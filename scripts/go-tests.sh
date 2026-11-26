@@ -34,6 +34,7 @@ run_in_go() {
     mkdir -p "$root/storage/framework/test-host"
     docker run --rm \
         -v "$root/tools/journal-agent:/src" \
+        -v "$root/resources/recordings:/resources/recordings:ro" \
         -v "$root/storage/framework/test-host:/out" \
         -v journal-go-cache:/root/.cache \
         -v journal-go-mod:/go/pkg/mod \

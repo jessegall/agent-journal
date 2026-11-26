@@ -10,13 +10,23 @@ import (
 	"journal-agent/recording"
 )
 
-const recordingsFolder = "../testdata/recordings"
+// recordingsFolders are where the recordings live: the journal's resources and the host's own test data.
+var recordingsFolders = []string{"../../../resources/recordings", "../testdata/recordings"}
 
 func TestEveryRecordingHasItsCommittedFrames(t *testing.T) {
-	_ = filepath.WalkDir(recordingsFolder, func(path string, entry fs.DirEntry, err error) error {
+	for _, folder := range recordingsFolders {
+		assertFramesOf(t, folder)
+	}
+}
+
+func assertFramesOf(t *testing.T, recordings string) {
+	t.Helper()
+	found := 0
+	_ = filepath.WalkDir(recordings, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil || entry.Name() != recording.FileName {
 			return err
 		}
+		found++
 		folder := filepath.Dir(path)
 		rendered, err := RenderedFramesOf(folder)
 		if err != nil {
@@ -28,6 +38,9 @@ func TestEveryRecordingHasItsCommittedFrames(t *testing.T) {
 		}
 		return nil
 	})
+	if found == 0 {
+		t.Errorf("%s holds no recording", recordings)
+	}
 }
 
 func TestAChangedChunkChangesTheRenderedFrames(t *testing.T) {

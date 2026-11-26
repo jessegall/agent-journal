@@ -49,4 +49,32 @@ enum TerminalNamedKey: string
     case CtrlX = 'ctrl_x';
     case CtrlY = 'ctrl_y';
     case CtrlZ = 'ctrl_z';
+
+    /**
+     * The low five bits of a letter, which make it the letter's control character.
+     */
+    private const int CONTROL_BITS = 0x1F;
+
+    /**
+     * The bytes a terminal reads as the key; a control key is its letter's control character.
+     */
+    public function bytes(): string
+    {
+        return match ($this) {
+            self::Up => "\e[A",
+            self::Down => "\e[B",
+            self::Left => "\e[D",
+            self::Right => "\e[C",
+            self::Home => "\e[H",
+            self::End => "\e[F",
+            self::PageUp => "\e[5~",
+            self::PageDown => "\e[6~",
+            self::Tab => "\t",
+            self::ShiftTab => "\e[Z",
+            self::Escape => "\e",
+            self::Backspace => "\x7f",
+            self::Delete => "\e[3~",
+            default => chr(ord(substr($this->value, -1)) & self::CONTROL_BITS),
+        };
+    }
 }

@@ -10,6 +10,7 @@ use App\Models\Projects\Host;
 use App\Support\ClaimedRequests;
 use App\Support\Drivers\DriverRequestClaims;
 use App\Support\Drivers\HeadlessStarts;
+use App\Support\PrivateValues;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -18,7 +19,11 @@ use Illuminate\Support\Collection;
  */
 final readonly class ClaimDriverRequestsHandler implements CommandHandler
 {
-    public function __construct(private DriverRequestClaims $claims, private HeadlessStarts $headless) {}
+    public function __construct(
+        private DriverRequestClaims $claims,
+        private HeadlessStarts $headless,
+        private PrivateValues $privateValues,
+    ) {}
 
     public function handle(ClaimDriverRequestsCommand $command): ClaimedRequests
     {
@@ -39,6 +44,6 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             ->get()
             ->keyBy('id');
 
-        return $this->claims->claimFor($runtimes, $command->limit);
+        return $this->privateValues->carriedBy($this->claims->claimFor($runtimes, $command->limit));
     }
 }

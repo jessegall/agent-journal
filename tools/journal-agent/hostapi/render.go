@@ -29,7 +29,7 @@ func RenderFixture(fixture recording.Fixture) ([]RenderedFrame, error) {
 		return frames, nil
 	}
 	geometry := fixture.StartGeometry()
-	shown, err := newScreen(int(geometry.Columns), int(geometry.Rows))
+	shown, err := newScreen(int(geometry.Columns), int(geometry.Rows), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,10 +85,10 @@ func RenderedFramesOf(recordingFolder string) ([]byte, error) {
 	return append(encoded, '\n'), nil
 }
 
-func newScreen(columns, rows int) (*Screen, error) {
+func newScreen(columns, rows int, shields []ShieldRule) (*Screen, error) {
 	reader, err := screen.NewEmulatorReader(columns, rows, screen.DefaultLimits, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &Screen{reader: reader}, nil
+	return &Screen{reader: reader, shields: shields}, nil
 }

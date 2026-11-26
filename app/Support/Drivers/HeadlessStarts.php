@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace App\Support\Drivers;
 
 use App\Commands\Agents\OpenHeadlessTurn\OpenHeadlessTurnCommand;
+use App\Commands\Agents\OpenJournalTerminal\OpenJournalTerminalCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Hosts\HostProcessType;
+use App\Exceptions\DriverUnknown;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
+use App\Support\AgentClientSettings;
+use App\Support\SessionTokens;
 use App\Support\StartClaims;
+use App\Support\StartProfilePin;
 use App\Values\DriverAccount;
 use App\Values\DriverRegistration;
 use App\Values\DriverStart;
@@ -33,6 +38,8 @@ final readonly class HeadlessStarts
 
     private const string HOOK_COMMAND = '{host:HOOK_COMMAND}';
 
+    private const string JOURNAL_URL = '{host:JOURNAL_URL}';
+
     /**
      * The trusted entry the journal's own commands for headless starts run under.
      */
@@ -42,15 +49,44 @@ final readonly class HeadlessStarts
         private StartClaims $starts,
         private DriverCatalogue $drivers,
         private JournalCommands $commands,
+        private SessionTokens $tokens,
     ) {}
 
     /**
-     * The journal opens the runtime's next turn, when its start is proven, no turn runs and work waits.
+     * The journal opens the headless runtime's next turn, when its start is proven, no turn runs and work waits.
      */
     public function openNextTurn(string $runtimeId): void
     {
         $open = new OpenHeadlessTurnCommand($runtimeId);
         $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $open);
+    }
+
+    /**
+     * The journal opens what a runtime whose start was just proven runs: its terminal, or its first turn.
+     */
+    public function openProven(AgentRuntime $runtime): void
+    {
+        if ($this->opensTerminal($runtime)) {
+            $open = new OpenJournalTerminalCommand($runtime->id);
+            $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $open);
+
+            return;
+        }
+
+        $this->openNextTurn($runtime->id);
+    }
+
+    /**
+     * How a process of the runtime signs in to the journal: the first takes the start's grant, each later one a fresh
+     * token, as the process before it has ended.
+     */
+    public function clientSettingsOf(AgentRuntime $runtime): AgentClientSettings
+    {
+        $session = $runtime->session;
+        $token = $runtime->claimStartGrant() ?? $this->tokens->rotate($session);
+        $profile = new StartProfilePin($session->profile_key, $session->profile_revision);
+
+        return new AgentClientSettings(self::JOURNAL_URL, $token, $profile);
     }
 
     /**
@@ -74,6 +110,15 @@ final readonly class HeadlessStarts
     public function drives(AgentRuntime $runtime): bool
     {
         return in_array($runtime->driver_key, $this->drivenKeys(), true);
+    }
+
+    /**
+     * Whether the runtime works in a terminal, which takes its work from its own driver worker, as its driver's
+     * registration says.
+     */
+    public function opensTerminal(AgentRuntime $runtime): bool
+    {
+        return $this->registrationOf($runtime)->opensTerminal();
     }
 
     public function startOf(
@@ -103,6 +148,16 @@ final readonly class HeadlessStarts
      * A turn continues the conversation once a turn of it ran, or from its first turn when the owner chose to resume
      * it.
      */
+    private function registrationOf(AgentRuntime $runtime): DriverRegistration
+    {
+        $registrations = array_filter(
+            $this->drivers->catalogue(),
+            fn (DriverRegistration $registration) => $registration->key->key === $runtime->driver_key,
+        );
+
+        return array_values($registrations)[0] ?? throw DriverUnknown::for($runtime->driver_key);
+    }
+
     private function isResume(AgentRuntime $runtime): bool
     {
         return $runtime->hasRunTurn()

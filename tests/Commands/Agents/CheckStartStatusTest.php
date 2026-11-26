@@ -19,6 +19,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorReference;
 use App\Support\AgentWakes;
+use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\ReadinessCheckSweep;
@@ -159,12 +160,12 @@ final class CheckStartStatusTest extends TestCase
 
     private function startWithMessage(): array
     {
-        [$host, $opened] = $this->openRuntime(firstMessage: 'Start with the plan.');
+        [$host, $opened] = $this->openHostClaimedRuntime(firstMessage: 'Start with the plan.');
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $request = new StartRequest(
             TestSelections::requestId(),
             $session->agent_id,
-            TestSelections::of(),
+            TestSelections::of(DefaultDrivers::CODEX),
             StartOriginType::MainStart,
             null,
             null,

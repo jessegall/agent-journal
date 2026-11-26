@@ -1,5 +1,5 @@
 // Package scripts holds the key scripts the host may run, each only for a program build whose recordings establish
-// its commands and screens (tools/journal-agent/testdata/recordings/*/keyscripts).
+// its commands and screens (resources/recordings/*/keyscripts and tools/journal-agent/testdata/recordings/*/keyscripts).
 package scripts
 
 import (

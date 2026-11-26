@@ -11,6 +11,7 @@ use App\Data\Messages\MessageTextData;
 use App\Enums\Hosts\HostOrderStatus;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
+use App\Support\Command;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
@@ -105,6 +106,11 @@ final class EchoProcessDriver implements ProcessDriver
         $step = self::PASTE.'-'.$this->refusedPastes;
         $this->pending = [HostOrderSource::forStep($requestId, $step, $attempt, $this->generation), $text];
 
+        return DriverActions::none();
+    }
+
+    public function onAnswered(Command $command, mixed $answer): DriverActions
+    {
         return DriverActions::none();
     }
 

@@ -24,6 +24,11 @@ final readonly class ProcessFeed
     public const int ENTRY_LIMIT = 256;
 
     /**
+     * What Redis takes for a read that does not wait.
+     */
+    private const int NO_BLOCK = -1;
+
+    /**
      * About the most bytes a process's stream keeps: a large entry shortens how many are kept.
      */
     public const int BYTE_LIMIT = 4 * 1024 * 1024;
@@ -63,6 +68,16 @@ final readonly class ProcessFeed
         $this->connection()->expire($key, self::TTL_SECONDS);
     }
 
+    /**
+     * Tells the process's worker that the process ended, so an idle worker learns it from its feed alone.
+     */
+    public function markEnded(string $processId): void
+    {
+        $key = self::streamKey($processId);
+        $this->connection()->xadd($key, '*', ['ended' => '1'], self::ENTRY_LIMIT, true);
+        $this->connection()->expire($key, self::TTL_SECONDS);
+    }
+
     public function latestFrame(string $processId): HostFrameData|null
     {
         $encoded = $this->connection()->get(self::latestKey($processId));
@@ -85,14 +100,16 @@ final readonly class ProcessFeed
     }
 
     /**
-     * What a worker waits on: the process's new output and its runtime's wakes together, after their cursors.
+     * What a worker waits on: the process's new output and its runtime's wakes together, after their cursors; a wait
+     * of none reads what is there and returns, as Redis would block for good on a wait of zero.
      *
      * @param  array<string, string>  $cursors  stream key => cursor
      * @return list<FeedEntry>
      */
     public function read(array $cursors, int $waitMs): array
     {
-        $read = $this->connection()->xread($cursors, self::ENTRY_LIMIT, $waitMs);
+        $block = $waitMs > 0 ? $waitMs : self::NO_BLOCK;
+        $read = $this->connection()->xread($cursors, self::ENTRY_LIMIT, $block);
 
         if (! is_array($read)) {
             return [];

@@ -10,6 +10,7 @@ use App\Commands\Hosts\RenewHostWorker\RenewHostWorkerCommand;
 use App\Commands\Hosts\SnapshotHostProcess\SnapshotHostProcessCommand;
 use App\Commands\Hosts\StreamHostProcess\StreamHostProcessCommand;
 use App\Contracts\Bus\JournalCommands;
+use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Hosts\HostProcessType;
 use App\Exceptions\WorkerFenced;
@@ -49,6 +50,7 @@ final readonly class DriverWorkers
         private ProcessDrivers $drivers,
         private JournalCommands $commands,
         private ServerClock $clock,
+        private MonotonicClock $monotonic,
         private DriverRestartSignal $restart,
         private CommandRegistry $registry,
         private WorkerLease $lease,
@@ -75,9 +77,14 @@ final readonly class DriverWorkers
             $cursors[$output] = ProcessFeed::FIRST_CURSOR;
         }
 
+        // A process that ended before this worker began has its end before the cursor: it is told again after it.
+        if (! $process->isLive()) {
+            $this->feed->markEnded($process->id);
+        }
+
         $driver = $this->drivers->for($process, $generation);
         $now = $this->clock->now();
-        $work = new DriverWork($process->id, $generation, $driver, $now, $cursors, $now);
+        $work = new DriverWork($process->id, $generation, $driver, $now, $cursors, $this->monotonic->nanoseconds());
 
         $this->perform($work, $this->resumed($work, $process)->then($this->requestsOf($work)));
 
@@ -114,16 +121,17 @@ final readonly class DriverWorkers
 
         foreach ($this->feed->read($work->cursors(), $waitMs) as $entry) {
             $work->advance($entry->stream, $entry->cursor);
+
+            if ($entry->hasEnded) {
+                $this->perform($work, $work->driver->onExit());
+
+                return false;
+            }
+
             $this->perform($work, $this->handOver($work, $entry));
         }
 
-        if (! HostProcess::query()->whereKey($work->processId)->sole()->isLive()) {
-            $this->perform($work, $work->driver->onExit());
-
-            return false;
-        }
-
-        $now = $this->clock->now();
+        $now = $this->monotonic->nanoseconds();
 
         if ($work->isLeaseDue($now)) {
             $this->perform($work, DriverActions::of(new RenewHostWorkerCommand($work->processId, $work->generation)));
@@ -178,11 +186,17 @@ final readonly class DriverWorkers
      */
     private function perform(DriverWork $work, DriverActions $actions): void
     {
-        $this->lease->hold($work->processId, $work->generation, function () use ($actions): void {
+        $answered = DriverActions::none();
+
+        $this->lease->hold($work->processId, $work->generation, function () use ($actions, $work, &$answered): void {
             foreach ($actions->commands as $command) {
-                $this->run($command);
+                $answered = $answered->then($work->driver->onAnswered($command, $this->run($command)));
             }
         });
+
+        if ($answered->commands !== []) {
+            $this->perform($work, $answered);
+        }
     }
 
     /**

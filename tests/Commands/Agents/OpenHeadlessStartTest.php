@@ -51,18 +51,16 @@ final class OpenHeadlessStartTest extends TestCase
         $this->journal->assertResult(null, $this->journal->asSystem(new OpenHeadlessStartCommand($opened->sessionId)));
     }
 
-    public function test_a_terminal_start_is_left_to_its_host(): void
+    public function test_a_claude_terminal_start_is_claimed_and_probed_by_the_journal_too(): void
     {
         $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
 
         $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
 
+        $start = $this->journal->startOfSession($opened->sessionId);
         $this->journal->assertResult(
-            [SessionProcessStatus::Pending, 0],
-            [
-                $this->journal->startOfSession($opened->sessionId)->status,
-                HostProcess::query()->count(),
-            ],
+            [SessionProcessStatus::Starting, HostProcessPurpose::BuildProbe],
+            [$start->status, HostProcess::query()->where('session_process_id', $start->id)->sole()->purpose],
         );
     }
 }

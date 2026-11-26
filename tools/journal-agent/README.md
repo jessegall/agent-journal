@@ -10,7 +10,7 @@ records evidence sessions. How to install and run it, and why a start is refused
 ```sh
 cd tools/journal-agent
 go build -o bin/journal-agent ./cmd/journal-agent
-bin/journal-agent record --driver claude --mode terminal --out testdata/recordings/claude/2.1.323/first-prompt -- claude
+bin/journal-agent record --driver claude --mode terminal --out ../../resources/recordings/claude-code/2.1.323/first-prompt -- claude
 bin/journal-agent record --driver codex --mode process --out testdata/recordings/codex/0.165.0/one-turn -- codex exec "say hi"
 ```
 

@@ -47,7 +47,7 @@ final class ClaimRuntimeRequestsTest extends TestCase
     public function test_the_current_worker_claims_the_runtimes_request_once_and_a_deposed_one_is_fenced(): void
     {
         $this->chooseActiveAccounts();
-        $this->journal->owner()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
         $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal, firstMessage: 'hello');
         $this->journal->openHostProcess('Mac', 'shell', runtimeId: $opened->runtimeId);
         $id = $this->journal->hostProcessCalled('shell')->id;

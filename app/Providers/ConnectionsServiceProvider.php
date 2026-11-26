@@ -30,6 +30,7 @@ use App\Support\CommandRunEvidence;
 use App\Support\Drivers\ProcessDrivers;
 use App\Support\Drivers\Processes\HeadlessDriver;
 use App\Support\Drivers\Processes\ProbeDriver;
+use App\Support\Drivers\Processes\TerminalDriver;
 use App\Support\Drivers\WorkerLease;
 use App\Support\HostOperatorAccess;
 use App\Support\Hosts\HostChannel;
@@ -66,6 +67,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
         // Each purpose of process the journal drives has its process driver; a test adds its stand-in drivers.
         $this->app->singleton(ProcessDrivers::class, fn ($app) => new ProcessDrivers($app)
             ->with(HostProcessPurpose::AgentTurn, HeadlessDriver::class)
+            ->with(HostProcessPurpose::AgentTerminal, TerminalDriver::class)
             ->with(HostProcessPurpose::BuildProbe, ProbeDriver::class)
             ->with(HostProcessPurpose::SignInProbe, ProbeDriver::class));
 

@@ -126,7 +126,7 @@ yours to resolve at its source.
 
 ## A driver's screens belong to the screen navigation (rule 80; user messages 19423, 19424, 19427, 19428)
 
-- A screen, menu or question of Claude Code or Codex is passed only by the host's screen navigation, from a recording of that screen under `tools/journal-agent/testdata/recordings/<driver>/<build>/screens`.
+- A screen, menu or question of Claude Code or Codex is passed only by the journal's screen navigation (`app/Support/Screens`, `app/Support/KeyScripts`), from a recording of that screen under `resources/recordings/<driver>/<build>/screens`.
 - Before fixing a start that hangs on a screen, look at what is recorded. A screen that is missing is recorded and added to the screens the navigation knows. Never write a new mechanism for it.
 - No other code reads, guesses or answers a driver's screens, sends it keys, or writes a driver's own state files (such as `.claude.json` and its onboarding and trust fields) to make a screen go away.
 - A screen the navigation does not know ends the start with what the screen shows; it never waits forever.

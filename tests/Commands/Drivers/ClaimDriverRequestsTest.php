@@ -15,6 +15,7 @@ use App\Enums\Drivers\RequestProgress;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
 use App\Support\ClaimedRequests;
+use App\Support\DefaultDrivers;
 use App\Support\OpenedRuntime;
 use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
@@ -55,8 +56,8 @@ final class ClaimDriverRequestsTest extends TestCase
 
     public function test_a_host_claims_only_the_requests_of_its_own_runtimes(): void
     {
-        [$host, $opened] = $this->openRuntime(firstMessage: 'Mine');
-        [, $foreign] = $this->openRuntime(firstMessage: 'Not mine');
+        [$host, $opened] = $this->openHostClaimedRuntime(firstMessage: 'Mine');
+        [, $foreign] = $this->openHostClaimedRuntime(firstMessage: 'Not mine');
 
         $claimed = $this->journal->asSystem(
             new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
@@ -83,17 +84,17 @@ final class ClaimDriverRequestsTest extends TestCase
      */
     public function test_a_host_with_more_runtimes_than_a_batch_still_claims_a_batch(): void
     {
-        [$host] = $this->openRuntime(firstMessage: 'First');
+        [$host] = $this->openHostClaimedRuntime(firstMessage: 'First');
 
         for ($more = 0; $more < self::RUNTIMES_PAST_A_BATCH; $more++) {
             $this->asOwner(new OpenAgentRuntimeCommand(
                 $this->agent()->id,
                 $host->hostId,
                 self::FOLDER,
-                'claude-code',
+                DefaultDrivers::CODEX,
                 '2.1.323',
                 'claude',
-                DriverType::Terminal,
+                DriverType::Headless,
                 'claude-opus-5-5',
                 firstMessage: 'Another',
             ));
@@ -108,7 +109,7 @@ final class ClaimDriverRequestsTest extends TestCase
 
     public function test_a_stop_and_an_interrupt_are_claimed_past_a_full_batch_of_normal_work(): void
     {
-        [$host, $opened] = $this->openRuntime();
+        [$host, $opened] = $this->openHostClaimedRuntime();
 
         foreach (range(1, 12) as $number) {
             $this->deliver($opened, "work-{$number}", "Work {$number}");

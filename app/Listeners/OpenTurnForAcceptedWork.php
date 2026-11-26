@@ -20,7 +20,11 @@ final readonly class OpenTurnForAcceptedWork implements Listener
     {
         $request = DriverRequest::query()->with('runtime')->whereKey($fact->requestId)->sole();
 
-        if ($request->operation->startsWork() && $this->headless->drives($request->runtime)) {
+        // A terminal takes its work from its own driver worker; only a headless runtime opens a turn for it.
+        $runtime = $request->runtime;
+        $isTurnByTurn = $this->headless->drives($runtime) && ! $this->headless->opensTerminal($runtime);
+
+        if ($request->operation->startsWork() && $isTurnByTurn) {
             $this->headless->openNextTurn($request->agent_runtime_id);
         }
     }

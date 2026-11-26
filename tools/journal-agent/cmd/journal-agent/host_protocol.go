@@ -94,7 +94,7 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 		return err
 	}
 	executors := table.Executors()
-	maps.Copy(executors, hostapi.NewProcessInput(table, outputs).Executors())
+	maps.Copy(executors, hostapi.NewProcessInput(table, outputs, calls.PrivateValue).Executors())
 	clock := &hostapi.JournalClock{Host: time.Now}
 	verifier := hostapi.Verifier{Secret: hostapi.OrderSecretOf(enrollment.Secret), Now: clock.Now}
 	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(order hostapi.Order, answer hostapi.Answer) {

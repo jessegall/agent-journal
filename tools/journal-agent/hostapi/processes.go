@@ -44,6 +44,8 @@ type OpenPlan struct {
 	// ReadFiles are files the host opens read-only for a process on this host, handed over as its descriptors 3 on,
 	// such as a token it reads on a descriptor instead of from its environment.
 	ReadFiles []string `json:"read_files,omitempty"`
+	// ShieldRules are the screens of a terminal whose frames the host shields before they leave.
+	ShieldRules []ShieldRule `json:"shield_rules,omitempty"`
 }
 
 // TerminalSize is a terminal's columns and rows.
@@ -517,11 +519,26 @@ func (plan OpenPlan) restartArgv() []string {
 	if len(plan.RestartArgv) == 0 || plan.RestartWhen.Folder == "" {
 		return plan.Argv
 	}
-	matches, _ := filepath.Glob(filepath.Join(plan.RestartWhen.Folder, plan.RestartWhen.Glob))
-	if len(matches) == 0 {
+	if !hasFileNamed(plan.RestartWhen.Folder, plan.RestartWhen.Glob) {
 		return plan.Argv
 	}
 	return plan.RestartArgv
+}
+
+// hasFileNamed is whether a file whose name matches the glob lies anywhere under the folder, as a program keeps its
+// transcripts in a folder per project.
+func hasFileNamed(folder, glob string) bool {
+	found := errors.New("found")
+	err := filepath.WalkDir(folder, func(_ string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return nil
+		}
+		if matched, _ := filepath.Match(glob, entry.Name()); matched && !entry.IsDir() {
+			return found
+		}
+		return nil
+	})
+	return errors.Is(err, found)
 }
 
 func (table *ProcessTable) resize(_ context.Context, order Order) (map[string]any, error) {

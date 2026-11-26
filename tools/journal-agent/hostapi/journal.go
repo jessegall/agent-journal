@@ -83,6 +83,17 @@ func (journal Journal) NotifyProcessOutput(ctx context.Context, processID string
 	return journal.Client.Call(ctx, "/host/processes/"+url.PathEscape(processID)+"/output", output, nil)
 }
 
+// PrivateValue pulls the value of a private submission once; the journal refuses a second pull.
+func (journal Journal) PrivateValue(ctx context.Context, submission string) ([]byte, error) {
+	var pulled struct {
+		Value string `json:"value"`
+	}
+	if err := journal.Client.Call(ctx, "/host/private-values/"+url.PathEscape(submission), struct{}{}, &pulled); err != nil {
+		return nil, err
+	}
+	return []byte(pulled.Value), nil
+}
+
 // NotifyProcessReport sends that one of the host's processes runs, was healed, exited or was lost.
 func (journal Journal) NotifyProcessReport(ctx context.Context, report ProcessReport) error {
 	return journal.Client.Call(ctx, "/host/processes/"+url.PathEscape(report.ProcessID), report, nil)

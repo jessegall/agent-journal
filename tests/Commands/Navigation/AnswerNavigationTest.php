@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Navigation;
 
+use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
+use App\Commands\Hosts\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -41,6 +43,11 @@ use Tests\TestCase;
 #[TestsCommand(AnswerNavigationCommand::class)]
 final class AnswerNavigationTest extends TestCase
 {
+    /**
+     * The host the first runtime a test opens runs on.
+     */
+    private const string HOST = 'Test host 1';
+
     use CommitsHookRows;
     use RaisesNavigationRequests;
 
@@ -147,18 +154,16 @@ final class AnswerNavigationTest extends TestCase
         $again = $this->append($navigation, $round);
 
         $this->assertSame($first->id, $again->id);
-        $claimed = collect(
-            $this->journal->hostCall(
-                $host,
-                'POST',
-                '/host/claim?limit=10&wait=0&watched_version=0',
-            )->assertOk()->json('requests'),
-        )
+        // The journal drives a Claude Code terminal, so its own driver worker claims the round.
+        $this->journal->openHostProcess(self::HOST, 'terminal', runtimeId: $navigation->agent_runtime_id);
+        $process = $this->journal->hostProcessCalled('terminal')->id;
+        $generation = $this->journal->asSystem(new ClaimHostWorkerCommand($process));
+        $claimed = collect($this->journal->asSystem(new ClaimRuntimeRequestsCommand($process, $generation, 10))->requests)
             ->firstWhere('requestId', $first->id);
-        $this->assertSame(['navigate', $navigation->id, ['down']], [
-            $claimed['operation'],
-            $claimed['navigationRequestId'],
-            $claimed['navigationRound']['keys'],
+        $this->assertSame(['navigate', $navigation->id, [NavigationKey::Down]], [
+            $claimed?->operation,
+            $claimed?->navigationRequestId,
+            $claimed?->navigationRound?->keys,
         ]);
     }
 

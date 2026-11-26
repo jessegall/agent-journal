@@ -9,6 +9,7 @@ use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\RestartPolicy;
 use App\Support\ContainerManifest;
+use App\Support\Screens\ShieldRule;
 
 /**
  * How a host is to open one process: what it is for, terminal or pipes, whether it is healed, its argv and
@@ -28,6 +29,8 @@ final readonly class HostProcessPlan
      * @param  list<string>  $inherit
      * @param  list<string>  $sideSockets
      * @param  list<string>  $readFiles
+     * @param  list<ShieldRule>  $shieldRules
+     * @param  list<string>  $restartArgv
      */
     public function __construct(
         public HostProcessPurpose $purpose,
@@ -44,13 +47,22 @@ final readonly class HostProcessPlan
         public array $inherit = [],
         public array $sideSockets = [],
         /**
-         * a plan file holding the Seatbelt profile the process runs under where the host has Seatbelt
+         * A plan file holding the Seatbelt profile the process runs under where the host has Seatbelt
          */
         public string|null $seatbelt = null,
         /**
-         * files the host opens read-only for the process, handed over as its descriptors 3 on
+         * Files the host opens read-only for the process, handed over as its descriptors 3 on
          */
         public array $readFiles = [],
+        /**
+         * The screens of a terminal the host shields before any frame of them leaves the machine.
+         */
+        public array $shieldRules = [],
+        /**
+         * What a process the host heals after a crash runs once its restart file exists, such as a resume.
+         */
+        public array $restartArgv = [],
+        public RestartFile|null $restartWhenFile = null,
     ) {}
 
     /**
@@ -102,6 +114,9 @@ final readonly class HostProcessPlan
             'side_sockets' => $this->sideSockets,
             'seatbelt' => $this->seatbelt,
             'read_files' => $this->readFiles,
+            'shield_rules' => $this->shieldRules,
+            'restart_argv' => $this->restartArgv,
+            'restart_when_file' => $this->restartWhenFile,
         ];
     }
 }

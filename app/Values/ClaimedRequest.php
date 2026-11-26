@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Contracts\Drivers\MessagePart;
+use Spatie\LaravelData\Data;
 
 /**
  * One request handed to a host: which runtime, which request and attempt, and what to do, with the key script to run
@@ -52,6 +53,19 @@ final readonly class ClaimedRequest
         }
 
         return implode("\n\n", array_map(fn (MessagePart $part) => $part->promptLine(), $this->parts));
+    }
+
+    /**
+     * The message a driver sends as JSON, such as typed input or a draft choice, read as its Data class.
+     *
+     * @template T of Data
+     *
+     * @param  class-string<T>  $type
+     * @return T
+     */
+    public function messageAs(string $type): Data
+    {
+        return $type::from((string) $this->message);
     }
 
     /**

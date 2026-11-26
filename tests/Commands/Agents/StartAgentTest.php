@@ -196,7 +196,7 @@ final class StartAgentTest extends TestCase
         );
     }
 
-    public function test_a_start_runs_with_the_chosen_account_and_registers_its_pending_start(): void
+    public function test_a_start_runs_with_the_chosen_account_and_the_journal_takes_it_to_prove_it(): void
     {
         $receipt = $this->start($this->request());
 
@@ -207,7 +207,7 @@ final class StartAgentTest extends TestCase
             [$receipt->sessionId, $account->id, 1],
             [$start->session_id, $start->account_id, $start->account_generation],
         );
-        $this->assertSame(SessionProcessStatus::Pending, $start->status);
+        $this->assertSame(SessionProcessStatus::Starting, $start->status);
         $this->assertTrue($session->isLinkedTo($account));
     }
 
@@ -250,7 +250,7 @@ final class StartAgentTest extends TestCase
 
     public function test_a_start_no_host_took_up_within_the_presence_window_ends_and_the_agent_can_start_again(): void
     {
-        $receipt = $this->start($this->request());
+        $receipt = $this->start($this->hostClaimedRequest());
         $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addSeconds(121)));
 
         $this->app->make(StartHeartbeats::class)->markSilentStarts();
@@ -261,7 +261,7 @@ final class StartAgentTest extends TestCase
             [SessionStatus::Ended, SessionProcessStatus::Cancelled, false],
             [$session->status, $start->status, CapacityReservation::isHeldFor($session->start_request_id)],
         );
-        $this->assertNotSame($receipt->sessionId, $this->start($this->request())->sessionId);
+        $this->assertNotSame($receipt->sessionId, $this->start($this->hostClaimedRequest())->sessionId);
     }
 
     public function test_a_start_a_host_took_up_stays_running_when_it_falls_silent(): void

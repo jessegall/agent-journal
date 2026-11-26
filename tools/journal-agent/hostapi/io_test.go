@@ -95,7 +95,7 @@ func TestAGuardedWriteIsRefusedOnceItsRowsOrTheInputMovedAndTheUsersWriteRaisesT
 	table := &ProcessTable{outputs: outputs, processes: map[string]*heldProcess{
 		"p": {id: "p", terminal: discardingTerminal{}, exited: make(chan struct{})},
 	}}
-	input := NewProcessInput(table, outputs)
+	input := NewProcessInput(table, outputs, nil)
 	outputs.Printed("p", []byte("> "))
 	screen, _ := outputs.ScreenOf("p")
 	guard := RowGuard{From: 0, To: 0, Hash: screen.RowsHash(0, 0)}
@@ -184,4 +184,148 @@ func (discardingTerminal) Size() (uint16, uint16, error)   { return 40, 5, nil }
 
 func loadFixture(folder string) (recording.Fixture, error) {
 	return recording.Load(folder)
+}
+
+// A screen the journal named as secret leaves as a shielded frame with no rows, and no recording keeps its bytes.
+func TestAShieldedScreenLeavesWithoutItsRowsAndIsNotRecorded(t *testing.T) {
+	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
+	posted := &postedOutputs{}
+	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
+	plan := OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
+		ShieldRules: []ShieldRule{{Keywords: []string{"custom api key", "use this api key"}, MinKeywords: 2}}}
+	if err := outputs.Open("p", plan); err != nil {
+		t.Fatal(err)
+	}
+	outputs.Record("p", plan)
+	outputs.Printed("p", []byte("Use this API key?\r\nCUSTOM API KEY: sk-1"))
+	screen, _ := outputs.ScreenOf("p")
+
+	frame := screen.Frame(outputs.monotonic())
+	folder, err := outputs.StopRecording("p")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixture, err := loadFixture(folder)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !frame.IsShielded || len(frame.Rows) != 0 || len(fixture.Output) != 0 {
+		t.Fatalf("the secret screen left with %d rows, shielded %v, and %d recorded chunks",
+			len(frame.Rows), frame.IsShielded, len(fixture.Output))
+	}
+}
+
+// Nothing of a private entry leaves: no frame between open_private and the redraw after close_private, no recorded
+// byte, and the value pulled from the journal is written without being recorded.
+func TestAPrivateEntrySendsNoFrameUntilTheRedrawAfterItCloses(t *testing.T) {
+	outputs, _, posted := terminalOutputs(t)
+	outputs.Record("p", OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}})
+	if err := outputs.OpenPrivate("p"); err != nil {
+		t.Fatal(err)
+	}
+	outputs.Printed("p", []byte("Key: ****"))
+	_ = outputs.Snapshot("p")
+	outputs.ClosePrivate("p")
+	_ = outputs.Snapshot("p")
+	sentWhilePrivate := len(posted.outputs)
+	outputs.Printed("p", []byte("\x1b[2J\x1b[Hready"))
+	_ = outputs.Snapshot("p")
+	folder, err := outputs.StopRecording("p")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixture, err := loadFixture(folder)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	recorded := ""
+	for _, chunk := range fixture.Output {
+		recorded += string(chunk.Bytes)
+	}
+	if sentWhilePrivate != 0 || len(posted.outputs) != 1 || strings.Contains(recorded, "Key") {
+		t.Fatalf("a private entry sent %d frames, %d after its redraw, and recorded %q",
+			sentWhilePrivate, len(posted.outputs), recorded)
+	}
+}
+
+// A changed screen goes out once it settles, long before the stream's tick, and a screen that keeps changing goes
+// out no more often than the stream rate.
+func TestAChangedScreenIsSentOnceItSettlesAndABurstAtMostAtTheStreamRate(t *testing.T) {
+	outputs, _, posted := terminalOutputs(t)
+	if err := outputs.Stream("p", 4); err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = outputs.Stream("p", 0) }()
+	sentCount := func() int {
+		posted.mutex.Lock()
+		defer posted.mutex.Unlock()
+		return len(posted.outputs)
+	}
+
+	outputs.Printed("p", []byte("typed"))
+	time.Sleep(60 * time.Millisecond)
+	afterOneChange := sentCount()
+	for at := 0; at < 120; at++ {
+		outputs.Printed("p", []byte("\r"+strings.Repeat(".", at%30)))
+		time.Sleep(5 * time.Millisecond)
+	}
+	duringBurst := sentCount() - afterOneChange
+
+	if afterOneChange != 1 || duringBurst > 4 {
+		t.Fatalf("one change sent %d frames within 60 ms and a 600 ms burst %d", afterOneChange, duringBurst)
+	}
+}
+
+// A private entry nobody closes ends by itself at its deadline: a private value is refused after it and its output
+// leaves again once the screen redraws.
+func TestAPrivateEntryNobodyClosesEndsAtItsDeadline(t *testing.T) {
+	deadline := privateDeadline
+	privateDeadline = 20 * time.Millisecond
+	defer func() { privateDeadline = deadline }()
+	outputs, _, posted := terminalOutputs(t)
+	if err := outputs.OpenPrivate("p"); err != nil {
+		t.Fatal(err)
+	}
+	wasPrivate := outputs.IsPrivate("p")
+
+	time.Sleep(60 * time.Millisecond)
+	isPrivate := outputs.IsPrivate("p")
+	outputs.Printed("p", []byte("ready"))
+	_ = outputs.Snapshot("p")
+
+	posted.mutex.Lock()
+	defer posted.mutex.Unlock()
+	if !wasPrivate || isPrivate || len(posted.outputs) != 1 {
+		t.Fatalf("the entry was private %v, still private %v after its deadline, and sent %d frames after the redraw",
+			wasPrivate, isPrivate, len(posted.outputs))
+	}
+}
+
+// While a shield rule matches the screen, no chunk of the process leaves either: a side socket's bytes are withheld
+// with its frames, and they flow again once the screen no longer matches.
+func TestAShieldedScreenWithholdsTheProcesssChunksOnEveryStream(t *testing.T) {
+	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
+	posted := &postedOutputs{}
+	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
+	plan := OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
+		ShieldRules: []ShieldRule{{Keywords: []string{"custom api key", "use this api key"}, MinKeywords: 2}}}
+	if err := outputs.Open("p", plan); err != nil {
+		t.Fatal(err)
+	}
+	outputs.Printed("p", []byte("Use this API key?\r\nCustom API key:"))
+	outputs.send("p", Output{Chunks: chunksOf("status", 0, []byte("sk-1"))})
+	outputs.Printed("p", []byte("\x1b[2J\x1b[Hready"))
+	outputs.send("p", Output{Chunks: chunksOf("status", 4, []byte("ok"))})
+
+	posted.mutex.Lock()
+	defer posted.mutex.Unlock()
+	chunks := 0
+	for _, output := range posted.outputs {
+		chunks += len(output.Chunks)
+	}
+	if chunks != 1 {
+		t.Fatalf("%d side socket chunks left the machine, want only the one sent after the shielded screen", chunks)
+	}
 }

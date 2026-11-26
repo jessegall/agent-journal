@@ -87,3 +87,19 @@ func TestAPlanWithASeatbeltProfileRunsUnderItOnMacOSOnly(t *testing.T) {
 		t.Fatal("a Seatbelt profile outside the files folder was not refused")
 	}
 }
+
+func TestAContainerPlansRestartFileNamingAHostPlaceholderIsRefused(t *testing.T) {
+	container := &host.ContainerManifest{}
+	inside := OpenPlan{Argv: []string{"program"}, Container: container,
+		RestartWhen: host.RestartFile{Folder: "/home/journal/.account", Glob: "*.jsonl"}}
+	placed := inside
+	placed.RestartWhen.Folder = "{folder:home}/.program/projects"
+
+	_, insideErr := fillPlan(inside, Placeholders{Folders: map[string]string{"home": "/state/home"}})
+	_, placedErr := fillPlan(placed, Placeholders{Folders: map[string]string{"home": "/state/home"}})
+
+	var refusal RefusalError
+	if insideErr != nil || !errors.As(placedErr, &refusal) || refusal.Refusal != Unsafe {
+		t.Fatalf("a container path was refused (%v) or a host placeholder was let through (%v)", insideErr, placedErr)
+	}
+}

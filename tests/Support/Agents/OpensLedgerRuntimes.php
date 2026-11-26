@@ -9,6 +9,7 @@ use App\Contracts\Bus\Command;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
+use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\ScriptParameter;
@@ -39,7 +40,7 @@ trait OpensLedgerRuntimes
     }
 
     /**
-     * A new agent's runtime opened by the owner on a new host in the project folder.
+     * A new agent's runtime opened by the owner on a new host in the project folder, its driver's arrangement shown.
      *
      * @return array{EnrolledHost, OpenedRuntime}
      */
@@ -50,7 +51,7 @@ trait OpensLedgerRuntimes
         DriverType $driverType = DriverType::Terminal,
     ): array {
         $number = ++$this->openedRuntimeCount;
-        $this->journal->idleAgent("Driven agent {$number}")->enrollHost("Test host {$number}", [self::FOLDER]);
+        $this->journal->showDriverArrangements()->idleAgent("Driven agent {$number}")->enrollHost("Test host {$number}", [self::FOLDER]);
         $opened = $this->journal->openRuntimeOn(
             "Driven agent {$number}",
             "Test host {$number}",
@@ -62,6 +63,16 @@ trait OpensLedgerRuntimes
         );
 
         return [$this->journal->hostCalled("Test host {$number}"), $opened];
+    }
+
+    /**
+     * A runtime whose requests its host still claims itself: a Codex headless one, as the journal drives Claude Code.
+     *
+     * @return array{EnrolledHost, OpenedRuntime}
+     */
+    private function openHostClaimedRuntime(string|null $firstMessage = null): array
+    {
+        return $this->openRuntime($firstMessage, driver: DefaultDrivers::CODEX, driverType: DriverType::Headless);
     }
 
     private function enrollHost(): EnrolledHost

@@ -295,11 +295,11 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Whether a turn of the runtime is ordered or running, so its next work waits for it to end.
+     * Whether a process of the purpose runs for the runtime now, such as its turn or its terminal.
      */
-    public function hasLiveTurn(): bool
+    public function hasLiveProcess(HostProcessPurpose $purpose): bool
     {
-        return $this->hostProcesses()->live()->where('purpose', HostProcessPurpose::AgentTurn)->exists();
+        return $this->hostProcesses()->live()->where('purpose', $purpose)->exists();
     }
 
     /**

@@ -63,7 +63,7 @@ final class DriverWorkersTest extends TestCase
 
         $this->journal->assertResult(
             [['frames_per_second' => 4, 'raw' => false], ['signal' => 'SIGUSR2']],
-            [$stream->payload, $this->lastOrder()->payload],
+            [$this->journal->payloadOf($stream), $this->journal->payloadOf($this->lastOrder())],
         );
     }
 

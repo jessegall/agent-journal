@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class ClaudeResultTest extends TestCase
 {
-    private const string RECORDINGS = __DIR__.'/../../../tools/journal-agent/testdata/recordings/claude-code/2.1.323';
+    private const string RECORDINGS = __DIR__.'/../../../resources/recordings/claude-code/2.1.323';
 
     public function test_each_recorded_turn_gives_its_model_window_cost_and_success(): void
     {

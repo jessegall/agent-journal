@@ -13,6 +13,8 @@ use Carbon\CarbonImmutable;
  */
 final class DriverWork
 {
+    private const int NANOSECONDS_PER_MS = 1_000_000;
+
     /**
      * @param  array<string, string>  $cursors  stream key => cursor
      */
@@ -22,7 +24,7 @@ final class DriverWork
         public readonly ProcessDriver $driver,
         public readonly CarbonImmutable $startedAt,
         private array $cursors,
-        private CarbonImmutable $renewedAt,
+        private int $renewedAtNanoseconds,
     ) {}
 
     /**
@@ -38,13 +40,16 @@ final class DriverWork
         $this->cursors[$stream] = $cursor;
     }
 
-    public function isLeaseDue(CarbonImmutable $now): bool
+    /**
+     * Whether the worker's lease is due again, by the process's own clock, so a step asks the database nothing.
+     */
+    public function isLeaseDue(int $nanoseconds): bool
     {
-        return $this->renewedAt->diffInMilliseconds($now) >= DriverWorkers::RENEW_MS;
+        return $nanoseconds - $this->renewedAtNanoseconds >= DriverWorkers::RENEW_MS * self::NANOSECONDS_PER_MS;
     }
 
-    public function renew(CarbonImmutable $now): void
+    public function renew(int $nanoseconds): void
     {
-        $this->renewedAt = $now;
+        $this->renewedAtNanoseconds = $nanoseconds;
     }
 }

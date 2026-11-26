@@ -400,3 +400,21 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 	waitForText(t, after, "second\n")
 	reports.waitFor(t, "exited")
 }
+
+// A healed process resumes once its restart file lies anywhere under its folder, as a transcript in a project folder.
+func TestAHealedProcessRunsItsRestartArgvOnceItsFileExistsUnderItsFolder(t *testing.T) {
+	folder := t.TempDir()
+	plan := OpenPlan{Argv: []string{"program", "--session-id", "c1"}, RestartArgv: []string{"program", "--resume", "c1"},
+		RestartWhen: host.RestartFile{Folder: folder, Glob: "*c1.jsonl"}}
+	before := plan.restartArgv()
+	if err := os.MkdirAll(filepath.Join(folder, "-work"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(folder, "-work", "c1.jsonl"), []byte("{}"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if before[1] != "--session-id" || plan.restartArgv()[1] != "--resume" {
+		t.Fatalf("the healed process ran %v before its transcript and %v after", before, plan.restartArgv())
+	}
+}

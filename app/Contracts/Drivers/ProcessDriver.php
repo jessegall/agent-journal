@@ -6,6 +6,7 @@ namespace App\Contracts\Drivers;
 
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostOrder;
+use App\Support\Command;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
@@ -39,6 +40,14 @@ interface ProcessDriver
      * What the driver does once the host answered one of the orders it made.
      */
     public function onAnswer(HostOrder $order): DriverActions;
+
+    /**
+     * What the driver does with the journal's answer to a command it ordered, such as the answer to a raise of
+     * navigation that hands it a library entry to replay.
+     *
+     * @param  Command<mixed>  $command
+     */
+    public function onAnswered(Command $command, mixed $answer): DriverActions;
 
     /**
      * What the driver does once the process ended for good.

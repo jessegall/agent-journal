@@ -10,9 +10,11 @@ use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
 use App\Commands\Hosts\NotifyHostOutput\NotifyHostOutputCommand;
 use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
+use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
 use App\Contracts\Drivers\ProcessDriver;
 use App\Contracts\Hosts\HostChannel;
 use App\Data\Hosts\HostProcessReportData;
+use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Agents\WorkspaceUse;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessReportType;
@@ -24,16 +26,19 @@ use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
 use App\Support\ContainerManifest;
+use App\Support\DefaultDrivers;
 use App\Support\Drivers\DriverWork;
 use App\Support\Drivers\DriverWorkers;
 use App\Support\Drivers\ProcessDrivers;
 use App\Support\Drivers\Profiles\ClaudeCodeProfile;
 use App\Support\Hosts\ProcessFeed;
 use App\Support\MountRules;
+use App\Support\PrivateValues;
 use App\Support\SecurityOptions;
 use App\Values\ExecutionBudgets;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
+use App\Values\RowGuard;
 use Closure;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Process\Factory;
@@ -85,8 +90,9 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The named host claims the session's start, its driver's arrangement shown, and is ordered to open a process of
-     * the purpose for it, which has not reported yet.
+     * The session's start is taken, by the named host or, for a driver the journal drives, by the journal already, and
+     * the host is ordered to open a process of the purpose for it, which has not reported yet; the test showed the
+     * driver's arrangement before it opened the runtime.
      */
     public function openHostProcessForStart(
         string $host,
@@ -95,8 +101,12 @@ trait ArrangesHostProcesses
         HostProcessPurpose $purpose = HostProcessPurpose::AgentTerminal,
     ): self {
         $hostId = $this->hostCalled($host)->hostId;
-        $this->showDriverArrangements()->asSystem(new ClaimStartCommand($hostId, $sessionId));
         $start = SessionProcess::findCurrentOf($sessionId) ?? throw FixtureRefused::missingAlias('start', $sessionId, self::OWNER);
+
+        if ($start->status === SessionProcessStatus::Pending) {
+            $this->asSystem(new ClaimStartCommand($hostId, $sessionId));
+        }
+
         $plan = new HostProcessPlan($purpose, HostProcessType::Terminal, RestartPolicy::Never, ['sh', '-c', 'cat'], [], base_path());
         $source = HostOrderSource::fromJournal();
         $this->hostProcesses[$name] = $this->asSystem(new OpenHostProcessCommand($hostId, null, $plan, $source, $start->id));
@@ -187,6 +197,25 @@ trait ArrangesHostProcesses
     }
 
     /**
+     * The process driver of the named process's purpose, made for it as a worker of the generation makes it, so a
+     * test feeds it entries and requests one by one.
+     */
+    public function processDriverOf(string $name, int $generation = 1): ProcessDriver
+    {
+        return $this->app->make(ProcessDrivers::class)->for($this->hostProcessCalled($name), $generation);
+    }
+
+    /**
+     * A browser submitted the private value under the submission id, which now waits for its host to pull it.
+     */
+    public function submitPrivateValue(string $submissionId, string $value): self
+    {
+        $this->app->make(PrivateValues::class)->keep($submissionId, $value);
+
+        return $this;
+    }
+
+    /**
      * The named pipe process's host sends what it printed next on its standard output, right after what it sent before.
      */
     public function printOnPipe(string $name, string $printed): self
@@ -243,13 +272,13 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The host channel plays the committed recording in the folder, relative to the recordings of the Go host.
+     * The host channel plays the committed recording in the folder, relative to the journal's recordings.
      */
     public function playsRecording(string $recording): self
     {
         $this->app->instance(
             HostChannel::class,
-            StandInHost::playing(base_path("tools/journal-agent/testdata/recordings/{$recording}")),
+            StandInHost::playing(resource_path("recordings/{$recording}")),
         );
 
         return $this;
@@ -306,6 +335,36 @@ trait ArrangesHostProcesses
         $this->openPlanned($host, $name, $runtimeId, $plan);
 
         return $this;
+    }
+
+    /**
+     * Opens the key recorder on the named host, which must run for real, as a native terminal: every byte typed on it
+     * is written to a file of the installation and the typed text drawn on its screen.
+     */
+    public function openKeyRecorder(string $host, string $name): self
+    {
+        $installation = $this->realHostInstallation();
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Terminal,
+            RestartPolicy::Never,
+            ["{$installation}/bin/journal-agent", 'standin', 'keys', '--record', "{$installation}/keys-{$name}"],
+            [],
+            $this->realHostFolder(),
+        );
+        $this->openPlanned($host, $name, null, $plan);
+
+        return $this;
+    }
+
+    /**
+     * Every byte the named key recorder read so far, as it reached the program.
+     */
+    public function keysRecordedBy(string $name): string
+    {
+        $file = "{$this->realHostInstallation()}/keys-{$name}";
+
+        return is_file($file) ? (string) file_get_contents($file) : '';
     }
 
     /**
@@ -385,6 +444,79 @@ trait ArrangesHostProcesses
         $this->realHost?->releaseTurns();
 
         return $this;
+    }
+
+    /**
+     * The driver accounts are chosen in folders of the running real host, so a stand-in started for an account can
+     * write into its account folder, as Claude Code writes a conversation's transcript there.
+     */
+    public function chooseActiveAccountsOnRealHost(): self
+    {
+        $folder = "{$this->realHostFolder()}/accounts";
+
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            mkdir("{$folder}/{$driver}", 0o700, true);
+        }
+
+        return $this->chooseActiveAccounts($folder);
+    }
+
+    /**
+     * The journal types the keys on the named process, guarded by the screen its host last sent, as a key script does.
+     */
+    public function typeOnHostProcess(string $name, string $keys): self
+    {
+        $process = $this->hostProcessCalled($name);
+        $rows = $this->service(ProcessFeed::class)->latestFrame($process->id)?->rows
+            ?? throw FixtureRefused::missingAlias('screen of host process', $name, self::OWNER);
+        $guard = new RowGuard(0, count($rows) - 1, hash('sha256', implode("\n", $rows)));
+
+        $this->asSystem(new SendHostKeysCommand($process->id, $keys, $guard, 0, HostOrderSource::fromJournal()));
+
+        return $this;
+    }
+
+    /**
+     * The journal proves the runtime's start on the real host: its build probe, then its sign-in probe, run there and
+     * are driven until the process the proven start opens is ordered, which the test then calls by the name.
+     */
+    public function proveStartOnRealHost(string $runtimeId, HostProcessPurpose $opens, string $name): self
+    {
+        $ordered = fn (HostProcessPurpose $purpose) => fn () => HostProcess::query()
+            ->where('agent_runtime_id', $runtimeId)
+            ->where('purpose', $purpose)
+            ->exists();
+        $this->callJournalProcess('probe', $runtimeId, HostProcessPurpose::BuildProbe)
+            ->driveHostProcess('probe', $ordered(HostProcessPurpose::SignInProbe));
+        $this->callJournalProcess('sign-in', $runtimeId, HostProcessPurpose::SignInProbe)
+            ->driveHostProcess('sign-in', $ordered($opens));
+
+        return $this->callJournalProcess($name, $runtimeId, $opens);
+    }
+
+    /**
+     * Each row of the newest screen the named process's host sent, as the journal's feed holds it; none before the
+     * first.
+     *
+     * @return list<string>
+     */
+    public function hostProcessRows(string $name): array
+    {
+        $frame = $this->service(ProcessFeed::class)->latestFrame($this->hostProcessCalled($name)->id);
+
+        return $frame === null ? [] : $frame->rows;
+    }
+
+    /**
+     * Each start of the real host's Claude Code stand-in on a terminal, by the arguments it was started with.
+     *
+     * @return list<list<string>>
+     */
+    public function realHostClaudeStarts(): array
+    {
+        $host = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'starts', self::OWNER);
+
+        return $host->claudeStarts();
     }
 
     /**

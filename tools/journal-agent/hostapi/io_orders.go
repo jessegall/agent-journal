@@ -15,15 +15,24 @@ type StdinWrite struct {
 	Bytes []byte `json:"bytes"`
 }
 
+// PrivateWrite is the payload of write_private: only the submission whose value the host pulls from the journal.
+type PrivateWrite struct {
+	Submission string `json:"submission"`
+}
+
+// PrivateValuePuller pulls a private submission's value from the journal, once.
+type PrivateValuePuller func(ctx context.Context, submission string) ([]byte, error)
+
 // ProcessInput carries out the orders that write into a process, read its screen or record it.
 type ProcessInput struct {
 	table   *ProcessTable
 	outputs *Outputs
+	pull    PrivateValuePuller
 }
 
-// NewProcessInput writes into the table's processes and reads their output.
-func NewProcessInput(table *ProcessTable, outputs *Outputs) ProcessInput {
-	return ProcessInput{table: table, outputs: outputs}
+// NewProcessInput writes into the table's processes, reads their output and pulls private values with pull.
+func NewProcessInput(table *ProcessTable, outputs *Outputs, pull PrivateValuePuller) ProcessInput {
+	return ProcessInput{table: table, outputs: outputs, pull: pull}
 }
 
 // Executors are the input and output orders this carries out.
@@ -36,7 +45,39 @@ func (input ProcessInput) Executors() map[string]Executor {
 		"snapshot":       input.snapshot,
 		"record":         input.record,
 		"stop_recording": input.stopRecording,
+		"open_private":   input.openPrivate,
+		"write_private":  input.writePrivate,
+		"close_private":  input.closePrivate,
 	}
+}
+
+// openPrivate stops every frame and recording of the process from leaving until the screen redraws after
+// close_private, and answers once they are stopped.
+func (input ProcessInput) openPrivate(_ context.Context, order Order) (map[string]any, error) {
+	return nil, input.outputs.OpenPrivate(order.ProcessID)
+}
+
+// writePrivate pulls the submission's value from the journal and writes it once; neither the order nor its answer
+// holds the value.
+func (input ProcessInput) writePrivate(ctx context.Context, order Order) (map[string]any, error) {
+	write, err := decodePayload[PrivateWrite](order)
+	if err != nil {
+		return nil, err
+	}
+	if !input.outputs.IsPrivate(order.ProcessID) {
+		return nil, RefusalError{Refusal: Unsafe, Reason: "a private value is written only while the entry is private"}
+	}
+	value, err := input.pull(ctx, write.Submission)
+	if err != nil {
+		return nil, err
+	}
+	return nil, input.table.Write(order.ProcessID, value)
+}
+
+// closePrivate lets the process's frames leave again once its screen has redrawn.
+func (input ProcessInput) closePrivate(_ context.Context, order Order) (map[string]any, error) {
+	input.outputs.ClosePrivate(order.ProcessID)
+	return nil, nil
 }
 
 // writeKeys writes the user's keys at once and raises the input generation; any other write only while the rows it

@@ -76,10 +76,30 @@ type Outputs struct {
 	mutex     sync.Mutex
 	screens   map[string]*Screen
 	spools    map[string]*Spool
-	streams   map[string]context.CancelFunc
+	streams   map[string]frameStream
 	recorders map[string]*recording.Recorder
 	held      map[string]Frame
+	private   map[string]privateEntry
+	openings  map[string]int
 }
+
+// frameStream is a process's running stream: how to stop it, and the signal that its screen changed.
+type frameStream struct {
+	stop    context.CancelFunc
+	changed chan struct{}
+}
+
+// settleTime is how long a changed screen must stay still before its frame goes out, so one redraw sends one frame.
+const settleTime = 15 * time.Millisecond
+
+// privateEntry is how far a process's private entry has got: open, nothing of it leaves; closing, it leaves again
+// once the screen redrew.
+type privateEntry int
+
+const (
+	privateOpen privateEntry = iota + 1
+	privateClosing
+)
 
 // NewOutputs keeps output under the state folder and posts it with post.
 func NewOutputs(stateFolder string, post OutputPoster, clock func() time.Time) *Outputs {
@@ -90,9 +110,57 @@ func NewOutputs(stateFolder string, post OutputPoster, clock func() time.Time) *
 		started:     clock(),
 		screens:     map[string]*Screen{},
 		spools:      map[string]*Spool{},
-		streams:     map[string]context.CancelFunc{},
+		streams:     map[string]frameStream{},
 		recorders:   map[string]*recording.Recorder{},
 		held:        map[string]Frame{},
+		private:     map[string]privateEntry{},
+		openings:    map[string]int{},
+	}
+}
+
+// privateDeadline is how long a private entry stays open with no close: one the journal forgot, because its worker
+// died or its order was lost, ends by itself and takes no value after it.
+var privateDeadline = time.Minute
+
+// OpenPrivate stops every frame and recording of the terminal process from leaving, and the frame held back, until
+// it redraws after ClosePrivate or the private deadline passed.
+func (outputs *Outputs) OpenPrivate(processID string) error {
+	outputs.mutex.Lock()
+	defer outputs.mutex.Unlock()
+	if _, isTerminal := outputs.screens[processID]; !isTerminal {
+		return RefusalError{Refusal: NotRunning, Reason: "the process has no terminal"}
+	}
+	outputs.private[processID] = privateOpen
+	outputs.openings[processID]++
+	opening := outputs.openings[processID]
+	delete(outputs.held, processID)
+	time.AfterFunc(privateDeadline, func() { outputs.closeOpening(processID, opening) })
+	return nil
+}
+
+// closeOpening closes the private entry once its deadline passed, unless a later entry was opened since.
+func (outputs *Outputs) closeOpening(processID string, opening int) {
+	outputs.mutex.Lock()
+	isSame := outputs.openings[processID] == opening
+	outputs.mutex.Unlock()
+	if isSame {
+		outputs.ClosePrivate(processID)
+	}
+}
+
+// IsPrivate is whether the process's private entry is open, so a private value may be written into it.
+func (outputs *Outputs) IsPrivate(processID string) bool {
+	outputs.mutex.Lock()
+	defer outputs.mutex.Unlock()
+	return outputs.private[processID] == privateOpen
+}
+
+// ClosePrivate lets the process's output leave again once the screen redraws.
+func (outputs *Outputs) ClosePrivate(processID string) {
+	outputs.mutex.Lock()
+	defer outputs.mutex.Unlock()
+	if outputs.private[processID] == privateOpen {
+		outputs.private[processID] = privateClosing
 	}
 }
 
@@ -101,11 +169,13 @@ func (outputs *Outputs) Open(processID string, plan OpenPlan) error {
 	outputs.mutex.Lock()
 	defer outputs.mutex.Unlock()
 	if plan.Type == "terminal" {
-		shown, err := newScreen(int(plan.Size.Columns), int(plan.Size.Rows))
+		shown, err := newScreen(int(plan.Size.Columns), int(plan.Size.Rows), plan.ShieldRules)
 		if err != nil {
 			return err
 		}
 		outputs.screens[processID] = shown
+		// A process opened again, as a healed one is, starts with no private entry of the one before it.
+		delete(outputs.private, processID)
 		return nil
 	}
 	spool, err := OpenSpool(filepath.Join(outputs.stateFolder, "spool", processID))
@@ -122,13 +192,27 @@ func (outputs *Outputs) Printed(processID string, printed []byte) {
 	screen, isTerminal := outputs.screens[processID]
 	spool := outputs.spools[processID]
 	recorder := outputs.recorders[processID]
+	entry, isPrivate := outputs.private[processID]
 	outputs.mutex.Unlock()
-	if recorder != nil {
-		recorder.Output("stdout", printed)
+	if isPrivate {
+		recorder = nil
 	}
 	if isTerminal {
 		screen.Feed(printed, outputs.monotonic())
+		outputs.screenChanged(processID)
+		if entry == privateClosing {
+			outputs.mutex.Lock()
+			delete(outputs.private, processID)
+			outputs.mutex.Unlock()
+		}
+		// A shielded screen's bytes are kept by no recording, as its frames reach no one.
+		if recorder != nil && !screen.IsShielded() {
+			recorder.Output("stdout", printed)
+		}
 		return
+	}
+	if recorder != nil {
+		recorder.Output("stdout", printed)
 	}
 	if spool == nil {
 		return
@@ -178,8 +262,8 @@ func (outputs *Outputs) Stream(processID string, framesPerSecond int) error {
 		return RefusalError{Refusal: NotRunning, Reason: "the process has no screen"}
 	}
 	outputs.mutex.Lock()
-	if stop, running := outputs.streams[processID]; running {
-		stop()
+	if running, isRunning := outputs.streams[processID]; isRunning {
+		running.stop()
 		delete(outputs.streams, processID)
 	}
 	if framesPerSecond <= 0 {
@@ -187,21 +271,52 @@ func (outputs *Outputs) Stream(processID string, framesPerSecond int) error {
 		return nil
 	}
 	ctx, stop := context.WithCancel(context.Background())
-	outputs.streams[processID] = stop
+	stream := frameStream{stop: stop, changed: make(chan struct{}, 1)}
+	outputs.streams[processID] = stream
 	outputs.mutex.Unlock()
-	go func() {
-		ticker := time.NewTicker(time.Second / time.Duration(framesPerSecond))
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				_ = outputs.Snapshot(processID)
-			}
-		}
-	}()
+	go outputs.streamFrames(ctx, processID, stream.changed, time.Second/time.Duration(framesPerSecond))
 	return nil
+}
+
+// streamFrames sends a changed screen once it stayed still for the settle time, at most once an interval over a
+// burst of changes, and an unchanged screen once an interval as the proof that it did not change.
+func (outputs *Outputs) streamFrames(ctx context.Context, processID string, changed <-chan struct{}, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	settled := time.NewTimer(time.Hour)
+	settled.Stop()
+	lastChangeSent := time.Time{}
+	send := func() {
+		_ = outputs.Snapshot(processID)
+		ticker.Reset(interval)
+	}
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-changed:
+			settled.Reset(max(settleTime, interval-time.Since(lastChangeSent)))
+		case <-settled.C:
+			lastChangeSent = time.Now()
+			send()
+		case <-ticker.C:
+			send()
+		}
+	}
+}
+
+// screenChanged tells the process's stream, when one runs, that its screen took output.
+func (outputs *Outputs) screenChanged(processID string) {
+	outputs.mutex.Lock()
+	stream, running := outputs.streams[processID]
+	outputs.mutex.Unlock()
+	if !running {
+		return
+	}
+	select {
+	case stream.changed <- struct{}{}:
+	default:
+	}
 }
 
 // Record starts a raw recording of the process.
@@ -256,6 +371,17 @@ func (outputs *Outputs) Flush(processID string) {
 
 // send posts the output in parts no larger than OutputLimit; when a post fails only its latest frame is held back.
 func (outputs *Outputs) send(processID string, output Output) {
+	outputs.mutex.Lock()
+	_, isPrivate := outputs.private[processID]
+	screen, isTerminal := outputs.screens[processID]
+	outputs.mutex.Unlock()
+	if isPrivate {
+		return
+	}
+	// A shielded screen's bytes on any stream, a side socket's too, stay on the machine as its frames do.
+	if isTerminal && screen.IsShielded() {
+		output.Chunks = nil
+	}
 	for _, part := range split(output, OutputLimit) {
 		if outputs.post(processID, part) == nil || len(part.Frames) == 0 {
 			continue
@@ -308,6 +434,12 @@ type Screen struct {
 	rows            []string
 	changedAt       []int64
 	inputGeneration uint64
+	shields         []ShieldRule
+}
+
+// IsShielded is whether the screen now shows one the journal named as never to leave the machine.
+func (screen *Screen) IsShielded() bool {
+	return isShielded(screen.shields, screen.reader.Snapshot().Rows)
 }
 
 // Feed draws the printed bytes and marks the rows they changed at the host's monotonic time.
@@ -331,6 +463,10 @@ func (screen *Screen) Feed(printed []byte, now int64) {
 // Frame is the screen now, each row with how long it has not changed.
 func (screen *Screen) Frame(now int64) Frame {
 	snapshot := screen.reader.Snapshot()
+	if isShielded(screen.shields, snapshot.Rows) {
+		return Frame{Rows: []string{}, Columns: snapshot.Columns, Buffer: string(snapshot.Buffer), Captured: now,
+			UnchangedMs: []int64{}, IsShielded: true}
+	}
 	screen.mutex.Lock()
 	defer screen.mutex.Unlock()
 	unchanged := make([]int64, len(snapshot.Rows))

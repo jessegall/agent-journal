@@ -25,6 +25,22 @@ final readonly class DriverStart
         public DriverAccount|null $account = null,
     ) {}
 
+    /**
+     * The same start opened as the given type of process, such as the terminal a proven start opens.
+     */
+    public function openedAs(HostProcessType $type): self
+    {
+        return clone ($this, ['type' => $type]);
+    }
+
+    /**
+     * The same start resuming its conversation, as a healed terminal does once its transcript exists.
+     */
+    public function resumed(): self
+    {
+        return clone ($this, ['isResume' => true]);
+    }
+
     public function isTurn(): bool
     {
         return $this->type === HostProcessType::Pipe;

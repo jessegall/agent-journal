@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Seeding;
 
+use App\Commands\Hosts\PullHostPrivateValue\PullHostPrivateValueCommand;
+use App\Commands\Hosts\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Hosts\HostOrderStatus;
@@ -14,6 +16,7 @@ use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostProcessType;
 use App\Support\Drivers\DriverSupervisor;
 use App\Support\Hosts\ProcessFeed;
+use App\Values\HostOrderSource;
 use Tests\Support\Drivers\StandInProcessDriver;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
@@ -80,10 +83,48 @@ final class JournalHostProcessesTest extends TestCase
         $this->journal->assertResult([1, true], [$work->generation, $this->journal->stepDriverWorker($work, 200)]);
     }
 
+    public function test_an_idle_driver_worker_steps_with_no_query_and_ends_on_its_processes_end(): void
+    {
+        $this->journal
+            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
+            ->enrollHost('Mac', [base_path()])
+            ->openHostProcess('Mac', 'shell');
+        $work = $this->journal->beginDriverWorker('shell');
+        $this->journal->stepDriverWorker($work, 0);
+
+        $idleQueries = $this->journal->queriesDuring(fn () => $this->journal->stepDriverWorker($work, 0));
+        $this->journal->reportHostProcess('shell', HostProcessReportType::Exited, 0);
+
+        $this->journal->assertResult([0, false], [$idleQueries, $this->journal->stepDriverWorker($work, 0)]);
+    }
+
+    public function test_a_process_driver_is_made_for_a_named_process_by_its_purpose(): void
+    {
+        $this->journal
+            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
+            ->enrollHost('Mac', [base_path()])
+            ->openHostProcess('Mac', 'shell');
+
+        $this->journal->assertResult(true, $this->journal->processDriverOf('shell') instanceof StandInProcessDriver);
+    }
+
+    public function test_a_submitted_private_value_waits_for_the_host_its_write_was_ordered_on(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell')->submitPrivateValue('s-1', 'sk-1');
+        $process = $this->journal->hostProcessCalled('shell');
+
+        $this->journal->asSystem(new WriteHostPrivateValueCommand($process->id, 's-1', HostOrderSource::fromJournal()));
+
+        $this->journal->assertResult(
+            'sk-1',
+            $this->journal->asSystem(new PullHostPrivateValueCommand($process->host_id, 's-1')),
+        );
+    }
+
     public function test_a_process_opened_for_a_start_is_linked_to_the_start_the_host_claimed(): void
     {
         $this->chooseActiveAccounts();
-        $this->journal->owner()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
         $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
 
         $this->journal->openHostProcessForStart('Mac', 'agent', $opened->sessionId, HostProcessPurpose::AgentTurn);

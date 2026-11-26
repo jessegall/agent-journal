@@ -101,6 +101,7 @@ final readonly class DefaultDrivers
                 DriverType::Terminal,
                 'Claude Code',
                 TerminalCapabilities::class,
+                isDrivenByJournal: true,
             ),
             self::registration(
                 'claude-code-headless',

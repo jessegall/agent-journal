@@ -15,7 +15,6 @@ use App\Models\Sessions\SessionRequest;
 use App\Support\ActorReference;
 use App\Support\ClaimedRequests;
 use App\Support\PendingWorkSources;
-use App\Support\PrivateValues;
 use App\Values\AgentText;
 use App\Values\ClaimedRequest;
 use Carbon\CarbonImmutable;
@@ -31,7 +30,6 @@ final readonly class DriverRequestClaims
     public function __construct(
         private PendingWorkSources $pendingWork,
         private AgentTexts $texts,
-        private PrivateValues $privateValues,
     ) {}
 
     /**
@@ -100,10 +98,7 @@ final readonly class DriverRequestClaims
 
             $request->stage($now);
 
-            $claimed[] = $this->privateValues->carriedBy(
-                $request,
-                $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null, false),
-            );
+            $claimed[] = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null, false);
         }
 
         return $claimed;

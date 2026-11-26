@@ -99,6 +99,17 @@ func fillPlan(plan OpenPlan, placeholders Placeholders) (OpenPlan, error) {
 	if plan.RestartArgv, err = fillAll(plan.RestartArgv, placeholders); err != nil {
 		return plan, err
 	}
+	if plan.Container != nil && placeholderPattern.MatchString(plan.RestartWhen.Folder) {
+		return plan, RefusalError{
+			Refusal: Unsafe,
+			Reason:  "a container looks for its restart file inside itself, so its folder names no host placeholder",
+		}
+	}
+	if plan.RestartWhen.Folder != "" {
+		if plan.RestartWhen.Folder, err = placeholders.Fill(plan.RestartWhen.Folder); err != nil {
+			return plan, err
+		}
+	}
 	if plan.Environment, err = fillAll(plan.Environment, placeholders); err != nil {
 		return plan, err
 	}

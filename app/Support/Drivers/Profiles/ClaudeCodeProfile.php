@@ -6,17 +6,29 @@ namespace App\Support\Drivers\Profiles;
 
 use App\Contracts\Drivers\PinnedBuilds;
 use App\Data\Accounts\ClaudeStatusData;
+use App\Enums\Drivers\HoldReason;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\RestartPolicy;
+use App\Enums\Navigation\NavigationKey;
 use App\Exceptions\BuildNotPinned;
 use App\Exceptions\ProfileRefused;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\Processes\StatusLineLimits;
+use App\Support\KeyScripts\KeyScript;
+use App\Support\KeyScripts\KeyStep;
+use App\Support\KeyScripts\ScreenExpectation;
+use App\Support\Screens\FencedRow;
+use App\Support\Screens\MarkedRow;
+use App\Support\Screens\MenuFamily;
+use App\Support\Screens\OptionList;
+use App\Support\Screens\ScreenLayout;
+use App\Support\Screens\Slider;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\HostProcessPlan;
 use App\Values\PlanFile;
+use App\Values\RestartFile;
 use JsonException;
 
 /**
@@ -187,6 +199,11 @@ final readonly class ClaudeCodeProfile
     private const string HOME_FOLDER = 'home';
 
     /**
+     * The variable naming the folder Claude Code keeps its configuration and transcripts in.
+     */
+    private const string CONFIGURATION_FOLDER = 'CLAUDE_CONFIG_DIR';
+
+    /**
      * The sign-in methods the journal accepts for an account, as `claude auth status --json` names them.
      */
     private const array SIGN_IN_METHODS = [
@@ -200,7 +217,194 @@ final readonly class ClaudeCodeProfile
      */
     private const string SEATBELT_PROFILE = 'session.sb';
 
+    /**
+     * How the highlighted option of a menu is marked: ❯ alone, or ❯ with the ✔ of the entry in use where a list keeps
+     * a column for it, as the welcome screen's text styles do.
+     */
+    private const array HIGHLIGHTS = [
+        '❯ ✔ ',
+        '❯ ',
+    ];
+
+    /**
+     * The glyphs the spinner cycles through before the working line, read from the recorded turns.
+     */
+    private const array SPINNER_GLYPHS = [
+        '✻ ',
+        '✶ ',
+        '✳ ',
+        '✢ ',
+        '· ',
+        '* ',
+        '✽ ',
+    ];
+
+    /**
+     * How long the composer and a menu must hold still: a spinner redraws about every 100 ms, so 300 ms is three
+     * missed frames.
+     */
+    private const int STILL_MS = 300;
+
+    /**
+     * The build whose recordings under resources/recordings/claude-code establish its key scripts.
+     */
+    private const string KEY_SCRIPTS_BUILD = '2.1.323';
+
     public function __construct(private PinnedBuilds $builds) {}
+
+    /**
+     * The key scripts recorded for Claude Code: each changes a setting for this session only and ends on Claude
+     * Code's own line saying it applied (recordings keyscripts/model-choice and keyscripts/effort-change).
+     *
+     * @return list<KeyScript>
+     */
+    public function keyScripts(): array
+    {
+        $changeModel = [
+            ...KeyScript::command('/model', '❯ /model'),
+            KeyStep::find('find the model', 'model-picker', 'model'),
+            KeyStep::press('set it for this session only', ScreenExpectation::menu('model-picker'), 's'),
+            KeyStep::evidence('see the model applied', 'set model to {model}'),
+        ];
+
+        $changeEffort = [
+            ...KeyScript::command('/effort', '❯ /effort'),
+            KeyStep::find('find the effort level', 'effort-picker', 'effort'),
+            KeyStep::press('set it for this session only', ScreenExpectation::menu('effort-picker'), 's'),
+            KeyStep::evidence('see the effort applied', 'set effort level to {effort}'),
+        ];
+
+        $driver = DefaultDrivers::CLAUDE_CODE;
+
+        return [
+            new KeyScript('ChangeModel', $driver, self::KEY_SCRIPTS_BUILD, ['model'], $changeModel),
+            new KeyScript('ChangeEffort', $driver, self::KEY_SCRIPTS_BUILD, ['effort'], $changeEffort),
+        ];
+    }
+
+    /**
+     * How the pinned build draws its terminal, measured from resources/recordings/claude-code: the composer is the
+     * ❯ row fenced by two rules on the normal buffer, empty while the cursor sits after the ❯. Each menu is known by
+     * its ❯ option list and two of its keywords and holds the runtime for a user; only the welcome screen's text
+     * style is answered, with its recorded Enter. The effort picker is a slider.
+     */
+    public function layout(): ScreenLayout
+    {
+        $options = new OptionList('menu', self::HIGHLIGHTS);
+
+        $menu = fn (string $name, HoldReason $hold, string ...$keywords) => MenuFamily::of(
+            $name,
+            $hold,
+            $options,
+            ...$keywords,
+        );
+
+        return new ScreenLayout(
+            buffer: 'normal',
+            composer: new FencedRow('composer', '❯ '),
+            emptyCursorColumn: 2,
+            composerStillMs: self::STILL_MS,
+            menus: [
+                $menu(
+                    'bypass-warning',
+                    HoldReason::TrustRequired,
+                    'bypass permissions',
+                    'dangerous commands',
+                    'accept all responsibility',
+                    'sandboxed',
+                ),
+                $menu('folder-trust', HoldReason::TrustRequired, 'trust', 'folder', 'safety', 'workspace', 'security'),
+                $menu(
+                    'login-method',
+                    HoldReason::LoginRequired,
+                    'select login method',
+                    'subscription',
+                    'console account',
+                    '3rd-party platform',
+                ),
+                $menu(
+                    'api-key',
+                    HoldReason::LoginRequired,
+                    'custom api key',
+                    'anthropic_api_key',
+                    'use this api key',
+                )->secret(),
+                $menu(
+                    'theme',
+                    HoldReason::OnboardingRequired,
+                    'text style',
+                    'dark mode',
+                    'light mode',
+                    'colorblind',
+                )->answeredWith(NavigationKey::Enter->bytes()),
+                $menu(
+                    'terms',
+                    HoldReason::OnboardingRequired,
+                    'consumer terms',
+                    'policies',
+                    'help improve',
+                    'accept terms',
+                ),
+                $menu(
+                    'usage-limit',
+                    HoldReason::UsageLimited,
+                    'wait for limit to reset',
+                    'spend limit',
+                    'hit your',
+                    'upgrade',
+                ),
+                $menu(
+                    'resume-conversation',
+                    HoldReason::UserInput,
+                    'resume this conversation',
+                    'inactive',
+                    'tokens long',
+                    'summary',
+                ),
+                $menu(
+                    'question',
+                    HoldReason::UserInput,
+                    'type something',
+                    'review your answers',
+                    'submit answers',
+                ),
+                $menu(
+                    'model-picker',
+                    HoldReason::UserInput,
+                    'select model',
+                    'switch between claude models',
+                    'default for new sessions',
+                    'effort',
+                ),
+                MenuFamily::of(
+                    'effort-picker',
+                    HoldReason::UserInput,
+                    new Slider(
+                        'slider',
+                        '▲'
+                    ),
+                    'faster',
+                    'smarter',
+                    'to adjust',
+                    'for this session only',
+                ),
+                $menu(
+                    'tool-permission',
+                    HoldReason::PermissionRequired,
+                    'do you want to',
+                    "don't ask again",
+                    'what to do differently',
+                    'allow all edits',
+                    'allow this connection',
+                ),
+            ],
+            others: [
+                new MarkedRow('spinner', self::SPINNER_GLYPHS, '…'),
+                new MarkedRow('status', ['  '], 'shift+tab', 3),
+            ],
+            isBracketedPaste: true,
+        );
+    }
 
     public function build(): string
     {
@@ -232,12 +436,17 @@ final readonly class ClaudeCodeProfile
             $files[] = new PlanFile(self::SEATBELT_PROFILE, $profile);
         }
 
+        $executable = $account === null ? self::EXECUTABLE : self::INSTALLED_EXECUTABLE;
+        $isTerminal = $start->type === HostProcessType::Terminal;
+        // A terminal of an account resumes its conversation when the host heals it; the transcript is in its home.
+        $isHealed = $isTerminal && $account !== null;
+
         return new HostProcessPlan(
             purpose: $start->isTurn() ? HostProcessPurpose::AgentTurn : HostProcessPurpose::AgentTerminal,
             type: $start->type,
-            restart: RestartPolicy::Never,
+            restart: $isTerminal ? RestartPolicy::OnCrash : RestartPolicy::Never,
             argv: [
-                $account === null ? self::EXECUTABLE : self::INSTALLED_EXECUTABLE,
+                $executable,
                 ...$this->arguments($start),
             ],
             environment: $this->environment($start),
@@ -255,7 +464,31 @@ final readonly class ClaudeCodeProfile
             sideSockets: self::readsStatusLine($start) ? [StatusLineLimits::SOCKET] : [],
             seatbelt: $isSeatbelted ? self::SEATBELT_PROFILE : null,
             readFiles: $account === null ? [] : $account->recipe->readFiles,
+            shieldRules: $isTerminal ? $this->layout()->shieldRules() : [],
+            restartArgv: $isHealed ? [
+                $executable,
+                ...$this->arguments($start->resumed()),
+            ] : [],
+            restartWhenFile: $isHealed ? self::transcriptOf($start, $account) : null,
         );
+    }
+
+    /**
+     * The transcript Claude Code writes once the conversation holds a turn, in the configuration folder the account
+     * names or else in its home: a terminal healed after it exists resumes that conversation instead of starting it
+     * again.
+     */
+    private static function transcriptOf(DriverStart $start, DriverAccount $account): RestartFile
+    {
+        $configuration = '{folder:'.self::HOME_FOLDER.'}/.claude';
+
+        foreach ($account->recipe->environment as $setting) {
+            if ($setting->name === self::CONFIGURATION_FOLDER) {
+                $configuration = $setting->settingText;
+            }
+        }
+
+        return new RestartFile("{$configuration}/projects", "*{$start->sessionId}.jsonl");
     }
 
     /**

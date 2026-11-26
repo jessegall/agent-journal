@@ -42,7 +42,7 @@ func asksForSecret(family screen.MenuFamily) screen.MenuFamily {
 	return family
 }
 
-// Screens is how Claude Code 2.1.323 draws its terminal, measured from testdata/recordings/claude-code/2.1.323: the
+// Screens is how Claude Code 2.1.323 draws its terminal, measured from resources/recordings/claude-code/2.1.323: the
 // composer is the ❯ row fenced by two rules on the normal buffer, empty while the cursor sits after the ❯. A spinner
 // redraw lands about every 100 ms, so 300 ms of stillness is three missed frames. The menu families come from report
 // 175 (the program's own dialog code): each is known by its ❯ option list and two of its keywords, and holds the

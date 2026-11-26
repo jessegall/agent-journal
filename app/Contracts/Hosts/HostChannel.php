@@ -26,6 +26,12 @@ interface HostChannel
     ): string;
 
     /**
+     * Orders a user's keys typed into the terminal process at once, unguarded, raising its input generation; answers
+     * the order's id.
+     */
+    public function userKeys(string $processId, string $bytes, HostOrderSource $source): string;
+
+    /**
      * Orders the pipe process to read the bytes on its standard input; answers the order's id.
      */
     public function write(string $processId, string $bytes, HostOrderSource $source): string;
@@ -55,4 +61,21 @@ interface HostChannel
      * Orders one picture of the terminal process's screen; answers the order's id.
      */
     public function snapshot(string $processId, HostOrderSource $source): string;
+
+    /**
+     * Orders every frame and recording of the terminal process held back, so a private value can go in; answers the
+     * order's id.
+     */
+    public function openPrivate(string $processId, HostOrderSource $source): string;
+
+    /**
+     * Orders the private submission's value written into the process, the order naming only the submission; answers
+     * the order's id.
+     */
+    public function writePrivate(string $processId, string $submissionId, HostOrderSource $source): string;
+
+    /**
+     * Orders the process's frames to leave again once its screen redrew; answers the order's id.
+     */
+    public function closePrivate(string $processId, HostOrderSource $source): string;
 }

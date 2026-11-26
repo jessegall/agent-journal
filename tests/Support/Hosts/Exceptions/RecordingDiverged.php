@@ -13,9 +13,10 @@ final class RecordingDiverged extends AssertionFailedError
 {
     public int $checkpoint = 0;
 
-    public static function at(int $checkpoint): self
+    public static function at(int $checkpoint, string $expected, string $typed): self
     {
-        $diverged = new self("At checkpoint {$checkpoint} the driver typed other bytes than the recording's user.");
+        $shown = json_encode(['recorded' => $expected, 'typed' => $typed], JSON_THROW_ON_ERROR);
+        $diverged = new self("At checkpoint {$checkpoint} the driver typed other bytes than the recording's user: {$shown}");
         $diverged->checkpoint = $checkpoint;
 
         return $diverged;

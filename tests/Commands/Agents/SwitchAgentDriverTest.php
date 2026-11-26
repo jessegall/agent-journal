@@ -68,7 +68,7 @@ final class SwitchAgentDriverTest extends TestCase
         $this->accounts = $this->chooseActiveAccounts();
         $this->serveEveryCombination();
 
-        $this->journal->owner();
+        $this->journal->owner()->showDriverArrangements();
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
     }

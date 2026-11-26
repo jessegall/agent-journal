@@ -43,7 +43,7 @@ const (
 var claudeCodeAllowedWithoutAsking = []string{"Read", "Edit", "Write", "NotebookEdit", "Bash(journal:*)", "Bash(ls:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"}
 
 // claudeCodeNormalBuffer keeps Claude Code off its full-screen view: Screens reads the composer on the normal buffer,
-// as every recording under testdata/recordings/claude-code was made, and a prompt on the other buffer never reads as
+// as every recording under resources/recordings/claude-code was made, and a prompt on the other buffer never reads as
 // ready.
 const claudeCodeNormalBuffer = "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
 

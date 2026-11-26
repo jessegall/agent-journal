@@ -69,7 +69,7 @@ final class NotifyHostProcessTest extends TestCase
     public function test_a_heal_starts_the_runtimes_next_generation_and_an_exit_ends_its_session(): void
     {
         $this->chooseActiveAccounts();
-        $this->journal->owner()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
         $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
         $this->journal->openHostProcess('Mac', 'agent', runtimeId: $opened->runtimeId);
         $generation = AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->process_generation;
@@ -89,7 +89,7 @@ final class NotifyHostProcessTest extends TestCase
     public function test_the_start_a_terminal_runs_for_runs_with_it_and_stops_when_it_exits(): void
     {
         $this->chooseActiveAccounts();
-        $this->journal->owner()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
         $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
         $this->journal->openHostProcessForStart('Mac', 'agent', $opened->sessionId);
 
@@ -106,7 +106,7 @@ final class NotifyHostProcessTest extends TestCase
     public function test_a_headless_turn_that_ends_leaves_its_start_running(): void
     {
         $this->chooseActiveAccounts();
-        $this->journal->owner()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
         $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
         $this->journal->openHostProcessForStart('Mac', 'turn', $opened->sessionId, HostProcessPurpose::AgentTurn);
 

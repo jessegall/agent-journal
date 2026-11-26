@@ -9,6 +9,7 @@ use App\Commands\Hosts\SignalHostProcess\SignalHostProcessCommand;
 use App\Contracts\Drivers\ProcessDriver;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
+use App\Support\Command;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
@@ -45,6 +46,11 @@ final readonly class StandInProcessDriver implements ProcessDriver
     public function onAnswer(HostOrder $order): DriverActions
     {
         return $this->signal('SIGUSR2');
+    }
+
+    public function onAnswered(Command $command, mixed $answer): DriverActions
+    {
+        return DriverActions::none();
     }
 
     public function onExit(): DriverActions

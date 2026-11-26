@@ -32,6 +32,7 @@ use App\Values\StackTarget;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
@@ -150,6 +151,21 @@ final class TestJournal
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
 
         return $this->actAs($this->owner->name);
+    }
+
+    /**
+     * How many queries the database ran while the callable ran.
+     */
+    public function queriesDuring(callable $during): int
+    {
+        $queries = 0;
+        $this->app->make(DatabaseManager::class)->listen(function () use (&$queries): void {
+            $queries++;
+        });
+        $counted = $queries;
+        $during();
+
+        return $queries - $counted;
     }
 
     /**

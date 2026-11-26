@@ -34,6 +34,6 @@ final readonly class CheckSignInHandler implements CommandHandler
         }
 
         $runtime->proveStart($this->clock->now());
-        $this->headless->openNextTurn($runtime->id);
+        $this->headless->openProven($runtime);
     }
 }

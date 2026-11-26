@@ -10,6 +10,7 @@ use App\Contracts\Drivers\ProcessDriver;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
+use App\Support\Command;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
@@ -44,6 +45,14 @@ final class ProbeDriver implements ProcessDriver
     }
 
     public function onAnswer(HostOrder $order): DriverActions
+    {
+        return DriverActions::none();
+    }
+
+    /**
+     * @param  Command<mixed>  $command
+     */
+    public function onAnswered(Command $command, mixed $answer): DriverActions
     {
         return DriverActions::none();
     }

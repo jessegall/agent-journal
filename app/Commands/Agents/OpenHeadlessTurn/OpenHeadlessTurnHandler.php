@@ -8,14 +8,12 @@ use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\Accounts\CommandEntry;
+use App\Enums\Hosts\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
-use App\Support\AgentClientSettings;
 use App\Support\Drivers\DriverRequestClaims;
 use App\Support\Drivers\HeadlessStarts;
 use App\Support\Drivers\Profiles\ClaudeCodeProfile;
-use App\Support\SessionTokens;
-use App\Support\StartProfilePin;
 use App\Values\HostOrderSource;
 
 final readonly class OpenHeadlessTurnHandler implements CommandHandler
@@ -24,13 +22,10 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
 
     private const string OPEN_STEP = 'open';
 
-    private const string JOURNAL_URL = '{host:JOURNAL_URL}';
-
     public function __construct(
         private DriverRequestClaims $claims,
         private HeadlessStarts $headless,
         private ClaudeCodeProfile $profile,
-        private SessionTokens $tokens,
         private JournalCommands $commands,
     ) {}
 
@@ -38,7 +33,11 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
     {
         $runtime = AgentRuntime::query()->withSessionAgent()->whereKey($command->runtimeId)->lockForUpdate()->sole();
 
-        if (! $this->headless->drives($runtime) || ! $runtime->hasProvenStart() || $runtime->hasLiveTurn()) {
+        $isTurnDue = $this->headless->drives($runtime)
+            && $runtime->hasProvenStart()
+            && ! $runtime->hasLiveProcess(HostProcessPurpose::AgentTurn);
+
+        if (! $isTurnDue) {
             return null;
         }
 
@@ -60,24 +59,12 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
         $driverStart = $this->headless->startOf($runtime, $start, $prompt, $request->model, $request->effort);
 
         $turn = $this->profile->startPlan($driverStart)
-            ->withEnvironment($this->credentialsOf($runtime)->environment());
+            ->withEnvironment($this->headless->clientSettingsOf($runtime)->environment());
 
         $source = HostOrderSource::forStep($request->requestId, self::OPEN_STEP, $request->attempt, 0);
 
         $open = new OpenHostProcessCommand($runtime->host_id, $runtime->id, $turn, $source, $start->id);
 
         return $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $open);
-    }
-
-    /**
-     * The first turn takes the start's grant; each later turn a fresh token, as the turn before it has ended.
-     */
-    private function credentialsOf(AgentRuntime $runtime): AgentClientSettings
-    {
-        $session = $runtime->session;
-        $token = $runtime->claimStartGrant() ?? $this->tokens->rotate($session);
-        $profile = new StartProfilePin($session->profile_key, $session->profile_revision);
-
-        return new AgentClientSettings(self::JOURNAL_URL, $token, $profile);
     }
 }

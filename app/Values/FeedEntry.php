@@ -19,6 +19,7 @@ final readonly class FeedEntry
         public HostFrameData|null $frame,
         public HostChunkData|null $chunk,
         public string|null $answeredOrderId,
+        public bool $hasEnded = false,
     ) {}
 
     /**
@@ -32,11 +33,12 @@ final readonly class FeedEntry
             isset($fields['frame']) ? HostFrameData::from(json_decode($fields['frame'], true, flags: JSON_THROW_ON_ERROR)) : null,
             isset($fields['chunk']) ? HostChunkData::from(json_decode($fields['chunk'], true, flags: JSON_THROW_ON_ERROR)) : null,
             $fields['answered'] ?? null,
+            isset($fields['ended']),
         );
     }
 
     public function isWake(): bool
     {
-        return $this->frame === null && $this->chunk === null && $this->answeredOrderId === null;
+        return $this->frame === null && $this->chunk === null && $this->answeredOrderId === null && ! $this->hasEnded;
     }
 }

@@ -6,6 +6,7 @@ namespace Tests\Unit\Drivers;
 
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessType;
+use App\Enums\Hosts\RestartPolicy;
 use App\Enums\Sessions\TransportProfileType;
 use App\Exceptions\BuildNotPinned;
 use App\Exceptions\ProfileRefused;
@@ -26,7 +27,7 @@ use Tests\TestCase;
  */
 final class ClaudeCodeProfileTest extends TestCase
 {
-    private const string RECORDINGS = __DIR__.'/../../../tools/journal-agent/testdata/recordings/claude-code/2.1.323';
+    private const string RECORDINGS = __DIR__.'/../../../resources/recordings/claude-code/2.1.323';
 
     /** How the driver prints its version, as its version probe shows it. */
     private const string PRINTED_VERSION = '%s (Claude Code)';
@@ -115,6 +116,40 @@ final class ClaudeCodeProfileTest extends TestCase
                 in_array('JOURNAL_START_REF=start-1', $plan->environment, true),
                 in_array('ANTHROPIC_API_KEY=leaked', $plan->environment, true),
             ],
+        );
+    }
+
+    public function test_an_account_terminal_is_healed_by_resuming_its_conversation_once_its_transcript_exists(): void
+    {
+        $id = '3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77';
+        $terminal = new DriverStart($id, HostProcessType::Terminal, '/work', account: $this->account());
+
+        $plan = $this->profile()->startPlan($terminal);
+        $resumed = $plan->argv;
+        $resumed[array_search('--session-id', $resumed, true)] = '--resume';
+
+        $this->journal->assertResult(
+            [RestartPolicy::OnCrash, $resumed, ['folder' => '/accounts/a/projects', 'glob' => "*{$id}.jsonl"]],
+            [$plan->restart, $plan->restartArgv, $plan->restartWhenFile?->jsonSerialize()],
+        );
+    }
+
+    public function test_a_terminal_is_planned_as_the_recorded_terminal_ran(): void
+    {
+        $recorded = $this->recordedStart('turns/terminal-turn');
+        $arguments = $recorded['arguments'];
+        $start = new DriverStart(
+            sessionId: $arguments[array_search('--session-id', $arguments, true) + 1],
+            type: HostProcessType::Terminal,
+            workFolder: $recorded['working_folder'],
+        );
+
+        $plan = $this->profile()->startPlan($start);
+        $arguments[array_search('--settings', $arguments, true) + 1] = '{folder:files}/settings.json';
+
+        $this->journal->assertResult(
+            [$arguments, HostProcessPurpose::AgentTerminal],
+            [$plan->argv, $plan->purpose],
         );
     }
 

@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Data\Messages\PrivateInputMessageData;
 use App\Enums\Drivers\DriverOperation;
-use App\Models\Drivers\DriverRequest;
+use App\Exceptions\PrivateValueRefused;
 use App\Values\ClaimedRequest;
 use Illuminate\Contracts\Cache\Repository;
 
@@ -30,12 +30,18 @@ final readonly class PrivateValues
     }
 
     /**
-     * The claimed request as the host receives it: a private input carries its value, read once and deleted; any
-     * other request is as it was. A value that is gone leaves the request without one, and the host writes nothing.
+     * The claimed requests as a host that drives its own runtimes receives them: a private input carries its value,
+     * read once and deleted; any other request is as it was. A value that is gone leaves the request without one,
+     * and the host writes nothing. A runtime the journal drives gets no value: its host pulls it for the write.
      */
-    public function carriedBy(DriverRequest $request, ClaimedRequest $claimed): ClaimedRequest
+    public function carriedBy(ClaimedRequests $claimed): ClaimedRequests
     {
-        if ($request->operation !== DriverOperation::PrivateInput || $claimed->message === null) {
+        return new ClaimedRequests(array_map($this->carried(...), $claimed->requests));
+    }
+
+    private function carried(ClaimedRequest $claimed): ClaimedRequest
+    {
+        if ($claimed->operation !== DriverOperation::PrivateInput->value || $claimed->message === null) {
             return $claimed;
         }
 
@@ -52,6 +58,35 @@ final readonly class PrivateValues
         ], JSON_THROW_ON_ERROR));
     }
 
+    /**
+     * Names the host a write of the submission was ordered on, the only host that may pull its value.
+     */
+    public function bindTo(string $submissionId, string $hostId): void
+    {
+        $this->cache->put($this->hostKey($submissionId), $hostId, self::KEEP_SECONDS);
+    }
+
+    /**
+     * The submission's value, once, for the host its write was ordered on; a second pull, a value that is gone or
+     * another host is refused.
+     *
+     * @throws PrivateValueRefused
+     */
+    public function pull(string $submissionId, string $hostId): string
+    {
+        if ($this->cache->pull($this->hostKey($submissionId)) !== $hostId) {
+            throw PrivateValueRefused::notOrderedFor($submissionId, $hostId);
+        }
+
+        $value = $this->cache->pull($this->key($submissionId));
+
+        if (is_string($value)) {
+            return $value;
+        }
+
+        throw PrivateValueRefused::gone($submissionId);
+    }
+
     public function discard(string $submissionId): void
     {
         $this->cache->forget($this->key($submissionId));
@@ -60,5 +95,10 @@ final readonly class PrivateValues
     private function key(string $submissionId): string
     {
         return "terminal-private-value:{$submissionId}";
+    }
+
+    private function hostKey(string $submissionId): string
+    {
+        return "terminal-private-value-host:{$submissionId}";
     }
 }

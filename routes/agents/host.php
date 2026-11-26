@@ -35,6 +35,7 @@ use App\Http\Controllers\Hosts\AnswerOrderController;
 use App\Http\Controllers\Hosts\ClaimOrdersController;
 use App\Http\Controllers\Hosts\HeartbeatController;
 use App\Http\Controllers\Hosts\InventoryController;
+use App\Http\Controllers\Hosts\PrivateValueController;
 use App\Http\Controllers\Hosts\ProcessOutputController;
 use App\Http\Controllers\Hosts\ProcessReportController;
 use App\Http\Middleware\Agents\LimitUsageReport;
@@ -83,6 +84,7 @@ Route::prefix('host')->middleware('journal.host:'.HostRouteRole::Shared->value)-
     Route::get('/starts/{start}/outputs', OutputGrantController::class)->name('starts.outputs');
     Route::post('/orders/claim', ClaimOrdersController::class)->name('orders.claim');
     Route::post('/orders/{order}', AnswerOrderController::class)->name('orders.answer');
+    Route::post('/private-values/{submission}', PrivateValueController::class)->name('private-values.pull');
     Route::post('/processes/{process}/output', ProcessOutputController::class)->name('processes.output');
     Route::post('/processes/{process}', ProcessReportController::class)->name('processes.report');
     Route::post('/inventory', InventoryController::class)->name('inventory');

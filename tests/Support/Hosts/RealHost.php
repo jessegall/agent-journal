@@ -26,6 +26,11 @@ final class RealHost
     private const string BUILDS = 'storage/framework/test-host';
 
     /**
+     * The terminal recording the Claude Code stand-in plays by what is typed.
+     */
+    private const string TERMINAL_TURN = 'resources/recordings/claude-code/2.1.323/turns/terminal-turn/fixture.json';
+
+    /**
      * @var list<InvokedProcess>
      */
     private array $running = [];
@@ -263,6 +268,28 @@ final class RealHost
         copy(__DIR__.'/scripts/claude-stand-in.sh', "{$this->installation()}/bin/claude");
         chmod("{$this->installation()}/bin/claude", 0o700);
         copy(__DIR__.'/fixtures/claude-turn.jsonl', "{$this->installation()}/turn.jsonl");
+        symlink(self::binary(), "{$this->installation()}/bin/journal-agent");
+        mkdir("{$this->installation()}/terminal-turn", 0o700);
+        copy(base_path(self::TERMINAL_TURN), "{$this->installation()}/terminal-turn/fixture.json");
+    }
+
+    /**
+     * Each start of the Claude Code stand-in on a terminal, by the arguments it was started with, oldest first.
+     *
+     * @return list<list<string>>
+     */
+    public function claudeStarts(): array
+    {
+        $file = "{$this->installation()}/started";
+
+        if (! is_file($file)) {
+            return [];
+        }
+
+        return array_map(
+            fn (string $line) => json_decode($line, true, flags: JSON_THROW_ON_ERROR),
+            file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [],
+        );
     }
 
     private function startHost(): void

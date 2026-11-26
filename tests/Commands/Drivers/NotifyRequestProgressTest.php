@@ -35,6 +35,7 @@ use App\Models\Sessions\SessionRequest;
 use App\Support\ActorReference;
 use App\Support\AgentStatus;
 use App\Support\AgentWakes;
+use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
@@ -92,7 +93,7 @@ final class NotifyRequestProgressTest extends TestCase
 
     public function test_a_staged_report_gives_the_request_back_to_be_offered_again_after_a_wait(): void
     {
-        [$host, $opened] = $this->openRuntime(firstMessage: 'Behind a menu');
+        [$host, $opened] = $this->openHostClaimedRuntime(firstMessage: 'Behind a menu');
         $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
 
         $this->notifyProgress($host->hostId, $opened->firstRequestId, RequestProgress::Staged);
@@ -123,7 +124,7 @@ final class NotifyRequestProgressTest extends TestCase
      */
     public function test_the_journal_holds_a_runtime_for_attention_from_the_hosts_facts(): void
     {
-        [$host, $signedOut] = $this->openRuntime(firstMessage: 'Signed out');
+        [$host, $signedOut] = $this->openHostClaimedRuntime(firstMessage: 'Signed out');
         $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $wake = DriverRequest::query()->findOrFail($signedOut->firstRequestId);
         $this->journal->asSystem(new NotifyRequestProgressCommand(
@@ -137,7 +138,7 @@ final class NotifyRequestProgressTest extends TestCase
             hasCreatedNoProcess: true,
         ));
 
-        [$stopHost, $stopped] = $this->openRuntime();
+        [$stopHost, $stopped] = $this->openHostClaimedRuntime();
         $stop = $this->asOwner(new StopAgentCommand($this->agentIdOf($stopped), $stopped->sessionId, 'stop-1'));
         $this->journal->asSystem(
             new ClaimDriverRequestsCommand($stopHost->hostId, 10, BrowserInputCapabilities::none()),
@@ -162,7 +163,7 @@ final class NotifyRequestProgressTest extends TestCase
 
     public function test_an_applied_stop_keeps_stopping_until_the_exit_of_its_generation_is_proved(): void
     {
-        [$host, $opened] = $this->openRuntime();
+        [$host, $opened] = $this->openHostClaimedRuntime();
         $agentId = $this->agentIdOf($opened);
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $stop = $this->asOwner(
@@ -193,7 +194,7 @@ final class NotifyRequestProgressTest extends TestCase
 
     public function test_a_stopped_key_script_resumes_from_its_step_or_is_cancelled(): void
     {
-        [$host, $opened] = $this->openRuntime();
+        [$host, $opened] = $this->openHostClaimedRuntime();
         $resumed = DriverRequest::query()->findOrFail(
             $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']))->requestId,
         );
@@ -321,7 +322,7 @@ final class NotifyRequestProgressTest extends TestCase
 
     public function test_a_numbered_report_sent_again_is_taken_once(): void
     {
-        [$host, $opened] = $this->openRuntime();
+        [$host, $opened] = $this->openHostClaimedRuntime();
         $receipt = $this->deliver($opened, 'replayed', 'Read the notes');
         $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
 
@@ -367,12 +368,12 @@ final class NotifyRequestProgressTest extends TestCase
 
     private function startWithMessage(): array
     {
-        [$host, $opened] = $this->openRuntime(firstMessage: 'Start with the plan.');
+        [$host, $opened] = $this->openHostClaimedRuntime(firstMessage: 'Start with the plan.');
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $request = new StartRequest(
             TestSelections::requestId(),
             $session->agent_id,
-            TestSelections::of(),
+            TestSelections::of(DefaultDrivers::CODEX),
             StartOriginType::MainStart,
             null,
             null,

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support\Hosts;
 
 use App\Contracts\Hosts\HostChannel;
+use App\Data\Hosts\HostFrameData;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
+use Generator;
 use Illuminate\Support\Str;
 use Tests\Support\FakeMonotonicClock;
 use Tests\Support\Hosts\Exceptions\RecordingDiverged;
@@ -22,6 +24,13 @@ final class StandInHost implements HostChannel
 
     private const string FIXTURE = 'fixture.json';
 
+    private const int NANOSECONDS_PER_MS = 1_000_000;
+
+    /**
+     * How long a stream goes on sending the last recorded screen.
+     */
+    private const int LAST_SCREEN_HELD_MS = 2000;
+
     private string $typed = '';
 
     /**
@@ -30,7 +39,7 @@ final class StandInHost implements HostChannel
     private array $answers = [];
 
     /**
-     * @param  list<array{offset: int, frame: array{rows: list<string>}}>  $frames
+     * @param  list<array{offset: int, frame: array{rows: list<string>, captured: int, unchanged_ms: list<int>}}>  $frames
      * @param  list<string>  $inputs  the bytes of each recorded input, in order
      * @param  list<int>  $inputOffsets  the offset of each recorded input, in nanoseconds
      */
@@ -66,6 +75,14 @@ final class StandInHost implements HostChannel
     }
 
     /**
+     * When the recording's user typed the input of that number, in nanoseconds from the recording's start.
+     */
+    public function inputOffset(int $input): int
+    {
+        return $this->inputOffsets[$input];
+    }
+
+    /**
      * Moves the clock to where the recording's user typed the input of that number.
      */
     public function advanceToInput(int $input): void
@@ -74,23 +91,46 @@ final class StandInHost implements HostChannel
     }
 
     /**
-     * The rows shown now: those of the last frame whose offset the clock passed.
+     * The rows shown now: those of the frame shown now.
      *
      * @return list<string>
      */
     public function rows(): array
     {
-        $shown = [];
+        return $this->shownFrame()['frame']['rows'];
+    }
 
-        foreach ($this->frames as $frame) {
-            if ($frame['offset'] > $this->clock->nanoseconds()) {
-                break;
-            }
+    /**
+     * The frame shown now, aged by the clock since it was captured, as the host's stream sends an unchanged screen.
+     */
+    public function frame(): HostFrameData
+    {
+        $shown = $this->shownFrame();
+        $agedMs = intdiv(max(0, $this->clock->nanoseconds() - $shown['offset']), self::NANOSECONDS_PER_MS);
 
-            $shown = $frame['frame']['rows'];
+        return HostFrameData::from([
+            ...$shown['frame'],
+            'captured' => $shown['frame']['captured'] + $agedMs,
+            'unchanged_ms' => array_map(fn (int $unchanged) => $unchanged + $agedMs, $shown['frame']['unchanged_ms']),
+        ]);
+    }
+
+    /**
+     * The clock's times from the first recorded frame to a while after the last frame or input, one every interval from
+     * the clock's time, as a stream sends frames: a test that moves the clock goes on from there, and the last screen
+     * is seen and holds still.
+     *
+     * @return Generator<int, int>
+     */
+    public function streamTimes(int $intervalMs): Generator
+    {
+        $interval = $intervalMs * self::NANOSECONDS_PER_MS;
+        $lastFrame = $this->frames[array_key_last($this->frames)]['offset'];
+        $last = max($lastFrame, ...$this->inputOffsets) + self::LAST_SCREEN_HELD_MS * self::NANOSECONDS_PER_MS;
+
+        for ($time = $this->frames[0]['offset']; $time <= $last; $time = max($time, $this->clock->nanoseconds()) + $interval) {
+            yield $time;
         }
-
-        return $shown;
     }
 
     public function guardFor(int $from, int $to): RowGuard
@@ -106,7 +146,7 @@ final class StandInHost implements HostChannel
         $expected = implode('', array_slice($this->inputs, 0, $input + 1));
 
         if ($expected !== $this->typed) {
-            throw RecordingDiverged::at($input);
+            throw RecordingDiverged::at($input, $expected, $this->typed);
         }
     }
 
@@ -132,13 +172,112 @@ final class StandInHost implements HostChannel
         }
 
         $this->typed .= $bytes;
+        $this->advanceToTyped();
 
         return $this->answer(['status' => 'done', 'facts' => []]);
+    }
+
+    /**
+     * Whether the screen after the recorded input, up to the next one, is the screen before it.
+     */
+    private function isUnchangedBy(int $input): bool
+    {
+        $next = $this->inputOffsets[$input + 1] ?? PHP_INT_MAX;
+
+        return $this->rowsAt($this->inputOffsets[$input]) === $this->rowsAt($next - 1);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function rowsAt(int $offset): array
+    {
+        $shown = $this->frames[0];
+
+        foreach ($this->frames as $frame) {
+            if ($frame['offset'] > $offset) {
+                break;
+            }
+
+            $shown = $frame;
+        }
+
+        return $shown['frame']['rows'];
+    }
+
+    /**
+     * Typing what the recording's user typed moves the clock to when the user typed it, never back, so the screen
+     * shows what that typing drew however soon it came.
+     */
+    private function advanceToTyped(): void
+    {
+        $covered = $this->typedInputs();
+
+        if ($covered > 0) {
+            $this->clock->set(max($this->clock->nanoseconds(), $this->inputOffsets[$covered - 1]));
+        }
+    }
+
+    /**
+     * The last frame the clock passed, held at the first recorded input not typed yet, as the recording plays by what
+     * is typed: the screen never shows what the recording's user typed before the driver typed it.
+     *
+     * @return array{offset: int, frame: array<string, mixed>}
+     */
+    private function shownFrame(): array
+    {
+        $until = min($this->clock->nanoseconds(), $this->inputOffsets[$this->typedInputs()] ?? PHP_INT_MAX);
+        $shown = $this->frames[0];
+
+        foreach ($this->frames as $frame) {
+            if ($frame['offset'] > $until) {
+                break;
+            }
+
+            $shown = $frame;
+        }
+
+        return $shown;
+    }
+
+    /**
+     * How many of the recorded inputs what was typed so far covers, from the first one the typing begins with: a key
+     * the recording's user pressed before it drew nothing the driver needed, so it is passed over.
+     */
+    private function typedInputs(): int
+    {
+        $first = array_find_key($this->inputs, fn (string $bytes) => str_starts_with($this->typed, $bytes));
+
+        if ($this->typed === '' || $first === null) {
+            return 0;
+        }
+
+        $recorded = '';
+        $covered = $first;
+
+        foreach (array_slice($this->inputs, $first, preserve_keys: true) as $input => $bytes) {
+            // A key the user pressed again that drew nothing, such as an arrow past the end of a slider, the driver
+            // presses once.
+            $isRepeat = $bytes === ($this->inputs[$input - 1] ?? null) && $this->isUnchangedBy($input);
+
+            if (! str_starts_with($this->typed, $recorded.$bytes) && ! $isRepeat) {
+                break;
+            }
+
+            if (str_starts_with($this->typed, $recorded.$bytes)) {
+                $recorded .= $bytes;
+            }
+
+            $covered = $input + 1;
+        }
+
+        return $covered;
     }
 
     public function write(string $processId, string $bytes, HostOrderSource $source): string
     {
         $this->typed .= $bytes;
+        $this->advanceToTyped();
 
         return $this->answer(['status' => 'done', 'facts' => []]);
     }
@@ -166,6 +305,35 @@ final class StandInHost implements HostChannel
     public function snapshot(string $processId, HostOrderSource $source): string
     {
         return $this->answer(['status' => 'done', 'facts' => ['rows' => $this->rows()]]);
+    }
+
+    /**
+     * The user's keys are typed as the recording's user typed them, with no guard.
+     */
+    public function userKeys(string $processId, string $bytes, HostOrderSource $source): string
+    {
+        $this->typed .= $bytes;
+        $this->advanceToTyped();
+
+        return $this->answer(['status' => 'done', 'facts' => []]);
+    }
+
+    public function openPrivate(string $processId, HostOrderSource $source): string
+    {
+        return $this->answer(['status' => 'done', 'facts' => []]);
+    }
+
+    /**
+     * The stand-in types nothing for a private value: no recording holds one.
+     */
+    public function writePrivate(string $processId, string $submissionId, HostOrderSource $source): string
+    {
+        return $this->answer(['status' => 'done', 'facts' => []]);
+    }
+
+    public function closePrivate(string $processId, HostOrderSource $source): string
+    {
+        return $this->answer(['status' => 'done', 'facts' => []]);
     }
 
     private function hashOf(int $from, int $to): string

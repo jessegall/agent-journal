@@ -66,7 +66,7 @@ final class NotifyHostOrderTest extends TestCase
     public function test_the_start_whose_process_the_host_refused_to_open_ends_refused(): void
     {
         $this->chooseActiveAccounts();
-        $this->journal->owner()->idleAgent('Driven');
+        $this->journal->owner()->showDriverArrangements()->idleAgent('Driven');
         $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
         $this->journal->openHostProcessForStart('Mac', 'agent', $opened->sessionId);
         [$open] = $this->journal->hostOrdersOf('agent');

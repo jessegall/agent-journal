@@ -8,6 +8,7 @@ use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
 use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\RequestProgress;
+use App\Enums\Hosts\HostOrderStatus;
 use App\Enums\Hosts\HostOrderType;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessStatus;
@@ -15,7 +16,7 @@ use App\Enums\Hosts\RestartPolicy;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostOrder;
-use App\Models\Hosts\HostProcess;
+use App\Support\Drivers\DriverWork;
 use App\Support\Hosts\ProcessFeed;
 use App\Support\OpenedRuntime;
 use App\Values\HostOrderSource;
@@ -40,6 +41,16 @@ final class SessionLifeTest extends TestCase
 {
     use CommitsHookRows;
     use WithActiveAccount;
+
+    /**
+     * How long a screen holds still before a test types on it.
+     */
+    private const int STILL_MS = 300;
+
+    /**
+     * How many times keys a moved screen refused are typed again.
+     */
+    private const int TYPING_TRIES = 5;
 
     private const array TABLES = [
         'hosts',
@@ -140,6 +151,98 @@ final class SessionLifeTest extends TestCase
         );
     }
 
+    public function test_a_claude_code_terminal_driven_by_the_journal_answers_its_message_and_stops(): void
+    {
+        $this->openAnsweredTerminal();
+
+        $this->journal->asSystem(new StopHostProcessCommand(
+            $this->journal->hostProcessCalled('terminal')->id,
+            1000,
+            1000,
+            HostOrderSource::fromJournal(),
+        ));
+
+        $this->journal->waitForHostProcess('terminal', HostProcessStatus::Exited);
+        $this->journal->assertResult(1, count($this->journal->realHostClaudeStarts()));
+    }
+
+    public function test_a_claude_code_terminal_ends_with_its_hosts_restart_as_its_terminal_is_the_hosts(): void
+    {
+        $this->openAnsweredTerminal();
+
+        $this->journal->restartRealHost()->waitForHostProcess('terminal', HostProcessStatus::Lost);
+
+        $this->journal->assertResult(1, count($this->journal->realHostClaudeStarts()));
+    }
+
+    public function test_a_crashed_claude_code_terminal_starts_its_conversation_again_until_its_transcript_exists(): void
+    {
+        $this->journal->owner()
+            ->showDriverArrangements()
+            ->idleAgent('Terminal')
+            ->enrollHost('Mac', [base_path()])
+            ->runRealHost('Mac')
+            ->chooseActiveAccountsOnRealHost();
+        $opened = $this->journal->openRuntimeOn('Terminal', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $healed = fn (int $times) => fn () => $this->journal->hostProcessCalled('terminal')->generation >= $times
+            && count($this->journal->realHostClaudeStarts()) > $times;
+
+        $work = $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
+            ->driveHostProcess('terminal', $this->isComposerShown(...));
+        $this->typeTaken('crash', $work, $healed(1));
+        $this->journal->driveHostProcess('terminal', $healed(1), $work);
+        $this->journal->driveHostProcess('terminal', $this->isComposerShown(...), $work);
+        $answered = fn () => in_array(
+            'done',
+            array_map(trim(...), $this->journal->hostProcessRows('terminal')),
+            true,
+        );
+        $this->typeTaken("\e[200~hello\e[201~\r", $work, $answered);
+        $this->journal->driveHostProcess('terminal', $answered, $work);
+        $this->journal->driveHostProcess('terminal', $this->isScreenStill(...), $work);
+        $this->typeTaken('crash', $work, $healed(2));
+        $this->journal->driveHostProcess('terminal', $healed(2), $work);
+
+        $this->journal->assertResult(
+            ['--session-id', '--session-id', '--resume'],
+            array_map(
+                fn (array $arguments) => in_array('--resume', $arguments, true) ? '--resume' : '--session-id',
+                $this->journal->realHostClaudeStarts(),
+            ),
+        );
+    }
+
+    public function test_keys_sent_from_the_journal_reach_a_terminal_program_byte_for_byte_and_show_on_its_screen(): void
+    {
+        // Each key with what the screen shows once it arrived: an arrow and Enter draw no new text.
+        $sent = [
+            'hello' => 'keys> hello',
+            "\e[B" => 'keys> hello',
+            "\e[200~a pasted line\e[201~" => 'keys> helloa pasted line',
+            "\r" => 'keys> helloa pasted line',
+            'done' => 'done',
+        ];
+        $this->journal
+            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
+            ->enrollHost('Mac', [base_path()])
+            ->runRealHost('Mac')
+            ->openKeyRecorder('Mac', 'keys')
+            ->waitForHostProcess('keys', HostProcessStatus::Running);
+        $shows = fn (string $text) => fn () => str_contains(implode("\n", $this->journal->hostProcessRows('keys')), $text);
+        $work = $this->journal->driveHostProcess('keys', $shows('keys>'));
+
+        foreach ($sent as $keys => $screen) {
+            $arrived = fn () => str_ends_with($this->journal->keysRecordedBy('keys'), $keys) && $shows($screen)();
+            $this->journal->typeOnHostProcess('keys', $keys)->driveHostProcess('keys', $arrived, $work);
+        }
+
+        $shown = array_slice(array_map(rtrim(...), $this->journal->hostProcessRows('keys')), 0, 2);
+        $this->journal->assertResult(
+            [implode('', array_keys($sent)), ['keys> helloa pasted line', 'done']],
+            [$this->journal->keysRecordedBy('keys'), $shown],
+        );
+    }
+
     public function test_a_headless_turn_held_across_its_hosts_restart_finishes_with_its_result_once(): void
     {
         $opened = $this->openHeadlessTurn('Run: ls.');
@@ -175,21 +278,84 @@ final class SessionLifeTest extends TestCase
             ->holdStandInTurns();
         $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), firstMessage: $message);
 
-        $signInOrdered = fn () => $this->hasProcess($opened->runtimeId, HostProcessPurpose::SignInProbe);
-        $turnOrdered = fn () => $this->hasProcess($opened->runtimeId, HostProcessPurpose::AgentTurn);
-        $this->journal->callJournalProcess('probe', $opened->runtimeId, HostProcessPurpose::BuildProbe)
-            ->driveHostProcess('probe', $signInOrdered);
-        $this->journal->callJournalProcess('sign-in', $opened->runtimeId, HostProcessPurpose::SignInProbe)
-            ->driveHostProcess('sign-in', $turnOrdered);
-        $this->journal->callJournalProcess('turn', $opened->runtimeId, HostProcessPurpose::AgentTurn)
+        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTurn, 'turn')
             ->driveHostProcess('turn', fn () => $this->journal->hostProcessCalled('turn')->output_offset > 0);
 
         return $opened;
     }
 
-    private function hasProcess(string $runtimeId, HostProcessPurpose $purpose): bool
+    /**
+     * A Claude Code terminal on the real host, its start proven by the journal and its first message answered.
+     */
+    private function openAnsweredTerminal(): void
     {
-        return HostProcess::query()->where('agent_runtime_id', $runtimeId)->where('purpose', $purpose)->exists();
+        $this->journal->owner()
+            ->showDriverArrangements()
+            ->idleAgent('Terminal')
+            ->enrollHost('Mac', [base_path()])
+            ->runRealHost('Mac')
+            ->chooseActiveAccountsOnRealHost();
+        $opened = $this->journal->openRuntimeOn(
+            'Terminal',
+            'Mac',
+            base_path(),
+            driverType: DriverType::Terminal,
+            firstMessage: 'Count slowly from 1 to 300, then say done.',
+        );
+        $answered = fn () => in_array('done', array_map(trim(...), $this->journal->hostProcessRows('terminal')), true);
+
+        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
+            ->driveHostProcess('terminal', $answered, seconds: 20);
+    }
+
+    /**
+     * Types the keys on the terminal until its host takes them or what they do shows: keys guarded by a screen that
+     * moved before they arrived are refused, and typed again once the screen holds still.
+     */
+    private function typeTaken(string $keys, DriverWork $work, Closure $isDone): void
+    {
+        foreach (range(1, self::TYPING_TRIES) as $try) {
+            // Taken once the host says so, or once what the keys do shows.
+            $isTaken = fn () => $this->lastKeysOrder()->status === HostOrderStatus::Done || $isDone();
+            $isAnswered = fn () => $isTaken() || $this->lastKeysOrder()->status === HostOrderStatus::Refused;
+            $this->journal->typeOnHostProcess('terminal', $keys)->driveHostProcess('terminal', $isAnswered, $work);
+
+            if ($isTaken()) {
+                return;
+            }
+
+            $this->journal->driveHostProcess('terminal', $this->isScreenStill(...), $work);
+        }
+    }
+
+    private function lastKeysOrder(): HostOrder
+    {
+        $keys = array_filter(
+            $this->journal->hostOrdersOf('terminal'),
+            fn (HostOrder $order) => $order->type === HostOrderType::WriteKeys,
+        );
+
+        return $keys[array_key_last($keys)];
+    }
+
+    /**
+     * Whether the Claude Code stand-in drew its ready composer and its screen held still since, so keys guarded by the
+     * screen the host last sent land on that screen.
+     */
+    private function isComposerShown(): bool
+    {
+        return $this->isScreenStill() && str_contains(implode("\n", $this->journal->hostProcessRows('terminal')), 'Try "');
+    }
+
+    /**
+     * Whether the screen the terminal's host last sent held still for a while.
+     */
+    private function isScreenStill(): bool
+    {
+        $frame = $this->journal->service(ProcessFeed::class)
+            ->latestFrame($this->journal->hostProcessCalled('terminal')->id);
+
+        return $frame !== null && min($frame->unchangedMs) >= self::STILL_MS;
     }
 
     private function progressOf(string|null $requestId): RequestProgress
@@ -214,6 +380,7 @@ final class SessionLifeTest extends TestCase
         $this->journal
             ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
             ->owner()
+            ->showDriverArrangements()
             ->idleAgent('Echo')
             ->enrollHost('Mac', [base_path()])
             ->runRealHost('Mac');

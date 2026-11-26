@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Hosts;
 
+use App\Commands\Hosts\CloseHostPrivateEntry\CloseHostPrivateEntryCommand;
+use App\Commands\Hosts\ForwardUserKeys\ForwardUserKeysCommand;
+use App\Commands\Hosts\OpenHostPrivateEntry\OpenHostPrivateEntryCommand;
 use App\Commands\Hosts\ResizeHostProcess\ResizeHostProcessCommand;
 use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
 use App\Commands\Hosts\SignalHostProcess\SignalHostProcessCommand;
@@ -11,6 +14,7 @@ use App\Commands\Hosts\SnapshotHostProcess\SnapshotHostProcessCommand;
 use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
 use App\Commands\Hosts\StreamHostProcess\StreamHostProcessCommand;
 use App\Commands\Hosts\WriteHostInput\WriteHostInputCommand;
+use App\Commands\Hosts\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\HostChannel as HostChannelContract;
 use App\Values\HostOrderSource;
@@ -61,5 +65,25 @@ final readonly class HostChannel implements HostChannelContract
     public function snapshot(string $processId, HostOrderSource $source): string
     {
         return $this->commands->run(new SnapshotHostProcessCommand($processId, $source));
+    }
+
+    public function userKeys(string $processId, string $bytes, HostOrderSource $source): string
+    {
+        return $this->commands->run(new ForwardUserKeysCommand($processId, $bytes, $source));
+    }
+
+    public function openPrivate(string $processId, HostOrderSource $source): string
+    {
+        return $this->commands->run(new OpenHostPrivateEntryCommand($processId, $source));
+    }
+
+    public function writePrivate(string $processId, string $submissionId, HostOrderSource $source): string
+    {
+        return $this->commands->run(new WriteHostPrivateValueCommand($processId, $submissionId, $source));
+    }
+
+    public function closePrivate(string $processId, HostOrderSource $source): string
+    {
+        return $this->commands->run(new CloseHostPrivateEntryCommand($processId, $source));
     }
 }

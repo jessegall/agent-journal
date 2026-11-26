@@ -117,10 +117,10 @@ trait OpensRuntimes
      * Whoever acts, the owner as a rule, saves a signed-in account for every driver and chooses it, as on the Accounts
      * page, so the starts that follow run with it.
      */
-    public function chooseActiveAccounts(): self
+    public function chooseActiveAccounts(string $folder = '/journal/accounts'): self
     {
         foreach (DefaultDrivers::familyKeys() as $driver) {
-            $account = Account::create($driver, AccountLabel::from('Test account'), "/journal/accounts/{$driver}");
+            $account = Account::create($driver, AccountLabel::from('Test account'), "{$folder}/{$driver}");
             ActiveAccount::findLockedFor($driver)->select($account);
             $this->chosenAccounts[$driver] = $account;
         }

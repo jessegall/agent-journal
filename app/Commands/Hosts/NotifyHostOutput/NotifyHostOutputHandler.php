@@ -9,17 +9,20 @@ use App\Data\Hosts\HostOutputData;
 use App\Exceptions\HostProtocolRefused;
 use App\Models\Hosts\HostProcess;
 use App\Support\Hosts\ProcessFeed;
+use App\Support\Terminals\HostFrameScreens;
+use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiter;
 use Psr\Log\LoggerInterface;
 
 /**
- * Puts the output in the process's feed; output over the post limit or for another host's process is refused, and
- * logged at most once a minute per host.
+ * Puts the output in the process's feed and shows a journal-driven terminal's newest frame on its page; output over
+ * the post limit or for another host's process is refused, and logged at most once a minute per host.
  */
 final readonly class NotifyHostOutputHandler implements CommandHandler
 {
     public function __construct(
         private ProcessFeed $feed,
+        private HostFrameScreens $screens,
         private RateLimiter $limiter,
         private LoggerInterface $log,
     ) {}
@@ -42,6 +45,7 @@ final readonly class NotifyHostOutputHandler implements CommandHandler
 
         $output = HostOutputData::from(json_decode($command->body, true, flags: JSON_THROW_ON_ERROR));
         $this->feed->push($process->id, $output);
+        $this->screens->show($process, $output, CarbonImmutable::now());
         $process->recordOutputThrough($output->stdoutThrough());
     }
 

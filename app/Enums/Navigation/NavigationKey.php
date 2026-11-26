@@ -33,4 +33,22 @@ enum NavigationKey: string
     case Seven = '7';
     case Eight = '8';
     case Nine = '9';
+
+    /**
+     * The bytes a terminal reads as the key.
+     */
+    public function bytes(): string
+    {
+        return match ($this) {
+            self::Up => "\e[A",
+            self::Down => "\e[B",
+            self::Right => "\e[C",
+            self::Left => "\e[D",
+            self::Enter => "\r",
+            self::Esc => "\e",
+            self::Tab => "\t",
+            self::Space => ' ',
+            default => $this->value,
+        };
+    }
 }
