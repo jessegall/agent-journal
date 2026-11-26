@@ -7,6 +7,7 @@ namespace App\Support\Hosts;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Hosts\HostOrderType;
 use App\Exceptions\HostProtocolRefused;
+use App\Exceptions\HostProtocolUnsupported;
 use App\Exceptions\WorkerFenced;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
@@ -89,6 +90,7 @@ final readonly class HostOrderPlacement
      * The host, locked, once it is known to take orders.
      *
      * @throws HostProtocolRefused
+     * @throws HostProtocolUnsupported
      */
     public function orderingHost(string $hostId): Host
     {
@@ -108,7 +110,7 @@ final readonly class HostOrderPlacement
         }
 
         if (! $host->acceptsProtocol(self::PROTOCOL)) {
-            throw HostProtocolRefused::unsupported($host->id, $host->protocol);
+            throw HostProtocolUnsupported::forHost($host->id, $host->protocol);
         }
     }
 

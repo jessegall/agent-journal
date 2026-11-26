@@ -13,17 +13,12 @@ use App\Enums\Hosts\HostProcessType;
 use RuntimeException;
 
 /**
- * An order the journal will not make: its host speaks another protocol or was revoked, or its process no longer runs
- * or takes no such input.
+ * An order the journal will not make or take: its host was revoked, or its process no longer runs, takes no such
+ * order or runs on another host.
  */
 final class HostProtocolRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
-
-    public static function unsupported(string $hostId, int $protocol): self
-    {
-        return new self("Host {$hostId} speaks host protocol {$protocol}; update the host to protocol 1.");
-    }
 
     public static function revoked(string $hostId): self
     {

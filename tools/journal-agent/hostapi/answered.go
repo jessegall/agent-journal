@@ -85,3 +85,14 @@ func (record *AnsweredRecord) save() error {
 	}
 	return os.Rename(temporary, record.path)
 }
+
+// AnsweredThrough is the newest order the record holds an answer of; order ids sort by when they were made.
+func (record *AnsweredRecord) AnsweredThrough() string {
+	record.mutex.Lock()
+	defer record.mutex.Unlock()
+	newest := ""
+	for orderID := range record.entries {
+		newest = max(newest, orderID)
+	}
+	return newest
+}

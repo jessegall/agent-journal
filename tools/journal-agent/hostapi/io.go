@@ -134,6 +134,19 @@ func (outputs *Outputs) ScreenOf(processID string) (*Screen, bool) {
 	return screen, found
 }
 
+// SpoolOffset is how many bytes the pipe process printed, kept or not; 0 for a terminal.
+func (outputs *Outputs) SpoolOffset(processID string) int64 {
+	outputs.mutex.Lock()
+	spool, found := outputs.spools[processID]
+	outputs.mutex.Unlock()
+	if !found {
+		return 0
+	}
+	spool.mutex.Lock()
+	defer spool.mutex.Unlock()
+	return spool.offset
+}
+
 // Snapshot sends one full frame of the process's screen now.
 func (outputs *Outputs) Snapshot(processID string) error {
 	screen, found := outputs.ScreenOf(processID)

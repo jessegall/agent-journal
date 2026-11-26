@@ -116,6 +116,30 @@ func (table *ProcessTable) Live() []string {
 	return live
 }
 
+// Inventory is every process the host holds, as it reports them after a start.
+func (table *ProcessTable) Inventory() []InventoryProcess {
+	table.mutex.Lock()
+	defer table.mutex.Unlock()
+	inventory := []InventoryProcess{}
+	for id, held := range table.processes {
+		alive := true
+		select {
+		case <-held.exited:
+			alive = false
+		default:
+		}
+		inventory = append(inventory, InventoryProcess{
+			ProcessID:      id,
+			Identity:       held.identity,
+			Container:      held.plan.Name,
+			IsAlive:        alive,
+			IsTerminalHeld: held.terminal != nil,
+			SpoolOffset:    table.outputs.SpoolOffset(id),
+		})
+	}
+	return inventory
+}
+
 // PlanOf is what the process was opened with.
 func (table *ProcessTable) PlanOf(processID string) (OpenPlan, error) {
 	held, err := table.held(processID)

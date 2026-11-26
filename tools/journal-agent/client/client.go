@@ -812,6 +812,8 @@ func refusalOf(response *http.Response, target string) error {
 	switch {
 	case response.StatusCode == http.StatusConflict:
 		return errors.Join(ErrConflict, ErrRefused, failure)
+	case response.StatusCode == http.StatusUpgradeRequired:
+		return errors.Join(ErrProtocolRefused, ErrRefused, failure)
 	case response.StatusCode == http.StatusPreconditionRequired:
 		return errors.Join(ErrAwaitingApproval, ErrRefused, failure)
 	case response.StatusCode == http.StatusUnauthorized:
