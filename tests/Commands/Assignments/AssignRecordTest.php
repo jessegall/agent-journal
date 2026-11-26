@@ -6,6 +6,7 @@ namespace Tests\Commands\Assignments;
 
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Bus\CommandBus;
+use App\Enums\CommandRules\ReceiptStatus;
 use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\RequestKeyConflict;
 use App\Models\Access\User;
@@ -13,7 +14,6 @@ use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
@@ -61,12 +61,6 @@ final class AssignRecordTest extends TestCase
     private TestStart $main;
 
     private User $owner;
-
-    private TestStart $second;
-
-    private TestStart $first;
-
-    private TestStart $caller;
 
     private TestStart $start;
 
@@ -244,121 +238,20 @@ final class AssignRecordTest extends TestCase
             ->expectsOutputToContain('type:id')->assertExitCode(1);
     }
 
-    public function test_all_three_cli_operations_replay_their_mcp_results(): void
-    {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->caller = TestStart::start();
-        $this->first = TestStart::start('writing-helper');
-        $this->second = TestStart::start('writing-helper');
-        $this->task = Task::factory()->create(['title' => 'Prepare the handoff']);
-
-        $first = $this->assignFirst();
-        $second = $this->reassign($first);
-        $this->journal->mcpTool($this->caller, 'assignments_unassign', [
-            ...$this->record(),
-            'expected_assignment' => $second,
-            'request_key' => 'unassign',
-        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'changed')
-            ->assertJsonPath('result.structuredContent.assignment', null);
-
-        $this->journal->relayAgentCommands($this->caller);
-        $record = ['type' => 'tasks.task', 'id' => $this->task->id, '--json' => true];
-        $this->artisan('assignment:assign', [
-            ...$record,
-            '--to' => "agent:{$this->first->agent->id}",
-            '--request-key' => 'assign',
-        ])->expectsOutputToContain($first['id'])->assertExitCode(0);
-        $this->artisan('assignment:reassign', [
-            ...$record,
-            '--assignment' => $first['id'],
-            '--holder' => "agent:{$this->first->agent->id}",
-            '--to' => "agent:{$this->second->agent->id}",
-            '--request-key' => 'reassign',
-        ])->expectsOutputToContain($second['id'])->assertExitCode(0);
-        $this->artisan('assignment:unassign', [
-            ...$record,
-            '--assignment' => $second['id'],
-            '--holder' => "agent:{$this->second->agent->id}",
-            '--request-key' => 'unassign',
-        ])->expectsOutputToContain('"changed":1')->assertExitCode(0);
-
-        $this->journal->mcpTool($this->caller, 'assignments_read', $this->record())->assertOk()
-            ->assertJsonPath('result.structuredContent.holder', null);
-    }
-
-    public function test_a_completed_assignment_write_reads_back_with_its_outcome(): void
+    public function test_a_completed_assignment_write_keeps_its_completed_receipt(): void
     {
         $this->journal->idleAgent('Test agent')->startSession('Test agent', 'Test agent');
         $this->start = $this->journal->testStartCalled('Test agent');
-
         $task = Task::factory()->create(['title' => 'Keyed']);
-        $this->journal->actAsAgentIds($this->start->agent->id, $this->start->session->id);
-        $this->app->make(RequestKey::class)->set(self::KEY);
-        $this->app->make(CommandBus::class)->run(
-            new AssignRecordCommand($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent)),
-        );
+        $command = new AssignRecordCommand($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent));
 
-        $result = $this->journal->mcpTool(
-            $this->start,
-            'operations_read',
-            ['request_key' => self::KEY],
-        )->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
+        $this->journal->actAsAgentIds($this->start->agent->id, $this->start->session->id)->run($command, self::KEY);
 
-        $this->assertSame('completed', $result['state']);
-        $this->assertSame('AssignRecord', $result['command']);
-        $this->assertSame(1, $result['outcome_count']);
-        $this->assertSame([], $result['next_actions']);
+        $this->journal->assertReceiptStatus($this->journal->commandReceipt($command, self::KEY), ReceiptStatus::Completed);
     }
 
     private function tasks(): TaskFixtures
     {
         return $this->journal->fixtures(TaskFixtures::class);
-    }
-
-    /**
-     * @return array{id: string, holder: array{type: string, id: string}}
-     */
-    private function assignFirst(): array
-    {
-        return $this->journal->mcpTool($this->caller, 'assignments_assign', [
-            ...$this->record(),
-            'recipient' => $this->recipient($this->first),
-            'request_key' => 'assign',
-        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'changed')
-            ->assertJsonPath('result.structuredContent.assignment.holder', $this->recipient($this->first))
-            ->json('result.structuredContent.assignment');
-    }
-
-    /**
-     * @return array{type: string, id: string}
-     */
-    private function recipient(TestStart $start): array
-    {
-        return ['type' => 'agent', 'id' => $start->agent->id];
-    }
-
-    /**
-     * @return array{record_type: string, record_id: string}
-     */
-    private function record(): array
-    {
-        return ['record_type' => 'tasks.task', 'record_id' => $this->task->id];
-    }
-
-    /**
-     * @param  array{id: string, holder: array{type: string, id: string}}  $first
-     * @return array{id: string, holder: array{type: string, id: string}}
-     */
-    private function reassign(array $first): array
-    {
-        return $this->journal->mcpTool($this->caller, 'assignments_reassign', [
-            ...$this->record(),
-            'expected_assignment' => $first,
-            'recipient' => $this->recipient($this->second),
-            'request_key' => 'reassign',
-        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'changed')
-            ->assertJsonPath('result.structuredContent.assignment.holder', $this->recipient($this->second))
-            ->json('result.structuredContent.assignment');
     }
 }

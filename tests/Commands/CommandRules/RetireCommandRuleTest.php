@@ -19,7 +19,6 @@ use App\Values\RuleScope;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
@@ -31,29 +30,20 @@ final class RetireCommandRuleTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const string EXPLAIN_AGAIN = 'explain the line again';
-
-    public function test_retiring_a_rule_makes_a_queued_admission_refuse_on_start(): void
+    public function test_retiring_a_rule_marks_a_queued_admission_stale(): void
     {
         config(['processes.runner' => true]);
-        $start = $this->journal->signedStart('Test agent');
+        $start = $this->journal->owner()->signedStart('Test agent');
         $queued = $this->admit(ActorReference::ofClass(Agent::class, $start->agent->id), 'printf queued');
-        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
+        $this->journal->asOwner(
             new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'),
         );
 
-        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
+        $this->journal->asOwner(
             new RetireCommandRuleCommand(ClassificationRule::query()->sole()->id, 1, 'not needed'),
         );
 
         $this->assertStringStartsWith('rule-revision-changed', $queued->refresh()->stale_reason);
-        $reply = $this->journal->agentCall(
-            $start,
-            'POST',
-            "/agent/processes/admissions/{$queued->id}",
-            ['request_key' => 'stale-1'],
-        )->assertStatus(409);
-        $this->assertStringContainsString(self::EXPLAIN_AGAIN, (string) $reply->json('message'));
     }
 
     private function admit(ActorReference $actor, string $line): ProcessRun

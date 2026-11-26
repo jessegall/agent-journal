@@ -7,6 +7,7 @@ namespace Tests\Commands\CommandRules;
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
+use App\Enums\CommandRules\EvidenceSource;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Runs\RunMode;
@@ -17,6 +18,7 @@ use App\Models\Runs\ProcessRun;
 use App\Support\ActorReference;
 use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
+use App\Values\EvidenceRange;
 use App\Values\PartEnd;
 use App\Values\PartKey;
 use Carbon\CarbonImmutable;
@@ -69,11 +71,11 @@ final class RecordEvidenceReadsTest extends TestCase
         $run = $this->sampleRun();
         $this->assertFalse($this->request->hasReadEvidence($run));
 
-        $this->readOutput($run, 'summary', []);
-        $this->readOutput($run, 'tail', ['part' => 1, 'stream' => 'stdout', 'lines' => 5]);
+        $this->read($run, EvidenceRange::envelope($this->partOf($run)));
+        $this->read($run, EvidenceRange::bytes($this->partOf($run), EvidenceSource::Stdout, 0, 5));
         $this->assertFalse($this->request->hasReadEvidence($run));
 
-        $this->readOutput($run, 'tail', ['part' => 1, 'stream' => 'stderr', 'lines' => 5]);
+        $this->read($run, EvidenceRange::bytes($this->partOf($run), EvidenceSource::Stderr, 0, 5));
         $this->assertTrue($this->request->hasReadEvidence($run));
     }
 
@@ -81,23 +83,23 @@ final class RecordEvidenceReadsTest extends TestCase
     {
         $run = $this->sampleRun();
 
-        $this->readOutput($run, 'tail', ['part' => 1, 'stream' => 'stdout', 'lines' => 5]);
-        $this->readOutput($run, 'tail', ['part' => 1, 'stream' => 'stderr', 'lines' => 5]);
+        $this->read($run, EvidenceRange::bytes($this->partOf($run), EvidenceSource::Stdout, 0, 5));
+        $this->read($run, EvidenceRange::bytes($this->partOf($run), EvidenceSource::Stderr, 0, 5));
 
         $this->assertFalse($this->request->hasReadEvidence($run));
     }
 
     /**
-     * @param  array<string, mixed>  $body
+     * The agent reads this range of the run's output, as an output read does.
      */
-    private function readOutput(ProcessRun $run, string $read, array $body): void
+    private function read(ProcessRun $run, EvidenceRange $range): void
     {
-        $this->journal->agentCall(
-            $this->start,
-            'POST',
-            "/agent/processes/runs/{$run->id}/output/{$read}",
-            $body,
-        )->assertOk();
+        $this->journal->runAsStart($this->start, new RecordEvidenceReadsCommand($run->id, [$range]));
+    }
+
+    private function partOf(ProcessRun $run): string
+    {
+        return PartRun::query()->where('process_run_id', $run->id)->sole()->id;
     }
 
     private function sampleRun(): ProcessRun

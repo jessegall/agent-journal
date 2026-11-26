@@ -9,10 +9,12 @@ use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Commands\CommandRules\ProposeReader\ProposeReaderCommand;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
+use App\Exceptions\ReaderDefinitionInvalid;
+use App\Exceptions\ReaderProposalRefused;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\ReaderRevision;
-use Illuminate\Testing\TestResponse;
+use App\Values\ReaderDefinition;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -60,9 +62,7 @@ final class ProposeReaderTest extends TestCase
 
     public function test_a_proposed_reader_is_a_draft_that_unlocks_nothing(): void
     {
-        $reply = $this->proposeReader($this->definition(hasSummary: true))->assertOk();
-
-        $revision = ReaderRevision::query()->findOrFail($reply->json('reader_revision_id'));
+        $revision = ReaderRevision::query()->findOrFail($this->proposeReader(1, $this->definition(hasSummary: true)));
         $this->assertFalse($revision->isProven());
         $this->assertSame($this->request->id, $revision->command_request_id);
         $this->assertSame(1, $revision->declaration_revision);
@@ -72,29 +72,32 @@ final class ProposeReaderTest extends TestCase
 
     public function test_a_definition_without_the_summary_rule_the_contract_requires_is_refused(): void
     {
-        $reply = $this->proposeReader($this->definition(hasSummary: false))->assertStatus(422);
-
-        $this->assertStringContainsString(self::SUMMARY_RULE, (string) $reply->json('message'));
+        $this->journal->assertRefused(
+            ReaderDefinitionInvalid::class,
+            fn () => $this->proposeReader(1, $this->definition(hasSummary: false)),
+            fn (ReaderDefinitionInvalid $refusal) => $this->assertStringContainsString(self::SUMMARY_RULE, $refusal->getMessage()),
+        );
         $this->assertSame(0, ReaderRevision::query()->count());
     }
 
     public function test_a_reader_for_a_missing_declaration_revision_is_refused(): void
     {
-        $this->journal->agentCall($this->start, 'POST', $this->readersRoute(), [
-            'declaration_revision' => 2,
-            'definition' => $this->definition(hasSummary: true),
-        ])->assertStatus(409);
+        $this->journal->assertRefused(
+            ReaderProposalRefused::class,
+            fn () => $this->proposeReader(2, $this->definition(hasSummary: true)),
+        );
     }
 
     /**
      * @param  array<string, mixed>  $definition
      */
-    private function proposeReader(array $definition): TestResponse
+    private function proposeReader(int $declarationRevision, array $definition): string
     {
-        return $this->journal->agentCall($this->start, 'POST', $this->readersRoute(), [
-            'declaration_revision' => 1,
-            'definition' => $definition,
-        ]);
+        return $this->journal->runAsStart($this->start, new ProposeReaderCommand(
+            $this->request->id,
+            $declarationRevision,
+            ReaderDefinition::from($definition),
+        ));
     }
 
     /**
@@ -116,10 +119,5 @@ final class ProposeReaderTest extends TestCase
             'max_record_bytes' => 65_536,
             'millisecond_budget' => 2_000,
         ];
-    }
-
-    private function readersRoute(): string
-    {
-        return "/agent/processes/requests/{$this->request->id}/readers";
     }
 }

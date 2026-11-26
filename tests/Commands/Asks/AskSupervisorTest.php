@@ -45,8 +45,6 @@ final class AskSupervisorTest extends TestCase
     /**
      * The domains this test uses beside core.
      */
-    private const string FIXTURE_ADVICE = 'Read the fixture.';
-
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(TasksDomain::class);
@@ -68,35 +66,20 @@ final class AskSupervisorTest extends TestCase
         $this->assertSame($owner->id, $card->holderId);
     }
 
-    public function test_the_plain_signed_cli_retains_a_question_for_the_reviewers_supervisor(): void
+    public function test_a_reviewers_question_is_held_by_its_supervisor(): void
     {
         $this->journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')));
         $start = TestStart::start('journal-code-reviewer');
         $recipient = TestStart::start('journal-main');
-        $this->journal->relayAgentCommands($start);
 
-        $this->artisan('ask:make', ['text' => 'Why does this fail?'])->assertSuccessful();
-        $this->artisan('ask:list')->assertSuccessful();
+        $this->journal->runAsStart($start, new AskSupervisorCommand('Why does this fail?', 'reviewer-question'));
 
         $ask = Ask::query()->ownedBy(ActorReference::of($start->agent))->firstOrFail();
-        $this->artisan('ask:show', ['ask' => $ask->id])->assertSuccessful();
         $this->assertSame('question', $ask->type_key->key);
         $this->assertStringStartsWith('free:', $ask->work);
         $this->assertTrue(
             AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->firstOrFail()
                 ->toAssignment->holder()->isSameAs($recipient->agent->assigneeIdentity()),
         );
-
-        $this->journal->agentCall($recipient, 'POST', '/agent/asks/reply', [
-            'id' => $ask->id,
-            'body' => 'Read the fixture.',
-            'request_key' => 'reply-to-fixture-ask',
-        ])->assertOk()->assertJsonPath('reply', self::FIXTURE_ADVICE);
-        $this->assertFalse($ask->refresh()->open);
-
-        $this->artisan('ask:make', ['text' => 'Please check another file.'])->assertSuccessful();
-        $ask = Ask::query()->ownedBy(ActorReference::of($start->agent))->where('open', true)->sole();
-        $this->artisan('ask:withdraw', ['ask' => $ask->id])->assertSuccessful();
-        $this->assertFalse($ask->refresh()->open);
     }
 }

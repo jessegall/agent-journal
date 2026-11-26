@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
+use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
 use App\Declarations\RuleDeclaration;
+use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
-use App\Mcp\Tools\CommandRequestShowTool;
-use App\Mcp\Tools\CommandTypeProposeTool;
+use App\Models\CommandRules\CommandRequest;
+use App\Models\CommandRules\RuleProposal;
 use App\Values\RuleExample;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
@@ -34,40 +36,30 @@ final class ProposeRuleDeclarationTest extends TestCase
         $this->start = $this->journal->testStartCalled('Test agent');
     }
 
-    public function test_a_proposal_through_the_tool_moves_the_request_on_and_the_show_tool_reads_it_back(): void
+    public function test_a_proposal_moves_its_request_on_to_wait_for_a_sample(): void
     {
-        $requestId = $this->explainAcme();
+        $requestId = $this->journal->actAs('Test agent')->run(new OpenCommandRequestCommand(
+            'acme verify',
+            str_repeat('a', 64),
+            'acme verify',
+            '/projects/acme',
+            RequestHoldReason::UnknownCommand,
+        ));
 
-        $proposal = $this->journal->mcpTool($this->start, CommandTypeProposeTool::NAME, [
-            'request' => $requestId,
-            'declaration_file' => json_encode(
-                ['declarations' => [[...$this->declaration()->toArray(), 'request_id' => 'propose-tool-1']]],
+        $receipt = $this->journal->runAsStart($this->start, new ProposeRuleDeclarationCommand(
+            $requestId,
+            json_encode(
+                ['declarations' => [[...$this->declaration()->toArray(), 'request_id' => 'propose-1']]],
                 JSON_THROW_ON_ERROR,
             ),
-            'request_key' => 'propose-tool-1',
-        ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
+        ));
 
-        $this->app->forgetScopedInstances();
-        $shown = $this->journal->mcpTool(
-            $this->start,
-            CommandRequestShowTool::NAME,
-            ['request' => $requestId],
-        )->assertOk()
-            ->assertJsonPath('result.isError', false)
-            ->json('result.structuredContent');
-        $this->assertSame(RequestStatus::AwaitingSampleApproval->value, $shown['state']);
-        $this->assertSame($proposal['proposal_id'], $shown['proposals'][0]['proposal_id']);
-    }
-
-    private function explainAcme(): string
-    {
-        return (string) $this->journal->agentCall(
-            $this->start,
-            'POST',
-            '/agent/processes/explain',
-            ['line' => 'acme verify'],
-        )
-            ->json('held.0.requestId');
+        $request = CommandRequest::query()->findOrFail($requestId);
+        $this->assertSame(RequestStatus::AwaitingSampleApproval, $request->status);
+        $this->assertSame(
+            $receipt->proposalId,
+            RuleProposal::query()->where('command_request_id', $requestId)->sole()->id,
+        );
     }
 
     private function declaration(): RuleDeclaration

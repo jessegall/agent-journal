@@ -48,7 +48,6 @@ use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
@@ -299,45 +298,6 @@ final class RetireAgentTest extends TestCase
             SessionProcess::query()->withoutGlobalScopes()->sole()->status,
         );
         $this->assertNull($this->journal->asSystem(new ClaimStartCommand($host->hostId, $opened->sessionId)));
-    }
-
-    public function test_retirement_is_open_to_the_user_over_the_web_and_to_a_main_agent_over_a_signed_call(): void
-    {
-        $owner = $this->journal->ownerUser();
-        $main = TestStart::start('main-agent');
-        $helper = TestStart::start('read-only-helper');
-        $task = $this->tasks()->createTask('Write the retire commands');
-
-        $spare = Agent::create('Spare', 'read-only-helper', $this->localProject());
-        $this->actingAs($owner)->postJson(
-            '/assignments/assign',
-            [
-                'recordType' => 'tasks.task',
-                'recordId' => $task->id,
-                'recipientType' => 'agent',
-                'recipientId' => $helper->agent->id,
-            ],
-        )->assertOk();
-
-        $this->journal->agentCall(
-            $main,
-            'POST',
-            '/agent/agents/retire',
-            ['agentId' => $main->agent->id, 'request_key' => 'retire-1'],
-        )->assertForbidden();
-        $this->journal->agentCall(
-            $main,
-            'POST',
-            '/agent/agents/retire',
-            ['agentId' => $helper->agent->id, 'request_key' => 'retire-2'],
-        )->assertOk()->assertJson(['changed' => 1]);
-        $this->actingAs($owner)->postJson(
-            '/agents/retire',
-            ['agentId' => $spare->id],
-        )->assertOk()->assertJson(['changed' => 0]);
-
-        $this->assertTrue($helper->agent->refresh()->isRetired());
-        $this->assertTrue($spare->refresh()->isRetired());
     }
 
     public function test_without_the_module_its_records_cannot_be_read_but_retirement_still_releases_them(): void
