@@ -17,6 +17,21 @@ use Tests\Support\Seeding\TestJournal;
 #[TestsRoute('POST', 'accounts.submit-code')]
 final class SubmitCodePostTest extends GuardedRouteEntryTestCase
 {
+    public function test_a_refused_answer_flashes_no_code_into_the_session(): void
+    {
+        $this->journal->owner()->sinkCommands();
+
+        $this->journal->route(
+            'POST',
+            'accounts.submit-code',
+            ['attempt' => strtolower((string) Str::ulid())],
+            payload: ['code' => 'secret code with spaces'],
+        )
+            ->assertSessionHasErrors('submission_key')
+            ->assertSessionMissing('_old_input.code');
+        $this->journal->assertNothingDispatched();
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner()->user('Member');

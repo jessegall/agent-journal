@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
+use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
+use App\Commands\Projects\EnrollHost\EnrollHostCommand;
+use App\Enums\Accounts\SignInMethod;
+use App\Jobs\SignInDeadline;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
@@ -17,6 +24,23 @@ use Tests\Support\Seeding\TestJournal;
 #[TestsRoute('POST', 'accounts.challenge')]
 final class ChallengePostTest extends GuardedRouteEntryTestCase
 {
+    public function test_the_owner_reads_a_live_sign_ins_challenge_and_no_cache_keeps_it(): void
+    {
+        config(['accounts.root' => sys_get_temp_dir().'/sign-in-challenge-'.bin2hex(random_bytes(4))]);
+        Bus::fake([SignInDeadline::class]);
+        $this->journal->owner();
+        $host = $this->journal->asSystem(new EnrollHostCommand('test host', ['/work']));
+        $attemptId = $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::OAuth))->attemptId;
+        $this->journal->asSystem(new ClaimSignInCommand($host->hostId));
+        $address = 'https://claude.ai/oauth/authorize?secret-state';
+        $this->journal->asSystem(new PublishSignInChallengeCommand($host->hostId, $attemptId, $address, null));
+
+        $read = $this->journal->route('POST', 'accounts.challenge', ['attempt' => $attemptId])->assertOk();
+
+        $this->assertSame($address, $read->json('address'));
+        $this->assertStringContainsString('no-store', (string) $read->headers->get('Cache-Control'));
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner()->user('Member');

@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
 use App\Commands\Accounts\NotifySignIn\NotifySignInCommand;
 use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
+use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Commands\Accounts\TakeSignInCode\TakeSignInCodeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInOutcome;
 use App\Enums\Accounts\SignInStatus;
+use App\Exceptions\SignInAnswerRefused;
+use App\Exceptions\SignInCodeInvalid;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\EnrolledHost;
@@ -63,24 +67,27 @@ final class TakeSignInCodeTest extends TestCase
 
     public function test_a_code_with_a_control_character_and_a_cancelled_sign_in_give_the_host_nothing(): void
     {
-        $owner = $this->journal->ownerUser();
         $host = $this->enrollHost();
         $attemptId = $this->begin();
         $this->claim($host);
+        $this->notify($host, $attemptId, SignInOutcome::Waiting);
 
-        $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/code", ['code' => "12\u{0007}34"]);
-        $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/cancel")->assertStatus(303);
-        $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/code", ['code' => '1234']);
+        $this->journal->assertRefused(
+            SignInCodeInvalid::class,
+            fn () => $this->journal->run(new SubmitSignInCodeCommand($attemptId, "12\u{0007}34", 'answer-1')),
+        );
+        $this->journal->run(new CancelSignInCommand($attemptId));
+        $this->journal->assertRefused(
+            SignInAnswerRefused::class,
+            fn () => $this->journal->run(new SubmitSignInCodeCommand($attemptId, '1234', 'answer-2')),
+        );
 
         $this->assertEquals(new SignInPoll(false, null), $this->takeCode($host, $attemptId, 0));
         $this->assertSame(SignInStatus::Cancelled, $this->signInAttempt($attemptId)->status);
-        $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge");
-        $this->assertNull($read->json('address'));
     }
 
     public function test_an_answer_whose_acceptance_never_committed_is_never_handed_to_the_host(): void
     {
-        $owner = $this->journal->ownerUser();
         $host = $this->enrollHost();
         $attemptId = $this->begin();
         $this->claim($host);
@@ -90,8 +97,7 @@ final class TakeSignInCodeTest extends TestCase
             ->typeCode($attemptId, 'answer-rolled-back', '1234', CarbonImmutable::now()->addMinutes(5));
 
         $this->assertEquals(new SignInPoll(true, null), $this->takeCode($host, $attemptId, 0));
-        $this->actingAs($owner)->withHeader('Idempotency-Key', 'answer-1')
-            ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => '5678'])->assertStatus(303);
+        $this->journal->run(new SubmitSignInCodeCommand($attemptId, '5678', 'answer-1'));
         $this->assertEquals(new SignInPoll(true, '5678'), $this->takeCode($host, $attemptId, 0));
     }
 
@@ -101,8 +107,7 @@ final class TakeSignInCodeTest extends TestCase
         $attemptId = $this->begin();
         $this->claim($host);
         $this->notify($host, $attemptId, SignInOutcome::Waiting);
-        $this->actingAs($this->journal->ownerUser())->withHeader('Idempotency-Key', 'answer-1')
-            ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => '1234'])->assertStatus(303);
+        $this->journal->run(new SubmitSignInCodeCommand($attemptId, '1234', 'answer-1'));
 
         $this->notify($host, $attemptId, SignInOutcome::Interrupted);
 
@@ -110,21 +115,6 @@ final class TakeSignInCodeTest extends TestCase
         $this->assertSame(SignInStatus::Interrupted, $attempt->status);
         $this->assertNull($attempt->refusal);
         $this->assertNull($this->app->make(SignInChallenges::class)->takeCode($attempt));
-    }
-
-    public function test_a_failed_answer_flashes_no_code_into_the_session(): void
-    {
-        $owner = $this->journal->ownerUser();
-        $host = $this->enrollHost();
-        $attemptId = $this->begin();
-        $this->claim($host);
-        $this->notify($host, $attemptId, SignInOutcome::Waiting);
-
-        $this->actingAs($owner)->withHeader('Idempotency-Key', 'answer-1')
-            ->from('/accounts')
-            ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => 'secret code with spaces'])
-            ->assertStatus(303)
-            ->assertSessionMissing('_old_input.code');
     }
 
     private function begin(): string

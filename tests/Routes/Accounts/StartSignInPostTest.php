@@ -19,6 +19,18 @@ use Tests\Support\Seeding\TestJournal;
 #[TestsRoute('POST', 'accounts.start-sign-in')]
 final class StartSignInPostTest extends GuardedRouteEntryTestCase
 {
+    public function test_an_unknown_program_or_a_method_its_program_lacks_is_refused_and_nothing_is_sent(): void
+    {
+        $this->journal->owner()->sinkCommands();
+
+        foreach ([['gemini', 'oauth', 'driver'], ['codex', 'provider_token', 'method'], ['codex', 'password', 'method']] as [$driver, $method, $field]) {
+            $this->journal->route('POST', 'accounts.start-sign-in', payload: ['driver' => $driver, 'method' => $method])
+                ->assertSessionHasErrors($field);
+        }
+
+        $this->journal->assertNothingDispatched();
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner()->user('Member');

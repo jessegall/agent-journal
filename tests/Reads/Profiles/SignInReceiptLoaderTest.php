@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Reads\Profiles;
 
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Data\Accounts\SignInReceiptData;
 use App\Data\Profiles\SignInReceiptInput;
+use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInReceiptStatus;
 use App\Http\Loaders\Profiles\SignInReceiptLoader;
 use App\Jobs\SignInDeadline;
@@ -50,16 +53,45 @@ final class SignInReceiptLoaderTest extends TestCase
 
     public function test_the_owners_started_sign_in_is_named_by_its_key(): void
     {
-        $this->actingAs($this->journal->ownerUser())
-            ->withHeader('Idempotency-Key', 'tab-1')
-            ->post('/accounts/sign-ins', ['driver' => 'claude-code', 'method' => 'oauth'])
-            ->assertStatus(303);
-        $this->journal->actAs('Owner');
+        $this->journal->actAs('Owner')->run(new BeginSignInCommand('claude-code', SignInMethod::OAuth), 'tab-1');
 
         $receipt = $this->read(['key' => 'tab-1', 'driver' => 'claude-code']);
 
         $this->assertSame(SignInReceiptStatus::Started, $receipt->status);
         $this->assertSame(SignInAttempt::query()->withoutGlobalScopes()->sole()->id, $receipt->attemptId);
+    }
+
+    public function test_a_repeated_and_a_rejoining_key_name_the_same_attempt(): void
+    {
+        $this->journal->actAs('Owner');
+
+        foreach (['tab-1', 'tab-1', 'tab-2'] as $key) {
+            $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::OAuth), $key);
+        }
+
+        $first = $this->read(['key' => 'tab-1', 'driver' => 'claude-code']);
+        $this->assertSame(
+            [SignInReceiptStatus::Started, SignInAttempt::query()->withoutGlobalScopes()->sole()->id, SignInMethod::OAuth],
+            [$first->status, $first->attemptId, $first->method],
+        );
+        $this->assertEquals($first, $this->read(['key' => 'tab-2', 'driver' => 'claude-code']));
+    }
+
+    public function test_a_rejoining_key_still_names_the_ended_attempt_and_its_actual_method(): void
+    {
+        $this->journal->actAs('Owner');
+        $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::ApiKey), 'tab-1');
+        $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::ApiKey), 'tab-2');
+        $attempt = SignInAttempt::query()->withoutGlobalScopes()->sole();
+
+        $this->journal->run(new CancelSignInCommand($attempt->id));
+
+        $receipt = $this->read(['key' => 'tab-2', 'driver' => 'claude-code']);
+        $this->assertSame(
+            [$attempt->id, SignInMethod::ApiKey, $attempt->refresh()->status],
+            [$receipt->attemptId, $receipt->method, $receipt->state],
+        );
+        $this->assertFalse($attempt->isLive());
     }
 
     public function test_a_key_no_start_was_sent_under_tells_nothing(): void

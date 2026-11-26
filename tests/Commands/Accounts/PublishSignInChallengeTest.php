@@ -8,6 +8,7 @@ use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
 use App\Commands\Accounts\NotifySignIn\NotifySignInCommand;
 use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
+use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Commands\Accounts\TakeSignInCode\TakeSignInCodeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Enums\Accounts\SignInMethod;
@@ -15,7 +16,9 @@ use App\Enums\Accounts\SignInOutcome;
 use App\Exceptions\SignInChallengeRefused;
 use App\Jobs\SignInDeadline;
 use App\Support\EnrolledHost;
+use App\Support\SignInChallenges;
 use App\Values\ClaimedSignIn;
+use App\Values\SignInChallenge;
 use App\Values\SignInIdentity;
 use App\Values\SignInPoll;
 use Illuminate\Support\Facades\Bus;
@@ -57,42 +60,26 @@ final class PublishSignInChallengeTest extends TestCase
         config(['accounts.root' => $this->root]);
     }
 
-    public function test_the_challenge_reaches_only_the_owner_no_store_and_a_typed_code_reaches_the_host_once(): void
+    public function test_the_challenge_is_held_for_the_owner_and_a_typed_code_reaches_the_host_once(): void
     {
-        $owner = $this->journal->ownerUser();
         $host = $this->enrollHost();
-        $this->actingAs($owner)->withHeader('Idempotency-Key', 'request-1')->post('/accounts/sign-ins', [
-            'driver' => 'claude-code',
-            'method' => 'oauth',
-        ])->assertStatus(303);
-        $attemptId = (string) $this->claim($host)?->attemptId;
-        $challenge = ['address' => 'https://claude.ai/oauth/authorize?secret-state', 'code' => null];
-        $this->publishChallenge($host, $attemptId, $challenge);
+        $attemptId = $this->begin();
+        $this->claim($host);
+        $address = 'https://claude.ai/oauth/authorize?secret-state';
+        $this->publishChallenge($host, $attemptId, ['address' => $address, 'code' => null]);
         $this->notify($host, $attemptId, SignInOutcome::Waiting);
 
-        $page = $this->actingAs($owner)->get('/accounts?add=1')->assertOk();
-        $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge")->assertOk();
-        $this->actingAs($owner)->withHeader('Idempotency-Key', 'answer-1')
-            ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => ' 1234 '])->assertStatus(303);
+        $this->journal->run(new SubmitSignInCodeCommand($attemptId, ' 1234 ', 'answer-1'));
 
-        $this->assertSame(
-            $attemptId,
-            $page->viewData('page')['props']['page']['data']['root']['children'][1]['children'][1]['native']['props']['attempts'][0]['id'],
-        );
-        $this->assertStringNotContainsString('secret-state', (string) $page->getContent());
-        $this->assertSame('https://claude.ai/oauth/authorize?secret-state', $read->json('address'));
-        $this->assertStringContainsString('no-store', (string) $read->headers->get('Cache-Control'));
+        $this->assertSame($address, $this->challengeOf($attemptId)?->address);
         $poll = fn (int $generation) => $this->takeCode($host, $attemptId, $generation);
         $this->assertEquals(new SignInPoll(true, '1234'), $poll(0));
         $this->assertEquals(new SignInPoll(true, null), $poll(0));
         $this->assertEquals(SignInPoll::ended(), $poll(1));
-        $stranger = $this->journal->createUser('Stranger');
-        $this->assertFalse($this->actingAs($stranger)->post("/accounts/sign-ins/{$attemptId}/challenge")->isOk());
     }
 
-    public function test_a_challenge_outside_the_providers_pages_publishes_no_link_and_a_stranger_reads_nothing(): void
+    public function test_a_challenge_outside_the_providers_pages_publishes_no_link(): void
     {
-        $owner = $this->journal->ownerUser();
         $host = $this->enrollHost();
         $attemptId = $this->begin();
         $this->claim($host);
@@ -102,20 +89,18 @@ final class PublishSignInChallengeTest extends TestCase
             'http://claude.ai/oauth',
             'https://evil.test/claude.ai',
         ] as $address) {
-            $this->assertThrows(
-                fn () => $this->publishChallenge($host, $attemptId, ['address' => $address, 'code' => null]),
+            $this->journal->assertRefused(
                 SignInChallengeRefused::class,
+                fn () => $this->publishChallenge($host, $attemptId, ['address' => $address, 'code' => null]),
             );
         }
 
-        $this->assertNull($this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge")->json('address'));
-        $challenge = ['address' => 'https://claude.ai/oauth/authorize?state', 'code' => null];
-        $this->publishChallenge($host, $attemptId, $challenge);
-        $stranger = $this->actingAs(
-            $this->journal->createUser('Stranger'),
-        )->post("/accounts/sign-ins/{$attemptId}/challenge");
-        $this->assertFalse($stranger->isOk());
-        $this->assertStringNotContainsString('claude.ai', (string) $stranger->getContent());
+        $this->assertNull($this->challengeOf($attemptId));
+    }
+
+    private function challengeOf(string $attemptId): SignInChallenge|null
+    {
+        return $this->journal->service(SignInChallenges::class)->challengeOf($attemptId);
     }
 
     private function begin(): string
