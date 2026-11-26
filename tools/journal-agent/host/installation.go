@@ -131,11 +131,6 @@ func (installation Installation) Verify() ([]VerifiedArtifact, error) {
 	return verified, nil
 }
 
-// Path is the absolute path of an installed artifact, once the installation verified.
-func (installation Installation) Path(name string) string {
-	return filepath.Join(installation.Folder, name)
-}
-
 func checkArtifactNames(manifest InstallationManifest) error {
 	seen := map[string]bool{installedManifestName: true}
 	for _, artifact := range manifest.Artifacts {

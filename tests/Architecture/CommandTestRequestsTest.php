@@ -73,33 +73,13 @@ final class CommandTestRequestsTest extends TestCase
      * The command tests that still send host calls, each left off the list once its host route is gone.
      */
     private const array WAITING = [
-        'tests/Commands/Agents/ChangeAgentModelTest.php',
-        'tests/Commands/Agents/ClaimStartTest.php',
-        'tests/Commands/Agents/DeliverAgentTest.php',
-        'tests/Commands/Agents/NotifyFailureTest.php',
-        'tests/Commands/Agents/NotifyRunningTest.php',
-        'tests/Commands/Agents/NotifyRuntimeScreenTest.php',
-        'tests/Commands/Agents/OpenAgentRuntimeTest.php',
-        'tests/Commands/Agents/OpenHostMainRuntimeTest.php',
-        'tests/Commands/Agents/ReconcileStartsTest.php',
-        'tests/Commands/Agents/WakeAgentTest.php',
-        'tests/Commands/Drivers/NotifyEntryReplayedTest.php',
-        'tests/Commands/Drivers/NotifyRuntimeActivityTest.php',
-        'tests/Commands/Navigation/AnswerNavigationTest.php',
-        'tests/Commands/Navigation/InterruptNavigationTest.php',
-        'tests/Commands/Navigation/MarkMenuEntryStaleTest.php',
-        'tests/Commands/Navigation/ProveNavigationTest.php',
-        'tests/Commands/Navigation/RaiseNavigationTest.php',
         'tests/Commands/Projects/CancelProjectCommandRunTest.php',
         'tests/Commands/Projects/FinishProjectCommandRunTest.php',
         'tests/Commands/Projects/RecordHostCallAnsweredTest.php',
-        'tests/Commands/Projects/RecordHostDescriptorsTest.php',
         'tests/Commands/Projects/RecordHostProtectionTest.php',
         'tests/Commands/Projects/RecordProjectCommandProcessTest.php',
         'tests/Commands/Projects/StartProjectCommandRunTest.php',
         'tests/Commands/Sessions/RecordStopConditionResultsTest.php',
-        'tests/Commands/Terminals/ResumeKeyScriptTest.php',
-        'tests/Commands/Terminals/RunKeyScriptTest.php',
     ];
 
     public function test_no_command_test_sends_a_request_but_those_waiting_on_their_routes_removal(): void

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Drivers\Processes;
 
 use App\Attributes\Rules\DecodesAnyJson;
+use App\Contracts\Drivers\TurnResult;
 use App\Enums\Accounts\UsageWindowSlot;
 use App\Values\TurnEnd;
 use App\Values\UsageCost;
@@ -21,7 +22,7 @@ use Carbon\CarbonImmutable;
  * limit window and each result's cost as they are read, and the last result's subtype and error flag. Nothing else of
  * the output is kept.
  */
-final class ClaudeResult
+final class ClaudeResult implements TurnResult
 {
     /**
      * The limit every Claude window belongs to.
@@ -67,6 +68,14 @@ final class ClaudeResult
         }
 
         return $this->usage;
+    }
+
+    /**
+     * Claude Code's turn names no conversation of its own: the journal chose it when it opened the runtime.
+     */
+    public function conversation(): string|null
+    {
+        return null;
     }
 
     /**

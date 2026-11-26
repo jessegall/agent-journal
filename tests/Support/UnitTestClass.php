@@ -9,10 +9,10 @@ namespace Tests\Support;
  */
 final readonly class UnitTestClass
 {
-    private const string NAMESPACE = '/^(Tests|Domain\\\\\w+\\\\Tests)\\\\Unit\\\\/';
+    private const string UNIT_NAMESPACE_PATTERN = '/^(Tests|Domain\\\\\w+\\\\Tests)\\\\Unit\\\\/';
 
     public static function is(string $class): bool
     {
-        return preg_match(self::NAMESPACE, $class) === 1;
+        return preg_match(self::UNIT_NAMESPACE_PATTERN, $class) === 1;
     }
 }

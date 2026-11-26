@@ -96,7 +96,7 @@ start_database() {
 # A database made again no longer knows the enrolled host, and would refuse its secret on every call.
 forget_unknown_host() {
     local host
-    host=$(setting AGENTS_HOST_ID)
+    host=$(read_setting AGENTS_HOST_ID)
     [ -n "$host" ] || return 0
     docker compose exec -T app php artisan tinker --execute \
         "$(fill_template scripts/local-host/host-known.php host="$host")" | grep -q known && return 0

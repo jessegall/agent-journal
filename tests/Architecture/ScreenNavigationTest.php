@@ -12,7 +12,7 @@ use Tests\Support\ScanCache\ScanCache;
 use Tests\TestCase;
 
 /**
- * Rule 80: a driver's screens are passed only by the journal's screen navigation. Keys of the journal go to a driver
+ * A driver's screens are passed only by the journal's screen navigation. Keys of the journal go to a driver
  * only from the key scripts, the screens and the terminal driver, through the host channel; a user's keys only from
  * the terminal driver carrying out a browser writer's input. No other code creates either command.
  */

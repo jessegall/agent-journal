@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -151,6 +152,10 @@ func (table *ProcessTable) Adopt(ctx context.Context) error {
 		held := &heldProcess{id: id, plan: container.Plan, generation: container.Generation, exited: make(chan struct{})}
 		if err := table.outputs.Open(id, held.plan); err != nil {
 			return err
+		}
+		if container.Pid != 0 && held.plan.Type == "terminal" {
+			table.endOrphanedTerminal(held, container.Pid)
+			continue
 		}
 		if container.Pid != 0 {
 			table.adoptNative(held, container.Pid)
@@ -426,7 +431,8 @@ func (table *ProcessTable) openProcess(_ context.Context, order Order) (map[stri
 	if err != nil {
 		return nil, err
 	}
-	if err := table.startNative(held, plan.Argv); err != nil {
+	// A process opened again for a conversation that already went on, as after a restart of the host, resumes it.
+	if err := table.startNative(held, plan.restartArgv()); err != nil {
 		closeSides()
 		return nil, err
 	}
@@ -514,7 +520,8 @@ func (table *ProcessTable) watchNative(held *heldProcess) {
 	}
 }
 
-// restartArgv is what a healed process runs: its restart argv once its restart file exists, its argv otherwise.
+// restartArgv is what a process runs when it is opened or healed: its restart argv once its restart file exists, its
+// argv otherwise.
 func (plan OpenPlan) restartArgv() []string {
 	if len(plan.RestartArgv) == 0 || plan.RestartWhen.Folder == "" {
 		return plan.Argv
@@ -649,8 +656,8 @@ func (table *ProcessTable) end(held *heldProcess, report ProcessReport) {
 	close(held.exited)
 }
 
-// saveKept writes the plans of the processes that still run and can outlive the host, so a restart adopts exactly
-// those.
+// saveKept writes the plans of the processes that still run, so a restart adopts those that can outlive the host and
+// ends what is left of the others.
 func (table *ProcessTable) saveKept() {
 	table.writeKept(nil)
 }
@@ -665,7 +672,8 @@ func (table *ProcessTable) writeKept(ending *heldProcess) {
 			continue
 		default:
 		}
-		if held == ending || !held.canOutliveHost() {
+		// A native terminal cannot outlive the host, but is kept by its pid so a restart can end what is left of it.
+		if held == ending || (!held.canOutliveHost() && held.pid == 0) {
 			continue
 		}
 		_, generation := held.state()
@@ -686,8 +694,29 @@ func (table *ProcessTable) writeKept(ending *heldProcess) {
 }
 
 func (table *ProcessTable) readKept() (map[string]keptProcess, error) {
+	return readKeptAt(table.keptPath)
+}
+
+// LiveKeptProcesses are the ids of the processes the table in the state folder kept whose process group still runs,
+// as a disconnect asks once the relay that held them stopped.
+func LiveKeptProcesses(stateFolder string) ([]string, error) {
+	kept, err := readKeptAt(filepath.Join(stateFolder, "orders", "processes.json"))
+	if err != nil {
+		return nil, err
+	}
+	live := []string{}
+	for id, process := range kept {
+		if process.Pid != 0 && isGroupAlive(process.Pid) {
+			live = append(live, id)
+		}
+	}
+	sort.Strings(live)
+	return live, nil
+}
+
+func readKeptAt(path string) (map[string]keptProcess, error) {
 	kept := map[string]keptProcess{}
-	content, err := os.ReadFile(table.keptPath)
+	content, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return kept, nil
 	}

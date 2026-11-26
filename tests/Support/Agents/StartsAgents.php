@@ -17,7 +17,6 @@ use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
-use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\RecordIdentity;
@@ -74,25 +73,6 @@ trait StartsAgents
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Terminal,
             previewRevision: $previewRevision,
-        );
-    }
-
-    /**
-     * A Codex headless start, which its host still claims itself: the journal claims Claude Code's starts.
-     */
-    private function hostClaimedRequest(): StartRequest
-    {
-        return new StartRequest(
-            TestSelections::requestId(),
-            $this->researcher->id,
-            TestSelections::of(DefaultDrivers::CODEX),
-            StartOriginType::MainStart,
-            null,
-            null,
-            ConversationModeType::New,
-            null,
-            StartPolicy::withoutProfile(TestSelections::onHost()),
-            driverType: DriverType::Headless,
         );
     }
 

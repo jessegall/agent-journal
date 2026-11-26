@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Support\Decisions\StateReferenceKeys;
+use App\Support\States\Support\ReadyStateReference;
 use UnexpectedValueException;
 
 /**
@@ -21,8 +23,10 @@ final class InvalidBottomState extends UnexpectedValueException
         return new self("The stored stack has a second bottom state in frame {$frameId}.");
     }
 
-    public static function ofAnotherType(string $typeKey, string $expected): self
+    public static function ofAnotherType(string $typeKey): self
     {
+        $expected = StateReferenceKeys::of(ReadyStateReference::class);
+
         return new self("The stored stack's bottom state is {$typeKey}, but every stack's bottom is {$expected}.");
     }
 }

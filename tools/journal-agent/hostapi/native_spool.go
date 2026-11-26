@@ -18,6 +18,9 @@ const spoolName = "stdout"
 // spoolPollInterval is how often a followed spool is read again once it was read to its end.
 const spoolPollInterval = 25 * time.Millisecond
 
+// orphanGrace is how long what is left of a terminal the host lost gets to end after its hang-up, before it is killed.
+const orphanGrace = 2 * time.Second
+
 // openSpool opens the process's spool for its next start to print to, after what an earlier start printed.
 func openSpool(stateFolder, processID string) (*os.File, error) {
 	folder := filepath.Join(stateFolder, "processes", processID)
@@ -77,6 +80,29 @@ func (table *ProcessTable) adoptNative(held *heldProcess, pid int) {
 	table.followSpool(held, table.outputs.SpoolOffset(held.id))
 	table.keep(held)
 	go table.watchAdopted(held)
+}
+
+// endOrphanedTerminal ends what is left of a native terminal the host started before it restarted: its terminal died
+// with the host, so its group is hung up, killed after a grace, and reported lost only once it is gone, so the
+// journal never opens it again while the old one still runs.
+func (table *ProcessTable) endOrphanedTerminal(held *heldProcess, pid int) {
+	held.pid = pid
+	held.finished = make(chan struct{})
+	held.setIdentity(fmt.Sprintf("pid:%d", pid))
+	table.keep(held)
+	go func() {
+		_ = syscall.Kill(-pid, syscall.SIGHUP)
+		deadline := time.Now().Add(orphanGrace)
+		for isGroupAlive(pid) {
+			if time.Now().After(deadline) {
+				_ = syscall.Kill(-pid, syscall.SIGKILL)
+			}
+			time.Sleep(spoolPollInterval)
+		}
+		held.finish()
+		table.end(held, ProcessReport{ProcessID: held.id, Report: "lost",
+			Evidence: "the host restarted without its terminal, and the process it had started has ended"})
+	}()
 }
 
 // watchAdopted waits until the adopted process group is gone and reports its end after its spool was read.

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
-use App\Commands\Agents\ClaimStart\ClaimStartCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Drivers\NotifyStopped\NotifyStoppedCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
@@ -73,21 +72,24 @@ final class NotifyStoppedTest extends TestCase
         $this->journal->showDriverArrangements();
     }
 
-    public function test_maintenance_cancels_unclaimed_starts_and_settles_only_after_proven_exits(): void
+    public function test_maintenance_settles_only_once_every_start_the_journal_took_proved_its_exit(): void
     {
         $host = $this->enrollHost();
-        $claimed = $this->open($host);
-        $pending = $this->open($host);
-        $key = $this->journal->asSystem(new ClaimStartCommand($host->hostId, $claimed->sessionId))?->startKey;
+        $first = $this->open($host);
+        $second = $this->open($host);
+        $startKeyOf = fn (OpenedRuntime $opened) => $this->journal->claimStartOf($host->hostId, $opened->sessionId);
+        $keys = array_map(fn (OpenedRuntime $opened) => (string) $startKeyOf($opened)->start_key, [$first, $second]);
 
-        $first = $this->maintenance()->advance($this->account->id);
+        $held = $this->maintenance()->advance($this->account->id);
 
-        $this->assertSame([1, false], [$first->cancelledStarts, $first->isSettled]);
-        $this->assertEqualsCanonicalizing([$claimed->sessionId, $pending->sessionId], $first->runningSessionIds);
-        $this->assertNull($this->journal->asSystem(new ClaimStartCommand($host->hostId, $pending->sessionId)));
+        $this->assertSame([0, false], [$held->cancelledStarts, $held->isSettled]);
+        $this->assertEqualsCanonicalizing([$first->sessionId, $second->sessionId], $held->runningSessionIds);
         $this->assertRefusedWhileHeld($host);
 
-        $this->journal->asSystem(new NotifyStoppedCommand($host->hostId, (string) $key));
+        foreach ($keys as $key) {
+            $this->journal->asSystem(new NotifyStoppedCommand($host->hostId, $key));
+        }
+
         $this->actAsOwner();
 
         $this->assertTrue($this->maintenance()->advance($this->account->id)->isSettled);

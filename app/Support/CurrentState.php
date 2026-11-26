@@ -7,6 +7,7 @@ namespace App\Support;
 use App\Contracts\Work\CurrentState as CurrentStateContract;
 use App\Contracts\Work\WorkState;
 use App\Models\Agents\AgentStackRow;
+use App\Support\Decisions\StateReferenceKeys;
 use App\Support\References\StateReference;
 use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\StackRestorer;
@@ -28,7 +29,7 @@ final readonly class CurrentState implements CurrentStateContract
         return $this->highestLive($target, fn (Frame $frame) => $frame->typeKey() === $typeKey);
     }
 
-    public function ofCaller(string $typeKey): Option
+    public function ofCaller(string $reference): Option
     {
         $target = $this->targets->ofCaller()[0] ?? null;
 
@@ -36,7 +37,7 @@ final readonly class CurrentState implements CurrentStateContract
             return None::create();
         }
 
-        return $this->of($target, $typeKey);
+        return $this->of($target, StateReferenceKeys::of($reference));
     }
 
     public function top(StackTarget $target): Option

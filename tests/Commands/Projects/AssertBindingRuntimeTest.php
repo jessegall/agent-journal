@@ -32,8 +32,6 @@ final class AssertBindingRuntimeTest extends TestCase
 
     private const string HOOKS_NOT_KEPT = 'Codex does not keep its hooks to one session';
 
-    private const string CLAUDE_NOT_REPORTED = 'has not reported it can run Claude Code';
-
     private const array TABLES = [
         'connection_audits',
         'project_invitations',
@@ -82,19 +80,12 @@ final class AssertBindingRuntimeTest extends TestCase
     public function test_a_program_the_binding_may_not_start_is_refused_by_name_before_any_runtime(): void
     {
         $binding = $this->connected('the-ticket', self::NONCE);
-        $silent = $this->redeemed('other-ticket', 'nonce-bbbbbbbbbbbbbbbb');
-        $this->notifyPresence('nonce-bbbbbbbbbbbbbbbb', $silent->id, []);
 
         $codex = $this->start($binding, ['driver' => 'codex'])->assertForbidden();
-        $unreported = $this->signedStart('nonce-bbbbbbbbbbbbbbbb', $silent, [])->assertForbidden();
 
         $this->assertStringContainsString(
             self::HOOKS_NOT_KEPT,
             (string) $codex->json('message'),
-        );
-        $this->assertStringContainsString(
-            self::CLAUDE_NOT_REPORTED,
-            (string) $unreported->json('message'),
         );
         $this->assertSame(0, AgentRuntime::query()->count());
     }
@@ -149,7 +140,6 @@ final class AssertBindingRuntimeTest extends TestCase
                 'folder' => $binding->canonical_root,
                 'agentId' => $binding->main_agent_id,
                 'driver' => 'claude-code',
-                'driverBuild' => '2.1.323',
                 'profile' => 'main-agent',
                 'model' => 'opus',
                 ...$changes,

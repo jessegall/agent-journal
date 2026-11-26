@@ -12,6 +12,7 @@ use App\Events\Hooks\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\CommandEntrance;
+use App\Support\Decisions\StateReferenceKeys;
 use App\Support\EngineAccess;
 use App\Support\EnginePass;
 use App\Support\StateLoading\RegisteredStateType;
@@ -27,7 +28,7 @@ use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQ
 use Tests\Fixtures\Domains\QuestionReminders\Events\QuestionAnswered;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
-use Tests\Fixtures\Domains\QuestionReminders\States\AwaitAnswerState;
+use Tests\Fixtures\Domains\QuestionReminders\States\AwaitAnswerStateReference;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
@@ -112,7 +113,7 @@ final class DueWorkOnTickTest extends TestCase
     {
         $question = Question::ask('Which database?');
         $stack = $this->tickingStack(
-            AwaitAnswerState::TYPE_KEY,
+            StateReferenceKeys::of(AwaitAnswerStateReference::class),
             [$question->id],
             $this->asked,
             subjectValue: 'questionId',

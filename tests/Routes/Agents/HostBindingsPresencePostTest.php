@@ -36,7 +36,6 @@ final class HostBindingsPresencePostTest extends GuardedRouteEntryTestCase
                 'bootId' => 'boot-1',
                 'sequence' => 1,
                 'release' => '1.0.0',
-                'descriptors' => [],
                 'provisioning' => 'succeeded',
             ])
             ->reply(RecordBindingPresenceCommand::class, new PresenceReceipt(

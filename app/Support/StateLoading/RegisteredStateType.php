@@ -39,7 +39,7 @@ final readonly class RegisteredStateType
     {
         $type = Reflector::of($class)->attribute(StateType::class);
 
-        return self::named($type->key, $class, $type->schemaVersion);
+        return self::named($type->key(), $class, $type->schemaVersion);
     }
 
     /**

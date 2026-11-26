@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -22,9 +23,9 @@ import (
 	"journal-agent/diagnostics"
 	"journal-agent/hookadapter"
 	"journal-agent/host"
+	"journal-agent/hostapi"
 	"journal-agent/lease"
 	"journal-agent/localsession"
-	"journal-agent/profiles"
 	"journal-agent/project"
 	"journal-agent/release"
 	"journal-agent/userservice"
@@ -44,6 +45,11 @@ const relayStopWait = 15 * time.Second
 
 // errVerbLater refuses a local verb this connected machine does not run yet.
 var errVerbLater = errors.New("this verb arrives with the next release")
+
+// errCodexWithheld withholds the local Codex target: codex-cli 0.165.0 gives a hook call no per-thread capability a
+// trusted transport injects, so a callback could not be bound to its own thread.
+var errCodexWithheld = errors.New("local Codex sessions are withheld: codex-cli 0.165.0 carries no per-thread " +
+	"capability for its hook calls, so a callback cannot be bound to its own thread")
 
 // ownCommandPath is the absolute path of this installed journal command; its plain name when the system cannot say.
 func ownCommandPath() string {
@@ -193,7 +199,7 @@ func (commands dispatcher) local(
 	}
 	if verb == "codex" {
 		// Local Codex sessions wait for a per-thread callback channel the pinned build does not give.
-		fmt.Fprintln(stderr, "journal:", localsession.ErrCodexWithheld)
+		fmt.Fprintln(stderr, "journal:", errCodexWithheld)
 		return 1
 	}
 	if verb != "status" {
@@ -216,15 +222,20 @@ func (commands dispatcher) claude(binding host.Binding, folder project.Folder, s
 	state := host.ConnectionState{Folder: commands.stateFolder, CanonicalRoot: folder.Root}
 	opened, err := openMainRuntime(journal, state, client.BindingRuntimeRequest{
 		RootID: binding.RootID, Folder: folder.Root, AgentID: binding.MainAgentID,
-		Driver: "claude-code", DriverBuild: profiles.ClaudeCode{}.Build(), Profile: "main-agent", Model: "default",
+		Driver: "claude-code", Profile: "main-agent", Model: "default",
 	}, binding.BindingID)
 	if err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
 		return 1
 	}
 
+	var plan hostapi.OpenPlan
+	if err := json.Unmarshal(opened.Plan, &plan); err != nil {
+		fmt.Fprintln(stderr, "journal: the journal sent no plan to run:", err)
+		return 1
+	}
 	session := localsession.Session{
-		Root: folder.Root, RuntimeID: opened.RuntimeID, SessionID: opened.SessionID, Installation: installation,
+		Root: folder.Root, RuntimeID: opened.RuntimeID, SessionID: opened.SessionID, Installation: installation, Plan: plan,
 	}
 	command, err := session.Command(os.Args[2:])
 	if err != nil {

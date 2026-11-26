@@ -117,6 +117,7 @@ final readonly class DefaultDrivers
                 DriverType::Terminal,
                 'Codex',
                 CodexTerminalCapabilities::class,
+                isDrivenByJournal: true,
             ),
             self::registration(
                 'codex-headless',
@@ -124,6 +125,7 @@ final readonly class DefaultDrivers
                 DriverType::Headless,
                 'Codex headless',
                 CodexHeadlessCapabilities::class,
+                isDrivenByJournal: true,
             ),
         ];
     }

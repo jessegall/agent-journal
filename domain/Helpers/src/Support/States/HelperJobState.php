@@ -25,7 +25,7 @@ use Domain\Helpers\Support\States\Support\HelperJobStateReference;
  * records the job was given, adds each steering as it comes, tells the helper all of it whenever its context starts,
  * and ends when the job is held, left unfinished, reported or cancelled.
  */
-#[StateType(HelperJobStateReference::TYPE_KEY, schemaVersion: 1)]
+#[StateType(HelperJobStateReference::class, schemaVersion: 1)]
 final class HelperJobState extends AgentState implements UniqueSubjectState
 {
     /**

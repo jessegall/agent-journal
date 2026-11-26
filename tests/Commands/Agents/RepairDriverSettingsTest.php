@@ -6,13 +6,11 @@ namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\ChangeAgentEffort\ChangeAgentEffortCommand;
 use App\Commands\Agents\RepairDriverSettings\RepairDriverSettingsCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
-use App\Values\BrowserInputCapabilities;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -48,7 +46,7 @@ final class RepairDriverSettingsTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $agentId = $this->agentIdOf($opened);
         $effort = $this->asOwner(new ChangeAgentEffortCommand($agentId, $opened->sessionId, 'effort-1', 'high'));
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
         $request = DriverRequest::query()->findOrFail($effort->requestId);
         $attempt = $request->attempt_version;
         $this->journal->asSystem(new NotifyRequestProgressCommand(

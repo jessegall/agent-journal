@@ -10,16 +10,12 @@ use App\Contracts\Accounts\AccountUses;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Agents\ConversationModeType;
-use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverSourceType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Profiles\ModelTier;
 use App\Enums\Sessions\ResumeRefusal;
-use App\Enums\Sessions\StartPreflightRefusal;
-use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\ProfileCannotCoordinate;
 use App\Exceptions\ResumeRefused;
-use App\Exceptions\StartPreflightRefused;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -27,7 +23,6 @@ use App\Models\Drivers\DriverConversation;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionRequest;
 use App\Support\AgentSessions;
-use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\DefaultDrivers;
 use App\Support\PolicyOverride;
 use App\Support\ProposedProfile;
@@ -150,31 +145,16 @@ final class StartProfileMainTest extends TestCase
         );
     }
 
-    public function test_an_automatic_codex_start_on_the_terminal_default_is_refused_with_its_reason(): void
+    public function test_an_automatic_codex_start_takes_the_terminal_default(): void
     {
         $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
 
-        $this->assertThrows(
-            fn () => $this->start('default', 'codex'),
-            DriverCapabilityUnsupported::class,
-            DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
+        $started = $this->start('default', 'codex');
+
+        $this->assertSame(
+            [DefaultDrivers::CODEX, DriverType::Terminal],
+            array_slice($this->recorded($started->requestId, $started->sessionId), 0, 2),
         );
-    }
-
-    public function test_a_start_the_host_cannot_run_is_refused_before_a_session(): void
-    {
-        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
-        Host::query()->update(['descriptors' => []]);
-        $sessions = AgentSession::query()->count();
-
-        try {
-            $this->start('default', null);
-            $this->fail('A start no host declared was admitted.');
-        } catch (StartPreflightRefused $refused) {
-            $this->assertSame(StartPreflightRefusal::CombinationNotDeclared, $refused->refusal);
-        }
-
-        $this->assertSame($sessions, AgentSession::query()->count());
     }
 
     public function test_an_explicit_resume_continues_the_chosen_older_thread_and_a_foreign_one_is_refused(): void

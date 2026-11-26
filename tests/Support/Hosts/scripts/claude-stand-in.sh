@@ -1,6 +1,6 @@
 #!/bin/sh
-# Stands in for the installed Claude Code in a real-host test: the pinned build, a sign-in in the account's own folder,
-# a recorded headless turn held by the installation's hold file, or a terminal recording played by what is typed.
+# Stands in for the installed Claude Code in a real-host test: the pinned build, a sign-in in the account's own folder
+# and its login, a recorded headless turn held by the hold file, or a terminal recording played by what is typed.
 set -eu
 
 main() {
@@ -8,7 +8,7 @@ main() {
     installation=$(installation_folder)
     case "${1:-}" in
         --version) print_build ;;
-        auth) print_sign_in ;;
+        auth) answer_auth "${2:-}" ;;
         *) start_session "$installation" "$@" ;;
     esac
 }
@@ -51,6 +51,21 @@ installation_folder() {
 
 print_build() {
     echo "2.1.323 (Claude Code)"
+}
+
+# auth login shows a sign-in address and takes the code typed for it; any other auth call prints the sign-in.
+answer_auth() {
+    case "$1" in
+        login) take_code ;;
+        *) print_sign_in ;;
+    esac
+}
+
+take_code() {
+    local code
+    echo "Browser didn't open? Use the url below to sign in: https://claude.ai/oauth/authorize?stand-in=1"
+    echo "Paste code here if prompted >"
+    read -r code
 }
 
 print_sign_in() {

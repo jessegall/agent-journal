@@ -44,6 +44,7 @@ type Daemon struct {
 
 	server     *httptest.Server
 	mutex      sync.Mutex
+	stopping   bool
 	requests   []string
 	refusals   []refusal
 	containers map[string]*Container
@@ -235,6 +236,10 @@ func (daemon *Daemon) AddContainer(name string, labels map[string]string, runnin
 }
 
 func (daemon *Daemon) stop() {
+	// A container a host heals while the daemon stops would hold its attach open past the server's close.
+	daemon.mutex.Lock()
+	daemon.stopping = true
+	daemon.mutex.Unlock()
 	for _, container := range daemon.Created() {
 		container.end(killedCode)
 	}

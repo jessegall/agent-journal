@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverOperation;
@@ -23,7 +22,6 @@ use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\ReadinessCheckSweep;
-use App\Values\BrowserInputCapabilities;
 use App\Values\ClaimedRequest;
 use App\Values\StackTarget;
 use App\Values\StartPolicy;
@@ -202,9 +200,7 @@ final class CheckStartStatusTest extends TestCase
      */
     private function claimed(EnrolledHost $host): array
     {
-        return $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
-        )->requests;
+        return $this->journal->claimRequestsOnHost($host->hostId, 10)->requests;
     }
 
     private function notifyApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void

@@ -8,7 +8,6 @@ use App\Contracts\Drivers\Driver;
 use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Drivers\SupportStatus;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverKeyInvalid;
 use App\Exceptions\DriverRegisteredTwice;
@@ -116,18 +115,13 @@ final class DriverRegistryTest extends TestCase
         }
     }
 
-    public function test_the_codex_terminal_reports_itself_unavailable_with_its_reason(): void
+    public function test_the_codex_terminal_runs_but_shares_no_account_with_its_reason(): void
     {
         $support = $this->registry()->forKey(DriverKey::from('codex'))->capabilities(BoundTarget::onHost('host-1'));
-        $run = $support->supportOf(DriverCapability::Run);
+        $shared = $support->supportOf(DriverCapability::SharedAccount);
 
-        $this->assertSame(SupportStatus::TemporarilyUnavailable, $run->state);
-        $this->assertSame(CodexTerminalCapabilities::NOT_PROVEN, $run->reason);
-        $this->assertThrows(
-            fn () => $support->assertSupports([DriverCapability::Run]),
-            DriverCapabilityUnsupported::class,
-            DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
-        );
+        $support->assertSupports([DriverCapability::Run]);
+        $this->assertSame(CodexTerminalCapabilities::RUNS_ALONE, $shared->reason);
     }
 
     public function test_a_headless_driver_runs_but_has_no_terminal(): void

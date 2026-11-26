@@ -2,6 +2,9 @@ package host
 
 import (
 	"errors"
+	"os/exec"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -133,4 +136,17 @@ func (group OwnedGroup) emptiesWithin(bound time.Duration, poll time.Duration) S
 		}
 		time.Sleep(poll)
 	}
+}
+
+var errNoStartIdentity = errors.New("the process start identity cannot be read")
+
+// startIdentityOf reads when the process started, which together with its id tells it apart from a later process
+// that reused the id.
+func startIdentityOf(processID int) (string, error) {
+	output, err := exec.Command("ps", "-o", "lstart=", "-p", strconv.Itoa(processID)).Output()
+	identity := strings.TrimSpace(string(output))
+	if err != nil || identity == "" {
+		return "", errNoStartIdentity
+	}
+	return identity, nil
 }

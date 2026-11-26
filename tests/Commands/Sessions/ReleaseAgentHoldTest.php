@@ -7,7 +7,6 @@ namespace Tests\Commands\Sessions;
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
 use App\Commands\Agents\WakeAgent\WakeAgentCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Enums\Drivers\HoldReason;
@@ -15,7 +14,6 @@ use App\Enums\Runs\RuntimeActivity;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Support\OpenedRuntime;
-use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
@@ -57,16 +55,12 @@ final class ReleaseAgentHoldTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $agentId = $this->agentIdOf($opened);
         $this->asOwner(new InterruptAgentCommand($agentId, $opened->sessionId, 'interrupt-1'));
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
         $delivery = $this->deliver($opened, 'after-interrupt', 'Go on later');
 
-        $held = $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
-        );
+        $held = $this->journal->claimRequestsOnHost($host->hostId, 10);
         $this->asOwner(new ReleaseAgentHoldCommand($agentId, $opened->sessionId, HoldReason::Interrupted, 'go on'));
-        $released = $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
-        );
+        $released = $this->journal->claimRequestsOnHost($host->hostId, 10);
 
         $this->assertNotContains(
             $delivery->requestId,

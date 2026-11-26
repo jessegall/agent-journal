@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Routes;
 
-use App\Commands\Drivers\NotifyDriverTurn\NotifyDriverTurnCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Models\Agents\AgentSession;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Illuminate\Support\Str;
@@ -29,23 +29,17 @@ final class SendPostTest extends GuardedRouteEntryTestCase
         return DomainBoot::withRequirements(ChatDomain::class);
     }
 
-    public function test_a_message_reaches_its_session_after_a_new_turn_started_another_process(): void
+    public function test_a_message_reaches_its_running_session(): void
     {
         $this->chooseActiveAccounts();
         $inbox = $this->journal->owner()->inboxCalled('Owner');
-        $this->journal->idleAgent('Turning agent')->enrollHost('Turn host', ['/work']);
+        $this->journal->showDriverArrangements()->idleAgent('Turning agent')->enrollHost('Turn host', ['/work']);
         $opened = $this->journal->openRuntimeOn('Turning agent', 'Turn host', '/work');
 
-        $this->journal->asSystem(new NotifyDriverTurnCommand(
-            $this->journal->hostCalled('Turn host')->hostId,
-            $opened->runtimeId,
-            2,
-            'prompt-2',
-            false,
-            null,
-            null,
-            null,
-        ));
+        $running = AgentSession::query()->where('agent_id', $this->journal->agentCalled('Turning agent')->id)
+            ->running()->pluck('id')->all();
+
+        $this->assertSame([$opened->sessionId], $running);
 
         $call = RouteCall::recorded('chat-send', ['01JPAGEREQUESTINBOX0000000' => $inbox->id])
             ->payload([

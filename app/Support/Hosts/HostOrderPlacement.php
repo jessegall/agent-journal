@@ -87,6 +87,20 @@ final readonly class HostOrderPlacement
     }
 
     /**
+     * An order about the host as a whole, which belongs to no process, such as a read of a connected project's folder.
+     *
+     * @param  array<string, mixed>  $payload
+     *
+     * @throws HostProtocolRefused
+     */
+    public function forHost(string $hostId, HostOrderSource $source, HostOrderType $type, array $payload): HostOrder
+    {
+        $host = $this->orderingHost($hostId);
+
+        return $this->place($host, null, HostOrderBody::from($type, $payload, $source));
+    }
+
+    /**
      * The host, locked, once it is known to take orders.
      *
      * @throws HostProtocolRefused
@@ -116,7 +130,7 @@ final readonly class HostOrderPlacement
 
     private function place(
         Host $host,
-        HostProcess $process,
+        HostProcess|null $process,
         HostOrderBody $body,
         int $seconds = self::ORDER_SECONDS,
     ): HostOrder {
@@ -130,8 +144,9 @@ final readonly class HostOrderPlacement
             return $known;
         }
 
-        // The process numbers its orders under its own lock, so the order takes the next number before it is made.
-        $sequence = $process->takeOrderNumber();
+        // The process numbers its orders under its own lock, so the order takes the next number before it is made; an
+        // order about the host waits on no other order, so it takes none.
+        $sequence = $process === null ? 0 : $process->takeOrderNumber();
 
         return HostOrder::create($host, $process, $body, $this->clock->now()->addSeconds($seconds), $sequence);
     }

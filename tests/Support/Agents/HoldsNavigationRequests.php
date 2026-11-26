@@ -7,7 +7,6 @@ namespace Tests\Support\Agents;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
-use App\Support\MainInboxTakeover;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Seeding\TestJournal;
 
@@ -26,7 +25,7 @@ trait HoldsNavigationRequests
     {
         $start = $journal->installInboxes()->signedStart('Main');
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($start->agent),
+            fn () => $this->journal->seatMainAgent($start->agent),
         );
         $stalled = $this->stalledScript();
 

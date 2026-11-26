@@ -8,12 +8,14 @@ use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Commands\Projects\RequestProjectRead\RequestProjectReadCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Hosts\ProjectFiles;
+use App\Enums\Hosts\HostOrderType;
 use App\Enums\Projects\ProjectReadStatus;
 use App\Enums\Projects\ProjectReadType;
 use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\ProjectReadRefused;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
 use App\Models\Projects\Project;
@@ -93,6 +95,19 @@ final class RequestProjectReadTest extends TestCase
         $this->assertSame($pending->readId, $answered->readId);
         $this->assertSame(ProjectReadStatus::Answered, $answered->state);
         $this->assertSame(self::SOURCE, $answered->text);
+    }
+
+    public function test_a_new_read_is_ordered_to_the_bindings_host_and_one_asked_again_is_not(): void
+    {
+        $read = $this->read(ProjectReadType::File, 'src/main.go');
+        $this->read(ProjectReadType::File, 'src/main.go');
+
+        $order = HostOrder::query()->where('type', HostOrderType::ReadProject->value)->sole();
+        $payload = $this->journal->payloadOf($order);
+        $this->assertSame(
+            [$this->host->hostId, null, $read->id, 'src/main.go'],
+            [$order->host_id, $order->host_process_id, $payload['id'], $payload['path']],
+        );
     }
 
     public function test_a_signed_in_member_who_is_not_the_owner_may_not_read_the_project(): void

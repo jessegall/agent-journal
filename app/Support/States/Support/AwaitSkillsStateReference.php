@@ -14,7 +14,10 @@ use App\Support\References\SubjectReference;
  */
 final class AwaitSkillsStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'core.skills.await';
+    public static function key(): string
+    {
+        return 'core.skills.await';
+    }
 
     public static function forPublication(SkillPublication $publication): StateReference
     {

@@ -14,7 +14,10 @@ use Domain\Tasks\Models\Task;
  */
 final class WorkOnTaskStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'tasks.work';
+    public static function key(): string
+    {
+        return 'tasks.work';
+    }
 
     public static function forTask(Task $task): StateReference
     {

@@ -24,7 +24,7 @@ main() {
     extract_files
     . scripts/lib/settings.sh
 
-    arrangement=$(setting AGENTS_ARRANGEMENT)
+    arrangement=$(read_setting AGENTS_ARRANGEMENT)
     profiles=$(compose_profiles)
     outcome=installed
     install || outcome=failed
@@ -199,7 +199,7 @@ artisan() {
 enroll_host() {
     local name enrolled host_id secret
     [ "$arrangement" = contained ] && schema_changed || return 0
-    name=$(setting AGENTS_INSTALLATION_NAME)
+    name=$(read_setting AGENTS_INSTALLATION_NAME)
     enrolled=$(artisan run agents:host-enroll "${name:-journal}" --contained --root /workspace) || return 1
     host_id=$(printf '%s\n' "$enrolled" | sed -n 's/^Host \([0-9a-z]*\) is enrolled.*/\1/p')
     secret=$(printf '%s\n' "$enrolled" | tail -n 1 | tr -d '\r')
@@ -227,7 +227,7 @@ publish_release() {
 
 # A release is built again only when the host program's sources changed, or none was published yet.
 release_needed() {
-    [ -z "$(setting JOURNAL_RELEASE)" ] || ! has_installed_commit || changed_files | grep -q '^tools/journal-agent/'
+    [ -z "$(read_setting JOURNAL_RELEASE)" ] || ! has_installed_commit || changed_files | grep -q '^tools/journal-agent/'
 }
 
 # Builds the release in a Go container from a clone of the commit: build_release <project> <clone> <version> <key>

@@ -97,7 +97,6 @@ final class RecordBindingRuntimeTest extends TestCase
                 'folder' => $binding->canonical_root,
                 'agentId' => $binding->main_agent_id,
                 'driver' => 'claude-code',
-                'driverBuild' => '2.1.323',
                 'profile' => 'main-agent',
                 'model' => 'opus',
                 ...$changes,

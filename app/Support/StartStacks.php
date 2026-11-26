@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Time\ServerClock;
-use App\Enums\Engine\NoSubject;
 use App\Exceptions\StateSchemaUnknown;
 use App\Exceptions\StateTransferUnknown;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Sessions\SessionRequest;
-use App\Support\References\StateReference;
 use App\Support\Stack\StateTypes;
-use App\Support\States\ReadyState;
+use App\Support\States\Support\ReadyStateReference;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Values\StackTarget;
@@ -43,7 +41,7 @@ final readonly class StartStacks
 
         $bottom = new FrameRecord(
             (string) Str::ulid(),
-            new StateReference(ReadyState::TYPE_KEY, NoSubject::None),
+            ReadyStateReference::bottom(),
             true,
             1,
             $this->clock->now(),

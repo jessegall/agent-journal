@@ -17,6 +17,7 @@ use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
 use App\Commands\Hosts\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Commands\Navigation\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
 use App\Commands\Navigation\RaiseNavigation\RaiseNavigationCommand;
+use App\Contracts\Drivers\DriverProfile;
 use App\Contracts\Drivers\ProcessDriver;
 use App\Data\Hosts\HostFrameData;
 use App\Data\Messages\DraftChoiceMessageData;
@@ -41,8 +42,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;
-use App\Support\DefaultDrivers;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
+use App\Support\Drivers\Profiles\DriverProfiles;
 use App\Support\KeyScripts\KeyMove;
 use App\Support\KeyScripts\KeyScript;
 use App\Support\KeyScripts\KeyScriptCatalogue;
@@ -104,6 +104,11 @@ final class TerminalDriver implements ProcessDriver
      * The control characters a pasted prompt never carries; a newline and a tab stay text inside the paste.
      */
     private const string CONTROL_CHARACTERS = '/[\x00-\x08\x0b-\x1f\x7f]/';
+
+    /**
+     * The profile of the driver the terminal runs, Claude Code or Codex, by its runtime's driver.
+     */
+    private readonly DriverProfile $profile;
 
     private readonly ScreenLayout $layout;
 
@@ -177,15 +182,17 @@ final class TerminalDriver implements ProcessDriver
     public function __construct(
         private readonly HostProcess $process,
         private readonly int $generation,
-        private readonly ClaudeCodeProfile $profile,
+        DriverProfiles $profiles,
         private readonly ScreenClassifier $classifier,
         private readonly ScreenHolds $holds,
         private readonly KeyScriptRunner $scripts,
         private readonly ScreenFingerprint $fingerprints,
         private readonly DriverLimits $limits,
     ) {
-        $this->layout = $profile->layout();
-        $this->catalogue = new KeyScriptCatalogue($profile->keyScripts());
+        $runtime = AgentRuntime::query()->findOrFail($process->agent_runtime_id);
+        $this->profile = $profiles->of($runtime);
+        $this->layout = $this->profile->layout();
+        $this->catalogue = new KeyScriptCatalogue($this->profile->keyScripts());
     }
 
     /**
@@ -295,7 +302,7 @@ final class TerminalDriver implements ProcessDriver
         }
 
         $build = $this->profile->build();
-        $script = new KeyScript("entry {$entry->id}", DefaultDrivers::CLAUDE_CODE, $build, [], $steps);
+        $script = new KeyScript("entry {$entry->id}", $this->profile->family(), $build, [], $steps);
         $this->script = new KeyScriptRun($script, ScriptParameter::byName($this->stalled->scriptParameters));
         $this->scriptRequest = $this->stalled;
         $this->replaying = $entry;
@@ -687,7 +694,7 @@ final class TerminalDriver implements ProcessDriver
             ],
         };
 
-        $script = $this->catalogue->scriptFor(DefaultDrivers::CLAUDE_CODE, $this->profile->build(), $name);
+        $script = $this->catalogue->scriptFor($this->profile->family(), $this->profile->build(), $name);
         $this->script = new KeyScriptRun($script, $values, $request->scriptStep ?? 0);
         $this->scriptRequest = $request;
 
@@ -778,7 +785,7 @@ final class TerminalDriver implements ProcessDriver
         $this->stalled = $request;
         $reading = $this->classifier->readingOf($this->layout, $frame);
         $menu = $reading->menu?->name;
-        $fingerprint = $this->fingerprints->of($this->layout, DefaultDrivers::CLAUDE_CODE, $frame, $menu);
+        $fingerprint = $this->fingerprints->of($this->layout, $this->profile->family(), $frame, $menu);
         $entries = $this->layout->optionList()->entriesOf($frame);
 
         $screen = new NavigationScreen(
@@ -874,7 +881,7 @@ final class TerminalDriver implements ProcessDriver
         }
 
         $build = $this->profile->build();
-        $script = $this->catalogue->scriptFor(DefaultDrivers::CLAUDE_CODE, $build, (string) $request->script);
+        $script = $this->catalogue->scriptFor($this->profile->family(), $build, (string) $request->script);
         $values = ScriptParameter::byName($request->scriptParameters);
         $this->script = new KeyScriptRun($script, $values, $entry->nextStep);
         $this->scriptRequest = $request;
@@ -901,7 +908,7 @@ final class TerminalDriver implements ProcessDriver
 
         $values = ScriptParameter::byName($request->scriptParameters);
         $steps = self::roundSteps($round, $values);
-        $script = new KeyScript('navigation', DefaultDrivers::CLAUDE_CODE, $this->profile->build(), [], $steps);
+        $script = new KeyScript('navigation', $this->profile->family(), $this->profile->build(), [], $steps);
         $this->script = new KeyScriptRun($script, $values);
         $this->scriptRequest = $request;
 

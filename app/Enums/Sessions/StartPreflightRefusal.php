@@ -13,7 +13,6 @@ enum StartPreflightRefusal: string
 {
     case DriverNotContainable = 'driver-not-containable';
     case NoHost = 'no-host';
-    case CombinationNotDeclared = 'combination-not-declared';
 
     public function label(): string
     {
@@ -21,7 +20,6 @@ enum StartPreflightRefusal: string
             self::DriverNotContainable => 'Codex cannot run in a container yet: its sandbox does not keep its tools '
                 .'from its sign-in.',
             self::NoHost => 'No connected host runs agents in this place.',
-            self::CombinationNotDeclared => 'The host has not said it can run this driver this way.',
         };
     }
 
@@ -33,7 +31,6 @@ enum StartPreflightRefusal: string
         return match ($this) {
             self::DriverNotContainable => 'This driver cannot run with the required protection here.',
             self::NoHost => 'No connected host serves this environment.',
-            self::CombinationNotDeclared => 'The host does not support these settings together.',
         };
     }
 
@@ -45,10 +42,6 @@ enum StartPreflightRefusal: string
                 'Choose a supported driver',
             ),
             self::NoHost => StartRemedy::forOperators(StartRemedyType::ConnectHost, 'Connect a host'),
-            self::CombinationNotDeclared => StartRemedy::forEveryone(
-                StartRemedyType::ReviewConfiguration,
-                'Review configuration',
-            ),
         };
     }
 }

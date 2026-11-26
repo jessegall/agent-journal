@@ -11,7 +11,6 @@ use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Work\WorkProgress;
-use App\Enums\Engine\NoSubject;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Asks\AskHop;
 use App\Support\ActorReference;
@@ -19,9 +18,8 @@ use App\Support\AskAttention;
 use App\Support\AttentionOrigin;
 use App\Support\AttentionOutcome;
 use App\Support\ProfileProposal;
-use App\Support\References\StateReference;
-use App\Support\States\ReadyState;
 use App\Support\States\Support\AnswerAskStateReference;
+use App\Support\States\Support\ReadyStateReference;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Support\Ticks\TickingTypes;
@@ -72,7 +70,7 @@ final class OfferNextAskTest extends TestCase
         new AgentStackRow()->startFor(
             new StackTarget($recipient->agent->id, $recipient->session->id),
             new FrameRecords([
-                new FrameRecord('ready', new StateReference(ReadyState::TYPE_KEY, NoSubject::None), true, 1, $now),
+                new FrameRecord('ready', ReadyStateReference::bottom(), true, 1, $now),
             ]),
             new TickingTypes([]),
         );

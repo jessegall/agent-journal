@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks;
 
 use App\Contracts\Work\CurrentState;
+use App\Support\Decisions\StateReferenceKeys;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;
 use PhpOption\None;
@@ -29,9 +30,9 @@ final readonly class FixedCurrentState implements CurrentState
         ) ? new Some($this->frames[$typeKey]) : None::create();
     }
 
-    public function ofCaller(string $typeKey): Option
+    public function ofCaller(string $reference): Option
     {
-        return $this->of($this->target, $typeKey);
+        return $this->of($this->target, StateReferenceKeys::of($reference));
     }
 
     public function top(StackTarget $target): Option

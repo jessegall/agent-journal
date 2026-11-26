@@ -10,6 +10,7 @@ use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\StateTypeRepeated;
 use App\Exceptions\StateTypesFrozen;
 use App\Exceptions\StateTypeUnknown;
+use App\Support\Decisions\StateReferenceKeys;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use App\Support\Stack\StateFactory;
@@ -19,6 +20,7 @@ use App\Support\StateLoading\RegisteredStateType;
 use App\Support\StateLoading\StateBuilder;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Support\States\ReadyState;
+use App\Support\States\Support\ReadyStateReference;
 use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Tasks\TasksDomain;
@@ -100,7 +102,7 @@ final class StateTypesTest extends TestCase
         $this->assertSame($first, $second);
         $this->assertSame(1, $buildCount);
         $this->assertTrue($first->has('tasks.work'));
-        $this->assertSame(ReadyState::class, $first->get(ReadyState::TYPE_KEY)->stateClass);
+        $this->assertSame(ReadyState::class, $first->get(StateReferenceKeys::of(ReadyStateReference::class))->stateClass);
     }
 
     // Found on the local journal (23 Nov): under the long-running app server a loader kept the container it was built

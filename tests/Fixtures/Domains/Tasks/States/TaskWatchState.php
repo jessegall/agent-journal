@@ -19,7 +19,7 @@ use Tests\Support\TestText;
 /**
  * A fixture watcher whose context identifies the frame reacting to a Tasks fact.
  */
-#[StateType('tasks.task_watch', schemaVersion: 1)]
+#[StateType(TaskWatchStateReference::class, schemaVersion: 1)]
 class TaskWatchState extends AgentState implements DurableState
 {
     public function __construct(private readonly string $taskId, private readonly int $runNumber) {}

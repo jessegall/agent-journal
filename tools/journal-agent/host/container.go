@@ -193,19 +193,10 @@ const (
 )
 
 var (
-	// ErrContainerTransportUnsupported refuses a required-container start on a saved account: no account transport
-	// into a container is shown, and a host program with only its tools in a container does not count.
-	ErrContainerTransportUnsupported = errors.New("no saved-account transport into a container is supported")
 	// ErrManifestUnsafe refuses a manifest that asks for what a helper may never have; the journal refuses it first,
 	// so this only catches a manifest that changed on its way.
 	ErrManifestUnsafe = errors.New("the container manifest asks for more than a helper may have")
 )
-
-// RequireContainerTransport refuses a saved-account arrangement inside a required container before anything is
-// created.
-func RequireContainerTransport(arrangement string) error {
-	return fmt.Errorf("%w: %s", ErrContainerTransportUnsupported, arrangement)
-}
 
 // accountsRoot is where the agent daemon holds every account's own sign-in folder, and accountTarget where a
 // container finds its session's own one.

@@ -28,8 +28,6 @@ return [
     'DeviceGrant::issue',
     'DeviceGrant::revoke',
     'Host::recordProtection',
-    'Host::recordDescriptors',
-    'Host::advertiseBrowserInput',
     'Host::revokeAt',
     'ProjectCommandRun::recordProcess',
     'ProjectCommandRun::finish',

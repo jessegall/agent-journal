@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Navigation;
 
+use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Commands\Hosts\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
@@ -13,6 +14,7 @@ use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\RequestProgress;
 use App\Enums\Navigation\NavigationKey;
 use App\Enums\Navigation\NavigationStatus;
 use App\Exceptions\NavigationAnswerRefused;
@@ -22,12 +24,12 @@ use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\EnrolledHost;
-use App\Support\MainInboxTakeover;
 use App\Support\NavigationRounds;
+use App\Values\MenuStep;
 use App\Values\NavigationAnswer;
 use App\Values\NavigationRound;
+use App\Values\NavigationRoundReport;
 use App\Values\OwnerAuthority;
-use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
@@ -83,7 +85,7 @@ final class AnswerNavigationTest extends TestCase
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($this->main),
+            fn () => $this->journal->seatMainAgent($this->main),
         );
     }
 
@@ -175,7 +177,7 @@ final class AnswerNavigationTest extends TestCase
         [$host, $navigation] = $this->stalled();
         $round = $this->append($navigation, NavigationRound::choose($navigation->id, 1, 7, 'GPT-6'));
 
-        $this->notify($host, $round, isProofSeen: false)->assertNoContent();
+        $this->notify($host, $round, isProofSeen: false);
 
         $this->assertSame(['Model: GPT-6'], $navigation->fresh()?->screen->rows);
     }
@@ -232,27 +234,18 @@ final class AnswerNavigationTest extends TestCase
     }
 
     /**
-     * @param  list<array<string, mixed>>  $steps
+     * @param  list<MenuStep>  $steps
      */
-    private function notify(
-        EnrolledHost $host,
-        DriverRequest $round,
-        bool $isProofSeen,
-        array $steps = [],
-    ): TestResponse {
-        return $this->journal->hostCall($host, 'POST', '/host/reports/request', [
-            'request_id' => $round->id,
-            'attempt' => $round->fresh()?->attempt_version,
-            'progress' => 'applied',
-            'actual_binding' => 'navigation',
-            'outcome' => null,
-            'navigation' => [
-                'rows' => ['Model: GPT-6'],
-                'highlight' => -1,
-                'generation' => 8,
-                'has_observed_proof' => $isProofSeen,
-                ...($steps === [] ? [] : ['steps' => $steps]),
-            ],
-        ]);
+    private function notify(EnrolledHost $host, DriverRequest $round, bool $isProofSeen, array $steps = []): void
+    {
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $round->id,
+            (int) $round->fresh()?->attempt_version,
+            RequestProgress::Applied,
+            'navigation',
+            null,
+            navigation: new NavigationRoundReport(['Model: GPT-6'], null, 8, $isProofSeen, null, $steps),
+        ));
     }
 }

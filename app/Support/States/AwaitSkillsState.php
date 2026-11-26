@@ -22,7 +22,7 @@ use PhpOption\Some;
  * A session whose new skill set is not delivered yet: it may read, including skill:status and skill:show, but changes
  * no file until the set is delivered. It ends by itself once the publication settles.
  */
-#[StateType(AwaitSkillsStateReference::TYPE_KEY, schemaVersion: 1)]
+#[StateType(AwaitSkillsStateReference::class, schemaVersion: 1)]
 final class AwaitSkillsState extends AgentState implements UniqueState
 {
     private PublicationStatus $publication = PublicationStatus::Pending;

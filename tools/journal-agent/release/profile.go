@@ -2,21 +2,15 @@ package release
 
 import (
 	"crypto/ed25519"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	"journal-agent/profiles"
-	"journal-agent/profiles/contracts"
 )
 
 // SecondStageName is the installer the first-stage script checks against the manifest and runs.
 const SecondStageName = "scripts/install-relay.sh"
-
-// HookEntryPlaceholder stands in a hook template for the sealed absolute path of the installed hook adapter; the
-// project setup replaces it once the installation folder is known.
-const HookEntryPlaceholder = "{{hook-entry}}"
 
 // OfficialInstallImport is how a provider the release cannot ship arrives: its official local install is checked
 // against the release manifest and imported into the sealed installation.
@@ -45,6 +39,7 @@ type ProfileFile struct {
 // Provider is a pinned agent driver the profile runs, shipped apart from the core files and never taken from PATH.
 type Provider struct {
 	Name        string `json:"name"`
+	Executable  string `json:"executable"`
 	Build       string `json:"build"`
 	Acquisition string `json:"acquisition"`
 	Check       string `json:"check"`
@@ -69,30 +64,31 @@ var RemoteProject = Profile{
 		{Name: "bin/journal-account", Source: GoProgram{Package: "./cmd/journal-account"}, Executable: true},
 		{Name: "journal/tools/accounts/no-keychain/security", Source: RepositoryFile{Path: "tools/accounts/no-keychain/security"}, Executable: true},
 		{Name: SecondStageName, Source: RepositoryFile{Path: "tools/journal-agent/scripts/install-relay.sh"}},
-		{Name: "hooks/claude-code/settings.json", Source: HookTemplate{Profile: profiles.ClaudeCode{}, File: "settings.json"}},
-		{Name: "hooks/codex/hooks.json", Source: HookTemplate{Profile: profiles.Codex{}, File: "hooks.json"}},
 	},
-	Providers: []Provider{officialInstall("claude-code"), officialInstall("codex")},
 }
 
-// providerProfiles are the start profiles of the providers a release may name, by the provider's name.
-var providerProfiles = map[string]contracts.DriverProfile{
-	"claude-code": profiles.ClaudeCode{},
-	"codex":       profiles.Codex{},
-}
+// ProvidersFile is the repository's list of the providers a release imports, each with its program and the build the
+// journal pins; the journal's own tests keep it equal to its pins.
+const ProvidersFile = "resources/drivers/providers.json"
 
-// officialInstall is a provider the release does not redistribute: the installer imports the official install it
-// finds on the machine's PATH, once that install reports the pinned build.
-func officialInstall(name string) Provider {
-	profile := providerProfiles[name]
-
-	return Provider{
-		Name:        name,
-		Build:       profile.Build(),
-		Acquisition: OfficialInstallImport,
-		Check: fmt.Sprintf("the official %s install on the machine's PATH is the native program and reports build %s; "+
-			"otherwise the driver stays off and journal status says why", profile.Driver(), profile.Build()),
+// ReadProviders reads the providers a release imports from the repository, each an official install the installer
+// takes from the machine's PATH once it reports the pinned build.
+func ReadProviders(repository string) ([]Provider, error) {
+	content, err := os.ReadFile(filepath.Join(repository, ProvidersFile))
+	if err != nil {
+		return nil, err
 	}
+	var providers []Provider
+	if err := json.Unmarshal(content, &providers); err != nil {
+		return nil, fmt.Errorf("reading %s failed: %w", ProvidersFile, err)
+	}
+	for index, provider := range providers {
+		providers[index].Acquisition = OfficialInstallImport
+		providers[index].Check = fmt.Sprintf("the official %s install on the machine's PATH is the native program and "+
+			"reports build %s; otherwise the driver stays off and journal status says why", provider.Executable, provider.Build)
+	}
+
+	return providers, nil
 }
 
 // GoProgram is a program of the journal-agent module, cross-compiled for the target with cgo off.
@@ -123,26 +119,4 @@ func (file RepositoryFile) write(sources Sources, _ Target, path string) error {
 	}
 
 	return os.WriteFile(path, content, 0o644)
-}
-
-// HookTemplate is the settings file a provider's start profile writes with every native hook running the hook
-// adapter, its path left as HookEntryPlaceholder.
-type HookTemplate struct {
-	Profile contracts.DriverProfile
-	File    string
-}
-
-func (template HookTemplate) write(_ Sources, _ Target, path string) error {
-	files, err := template.Profile.SettingsFiles(contracts.BaseStart{HookCommand: HookEntryPlaceholder}.Terminal(false))
-	if err != nil {
-		return err
-	}
-
-	for _, file := range files {
-		if file.Name == template.File {
-			return os.WriteFile(path, file.Content, 0o644)
-		}
-	}
-
-	return fmt.Errorf("the %s profile writes no %s", template.Profile.Driver(), template.File)
 }

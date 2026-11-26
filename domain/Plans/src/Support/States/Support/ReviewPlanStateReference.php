@@ -13,7 +13,10 @@ use App\Support\References\SubjectReference;
  */
 final class ReviewPlanStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'plans.review';
+    public static function key(): string
+    {
+        return 'plans.review';
+    }
 
     public static function forPlan(string $planId, int $number): StateReference
     {

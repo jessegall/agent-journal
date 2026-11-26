@@ -27,14 +27,6 @@ enum HostWakeRefusal: string
     case Unknown = 'unknown';
 
     /**
-     * The reason a host's report names, or unknown when the host named one outside the set.
-     */
-    public static function fromReport(string $reason): self
-    {
-        return self::tryFrom($reason) ?? self::Unknown;
-    }
-
-    /**
      * Whether the runtime cannot go on without someone looking at it: an account no longer signed in, or a start that
      * names no conversation to continue.
      */

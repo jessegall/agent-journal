@@ -15,11 +15,9 @@ use Tests\Support\TestText;
  * A test state that counts the facts of its subject it hears, keeps the agent from stopping until it heard as many as
  * its limit, and is finished then.
  */
-#[StateType(self::TYPE_KEY, schemaVersion: 1)]
+#[StateType(CountFactsStateReference::class, schemaVersion: 1)]
 final class CountFactsState extends AgentState
 {
-    public const string TYPE_KEY = 'counting.count_facts';
-
     private int $heard = 0;
 
     public function __construct(private readonly string $subject, private readonly int $limit) {}

@@ -70,7 +70,7 @@ func connect(arguments []string) error {
 
 	// Only a report of this run's setup, acknowledged after it began, makes the folder ready.
 	started := time.Now()
-	if err := connection.setUp(binding, installation); err != nil {
+	if err := connection.setUp(binding); err != nil {
 		return err
 	}
 	setupGeneration := project.Folder{Root: root}.SetupGeneration()
@@ -193,7 +193,7 @@ func (connection projectConnection) keep(redemption client.Redemption, pending h
 
 // setUp writes the folder's .journal setup for the binding under the root's lock; a rerun finishes what an
 // interrupted one left.
-func (connection projectConnection) setUp(binding host.Binding, installation host.Installation) error {
+func (connection projectConnection) setUp(binding host.Binding) error {
 	unlock, err := connection.state.Lock()
 	if err != nil {
 		return err
@@ -202,7 +202,7 @@ func (connection projectConnection) setUp(binding host.Binding, installation hos
 
 	folder := project.Folder{Root: connection.state.CanonicalRoot}
 
-	return folder.SetUp(project.ConnectionOf(binding), installation)
+	return folder.SetUp(project.ConnectionOf(binding))
 }
 
 // ownInstallation is the sealed installation this program runs from: the folder above its bin folder.

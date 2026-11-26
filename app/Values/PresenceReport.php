@@ -12,9 +12,6 @@ namespace App\Values;
  */
 final readonly class PresenceReport
 {
-    /**
-     * @param  list<HostDescriptor>  $descriptors
-     */
     public function __construct(
         public string $bootId,
         public int $sequence,
@@ -22,7 +19,6 @@ final readonly class PresenceReport
         public bool $isProvisioned,
         public bool $takesOver,
         public int $setupGeneration,
-        public array $descriptors = [],
         public bool $isReconciled = false,
     ) {}
 }

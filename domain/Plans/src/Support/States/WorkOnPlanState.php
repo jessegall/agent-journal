@@ -24,7 +24,7 @@ use PhpOption\Some;
  * An agent working on a started plan. The plan stays open until the state hears it finished or cancelled; it keeps
  * the newest counts it heard for the plan and shows them in its instruction.
  */
-#[StateType(WorkOnPlanStateReference::TYPE_KEY, schemaVersion: 1)]
+#[StateType(WorkOnPlanStateReference::class, schemaVersion: 1)]
 final class WorkOnPlanState extends AgentState implements DurableState, WorkState
 {
     private bool $isOpen = true;

@@ -7,7 +7,6 @@ namespace Tests\Commands\Agents;
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Agents\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Commands\Agents\StopAgent\StopAgentCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Enums\Drivers\DriverOperation;
@@ -24,7 +23,6 @@ use App\Support\ActorReference;
 use App\Support\AgentStatus;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
-use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -112,24 +110,18 @@ final class StopAgentTest extends TestCase
         $this->assertSame(RuntimeActivity::Stopping, AgentRuntime::query()->findOrFail($helper->runtimeId)->activity);
         $this->assertSame(
             [],
-            $this->journal->asSystem(
-                new ClaimDriverRequestsCommand($mainHost->hostId, 10, BrowserInputCapabilities::none()),
-            )->requests,
+            $this->journal->claimRequestsOnHost($mainHost->hostId, 10)->requests,
         );
         $this->assertSame(RequestProgress::Accepted, $stopOf($main)->progress);
 
-        $helperClaim = $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($helperHost->hostId, 10, BrowserInputCapabilities::none()),
-        );
+        $helperClaim = $this->journal->claimRequestsOnHost($helperHost->hostId, 10);
         $this->assertSame(
             [DriverOperation::Stop->value],
             array_map(fn ($request) => $request->operation, $helperClaim->requests),
         );
         $this->notifyExit($helperHost, $helper);
 
-        $mainClaim = $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($mainHost->hostId, 10, BrowserInputCapabilities::none()),
-        );
+        $mainClaim = $this->journal->claimRequestsOnHost($mainHost->hostId, 10);
         $this->assertSame(
             [DriverOperation::Stop->value],
             array_map(fn ($request) => $request->operation, $mainClaim->requests),

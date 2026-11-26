@@ -70,7 +70,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
      */
     private function assertNotCovered(Task $task): void
     {
-        foreach ($this->states->ofCaller(WorkOnTaskStateReference::TYPE_KEY) as $current) {
+        foreach ($this->states->ofCaller(WorkOnTaskStateReference::class) as $current) {
             $subject = $current->subject;
 
             if ($subject instanceof SubjectReference && $subject->id !== $task->id) {

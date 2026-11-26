@@ -14,7 +14,10 @@ use App\Support\References\SubjectReference;
  */
 final class AnswerMessageStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'core.messages.answer';
+    public static function key(): string
+    {
+        return 'core.messages.answer';
+    }
 
     public static function forMessage(Message $message, string $agentId): StateReference
     {

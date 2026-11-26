@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\CancelSessionStart\CancelSessionStartCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
@@ -20,7 +19,6 @@ use App\Support\AgentWakes;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
-use App\Values\BrowserInputCapabilities;
 use App\Values\ClaimedRequest;
 use App\Values\StackTarget;
 use App\Values\StartPolicy;
@@ -123,9 +121,7 @@ final class CancelSessionStartTest extends TestCase
      */
     private function claimed(EnrolledHost $host): array
     {
-        return $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
-        )->requests;
+        return $this->journal->claimRequestsOnHost($host->hostId, 10)->requests;
     }
 
     private function notifyApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void

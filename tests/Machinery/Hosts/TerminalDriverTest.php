@@ -20,6 +20,7 @@ use App\Enums\Drivers\RequestProgress;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Navigation\NavigationKey;
 use App\Enums\Navigation\NavigationReason;
+use App\Support\DefaultDrivers;
 use App\Support\Drivers\Processes\TerminalDriver;
 use App\Support\NavigationRaiseAnswer;
 use App\Support\Reflector;
@@ -39,7 +40,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * The terminal driver types into Claude Code, on the recorded screens, what the recording's typist typed: a prompt
+ * The terminal driver types into Claude Code and Codex, on the recorded screens, what the recording's typist typed: a prompt
  * only into the empty, still composer, its Enter once the echo held still, Escape for an interrupt during the turn,
  * and a stop that ends the process; a menu holds the runtime and gets no key.
  */
@@ -52,6 +53,8 @@ final class TerminalDriverTest extends TestCase
     private const string TURN = 'claude-code/2.1.323/turns/terminal-turn';
 
     private const string MODEL_CHOICE = 'claude-code/2.1.323/keyscripts/model-choice';
+
+    private const string CODEX_TURN = 'codex/0.165.0/turns/terminal-turn';
 
     /**
      * The label of the model picker's first entry, highlighted when it opens.
@@ -95,14 +98,7 @@ final class TerminalDriverTest extends TestCase
         $isInterrupted = false;
         // The interrupt comes while the reply runs, once the prompt went in.
         $interrupt = function () use ($driver, &$isInterrupted) {
-            $isRunning = array_any(
-                $this->ordered,
-                fn (object $command) => $command instanceof NotifyRequestProgressCommand
-                    && $command->requestId === 'deliver-1'
-                    && $command->progress === RequestProgress::Applying,
-            );
-
-            if ($isInterrupted || ! $isRunning) {
+            if ($isInterrupted || ! $this->isApplying('deliver-1')) {
                 return null;
             }
 
@@ -119,6 +115,42 @@ final class TerminalDriverTest extends TestCase
             [
                 $this->hasOrdered(StopHostProcessCommand::class),
                 $this->isHeldFor(HoldReason::TrustRequired),
+                $this->pastes,
+                [$this->keyOrdersOf('deliver-1'), $this->keyOrdersOf('interrupt-1'), $this->keyOrdersOf('deliver-2')],
+            ],
+        );
+    }
+
+    public function test_a_codex_turn_with_an_interrupt_and_a_second_prompt_types_what_the_recording_typed(): void
+    {
+        // The Codex terminal opens to users once its starts go through the journal; its profile is the family's.
+        $driver = $this->drivenTerminal(self::CODEX_TURN, DefaultDrivers::CODEX, DriverType::Headless);
+        $host = $this->journal->standInHost();
+        $inputs = $host->recordedInputs();
+        $events = [
+            0 => fn () => $driver->onRequest($this->claim('deliver-1', DriverOperation::Deliver, $inputs[0])),
+            3 => fn () => $driver->onRequest($this->claim('deliver-2', DriverOperation::Deliver, $inputs[3])),
+            5 => fn () => $driver->onRequest($this->claim('stop-1', DriverOperation::Stop)),
+        ];
+        $isInterrupted = false;
+        $interrupt = function () use ($driver, &$isInterrupted) {
+            if ($isInterrupted || ! $this->isApplying('deliver-1')) {
+                return null;
+            }
+
+            $isInterrupted = true;
+
+            return $driver->onRequest($this->claim('interrupt-1', DriverOperation::Interrupt));
+        };
+
+        $this->stream($driver, $events, $interrupt);
+
+        // Codex takes no bracketed paste: each prompt is typed as it is.
+        $host->assertTypedThrough(4);
+        $this->journal->assertResult(
+            [true, [], [2, 1, 2]],
+            [
+                $this->hasOrdered(StopHostProcessCommand::class),
                 $this->pastes,
                 [$this->keyOrdersOf('deliver-1'), $this->keyOrdersOf('interrupt-1'), $this->keyOrdersOf('deliver-2')],
             ],
@@ -378,13 +410,17 @@ final class TerminalDriverTest extends TestCase
     }
 
     /**
-     * The recording plays on the stand-in host and a Claude Code terminal of a started session is open on it.
+     * The recording plays on the stand-in host and a terminal of the driver, Claude Code unless named, of a started
+     * session is open on it.
      */
-    private function drivenTerminal(string $recording = self::TURN): ProcessDriver
-    {
+    private function drivenTerminal(
+        string $recording = self::TURN,
+        string $driver = DefaultDrivers::CLAUDE_CODE,
+        DriverType $driverType = DriverType::Terminal,
+    ): ProcessDriver {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), $driver, driverType: $driverType);
         $this->journal
             ->driveProcessesWith(HostProcessPurpose::AgentTerminal, TerminalDriver::class)
             ->openHostProcessForStart('Mac', 'agent', $opened->sessionId)
@@ -421,6 +457,19 @@ final class TerminalDriverTest extends TestCase
             }
 
         }
+    }
+
+    /**
+     * Whether the driver reported the request applying: its prompt went in and the reply runs.
+     */
+    private function isApplying(string $requestId): bool
+    {
+        return array_any(
+            $this->ordered,
+            fn (object $command) => $command instanceof NotifyRequestProgressCommand
+                && $command->requestId === $requestId
+                && $command->progress === RequestProgress::Applying,
+        );
     }
 
     private function handle(DriverActions|null $actions): void

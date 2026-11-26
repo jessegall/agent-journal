@@ -177,7 +177,7 @@ final class RevokeProjectBindingTest extends TestCase
     {
         return $this->signedRelayCall(
             $this->relayCredential(self::NONCE),
-            '/host/claim?limit=1&wait=0&watched_version=0',
+            '/host/orders/claim?limit=1&wait=0',
             [],
             (string) Str::uuid(),
         );

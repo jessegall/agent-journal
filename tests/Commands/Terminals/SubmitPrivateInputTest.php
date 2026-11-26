@@ -7,6 +7,7 @@ namespace Tests\Commands\Terminals;
 use App\Commands\Terminals\OpenPrivateEntry\OpenPrivateEntryCommand;
 use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
 use App\Enums\Drivers\DriverOperation;
+use App\Exceptions\PrivateValueRefused;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
@@ -67,10 +68,9 @@ final class SubmitPrivateInputTest extends TestCase
 
         $request = DriverRequest::query()->where('operation', DriverOperation::PrivateInput)->sole();
         $this->assertStringNotContainsString($secret, (string) $request->message);
-        $claimed = $values->carriedBy($request, $request->claimed($runtime, null, false));
-        $again = $values->carriedBy($request, $request->claimed($runtime, null, false));
-        $this->assertStringContainsString($secret, (string) $claimed->message);
-        $this->assertStringNotContainsString($secret, (string) $again->message);
+        $values->bindTo('private-1', $runtime->host_id);
+        $this->assertSame($secret, $values->pull('private-1', $runtime->host_id));
+        $this->assertThrows(fn () => $values->pull('private-1', $runtime->host_id), PrivateValueRefused::class);
         $this->assertSame(0, DriverRequest::query()->where('message', 'like', '%'.$secret.'%')->count());
     }
 }

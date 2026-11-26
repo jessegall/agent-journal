@@ -13,7 +13,7 @@ use App\Enums\Hosts\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Support\Drivers\HeadlessStarts;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
+use App\Support\Drivers\Profiles\DriverProfiles;
 use App\Values\HostOrderSource;
 
 final readonly class OpenJournalTerminalHandler implements CommandHandler
@@ -22,7 +22,7 @@ final readonly class OpenJournalTerminalHandler implements CommandHandler
 
     public function __construct(
         private HeadlessStarts $starts,
-        private ClaudeCodeProfile $profile,
+        private DriverProfiles $profiles,
         private JournalCommands $commands,
     ) {}
 
@@ -43,7 +43,8 @@ final readonly class OpenJournalTerminalHandler implements CommandHandler
 
         $terminal = $this->starts->startOf($runtime, $start)->openedAs(HostProcessType::Terminal);
         $settings = $this->starts->clientSettingsOf($runtime);
-        $plan = $this->profile->startPlan($terminal)->withEnvironment($settings->environment());
+        $profile = $this->profiles->of($runtime);
+        $plan = $profile->startPlan($terminal)->withEnvironment($settings->environment());
         $source = HostOrderSource::fromJournal();
         $open = new OpenHostProcessCommand($runtime->host_id, $runtime->id, $plan, $source, $start->id);
 

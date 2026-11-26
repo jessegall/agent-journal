@@ -11,7 +11,8 @@ use App\Support\Command;
 use App\Support\RecordIdentity;
 
 /**
- * Cancels the starts of a held account that have no process yet, and answers how many it cancelled.
+ * Cancels the starts of a held account that have no process yet, and answers how many it cancelled; every live
+ * process of its other starts is stopped, so they end with it.
  *
  * @extends Command<int>
  */

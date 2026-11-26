@@ -10,13 +10,11 @@ import (
 	"journal-agent/recording"
 )
 
-// recordingsFolders are where the recordings live: the journal's resources and the host's own test data.
-var recordingsFolders = []string{"../../../resources/recordings", "../testdata/recordings"}
+// recordingsFolder is where every program's recordings live: the journal's resources.
+const recordingsFolder = "../../../resources/recordings"
 
 func TestEveryRecordingHasItsCommittedFrames(t *testing.T) {
-	for _, folder := range recordingsFolders {
-		assertFramesOf(t, folder)
-	}
+	assertFramesOf(t, recordingsFolder)
 }
 
 func assertFramesOf(t *testing.T, recordings string) {

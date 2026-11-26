@@ -11,7 +11,7 @@ use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Support\Drivers\HeadlessStarts;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
+use App\Support\Drivers\Profiles\DriverProfiles;
 use App\Support\StartClaims;
 use App\Support\StartHeartbeats;
 use App\Values\HostOrderSource;
@@ -27,7 +27,7 @@ final readonly class OpenHeadlessStartHandler implements CommandHandler
         private HeadlessStarts $headless,
         private StartHeartbeats $heartbeats,
         private StartClaims $claims,
-        private ClaudeCodeProfile $profile,
+        private DriverProfiles $profiles,
         private JournalCommands $commands,
     ) {}
 
@@ -58,7 +58,7 @@ final readonly class OpenHeadlessStartHandler implements CommandHandler
 
         // A resume continues the conversation the owner chose; any other start begins one of its own.
         $runtime->chooseConversation($claimed->conversationTarget ?? (string) Str::uuid());
-        $probe = $this->profile->versionProbe($runtime->canonical_folder);
+        $probe = $this->profiles->of($runtime)->versionProbe($runtime->canonical_folder);
         $source = HostOrderSource::fromJournal();
         $open = new OpenHostProcessCommand($runtime->host_id, $runtime->id, $probe, $source, $start->id);
 

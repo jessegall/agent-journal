@@ -6,12 +6,12 @@ namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\ChangeAgentEffort\ChangeAgentEffortCommand;
 use App\Commands\Agents\ChangeAgentModel\ChangeAgentModelCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
+use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\Drivers\RequestProgress;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
 use App\Support\EnrolledHost;
-use App\Values\BrowserInputCapabilities;
+use App\Values\TurnEnd;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -55,7 +55,7 @@ final class ChangeAgentModelTest extends TestCase
             new ChangeAgentModelCommand($agentId, $opened->sessionId, 'model-1', 'claude-sonnet-5-5'),
         );
         $effort = $this->asOwner(new ChangeAgentEffortCommand($agentId, $opened->sessionId, 'effort-1', 'high'));
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
 
         foreach ([$model, $effort] as $setting) {
             $this->notifyTurnEnd($host, $setting->requestId, null);
@@ -64,7 +64,7 @@ final class ChangeAgentModelTest extends TestCase
         $this->assertSame(RequestProgress::Staged, DriverRequest::query()->findOrFail($model->requestId)->progress);
 
         foreach ([$model, $effort] as $setting) {
-            $this->notifyTurnEnd($host, $setting->requestId, ['exit_code' => 0, 'model' => 'claude-sonnet-5-5']);
+            $this->notifyTurnEnd($host, $setting->requestId, new TurnEnd(exitCode: 0, model: 'claude-sonnet-5-5'));
         }
 
         $this->assertSame(
@@ -78,19 +78,19 @@ final class ChangeAgentModelTest extends TestCase
 
     /**
      * The host's report of a request: staged without a turn's end, or the turn's end as the host saw it.
-     *
-     * @param  array<string, int|string|bool>|null  $turnEnd
      */
-    private function notifyTurnEnd(EnrolledHost $host, string $requestId, array|null $turnEnd): void
+    private function notifyTurnEnd(EnrolledHost $host, string $requestId, TurnEnd|null $turnEnd): void
     {
         $request = DriverRequest::query()->findOrFail($requestId);
-        $report = ['request_id' => $request->id, 'attempt' => $request->attempt_version, 'actual_binding' => null];
 
-        $this->journal->hostCall(
-            $host,
-            'POST',
-            '/host/reports/request',
-            $turnEnd === null ? [...$report, 'progress' => 'staged'] : [...$report, 'turn_end' => $turnEnd],
-        )->assertSuccessful();
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $request->id,
+            $request->attempt_version,
+            $turnEnd?->progress() ?? RequestProgress::Staged,
+            null,
+            $turnEnd?->outcome(),
+            turnEnd: $turnEnd,
+        ));
     }
 }

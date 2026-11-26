@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Connections;
 
-use App\Data\Hosts\HostDescriptorData;
 use App\Values\PresenceReport;
-use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\Validation\In;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
-use Spatie\LaravelData\Attributes\Validation\Present;
 use Spatie\LaravelData\Data;
 
 /**
@@ -20,9 +17,6 @@ use Spatie\LaravelData\Data;
  */
 final class PresenceReportData extends Data
 {
-    /**
-     * @param  list<HostDescriptorData>  $descriptors
-     */
     public function __construct(
         #[Max(128)]
         public readonly string $bootId,
@@ -30,9 +24,6 @@ final class PresenceReportData extends Data
         public readonly int $sequence,
         #[Max(64)]
         public readonly string $release,
-        #[Present]
-        #[DataCollectionOf(HostDescriptorData::class)]
-        public readonly array $descriptors,
         #[In([
             'succeeded',
             'failed',
@@ -53,7 +44,6 @@ final class PresenceReportData extends Data
             $this->provisioning === 'succeeded',
             $this->isTakeover,
             $this->setupGeneration,
-            array_map(fn (HostDescriptorData $descriptor) => $descriptor->descriptor(), $this->descriptors),
             $this->isReconciled,
         );
     }

@@ -9,19 +9,15 @@ use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Profiles\ModelTier;
-use App\Enums\Sessions\StartPreflightRefusal;
-use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverSwitchStale;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
-use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\DefaultDrivers;
 use App\Support\PolicyOverride;
 use App\Support\ProposedProfile;
@@ -32,6 +28,7 @@ use App\Values\DriverSwitchTarget;
 use App\Values\ModelSelection;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
@@ -73,27 +70,11 @@ final class SwitchAgentDriverTest extends TestCase
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
     }
 
-    public function test_a_switch_the_host_cannot_run_is_refused_and_keeps_the_old_session_and_a_repeat_answers_it(): void
-    {
-        $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
-        $old = $this->start('default', null);
-        Host::query()->update(['descriptors' => []]);
-        $requestId = strtolower((string) Str::ulid());
-
-        $refused = $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
-        $repeated = $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
-
-        $this->assertSame(DriverSwitchStage::Refused, $refused->stage);
-        $this->assertSame(StartPreflightRefusal::CombinationNotDeclared->value, $refused->failureReason);
-        $this->assertSame($refused->switchId, $repeated->switchId);
-        $this->assertSame($old->sessionId, $this->main->refresh()->current_session_id);
-    }
-
     public function test_a_repeated_switch_makes_one_switch_refused_for_lack_of_a_host(): void
     {
         $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $old = $this->start('default', null);
-        Host::query()->update(['descriptors' => []]);
+        Host::query()->sole()->revokeAt(CarbonImmutable::now());
         $requestId = strtolower((string) Str::ulid());
 
         $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
@@ -112,22 +93,14 @@ final class SwitchAgentDriverTest extends TestCase
         $this->switchTo(strtolower((string) Str::ulid()), strtolower((string) Str::ulid()), $this->accounts['codex']);
     }
 
-    public function test_a_switch_to_the_codex_terminal_is_refused_with_its_reason_before_any_switch_exists(): void
+    public function test_a_switch_to_the_codex_terminal_is_made(): void
     {
         $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $session = $this->start('default', null)->sessionId;
 
-        $this->assertThrows(
-            fn () => $this->switchTo(
-                strtolower((string) Str::ulid()),
-                $session,
-                $this->accounts['codex'],
-                DriverType::Terminal,
-            ),
-            DriverCapabilityUnsupported::class,
-            DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
-        );
-        $this->assertSame(0, DriverSwitch::query()->count());
+        $this->switchTo(strtolower((string) Str::ulid()), $session, $this->accounts['codex'], DriverType::Terminal);
+
+        $this->assertSame(1, DriverSwitch::query()->count());
     }
 
     public function test_a_switch_keeps_the_registration_its_target_was_pinned_to(): void

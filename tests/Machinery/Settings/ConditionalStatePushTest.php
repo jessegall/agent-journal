@@ -6,7 +6,6 @@ namespace Tests\Machinery\Settings;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Engine\NoSubject;
 use App\Exceptions\SettingsUnavailable;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Records\SettingsRecord;
@@ -16,9 +15,9 @@ use App\Support\AgentContext;
 use App\Support\AgentStacks;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;
+use App\Support\Decisions\StateReferenceKeys;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
-use App\Support\References\StateReference;
 use App\Support\SettingCommands;
 use App\Support\SettingRegistry;
 use App\Support\SignedCall;
@@ -37,6 +36,7 @@ use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Domains\Reviews\States\ReviewState;
+use Tests\Fixtures\Domains\Reviews\States\ReviewStateReference;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
@@ -99,7 +99,7 @@ final class ConditionalStatePushTest extends TestCase
     {
         $this->pushReview();
 
-        $this->assertSame(['core.ready', ReviewState::TYPE_KEY], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', StateReferenceKeys::of(ReviewStateReference::class)], $this->storedTypeKeys());
     }
 
     public function test_while_the_group_is_off_a_push_is_declined_and_a_stored_frame_is_removed_for_good(): void
@@ -169,7 +169,7 @@ final class ConditionalStatePushTest extends TestCase
         $this->transaction()->run(
             fn () => $this->app->make(AgentStacks::class)->push(
                 $this->target,
-                new StateReference(ReviewState::TYPE_KEY, NoSubject::None),
+                ReviewStateReference::withoutSubject(),
             ),
         );
     }

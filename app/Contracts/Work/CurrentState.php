@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Work;
 
+use App\Support\Decisions\StateReferenceFactory;
 use App\Support\RecordIdentity;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;
@@ -21,11 +22,12 @@ interface CurrentState
     public function of(StackTarget $target, string $typeKey): Option;
 
     /**
-     * The live frame of the type on the acting actor's first stack.
+     * The live frame of the reference class's type on the acting actor's first stack.
      *
+     * @param  class-string<StateReferenceFactory>  $reference
      * @return Option<StateReference> none for an actor that runs no session, or a stack without such a frame
      */
-    public function ofCaller(string $typeKey): Option;
+    public function ofCaller(string $reference): Option;
 
     /**
      * The state the stack answers from now: its highest frame whose work is not done.

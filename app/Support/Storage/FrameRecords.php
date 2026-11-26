@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Storage;
 
 use App\Exceptions\InvalidBottomState;
-use App\Support\States\ReadyState;
+use App\Support\Decisions\StateReferenceKeys;
+use App\Support\States\Support\ReadyStateReference;
 use App\Support\Ticks\TickingTypes;
 use App\Values\WorkReference;
 use Carbon\CarbonImmutable;
@@ -100,8 +101,8 @@ final readonly class FrameRecords
             throw InvalidBottomState::missing();
         }
 
-        if ($first->reference->typeKey !== ReadyState::TYPE_KEY) {
-            throw InvalidBottomState::ofAnotherType($first->reference->typeKey, ReadyState::TYPE_KEY);
+        if ($first->reference->typeKey !== StateReferenceKeys::of(ReadyStateReference::class)) {
+            throw InvalidBottomState::ofAnotherType($first->reference->typeKey);
         }
 
         foreach (array_slice($this->records, 1) as $record) {

@@ -14,10 +14,8 @@ use App\Events\Connections\DeviceGrantPolled;
 use App\Events\Connections\DeviceGrantRestarted;
 use App\Events\Connections\DeviceGrantRevoked;
 use App\Events\Connections\EnvironmentOpened;
-use App\Events\Connections\HostBrowserInputAdvertised;
 use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
-use App\Events\Connections\HostDescriptorsRecorded;
 use App\Events\Connections\HostHeartbeatRecorded;
 use App\Events\Connections\HostOrderAnswered;
 use App\Events\Connections\HostOrderClaimed;
@@ -222,20 +220,6 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new HostProtectionRecorded('host'),
-    ],
-    HostDescriptorsRecorded::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Host::recordDescriptors',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new HostDescriptorsRecorded('host'),
-    ],
-    HostBrowserInputAdvertised::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Host::advertiseBrowserInput',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new HostBrowserInputAdvertised('host'),
     ],
     HostCallFailed::class => [
         'role' => EventRole::RowFact,

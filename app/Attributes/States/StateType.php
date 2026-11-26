@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 namespace App\Attributes\States;
 
+use App\Support\Decisions\StateReferenceFactory;
+use App\Support\Decisions\StateReferenceKeys;
 use Attribute;
 
 /**
- * A state's own type: the key its frames are saved under and the version of the values it saves, which the builder
- * reads before the state exists.
+ * A state's own type, named by its reference class: the key its frames are saved under and the version of the values
+ * it saves, which the builder reads before the state exists.
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class StateType
 {
-    public function __construct(public string $key, public int $schemaVersion) {}
+    /**
+     * @param  class-string<StateReferenceFactory>  $reference
+     */
+    public function __construct(public string $reference, public int $schemaVersion) {}
+
+    public function key(): string
+    {
+        return StateReferenceKeys::of($this->reference);
+    }
 }

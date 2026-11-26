@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Commands\Drivers;
 
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\InterruptStuckTurns\InterruptStuckTurnsCommand;
 use App\Commands\Drivers\InterruptStuckTurns\InterruptStuckTurnsHandler;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
@@ -19,7 +18,6 @@ use App\Support\EnginePass;
 use App\Support\EngineTickedDelivery;
 use App\Support\OpenedRuntime;
 use App\Support\Ticks\ElapsedTime;
-use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use Carbon\CarbonImmutable;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -58,7 +56,7 @@ final class InterruptStuckTurnsTest extends TestCase
     public function test_a_turn_running_past_the_limit_is_interrupted_once(): void
     {
         [$host, $opened] = $this->openRuntime(firstMessage: 'Never ends');
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
         $request = DriverRequest::query()->findOrFail($opened->firstRequestId);
         $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,

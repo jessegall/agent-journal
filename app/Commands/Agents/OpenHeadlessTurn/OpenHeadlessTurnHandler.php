@@ -13,7 +13,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Support\Drivers\DriverRequestClaims;
 use App\Support\Drivers\HeadlessStarts;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
+use App\Support\Drivers\Profiles\DriverProfiles;
 use App\Values\HostOrderSource;
 
 final readonly class OpenHeadlessTurnHandler implements CommandHandler
@@ -25,7 +25,7 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
     public function __construct(
         private DriverRequestClaims $claims,
         private HeadlessStarts $headless,
-        private ClaudeCodeProfile $profile,
+        private DriverProfiles $profiles,
         private JournalCommands $commands,
     ) {}
 
@@ -58,8 +58,9 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
         $prompt = $request->prompt();
         $driverStart = $this->headless->startOf($runtime, $start, $prompt, $request->model, $request->effort);
 
-        $turn = $this->profile->startPlan($driverStart)
-            ->withEnvironment($this->headless->clientSettingsOf($runtime)->environment());
+        $profile = $this->profiles->of($runtime);
+        $environment = $this->headless->clientSettingsOf($runtime)->environment();
+        $turn = $profile->startPlan($driverStart)->withEnvironment($environment);
 
         $source = HostOrderSource::forStep($request->requestId, self::OPEN_STEP, $request->attempt, 0);
 

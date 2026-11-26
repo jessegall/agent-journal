@@ -418,3 +418,42 @@ func TestAHealedProcessRunsItsRestartArgvOnceItsFileExistsUnderItsFolder(t *test
 		t.Fatalf("the healed process ran %v before its transcript and %v after", before, plan.restartArgv())
 	}
 }
+
+// A native terminal lost with its host is ended and reported lost only once its process is gone, so the journal never
+// opens it again while the old one still runs.
+func TestATerminalLostWithItsHostIsReportedLostOnlyOnceItsProcessEnded(t *testing.T) {
+	containers, err := host.ContainersOn(dockerstandin.Start(t, standinImage).Host(), host.ContainerRules{Arrangement: host.Local})
+	if err != nil {
+		t.Fatal(err)
+	}
+	state, ended := t.TempDir(), filepath.Join(t.TempDir(), "ended")
+	open := func(reports *sentReports) *ProcessTable {
+		queue, err := OpenReportQueue(t.TempDir(), reports.send)
+		if err != nil {
+			t.Fatal(err)
+		}
+		runQueue(t, queue)
+		return OpenProcessTable(state, containers, queue, NewOutputs(state, (&sentChunks{}).send, time.Now))
+	}
+	plan, err := json.Marshal(OpenPlan{Type: "terminal", Restart: "never", Folder: t.TempDir(),
+		Size: TerminalSize{Columns: 40, Rows: 5},
+		Argv: []string{"sh", "-c", `trap 'touch "$0"; exit 0' HUP; while true; do sleep 0.05; done`, ended}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := open(&sentReports{})
+	if _, err := before.openProcess(context.Background(), Order{ID: "open-t", Type: "open_process", ProcessID: "t",
+		Payload: string(plan)}); err != nil {
+		t.Fatal(err)
+	}
+	reports := &sentReports{}
+
+	if err := open(reports).Adopt(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+
+	reports.waitFor(t, "lost")
+	if _, err := os.Stat(ended); err != nil {
+		t.Fatalf("the terminal was reported lost before its process ended: %v", err)
+	}
+}

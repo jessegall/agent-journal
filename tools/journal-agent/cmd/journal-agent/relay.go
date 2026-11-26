@@ -17,13 +17,13 @@ import (
 	"time"
 
 	"journal-agent/client"
-	"journal-agent/diagnostics"
 	"journal-agent/host"
+	"journal-agent/hostapi"
 	"journal-agent/project"
 )
 
 const (
-	// relayIdleWindow is how long a relay with no attached session or claim keeps its binding online.
+	// relayIdleWindow is how long a relay that holds no live process keeps its binding online.
 	relayIdleWindow = 10 * time.Minute
 	// relayReadyWait is how long connect waits for the relay's first acknowledged report.
 	relayReadyWait = 30 * time.Second
@@ -82,8 +82,8 @@ type bindingRelay struct {
 	idle         time.Duration
 }
 
-// run holds the binding's relay lock for the whole run, serves the work the journal hands this binding and reports
-// presence beside it, until the idle window passes the last claim that handed work, a disconnect fences the folder,
+// run holds the binding's relay lock for the whole run, carries out the orders the journal sends this binding's host
+// and reports presence beside it, until the idle window passes with no live process, a disconnect fences the folder,
 // the folder's binding state is gone or ctx ends. The lock is let go only once serving ended.
 func (binder bindingRelay) run(parent context.Context) error {
 	unlock, err := binder.state.LockRelay()
@@ -99,91 +99,51 @@ func (binder bindingRelay) run(parent context.Context) error {
 	if err != nil {
 		return err
 	}
-	journal := client.ForRemoteProject(binder.binding.Enrollment, binder.transport).WithArrangement(string(host.Local))
-	leases := &relayLeases{journal: journal, bindingID: binder.binding.BindingID,
-		events: diagnostics.Log{State: binder.state}}
+	journal := client.ForRemoteProject(binder.binding.Enrollment, binder.transport)
 	serving, stopServing := context.WithCancel(ctx)
 	defer stopServing()
-	var lastWork atomic.Int64
-	lastWork.Store(time.Now().UnixNano())
+	table, err := binder.serveOrders(serving, journal)
+	if err != nil {
+		return err
+	}
 	reconciliation := &bootReconciliation{done: make(chan struct{})}
-	served := make(chan error, 1)
-	go func() {
-		served <- binder.serveClaims(serving, journal, leases, reconciliation,
-			func() { lastWork.Store(time.Now().UnixNano()) })
-	}()
+	go binder.finishReconciliation(ctx, journal, reconciliation)
 
-	idleEnds := func() time.Time { return time.Unix(0, lastWork.Load()).Add(binder.idle) }
-	for sequence := 1; ctx.Err() == nil && time.Now().Before(idleEnds()); sequence++ {
+	lastWork := time.Now()
+	for sequence := 1; ctx.Err() == nil && time.Now().Before(lastWork.Add(binder.idle)); sequence++ {
+		// A relay that holds a live process is never idle.
+		if len(table.Live()) > 0 {
+			lastWork = time.Now()
+		}
 		receipt, err := journal.NotifyPresence(ctx, binder.binding.BindingID, client.PresenceReport{
 			BootID: bootID, Sequence: sequence, Release: binder.release,
-			Descriptors:  isolatedDescriptors(),
 			Provisioning: "succeeded", IsTakeover: sequence == 1,
 			SetupGeneration: project.Folder{Root: binder.binding.CanonicalRoot}.SetupGeneration(),
 			IsReconciled:    reconciliation.reportNow(),
 		})
-		if err == nil {
-			leases.authority.Store(int64(receipt.AuthorityGeneration))
-		}
 		if !binder.wait(ctx, binder.nextReport(receipt, err, bootID), reconciliation.reported()) {
 			break
 		}
-	}
-	stopServing()
-	if err := <-served; err != nil {
-		log.Printf("binding %s stopped serving its work: %v", binder.binding.BindingID, err)
 	}
 
 	return nil
 }
 
-// serveClaims runs the enrolled host's claim serving for this binding alone, local and uncontained, from a folder of
-// its own beside the binding's state, so two bindings' relays never share a socket or a start record.
-func (binder bindingRelay) serveClaims(
-	ctx context.Context,
-	journal *client.Client,
-	leases *relayLeases,
-	reconciliation *bootReconciliation,
-	claimed func(),
-) error {
+// serveOrders runs host protocol 1 for this binding alone, local and uncontained, from a folder of its own beside the
+// binding's state, so two bindings' relays never share a process table; the journal opens and drives every process
+// and reads the folder by orders.
+func (binder bindingRelay) serveOrders(ctx context.Context, journal *client.Client) (*hostapi.ProcessTable, error) {
 	folder := host.RelayFolder(binder.state.Folder, binder.binding.BindingID)
 	if err := os.MkdirAll(folder, 0o700); err != nil {
-		return err
+		return nil, err
 	}
-	socket := &host.AttachSocket{Folder: folder, Start: startTerminal, Layout: layoutOf}
-	listener, err := socket.Listen()
-	if err != nil {
-		return err
-	}
-	defer listener.Close()
-	opener := runtimeOpener{stateFolder: folder, installationFolder: binder.installation.Folder,
-		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(),
-		hookCommand: filepath.Join(binder.installation.Folder, "bin", "journal-hook"), socket: socket,
-		declared:   isolatedDescriptors(),
-		worktrees:  &host.NativeWorktrees{Root: binder.binding.CanonicalRoot, Git: "git"},
-		relayState: binder.state.Folder}
-	opener.usage = host.NewUsageReports(folder)
-	opener.statusLines = &host.StatusLineRelays{}
-	go opener.usage.Run(ctx, journal)
-	preparation := startPreparation(journal, folder, localPrerequisites(folder, binder.installation.Folder))
-	reports := &host.StartReports{Folder: folder}
-	outcomes, err := host.ReconcileOnBoot(ctx, journal, preparation.States, reports, host.ContainerSessions{})
-	if err != nil {
-		return err
-	}
-	for _, outcome := range outcomes {
-		log.Printf("after the restart, start %s of binding %s is %s", outcome.StartKey, binder.binding.BindingID, outcome.Outcome)
-		leases.record(diagnostics.Event{Step: "reconciled after the restart: " + string(outcome.Outcome),
-			ClaimID: outcome.StartKey})
-	}
-	binder.finishReconciliation(ctx, journal, reports, reconciliation)
-	open := leases.opening(ctx, opener.open)
-	executor := &protectedExecutor{preparation: preparation, open: open, reports: reports, reporter: journal,
-		codexOwners: opener.codexOwners, arrangement: host.Local}
-	claims := claimServing{journal: journal, preparation: preparation, open: open, executor: executor,
-		startSocketFolder: folder, socket: socket, projectRoot: binder.binding.CanonicalRoot}
+	hookCommand := filepath.Join(binder.installation.Folder, "bin", "journal-hook")
+	names := hostNamesOf(journal, binder.installation.Folder, hookCommand)
 
-	return claims.run(ctx, claimed)
+	reads := hostapi.ProjectReads{Reader: host.ProjectReader{Root: binder.binding.CanonicalRoot}, Journal: journal}
+
+	return startHostProtocol(ctx, journal, binder.binding.Enrollment, folder, names, host.Containers{}, binder.release,
+		reads.Executors())
 }
 
 // fenceCheck is how often a running relay looks whether a disconnect fenced its folder.
@@ -207,23 +167,24 @@ func (binder bindingRelay) watchFence(ctx context.Context, stop context.CancelFu
 	}
 }
 
-// finishReconciliation sends the session stops kept while the device was away and marks the boot reconciled once no
-// start report or stop receipt is left unsent; otherwise the journal keeps starts and commands waiting.
+// finishReconciliation sends the session stops kept while the device was away and marks the boot reconciled once
+// they are taken; the inventory the host protocol sent at its start reported every process it still holds.
 func (binder bindingRelay) finishReconciliation(
 	ctx context.Context,
 	journal *client.Client,
-	reports *host.StartReports,
 	reconciliation *bootReconciliation,
 ) {
-	if err := binder.state.SendStopReceipts(ctx, binder.binding.BindingID, journal); err != nil {
+	for ctx.Err() == nil {
+		err := binder.state.SendStopReceipts(ctx, binder.binding.BindingID, journal)
+		if err == nil {
+			reconciliation.finish()
+			return
+		}
 		log.Printf("session stops of binding %s wait for the journal: %v", binder.binding.BindingID, err)
-		return
+		if !binder.wait(ctx, relayRetry, nil) {
+			return
+		}
 	}
-	if unsent, err := reports.Count(); err != nil || unsent > 0 {
-		log.Printf("start reports of binding %s wait for the journal", binder.binding.BindingID)
-		return
-	}
-	reconciliation.finish()
 }
 
 // nextReport keeps an acknowledged report and answers how long to wait before the next: half the time the
@@ -263,8 +224,8 @@ func (binder bindingRelay) wait(ctx context.Context, duration time.Duration, rec
 	}
 }
 
-// bootReconciliation is whether this boot reported what became of its earlier sessions: the start reports and
-// session stops kept while the device was away were taken, and the starts the journal counted as running compared.
+// bootReconciliation is whether this boot reported what became of its earlier sessions: the session stops kept while
+// the device was away were taken.
 type bootReconciliation struct {
 	done      chan struct{}
 	finished  atomic.Bool

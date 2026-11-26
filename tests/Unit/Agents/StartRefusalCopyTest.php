@@ -110,13 +110,6 @@ final class StartRefusalCopyTest extends TestCase
                 'Connect a host',
                 'Ask your host operator to connect a host.',
             ],
-            'combination-not-declared' => [
-                StartPreflightRefusal::CombinationNotDeclared,
-                'The host does not support these settings together.',
-                StartRemedyType::ReviewConfiguration,
-                'Review configuration',
-                'Review configuration',
-            ],
             'account-folder-rejected' => [
                 HostRefusal::AccountFolderRejected,
                 'The host could not verify the protection required for this account.',

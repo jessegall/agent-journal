@@ -29,7 +29,7 @@ use PhpOption\Some;
  * withdrawn, unless reviewers it sent are still out, whose reports wake it again. It keeps their ids with its frame.
  * It only nudges; the plan itself refuses changes while it is under review.
  */
-#[StateType(ReviewPlanStateReference::TYPE_KEY, schemaVersion: 1)]
+#[StateType(ReviewPlanStateReference::class, schemaVersion: 1)]
 final class ReviewPlanState extends AgentState implements DurableState, UniqueSubjectState
 {
     private bool $isReviewing = true;

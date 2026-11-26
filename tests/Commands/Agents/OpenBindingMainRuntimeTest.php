@@ -18,7 +18,6 @@ use App\Models\Projects\ProjectBinding;
 use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
-use App\Support\MainInboxTakeover;
 use App\Values\ProfileKey;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -29,8 +28,9 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A binding's relay opens its main agent's runtime: a start that names no model takes its profile's default, and the
- * server's own main agent stays attached to the main inbox.
+ * A binding's relay opens its main agent's runtime: a start that names no model takes its profile's default, its answer
+ * carries the plan its device runs on the owner's terminal, and the server's own main agent stays attached to the main
+ * inbox.
  */
 #[TestsCommand(OpenBindingMainRuntimeCommand::class)]
 final class OpenBindingMainRuntimeTest extends TestCase
@@ -68,11 +68,31 @@ final class OpenBindingMainRuntimeTest extends TestCase
         $this->assertSame($family->modelAt($profile->preferredTier), $session->model);
     }
 
+    public function test_a_start_answers_the_plan_its_device_runs_on_the_owners_terminal(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+
+        $plan = $this->start($binding, [])->assertCreated()->json('plan');
+
+        $sessionId = AgentSession::query()->sole()->id;
+        $settings = json_decode($plan['files'][0]['content'], true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame(
+            ['claude', ['--session-id', $sessionId], 'settings.json', $binding->canonical_root, true],
+            [
+                $plan['argv'][0],
+                array_slice($plan['argv'], -2),
+                $plan['files'][0]['name'],
+                $plan['folder'],
+                str_contains(json_encode($settings['hooks'], JSON_THROW_ON_ERROR), '{host:HOOK_COMMAND}'),
+            ],
+        );
+    }
+
     public function test_a_binding_runtime_leaves_the_servers_main_agent_attached_to_main(): void
     {
         $serverMain = $this->journal->idleAgent('Server main', 'main-agent')->agentCalled('Server main');
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($serverMain),
+            fn () => $this->journal->seatMainAgent($serverMain),
         );
         $binding = $this->connected('the-ticket', self::NONCE);
 
@@ -129,7 +149,6 @@ final class OpenBindingMainRuntimeTest extends TestCase
                 'folder' => $binding->canonical_root,
                 'agentId' => $binding->main_agent_id,
                 'driver' => 'claude-code',
-                'driverBuild' => '2.1.323',
                 'profile' => 'main-agent',
                 'model' => 'opus',
                 ...$changes,

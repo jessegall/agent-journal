@@ -10,6 +10,7 @@ use App\Contracts\Records\StateProvider;
 use App\CoreCommands;
 use App\Models\Messages\Message;
 use App\Support\CommandRegistry;
+use App\Support\Decisions\StateReferenceKeys;
 use App\Support\LinkTypeRegistry;
 use App\Support\Stack\StateTypes;
 use App\Support\States\AnswerMessageState;
@@ -52,6 +53,6 @@ final class CoreMessagingWithoutChatTest extends TestCase
         $this->assertSame(Message::class, $this->app->make(LinkTypeRegistry::class)->modelFor(Message::linkType()));
 
         $types = $this->app->make(StateTypes::class)->registry();
-        $this->assertSame(AnswerMessageState::class, $types->get(AnswerMessageStateReference::TYPE_KEY)->stateClass);
+        $this->assertSame(AnswerMessageState::class, $types->get(StateReferenceKeys::of(AnswerMessageStateReference::class))->stateClass);
     }
 }

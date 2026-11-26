@@ -10,7 +10,10 @@ use App\Support\References\SubjectReference;
 
 final class LogDueStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'tasks.log_due';
+    public static function key(): string
+    {
+        return 'tasks.log_due';
+    }
 
     public static function forTask(string $taskId, int $number): StateReference
     {

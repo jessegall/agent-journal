@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"slices"
 	"time"
 
-	"journal-agent/client"
 	"journal-agent/host"
+	"journal-agent/hostapi"
 	"journal-agent/localsession"
 	"journal-agent/project"
 	"journal-agent/userservice"
@@ -20,27 +19,19 @@ import (
 // errNotQuiet stops a disconnect whose relay or one of its children may still write.
 var errNotQuiet = errors.New("this folder's work has not stopped, so nothing of it was removed")
 
-// errReceiptsUnacknowledged stops a disconnect while start reports the journal never acknowledged are kept.
-var errReceiptsUnacknowledged = errors.New("start reports the journal has not acknowledged are kept on this machine")
-
 // relayStopCheck is how often a disconnect looks whether the fenced relay let go of its lock.
 const relayStopCheck = 250 * time.Millisecond
 
-// receiptsSendWait bounds the one attempt to send the unacknowledged start reports before they are counted.
-const receiptsSendWait = 10 * time.Second
-
-// disconnectRequest is what journal disconnect was asked: confirmed with --yes, the binding of a disconnect to finish
-// with --resume, and whether --discard-receipts lets unacknowledged start reports go.
+// disconnectRequest is what journal disconnect was asked: confirmed with --yes and the binding of a disconnect to
+// finish with --resume.
 type disconnectRequest struct {
-	confirmed       bool
-	resume          string
-	discardReceipts bool
+	confirmed bool
+	resume    string
 }
 
 func disconnectRequestOf(flags []string) disconnectRequest {
 	request := disconnectRequest{
-		confirmed:       slices.Contains(flags, "--yes"),
-		discardReceipts: slices.Contains(flags, "--discard-receipts"),
+		confirmed: slices.Contains(flags, "--yes"),
 	}
 	if at := slices.Index(flags, "--resume"); at >= 0 && at+1 < len(flags) {
 		request.resume = flags[at+1]
@@ -168,8 +159,6 @@ func (commands dispatcher) disconnectStep(
 		return nil, commands.disableOwnedService(record)
 	case host.StepRelay:
 		return nil, commands.awaitQuiet(record)
-	case host.StepReceipts:
-		return nil, commands.settleReceipts(record, request, contacted, stdout)
 	case host.StepWorktrees:
 		return commands.retireWorktrees(record)
 	case host.StepSignIns:
@@ -223,63 +212,24 @@ func (commands dispatcher) awaitQuiet(record host.DisconnectRecord) error {
 		}
 		time.Sleep(relayStopCheck)
 	}
-	unfinished, err := unfinishedStarts(commands.stateFolder, record.BindingID)
+	live, err := hostapi.LiveKeptProcesses(host.RelayFolder(commands.stateFolder, record.BindingID))
 	if err != nil {
-		return fmt.Errorf("%w: the status of its starts is unknown: %v", errNotQuiet, err)
+		return fmt.Errorf("%w: the status of its processes is unknown: %v", errNotQuiet, err)
 	}
-	if len(unfinished) > 0 {
-		return fmt.Errorf("%w: runtime %s still runs as process %d, or the system cannot say it ended",
-			errNotQuiet, unfinished[0].RuntimeID, unfinished[0].Execution.ProcessID)
+	if len(live) > 0 {
+		return fmt.Errorf("%w: process %s of the journal still runs, or the system cannot say it ended",
+			errNotQuiet, live[0])
 	}
 
 	return nil
 }
 
-// settleReceipts takes the count of start reports the journal has not acknowledged: it sends them first when the
-// journal answers, and lets the rest go only with --discard-receipts, since the journal then never hears of them.
-func (commands dispatcher) settleReceipts(
-	record host.DisconnectRecord,
-	request disconnectRequest,
-	contacted *bool,
-	stdout io.Writer,
-) error {
-	reports := &host.StartReports{Folder: host.RelayFolder(commands.stateFolder, record.BindingID)}
-	count, err := reports.Count()
-	if err != nil || count == 0 {
-		return err
-	}
-	binding, err := record.Connection(commands.stateFolder).Binding()
-	if err == nil {
-		*contacted = true
-		ctx, cancel := context.WithTimeout(context.Background(), receiptsSendWait)
-		defer cancel()
-		_ = reports.Send(ctx, client.ForRemoteProject(binding.Enrollment, commands.transport))
-		if count, err = reports.Count(); err != nil || count == 0 {
-			return err
-		}
-	}
-	if request.discardReceipts {
-		fmt.Fprintf(stdout, "Discarded %d start reports the journal never acknowledged.\n", count)
-		return nil
-	}
-
-	return fmt.Errorf("%w: %d of them could not be sent, and without them the journal never hears how those starts "+
-		"ended; reconnect the network and resume, or resume with --discard-receipts to let them go", errReceiptsUnacknowledged, count)
-}
-
 // retireWorktrees retires every worktree that can go and answers those kept; the receipts go only when none is kept,
 // since a kept worktree's receipt is what proves whose it is.
 func (commands dispatcher) retireWorktrees(record host.DisconnectRecord) ([]host.WorktreeCleanup, error) {
-	unfinished, err := unfinishedStarts(commands.stateFolder, record.BindingID)
-	if err != nil {
-		return nil, err
-	}
-	running := []string{}
-	for _, start := range unfinished {
-		running = append(running, start.RuntimeID)
-	}
+	// The relay is quiet and none of its processes runs, so no worktree is in use.
 	kept := []host.WorktreeCleanup{}
-	for _, cleanup := range (host.NativeWorktrees{Root: record.CanonicalRoot, Git: "git"}).Retire(context.Background(), running) {
+	for _, cleanup := range (host.NativeWorktrees{Root: record.CanonicalRoot, Git: "git"}).Retire(context.Background(), nil) {
 		if cleanup.Outcome != host.CleanupRemoved {
 			kept = append(kept, cleanup)
 		}
@@ -289,11 +239,6 @@ func (commands dispatcher) retireWorktrees(record host.DisconnectRecord) ([]host
 	}
 
 	return kept, project.Folder{Root: record.CanonicalRoot}.ForgetReceipts()
-}
-
-// unfinishedStarts are the starts of the binding's relay whose program may still run.
-func unfinishedStarts(stateFolder string, bindingID string) ([]host.StartRecord, error) {
-	return host.StartStates{Folder: filepath.Join(host.RelayFolder(stateFolder, bindingID), "starts")}.Unfinished()
 }
 
 // printMachineUndo names what the last removal did with the setup every connected folder shared: the releases, the

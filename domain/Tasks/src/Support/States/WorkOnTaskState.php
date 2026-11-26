@@ -36,7 +36,7 @@ use PhpOption\Some;
  * end of an earlier claim never closes a resumed run. A stop is held back while the run is open and held by this agent.
  * The task is in the agent's focus while its frame is the live top, and leaves it once the frame stops being live.
  */
-#[StateType(WorkOnTaskStateReference::TYPE_KEY, schemaVersion: 1)]
+#[StateType(WorkOnTaskStateReference::class, schemaVersion: 1)]
 final class WorkOnTaskState extends AgentState implements DurableState, WorkState
 {
     /**

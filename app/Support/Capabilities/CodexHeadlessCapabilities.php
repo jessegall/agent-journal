@@ -11,8 +11,8 @@ use App\Values\OperationSupport;
 use App\Values\SupportSnapshot;
 
 /**
- * What Codex headless can do: what every headless driver can, but not resume a thread exactly, since its
- * app-server owner cannot yet reopen a thread after it restarts and a guessed replacement is never offered.
+ * What Codex headless can do: what every headless driver can, but not resume a thread exactly, as a guessed
+ * replacement is never offered, nor share its account, as each exec turn refreshes the account's sign-in itself.
  */
 final readonly class CodexHeadlessCapabilities implements DriverCapabilities
 {
@@ -20,6 +20,8 @@ final readonly class CodexHeadlessCapabilities implements DriverCapabilities
      * Codex's sandbox limits writes only, so its tools could read its sign-in in a shared container.
      */
     public const string NOT_CONTAINABLE = "Codex's sandbox does not keep tools from its sign-in; container starts wait for the provider transport";
+
+    public const string RUNS_ALONE = 'Codex headless refreshes its own sign-in in each turn, so it runs alone on its account.';
 
     public const string NO_EXACT_RESUME = 'Codex headless cannot reopen an earlier thread yet; start it in a new conversation.';
 
@@ -34,6 +36,10 @@ final readonly class CodexHeadlessCapabilities implements DriverCapabilities
             [
                 DriverCapability::RunContained,
                 OperationSupport::unsupported(self::NOT_CONTAINABLE),
+            ],
+            [
+                DriverCapability::SharedAccount,
+                OperationSupport::unsupported(self::RUNS_ALONE),
             ],
         ]);
     }

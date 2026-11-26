@@ -23,6 +23,7 @@ use App\Events\Sessions\SessionProcessStopped;
 use App\Events\Sessions\StartRefused;
 use App\Exceptions\SessionProcessUnknown;
 use App\Models\Agents\AgentSession;
+use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
@@ -518,6 +519,25 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     protected function withStartKeys(Builder $query, array $keys): void
     {
         $query->whereIn('start_key', $keys);
+    }
+
+    /**
+     * The starts the journal claimed but whose host never took up a process of theirs by the cutoff: every process the
+     * journal ordered for them, such as their build probe, is still only ordered, and their running session never
+     * beat.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function untakenSince(Builder $query, CarbonImmutable $cutoff): void
+    {
+        $query->where('status', SessionProcessStatus::Starting->value)
+            ->where('created_at', '<=', $cutoff)
+            ->whereNotIn('id', HostProcess::query()->takenUp()->startIds())
+            ->whereIn('session_id', AgentSession::query()
+                ->withAnyStatus(SessionStatus::running())
+                ->neverBeat()
+                ->keys());
     }
 
     /**

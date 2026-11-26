@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Profiles;
 
+use App\Contracts\Drivers\DriverProfile;
 use App\Contracts\Drivers\PinnedBuilds;
+use App\Contracts\Drivers\TurnResult;
 use App\Data\Accounts\ClaudeStatusData;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Hosts\HostProcessPurpose;
@@ -14,6 +16,7 @@ use App\Enums\Navigation\NavigationKey;
 use App\Exceptions\BuildNotPinned;
 use App\Exceptions\ProfileRefused;
 use App\Support\DefaultDrivers;
+use App\Support\Drivers\Processes\ClaudeResult;
 use App\Support\Drivers\Processes\StatusLineLimits;
 use App\Support\KeyScripts\KeyScript;
 use App\Support\KeyScripts\KeyStep;
@@ -36,7 +39,7 @@ use JsonException;
  * server but the journal's, an explicit tool set without any route that starts another agent, and exact session ids.
  * The host writes its settings files into the process's own files folder and knows nothing else of the driver.
  */
-final readonly class ClaudeCodeProfile
+final readonly class ClaudeCodeProfile implements DriverProfile
 {
     /**
      * The driver's executable, as it is installed on every host.
@@ -399,11 +402,16 @@ final readonly class ClaudeCodeProfile
                 ),
             ],
             others: [
-                new MarkedRow('spinner', self::SPINNER_GLYPHS, '…'),
-                new MarkedRow('status', ['  '], 'shift+tab', 3),
+                new MarkedRow('spinner', self::SPINNER_GLYPHS, ['…']),
+                new MarkedRow('status', ['  '], ['shift+tab'], 3),
             ],
             isBracketedPaste: true,
         );
+    }
+
+    public function family(): string
+    {
+        return DefaultDrivers::CLAUDE_CODE;
     }
 
     public function build(): string
@@ -571,6 +579,11 @@ final readonly class ClaudeCodeProfile
             && in_array($status->authMethod, self::SIGN_IN_METHODS, true)
             && $status->configDirectory !== null
             && rtrim($status->configDirectory, '/') === rtrim($accountFolder, '/');
+    }
+
+    public function turnResult(string $processId): TurnResult
+    {
+        return new ClaudeResult($processId);
     }
 
     public function versionProbe(string $workFolder): HostProcessPlan

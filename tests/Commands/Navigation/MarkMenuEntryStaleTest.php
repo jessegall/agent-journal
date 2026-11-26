@@ -68,14 +68,9 @@ final class MarkMenuEntryStaleTest extends TestCase
         $this->journal->installInboxes();
         [$host, $opened] = $this->openRuntime();
 
-        $this->journal->hostCall($host, 'POST', '/host/menu-entries/01jd8x0g9m3qz6v4k2t7r00000/stale', [
-            'runtime_id' => $opened->runtimeId,
-            'operation_key' => 'stale-1',
-            'reason' => NavigationReason::LabelMissing->value,
-            'step' => 2,
-            'build' => '2.1.323',
-            'rows' => ['Model: GPT-5'],
-        ])->assertForbidden();
+        $this->assertThrows(
+            fn () => $this->stale($host, '01jd8x0g9m3qz6v4k2t7r00000', $opened->runtimeId, ['Model: GPT-5']),
+        );
     }
 
     /**
@@ -83,14 +78,15 @@ final class MarkMenuEntryStaleTest extends TestCase
      */
     private function stale(EnrolledHost $host, string $entryId, string $runtimeId, array $rows): void
     {
-        $this->journal->hostCall($host, 'POST', "/host/menu-entries/{$entryId}/stale", [
-            'runtime_id' => $runtimeId,
-            'operation_key' => 'stale-1',
-            'reason' => NavigationReason::LabelMissing->value,
-            'step' => 2,
-            'build' => '2.1.323',
-            'rows' => $rows,
-        ])->assertNoContent();
+        $this->journal->asSystem(new MarkMenuEntryStaleCommand(
+            $host->hostId,
+            $entryId,
+            $runtimeId,
+            NavigationReason::LabelMissing,
+            2,
+            '2.1.323',
+            $rows,
+        ));
     }
 
     private function entryFrom(DriverRequest $stalled): MenuEntry

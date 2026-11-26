@@ -10,6 +10,7 @@ use App\Models\Projects\Host;
 use App\Support\DefaultDrivers;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -51,6 +52,32 @@ final class JournalRuntimesTest extends TestCase
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $host = $this->journal->hostCalled('Laptop')->hostId;
         $this->assertSame([$host, $opened->sessionId], [$runtime->host_id, $runtime->agent_session_id]);
+    }
+
+    public function test_a_runtimes_requests_and_start_are_claimed_once(): void
+    {
+        $this->chooseActiveAccounts();
+        $this->journal->owner()->idleAgent('Driven')->enrollHost('Laptop', ['/work/project']);
+        $opened = $this->journal->openRuntimeOn(
+            'Driven',
+            'Laptop',
+            '/work/project',
+            driverType: DriverType::Terminal,
+            firstMessage: 'Hello',
+        );
+        $hostId = $this->journal->hostCalled('Laptop')->hostId;
+
+        $start = $this->journal->claimStartOf($hostId, $opened->sessionId);
+        $this->journal->claimRequestsOnHost($hostId);
+
+        $this->journal->assertResult(
+            [$start->id, []],
+            [
+                $this->journal->claimStartOf($hostId, $opened->sessionId)->id,
+                $this->journal->claimRequestsOnHost($hostId)->requests,
+            ],
+        );
+        $this->assertThrows(fn () => $this->journal->claimedRequestOnHost($hostId, 'no-such-request'), FixtureRefused::class);
     }
 
     public function test_the_owner_chooses_an_account_for_every_driver_and_a_start_runs_with_it(): void
@@ -104,7 +131,7 @@ final class JournalRuntimesTest extends TestCase
         $this->journal->markHostAnswered($host);
 
         $this->assertFalse(
-            Host::query()->findOrFail($host->hostId)->hasAnswerToRecord('/host/claim', [], CarbonImmutable::now()),
+            Host::query()->findOrFail($host->hostId)->hasAnswerToRecord('/host/orders/claim', [], CarbonImmutable::now()),
         );
     }
 }

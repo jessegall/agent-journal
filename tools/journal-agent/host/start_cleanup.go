@@ -2,9 +2,6 @@ package host
 
 import (
 	"context"
-	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -42,73 +39,6 @@ func (labels StartLabels) asMap() map[string]string {
 	}
 
 	return named
-}
-
-// CleanupStep mirrors App\Agents\Enums\CleanupStep: one transient resource of an ended start.
-type CleanupStep string
-
-const (
-	CleanupContainer CleanupStep = "container"
-	CleanupNetwork   CleanupStep = "network"
-	CleanupRuntime   CleanupStep = "runtime"
-)
-
-// PendingCleanup mirrors one entry of the journal's pending cleanups: the ended start's session and what is left.
-type PendingCleanup struct {
-	SessionID string        `json:"session_id"`
-	Remaining []CleanupStep `json:"remaining"`
-}
-
-// CleanupReport mirrors what the host reports of one pass: what it removed or found gone, the dirty workspace it
-// kept, and why a deletion failed.
-type CleanupReport struct {
-	Removed       []CleanupStep `json:"removed"`
-	KeptWorkspace string        `json:"kept_workspace,omitempty"`
-	Failure       string        `json:"failure,omitempty"`
-}
-
-// StartCleanup removes an ended start's container, start network and ephemeral runtime folder. The workspace and
-// its named volumes are never among them, and no account is touched.
-type StartCleanup struct {
-	Containers     Containers
-	Installation   InstallationName
-	RuntimeFolders string
-	StopSeconds    int
-}
-
-// CleanUp removes what the pending cleanup still lists, the container first, since its network and folder are in
-// use until it is gone. Something already gone counts as removed, so a second pass changes nothing more; the first
-// failure ends the pass and is reported, to be retried.
-func (cleanup StartCleanup) CleanUp(ctx context.Context, pending PendingCleanup) CleanupReport {
-	report := CleanupReport{Removed: []CleanupStep{}}
-	name := cleanup.Installation.ResourceName(pending.SessionID)
-	removals := map[CleanupStep]func() error{
-		CleanupContainer: func() error { return cleanup.Containers.Remove(ctx, name, cleanup.StopSeconds) },
-		CleanupNetwork:   func() error { return cleanup.Containers.RemoveNetwork(ctx, name) },
-		CleanupRuntime: func() error {
-			return os.RemoveAll(filepath.Join(cleanup.RuntimeFolders, filepath.Base(pending.SessionID)))
-		},
-	}
-	for _, step := range []CleanupStep{CleanupContainer, CleanupNetwork, CleanupRuntime} {
-		if !containsStep(pending.Remaining, step) {
-			continue
-		}
-		if err := removals[step](); err != nil {
-			report.Failure = fmt.Sprintf("removing the %s failed: %v", step, err)
-			return report
-		}
-		report.Removed = append(report.Removed, step)
-	}
-	return report
-}
-
-func containsStep(steps []CleanupStep, wanted CleanupStep) bool {
-	for _, step := range steps {
-		if step == wanted {
-			return true
-		}
-	}
-	return false
 }
 
 // Remove stops the container within the bound and removes it with its anonymous volumes, which Docker refuses while
@@ -201,61 +131,4 @@ func (containers Containers) BindsAccount(ctx context.Context, folder string) (b
 	}
 
 	return len(listed) > 0, nil
-}
-
-// OrphanOutcome is what reconciliation concluded about one container no running execution of this host owns.
-type OrphanOutcome struct {
-	Session string
-	Outcome Reconciliation
-}
-
-// SweepOrphans fences every container of this installation that no execution of this host runs: it is stopped,
-// confirmed exited and removed. One whose exit cannot be confirmed stays needing attention, possibly still running,
-// and is never reported idle. Containers without this installation's label are never touched.
-func SweepOrphans(
-	ctx context.Context,
-	containers Containers,
-	installation string,
-	runsHere func(session string) bool,
-	stopSeconds int,
-) ([]OrphanOutcome, error) {
-	found, err := containers.Labelled(ctx, installation)
-	if err != nil {
-		return nil, err
-	}
-	var outcomes []OrphanOutcome
-	for _, container := range found {
-		if runsHere(container.Session) {
-			continue
-		}
-		outcome := Exited
-		if containers.Remove(ctx, container.ID, stopSeconds) != nil {
-			outcome = NeedsAttention
-		}
-		outcomes = append(outcomes, OrphanOutcome{Session: container.Session, Outcome: outcome})
-	}
-	return outcomes, nil
-}
-
-// CleanupJournal is the journal's side of start cleanups: the ones this host still owes, and each pass's report.
-type CleanupJournal interface {
-	PendingCleanups(ctx context.Context, answer any) error
-	NotifyCleanup(ctx context.Context, sessionID string, report any) error
-}
-
-// RunPending makes one pass over every cleanup the journal says this host owes and reports each; a pass that
-// failed is reported with its failure and offered again by the journal on the next round.
-func (cleanup StartCleanup) RunPending(ctx context.Context, journal CleanupJournal) error {
-	var answer struct {
-		Pending []PendingCleanup `json:"pending"`
-	}
-	if err := journal.PendingCleanups(ctx, &answer); err != nil {
-		return err
-	}
-	for _, pending := range answer.Pending {
-		if err := journal.NotifyCleanup(ctx, pending.SessionID, cleanup.CleanUp(ctx, pending)); err != nil {
-			return err
-		}
-	}
-	return nil
 }

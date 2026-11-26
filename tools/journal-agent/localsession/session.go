@@ -1,7 +1,7 @@
 // Package localsession prepares and starts a provider session of a project connected to a server journal on the
-// owner's own machine: its own start folder, home and run folder under .journal/sessions/<runtime>, settings the
-// journal owns with the sealed hook adapter, argv only from the pinned start profile, the provider from the sealed
-// installation and a clean environment.
+// owner's own machine: its own start folder, home and run folder under .journal/sessions/<runtime>, the argv,
+// settings and environment of the plan the journal sent with the runtime, the sealed hook adapter, the provider from
+// the sealed installation and a clean environment.
 package localsession
 
 import (
@@ -13,8 +13,7 @@ import (
 	"slices"
 	"strings"
 
-	"journal-agent/profiles"
-	"journal-agent/profiles/contracts"
+	"journal-agent/hostapi"
 )
 
 // ErrSettingsOverride refuses an argument that would replace the journal's settings, hooks, tools or session.
@@ -22,6 +21,9 @@ var ErrSettingsOverride = errors.New("a connected session runs only the journal'
 
 // ErrProviderMissing is returned when the sealed installation holds no provider program.
 var ErrProviderMissing = errors.New("the provider program is not in the installation")
+
+// ErrPlanEmpty refuses a plan the journal sent with no program to run.
+var ErrPlanEmpty = errors.New("the journal sent no program to run")
 
 // overridingArguments are the provider arguments a user may not add to a connected session.
 var overridingArguments = []string{
@@ -39,8 +41,9 @@ type Session struct {
 	Root         string
 	RuntimeID    string
 	SessionID    string
-	Resume       bool
 	Installation string
+	// Plan is what the journal decided the session runs: its argv, settings files and environment.
+	Plan hostapi.OpenPlan
 }
 
 // Folder is the session's own folder under the root's .journal/sessions.
@@ -56,8 +59,8 @@ func (session Session) ConfigFolder() string {
 // RunFolder is where the session socket and the session's preparation record live.
 func (session Session) RunFolder() string { return filepath.Join(session.Folder(), "run") }
 
-// Command prepares the session's folders and settings and answers the Claude Code process to start, refusing any
-// extra argument that would override what the journal owns.
+// Command prepares the session's folders and the journal's plan, and answers the Claude Code process to start,
+// refusing any extra argument that would override what the journal owns.
 func (session Session) Command(extra []string) (*exec.Cmd, error) {
 	for _, argument := range extra {
 		name, _, _ := strings.Cut(argument, "=")
@@ -79,26 +82,28 @@ func (session Session) Command(extra []string) (*exec.Cmd, error) {
 		}
 	}
 
-	profile := profiles.ClaudeCode{}
-	start := contracts.BaseStart{
-		SettingsFolder: home,
-		SessionID:      session.SessionID,
-		HookCommand:    profiles.LocalProjectHookCommand(session.Installation),
-		WorkFolder:     session.Root,
-	}.Terminal(session.Resume)
-	if err := writeSettings(profile, start); err != nil {
-		return nil, err
-	}
-	arguments, err := profile.Arguments(start)
+	plan, err := hostapi.PrepareOpenPlan(filepath.Join(session.Folder(), "plan"), session.Plan, session.hostNames())
 	if err != nil {
 		return nil, err
 	}
+	if len(plan.Argv) == 0 {
+		return nil, ErrPlanEmpty
+	}
 
-	command := exec.Command(program, append(arguments, extra...)...)
+	// The program is always the installation's own; the plan names it only by its name.
+	command := exec.Command(program, append(plan.Argv[1:], extra...)...)
 	command.Dir = startFolder
-	command.Env = session.environment(home)
+	command.Env = append(session.environment(home), plan.Environment...)
 
 	return command, nil
+}
+
+// hostNames are the names a journal's plan may use for this machine: the installation and its hook adapter.
+func (session Session) hostNames() map[string]string {
+	return map[string]string{
+		"INSTALLATION": session.Installation,
+		"HOOK_COMMAND": filepath.Join(session.Installation, "bin", "journal-hook"),
+	}
 }
 
 // environment is the clean environment of the session: the terminal's platform variables, an explicit PATH of the
@@ -120,19 +125,4 @@ func (session Session) environment(home string) []string {
 			filepath.Join(session.Installation, "bin")+":/usr/bin:/bin:/usr/sbin:/sbin",
 		"JOURNAL_SESSION_RUN="+session.RunFolder(),
 	)
-}
-
-// writeSettings writes the profile's settings files into the session home, readable by the user alone.
-func writeSettings(profile contracts.DriverProfile, start contracts.Start) error {
-	files, err := profile.SettingsFiles(start)
-	if err != nil {
-		return err
-	}
-	for _, file := range files {
-		if err := os.WriteFile(filepath.Join(start.SettingsFolder, file.Name), file.Content, 0o600); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

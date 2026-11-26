@@ -19,6 +19,8 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Hosts\HostProcessPurpose;
+use App\Enums\Hosts\HostProcessReportType;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Projects\HostCapabilityType;
@@ -250,7 +252,7 @@ final class StartAgentTest extends TestCase
 
     public function test_a_start_no_host_took_up_within_the_presence_window_ends_and_the_agent_can_start_again(): void
     {
-        $receipt = $this->start($this->hostClaimedRequest());
+        $receipt = $this->start($this->request());
         $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addSeconds(121)));
 
         $this->app->make(StartHeartbeats::class)->markSilentStarts();
@@ -261,13 +263,15 @@ final class StartAgentTest extends TestCase
             [SessionStatus::Ended, SessionProcessStatus::Cancelled, false],
             [$session->status, $start->status, CapacityReservation::isHeldFor($session->start_request_id)],
         );
-        $this->assertNotSame($receipt->sessionId, $this->start($this->hostClaimedRequest())->sessionId);
+        $this->assertNotSame($receipt->sessionId, $this->start($this->request())->sessionId);
     }
 
     public function test_a_start_a_host_took_up_stays_running_when_it_falls_silent(): void
     {
         $receipt = $this->start($this->request());
-        SessionProcess::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole()->claim();
+        $runtimeId = (string) AgentRuntime::findForSession($receipt->sessionId)?->id;
+        $this->journal->callJournalProcess('probe', $runtimeId, HostProcessPurpose::BuildProbe)
+            ->reportHostProcess('probe', HostProcessReportType::Running);
         $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addSeconds(121)));
 
         $this->app->make(StartHeartbeats::class)->markSilentStarts();
@@ -416,9 +420,7 @@ final class StartAgentTest extends TestCase
     private function servingBindingOf(string $name): ProjectBinding
     {
         $project = $this->journal->project($name)->projectCalled($name);
-        $descriptors = Host::query()->enrolled()->sole()->descriptors->items();
         $relay = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
-        $relay->recordDescriptors($descriptors);
         $binding = ProjectBinding::create(
             $relay,
             $project,
@@ -431,7 +433,7 @@ final class StartAgentTest extends TestCase
                 bin2hex(random_bytes(8)),
             ),
         );
-        $binding->recordPresence(new PresenceReport('boot-1', 1, '1.0.0', true, false, 0, [], true));
+        $binding->recordPresence(new PresenceReport('boot-1', 1, '1.0.0', true, false, 0, true));
 
         return $binding;
     }

@@ -52,6 +52,16 @@ final class SessionLifeTest extends TestCase
      */
     private const int TYPING_TRIES = 5;
 
+    /**
+     * The thread the recorded Codex exec turn started, which the turn's request is bound to.
+     */
+    private const string CODEX_THREAD = '01a1eea7-3f30-73b0-909d-32c186306641';
+
+    /**
+     * The row of the recorded Codex terminal that shows it took the first message.
+     */
+    private const string CODEX_ANSWER = '• I’ll run ls, then write a 600-word essay about terminals.';
+
     private const array TABLES = [
         'hosts',
         'host_processes',
@@ -166,13 +176,95 @@ final class SessionLifeTest extends TestCase
         $this->journal->assertResult(1, count($this->journal->realHostClaudeStarts()));
     }
 
-    public function test_a_claude_code_terminal_ends_with_its_hosts_restart_as_its_terminal_is_the_hosts(): void
+    public function test_a_claude_code_terminal_lost_with_its_hosts_restart_is_opened_again_resuming_its_conversation(): void
     {
-        $this->openAnsweredTerminal();
+        $runtimeId = $this->openAnsweredTerminal();
 
         $this->journal->restartRealHost()->waitForHostProcess('terminal', HostProcessStatus::Lost);
+        $this->journal->callJournalProcess('again', $runtimeId, HostProcessPurpose::AgentTerminal)
+            ->waitForHostProcess('again', HostProcessStatus::Running);
+        $this->journal->driveHostProcess('again', fn () => $this->isComposerShownOn('again'));
 
-        $this->journal->assertResult(1, count($this->journal->realHostClaudeStarts()));
+        $this->journal->assertResult(
+            ['--session-id', '--resume'],
+            array_map(
+                fn (array $arguments) => in_array('--resume', $arguments, true) ? '--resume' : '--session-id',
+                $this->journal->realHostClaudeStarts(),
+            ),
+        );
+    }
+
+    public function test_a_codex_terminal_driven_by_the_journal_answers_its_message_and_stops(): void
+    {
+        $this->arrangeTerminalHost();
+        $this->answerTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5', self::CODEX_ANSWER);
+
+        $this->journal->asSystem(new StopHostProcessCommand(
+            $this->journal->hostProcessCalled('codex')->id,
+            1000,
+            1000,
+            HostOrderSource::fromJournal(),
+        ));
+
+        $this->journal->waitForHostProcess('codex', HostProcessStatus::Exited);
+        $this->journal->assertResult([1, []], [count($this->journal->realHostCodexStarts()), $this->journal->realHostClaudeStarts()]);
+    }
+
+    public function test_a_codex_exec_turn_is_opened_driven_and_finished_with_its_thread_bound(): void
+    {
+        $this->journal->owner()
+            ->showDriverArrangements()
+            ->idleAgent('Exec')
+            ->enrollHost('Mac', [base_path()])
+            ->runRealHost('Mac')
+            ->chooseActiveAccountsOnRealHost();
+        $opened = $this->journal->openRuntimeOn(
+            'Exec',
+            'Mac',
+            base_path(),
+            driver: 'codex',
+            build: '0.165.0',
+            profile: 'codex',
+            model: 'gpt-5.5',
+            firstMessage: 'Run: ls.',
+        );
+
+        $applied = fn () => $this->progressOf($opened->firstRequestId) === RequestProgress::Applied;
+        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTurn, 'turn')
+            ->driveHostProcess('turn', $applied);
+
+        $this->journal->assertResult(
+            [HostProcessStatus::Exited, self::CODEX_THREAD, self::CODEX_THREAD],
+            [
+                $this->journal->hostProcessCalled('turn')->status,
+                $this->bindingOf($opened->firstRequestId),
+                AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->conversation_id,
+            ],
+        );
+    }
+
+    public function test_a_claude_code_and_a_codex_terminal_lost_with_their_hosts_restart_are_both_opened_again(): void
+    {
+        $this->arrangeTerminalHost();
+        $claude = $this->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5', 'done');
+        $codex = $this->answerTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5', self::CODEX_ANSWER);
+
+        $this->journal->restartRealHost()
+            ->waitForHostProcess('terminal', HostProcessStatus::Lost)
+            ->waitForHostProcess('codex', HostProcessStatus::Lost);
+        $this->journal->callJournalProcess('again', $claude, HostProcessPurpose::AgentTerminal)
+            ->callJournalProcess('codex again', $codex, HostProcessPurpose::AgentTerminal)
+            ->waitForHostProcess('again', HostProcessStatus::Running)
+            ->waitForHostProcess('codex again', HostProcessStatus::Running);
+
+        $this->journal->assertResult(
+            [2, 2, true],
+            [
+                count($this->journal->realHostClaudeStarts()),
+                count($this->journal->realHostCodexStarts()),
+                in_array('--resume', $this->journal->realHostClaudeStarts()[1], true),
+            ],
+        );
     }
 
     public function test_a_crashed_claude_code_terminal_starts_its_conversation_again_until_its_transcript_exists(): void
@@ -287,25 +379,58 @@ final class SessionLifeTest extends TestCase
     /**
      * A Claude Code terminal on the real host, its start proven by the journal and its first message answered.
      */
-    private function openAnsweredTerminal(): void
+    private function openAnsweredTerminal(): string
+    {
+        $this->arrangeTerminalHost();
+
+        return $this->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5', 'done');
+    }
+
+    /**
+     * The real host runs for a Claude Code and a Codex agent, with an account of each in the host's own folders.
+     */
+    private function arrangeTerminalHost(): void
     {
         $this->journal->owner()
             ->showDriverArrangements()
             ->idleAgent('Terminal')
+            ->idleAgent('Codex')
             ->enrollHost('Mac', [base_path()])
             ->runRealHost('Mac')
             ->chooseActiveAccountsOnRealHost();
+    }
+
+    /**
+     * Opens the agent's terminal of the driver, proves its start and drives it until a row of its screen is the
+     * answer; the runtime's id.
+     */
+    private function answerTerminal(
+        string $agent,
+        string $name,
+        string $driver,
+        string $build,
+        string|null $model,
+        string $answer,
+    ): string {
         $opened = $this->journal->openRuntimeOn(
-            'Terminal',
+            $agent,
             'Mac',
             base_path(),
+            driver: $driver,
+            build: $build,
+            profile: $driver === 'codex' ? 'codex' : 'claude',
             driverType: DriverType::Terminal,
-            firstMessage: 'Count slowly from 1 to 300, then say done.',
+            model: $model,
+            firstMessage: $driver === 'codex'
+                ? 'Run the shell command: ls. Then write a 600 word essay about terminals.'
+                : 'Count slowly from 1 to 300, then say done.',
         );
-        $answered = fn () => in_array('done', array_map(trim(...), $this->journal->hostProcessRows('terminal')), true);
+        $answered = fn () => in_array($answer, array_map(trim(...), $this->journal->hostProcessRows($name)), true);
 
-        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
-            ->driveHostProcess('terminal', $answered, seconds: 20);
+        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, $name)
+            ->driveHostProcess($name, $answered, seconds: 20);
+
+        return $opened->runtimeId;
     }
 
     /**
@@ -344,16 +469,21 @@ final class SessionLifeTest extends TestCase
      */
     private function isComposerShown(): bool
     {
-        return $this->isScreenStill() && str_contains(implode("\n", $this->journal->hostProcessRows('terminal')), 'Try "');
+        return $this->isComposerShownOn('terminal');
+    }
+
+    private function isComposerShownOn(string $name): bool
+    {
+        return $this->isScreenStill($name) && str_contains(implode("\n", $this->journal->hostProcessRows($name)), 'Try "');
     }
 
     /**
-     * Whether the screen the terminal's host last sent held still for a while.
+     * Whether the screen the named terminal's host last sent held still for a while.
      */
-    private function isScreenStill(): bool
+    private function isScreenStill(string $name = 'terminal'): bool
     {
         $frame = $this->journal->service(ProcessFeed::class)
-            ->latestFrame($this->journal->hostProcessCalled('terminal')->id);
+            ->latestFrame($this->journal->hostProcessCalled($name)->id);
 
         return $frame !== null && min($frame->unchangedMs) >= self::STILL_MS;
     }

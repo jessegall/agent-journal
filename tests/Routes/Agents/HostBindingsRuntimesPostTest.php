@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
+use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use App\Commands\Projects\AssertBindingRuntime\AssertBindingRuntimeCommand;
+use App\Enums\Drivers\DriverType;
 use App\Support\EnrolledHost;
 use Illuminate\Support\Str;
 use Tests\Support\Connections\ConnectsProjects;
@@ -28,6 +30,10 @@ final class HostBindingsRuntimesPostTest extends GuardedRouteEntryTestCase
     {
         [$relay, $bindingId] = $this->redeemedRelay();
         $agentId = strtolower((string) Str::ulid());
+        $opened = $journal->chooseActiveAccounts()
+            ->idleAgent('Binding main')
+            ->enrollHost('Runtime host', ['/work'])
+            ->openRuntimeOn('Binding main', 'Runtime host', '/work', driverType: DriverType::Terminal);
 
         return RouteCall::as(Caller::RelayHost, $relay)
             ->parameters([
@@ -38,14 +44,21 @@ final class HostBindingsRuntimesPostTest extends GuardedRouteEntryTestCase
                 'folder' => '/Users/owner/shop',
                 'agentId' => $agentId,
                 'driver' => 'claude-code',
-                'driverBuild' => '2.1.323',
                 'profile' => 'main-agent',
                 'model' => 'claude-opus-5-5',
             ])
+            ->reply(OpenBindingMainRuntimeCommand::class, $opened)
             ->expects(AssertBindingRuntimeCommand::class, [
                 'hostId' => $relay->hostId,
                 'bindingId' => $bindingId,
                 'agentId' => $agentId,
+            ])
+            ->expects(OpenBindingMainRuntimeCommand::class, [
+                'agentId' => $agentId,
+                'hostId' => $relay->hostId,
+                'folder' => '/Users/owner/shop',
+                'driver' => 'claude-code',
+                'model' => 'claude-opus-5-5',
             ]);
     }
 

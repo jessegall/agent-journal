@@ -9,6 +9,7 @@ use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Hooks\AnswerType;
 use App\Models\Agents\AgentSession;
 use App\Providers\DomainEventServiceProvider;
+use App\Support\Decisions\StateReferenceKeys;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Inputs\StopRequested;
 use App\Support\References\StateReference;
@@ -16,7 +17,7 @@ use App\Support\References\SubjectReference;
 use PHPUnit\Framework\AssertionFailedError;
 use Tests\Fixtures\Domains\Counting\CountingDomain;
 use Tests\Fixtures\Domains\Counting\Events\SubjectSeen;
-use Tests\Fixtures\Domains\Counting\States\CountFactsState;
+use Tests\Fixtures\Domains\Counting\States\CountFactsStateReference;
 use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\SubjectIds;
@@ -217,7 +218,7 @@ final class JournalStatesTest extends TestCase
     private function counting(string $subject, int $limit): StateReference
     {
         return new StateReference(
-            CountFactsState::TYPE_KEY,
+            StateReferenceKeys::of(CountFactsStateReference::class),
             new SubjectReference($subject, 1),
             ['subject' => $subject, 'limit' => $limit],
         );

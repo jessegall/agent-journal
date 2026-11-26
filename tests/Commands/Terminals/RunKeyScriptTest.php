@@ -11,9 +11,7 @@ use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\KeyScriptRefused;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Projects\Host;
 use App\Support\ActorReference;
-use App\Support\EnrolledHost;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -71,21 +69,5 @@ final class RunKeyScriptTest extends TestCase
 
         $this->expectException(ActorNotAllowed::class);
         $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
-    }
-
-    /**
-     * The request as the host's claim hands it out.
-     *
-     * @return array<string, mixed>
-     */
-    private function claimedScript(EnrolledHost $host, string $requestId): array
-    {
-        $requests = $this->journal->hostCall(
-            $host,
-            'POST',
-            '/host/claim?limit=10&wait=0&watched_version=0',
-        )->assertOk()->json('requests');
-
-        return collect($requests)->firstOrFail(fn (array $claimed) => $claimed['requestId'] === $requestId);
     }
 }

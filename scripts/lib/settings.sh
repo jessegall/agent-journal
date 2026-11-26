@@ -3,13 +3,13 @@
 #   . scripts/lib/settings.sh
 
 # The value .env gives a setting, or nothing.
-setting() {
+read_setting() {
     sed -n "s/^$1=//p" .env | tail -n 1
 }
 
 # The option that turns on the arrangement's services: a contained installation also runs the contained profile.
 compose_profiles() {
-    [ "$(setting AGENTS_ARRANGEMENT)" != contained ] || echo "--profile contained"
+    [ "$(read_setting AGENTS_ARRANGEMENT)" != contained ] || echo "--profile contained"
 }
 
 # Writes a setting into .env, replacing the line that sets it or adding one.

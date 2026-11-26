@@ -9,16 +9,20 @@ use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use App\Commands\Projects\AssertBindingRuntime\AssertBindingRuntimeCommand;
 use App\Commands\Sessions\RecordBindingRuntime\RecordBindingRuntimeCommand;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\PinnedBuilds;
 use App\Data\Connections\BindingRuntimeRequestData;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Sessions\BindingRuntime;
+use App\Support\Drivers\OwnTerminalPlans;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Opens a binding's main runtime on its own host: the start is checked against the binding first, then the
- * existing main-runtime opening runs for the binding's main agent in the binding's root. A start under an id its
- * device chose is recorded with its runtime, so asking again under that id answers the same runtime.
+ * Opens a binding's main runtime on its own host at its driver's pinned build: the start is checked against the binding
+ * first, then the existing main-runtime opening runs for the binding's main agent in the binding's root. A start under
+ * an id its device chose is recorded with its runtime, so asking again under that id answers the same runtime. The
+ * answer carries the plan the device runs on its owner's terminal.
  */
 final readonly class BindingRuntimeController
 {
@@ -30,15 +34,19 @@ final readonly class BindingRuntimeController
         BindingRuntimeRequestData $request,
         HostContext $host,
         CommandBus $commands,
+        PinnedBuilds $pins,
+        OwnTerminalPlans $plans,
     ): JsonResponse {
         $commands->run($request->asBindingRuntime($host->hostId, $binding));
 
         // A start asked again under its id, after a lost reply or a restart, answers the runtime it opened.
-        foreach ($request->startId === '' ? [] : BindingRuntime::findForBinding($binding, $request->startId) as $earlier) {
-            return $this->answer($binding, $earlier->session_id, $earlier->runtime_id, JsonResponse::HTTP_OK);
+        $earlier = $request->startId === '' ? [] : BindingRuntime::findRuntimeForBinding($binding, $request->startId);
+
+        foreach ($earlier as $runtime) {
+            return $this->answer($binding, $runtime, $plans, JsonResponse::HTTP_OK);
         }
 
-        $opened = $commands->run($request->asMainRuntime($host->hostId));
+        $opened = $commands->run($request->asMainRuntime($host->hostId, $pins->versionOf($request->driver)));
 
         if ($request->startId !== '') {
             $commands->run(
@@ -46,16 +54,22 @@ final readonly class BindingRuntimeController
             );
         }
 
-        return $this->answer($binding, $opened->sessionId, $opened->runtimeId, JsonResponse::HTTP_CREATED);
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+
+        return $this->answer($binding, $runtime, $plans, JsonResponse::HTTP_CREATED);
     }
 
-    private function answer(string $binding, string $sessionId, string $runtimeId, int $status): JsonResponse
+    /**
+     * The runtime with the plan its device runs on the owner's terminal.
+     */
+    private function answer(string $binding, AgentRuntime $runtime, OwnTerminalPlans $plans, int $status): JsonResponse
     {
         return new JsonResponse(
             [
-                'session_id' => $sessionId,
-                'runtime_id' => $runtimeId,
+                'session_id' => $runtime->agent_session_id,
+                'runtime_id' => $runtime->id,
                 'authority_generation' => ProjectBinding::resolveAuthorityGenerationOf($binding),
+                'plan' => $plans->of($runtime)->payload(),
             ],
             $status,
         );

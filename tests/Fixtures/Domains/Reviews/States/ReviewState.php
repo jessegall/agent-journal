@@ -15,11 +15,9 @@ use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 /**
  * A review state that runs only while the review settings group is switched on, read from the settings each time.
  */
-#[StateType(self::TYPE_KEY, schemaVersion: 1)]
+#[StateType(ReviewStateReference::class, schemaVersion: 1)]
 final class ReviewState extends AgentState implements ConditionalState
 {
-    public const string TYPE_KEY = 'reviews.reviewing';
-
     public function __construct(
         private readonly ReviewSettings $settings,
         private readonly CurrentSettingsResolver $currentSettings,

@@ -24,6 +24,7 @@ use App\Models\Skills\SkillPublication;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
+use App\Support\Decisions\StateReferenceKeys;
 use App\Support\DomainRegistry;
 use App\Support\ReminderContribution;
 use App\Support\SkillPublisher;
@@ -227,7 +228,7 @@ final class PublishSkillsTest extends TestCase
         $this->boundary($session);
 
         $this->assertCount(1, $this->stack->pushed);
-        $this->assertSame(AwaitSkillsStateReference::TYPE_KEY, $this->stack->pushed[0]->typeKey);
+        $this->assertSame(StateReferenceKeys::of(AwaitSkillsStateReference::class), $this->stack->pushed[0]->typeKey);
     }
 
     public function test_resume_picks_up_a_publication_a_killed_run_left_preparing(): void

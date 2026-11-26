@@ -2,6 +2,7 @@ package host
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/charmbracelet/x/ansi"
 	"github.com/moby/moby/client"
@@ -42,4 +43,27 @@ func lastCharacters(text string, limit int) string {
 	}
 
 	return string(characters[len(characters)-limit:])
+}
+
+// ContainerExit is how a session container's program ended: its exit code, whether the kernel killed it for using
+// more memory than its budget, and the last lines it printed.
+type ContainerExit struct {
+	Code        int
+	OutOfMemory bool
+	LastLines   string
+}
+
+// Evidence is the exit as the host reports it to the journal, with the program's own last lines as the reason when
+// it printed any.
+func (exit ContainerExit) Evidence() string {
+	if exit.OutOfMemory {
+		return "the session container was killed for using more memory than its budget"
+	}
+
+	evidence := "the session container's program exited with " + strconv.Itoa(exit.Code)
+	if exit.LastLines == "" {
+		return evidence
+	}
+
+	return evidence + ": " + exit.LastLines
 }

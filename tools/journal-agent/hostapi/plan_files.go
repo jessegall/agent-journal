@@ -18,11 +18,26 @@ type PlanFile struct {
 // filesFolderName is the placeholder name of a process's own files folder.
 const filesFolderName = "files"
 
-// writePlanFiles writes the plan's files and makes its folders inside the process's own folder, private to the host's
-// user, and answers the plan with those folders filled in its argv, restart argv, environment and container mount
-// sources, and with each variable it inherits that the host has.
+// writePlanFiles writes the plan's files and makes its folders inside the process's own folder, and answers the plan
+// filled as PrepareOpenPlan fills it, with each variable it inherits that the host has.
 func writePlanFiles(stateFolder, processID string, plan OpenPlan, hostNames map[string]string) (OpenPlan, error) {
-	processFolder := filepath.Join(stateFolder, "processes", processID)
+	filled, err := PrepareOpenPlan(filepath.Join(stateFolder, "processes", processID), plan, hostNames)
+	if err != nil {
+		return plan, err
+	}
+	// The host's own values are added after filling, so a value of the host is never read as a placeholder.
+	for _, name := range plan.Inherit {
+		if value, isSet := os.LookupEnv(name); isSet {
+			filled.Environment = append(filled.Environment, name+"="+value)
+		}
+	}
+	return filled, nil
+}
+
+// PrepareOpenPlan writes the plan's files and makes its folders inside the process folder, private to the user, and
+// answers the plan with those folders and the host's names filled in its argv, restart argv, environment and container
+// mount sources. A device that runs a journal's plan on its owner's own terminal prepares it the same way.
+func PrepareOpenPlan(processFolder string, plan OpenPlan, hostNames map[string]string) (OpenPlan, error) {
 	folders := map[string]string{}
 	names := append([]string{filesFolderName}, plan.Folders...)
 	if len(plan.SideSockets) > 0 {
@@ -58,12 +73,6 @@ func writePlanFiles(stateFolder, processID string, plan OpenPlan, hostNames map[
 			return plan, RefusalError{Refusal: Unsafe, Reason: "the Seatbelt profile " + plan.Seatbelt + " leaves its folder"}
 		}
 		filled.Argv = underSeatbelt(filled.Argv, filepath.Join(folders[filesFolderName], plan.Seatbelt))
-	}
-	// The host's own values are added after filling, so a value of the host is never read as a placeholder.
-	for _, name := range plan.Inherit {
-		if value, isSet := os.LookupEnv(name); isSet {
-			filled.Environment = append(filled.Environment, name+"="+value)
-		}
 	}
 	return filled, nil
 }

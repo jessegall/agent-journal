@@ -104,7 +104,7 @@ final readonly class PlanResolver implements PlanResolverContract
      */
     private function focusedPlanId(): Option
     {
-        return $this->states->ofCaller(WorkOnPlanStateReference::TYPE_KEY)
+        return $this->states->ofCaller(WorkOnPlanStateReference::class)
             ->flatMap(
                 fn (
                     StateReference $frame,

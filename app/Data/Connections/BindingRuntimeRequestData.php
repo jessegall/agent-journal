@@ -9,8 +9,8 @@ use App\Commands\Projects\AssertBindingRuntime\AssertBindingRuntimeCommand;
 use Spatie\LaravelData\Data;
 
 /**
- * A binding relay's ask to open its main runtime: the root id and folder it runs in, the agent, and the driver, build,
- * profile and model the owner selected.
+ * A binding relay's ask to open its main runtime: the root id and folder it runs in, the agent, and the driver, profile
+ * and model the owner selected; the journal pins the build.
  */
 final class BindingRuntimeRequestData extends Data
 {
@@ -19,7 +19,6 @@ final class BindingRuntimeRequestData extends Data
         public readonly string $folder,
         public readonly string $agentId,
         public readonly string $driver,
-        public readonly string $driverBuild,
         public readonly string $profile,
         public readonly string $model,
         public readonly string $startId = '',
@@ -43,14 +42,14 @@ final class BindingRuntimeRequestData extends Data
     /**
      * The opening of the binding's main runtime on this host, as the owner selected it.
      */
-    public function asMainRuntime(string $hostId): OpenBindingMainRuntimeCommand
+    public function asMainRuntime(string $hostId, string $driverBuild): OpenBindingMainRuntimeCommand
     {
         return new OpenBindingMainRuntimeCommand(
             $this->agentId,
             $hostId,
             $this->folder,
             $this->driver,
-            $this->driverBuild,
+            $driverBuild,
             $this->profile,
             $this->model,
         );

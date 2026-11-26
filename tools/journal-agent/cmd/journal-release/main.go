@@ -44,8 +44,15 @@ func run(arguments []string) error {
 		return err
 	}
 
+	providers, err := release.ReadProviders(repository)
+	if err != nil {
+		return err
+	}
+	profile := release.RemoteProject
+	profile.Providers = providers
+
 	sources := release.Sources{Repository: repository, Module: *module}
-	manifest, err := release.Build(release.RemoteProject, sources, *folder, *version, key)
+	manifest, err := release.Build(profile, sources, *folder, *version, key)
 	if err != nil {
 		return err
 	}

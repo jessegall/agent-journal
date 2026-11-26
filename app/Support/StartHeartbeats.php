@@ -129,10 +129,10 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     }
 
     /**
-     * Ends each running session that never beat and whose start is still waiting for a host since the cutoff, so the
-     * agent can start again and its reserved capacity is freed. A start whose host cannot be reached, its calls failing
-     * or stopped, waits for it to come back instead, up to half an hour; so does a start no host was chosen for yet
-     * while no enrolled host can be reached.
+     * Ends each running session that never beat and whose start is still waiting for a host since the cutoff, pending
+     * or claimed by the journal with no process of it taken up, so the agent can start again and its reserved capacity
+     * is freed. A pending start whose host cannot be reached, its calls failing or stopped, waits for it to come back
+     * instead, up to half an hour; so does a start no host was chosen for yet while no enrolled host can be reached.
      */
     private function endUnclaimedSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {
@@ -146,6 +146,12 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
                 $unreachableHosts,
                 $isAnyHostReachable,
             )
+            ->limit(self::UNCLAIMED_ENDED_LIMIT)
+            ->get()
+            ->each(fn (SessionProcess $start) => $this->endUnclaimed($start->session_id, $now));
+
+        SessionProcess::query()->supervised()
+            ->untakenSince($cutoff)
             ->limit(self::UNCLAIMED_ENDED_LIMIT)
             ->get()
             ->each(fn (SessionProcess $start) => $this->endUnclaimed($start->session_id, $now));
@@ -178,7 +184,13 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
         $this->transaction->runForSession($sessionId, function () use ($sessionId, $now): void {
             $start = SessionProcess::findLockedCurrentOf($sessionId);
 
-            if ($start === null || $start->status !== SessionProcessStatus::Pending) {
+            // A start the journal claimed is as untaken as a pending one while its host takes up none of its processes.
+            $isUntaken = in_array($start?->status, [
+                SessionProcessStatus::Pending,
+                SessionProcessStatus::Starting,
+            ], true);
+
+            if (! $isUntaken) {
                 return;
             }
 

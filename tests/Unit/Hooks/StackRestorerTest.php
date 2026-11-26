@@ -17,7 +17,7 @@ use App\Support\Stack\AgentStack;
 use App\Support\Stack\StackRestorer;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\States\Contracts\StopConditionGate;
-use App\Support\States\ReadyState;
+use App\Support\States\Support\ReadyStateReference;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Values\StackTarget;
@@ -127,9 +127,9 @@ final class StackRestorerTest extends TestCase
 
     public function test_a_bottom_of_another_type_is_refused(): void
     {
-        $this->expectExceptionObject(InvalidBottomState::ofAnotherType('hooks.main_ready', ReadyState::TYPE_KEY));
+        $this->expectExceptionObject(InvalidBottomState::ofAnotherType('hooks.main_ready'));
 
-        $this->restore($this->bottom('hooks.main_ready'));
+        $this->restore($this->bottomOf('hooks.main_ready'));
     }
 
     public function test_an_unknown_state_type_is_an_error(): void
@@ -206,9 +206,14 @@ final class StackRestorerTest extends TestCase
         );
     }
 
-    private function bottom(string $typeKey = ReadyState::TYPE_KEY, string $id = 'ready'): FrameRecord
+    private function bottom(string $id = 'ready'): FrameRecord
     {
-        return new FrameRecord($id, new StateReference($typeKey, NoSubject::None), true, 1, CarbonImmutable::now());
+        return new FrameRecord($id, ReadyStateReference::bottom(), true, 1, CarbonImmutable::now());
+    }
+
+    private function bottomOf(string $typeKey): FrameRecord
+    {
+        return new FrameRecord('ready', new StateReference($typeKey, NoSubject::None), true, 1, CarbonImmutable::now());
     }
 
     private function task(string $id, int $number, int $version = 1): FrameRecord

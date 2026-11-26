@@ -18,7 +18,6 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
-use App\Support\MainInboxTakeover;
 use App\Values\NavigationAnswer;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\RaisesNavigationRequests;
@@ -66,7 +65,7 @@ final class AbandonNavigationTest extends TestCase
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($this->main),
+            fn () => $this->journal->seatMainAgent($this->main),
         );
     }
 

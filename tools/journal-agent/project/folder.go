@@ -10,24 +10,18 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
-	"strings"
 
 	"journal-agent/host"
-	"journal-agent/release"
 )
 
 const (
-	journalFolderName  = ".journal"
-	connectionName     = "connection.json"
-	hooksFolderName    = "hooks"
-	setupName          = "setup.json"
-	ignoreRule         = "/.journal/"
-	privateFolderMode  = 0o700
-	stepConnection     = "connection"
-	stepHooks          = "hooks"
-	stepIgnore         = "ignore"
-	hookEntryProgram   = "bin/journal-hook"
-	hookTemplateFolder = "hooks"
+	journalFolderName = ".journal"
+	connectionName    = "connection.json"
+	setupName         = "setup.json"
+	ignoreRule        = "/.journal/"
+	privateFolderMode = 0o700
+	stepConnection    = "connection"
+	stepIgnore        = "ignore"
 )
 
 // ErrNotConnected is returned for a folder whose connection.json no private state of this machine matches, such as a
@@ -94,10 +88,9 @@ type setupProgress struct {
 	Generation int `json:"generation"`
 }
 
-// SetUp writes the connection, the hook entry points of the verified installation and the ignore rule, each step
-// recorded once it is done; the caller holds the root's lock. A step already done is not done again, and the ignore
-// file is never staged.
-func (folder Folder) SetUp(connection Connection, installation host.Installation) error {
+// SetUp writes the connection and the ignore rule, each step recorded once it is done; the caller holds the root's
+// lock. A step already done is not done again, and the ignore file is never staged.
+func (folder Folder) SetUp(connection Connection) error {
 	if err := os.MkdirAll(folder.journalFolder(), privateFolderMode); err != nil {
 		return err
 	}
@@ -112,7 +105,6 @@ func (folder Folder) SetUp(connection Connection, installation host.Installation
 		run  func() error
 	}{
 		{stepConnection, func() error { return folder.writeConnection(connection) }},
-		{stepHooks, func() error { return folder.writeHooks(installation) }},
 		{stepIgnore, func() error {
 			addition, err := folder.ignoreJournalFolder()
 			progress.IgnoreAddition = addition
@@ -139,7 +131,7 @@ func (folder Folder) SetUp(connection Connection, installation host.Installation
 // IsSetUp is whether every step of the folder's setup is done.
 func (folder Folder) IsSetUp() bool {
 	progress := folder.progress()
-	for _, step := range []string{stepConnection, stepHooks, stepIgnore} {
+	for _, step := range []string{stepConnection, stepIgnore} {
 		if !slices.Contains(progress.Done, step) {
 			return false
 		}
@@ -185,32 +177,6 @@ func (folder Folder) Marker() (Connection, error) {
 
 func (folder Folder) writeConnection(connection Connection) error {
 	return writeJSON(folder.path(connectionName), connection)
-}
-
-// writeHooks writes each provider's hook template of the installation with its sealed hook entry point filled in.
-func (folder Folder) writeHooks(installation host.Installation) error {
-	verified, err := installation.Verify()
-	if err != nil {
-		return err
-	}
-
-	entry := installation.Path(hookEntryProgram)
-	for _, artifact := range verified {
-		if !strings.HasPrefix(artifact.Name, hookTemplateFolder+"/") {
-			continue
-		}
-		template, err := os.ReadFile(artifact.Path)
-		if err != nil {
-			return err
-		}
-		filled := bytes.ReplaceAll(template, []byte(release.HookEntryPlaceholder), []byte(entry))
-		target := folder.path(filepath.Join(hooksFolderName, strings.TrimPrefix(artifact.Name, hookTemplateFolder+"/")))
-		if err := host.WritePrivateFile(target, filled); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 // ignoreJournalFolder appends /.journal/ to the root's .gitignore, in its own line endings, unless Git already
@@ -304,7 +270,7 @@ func writeJSON(path string, value any) error {
 // the setup record. The .gitignore rule is ForgetIgnoreRule's, asked first; worktrees and their receipts are left to
 // the worktree retirement that runs before it.
 func (folder Folder) Disconnect() error {
-	for _, owned := range []string{connectionName, setupName, hooksFolderName, "sessions"} {
+	for _, owned := range []string{connectionName, setupName, "sessions"} {
 		if err := os.RemoveAll(folder.path(owned)); err != nil {
 			return err
 		}

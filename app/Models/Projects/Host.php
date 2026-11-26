@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Data\Hosts\EnrolledDescriptorData;
 use App\Data\Hosts\FailedHostCallData;
 use App\Data\Profiles\ProtectionReportData;
 use App\Enums\Agents\ExecutionModeType;
@@ -17,10 +16,8 @@ use App\Enums\Drivers\DriverType;
 use App\Enums\Hosts\HostOrderType;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Terminals\TerminalInputType;
-use App\Events\Connections\HostBrowserInputAdvertised;
 use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
-use App\Events\Connections\HostDescriptorsRecorded;
 use App\Events\Connections\HostHeartbeatRecorded;
 use App\Events\Connections\HostProtectionRecorded;
 use App\Events\Connections\HostRevoked;
@@ -31,10 +28,8 @@ use App\Exceptions\StartRefused;
 use App\Models\Hosts\HostOrder;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
-use App\Values\BrowserInputCapabilities;
 use App\Values\ProtectionReport;
 use App\Values\StartPlace;
-use App\Values\StartProposal;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -52,12 +47,6 @@ use Spatie\LaravelData\DataCollection;
  * @property int $protocol
  * @property string|null $order_secret
  * @property list<string> $capabilities
- * @property DataCollection<int, EnrolledDescriptorData> $descriptors
- * @property bool $browser_input
- * @property bool $browser_keys
- * @property bool $browser_paste
- * @property bool $browser_resize
- * @property bool $browser_private
  * @property CarbonImmutable|null $revoked_at
  * @property CarbonImmutable|null $last_answered_at
  * @property CarbonImmutable|null $failing_since
@@ -97,12 +86,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             'capabilities' => 'array',
             'start_roots' => 'array',
             'protection' => DataCollection::class.':'.ProtectionReportData::class,
-            'descriptors' => DataCollection::class.':'.EnrolledDescriptorData::class,
-            'browser_input' => 'boolean',
-            'browser_keys' => 'boolean',
-            'browser_paste' => 'boolean',
-            'browser_resize' => 'boolean',
-            'browser_private' => 'boolean',
             'revoked_at' => 'immutable_datetime',
             'last_answered_at' => 'immutable_datetime',
             'failing_since' => 'immutable_datetime',
@@ -145,43 +128,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->protection = ProtectionReportData::collect($reports, DataCollection::class);
         $this->assertSaved($this->save());
         $this->raise(new HostProtectionRecorded($this->id));
-    }
-
-    /**
-     * Keeps the drivers the host enrolled, in place of the ones it enrolled before.
-     *
-     * @param  list<EnrolledDescriptorData>  $descriptors
-     */
-    public function recordDescriptors(array $descriptors): void
-    {
-        $this->descriptors = EnrolledDescriptorData::collect($descriptors, DataCollection::class);
-        $this->assertSaved($this->save());
-        $this->raise(new HostDescriptorsRecorded($this->id));
-    }
-
-    /**
-     * Keeps which browser input the host's latest claim says it carries out on its terminals.
-     */
-    public function advertiseBrowserInput(BrowserInputCapabilities $capabilities): void
-    {
-        $this->browser_input = $capabilities->isText;
-        $this->browser_keys = $capabilities->keys;
-        $this->browser_paste = $capabilities->shouldPaste;
-        $this->browser_resize = $capabilities->shouldResize;
-        $this->browser_private = $capabilities->isPrivateEntry;
-
-        if (! $this->isDirty([
-            'browser_input',
-            'browser_keys',
-            'browser_paste',
-            'browser_resize',
-            'browser_private',
-        ])) {
-            return;
-        }
-
-        $this->assertSaved($this->save());
-        $this->raise(new HostBrowserInputAdvertised($this->id));
     }
 
     /**
@@ -257,27 +203,25 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Whether a browser may take control of this host's terminals; a host that never said so is watch-only.
+     * Whether a browser may take control of this host's terminals: the host carries out the key orders the journal
+     * types for it.
      */
     public function canCarryOutBrowserInput(): bool
     {
-        return $this->browser_input;
+        return $this->carriesOut(HostOrderType::WriteKeys);
     }
 
     /**
-     * Whether the host carries out this type of browser input: text, named keys or pastes.
+     * Whether the host carries out the order this type of browser input becomes: keys for text, named keys and pastes,
+     * a resize, or private entry.
      */
     public function carriesOutBrowserInputOf(TerminalInputType $inputType): bool
     {
-        $capabilities = new BrowserInputCapabilities(
-            $this->browser_input,
-            $this->browser_keys,
-            $this->browser_paste,
-            $this->browser_resize,
-            $this->browser_private,
-        );
-
-        return $capabilities->carriesOut($inputType);
+        return $this->carriesOut(match ($inputType) {
+            TerminalInputType::Resize => HostOrderType::Resize,
+            TerminalInputType::Private => HostOrderType::OpenPrivate,
+            default => HostOrderType::WriteKeys,
+        });
     }
 
     /**
@@ -287,48 +231,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function isConnectedFolderRelay(): bool
     {
         return ProjectBinding::query()->acrossProjects()->onHost($this->id)->exists();
-    }
-
-    /**
-     * Whether the host enrolled the proposed driver build as available, in its own arrangement, placement and driver
-     * type.
-     */
-    public function declares(StartProposal $proposal): bool
-    {
-        return $this->declaresRun($proposal->driver, $proposal->build, $proposal->placement, $proposal->driverType);
-    }
-
-    /**
-     * Whether the host enrolled this driver build as available, in its own arrangement, the placement and the driver
-     * type.
-     */
-    public function declaresRun(
-        string $driver,
-        string $build,
-        ExecutionModeType $placement,
-        DriverType $driverType,
-    ): bool {
-        foreach ($this->descriptors as $descriptor) {
-            if ($descriptor->runs($driver, $build, $this->arrangement, $placement, $driverType)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Whether the host enrolled any available driver of the family, in any build, placement or driver type.
-     */
-    public function declaresDriver(string $family): bool
-    {
-        foreach ($this->descriptors as $descriptor) {
-            if ($descriptor->isOfAvailableFamily($family)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -604,8 +506,8 @@ final class Host extends JournalModel implements EventSource, ReadableModel
 
     /**
      * Where a main start of an agent of the project runs: for the local project the first serving enrolled host that
-     * runs this placement and declared the driver build and driver type, in its start folder; for a connected project
-     * the relay host of one of its serving bindings, in that binding's folder.
+     * runs this placement, in its start folder; for a connected project the relay host of one of its serving bindings,
+     * in that binding's folder. The journal proves the driver's build on that host before the start runs.
      *
      * @throws HostUnavailable
      * @throws StartRefused when no folder of the connected project serves it now
@@ -613,24 +515,18 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public static function findRunningStart(
         Project $project,
         string $driver,
-        string $build,
         ExecutionModeType $placement,
         DriverType $driverType,
     ): StartPlace {
         if (! $project->isLocal()) {
-            $binding = ProjectBinding::findServingStart($project, $driver, $build, $placement, $driverType);
+            $binding = ProjectBinding::findServingStart($project, $placement);
 
             return new StartPlace($binding->host_id, $binding->canonical_root);
         }
 
         $hosts = array_values(array_filter(
             self::findServingEnrolled(),
-            fn (self $host) => $host->runsPlacement($placement) && $host->declaresRun(
-                $driver,
-                $build,
-                $placement,
-                $driverType,
-            ),
+            fn (self $host) => $host->runsPlacement($placement),
         ));
 
         self::assertServesStart($hosts, $driver, $driverType);

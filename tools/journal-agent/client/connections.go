@@ -63,15 +63,14 @@ func (client *Client) Recover(ctx context.Context, installationNonce string) (Re
 }
 
 // PresenceReport mirrors App\Http\Data\Connections\PresenceReportData: the boot of the relay, its rising sequence,
-// the release it runs, the combinations it can run, how setting up the folder ended and whether it takes
+// the release it runs, how setting up the folder ended and whether it takes
 // over a live boot.
 type PresenceReport struct {
-	BootID       string           `json:"bootId"`
-	Sequence     int              `json:"sequence"`
-	Release      string           `json:"release"`
-	Descriptors  []HostDescriptor `json:"descriptors"`
-	Provisioning string           `json:"provisioning"`
-	IsTakeover   bool             `json:"isTakeover"`
+	BootID       string `json:"bootId"`
+	Sequence     int    `json:"sequence"`
+	Release      string `json:"release"`
+	Provisioning string `json:"provisioning"`
+	IsTakeover   bool   `json:"isTakeover"`
 	// SetupGeneration is the folder's setup generation, which rises on every setup or resume of it.
 	SetupGeneration int `json:"setupGeneration"`
 	// IsReconciled is whether this boot already reported what became of its earlier sessions: until it did, the
@@ -123,12 +122,11 @@ func (client *Client) NotifyPresence(ctx context.Context, bindingID string, repo
 
 // BindingRuntimeRequest mirrors App\Http\Data\Connections\BindingRuntimeRequestData.
 type BindingRuntimeRequest struct {
-	RootID      string `json:"rootId"`
-	Folder      string `json:"folder"`
-	AgentID     string `json:"agentId"`
-	Driver      string `json:"driver"`
-	DriverBuild string `json:"driverBuild"`
-	Profile     string `json:"profile"`
+	RootID  string `json:"rootId"`
+	Folder  string `json:"folder"`
+	AgentID string `json:"agentId"`
+	Driver  string `json:"driver"`
+	Profile string `json:"profile"`
 	// Model is the model the session runs on; "default" asks for the profile's default.
 	Model string `json:"model"`
 	// StartID names this start before anything starts, so asking again after a lost reply opens nothing new.
@@ -141,6 +139,8 @@ type OpenedBindingRuntime struct {
 	SessionID           string `json:"session_id"`
 	RuntimeID           string `json:"runtime_id"`
 	AuthorityGeneration int    `json:"authority_generation"`
+	// Plan is the process the journal decided the owner's terminal runs, as an open order carries it.
+	Plan json.RawMessage `json:"plan"`
 }
 
 // OpenBindingRuntime asks the journal to open the binding's main runtime in its own root.

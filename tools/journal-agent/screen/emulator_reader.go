@@ -18,18 +18,16 @@ import (
 // beside a menu, or a region drawn a row lower, leaves the region's generation as it was. One lock guards the
 // emulator, which has none of its own, so one goroutine may feed while others read.
 type EmulatorReader struct {
-	lock          sync.Mutex
-	terminal      *vt.Emulator
-	limits        Limits
-	cursorVisible bool
-	regions       []contracts.Region
-	hashes        map[string]uint64
-	generations   map[string]uint64
-	version       uint64
-	feedRefused   bool
-	resizeRefused bool
-	// volatile are the regions the whole-screen generation leaves out.
-	volatile         []contracts.Region
+	lock             sync.Mutex
+	terminal         *vt.Emulator
+	limits           Limits
+	cursorVisible    bool
+	regions          []contracts.Region
+	hashes           map[string]uint64
+	generations      map[string]uint64
+	version          uint64
+	feedRefused      bool
+	resizeRefused    bool
 	screenHash       uint64
 	screenGeneration uint64
 }
@@ -39,22 +37,6 @@ var _ contracts.ScreenReader = (*EmulatorReader)(nil)
 // NewEmulatorReader starts an empty screen of the given size that counts the generations of the regions, and of the
 // whole screen.
 func NewEmulatorReader(columns, rows int, limits Limits, regions []contracts.Region) (*EmulatorReader, error) {
-	return newEmulatorReader(columns, rows, limits, regions, nil)
-}
-
-// NewReader starts an empty screen of the given size for a program drawn this way: it counts the generations of
-// every region the layout names, and of the whole screen without the layout's other regions, such as its spinner
-// and status line.
-func (layout Layout) NewReader(columns, rows int, limits Limits) (*EmulatorReader, error) {
-	return newEmulatorReader(columns, rows, limits, layout.Regions(), layout.Others)
-}
-
-func newEmulatorReader(
-	columns, rows int,
-	limits Limits,
-	regions []contracts.Region,
-	volatile []contracts.Region,
-) (*EmulatorReader, error) {
 	if err := limits.checkSize(columns, rows); err != nil {
 		return nil, err
 	}
@@ -66,7 +48,6 @@ func newEmulatorReader(
 		regions:       regions,
 		hashes:        map[string]uint64{},
 		generations:   map[string]uint64{},
-		volatile:      volatile,
 	}
 	reader.terminal.SetCallbacks(vt.Callbacks{CursorVisibility: func(visible bool) { reader.cursorVisible = visible }})
 	reader.terminal.SetScrollbackSize(limits.MaxScrollbackLines)
@@ -272,21 +253,11 @@ func (reader *EmulatorReader) countGenerations() {
 	}
 }
 
-// countScreenGeneration raises the whole-screen generation when the text of any row outside the volatile regions
-// changed since the last count.
+// countScreenGeneration raises the whole-screen generation when the text of any row changed since the last count.
 func (reader *EmulatorReader) countScreenGeneration(snapshot contracts.Snapshot) {
-	var volatileRows []contracts.RowRange
-	for _, region := range reader.volatile {
-		if rows, found := region.Rows(snapshot); found {
-			volatileRows = append(volatileRows, rows)
-		}
-	}
-
 	hash := fnv.New64a()
-	for row, text := range snapshot.Rows {
-		if !isInAny(row, volatileRows) {
-			hash.Write([]byte(text))
-		}
+	for _, text := range snapshot.Rows {
+		hash.Write([]byte(text))
 		hash.Write([]byte{'\n'})
 	}
 	if sum := hash.Sum64(); sum != reader.screenHash {

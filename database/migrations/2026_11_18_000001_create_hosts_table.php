@@ -24,13 +24,7 @@ return new class extends Migration
             // The order types the host's last inventory said it carries out; empty until its first inventory.
             $table->jsonb('capabilities')->default('[]');
             // The combinations the host reported it can run.
-            $table->jsonb('descriptors')->default('[]');
             // Whether the host's last claim said it carries out browser control of its terminals.
-            $table->boolean('browser_input')->default(false);
-            $table->boolean('browser_keys')->default(false);
-            $table->boolean('browser_paste')->default(false);
-            $table->boolean('browser_resize')->default(false);
-            $table->boolean('browser_private')->default(false);
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampTz('last_answered_at')->nullable();
             $table->timestampTz('failing_since')->nullable();

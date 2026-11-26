@@ -7,6 +7,7 @@ namespace Tests\Architecture\Seeding;
 use App\Commands\Notifications\MarkNotificationRead\MarkNotificationReadCommand;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
+use App\Support\ActorReference;
 use PHPUnit\Framework\AssertionFailedError;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
@@ -74,6 +75,16 @@ final class JournalInboxesTest extends TestCase
         $this->journal->owner()->installInboxes();
 
         $this->assertTrue(Inbox::findMain()->exists);
+    }
+
+    public function test_a_seated_main_agent_is_the_main_inboxs_member(): void
+    {
+        $this->journal->owner()->installInboxes()->idleAgent('Main');
+        $agent = $this->journal->agentCalled('Main');
+
+        $this->journal->seatMainAgent($agent);
+
+        $this->assertNotNull(InboxMember::findActive(Inbox::findMain()->id, ActorReference::of($agent)));
     }
 
     public function test_an_actors_own_inbox_is_made_once_and_found_again(): void

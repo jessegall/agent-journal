@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\Messages\PrivateInputMessageData;
-use App\Enums\Drivers\DriverOperation;
 use App\Exceptions\PrivateValueRefused;
-use App\Values\ClaimedRequest;
 use Illuminate\Contracts\Cache\Repository;
 
 /**
  * A browser writer's private value on its way to the host: kept only in the cache, under its single-use submission
- * id, for at most half a minute, and taken out the moment the host claims the request that names it. The request row
- * names the submission alone; the value is never written to the database, a log or a receipt.
+ * id, for at most half a minute, and pulled once by the host its write was ordered on. The request row names the
+ * submission alone; the value is never written to the database, a log or a receipt.
  */
 final readonly class PrivateValues
 {
@@ -27,35 +24,6 @@ final readonly class PrivateValues
     public function keep(string $submissionId, string $value): void
     {
         $this->cache->put($this->key($submissionId), $value, self::KEEP_SECONDS);
-    }
-
-    /**
-     * The claimed requests as a host that drives its own runtimes receives them: a private input carries its value,
-     * read once and deleted; any other request is as it was. A value that is gone leaves the request without one,
-     * and the host writes nothing. A runtime the journal drives gets no value: its host pulls it for the write.
-     */
-    public function carriedBy(ClaimedRequests $claimed): ClaimedRequests
-    {
-        return new ClaimedRequests(array_map($this->carried(...), $claimed->requests));
-    }
-
-    private function carried(ClaimedRequest $claimed): ClaimedRequest
-    {
-        if ($claimed->operation !== DriverOperation::PrivateInput->value || $claimed->message === null) {
-            return $claimed;
-        }
-
-        $fields = PrivateInputMessageData::from(json_decode($claimed->message, true, flags: JSON_THROW_ON_ERROR));
-        $value = $this->cache->pull($this->key($fields->submissionId));
-
-        if (! is_string($value)) {
-            return $claimed;
-        }
-
-        return $claimed->withMessage(json_encode([
-            ...$fields->toArray(),
-            'value' => $value,
-        ], JSON_THROW_ON_ERROR));
     }
 
     /**

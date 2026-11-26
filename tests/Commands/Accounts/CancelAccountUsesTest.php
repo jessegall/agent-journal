@@ -10,9 +10,12 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandTransaction;
+use App\Enums\Hosts\HostOrderType;
+use App\Enums\Hosts\HostProcessReportType;
 use App\Events\Sessions\AccountUseChanged;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
+use App\Models\Hosts\HostOrder;
 use App\Models\Sessions\SessionProcess;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
@@ -32,8 +35,9 @@ use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
- * Maintenance cancels the starts of an account that no host claimed yet, so they never make a process, and says the
- * account's use changed only when it cancelled one.
+ * Maintenance cancels the starts of an account that no host claimed yet, so they never make a process, orders every live
+ * process of its other starts to stop, so they end with it, and says the account's use changed only when it cancelled
+ * one.
  */
 #[TestsCommand(CancelAccountUsesCommand::class)]
 final class CancelAccountUsesTest extends TestCase
@@ -49,6 +53,9 @@ final class CancelAccountUsesTest extends TestCase
         'links',
         'session_processes',
         'command_receipts',
+        'hosts',
+        'host_processes',
+        'host_orders',
     ];
 
     /**
@@ -86,6 +93,24 @@ final class CancelAccountUsesTest extends TestCase
         $this->assertSame([1, 0], [$first, $second]);
         $this->assertFalse($this->starts[$pending->id]->refresh()->claim());
         Event::assertDispatchedTimes(AccountUseChanged::class, 1);
+    }
+
+    public function test_every_live_process_of_the_accounts_claimed_starts_is_ordered_to_stop(): void
+    {
+        $account = $this->account();
+        $running = $this->sessionOn($account);
+        $this->journal->enrollHost('Mac', [base_path()])
+            ->openHostProcessForStart('Mac', 'terminal', $running->id)
+            ->reportHostProcess('terminal', HostProcessReportType::Running);
+
+        $this->actAsOwner();
+
+        $this->bus()->run(new CancelAccountUsesCommand($account));
+
+        $this->journal->assertResult(
+            [HostOrderType::OpenProcess, HostOrderType::Stop],
+            array_map(fn (HostOrder $order) => $order->type, $this->journal->hostOrdersOf('terminal')),
+        );
     }
 
     private function account(): RecordIdentity

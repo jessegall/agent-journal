@@ -22,7 +22,6 @@ const (
 	StepFence     DisconnectStep = "fence new work"
 	StepService   DisconnectStep = "disable the relay service"
 	StepRelay     DisconnectStep = "stop the relay and its children"
-	StepReceipts  DisconnectStep = "settle the start reports the journal has not acknowledged"
 	StepWorktrees DisconnectStep = "retire the worktrees"
 	StepSignIns   DisconnectStep = "remove this folder's sign-ins"
 	StepState     DisconnectStep = "remove the folder's setup and connection state"
@@ -30,7 +29,7 @@ const (
 
 // DisconnectSteps are every step of a disconnect, in order.
 var DisconnectSteps = []DisconnectStep{
-	StepFence, StepService, StepRelay, StepReceipts, StepWorktrees, StepSignIns, StepState,
+	StepFence, StepService, StepRelay, StepWorktrees, StepSignIns, StepState,
 }
 
 // ErrNoDisconnect is returned for a binding with no disconnect left to finish.

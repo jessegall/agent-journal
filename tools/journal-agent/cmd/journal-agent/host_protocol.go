@@ -52,8 +52,8 @@ func protocolOnly(arguments []string) error {
 	if err := hostapi.CheckOrigin(journal.JournalURL(), *dockerSocket != ""); err != nil {
 		return err
 	}
-	if err := startHostProtocol(ctx, journal, enrollment, *stateFolder, hostNamesOf(journal, *installation, *hookCommand), containers,
-		"development"); err != nil {
+	if _, err := startHostProtocol(ctx, journal, enrollment, *stateFolder, hostNamesOf(journal, *installation, *hookCommand), containers,
+		"development", nil); err != nil {
 		return err
 	}
 	<-ctx.Done()
@@ -69,21 +69,22 @@ func stopWhenInputEnds(stop func()) {
 	}()
 }
 
-// startHostProtocol runs host protocol 1 beside the older serving loop: process reports and output kept and sent,
-// orders claimed through the long poll and carried out, the inventory sent once and a heartbeat every 30 s.
+// startHostProtocol runs host protocol 1: process reports and output kept and sent, orders claimed through the long
+// poll and carried out, the inventory sent once and a heartbeat every 30 s; extra executors carry out the orders only
+// this host takes, such as a relay's project reads. It answers the table of the processes it runs.
 func startHostProtocol(ctx context.Context, journal *client.Client, enrollment host.Enrollment, stateFolder string,
 	names map[string]string,
-	containers host.Containers, release string) error {
+	containers host.Containers, release string, extra map[string]hostapi.Executor) (*hostapi.ProcessTable, error) {
 	calls := hostapi.Journal{Client: journal}
 	reports, err := hostapi.OpenReportQueue(stateFolder, func(report hostapi.ProcessReport) error {
 		return calls.NotifyProcessReport(ctx, report)
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	record, err := hostapi.OpenAnsweredRecord(stateFolder)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	outputs := hostapi.NewOutputs(stateFolder, func(processID string, output hostapi.Output) error {
 		return calls.NotifyProcessOutput(ctx, processID, output)
@@ -91,10 +92,11 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 	table := hostapi.OpenProcessTable(stateFolder, containers, reports, outputs)
 	table.NameHost(names)
 	if err := table.Adopt(ctx); err != nil {
-		return err
+		return nil, err
 	}
 	executors := table.Executors()
 	maps.Copy(executors, hostapi.NewProcessInput(table, outputs, calls.PrivateValue).Executors())
+	maps.Copy(executors, extra)
 	clock := &hostapi.JournalClock{Host: time.Now}
 	verifier := hostapi.Verifier{Secret: hostapi.OrderSecretOf(enrollment.Secret), Now: clock.Now}
 	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(order hostapi.Order, answer hostapi.Answer) {
@@ -116,7 +118,7 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 			log.Printf("host protocol 1 stopped: %v", err)
 		}
 	}()
-	return nil
+	return table, nil
 }
 
 // hostNamesOf are the names a plan may ask this host for: the journal's URL as this host reaches it, the host's own

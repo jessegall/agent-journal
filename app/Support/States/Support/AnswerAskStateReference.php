@@ -14,7 +14,10 @@ use App\Support\References\SubjectReference;
  */
 final class AnswerAskStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'core.asks.answer';
+    public static function key(): string
+    {
+        return 'core.asks.answer';
+    }
 
     public static function forHop(AskHop $hop): StateReference
     {

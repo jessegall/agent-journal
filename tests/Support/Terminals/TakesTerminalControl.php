@@ -11,8 +11,6 @@ use App\Enums\Drivers\DriverOperation;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
-use App\Models\Projects\Host;
-use App\Values\BrowserInputCapabilities;
 use Illuminate\Support\Str;
 
 /**
@@ -25,11 +23,7 @@ trait TakesTerminalControl
 
     private function controllableRuntime(): AgentRuntime
     {
-        $host = $this->journal->enrolledHost();
-        $everyInput = new BrowserInputCapabilities(true, true, true, true, true);
-        Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput($everyInput);
-
-        return $this->runtimeOn($host->hostId);
+        return $this->runtimeOn($this->journal->enrolledHost()->hostId);
     }
 
     private function openInterest(AgentRuntime $runtime): string

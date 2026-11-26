@@ -211,6 +211,11 @@ func (daemon *Daemon) serveContainer(writer http.ResponseWriter, request *http.R
 }
 
 func (daemon *Daemon) start(writer http.ResponseWriter, held *Container) {
+	if daemon.isStopping() {
+		refuse(writer, http.StatusServiceUnavailable, "the stand-in daemon is stopping")
+
+		return
+	}
 	if held.IsRunning() {
 		writer.WriteHeader(http.StatusNotModified)
 

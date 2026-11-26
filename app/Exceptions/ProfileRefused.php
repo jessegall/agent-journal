@@ -32,6 +32,15 @@ final class ProfileRefused extends RuntimeException
         return new self("the account start's settings do not keep every tool in the sandbox: it is not started");
     }
 
+    /**
+     * A driver whose sandbox does not keep its tools from its sign-in is refused on a protected account, whose
+     * container would hand them that sign-in.
+     */
+    public static function notContainable(string $driver): self
+    {
+        return new self("{$driver}'s sandbox does not keep its tools from its sign-in: it is not started in a container");
+    }
+
     public static function contraryArgument(string $argument, string $what): self
     {
         return new self("the argument {$argument} {$what}");

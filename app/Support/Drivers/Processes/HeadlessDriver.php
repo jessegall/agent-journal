@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Drivers\Processes;
 
 use App\Commands\Accounts\AddUsageCost\AddUsageCostCommand;
+use App\Commands\Accounts\RecordThreadTokens\RecordThreadTokensCommand;
 use App\Commands\Accounts\RecordUsageWindow\RecordUsageWindowCommand;
 use App\Commands\Agents\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
@@ -12,19 +13,23 @@ use App\Commands\Hosts\CloseHostInput\CloseHostInputCommand;
 use App\Commands\Hosts\SignalHostProcess\SignalHostProcessCommand;
 use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
 use App\Contracts\Drivers\ProcessDriver;
+use App\Contracts\Drivers\TurnResult;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\RequestProgress;
 use App\Enums\Hosts\HostOrderType;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;
+use App\Support\Drivers\Profiles\DriverProfiles;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
 use App\Values\HostOrderSource;
 use App\Values\ReportedStart;
+use App\Values\ThreadTokens;
 use App\Values\TurnEnd;
 use App\Values\UsageCost;
 use App\Values\UsageWindowReading;
@@ -45,7 +50,7 @@ final class HeadlessDriver implements ProcessDriver
 
     private const int STOP_FORCE_MS = 5000;
 
-    private readonly ClaudeResult $result;
+    private readonly TurnResult $result;
 
     private bool $isInputClosed = false;
 
@@ -60,8 +65,10 @@ final class HeadlessDriver implements ProcessDriver
         private readonly HostProcess $process,
         private readonly int $generation,
         private readonly ServerClock $clock,
+        DriverProfiles $profiles,
     ) {
-        $this->result = new ClaudeResult($process->id);
+        $runtime = AgentRuntime::query()->findOrFail($process->agent_runtime_id);
+        $this->result = $profiles->of($runtime)->turnResult($process->id);
     }
 
     public function resume(array $inFlight, array $ordered): DriverActions
@@ -177,22 +184,23 @@ final class HeadlessDriver implements ProcessDriver
             $requestId,
             $attempt,
             $end->progress(),
-            $this->conversation(),
+            $this->result->conversation() ?? $this->conversation(),
             $end->outcome(),
             turnEnd: $end,
         );
     }
 
-    private function usageCommand(UsageWindowReading|UsageCost $usage): AddUsageCostCommand|RecordUsageWindowCommand
-    {
+    private function usageCommand(
+        UsageWindowReading|UsageCost|ThreadTokens $usage,
+    ): AddUsageCostCommand|RecordUsageWindowCommand|RecordThreadTokensCommand {
         $session = $this->process->sessionProcess()->sole();
         $start = new ReportedStart($this->process->host_id, $session->start_key, $session->account_generation);
 
-        if ($usage instanceof UsageCost) {
-            return new AddUsageCostCommand($start, $usage);
-        }
-
-        return new RecordUsageWindowCommand($start, $usage);
+        return match (true) {
+            $usage instanceof UsageCost => new AddUsageCostCommand($start, $usage),
+            $usage instanceof ThreadTokens => new RecordThreadTokensCommand($start, $usage),
+            default => new RecordUsageWindowCommand($start, $usage),
+        };
     }
 
     /**

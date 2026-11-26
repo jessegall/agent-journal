@@ -7,6 +7,7 @@ namespace Tests\Commands\Terminals;
 use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\Drivers\DriverOperation;
+use App\Enums\Hosts\HostOrderType;
 use App\Enums\Terminals\TerminalControlRefusal;
 use App\Enums\Terminals\TerminalGrantStatus;
 use App\Exceptions\TerminalControlRefused;
@@ -80,9 +81,11 @@ final class TakeTerminalControlTest extends TestCase
         $this->assertSame(0, TerminalGrant::query()->acrossActors()->count());
     }
 
-    public function test_a_host_that_does_not_carry_out_browser_input_is_watch_only(): void
+    public function test_a_host_that_does_not_carry_out_key_orders_is_watch_only(): void
     {
-        $runtime = $this->runtimeOn($this->journal->enrolledHost()->hostId);
+        $hostId = $this->journal->enrolledHost()->hostId;
+        Host::query()->whereKey($hostId)->sole()->recordCapabilities([HostOrderType::Snapshot->value]);
+        $runtime = $this->runtimeOn($hostId);
         $interest = $this->openInterest($runtime);
 
         $this->assertRefusedWith(TerminalControlRefusal::WatchOnly, fn () => $this->take($runtime, $interest));

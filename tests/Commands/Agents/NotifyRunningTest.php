@@ -6,6 +6,7 @@ namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\NotifyRunning\NotifyRunningCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Drivers\NotifyStopped\NotifyStoppedCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
@@ -22,7 +23,6 @@ use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -76,22 +76,18 @@ final class NotifyRunningTest extends TestCase
         });
     }
 
-    public function test_the_host_claims_a_start_once_and_reports_its_execution_and_exit(): void
+    public function test_a_claimed_start_reports_its_execution_and_its_exit_once(): void
     {
         [$host, $opened] = $this->openRuntime();
 
-        $claim = $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertOk();
-        $key = (string) $claim->json('start_key');
-        $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertStatus(410);
+        $key = $this->journal->claimStartOf($host->hostId, $opened->sessionId)->start_key;
 
-        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
-        $this->assertSame([$key], $this->signed($host, 'GET', '/host/starts')->json('unresolved'));
-        $this->signed($host, 'POST', "/host/starts/{$key}/stopped")->assertNoContent();
-        $this->signed($host, 'POST', "/host/starts/{$key}/stopped")->assertNoContent();
+        $this->journal->asSystem(new NotifyRunningCommand($host->hostId, $key, 'thread-1'));
+        $this->journal->asSystem(new NotifyStoppedCommand($host->hostId, $key));
+        $this->journal->asSystem(new NotifyStoppedCommand($host->hostId, $key));
 
         $start = SessionProcess::query()->withoutGlobalScopes()->sole();
         $this->assertSame([SessionProcessStatus::Stopped, 'thread-1'], [$start->status, $start->execution_id]);
-        $this->assertSame([], $this->signed($host, 'GET', '/host/starts')->json('unresolved'));
     }
 
     public function test_a_start_that_saves_its_driver_type_keeps_it_for_the_agent_only_once_it_runs(): void
@@ -100,9 +96,8 @@ final class NotifyRunningTest extends TestCase
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
         $this->assertNull($agent->driver_type_preference);
 
-        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
-            ->json('start_key');
-        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
+        $key = $this->journal->claimStartOf($host->hostId, $opened->sessionId)->start_key;
+        $this->journal->asSystem(new NotifyRunningCommand($host->hostId, $key, 'thread-1'));
 
         $agent->refresh();
         $this->assertSame(DriverType::Terminal, $agent->driver_type_preference);
@@ -113,11 +108,10 @@ final class NotifyRunningTest extends TestCase
     public function test_a_running_report_that_comes_after_the_start_ended_keeps_no_mode(): void
     {
         [$host, $opened] = $this->openRuntime(shouldSaveDriverType: true);
-        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
-            ->json('start_key');
+        $key = $this->journal->claimStartOf($host->hostId, $opened->sessionId)->start_key;
 
-        $this->signed($host, 'POST', "/host/starts/{$key}/stopped")->assertNoContent();
-        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1']);
+        $this->journal->asSystem(new NotifyStoppedCommand($host->hostId, $key));
+        $this->journal->asSystem(new NotifyRunningCommand($host->hostId, $key, 'thread-1'));
 
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
         $this->assertNull($agent->driver_type_preference);
@@ -126,9 +120,8 @@ final class NotifyRunningTest extends TestCase
     public function test_a_one_start_driver_type_leaves_the_agent_on_its_profile_default(): void
     {
         [$host, $opened] = $this->openRuntime();
-        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
-            ->json('start_key');
-        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
+        $key = $this->journal->claimStartOf($host->hostId, $opened->sessionId)->start_key;
+        $this->journal->asSystem(new NotifyRunningCommand($host->hostId, $key, 'thread-1'));
 
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
         $this->assertNull($agent->driver_type_preference);
@@ -136,14 +129,6 @@ final class NotifyRunningTest extends TestCase
     }
 
     // A session its restarted host no longer serves is stopped by itself, and the pages hear it.
-    /**
-     * @param  array<string, mixed>  $body
-     */
-    private function signed(EnrolledHost $host, string $method, string $target, array $body = []): TestResponse
-    {
-        return $this->journal->hostCall($host, $method, $target, $body === [] ? '' : (string) json_encode($body));
-    }
-
     /**
      * @return array{EnrolledHost, OpenedRuntime}
      */

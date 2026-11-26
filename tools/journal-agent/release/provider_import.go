@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"journal-agent/host"
 )
@@ -46,11 +48,7 @@ func importProviders(providers []Provider, searchPath string) ProviderImport {
 }
 
 func importProvider(provider Provider, searchPath string) (host.Artifact, error) {
-	profile, isKnown := providerProfiles[provider.Name]
-	if !isKnown {
-		return host.Artifact{}, fmt.Errorf("this installer does not know the provider %s", provider.Name)
-	}
-	program := profile.Driver()
+	program := provider.Executable
 	found, err := findProgram(program, searchPath)
 	if err != nil {
 		return host.Artifact{}, err
@@ -67,8 +65,10 @@ func importProvider(provider Provider, searchPath string) (host.Artifact, error)
 	if err != nil {
 		return host.Artifact{}, fmt.Errorf("the official %s (%s) did not report its build: %w", program, resolved, err)
 	}
-	if err := profile.CheckBuild(string(reported)); err != nil {
-		return host.Artifact{}, err
+	// A provider names its build as one word of what it reports, whatever else it prints around it.
+	if !slices.Contains(strings.Fields(string(reported)), provider.Build) {
+		return host.Artifact{}, fmt.Errorf("%s build %q is not the pinned build %s: refused before any work",
+			program, strings.TrimSpace(string(reported)), provider.Build)
 	}
 	measured, err := measure(resolved)
 	if err != nil {

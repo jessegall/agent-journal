@@ -56,6 +56,14 @@ func (daemon *Daemon) run(container *Container) {
 	}()
 }
 
+// isStopping answers whether the daemon is stopping, when it starts no container any more.
+func (daemon *Daemon) isStopping() bool {
+	daemon.mutex.Lock()
+	defer daemon.mutex.Unlock()
+
+	return daemon.stopping
+}
+
 // Printing is a program that prints the text and ends with the exit code.
 func Printing(text string, code int) Program {
 	return func(_ context.Context, _ *Container, _ io.Reader, output io.Writer) int {

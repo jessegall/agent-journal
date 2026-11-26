@@ -16,6 +16,7 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
+use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Project;
@@ -200,6 +201,16 @@ final class TestJournal
     public function installInboxes(): self
     {
         $this->runAsJournal(CommandEntry::HostControl, 'inbox install', new InstallInboxesCommand());
+
+        return $this;
+    }
+
+    /**
+     * The agent is the member of the main inbox from now, as the main agent seated at this journal's desk.
+     */
+    public function seatMainAgent(Agent $agent): self
+    {
+        InboxMember::create(Inbox::findMain()->id, ActorReference::of($agent), CarbonImmutable::now());
 
         return $this;
     }

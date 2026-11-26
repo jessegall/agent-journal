@@ -14,7 +14,10 @@ use Domain\Sequences\Models\SequenceRun;
  */
 final class FollowSequenceStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'sequences.follow';
+    public static function key(): string
+    {
+        return 'sequences.follow';
+    }
 
     public static function forRun(SequenceRun $run): StateReference
     {

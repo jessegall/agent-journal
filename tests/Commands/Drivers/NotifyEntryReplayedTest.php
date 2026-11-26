@@ -72,20 +72,10 @@ final class NotifyEntryReplayedTest extends TestCase
     {
         $entry = $this->libraryEntry('2.1.300');
         [$host, $opened] = $this->openRuntime();
-        $replayed = ['runtime_id' => $opened->runtimeId, 'operation_key' => 'replay-1'];
+        $replayed = new NotifyEntryReplayedCommand($host->hostId, $entry->id, $opened->runtimeId, 'replay-1');
 
-        $this->journal->hostCall(
-            $host,
-            'POST',
-            "/host/menu-entries/{$entry->id}/replayed",
-            $replayed,
-        )->assertNoContent();
-        $this->journal->hostCall(
-            $host,
-            'POST',
-            "/host/menu-entries/{$entry->id}/replayed",
-            $replayed,
-        )->assertNoContent();
+        $this->journal->asSystem($replayed);
+        $this->journal->asSystem($replayed);
 
         $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
         $this->assertSame(1, $entry->uses);

@@ -122,23 +122,17 @@ trait ConnectsProjects
     }
 
     /**
-     * Reports the binding's relay present on a set-up folder, reconciled, and able to run Claude Code with isolated
-     * hooks and a lease, as a relay that set its folder up does.
+     * Reports the binding's relay present on a set-up folder and reconciled, as a relay that set its folder up does.
      */
     private function notifyClaudeCode(string $nonce, string $bindingId): void
     {
-        $this->notifyPresence($nonce, $bindingId, [[
-            'key' => 'claude-code', 'build' => '2.1.323',
-            'arrangement' => 'local', 'placement' => 'protected_host',
-        ]]);
+        $this->notifyPresence($nonce, $bindingId);
     }
 
     /**
-     * Reports the binding's relay present on a set-up folder and reconciled, able to run the given drivers.
-     *
-     * @param  list<array<string, string|int>>  $descriptors
+     * Reports the binding's relay present on a set-up folder and reconciled.
      */
-    private function notifyPresence(string $nonce, string $bindingId, array $descriptors): void
+    private function notifyPresence(string $nonce, string $bindingId): void
     {
         $this->signedRelayCall(
             $this->relayCredential($nonce),
@@ -147,7 +141,6 @@ trait ConnectsProjects
                 'bootId' => 'boot-'.$nonce,
                 'sequence' => 1,
                 'release' => '1.0.0',
-                'descriptors' => $descriptors,
                 'provisioning' => 'succeeded',
                 'isTakeover' => false,
                 'setupGeneration' => 1,

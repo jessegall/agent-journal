@@ -8,19 +8,16 @@ use App\Commands\Drivers\ApproveDriver\ApproveDriverCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
-use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\MarkTone;
 use App\Enums\Drivers\SignInCodeDirection;
-use App\Enums\Projects\ArrangementType;
+use App\Models\Drivers\DriverApproval;
 use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
 use App\Support\DriverCatalogue;
-use App\Support\HostDescriptorEnrollment;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;
-use App\Values\HostDescriptor;
 use App\Values\OwnerAuthority;
 use App\Values\ProviderKey;
 use Domain\Chat\ChatDomain;
@@ -46,18 +43,15 @@ final class ApproveDriverTest extends TestCase
         return DomainBoot::withRequirements(ChatDomain::class);
     }
 
-    public function test_a_host_enrolls_a_third_party_driver_only_once_approved_and_only_an_approved_build(): void
+    public function test_a_third_party_driver_is_approved_with_only_the_builds_named(): void
     {
         $this->registryWithAcme();
-        $enrollment = $this->app->make(HostDescriptorEnrollment::class);
-        $reasonFor = fn (string $build): string|null => $enrollment->enroll([$this->descriptor($build)])[0]->unavailableReason;
-
-        $this->assertSame(HostDescriptorEnrollment::REGISTRATION_UNAPPROVED, $reasonFor('1.0.0'));
+        $this->assertSame([], DriverApproval::resolveBuildsByKey(['acme/reader']));
 
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ApproveDriverCommand(DriverKey::from('acme/reader'), ['1.0.0']));
 
-        $this->assertSame([null, HostDescriptorEnrollment::BUILD_UNAPPROVED], [$reasonFor('1.0.0'), $reasonFor('2.0.0')]);
+        $this->assertSame(['acme/reader' => ['1.0.0']], DriverApproval::resolveBuildsByKey(['acme/reader']));
     }
 
     private function registryWithAcme(): DriverCatalogue
@@ -100,18 +94,6 @@ final class ApproveDriverTest extends TestCase
             $headless->skillProtocol,
             AcmeReaderCapabilities::class,
             [],
-        );
-    }
-
-    private function descriptor(string $build): HostDescriptor
-    {
-        $registry = $this->app->make(DriverCatalogueContract::class);
-
-        return new HostDescriptor(
-            DriverKey::from('acme/reader'),
-            $build,
-            ArrangementType::Local,
-            ExecutionModeType::ProtectedHost,
         );
     }
 }

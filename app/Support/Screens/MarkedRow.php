@@ -8,18 +8,19 @@ use App\Contracts\Screens\ScreenRegion;
 use App\Data\Hosts\HostFrameData;
 
 /**
- * The lowest row that starts with one of its prefixes and holds its text, at most the rows given above the last drawn
- * row when they are given, as a driver draws its spinner or its status line.
+ * The lowest row that starts with one of its prefixes and holds each of its texts, at most the rows given above the
+ * last drawn row when they are given, as a driver draws its spinner, its status line or its composer.
  */
 final readonly class MarkedRow implements ScreenRegion
 {
     /**
      * @param  list<string>  $prefixes
+     * @param  list<string>  $texts
      */
     public function __construct(
         private string $label,
         private array $prefixes,
-        private string $text,
+        private array $texts,
         private int|null $rowsBelow = null,
     ) {}
 
@@ -46,7 +47,7 @@ final readonly class MarkedRow implements ScreenRegion
 
     private function isMarked(ScreenRow $row): bool
     {
-        if (! str_contains($row->text, $this->text)) {
+        if (! array_all($this->texts, fn (string $text) => str_contains($row->text, $text))) {
             return false;
         }
 

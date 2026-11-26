@@ -31,7 +31,7 @@ final class RecordHostCallAnsweredTest extends TestCase
 
     private const string REASON = 'Maximum execution time of 30 seconds exceeded';
 
-    private const string ANSWERED_ROUTE = '/host/claim?limit=10&wait=0&watched_version=0';
+    private const string ANSWERED_ROUTE = '/host/orders/claim?limit=10&wait=0';
 
     private const string FAILING_ROUTE_ANSWERED = '/host/link-alarm-test/answered';
 
@@ -93,7 +93,7 @@ final class RecordHostCallAnsweredTest extends TestCase
     {
         $host = $this->journal->enrolledHost();
         $since = CarbonImmutable::now()->toIso8601String();
-        $reported = [['route' => '/host/claim', 'status' => 500, 'reason' => self::REASON, 'since' => $since]];
+        $reported = [['route' => '/host/orders/claim', 'status' => 500, 'reason' => self::REASON, 'since' => $since]];
 
         $this->journal->hostCall(
             $host,
@@ -106,7 +106,7 @@ final class RecordHostCallAnsweredTest extends TestCase
 
         $alarms = $this->app->make(HostLinkAlarms::class)->current();
         $this->assertSame([Host::query()->findOrFail($host->hostId)->link_alarm], $alarms);
-        $this->assertStringContainsString('/host/claim', $alarms[0]);
+        $this->assertStringContainsString('/host/orders/claim', $alarms[0]);
         $this->assertStringContainsString(self::REASON, $alarms[0]);
     }
 
@@ -115,7 +115,7 @@ final class RecordHostCallAnsweredTest extends TestCase
         $host = $this->journal->enrolledHost();
         $reported = [
             [
-                'route' => '/host/claim',
+                'route' => '/host/orders/claim',
                 'status' => 0,
                 'reason' => 'connection refused',
                 'since' => '2026-11-24T10:00:00Z',

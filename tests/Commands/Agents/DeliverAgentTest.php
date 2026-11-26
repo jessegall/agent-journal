@@ -6,7 +6,6 @@ namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Contracts\Drivers\AttachmentReferences;
-use App\Contracts\Drivers\MessagePart;
 use App\Data\Messages\MessageAttachmentData;
 use App\Data\Messages\MessageTextData;
 use App\Exceptions\DriverRequestRefused;
@@ -14,7 +13,6 @@ use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
 use App\Support\DriverBudgets;
-use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\DriverReceipt;
 use Illuminate\Support\Str;
@@ -76,8 +74,8 @@ final class DeliverAgentTest extends TestCase
             new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'parts', $parts),
         );
 
-        $claimed = $this->claimedScript($host, $receipt->requestId);
-        $this->assertSame(array_map(fn (MessagePart $part): array => $part->toArray(), $parts), $claimed['parts']);
+        $claimed = $this->journal->claimedRequestOnHost($host->hostId, $receipt->requestId);
+        $this->assertEquals($parts, $claimed->parts);
     }
 
     public function test_a_delivery_naming_an_attachment_that_cannot_be_read_is_refused_whole(): void
@@ -143,22 +141,6 @@ final class DeliverAgentTest extends TestCase
 
         $this->assertThrows(fn () => $this->deliver($opened, 'too-long', 'Eleven byte'), DriverRequestRefused::class);
         $this->assertSame(0, DriverRequest::query()->where('idempotency_key', 'too-long')->count());
-    }
-
-    /**
-     * The request as the host's claim hands it out.
-     *
-     * @return array<string, mixed>
-     */
-    private function claimedScript(EnrolledHost $host, string $requestId): array
-    {
-        $requests = $this->journal->hostCall(
-            $host,
-            'POST',
-            '/host/claim?limit=10&wait=0&watched_version=0',
-        )->assertOk()->json('requests');
-
-        return collect($requests)->firstOrFail(fn (array $claimed) => $claimed['requestId'] === $requestId);
     }
 
     /**

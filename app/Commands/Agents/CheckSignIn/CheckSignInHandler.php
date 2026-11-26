@@ -9,13 +9,13 @@ use App\Contracts\Time\ServerClock;
 use App\Enums\Sessions\HostRefusal;
 use App\Models\Hosts\HostProcess;
 use App\Support\Drivers\HeadlessStarts;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
+use App\Support\Drivers\Profiles\DriverProfiles;
 use App\Support\StartHeartbeats;
 
 final readonly class CheckSignInHandler implements CommandHandler
 {
     public function __construct(
-        private ClaudeCodeProfile $profile,
+        private DriverProfiles $profiles,
         private StartHeartbeats $heartbeats,
         private ServerClock $clock,
         private HeadlessStarts $headless,
@@ -27,7 +27,7 @@ final readonly class CheckSignInHandler implements CommandHandler
         $start = $process->sessionProcess()->lockForUpdate()->sole();
         $runtime = $process->runtime;
 
-        if (! $this->profile->hasAcceptedSignIn($command->printed, $start->directory)) {
+        if (! $this->profiles->of($runtime)->hasAcceptedSignIn($command->printed, $start->directory)) {
             $this->heartbeats->refuseStart($start, HostRefusal::NotSignedIn->explanation());
 
             return;

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support\Seeding;
 
 use App\Commands\Agents\CheckDriverBuild\CheckDriverBuildCommand;
-use App\Commands\Agents\ClaimStart\ClaimStartCommand;
+use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
+use App\Commands\Hosts\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
 use App\Commands\Hosts\NotifyHostOutput\NotifyHostOutputCommand;
 use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
@@ -25,6 +26,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
+use App\Support\ClaimedRequests;
 use App\Support\ContainerManifest;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\DriverWork;
@@ -35,14 +37,18 @@ use App\Support\Hosts\ProcessFeed;
 use App\Support\MountRules;
 use App\Support\PrivateValues;
 use App\Support\SecurityOptions;
+use App\Support\SignInChallenges;
+use App\Values\ClaimedRequest;
 use App\Values\ExecutionBudgets;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
 use App\Values\RowGuard;
+use App\Values\SignInChallenge;
 use Closure;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Process\Factory;
 use Illuminate\Process\PendingProcess;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Process;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Hosts\RealHost;
@@ -59,6 +65,11 @@ trait ArrangesHostProcesses
      * @var array<string, string>
      */
     private array $hostProcesses = [];
+
+    /**
+     * @var array<string, array{string, int}>
+     */
+    private array $requestWorkers = [];
 
     private RealHost|null $realHost = null;
 
@@ -103,15 +114,86 @@ trait ArrangesHostProcesses
         $hostId = $this->hostCalled($host)->hostId;
         $start = SessionProcess::findCurrentOf($sessionId) ?? throw FixtureRefused::missingAlias('start', $sessionId, self::OWNER);
 
-        if ($start->status === SessionProcessStatus::Pending) {
-            $this->asSystem(new ClaimStartCommand($hostId, $sessionId));
-        }
+        $this->claimStartOf($hostId, $sessionId);
 
         $plan = new HostProcessPlan($purpose, HostProcessType::Terminal, RestartPolicy::Never, ['sh', '-c', 'cat'], [], base_path());
         $source = HostOrderSource::fromJournal();
-        $this->hostProcesses[$name] = $this->asSystem(new OpenHostProcessCommand($hostId, null, $plan, $source, $start->id));
+        $runtimeId = AgentRuntime::findForSession($sessionId)?->id;
+        $command = new OpenHostProcessCommand($hostId, $runtimeId, $plan, $source, $start->id);
+        $this->hostProcesses[$name] = $this->asSystem($command);
 
         return $this;
+    }
+
+    /**
+     * The request as a claim of the host's accepted requests hands it out, claimed as its driver worker claims it.
+     */
+    public function claimedRequestOnHost(string $hostId, string $requestId): ClaimedRequest
+    {
+        $claimed = $this->claimRequestsOnHost($hostId)->requests;
+
+        return array_find($claimed, fn (ClaimedRequest $request) => $request->requestId === $requestId)
+            ?? throw FixtureRefused::missingAlias('claimed request', $requestId, self::OWNER);
+    }
+
+    /**
+     * Takes the session's pending start as the journal does for a driver it drives, and answers it.
+     */
+    public function claimStartOf(string $hostId, string $sessionId): SessionProcess
+    {
+        $start = SessionProcess::findLatestOfSession($sessionId)
+            ?? throw FixtureRefused::missingAlias('start', $sessionId, self::OWNER);
+
+        // A start the journal drives is taken by the journal the moment it is registered.
+        if ($start->status !== SessionProcessStatus::Pending) {
+            return $start;
+        }
+
+        // A host takes a pending start on itself, as the journal's own claim does.
+        $start->claimOn($hostId);
+
+        return $start;
+    }
+
+    /**
+     * Claims the accepted requests of the host's runtimes as their driver workers do, each runtime's through a worker
+     * of its own, at most the limit each, and answers them: the work the journal hands a driver, without a driver.
+     */
+    public function claimRequestsOnHost(string $hostId, int $limit = 10): ClaimedRequests
+    {
+        $claimed = [];
+
+        foreach (AgentRuntime::query()->onHost($hostId)->withAcceptedRequest()->get() as $runtime) {
+            [$processId, $generation] = $this->requestWorkerOf($runtime);
+            $command = new ClaimRuntimeRequestsCommand($processId, $generation, $limit);
+            $claimed = [...$claimed, ...$this->asSystem($command)->requests];
+        }
+
+        return new ClaimedRequests($claimed);
+    }
+
+    /**
+     * The worker process that claims the runtime's requests and its generation, opened at its first claim.
+     *
+     * @return array{string, int}
+     */
+    private function requestWorkerOf(AgentRuntime $runtime): array
+    {
+        if (! array_key_exists($runtime->id, $this->requestWorkers)) {
+            $plan = new HostProcessPlan(
+                HostProcessPurpose::Probe,
+                HostProcessType::Pipe,
+                RestartPolicy::Never,
+                ['sh', '-c', 'cat'],
+                [],
+                base_path(),
+            );
+            $source = HostOrderSource::fromJournal();
+            $process = $this->asSystem(new OpenHostProcessCommand($runtime->host_id, $runtime->id, $plan, $source));
+            $this->requestWorkers[$runtime->id] = [$process, $this->asSystem(new ClaimHostWorkerCommand($process))];
+        }
+
+        return $this->requestWorkers[$runtime->id];
     }
 
     /**
@@ -517,6 +599,73 @@ trait ArrangesHostProcesses
         $host = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'starts', self::OWNER);
 
         return $host->claudeStarts();
+    }
+
+    /**
+     * The owner's sign-ins are made as the real host runs them: this test reads the cache the served journal and its
+     * runner share, and makes each attempt's folder under the host's own accounts folder.
+     */
+    public function shareSignInsWithRealHost(): self
+    {
+        $host = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'sign-ins', self::OWNER);
+        $this->app->make(Repository::class)->set([
+            'cache.default' => 'file',
+            'accounts.root' => $host->accountsFolder(),
+        ]);
+        $this->app->forgetInstance('cache');
+        $this->app->forgetInstance('cache.store');
+        Facade::clearResolvedInstance('cache');
+
+        return $this;
+    }
+
+    /**
+     * One pass of the real host's sign-in runner starts, taking the sign-in that waits for a host.
+     */
+    public function runSignInsOnRealHost(): self
+    {
+        ($this->realHost ?? throw FixtureRefused::missingAlias('real host', 'sign-ins', self::OWNER))->startSignIns();
+
+        return $this;
+    }
+
+    /**
+     * The challenge the real host's runner published for the attempt, waited for until it is there.
+     */
+    public function signInChallengeOf(string $attemptId, int $seconds = 20): SignInChallenge
+    {
+        $challenges = $this->app->make(SignInChallenges::class);
+        $deadline = microtime(true) + $seconds;
+
+        while ($challenges->challengeOf($attemptId) === null && microtime(true) < $deadline) {
+            usleep(100_000);
+        }
+
+        return $challenges->challengeOf($attemptId)
+            ?? throw FixtureRefused::missingAlias('sign-in challenge', $attemptId, self::OWNER);
+    }
+
+    /**
+     * Waits for the real host's sign-in runner to end its pass, which must end well.
+     */
+    public function waitForSignInsOnRealHost(): self
+    {
+        $host = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'sign-ins', self::OWNER);
+        Assert::assertTrue($host->waitForSignIns(), 'The sign-in runner failed: '.$host->printed());
+
+        return $this;
+    }
+
+    /**
+     * Each start of the real host's Codex stand-in on a terminal, by the arguments it was started with.
+     *
+     * @return list<list<string>>
+     */
+    public function realHostCodexStarts(): array
+    {
+        $host = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'starts', self::OWNER);
+
+        return $host->codexStarts();
     }
 
     /**

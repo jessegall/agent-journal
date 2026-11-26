@@ -12,7 +12,10 @@ use Domain\Helpers\Models\HelperJob;
 
 final class HelperJobStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'helpers.job';
+    public static function key(): string
+    {
+        return 'helpers.job';
+    }
 
     /**
      * The job as its helper starts on it: who the helper is, the purpose, the brief, the steering so far and the

@@ -23,7 +23,7 @@ final class StateTypeKeyTest extends TestCase
         $misnamed = [];
 
         foreach ($this->stateClasses() as $class) {
-            $key = Reflector::of($class)->attribute(StateType::class)->key;
+            $key = Reflector::of($class)->attribute(StateType::class)->key();
             $owner = self::ownerKeyOf($class);
 
             if (! str_starts_with($key, "{$owner}.")) {

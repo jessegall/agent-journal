@@ -6,13 +6,13 @@ namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Contracts\Hosts\DockerImageVerifier;
-use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\MarkTone;
@@ -22,7 +22,6 @@ use App\Enums\Projects\ArrangementType;
 use App\Enums\Sessions\SessionStatus;
 use App\Events\Sessions\SessionOpened;
 use App\Exceptions\AccountWriterTaken;
-use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverNotContainable;
 use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\SkillSelectionConflict;
@@ -39,7 +38,6 @@ use App\Models\Sessions\SessionProcess;
 use App\Support\ActorReference;
 use App\Support\ArrangementSetting;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
-use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\DefaultDrivers;
 use App\Support\DomainRegistry;
 use App\Support\DriverCatalogue;
@@ -52,6 +50,7 @@ use App\Values\DriverRegistration;
 use App\Values\OwnerAuthority;
 use App\Values\ProfileBase;
 use App\Values\ProviderKey;
+use App\Values\RequestReportBinding;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\CountingImageVerifier;
 use Tests\Fixtures\Agents\TestSelections;
@@ -159,16 +158,11 @@ final class OpenAgentRuntimeTest extends TestCase
         );
     }
 
-    public function test_a_codex_terminal_start_is_refused_before_anything_is_accepted(): void
+    public function test_a_codex_terminal_opens_a_runtime_with_a_screen_as_every_terminal_does(): void
     {
-        $runtimes = AgentRuntime::query()->count();
+        [, $opened] = $this->openRuntime(driver: 'codex', driverType: DriverType::Terminal);
 
-        $this->assertThrows(
-            fn () => $this->openRuntime(driver: 'codex', driverType: DriverType::Terminal),
-            DriverCapabilityUnsupported::class,
-            DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
-        );
-        $this->assertSame($runtimes, AgentRuntime::query()->count());
+        $this->assertTrue(AgentRuntime::query()->findOrFail($opened->runtimeId)->hasScreen());
     }
 
     public function test_an_opened_runtime_freezes_its_agents_profile_policy(): void
@@ -316,30 +310,27 @@ final class OpenAgentRuntimeTest extends TestCase
             'echo-small',
         ));
         $receipt = $this->asOwner(DeliverAgentCommand::text($agent->id, $opened->sessionId, 'echo-1', 'Say hello'));
-        $claimed = collect(
-            $this->journal->hostCall(
-                $host,
-                'POST',
-                '/host/claim?limit=10&wait=0&watched_version=0',
-            )->assertOk()->json('requests'),
-        )
-            ->firstOrFail(fn (array $request) => $request['requestId'] === $receipt->requestId);
-        $this->journal->hostCall($host, 'POST', '/host/reports/request', [
-            'request_id' => $receipt->requestId,
-            'attempt' => $claimed['attempt'],
-            'progress' => 'applied',
-            'actual_binding' => null,
-            'session_id' => $claimed['sessionId'],
-            'session_process_id' => $claimed['sessionProcessId'],
-            'process_generation' => $claimed['processGeneration'],
-        ])->assertSuccessful();
+        $claimed = $this->journal->claimedRequestOnHost($host->hostId, $receipt->requestId);
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $receipt->requestId,
+            $claimed->attempt,
+            RequestProgress::Applied,
+            null,
+            null,
+            binding: new RequestReportBinding(
+                $claimed->sessionId,
+                $claimed->sessionProcessId,
+                $claimed->processGeneration,
+            ),
+        ));
 
         $this->assertSame(
             [$key, 'Echo', 'Say hello', RequestProgress::Applied],
             [
                 AgentRuntime::query()->findOrFail($opened->runtimeId)->driver_key,
                 AgentRuntime::query()->findOrFail($opened->runtimeId)->driver_label,
-                $claimed['parts'][0]['text'],
+                $claimed->prompt(),
                 DriverRequest::query()->findOrFail($receipt->requestId)->progress,
             ],
         );

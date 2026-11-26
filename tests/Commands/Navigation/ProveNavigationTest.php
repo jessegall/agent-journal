@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Navigation;
 
+use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
 use App\Commands\Navigation\ProveNavigation\ProveNavigationCommand;
 use App\Contracts\Actors\ActorAttention;
@@ -27,13 +28,12 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\DriverRequestEndings;
 use App\Support\EnrolledHost;
-use App\Support\MainInboxTakeover;
 use App\Support\NavigationRounds;
 use App\Values\MenuStep;
 use App\Values\NavigationAnswer;
 use App\Values\NavigationRound;
+use App\Values\NavigationRoundReport;
 use App\Values\OwnerAuthority;
-use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
@@ -85,7 +85,7 @@ final class ProveNavigationTest extends TestCase
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($this->main),
+            fn () => $this->journal->seatMainAgent($this->main),
         );
     }
 
@@ -152,7 +152,7 @@ final class ProveNavigationTest extends TestCase
         $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6');
         $round = $this->append($navigation, $this->proofRound($navigation, NavigationCompletion::Goal, null));
 
-        $this->notify($host, $round, isProofSeen: true)->assertNoContent();
+        $this->notify($host, $round, isProofSeen: true);
 
         $this->assertSame(NavigationStatus::Proven, $navigation->fresh()?->status);
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
@@ -172,7 +172,7 @@ final class ProveNavigationTest extends TestCase
         $navigation->prove(NavigationCompletion::Step, 4, 'GPT-6');
         $round = $this->append($navigation, $this->proofRound($navigation, NavigationCompletion::Step, 4));
 
-        $this->notify($host, $round, isProofSeen: true)->assertNoContent();
+        $this->notify($host, $round, isProofSeen: true);
 
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
         $this->assertSame([4, $attempt + 1, RequestProgress::Accepted], [
@@ -192,7 +192,7 @@ final class ProveNavigationTest extends TestCase
         $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6');
         $round = $this->append($navigation, $this->proofRound($navigation, NavigationCompletion::Goal, null));
 
-        $this->notify($host, $round, isProofSeen: false)->assertNoContent();
+        $this->notify($host, $round, isProofSeen: false);
 
         $this->assertSame(NavigationStatus::Answering, $navigation->fresh()?->status);
     }
@@ -204,13 +204,13 @@ final class ProveNavigationTest extends TestCase
 
         [$host, $navigation] = $this->stalled();
         $reported = $this->append($navigation, NavigationRound::keys($navigation->id, 2, 7, [NavigationKey::Esc]));
-        $this->journal->hostCall($host, 'POST', '/host/claim?limit=10&wait=0&watched_version=0')->assertOk();
+        $this->journal->claimRequestsOnHost($host->hostId);
         $queued = $this->append($navigation, NavigationRound::keys($navigation->id, 3, 7, [NavigationKey::Esc]));
 
         $this->app->make(DriverRequestEndings::class)->cancelNavigation($navigation);
 
         $this->assertSame(RequestProgress::Cancelled, $queued->fresh()?->progress);
-        $this->assertGreaterThanOrEqual(400, $this->notify($host, $reported, isProofSeen: false)->status());
+        $this->assertThrows(fn () => $this->notify($host, $reported, isProofSeen: false));
     }
 
     public function test_a_proven_path_is_saved_once_as_a_menu_entry_and_named_in_the_evidence(): void
@@ -221,42 +221,21 @@ final class ProveNavigationTest extends TestCase
         [$host, $navigation] = $this->stalled();
         $round = $this->proved($navigation);
 
-        $this->notify($host, $round, isProofSeen: true, steps: [$this->step()])->assertNoContent();
+        $this->notify($host, $round, isProofSeen: true, steps: [$this->step()]);
 
         $entry = MenuEntry::query()->acrossActors()->sole();
         $this->assertSame($entry->id, $navigation->fresh()?->library_entry_id);
         $this->assertSame(
-            [[...$this->step(), 'key' => null, 'proof' => null]],
+            [$this->step()->toArray()],
             array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps->items()),
         );
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
         $this->assertSame(sprintf(self::SAVED_EVIDENCE, $entry->id), $stalled->script_evidence);
 
         [$otherHost, $other] = $this->stalled('2.1.400');
-        $this->notify($otherHost, $this->proved($other), isProofSeen: true, steps: [$this->step()])->assertNoContent();
+        $this->notify($otherHost, $this->proved($other), isProofSeen: true, steps: [$this->step()]);
         $this->assertSame(1, MenuEntry::query()->acrossActors()->count());
         $this->assertSame(false, MenuEntry::query()->acrossActors()->sole()->buildOn('2.1.400')?->isStale);
-    }
-
-    public function test_steps_that_could_carry_screen_text_are_refused_and_save_nothing(): void
-    {
-        $attention = new RecordedAttention();
-        $this->app->bind(ActorAttention::class, fn () => $attention);
-
-        $invalid = [
-            'both actions' => [[...$this->step(), 'key' => 'enter']],
-            'a free text field' => [[...$this->step(), 'screen' => 'Model: GPT-5']],
-            'too many steps' => array_fill(0, 21, $this->step()),
-        ];
-
-        foreach ($invalid as $name => $steps) {
-            [$host, $navigation] = $this->stalled();
-            $response = $this->notify($host, $this->proved($navigation), isProofSeen: true, steps: $steps);
-
-            $this->assertGreaterThanOrEqual(400, $response->status(), $name);
-        }
-
-        $this->assertSame(0, MenuEntry::query()->acrossActors()->count());
     }
 
     /**
@@ -315,36 +294,24 @@ final class ProveNavigationTest extends TestCase
     }
 
     /**
-     * @param  list<array<string, mixed>>  $steps
+     * @param  list<MenuStep>  $steps
      */
-    private function notify(
-        EnrolledHost $host,
-        DriverRequest $round,
-        bool $isProofSeen,
-        array $steps = [],
-    ): TestResponse {
-        return $this->journal->hostCall($host, 'POST', '/host/reports/request', [
-            'request_id' => $round->id,
-            'attempt' => $round->fresh()?->attempt_version,
-            'progress' => 'applied',
-            'actual_binding' => 'navigation',
-            'outcome' => null,
-            'navigation' => [
-                'rows' => ['Model: GPT-6'],
-                'highlight' => -1,
-                'generation' => 8,
-                'has_observed_proof' => $isProofSeen,
-                ...($steps === [] ? [] : ['steps' => $steps]),
-            ],
-        ]);
+    private function notify(EnrolledHost $host, DriverRequest $round, bool $isProofSeen, array $steps = []): void
+    {
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $round->id,
+            (int) $round->fresh()?->attempt_version,
+            RequestProgress::Applied,
+            'navigation',
+            null,
+            navigation: new NavigationRoundReport(['Model: GPT-6'], null, 8, $isProofSeen, null, $steps),
+        ));
     }
 
-    /**
-     * @return array{fingerprint: string, choose: string}
-     */
-    private function step(): array
+    private function step(): MenuStep
     {
-        return ['fingerprint' => 'fp1:'.str_repeat('b', 64), 'choose' => 'GPT-6'];
+        return new MenuStep('fp1:'.str_repeat('b', 64), 'GPT-6', null, null);
     }
 
     private function append(NavigationRequest $navigation, NavigationRound $round): DriverRequest

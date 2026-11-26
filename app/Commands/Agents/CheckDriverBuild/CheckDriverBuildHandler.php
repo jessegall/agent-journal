@@ -11,7 +11,7 @@ use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\BuildNotPinned;
 use App\Models\Hosts\HostProcess;
 use App\Support\Drivers\HeadlessStarts;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
+use App\Support\Drivers\Profiles\DriverProfiles;
 use App\Support\StartHeartbeats;
 use App\Values\HostOrderSource;
 
@@ -20,7 +20,7 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
     private const string TRUSTED_ENTRY = 'headless starts';
 
     public function __construct(
-        private ClaudeCodeProfile $profile,
+        private DriverProfiles $profiles,
         private StartHeartbeats $heartbeats,
         private HeadlessStarts $headless,
         private JournalCommands $commands,
@@ -33,7 +33,7 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
         $runtime = $process->runtime;
 
         try {
-            $this->profile->assertPinnedBuild($command->printed);
+            $this->profiles->of($runtime)->assertPinnedBuild($command->printed);
         } catch (BuildNotPinned $refusal) {
             $this->heartbeats->refuseStart($start, $refusal->getMessage());
 
@@ -41,7 +41,7 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
         }
 
         $driverStart = $this->headless->startOf($runtime, $start);
-        $probe = $this->profile->signInProbe($driverStart);
+        $probe = $this->profiles->of($runtime)->signInProbe($driverStart);
         $source = HostOrderSource::fromJournal();
         $open = new OpenHostProcessCommand($process->host_id, $runtime->id, $probe, $source, $start->id);
 

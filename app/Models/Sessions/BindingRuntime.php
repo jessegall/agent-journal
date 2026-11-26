@@ -10,6 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\BindingRuntimeRecorded;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -54,14 +55,15 @@ final class BindingRuntime extends JournalModel implements EventSource, Readable
     // ----------[ Queries ]----------
 
     /**
-     * The start of the binding under this id, none or one.
+     * The runtime the binding's start under this id opened, none or one.
      *
-     * @return list<self>
+     * @return list<AgentRuntime>
      */
-    public static function findForBinding(string $bindingId, string $startId): array
+    public static function findRuntimeForBinding(string $bindingId, string $startId): array
     {
-        return array_values(self::query()->ofBindingAndStart($bindingId, $startId)->limit(1)
-            ->get()->all());
+        $runtimeIds = self::query()->ofBindingAndStart($bindingId, $startId)->select('runtime_id');
+
+        return array_values(AgentRuntime::query()->whereIn('id', $runtimeIds)->limit(1)->get()->all());
     }
 
     // ----------[ Scopes ]----------

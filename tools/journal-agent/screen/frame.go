@@ -13,8 +13,7 @@ import (
 )
 
 // Frame is the screen as currently shown: every row as runs of one style, the cursor, the buffer and the size. A
-// shielded frame stands for a screen the host would not export, with no rows and no cursor; the privacy revision goes
-// up each time the runtime's screen turns from public to shielded, so a public frame of an earlier revision is void.
+// shielded frame stands for a screen the host would not export, with no rows and no cursor.
 type Frame struct {
 	Epoch         string           `json:"epoch"`
 	Sequence      uint64           `json:"sequence"`
@@ -28,26 +27,8 @@ type Frame struct {
 	IsUnreadable  bool             `json:"is_unreadable"`
 	HasNoTerminal bool             `json:"has_no_terminal"`
 	IsShielded    bool             `json:"is_shielded"`
-	// PrivacyRevision is the runtime's privacy revision this frame was captured under.
-	PrivacyRevision uint64 `json:"privacy_revision"`
 	// Stream names the sender that sent the frame: a sender started over is a new stream, its sequence from one.
 	Stream string `json:"stream"`
-	// Proof rises with every report of the stream, an unchanged screen's included; the host is proven alive by the
-	// frame until ExpiresAt.
-	Proof     uint64    `json:"proof"`
-	ExpiresAt time.Time `json:"expires_at"`
-	// InputOwner is who holds the program's input as every viewer sees it, with a take still being settled and the
-	// prompt revision a browser writer's input names; the grant's own id never leaves for viewers.
-	InputOwner     string `json:"input_owner"`
-	IsTakePending  bool   `json:"is_take_pending"`
-	PromptRevision uint64 `json:"prompt_revision"`
-	// Attachment and ContainerInstance name the attachment the screen was read through and its verified container;
-	// ConnectionLost is a marker of a contained attachment that ended while its container runs.
-	Attachment        string `json:"attachment"`
-	ContainerInstance string `json:"container_instance"`
-	IsConnectionLost  bool   `json:"is_connection_lost"`
-	// Menu is the recognized menu on a public screen, with its labels and highlight, for a choice made by name.
-	Menu *FrameMenu `json:"menu,omitempty"`
 }
 
 // FrameLimit is the most bytes of JSON one frame may take.
@@ -76,26 +57,6 @@ func (reader *EmulatorReader) Frame(epoch string, sequence uint64, now time.Time
 	defer reader.lock.Unlock()
 
 	return reader.frame(epoch, sequence, now)
-}
-
-// ExportFrame reads the screen once, under one lock, and gives its frame only when the layout finds that very screen
-// exportable; any other screen gives a shield frame with no rows and no cursor, so the classification and the export
-// can never see two different screens.
-func (reader *EmulatorReader) ExportFrame(layout Layout, epoch string, sequence uint64, now time.Time) Frame {
-	reader.lock.Lock()
-	defer reader.lock.Unlock()
-
-	snapshot := reader.snapshot()
-	if !layout.IsExportable(snapshot) {
-		return reader.shieldFrame(epoch, sequence, now)
-	}
-
-	frame := reader.frame(epoch, sequence, now)
-	if menu, found := layout.frameMenu(snapshot, reader.screenGeneration); found {
-		frame.Menu = &menu
-	}
-
-	return frame
 }
 
 // ShieldFrame is the placeholder that stands for the screen while a capture barrier is closed: no rows, no cursor.

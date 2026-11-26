@@ -13,7 +13,6 @@ use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Connections\BindingReadiness;
-use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\ArrangementType;
 use App\Events\Connections\ProjectBindingCreated;
 use App\Events\Connections\ProjectBindingEnvironmentAssigned;
@@ -329,8 +328,8 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
     }
 
     /**
-     * Whether the binding may start the driver: one whose hooks run isolated per session, that its relay reported it
-     * can run with isolated hooks, start grants and a lease.
+     * Whether the binding may start the driver: one whose hooks run isolated per session; the journal proves the build
+     * on the relay's host itself before the start runs.
      */
     public function eligibilityOf(DriverFamily $family): ProviderEligibility
     {
@@ -339,13 +338,6 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
                 $family,
                 "{$family->label} does not keep its hooks to one session yet, "
                     .'so a connected folder cannot run it isolated.',
-            );
-        }
-
-        if (! $this->host->declaresDriver($family->key)) {
-            return ProviderEligibility::unavailable(
-                $family,
-                "This folder's relay has not reported it can run {$family->label} with isolated hooks and a lease.",
             );
         }
 
@@ -461,18 +453,13 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
     // ----------[ Queries ]----------
 
     /**
-     * The first unrevoked binding of the connected project that is ready now and whose relay runs the placement and
-     * declared the driver build and driver type, for a main start of one of the project's agents.
+     * The first unrevoked binding of the connected project that is ready now and whose relay runs the placement, for a
+     * main start of one of the project's agents.
      *
      * @throws StartRefused when no folder of the project serves it now
      */
-    public static function findServingStart(
-        Project $project,
-        string $driver,
-        string $build,
-        ExecutionModeType $placement,
-        DriverType $driverType,
-    ): self {
+    public static function findServingStart(Project $project, ExecutionModeType $placement): self
+    {
         $now = CarbonImmutable::now();
 
         $bindings = self::query()
@@ -484,8 +471,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
 
         return $bindings->first(
             fn (self $binding) => $binding->readinessAt($now) === BindingReadiness::Ready
-                && $binding->host->runsPlacement($placement)
-                && $binding->host->declaresRun($driver, $build, $placement, $driverType),
+                && $binding->host->runsPlacement($placement),
             fn () => throw StartRefused::projectNotServed($project->label),
         );
     }
@@ -577,13 +563,14 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
     }
 
     /**
-     * The id of the live binding a local host serves, none or one: each binding has a host of its own.
+     * The id of the live binding a local host serves, none or one: each binding has a host of its own. The host's call
+     * belongs to no project, so the binding is found across them.
      *
      * @return list<string>
      */
     public static function resolveLiveIdOfLocalHost(string $hostId): array
     {
-        return array_values(self::query()->onHost($hostId)->unrevoked()->onLocalHost()
+        return array_values(self::query()->acrossProjects()->onHost($hostId)->unrevoked()->onLocalHost()
             ->limit(1)->pluck('id')->all());
     }
 

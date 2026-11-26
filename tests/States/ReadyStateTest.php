@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\States;
 
 use App\Contracts\Authorization\OperationPolicy;
-use App\Enums\Engine\NoSubject;
 use App\Enums\Hooks\AnswerType;
 use App\Enums\Sessions\StopCheckStatus;
 use App\Events\Sessions\StopCheckSettled;
@@ -13,12 +12,12 @@ use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookHandler;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
-use App\Support\References\StateReference;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use App\Support\States\AgentState;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Support\States\ReadyState;
+use App\Support\States\Support\ReadyStateReference;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Hooks\AllowedStops;
@@ -184,7 +183,7 @@ final class ReadyStateTest extends TestCase
 
         return $this->journal->stateOn(
             $this->journal->sessionOf('Writer'),
-            new StateReference(ReadyState::TYPE_KEY, NoSubject::None),
+            ReadyStateReference::bottom(),
         );
     }
 

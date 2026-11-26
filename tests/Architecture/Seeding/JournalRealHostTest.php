@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Seeding;
 
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Enums\Accounts\SignInMethod;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessStatus;
@@ -37,6 +39,8 @@ final class JournalRealHostTest extends TestCase
         'driver_turns',
         'accounts',
         'active_accounts',
+        'sign_in_attempts',
+        'command_receipts',
         'session_processes',
         'inboxes',
         'inbox_members',
@@ -107,6 +111,51 @@ final class JournalRealHostTest extends TestCase
                 count($this->journal->realHostClaudeStarts()),
             ],
         );
+        $this->journal->stopRealHost();
+    }
+
+    public function test_a_codex_terminal_on_a_real_host_runs_the_installed_stand_in_found_by_name(): void
+    {
+        $this->journal->owner()
+            ->showDriverArrangements()
+            ->idleAgent('Codex terminal')
+            ->enrollHost('Mac', [base_path()])
+            ->runRealHost('Mac')
+            ->chooseActiveAccountsOnRealHost();
+        $opened = $this->journal->openRuntimeOn(
+            'Codex terminal',
+            'Mac',
+            base_path(),
+            driver: 'codex',
+            build: '0.165.0',
+            profile: 'codex',
+            driverType: DriverType::Terminal,
+            model: 'gpt-5.5',
+        );
+
+        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
+            ->driveHostProcess('terminal', fn () => $this->journal->hostProcessRows('terminal') !== []);
+
+        $this->journal->assertResult(
+            [true, 1, []],
+            [
+                str_contains(implode("\n", $this->journal->hostProcessRows('terminal')), 'OpenAI Codex (v0.165.0)'),
+                count($this->journal->realHostCodexStarts()),
+                $this->journal->realHostClaudeStarts(),
+            ],
+        );
+        $this->journal->stopRealHost();
+    }
+
+    public function test_a_sign_in_runs_on_the_real_host_and_its_challenge_reaches_the_test(): void
+    {
+        $this->journal->owner()->enrollHost('Mac', [base_path()])->runRealHost('Mac')->shareSignInsWithRealHost();
+        $started = $this->journal->asOwner(new BeginSignInCommand('codex', SignInMethod::OAuth));
+
+        $challenge = $this->journal->runSignInsOnRealHost()->signInChallengeOf($started->attemptId);
+        $this->journal->waitForSignInsOnRealHost();
+
+        $this->journal->assertResult('STAND-IN', $challenge->code);
         $this->journal->stopRealHost();
     }
 

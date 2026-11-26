@@ -21,7 +21,7 @@ use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 /**
  * While the agent writes a note, it may not stop.
  */
-#[StateType('notes.writing', schemaVersion: 1)]
+#[StateType(WriteNoteStateReference::class, schemaVersion: 1)]
 final class WriteNoteState extends AgentState implements DurableState
 {
     public function onStop(StopRequested $input): Decision

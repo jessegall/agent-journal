@@ -6,7 +6,6 @@ namespace Tests\Commands\Drivers;
 
 use App\Commands\Agents\WakeAgent\WakeAgentCommand;
 use App\Commands\Drivers\AcknowledgeWake\AcknowledgeWakeCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\HoldReason;
@@ -14,7 +13,6 @@ use App\Enums\Drivers\RequestProgress;
 use App\Enums\Runs\RuntimeActivity;
 use App\Models\Drivers\DriverRequest;
 use App\Support\OutsideCommandAllowance;
-use App\Values\BrowserInputCapabilities;
 use Carbon\CarbonImmutable;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
@@ -60,7 +58,7 @@ final class AcknowledgeWakeTest extends TestCase
             ),
         );
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-2'));
         $this->app->make(OutsideCommandAllowance::class)->forbid();
 
@@ -72,7 +70,7 @@ final class AcknowledgeWakeTest extends TestCase
             [$wake->wake_acknowledged, $wake->wake_requested, $wake->progress],
         );
 
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
         $this->journal->asSystem(new AcknowledgeWakeCommand($opened->sessionId));
 
         $wake->refresh();
@@ -93,7 +91,7 @@ final class AcknowledgeWakeTest extends TestCase
             ),
         );
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
 
         $this->journal->useServerClockAt(CarbonImmutable::now()->subMinute());
         $this->journal->asSystem(new AcknowledgeWakeCommand($opened->sessionId));

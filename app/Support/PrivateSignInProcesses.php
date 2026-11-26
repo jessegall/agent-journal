@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Accounts\AccountFolders;
-use App\Contracts\Accounts\AccountOwnerDrain as AccountOwnerDrainContract;
+use App\Contracts\Accounts\AccountFolderUses as AccountFolderUsesContract;
 use App\Contracts\Accounts\FirstRunSettlement;
 use App\Contracts\Accounts\SignInHost;
 use App\Contracts\Accounts\SignInProtocol;
@@ -42,7 +42,7 @@ final readonly class PrivateSignInProcesses
         private Closure $pause,
         private Files $files,
         private AccountFolders $folders,
-        private AccountOwnerDrainContract $owners = new AccountOwnerDrain('', ArrangementType::Local),
+        private AccountFolderUsesContract $folderUses = new AccountFolderUses('', ArrangementType::Local),
     ) {}
 
     /**
@@ -63,12 +63,6 @@ final readonly class PrivateSignInProcesses
         }
 
         $protocol = $this->protocols->for($claimed->driver, $claimed->method);
-
-        if (! $this->owners->drain($claimed->directory, $claimed->accountId)) {
-            $this->host->notify($claimed, SignInOutcome::Failed, SignInIdentity::unproved());
-
-            return true;
-        }
 
         $this->makePrivateFolder($claimed->directory);
         $process = $protocol->begin($claimed->directory);
@@ -166,7 +160,7 @@ final readonly class PrivateSignInProcesses
 
         $isServed = $this->protocols->supports($claimed->driver, $claimed->method);
 
-        if (! $isServed || ! $this->isUnused($claimed)) {
+        if (! $isServed) {
             return false;
         }
 
@@ -185,15 +179,7 @@ final readonly class PrivateSignInProcesses
     private function isStillBound(ClaimedCleanup $claimed): bool
     {
         return $claimed->isDisplacedFolder() && ! $this->isGone($claimed->directory)
-            && ! $this->owners->isDisplacedFolderFree($claimed->directory, (string) $claimed->accountId);
-    }
-
-    /**
-     * Whether nothing runs on the folder any more: a displaced folder was already found free, any other is drained.
-     */
-    private function isUnused(ClaimedCleanup $claimed): bool
-    {
-        return $claimed->isDisplacedFolder() || $this->owners->drain($claimed->directory, $claimed->accountId);
+            && ! $this->folderUses->isDisplacedFolderFree($claimed->directory, (string) $claimed->accountId);
     }
 
     private function removeDirectory(string $directory): bool

@@ -89,7 +89,6 @@ final class RenewRuntimeLeaseTest extends TestCase
             "/host/bindings/{$binding->id}/presence",
             [
                 'bootId' => 'boot-1', 'sequence' => 1, 'release' => '1.0.0',
-                'descriptors' => [],
                 'provisioning' => 'succeeded', 'isTakeover' => false,
             ],
             (string) Str::uuid(),

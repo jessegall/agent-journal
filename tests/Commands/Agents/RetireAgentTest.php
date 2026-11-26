@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\ClaimStart\ClaimStartCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
@@ -271,7 +270,7 @@ final class RetireAgentTest extends TestCase
         $this->assertNotNull($session->sessionToken?->revoked_at);
     }
 
-    public function test_a_retired_agents_unclaimed_start_never_runs(): void
+    public function test_a_retired_agents_start_the_journal_took_ends_with_its_process_not_by_cancel(): void
     {
         $this->account = $this->chooseActiveAccounts()['claude-code'];
         $this->journal->showDriverArrangements();
@@ -282,11 +281,11 @@ final class RetireAgentTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new RetireAgentCommand($agentId));
 
+        // The journal takes a start at once, so retirement cancels none: the start ends with its process.
         $this->assertSame(
-            SessionProcessStatus::Cancelled,
+            SessionProcessStatus::Starting,
             SessionProcess::query()->withoutGlobalScopes()->sole()->status,
         );
-        $this->assertNull($this->journal->asSystem(new ClaimStartCommand($host->hostId, $opened->sessionId)));
     }
 
     public function test_without_the_module_its_records_cannot_be_read_but_retirement_still_releases_them(): void

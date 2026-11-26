@@ -13,7 +13,10 @@ use App\Support\References\SubjectReference;
  */
 final class ReadMessageStateReference extends StateReferenceFactory
 {
-    public const string TYPE_KEY = 'core.messages.read';
+    public static function key(): string
+    {
+        return 'core.messages.read';
+    }
 
     public static function forInbox(string $inboxId, string $agentId): StateReference
     {

@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Contracts\Files\Files;
 use App\Exceptions\SignInRunnerRefused;
-use App\Support\AccountOwnerDrain;
+use App\Support\AccountFolderUses;
 use App\Support\ArrangementSetting;
 use App\Support\HostAccountFolders;
 use App\Support\HostSecret;
@@ -46,7 +46,7 @@ final class RunSignInsCommand extends Command
             $arrangement->arrangement->isContained()
                 ? new HostAccountFolders(new HostStartSocket((string) getenv('AGENTS_HOST_START_SOCKET')))
                 : new LocalAccountFolders($files),
-            new AccountOwnerDrain((string) getenv('AGENTS_HOST_START_SOCKET'), $arrangement->arrangement),
+            new AccountFolderUses((string) getenv('AGENTS_HOST_START_SOCKET'), $arrangement->arrangement),
         );
 
         $runner->reconcileAtStart();

@@ -7,7 +7,6 @@ namespace Tests\Commands\Drivers;
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Agents\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Commands\Agents\StopAgent\StopAgentCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
 use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand;
@@ -40,7 +39,6 @@ use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
 use App\Values\AgentText;
-use App\Values\BrowserInputCapabilities;
 use App\Values\ClaimedRequest;
 use App\Values\DriverReceipt;
 use App\Values\OwnerAuthority;
@@ -94,7 +92,7 @@ final class NotifyRequestProgressTest extends TestCase
     public function test_a_staged_report_gives_the_request_back_to_be_offered_again_after_a_wait(): void
     {
         [$host, $opened] = $this->openHostClaimedRuntime(firstMessage: 'Behind a menu');
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
 
         $this->notifyProgress($host->hostId, $opened->firstRequestId, RequestProgress::Staged);
 
@@ -102,15 +100,11 @@ final class NotifyRequestProgressTest extends TestCase
             RequestProgress::Accepted,
             DriverRequest::query()->findOrFail($opened->firstRequestId)->progress,
         );
-        $tooSoon = $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
-        );
+        $tooSoon = $this->journal->claimRequestsOnHost($host->hostId, 10);
         $this->assertSame([], $tooSoon->requests);
 
         $this->travel(3)->seconds();
-        $again = $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
-        );
+        $again = $this->journal->claimRequestsOnHost($host->hostId, 10);
 
         $this->assertSame(
             [$opened->firstRequestId],
@@ -125,7 +119,7 @@ final class NotifyRequestProgressTest extends TestCase
     public function test_the_journal_holds_a_runtime_for_attention_from_the_hosts_facts(): void
     {
         [$host, $signedOut] = $this->openHostClaimedRuntime(firstMessage: 'Signed out');
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
         $wake = DriverRequest::query()->findOrFail($signedOut->firstRequestId);
         $this->journal->asSystem(new NotifyRequestProgressCommand(
             $host->hostId,
@@ -138,11 +132,9 @@ final class NotifyRequestProgressTest extends TestCase
             hasCreatedNoProcess: true,
         ));
 
-        [$stopHost, $stopped] = $this->openHostClaimedRuntime();
+        [$stopHost, $stopped] = $this->openRuntime(driverType: DriverType::Headless);
         $stop = $this->asOwner(new StopAgentCommand($this->agentIdOf($stopped), $stopped->sessionId, 'stop-1'));
-        $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($stopHost->hostId, 10, BrowserInputCapabilities::none()),
-        );
+        $this->journal->claimRequestsOnHost($stopHost->hostId, 10);
         $this->journal->asSystem(new NotifyRequestProgressCommand(
             $stopHost->hostId,
             $stop->requestId,
@@ -169,7 +161,7 @@ final class NotifyRequestProgressTest extends TestCase
         $stop = $this->asOwner(
             new StopAgentCommand($agentId, $opened->sessionId, 'stop-1', $runtime->process_generation),
         );
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
         $this->notifyProgress($host->hostId, $stop->requestId, RequestProgress::Applied);
 
         $this->assertSame('Stopping', $this->statusOf($agentId)->label);
@@ -324,7 +316,7 @@ final class NotifyRequestProgressTest extends TestCase
     {
         [$host, $opened] = $this->openHostClaimedRuntime();
         $receipt = $this->deliver($opened, 'replayed', 'Read the notes');
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
 
         $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applying, 1);
         $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applied, 2);
@@ -402,9 +394,7 @@ final class NotifyRequestProgressTest extends TestCase
      */
     private function claimed(EnrolledHost $host): array
     {
-        return $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
-        )->requests;
+        return $this->journal->claimRequestsOnHost($host->hostId, 10)->requests;
     }
 
     /**

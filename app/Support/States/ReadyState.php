@@ -20,6 +20,7 @@ use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Support\States\Contracts\StopConditionGate;
+use App\Support\States\Support\ReadyStateReference;
 use App\Values\AgentText;
 use App\Values\Operation;
 use App\Values\SettledStopChecks;
@@ -31,11 +32,9 @@ use App\Values\SettledStopChecks;
  * waits on the stop conditions the session was started under, and the state keeps the outcomes of the attempts it
  * opened, so a run of unchanged failures is counted from its own record.
  */
-#[StateType(self::TYPE_KEY, schemaVersion: 1)]
+#[StateType(ReadyStateReference::class, schemaVersion: 1)]
 class ReadyState extends AgentState implements UniqueState
 {
-    public const string TYPE_KEY = 'core.ready';
-
     /**
      * The stop attempts this stack opened whose results have not come back.
      *

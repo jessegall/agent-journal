@@ -449,4 +449,26 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
             HostProcessStatus::Running,
         ]);
     }
+
+    /**
+     * The processes their host took up: it reported them running or ended, rather than leaving them only ordered.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function takenUp(Builder $query): void
+    {
+        $query->where('status', '!=', HostProcessStatus::Ordered);
+    }
+
+    /**
+     * The starts the processes were opened for, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function startIds(Builder $query): void
+    {
+        $query->whereNotNull('session_process_id')->select('session_process_id');
+    }
 }

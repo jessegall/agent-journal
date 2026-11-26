@@ -6,7 +6,10 @@ namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Commands\Agents\WakeAgent\WakeAgentCommand;
+use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\HostWakeRefusal;
+use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
 use App\Enums\Sessions\SessionStatus;
 use App\Exceptions\DriverRequestRefused;
@@ -19,6 +22,8 @@ use App\Models\Sessions\SessionProcess;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
+use App\Values\ClaimedRequest;
+use App\Values\RequestReportBinding;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -79,9 +84,9 @@ final class WakeAgentTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $wake = $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'message-wake'));
-        $claimed = $this->claimedScript($host, $wake->requestId);
+        $claimed = $this->journal->claimedRequestOnHost($host->hostId, $wake->requestId);
 
-        $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
+        $this->notifyWakeRefused($host, $claimed, HostWakeRefusal::ContainerUnavailable, true);
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $this->assertSame(SessionStatus::Active, $session->status);
@@ -97,10 +102,10 @@ final class WakeAgentTest extends TestCase
             $opened->sessionId,
             InitialWakeSettlement::keyOf($opened->sessionId),
         ));
-        $claimed = $this->claimedScript($host, $wake->requestId);
+        $claimed = $this->journal->claimedRequestOnHost($host->hostId, $wake->requestId);
 
-        $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
-        $this->notifyWakeRefused($host, $claimed, 'container-unavailable', true);
+        $this->notifyWakeRefused($host, $claimed, HostWakeRefusal::ContainerUnavailable, true);
+        $this->notifyWakeRefused($host, $claimed, HostWakeRefusal::ContainerUnavailable, true);
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $start = SessionProcess::findLatestOfSession($opened->sessionId);
@@ -116,7 +121,7 @@ final class WakeAgentTest extends TestCase
             $opened->sessionId,
             InitialWakeSettlement::keyOf($opened->sessionId),
         ));
-        $claimed = $this->claimedScript($host, $wake->requestId);
+        $claimed = $this->journal->claimedRequestOnHost($host->hostId, $wake->requestId);
 
         $this->notifyWakeRefused($host, $claimed, null, false);
 
@@ -125,44 +130,29 @@ final class WakeAgentTest extends TestCase
     }
 
     /**
-     * The request as the host's claim hands it out.
-     *
-     * @return array<string, mixed>
-     */
-    private function claimedScript(EnrolledHost $host, string $requestId): array
-    {
-        $requests = $this->journal->hostCall(
-            $host,
-            'POST',
-            '/host/claim?limit=10&wait=0&watched_version=0',
-        )->assertOk()->json('requests');
-
-        return collect($requests)->firstOrFail(fn (array $claimed) => $claimed['requestId'] === $requestId);
-    }
-
-    /**
      * The host refuses a claimed wake, naming a reason and that no process was made only when it knows.
-     *
-     * @param  array<string, mixed>  $claimed
      */
     private function notifyWakeRefused(
         EnrolledHost $host,
-        array $claimed,
-        string|null $reason,
+        ClaimedRequest $claimed,
+        HostWakeRefusal|null $refusal,
         bool $hasCreatedNoProcess,
     ): void {
-        $this->journal->hostCall($host, 'POST', '/host/reports/request', [
-            'request_id' => $claimed['requestId'],
-            'attempt' => $claimed['attempt'],
-            'progress' => 'failed',
-            'actual_binding' => null,
-            'outcome' => 'refused',
-            'refusal_reason' => $reason,
-            'has_created_no_process' => $hasCreatedNoProcess,
-            'session_id' => $claimed['sessionId'],
-            'session_process_id' => $claimed['sessionProcessId'],
-            'process_generation' => $claimed['processGeneration'],
-        ])->assertSuccessful();
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $claimed->requestId,
+            $claimed->attempt,
+            RequestProgress::Failed,
+            null,
+            RequestOutcome::Refused,
+            refusal: $refusal,
+            hasCreatedNoProcess: $hasCreatedNoProcess,
+            binding: new RequestReportBinding(
+                $claimed->sessionId,
+                $claimed->sessionProcessId,
+                $claimed->processGeneration,
+            ),
+        ));
     }
 
     private function notifyExit(EnrolledHost $host, OpenedRuntime $opened): void

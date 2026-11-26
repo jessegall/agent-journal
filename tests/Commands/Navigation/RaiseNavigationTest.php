@@ -26,7 +26,6 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\EnrolledHost;
-use App\Support\MainInboxTakeover;
 use App\Support\NavigationDispatch;
 use App\Support\NavigationLibrary;
 use App\Support\OpenedRuntime;
@@ -38,7 +37,6 @@ use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
@@ -87,20 +85,9 @@ final class RaiseNavigationTest extends TestCase
         $stalled = DriverRequest::query()->findOrFail(
             $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId,
         );
-        $target = "/host/runtimes/{$stalled->agent_runtime_id}/navigation";
 
-        $first = $this->journal->hostCall(
-            $host,
-            'POST',
-            $target,
-            $this->raised($stalled, 'raise-1'),
-        )->assertOk()->json();
-        $again = $this->journal->hostCall(
-            $host,
-            'POST',
-            $target,
-            $this->raised($stalled, 'raise-1'),
-        )->assertOk()->json();
+        $first = $this->journal->asSystem($this->raised($host, $stalled, 'raise-1'));
+        $again = $this->journal->asSystem($this->raised($host, $stalled, 'raise-1'));
 
         $this->assertEquals($first, $again);
         $this->assertSame(1, NavigationRequest::query()->acrossActors()->count());
@@ -114,12 +101,9 @@ final class RaiseNavigationTest extends TestCase
             $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId,
         );
 
-        $this->journal->hostCall(
-            $host,
-            'POST',
-            "/host/runtimes/{$stalled->agent_runtime_id}/navigation",
-            ['attempt' => $stalled->attempt_version + 1] + $this->raised($stalled, 'raise-1'),
-        )->assertForbidden();
+        $this->assertThrows(
+            fn () => $this->journal->asSystem($this->raised($host, $stalled, 'raise-1', $stalled->attempt_version + 1)),
+        );
 
         $this->assertSame(0, NavigationRequest::query()->acrossActors()->count());
     }
@@ -194,11 +178,11 @@ final class RaiseNavigationTest extends TestCase
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
-        $first = $this->raiseThroughHost($host, $opened, $request)->assertOk();
-        $second = $this->raiseThroughHost($host, $opened, $request)->assertOk();
+        $first = $this->raiseThroughHost($host, $opened, $request);
+        $second = $this->raiseThroughHost($host, $opened, $request);
 
-        $this->assertSame('opened', $first->json('answer'));
-        $this->assertSame($first->json('requestId'), $second->json('requestId'));
+        $this->assertSame('opened', data_get($first, 'answer'));
+        $this->assertSame(data_get($first, 'requestId'), data_get($second, 'requestId'));
         $this->assertSame(1, NavigationRequest::query()->acrossActors()->count());
         $navigation = NavigationRequest::query()->acrossActors()->sole();
         $this->assertSame(['Model: GPT-5', '❯ GPT-6'], $navigation->raise_rows);
@@ -218,11 +202,11 @@ final class RaiseNavigationTest extends TestCase
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         [$host, $opened, $request] = $this->stalledScriptOnHost();
         [$otherHost, $other, $otherRequest] = $this->stalledScriptOnHost();
-        $this->raiseThroughHost($host, $opened, $request)->assertOk();
+        $this->raiseThroughHost($host, $opened, $request);
 
-        $waiting = $this->raiseThroughHost($otherHost, $other, $otherRequest)->assertOk();
+        $waiting = $this->raiseThroughHost($otherHost, $other, $otherRequest);
 
-        $this->assertSame(['wait', 30], [$waiting->json('answer'), $waiting->json('retryAfterSeconds')]);
+        $this->assertSame(['wait', 30], [data_get($waiting, 'answer'), data_get($waiting, 'retryAfterSeconds')]);
         $this->assertSame(1, NavigationRequest::query()->acrossActors()->count());
     }
 
@@ -246,9 +230,9 @@ final class RaiseNavigationTest extends TestCase
 
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
-        $answer = $this->raiseThroughHost($host, $opened, $request)->assertOk();
+        $answer = $this->raiseThroughHost($host, $opened, $request);
 
-        $this->assertSame('wait', $answer->json('answer'));
+        $this->assertSame('wait', data_get($answer, 'answer'));
         $this->assertSame(51, NavigationRequest::query()->acrossActors()->count());
     }
 
@@ -262,9 +246,9 @@ final class RaiseNavigationTest extends TestCase
         [$host, $opened, $request] = $this->stalledScriptOnHost();
         $this->seat(Agent::query()->findOrFail($this->agentIdOf($opened)));
 
-        $held = $this->raiseThroughHost($host, $opened, $request)->assertOk();
+        $held = $this->raiseThroughHost($host, $opened, $request);
 
-        $this->assertSame('held', $held->json('answer'));
+        $this->assertSame('held', data_get($held, 'answer'));
         $this->assertSame(0, NavigationRequest::query()->acrossActors()->count());
     }
 
@@ -279,9 +263,7 @@ final class RaiseNavigationTest extends TestCase
         [$host, $opened, $request] = $this->stalledScriptOnHost();
         [$otherHost] = $this->stalledScriptOnHost();
 
-        $this->assertGreaterThanOrEqual(400, $this->raiseThroughHost($otherHost, $opened, $request)->status());
-        $tooLong = $this->raiseThroughHost($host, $opened, $request, array_fill(0, 61, 'row'));
-        $this->assertGreaterThanOrEqual(400, $tooLong->status());
+        $this->assertThrows(fn () => $this->raiseThroughHost($otherHost, $opened, $request));
         $this->assertSame(0, NavigationRequest::query()->acrossActors()->count());
     }
 
@@ -298,14 +280,14 @@ final class RaiseNavigationTest extends TestCase
         $before = NavigationRequest::query()->acrossActors()->count();
         $wakes = count($this->attention->wakes);
 
-        $answer = $this->raiseThroughHost($host, $opened, $request)->assertOk();
+        $answer = $this->raiseThroughHost($host, $opened, $request);
 
         $this->assertSame(['entry', false, $entry->id], [
-            $answer->json('answer'),
-            $answer->json('isGuarded'),
-            $answer->json('entry.id'),
+            data_get($answer, 'answer'),
+            data_get($answer, 'isGuarded'),
+            data_get($answer, 'entry.id'),
         ]);
-        $this->assertSame('GPT-6', $answer->json('entry.steps.0.choose'));
+        $this->assertSame('GPT-6', data_get($answer, 'entry.steps.0.choose'));
         $this->assertSame($before, NavigationRequest::query()->acrossActors()->count());
         $this->assertCount($wakes, $this->attention->wakes);
     }
@@ -321,12 +303,12 @@ final class RaiseNavigationTest extends TestCase
         $entry = $this->libraryEntry('2.1.300');
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
-        $answer = $this->raiseThroughHost($host, $opened, $request)->assertOk();
+        $answer = $this->raiseThroughHost($host, $opened, $request);
 
         $this->assertSame(['entry', true, $entry->id], [
-            $answer->json('answer'),
-            $answer->json('isGuarded'),
-            $answer->json('entry.id'),
+            data_get($answer, 'answer'),
+            data_get($answer, 'isGuarded'),
+            data_get($answer, 'entry.id'),
         ]);
     }
 
@@ -343,10 +325,10 @@ final class RaiseNavigationTest extends TestCase
         $this->addPaths($this->librarySource('2.1.300'));
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
-        $answer = $this->raiseThroughHost($host, $opened, $request)->assertOk();
+        $answer = $this->raiseThroughHost($host, $opened, $request);
 
-        $this->assertSame($entry->id, $answer->json('entry.id'));
-        $this->assertFalse($answer->json('isGuarded'));
+        $this->assertSame($entry->id, data_get($answer, 'entry.id'));
+        $this->assertFalse(data_get($answer, 'isGuarded'));
     }
 
     public function test_a_guarded_entry_is_found_behind_twenty_newer_stale_entries(): void
@@ -362,10 +344,10 @@ final class RaiseNavigationTest extends TestCase
         $this->addPaths($this->librarySource('2.1.323'), ['2.1.323']);
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
-        $answer = $this->raiseThroughHost($host, $opened, $request)->assertOk();
+        $answer = $this->raiseThroughHost($host, $opened, $request);
 
-        $this->assertSame($entry->id, $answer->json('entry.id'));
-        $this->assertTrue($answer->json('isGuarded'));
+        $this->assertSame($entry->id, data_get($answer, 'entry.id'));
+        $this->assertTrue(data_get($answer, 'isGuarded'));
     }
 
     public function test_saving_reuses_the_exact_path_behind_twenty_newer_paths(): void
@@ -400,7 +382,7 @@ final class RaiseNavigationTest extends TestCase
         $this->libraryEntry('2.1.323')->markStaleOn('2.1.323', 'label-missing', []);
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
-        $this->assertSame('opened', $this->raiseThroughHost($host, $opened, $request)->assertOk()->json('answer'));
+        $this->assertSame('opened', $this->raiseThroughHost($host, $opened, $request)['answer']);
     }
 
     public function test_an_entry_the_host_declined_is_not_answered_again(): void
@@ -414,9 +396,9 @@ final class RaiseNavigationTest extends TestCase
         $entry = $this->libraryEntry('2.1.323');
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
-        $answer = $this->raiseThroughHost($host, $opened, $request, declined: [$entry->id])->assertOk();
+        $answer = $this->raiseThroughHost($host, $opened, $request, declined: [$entry->id]);
 
-        $this->assertSame('opened', $answer->json('answer'));
+        $this->assertSame('opened', data_get($answer, 'answer'));
     }
 
     public function test_a_stale_entry_raise_keeps_its_hint_and_the_proven_path_supersedes_it(): void
@@ -431,12 +413,9 @@ final class RaiseNavigationTest extends TestCase
         $stale->markStaleOn('2.1.323', 'label-missing at step 1', []);
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
-        $answer = $this->raiseThroughHost($host, $opened, $request, stale: [
-            'stale_entry' => $stale->id,
-            'sent_steps' => ['choose GPT-6'],
-        ])->assertOk();
+        $answer = $this->raiseThroughHost($host, $opened, $request, staleEntry: $stale->id, sentSteps: ['choose GPT-6']);
 
-        $navigation = NavigationRequest::query()->acrossActors()->findOrFail($answer->json('requestId'));
+        $navigation = NavigationRequest::query()->acrossActors()->findOrFail(data_get($answer, 'requestId'));
         $this->assertSame([$stale->id, ['choose GPT-6']], [$navigation->stale_entry_id, $navigation->sent_steps]);
         $navigation->answer();
         $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6');
@@ -476,21 +455,42 @@ final class RaiseNavigationTest extends TestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * The host's raise of the request stalled at its step 2 on the model picker, in the attempt given or its own.
      */
-    private function raised(DriverRequest $stalled, string $operationKey): array
-    {
-        return [
-            'operation_key' => $operationKey,
-            'request_id' => $stalled->id,
-            'attempt' => $stalled->attempt_version,
-            'step' => 2,
-            'reason' => NavigationReason::LabelMissing->value,
-            'fingerprint' => 'fp1:'.str_repeat('a', 64),
-            'rows' => ['Model: GPT-5', '❯ GPT-6'],
-            'highlight' => 1,
-            'generation' => 7,
-        ];
+    private function raised(
+        EnrolledHost $host,
+        DriverRequest $stalled,
+        string $operationKey,
+        int|null $attempt = null,
+    ): RaiseNavigationCommand {
+        return new RaiseNavigationCommand(
+            $host->hostId,
+            $stalled->agent_runtime_id,
+            $operationKey,
+            $stalled->id,
+            $attempt ?? $stalled->attempt_version,
+            $this->uncertainty(['Model: GPT-5', '❯ GPT-6'], 'fp1:'.str_repeat('a', 64), null, []),
+        );
+    }
+
+    /**
+     * @param  list<string>  $rows
+     * @param  list<string>  $sentSteps
+     */
+    private function uncertainty(
+        array $rows,
+        string $fingerprint,
+        string|null $staleEntry,
+        array $sentSteps,
+    ): NavigationUncertainty {
+        return new NavigationUncertainty(
+            NavigationReason::LabelMissing,
+            2,
+            $fingerprint,
+            new NavigationScreen($rows, 1, 7),
+            $staleEntry,
+            $sentSteps,
+        );
     }
 
     /**
@@ -514,7 +514,7 @@ final class RaiseNavigationTest extends TestCase
     private function seat(Agent $agent): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
-        $this->inTransaction(fn () => $this->app->make(MainInboxTakeover::class)->takeOver($agent));
+        $this->inTransaction(fn () => $this->journal->seatMainAgent($agent));
     }
 
     private function seatMain(): Agent
@@ -531,11 +531,12 @@ final class RaiseNavigationTest extends TestCase
     }
 
     /**
-     * The host's raise of the request stalled at its step 2 on the model picker.
+     * The host's raise of the request stalled at its step 2 on the model picker, answered as the host reads it.
      *
      * @param  list<string>  $rows
      * @param  list<string>  $declined
-     * @param  array<string, mixed>  $stale  the stale entry and the steps its replay already sent
+     * @param  list<string>  $sentSteps  the steps the stale entry's replay already sent
+     * @return array<string, mixed>
      */
     private function raiseThroughHost(
         EnrolledHost $host,
@@ -543,21 +544,20 @@ final class RaiseNavigationTest extends TestCase
         DriverRequest $request,
         array $rows = ['Model: GPT-5', '❯ GPT-6'],
         array $declined = [],
-        array $stale = [],
-    ): TestResponse {
-        return $this->journal->hostCall($host, 'POST', "/host/runtimes/{$opened->runtimeId}/navigation", [
-            'operation_key' => "{$request->id}:{$request->attempt_version}:2",
-            'request_id' => $request->id,
-            'attempt' => $request->attempt_version,
-            'step' => 2,
-            'reason' => 'label-missing',
-            'fingerprint' => self::FINGERPRINT,
-            'rows' => $rows,
-            'highlight' => 1,
-            'generation' => 7,
-            ...($declined === [] ? [] : ['declined_entries' => $declined]),
-            ...$stale,
-        ]);
+        string|null $staleEntry = null,
+        array $sentSteps = [],
+    ): array {
+        $answer = $this->journal->asSystem(new RaiseNavigationCommand(
+            $host->hostId,
+            $opened->runtimeId,
+            "{$request->id}:{$request->attempt_version}:2",
+            $request->id,
+            $request->attempt_version,
+            $this->uncertainty($rows, self::FINGERPRINT, $staleEntry, $sentSteps),
+            $declined,
+        ));
+
+        return json_decode((string) json_encode($answer), true, flags: JSON_THROW_ON_ERROR);
     }
 
     /**

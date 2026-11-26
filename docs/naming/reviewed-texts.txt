@@ -55,6 +55,7 @@ Cancelling the sign-in…
 Change the last answer
 Check and switch
 Check capacity
+Check output restored to the disk
 Check screen
 Check status
 Checked reader revision
@@ -134,7 +135,7 @@ Drafted by {{ agent }}. Nothing is saved until you submit.
 Drafting
 Driver
 Driver menu
-Dropped compared with the rule in use: {{ revision.removedClasses.join(', ') || 'none' }}
+Dropped compared with the rule in use: {{ revision.removedClasses.join(", ") || "none" }}
 Edit
 Email
 Ended
@@ -146,7 +147,7 @@ Estimated USD value observed by the journal. It covers only the sessions the jou
 Everything
 Examples
 Exceptional work
-Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(', ') }}
+Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(", ") }}
 Expires
 Expires {{ dateOnly(account.expiresAt) }}
 Failed
@@ -220,7 +221,7 @@ Name of the new layout
 Name this account
 Needs sign-in
 Network
-New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
+New compared with the rule in use: {{ revision.addedClasses.join(", ") || "none" }}
 New notifications
 Next
 Next option
@@ -245,7 +246,7 @@ No sources are available to search.
 No terminal signed in to this folder yet.
 No window matches
 Normal and up
-Not filled in yet: {{ revision.missingFields.join(', ') }}
+Not filled in yet: {{ revision.missingFields.join(", ") }}
 Not in contact yet
 Not run yet.
 Notable
@@ -274,7 +275,7 @@ Open the {{ label }} sign-in page and sign in.
 Open windows
 Open ↗
 Ordinary
-Other ways to write it: {{ revision.spellings.join(', ') || 'none' }}
+Other ways to write it: {{ revision.spellings.join(", ") || "none" }}
 Outcome
 Outcome unknown: {{ unknown }}
 Outcomes
@@ -310,7 +311,7 @@ Read before working with agent profiles.
 Read before working with skills.
 Read screen
 Reader proof
-Reader {{ reader.readerRevisionId }} for revision {{ reader.declarationRevision }}: {{ reader.proofs.length === 0 ? 'not checked yet' : reader.proofs.join('; ') }}
+Reader {{ reader.readerRevisionId }} for revision {{ reader.declarationRevision }}: {{ reader.proofs.length === 0 ? "not checked yet" : reader.proofs.join("; ") }}
 Readers
 Readers and proofs
 Reading the project's files
@@ -319,6 +320,7 @@ Reading {{ row.entry.name }}
 Reading, sorting and small chores.
 Ready
 Reason
+Reason to retire it
 Recheck
 Reconnect
 Reconnecting to the sign-in…
@@ -343,7 +345,9 @@ Reset layout
 Resize panes
 Resolve
 Restarted
+Restore revision {{ revision }}
 Resume
+Retire revision {{ data.activeRevision }}
 Retired
 Retry
 Retry cleanup
@@ -363,7 +367,7 @@ Run a project on your own computer and keep its tasks, plans and decisions on {{
 Run outcome
 Run permitted commands as you in {{ data.projectLabel }} for up to 12 hours
 Run this command in a terminal inside your project folder. It works once, for ten minutes, and lets this server direct an agent to read and change files in that folder.
-Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
+Run {{ sample.runId }}: {{ sample.parts.join("; ") }}
 Samples
 Save
 Save and clear
@@ -467,11 +471,11 @@ The chosen option cannot be read from the screen; refresh or go back.
 The comment was not sent. Your text is kept.
 The desk
 The draft is ready. Drafted by {{ draft.agent }}.
-The host has not said it can run this driver this way.
 The journal cannot be reached to check this line is still valid, so it cannot be copied now.
 The new session failed to start
 The project's files could not be read.
 The project's machine is not connected, so {{ data.name }} cannot be read.
+The rule in use
 The search could not be completed.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
 The terminal still has an unfinished line: {{ view.unsentLine }}
@@ -535,7 +539,7 @@ Your last code did not arrive. Paste it again.
 a file the user names on the command line, wherever it lies
 a sharing gateway's program in the host's tool folders
 approved by {{ signIn.approvedBy }}
-as {{ sample.approvedClasses.join(', ') }}
+as {{ sample.approvedClasses.join(", ") }}
 characters
 classes
 depth

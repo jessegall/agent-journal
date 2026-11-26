@@ -12,7 +12,7 @@ type Executor func(ctx context.Context, order Order) (map[string]any, error)
 
 // repeatableOrders are the order types that leave the same result when carried out twice, so one the host stopped in
 // the middle of runs again after a restart; any other such order is refused host_restarted and never run twice.
-var repeatableOrders = []string{"resize", "stop", "remove", "stream", "snapshot", "close_stdin", "stop_recording"}
+var repeatableOrders = []string{"resize", "stop", "remove", "stream", "snapshot", "close_stdin", "stop_recording", "read_project"}
 
 // Dispatcher runs the orders the host claimed: each is checked, answered from the record when it was answered
 // before, and otherwise carried out by the executor of its type. Orders of one process run one after another in the

@@ -58,16 +58,11 @@ final readonly class StartPreflight implements StartPreflightContract
     {
         $hosts = array_filter(Host::findServingEnrolled(), fn (Host $host) => $host->runsPlacement($proposal->placement));
 
+        // The journal proves the driver's build on the host itself before the start runs.
         if ($hosts === []) {
             return [StartPreflightRefusal::NoHost];
         }
 
-        foreach ($hosts as $host) {
-            if ($host->declares($proposal)) {
-                return [];
-            }
-        }
-
-        return [StartPreflightRefusal::CombinationNotDeclared];
+        return [];
     }
 }

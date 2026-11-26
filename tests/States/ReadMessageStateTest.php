@@ -15,6 +15,7 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Resolvers\AgentDirectory;
 use App\Support\ActorReference;
+use App\Support\Decisions\StateReferenceKeys;
 use App\Support\Projects\CurrentProject;
 use App\Support\States\ReadMessageState;
 use App\Support\States\Support\AnswerMessageStateReference;
@@ -108,7 +109,7 @@ final class ReadMessageStateTest extends TestCase
             ->given(
                 new MessageRead($this->first->id, $this->inbox->id, $this->journal->actorCalled('Other')),
                 fn (StateObservation $state) => $state->assertStack(
-                    ['core.ready', ReadMessageStateReference::TYPE_KEY],
+                    ['core.ready', StateReferenceKeys::of(ReadMessageStateReference::class)],
                 ),
             )
             ->given(new MessageRead(

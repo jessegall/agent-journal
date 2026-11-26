@@ -31,6 +31,13 @@ final class RealHost
     private const string TERMINAL_TURN = 'resources/recordings/claude-code/2.1.323/turns/terminal-turn/fixture.json';
 
     /**
+     * The terminal recording the Codex stand-in plays by what is typed, and the exec turn whose events it prints.
+     */
+    private const string CODEX_TERMINAL_TURN = 'resources/recordings/codex/0.165.0/turns/terminal-turn/fixture.json';
+
+    private const string CODEX_EXEC_TURN = 'resources/recordings/codex/0.165.0/turns/process-turn/fixture.json';
+
+    /**
      * @var list<InvokedProcess>
      */
     private array $running = [];
@@ -38,6 +45,8 @@ final class RealHost
     private InvokedProcess|null $host = null;
 
     private InvokedProcess|null $journal = null;
+
+    private InvokedProcess|null $signIns = null;
 
     /**
      * The open standard input of each host process this started: it ends when this test's process dies, and with it
@@ -235,9 +244,56 @@ final class RealHost
         $server = ['php', '-S', "127.0.0.1:{$this->port}", '-t', base_path('public'), base_path('public/index.php')];
         $command = [__DIR__.'/scripts/serve-until-input-ends.sh', ...$server];
         // The host holds one claim open as a long poll, so the server answers its reports beside it on other workers.
-        $environment = [...getenv(), 'DB_DATABASE' => $this->database, 'PHP_CLI_SERVER_WORKERS' => '8'];
+        $environment = [...$this->sharedEnvironment(), 'PHP_CLI_SERVER_WORKERS' => '8'];
         $this->journal = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
+    }
+
+    /**
+     * What the served journal, its sign-in runner and the test share: the test's database, a cache every process
+     * reads, so a sign-in's challenge and code pass between them, and the account folders under this host's folder.
+     *
+     * @return array<string, string>
+     */
+    private function sharedEnvironment(): array
+    {
+        return [
+            ...getenv(),
+            'DB_DATABASE' => $this->database,
+            'CACHE_STORE' => 'file',
+            'ACCOUNTS_ROOT' => $this->accountsFolder(),
+        ];
+    }
+
+    public function accountsFolder(): string
+    {
+        return "{$this->folder}/accounts";
+    }
+
+    /**
+     * Starts one pass of the sign-in runner as a host runs it, signed with this host's secret, signing in with the
+     * installation's stand-ins; it ends once the sign-in it took ended.
+     */
+    public function startSignIns(): void
+    {
+        chmod("{$this->folder}/secret", 0o600);
+        $environment = [
+            ...$this->sharedEnvironment(),
+            'JOURNAL_URL' => $this->journalUrl(),
+            'JOURNAL_HOST_SECRET_FILE' => "{$this->folder}/secret",
+            'ACCOUNTS_CLAUDE_PROGRAM' => "{$this->installation()}/bin/claude",
+            'ACCOUNTS_CODEX_PROGRAM' => "{$this->installation()}/bin/codex",
+        ];
+        $this->signIns = $this->processes->env($environment)->timeout(60)
+            ->start(['php', base_path('artisan'), 'accounts:run-sign-ins', '--once']);
+    }
+
+    /**
+     * Waits for the sign-in runner's pass to end and answers whether it ended well.
+     */
+    public function waitForSignIns(): bool
+    {
+        return $this->signIns?->wait()->successful() ?? false;
     }
 
     /**
@@ -271,6 +327,38 @@ final class RealHost
         symlink(self::binary(), "{$this->installation()}/bin/journal-agent");
         mkdir("{$this->installation()}/terminal-turn", 0o700);
         copy(base_path(self::TERMINAL_TURN), "{$this->installation()}/terminal-turn/fixture.json");
+        copy(__DIR__.'/scripts/codex-stand-in.sh', "{$this->installation()}/bin/codex");
+        chmod("{$this->installation()}/bin/codex", 0o700);
+        mkdir("{$this->installation()}/codex-terminal-turn", 0o700);
+        copy(base_path(self::CODEX_TERMINAL_TURN), "{$this->installation()}/codex-terminal-turn/fixture.json");
+        mkdir("{$this->installation()}/codex-app-server", 0o700);
+
+        foreach (glob(__DIR__.'/scripts/codex-app-server/*.json') ?: [] as $answer) {
+            copy($answer, "{$this->installation()}/codex-app-server/".basename($answer));
+        }
+
+        file_put_contents("{$this->installation()}/codex-turn.jsonl", $this->standardOutputOf(self::CODEX_EXEC_TURN));
+    }
+
+    /**
+     * What a recorded program printed on its standard output, its chunks joined in order.
+     */
+    private function standardOutputOf(string $recording): string
+    {
+        $fixture = json_decode((string) file_get_contents(base_path($recording)), true, flags: JSON_THROW_ON_ERROR);
+        $chunks = array_filter($fixture['output'], fn (array $chunk) => $chunk['stream'] === 'stdout');
+
+        return implode('', array_map(fn (array $chunk) => (string) base64_decode($chunk['bytes'], true), $chunks));
+    }
+
+    /**
+     * Each start of the Codex stand-in on a terminal, by the arguments it was started with, oldest first.
+     *
+     * @return list<list<string>>
+     */
+    public function codexStarts(): array
+    {
+        return $this->startsIn("{$this->installation()}/codex-started");
     }
 
     /**
@@ -280,8 +368,16 @@ final class RealHost
      */
     public function claudeStarts(): array
     {
-        $file = "{$this->installation()}/started";
+        return $this->startsIn("{$this->installation()}/started");
+    }
 
+    /**
+     * The starts a stand-in wrote to the file, one JSON list of arguments a line; none before its first.
+     *
+     * @return list<list<string>>
+     */
+    private function startsIn(string $file): array
+    {
         if (! is_file($file)) {
             return [];
         }
@@ -300,7 +396,9 @@ final class RealHost
             self::binary(), 'protocol', '--state', $state, '--docker', $docker, '--until-input-ends',
             '--installation', $this->installation(), '--hook-command', "{$this->installation()}/bin/journal-hook",
         ];
-        $this->host = $this->processes->env(getenv())->forever()->input($this->untilKilled())->start($command);
+        // The installation's programs come first on the host's path, so a program started by name runs its stand-in.
+        $environment = [...getenv(), 'PATH' => "{$this->installation()}/bin:".getenv('PATH')];
+        $this->host = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
     }
 

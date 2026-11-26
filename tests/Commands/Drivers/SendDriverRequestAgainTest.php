@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Commands\Drivers;
 
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Drivers\RetryDriverRequest\RetryDriverRequestCommand;
 use App\Commands\Drivers\SendDriverRequestAgain\SendDriverRequestAgainCommand;
@@ -15,7 +14,6 @@ use App\Enums\Drivers\RequestProgress;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Drivers\DriverRequest;
 use App\Support\OpenedRuntime;
-use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
@@ -51,7 +49,7 @@ final class SendDriverRequestAgainTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $receipt = $this->deliver($opened, 'uncertain', 'Hello');
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
         $this->notifyProgress($host->hostId, $receipt->requestId, RequestProgress::DeliveryUncertain);
         $original = DriverRequest::query()->findOrFail($receipt->requestId);
 

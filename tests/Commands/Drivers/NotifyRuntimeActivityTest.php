@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Drivers;
 
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
-use App\Commands\Agents\NotifyRuntimeHeartbeat\NotifyRuntimeHeartbeatCommand;
 use App\Commands\Agents\WakeAgent\WakeAgentCommand;
-use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Contracts\Actors\AgentTexts;
@@ -16,7 +14,6 @@ use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
 use App\Enums\Runs\RuntimeActivity;
-use App\Events\Sessions\SessionStateChanged;
 use App\Exceptions\HostReportRefused;
 use App\Exceptions\StaleProcessGeneration;
 use App\Models\Agents\AgentRuntime;
@@ -26,11 +23,8 @@ use App\Support\NativeTurnRecords;
 use App\Support\OpenedRuntime;
 use App\Support\PendingWorkSources;
 use App\Values\AgentText;
-use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use App\Values\RequestReportBinding;
-use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
@@ -80,9 +74,7 @@ final class NotifyRuntimeActivityTest extends TestCase
         );
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
 
-        $claimed = $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
-        );
+        $claimed = $this->journal->claimRequestsOnHost($host->hostId, 10);
 
         $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
         $this->assertSame([], $claimed->requests);
@@ -105,9 +97,7 @@ final class NotifyRuntimeActivityTest extends TestCase
         );
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
 
-        $claimed = $this->journal->asSystem(
-            new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()),
-        );
+        $claimed = $this->journal->claimRequestsOnHost($host->hostId, 10);
 
         $this->assertCount(1, $claimed->requests);
         $this->assertSame(
@@ -171,96 +161,39 @@ final class NotifyRuntimeActivityTest extends TestCase
      * An idle runtime reports nothing between two turns, so its last report grew stale after a
      * minute and its session read as Status unknown though nothing was wrong.
      */
-    public function test_a_heartbeat_keeps_an_idle_runtimes_report_fresh(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
-        $this->journal->asSystem(new NotifyRuntimeActivityCommand(
-            $host->hostId,
-            $opened->runtimeId,
-            RuntimeActivity::Idle,
-            HoldReason::None,
-            $runtime->process_generation,
-        ));
-
-        $this->travel(AgentRuntime::FRESH_SECONDS + 1)->seconds();
-        $this->assertTrue($runtime->refresh()->isStale(CarbonImmutable::now()));
-
-        $this->journal->asSystem(new NotifyRuntimeHeartbeatCommand(
-            $host->hostId,
-            $opened->runtimeId,
-            $runtime->process_generation,
-            'owned process alive',
-        ));
-
-        $this->assertFalse($runtime->refresh()->isStale(CarbonImmutable::now()));
-        $this->assertSame(RuntimeActivity::Idle, $runtime->activity);
-    }
-
-    /**
-     * A page learns that a session's state changed from the host's report itself, so its header
-     * never waits for a reload; a beat that only keeps a fresh report fresh says nothing.
-     */
-    public function test_a_report_that_changes_a_sessions_state_tells_the_pages_and_a_plain_beat_does_not(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
-        $idle = new NotifyRuntimeActivityCommand(
-            $host->hostId,
-            $opened->runtimeId,
-            RuntimeActivity::Idle,
-            HoldReason::None,
-            $generation,
-        );
-        $beat = new NotifyRuntimeHeartbeatCommand(
-            $host->hostId,
-            $opened->runtimeId,
-            $generation,
-            'owned process alive',
-        );
-        $told = fn (SessionStateChanged $change) => $change->sessionId === $opened->sessionId;
-        Event::fake([SessionStateChanged::class]);
-
-        $this->journal->asSystem($idle);
-        Event::assertDispatchedTimes(SessionStateChanged::class, 1);
-        Event::assertDispatched(SessionStateChanged::class, $told);
-
-        $this->journal->asSystem($beat);
-        Event::assertDispatchedTimes(SessionStateChanged::class, 1);
-
-        $this->travel(AgentRuntime::FRESH_SECONDS + 1)->seconds();
-        $this->journal->asSystem($beat);
-        Event::assertDispatchedTimes(SessionStateChanged::class, 2);
-    }
-
     public function test_the_host_reports_a_navigation_hold_and_ends_requests_unavailable_or_unconfirmed(): void
     {
         [$host, $opened] = $this->openRuntime();
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $unavailable = $this->deliver($opened, 'entry-gone', 'Pick GPT-6');
         $unconfirmed = $this->deliver($opened, 'only-highlighted', 'Pick GPT-6 again');
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
 
-        $this->journal->hostCall($host, 'POST', '/host/reports/activity', [
-            'runtime_id' => $runtime->id,
-            'activity' => RuntimeActivity::Running->value,
-            'hold' => HoldReason::NavigationNeeded->value,
-            'process_generation' => $runtime->process_generation,
-        ])->assertSuccessful();
-        $ends = [[$unavailable, 'unavailable', 'entry_unavailable'], [$unconfirmed, 'failed', 'unconfirmed']];
+        $this->journal->asSystem(new NotifyRuntimeActivityCommand(
+            $host->hostId,
+            $runtime->id,
+            RuntimeActivity::Running,
+            HoldReason::NavigationNeeded,
+            $runtime->process_generation,
+        ));
+        $ends = [
+            [$unavailable, RequestProgress::Unavailable, RequestOutcome::EntryUnavailable],
+            [$unconfirmed, RequestProgress::Failed, RequestOutcome::Unconfirmed],
+        ];
         $attempts = DriverRequest::query()
             ->whereKey([$unavailable->requestId, $unconfirmed->requestId])
             ->limit(2)
             ->pluck('attempt_version', 'id');
 
         foreach ($ends as [$receipt, $progress, $outcome]) {
-            $this->journal->hostCall($host, 'POST', '/host/reports/request', [
-                'request_id' => $receipt->requestId,
-                'attempt' => $attempts[$receipt->requestId],
-                'progress' => $progress,
-                'actual_binding' => null,
-                'outcome' => $outcome,
-            ])->assertSuccessful();
+            $this->journal->asSystem(new NotifyRequestProgressCommand(
+                $host->hostId,
+                $receipt->requestId,
+                $attempts[$receipt->requestId],
+                $progress,
+                null,
+                $outcome,
+            ));
         }
 
         $this->assertSame(HoldReason::NavigationNeeded, $runtime->fresh()?->hold_reason);
@@ -299,7 +232,7 @@ final class NotifyRuntimeActivityTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $receipt = $this->deliver($opened, 'gap', 'Read the notes');
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
         $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applying, 1);
 
         $this->journal->asSystem(new NotifyRuntimeActivityCommand(

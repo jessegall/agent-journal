@@ -30,7 +30,7 @@ final class StateLoadingTest extends TestCase
         foreach ($this->applicationTypes() as $type) {
             $declared = Reflector::of($type->stateClass)->attributes(StateType::class)->first();
 
-            if ($declared->isEmpty() || $declared->get()->key !== $type->key) {
+            if ($declared->isEmpty() || $declared->get()->key() !== $type->key) {
                 $unnamed[] = "{$type->key}: {$type->stateClass}";
             }
         }

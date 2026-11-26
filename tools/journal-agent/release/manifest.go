@@ -53,7 +53,7 @@ type TargetArtifacts struct {
 var Capabilities = []string{"enrollment", "presence", "commands", "child-worktrees"}
 
 // LocalProviders are the local providers a connected machine runs; Codex is left out while its hook calls carry no
-// per-thread capability (localsession.ErrCodexWithheld), so the server names it withheld.
+// per-thread capability (journal codex says why), so the server names it withheld.
 var LocalProviders = []string{"claude-code"}
 
 // prerequisitesOf are the programs a target's machine needs before it installs the release.

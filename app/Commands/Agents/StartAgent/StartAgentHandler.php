@@ -172,7 +172,6 @@ final readonly class StartAgentHandler implements CommandHandler
         $place = Host::findRunningStart(
             Project::findForId($agent->project_id),
             $driver,
-            $build,
             $request->execution()->mode,
             $request->driverType,
         );
