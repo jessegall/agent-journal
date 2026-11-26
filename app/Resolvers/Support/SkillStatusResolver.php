@@ -17,6 +17,9 @@ use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\SkillSelection;
 use App\Skills\Values\HandedSkillsReport;
 use App\Skills\Values\SkillEntry;
+use App\Stacks\Decisions\StateReferenceKeys;
+use App\Stacks\Support\ReadSkillStateReference;
+use App\Support\Inspection\Contracts\StackInspectionQuery;
 use App\Values\SessionSkillStatus;
 use App\Values\SkillStatus;
 
@@ -35,6 +38,7 @@ final readonly class SkillStatusResolver
         private SkillResolver $skills,
         private SkillContextResolver $contexts,
         private SkillSelection $selection,
+        private StackInspectionQuery $stacks,
     ) {}
 
     /**
@@ -56,6 +60,7 @@ final readonly class SkillStatusResolver
 
         $latest = SkillGeneration::findLatestReady();
         $lastReads = $this->lastReadsOf($session);
+        $waitingKeys = $this->waitingSkillsOf($session);
 
         return array_map(function (SkillEntry $entry) use (
             $session,
@@ -63,6 +68,7 @@ final readonly class SkillStatusResolver
             $handedGeneration,
             $latest,
             $lastReads,
+            $waitingKeys,
         ) {
             $key = $entry->key->key;
             $selected = in_array($key, $selection['selected'], true);
@@ -80,8 +86,28 @@ final readonly class SkillStatusResolver
                 $handedDigest === null ? null : $session->skill_generation_id,
                 $changed,
                 $lastReads[$key] ?? null,
+                in_array($key, $waitingKeys, true),
             );
         }, $skillEntries);
+    }
+
+    /**
+     * The skills the reading state of the session's stack still waits for, as its frame saves them.
+     *
+     * @return list<string>
+     */
+    private function waitingSkillsOf(AgentSession $session): array
+    {
+        $typeKey = StateReferenceKeys::of(ReadSkillStateReference::class);
+        $waiting = [];
+
+        foreach ($this->stacks->forTarget($session->target)->frames as $frame) {
+            if ($frame->typeKey === $typeKey) {
+                $waiting = [...$waiting, ...$frame->textList('skillKeys')];
+            }
+        }
+
+        return $waiting;
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Listeners\AdmitStartSkills;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillReadEntry;
 use App\Resolvers\Support\SkillStatusResolver;
+use App\Skills\Commands\AskSkillRead\AskSkillReadCommand;
 use App\Skills\Enums\ReadEvidence;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
@@ -34,6 +35,8 @@ final class SkillStatusTest extends TestCase
         'command_receipts',
         'process_runs',
         'part_runs',
+        'skill_reads',
+        'agent_stacks',
     ];
 
     protected function setUp(): void
@@ -95,6 +98,20 @@ final class SkillStatusTest extends TestCase
         $this->artisan('skill:status', ['--session' => $session->id])
             ->expectsOutputToContain('skill-show at')
             ->assertSuccessful();
+    }
+
+    public function test_a_key_still_to_read_shows_so_and_a_read_key_does_not(): void
+    {
+        $session = $this->admitted('Writer');
+        [$first, $second] = $session->skill_keys;
+        $this->journal->actAsAgentIds($session->agent_id, $session->id);
+        $this->journal->runUnkeyed(new AskSkillReadCommand($session->id, [$first, $second]));
+        $this->journal->finishToolCall($session, 'Bash', ['command' => "php artisan skill:show {$first}"]);
+        $this->journal->actAs('Owner');
+
+        $skills = $this->skillsOf($session);
+
+        $this->assertSame([$second], $this->keysOf($skills, fn (SessionSkillStatus $skill) => $skill->isStillToRead));
     }
 
     public function test_an_agent_sees_its_own_session_and_no_other(): void

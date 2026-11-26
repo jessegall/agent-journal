@@ -9,8 +9,8 @@ use JsonSerializable;
 
 /**
  * One skill as one session has it, each stage on its own: the stored revision, the generated digest, whether it is
- * selected now and why not, the generation the start handed it in, whether it changed since that start, and the last
- * time the agent read it whole. A file that exists is never counted as read.
+ * selected now and why not, the generation the start handed it in, whether it changed since that start, the last time
+ * the agent read it whole, and whether its reading state still waits for it. A file that exists is never counted as read.
  */
 final readonly class SessionSkillStatus implements JsonSerializable
 {
@@ -23,6 +23,7 @@ final readonly class SessionSkillStatus implements JsonSerializable
         public string|null $handedGeneration,
         public bool $hasChanged,
         public SkillReadEntry|null $lastRead,
+        public bool $isStillToRead,
     ) {}
 
     /**
@@ -60,6 +61,7 @@ final readonly class SessionSkillStatus implements JsonSerializable
             'changed_since_start' => $this->hasChanged,
             'last_read_evidence' => $this->lastRead?->evidence->value,
             'last_read_at' => $this->lastRead?->read_at->toIso8601String(),
+            'still_to_read' => $this->isStillToRead,
         ];
     }
 }
