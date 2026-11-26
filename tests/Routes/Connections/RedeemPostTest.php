@@ -6,6 +6,7 @@ namespace Tests\Routes\Connections;
 
 use App\Commands\Projects\RedeemProjectInvitation\RedeemProjectInvitationCommand;
 use App\Values\Redemption;
+use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Str;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;
@@ -28,6 +29,8 @@ final class RedeemPostTest extends RouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $this->issueLine('the-ticket');
+        // A relay redeems over https only, as the request refuses plain http.
+        $this->app->make(UrlGenerator::class)->forceScheme('https');
 
         return RouteCall::as(Caller::Public)
             ->payload($this->redemptionBody('the-ticket', self::NONCE))

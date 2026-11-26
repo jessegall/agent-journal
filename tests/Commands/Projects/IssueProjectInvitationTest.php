@@ -224,7 +224,7 @@ final class IssueProjectInvitationTest extends TestCase
         $this->assertTrue($this->availability()->canIssue());
         $this->assertSame([], $offer->missingCapabilities);
         $this->assertSame(
-            ['darwin-arm64', 9_000_000, ['git', 'curl'], [], true],
+            ['darwin-arm64', 9_004_000, ['git', 'curl'], [], true],
             [$offer->targets[0]->name, $offer->targets[0]->bytes, $offer->targets[0]->prerequisites,
                 $offer->targets[0]->missingProviders, $offer->targets[0]->isSupported],
         );

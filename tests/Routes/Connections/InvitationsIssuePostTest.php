@@ -7,6 +7,7 @@ namespace Tests\Routes\Connections;
 use App\Commands\Projects\IssueProjectInvitation\IssueProjectInvitationCommand;
 use App\Values\IssuedInvitation;
 use Illuminate\Support\Str;
+use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
@@ -19,10 +20,10 @@ use Tests\Support\Seeding\TestJournal;
 #[TestsRoute('POST', 'connections.invitations.issue')]
 final class InvitationsIssuePostTest extends GuardedRouteEntryTestCase
 {
+    use ConnectsProjects;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        $journal->owner();
-
         return RouteCall::as(Caller::User)
             ->payload([
                 'issuanceKey' => 'issue-1',

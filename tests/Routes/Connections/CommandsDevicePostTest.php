@@ -43,10 +43,7 @@ final class CommandsDevicePostTest extends RouteEntryTestCase
             'deviceCode' => $started->json('deviceCode'),
         ])->json('grant');
 
-        return RouteCall::as(Caller::Public)
-            ->headers([
-                'Authorization' => "Bearer {$grant}",
-            ])
+        return RouteCall::as(Caller::DeviceGrant, $grant)
             ->payload([
                 'request_key' => 'overview-1',
                 'binding' => $bindingId,

@@ -30,6 +30,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\Stacks\FinishableState;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
+use Tests\Fixtures\Hooks\SubjectIds;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
@@ -51,6 +52,13 @@ final class StackChangeTest extends TestCase
     private StackTarget $target;
 
     private FinishedSubjects $tasks;
+
+    /**
+     * The name the test gave each subject, by the subject id its frame stores.
+     *
+     * @var array<string, string>
+     */
+    private array $names = [];
 
     protected function setUp(): void
     {
@@ -157,12 +165,12 @@ final class StackChangeTest extends TestCase
         $this->push('C');
         $current = $this->app->make(CurrentState::class);
 
-        $this->assertSame('C', $current->of($this->target, 'test.tasks')->get()->subject->id);
-        $this->assertSame('P', $current->of($this->target, 'test.plans')->get()->subject->id);
+        $this->assertSame('C', $this->nameOf($current->of($this->target, 'test.tasks')->get()));
+        $this->assertSame('P', $this->nameOf($current->of($this->target, 'test.plans')->get()));
 
         $this->tasks->finished = ['C'];
 
-        $this->assertSame('A', $current->of($this->target, 'test.tasks')->get()->subject->id);
+        $this->assertSame('A', $this->nameOf($current->of($this->target, 'test.tasks')->get()));
     }
 
     public function test_restoring_keeps_finished_frames_and_refuses_a_stack_past_the_limit(): void
@@ -208,17 +216,34 @@ final class StackChangeTest extends TestCase
         $this->transaction()->run(
             fn () => $this->app->make(AgentStacks::class)->push(
                 $this->target,
-                new StateReference('test.plans', new SubjectReference($subject, 1), ['subject' => 'plan-'.$subject]),
+                $this->named('test.plans', $subject, 'plan-'.$subject),
             ),
         );
     }
 
     private function task(string $subject): StateReference
     {
-        return new StateReference('test.tasks', new SubjectReference($subject, 1), ['subject' => $subject]);
+        return $this->named('test.tasks', $subject, $subject);
     }
 
     /**
+     * A reference to the state of the type about the subject its data names, remembered by the test's name for it.
+     */
+    private function named(string $type, string $name, string $subject): StateReference
+    {
+        $this->names[SubjectIds::of($subject)] = $name;
+
+        return new StateReference($type, new SubjectReference(SubjectIds::of($subject), 1), ['subject' => $subject]);
+    }
+
+    private function nameOf(StateReference $reference): string
+    {
+        return $reference->subject instanceof SubjectReference ? $this->names[$reference->subject->id] : '';
+    }
+
+    /**
+     * The subject each frame above the bottom was pushed for, by the name the test gave it.
+     *
      * @return list<string>
      */
     private function storedSubjects(): array
@@ -227,9 +252,7 @@ final class StackChangeTest extends TestCase
 
         return array_values(
             array_map(
-                fn (
-                    FrameRecord $frame,
-                ) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '',
+                fn (FrameRecord $frame) => $this->nameOf($frame->reference),
                 array_slice($frames, 1),
             ),
         );
@@ -253,9 +276,7 @@ final class StackChangeTest extends TestCase
 
         return array_combine(
             array_map(
-                fn (
-                    FrameRecord $frame,
-                ) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '',
+                fn (FrameRecord $frame) => $this->nameOf($frame->reference),
                 $frames,
             ),
             array_map(fn (FrameRecord $frame) => $frame->enteredAt, $frames),
