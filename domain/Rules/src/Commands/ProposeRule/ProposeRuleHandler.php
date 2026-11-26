@@ -28,6 +28,6 @@ final readonly class ProposeRuleHandler extends RuleCommandHandler
             $command->replacesRuleId,
             $command->dispatchedBy(),
             $command->owner(),
-        )->id;
+        )->getKey();
     }
 }

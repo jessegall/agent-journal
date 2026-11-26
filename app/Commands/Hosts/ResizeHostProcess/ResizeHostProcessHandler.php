@@ -25,6 +25,6 @@ final readonly class ResizeHostProcessHandler implements CommandHandler
                 'columns' => $command->columns,
                 'rows' => $command->rows,
             ],
-        )->id;
+        )->getKey();
     }
 }

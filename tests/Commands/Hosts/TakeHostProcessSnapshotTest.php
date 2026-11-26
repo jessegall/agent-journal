@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\SnapshotHostProcess\SnapshotHostProcessCommand;
+use App\Commands\Hosts\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
 use App\Enums\Hosts\HostOrderType;
 use App\Enums\Hosts\HostProcessReportType;
 use App\Exceptions\CommandNotRegistered;
@@ -19,8 +19,8 @@ use Tests\TestCase;
 /**
  * A snapshot order asks for one frame now; a replaced worker and an ended process are refused.
  */
-#[TestsCommand(SnapshotHostProcessCommand::class)]
-final class SnapshotHostProcessTest extends TestCase
+#[TestsCommand(TakeHostProcessSnapshotCommand::class)]
+final class TakeHostProcessSnapshotTest extends TestCase
 {
     use RefreshHookDatabase;
 
@@ -83,8 +83,8 @@ final class SnapshotHostProcessTest extends TestCase
         );
     }
 
-    private function command(HostOrderSource $source): SnapshotHostProcessCommand
+    private function command(HostOrderSource $source): TakeHostProcessSnapshotCommand
     {
-        return new SnapshotHostProcessCommand($this->journal->hostProcessCalled('shell')->id, $source);
+        return new TakeHostProcessSnapshotCommand($this->journal->hostProcessCalled('shell')->id, $source);
     }
 }

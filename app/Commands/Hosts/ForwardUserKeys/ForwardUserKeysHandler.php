@@ -32,6 +32,6 @@ final readonly class ForwardUserKeysHandler implements CommandHandler
 
         HostProcess::findLocked($command->processId)->raiseInputGeneration();
 
-        return $order->id;
+        return $order->getKey();
     }
 }

@@ -29,6 +29,6 @@ final readonly class OpenHostProcessHandler implements CommandHandler
         $process = HostProcess::create($host, $runtime, $command->plan, $start);
         $this->placement->forOpening($process, $command->plan, $command->source);
 
-        return $process->id;
+        return $process->getKey();
     }
 }

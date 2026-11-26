@@ -22,6 +22,6 @@ final readonly class SignalHostProcessHandler implements CommandHandler
             $command->source,
             HostOrderType::Signal,
             ['signal' => $command->signal],
-        )->id;
+        )->getKey();
     }
 }

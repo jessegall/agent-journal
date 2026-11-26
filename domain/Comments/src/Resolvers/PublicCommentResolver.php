@@ -38,7 +38,7 @@ final readonly class PublicCommentResolver implements PublicCommentResolverContr
                         $comment->shareIdentity(),
                         $comment->created_at->toIso8601String(),
                         (string) $comment->getAttribute('excerpt'),
-                        $comment->quote,
+                        $comment->anchor?->quote,
                     ),
                 )->all(),
             ),

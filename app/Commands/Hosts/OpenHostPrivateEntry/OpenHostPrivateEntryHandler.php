@@ -14,6 +14,11 @@ final readonly class OpenHostPrivateEntryHandler implements CommandHandler
 
     public function handle(OpenHostPrivateEntryCommand $command): string
     {
-        return $this->placement->forProcess($command->processId, $command->source, HostOrderType::OpenPrivate, [])->id;
+        return $this->placement->forProcess(
+            $command->processId,
+            $command->source,
+            HostOrderType::OpenPrivate,
+            [],
+        )->getKey();
     }
 }

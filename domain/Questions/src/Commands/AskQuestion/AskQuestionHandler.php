@@ -63,6 +63,6 @@ final readonly class AskQuestionHandler extends QuestionCommandHandler
             $command->text,
             $command->type,
             $options,
-        )->id;
+        )->getKey();
     }
 }

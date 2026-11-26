@@ -10,9 +10,9 @@ use App\Commands\Hosts\OpenHostPrivateEntry\OpenHostPrivateEntryCommand;
 use App\Commands\Hosts\ResizeHostProcess\ResizeHostProcessCommand;
 use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
 use App\Commands\Hosts\SignalHostProcess\SignalHostProcessCommand;
-use App\Commands\Hosts\SnapshotHostProcess\SnapshotHostProcessCommand;
 use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
 use App\Commands\Hosts\StreamHostProcess\StreamHostProcessCommand;
+use App\Commands\Hosts\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
 use App\Commands\Hosts\WriteHostInput\WriteHostInputCommand;
 use App\Commands\Hosts\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Contracts\Bus\CommandBus;
@@ -64,7 +64,7 @@ final readonly class HostChannel implements HostChannelContract
 
     public function snapshot(string $processId, HostOrderSource $source): string
     {
-        return $this->commands->run(new SnapshotHostProcessCommand($processId, $source));
+        return $this->commands->run(new TakeHostProcessSnapshotCommand($processId, $source));
     }
 
     public function userKeys(string $processId, string $bytes, HostOrderSource $source): string

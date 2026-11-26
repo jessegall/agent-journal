@@ -7,8 +7,8 @@ namespace App\Support\Drivers;
 use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Commands\Hosts\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Commands\Hosts\RenewHostWorker\RenewHostWorkerCommand;
-use App\Commands\Hosts\SnapshotHostProcess\SnapshotHostProcessCommand;
 use App\Commands\Hosts\StreamHostProcess\StreamHostProcessCommand;
+use App\Commands\Hosts\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
@@ -92,7 +92,7 @@ final readonly class DriverWorkers
             $source = HostOrderSource::forWorker($generation);
 
             $this->perform($work, DriverActions::of(
-                new SnapshotHostProcessCommand($process->id, $source),
+                new TakeHostProcessSnapshotCommand($process->id, $source),
                 new StreamHostProcessCommand($process->id, StreamRate::of(true, 0), false, $source),
             ));
         }

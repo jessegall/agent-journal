@@ -38,6 +38,7 @@ final class PostCommentTest extends TestCase
     private const string QUESTION = 'Is this still open?';
 
     private const array TABLES = [
+        'comment_anchors',
         'comments',
         'users',
         'agents',

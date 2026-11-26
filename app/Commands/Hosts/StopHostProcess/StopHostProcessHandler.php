@@ -25,6 +25,6 @@ final readonly class StopHostProcessHandler implements CommandHandler
                 'grace_ms' => $command->graceMs,
                 'force_ms' => $command->forceMs,
             ],
-        )->id;
+        )->getKey();
     }
 }

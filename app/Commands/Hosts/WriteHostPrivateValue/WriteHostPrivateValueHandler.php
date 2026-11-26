@@ -21,6 +21,6 @@ final readonly class WriteHostPrivateValueHandler implements CommandHandler
 
         $this->values->bindTo($command->submissionId, $order->host_id);
 
-        return $order->id;
+        return $order->getKey();
     }
 }

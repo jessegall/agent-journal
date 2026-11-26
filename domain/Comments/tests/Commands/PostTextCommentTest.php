@@ -37,6 +37,7 @@ use Domain\Comments\Data\RecordCommentView;
 use Domain\Comments\Data\TextCommentView;
 use Domain\Comments\Exceptions\TargetNotCommentable;
 use Domain\Comments\Models\Comment;
+use Domain\Comments\Models\CommentAnchor;
 use Domain\Comments\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
@@ -57,6 +58,7 @@ final class PostTextCommentTest extends TestCase
     use InstallsNotesModule;
 
     private const array TABLES = [
+        'comment_anchors',
         'comments',
         'users',
         'agents',
@@ -118,15 +120,15 @@ final class PostTextCommentTest extends TestCase
             ),
         );
 
-        $comment = Comment::query()->findOrFail($commentId);
+        $comment = Comment::query()->with('anchor')->findOrFail($commentId);
         $this->assertSame(self::LINES_QUESTION, $comment->body);
 
         $this->assertSame([
             2,
             3,
         ], [
-            $comment->first_line,
-            $comment->last_line,
+            $comment->anchor->first_line,
+            $comment->anchor->last_line,
         ]);
     }
 
@@ -168,7 +170,7 @@ final class PostTextCommentTest extends TestCase
             new PostTextCommentCommand($target, 'Why empty?', TextRange::lines($digest, 3, 3), (string) Str::uuid()),
         );
 
-        $this->assertSame([$digest], Comment::query()->pluck('version_id')->all());
+        $this->assertSame([$digest], CommentAnchor::query()->pluck('version_id')->all());
 
         $this->expectException(InvalidTextRange::class);
 

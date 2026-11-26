@@ -14,6 +14,11 @@ final readonly class CloseHostPrivateEntryHandler implements CommandHandler
 
     public function handle(CloseHostPrivateEntryCommand $command): string
     {
-        return $this->placement->forProcess($command->processId, $command->source, HostOrderType::ClosePrivate, [])->id;
+        return $this->placement->forProcess(
+            $command->processId,
+            $command->source,
+            HostOrderType::ClosePrivate,
+            [],
+        )->getKey();
     }
 }

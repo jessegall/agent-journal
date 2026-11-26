@@ -28,6 +28,6 @@ final readonly class SendHostKeysHandler implements CommandHandler
                 'as_user' => false,
             ],
             HostOrderPlacement::KEY_SECONDS,
-        )->id;
+        )->getKey();
     }
 }

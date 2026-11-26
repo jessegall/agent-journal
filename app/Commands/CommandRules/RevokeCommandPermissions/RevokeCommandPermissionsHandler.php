@@ -19,6 +19,6 @@ final readonly class RevokeCommandPermissionsHandler implements CommandHandler
             CommandClassSet::of(...$command->classes),
             CommandPatternSet::of(...$command->patterns),
             $command->dispatchedBy(),
-        )->id;
+        )->getKey();
     }
 }

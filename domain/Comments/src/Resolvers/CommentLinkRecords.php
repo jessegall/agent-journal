@@ -84,7 +84,13 @@ final readonly class CommentLinkRecords implements RecordProvider
             fn (Comment $comment) => isset($visibleTargets[$comment->target_type.' '.$comment->target_id]),
         )->pluck('id')->all();
 
-        $comments = Comment::query()->whereKey($shown)->readExactly(max(1, count($shown)))->get()->keyBy('id');
+        $comments = Comment::query()
+            ->whereKey($shown)
+            ->with('anchor')
+            ->readExactly(max(1, count($shown)))
+            ->get()
+            ->keyBy('id');
+
         $cards = [];
 
         foreach ($records as $record) {
