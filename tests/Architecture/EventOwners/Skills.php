@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Events\Skills\SkillContextEpochAdvanced;
 use App\Events\Skills\SkillGenerationRetired;
+use App\Events\Skills\SkillRead;
 use App\Events\Skills\SkillsChanged;
+use App\Skills\Enums\ReadEvidence;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -19,6 +21,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SkillsChanged('skill', 2),
+    ],
+    SkillRead::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SkillReadEntry::record',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SkillRead('session', 'journal', ReadEvidence::SkillShow),
     ],
     SkillGenerationRetired::class => [
         'role' => EventRole::RowFact,
