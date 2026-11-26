@@ -13,9 +13,8 @@ use App\Events\Sessions\SessionTokenIssued;
 use App\Events\Sessions\SessionTokenRevoked;
 use App\Events\Sessions\SessionTokenRotated;
 use App\Models\Agents\AgentSession;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -29,10 +28,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
-final class SessionToken extends Model implements EventSource, ReadableModel
+final class SessionToken extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

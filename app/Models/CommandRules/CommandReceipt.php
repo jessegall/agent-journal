@@ -18,6 +18,7 @@ use App\Events\Engine\CommandReceiptRefused;
 use App\Exceptions\RefusalReplayed;
 use App\Exceptions\RequestKeyExpired;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\CommandName;
 use App\Support\Operation;
 use App\Support\PlainValue;
@@ -30,8 +31,6 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -56,10 +55,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class CommandReceipt extends Model implements EventSource, ReadableModel
+final class CommandReceipt extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

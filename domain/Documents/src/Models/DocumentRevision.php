@@ -12,6 +12,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\TextVersionUnavailable;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
@@ -23,7 +24,6 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -45,11 +45,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
-final class DocumentRevision extends Model implements Numbered, ReadableModel
+final class DocumentRevision extends JournalModel implements Numbered, ReadableModel
 {
     use BoundedReads;
     use HasNumber;
-    use HasUlids;
     use Linkable;
     use MeasuresBody;
     use SearchesText;

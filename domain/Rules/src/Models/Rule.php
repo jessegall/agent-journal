@@ -15,6 +15,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\CrossProjectEdge;
 use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\TextSearch;
 use App\Values\ProjectOwner;
@@ -29,8 +30,6 @@ use Domain\Rules\Exceptions\RuleSelfApproval;
 use Domain\Rules\Values\RuleDetails;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -48,12 +47,11 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class Rule extends Model implements EventSource, Numbered, ProjectOwned, ReadableModel
+final class Rule extends JournalModel implements EventSource, Numbered, ProjectOwned, ReadableModel
 {
     use BelongsToProjectOrGlobal;
     use BoundedReads;
     use HasNumber;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

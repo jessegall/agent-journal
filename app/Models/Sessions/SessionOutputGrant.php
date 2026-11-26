@@ -9,13 +9,12 @@ use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Values\SessionOutputPaths;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -31,10 +30,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class SessionOutputGrant extends Model implements ReadableModel
+final class SessionOutputGrant extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use InsertsRowSets;
     use Linkable;
 

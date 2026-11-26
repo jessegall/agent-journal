@@ -11,6 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\GatewayEndpoint;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayEndpointStatus;
@@ -20,8 +21,6 @@ use Domain\Sharing\Exceptions\GatewayLeaseRefused;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
 /**
@@ -38,10 +37,9 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class ShareGatewayEndpoint extends Model implements EventSource, ReadableModel
+final class ShareGatewayEndpoint extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

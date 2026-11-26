@@ -11,6 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Hooks\HookCallRecorded;
 use App\Models\Support\AgentSessionScope;
+use App\Models\Support\JournalModel;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Storage\RecordedAnswer;
 use App\Support\Storage\RecordedAnswerCast;
@@ -20,8 +21,6 @@ use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
@@ -37,10 +36,9 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  *
  * @mixin \Eloquent
  */
-final class HookCall extends Model implements EventSource, ReadableModel
+final class HookCall extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

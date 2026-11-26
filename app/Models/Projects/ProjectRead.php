@@ -20,14 +20,13 @@ use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
 use App\Exceptions\ProjectReadRefused;
 use App\Models\Support\HasActorColumns;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\ProjectFileText;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use PhpOption\Option;
 use Spatie\LaravelData\DataCollection;
@@ -56,11 +55,10 @@ use Spatie\LaravelData\DataCollection;
  * @mixin \Eloquent
  */
 #[Table('project_reads')]
-final class ProjectRead extends Model implements EventSource, ReadableModel
+final class ProjectRead extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

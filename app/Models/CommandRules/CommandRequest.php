@@ -21,6 +21,7 @@ use App\Models\Runs\ProcessRun;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\HasActorColumns;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\ExitBranch;
 use App\Values\ExitPolicy;
@@ -29,8 +30,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -51,13 +50,12 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class CommandRequest extends Model implements ProjectOwned, ReadableModel
+final class CommandRequest extends JournalModel implements ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
     use HasActorColumns;
     use HasActorColumns;
-    use HasUlids;
     use Linkable;
 
     public const int EXCERPT_LENGTH = 200;

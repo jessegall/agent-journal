@@ -13,6 +13,6 @@ final readonly class CreatePlanHandler extends PlanCommandHandler
     {
         $creator = $command->dispatchedBy();
 
-        return Plan::create($command->title, $command->brief, $command->type, $creator, $command->owner())->id;
+        return Plan::create($command->title, $command->brief, $command->type, $creator, $command->owner())->getKey();
     }
 }

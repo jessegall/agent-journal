@@ -21,6 +21,7 @@ use App\Exceptions\AssignmentPoolUnavailable;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\AssignmentHolder;
 use App\Support\OrderedRecordIds;
@@ -54,9 +55,7 @@ use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Override;
 use PhpOption\Option;
@@ -93,7 +92,7 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[UseFactory(PlanFactory::class)]
-final class Plan extends Model implements Assignable, EventSource, Numbered, ProjectOwned, ReadableModel, Shareable
+final class Plan extends JournalModel implements Assignable, EventSource, Numbered, ProjectOwned, ReadableModel, Shareable
 {
     use AssignableListing;
     use BelongsToProject;
@@ -105,7 +104,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Pro
     use HasFactory;
 
     use HasNumber;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

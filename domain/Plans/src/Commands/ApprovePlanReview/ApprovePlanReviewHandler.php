@@ -24,6 +24,6 @@ final readonly class ApprovePlanReviewHandler extends PlanCommandHandler
         $edition->approve($command->dispatchedBy(), $command->requestKey);
         $plan->settleReview($edition->id, PlanReviewStatus::Approved);
 
-        return $edition->id;
+        return $edition->getKey();
     }
 }

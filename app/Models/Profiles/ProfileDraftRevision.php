@@ -8,11 +8,10 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\PreventsRevisionUpdates;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\ScriptSource;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -25,10 +24,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class ProfileDraftRevision extends Model implements ReadableModel
+final class ProfileDraftRevision extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use PreventsRevisionUpdates;
 

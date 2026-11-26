@@ -19,6 +19,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
@@ -47,8 +48,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -75,7 +74,7 @@ use Illuminate\Database\Query\JoinClause;
  *
  * @mixin \Eloquent
  */
-final class Document extends Model implements
+final class Document extends JournalModel implements
     Commentable,
     Dockable,
     EventSource,
@@ -89,7 +88,6 @@ final class Document extends Model implements
     use BoundedReads;
     use CreatedWithAttention;
     use HasNumber;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

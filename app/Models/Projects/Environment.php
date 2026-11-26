@@ -13,11 +13,10 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\EnvironmentOpened;
 use App\Exceptions\InvitationUnusable;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -27,11 +26,10 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class Environment extends Model implements EventSource, ProjectOwned, ReadableModel
+final class Environment extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

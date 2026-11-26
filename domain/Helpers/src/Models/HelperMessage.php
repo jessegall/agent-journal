@@ -8,11 +8,10 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -27,11 +26,10 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  */
 #[Table('helper_messages')]
-final class HelperMessage extends Model implements ReadableModel
+final class HelperMessage extends JournalModel implements ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
 
     // ----------[ Constructors ]----------

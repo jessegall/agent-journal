@@ -10,11 +10,10 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\BindingRuntimeRecorded;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -26,10 +25,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class BindingRuntime extends Model implements EventSource, ReadableModel
+final class BindingRuntime extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

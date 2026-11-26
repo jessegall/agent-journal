@@ -11,6 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\JournalModel;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Data\SequenceStepData;
@@ -21,8 +22,6 @@ use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\LaravelData\DataCollection;
 
@@ -40,11 +39,10 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class Sequence extends Model implements EventSource, ProjectOwned, ReadableModel
+final class Sequence extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProjectOrGlobal;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

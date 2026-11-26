@@ -8,12 +8,12 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Notifications\NotificationMutationType;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
@@ -29,10 +29,9 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[Table('notification_changes')]
-final class NotificationChange extends Model implements ReadableModel
+final class NotificationChange extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
 
     public const ?string UPDATED_AT = null;

@@ -12,6 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Assignments\AutoAssignmentConfigured;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\Support\HasActorColumns;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
@@ -24,8 +25,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 
@@ -45,11 +44,10 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
  * @mixin \Eloquent
  */
 #[Table('auto_assignments')]
-final class AutoAssignment extends Model implements EventSource, ReadableModel
+final class AutoAssignment extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

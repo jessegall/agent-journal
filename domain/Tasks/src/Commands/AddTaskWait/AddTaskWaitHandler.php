@@ -50,6 +50,6 @@ final readonly class AddTaskWaitHandler extends TaskCommandHandler
         $wait = TaskWait::create($dependent, $prerequisite, $actor);
         TaskWaitHistory::create($wait, TaskWaitChange::Added, $actor, null, null);
 
-        return $wait->id;
+        return $wait->getKey();
     }
 }

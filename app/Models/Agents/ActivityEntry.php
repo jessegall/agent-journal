@@ -12,6 +12,7 @@ use App\Enums\Agents\ActivityLevel;
 use App\Enums\Agents\ActivityType;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\HasActorColumns;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
@@ -19,7 +20,6 @@ use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -39,12 +39,11 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  */
 #[Table('activity_entries')]
-final class ActivityEntry extends Model implements ProjectOwned, ReadableModel
+final class ActivityEntry extends JournalModel implements ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
     use HasActorColumns;
-    use HasUlids;
     use Linkable;
 
     /**

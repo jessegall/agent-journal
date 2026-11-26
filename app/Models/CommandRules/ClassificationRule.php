@@ -19,13 +19,12 @@ use App\Exceptions\ClassificationRuleRefused;
 use App\Models\Projects\Project;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\NamedByRuleScope;
+use App\Models\Support\JournalModel;
 use App\Values\CommandRule;
 use App\Values\RuleScope;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -46,11 +45,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
-final class ClassificationRule extends Model implements EventSource, ProjectOwned, ReadableModel
+final class ClassificationRule extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use NamedByRuleScope;
     use RaisesEvents;

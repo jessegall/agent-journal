@@ -11,13 +11,12 @@ use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleProposalRevision;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\ProvenBranch;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -33,11 +32,10 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class ReaderProof extends Model implements ProjectOwned, ReadableModel
+final class ReaderProof extends JournalModel implements ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
 
     public const null UPDATED_AT = null;

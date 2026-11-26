@@ -14,14 +14,13 @@ use App\Enums\Runs\ProblemCode;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleRevision;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Values\OutputProblem;
 use App\Values\OutputValidation;
 use App\Values\ReplayedOutput;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -40,11 +39,10 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class OutputAssessment extends Model implements ProjectOwned, ReadableModel
+final class OutputAssessment extends JournalModel implements ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
 
     public const null UPDATED_AT = null;

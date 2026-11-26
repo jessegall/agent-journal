@@ -14,14 +14,13 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\TextVersionUnavailable;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use PhpOption\Option;
 
@@ -40,12 +39,11 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[Table('project_files')]
-final class ProjectFile extends Model implements Commentable, Numbered, ProjectOwned, ReadableModel, TextContent
+final class ProjectFile extends JournalModel implements Commentable, Numbered, ProjectOwned, ReadableModel, TextContent
 {
     use BelongsToProject;
     use BoundedReads;
     use HasNumber;
-    use HasUlids;
     use Linkable;
 
     protected function casts(): array

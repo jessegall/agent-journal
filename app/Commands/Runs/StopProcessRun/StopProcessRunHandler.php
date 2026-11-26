@@ -40,6 +40,6 @@ final readonly class StopProcessRunHandler implements CommandHandler
         $run->markStopped($command->reason);
         $this->outcomes->record($run, RunLogicalResult::Stopped, RunResultSource::Journal);
 
-        return $run->id;
+        return $run->getKey();
     }
 }

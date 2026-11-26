@@ -13,6 +13,7 @@ use App\Events\Connections\WorkspaceReadAnswered;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\CommitObservation;
 use App\Values\WorkReference;
@@ -23,8 +24,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\None;
 use PhpOption\Some;
 
@@ -51,11 +50,10 @@ use PhpOption\Some;
  * @mixin \Eloquent
  */
 #[Table('workspace_reads')]
-final class WorkspaceRead extends Model implements EventSource, ReadableModel
+final class WorkspaceRead extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

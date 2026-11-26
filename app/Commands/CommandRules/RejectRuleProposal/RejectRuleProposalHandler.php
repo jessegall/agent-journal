@@ -36,6 +36,6 @@ final readonly class RejectRuleProposalHandler implements CommandHandler
         $rejected = RuleRejected::forProposal($proposal, $command->reason);
         $this->facts->publishAfterCommit($rejected);
 
-        return $proposal->id;
+        return $proposal->getKey();
     }
 }

@@ -33,7 +33,7 @@ final readonly class CancelHelperJobHandler extends HelperCommandHandler
 
         $job->cancel();
 
-        return $job->id;
+        return $job->getKey();
     }
 
     /**

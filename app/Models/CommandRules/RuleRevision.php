@@ -14,6 +14,7 @@ use App\Exceptions\RuleRevisionInvalid;
 use App\Models\Projects\Project;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\NamedByRuleScope;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\CommandRule;
 use App\Values\ReaderApproval;
@@ -22,8 +23,6 @@ use App\Values\ScriptBinding;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -48,11 +47,10 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class RuleRevision extends Model implements ProjectOwned, ReadableModel
+final class RuleRevision extends JournalModel implements ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use NamedByRuleScope;
 

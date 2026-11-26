@@ -24,6 +24,6 @@ final readonly class RequestPlanChangesHandler extends PlanCommandHandler
         $edition->requestChanges($command->dispatchedBy(), $command->requestKey, $command->reason);
         $plan->settleReview($edition->id, PlanReviewStatus::ChangesRequested);
 
-        return $edition->id;
+        return $edition->getKey();
     }
 }

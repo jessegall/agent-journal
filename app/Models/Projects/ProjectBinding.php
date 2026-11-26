@@ -28,6 +28,7 @@ use App\Exceptions\StartRefused;
 use App\Models\Agents\Agent;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Values\BindingFolder;
 use App\Values\DriverFamily;
 use App\Values\PresenceReceipt;
@@ -38,8 +39,6 @@ use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use PhpOption\Option;
 
@@ -77,11 +76,10 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class ProjectBinding extends Model implements EventSource, ProjectOwned, ReadableModel
+final class ProjectBinding extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

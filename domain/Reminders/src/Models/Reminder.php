@@ -11,6 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Reminders\Enums\ReminderStatus;
@@ -18,8 +19,6 @@ use Domain\Reminders\Events\ReminderFinished;
 use Domain\Reminders\Exceptions\ReminderEnded;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -33,12 +32,11 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class Reminder extends Model implements EventSource, ReadableModel
+final class Reminder extends JournalModel implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use FindsForUpdate;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

@@ -7,8 +7,8 @@ namespace App\Models\Access;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\HasUlidKey;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Laravel\Passkeys\Passkey as PackagePasskey;
 
 /**
@@ -28,6 +28,6 @@ use Laravel\Passkeys\Passkey as PackagePasskey;
 final class Passkey extends PackagePasskey implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
+    use HasUlidKey;
     use Linkable;
 }

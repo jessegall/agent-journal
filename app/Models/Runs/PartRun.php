@@ -24,6 +24,7 @@ use App\Events\Processes\PartRunStarted;
 use App\Events\Processes\PartRunStopped;
 use App\Exceptions\PartTransitionRefused;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Values\PartEnd;
 use App\Values\PartKey;
 use Carbon\CarbonImmutable;
@@ -31,8 +32,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -69,10 +68,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-final class PartRun extends Model implements EventSource, ReadableModel
+final class PartRun extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

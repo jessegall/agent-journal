@@ -12,12 +12,11 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Messages\NotificationReceiptHidden;
 use App\Events\Messages\NotificationReceiptRead;
 use App\Events\Messages\NotificationReceiptRevealed;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use PhpOption\Option;
 
@@ -34,10 +33,9 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[Table('notification_receipts')]
-final class NotificationReceipt extends Model implements EventSource, ReadableModel
+final class NotificationReceipt extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

@@ -24,9 +24,9 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
             ->first();
 
         if ($open !== null) {
-            return $open->id;
+            return $open->getKey();
         }
 
-        return CommandRequest::create($this->projects->find(), $actor, $command)->id;
+        return CommandRequest::create($this->projects->find(), $actor, $command)->getKey();
     }
 }

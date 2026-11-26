@@ -27,6 +27,7 @@ use App\Models\Drivers\DriverConversation;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\SessionToken;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\PresenceWindow;
 use App\Support\RecordIdentity;
 use App\Values\AccessPolicy;
@@ -41,7 +42,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -81,10 +81,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  *
  * @mixin \Eloquent
  */
-final class AgentSession extends Model implements EventSource, ReadableModel
+final class AgentSession extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

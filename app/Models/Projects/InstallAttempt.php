@@ -19,6 +19,7 @@ use App\Events\Connections\InstallAttemptReplaced;
 use App\Events\Connections\InstallAttemptSpent;
 use App\Exceptions\InstallAttemptRefused;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\ShortReference;
 use App\Values\RelationRead;
 use Carbon\CarbonImmutable;
@@ -27,8 +28,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -53,10 +52,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-final class InstallAttempt extends Model implements EventSource, ReadableModel
+final class InstallAttempt extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use InsertsAbsentRows;
     use Linkable;
     use OrdersById;

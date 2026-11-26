@@ -11,11 +11,11 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Sessions\ResumeRefusal;
 use App\Exceptions\ResumeRefused;
 use App\Models\Agents\AgentSession;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -33,10 +33,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class DriverConversation extends Model implements ReadableModel
+final class DriverConversation extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
 

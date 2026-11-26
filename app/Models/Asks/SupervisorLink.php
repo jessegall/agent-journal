@@ -11,12 +11,11 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\SupervisorLinks\SupervisorLinkChanged;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorRoutes;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -29,11 +28,10 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class SupervisorLink extends Model implements EventSource, ReadableModel
+final class SupervisorLink extends JournalModel implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

@@ -14,6 +14,6 @@ final readonly class SaveMemoryHandler extends MemoryCommandHandler
 {
     public function handle(SaveMemoryCommand $command): string
     {
-        return Memory::create($command->dispatchedBy(), $command->text, $command->weight)->id;
+        return Memory::create($command->dispatchedBy(), $command->text, $command->weight)->getKey();
     }
 }

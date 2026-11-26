@@ -9,6 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
@@ -19,8 +20,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -39,10 +38,9 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  */
 #[Table('task_history')]
-final class TaskHistoryEntry extends Model implements ReadableModel
+final class TaskHistoryEntry extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
 

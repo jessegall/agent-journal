@@ -21,6 +21,7 @@ use App\Exceptions\AskRefused;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\AskReference;
@@ -34,8 +35,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use PhpOption\Option;
 
@@ -64,12 +63,11 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class Ask extends Model implements Assignable, EventSource, ReadableModel
+final class Ask extends JournalModel implements Assignable, EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasActorColumns;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

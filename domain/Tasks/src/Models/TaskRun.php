@@ -12,6 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
@@ -24,8 +25,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -42,11 +41,10 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  */
 #[Table('task_runs')]
-final class TaskRun extends Model implements Assignable, EventSource, ReadableModel
+final class TaskRun extends JournalModel implements Assignable, EventSource, ReadableModel
 {
     use BoundedReads;
     use FindsForUpdate;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

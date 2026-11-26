@@ -16,6 +16,7 @@ use App\Enums\Agents\ConversationModeType;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
@@ -36,8 +37,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -66,12 +65,11 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  */
 #[Table('helper_jobs')]
-final class HelperJob extends Model implements Assignable, EventSource, ProjectOwned, ReadableModel
+final class HelperJob extends JournalModel implements Assignable, EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

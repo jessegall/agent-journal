@@ -12,6 +12,7 @@ use App\Enums\Agents\ChildRole;
 use App\Exceptions\ChildClaimRefused;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Values\ChildCheckout;
 use App\Values\CommitObservation;
 use App\Values\WorkspaceFacts;
@@ -19,8 +20,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -39,10 +38,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class ChildClaim extends Model implements ReadableModel
+final class ChildClaim extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
 

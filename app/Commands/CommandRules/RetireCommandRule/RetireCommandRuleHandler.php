@@ -28,6 +28,6 @@ final readonly class RetireCommandRuleHandler implements CommandHandler
         $retired = RuleRetired::forRule($rule, $command->reason);
         $this->facts->publishAfterCommit($retired);
 
-        return $rule->id;
+        return $rule->getKey();
     }
 }

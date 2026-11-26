@@ -47,6 +47,6 @@ final readonly class StartSampleHandler implements CommandHandler
         $run = $this->evidence->start($permit, $command->dispatchedBy(), $command->requestKey);
         $request->startSample();
 
-        return $run->id;
+        return $run->getKey();
     }
 }

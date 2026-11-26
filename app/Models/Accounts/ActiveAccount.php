@@ -16,11 +16,10 @@ use App\Events\Accounts\ActiveAccountSelected;
 use App\Exceptions\AccountSelectionChanged;
 use App\Exceptions\AccountUnavailable;
 use App\Models\Support\AccountOwnerScope;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
@@ -34,10 +33,9 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-final class ActiveAccount extends Model implements EventSource, ReadableModel
+final class ActiveAccount extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

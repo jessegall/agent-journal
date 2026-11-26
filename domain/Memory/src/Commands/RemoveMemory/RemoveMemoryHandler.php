@@ -21,6 +21,6 @@ final readonly class RemoveMemoryHandler extends MemoryCommandHandler
         $memory = Memory::ownForUpdate($command->memoryId);
         $memory->delete();
 
-        return $memory->id;
+        return $memory->getKey();
     }
 }

@@ -11,6 +11,7 @@ use App\Contracts\Skills\SkillCondition;
 use App\Data\Skills\Conditions\StoredConditionData;
 use App\Exceptions\SkillRevisionImmutable;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\ConditionTree;
 use App\Values\SectionDraft;
@@ -20,8 +21,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -43,10 +42,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class SkillRevision extends Model implements ReadableModel
+final class SkillRevision extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
 
     public const null UPDATED_AT = null;

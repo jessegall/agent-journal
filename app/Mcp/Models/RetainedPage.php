@@ -9,14 +9,13 @@ use App\Concerns\Linkable;
 use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\AgentSessionScope;
+use App\Models\Support\JournalModel;
 use App\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\MassPrunable;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -29,10 +28,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class RetainedPage extends Model implements ReadableModel
+final class RetainedPage extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use MassPrunable;
 

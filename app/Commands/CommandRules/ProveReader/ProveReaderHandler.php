@@ -50,6 +50,6 @@ final readonly class ProveReaderHandler implements CommandHandler
         $proof = ReaderProof::create($reader, $declaration, $branches, $command->dispatchedBy());
         $request->prove();
 
-        return $proof->id;
+        return $proof->getKey();
     }
 }

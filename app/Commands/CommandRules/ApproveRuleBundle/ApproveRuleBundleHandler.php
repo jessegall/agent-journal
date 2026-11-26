@@ -45,6 +45,6 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
         $approval = ModuleRuleBundle::create($this->projects->find(), $installed[0], $owner);
         $this->facts->publishAfterCommit(BundleActivated::forApproval($approval));
 
-        return $approval->id;
+        return $approval->getKey();
     }
 }

@@ -13,6 +13,7 @@ use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
@@ -25,8 +26,6 @@ use Domain\Questions\Values\QuestionSummary;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -50,11 +49,10 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class Question extends Model implements AuthoredModel, EventSource, ProjectOwned, ReadableModel
+final class Question extends JournalModel implements AuthoredModel, EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

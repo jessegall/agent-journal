@@ -17,6 +17,7 @@ use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneRoot;
 use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\ProjectOwner;
@@ -46,8 +47,6 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\None;
 use PhpOption\Option;
 
@@ -86,14 +85,13 @@ use PhpOption\Option;
     'token_digest',
     'token_ciphertext',
 ])]
-final class Share extends Model implements EventSource, Numbered, ProjectOwned, ReadableModel
+final class Share extends JournalModel implements EventSource, Numbered, ProjectOwned, ReadableModel
 {
     use BelongsToOneRoot;
     use BelongsToProjectOrGlobal;
     use BoundedReads;
     use FindsForUpdate;
     use HasNumber;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

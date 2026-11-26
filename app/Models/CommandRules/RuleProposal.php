@@ -19,6 +19,7 @@ use App\Events\Processes\RuleProposalWithdrawn;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\Projects\Project;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\ProposedRule;
 use App\Values\RuleReference;
@@ -28,7 +29,6 @@ use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -59,11 +59,10 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class RuleProposal extends Model implements EventSource, ProjectOwned, ReadableModel
+final class RuleProposal extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

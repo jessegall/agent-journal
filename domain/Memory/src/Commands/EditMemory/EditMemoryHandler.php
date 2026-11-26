@@ -28,6 +28,6 @@ final readonly class EditMemoryHandler extends MemoryCommandHandler
 
         $memory->revise($command->text, $command->weight);
 
-        return $memory->id;
+        return $memory->getKey();
     }
 }

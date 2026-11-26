@@ -11,6 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobStatus;
@@ -18,8 +19,6 @@ use Domain\Helpers\Events\HelperNoticeDelivered;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -36,11 +35,10 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  */
 #[Table('helper_notices')]
-final class HelperNotice extends Model implements EventSource, ReadableModel
+final class HelperNotice extends JournalModel implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

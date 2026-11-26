@@ -14,12 +14,11 @@ use App\Events\Sessions\TerminalViewClosed;
 use App\Events\Sessions\TerminalViewFollowed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
@@ -40,11 +39,10 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-final class TerminalView extends Model implements EventSource, ReadableModel
+final class TerminalView extends JournalModel implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

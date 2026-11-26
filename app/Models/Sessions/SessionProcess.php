@@ -25,14 +25,13 @@ use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
 use App\Models\Support\Accessor;
 use App\Models\Support\SessionProcessScope;
+use App\Models\Support\JournalModel;
 use App\Support\RecordIdentity;
 use App\Values\SelectedAccount;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Str;
 
@@ -61,10 +60,9 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-final class SessionProcess extends Model implements EventSource, ReadableModel
+final class SessionProcess extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

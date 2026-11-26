@@ -8,12 +8,12 @@ use App\Concerns\BoundedReads;
 use App\Concerns\CountsPivotLoads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\HasUlidKey;
 use App\Values\ReadOrder;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -30,7 +30,7 @@ final class PhaseTask extends Pivot implements ReadableModel
 {
     use BoundedReads;
     use CountsPivotLoads;
-    use HasUlids;
+    use HasUlidKey;
     use Linkable;
 
     public $timestamps = false;

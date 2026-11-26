@@ -39,6 +39,7 @@ use App\Events\Sessions\DriverRequestWakeClaimed;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\InitialWakeSettlement;
 use App\Support\RuntimeStatuses;
 use App\Values\ClaimedRequest;
@@ -53,7 +54,6 @@ use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\LaravelData\DataCollection;
@@ -102,10 +102,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class DriverRequest extends Model implements EventSource, ReadableModel
+final class DriverRequest extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

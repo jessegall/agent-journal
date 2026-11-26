@@ -9,11 +9,10 @@ use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\GlobalGroupMissing;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -23,10 +22,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class GlobalGroup extends Model implements ReadableModel
+final class GlobalGroup extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use InsertsAbsentRows;
     use Linkable;
 

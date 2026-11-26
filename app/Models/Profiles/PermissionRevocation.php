@@ -10,6 +10,7 @@ use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Profiles\RevokedPatternData;
 use App\Enums\CommandRules\CommandClass;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\CommandClassSet;
 use App\Values\CommandPattern;
@@ -18,8 +19,6 @@ use App\Values\CommandPermissions;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\DataCollection;
 
@@ -36,10 +35,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class PermissionRevocation extends Model implements ReadableModel
+final class PermissionRevocation extends JournalModel implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
 

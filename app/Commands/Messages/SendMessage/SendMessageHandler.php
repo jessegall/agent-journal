@@ -46,7 +46,7 @@ final readonly class SendMessageHandler implements CommandHandler
 
         $number = $inbox->takeMessageNumber();
 
-        return Message::create(new InboxReceiver($inbox), $number, $sender, $command->body, $target)->id;
+        return Message::create(new InboxReceiver($inbox), $number, $sender, $command->body, $target)->getKey();
     }
 
     /**

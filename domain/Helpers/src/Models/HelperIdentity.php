@@ -13,6 +13,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Events\HelperDesignated;
@@ -22,8 +23,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
 /**
@@ -43,12 +42,11 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[Table('helper_identities')]
-final class HelperIdentity extends Model implements EventSource, ProjectOwned, ReadableModel
+final class HelperIdentity extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

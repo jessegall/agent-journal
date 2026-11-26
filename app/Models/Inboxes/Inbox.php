@@ -15,6 +15,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Inboxes\InboxOpened;
 use App\Exceptions\InboxUnavailable;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;
@@ -23,7 +24,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use PhpOption\None;
@@ -46,10 +46,9 @@ use PhpOption\Some;
  * @mixin \Eloquent
  */
 #[Table('inboxes')]
-final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, ReadableModel
+final class Inbox extends JournalModel implements Assignee, EventSource, LabeledInbox, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

@@ -27,6 +27,7 @@ use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\Project;
 use App\Models\Support\HasProjectColumn;
 use App\Models\Support\ProjectScope;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Values\ProjectSelection;
@@ -37,8 +38,6 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Override;
 use PhpOption\None;
 use PhpOption\Option;
@@ -60,7 +59,7 @@ use PhpOption\Some;
  *
  * @mixin \Eloquent
  */
-final class Agent extends Model implements
+final class Agent extends JournalModel implements
     Assignee,
     EventSource,
     MessageReceiver,
@@ -72,7 +71,6 @@ final class Agent extends Model implements
 {
     use BoundedReads;
     use HasProjectColumn;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

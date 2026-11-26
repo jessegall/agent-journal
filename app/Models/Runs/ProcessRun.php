@@ -30,6 +30,7 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
@@ -48,8 +49,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -92,12 +91,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-final class ProcessRun extends Model implements Dockable, EventSource, ProjectOwned, ReadableModel
+final class ProcessRun extends JournalModel implements Dockable, EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

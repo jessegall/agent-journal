@@ -13,13 +13,12 @@ use App\Enums\Sessions\CleanupStatus;
 use App\Enums\Sessions\CleanupStep;
 use App\Events\Sessions\CleanupPassRecorded;
 use App\Models\Agents\AgentSession;
+use App\Models\Support\JournalModel;
 use App\Values\CleanupReport;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -37,10 +36,9 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  */
 #[Table('session_cleanups')]
-final class SessionCleanup extends Model implements EventSource, ReadableModel
+final class SessionCleanup extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

@@ -25,7 +25,7 @@ final readonly class SendDriverRequestAgainHandler implements CommandHandler
         $sent = DriverRequest::query()->ofAgentRuntime($runtime->id)->withIdempotencyKey($key)->first();
 
         if ($sent !== null) {
-            return $sent->id;
+            return $sent->getKey();
         }
 
         if (! $original->canSendAgain()) {
@@ -46,6 +46,6 @@ final readonly class SendDriverRequestAgainHandler implements CommandHandler
         $again->accept();
         $again->markPossibleDuplicateOf($original);
 
-        return $again->id;
+        return $again->getKey();
     }
 }

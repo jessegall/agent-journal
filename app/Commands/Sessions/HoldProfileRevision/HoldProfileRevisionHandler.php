@@ -14,6 +14,6 @@ final readonly class HoldProfileRevisionHandler implements CommandHandler
 {
     public function handle(HoldProfileRevisionCommand $command): string
     {
-        return ProfileRevisionHold::create($command->key, $command->revision)->id;
+        return ProfileRevisionHold::create($command->key, $command->revision)->getKey();
     }
 }

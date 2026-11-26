@@ -11,6 +11,6 @@ final readonly class DefineSequenceHandler extends SequenceCommandHandler
 {
     public function handle(DefineSequenceCommand $command): string
     {
-        return Sequence::create($command->name, '', $command->steps, $command->owner())->id;
+        return Sequence::create($command->name, '', $command->steps, $command->owner())->getKey();
     }
 }

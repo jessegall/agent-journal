@@ -16,6 +16,7 @@ use App\Enums\Runs\Tone;
 use App\Enums\Web\Alignment;
 use App\Exceptions\CrossOwnerReadRefused;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
@@ -38,8 +39,6 @@ use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -59,12 +58,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
-final class SequenceRun extends Model implements AuthoredModel, Dockable, EventSource, Numbered, ReadableModel
+final class SequenceRun extends JournalModel implements AuthoredModel, Dockable, EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasNumber;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

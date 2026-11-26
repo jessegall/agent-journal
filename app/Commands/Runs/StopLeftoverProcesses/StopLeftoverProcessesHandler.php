@@ -18,6 +18,6 @@ final readonly class StopLeftoverProcessesHandler implements CommandHandler
         $run = ProcessRun::query()->acrossActors()->whereKey($command->runId)->lockForUpdate()->sole();
         $run->stopLeftoverProcesses();
 
-        return $run->id;
+        return $run->getKey();
     }
 }

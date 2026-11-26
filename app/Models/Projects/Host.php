@@ -27,6 +27,7 @@ use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
 use App\Exceptions\StartRefused;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Values\BrowserInputCapabilities;
 use App\Values\ProtectionReport;
 use App\Values\StartPlace;
@@ -35,8 +36,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Spatie\LaravelData\DataCollection;
 
@@ -65,10 +64,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class Host extends Model implements EventSource, ReadableModel
+final class Host extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

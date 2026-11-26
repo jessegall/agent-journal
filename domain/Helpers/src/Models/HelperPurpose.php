@@ -12,6 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
@@ -20,8 +21,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
@@ -44,12 +43,11 @@ use PhpOption\Some;
  * @mixin \Eloquent
  */
 #[Table('helper_purposes')]
-final class HelperPurpose extends Model implements ProjectOwned, ReadableModel
+final class HelperPurpose extends JournalModel implements ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use InsertsAbsentRows;
     use Linkable;
 

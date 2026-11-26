@@ -10,10 +10,10 @@ use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\ProjectInvitation;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\BelongsToProjectOrGlobal;
-use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Tests\Architecture\Support\DomainFiles;
+use Tests\Architecture\Support\ProjectModels;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -57,7 +57,7 @@ final class ProjectOwnedModelsTest extends TestCase
     {
         $unscoped = [];
 
-        foreach ($this->models() as $model) {
+        foreach (ProjectModels::all() as $model) {
             $table = new $model()->getTable();
 
             if (! Schema::hasColumn($table, 'project_id') || array_key_exists($model, self::UNSCOPED)) {
@@ -112,29 +112,5 @@ final class ProjectOwnedModelsTest extends TestCase
         }
 
         return $found;
-    }
-
-    /**
-     * @return list<class-string<Model>>
-     */
-    private function models(): array
-    {
-        $models = [];
-
-        foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
-            if (! str_contains($file, '/Models/')
-                || preg_match('/^namespace ([^;]+);/m', (string) file_get_contents($file), $namespace) !== 1) {
-                continue;
-            }
-
-            $class = $namespace[1].'\\'.basename($file, '.php');
-
-            if (Reflector::factory()->isSubclassOf($class, Model::class)
-                && Reflector::of($class)->not()->isAbstract()) {
-                $models[] = $class;
-            }
-        }
-
-        return $models;
     }
 }

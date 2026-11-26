@@ -14,12 +14,11 @@ use App\Events\Connections\ProjectInvitationIssued;
 use App\Events\Connections\ProjectInvitationRevoked;
 use App\Events\Connections\ProjectInvitationSpent;
 use App\Exceptions\InvitationUnusable;
+use App\Models\Support\JournalModel;
 use App\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -38,10 +37,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class ProjectInvitation extends Model implements EventSource, ReadableModel
+final class ProjectInvitation extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

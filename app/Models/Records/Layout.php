@@ -12,11 +12,10 @@ use App\Contracts\Records\ReadableModel;
 use App\Data\Layouts\LayoutShape;
 use App\Events\Web\LayoutRemoved;
 use App\Events\Web\LayoutSaved;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -28,10 +27,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class Layout extends Model implements EventSource, ReadableModel
+final class Layout extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

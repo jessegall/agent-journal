@@ -18,6 +18,7 @@ use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationMissing;
 use App\Exceptions\SkillPublicationStale;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Values\PublicationIntent;
 use App\Values\PublicationManifest;
 use App\Values\PublicationReport;
@@ -26,7 +27,6 @@ use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -53,10 +53,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class SkillPublication extends Model implements EventSource, ReadableModel
+final class SkillPublication extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

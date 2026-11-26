@@ -27,6 +27,6 @@ final readonly class WithdrawCommandRequestHandler implements CommandHandler
 
         $request->withdraw();
 
-        return $request->id;
+        return $request->getKey();
     }
 }

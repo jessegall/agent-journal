@@ -15,6 +15,7 @@ use App\Contracts\Messages\MessageSender;
 use App\Contracts\Questions\QuestionRecipient;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Inboxes\InboxMember;
+use App\Models\Support\HasUlidKey;
 use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
@@ -24,7 +25,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
@@ -83,7 +83,7 @@ class User extends Authenticatable implements
      */
     use HasFactory;
 
-    use HasUlids;
+    use HasUlidKey;
     use InsertsAbsentRows;
     use Linkable;
     use Notifiable;

@@ -14,14 +14,13 @@ use App\Exceptions\UsageCostConflict;
 use App\Models\Concerns\OfSignIn;
 use App\Models\Concerns\RemovedWithAccount;
 use App\Models\Support\AccountOwnerScope;
+use App\Models\Support\JournalModel;
 use App\Values\MonthCost;
 use App\Values\UsageCost;
 use App\Values\UsdAmount;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -36,10 +35,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class AccountUsageCost extends Model implements EventSource, ReadableModel
+final class AccountUsageCost extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OfSignIn;
     use RaisesEvents;

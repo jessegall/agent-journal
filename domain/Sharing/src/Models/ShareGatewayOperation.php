@@ -11,6 +11,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\JournalModel;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayOperation;
 use Carbon\CarbonImmutable;
@@ -21,8 +22,6 @@ use Domain\Sharing\Events\ShareGatewayOperationFinished;
 use Domain\Sharing\Exceptions\GatewayLeaseRefused;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
 /**
@@ -41,10 +40,9 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class ShareGatewayOperation extends Model implements EventSource, ReadableModel
+final class ShareGatewayOperation extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use InsertsRowSets;
     use Linkable;
     use OrdersById;

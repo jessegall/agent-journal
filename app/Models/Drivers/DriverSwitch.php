@@ -24,6 +24,7 @@ use App\Exceptions\DriverSwitchStageRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use App\Values\PinnedDriver;
@@ -32,7 +33,6 @@ use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -60,10 +60,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class DriverSwitch extends Model implements EventSource, ReadableModel
+final class DriverSwitch extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

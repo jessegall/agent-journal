@@ -18,6 +18,6 @@ final readonly class WithdrawRuleProposalHandler implements CommandHandler
         $proposal = RuleProposal::query()->whereKey($command->proposalId)->lockForUpdate()->sole();
         $proposal->withdraw($command->dispatchedBy());
 
-        return $proposal->id;
+        return $proposal->getKey();
     }
 }

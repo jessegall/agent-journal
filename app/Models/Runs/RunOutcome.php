@@ -12,12 +12,11 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Runs\RunLogicalResult;
 use App\Enums\Runs\RunResultSource;
 use App\Events\Processes\RunOutcomeRecorded;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
 /**
@@ -33,10 +32,9 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[Table('run_outcomes')]
-final class RunOutcome extends Model implements EventSource, ReadableModel
+final class RunOutcome extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

@@ -27,6 +27,6 @@ final readonly class OpenInboxHandler implements CommandHandler
             }
         }
 
-        return $inbox->id;
+        return $inbox->getKey();
     }
 }

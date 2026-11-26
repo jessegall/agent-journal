@@ -14,6 +14,6 @@ final readonly class CreateReminderHandler extends ReminderCommandHandler
     {
         $owner = $command->dispatchedBy();
 
-        return Reminder::create($owner, $command->title, CarbonImmutable::parse($command->dueAt))->id;
+        return Reminder::create($owner, $command->title, CarbonImmutable::parse($command->dueAt))->getKey();
     }
 }

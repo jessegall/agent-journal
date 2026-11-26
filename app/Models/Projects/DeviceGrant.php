@@ -17,12 +17,11 @@ use App\Events\Connections\DeviceGrantPolled;
 use App\Events\Connections\DeviceGrantRestarted;
 use App\Events\Connections\DeviceGrantRevoked;
 use App\Exceptions\DeviceGrantRefused;
+use App\Models\Support\JournalModel;
 use App\Support\ShortReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -48,10 +47,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
-final class DeviceGrant extends Model implements EventSource, ReadableModel
+final class DeviceGrant extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

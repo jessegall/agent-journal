@@ -17,6 +17,7 @@ use App\Events\Accounts\ProfileRunSuspended;
 use App\Exceptions\ProfileRunRefused;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\StepOutcome;
 use App\Values\WorkReference;
@@ -25,8 +26,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use PhpOption\None;
 use PhpOption\Option;
@@ -56,12 +55,11 @@ use PhpOption\Some;
  * @mixin \Eloquent
  */
 #[Table('profile_runs')]
-final class ProfileRun extends Model implements EventSource, ReadableModel
+final class ProfileRun extends JournalModel implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasActorColumns;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

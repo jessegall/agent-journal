@@ -29,6 +29,7 @@ use App\Events\Sessions\AgentRuntimeStopRequested;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalView;
 use App\Models\Projects\Host;
+use App\Models\Support\JournalModel;
 use App\Support\RuntimeStatuses;
 use App\Values\PinnedDriver;
 use App\Values\RuntimeIntent;
@@ -37,7 +38,6 @@ use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -82,10 +82,9 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class AgentRuntime extends Model implements EventSource, ReadableModel
+final class AgentRuntime extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

@@ -19,6 +19,6 @@ final readonly class IssueEvidencePermitHandler implements CommandHandler
 
         $limits = new PermitLimits($command->byteCap, $command->secondsCap, $command->minutesValid);
 
-        return $this->evidence->issue($command->line, $command->workingFolder, $runner, $limits)->id;
+        return $this->evidence->issue($command->line, $command->workingFolder, $runner, $limits)->getKey();
     }
 }

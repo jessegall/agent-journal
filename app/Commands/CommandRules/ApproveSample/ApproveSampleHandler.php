@@ -53,6 +53,6 @@ final readonly class ApproveSampleHandler implements CommandHandler
         $permit = $this->evidence->issueForRequest($request, $declaration->payload);
         $request->approveSample();
 
-        return $permit->id;
+        return $permit->getKey();
     }
 }

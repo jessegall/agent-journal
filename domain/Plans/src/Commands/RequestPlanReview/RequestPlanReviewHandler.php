@@ -28,6 +28,6 @@ final readonly class RequestPlanReviewHandler extends PlanCommandHandler
         $review = PlanReviewEdition::create($plan, $command->dispatchedBy());
         $plan->requestReview($review, $command->reviewers);
 
-        return $review->id;
+        return $review->getKey();
     }
 }

@@ -13,6 +13,7 @@ use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
+use App\Models\Support\HasUlidKey;
 use App\Models\Support\SignedInScope;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
@@ -24,7 +25,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 
 /**
@@ -44,7 +44,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
 {
     use BoundedReads;
     use CountsPivotLoads;
-    use HasUlids;
+    use HasUlidKey;
     use InsertsAbsentRows;
     use Linkable;
     use OrdersById;

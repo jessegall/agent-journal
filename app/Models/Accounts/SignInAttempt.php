@@ -33,14 +33,13 @@ use App\Models\Support\Accessor;
 use App\Models\Support\AccountOwnerScope;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\KeepsCleanupTries;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\CleanupProgress;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Str;
@@ -75,7 +74,7 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-final class SignInAttempt extends Model implements EventSource, ReadableModel
+final class SignInAttempt extends JournalModel implements EventSource, ReadableModel
 {
     /**
      * How long an attempt may wait for a sign-in service to take it up before the dialog says none has.
@@ -84,7 +83,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
 
     use BoundedReads;
     use HasActorColumns;
-    use HasUlids;
     use KeepsCleanupTries;
     use Linkable;
     use OrdersById;

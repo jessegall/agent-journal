@@ -16,6 +16,7 @@ use App\Exceptions\EvidencePermitRefused;
 use App\Models\Projects\Project;
 use App\Models\Runs\ProcessRun;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\CommandRule;
 use App\Values\PermitLimits;
@@ -23,8 +24,6 @@ use App\Values\PermittedLine;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -50,11 +49,10 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class EvidencePermit extends Model implements EventSource, ProjectOwned, ReadableModel
+final class EvidencePermit extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

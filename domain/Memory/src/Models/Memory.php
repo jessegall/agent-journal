@@ -13,14 +13,13 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Memory\Events\MemoryRevised;
 use Domain\Memory\Events\MemorySaved;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -36,13 +35,12 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class Memory extends Model implements EventSource, Numbered, ReadableModel
+final class Memory extends JournalModel implements EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use FindsForUpdate;
     use HasNumber;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

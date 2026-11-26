@@ -13,12 +13,11 @@ use App\Contracts\Messages\MessageParticipant;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Inboxes\InboxJoined;
 use App\Events\Inboxes\InboxLeft;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
 /**
@@ -31,7 +30,7 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class InboxMember extends Model implements EventSource, ReadableModel
+final class InboxMember extends JournalModel implements EventSource, ReadableModel
 {
     /**
      * The most inboxes one read lists for an actor.
@@ -39,7 +38,6 @@ final class InboxMember extends Model implements EventSource, ReadableModel
     public const int ATTACHED_LIMIT = 100;
 
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

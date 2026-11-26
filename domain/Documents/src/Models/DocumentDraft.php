@@ -11,6 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Agents\Agent;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\MarkdownText;
 use Carbon\CarbonImmutable;
@@ -23,8 +24,6 @@ use Domain\Documents\Values\DraftReference;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
@@ -47,10 +46,9 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-final class DocumentDraft extends Model implements EventSource, ReadableModel
+final class DocumentDraft extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

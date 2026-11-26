@@ -21,6 +21,7 @@ use App\Enums\Assignments\PoolMembersType;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Support\ActorLabelSet;
 use App\Support\ActorReference;
 use App\Support\AssignmentHolder;
@@ -55,9 +56,7 @@ use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
@@ -90,7 +89,7 @@ use PhpOption\Some;
  */
 #[UseFactory(TaskFactory::class)]
 #[UsePolicy(TaskRunPolicy::class)]
-final class Task extends Model implements
+final class Task extends JournalModel implements
     Assignable,
     Commentable,
     EventSource,
@@ -109,7 +108,6 @@ final class Task extends Model implements
     use HasFactory;
 
     use HasNumber;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

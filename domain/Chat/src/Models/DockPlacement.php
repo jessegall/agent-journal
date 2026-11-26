@@ -13,6 +13,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\DockDefinition;
@@ -22,8 +23,6 @@ use Domain\Chat\Events\DockChanged;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -41,11 +40,10 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class DockPlacement extends Model implements EventSource, ProjectOwned, ReadableModel
+final class DockPlacement extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProjectOrGlobal;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

@@ -18,6 +18,7 @@ use App\Events\Sessions\MenuEntryUsed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Values\EntryGoalAnswer;
 use App\Values\LibraryEntryAnswer;
@@ -28,8 +29,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -60,11 +59,10 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class MenuEntry extends Model implements EventSource, ReadableModel
+final class MenuEntry extends JournalModel implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

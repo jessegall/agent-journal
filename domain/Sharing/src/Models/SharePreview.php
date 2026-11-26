@@ -12,6 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneRoot;
+use App\Models\Support\JournalModel;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Events\SharePreviewConsumed;
@@ -21,8 +22,6 @@ use Domain\Sharing\Support\ShareSelectedTarget;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 use Spatie\LaravelData\DataCollection;
 
@@ -43,11 +42,10 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class SharePreview extends Model implements EventSource, ReadableModel
+final class SharePreview extends JournalModel implements EventSource, ReadableModel
 {
     use BelongsToOneRoot;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

@@ -12,6 +12,7 @@ use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sessions\SessionProvenance;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Enums\UploadType;
@@ -24,8 +25,6 @@ use Domain\Documents\Exceptions\UploadIncomplete;
 use Domain\Documents\Exceptions\UploadInvalid;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -43,11 +42,10 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class TextUpload extends Model implements EventSource, ProjectOwned, ReadableModel
+final class TextUpload extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

@@ -13,6 +13,7 @@ use App\Contracts\Sharing\Shareable;
 use App\Enums\Records\TextAnchorType;
 use App\Exceptions\IncompleteTextAnchor;
 use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\ShareRelationSet;
@@ -27,7 +28,6 @@ use Domain\Comments\Support\CommentDetailsFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Override;
 
@@ -56,10 +56,9 @@ use Override;
  *
  * @mixin \Eloquent
  */
-final class Comment extends Model implements EventSource, ReadableModel, Shareable
+final class Comment extends JournalModel implements EventSource, ReadableModel, Shareable
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

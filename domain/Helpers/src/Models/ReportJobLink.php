@@ -9,14 +9,13 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Helpers\Values\FiledReport;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
 /**
@@ -31,10 +30,9 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[Table('report_job_links')]
-final class ReportJobLink extends Model implements EventSource, ReadableModel
+final class ReportJobLink extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

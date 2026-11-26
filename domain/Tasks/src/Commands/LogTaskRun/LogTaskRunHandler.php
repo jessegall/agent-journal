@@ -24,6 +24,6 @@ final readonly class LogTaskRunHandler extends TaskCommandHandler
         $this->assertCurrentTaskRun($task, $command->runNumber);
         $run = TaskRun::findNumberedOf($task, $command->runNumber);
 
-        return TaskLogEntry::create($task, $run, $command->dispatchedBy(), $command->text)->id;
+        return TaskLogEntry::create($task, $run, $command->dispatchedBy(), $command->text)->getKey();
     }
 }

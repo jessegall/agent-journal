@@ -14,13 +14,12 @@ use App\Events\Messages\NotificationsMarkAllAdvanced;
 use App\Events\Messages\NotificationsMarkAllFinished;
 use App\Events\Messages\NotificationsMarkAllStarted;
 use App\Models\Access\User;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
 /**
@@ -40,10 +39,9 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[Table('notification_scopes')]
-final class NotificationScope extends Model implements EventSource, ReadableModel
+final class NotificationScope extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

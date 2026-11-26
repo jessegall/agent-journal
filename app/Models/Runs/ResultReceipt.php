@@ -13,13 +13,12 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Runs\AssessmentOutcome;
 use App\Events\Processes\ResultReceiptSuperseded;
 use App\Models\Support\BelongsToProject;
+use App\Models\Support\JournalModel;
 use App\Values\PublishedResult;
 use App\Values\VerifiedOutput;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
@@ -39,11 +38,10 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class ResultReceipt extends Model implements EventSource, ProjectOwned, ReadableModel
+final class ResultReceipt extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToProject;
     use BoundedReads;
-    use HasUlids;
     use Linkable;
     use RaisesEvents;
 

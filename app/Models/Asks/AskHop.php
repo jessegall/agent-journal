@@ -17,13 +17,12 @@ use App\Events\Asks\AskHopAttentionRecorded;
 use App\Events\Asks\AskHopWakeRecorded;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
+use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
 /**
@@ -44,11 +43,10 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class AskHop extends Model implements EventSource, ReadableModel
+final class AskHop extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
-    use HasUlids;
     use Linkable;
     use OrdersById;
     use RaisesEvents;

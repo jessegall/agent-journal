@@ -35,6 +35,7 @@ use App\Exceptions\AccountUnavailable;
 use App\Models\Support\Accessor;
 use App\Models\Support\AccountOwnerScope;
 use App\Models\Support\KeepsCleanupTries;
+use App\Models\Support\JournalModel;
 use App\Support\RecordIdentity;
 use App\Values\AccountLabel;
 use App\Values\CleanupProgress;
@@ -44,8 +45,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
@@ -82,10 +81,9 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-final class Account extends Model implements EventSource, ReadableModel
+final class Account extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
-    use HasUlids;
     use KeepsCleanupTries;
     use Linkable;
     use RaisesEvents;

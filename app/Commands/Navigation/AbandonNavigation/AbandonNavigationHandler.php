@@ -39,6 +39,6 @@ final readonly class AbandonNavigationHandler implements CommandHandler
             ->firstOrFail()
             ->fail(RequestOutcome::EntryUnavailable);
 
-        return $navigation->id;
+        return $navigation->getKey();
     }
 }

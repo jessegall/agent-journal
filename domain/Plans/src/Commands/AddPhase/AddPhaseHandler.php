@@ -20,6 +20,6 @@ final readonly class AddPhaseHandler extends PlanCommandHandler
     {
         $plan = Plan::query()->findOr($command->planId, PlanMissing::throwing()->withId($command->planId));
 
-        return $this->structure->addPhase($plan, $command->title)->id;
+        return $this->structure->addPhase($plan, $command->title)->getKey();
     }
 }
