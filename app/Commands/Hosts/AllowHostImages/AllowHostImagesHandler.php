@@ -28,6 +28,6 @@ final readonly class AllowHostImagesHandler implements CommandHandler
 
         Host::findLocked($command->hostId)->allowImages($command->images);
 
-        return $order->id;
+        return $order->getKey();
     }
 }

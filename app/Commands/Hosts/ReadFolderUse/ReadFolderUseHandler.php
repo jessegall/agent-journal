@@ -23,6 +23,6 @@ final readonly class ReadFolderUseHandler implements CommandHandler
             HostOrderSource::keyed("folder:use:{$command->operation}"),
             HostOrderType::FolderUse,
             ['folder' => $command->folder, 'operation' => $command->operation],
-        )->id;
+        )->getKey();
     }
 }

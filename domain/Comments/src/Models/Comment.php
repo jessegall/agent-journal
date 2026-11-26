@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Records\Commentable;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Models\Support\Accessor;
@@ -62,7 +63,7 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     /**
      * A comment on a record; an anchor written for it makes it about an exact place in one version of its text.
      */
-    public static function create(Model $target, ActorReference $author, string $body, string $key, string $hash): self
+    public static function create(Model&Commentable $target, ActorReference $author, string $body, string $key, string $hash): self
     {
         $comment = new self();
         $comment->body = $body;
