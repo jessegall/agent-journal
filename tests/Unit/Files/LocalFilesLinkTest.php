@@ -29,7 +29,7 @@ final class LocalFilesLinkTest extends TestCase
     {
         parent::setUp();
 
-        $this->skills = $this->placeInTemporaryFolder(Place::HostSkills);
+        $this->skills = $this->placeInTemporaryFolder(Place::Releases);
 
         foreach (['generation-1', 'generation-2'] as $generation) {
             mkdir("{$this->skills}/generations/{$generation}", 0o755, true);
@@ -42,8 +42,8 @@ final class LocalFilesLinkTest extends TestCase
     public function test_a_link_target_inside_the_place_is_its_file_path(): void
     {
         $this->assertEquals(
-            FilePath::in(Place::HostSkills, 'generations/generation-1'),
-            $this->files()->linkTarget(FilePath::in(Place::HostSkills, 'active')),
+            FilePath::in(Place::Releases, 'generations/generation-1'),
+            $this->files()->linkTarget(FilePath::in(Place::Releases, 'active')),
         );
     }
 
@@ -54,7 +54,7 @@ final class LocalFilesLinkTest extends TestCase
         symlink($outside, "{$this->skills}/out");
 
         try {
-            $this->files()->linkTarget(FilePath::in(Place::HostSkills, 'out'));
+            $this->files()->linkTarget(FilePath::in(Place::Releases, 'out'));
             $this->fail('A link out of the place was followed.');
         } catch (LinkLeavesPlace $refusal) {
             $this->assertStringNotContainsString($outside, $refusal->getMessage());
@@ -66,7 +66,7 @@ final class LocalFilesLinkTest extends TestCase
     public function test_a_link_re_pointed_while_files_lives_on_is_followed_to_its_new_target(): void
     {
         $files = $this->files();
-        $skill = FilePath::in(Place::HostSkills, 'active/SKILL.md');
+        $skill = FilePath::in(Place::Releases, 'active/SKILL.md');
 
         $this->assertSame(self::FIRST_GENERATION, $files->read($skill));
 

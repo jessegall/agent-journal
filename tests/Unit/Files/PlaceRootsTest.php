@@ -71,7 +71,7 @@ final class PlaceRootsTest extends TestCase
     public function test_a_place_whose_root_cannot_be_made_fails_only_when_it_is_used(): void
     {
         touch("{$this->folder}/blocker");
-        config(['accounts.root' => "{$this->folder}/blocker/accounts", 'files.places.host-skills' => null]);
+        config(['accounts.root' => "{$this->folder}/blocker/accounts", 'files.places.releases' => null]);
 
         $roots = $this->roots();
 
@@ -84,11 +84,11 @@ final class PlaceRootsTest extends TestCase
 
     public function test_a_place_with_no_root_configured_is_unavailable(): void
     {
-        config(['files.places.host-skills' => null]);
+        config(['files.places.releases' => null]);
 
-        $this->expectExceptionObject(PlaceUnavailable::for(Place::HostSkills));
+        $this->expectExceptionObject(PlaceUnavailable::for(Place::Releases));
 
-        $this->roots()->root(Place::HostSkills);
+        $this->roots()->root(Place::Releases);
     }
 
     public function test_an_absolute_project_path_is_placed_in_the_project(): void

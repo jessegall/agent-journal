@@ -38,7 +38,6 @@ use App\Events\Sessions\StartGrantRequested;
 use App\Events\Sessions\StartRefusedWithoutAccount;
 use App\Events\Sessions\StartSettingsRequested;
 use App\Events\Settings\SettingsChanged;
-use App\Events\Skills\SessionSkillsIntended;
 use App\Events\Skills\SkillsChanged;
 use App\Events\Web\PageChanged;
 use Domain\Comments\Events\CommentPosted;
@@ -320,11 +319,6 @@ final class EventPayloads
             ShareScopeChanged::class => [
                 'fields' => [
                     'share' => 'Domain\Sharing\Support\ShareFact',
-                ],
-            ],
-            SessionSkillsIntended::class => [
-                'fields' => [
-                    'publicationId' => 'string',
                 ],
             ],
             SkillsChanged::class => [

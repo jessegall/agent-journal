@@ -21,7 +21,6 @@ use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Sessions\Enums\SessionStatus;
 use App\Skills\Commands\RecordSkillRead\RecordSkillReadCommand;
 use App\Skills\Enums\ReadEvidence;
-use App\Skills\SkillPublishingService;
 use App\Support\DomainRegistry;
 use App\Values\ProfileBase;
 use App\Values\StackTarget;
@@ -33,7 +32,6 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Skills\AdmitsMainAgentSkills;
 use Tests\Support\Skills\FinishesToolCalls;
 use Tests\Support\Skills\MakesUserGuideSkill;
-use Tests\Support\Skills\PublishesSkills;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -49,12 +47,10 @@ final class RecordSkillReadTest extends TestCase
     use FinishesToolCalls;
     use HasContainerSupport;
     use MakesUserGuideSkill;
-    use PublishesSkills;
 
     private const array TABLES = [
         'skill_receipts',
         'skill_context_epochs',
-        'skill_publications',
         'skill_generations',
         'command_receipts',
         'profile_revisions',
@@ -134,7 +130,7 @@ final class RecordSkillReadTest extends TestCase
         $this->finished($session, 'Skill', ['skill' => ClaudeCodeSkills::PLUGIN_NAME.':user-guide']);
         $this->assertNotReminded($this->boundary($session));
 
-        $this->app->make(SkillPublishingService::class)->refresh();
+        $this->journal->refreshSkills();
         $this->assertNotReminded($this->boundary($session));
 
         $this->artisan('skill:edit', [

@@ -2,14 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Events\Skills\SessionSkillsIntended;
 use App\Events\Skills\SkillContextEpochAdvanced;
 use App\Events\Skills\SkillGenerationRetired;
-use App\Events\Skills\SkillPublicationClaimed;
-use App\Events\Skills\SkillPublicationMoved;
-use App\Events\Skills\SkillPublicationProgressed;
 use App\Events\Skills\SkillsChanged;
-use App\Skills\Enums\PublicationStatus;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -18,38 +13,12 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
-    SessionSkillsIntended::class => [
-        'role' => EventRole::CommandFact,
-        'migrated' => false,
-        'producers' => [],
-    ],
-    SkillPublicationMoved::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'SkillPublication::raiseMoved',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new SkillPublicationMoved('publication', 'session', PublicationStatus::Delivered),
-    ],
     SkillsChanged::class => [
         'role' => EventRole::RowFact,
         'owner' => ['Skill::makeCurrent', 'Skill::retireBy'],
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SkillsChanged('skill', 2),
-    ],
-    SkillPublicationClaimed::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'SkillPublication::claim',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new SkillPublicationClaimed('publication', 1),
-    ],
-    SkillPublicationProgressed::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'SkillPublication::recordProgress',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new SkillPublicationProgressed('publication', 3),
     ],
     SkillGenerationRetired::class => [
         'role' => EventRole::RowFact,

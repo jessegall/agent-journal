@@ -35,7 +35,6 @@ final class ReviseSkillTest extends TestCase
     private const string REVISION_CONFLICT = 'is at revision 2 now';
 
     private const array TABLES = [
-        'skill_publications',
         'skill_generations',
         'skill_requests',
         'skill_revisions',

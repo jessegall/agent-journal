@@ -8,7 +8,6 @@ use App\Access\Contracts\FileAccessPolicy as FileAccessPolicyContract;
 use App\Access\Contracts\PolicyCatalogue;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
-use App\Files\Enums\Place;
 use App\Policies\SkillAuthoringPolicy;
 use App\Policies\SkillPolicy;
 use App\Reads\Contracts\MarkdownParts as MarkdownPartsContract;
@@ -17,20 +16,15 @@ use App\Resolvers\CatalogueOnFirstRead;
 use App\Resolvers\Support\SkillStatusResolver;
 use App\Skills\CanonicalRenderer;
 use App\Skills\ConditionTree;
-use App\Skills\Contracts\SkillPublisher as SkillPublisherContract;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\FileAccessPolicy;
 use App\Skills\MarkdownParts;
 use App\Skills\Resolvers\SkillCatalogue;
 use App\Skills\Resolvers\Support\SkillContextResolver;
-use App\Skills\SkillPublisher;
 use App\Skills\SkillRegistry;
 use App\Skills\SkillTables;
-use App\Skills\SkillTargets;
 use App\Skills\StoredSkillSource;
 use App\Skills\Values\SkillContext;
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
@@ -53,17 +47,11 @@ final class SkillsServiceProvider extends ServiceProvider
             fn (Application $app) => $app->make(SkillContextResolver::class)->current(),
         );
 
-        $this->app->singleton(
-            SkillTargets::class,
-            fn () => new SkillTargets($this->app->make(Repository::class)->string(Place::HostSkills->rootSetting())),
-        );
-
-        $this->app->bind(SkillPublisherContract::class, SkillPublisher::class);
         $this->app->scoped(FileAccessPolicyContract::class, FileAccessPolicy::class);
 
         $this->app->bind(SkillTables::class, fn (Application $app) => new SkillTables(
             $app->make(DatabaseManager::class)->connection()->getSchemaBuilder(),
-            ['skills', 'skill_revisions', 'skill_requests', 'skill_generations', 'skill_publications'],
+            ['skills', 'skill_revisions', 'skill_requests', 'skill_generations'],
         ));
 
         $this->app->scoped(SkillResolver::class, fn (Application $app) => new CatalogueOnFirstRead(
@@ -88,10 +76,5 @@ final class SkillsServiceProvider extends ServiceProvider
             SkillAuthoringPolicy::class,
             [AccessType::Create, AccessType::Edit],
         ));
-
-        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
-            $schedule->command('skill:resume')->everyMinute()->withoutOverlapping();
-            $schedule->command('skill:prune')->daily();
-        });
     }
 }

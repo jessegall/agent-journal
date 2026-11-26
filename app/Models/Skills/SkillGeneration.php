@@ -144,14 +144,6 @@ final class SkillGeneration extends JournalModel implements EventSource, Readabl
     }
 
     /**
-     * The immutable generation the publication delivers.
-     */
-    public static function findForPublication(SkillPublication $publication): self
-    {
-        return self::findById($publication->generation_id);
-    }
-
-    /**
      * The newest ready generation, or null before the first refresh.
      */
     public static function findLatestReady(): self|null

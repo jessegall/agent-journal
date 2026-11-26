@@ -32,7 +32,6 @@ final class CopySkillTest extends TestCase
     private const string ASSIGNED_LINE = '`plan:assigned` lists the plans you hold.';
 
     private const array TABLES = [
-        'skill_publications',
         'skill_generations',
         'skill_requests',
         'skill_revisions',

@@ -11,8 +11,8 @@ use App\Events\Skills\SkillsChanged;
 use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
 
 /**
- * After a stored skill changed and its transaction committed, the journal refreshes the catalogue as itself, so the
- * running sessions it applies to get a pending publication. It writes no file.
+ * After a stored skill changed and its transaction committed, the journal refreshes the catalogue as itself into one
+ * generation. It changes no session and writes no file.
  */
 final readonly class RefreshOnSkillsChanged implements Listener
 {

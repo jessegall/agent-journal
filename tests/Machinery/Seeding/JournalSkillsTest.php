@@ -9,23 +9,21 @@ use App\Processes\Values\PartKey;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Skills\HasSkillTargets;
 use Tests\TestCase;
 
 /**
- * The journal makes a skill and delivers it to the session's target in a folder of the test's own, and admits a
- * process run for an agent with a started part.
+ * The journal makes a skill and builds it into a generation, checks a session's handed skills, and admits a process
+ * run for an agent with a started part.
  */
 final class JournalSkillsTest extends TestCase
 {
     use CommitsHookRows;
-    use HasSkillTargets;
 
     /**
      * The skill and run commands commit for real, so these tables are emptied around each test.
      */
     protected const array TABLES = [
-        'skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups',
+        'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups',
         'command_receipts', 'process_runs', 'part_runs',
     ];
 
@@ -36,7 +34,7 @@ final class JournalSkillsTest extends TestCase
         $this->journal->owner()->agent('Writer');
     }
 
-    public function test_a_skill_is_made_and_delivered_to_the_sessions_target(): void
+    public function test_a_skill_is_made_and_built_into_the_generation(): void
     {
         $this->journal->skill('user-review-notes', new SkillDraft(
             'Review notes',
@@ -45,7 +43,11 @@ final class JournalSkillsTest extends TestCase
             '',
         ));
 
-        $this->journal->publishSkills()->assertSkillPublished('user-review-notes', $this->journal->sessionOf('Writer'));
+        $this->journal->refreshSkills();
+
+        $generation = SkillGeneration::findLatestReady();
+        $this->assertNotNull($generation);
+        $this->assertNotNull($generation->entry('user-review-notes'));
 
         $this->assertSame(1, $this->journal->skillRevisionOf('user-review-notes')->revision);
     }
