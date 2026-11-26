@@ -35,16 +35,21 @@ final class RealHost
 
     private int $port = 0;
 
-    private function __construct(private readonly Factory $processes, public readonly string $folder) {}
+    private function __construct(
+        private readonly Factory $processes,
+        public readonly string $folder,
+        private readonly string $database,
+    ) {}
 
     /**
-     * Starts the test application, the stand-in daemon and the host enrolled as the host given.
+     * Starts the test application on the test's own database, the stand-in daemon and the host enrolled as the host
+     * given.
      */
-    public static function start(Factory $processes, EnrolledHost $host): self
+    public static function start(Factory $processes, EnrolledHost $host, string $database): self
     {
         $folder = sys_get_temp_dir().'/journal-real-host-'.bin2hex(random_bytes(6));
         mkdir($folder, 0o700, true);
-        $real = new self($processes, $folder);
+        $real = new self($processes, $folder, $database);
         $real->port = self::freePort();
         $real->serveJournal();
         $real->run([self::binary(), 'standin', 'docker', '--socket', "{$folder}/docker.sock", '--image', self::IMAGE]);
@@ -107,41 +112,51 @@ final class RealHost
     }
 
     /**
+     * What the host binary and the served journal printed so far, without the server's connection lines, for a test
+     * that failed to say why.
+     */
+    public function printed(): string
+    {
+        $printed = '';
+
+        foreach (['host' => $this->host, 'journal' => $this->journal] as $name => $process) {
+            $lines = explode("\n", $process?->output().$process?->errorOutput());
+            $kept = preg_grep('/ (Accepted|Closing)$|Development Server/', $lines, PREG_GREP_INVERT) ?: [];
+            $printed .= "--- {$name}\n".implode("\n", $kept);
+        }
+
+        return $printed;
+    }
+
+    /**
      * Stops the host binary and starts it again; the stand-in daemon and its containers run on.
      */
     public function restartHost(): void
     {
-        $this->host?->signal(SIGTERM);
-        $this->host?->wait();
+        self::end($this->host, SIGTERM);
         $this->startHost();
     }
 
     /**
-     * The served journal goes away for the seconds and comes back on the same port, as after a crash of the app.
+     * The served journal and all its workers are killed, as in a crash of the app, and it comes back on the same port
+     * after the seconds.
      */
     public function restartJournal(float $seconds): void
     {
-        $this->journal?->signal(SIGKILL);
-        $this->journal?->wait();
+        $this->killJournal();
         usleep((int) ($seconds * 1_000_000));
         $this->serveJournal();
     }
 
     public function stop(): void
     {
-        foreach ([$this->host, $this->journal] as $process) {
-            $process?->signal(SIGTERM);
-            $process?->wait();
+        $this->killJournal();
+
+        foreach ([$this->host, ...$this->running] as $process) {
+            self::end($process, SIGTERM);
         }
 
         $this->host = null;
-        $this->journal = null;
-
-        foreach ($this->running as $process) {
-            $process->signal(SIGTERM);
-            $process->wait();
-        }
-
         $this->running = [];
     }
 
@@ -150,10 +165,53 @@ final class RealHost
         $this->stop();
     }
 
+    /**
+     * Ends a process this started, unless it already ended by itself.
+     */
+    private static function end(InvokedProcess|null $process, int $signal): void
+    {
+        if ($process?->running() === true) {
+            $process->signal($signal);
+        }
+
+        $process?->wait();
+    }
+
+    /**
+     * Kills the served journal and every worker it forked, found by their command line, as no process of a crashed
+     * app lives on; its handle is let go, as a process ended by a signal it did not send answers no wait.
+     */
+    private function killJournal(): void
+    {
+        $server = "php\0-S\0127.0.0.1:{$this->port}\0";
+
+        foreach (glob('/proc/[0-9]*/cmdline') ?: [] as $commandLine) {
+            if (str_starts_with(self::commandLineOf($commandLine), $server)) {
+                posix_kill((int) basename(dirname($commandLine)), SIGKILL);
+            }
+        }
+
+        $this->journal = null;
+    }
+
+    /**
+     * A process's command line; empty for one that ended after it was listed, which is no process of the server.
+     */
+    private static function commandLineOf(string $path): string
+    {
+        try {
+            return (string) new \SplFileObject($path)->fread(4096);
+        } catch (\RuntimeException) {
+            return '';
+        }
+    }
+
     private function serveJournal(): void
     {
         $command = ['php', '-S', "127.0.0.1:{$this->port}", '-t', base_path('public'), base_path('public/index.php')];
-        $this->journal = $this->processes->env(getenv())->forever()->start($command);
+        // The host holds one claim open as a long poll, so the server answers its reports beside it on other workers.
+        $environment = [...getenv(), 'DB_DATABASE' => $this->database, 'PHP_CLI_SERVER_WORKERS' => '8'];
+        $this->journal = $this->processes->env($environment)->forever()->start($command);
         usleep(200_000);
     }
 

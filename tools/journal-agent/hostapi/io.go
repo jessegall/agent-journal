@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,6 +46,19 @@ type Chunk struct {
 type Output struct {
 	Frames []Frame `json:"frames"`
 	Chunks []Chunk `json:"chunks"`
+}
+
+// MarshalJSON sends a list the output has none of as an empty list, never as null, as the protocol fixes both.
+func (output Output) MarshalJSON() ([]byte, error) {
+	type wire Output
+	sent := wire(output)
+	if sent.Frames == nil {
+		sent.Frames = []Frame{}
+	}
+	if sent.Chunks == nil {
+		sent.Chunks = []Chunk{}
+	}
+	return json.Marshal(sent)
 }
 
 // OutputPoster sends a process's output to the journal.

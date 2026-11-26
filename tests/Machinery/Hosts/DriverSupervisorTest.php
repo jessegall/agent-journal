@@ -9,6 +9,7 @@ use App\Support\Drivers\DriverSupervisor;
 use App\Support\Hosts\HostWake;
 use Tests\Support\Drivers\StandInProgramDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,8 @@ use Tests\TestCase;
 #[TestsMachinery(DriverSupervisor::class)]
 final class DriverSupervisorTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_driven_process_gets_its_worker_once(): void
     {
         $this->journal

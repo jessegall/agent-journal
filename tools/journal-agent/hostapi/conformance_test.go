@@ -68,7 +68,7 @@ func TestAnUnknownOrderIsRefusedByName(t *testing.T) {
 		t.Fatal(err)
 	}
 	var answer Answer
-	dispatcher := NewDispatcher(testVerifier(), record, map[string]Executor{}, func(given Answer) { answer = given })
+	dispatcher := NewDispatcher(testVerifier(), record, map[string]Executor{}, func(_ Order, given Answer) { answer = given })
 	order := signedOrder("unknown", "", 1)
 	order.Type = "teleport"
 	order.Signature = Sign(testSecret, order)

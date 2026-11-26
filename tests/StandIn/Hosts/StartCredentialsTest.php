@@ -7,6 +7,7 @@ namespace Tests\StandIn\Hosts;
 use App\Enums\Hosts\HostProcessStatus;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -15,6 +16,7 @@ use Tests\TestCase;
  * the names every entry point reads, and reaches the journal with them: here mcp:relay passes an initialize frame.
  */
 #[TestsAgainstStandIn]
+#[TimeLimit(seconds: 60, reason: 'It runs the real host, the Docker stand-in and a served journal.')]
 final class StartCredentialsTest extends TestCase
 {
     use CommitsHookRows;
@@ -26,9 +28,19 @@ final class StartCredentialsTest extends TestCase
         'host_orders',
         'agents',
         'agent_sessions',
+        'session_tokens',
+        'agent_stacks',
+        'hook_calls',
         'agent_runtimes',
         'driver_requests',
-        'session_tokens',
+        'driver_turns',
+        'accounts',
+        'active_accounts',
+        'session_processes',
+        'inboxes',
+        'inbox_members',
+        'links',
+        'users',
     ];
 
     private const string INITIALIZE = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":'

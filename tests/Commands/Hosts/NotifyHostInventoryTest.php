@@ -15,6 +15,7 @@ use App\Models\Hosts\HostOrder;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -24,6 +25,8 @@ use Tests\TestCase;
 #[TestsCommand(NotifyHostInventoryCommand::class)]
 final class NotifyHostInventoryTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_held_processes_are_kept_missing_ones_lost_newer_ones_left_and_claimed_keys_refused(): void
     {
         $this->journal

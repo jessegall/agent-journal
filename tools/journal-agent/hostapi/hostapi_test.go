@@ -81,7 +81,7 @@ func TestAnOrderHandedOutAgainIsAnsweredFromTheRecordAcrossARestart(t *testing.T
 	}}
 	var answers []Answer
 	var mutex sync.Mutex
-	report := func(answer Answer) {
+	report := func(_ Order, answer Answer) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		answers = append(answers, answer)
@@ -137,7 +137,7 @@ func TestAnOrderTheHostStoppedInIsRefusedUnlessItCanRunTwice(t *testing.T) {
 	}
 	answers := map[string]Answer{}
 	var mutex sync.Mutex
-	dispatcher := NewDispatcher(testVerifier(), restarted, executors, func(answer Answer) {
+	dispatcher := NewDispatcher(testVerifier(), restarted, executors, func(_ Order, answer Answer) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		answers[answer.OrderID] = answer
@@ -170,7 +170,7 @@ func TestOneProcesssOrdersRunInSequenceAndTwoProcessesAtOnce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dispatcher := NewDispatcher(testVerifier(), record, executors, func(Answer) {})
+	dispatcher := NewDispatcher(testVerifier(), record, executors, func(Order, Answer) {})
 
 	dispatcher.Submit(context.Background(), signedOrder("first-of-p", "p", 1))
 	dispatcher.Submit(context.Background(), signedOrder("second-of-p", "p", 2))

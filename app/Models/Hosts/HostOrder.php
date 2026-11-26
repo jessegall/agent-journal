@@ -56,7 +56,8 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     use RaisesEvents;
 
     /**
-     * How long a claimed order that writes nothing into a process waits for its answer before it is handed out again.
+     * How long a claimed order waits for its answer before it is handed out again; the host answers one it carried out
+     * from its record and refuses one it was stopped in, so none is carried out twice.
      */
     public const int CLAIM_SECONDS = 10;
 
@@ -286,8 +287,29 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * The orders the host may take now, by their number: those waiting and in time, and those it claimed that write
-     * nothing into a process and went unanswered too long, locked so a claim beside this one skips them.
+     * The seconds until the first order the host claimed and has not answered may be handed out again, at least one;
+     * null when it holds none, so a claim that waits wakes in time to hand it out.
+     */
+    public static function secondsUntilRetakeable(Host $host, CarbonImmutable $now): int|null
+    {
+        $oldest = self::query()
+            ->forHost($host)
+            ->where('status', HostOrderStatus::Claimed)
+            ->where('expires_at', '>', $now)
+            ->min('claimed_at');
+
+        if ($oldest === null) {
+            return null;
+        }
+
+        $retakeable = CarbonImmutable::parse((string) $oldest)->addSeconds(self::CLAIM_SECONDS);
+
+        return max(1, (int) ceil($now->diffInSeconds($retakeable, false)));
+    }
+
+    /**
+     * The orders the host may take now, by their number: those waiting and in time, and those it claimed that went
+     * unanswered too long, locked so a claim beside this one skips them.
      *
      * @return list<self>
      */
@@ -345,12 +367,9 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     #[Scope]
     protected function takeableAt(Builder $query, CarbonImmutable $now): void
     {
-        $inputTypes = HostOrderType::inputs();
-
         $query->where('expires_at', '>', $now)->where(
             fn (Builder $takeable) => $takeable->where('status', HostOrderStatus::Pending)->orWhere(
                 fn (Builder $unanswered) => $unanswered->where('status', HostOrderStatus::Claimed)
-                    ->whereNotIn('type', $inputTypes)
                     ->where('claimed_at', '<', $now->subSeconds(self::CLAIM_SECONDS)),
             ),
         );

@@ -12,6 +12,7 @@ use App\Exceptions\WorkerFenced;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,8 @@ use Tests\TestCase;
 #[TestsCommand(StreamHostProcessCommand::class)]
 final class StreamHostProcessTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string NOW = '2026-11-26 10:00:00';
 
     private const array PAYLOAD = ['frames_per_second' => 4, 'raw' => false];

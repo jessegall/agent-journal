@@ -9,6 +9,7 @@ use App\Data\Hosts\HostOutputData;
 use App\Exceptions\HostProtocolRefused;
 use App\Support\Hosts\ProcessFeed;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,8 @@ use Tests\TestCase;
 #[TestsCommand(NotifyHostOutputCommand::class)]
 final class NotifyHostOutputTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string FRAME = '{"frames":[{"rows":["ready"],"cursor_row":0,"cursor_column":5,"columns":80,'
         .'"captured":1,"unchanged_ms":[0]}]}';
 

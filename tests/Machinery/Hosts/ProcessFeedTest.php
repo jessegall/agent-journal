@@ -24,9 +24,9 @@ final class ProcessFeedTest extends TestCase
         $feed = $this->journal->service(ProcessFeed::class);
         $process = (string) Str::ulid();
 
-        $feed->push($process, $this->output('first'));
+        $feed->push($process, $this->screenShowing('first'));
         $first = $feed->after($process, ProcessFeed::FIRST_CURSOR, 0);
-        $feed->push($process, $this->output('second'));
+        $feed->push($process, $this->screenShowing('second'));
         $newer = $feed->after($process, $first[0]->cursor, 0);
 
         $this->assertSame(['second'], array_map(fn ($entry) => $entry->frame?->rows[0], $newer));
@@ -44,7 +44,7 @@ final class ProcessFeedTest extends TestCase
         $runtime = (string) Str::ulid();
         $cursors = [ProcessFeed::streamKey($process) => '$', HostWake::runtimeKey($runtime) => '$'];
 
-        $feed->push($process, $this->output('ready'));
+        $feed->push($process, $this->screenShowing('ready'));
         $this->journal->service(HostWake::class)->wakeRuntime($runtime);
 
         $this->assertSame([], $feed->read($cursors, 50));
@@ -63,7 +63,7 @@ final class ProcessFeedTest extends TestCase
         );
     }
 
-    private function output(string $firstRow): HostOutputData
+    private function screenShowing(string $firstRow): HostOutputData
     {
         return HostOutputData::from(['frames' => [[
             'rows' => [$firstRow],

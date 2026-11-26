@@ -3,8 +3,10 @@ package hostapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,7 +32,6 @@ type OpenPlan struct {
 	Folder      string                  `json:"folder"`
 	Isolation   string                  `json:"isolation"`
 	Container   *host.ContainerManifest `json:"container"`
-	Name        string                  `json:"name"`
 	Labels      host.StartLabels        `json:"labels"`
 	Size        TerminalSize            `json:"size"`
 }
@@ -65,9 +66,17 @@ type ProcessTable struct {
 	containers host.Containers
 	reports    *ReportQueue
 	outputs    *Outputs
+	// keptPath is where the plans of the held containers are kept, so a host that restarted adopts them again.
+	keptPath string
 
 	mutex     sync.Mutex
 	processes map[string]*heldProcess
+}
+
+// keptContainer is what the host keeps on disk of one container it holds.
+type keptContainer struct {
+	Plan       OpenPlan `json:"plan"`
+	Generation int      `json:"generation"`
 }
 
 // heldProcess is one process the host holds, contained or native.
@@ -83,10 +92,39 @@ type heldProcess struct {
 	exited     chan struct{}
 }
 
-// NewProcessTable holds processes on the daemon of these containers, keeps their output and reports through the
-// queue.
-func NewProcessTable(containers host.Containers, reports *ReportQueue, outputs *Outputs) *ProcessTable {
-	return &ProcessTable{containers: containers, reports: reports, outputs: outputs, processes: map[string]*heldProcess{}}
+// OpenProcessTable holds processes on the daemon of these containers, keeps their output, reports through the queue
+// and keeps the plans of its containers in the state folder.
+func OpenProcessTable(stateFolder string, containers host.Containers, reports *ReportQueue, outputs *Outputs) *ProcessTable {
+	return &ProcessTable{
+		containers: containers,
+		reports:    reports,
+		outputs:    outputs,
+		keptPath:   filepath.Join(stateFolder, "orders", "containers.json"),
+		processes:  map[string]*heldProcess{},
+	}
+}
+
+// Adopt takes back every container the host held before it restarted: one still running is attached again and
+// watched, with no new report, so the inventory lists it under its identity; one that is gone is reported lost.
+func (table *ProcessTable) Adopt(ctx context.Context) error {
+	kept, err := table.readKept()
+	if err != nil {
+		return err
+	}
+	for id, container := range kept {
+		held := &heldProcess{id: id, plan: container.Plan, generation: container.Generation, exited: make(chan struct{})}
+		if err := table.outputs.Open(id, held.plan); err != nil {
+			return err
+		}
+		if err := table.reattach(ctx, held); err != nil {
+			table.keep(held)
+			table.end(held, ProcessReport{ProcessID: id, Report: "lost", Evidence: "not found after the host restarted: " + err.Error()})
+			continue
+		}
+		table.keep(held)
+		go table.watchContainer(held)
+	}
+	return nil
 }
 
 // Executors are the process orders this table carries out.
@@ -131,7 +169,7 @@ func (table *ProcessTable) Inventory() []InventoryProcess {
 		inventory = append(inventory, InventoryProcess{
 			ProcessID:      id,
 			Identity:       held.identity,
-			Container:      held.plan.Name,
+			Container:      held.containerName(),
 			IsAlive:        alive,
 			IsTerminalHeld: held.terminal != nil,
 			SpoolOffset:    table.outputs.SpoolOffset(id),
@@ -213,10 +251,12 @@ func (table *ProcessTable) startContainer(ctx context.Context, held *heldProcess
 		RestartWhen:    plan.RestartWhen,
 		IsHealedByHost: true,
 	}
-	if _, err := table.containers.Create(ctx, *plan.Container, plan.Name, plan.Labels, process); err != nil {
+	labels := plan.Labels
+	labels.Start = held.id
+	if _, err := table.containers.Create(ctx, *plan.Container, held.containerName(), labels, process); err != nil {
 		return err
 	}
-	if err := table.containers.Start(ctx, plan.Name); err != nil {
+	if err := table.containers.Start(ctx, held.containerName()); err != nil {
 		return err
 	}
 	return table.attachContainer(ctx, held)
@@ -224,24 +264,33 @@ func (table *ProcessTable) startContainer(ctx context.Context, held *heldProcess
 
 // attachContainer attaches to the container's terminal, names its instance and reports it running.
 func (table *ProcessTable) attachContainer(ctx context.Context, held *heldProcess) error {
-	identity, err := table.containers.InstanceID(ctx, held.plan.Name)
+	if err := table.reattach(ctx, held); err != nil {
+		return err
+	}
+	report := "running"
+	if held.generation > 0 {
+		report = "restarted"
+	}
+	table.saveKept()
+	return table.reports.Add(ProcessReport{ProcessID: held.id, Report: report, Identity: held.identity, Generation: held.generation})
+}
+
+// reattach names the running container's instance and attaches to its terminal.
+func (table *ProcessTable) reattach(ctx context.Context, held *heldProcess) error {
+	identity, err := table.containers.InstanceID(ctx, held.containerName())
 	if err != nil {
 		return err
 	}
 	held.identity = identity
 	if held.plan.Container.IsAttachable {
-		terminal, err := table.containers.AttachTerminal(ctx, held.plan.Name, held.plan.Size.Rows, held.plan.Size.Columns)
+		terminal, err := table.containers.AttachTerminal(ctx, held.containerName(), held.plan.Size.Rows, held.plan.Size.Columns)
 		if err != nil {
 			return err
 		}
 		held.terminal = terminal
 		go table.copyOutput(held.id, terminal)
 	}
-	report := "running"
-	if held.generation > 0 {
-		report = "restarted"
-	}
-	return table.reports.Add(ProcessReport{ProcessID: held.id, Report: report, Identity: identity, Generation: held.generation})
+	return nil
 }
 
 // watchContainer waits for each exit of the container: a crash of a process healed on a crash starts it again,
@@ -249,7 +298,7 @@ func (table *ProcessTable) attachContainer(ctx context.Context, held *heldProces
 func (table *ProcessTable) watchContainer(held *heldProcess) {
 	ctx := context.Background()
 	for {
-		exit, err := table.containers.ExitOf(ctx, held.plan.Name)
+		exit, err := table.containers.ExitOf(ctx, held.containerName())
 		if err != nil {
 			table.end(held, ProcessReport{ProcessID: held.id, Report: "lost", Evidence: err.Error()})
 			return
@@ -260,7 +309,7 @@ func (table *ProcessTable) watchContainer(held *heldProcess) {
 			return
 		}
 		held.generation++
-		if err := table.containers.Start(ctx, held.plan.Name); err != nil {
+		if err := table.containers.Start(ctx, held.containerName()); err != nil {
 			table.end(held, ProcessReport{ProcessID: held.id, Report: "lost", Evidence: "the crashed container could not be started again: " + err.Error()})
 			return
 		}
@@ -393,7 +442,7 @@ func (table *ProcessTable) signal(ctx context.Context, order Order) (map[string]
 		}
 		return nil, host.OwnedGroupOf(held.native.Process.Pid).Signal(number)
 	}
-	return nil, table.containers.Kill(ctx, held.plan.Name, plan.Signal)
+	return nil, table.containers.Kill(ctx, held.containerName(), plan.Signal)
 }
 
 // stop ends the process within its grace and force times; its one exit report comes from its watch.
@@ -413,7 +462,7 @@ func (table *ProcessTable) stop(ctx context.Context, order Order) (map[string]an
 		host.OwnedGroupOf(held.native.Process.Pid).Stop(host.StopStagesOf(grace, force))
 	} else {
 		seconds := max(1, int(grace/time.Second))
-		_ = table.containers.Stop(ctx, held.plan.Name, seconds)
+		_ = table.containers.Stop(ctx, held.containerName(), seconds)
 	}
 	select {
 	case <-held.exited:
@@ -448,8 +497,9 @@ func (table *ProcessTable) remove(ctx context.Context, order Order) (map[string]
 
 func (table *ProcessTable) keep(held *heldProcess) {
 	table.mutex.Lock()
-	defer table.mutex.Unlock()
 	table.processes[held.id] = held
+	table.mutex.Unlock()
+	table.saveKept()
 }
 
 func (table *ProcessTable) held(processID string) (*heldProcess, error) {
@@ -467,6 +517,47 @@ func (table *ProcessTable) end(held *heldProcess, report ProcessReport) {
 	report.Identity = held.identity
 	_ = table.reports.Add(report)
 	close(held.exited)
+	table.saveKept()
+}
+
+// saveKept writes the plans of the containers that still run, so a restart adopts exactly those.
+func (table *ProcessTable) saveKept() {
+	table.mutex.Lock()
+	kept := map[string]keptContainer{}
+	for id, held := range table.processes {
+		select {
+		case <-held.exited:
+			continue
+		default:
+		}
+		if held.plan.Container != nil {
+			kept[id] = keptContainer{Plan: held.plan, Generation: held.generation}
+		}
+	}
+	table.mutex.Unlock()
+	content, err := json.Marshal(kept)
+	if err != nil {
+		return
+	}
+	if err := os.MkdirAll(filepath.Dir(table.keptPath), 0o700); err != nil {
+		return
+	}
+	temporary := table.keptPath + ".new"
+	if err := os.WriteFile(temporary, content, 0o600); err == nil {
+		_ = os.Rename(temporary, table.keptPath)
+	}
+}
+
+func (table *ProcessTable) readKept() (map[string]keptContainer, error) {
+	kept := map[string]keptContainer{}
+	content, err := os.ReadFile(table.keptPath)
+	if errors.Is(err, fs.ErrNotExist) {
+		return kept, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return kept, json.Unmarshal(content, &kept)
 }
 
 func (table *ProcessTable) copyOutput(processID string, printed io.Reader) {
@@ -480,6 +571,12 @@ func (table *ProcessTable) copyOutput(processID string, printed io.Reader) {
 			return
 		}
 	}
+}
+
+// containerName is the name the host gives the container of a process: fixed by the process id, so a host that
+// restarted finds the container again.
+func (held *heldProcess) containerName() string {
+	return "journal-process-" + held.id
 }
 
 func (held *heldProcess) markStopping() {

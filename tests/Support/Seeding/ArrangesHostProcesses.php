@@ -24,12 +24,14 @@ use App\Support\ContainerManifest;
 use App\Support\Drivers\DriverWork;
 use App\Support\Drivers\DriverWorkers;
 use App\Support\Drivers\ProgramDrivers;
+use App\Support\Hosts\ProcessFeed;
 use App\Support\MountRules;
 use App\Support\SecurityOptions;
 use App\Values\ExecutionBudgets;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
 use Closure;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Process\Factory;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
@@ -189,7 +191,8 @@ trait ArrangesHostProcesses
      */
     public function runRealHost(string $host): self
     {
-        $this->realHost = RealHost::start($this->app->make(Factory::class), $this->hostCalled($host));
+        $database = (string) $this->app->make(Repository::class)->get('database.connections.pgsql.database');
+        $this->realHost = RealHost::start($this->app->make(Factory::class), $this->hostCalled($host), $database);
 
         return $this;
     }
@@ -264,6 +267,35 @@ trait ArrangesHostProcesses
     }
 
     /**
+     * A driver worker begins on the named process in this test's process. The worker service is taken anew for each
+     * call, as the test's sync queue forgets scoped services after every job, which no real worker process runs.
+     */
+    public function beginDriverWorker(string $name): DriverWork
+    {
+        return $this->app->make(DriverWorkers::class)->begin($this->hostProcessCalled($name)->id);
+    }
+
+    /**
+     * The worker takes its next step, waiting up to the milliseconds, and answers whether it goes on.
+     */
+    public function stepDriverWorker(DriverWork $work, int $waitMs): bool
+    {
+        return $this->app->make(DriverWorkers::class)->step($work, $waitMs);
+    }
+
+    /**
+     * The real host, its Docker stand-in and its served journal stop, before the test's rows are emptied; nothing
+     * happens when none runs.
+     */
+    public function stopRealHost(): self
+    {
+        $this->realHost?->stop();
+        $this->realHost = null;
+
+        return $this;
+    }
+
+    /**
      * The real host's binary stops and starts again, its containers left running.
      */
     public function restartRealHost(): self
@@ -285,15 +317,14 @@ trait ArrangesHostProcesses
         DriverWork|null $work = null,
         int $seconds = 10,
     ): DriverWork {
-        $workers = $this->app->make(DriverWorkers::class);
-        $work ??= $workers->begin($this->hostProcessCalled($name)->id);
+        $work ??= $this->beginDriverWorker($name);
         $deadline = microtime(true) + $seconds;
 
-        while (! $until() && microtime(true) < $deadline && $workers->step($work, 200)) {
+        while (! $until() && microtime(true) < $deadline && $this->stepDriverWorker($work, 200)) {
             continue;
         }
 
-        Assert::assertTrue($until(), "The worker of {$name} did not reach what the test waits for.");
+        Assert::assertTrue($until(), $this->drivenSoFar($name));
 
         return $work;
     }
@@ -309,9 +340,27 @@ trait ArrangesHostProcesses
             usleep(100_000);
         }
 
-        Assert::assertSame($status, $this->hostProcessCalled($name)->status);
+        Assert::assertSame($status, $this->hostProcessCalled($name)->status, (string) $this->realHost?->printed());
 
         return $this;
+    }
+
+    /**
+     * What a worker that did not get there saw: the process's last frame, its orders and what the real host printed.
+     */
+    private function drivenSoFar(string $name): string
+    {
+        $process = $this->hostProcessCalled($name);
+        $rows = $this->app->make(ProcessFeed::class)->latestFrame($process->id)?->rows ?? [];
+        $orders = array_map(
+            fn (HostOrder $order) => "{$order->type->value} {$order->status->value} {$order->refusal?->value}",
+            $this->hostOrdersOf($name),
+        );
+
+        return "The worker of {$name} did not reach what the test waits for.\n"
+            .'Its process is '.$process->status->value.'; the last frame shows: '.implode(' | ', $rows)."\n"
+            .'Its orders: '.implode(', ', $orders)."\n"
+            .$this->realHost?->printed();
     }
 
     private function realHostJournalUrl(): string

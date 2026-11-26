@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Hosts;
 use App\Attributes\Bus\Dispatches;
 use App\Commands\Hosts\ClaimHostOrders\ClaimHostOrdersCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Exceptions\HostClaimBusy;
 use App\Support\Hosts\HostClaimSlots;
 use App\Support\Hosts\HostWake;
 use App\Values\HostContext;
@@ -43,22 +42,30 @@ final readonly class ClaimOrdersController
             'wait' => ['sometimes', 'integer', 'min:0', 'max:'.self::WAIT_LIMIT_SECONDS],
         ]);
 
-        if (! $slots->take($host->hostId)) {
-            throw HostClaimBusy::forHost($host->hostId);
+        $deposesAnother = $slots->isTaken($host->hostId);
+        $slot = $slots->take($host->hostId);
+
+        if ($deposesAnother) {
+            $wake->wakeHost($host->hostId);
         }
 
         try {
             $claim = new ClaimHostOrdersCommand($host->hostId, $request->integer('limit', self::CLAIM_LIMIT));
             $claimed = $commands->run($claim);
-            $wait = $request->integer('wait');
+            $wait = $claimed->waitSeconds($request->integer('wait'));
 
-            if ($claimed->isEmpty() && $wait > 0 && $wake->waitForHost($host->hostId, $wait)) {
+            $isWoken = $claimed->isEmpty() && $wait > 0 && $wake->waitForHost($host->hostId, $wait);
+
+            // A claim the host's newer one took the slot from answers what it had and passes the wake on to it.
+            if ($isWoken && ! $slots->isHeldBy($host->hostId, $slot)) {
+                $wake->wakeHost($host->hostId);
+            } elseif ($isWoken) {
                 $claimed = $commands->run($claim);
             }
 
             return new JsonResponse($claimed);
         } finally {
-            $slots->release($host->hostId);
+            $slots->release($host->hostId, $slot);
         }
     }
 }

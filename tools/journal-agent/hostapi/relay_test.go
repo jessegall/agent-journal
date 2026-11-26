@@ -71,7 +71,7 @@ func relayFor(t *testing.T, journal *fakeJournal) (Relay, []byte) {
 		"snapshot": func(context.Context, Order) (map[string]any, error) { return map[string]any{"shown": true}, nil },
 	}
 	clock := &JournalClock{Host: time.Now}
-	dispatcher := NewDispatcher(Verifier{Secret: secret, Now: clock.Now}, record, executors, func(answer Answer) {
+	dispatcher := NewDispatcher(Verifier{Secret: secret, Now: clock.Now}, record, executors, func(_ Order, answer Answer) {
 		_ = journal.AnswerOrder(context.Background(), answer)
 	})
 	outputs := NewOutputs(t.TempDir(), func(string, Output) error { return nil }, time.Now)

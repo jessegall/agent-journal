@@ -18,6 +18,7 @@ use Closure;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
 use Tests\Support\Hosts\EchoProgramDriver;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -27,6 +28,7 @@ use Tests\TestCase;
  * one exit report (rule 83).
  */
 #[TestsAgainstStandIn]
+#[TimeLimit(seconds: 60, reason: 'It runs the real host, the Docker stand-in and a served journal.')]
 final class SessionLifeTest extends TestCase
 {
     use CommitsHookRows;
@@ -38,9 +40,19 @@ final class SessionLifeTest extends TestCase
         'host_orders',
         'agents',
         'agent_sessions',
+        'session_tokens',
+        'agent_stacks',
+        'hook_calls',
         'agent_runtimes',
         'driver_requests',
-        'session_tokens',
+        'driver_turns',
+        'accounts',
+        'active_accounts',
+        'session_processes',
+        'inboxes',
+        'inbox_members',
+        'links',
+        'users',
     ];
 
     public function test_a_session_starts_answers_survives_a_host_restart_and_stops(): void
@@ -71,15 +83,16 @@ final class SessionLifeTest extends TestCase
         $this->assertSame($process, $this->journal->hostProcessCalled('echo')->id);
     }
 
-    public function test_a_journal_that_dies_mid_delivery_has_the_message_answered_once_it_is_back(): void
+    public function test_a_journal_that_dies_mid_delivery_has_the_message_typed_and_answered_once_it_is_back(): void
     {
-        [, $answered] = $this->startEchoSession();
+        [$process, $answered] = $this->startEchoSession();
         $work = $this->journal->driveHostProcess('echo', fn () => $this->ordersOf(HostOrderType::WriteKeys) === 1);
 
         $this->journal->restartJournalOfRealHost();
-        $this->journal->driveHostProcess('echo', $answered, $work);
+        $this->journal->driveHostProcess('echo', $answered, $work, HostOrder::CLAIM_SECONDS * 2);
 
-        $this->journal->assertResult(1, $this->ordersOf(HostOrderType::WriteKeys));
+        $rows = $this->journal->service(ProcessFeed::class)->latestFrame($process)?->rows ?? [];
+        $this->journal->assertResult(1, count(array_keys($rows, 'echo: hello', true)));
     }
 
     public function test_a_crashed_container_healed_on_a_crash_runs_again(): void

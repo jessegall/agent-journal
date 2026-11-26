@@ -22,25 +22,29 @@ final class TerminalFrameGetTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        return $this->frameCall($journal, 'terminal-first-frame');
+        return RouteCall::recorded('terminal-first-frame', $this->watchedRuntime($journal));
     }
 
     public function test_the_frames_after_a_held_one_are_read(): void
     {
-        $this->assertReachedAndDispatchesItsCommands($this->frameCall($this->journal, 'terminal-held-frame'));
+        $this->assertReachedAndDispatchesItsCommands(
+            RouteCall::recorded('terminal-held-frame', $this->watchedRuntime($this->journal)),
+        );
     }
 
     /**
-     * The recorded frame read of a runtime the owner watches.
+     * The agent and the view of a runtime the owner watches, as a recorded frame read names them.
+     *
+     * @return array<string, string>
      */
-    private function frameCall(TestJournal $journal, string $recording): RouteCall
+    private function watchedRuntime(TestJournal $journal): array
     {
         $journal->owner();
         $runtime = $this->controllableRuntime();
 
-        return RouteCall::recorded($recording, [
+        return [
             '01JPAGEREQUESTAGENT0000000' => $runtime->session->agent_id,
             'interest-1' => $this->openInterest($runtime),
-        ]);
+        ];
     }
 }

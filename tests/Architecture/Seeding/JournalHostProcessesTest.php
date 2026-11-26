@@ -13,6 +13,7 @@ use App\Enums\Hosts\HostProcessType;
 use App\Support\Drivers\DriverSupervisor;
 use App\Support\Hosts\ProcessFeed;
 use Tests\Support\Drivers\StandInProgramDriver;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,8 @@ use Tests\TestCase;
  */
 final class JournalHostProcessesTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_process_is_opened_by_its_order_and_moved_by_its_hosts_report(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'pipe', HostProcessType::Pipe);
@@ -58,5 +61,18 @@ final class JournalHostProcessesTest extends TestCase
                 [HostOrderStatus::Done, 'ready'],
                 [$open->refresh()->status, $this->journal->service(ProcessFeed::class)->latestFrame($process)?->rows[0]],
             );
+    }
+
+    public function test_a_driver_worker_begins_on_a_process_and_steps_on_what_it_prints(): void
+    {
+        $this->journal
+            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProgramDriver::class)
+            ->enrollHost('Mac', [base_path()])
+            ->openHostProcess('Mac', 'shell');
+
+        $work = $this->journal->beginDriverWorker('shell');
+        $this->journal->printOnHostProcess('shell', '> ');
+
+        $this->journal->assertResult([1, true], [$work->generation, $this->journal->stepDriverWorker($work, 200)]);
     }
 }

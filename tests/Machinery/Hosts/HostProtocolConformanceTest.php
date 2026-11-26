@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Hosts;
+namespace Tests\Machinery\Hosts;
 
 use App\Data\Hosts\HostAnswerData;
 use App\Data\Hosts\HostInventoryData;
@@ -13,13 +13,15 @@ use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Host;
 use App\Support\Hosts\HostOrderPayload;
 use Carbon\CarbonImmutable;
-use PHPUnit\Framework\TestCase;
+use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\TestCase;
 
 /**
  * The committed vectors of host protocol 1, which the Go host checks too (tools/journal-agent/hostapi/
  * conformance_test.go): the journal signs each order to the committed signature over the committed payload text, and
  * reads each committed answer, report and inventory.
  */
+#[TestsMachinery(HostOrderPayload::class)]
 final class HostProtocolConformanceTest extends TestCase
 {
     private const string VECTORS = __DIR__.'/../../../tools/journal-agent/hostapi/testdata/conformance.json';

@@ -10,9 +10,12 @@ use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\RestartPolicy;
+use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostProcess;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -21,6 +24,8 @@ use Tests\TestCase;
 #[TestsCommand(OpenHostProcessCommand::class)]
 final class OpenHostProcessTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_native_process_is_made_with_its_open_order(): void
     {
         $this->journal->enrollHost('Mac', [base_path()]);
@@ -29,7 +34,7 @@ final class OpenHostProcessTest extends TestCase
             HostProcessType::Pipe,
             RestartPolicy::OnCrash,
             ['git', 'status'],
-            ['LANG' => 'C'],
+            ['LANG=C'],
             base_path(),
         );
 
@@ -40,7 +45,8 @@ final class OpenHostProcessTest extends TestCase
             HostOrderSource::fromJournal(),
         ));
 
-        $order = $process->openOrder;
+        $process = HostProcess::query()->whereKey($processId)->sole();
+        $order = HostOrder::query()->whereKey($process->open_order_id)->sole();
         $this->journal->assertResult(
             [HostProcessStatus::Ordered, RestartPolicy::OnCrash, HostOrderType::OpenProcess, $plan->payload()],
             [$process->status, $process->restart, $order->type, $order->payload],

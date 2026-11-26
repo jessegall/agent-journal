@@ -60,7 +60,7 @@ final readonly class DriverWorkers
     public function begin(string $processId): DriverWork
     {
         $generation = $this->run(new ClaimHostWorkerCommand($processId));
-        $process = HostProcess::query()->whereKey($processId)->sole();
+        $process = HostProcess::query()->with('runtime')->whereKey($processId)->sole();
         $streams = [ProcessFeed::streamKey($process->id)];
 
         if ($process->agent_runtime_id !== null) {

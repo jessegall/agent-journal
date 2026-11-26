@@ -30,6 +30,8 @@ final readonly class ClaimHostOrdersHandler implements CommandHandler
             $claimed[] = ClaimedHostOrder::of($order, $host->signOrder($order));
         }
 
-        return new HostOrderClaim($claimed, $now->utc()->format('Y-m-d\\TH:i:s.v\\Z'));
+        $retakeable = HostOrder::secondsUntilRetakeable($host, $now);
+
+        return new HostOrderClaim($claimed, $now->utc()->format('Y-m-d\\TH:i:s.v\\Z'), $retakeable);
     }
 }

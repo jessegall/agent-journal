@@ -7,6 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Commands\Hosts\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
 use App\Enums\Hosts\HostProcessStatus;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -16,6 +17,8 @@ use Tests\TestCase;
 #[TestsCommand(NotifyHostHeartbeatCommand::class)]
 final class NotifyHostHeartbeatTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_just_opened_process_is_not_lost_and_one_left_out_twice_is(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'old')->openHostProcess('Mac', 'new');

@@ -52,7 +52,7 @@ final class DriverSupervisor
                 continue;
             }
 
-            $this->workers[$processId] = $this->processes->path(base_path())
+            $this->workers[$processId] = $this->processes->newPendingProcess()->path(base_path())
                 ->forever()
                 ->start(['php', 'artisan', 'drivers:work', $processId]);
 

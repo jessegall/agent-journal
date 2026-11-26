@@ -12,6 +12,7 @@ use App\Exceptions\WorkerFenced;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,8 @@ use Tests\TestCase;
 #[TestsCommand(StopHostProcessCommand::class)]
 final class StopHostProcessTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string NOW = '2026-11-26 10:00:00';
 
     private const array PAYLOAD = ['grace_ms' => 2000, 'force_ms' => 3000];

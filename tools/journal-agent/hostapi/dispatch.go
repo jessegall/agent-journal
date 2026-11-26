@@ -21,7 +21,7 @@ type Dispatcher struct {
 	verifier  Verifier
 	record    *AnsweredRecord
 	executors map[string]Executor
-	report    func(Answer)
+	report    func(Order, Answer)
 
 	mutex    sync.Mutex
 	lanes    map[string]chan Order
@@ -29,8 +29,9 @@ type Dispatcher struct {
 	running  sync.WaitGroup
 }
 
-// NewDispatcher dispatches with these executors and hands every answer to report once the record holds it.
-func NewDispatcher(verifier Verifier, record *AnsweredRecord, executors map[string]Executor, report func(Answer)) *Dispatcher {
+// NewDispatcher dispatches with these executors and hands every answer, with its order, to report once the record
+// holds it.
+func NewDispatcher(verifier Verifier, record *AnsweredRecord, executors map[string]Executor, report func(Order, Answer)) *Dispatcher {
 	return &Dispatcher{
 		verifier:  verifier,
 		record:    record,
@@ -44,7 +45,7 @@ func NewDispatcher(verifier Verifier, record *AnsweredRecord, executors map[stri
 // Submit takes one claimed order; an order already running is not taken twice.
 func (dispatcher *Dispatcher) Submit(ctx context.Context, order Order) {
 	if answer, found := dispatcher.record.Find(order.ID); found {
-		dispatcher.report(answer)
+		dispatcher.report(order, answer)
 		return
 	}
 	dispatcher.mutex.Lock()
@@ -106,7 +107,7 @@ func (dispatcher *Dispatcher) carryOut(ctx context.Context, order Order) {
 	dispatcher.mutex.Lock()
 	delete(dispatcher.inFlight, order.ID)
 	dispatcher.mutex.Unlock()
-	dispatcher.report(answer)
+	dispatcher.report(order, answer)
 }
 
 func (dispatcher *Dispatcher) answerOf(ctx context.Context, order Order) Answer {

@@ -13,6 +13,7 @@ use App\Exceptions\WorkerFenced;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Tests\TestCase;
 #[TestsCommand(SnapshotHostProcessCommand::class)]
 final class SnapshotHostProcessTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string NOW = '2026-11-26 10:00:00';
 
     private const array PAYLOAD = [];

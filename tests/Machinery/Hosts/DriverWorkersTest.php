@@ -12,6 +12,7 @@ use App\Support\Drivers\DriverRestartSignal;
 use App\Support\Drivers\DriverWorkers;
 use Tests\Support\Drivers\StandInProgramDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Tests\TestCase;
 #[TestsMachinery(DriverWorkers::class)]
 final class DriverWorkersTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const int WAIT_MS = 200;
 
     protected function setUp(): void
@@ -35,16 +38,14 @@ final class DriverWorkersTest extends TestCase
 
     public function test_a_replaced_worker_is_fenced_and_the_one_after_it_pastes_no_second_time(): void
     {
-        $workers = $this->journal->service(DriverWorkers::class);
-        $process = $this->journal->hostProcessCalled('shell')->id;
-        $first = $workers->begin($process);
+        $first = $this->journal->beginDriverWorker('shell');
         $this->journal->printOnHostProcess('shell', '> ');
-        $firstGoesOn = $workers->step($first, self::WAIT_MS);
+        $firstGoesOn = $this->journal->stepDriverWorker($first, self::WAIT_MS);
 
-        $second = $workers->begin($process);
+        $second = $this->journal->beginDriverWorker('shell');
         $this->journal->printOnHostProcess('shell', '> ');
-        $replacedGoesOn = $workers->step($first, self::WAIT_MS);
-        $secondGoesOn = $workers->step($second, self::WAIT_MS);
+        $replacedGoesOn = $this->journal->stepDriverWorker($first, self::WAIT_MS);
+        $secondGoesOn = $this->journal->stepDriverWorker($second, self::WAIT_MS);
 
         $this->journal->assertResult(
             [true, false, true, 1],
@@ -54,12 +55,11 @@ final class DriverWorkersTest extends TestCase
 
     public function test_an_answer_to_its_order_wakes_the_worker(): void
     {
-        $workers = $this->journal->service(DriverWorkers::class);
-        $work = $workers->begin($this->journal->hostProcessCalled('shell')->id);
+        $work = $this->journal->beginDriverWorker('shell');
         [, $snapshot, $stream] = $this->journal->hostOrdersOf('shell');
 
         $this->journal->answerHostOrder($snapshot);
-        $workers->step($work, self::WAIT_MS);
+        $this->journal->stepDriverWorker($work, self::WAIT_MS);
 
         $this->journal->assertResult(
             [['frames_per_second' => 4, 'raw' => false], ['signal' => 'SIGUSR2']],
@@ -69,12 +69,11 @@ final class DriverWorkersTest extends TestCase
 
     public function test_a_restart_ends_the_worker_between_steps(): void
     {
-        $workers = $this->journal->service(DriverWorkers::class);
-        $work = $workers->begin($this->journal->hostProcessCalled('shell')->id);
+        $work = $this->journal->beginDriverWorker('shell');
 
         $this->journal->service(DriverRestartSignal::class)->ask($this->journal->service(ServerClock::class)->now());
 
-        $this->journal->assertResult(false, $workers->step($work, self::WAIT_MS));
+        $this->journal->assertResult(false, $this->journal->stepDriverWorker($work, self::WAIT_MS));
     }
 
     private function ordersOf(HostOrderType $type): int

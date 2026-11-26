@@ -24,7 +24,8 @@ run_tests() {
 build_test_host() {
     local root="$1"
     run_in_go "$root" 'hash=$(find . -name "*.go" -o -name go.mod -o -name go.sum | LC_ALL=C sort | xargs cat | sha256sum | cut -c1-16)
-        test -x "/out/journal-agent-$hash" || go build -tags standin -o "/out/journal-agent-$hash" ./cmd/journal-agent'
+        test -x "/out/journal-agent-$hash" || go build -tags standin -o "/out/journal-agent-$hash" ./cmd/journal-agent
+        find /out -name "journal-agent-*" ! -name "journal-agent-$hash" -delete'
 }
 
 run_in_go() {

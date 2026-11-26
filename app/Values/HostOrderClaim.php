@@ -19,12 +19,23 @@ final readonly class HostOrderClaim implements JsonSerializable
 
     /**
      * @param  list<ClaimedHostOrder>  $orders
+     * @param  int|null  $retakeableInSeconds  when an order the host claimed and left unanswered may be handed out
+     *                                         again; null when it holds none
      */
-    public function __construct(public array $orders, public string $now) {}
+    public function __construct(public array $orders, public string $now, public int|null $retakeableInSeconds) {}
 
     public function isEmpty(): bool
     {
         return $this->orders === [];
+    }
+
+    /**
+     * How long a claim that found nothing may wait for a wake: no longer than asked, and no longer than until an
+     * unanswered order may be handed out again.
+     */
+    public function waitSeconds(int $asked): int
+    {
+        return min($asked, $this->retakeableInSeconds ?? $asked);
     }
 
     /**

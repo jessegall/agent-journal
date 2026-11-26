@@ -12,6 +12,7 @@ use App\Enums\Hosts\HostProcessStatus;
 use App\Exceptions\WorkerFenced;
 use App\Support\Drivers\WorkerLease;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Tests\TestCase;
 #[TestsMiddleware(FenceDriverWorker::class)]
 final class FenceDriverWorkerTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_deposed_workers_report_is_refused_and_the_current_workers_goes_through(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell');

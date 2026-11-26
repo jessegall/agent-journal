@@ -31,6 +31,27 @@ final class NotifyHostProcessTest extends TestCase
     use CommitsHookRows;
     use WithActiveAccount;
 
+    private const array TABLES = [
+        'hosts',
+        'host_processes',
+        'host_orders',
+        'agents',
+        'agent_sessions',
+        'session_tokens',
+        'agent_stacks',
+        'hook_calls',
+        'agent_runtimes',
+        'driver_requests',
+        'driver_turns',
+        'accounts',
+        'active_accounts',
+        'session_processes',
+        'inboxes',
+        'inbox_members',
+        'links',
+        'users',
+    ];
+
     public function test_a_running_report_moves_the_row_and_raises_its_event(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell')->observeEvents(HostProcessStarted::class);

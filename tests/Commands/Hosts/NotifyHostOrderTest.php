@@ -6,10 +6,12 @@ namespace Tests\Commands\Hosts;
 
 use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
 use App\Enums\Hosts\HostOrderStatus;
+use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostRefusal;
 use App\Exceptions\HostProtocolRefused;
 use App\Support\Hosts\ProcessFeed;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -19,6 +21,8 @@ use Tests\TestCase;
 #[TestsCommand(NotifyHostOrderCommand::class)]
 final class NotifyHostOrderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string REFUSED = '{"status":"refused","refusal":"guard_moved","facts":{"row_hash":"abc"}}';
 
     protected function setUp(): void
@@ -39,6 +43,19 @@ final class NotifyHostOrderTest extends TestCase
         $this->journal->assertResult(
             [HostOrderStatus::Refused, HostRefusal::GuardMoved, ['row_hash' => 'abc'], $open->id],
             [$open->status, $open->refusal, $open->answer, $heard[0]->answeredOrderId],
+        );
+    }
+
+    public function test_a_refused_open_order_loses_its_process_with_the_refusal_as_evidence(): void
+    {
+        [$open] = $this->journal->hostOrdersOf('shell');
+
+        $this->journal->asSystem(new NotifyHostOrderCommand($this->journal->hostCalled('Mac')->hostId, $open->id, self::REFUSED));
+
+        $process = $this->journal->hostProcessCalled('shell');
+        $this->journal->assertResult(
+            [HostProcessStatus::Lost, 'the host refused to open it: guard_moved'],
+            [$process->status, $process->exit_evidence],
         );
     }
 

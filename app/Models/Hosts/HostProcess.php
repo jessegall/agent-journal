@@ -281,6 +281,14 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         return $this->status->isLive();
     }
 
+    /**
+     * Whether the host was asked to open the process and has not reported it running yet.
+     */
+    public function isOrdered(): bool
+    {
+        return $this->status === HostProcessStatus::Ordered;
+    }
+
     // ----------[ Asserts ]----------
 
     /**
@@ -318,11 +326,12 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
-     * The process, locked until the transaction ends, so its orders are numbered and its worker checked one at a time.
+     * The process with its host, locked until the transaction ends, so its orders are numbered and its worker checked
+     * one at a time.
      */
     public static function findLocked(string $id): self
     {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+        return self::query()->with('host')->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
     /**

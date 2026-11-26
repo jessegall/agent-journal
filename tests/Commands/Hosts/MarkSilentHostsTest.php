@@ -9,6 +9,7 @@ use App\Commands\Hosts\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
 use App\Support\HostLinkAlarms;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -17,14 +18,18 @@ use Tests\TestCase;
 #[TestsCommand(MarkSilentHostsCommand::class)]
 final class MarkSilentHostsTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_host_silent_for_90_seconds_is_shown_failing(): void
     {
-        $this->journal->useServerClockAt(CarbonImmutable::parse('2026-11-26 10:00:00'))->enrollHost('Mac', [base_path()]);
+        $start = CarbonImmutable::parse('2026-11-26 10:00:00');
+        $this->journal->travelTo($start)->useServerClockAt($start)->enrollHost('Mac', [base_path()]);
         $this->journal->asSystem(new NotifyHostHeartbeatCommand($this->journal->hostCalled('Mac')->hostId, [], null));
         $this->journal->asSystem(new MarkSilentHostsCommand());
         $quietAt60 = $this->journal->service(HostLinkAlarms::class)->current();
 
-        $this->journal->travelTo(CarbonImmutable::parse('2026-11-26 10:03:00'));
+        $later = CarbonImmutable::parse('2026-11-26 10:03:00');
+        $this->journal->travelTo($later)->useServerClockAt($later);
         $this->journal->asSystem(new MarkSilentHostsCommand());
 
         $this->journal->assertResult(

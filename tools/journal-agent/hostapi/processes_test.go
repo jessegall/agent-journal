@@ -66,8 +66,9 @@ func standinTable(t *testing.T, daemon *dockerstandin.Daemon) (*ProcessTable, *s
 	stopped := make(chan struct{})
 	t.Cleanup(func() { close(stopped) })
 	go queue.Run(stopped)
-	outputs := NewOutputs(t.TempDir(), func(string, Output) error { return nil }, time.Now)
-	return NewProcessTable(containers, queue, outputs), sent
+	state := t.TempDir()
+	outputs := NewOutputs(state, func(string, Output) error { return nil }, time.Now)
+	return OpenProcessTable(state, containers, queue, outputs), sent
 }
 
 func openOrder(t *testing.T, processID, restart, image string) Order {
@@ -86,7 +87,6 @@ func openOrder(t *testing.T, processID, restart, image string) Order {
 			Budgets:        host.ContainerBudgets{CPUCores: 1, MemoryBytes: 1 << 30, Processes: 64, OpenFiles: 256},
 			Mounts:         []host.ContainerMount{{Type: host.MountBind, Source: t.TempDir(), Target: "/workspace"}},
 		},
-		Name:   "journal-process-" + processID,
 		Labels: host.StartLabels{Installation: "test", Session: processID},
 		Size:   TerminalSize{Columns: 80, Rows: 24},
 	}
@@ -137,6 +137,57 @@ func TestACrashedContainerHealedOnACrashIsStartedAgainAndANeverContainerIsLeftDo
 		t.Fatal(err)
 	}
 	neverSent.waitFor(t, "running", "exited")
+}
+
+func TestARunningContainerIsAdoptedAgainAfterTheHostRestarted(t *testing.T) {
+	daemon := dockerstandin.Start(t, standinImage)
+	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := t.TempDir()
+	open := func() (*ProcessTable, *sentReports) {
+		sent := &sentReports{}
+		queue, err := OpenReportQueue(t.TempDir(), sent.send)
+		if err != nil {
+			t.Fatal(err)
+		}
+		stopped := make(chan struct{})
+		t.Cleanup(func() { close(stopped) })
+		go queue.Run(stopped)
+		outputs := NewOutputs(state, func(string, Output) error { return nil }, time.Now)
+		return OpenProcessTable(state, containers, queue, outputs), sent
+	}
+	first, sent := open()
+	facts, err := first.openContainer(context.Background(), openOrder(t, "kept", "never", standinImage))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sent.waitFor(t, "running")
+
+	restarted, again := open()
+	if err := restarted.Adopt(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+
+	inventory := restarted.Inventory()
+	if len(inventory) != 1 || inventory[0].Identity != facts["identity"] || !inventory[0].IsAlive || len(again.kinds()) != 0 {
+		t.Fatalf("the running container was not adopted under its identity: %+v, reports %v", inventory, again.kinds())
+	}
+}
+
+func TestANativeProcessThatEndsIsReportedExitedWithItsCode(t *testing.T) {
+	table, sent := standinTable(t, dockerstandin.Start(t, standinImage))
+	plan, err := json.Marshal(OpenPlan{Type: "pipe", Restart: "never", Argv: []string{"sh", "-c", "exit 3"}, Folder: t.TempDir()})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := table.openProcess(context.Background(), Order{ID: "open-n", Type: "open_process", ProcessID: "n", Payload: string(plan)}); err != nil {
+		t.Fatal(err)
+	}
+
+	sent.waitFor(t, "running", "exited")
 }
 
 func TestAnUnpinnedImageIsRefused(t *testing.T) {

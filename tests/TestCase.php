@@ -131,14 +131,17 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * The alarm stops before the cleanup, so a slow test still empties the rows it committed; the morph map is static
-     * and outlives the application, so a test's fixture types leave with it.
+     * The alarm stops before the cleanup, so a slow test still empties the rows it committed, and so does a real host
+     * the test ran, so nothing writes while the rows are emptied; the morph map is static and outlives the
+     * application, so a test's fixture types leave with it.
      */
     protected function tearDown(): void
     {
         if (TestAlarm::isAvailable()) {
             TestAlarm::disarm();
         }
+
+        $this->journal->stopRealHost();
 
         Relation::morphMap($this->applicationMorphMap, false);
 

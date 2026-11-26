@@ -279,6 +279,13 @@ type Container struct {
 	rows        uint
 	columns     uint
 	signals     []string
+	// resized tells the program its terminal was given a size, as SIGWINCH tells a real one.
+	resized chan struct{}
+}
+
+// Resized tells the program each time its terminal was given a size, so it can draw its screen again.
+func (container *Container) Resized() <-chan struct{} {
+	return container.resized
 }
 
 // Signals are the signals the container's program was sent, in order.

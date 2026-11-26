@@ -27,6 +27,7 @@ func newContainer(id, name string, body createBody) *Container {
 		HostConfig:  body.HostConfig,
 		input:       writer,
 		inputReader: reader,
+		resized:     make(chan struct{}, 1),
 	}
 }
 
@@ -156,11 +157,11 @@ func (container *Container) attach(writer http.ResponseWriter, request *http.Req
 	if container.Config.Tty {
 		media = "application/vnd.docker.raw-stream"
 	}
+	// The connection is attached before the client hears so, so what the program prints right after reaches it.
+	container.mutex.Lock()
 	_, _ = buffered.WriteString("HTTP/1.1 101 UPGRADED\r\nContent-Type: " + media +
 		"\r\nConnection: Upgrade\r\nUpgrade: tcp\r\n\r\n")
 	_ = buffered.Flush()
-
-	container.mutex.Lock()
 	hasEnded := container.started && !container.running
 	if !hasEnded {
 		container.attached = append(container.attached, connection)
@@ -265,8 +266,12 @@ func (container *Container) resize(query url.Values) {
 	rows, _ := strconv.Atoi(query.Get("h"))
 	columns, _ := strconv.Atoi(query.Get("w"))
 	container.mutex.Lock()
-	defer container.mutex.Unlock()
 	container.rows, container.columns = uint(rows), uint(columns)
+	container.mutex.Unlock()
+	select {
+	case container.resized <- struct{}{}:
+	default:
+	}
 }
 
 // writeLogs writes what the program printed, only its last lines when the client asks for a tail.

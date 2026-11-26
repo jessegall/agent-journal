@@ -71,15 +71,20 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 	outputs := hostapi.NewOutputs(stateFolder, func(processID string, output hostapi.Output) error {
 		return calls.NotifyProcessOutput(ctx, processID, output)
 	}, time.Now)
-	table := hostapi.NewProcessTable(containers, reports, outputs)
+	table := hostapi.OpenProcessTable(stateFolder, containers, reports, outputs)
+	if err := table.Adopt(ctx); err != nil {
+		return err
+	}
 	executors := table.Executors()
 	maps.Copy(executors, hostapi.NewProcessInput(table, outputs).Executors())
 	clock := &hostapi.JournalClock{Host: time.Now}
 	verifier := hostapi.Verifier{Secret: hostapi.OrderSecretOf(enrollment.Secret), Now: clock.Now}
-	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(answer hostapi.Answer) {
-		if err := calls.AnswerOrder(ctx, answer); err != nil {
-			log.Printf("the answer to order %s was not sent: %v", answer.OrderID, err)
-		}
+	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(order hostapi.Order, answer hostapi.Answer) {
+		go func() {
+			if err := calls.AnswerUntilTaken(ctx, answer, time.Second, order.ExpiresAt); err != nil {
+				log.Printf("the answer to order %s was not sent: %v", answer.OrderID, err)
+			}
+		}()
 	})
 	relay := hostapi.Relay{Journal: calls, Dispatcher: dispatcher, Record: record, Table: table, Release: release,
 		Heartbeat: hostapi.HeartbeatInterval, RetryAfter: time.Second, Clock: clock}

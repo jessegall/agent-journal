@@ -12,6 +12,7 @@ use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Tests\TestCase;
 #[TestsCommand(SweepHostOrdersCommand::class)]
 final class SweepHostOrdersTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_an_unanswered_order_expires_answered_keys_forget_their_bytes_and_old_orders_go(): void
     {
         $this->journal

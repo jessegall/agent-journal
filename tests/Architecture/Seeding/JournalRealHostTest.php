@@ -9,12 +9,14 @@ use App\Enums\Hosts\HostProcessStatus;
 use App\Support\Hosts\ProcessFeed;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Hosts\EchoProgramDriver;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
  * The test journal runs a host for real and opens the stand-in's echo program on it, then waits for its report.
  */
+#[TimeLimit(seconds: 60, reason: 'It runs the real host, the Docker stand-in and a served journal.')]
 final class JournalRealHostTest extends TestCase
 {
     use CommitsHookRows;
@@ -26,9 +28,19 @@ final class JournalRealHostTest extends TestCase
         'host_orders',
         'agents',
         'agent_sessions',
+        'session_tokens',
+        'agent_stacks',
+        'hook_calls',
         'agent_runtimes',
         'driver_requests',
-        'session_tokens',
+        'driver_turns',
+        'accounts',
+        'active_accounts',
+        'session_processes',
+        'inboxes',
+        'inbox_members',
+        'links',
+        'users',
     ];
 
     public function test_a_real_host_opens_the_echo_program_the_journal_orders(): void
@@ -54,7 +66,8 @@ final class JournalRealHostTest extends TestCase
 
         $this->journal
             ->openEchoContainer('Mac', 'echo')
-            ->waitForHostProcess('echo', HostProcessStatus::Running);
+            ->waitForHostProcess('echo', HostProcessStatus::Running)
+            ->stopRealHost();
     }
 
     public function test_a_process_opened_with_start_credentials_sees_them_under_their_names(): void

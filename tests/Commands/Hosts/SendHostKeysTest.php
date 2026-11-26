@@ -14,6 +14,7 @@ use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -22,6 +23,8 @@ use Tests\TestCase;
 #[TestsCommand(SendHostKeysCommand::class)]
 final class SendHostKeysTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string NOW = '2026-11-26 10:00:00';
 
     private const array PAYLOAD = [
