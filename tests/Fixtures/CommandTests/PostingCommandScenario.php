@@ -25,6 +25,6 @@ abstract class PostingCommandScenario extends TestCase
         $this->assertSame([1, 2], $tasks);
 
         $this->journal
-            ->hostCall('Host', 'POST', '/host/heartbeat', []);
+            ->route('POST', 'host.heartbeat');
     }
 }
