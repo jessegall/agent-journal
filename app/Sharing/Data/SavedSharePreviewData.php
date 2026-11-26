@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Sharing\Data;
+
+use App\Accounts\Data\Support\OptionalOrMissing;
+use App\Models\Sharing\SharePreview;
+use App\Sharing\Support\ShareSelectedTarget;
+use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
+/**
+ * The owner's last saved preview of a root that is still open: its id and checksum to confirm it with, the records
+ * it selected and when it expires.
+ */
+#[TypeScript]
+final class SavedSharePreviewData extends Data
+{
+    use OptionalOrMissing;
+
+    /**
+     * @param  list<string>  $selectedIds
+     */
+    public function __construct(
+        public readonly string $id,
+        public readonly string $checksum,
+        public readonly array $selectedIds,
+        public readonly string $expiresAt,
+    ) {}
+
+    public static function fromPreview(SharePreview $preview): self
+    {
+        return new self(
+            $preview->id,
+            $preview->checksum,
+            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection->items()),
+            $preview->expires_at->toIso8601String(),
+        );
+    }
+}

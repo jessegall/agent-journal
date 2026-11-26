@@ -11,7 +11,6 @@ use App\CoreCommands;
 use App\Sessions\Commands\RecordUserHeartbeat\RecordUserHeartbeatCommand;
 use App\Support\CommandRegistry;
 use Domain\Rules\RulesDomain;
-use Domain\Sharing\SharingDomain;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -30,7 +29,7 @@ final class CoreCommandsTest extends CommandBusTestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(RulesDomain::class, SharingDomain::class);
+        return DomainBoot::withRequirements(RulesDomain::class);
     }
 
     public function test_core_lists_its_commands_and_exports_them(): void

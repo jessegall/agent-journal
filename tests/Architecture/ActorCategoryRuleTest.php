@@ -25,7 +25,7 @@ final class ActorCategoryRuleTest extends TestCase
      * Where a stored type stays allowed, each with why it chooses no behaviour; the list only shrinks.
      */
     private const array ALLOWED = [
-        'domain/Sharing/src/Enums/ShareAuditActor.php' => 'maps the kind of actor to the label an audit line shows',
+        'app/Sharing/Enums/ShareAuditActor.php' => 'maps the kind of actor to the label an audit line shows',
         'app/Support/ActorReference.php' => 'answers whether a reference points at an agent or a user, builds the actor of a request, and keeps the journal out of text from outside',
     ];
 

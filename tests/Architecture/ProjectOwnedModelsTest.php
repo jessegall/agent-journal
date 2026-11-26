@@ -49,7 +49,7 @@ final class ProjectOwnedModelsTest extends TestCase
     private const array ACROSS_PROJECTS_CALLERS = [
         'app/Models/Projects/Host.php' => 'a host relays connected folders of any project; its calls belong to none',
         'app/Models/Projects/ProjectBinding.php' => 'a relay host finds the binding it serves before any project is chosen',
-        'domain/Sharing/src/Models/Share.php' => 'a token opens its share in any project; a public reader is in none',
+        'app/Models/Sharing/Share.php' => 'a token opens its share in any project; a public reader is in none',
     ];
 
     /**

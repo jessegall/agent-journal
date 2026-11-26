@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
+use App\Events\Sharing\ShareActivated;
+use App\Events\Sharing\ShareCreated;
+use App\Events\Sharing\ShareExpired;
+use App\Events\Sharing\ShareFailed;
+use App\Events\Sharing\ShareGatewayChanged;
+use App\Events\Sharing\ShareGatewayEndpointFoundHealthy;
+use App\Events\Sharing\ShareGatewayEndpointMoved;
+use App\Events\Sharing\ShareGatewayMadeDefault;
+use App\Events\Sharing\ShareGatewayOperationClaimed;
+use App\Events\Sharing\ShareGatewayOperationFinished;
+use App\Events\Sharing\ShareInstallationHeld;
+use App\Events\Sharing\SharePreviewConsumed;
+use App\Events\Sharing\SharePruned;
+use App\Events\Sharing\ShareRequested;
+use App\Events\Sharing\ShareRetried;
+use App\Events\Sharing\ShareRevoked;
+use App\Events\Sharing\ShareScopeChanged;
+use App\Sharing\Enums\GatewayEndpointStatus;
+use App\Sharing\Enums\GatewayOutcome;
+use App\Sharing\Enums\ShareStatus;
+use App\Sharing\Support\ShareFact;
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Enums\GatewayEndpointStatus;
-use Domain\Sharing\Enums\GatewayOutcome;
-use Domain\Sharing\Enums\ShareStatus;
-use Domain\Sharing\Events\ShareActivated;
-use Domain\Sharing\Events\ShareCreated;
-use Domain\Sharing\Events\ShareExpired;
-use Domain\Sharing\Events\ShareFailed;
-use Domain\Sharing\Events\ShareGatewayChanged;
-use Domain\Sharing\Events\ShareGatewayEndpointFoundHealthy;
-use Domain\Sharing\Events\ShareGatewayEndpointMoved;
-use Domain\Sharing\Events\ShareGatewayMadeDefault;
-use Domain\Sharing\Events\ShareGatewayOperationClaimed;
-use Domain\Sharing\Events\ShareGatewayOperationFinished;
-use Domain\Sharing\Events\ShareInstallationHeld;
-use Domain\Sharing\Events\SharePreviewConsumed;
-use Domain\Sharing\Events\SharePruned;
-use Domain\Sharing\Events\ShareRequested;
-use Domain\Sharing\Events\ShareRetried;
-use Domain\Sharing\Events\ShareRevoked;
-use Domain\Sharing\Events\ShareScopeChanged;
-use Domain\Sharing\Support\ShareFact;
 use Tests\Architecture\Support\EventRole;
 
 /**

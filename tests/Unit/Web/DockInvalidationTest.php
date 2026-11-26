@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Web;
 
+use App\Events\Sharing\ShareRevoked;
 use App\Events\Web\ProtectedViewInvalidated;
 use App\Listeners\BroadcastPageChange;
+use App\Listeners\Sharing\BroadcastProtectedViewInvalidation;
 use App\Providers\DomainEventServiceProvider;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Events\DockChanged;
-use Domain\Sharing\Events\ShareRevoked;
-use Domain\Sharing\Listeners\BroadcastProtectedViewInvalidation;
-use Domain\Sharing\SharingDomain;
 use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
@@ -26,7 +25,7 @@ final class DockInvalidationTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(ChatDomain::class, SharingDomain::class);
+        return DomainBoot::withRequirements(ChatDomain::class);
     }
 
     public function test_a_dock_change_rereads_the_pages_and_a_revoked_share_drops_what_they_show(): void

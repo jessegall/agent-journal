@@ -11,6 +11,7 @@ use App\Api\Connections\ConnectionApi;
 use App\Api\Processes\ProcessApi;
 use App\Api\Records\RecordApi;
 use App\Api\Scripts\ScriptApi;
+use App\Api\Sharing\SharingApi;
 use App\Api\Supervision\SupervisionApi;
 use App\Api\Text\TextApi;
 
@@ -27,6 +28,7 @@ final readonly class JournalClient
         public ProcessApi $processes,
         public RecordApi $records,
         public ScriptApi $scripts,
+        public SharingApi $sharing,
         public SupervisionApi $supervision,
         public TextApi $text,
     ) {}

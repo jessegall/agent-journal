@@ -60,6 +60,7 @@ final class TestJournal
     use ArrangesProcessRuns;
     use ArrangesProfiles;
     use ArrangesSettings;
+    use ArrangesShares;
     use ArrangesSkills;
     use AssertsLinks;
     use AssertsMessages;

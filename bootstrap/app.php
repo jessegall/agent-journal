@@ -21,7 +21,7 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 
 // The share-only listener runs this same entry with JOURNAL_LISTENER=sharing in its own process; no request picks it.
 if (($_SERVER['JOURNAL_LISTENER'] ?? getenv('JOURNAL_LISTENER')) === 'sharing') {
-    return require dirname(__DIR__).'/domain/Sharing/bootstrap/app.php';
+    return require __DIR__.'/sharing.php';
 }
 
 return Application::configure(basePath: dirname(__DIR__))

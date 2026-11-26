@@ -6,6 +6,7 @@ namespace Domain\Documents\Http\Pages\Resolvers;
 
 use App\Navigation\Contracts\PageResolver;
 use App\Records\Contracts\RecordResolver;
+use App\Sharing\Contracts\ShareStatusResolver;
 use App\Support\Layout\RecordLayoutData;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
@@ -17,7 +18,6 @@ use Domain\Documents\Http\Pages\Resolvers\Support\LibraryListing;
 use Domain\Documents\Http\Requests\RecordPageRequest;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Support\RecordPageReads;
-use Domain\Sharing\Contracts\ShareStatusResolver;
 
 /**
  * A document for its page: the document and its draft's state, and only for the tab the window chose its comments,
