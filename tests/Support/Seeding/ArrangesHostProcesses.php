@@ -234,6 +234,16 @@ trait ArrangesHostProcesses
     }
 
     /**
+     * The journal the real host reaches goes away for the seconds and comes back, as after a crash of the app.
+     */
+    public function restartJournalOfRealHost(float $seconds = 1.0): self
+    {
+        $this->realHost?->restartJournal($seconds);
+
+        return $this;
+    }
+
+    /**
      * The real host's binary stops and starts again, its containers left running.
      */
     public function restartRealHost(): self

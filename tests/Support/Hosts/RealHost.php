@@ -31,6 +31,10 @@ final class RealHost
 
     private InvokedProcess|null $host = null;
 
+    private InvokedProcess|null $journal = null;
+
+    private int $port = 0;
+
     private function __construct(private readonly Factory $processes, public readonly string $folder) {}
 
     /**
@@ -41,12 +45,12 @@ final class RealHost
         $folder = sys_get_temp_dir().'/journal-real-host-'.bin2hex(random_bytes(6));
         mkdir($folder, 0o700, true);
         $real = new self($processes, $folder);
-        $port = self::freePort();
-        $real->run(['php', '-S', "127.0.0.1:{$port}", '-t', base_path('public'), base_path('public/index.php')]);
+        $real->port = self::freePort();
+        $real->serveJournal();
         $real->run([self::binary(), 'standin', 'docker', '--socket', "{$folder}/docker.sock", '--image', self::IMAGE]);
         file_put_contents("{$folder}/secret", $host->secret);
         $enrolled = $processes->run([
-            self::binary(), 'enroll', '--journal', "http://127.0.0.1:{$port}", '--host', $host->hostId,
+            self::binary(), 'enroll', '--journal', "http://127.0.0.1:{$real->port}", '--host', $host->hostId,
             '--state', "{$folder}/state", '--secret-file', "{$folder}/secret",
         ]);
         Assert::assertTrue($enrolled->successful(), 'The real host did not enroll: '.$enrolled->errorOutput());
@@ -104,11 +108,26 @@ final class RealHost
         $this->startHost();
     }
 
+    /**
+     * The served journal goes away for the seconds and comes back on the same port, as after a crash of the app.
+     */
+    public function restartJournal(float $seconds): void
+    {
+        $this->journal?->signal(SIGKILL);
+        $this->journal?->wait();
+        usleep((int) ($seconds * 1_000_000));
+        $this->serveJournal();
+    }
+
     public function stop(): void
     {
-        $this->host?->signal(SIGTERM);
-        $this->host?->wait();
+        foreach ([$this->host, $this->journal] as $process) {
+            $process?->signal(SIGTERM);
+            $process?->wait();
+        }
+
         $this->host = null;
+        $this->journal = null;
 
         foreach ($this->running as $process) {
             $process->signal(SIGTERM);
@@ -121,6 +140,13 @@ final class RealHost
     public function __destruct()
     {
         $this->stop();
+    }
+
+    private function serveJournal(): void
+    {
+        $command = ['php', '-S', "127.0.0.1:{$this->port}", '-t', base_path('public'), base_path('public/index.php')];
+        $this->journal = $this->processes->env(getenv())->forever()->start($command);
+        usleep(200_000);
     }
 
     private function startHost(): void

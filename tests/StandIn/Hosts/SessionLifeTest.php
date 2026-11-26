@@ -14,6 +14,7 @@ use App\Models\Hosts\HostOrder;
 use App\Support\Hosts\ProcessFeed;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
+use Closure;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
 use Tests\Support\Hosts\EchoProgramDriver;
@@ -44,20 +45,7 @@ final class SessionLifeTest extends TestCase
 
     public function test_a_session_starts_answers_survives_a_host_restart_and_stops(): void
     {
-        $this->chooseActiveAccounts();
-        $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProgramDriver::class)
-            ->owner()
-            ->idleAgent('Echo')
-            ->enrollHost('Mac', [base_path()])
-            ->runRealHost('Mac');
-        $opened = $this->journal->openRuntimeOn('Echo', 'Mac', base_path(), firstMessage: 'hello');
-        $this->journal
-            ->openEchoContainer('Mac', 'echo', $opened->runtimeId)
-            ->waitForHostProcess('echo', HostProcessStatus::Running);
-        $process = $this->journal->hostProcessCalled('echo')->id;
-        $feed = $this->journal->service(ProcessFeed::class);
-        $answered = fn () => in_array('echo: hello', $feed->latestFrame($process)?->rows ?? [], true);
+        [$process, $answered] = $this->startEchoSession();
 
         $work = $this->journal->driveHostProcess('echo', $answered);
         $this->journal->restartRealHost();
@@ -67,6 +55,31 @@ final class SessionLifeTest extends TestCase
         $this->journal
             ->waitForHostProcess('echo', HostProcessStatus::Exited)
             ->assertResult([1, true], [$this->ordersOf(HostOrderType::WriteKeys), $work->generation >= 1]);
+    }
+
+    public function test_a_worker_that_dies_after_ordering_the_paste_is_replaced_without_a_second_paste(): void
+    {
+        [$process, $answered] = $this->startEchoSession();
+        $this->journal->driveHostProcess('echo', fn () => $this->ordersOf(HostOrderType::WriteKeys) === 1);
+
+        $replacement = $this->journal->driveHostProcess('echo', $answered);
+
+        $this->journal->assertResult(
+            [1, 2],
+            [$this->ordersOf(HostOrderType::WriteKeys), $replacement->generation],
+        );
+        $this->assertSame($process, $this->journal->hostProcessCalled('echo')->id);
+    }
+
+    public function test_a_journal_that_dies_mid_delivery_has_the_message_answered_once_it_is_back(): void
+    {
+        [, $answered] = $this->startEchoSession();
+        $work = $this->journal->driveHostProcess('echo', fn () => $this->ordersOf(HostOrderType::WriteKeys) === 1);
+
+        $this->journal->restartJournalOfRealHost();
+        $this->journal->driveHostProcess('echo', $answered, $work);
+
+        $this->journal->assertResult(1, $this->ordersOf(HostOrderType::WriteKeys));
     }
 
     public function test_a_crashed_container_healed_on_a_crash_runs_again(): void
@@ -89,6 +102,31 @@ final class SessionLifeTest extends TestCase
 
         $this->journal->driveHostProcess('echo', fn () => $this->journal->hostProcessCalled('echo')->generation >= 1, $work);
         $this->journal->assertResult(HostProcessStatus::Running, $this->journal->hostProcessCalled('echo')->status);
+    }
+
+    /**
+     * The echo program runs on the real host for a runtime whose first message is hello; the closure answers whether
+     * its reply shows.
+     *
+     * @return array{string, Closure(): bool}
+     */
+    private function startEchoSession(): array
+    {
+        $this->chooseActiveAccounts();
+        $this->journal
+            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProgramDriver::class)
+            ->owner()
+            ->idleAgent('Echo')
+            ->enrollHost('Mac', [base_path()])
+            ->runRealHost('Mac');
+        $opened = $this->journal->openRuntimeOn('Echo', 'Mac', base_path(), firstMessage: 'hello');
+        $this->journal
+            ->openEchoContainer('Mac', 'echo', $opened->runtimeId)
+            ->waitForHostProcess('echo', HostProcessStatus::Running);
+        $process = $this->journal->hostProcessCalled('echo')->id;
+        $feed = $this->journal->service(ProcessFeed::class);
+
+        return [$process, fn () => in_array('echo: hello', $feed->latestFrame($process)?->rows ?? [], true)];
     }
 
     private function ordersOf(HostOrderType $type): int

@@ -301,15 +301,16 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * The orders of a driver request the host carried out, by their number: where a new worker takes the request up.
+     * The orders of a driver request that were made and not refused, waiting, handed out or carried out, by their
+     * number: where a new worker takes the request up without ordering a step twice.
      *
      * @return list<self>
      */
-    public static function doneFor(DriverRequest $request): array
+    public static function orderedFor(DriverRequest $request): array
     {
         $orders = self::query()
             ->ofDriverRequest($request)
-            ->where('status', HostOrderStatus::Done)
+            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed, HostOrderStatus::Done])
             ->orderBy('sequence')
             ->get();
 

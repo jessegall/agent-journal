@@ -146,9 +146,9 @@ final readonly class DriverWorkers
         }
 
         $inFlight = array_values(DriverRequest::query()->inFlightFor($process->runtime)->get()->all());
-        $done = array_merge(...array_map(fn (DriverRequest $request) => HostOrder::doneFor($request), $inFlight));
+        $ordered = array_merge(...array_map(fn (DriverRequest $request) => HostOrder::orderedFor($request), $inFlight));
 
-        return $work->driver->resume($inFlight, $done);
+        return $work->driver->resume($inFlight, $ordered);
     }
 
     private function requestsOf(DriverWork $work): DriverActions

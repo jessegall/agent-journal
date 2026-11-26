@@ -17,12 +17,13 @@ use App\Values\FeedEntry;
 interface ProgramDriver
 {
     /**
-     * Where the requests a worker before this one had begun stand, rebuilt from the orders the host carried out.
+     * Where the requests a worker before this one had taken stand, rebuilt from the orders it made that were not
+     * refused, so no step is ordered twice.
      *
      * @param  list<DriverRequest>  $inFlight
-     * @param  list<HostOrder>  $done
+     * @param  list<HostOrder>  $ordered
      */
-    public function resume(array $inFlight, array $done): DriverActions;
+    public function resume(array $inFlight, array $ordered): DriverActions;
 
     public function onOutput(FeedEntry $entry): DriverActions;
 

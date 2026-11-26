@@ -25,7 +25,7 @@ final readonly class StandInProgramDriver implements ProgramDriver
 
     public function __construct(private HostProcess $process, private int $generation) {}
 
-    public function resume(array $inFlight, array $done): DriverActions
+    public function resume(array $inFlight, array $ordered): DriverActions
     {
         return DriverActions::none();
     }
