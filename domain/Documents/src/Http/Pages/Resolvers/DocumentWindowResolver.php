@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Resolvers;
 
-use App\Docking\Data\DockablePublicationData;
 use App\Navigation\Contracts\PageResolver;
 use App\Records\Contracts\RecordResolver;
 use App\Sharing\Contracts\ShareStatusResolver;
-use App\Support\Cards\DockIdentity;
+use App\Support\Layout\RecordLayoutData;
+use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 use Domain\Comments\Contracts\CommentResolver;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
@@ -38,7 +38,7 @@ final readonly class DocumentWindowResolver implements PageResolver
         private LibraryListing $library,
     ) {}
 
-    public function read(): DockablePublicationData
+    public function read(): RecordLayoutData
     {
         $number = $this->request->documentNumber();
         $document = $this->documents->show($number);
@@ -56,9 +56,9 @@ final readonly class DocumentWindowResolver implements PageResolver
             fn () => $this->documents->revisions($number, 1),
         );
 
-        return DockablePublicationData::of(
+        return RecordLayoutData::of(
             $this->library->layout($reader),
-            new DockIdentity(Document::linkType(), $document->id),
+            new RecordIdentity(Document::linkType(), $document->id),
         );
     }
 }

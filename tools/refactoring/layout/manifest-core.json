@@ -36355,10 +36355,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "cc59052ca1c9df43f6975f9d2394cf9f99d0818b",
-        "old_path": "app/Exceptions/DockCardInvalid.php",
-        "old_class": "App\\Exceptions\\DockCardInvalid",
-        "final_path": "app/Exceptions/DockCardInvalid.php",
-        "final_class": "App\\Exceptions\\DockCardInvalid",
+        "old_path": "domain/Chat/src/Exceptions/DockCardInvalid.php",
+        "old_class": "Domain\\Chat\\Exceptions\\DockCardInvalid",
+        "final_path": "domain/Chat/src/Exceptions/DockCardInvalid.php",
+        "final_class": "Domain\\Chat\\Exceptions\\DockCardInvalid",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -36374,10 +36374,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8c857546cb5c82e48e8ad016133ec3e26d9265f5",
-        "old_path": "app/Docking/Exceptions/DockDefinitionInvalid.php",
-        "old_class": "App\\Docking\\Exceptions\\DockDefinitionInvalid",
-        "final_path": "app/Docking/Exceptions/DockDefinitionInvalid.php",
-        "final_class": "App\\Docking\\Exceptions\\DockDefinitionInvalid",
+        "old_path": "domain/Chat/src/Exceptions/DockDefinitionInvalid.php",
+        "old_class": "Domain\\Chat\\Exceptions\\DockDefinitionInvalid",
+        "final_path": "domain/Chat/src/Exceptions/DockDefinitionInvalid.php",
+        "final_class": "Domain\\Chat\\Exceptions\\DockDefinitionInvalid",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -36393,10 +36393,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ddad53fcdc69c40f338c56663e621132e8bb7c25",
-        "old_path": "app/Docking/Exceptions/DockSourceUnavailable.php",
-        "old_class": "App\\Docking\\Exceptions\\DockSourceUnavailable",
-        "final_path": "app/Docking/Exceptions/DockSourceUnavailable.php",
-        "final_class": "App\\Docking\\Exceptions\\DockSourceUnavailable",
+        "old_path": "domain/Chat/src/Exceptions/DockSourceUnavailable.php",
+        "old_class": "Domain\\Chat\\Exceptions\\DockSourceUnavailable",
+        "final_path": "domain/Chat/src/Exceptions/DockSourceUnavailable.php",
+        "final_class": "Domain\\Chat\\Exceptions\\DockSourceUnavailable",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -39756,10 +39756,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1ff28d92b657f5348818807ed989ec53d21cac7e",
-        "old_path": "app/Exceptions/PartMapInvalid.php",
-        "old_class": "App\\Exceptions\\PartMapInvalid",
-        "final_path": "app/Exceptions/PartMapInvalid.php",
-        "final_class": "App\\Exceptions\\PartMapInvalid",
+        "old_path": "domain/Chat/src/Exceptions/PartMapInvalid.php",
+        "old_class": "Domain\\Chat\\Exceptions\\PartMapInvalid",
+        "final_path": "domain/Chat/src/Exceptions/PartMapInvalid.php",
+        "final_class": "Domain\\Chat\\Exceptions\\PartMapInvalid",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74406,10 +74406,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "18696328e68232be488de714061d6ca3706dacc5",
-        "old_path": "app/Support/Cards/Button.php",
-        "old_class": "App\\Support\\Cards\\Button",
-        "final_path": "app/Support/Cards/Button.php",
-        "final_class": "App\\Support\\Cards\\Button",
+        "old_path": "domain/Chat/src/Support/Cards/Button.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\Button",
+        "final_path": "domain/Chat/src/Support/Cards/Button.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\Button",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74444,10 +74444,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "af04ae2cbd73eacf182885fa96922d2ca9548ca8",
-        "old_path": "app/Docking/Cards/ComposedCard.php",
-        "old_class": "App\\Docking\\Cards\\ComposedCard",
-        "final_path": "app/Docking/Cards/ComposedCard.php",
-        "final_class": "App\\Docking\\Cards\\ComposedCard",
+        "old_path": "domain/Chat/src/Support/Cards/ComposedCard.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\ComposedCard",
+        "final_path": "domain/Chat/src/Support/Cards/ComposedCard.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\ComposedCard",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74463,10 +74463,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e8c4bb3b0352bfcaab0935ef8f0821dd8d6bee94",
-        "old_path": "app/Docking/Cards/ConsoleOutput.php",
-        "old_class": "App\\Docking\\Cards\\ConsoleOutput",
-        "final_path": "app/Docking/Cards/ConsoleOutput.php",
-        "final_class": "App\\Docking\\Cards\\ConsoleOutput",
+        "old_path": "domain/Chat/src/Support/Cards/ConsoleOutput.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\ConsoleOutput",
+        "final_path": "domain/Chat/src/Support/Cards/ConsoleOutput.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\ConsoleOutput",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74482,10 +74482,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9615a92d104d7e474b5252b66e1e2413deca5472",
-        "old_path": "app/Support/Cards/Contracts/DockPart.php",
-        "old_class": "App\\Support\\Cards\\Contracts\\DockPart",
-        "final_path": "app/Support/Cards/Contracts/DockPart.php",
-        "final_class": "App\\Support\\Cards\\Contracts\\DockPart",
+        "old_path": "domain/Chat/src/Contracts/Docking/DockPart.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\DockPart",
+        "final_path": "domain/Chat/src/Contracts/Docking/DockPart.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\DockPart",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74501,10 +74501,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0fa19d0fdde09b85fc48ea91e17f503684c46dcd",
-        "old_path": "app/Support/Cards/CountedProgress.php",
-        "old_class": "App\\Support\\Cards\\CountedProgress",
-        "final_path": "app/Support/Cards/CountedProgress.php",
-        "final_class": "App\\Support\\Cards\\CountedProgress",
+        "old_path": "domain/Chat/src/Support/Cards/CountedProgress.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\CountedProgress",
+        "final_path": "domain/Chat/src/Support/Cards/CountedProgress.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\CountedProgress",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74520,10 +74520,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9ad122f84b7eac30a15cbc4ae0b3ee8eefc33c27",
-        "old_path": "app/Docking/Cards/DestinationArgument.php",
-        "old_class": "App\\Docking\\Cards\\DestinationArgument",
-        "final_path": "app/Docking/Cards/DestinationArgument.php",
-        "final_class": "App\\Docking\\Cards\\DestinationArgument",
+        "old_path": "domain/Chat/src/Support/Cards/DestinationArgument.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\DestinationArgument",
+        "final_path": "domain/Chat/src/Support/Cards/DestinationArgument.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\DestinationArgument",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74539,10 +74539,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6c478620063b201d55447f5ccbd1b334a3c31e2a",
-        "old_path": "app/Support/Cards/Disclosure.php",
-        "old_class": "App\\Support\\Cards\\Disclosure",
-        "final_path": "app/Support/Cards/Disclosure.php",
-        "final_class": "App\\Support\\Cards\\Disclosure",
+        "old_path": "domain/Chat/src/Support/Cards/Disclosure.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\Disclosure",
+        "final_path": "domain/Chat/src/Support/Cards/Disclosure.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\Disclosure",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74558,10 +74558,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a4becc3456135f2fd5df0791cb5478eda0f25335",
-        "old_path": "app/Support/Cards/DockCard.php",
-        "old_class": "App\\Support\\Cards\\DockCard",
-        "final_path": "app/Support/Cards/DockCard.php",
-        "final_class": "App\\Support\\Cards\\DockCard",
+        "old_path": "domain/Chat/src/Support/Cards/DockCard.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\DockCard",
+        "final_path": "domain/Chat/src/Support/Cards/DockCard.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\DockCard",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74577,10 +74577,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d66462886954fecfeea301f242e6213ded8ee237",
-        "old_path": "app/Docking/Cards/DockDestination.php",
-        "old_class": "App\\Docking\\Cards\\DockDestination",
-        "final_path": "app/Docking/Cards/DockDestination.php",
-        "final_class": "App\\Docking\\Cards\\DockDestination",
+        "old_path": "domain/Chat/src/Support/Cards/DockDestination.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\DockDestination",
+        "final_path": "domain/Chat/src/Support/Cards/DockDestination.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\DockDestination",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74596,10 +74596,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8e26f0bf9d1e119c4fc6217b08f1050be59eeb11",
-        "old_path": "app/Support/Cards/DockIdentity.php",
-        "old_class": "App\\Support\\Cards\\DockIdentity",
-        "final_path": "app/Support/Cards/DockIdentity.php",
-        "final_class": "App\\Support\\Cards\\DockIdentity",
+        "old_path": "domain/Chat/src/Support/Cards/DockIdentity.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\DockIdentity",
+        "final_path": "domain/Chat/src/Support/Cards/DockIdentity.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\DockIdentity",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74615,10 +74615,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2837d398007e9df6d5cdad482ccfb9d8690380ea",
-        "old_path": "app/Docking/Cards/DockLink.php",
-        "old_class": "App\\Docking\\Cards\\DockLink",
-        "final_path": "app/Docking/Cards/DockLink.php",
-        "final_class": "App\\Docking\\Cards\\DockLink",
+        "old_path": "domain/Chat/src/Support/Cards/DockLink.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\DockLink",
+        "final_path": "domain/Chat/src/Support/Cards/DockLink.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\DockLink",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74634,10 +74634,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0bae5b3f327b25c58df21b3a99eebfa4e24b512e",
-        "old_path": "app/Processes/Cards/Duration.php",
-        "old_class": "App\\Processes\\Cards\\Duration",
-        "final_path": "app/Processes/Cards/Duration.php",
-        "final_class": "App\\Processes\\Cards\\Duration",
+        "old_path": "domain/Chat/src/Support/Cards/Duration.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\Duration",
+        "final_path": "domain/Chat/src/Support/Cards/Duration.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\Duration",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74653,10 +74653,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c394ac0ec32705142a2375219337bfc247df882d",
-        "old_path": "app/Support/Cards/ExcerptMessage.php",
-        "old_class": "App\\Support\\Cards\\ExcerptMessage",
-        "final_path": "app/Support/Cards/ExcerptMessage.php",
-        "final_class": "App\\Support\\Cards\\ExcerptMessage",
+        "old_path": "domain/Chat/src/Support/Cards/ExcerptMessage.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\ExcerptMessage",
+        "final_path": "domain/Chat/src/Support/Cards/ExcerptMessage.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\ExcerptMessage",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74672,10 +74672,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "879638e5783bb4360ce511232525b409c78addae",
-        "old_path": "app/Support/Cards/Group.php",
-        "old_class": "App\\Support\\Cards\\Group",
-        "final_path": "app/Support/Cards/Group.php",
-        "final_class": "App\\Support\\Cards\\Group",
+        "old_path": "domain/Chat/src/Support/Cards/Group.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\Group",
+        "final_path": "domain/Chat/src/Support/Cards/Group.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\Group",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74691,10 +74691,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c2037dcea348799d5d9a310c8622e2a1a165f398",
-        "old_path": "app/Support/Cards/IndeterminateProgress.php",
-        "old_class": "App\\Support\\Cards\\IndeterminateProgress",
-        "final_path": "app/Support/Cards/IndeterminateProgress.php",
-        "final_class": "App\\Support\\Cards\\IndeterminateProgress",
+        "old_path": "domain/Chat/src/Support/Cards/IndeterminateProgress.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\IndeterminateProgress",
+        "final_path": "domain/Chat/src/Support/Cards/IndeterminateProgress.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\IndeterminateProgress",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74710,10 +74710,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0369363f07e79de92bc4770a5c0856fa1f010f82",
-        "old_path": "app/Support/Cards/PartKey.php",
-        "old_class": "App\\Support\\Cards\\PartKey",
-        "final_path": "app/Support/Cards/PartKey.php",
-        "final_class": "App\\Support\\Cards\\PartKey",
+        "old_path": "domain/Chat/src/Support/Cards/PartKey.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\PartKey",
+        "final_path": "domain/Chat/src/Support/Cards/PartKey.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\PartKey",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74729,10 +74729,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "43616dcf407a3bf74016d78db782e1e6fffe432c",
-        "old_path": "app/Support/Cards/Row.php",
-        "old_class": "App\\Support\\Cards\\Row",
-        "final_path": "app/Support/Cards/Row.php",
-        "final_class": "App\\Support\\Cards\\Row",
+        "old_path": "domain/Chat/src/Support/Cards/Row.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\Row",
+        "final_path": "domain/Chat/src/Support/Cards/Row.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\Row",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74748,10 +74748,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "159fc732b38e1c0d874f31292754dc0cdb0e12da",
-        "old_path": "app/Support/Cards/Stack.php",
-        "old_class": "App\\Support\\Cards\\Stack",
-        "final_path": "app/Support/Cards/Stack.php",
-        "final_class": "App\\Support\\Cards\\Stack",
+        "old_path": "domain/Chat/src/Support/Cards/Stack.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\Stack",
+        "final_path": "domain/Chat/src/Support/Cards/Stack.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\Stack",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74767,10 +74767,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2998f81b844455245c83a96c2f647fe7a35b4c16",
-        "old_path": "app/Processes/Cards/StateLabel.php",
-        "old_class": "App\\Processes\\Cards\\StateLabel",
-        "final_path": "app/Processes/Cards/StateLabel.php",
-        "final_class": "App\\Processes\\Cards\\StateLabel",
+        "old_path": "domain/Chat/src/Support/Cards/StateLabel.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\StateLabel",
+        "final_path": "domain/Chat/src/Support/Cards/StateLabel.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\StateLabel",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74786,10 +74786,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "474c2b60c13090b8cdb1fea94f43e6072644f420",
-        "old_path": "app/Support/Cards/Subtitle.php",
-        "old_class": "App\\Support\\Cards\\Subtitle",
-        "final_path": "app/Support/Cards/Subtitle.php",
-        "final_class": "App\\Support\\Cards\\Subtitle",
+        "old_path": "domain/Chat/src/Support/Cards/Subtitle.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\Subtitle",
+        "final_path": "domain/Chat/src/Support/Cards/Subtitle.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\Subtitle",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74805,10 +74805,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a9550891f4b5d2fe548343337044ef2abba1fec5",
-        "old_path": "app/Support/Cards/Title.php",
-        "old_class": "App\\Support\\Cards\\Title",
-        "final_path": "app/Support/Cards/Title.php",
-        "final_class": "App\\Support\\Cards\\Title",
+        "old_path": "domain/Chat/src/Support/Cards/Title.php",
+        "old_class": "Domain\\Chat\\Support\\Cards\\Title",
+        "final_path": "domain/Chat/src/Support/Cards/Title.php",
+        "final_class": "Domain\\Chat\\Support\\Cards\\Title",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -77579,10 +77579,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "85656cadab83425547461917e36b204e40457be1",
-        "old_path": "app/Docking/DeclaredPageRoutes.php",
-        "old_class": "App\\Docking\\DeclaredPageRoutes",
-        "final_path": "app/Docking/DeclaredPageRoutes.php",
-        "final_class": "App\\Docking\\DeclaredPageRoutes",
+        "old_path": "domain/Chat/src/Support/Docking/DeclaredPageRoutes.php",
+        "old_class": "Domain\\Chat\\Support\\Docking\\DeclaredPageRoutes",
+        "final_path": "domain/Chat/src/Support/Docking/DeclaredPageRoutes.php",
+        "final_class": "Domain\\Chat\\Support\\Docking\\DeclaredPageRoutes",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -77636,10 +77636,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "52a3a1cb6cb6d2a726bddfd28a8e7dbc5556bd10",
-        "old_path": "app/Docking/RecordFallbackDocks.php",
-        "old_class": "App\\Docking\\RecordFallbackDocks",
-        "final_path": "app/Docking/RecordFallbackDocks.php",
-        "final_class": "App\\Docking\\RecordFallbackDocks",
+        "old_path": "domain/Chat/src/Support/Docking/RecordFallbackDocks.php",
+        "old_class": "Domain\\Chat\\Support\\Docking\\RecordFallbackDocks",
+        "final_path": "domain/Chat/src/Support/Docking/RecordFallbackDocks.php",
+        "final_class": "Domain\\Chat\\Support\\Docking\\RecordFallbackDocks",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -83792,10 +83792,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "41944391036ac15cfca40742a64afeb57f5cec99",
-        "old_path": "app/Docking/NoDockOffers.php",
-        "old_class": "App\\Docking\\NoDockOffers",
-        "final_path": "app/Docking/NoDockOffers.php",
-        "final_class": "App\\Docking\\NoDockOffers",
+        "old_path": "app/Navigation/NoWindowOffers.php",
+        "old_class": "App\\Navigation\\NoWindowOffers",
+        "final_path": "app/Navigation/NoWindowOffers.php",
+        "final_class": "App\\Navigation\\NoWindowOffers",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -84438,10 +84438,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f17defa0391e888a969e4559abd030bebe5b2ff8",
-        "old_path": "app/Docking/OutputDocking.php",
-        "old_class": "App\\Docking\\OutputDocking",
-        "final_path": "app/Docking/OutputDocking.php",
-        "final_class": "App\\Docking\\OutputDocking",
+        "old_path": "domain/Chat/src/Support/Docking/OutputDocking.php",
+        "old_class": "Domain\\Chat\\Support\\Docking\\OutputDocking",
+        "final_path": "domain/Chat/src/Support/Docking/OutputDocking.php",
+        "final_class": "Domain\\Chat\\Support\\Docking\\OutputDocking",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -88067,10 +88067,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1693bf1f627ed6850dbdb2578b5212135d6081fc",
-        "old_path": "app/Docking/RunDocking.php",
-        "old_class": "App\\Docking\\RunDocking",
-        "final_path": "app/Docking/RunDocking.php",
-        "final_class": "App\\Docking\\RunDocking",
+        "old_path": "domain/Chat/src/Support/Docking/RunDocking.php",
+        "old_class": "Domain\\Chat\\Support\\Docking\\RunDocking",
+        "final_path": "domain/Chat/src/Support/Docking/RunDocking.php",
+        "final_class": "Domain\\Chat\\Support\\Docking\\RunDocking",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90385,10 +90385,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9f05ce959753f549f28f742bd5cbc3e98dd39cba",
-        "old_path": "app/Docking/Sources/Contracts/CardContext.php",
-        "old_class": "App\\Docking\\Sources\\Contracts\\CardContext",
-        "final_path": "app/Docking/Sources/Contracts/CardContext.php",
-        "final_class": "App\\Docking\\Sources\\Contracts\\CardContext",
+        "old_path": "domain/Chat/src/Contracts/Docking/CardContext.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\CardContext",
+        "final_path": "domain/Chat/src/Contracts/Docking/CardContext.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\CardContext",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90404,10 +90404,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b36af4decce2f6f219b3a31551be190a8116b506",
-        "old_path": "app/Docking/Sources/Contracts/DestinationGate.php",
-        "old_class": "App\\Docking\\Sources\\Contracts\\DestinationGate",
-        "final_path": "app/Docking/Sources/Contracts/DestinationGate.php",
-        "final_class": "App\\Docking\\Sources\\Contracts\\DestinationGate",
+        "old_path": "domain/Chat/src/Contracts/Docking/DestinationGate.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\DestinationGate",
+        "final_path": "domain/Chat/src/Contracts/Docking/DestinationGate.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\DestinationGate",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90423,10 +90423,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "14c7bd571fe58875c108f8ccec9f8a0f6087c0a6",
-        "old_path": "app/Docking/Sources/Contracts/DockOffers.php",
-        "old_class": "App\\Docking\\Sources\\Contracts\\DockOffers",
-        "final_path": "app/Docking/Sources/Contracts/DockOffers.php",
-        "final_class": "App\\Docking\\Sources\\Contracts\\DockOffers",
+        "old_path": "app/Navigation/Contracts/WindowOffers.php",
+        "old_class": "App\\Navigation\\Contracts\\WindowOffers",
+        "final_path": "app/Navigation/Contracts/WindowOffers.php",
+        "final_class": "App\\Navigation\\Contracts\\WindowOffers",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90442,10 +90442,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "252614e43b0daf2ed7493e70de51add1887df888",
-        "old_path": "app/Docking/Sources/Contracts/DockRegistration.php",
-        "old_class": "App\\Docking\\Sources\\Contracts\\DockRegistration",
-        "final_path": "app/Docking/Sources/Contracts/DockRegistration.php",
-        "final_class": "App\\Docking\\Sources\\Contracts\\DockRegistration",
+        "old_path": "domain/Chat/src/Contracts/Docking/DockRegistration.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\DockRegistration",
+        "final_path": "domain/Chat/src/Contracts/Docking/DockRegistration.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\DockRegistration",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90461,10 +90461,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "21972556c06038f31496a4d5ab4521685698518f",
-        "old_path": "app/Processes/Sources/Contracts/DockSourceChanged.php",
-        "old_class": "App\\Processes\\Sources\\Contracts\\DockSourceChanged",
-        "final_path": "app/Processes/Sources/Contracts/DockSourceChanged.php",
-        "final_class": "App\\Processes\\Sources\\Contracts\\DockSourceChanged",
+        "old_path": "domain/Chat/src/Contracts/Docking/DockSourceChanged.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\DockSourceChanged",
+        "final_path": "domain/Chat/src/Contracts/Docking/DockSourceChanged.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\DockSourceChanged",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90480,10 +90480,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "19a387542c9f4a980b3c8e4b2d8f11473af24367",
-        "old_path": "app/Support/Sources/Contracts/DockSourceDeleted.php",
-        "old_class": "App\\Support\\Sources\\Contracts\\DockSourceDeleted",
-        "final_path": "app/Support/Sources/Contracts/DockSourceDeleted.php",
-        "final_class": "App\\Support\\Sources\\Contracts\\DockSourceDeleted",
+        "old_path": "domain/Chat/src/Contracts/Docking/DockSourceDeleted.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\DockSourceDeleted",
+        "final_path": "domain/Chat/src/Contracts/Docking/DockSourceDeleted.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\DockSourceDeleted",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90499,10 +90499,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "58d40cb1749fb6469858bb0a81c2daa6a55fc6ea",
-        "old_path": "app/Processes/Sources/Contracts/DockSourceFact.php",
-        "old_class": "App\\Processes\\Sources\\Contracts\\DockSourceFact",
-        "final_path": "app/Processes/Sources/Contracts/DockSourceFact.php",
-        "final_class": "App\\Processes\\Sources\\Contracts\\DockSourceFact",
+        "old_path": "domain/Chat/src/Contracts/Docking/DockSourceFact.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\DockSourceFact",
+        "final_path": "domain/Chat/src/Contracts/Docking/DockSourceFact.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\DockSourceFact",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90518,10 +90518,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bc3ee6c5d371c9723facfc052bd633fabb42d4fa",
-        "old_path": "app/Support/Sources/Contracts/Dockable.php",
-        "old_class": "App\\Support\\Sources\\Contracts\\Dockable",
-        "final_path": "app/Support/Sources/Contracts/Dockable.php",
-        "final_class": "App\\Support\\Sources\\Contracts\\Dockable",
+        "old_path": "domain/Chat/src/Contracts/Docking/Dockable.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\Dockable",
+        "final_path": "domain/Chat/src/Contracts/Docking/Dockable.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\Dockable",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90537,10 +90537,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "295a476ffce5842af480192a8691d0b96024e7e7",
-        "old_path": "app/Docking/Sources/Contracts/DockableProvider.php",
-        "old_class": "App\\Docking\\Sources\\Contracts\\DockableProvider",
-        "final_path": "app/Docking/Sources/Contracts/DockableProvider.php",
-        "final_class": "App\\Docking\\Sources\\Contracts\\DockableProvider",
+        "old_path": "domain/Chat/src/Contracts/Docking/DockableProvider.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\DockableProvider",
+        "final_path": "domain/Chat/src/Contracts/Docking/DockableProvider.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\DockableProvider",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90556,10 +90556,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "fd85608ba1438f3ea906c84f273251449c548300",
-        "old_path": "app/Docking/Sources/Contracts/DockableWindow.php",
-        "old_class": "App\\Docking\\Sources\\Contracts\\DockableWindow",
-        "final_path": "app/Docking/Sources/Contracts/DockableWindow.php",
-        "final_class": "App\\Docking\\Sources\\Contracts\\DockableWindow",
+        "old_path": "app/Navigation/Contracts/RecordWindow.php",
+        "old_class": "App\\Navigation\\Contracts\\RecordWindow",
+        "final_path": "app/Navigation/Contracts/RecordWindow.php",
+        "final_class": "App\\Navigation\\Contracts\\RecordWindow",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90575,10 +90575,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e362ee7b15c922b765fb7afd94a6c63a4448de24",
-        "old_path": "app/Docking/Sources/Contracts/DockedSources.php",
-        "old_class": "App\\Docking\\Sources\\Contracts\\DockedSources",
-        "final_path": "app/Docking/Sources/Contracts/DockedSources.php",
-        "final_class": "App\\Docking\\Sources\\Contracts\\DockedSources",
+        "old_path": "domain/Chat/src/Contracts/Docking/DockedSources.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\DockedSources",
+        "final_path": "domain/Chat/src/Contracts/Docking/DockedSources.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\DockedSources",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90594,10 +90594,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6cf05472116aadf01bf23f349dcdecd17a232ab5",
-        "old_path": "app/Docking/Sources/Contracts/FallbackDocks.php",
-        "old_class": "App\\Docking\\Sources\\Contracts\\FallbackDocks",
-        "final_path": "app/Docking/Sources/Contracts/FallbackDocks.php",
-        "final_class": "App\\Docking\\Sources\\Contracts\\FallbackDocks",
+        "old_path": "domain/Chat/src/Contracts/Docking/FallbackDocks.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\FallbackDocks",
+        "final_path": "domain/Chat/src/Contracts/Docking/FallbackDocks.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\FallbackDocks",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90613,10 +90613,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c83e56d1e255f734070b9f947ceccc43104045d0",
-        "old_path": "app/Support/Sources/DockDefinition.php",
-        "old_class": "App\\Support\\Sources\\DockDefinition",
-        "final_path": "app/Support/Sources/DockDefinition.php",
-        "final_class": "App\\Support\\Sources\\DockDefinition",
+        "old_path": "domain/Chat/src/Values/DockDefinition.php",
+        "old_class": "Domain\\Chat\\Values\\DockDefinition",
+        "final_path": "domain/Chat/src/Values/DockDefinition.php",
+        "final_class": "Domain\\Chat\\Values\\DockDefinition",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -94945,10 +94945,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "961d23eff1e9ca0a00d72b8ceffda870966f3e7b",
-        "old_path": "app/Support/Wire/Contracts/CardEncoder.php",
-        "old_class": "App\\Support\\Wire\\Contracts\\CardEncoder",
-        "final_path": "app/Support/Wire/Contracts/CardEncoder.php",
-        "final_class": "App\\Support\\Wire\\Contracts\\CardEncoder",
+        "old_path": "domain/Chat/src/Contracts/Docking/CardEncoder.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\CardEncoder",
+        "final_path": "domain/Chat/src/Contracts/Docking/CardEncoder.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\CardEncoder",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -94964,10 +94964,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "577eff4d2f8bce9ccd6f753a545872eb5c8390ad",
-        "old_path": "app/Support/Wire/Contracts/PartField.php",
-        "old_class": "App\\Support\\Wire\\Contracts\\PartField",
-        "final_path": "app/Support/Wire/Contracts/PartField.php",
-        "final_class": "App\\Support\\Wire\\Contracts\\PartField",
+        "old_path": "domain/Chat/src/Contracts/Docking/PartField.php",
+        "old_class": "Domain\\Chat\\Contracts\\Docking\\PartField",
+        "final_path": "domain/Chat/src/Contracts/Docking/PartField.php",
+        "final_class": "Domain\\Chat\\Contracts\\Docking\\PartField",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -94983,10 +94983,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bdf7b4db2263bef1e1deb2e14ecbc7ae2027dc26",
-        "old_path": "app/Support/Wire/DestinationEncoder.php",
-        "old_class": "App\\Support\\Wire\\DestinationEncoder",
-        "final_path": "app/Support/Wire/DestinationEncoder.php",
-        "final_class": "App\\Support\\Wire\\DestinationEncoder",
+        "old_path": "domain/Chat/src/Support/Wire/DestinationEncoder.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\DestinationEncoder",
+        "final_path": "domain/Chat/src/Support/Wire/DestinationEncoder.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\DestinationEncoder",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95021,10 +95021,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4806acf5ee81d7946cdd177cb92088a92867d0fe",
-        "old_path": "app/Support/Wire/DockNodeTypes.php",
-        "old_class": "App\\Support\\Wire\\DockNodeTypes",
-        "final_path": "app/Support/Wire/DockNodeTypes.php",
-        "final_class": "App\\Support\\Wire\\DockNodeTypes",
+        "old_path": "domain/Chat/src/Support/Wire/DockNodeTypes.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\DockNodeTypes",
+        "final_path": "domain/Chat/src/Support/Wire/DockNodeTypes.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\DockNodeTypes",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95040,10 +95040,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4ed2e586b0b402bdac64b5cc696da60d2997ff2c",
-        "old_path": "app/Support/Wire/EncodedCard.php",
-        "old_class": "App\\Support\\Wire\\EncodedCard",
-        "final_path": "app/Support/Wire/EncodedCard.php",
-        "final_class": "App\\Support\\Wire\\EncodedCard",
+        "old_path": "domain/Chat/src/Support/Wire/EncodedCard.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\EncodedCard",
+        "final_path": "domain/Chat/src/Support/Wire/EncodedCard.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\EncodedCard",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95059,10 +95059,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1ed29690479e74c41dd140af233ea2b2282c724b",
-        "old_path": "app/Support/Wire/Fields/DestinationField.php",
-        "old_class": "App\\Support\\Wire\\Fields\\DestinationField",
-        "final_path": "app/Support/Wire/Fields/DestinationField.php",
-        "final_class": "App\\Support\\Wire\\Fields\\DestinationField",
+        "old_path": "domain/Chat/src/Support/Wire/Fields/DestinationField.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\Fields\\DestinationField",
+        "final_path": "domain/Chat/src/Support/Wire/Fields/DestinationField.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\Fields\\DestinationField",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95078,10 +95078,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "58ea069d33229c935b3b3546a614063251c04250",
-        "old_path": "app/Support/Wire/Fields/EnumField.php",
-        "old_class": "App\\Support\\Wire\\Fields\\EnumField",
-        "final_path": "app/Support/Wire/Fields/EnumField.php",
-        "final_class": "App\\Support\\Wire\\Fields\\EnumField",
+        "old_path": "domain/Chat/src/Support/Wire/Fields/EnumField.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\Fields\\EnumField",
+        "final_path": "domain/Chat/src/Support/Wire/Fields/EnumField.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\Fields\\EnumField",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95097,10 +95097,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "22570547a088b0765ad7f1632d4e1739bd2c335b",
-        "old_path": "app/Support/Wire/Fields/ExcerptField.php",
-        "old_class": "App\\Support\\Wire\\Fields\\ExcerptField",
-        "final_path": "app/Support/Wire/Fields/ExcerptField.php",
-        "final_class": "App\\Support\\Wire\\Fields\\ExcerptField",
+        "old_path": "domain/Chat/src/Support/Wire/Fields/ExcerptField.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\Fields\\ExcerptField",
+        "final_path": "domain/Chat/src/Support/Wire/Fields/ExcerptField.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\Fields\\ExcerptField",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95116,10 +95116,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "895c0e0594300fa4a92c72a7c87ef7e9e4f7e5c3",
-        "old_path": "app/Support/Wire/Fields/FlagField.php",
-        "old_class": "App\\Support\\Wire\\Fields\\FlagField",
-        "final_path": "app/Support/Wire/Fields/FlagField.php",
-        "final_class": "App\\Support\\Wire\\Fields\\FlagField",
+        "old_path": "domain/Chat/src/Support/Wire/Fields/FlagField.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\Fields\\FlagField",
+        "final_path": "domain/Chat/src/Support/Wire/Fields/FlagField.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\Fields\\FlagField",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95135,10 +95135,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e60227d9e4c8ec7dd29610d2a5f0c7c866da1947",
-        "old_path": "app/Support/Wire/Fields/InstantField.php",
-        "old_class": "App\\Support\\Wire\\Fields\\InstantField",
-        "final_path": "app/Support/Wire/Fields/InstantField.php",
-        "final_class": "App\\Support\\Wire\\Fields\\InstantField",
+        "old_path": "domain/Chat/src/Support/Wire/Fields/InstantField.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\Fields\\InstantField",
+        "final_path": "domain/Chat/src/Support/Wire/Fields/InstantField.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\Fields\\InstantField",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95154,10 +95154,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "408cebabaa1e3b68b07f874752969fe89499c4fa",
-        "old_path": "app/Support/Wire/Fields/LinesField.php",
-        "old_class": "App\\Support\\Wire\\Fields\\LinesField",
-        "final_path": "app/Support/Wire/Fields/LinesField.php",
-        "final_class": "App\\Support\\Wire\\Fields\\LinesField",
+        "old_path": "domain/Chat/src/Support/Wire/Fields/LinesField.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\Fields\\LinesField",
+        "final_path": "domain/Chat/src/Support/Wire/Fields/LinesField.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\Fields\\LinesField",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95173,10 +95173,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "184c347493e0f25728eaa19e2bd2e02152e7bd05",
-        "old_path": "app/Support/Wire/Fields/NumberField.php",
-        "old_class": "App\\Support\\Wire\\Fields\\NumberField",
-        "final_path": "app/Support/Wire/Fields/NumberField.php",
-        "final_class": "App\\Support\\Wire\\Fields\\NumberField",
+        "old_path": "domain/Chat/src/Support/Wire/Fields/NumberField.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\Fields\\NumberField",
+        "final_path": "domain/Chat/src/Support/Wire/Fields/NumberField.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\Fields\\NumberField",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95192,10 +95192,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "09a2705f9dc8dee73e281d6427d1dd2f1fc3ed65",
-        "old_path": "app/Support/Wire/Fields/TextField.php",
-        "old_class": "App\\Support\\Wire\\Fields\\TextField",
-        "final_path": "app/Support/Wire/Fields/TextField.php",
-        "final_class": "App\\Support\\Wire\\Fields\\TextField",
+        "old_path": "domain/Chat/src/Support/Wire/Fields/TextField.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\Fields\\TextField",
+        "final_path": "domain/Chat/src/Support/Wire/Fields/TextField.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\Fields\\TextField",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95211,10 +95211,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d97ac72aa6d24247e6422b978367520a55f720f0",
-        "old_path": "app/Support/Wire/PartDescriptor.php",
-        "old_class": "App\\Support\\Wire\\PartDescriptor",
-        "final_path": "app/Support/Wire/PartDescriptor.php",
-        "final_class": "App\\Support\\Wire\\PartDescriptor",
+        "old_path": "domain/Chat/src/Support/Wire/PartDescriptor.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\PartDescriptor",
+        "final_path": "domain/Chat/src/Support/Wire/PartDescriptor.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\PartDescriptor",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -95230,10 +95230,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a6fee1474a75eb47ac4817bbc794b376619bf8df",
-        "old_path": "app/Support/Wire/PartMap.php",
-        "old_class": "App\\Support\\Wire\\PartMap",
-        "final_path": "app/Support/Wire/PartMap.php",
-        "final_class": "App\\Support\\Wire\\PartMap",
+        "old_path": "domain/Chat/src/Support/Wire/PartMap.php",
+        "old_class": "Domain\\Chat\\Support\\Wire\\PartMap",
+        "final_path": "domain/Chat/src/Support/Wire/PartMap.php",
+        "final_class": "Domain\\Chat\\Support\\Wire\\PartMap",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -96969,10 +96969,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "fa1c4761c54fd3701fa7f08ee86f4e5d5aaeae95",
-        "old_path": "app/Docking/Values/DockedOutput.php",
-        "old_class": "App\\Docking\\Values\\DockedOutput",
-        "final_path": "app/Docking/Values/DockedOutput.php",
-        "final_class": "App\\Docking\\Values\\DockedOutput",
+        "old_path": "domain/Chat/src/Values/DockedOutput.php",
+        "old_class": "Domain\\Chat\\Values\\DockedOutput",
+        "final_path": "domain/Chat/src/Values/DockedOutput.php",
+        "final_class": "Domain\\Chat\\Values\\DockedOutput",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -103280,8 +103280,8 @@
         "blob": "29785fbf210cd62bf46e4fa1a2adcbf0255821cd",
         "old_path": "app/Web/Listeners/BroadcastDockedSourceChange.php",
         "old_class": "App\\Web\\Listeners\\BroadcastDockedSourceChange",
-        "final_path": "app/Listeners/BroadcastDockedSourceChange.php",
-        "final_class": "App\\Listeners\\BroadcastDockedSourceChange",
+        "final_path": "domain/Chat/src/Listeners/BroadcastDockedSourceChange.php",
+        "final_class": "Domain\\Chat\\Listeners\\BroadcastDockedSourceChange",
         "status": "move",
         "kind": "class",
         "generator": {

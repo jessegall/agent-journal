@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Enums;
 
-use App\Processes\Cards\StateLabel;
 use App\Processes\Enums\Tone;
+use App\Records\Values\RecordStanding;
 
 /**
  * Where a task stands: open until an agent starts it, then started, blocked, finished or cancelled.
@@ -19,16 +19,16 @@ enum TaskStatus: string
     case Cancelled = 'cancelled';
 
     /**
-     * The state as a docked task card shows it.
+     * The state as a task's short card shows it.
      */
-    public function stateLabel(): StateLabel
+    public function standing(): RecordStanding
     {
         return match ($this) {
-            self::Open => new StateLabel('state', 'Open', Tone::Neutral),
-            self::Started => new StateLabel('state', 'Working', Tone::Note),
-            self::Blocked => new StateLabel('state', 'Blocked', Tone::Warn),
-            self::Finished => new StateLabel('state', 'Done', Tone::Good),
-            self::Cancelled => new StateLabel('state', 'Cancelled', Tone::Muted),
+            self::Open => new RecordStanding('Open', Tone::Neutral),
+            self::Started => new RecordStanding('Working', Tone::Note),
+            self::Blocked => new RecordStanding('Blocked', Tone::Warn),
+            self::Finished => new RecordStanding('Done', Tone::Good),
+            self::Cancelled => new RecordStanding('Cancelled', Tone::Muted),
         };
     }
 

@@ -21,7 +21,7 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Listeners/BroadcastPageChange.php',
-            'app/Listeners/BroadcastDockedSourceChange.php',
+            'domain/Chat/src/Listeners/BroadcastDockedSourceChange.php',
         ],
     ],
     InboxAccessEnded::class => [

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Docking\Cards\ComposedCard;
-use App\Support\Cards\DockCard;
-use App\Support\Cards\DockIdentity;
+use Domain\Chat\Support\Cards\ComposedCard;
+use Domain\Chat\Support\Cards\DockCard;
+use Domain\Chat\Support\Cards\DockIdentity;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

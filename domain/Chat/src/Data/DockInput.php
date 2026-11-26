@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Support\Sources\DockDefinition;
+use Domain\Chat\Values\DockDefinition;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;

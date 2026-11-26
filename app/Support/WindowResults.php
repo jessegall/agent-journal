@@ -11,14 +11,14 @@ use App\Data\Pages\DeniedWindow;
 use App\Data\Pages\FailedWindow;
 use App\Data\Pages\ReadyWindow;
 use App\Declarations\ResolverDefinition;
-use App\Docking\Data\DockOfferData;
-use App\Docking\Sources\Contracts\DockableWindow;
-use App\Docking\Sources\Contracts\DockOffers;
 use App\Engine\Enums\RefusalCode;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\ReaderDataMismatch;
 use App\Navigation\Contracts\PresentsLayout;
+use App\Navigation\Contracts\RecordWindow;
+use App\Navigation\Contracts\WindowOffers;
 use App\Navigation\Contracts\WindowResults as WindowResultsContract;
+use App\Navigation\Data\WindowOfferData;
 use App\Reads\ReadMeter;
 use App\Reflection\Contracts\ReflectorFactory;
 use App\Web\Data\Pages\UnavailableWindow;
@@ -50,7 +50,7 @@ final readonly class WindowResults implements WindowResultsContract
     private const int REQUEST_KEY_CHARACTER_LIMIT = 100;
 
     public function __construct(
-        private DockOffers $offers,
+        private WindowOffers $offers,
         private VisibilityChecks $visibility,
         private LoggerInterface $log,
         private ReflectorFactory $reflectors,
@@ -77,15 +77,15 @@ final readonly class WindowResults implements WindowResultsContract
                 throw ReaderDataMismatch::for($key, $resolver->dataClass, $windowContent::class);
             }
 
-            $dockSource = $windowContent instanceof DockableWindow ? $windowContent->dockSource() : None::create();
-            $offer = $dockSource->flatMap($this->offers->offerFor(...));
+            $record = $windowContent instanceof RecordWindow ? $windowContent->shownRecord() : None::create();
+            $offer = $record->flatMap($this->offers->offerFor(...));
 
             // A layout result is sent as the layout it presents, never with its server-only facts.
             $shown = $windowContent instanceof PresentsLayout
                 ? $windowContent->layout()->toArray()
                 : $windowContent->toArray();
 
-            return $offer->map(fn (DockOfferData $made) => ReadyWindow::offering($shown, $made))
+            return $offer->map(fn (WindowOfferData $made) => ReadyWindow::offering($shown, $made))
                 ->getOrCall(fn () => ReadyWindow::of($shown));
         } catch (
             AuthenticationException

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Docking\Sources\Contracts\DockedSources;
-use App\Support\Cards\DockIdentity;
+use Domain\Chat\Contracts\Docking\DockedSources;
 use Domain\Chat\Models\DockPlacement;
+use Domain\Chat\Support\Cards\DockIdentity;
 
 /**
  * A source is docked while some chat holds a placement of it.

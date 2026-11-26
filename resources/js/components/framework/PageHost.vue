@@ -9,7 +9,7 @@ import {
   pageReadStatus,
   retryPageRead,
 } from "@/composables/usePageChanges";
-import DockOfferPicker from "./DockOfferPicker.vue";
+import WindowOfferPicker from "./WindowOfferPicker.vue";
 import ResultView from "./ResultView.vue";
 
 /**
@@ -35,8 +35,8 @@ withDefaults(
       <TextLink @click="retryPageRead()"> Refresh visible windows </TextLink>
     </p>
   </template>
-  <template v-if="page.status === 'ready' && page.dockOffer !== undefined">
-    <DockOfferPicker :offer="page.dockOffer" />
+  <template v-if="page.status === 'ready' && page.offer !== undefined">
+    <WindowOfferPicker :offer="page.offer" />
   </template>
   <ResultView
     :result="page"

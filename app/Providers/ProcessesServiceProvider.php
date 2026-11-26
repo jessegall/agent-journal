@@ -33,12 +33,7 @@ use App\Console\Commands\ReaderProposeCommand;
 use App\Console\Commands\ReaderProveCommand;
 use App\Console\Commands\ReaderSampleRunCommand;
 use App\Console\Commands\RunProcessCommand;
-use App\Docking\OutputDocking;
-use App\Docking\RunDocking;
-use App\Docking\Sources\Contracts\DockRegistration;
-use App\Docking\Values\DockedOutput;
 use App\Hosts\Contracts\ServedEnvironment as ServedEnvironmentContract;
-use App\Models\Runs\ProcessRun;
 use App\Notifications\Contracts\NotificationTargets;
 use App\Policies\ProcessAdministrationPolicy;
 use App\Policies\ProcessPolicy;
@@ -106,12 +101,9 @@ final class ProcessesServiceProvider extends ServiceProvider
 
     public function boot(
         PolicyCatalogue $policies,
-        DockRegistration $docks,
         NotificationTargets $notificationTargets,
     ): void {
         $notificationTargets->register(RunNotificationTarget::KEY, RunNotificationTarget::class);
-        $docks->offerDockFor($docks->register(ProcessRun::DOCK_TYPE, ProcessRun::class, RunDocking::class));
-        $docks->offerDockFor($docks->register(OutputDocking::DOCK_TYPE, DockedOutput::class, OutputDocking::class));
 
         $policies->register('Core', new PolicyDefinition(
             ProcessPolicy::class,

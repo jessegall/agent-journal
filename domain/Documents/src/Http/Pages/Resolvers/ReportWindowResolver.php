@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Resolvers;
 
-use App\Docking\Data\DockablePublicationData;
 use App\Navigation\Contracts\PageResolver;
 use App\Records\Contracts\RecordResolver;
 use App\Sharing\Contracts\ShareStatusResolver;
-use App\Support\Cards\DockIdentity;
+use App\Support\Layout\RecordLayoutData;
+use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 use Domain\Comments\Contracts\CommentResolver;
 use Domain\Comments\Data\RecordCommentsPartData;
@@ -35,7 +35,7 @@ final readonly class ReportWindowResolver implements PageResolver
         private ReportsShow $page,
     ) {}
 
-    public function read(): DockablePublicationData
+    public function read(): RecordLayoutData
     {
         $number = $this->request->reportNumber();
         $report = $this->reports->show($number);
@@ -56,6 +56,6 @@ final readonly class ReportWindowResolver implements PageResolver
             fn () => $this->reports->inspect($number),
         );
 
-        return DockablePublicationData::of($layout, new DockIdentity(Report::linkType(), $report->id));
+        return RecordLayoutData::of($layout, new RecordIdentity(Report::linkType(), $report->id));
     }
 }

@@ -89,4 +89,6 @@ journal dock remove 01JD8X0G9M3QZ6V4K2PLACEMENT            # removed, or unavail
 
 A caller in one conversation uses it; a caller in several names one with `--chat <conversation id>`, and nothing is
 docked until it does. `dock list` shows only safe facts (`Resolvers/DockListing`): a source the caller may not read has
-no title and reads `unavailable`. Each card is written by its owner in the card language of `app/Docking`.
+no title and reads `unavailable`. A record's owner summarizes it through core's record summaries (`app/Records`,
+`SummaryProvider`), and the chat writes every card from that summary in its own card language
+(`domain/Chat/src/Support/Cards`).

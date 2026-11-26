@@ -10,8 +10,6 @@ use App\Support\DomainRegistry;
 use App\Support\Types\DomainTypeWriter;
 use App\Support\Types\HiddenAwareDataTransformer;
 use App\Support\Types\TypeOwners;
-use App\Support\Wire\DockNodeTypes;
-use App\Support\Wire\PartMap;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\LaravelDataTypeScriptTransformerExtension;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\Transformers\DataClassTransformer;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
@@ -21,12 +19,18 @@ use Spatie\TypeScriptTransformer\TypeScriptTransformerConfigFactory;
 /**
  * The TypeScript transformer's configuration (version 3 configures in this provider; it has no config file): the
  * official Laravel Data extension, with its Data transformer swapped for our hidden-aware one, enums, read from app
- * and every installed domain's folder, and the dock's card types written from its part map. On
+ * and every installed domain's folder, and the types each domain's own provider writes (tagged PROVIDER_TAG). On
  * `php artisan typescript:transform` it writes each owner's types to resources/js/generated/types/<owner>/index.ts and
  * keeps resources/js/types/generated/index.ts re-exporting them.
  */
 final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationServiceProvider
 {
+    /**
+     * The container tag a domain gives a TransformedProvider of types no class declares, such as a wire written from a
+     * map.
+     */
+    public const string PROVIDER_TAG = 'typescript.providers';
+
     public function register(): void
     {
         parent::register();
@@ -48,10 +52,13 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
             ->extension(new LaravelDataTypeScriptTransformerExtension())
             ->replaceTransformer(DataClassTransformer::class, new HiddenAwareDataTransformer())
             ->transformer(EnumTransformer::class)
-            ->provider(new DockNodeTypes(PartMap::standard()))
             ->transformDirectories(...$this->sourceFolders($registry))
             ->outputDirectory(resource_path('js'))
             ->writer(new DomainTypeWriter($this->app->make(TypeOwners::class)));
+
+        foreach ($this->app->tagged(self::PROVIDER_TAG) as $provider) {
+            $config->provider($provider);
+        }
     }
 
     /**

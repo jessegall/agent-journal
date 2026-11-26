@@ -6,9 +6,9 @@ namespace Domain\Chat\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Support\Cards\DockIdentity;
-use App\Support\Sources\Contracts\DockSourceDeleted;
+use App\Records\Contracts\RecordDeleted;
 use Domain\Chat\Models\DockPlacement;
+use Domain\Chat\Support\Cards\DockIdentity;
 
 /**
  * A deleted source leaves every chat it was docked in.
@@ -16,9 +16,9 @@ use Domain\Chat\Models\DockPlacement;
 #[InCommandTransaction]
 final readonly class RemoveDeletedSource implements Listener
 {
-    public function handle(DockSourceDeleted $fact): void
+    public function handle(RecordDeleted $fact): void
     {
-        $source = new DockIdentity($fact->dockType(), $fact->dockId());
+        $source = new DockIdentity($fact->recordType(), $fact->recordId());
 
         foreach (DockPlacement::query()->ofSource($source)->lockForUpdate()->get() as $placement) {
             $placement->remove();

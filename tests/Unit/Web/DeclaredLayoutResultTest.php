@@ -26,7 +26,7 @@ final class DeclaredLayoutResultTest extends TestCase
     {
         $result = $this->resultOf(fn () => DeclaredLayoutData::of(LayoutPartData::text('title', 'Shelf')));
 
-        $this->assertArrayNotHasKey('dockOffer', $result->toArray());
+        $this->assertArrayNotHasKey('offer', $result->toArray());
     }
 
     /**

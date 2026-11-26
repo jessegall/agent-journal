@@ -8,7 +8,7 @@ use App\Access\Contracts\ReadEntitlements;
 use App\Access\Contracts\SystemEntryPolicies;
 use App\Access\Values\ReadEntitlement;
 use App\Connections\Contracts\Work\EnvironmentTasks as EnvironmentTasksContract;
-use App\Docking\Sources\Contracts\DockRegistration;
+use App\Records\Contracts\RecordSummaries;
 use Domain\Tasks\Console\Commands\AssignedTasksCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver as AssignedTaskResolverContract;
 use Domain\Tasks\Contracts\TaskAssignmentResolver as TaskAssignmentResolverContract;
@@ -35,9 +35,8 @@ use Domain\Tasks\Resolvers\TaskProgressCounter;
 use Domain\Tasks\Resolvers\TaskProofResolver;
 use Domain\Tasks\Resolvers\TaskResolver;
 use Domain\Tasks\Resolvers\TaskWaitResolver;
-use Domain\Tasks\Support\DockedTask;
 use Domain\Tasks\Support\EnvironmentTasks;
-use Domain\Tasks\Support\TaskDocking;
+use Domain\Tasks\Support\TaskSummaries;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -64,12 +63,12 @@ final class TasksServiceProvider extends ServiceProvider
 
     public function boot(
         ReadEntitlements $reads,
-        DockRegistration $docks,
+        RecordSummaries $summaries,
         SystemEntryPolicies $systemEntries,
     ): void {
         $readGrant = ReadEntitlement::grant(TaskPolicy::class);
 
-        $docks->offerDockFor($docks->register(Task::linkType(), DockedTask::class, TaskDocking::class));
+        $summaries->register(Task::linkType(), TaskSummaries::class);
         $reads->declare('tasks_read', $readGrant);
         $reads->declare('tasks_list', $readGrant);
         $reads->declare('tasks_assigned', $readGrant);

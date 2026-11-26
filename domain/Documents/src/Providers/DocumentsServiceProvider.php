@@ -8,8 +8,8 @@ use App\Access\Contracts\ReadEntitlements;
 use App\Access\Values\ReadEntitlement;
 use App\Agents\Drivers\Contracts\AttachmentReferences;
 use App\Agents\Enums\AccessType;
-use App\Docking\Sources\Contracts\DockRegistration;
 use App\Notifications\Contracts\NotificationTargets;
+use App\Records\Contracts\RecordSummaries;
 use App\Sessions\Contracts\CurrentSession;
 use App\Sessions\Contracts\SessionProvenance;
 use App\Support\FolderClasses;
@@ -34,8 +34,8 @@ use Domain\Documents\Resolvers\DraftResolver;
 use Domain\Documents\Resolvers\ReportNotificationTarget;
 use Domain\Documents\Resolvers\ReportReader;
 use Domain\Documents\Resolvers\ReportResolver;
-use Domain\Documents\Support\DocumentDocking;
-use Domain\Documents\Support\ReportDocking;
+use Domain\Documents\Support\DocumentSummaries;
+use Domain\Documents\Support\ReportSummaries;
 use Domain\Documents\Support\SealedAttachments;
 use Domain\Documents\Support\UploadStore;
 use Illuminate\Console\Command;
@@ -62,12 +62,12 @@ final class DocumentsServiceProvider extends ServiceProvider
 
     public function boot(
         ReadEntitlements $reads,
-        DockRegistration $docks,
+        RecordSummaries $summaries,
         NotificationTargets $notificationTargets,
     ): void {
         $notificationTargets->register(ReportNotificationTarget::KEY, ReportNotificationTarget::class);
-        $docks->offerDockFor($docks->register(Document::linkType(), Document::class, DocumentDocking::class));
-        $docks->offerDockFor($docks->register(Report::linkType(), Report::class, ReportDocking::class));
+        $summaries->register(Document::linkType(), DocumentSummaries::class);
+        $summaries->register(Report::linkType(), ReportSummaries::class);
         $reads->declare('docs_drafts_read', ReadEntitlement::grant(DocumentPolicy::class, AccessType::Edit));
 
         TextUpload::addGlobalScope(
