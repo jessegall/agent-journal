@@ -45,6 +45,6 @@ final readonly class OrderHostUpgradeHandler implements CommandHandler
 
         $host->orderUpgrade($order->id);
 
-        return $order->id;
+        return $order->getKey();
     }
 }

@@ -23,6 +23,6 @@ final readonly class MakeHostFolderHandler implements CommandHandler
             HostOrderSource::keyed("folder:make:{$command->operation}"),
             HostOrderType::MakeFolder,
             ['folder' => $command->folder, 'operation' => $command->operation],
-        )->id;
+        )->getKey();
     }
 }

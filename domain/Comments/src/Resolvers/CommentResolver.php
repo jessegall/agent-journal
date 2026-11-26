@@ -101,10 +101,7 @@ final readonly class CommentResolver implements CommentResolverContract
         return Comment::query()->onTarget($record->getMorphClass(), (string) $record->getKey())->with('anchor');
     }
 
-    /**
-     * @return Model&Commentable
-     */
-    private function commentable(RecordIdentity $target): Model
+    private function commentable(RecordIdentity $target): Model&Commentable
     {
         $record = $this->records->requireReadable($target);
 

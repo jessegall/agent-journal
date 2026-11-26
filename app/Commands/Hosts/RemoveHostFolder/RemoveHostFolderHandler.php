@@ -23,6 +23,6 @@ final readonly class RemoveHostFolderHandler implements CommandHandler
             HostOrderSource::keyed("folder:remove:{$command->operation}"),
             HostOrderType::RemoveFolder,
             ['folder' => $command->folder, 'operation' => $command->operation],
-        )->id;
+        )->getKey();
     }
 }

@@ -31,6 +31,6 @@ final readonly class RunFencedHandler implements CommandHandler
             HostOrderSource::fromJournal(),
             HostOrderType::RunFenced,
             $payload,
-        )->id;
+        )->getKey();
     }
 }
