@@ -170,7 +170,7 @@ func keysOrder(t *testing.T, write KeyWrite) Order {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return Order{ID: "keys", Type: "write_keys", ProcessID: "p", Payload: payload}
+	return Order{ID: "keys", Type: "write_keys", ProcessID: "p", Payload: string(payload)}
 }
 
 // discardingTerminal is a terminal that takes every write.

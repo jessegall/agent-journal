@@ -93,7 +93,7 @@ func openOrder(t *testing.T, processID, restart, image string) Order {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return Order{ID: "open-" + processID, Type: "open_container", ProcessID: processID, Payload: payload}
+	return Order{ID: "open-" + processID, Type: "open_container", ProcessID: processID, Payload: string(payload)}
 }
 
 func TestAnOpenContainerRunsAndIsReportedRunning(t *testing.T) {
@@ -158,7 +158,7 @@ func TestAStoppedContainerEndsWithOneExitReport(t *testing.T) {
 	}
 	sent.waitFor(t, "running")
 
-	stop := Order{ID: "stop-p3", Type: "stop", ProcessID: "p3", Payload: json.RawMessage(`{"grace_ms":1000,"force_ms":1000}`)}
+	stop := Order{ID: "stop-p3", Type: "stop", ProcessID: "p3", Payload: `{"grace_ms":1000,"force_ms":1000}`}
 	if _, err := table.stop(context.Background(), stop); err != nil {
 		t.Fatal(err)
 	}

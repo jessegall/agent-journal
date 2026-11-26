@@ -12,4 +12,6 @@ use App\Contracts\Events\Event;
 interface HostOrderEvent extends Event
 {
     public string $orderId { get; }
+
+    public string|null $processId { get; }
 }

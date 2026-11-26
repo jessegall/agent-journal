@@ -22,7 +22,7 @@ final class HostProtocolRefused extends RuntimeException implements CodedRefusal
 
     public static function unsupported(string $hostId, int $protocol): self
     {
-        return new self("Host {$hostId} speaks host protocol {$protocol}, which this journal does not order.");
+        return new self("Host {$hostId} speaks host protocol {$protocol}; update the host to protocol 1.");
     }
 
     public static function revoked(string $hostId): self
@@ -43,6 +43,16 @@ final class HostProtocolRefused extends RuntimeException implements CodedRefusal
     public static function foreignProcess(string $hostId, string $processId): self
     {
         return new self("Process {$processId} does not run on host {$hostId}.");
+    }
+
+    public static function foreignOrder(string $hostId, string $orderId): self
+    {
+        return new self("Order {$orderId} is not an order of host {$hostId}.");
+    }
+
+    public static function outputTooLarge(string $processId, int $bytes): self
+    {
+        return new self("Output of process {$processId} is {$bytes} bytes, more than one post may hold.");
     }
 
     protected function status(): int

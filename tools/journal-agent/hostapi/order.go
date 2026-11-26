@@ -2,23 +2,21 @@
 // answers that keeps an order from running twice, and the dispatch that runs them in order per process.
 package hostapi
 
-import (
-	"encoding/json"
-	"time"
-)
+import "time"
 
 // Protocol is the version of the host protocol this binary speaks.
 const Protocol = 1
 
 // Order is one signed instruction of the journal: the host's whole vocabulary arrives as these.
 type Order struct {
-	ID        string          `json:"id"`
-	Sequence  uint64          `json:"sequence"`
-	Type      string          `json:"type"`
-	ProcessID string          `json:"process_id"`
-	Payload   json.RawMessage `json:"payload"`
-	ExpiresAt time.Time       `json:"expires_at"`
-	Signature string          `json:"signature"`
+	ID        string `json:"id"`
+	Sequence  uint64 `json:"sequence"`
+	Type      string `json:"type"`
+	ProcessID string `json:"process_id"`
+	// Payload is the JSON text of the order's payload, sent as a string so its bytes are the ones the signature covers.
+	Payload   string    `json:"payload"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Signature string    `json:"signature"`
 }
 
 // KeyWrite is the payload of write_keys: bytes guarded by the rows they were meant for and the input generation, or

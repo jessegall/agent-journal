@@ -8,7 +8,8 @@ use App\Data\Hosts\HostChunkData;
 use App\Data\Hosts\HostFrameData;
 
 /**
- * One entry a worker read: a frame or chunk of its process, or a wake of its runtime, with the cursor after it.
+ * One entry a worker read: a frame or chunk of its process, an answer to one of its orders, or a wake of its
+ * runtime, with the cursor after it.
  */
 final readonly class FeedEntry
 {
@@ -17,6 +18,7 @@ final readonly class FeedEntry
         public string $cursor,
         public HostFrameData|null $frame,
         public HostChunkData|null $chunk,
+        public string|null $answeredOrderId,
     ) {}
 
     /**
@@ -29,11 +31,12 @@ final readonly class FeedEntry
             $cursor,
             isset($fields['frame']) ? HostFrameData::from(json_decode($fields['frame'], true, flags: JSON_THROW_ON_ERROR)) : null,
             isset($fields['chunk']) ? HostChunkData::from(json_decode($fields['chunk'], true, flags: JSON_THROW_ON_ERROR)) : null,
+            $fields['answered'] ?? null,
         );
     }
 
     public function isWake(): bool
     {
-        return $this->frame === null && $this->chunk === null;
+        return $this->frame === null && $this->chunk === null && $this->answeredOrderId === null;
     }
 }

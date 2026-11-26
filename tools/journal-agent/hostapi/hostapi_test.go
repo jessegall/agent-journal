@@ -2,7 +2,6 @@ package hostapi
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"sync"
 	"sync/atomic"
@@ -21,7 +20,7 @@ func signedOrder(id, processID string, sequence uint64) Order {
 		Sequence:  sequence,
 		Type:      "write_keys",
 		ProcessID: processID,
-		Payload:   json.RawMessage(`{"bytes":"aGk=","as_user":true}`),
+		Payload:   `{"bytes":"aGk=","as_user":true}`,
 		ExpiresAt: testNow.Add(5 * time.Second),
 	}
 	order.Signature = Sign(testSecret, order)
@@ -38,7 +37,7 @@ func TestTheJournalsSignatureOfAFixedOrderIsAccepted(t *testing.T) {
 		Sequence:  7,
 		Type:      "write_keys",
 		ProcessID: "01jprocess000000000000000001",
-		Payload:   json.RawMessage(`{"bytes":"aGk=","as_user":true}`),
+		Payload:   `{"bytes":"aGk=","as_user":true}`,
 		ExpiresAt: time.Date(2026, 11, 26, 10, 0, 5, 0, time.UTC),
 	}
 	if got := Sign(testSecret, order); got != "cc55054280b01d6115d7cf90a9f2ff3e9be711a0787a7d5cbbeb90683ace968d" {
@@ -53,7 +52,7 @@ func TestAnUnsignedAlteredOrExpiredOrderIsRefused(t *testing.T) {
 	unsigned := signedOrder("a", "p", 1)
 	unsigned.Signature = ""
 	altered := signedOrder("a", "p", 1)
-	altered.Payload = json.RawMessage(`{"bytes":"cm0gLXJm","as_user":true}`)
+	altered.Payload = `{"bytes":"cm0gLXJm","as_user":true}`
 	expired := signedOrder("a", "p", 1)
 	expired.ExpiresAt = testNow
 	expired.Signature = Sign(testSecret, expired)

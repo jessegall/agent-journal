@@ -280,6 +280,18 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
+     * The host healed the runtime's crashed process: its next process generation starts now, so reports of the
+     * crashed one are refused.
+     */
+    public function beginProcessGeneration(CarbonImmutable $at): void
+    {
+        $this->process_generation++;
+        $this->generation_started_at = $at;
+        $this->row_version++;
+        $this->assertSaved($this->save());
+    }
+
+    /**
      * Moves the runtime to a new process generation on the given host, starting again with nothing held and the
      * rotated credential waiting for that host's start grant; reports of the old generation are refused after it.
      */

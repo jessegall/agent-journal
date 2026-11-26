@@ -48,6 +48,16 @@ final readonly class ProcessFeed
         $this->connection()->expire($key, self::TTL_SECONDS);
     }
 
+    /**
+     * Tells the process's worker that one of its orders was answered.
+     */
+    public function markOrder(string $processId, string $orderId): void
+    {
+        $key = self::streamKey($processId);
+        $this->connection()->xadd($key, '*', ['answered' => $orderId], self::ENTRY_LIMIT, true);
+        $this->connection()->expire($key, self::TTL_SECONDS);
+    }
+
     public function latestFrame(string $processId): HostFrameData|null
     {
         $encoded = $this->connection()->get(self::latestKey($processId));

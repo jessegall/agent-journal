@@ -11,5 +11,10 @@ use App\Contracts\Hosts\HostProcessEvent;
  */
 final readonly class HostProcessRestarted implements ConnectionEvent, HostProcessEvent
 {
-    public function __construct(public string $processId, public int $generation, public string $identity) {}
+    public function __construct(
+        public string $processId,
+        public string|null $runtimeId,
+        public int $generation,
+        public string $identity,
+    ) {}
 }

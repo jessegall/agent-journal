@@ -29,12 +29,14 @@ trait ArrangesHostProcesses
     private array $hostProcesses = [];
 
     /**
-     * The named host is ordered to open a native process of the type given, which it has not reported yet.
+     * The named host is ordered to open a native process of the type given, for the runtime given when it runs one;
+     * the host has not reported it yet.
      */
     public function openHostProcess(
         string $host,
         string $name,
         HostProcessType $type = HostProcessType::Terminal,
+        string|null $runtimeId = null,
     ): self {
         if (array_key_exists($name, $this->hostProcesses)) {
             throw FixtureRefused::occupiedAlias($name, 'host process');
@@ -49,7 +51,7 @@ trait ArrangesHostProcesses
             base_path(),
         );
         $this->hostProcesses[$name] = $this->asSystem(
-            new OpenHostProcessCommand($this->hostCalled($host)->hostId, null, $plan, HostOrderSource::fromJournal()),
+            new OpenHostProcessCommand($this->hostCalled($host)->hostId, $runtimeId, $plan, HostOrderSource::fromJournal()),
         );
 
         return $this;

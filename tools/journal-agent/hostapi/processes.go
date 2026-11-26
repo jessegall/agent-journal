@@ -485,7 +485,7 @@ func signalOf(state *os.ProcessState) string {
 // decodePayload reads an order's payload into its shape; a payload of another shape is unsafe.
 func decodePayload[T any](order Order) (T, error) {
 	var decoded T
-	if err := json.Unmarshal(order.Payload, &decoded); err != nil {
+	if err := json.Unmarshal([]byte(order.Payload), &decoded); err != nil {
 		return decoded, RefusalError{Refusal: Unsafe, Reason: "the payload of " + order.Type + " does not read: " + err.Error()}
 	}
 	return decoded, nil

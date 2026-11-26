@@ -43,7 +43,7 @@ func (verifier Verifier) Verify(order Order) error {
 // Sign is the order's signature: HMAC-SHA256 hex over its id, sequence, type, process id, the SHA-256 hex of its
 // payload bytes and its expiry in RFC 3339 UTC, one to a line, the same lines the journal signs.
 func Sign(secret []byte, order Order) string {
-	payloadDigest := sha256.Sum256(order.Payload)
+	payloadDigest := sha256.Sum256([]byte(order.Payload))
 	lines := strings.Join([]string{
 		order.ID,
 		fmt.Sprintf("%d", order.Sequence),

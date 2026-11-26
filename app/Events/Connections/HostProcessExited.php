@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Hosts\HostProcessEvent;
+use App\Contracts\Hosts\HostProcessEndEvent;
 
 /**
  * The process's exit is proven, with its code or signal.
  */
-final readonly class HostProcessExited implements ConnectionEvent, HostProcessEvent
+final readonly class HostProcessExited implements ConnectionEvent, HostProcessEndEvent
 {
     public function __construct(
         public string $processId,

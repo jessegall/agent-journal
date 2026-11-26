@@ -151,7 +151,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->execution_identity = $identity;
         $this->generation++;
         $this->assertSaved($this->save());
-        $this->raise(new HostProcessRestarted($this->id, $this->generation, $identity));
+        $this->raise(new HostProcessRestarted($this->id, $this->agent_runtime_id, $this->generation, $identity));
     }
 
     public function exit(ProcessExit $exit, CarbonImmutable $at): void

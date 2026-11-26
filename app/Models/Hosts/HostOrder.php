@@ -181,6 +181,14 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * The order, locked until the transaction ends, so one answer is stored at a time.
+     */
+    public static function findLocked(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
      * The orders made for the process, by their number.
      *
      * @return list<self>
