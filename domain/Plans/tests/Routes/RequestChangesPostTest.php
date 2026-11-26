@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Routes;
 
+use Domain\Plans\Commands\RequestPlanChanges\RequestPlanChangesCommand;
 use Domain\Plans\PlansDomain;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST plans.request-changes, as the generator wrote it.
+ * The owner asks for changes to an edition of a plan under review.
  */
-#[Generated]
 #[TestsRoute('POST', 'plans.request-changes')]
 final class RequestChangesPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,10 +28,25 @@ final class RequestChangesPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST plans.request-changes', [
-            '{plan}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'plan' => $plan->number,
+            ])
+            ->headers([
+                'Idempotency-Key' => 'review-1',
+            ])
+            ->payload([
+                'edition' => 1,
+                'reason' => 'Split the second phase.',
+            ])
+            ->reply(RequestPlanChangesCommand::class, Str::ulid())
+            ->expects(RequestPlanChangesCommand::class, [
+                'planId' => $plan->id,
+                'editionNumber' => 1,
+                'requestKey' => 'review-1',
+                'reason' => 'Split the second phase.',
+            ]);
     }
 }

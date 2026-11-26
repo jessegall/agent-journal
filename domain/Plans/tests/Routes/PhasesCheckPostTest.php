@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Routes;
 
+use Domain\Plans\Commands\RecordPhaseCheck\RecordPhaseCheckCommand;
 use Domain\Plans\PlansDomain;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST plans.phases.check, as the generator wrote it.
+ * An agent records the receipt of a passed check on a phase.
  */
-#[Generated]
 #[TestsRoute('POST', 'plans.phases.check')]
 final class PhasesCheckPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +28,23 @@ final class PhasesCheckPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST plans.phases.check', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+        $plans = $journal->fixtures(PlanFixtures::class)->plan('Release')->phase('Release', 'Design');
+        $plan = $plans->planCalled('Release');
+        $phase = $plans->phaseCalled('Design');
+        $receipt = strtolower((string) Str::ulid());
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'plan' => $plan->number,
+                'phase' => $phase->number,
+                'receipt' => $receipt,
+                'request_key' => 'plans-1',
+            ])
+            ->reply(RecordPhaseCheckCommand::class, Str::ulid())
+            ->expects(RecordPhaseCheckCommand::class, [
+                'phaseId' => $phase->id,
+                'receiptId' => $receipt,
+            ]);
     }
 }

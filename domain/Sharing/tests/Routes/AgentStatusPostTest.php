@@ -4,31 +4,30 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Routes;
 
+use Domain\Documents\DocumentsDomain;
 use Domain\Sharing\SharingDomain;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST shares.agent.status, as the generator wrote it.
+ * An agent reads where its share requests stand.
  */
-#[Generated]
 #[TestsRoute('POST', 'shares.agent.status')]
 final class AgentStatusPostTest extends GuardedRouteEntryTestCase
 {
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(SharingDomain::class);
+        return DomainBoot::withRequirements(SharingDomain::class, DocumentsDomain::class);
     }
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST shares.agent.status', [
-            'the payload',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+
+        return RouteCall::as(Caller::Agent, $start);
     }
 }

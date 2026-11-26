@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Routes;
 
+use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\PlansDomain;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST plans.phases.add-tasks, as the generator wrote it.
+ * An agent places tasks at the end of a phase.
  */
-#[Generated]
 #[TestsRoute('POST', 'plans.phases.add-tasks')]
 final class PhasesAddTasksPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +28,26 @@ final class PhasesAddTasksPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST plans.phases.add-tasks', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+        $plans = $journal->fixtures(PlanFixtures::class)->plan('Release')->phase('Release', 'Design');
+        $plan = $plans->planCalled('Release');
+        $phase = $plans->phaseCalled('Design');
+        $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'phase_id' => $phase->id,
+                'expected_revision' => 1,
+                'task_ids' => [
+                    $task->id,
+                ],
+                'request_key' => 'plans-1',
+            ])
+            ->expects(AddPhaseTasksCommand::class, [
+                'phaseId' => $phase->id,
+                'taskIds' => [
+                    $task->id,
+                ],
+            ]);
     }
 }

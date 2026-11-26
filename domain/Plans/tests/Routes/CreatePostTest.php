@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Routes;
 
+use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
+use Domain\Plans\Enums\PlanType;
 use Domain\Plans\PlansDomain;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST plans.create, as the generator wrote it.
+ * An agent files a new plan.
  */
-#[Generated]
 #[TestsRoute('POST', 'plans.create')]
 final class CreatePostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +28,20 @@ final class CreatePostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST plans.create', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'title' => 'Release',
+                'brief' => 'Ship version 6.',
+                'type' => 'build',
+                'request_key' => 'plans-1',
+            ])
+            ->reply(CreatePlanCommand::class, Str::ulid())
+            ->expects(CreatePlanCommand::class, [
+                'title' => 'Release',
+                'brief' => 'Ship version 6.',
+                'type' => PlanType::Build,
+            ]);
     }
 }
