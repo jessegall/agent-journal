@@ -6,7 +6,7 @@ from engine.errors.refusal import Refusal
 from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers
 
-STEP_LIMIT_CHARACTERS = 600
+STEP_LIMIT_CHARACTERS = 1_000_000
 
 
 @dataclass(frozen=True, kw_only=True)

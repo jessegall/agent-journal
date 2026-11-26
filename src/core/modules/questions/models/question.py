@@ -7,10 +7,10 @@ from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
 from core.modules.documents.models.enums.comment_selection_type import CommentSelectionType
 
-TEXT_LIMIT_CHARACTERS = 500
-TITLE_LIMIT_CHARACTERS = 60
-CONTEXT_LIMIT_CHARACTERS = 2000
-OPTION_LIMIT_CHARACTERS = 120
+TEXT_LIMIT_CHARACTERS = 1_000_000
+TITLE_LIMIT_CHARACTERS = 1_000_000
+CONTEXT_LIMIT_CHARACTERS = 1_000_000
+OPTION_LIMIT_CHARACTERS = 1_000_000
 
 
 @dataclass(frozen=True, kw_only=True)

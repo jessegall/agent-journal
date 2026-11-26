@@ -5,7 +5,7 @@ from engine.model.removable import Removable
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp
 
-CHECK_TITLE_LIMIT_CHARACTERS = 200
+CHECK_TITLE_LIMIT_CHARACTERS = 1_000_000
 
 
 @dataclass(frozen=True, kw_only=True)

@@ -6,7 +6,7 @@ from engine.repository.repository import Repository
 from core.modules.dumps.commands.name_dump.name_dump import NameDump
 from core.modules.dumps.models.dump import Dump
 
-DUMP_NAME_LIMIT_CHARACTERS = 80
+DUMP_NAME_LIMIT_CHARACTERS = 1_000_000
 
 
 class NameDumpHandler(Handler[NameDump, Dump]):

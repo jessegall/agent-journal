@@ -6,7 +6,7 @@ from engine.model.model import Model
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp
 
-PIN_TITLE_LIMIT_CHARACTERS = 80
+PIN_TITLE_LIMIT_CHARACTERS = 1_000_000
 ADDRESS = re.compile(r"^https?://\S+$")
 ROW = re.compile(r"^[a-z_]+:\d+$")
 COMMAND = re.compile(r"^!\s*\S")

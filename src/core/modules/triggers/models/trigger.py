@@ -9,7 +9,7 @@ from core.modules.triggers.models.enums.trigger_match import TriggerMatch
 from core.modules.triggers.models.support.trigger_condition import TriggerCondition
 from core.modules.triggers.models.support.trigger_extra_action import TriggerExtraAction
 
-TEXT_LIMIT_CHARACTERS = 600
+TEXT_LIMIT_CHARACTERS = 1_000_000
 INSTRUCTION_PREFIX = "instruction: "
 ALL_PLACES = ("messages", "commands", "files")
 
