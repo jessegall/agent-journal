@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\StandIn\Hosts;
 
+use App\Agents\Commands\InterruptAgent\InterruptAgentCommand;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Agents\Drivers\Work\DriverWork;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
@@ -210,6 +212,15 @@ final class SessionLifeTest extends TestCase
         $this->journal->assertResult([1, []], [count($this->journal->testHostCodexStarts()), $this->journal->testHostClaudeStarts()]);
     }
 
+    public function test_an_interrupt_presses_escape_on_a_running_claude_code_and_codex_turn_and_holds_each(): void
+    {
+        $this->arrangeTerminalHost();
+        $claude = $this->interruptRunningTurn('Terminal', 'terminal', $this->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5'));
+        $codex = $this->interruptRunningTurn('Codex', 'codex', $this->openTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5'));
+
+        $this->journal->assertResult([HoldReason::Interrupted, HoldReason::Interrupted], [$claude->hold_reason, $codex->hold_reason]);
+    }
+
     public function test_a_codex_exec_turn_is_opened_driven_and_finished_with_its_thread_bound(): void
     {
         $this->journal->owner()
@@ -412,6 +423,19 @@ final class SessionLifeTest extends TestCase
         string|null $model,
         string $answer,
     ): string {
+        $opened = $this->openTerminal($agent, $name, $driver, $build, $model);
+        $answered = fn () => in_array($answer, array_map(trim(...), $this->journal->hostProcessRows($name)), true);
+
+        $this->journal->driveHostProcess($name, $answered, seconds: 20);
+
+        return $opened->runtimeId;
+    }
+
+    /**
+     * Opens the agent's terminal of the driver with its first message and proves its start; the turn is running.
+     */
+    private function openTerminal(string $agent, string $name, string $driver, string $build, string|null $model): OpenedRuntime
+    {
         $opened = $this->journal->openRuntimeOn(
             $agent,
             'Mac',
@@ -425,12 +449,28 @@ final class SessionLifeTest extends TestCase
                 ? 'Run the shell command: ls. Then write a 600 word essay about terminals.'
                 : 'Count slowly from 1 to 300, then say done.',
         );
-        $answered = fn () => in_array($answer, array_map(trim(...), $this->journal->hostProcessRows($name)), true);
+        $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, $name);
 
-        $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, $name)
-            ->driveHostProcess($name, $answered, seconds: 20);
+        return $opened;
+    }
 
-        return $opened->runtimeId;
+    /**
+     * Interrupts the agent while its terminal's turn runs: the journal presses Escape on it and holds the runtime.
+     */
+    private function interruptRunningTurn(string $agent, string $name, OpenedRuntime $opened): AgentRuntime
+    {
+        $isTurning = fn () => $this->journal->hostProcessCalled($name)->output_offset > 0;
+        $work = $this->journal->driveHostProcess($name, $isTurning);
+        $this->journal->asOwner(new InterruptAgentCommand($this->journal->agentCalled($agent)->id, $opened->sessionId, "interrupt-{$name}"));
+        $escaped = fn () => array_filter(
+            $this->journal->hostOrdersOf($name),
+            fn (HostOrder $order) => $order->type === HostOrderType::WriteKeys
+                && $order->status === HostOrderStatus::Done
+                && str_contains($order->kept_payload, '\\u001b'),
+        ) !== [];
+        $this->journal->driveHostProcess($name, $escaped, $work);
+
+        return AgentRuntime::query()->findOrFail($opened->runtimeId);
     }
 
     /**

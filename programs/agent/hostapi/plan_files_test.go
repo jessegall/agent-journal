@@ -47,7 +47,7 @@ func TestAPlansFilesAreWrittenPrivatelyAndItsFilesFolderIsFilledIn(t *testing.T)
 
 func TestATemplateFileHasItsPlaceholdersFilledAndAHandedFileIsWrittenAsItIs(t *testing.T) {
 	state := t.TempDir()
-	command := `{"command":"{host:HOOK_COMMAND} claude-code {folder:files}/hook-replies.json"}`
+	command := `{"command":"{host:HOOK_COMMAND} a-program {folder:files}/hook-replies.json"}`
 	plan := OpenPlan{Files: []PlanFile{
 		{Name: "settings.json", Content: command, Template: true},
 		{Name: "skills/one/SKILL.md", Content: "Write {folder:files} as it is."},
@@ -60,7 +60,7 @@ func TestATemplateFileHasItsPlaceholdersFilledAndAHandedFileIsWrittenAsItIs(t *t
 	folder := filepath.Join(state, "processes", "p1", "files")
 	settings, _ := os.ReadFile(filepath.Join(folder, "settings.json"))
 	skill, _ := os.ReadFile(filepath.Join(folder, "skills", "one", "SKILL.md"))
-	wanted := `{"command":"/bin/journal-hook claude-code ` + folder + `/hook-replies.json"}`
+	wanted := `{"command":"/bin/journal-hook a-program ` + folder + `/hook-replies.json"}`
 	if string(settings) != wanted || string(skill) != "Write {folder:files} as it is." {
 		t.Fatalf("the template was %q and the handed file %q", settings, skill)
 	}

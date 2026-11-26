@@ -21,18 +21,25 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-mcp ./cmd/journal-mcp \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-check ./cmd/journal-check
 
-FROM ${BASE}
-
+# Claude Code and Codex as their native release builds, each checked against its pinned digest: no Node in the image.
+FROM --platform=$BUILDPLATFORM ${BASE} AS programs
+ARG TARGETARCH
 ARG CLAUDE_CODE_VERSION=2.1.323
 ARG CODEX_VERSION=0.165.0
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+COPY .docker/helper/install-programs.sh .docker/helper/program-digests.txt /programs/
+RUN sh /programs/install-programs.sh "$TARGETARCH" "$CLAUDE_CODE_VERSION" "$CODEX_VERSION" /out
+
+FROM ${BASE}
+
 ARG TOOLCHAIN_PACKAGES=""
 
-RUN --mount=type=cache,target=/root/.npm --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update \
-    && apt-get install -y --no-install-recommends git ca-certificates bash nodejs npm bubblewrap socat \
-        ${TOOLCHAIN_PACKAGES} \
-    && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}" \
-    && apt-get purge -y npm && apt-get autoremove -y
+    && apt-get install -y --no-install-recommends git ca-certificates bash bubblewrap socat \
+        ${TOOLCHAIN_PACKAGES}
+
+COPY --from=programs --chown=root:root /out/claude /out/codex /usr/local/bin/
 
 # The relays and the protected stop checks. Both relays are standalone programs that ask the journal themselves with
 # the start's grant; the image holds no application console.

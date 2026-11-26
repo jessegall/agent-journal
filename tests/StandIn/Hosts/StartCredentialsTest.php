@@ -50,7 +50,7 @@ final class StartCredentialsTest extends TestCase
     public function test_a_process_opened_by_an_order_reaches_the_journal_with_the_start_token(): void
     {
         $this->chooseActiveAccounts();
-        $this->journal->owner()->idleAgent('Relay')->enrollHost('Mac', [base_path()])->runTestHost('Mac');
+        $this->journal->owner()->showDriverArrangements()->idleAgent('Relay')->enrollHost('Mac', [base_path()])->runTestHost('Mac');
         $opened = $this->journal->openRuntimeOn('Relay', 'Mac', base_path(), driverType: DriverType::Terminal);
         $answer = tempnam(sys_get_temp_dir(), 'relay-answer-');
         $relay = 'printf "%s\\n" "$0" | php artisan mcp:relay > "$1"';

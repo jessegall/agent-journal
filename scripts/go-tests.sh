@@ -20,7 +20,7 @@ run_tests() {
     run_in_go "$root" "go test -count=1 $packages"
 }
 
-# The harness finds the binary by the same hash of the Go sources (tests/Support/Hosts/RealHost.php).
+# The harness finds the binary by the same hash of the Go sources (tests/Support/Hosts/TestHost.php).
 build_test_host() {
     local root="$1"
     run_in_go "$root" 'hash=$(find . -name "*.go" -o -name go.mod -o -name go.sum | LC_ALL=C sort | xargs cat | sha256sum | cut -c1-16)

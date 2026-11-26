@@ -12,6 +12,7 @@ use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Exceptions\HostProtocolUnsupported;
 use App\Models\Hosts\HostOrder;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
@@ -91,6 +92,17 @@ final class NotifyHostInventoryTest extends TestCase
         $this->journal->assertResult(
             [HostProcessStatus::Lost, 'the host restarted without the output it had already sent'],
             [$process->refresh()->status, $process->exit_evidence],
+        );
+    }
+
+    public function test_a_host_that_names_no_protocol_is_told_to_update(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()]);
+        $inventory = json_encode(['release' => '5.9.0', 'answered_through' => null], JSON_THROW_ON_ERROR);
+
+        $this->journal->assertRefused(
+            HostProtocolUnsupported::class,
+            fn () => $this->journal->asSystem(new NotifyHostInventoryCommand($this->journal->hostCalled('Mac')->hostId, $inventory)),
         );
     }
 }

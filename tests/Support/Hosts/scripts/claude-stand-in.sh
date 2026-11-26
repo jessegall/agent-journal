@@ -79,14 +79,6 @@ print_turn() {
     tail -n +4 "$installation/turn.jsonl"
 }
 
-# A hold never outlasts a minute, so a stand-in of a failed test does not run on.
-wait_while_held() {
-    local hold="$1"
-    local waited=0
-    while [ -e "$hold" ] && [ "$waited" -lt 1200 ]; do
-        sleep 0.05
-        waited=$((waited + 1))
-    done
-}
+. "$(dirname "$0")/../stand-in-hold.sh"
 
 main "$@"

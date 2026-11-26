@@ -70,6 +70,7 @@ final class TestHost
         private readonly string $database,
         private readonly string $ownerEmail,
         private readonly ArrangementType $arrangement,
+        private readonly bool $showsDriverArrangements,
     ) {}
 
     /**
@@ -83,10 +84,11 @@ final class TestHost
         string $database,
         string $ownerEmail,
         ArrangementType $arrangement,
+        bool $showsDriverArrangements,
     ): self {
         $folder = sys_get_temp_dir().'/journal-real-host-'.bin2hex(random_bytes(6));
         mkdir($folder, 0o700, true);
-        $real = new self($processes, $folder, $database, $ownerEmail, $arrangement);
+        $real = new self($processes, $folder, $database, $ownerEmail, $arrangement, $showsDriverArrangements);
         $real->port = self::freePort();
         $real->serveJournal();
         $real->run($real->standInDocker());
@@ -270,7 +272,7 @@ final class TestHost
 
     private function serveJournal(): void
     {
-        $server = ['php', '-S', "127.0.0.1:{$this->port}", '-t', base_path('public'), base_path('public/index.php')];
+        $server = ['php', '-S', "127.0.0.1:{$this->port}", '-t', base_path('public'), __DIR__.'/scripts/served-journal.php'];
         $command = [__DIR__.'/scripts/serve-until-input-ends.sh', ...$server];
         // The host holds one claim open as a long poll, so the server answers its reports beside it on other workers.
         $environment = [...$this->sharedEnvironment(), 'PHP_CLI_SERVER_WORKERS' => '8'];
@@ -279,9 +281,8 @@ final class TestHost
     }
 
     /**
-     * What the served journal, its sign-in runner and the test share: the test's database and owner, a cache every
-     * process reads, so a sign-in's challenge and code pass between them, and the account folders under this host's
-     * folder.
+     * What the served journal, its sign-in runner and the test share: the test's database, owner and shown driver
+     * arrangements, one cache, so a sign-in's challenge and code pass between them, and the host's account folders.
      *
      * @return array<string, string>
      */
@@ -293,6 +294,7 @@ final class TestHost
             'JOURNAL_OWNER_EMAIL' => $this->ownerEmail,
             'CACHE_STORE' => 'file',
             'ACCOUNTS_ROOT' => $this->accountsFolder(),
+            'TEST_SHOWS_DRIVER_ARRANGEMENTS' => $this->showsDriverArrangements ? '1' : '0',
         ];
 
         if (! $this->arrangement->isContained()) {
@@ -375,6 +377,7 @@ final class TestHost
     private function installStandIns(): void
     {
         mkdir("{$this->installation()}/bin", 0o700, true);
+        copy(__DIR__.'/scripts/stand-in-hold.sh', "{$this->installation()}/stand-in-hold.sh");
         copy(__DIR__.'/scripts/claude-stand-in.sh', "{$this->installation()}/bin/claude");
         chmod("{$this->installation()}/bin/claude", 0o700);
         copy(__DIR__.'/fixtures/claude-turn.jsonl', "{$this->installation()}/turn.jsonl");

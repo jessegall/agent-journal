@@ -10,6 +10,7 @@ use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\ContainerManifest;
 use App\Agents\DriverCatalogue;
 use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
+use App\Agents\Drivers\Contracts\DriverCompatibilities;
 use App\Agents\Drivers\Contracts\ProcessDriver;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\HookReplies;
@@ -69,6 +70,7 @@ use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Process;
 use PHPUnit\Framework\Assert;
+use Tests\Fixtures\Drivers\ShownDriverArrangements;
 use Tests\Support\Connections\PublicRelease;
 use Tests\Support\Hosts\StandInHost;
 use Tests\Support\Hosts\TestHost;
@@ -606,6 +608,7 @@ trait ArrangesHostProcesses
             $database,
             ($this->owner ?? $this->owner()->ownerUser())->email,
             Host::query()->findOrFail($this->hostCalled($host)->hostId)->arrangement,
+            $this->app->make(DriverCompatibilities::class) instanceof ShownDriverArrangements,
         );
 
         return $this;

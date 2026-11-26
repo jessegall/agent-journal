@@ -21,9 +21,10 @@ final class HostInventoryData extends Data
      * @param  list<InventoryProcessData>  $processes
      */
     public function __construct(
-        public readonly int $protocol,
         public readonly string $release,
         public readonly string|null $answeredThrough,
+        // A host built before protocol 1 sends no protocol field: it speaks protocol 0.
+        public readonly int $protocol = 0,
         public readonly array $capabilities = [],
         #[DataCollectionOf(InventoryProcessData::class)]
         public readonly array $processes = [],

@@ -8,6 +8,7 @@ use App\Bus\Contracts\CommandHandler;
 use App\Hosts\Data\HostInventoryData;
 use App\Hosts\Data\InventoryProcessData;
 use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Exceptions\HostProtocolUnsupported;
 use App\Hosts\HostOrderPlacement;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
@@ -26,6 +27,10 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
     {
         $host = $this->placement->orderingHost($command->hostId);
         $inventory = HostInventoryData::from(json_decode($command->body, true, flags: JSON_THROW_ON_ERROR));
+
+        if ($inventory->protocol !== HostOrderPlacement::PROTOCOL) {
+            throw HostProtocolUnsupported::forHost($host->id, $inventory->protocol);
+        }
 
         $reported = array_column(
             array_map(fn (InventoryProcessData $process) => [

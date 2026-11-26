@@ -13,7 +13,7 @@ use App\Models\Hosts\HostOrder;
 use App\Values\HostOrderSource;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
-use Tests\Support\Hosts\RealHost;
+use Tests\Support\Hosts\TestHost;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -59,8 +59,8 @@ final class ContainedSessionLifeTest extends TestCase
             ->showDriverArrangements()
             ->idleAgent('Terminal')
             ->enrollContainedHost('Box', [base_path()])
-            ->runRealHost('Box')
-            ->chooseActiveAccountsOnRealHost();
+            ->runTestHost('Box')
+            ->chooseActiveAccountsOnTestHost();
         $opened = $this->journal->openRuntimeOn(
             'Terminal',
             'Box',
@@ -74,7 +74,7 @@ final class ContainedSessionLifeTest extends TestCase
         );
         $answered = fn () => in_array('done', array_map(trim(...), $this->journal->hostProcessRows('terminal')), true);
 
-        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
+        $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
             ->driveHostProcess('terminal', $answered, seconds: 20);
         $process = $this->journal->hostProcessCalled('terminal');
         $this->journal->asSystem(new StopHostProcessCommand($process->id, 1000, 1000, HostOrderSource::fromJournal()));
@@ -88,10 +88,10 @@ final class ContainedSessionLifeTest extends TestCase
             ->all();
 
         $this->journal->assertResult(
-            [RealHost::IMAGE, true, true, [], true],
+            [TestHost::IMAGE, true, true, [], true],
             [
                 $session['image'],
-                str_starts_with((string) $session['network'], RealHost::INSTALLATION_NAME.'-'),
+                str_starts_with((string) $session['network'], TestHost::INSTALLATION_NAME.'-'),
                 $this->hasMountAt($session, '/etc/claude-code/managed-settings.json'),
                 array_values(array_filter($session['env'], fn (string $entry) => str_contains($entry, '{host:'))),
                 in_array($process->containerName(), $removed, true),

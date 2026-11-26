@@ -1,0 +1,1 @@
+{"method":"thread/tokenUsage/updated","params":{"threadId":"{thread}","tokenUsage":{"total":{"totalTokens":1200,"inputTokens":1000,"outputTokens":200},"last":{"totalTokens":1200,"inputTokens":1000,"outputTokens":200}}}}
