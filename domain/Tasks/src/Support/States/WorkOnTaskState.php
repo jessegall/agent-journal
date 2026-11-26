@@ -68,14 +68,14 @@ final class WorkOnTaskState extends AgentState implements DurableState, WorkStat
         private readonly int $runNumber,
     ) {}
 
-    public function stateSubject(): RecordIdentity
-    {
-        return new RecordIdentity(Task::linkType(), $this->taskId);
-    }
-
     public function isFinished(): bool
     {
         return ! $this->isWorking;
+    }
+
+    public function stateSubject(): RecordIdentity
+    {
+        return new RecordIdentity(Task::linkType(), $this->taskId);
     }
 
     /**

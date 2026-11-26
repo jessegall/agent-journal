@@ -76,6 +76,9 @@ final readonly class MachineryTests
         return array_merge(...array_map(fn (string $subject) => $this->faultsOfSubject($file, $subject), $subjects));
     }
 
+    /**
+     * @phpstan-assert-if-true class-string $class
+     */
     private function isTest(string $class): bool
     {
         return Reflector::exists($class)
@@ -88,7 +91,7 @@ final readonly class MachineryTests
      */
     private function faultsOfSubject(string $file, string $subject): array
     {
-        if (! class_exists($subject) && ! interface_exists($subject)) {
+        if (! Reflector::exists($subject)) {
             return ["{$file} names {$subject}, which does not exist: name the engine class it proves."];
         }
 
@@ -98,7 +101,7 @@ final readonly class MachineryTests
 
         $kinds = array_filter(
             self::ENTRY_KINDS,
-            fn (string $kind, string $base) => is_a($subject, $base, true),
+            fn (string $kind, string $base) => $subject === $base || Reflector::of($subject)->isSubclassOf($base),
             ARRAY_FILTER_USE_BOTH,
         );
 

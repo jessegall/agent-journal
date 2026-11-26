@@ -20,9 +20,11 @@ parameters:
         - tests/Architecture/
         - tests/Fixtures/
 
-    # A domain's tests, like the tests in tests/Feature and tests/Unit, are not analysed.
+    # A domain's tests, like the tests in tests/Unit and the entry folders, are not analysed; nor are TestJournal's own
+    # tests, which sit in tests/Architecture/Seeding beside the architecture tests.
     excludePaths:
         - domain/*/tests/*
+        - tests/Architecture/Seeding/*
         # The attribute rules' own fixtures break the rules on purpose; their tests analyse them alone.
         - tests/Fixtures/PhpStan/*
         # The static factory scan's fixture repeats calls and passes loose names on purpose; StaticFactoryScanTest reads it.

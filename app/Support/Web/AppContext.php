@@ -26,6 +26,7 @@ use App\Support\CoreSettings;
 use App\Support\CurrentUser;
 use App\Support\HostLinkAlarms;
 use App\Support\InstallationFaults;
+use App\Values\DriverFamily;
 use App\Values\InboxMemberAuthority;
 use App\Values\Web\LiveListeners;
 use Illuminate\Http\Request;
@@ -142,7 +143,7 @@ final readonly class AppContext
      */
     private function driverLooks(): array
     {
-        return DriverLookData::collect($this->drivers->families());
+        return array_map(fn (DriverFamily $family) => DriverLookData::fromDriverFamily($family), $this->drivers->families());
     }
 
     /**

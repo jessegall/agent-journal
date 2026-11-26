@@ -25,7 +25,7 @@ final class JournalActingTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = [];
+    protected const array TABLES = [];
 
     public function test_a_user_known_by_id_acts_and_stands_in_as_owner_while_the_journal_has_none(): void
     {

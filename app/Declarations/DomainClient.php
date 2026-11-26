@@ -253,15 +253,14 @@ final readonly class DomainClient
     }
 
     /**
-     * Refuses a loader reader that is not an invokable class of the declaring owner taking exactly one Data and
-     * returning a Data, both types this owner generates, so the generated imports resolve.
+     * The Data a loader reader takes and answers, refused unless it is an invokable class of the declaring owner taking
+     * exactly one Data and returning a Data, both types this owner generates, so the generated imports resolve.
      *
      * @param  class-string  $reader
      */
-    public function assertLoader(string $declaration, string $reader): void
+    public function typesOfLoader(string $declaration, string $reader): LoaderTypes
     {
-        if (! $this->owns($reader) || ! Reflector::exists($reader)
-            || ! Reflector::of($reader)->hasMethod('__invoke')) {
+        if (! $this->owns($reader) || ! Reflector::of($reader)->hasMethod('__invoke')) {
             throw ClientResolverInvalid::loaderNotOwned($declaration, $reader);
         }
 
@@ -273,15 +272,26 @@ final readonly class DomainClient
             ->map(fn (DeclaredType $type) => $type->name())
             ->getOrElse('');
 
-        foreach ([$input, $answer] as $dataClass) {
-            if ($dataClass === '' || ! Reflector::factory()->isSubclassOf($dataClass, Data::class)) {
-                throw ClientResolverInvalid::loaderShape($declaration, $reader);
-            }
+        return new LoaderTypes(
+            $this->ownedDataClass($declaration, $reader, $input),
+            $this->ownedDataClass($declaration, $reader, $answer),
+        );
+    }
 
-            if (! $this->ownsType($dataClass)) {
-                throw ClientResolverInvalid::loaderTypeNotOwned($declaration, $dataClass, $this->name);
-            }
+    /**
+     * @return class-string<Data>
+     */
+    private function ownedDataClass(string $declaration, string $reader, string $dataClass): string
+    {
+        if ($dataClass === '' || ! Reflector::factory()->isSubclassOf($dataClass, Data::class)) {
+            throw ClientResolverInvalid::loaderShape($declaration, $reader);
         }
+
+        if (! $this->ownsType($dataClass)) {
+            throw ClientResolverInvalid::loaderTypeNotOwned($declaration, $dataClass, $this->name);
+        }
+
+        return $dataClass;
     }
 
     /**

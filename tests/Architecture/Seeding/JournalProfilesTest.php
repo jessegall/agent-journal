@@ -26,7 +26,7 @@ final class JournalProfilesTest extends TestCase
     /**
      * The profile and settings commands commit for real, so these tables are emptied around each test.
      */
-    private const array TABLES = [
+    protected const array TABLES = [
         'profile_draft_revisions', 'profile_drafts', 'profile_revisions', 'profiles', 'settings_records', 'command_receipts',
     ];
 

@@ -20,7 +20,7 @@ final class JournalRuntimesTest extends TestCase
     use CommitsHookRows;
     use WithActiveAccount;
 
-    private const array TABLES = [
+    protected const array TABLES = [
         'agents',
         'agent_sessions',
         'session_tokens',

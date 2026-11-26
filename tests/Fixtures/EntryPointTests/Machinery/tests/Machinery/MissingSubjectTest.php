@@ -15,6 +15,6 @@ final class MissingSubjectTest extends TestCase
 {
     public function test_it_is_judged_by_what_it_names(): void
     {
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 }

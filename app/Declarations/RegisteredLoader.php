@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Support\Reflector;
 use Spatie\LaravelData\Data;
 
 /**
@@ -33,16 +32,15 @@ final readonly class RegisteredLoader
     public static function of(DomainClient $owner, Loader $loader, RegisteredPage|null $guard): self
     {
         $key = $owner->fullKey('loader', $loader->name);
-        $owner->assertLoader($key, $loader->reader);
-        $invoke = Reflector::of($loader->reader)->method('__invoke');
+        $types = $owner->typesOfLoader($key, $loader->reader);
 
         return new self(
             owner: $owner,
             key: $key,
             prop: 'load_'.str_replace(['.', '-'], '_', $key),
             reader: $loader->reader,
-            inputClass: $invoke->firstParameterClass()->get(),
-            answerClass: $invoke->returnType()->get()->name(),
+            inputClass: $types->input,
+            answerClass: $types->answer,
             guardKey: $guard?->key,
         );
     }

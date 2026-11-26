@@ -23,7 +23,7 @@ final class JournalSkillsTest extends TestCase
     /**
      * The skill and run commands commit for real, so these tables are emptied around each test.
      */
-    private const array TABLES = [
+    protected const array TABLES = [
         'skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups',
         'command_receipts', 'process_runs', 'part_runs',
     ];

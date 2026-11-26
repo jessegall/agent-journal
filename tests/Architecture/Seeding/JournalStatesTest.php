@@ -46,7 +46,7 @@ final class JournalStatesTest extends TestCase
     /**
      * Facts reach a stack only once its change commits, so these tests commit and empty what they wrote.
      */
-    private const array TABLES = ['agent_stacks', 'command_receipts'];
+    protected const array TABLES = ['agent_stacks', 'command_receipts'];
 
     private TickScript $ticks;
 

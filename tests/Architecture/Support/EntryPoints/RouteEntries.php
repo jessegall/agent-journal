@@ -9,6 +9,7 @@ use App\Support\ClientDeclarations;
 use App\Support\Web\DeclaredRouteKey;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Str;
 
 /**
  * Every method of every route a journal controller, of core or of a domain, answers, by its name, tested in the
@@ -95,9 +96,7 @@ final readonly class RouteEntries
             return $this->declarations->ownerOf(DeclaredRouteKey::of($route))->namespace;
         }
 
-        preg_match('/^(App|Domain\\\\[^\\\\]+)\\\\/', (string) $route->getControllerClass(), $owner);
-
-        return $owner[1];
+        return Str::match('/^(App|Domain\\\\[^\\\\]+)\\\\/', (string) $route->getControllerClass());
     }
 
     private static function isJournal(Route $route): bool

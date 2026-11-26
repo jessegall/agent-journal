@@ -16,6 +16,6 @@ final class DatabaseUnitTest extends TestCase
 
     public function test_it_should_have_been_an_entry_test(): void
     {
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 }

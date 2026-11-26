@@ -14,7 +14,7 @@ use Attribute;
 final readonly class TestsMachinery
 {
     /**
-     * @param  class-string  $subject
+     * @param  string  $subject  the engine class, by its full name; one that does not exist fails the machinery check
      */
     public function __construct(public string $subject) {}
 }

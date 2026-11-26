@@ -72,12 +72,12 @@ final readonly class EntryTestFindings
 
         $doubles = array_filter($files, fn (array $byClass) => count($byClass) > 1);
 
-        return array_values(array_map(
+        return array_map(
             fn (string $entry, array $byClass) => "{$entry} is named by more than one test class, in "
                 .implode(', ', $byClass).': keep one.',
             array_keys($doubles),
             $doubles,
-        ));
+        );
     }
 
     private function gapOf(EntryPoint $entry): string
@@ -98,7 +98,7 @@ final readonly class EntryTestFindings
             EntryType::Hook => "The {$type} {$entry->name} has no test: name it with #[{$attribute}] in a test under "
                 ."{$entry->testPlace}.",
             EntryType::Read => "The read {$entry->name} has no test: write one with #[{$attribute}] at "
-                ."{$entry->testPlace}/".Reflector::of($entry->name)->shortName().'Test.php.',
+                ."{$entry->testPlace}/".class_basename($entry->name).'Test.php.',
         };
     }
 

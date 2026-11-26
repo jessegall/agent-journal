@@ -15,6 +15,6 @@ final class ScriptTest extends TestCase
 {
     public function test_its_attribute_gives_its_kind(): void
     {
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 }

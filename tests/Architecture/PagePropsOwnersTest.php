@@ -11,11 +11,11 @@ use App\Declarations\RegisteredSection;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Http\Responses\LoaderProps;
 use App\Support\ClientDeclarations;
+use App\Support\ReflectedParameter;
+use App\Support\Reflector;
 use App\Support\Web\PageProps;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use ReflectionClass;
-use ReflectionParameter;
 use Tests\Fixtures\PagePropsOwners\SharingAnUnownedProp;
 
 /**
@@ -51,7 +51,7 @@ final class PagePropsOwnersTest extends TestCase
     {
         $request = Request::create('/');
         $request->setLaravelSession($this->app->make('session.store'));
-        $shared = array_keys($this->app->make($middleware)->share($request));
+        $shared = array_filter(array_keys($this->app->make($middleware)->share($request)), is_string(...));
 
         return array_values(array_diff($shared, $this->ownedKeys($request)));
     }
@@ -65,11 +65,11 @@ final class PagePropsOwnersTest extends TestCase
     {
         $declarations = $this->app->make(ClientDeclarations::class);
         $inertia = new class extends Middleware {};
-        $context = new ReflectionClass(AppContextData::class)->getConstructor()?->getParameters() ?? [];
+        $context = Reflector::of(AppContextData::class)->constructor()->get()->parameters();
 
         return [
             ...array_keys($inertia->share($request)),
-            ...array_map(fn (ReflectionParameter $field) => $field->getName(), $context),
+            ...array_map(fn (ReflectedParameter $field) => $field->name(), $context),
             PageProps::TITLE,
             PageProps::PAGE,
             PageProps::INSPECTOR,

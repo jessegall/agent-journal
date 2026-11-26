@@ -31,7 +31,7 @@ final class JournalSinksTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = [];
+    protected const array TABLES = [];
 
     public function test_a_route_sends_its_command_into_the_sink_through_every_middleware_and_writes_nothing(): void
     {

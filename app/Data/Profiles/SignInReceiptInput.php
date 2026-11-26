@@ -6,6 +6,7 @@ namespace App\Data\Profiles;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Exceptions\SignInReceiptUnnamed;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -50,8 +51,10 @@ final class SignInReceiptInput extends Data
 
     public function target(): string
     {
-        return is_string($this->account)
-            ? BeginSignInAgainCommand::targetOf($this->account)
-            : BeginSignInCommand::targetOf((string) $this->driver);
+        return match (true) {
+            is_string($this->account) => BeginSignInAgainCommand::targetOf($this->account),
+            is_string($this->driver) => BeginSignInCommand::targetOf($this->driver),
+            default => throw SignInReceiptUnnamed::for($this->key),
+        };
     }
 }

@@ -28,7 +28,7 @@ final class JournalEventsTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['links', 'tasks'];
+    protected const array TABLES = ['links', 'tasks'];
 
     protected static function bootedDomains(): array
     {

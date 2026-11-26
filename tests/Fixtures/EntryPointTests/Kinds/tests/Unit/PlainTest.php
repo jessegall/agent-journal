@@ -13,6 +13,6 @@ final class PlainTest extends TestCase
 {
     public function test_its_folder_gives_its_kind(): void
     {
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 }

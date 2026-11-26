@@ -61,9 +61,9 @@ final readonly class EntryTestFiles
      */
     private function routeFile(RouteMethod $method, array $recordings): EntryTestFile
     {
-        $caller = Caller::of($method->route->gatherMiddleware());
+        $caller = Caller::of(array_values(array_filter($method->route->gatherMiddleware(), is_string(...))));
         $missing = [
-            ...array_map(fn (string $parameter) => "{{$parameter}}", $method->route->parameterNames()),
+            ...array_map(fn (string $parameter) => "{{$parameter}}", array_values($method->route->parameterNames())),
             ...($method->method === 'GET' ? [] : ['the payload']),
             ...(DeclaredCommands::ofRoute($method->route) === [] ? [] : ['the expected commands']),
             ...match ($caller) {
