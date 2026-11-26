@@ -29,8 +29,8 @@ states it: an exact total, a percent the tool prints, or none.
 ## Recovery
 
 `process:reconcile` (`ReconcileLostRuns`) marks parts whose supervisor went away as `lost`; their output stays.
-`process:restore-check` (`VerifyRestoredOutput`) checks restored output against its manifest. `process:clean`
-removes ended runs' output after a preview.
+`VerifyRestoredOutput` checks restored output against its manifest. The owner cleans an ended run's output
+from its run page, after a preview.
 
 ## Limits
 

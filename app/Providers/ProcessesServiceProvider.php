@@ -5,26 +5,19 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Concerns\LoadsCoreRoutes;
-use App\Console\Commands\CommandTypeApproveCommand;
 use App\Console\Commands\CommandTypeImportCommand;
 use App\Console\Commands\CommandTypeListCommand;
 use App\Console\Commands\CommandTypeProposeCommand;
-use App\Console\Commands\CommandTypeRejectCommand;
-use App\Console\Commands\CommandTypeRestoreCommand;
-use App\Console\Commands\CommandTypeRetireCommand;
 use App\Console\Commands\CommandTypeReviseCommand;
 use App\Console\Commands\CommandTypeShowCommand;
 use App\Console\Commands\CommandTypeWithdrawCommand;
 use App\Console\Commands\ExplainCommandTypeCommand;
 use App\Console\Commands\OutputReadCommand;
-use App\Console\Commands\ProcessCleanCommand;
 use App\Console\Commands\ProcessExportCommand;
 use App\Console\Commands\ProcessReconcileCommand;
-use App\Console\Commands\ProcessRestoreCheckCommand;
 use App\Console\Commands\ProcessShowCommand;
 use App\Console\Commands\ReaderProposeCommand;
 use App\Console\Commands\ReaderProveCommand;
-use App\Console\Commands\ReaderSampleApproveCommand;
 use App\Console\Commands\ReaderSampleRunCommand;
 use App\Console\Commands\RunProcessCommand;
 use App\Contracts\Actors\AliasResolver as AliasResolverContract;
@@ -151,13 +144,9 @@ final class ProcessesServiceProvider extends ServiceProvider
 
         $this->commands([
             ExplainCommandTypeCommand::class,
-            CommandTypeApproveCommand::class,
             CommandTypeImportCommand::class,
             CommandTypeListCommand::class,
             CommandTypeProposeCommand::class,
-            CommandTypeRejectCommand::class,
-            CommandTypeRestoreCommand::class,
-            CommandTypeRetireCommand::class,
             CommandTypeReviseCommand::class,
             CommandTypeShowCommand::class,
             CommandTypeWithdrawCommand::class,
@@ -168,9 +157,6 @@ final class ProcessesServiceProvider extends ServiceProvider
             ReaderProposeCommand::class,
             ReaderProveCommand::class,
             ProcessReconcileCommand::class,
-            ProcessCleanCommand::class,
-            ProcessRestoreCheckCommand::class,
-            ReaderSampleApproveCommand::class,
             ReaderSampleRunCommand::class,
         ]);
     }

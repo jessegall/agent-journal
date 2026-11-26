@@ -33,50 +33,6 @@ final readonly class ProcessApi
         ]));
     }
 
-    public function approveProposal(
-        string $proposal,
-        int $expectedRevision,
-        int $expectedActiveRevision,
-        string|null $readerRevision,
-        string|null $proof,
-        string $reason,
-        CallKey $requestKey = new CallKey(),
-    ): RuleApproved {
-        return $this->sender->send(ApproveProposalPayload::from([
-            'proposal' => $proposal,
-            'expectedRevision' => $expectedRevision,
-            'expectedActiveRevision' => $expectedActiveRevision,
-            'readerRevision' => $readerRevision,
-            'proof' => $proof,
-            'reason' => $reason,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function approveSample(
-        string $commandRequest,
-        int $expectedRevision,
-        string $commandDigest,
-        CallKey $requestKey = new CallKey(),
-    ): SampleApproved {
-        return $this->sender->send(ApproveSamplePayload::from([
-            'commandRequest' => $commandRequest,
-            'expectedRevision' => $expectedRevision,
-            'commandDigest' => $commandDigest,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function checkRestoredOutput(
-        string $processRun,
-        CallKey $requestKey = new CallKey(),
-    ): RestoreChecked {
-        return $this->sender->send(CheckRestoredOutputPayload::from([
-            'processRun' => $processRun,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
     public function checkRunStaleness(
         string $processRun,
         string $eventKey,
@@ -84,21 +40,6 @@ final readonly class ProcessApi
         return $this->sender->send(CheckRunStalenessPayload::from([
             'processRun' => $processRun,
             'eventKey' => $eventKey,
-        ]));
-    }
-
-    /**
-     * @param  list<string>  $runs
-     */
-    public function cleanOutput(
-        array $runs,
-        bool $isPreview,
-        CallKey $requestKey = new CallKey(),
-    ): OutputCleaned {
-        return $this->sender->send(CleanOutputPayload::from([
-            'runs' => $runs,
-            'isPreview' => $isPreview,
-            'requestKey' => $requestKey,
         ]));
     }
 
@@ -245,46 +186,6 @@ final readonly class ProcessApi
             'processRun' => $processRun,
             'eventKey' => $eventKey,
             'events' => $events,
-        ]));
-    }
-
-    public function rejectProposal(
-        string $proposal,
-        string $reason,
-        CallKey $requestKey = new CallKey(),
-    ): ProposalStateChanged {
-        return $this->sender->send(RejectProposalPayload::from([
-            'proposal' => $proposal,
-            'reason' => $reason,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function restoreRule(
-        string $rule,
-        int $fromRevision,
-        int $expectedRevision,
-        CallKey $requestKey = new CallKey(),
-    ): ProposalReceived {
-        return $this->sender->send(RestoreRulePayload::from([
-            'rule' => $rule,
-            'fromRevision' => $fromRevision,
-            'expectedRevision' => $expectedRevision,
-            'requestKey' => $requestKey,
-        ]));
-    }
-
-    public function retireRule(
-        string $rule,
-        int $expectedRevision,
-        string $reason,
-        CallKey $requestKey = new CallKey(),
-    ): RuleRetired {
-        return $this->sender->send(RetireRulePayload::from([
-            'rule' => $rule,
-            'expectedRevision' => $expectedRevision,
-            'reason' => $reason,
-            'requestKey' => $requestKey,
         ]));
     }
 

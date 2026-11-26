@@ -28,12 +28,12 @@ no longer matches) or `binding_changed` (the executable or its configuration cha
 command-type:explain --line 'vendor/bin/phpstan analyse --error-format=json --no-progress'
     # Tests and checks; reader-required; nothing started; request 42
 command-type:propose 42            # the rule with its contract: output contract, exit map, binding
-reader:sample-approve 42           # owner: approves one sample run of the exact command and issues a permit
+# the owner approves one sample run of the exact command on the Processes page, which issues a permit
 reader:sample-run 42               # runs the sample in evidence mode from that permit
 output:read <run> --summary        # the author reads the sample's whole output: an evidence read
 reader:propose 42                  # the reader definition
 reader:prove 42                    # the reader is replayed over every sample; each exit branch needs one
-command-type:approve <proposal>    # owner: approves the rule with its proven reader
+# the owner approves the rule with its proven reader on the Processes page
 ```
 
 Then the agent runs the bare approved line again through normal admission.

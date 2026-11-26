@@ -48,12 +48,11 @@ and points the rule's `ClassificationRule` at it; retire and restore move that p
 | `command-type:list` | Lists the project's rules |
 | `command-type:propose <request>` | Proposes a rule for a held request |
 | `command-type:revise <proposal>` | Saves a new revision of a proposal |
-| `command-type:approve <proposal>` | The owner approves it |
-| `command-type:reject <proposal> --reason` | The owner rejects it |
 | `command-type:withdraw <proposal>` | Its author withdraws it |
-| `command-type:retire <rule>`, `command-type:restore <rule>` | Stops or restarts an approved rule |
 | `command-type:import <file>` | Imports rule proposals from a declaration file |
 | `command-type:show <request>` | Shows a request and where it stands |
+
+The owner approves or rejects a proposal on the Processes page; an agent's command line cannot.
 
 ## Module bundles
 
