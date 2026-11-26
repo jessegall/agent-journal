@@ -73,7 +73,7 @@ import type {
     SignInMethodData,
 } from '@generated/types/accounts';
 import AccountRow from './AccountRow.vue';
-import { declaredLooks } from '@/kit/testing/driverLooks';
+import { declaredLooks } from '@kit/testing/driverLooks';
 
 const subscription: SignInMethodData = {
     method: 'oauth',

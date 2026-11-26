@@ -2,7 +2,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import type { PendingAttemptCleanupData } from '@generated/types/accounts';
-import { declaredLooks } from '@/kit/testing/driverLooks';
+import { declaredLooks } from '@kit/testing/driverLooks';
 
 vi.mock('@inertiajs/vue3', () => ({
     usePage: () => ({ props: { drivers: declaredLooks } }),

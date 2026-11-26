@@ -3,13 +3,14 @@ import type {
     SignInMethod,
     SignInReceiptData,
 } from '@generated/types/accounts';
-import type { SignInCodeDirection } from '@/types/generated';
 import { challenge } from '@generated/routes/accounts';
 import type { DriverLook } from '@kit/appContext';
 import { accountsSignInReceipt, load } from '@kit/loaders';
 import { xsrfToken } from '@kit/xsrfToken';
 
 export type SignInChallenge = { address: string | null; code: string | null };
+
+type SignInCodeDirection = Extract<DriverLook, { type: 'declared' }>['look']['signInCode'];
 
 /**
  * What the wizard is opened for: a new account, a running sign-in it rejoins, or a saved account signed in again.

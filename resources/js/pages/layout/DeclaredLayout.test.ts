@@ -170,6 +170,7 @@ describe('a declared layout', () => {
                                                 value: '',
                                                 clears: [],
                                                 options: [],
+                                                optionLabels: [],
                                             },
                                         }),
                                         part({

@@ -81,7 +81,7 @@ vi.mock('@kit/usePageChanges', () => ({
     }),
 }));
 
-import { declaredLooks } from '@/kit/testing/driverLooks';
+import { declaredLooks } from '@kit/testing/driverLooks';
 import type {
     AccountRowData,
     DriverMethodsData,

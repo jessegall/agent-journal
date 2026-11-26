@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { reactive } from 'vue';
-import { declaredLooks } from '@/kit/testing/driverLooks';
+import { declaredLooks } from '@kit/testing/driverLooks';
 
 type Projection = (props: { page: unknown }) => unknown;
 

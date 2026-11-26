@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { declaredLooks } from '@/kit/testing/driverLooks';
+import { declaredLooks } from '@kit/testing/driverLooks';
 
 vi.mock('@generated/routes/accounts', () => ({
     challenge: ({ attempt }: { attempt: string }) => ({

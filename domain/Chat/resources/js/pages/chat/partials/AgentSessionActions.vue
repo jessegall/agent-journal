@@ -108,7 +108,13 @@ function readAgain(): void {
 
 function checkCapacity(): void {
   pendingType.value = "check-capacity";
-  load(webCapacity, { agent: props.agent.id, mode: "required_container" })
+  load(webCapacity, {
+    agent: props.agent.id,
+    mode: "required_container",
+    cpuCores: null,
+    memoryBytes: null,
+    diskBytes: null,
+  })
     .then((answer) => {
       notice.value = answer.status === "ok" ? capacityNotice(answer.value) : null;
     })

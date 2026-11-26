@@ -3,8 +3,11 @@ import { reactive } from 'vue';
 import type { AppContextData, DriverLookData, InstallationData, ViewerData } from '@/types/generated';
 import { useAppContext } from './appContext';
 
+// The page's props as Inertia changes them between visits, which the generated read-only shape does not allow.
+type ChangingProps<T> = { -readonly [Key in keyof T]: T[Key] };
+
 const page = reactive<{
-    props: AppContextData & { installation: InstallationData; viewer: ViewerData; drivers: DriverLookData[] };
+    props: ChangingProps<AppContextData> & { installation: InstallationData; viewer: ViewerData; drivers: DriverLookData[] };
 }>({
     props: {
         installation: { name: 'Journal', version: '012345678', faults: [] },
