@@ -72,6 +72,16 @@ services:
             - .:/app
             - /app/node_modules
 
+    drivers:
+        # The mounted project's .env is read by Laravel itself, so phpunit.xml can still choose the test database;
+        # .env as the container's environment (the server's way) would override it.
+        env_file: !reset []
+        image: ${COMPOSE_PROJECT_NAME}-development
+        # drivers:supervise starts every worker as a new process; after a code change run php artisan drivers:restart.
+        volumes:
+            - .:/app
+            - /app/node_modules
+
     scheduler:
         # The mounted project's .env is read by Laravel itself, so phpunit.xml can still choose the test database;
         # .env as the container's environment (the server's way) would override it.

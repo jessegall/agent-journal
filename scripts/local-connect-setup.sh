@@ -12,7 +12,7 @@ main() {
     publish_release "$key" "$version"
     set_setting JOURNAL_SERVER_ORIGIN "$origin"
     set_setting JOURNAL_RELEASE "$version"
-    docker compose -p agent-journal-6 restart app queue >/dev/null
+    docker compose -p agent-journal-6 restart app queue drivers >/dev/null
     echo "release $version is published. Switch on Connect projects on other machines in Settings once, then make an install line at $origin/connections"
 }
 

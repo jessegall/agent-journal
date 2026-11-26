@@ -103,6 +103,28 @@ services:
             redis:
                 condition: service_healthy
 
+    # Keeps a driver worker on every host process a program driver drives (php artisan drivers:supervise), with the
+    # queue's code and environment; drivers:restart ends its workers between steps on a deploy.
+    drivers:
+        restart: unless-stopped
+        env_file:
+            - path: .env
+              required: false
+        image: ${COMPOSE_PROJECT_NAME}-app
+        pull_policy: never
+        command: ['php', 'artisan', 'drivers:supervise']
+        volumes:
+            - ./docs/accounts:/app/docs/accounts:ro
+            - ./storage/installation:/app/storage/installation:ro
+        # A supervisor listens on no port; the image's web server check does not apply.
+        healthcheck:
+            disable: true
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
     # Runs the scheduled commands, such as the minute account reconciliation, with the queue's code and environment.
     scheduler:
         restart: unless-stopped
