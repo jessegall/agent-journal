@@ -32,7 +32,9 @@ return [
     SkillReadAsked::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
-        'producers' => [],
+        'producers' => [
+            'app/Skills/SkillReadAsks.php',
+        ],
     ],
     SkillGenerationRetired::class => [
         'role' => EventRole::RowFact,
