@@ -52,8 +52,8 @@ enum ScenarioFact: string
                 DriverOperation::Interrupt,
             ),
             self::Stopped => AgentSession::query()->find($run->lastAgent()->current_session_id)?->hasEnded() !== false,
-            self::ChallengeShown => SignInAttempt::query()->find($run->signInAttempt())?->isWaiting() === true,
-            self::SignedIn => SignInAttempt::query()->find($run->signInAttempt())?->isComplete() === true,
+            self::ChallengeShown => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isWaiting() === true,
+            self::SignedIn => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isSignedIn() === true,
             self::Installed => $run->installerExit() === 0 && Host::query()->exists(),
             self::InstructionsAnswered => HostInstruction::areAllAnsweredSince($run->startedAt),
         };
