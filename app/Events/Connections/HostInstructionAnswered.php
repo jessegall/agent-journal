@@ -12,5 +12,9 @@ use App\Hosts\Protocol\HostInstructionType;
  */
 final readonly class HostInstructionAnswered implements ConnectionEvent, HostInstructionAnswerEvent
 {
-    public function __construct(public string $instructionId, public string|null $processId, public HostInstructionType $type) {}
+    public function __construct(
+        public string $instructionId,
+        public string|null $processId,
+        public HostInstructionType $type,
+    ) {}
 }

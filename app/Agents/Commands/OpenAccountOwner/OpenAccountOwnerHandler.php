@@ -42,7 +42,13 @@ final readonly class OpenAccountOwnerHandler implements CommandHandler
         }
 
         $plan = $this->profiles->of($runtime)->ownerPlan($this->headless->startOf($runtime, $start));
-        $open = new OpenHostProcessCommand($runtime->host_id, null, $plan, HostInstructionSource::fromJournal(), $start->id);
+        $open = new OpenHostProcessCommand(
+            $runtime->host_id,
+            null,
+            $plan,
+            HostInstructionSource::fromJournal(),
+            $start->id,
+        );
 
         return $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $open);
     }

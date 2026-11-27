@@ -7,6 +7,8 @@ namespace App\Asks;
 use App\Actors\Contracts\AgentTexts;
 use App\Asks\Contracts\AskType;
 use App\Asks\Enums\SupervisorCoverageType;
+use App\Attributes\Commands\Authorize;
+use App\Bus\Contracts\Command;
 use App\Support\CommandRegistry;
 use App\Values\SupervisorCoverage;
 use App\Values\SupervisorProfile;
@@ -35,9 +37,9 @@ final readonly class SupervisorCoverageReader
     private function forType(AskType $type, SupervisorProfile|null $profile): SupervisorCoverage
     {
         $command = $type->requiredCommand();
-        $authorize = $this->commands->has($command) ? $this->commands->authorizeOf($command) : null;
+        $authorize = $this->commands->applicationAuthorizeOf($command);
 
-        if ($profile === null || $authorize === null) {
+        if ($profile === null || $authorize->isEmpty()) {
             return new SupervisorCoverage(
                 $type->key(),
                 SupervisorCoverageType::Unknown,
@@ -46,6 +48,18 @@ final readonly class SupervisorCoverageReader
             );
         }
 
+        return $this->covered($type, $profile, $command, $authorize->get());
+    }
+
+    /**
+     * @param  class-string<Command<mixed>>  $command
+     */
+    private function covered(
+        AskType $type,
+        SupervisorProfile $profile,
+        string $command,
+        Authorize $authorize,
+    ): SupervisorCoverage {
         $decision = $profile->authorization->admits($command, $authorize);
 
         return new SupervisorCoverage(

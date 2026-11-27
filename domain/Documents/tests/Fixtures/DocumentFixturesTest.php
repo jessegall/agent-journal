@@ -13,6 +13,8 @@ use Tests\Support\RefreshHookDatabase;
  */
 final class DocumentFixturesTest extends TestCase
 {
+    private const string DRAFT_BODY = 'Unsaved words.';
+
     use RefreshHookDatabase;
 
     public function test_each_revision_keeps_its_author_and_body_and_an_older_one_stays_addressable(): void
@@ -34,10 +36,10 @@ final class DocumentFixturesTest extends TestCase
     {
         $documents = $this->journal->owner()->fixtures(DocumentFixtures::class)
             ->publishedDocument('Design', author: 'Owner', body: 'First words.')
-            ->draft('Design', editor: 'Owner', body: 'Unsaved words.');
+            ->draft('Design', editor: 'Owner', body: self::DRAFT_BODY);
 
         $documents->withDocument('Design', fn (TestDocument $document) => $document
-            ->assertDraft(editor: 'Owner', body: 'Unsaved words.')->assertRevision(
+            ->assertDraft(editor: 'Owner', body: self::DRAFT_BODY)->assertRevision(
                 1,
                 author: 'Owner',
                 body: 'First words.',
@@ -74,8 +76,8 @@ final class DocumentFixturesTest extends TestCase
     {
         $documents = $this->journal->owner()->fixtures(DocumentFixtures::class)
             ->publishedDocument('Design', author: 'Owner', body: 'First words.')
-            ->draft('Design', editor: 'Owner', body: 'Unsaved words.');
+            ->draft('Design', editor: 'Owner', body: self::DRAFT_BODY);
 
-        $this->journal->assertResult('Unsaved words.', $documents->draftOf('Design', 'Owner')->body);
+        $this->journal->assertResult(self::DRAFT_BODY, $documents->draftOf('Design', 'Owner')->body);
     }
 }

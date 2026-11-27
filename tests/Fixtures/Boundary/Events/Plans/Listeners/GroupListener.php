@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Plans\Listeners;
 
-use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
-use Tests\Fixtures\Boundary\Events\Tasks\TasksDomain;
+use Tests\Fixtures\Boundary\Events\Tasks\{Events\TaskClosed, TasksDomain};
 
 final class GroupListener
 {

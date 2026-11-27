@@ -278,7 +278,7 @@ final readonly class PolicyResolver
     private function applicationCommands(ProfileKey $key, array $commands): array
     {
         foreach ($commands as $command) {
-            if (! $this->commands->has($command) || $this->commands->authorizeOf($command) === null) {
+            if ($this->commands->applicationAuthorizeOf($command)->isEmpty()) {
                 throw ProfilePolicyRefused::unknownCommand($key, $command);
             }
         }

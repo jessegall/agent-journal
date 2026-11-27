@@ -57,7 +57,7 @@ final readonly class SendMessageHandler implements CommandHandler
      */
     private function assertSameProjectAsOwner(MessageSender $sender, Inbox $inbox): void
     {
-        $owner = $inbox->personalActor()->filter(fn (ActorReference $actor) => $actor->isAgent());
+        $owner = $inbox->personal_actor->filter(fn (ActorReference $actor) => $actor->isAgent());
 
         if (! $sender instanceof Agent || $owner->isEmpty()) {
             return;

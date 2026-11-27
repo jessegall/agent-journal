@@ -137,7 +137,7 @@ final class PlanBuilder
         );
 
         $assignments = $this->assignments($node, $substitutions);
-        $program = $argv === [] ? null : $argv[0]->literal();
+        $program = self::programOf($argv);
 
         if ($program !== null && array_key_exists(basename($program), self::SHELLS)) {
             return $this->shell($node, $context, $argv, $redirects, $children, self::SHELLS[basename($program)]);
@@ -173,9 +173,9 @@ final class PlanBuilder
         ShellDialect $dialect,
     ): PlanStep {
         $literals = array_map(fn (PlanWord $word) => $word->literal(), $argv);
-        $source = array_search('-c', $literals, true) === 1 ? ($literals[2] ?? null) : null;
+        $source = $literals[2] ?? null;
 
-        if ($source === null || in_array(null, $literals, true)) {
+        if (array_search('-c', $literals, true) !== 1 || $source === null || in_array(null, $literals, true)) {
             throw ExecutionPlanRefused::unsupportedNode('shell without a literal -c source', $node->id);
         }
 
@@ -281,5 +281,19 @@ final class PlanBuilder
                 ),
             ),
         );
+    }
+
+    /**
+     * The literal program a command's first word names; none for a command of assignments only or a computed name.
+     *
+     * @param  list<PlanWord>  $argv
+     */
+    private static function programOf(array $argv): string|null
+    {
+        if ($argv === []) {
+            return null;
+        }
+
+        return $argv[0]->literal();
     }
 }

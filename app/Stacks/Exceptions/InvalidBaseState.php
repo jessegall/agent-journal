@@ -20,6 +20,8 @@ final class InvalidBaseState extends LogicException
 
     public static function notReadyFirst(): self
     {
-        return new self('journal.sessions.base_states must start with '.ReadyState::class.', the bottom of every stack.');
+        return new self(
+            'journal.sessions.base_states must start with '.ReadyState::class.', the bottom of every stack.',
+        );
     }
 }

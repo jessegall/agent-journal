@@ -254,9 +254,13 @@ final readonly class ShellAdmission implements ShellAdmissionContract
             }
         }
 
-        $timing = $classification->hasVerification() ? $this->timing->forCaller() : null;
+        if (! $classification->hasVerification()) {
+            return null;
+        }
 
-        if ($timing !== null && ! $timing->isAllowed()) {
+        $timing = $this->timing->forCaller();
+
+        if (! $timing->isAllowed()) {
             $correction = AgentText::of('core.shell.run_at_phase_end');
 
             return $this->refusal(AdmissionRefusalCode::PhaseTiming, $tree, $timing->reason(), $correction);

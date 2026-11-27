@@ -66,7 +66,12 @@ final readonly class ScreenExpectation
      * @param  array<string, string>  $values
      * @param  string|null  $fingerprint  the fingerprint of the frame, read only for an expectation that names one
      */
-    public function isMetBy(ScreenReading $reading, HostFramePayload $frame, array $values, string|null $fingerprint): bool
+    public function isMetBy(
+        ScreenReading $reading,
+        HostFramePayload $frame,
+        array $values,
+        string|null $fingerprint,
+    ): bool
     {
         if ($this->fingerprint !== null) {
             return $reading->isStill && $fingerprint === $this->fingerprint;

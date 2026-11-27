@@ -162,6 +162,8 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
      */
     public function answer(HostAnswerPayload $answer, CarbonImmutable $at): void
     {
+        $this->assertOpen();
+
         if ($answer->status === HostAnswerStatus::Refused) {
             // A refusal that names no reason is taken as unsafe, the host's own answer to an instruction it does not trust.
             $this->refuse($answer->refusal ?? HostRefusal::Unsafe, $answer->reason, $answer->facts, $at);
@@ -169,7 +171,6 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
             return;
         }
 
-        $this->assertOpen();
         $this->forgetCarriedSecrets();
         $this->status = HostInstructionStatus::Done;
         $this->answer = $answer;
@@ -250,7 +251,7 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
      */
     public static function areAllAnsweredSince(CarbonImmutable $since): bool
     {
-        return self::query()->where('created_at', '>=', $since)->whereNull('answered_at')->doesntExist();
+        return self::query()->placedSince($since)->unanswered()->doesntExist();
     }
 
     /**
@@ -269,8 +270,8 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     public static function findExpiredAt(CarbonImmutable $now, int $limit): array
     {
         $instructions = self::query()
-            ->whereIn('status', [HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
-            ->where('expires_at', '<=', $now)
+            ->withAnyStatus([HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
+            ->expiredAt($now)
             ->lock('for update skip locked')
             ->readExactly($limit)
             ->get();
@@ -286,33 +287,12 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     public static function findOpenOf(string $processId): array
     {
         $instructions = self::query()
-            ->where('host_process_id', $processId)
-            ->whereIn('status', [HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
+            ->ofProcess($processId)
+            ->withAnyStatus([HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
             ->lockForUpdate()
             ->get();
 
         return array_values($instructions->all());
-    }
-
-    /**
-     * The instructions made for the process, by their number.
-     *
-     * @return list<self>
-     */
-    public static function findForProcess(string $processId): array
-    {
-        return array_values(self::query()->where('host_process_id', $processId)->orderBy('sequence')->get()->all());
-    }
-
-    /**
-     * The instructions made for the host itself, for no process of it, oldest first.
-     *
-     * @return list<self>
-     */
-    public static function findForHostItself(string $hostId): array
-    {
-        return array_values(self::query()->where('host_id', $hostId)->whereNull('host_process_id')->orderBy('sequence')
-            ->limit(64)->get()->all());
     }
 
     /**
@@ -322,7 +302,11 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
      */
     public static function findClaimedOf(Host $host): array
     {
-        $instructions = self::query()->forHost($host)->where('status', HostInstructionStatus::Claimed)->lockForUpdate()->get();
+        $instructions = self::query()
+            ->forHost($host)
+            ->withAnyStatus([HostInstructionStatus::Claimed])
+            ->lockForUpdate()
+            ->get();
 
         return array_values($instructions->all());
     }
@@ -332,19 +316,19 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
      */
     public static function findWithKey(string $idempotencyKey): self|null
     {
-        return self::query()->where('idempotency_key', $idempotencyKey)->first();
+        return self::query()->withIdempotencyKey($idempotencyKey)->first();
     }
 
     /**
      * The seconds until the first instruction the host claimed and has not answered may be handed out again, at least one;
      * null when it holds none, so a claim that waits wakes in time to hand it out.
      */
-    public static function secondsUntilRetakeable(Host $host, CarbonImmutable $now): int|null
+    public static function resolveSecondsUntilRetakeable(Host $host, CarbonImmutable $now): int|null
     {
         $oldest = self::query()
             ->forHost($host)
-            ->where('status', HostInstructionStatus::Claimed)
-            ->where('expires_at', '>', $now)
+            ->withAnyStatus([HostInstructionStatus::Claimed])
+            ->inTimeAt($now)
             ->min('claimed_at');
 
         if ($oldest === null) {
@@ -363,19 +347,19 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
      *
      * @return list<self>
      */
-    public static function claimable(Host $host, CarbonImmutable $now, int $limit): array
+    public static function findClaimable(Host $host, CarbonImmutable $now, int $limit): array
     {
         $isAllowingImages = self::query()
             ->forHost($host)
-            ->where('type', HostInstructionType::AllowImages)
-            ->whereIn('status', [HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
+            ->ofType(HostInstructionType::AllowImages)
+            ->withAnyStatus([HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
             ->exists();
 
         $instructions = self::query()
             ->forHost($host)
             ->takeableAt($now)
-            ->when($isAllowingImages, fn (Builder $query) => $query->where('type', '!=', HostInstructionType::OpenContainer))
-            ->orderBy('sequence')
+            ->holdingContainerOpensWhile($isAllowingImages)
+            ->bySequence()
             ->lock('for update skip locked')
             ->readExactly($limit)
             ->get();
@@ -389,15 +373,118 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
      *
      * @return list<self>
      */
-    public static function orderedFor(DriverRequest $request): array
+    public static function findOrderedFor(DriverRequest $request): array
     {
         $instructions = self::query()
             ->ofDriverRequest($request)
-            ->whereIn('status', [HostInstructionStatus::Pending, HostInstructionStatus::Claimed, HostInstructionStatus::Done])
-            ->orderBy('sequence')
+            ->withAnyStatus([
+                HostInstructionStatus::Pending,
+                HostInstructionStatus::Claimed,
+                HostInstructionStatus::Done,
+            ])
+            ->bySequence()
             ->get();
 
         return array_values($instructions->all());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function placedSince(Builder $query, CarbonImmutable $since): void
+    {
+        $query->where('created_at', '>=', $since);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unanswered(Builder $query): void
+    {
+        $query->whereNull('answered_at');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @param  list<HostInstructionStatus>  $statuses
+     */
+    #[Scope]
+    protected function withAnyStatus(Builder $query, array $statuses): void
+    {
+        $query->whereIn('status', $statuses);
+    }
+
+    /**
+     * The instructions whose expiry passed at the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function expiredAt(Builder $query, CarbonImmutable $now): void
+    {
+        $query->where('expires_at', '<=', $now);
+    }
+
+    /**
+     * The instructions whose expiry is still to come at the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inTimeAt(Builder $query, CarbonImmutable $now): void
+    {
+        $query->where('expires_at', '>', $now);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofProcess(Builder $query, string $processId): void
+    {
+        $query->where('host_process_id', $processId);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withIdempotencyKey(Builder $query, string $idempotencyKey): void
+    {
+        $query->where('idempotency_key', $idempotencyKey);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofType(Builder $query, HostInstructionType $type): void
+    {
+        $query->where('type', $type);
+    }
+
+    /**
+     * Leaves out every container open while the host has not yet answered its allow_images instruction.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function holdingContainerOpensWhile(Builder $query, bool $isAllowingImages): void
+    {
+        if ($isAllowingImages) {
+            $query->where('type', '!=', HostInstructionType::OpenContainer);
+        }
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function bySequence(Builder $query): void
+    {
+        $query->orderBy('sequence');
     }
 
     /**
@@ -451,5 +538,16 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     {
         $query->whereIn('status', [HostInstructionStatus::Done, HostInstructionStatus::Refused])
             ->where('answered_at', '<', $before);
+    }
+
+    /**
+     * Only the id of each instruction, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ids(Builder $query): void
+    {
+        $query->select('id');
     }
 }

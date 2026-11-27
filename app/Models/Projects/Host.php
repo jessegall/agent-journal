@@ -42,6 +42,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Collection;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -70,6 +71,7 @@ use Spatie\LaravelData\DataCollection;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read string $link_alarm
+ * @property-read ProtectionEvidence $protection_evidence
  *
  * @mixin \Eloquent
  */
@@ -129,7 +131,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $host->credential_hash = self::hashOf($secret);
         $host->start_roots = $startRoots;
         $host->arrangement = $arrangement;
-        $host->instruction_secret = self::instructionSecretOf($secret);
+        $host->instruction_secret = self::resolveInstructionSecretOf($secret);
         $host->saveAndAssert();
 
         return $host;
@@ -179,7 +181,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function reenroll(string $secret, array $startRoots): void
     {
         $this->credential_hash = self::hashOf($secret);
-        $this->instruction_secret = self::instructionSecretOf($secret);
+        $this->instruction_secret = self::resolveInstructionSecretOf($secret);
         $this->start_roots = $startRoots;
         $this->failing_since = null;
         $this->failing_route = null;
@@ -195,6 +197,9 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->raise(new HostReenrolled($this->id));
     }
 
+    /**
+     * Keeps the moment the host's heartbeat last reached the journal.
+     */
     public function recordHeartbeat(CarbonImmutable $at): void
     {
         $this->last_heartbeat_at = $at;
@@ -257,6 +262,82 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->raise(new HostRevoked($this->id));
     }
 
+    /**
+     * Keeps the instruction types the host's inventory says it carries out.
+     *
+     * @param  list<string>  $capabilities
+     */
+    public function recordCapabilities(array $capabilities): void
+    {
+        $this->capabilities = $capabilities;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * Keeps the images the journal ordered this host to allow its containers, after the instruction was made.
+     *
+     * @param  list<string>  $images
+     */
+    public function allowImages(array $images): void
+    {
+        $this->allowed_images = $images;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * A host that restarted allows no image until the journal instructs it again.
+     */
+    public function forgetAllowedImages(): void
+    {
+        $this->allowImages([]);
+    }
+
+    /**
+     * Keeps the release the host's inventory named; the release an upgrade waited on ends that upgrade.
+     */
+    public function recordRelease(string $release): void
+    {
+        $this->release = $release;
+
+        if ($this->upgrade_release === $release) {
+            $this->upgrade_release = null;
+            $this->upgrade_instruction_id = null;
+        }
+
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The host is to move to the release once its processes ended; an earlier failure no longer stands.
+     */
+    public function awaitUpgrade(string $release): void
+    {
+        $this->upgrade_release = $release;
+        $this->upgrade_instruction_id = null;
+        $this->upgrade_failure = null;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * Keeps the upgrade instruction the journal made for the awaited release.
+     */
+    public function instructionUpgrade(string $instructionId): void
+    {
+        $this->upgrade_instruction_id = $instructionId;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The awaited upgrade failed for the reason given; the host stays on the release it runs.
+     */
+    public function failUpgrade(string $reason): void
+    {
+        $this->upgrade_release = null;
+        $this->upgrade_instruction_id = null;
+        $this->upgrade_failure = $reason;
+        $this->saveAndAssert();
+    }
+
     // ----------[ Predicates ]----------
 
     /**
@@ -307,23 +388,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Where this host runs a driver's executable from: a connected relay opens only the sealed copies its installer made,
-     * and a contained host runs it from the agent image.
-     */
-    public function executablePlace(): ExecutablePlace
-    {
-        if ($this->isConnectedFolderRelay()) {
-            return ExecutablePlace::Sealed;
-        }
-
-        if ($this->arrangement->isContained()) {
-            return ExecutablePlace::Image;
-        }
-
-        return ExecutablePlace::Host;
-    }
-
-    /**
      * Whether a folder lies inside one of the roots this host may start in.
      */
     public function permitsFolder(string $folder): bool
@@ -354,36 +418,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Keeps the instruction types the host's inventory says it carries out.
-     *
-     * @param  list<string>  $capabilities
-     */
-    public function recordCapabilities(array $capabilities): void
-    {
-        $this->capabilities = $capabilities;
-        $this->saveAndAssert();
-    }
-
-    /**
-     * Keeps the images the journal ordered this host to allow its containers, after the instruction was made.
-     *
-     * @param  list<string>  $images
-     */
-    public function allowImages(array $images): void
-    {
-        $this->allowed_images = $images;
-        $this->saveAndAssert();
-    }
-
-    /**
-     * A host that restarted allows no image until the journal instructs it again.
-     */
-    public function forgetAllowedImages(): void
-    {
-        $this->allowImages([]);
-    }
-
-    /**
      * Whether the journal last ordered this host to allow exactly these images.
      *
      * @param  list<string>  $images
@@ -391,52 +425,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function allowsImages(array $images): bool
     {
         return $this->allowed_images === $images;
-    }
-
-    /**
-     * Keeps the release the host's inventory named; the release an upgrade waited on ends that upgrade.
-     */
-    public function recordRelease(string $release): void
-    {
-        $this->release = $release;
-
-        if ($this->upgrade_release === $release) {
-            $this->upgrade_release = null;
-            $this->upgrade_instruction_id = null;
-        }
-
-        $this->saveAndAssert();
-    }
-
-    /**
-     * The host is to move to the release once its processes ended; an earlier failure no longer stands.
-     */
-    public function awaitUpgrade(string $release): void
-    {
-        $this->upgrade_release = $release;
-        $this->upgrade_instruction_id = null;
-        $this->upgrade_failure = null;
-        $this->saveAndAssert();
-    }
-
-    /**
-     * Keeps the upgrade instruction the journal made for the awaited release.
-     */
-    public function instructionUpgrade(string $instructionId): void
-    {
-        $this->upgrade_instruction_id = $instructionId;
-        $this->saveAndAssert();
-    }
-
-    /**
-     * The awaited upgrade failed for the reason given; the host stays on the release it runs.
-     */
-    public function failUpgrade(string $reason): void
-    {
-        $this->upgrade_release = null;
-        $this->upgrade_instruction_id = null;
-        $this->upgrade_failure = $reason;
-        $this->saveAndAssert();
     }
 
     /**
@@ -468,6 +456,23 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     // ----------[ Transformers ]----------
 
     /**
+     * Where this host runs a driver's executable from: a connected relay opens only the sealed copies its installer made,
+     * and a contained host runs it from the agent image.
+     */
+    public function executablePlace(): ExecutablePlace
+    {
+        if ($this->isConnectedFolderRelay()) {
+            return ExecutablePlace::Sealed;
+        }
+
+        if ($this->arrangement->isContained()) {
+            return ExecutablePlace::Image;
+        }
+
+        return ExecutablePlace::Host;
+    }
+
+    /**
      * The protection this host reported for the build the unreported report names, or that report when it has none.
      */
     public function protectionOf(ProtectionReport $unreported): ProtectionReport
@@ -481,20 +486,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         }
 
         return $reports[$key]->report();
-    }
-
-    /**
-     * The runs recorded on this host, by report key and item; a later run of an item replaces an earlier one.
-     */
-    public function protectionEvidence(): ProtectionEvidence
-    {
-        $runs = [];
-
-        foreach ($this->protection_runs->items() as $recorded) {
-            $runs[$recorded->key][$recorded->item] = $recorded->run;
-        }
-
-        return new ProtectionEvidence($runs);
     }
 
     // ----------[ Calculations ]----------
@@ -529,7 +520,36 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         return $this->start_roots[0];
     }
 
+    /**
+     * The sentence a host running another release than the journal's shows, with what the owner can do about it.
+     *
+     * @return non-falsy-string
+     */
+    public function releaseAlarm(string $journalRelease): string
+    {
+        return "The host {$this->installation_name} runs release {$this->release}, not the journal's {$journalRelease}: "
+            .'run its install line again on that machine to bring it up to date.';
+    }
+
     // ----------[ Accessors ]----------
+
+    /**
+     * The runs recorded on this host, by report key and item; a later run of an item replaces an earlier one.
+     *
+     * @return Attribute<ProtectionEvidence, never>
+     */
+    protected function protectionEvidence(): Attribute
+    {
+        return Accessor::get(function () {
+            $runs = [];
+
+            foreach ($this->protection_runs->items() as $recorded) {
+                $runs[$recorded->key][$recorded->item] = $recorded->run;
+            }
+
+            return new ProtectionEvidence($runs);
+        });
+    }
 
     /**
      * The sentence a broken link of this host shows: since when its calls fail and why the latest did, or since when
@@ -548,17 +568,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             return "The host {$this->installation_name} has not called the journal since "
                 ."{$this->last_answered_at?->format('H:i T')}.";
         });
-    }
-
-    /**
-     * The sentence a host running another release than the journal's shows, with what the owner can do about it.
-     *
-     * @return non-falsy-string
-     */
-    public function releaseAlarm(string $journalRelease): string
-    {
-        return "The host {$this->installation_name} runs release {$this->release}, not the journal's {$journalRelease}: "
-            .'run its install line again on that machine to bring it up to date.';
     }
 
     // ----------[ Asserts ]----------
@@ -584,20 +593,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     {
         if ($this->isRevoked()) {
             throw HostCredentialRejected::revoked();
-        }
-    }
-
-    /**
-     * Refuses a start no serving host can run.
-     *
-     * @param  list<self>  $hosts  the serving hosts that can run it
-     *
-     * @throws HostUnavailable
-     */
-    private static function assertServesStart(array $hosts, string $driver, DriverType $driverType): void
-    {
-        if ($hosts === []) {
-            throw HostUnavailable::forStart($driver, $driverType);
         }
     }
 
@@ -629,23 +624,23 @@ final class Host extends JournalModel implements EventSource, ReadableModel
      * The secret the host's instructions are signed with, worked out from its credential the way the host works it out, so
      * enrolment hands over nothing more.
      */
-    public static function instructionSecretOf(string $credential): string
+    public static function resolveInstructionSecretOf(string $credential): string
     {
         return hash_hmac('sha256', self::INSTRUCTION_SECRET_CONTEXT, $credential);
     }
 
-    /**
-     * The host, locked until the transaction ends, so its host-wide instructions are numbered one at a time.
-     */
     /**
      * The enrolled host of the installation name, locked, not revoked and serving no connected project; none before
      * the name is enrolled.
      */
     public static function findLockedEnrolledNamed(string $name): self|null
     {
-        return self::query()->enrolled()->unrevoked()->where('installation_name', $name)->lockForUpdate()->first();
+        return self::query()->enrolled()->unrevoked()->withInstallationName($name)->lockForUpdate()->first();
     }
 
+    /**
+     * The host, locked until the transaction ends, so its host-wide instructions are numbered one at a time.
+     */
     public static function findLocked(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
@@ -670,8 +665,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public static function findUpgradesAnsweredDoneBefore(CarbonImmutable $before): array
     {
         return array_values(self::query()->unrevoked()
-            ->whereNotNull('upgrade_release')
-            ->whereIn('upgrade_instruction_id', HostInstruction::query()->answeredDoneBefore($before)->select('id'))
+            ->upgradeAnsweredDoneBefore($before)
             ->lockForUpdate()
             ->get()
             ->all());
@@ -734,7 +728,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
      * @throws HostUnavailable
      * @throws StartRefused when no folder of the connected project serves it now
      */
-    public static function findRunningStart(
+    public static function resolveRunningStart(
         Project $project,
         string $driver,
         ExecutionModeType $placement,
@@ -746,14 +740,12 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             return new StartPlace($binding->host_id, $binding->canonical_root);
         }
 
-        $hosts = array_values(array_filter(
-            self::findServingEnrolled(),
+        $host = new Collection(self::findServingEnrolled())->first(
             fn (self $host) => $host->runsPlacement($placement),
-        ));
+            HostUnavailable::throwing()->forStart($driver, $driverType),
+        );
 
-        self::assertServesStart($hosts, $driver, $driverType);
-
-        return new StartPlace($hosts[0]->id, $hosts[0]->startFolder());
+        return new StartPlace($host->id, $host->startFolder());
     }
 
     // ----------[ Scopes ]----------
@@ -876,5 +868,26 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     protected function silentSince(Builder $query, CarbonImmutable $since): void
     {
         $query->where('last_heartbeat_at', '<', $since)->whereNull('failing_since');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withInstallationName(Builder $query, string $name): void
+    {
+        $query->where('installation_name', $name);
+    }
+
+    /**
+     * The hosts awaiting an upgrade whose instruction was answered done before the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function upgradeAnsweredDoneBefore(Builder $query, CarbonImmutable $before): void
+    {
+        $query->whereNotNull('upgrade_release')
+            ->whereIn('upgrade_instruction_id', HostInstruction::query()->answeredDoneBefore($before)->ids());
     }
 }

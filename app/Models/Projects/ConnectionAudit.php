@@ -112,16 +112,6 @@ final class ConnectionAudit extends JournalModel implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The newest steps first, at most this many.
-     *
-     * @return list<self>
-     */
-    public static function findNewest(int $most): array
-    {
-        return array_values(self::query()->newestFirst()->limit($most)->get()->all());
-    }
-
-    /**
      * The newest steps on these bindings, newest first, at most SUPPORT_RECORD_LIMIT for each one shown.
      *
      * @param  list<string>  $ids

@@ -6,6 +6,7 @@ namespace App\Pipelines\Support;
 
 use App\Bus\Contracts\Pipe;
 use App\Bus\Contracts\PipelineDefinition;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\Codebase;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
@@ -26,6 +27,7 @@ final readonly class PipelineValidator
         private DomainRegistry $domains,
         #[Config('journal.pipelines.middleware')]
         private array $middleware,
+        private ReflectorFactory $reflectors,
     ) {}
 
     /**
@@ -68,6 +70,8 @@ final readonly class PipelineValidator
     {
         $definition = $this->app->make($pipeline);
 
-        return new PipelineChain($definition, $this->middleware[$pipeline] ?? [], $this->app)->faults();
+        $middleware = $this->middleware[$pipeline] ?? [];
+
+        return new PipelineChain($definition, $middleware, $this->app, $this->reflectors)->faults();
     }
 }

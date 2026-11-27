@@ -26,7 +26,7 @@ return new class extends Migration
             $table->unsignedInteger('profile_revision');
             $table->ulid('start_request_id')->index();
             $table->ulid('skill_generation_id')->nullable();
-            $table->json('skill_keys')->nullable();
+            $table->json('skill_keys')->default('[]');
             $table->ulid('current_conversation_id')->nullable();
             $table->string('status', 16)->default('active');
             $table->timestampTz('ended_at')->nullable();

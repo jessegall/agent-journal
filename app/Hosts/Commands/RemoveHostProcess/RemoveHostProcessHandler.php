@@ -21,7 +21,7 @@ final readonly class RemoveHostProcessHandler implements CommandHandler
         return $this->instructions->remove(
             $process->host_id,
             HostInstructionSource::fromJournal(),
-            HostRemovePlanPayload::from(['container' => $process->containerName()]),
+            HostRemovePlanPayload::from(['container' => $process->container_name]),
         )->getKey();
     }
 }

@@ -47,6 +47,7 @@ final readonly class CheckRules
         $read = CommandClassSet::of(CommandClass::Verification, CommandClass::Read);
         $fix = CommandClassSet::of(CommandClass::Verification, CommandClass::Read, CommandClass::Edit);
         $php = ProgramSpellings::php();
+        $phpstan = ProgramSpellings::from(['family' => 'phpstan', 'spellings' => ['phpstan.phar']]);
 
         return [
             $this->check('core.php.artisan-test', $php, ['artisan', 'test'], $this->testRunner(), $read),
@@ -60,14 +61,14 @@ final readonly class CheckRules
             $this->check('core.pest', new ProgramSpellings('pest'), [], $this->testRunner(), $read),
             $this->check(
                 'core.phpstan.analyse',
-                ProgramSpellings::from(['family' => 'phpstan', 'spellings' => ['phpstan.phar']]),
+                $phpstan,
                 ['analyse'],
                 $this->phpstan(),
                 $read,
             ),
             $this->check(
                 'core.phpstan.analyze',
-                ProgramSpellings::from(['family' => 'phpstan', 'spellings' => ['phpstan.phar']]),
+                $phpstan,
                 ['analyze'],
                 $this->phpstan(),
                 $read,

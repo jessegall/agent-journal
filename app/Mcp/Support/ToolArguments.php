@@ -419,13 +419,13 @@ final readonly class ToolArguments
     public function enum(string $name, string $type): BackedEnum
     {
         $argument = $this->arguments[$name] ?? null;
-        $case = is_string($argument) || is_int($argument) ? $type::tryFrom($argument) : null;
+        $expected = 'one of '.self::valuesOf($type);
 
-        if ($case === null) {
-            throw ToolArgumentInvalid::for($name, 'one of '.self::valuesOf($type));
+        if (! is_string($argument) && ! is_int($argument)) {
+            throw ToolArgumentInvalid::for($name, $expected);
         }
 
-        return $case;
+        return $type::tryFrom($argument) ?? throw ToolArgumentInvalid::for($name, $expected);
     }
 
     /**

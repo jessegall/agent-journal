@@ -7,6 +7,7 @@ namespace App\Pipelines\Support;
 use App\Bus\Contracts\Pipable;
 use App\Bus\Contracts\Pipe;
 use App\Bus\Contracts\PipelineDefinition;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\DeclaredType;
 use App\Support\Reflector;
 use Illuminate\Contracts\Container\Container;
@@ -32,6 +33,7 @@ final class PipelineChain
         private readonly PipelineDefinition $definition,
         private readonly array $middleware,
         private readonly Container $container,
+        private readonly ReflectorFactory $reflectors,
     ) {}
 
     /**
@@ -71,7 +73,7 @@ final class PipelineChain
             return $step->carriesOn($carried, $this->follow(...));
         }
 
-        if (Reflector::of($step)->is(PipelineDefinition::class)) {
+        if ($this->reflectors->is($step, PipelineDefinition::class)) {
             $inner = $this->container->make($step);
             assert($inner instanceof PipelineDefinition);
             $this->checkTaken($step, [$inner->input], $carried);

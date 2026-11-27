@@ -86,8 +86,6 @@ final class EvidenceRead extends JournalModel implements ProjectOwned, ReadableM
 
     // ----------[ Queries ]----------
 
-    // ----------[ Scopes ]----------
-
     /**
      * @param  Builder<self>  $query
      */

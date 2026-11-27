@@ -13,6 +13,7 @@ use App\Profiles\Enums\ReadEntitlementType;
 use App\Values\AccessDecision;
 use App\Values\AgentText;
 use App\Values\AllowedNames;
+use App\Values\ProfileSnapshot;
 use App\Values\ReadRequest;
 use App\Values\StartProfileAuthority;
 
@@ -29,16 +30,16 @@ final readonly class ReadAdmission implements ReadAdmissionContract
 
     public function assess(ReadRequest $request): AccessDecision
     {
-        $authority = $this->actors->hasActor() ? $this->actors->authority() : null;
+        return $this->actors->startProfileAuthority()->map(
+            fn (StartProfileAuthority $authority) => $this->assessForProfile($request, $authority->profile),
+        )->getOrCall(fn () => AccessDecision::allowed(
+            AccessRuleType::ScopeGrant,
+            AgentText::of('core.access.no_profile_limits_read'),
+        ));
+    }
 
-        if (! $authority instanceof StartProfileAuthority) {
-            return AccessDecision::allowed(
-                AccessRuleType::ScopeGrant,
-                AgentText::of('core.access.no_profile_limits_read'),
-            );
-        }
-
-        $profile = $authority->profile;
+    private function assessForProfile(ReadRequest $request, ProfileSnapshot $profile): AccessDecision
+    {
 
         if ($profile->deniesOperation($request->name)) {
             return AccessDecision::refused(
@@ -70,13 +71,13 @@ final readonly class ReadAdmission implements ReadAdmissionContract
      */
     public function allowedTargets(string $name): AllowedNames
     {
-        $authority = $this->actors->hasActor() ? $this->actors->authority() : null;
+        return $this->actors->startProfileAuthority()->map(
+            fn (StartProfileAuthority $authority) => $this->allowedTargetsForProfile($name, $authority->profile),
+        )->getOrCall(fn () => AllowedNames::all());
+    }
 
-        if (! $authority instanceof StartProfileAuthority) {
-            return AllowedNames::all();
-        }
-
-        $profile = $authority->profile;
+    private function allowedTargetsForProfile(string $name, ProfileSnapshot $profile): AllowedNames
+    {
 
         if ($profile->deniesOperation($name)) {
             return AllowedNames::only([]);

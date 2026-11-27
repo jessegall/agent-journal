@@ -32,7 +32,11 @@ final readonly class HostFrameScreens
         $this->screens->admit(ScreenRegistration::of($runtime), self::screenOf($process, $frame, $now), $now);
     }
 
-    private static function screenOf(HostProcess $process, HostFramePayload $frame, CarbonImmutable $now): ScreenFrameData
+    private static function screenOf(
+        HostProcess $process,
+        HostFramePayload $frame,
+        CarbonImmutable $now,
+    ): ScreenFrameData
     {
         return ScreenFrameData::from([
             'epoch' => "{$process->id}:{$process->generation}",

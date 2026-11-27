@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\ToolCheck;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * A model or an Eloquent cast never writes or reads a column's JSON by hand: a column holding an object or a list of
  * them is cast to its Laravel Data class, and Laravel Data reads and writes it.
  * tools/refactoring/column-json.php lists every other.
  */
+#[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]
 final class ColumnJsonTest extends TestCase
 {
     private const string HOW_TO_FIX = 'Cast the column to its Data class instead of encoding it by hand: ';

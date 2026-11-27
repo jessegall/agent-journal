@@ -406,7 +406,12 @@ final class Reflector implements ReflectorContract
         }
 
         $name = $this->name();
-        $backing = enum_exists($name) ? new ReflectionEnum($name)->getBackingType() : null;
+
+        if (! enum_exists($name)) {
+            return $this->backingType = None::create();
+        }
+
+        $backing = new ReflectionEnum($name)->getBackingType();
 
         return $this->backingType = $backing === null ? None::create() : new Some((string) $backing);
     }

@@ -77,22 +77,6 @@ final class DriverApproval extends JournalModel implements EventSource, Readable
     // ----------[ Queries ]----------
 
     /**
-     * The approved builds of each approved driver among these keys, by key.
-     *
-     * @param  list<string>  $keys
-     * @return array<string, list<string>>
-     */
-    public static function resolveBuildsByKey(array $keys): array
-    {
-        return self::query()
-            ->ofKeys($keys)
-            ->readExactlyOf($keys)
-            ->get()
-            ->mapWithKeys(fn (self $approval) => [$approval->driver_key => $approval->build_pins])
-            ->all();
-    }
-
-    /**
      * The driver's approval; none before its first.
      */
     public static function findOfKey(DriverKey $key): self|null

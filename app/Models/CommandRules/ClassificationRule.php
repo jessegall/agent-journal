@@ -231,4 +231,13 @@ final class ClassificationRule extends JournalModel implements EventSource, Proj
     {
         $query->with('activeRevision');
     }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withProject(Builder $query): void
+    {
+        $query->with('project');
+    }
 }

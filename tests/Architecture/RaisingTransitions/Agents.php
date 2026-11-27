@@ -13,7 +13,6 @@ return [
     'AgentFocus::clear',
     'AgentFocus::moveTo',
     'Agent::adoptRuntime',
-    'Agent::fenceRuntimes',
     'Agent::retireAt',
     'AgentRuntime::markStopping',
     'AgentRuntime::holdFor',

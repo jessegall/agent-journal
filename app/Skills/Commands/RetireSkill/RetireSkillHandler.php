@@ -6,6 +6,7 @@ namespace App\Skills\Commands\RetireSkill;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Models\Skills\Skill;
+use App\Models\Skills\SkillRevision;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\StoredSkillWrites;
 use App\Skills\Values\SkillRevisionResult;
@@ -25,7 +26,9 @@ final readonly class RetireSkillHandler implements CommandHandler
             $skill = Skill::findLockedVisible($skillId, SkillContextResolver::ENVIRONMENT);
             $skill->assertWritableAt($command->expectedRevision);
 
-            return $skill->retireBy($this->writes->author());
+            $skill->retireBy($this->writes->author());
+
+            return SkillRevision::findCurrentOf($skill);
         });
     }
 }

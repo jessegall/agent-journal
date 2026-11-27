@@ -81,7 +81,7 @@ final readonly class CommentLinkRecords implements RecordProvider
 
         $comments = Comment::query()
             ->whereKey($shown)
-            ->with('anchor')
+            ->withAnchor()
             ->readExactly(max(1, count($shown)))
             ->get()
             ->keyBy('id');

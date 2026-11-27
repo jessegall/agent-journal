@@ -166,7 +166,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
 
     public function projectIdOf(string $agentId): string
     {
-        return Agent::findProjectIdOf($agentId);
+        return Agent::resolveProjectIdOf($agentId);
     }
 
     /**

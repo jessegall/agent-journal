@@ -64,7 +64,7 @@ final class SkillReadEntry extends JournalModel implements EventSource, Readable
     /**
      * Records that the session's agent read the whole skill, with the evidence that proved it.
      */
-    public static function record(AgentSession $session, string $skillKey, ReadEvidence $evidence): self
+    public static function create(AgentSession $session, string $skillKey, ReadEvidence $evidence): self
     {
         $entry = new self();
         $entry->agent_id = $session->agent_id;
@@ -80,16 +80,6 @@ final class SkillReadEntry extends JournalModel implements EventSource, Readable
     // ----------[ Mutations ]----------
 
     /**
-     * The next batch of the agent's reads, oldest first; none once every read was forgotten.
-     *
-     * @return Collection<int, self>
-     */
-    public static function findBatchOfAgent(string $agentId): Collection
-    {
-        return self::query()->ofAgent($agentId)->readExactly(self::FORGET_BATCH)->get();
-    }
-
-    /**
      * Forgets this read.
      */
     public function forget(): void
@@ -99,6 +89,16 @@ final class SkillReadEntry extends JournalModel implements EventSource, Readable
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The next batch of the agent's reads, oldest first; none once every read was forgotten.
+     *
+     * @return Collection<int, self>
+     */
+    public static function findBatchOfAgent(string $agentId): Collection
+    {
+        return self::query()->ofAgent($agentId)->readExactly(self::FORGET_BATCH)->get();
+    }
 
     /**
      * The session's newest reads, newest first.

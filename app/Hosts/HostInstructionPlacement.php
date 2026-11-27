@@ -77,13 +77,18 @@ final readonly class HostInstructionPlacement
      *
      * @throws HostProtocolRefused
      */
-    public function forOpening(HostProcess $process, HostProcessPlan $plan, HostInstructionSource $source): HostInstruction
+    public function forOpening(
+        HostProcess $process,
+        HostProcessPlan $plan,
+        HostInstructionSource $source,
+    ): HostInstruction
     {
         $host = $this->orderingHost($process->host_id);
         $payload = $plan->payload();
         $this->reader->assertValid($payload, 'open plan');
         $this->containedRules->assertKept($payload);
-        $instruction = $this->place($host, $process, HostInstructionBody::from($plan->instructionType(), $payload->toArray(), $source));
+        $body = HostInstructionBody::from($plan->instructionType(), $payload->toArray(), $source);
+        $instruction = $this->place($host, $process, $body);
         $process->holdOpenInstruction($instruction->id);
 
         return $instruction;
@@ -96,7 +101,12 @@ final readonly class HostInstructionPlacement
      *
      * @throws HostProtocolRefused
      */
-    public function forHost(string $hostId, HostInstructionSource $source, HostInstructionType $type, array $payload): HostInstruction
+    public function forHost(
+        string $hostId,
+        HostInstructionSource $source,
+        HostInstructionType $type,
+        array $payload,
+    ): HostInstruction
     {
         $host = $this->orderingHost($hostId);
 

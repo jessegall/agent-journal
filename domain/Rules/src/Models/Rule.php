@@ -241,7 +241,7 @@ final class Rule extends JournalModel implements EventSource, Numbered, ProjectO
     /**
      * The owner key of the rule's own project, the owner an approval names when it chooses no other.
      */
-    public static function findOwnerKeyOf(string $id): string
+    public static function resolveOwnerKeyOf(string $id): string
     {
         return self::query()->findOrFail($id)->projectOwner()->key();
     }

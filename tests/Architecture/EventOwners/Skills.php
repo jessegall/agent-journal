@@ -25,7 +25,7 @@ return [
     ],
     SkillRead::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'SkillReadEntry::record',
+        'owner' => 'SkillReadEntry::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SkillRead('session', 'journal', ReadEvidence::SkillShow),

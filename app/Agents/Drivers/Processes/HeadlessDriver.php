@@ -152,7 +152,12 @@ final class HeadlessDriver implements ProcessDriver
         }
 
         $this->isInputClosed = true;
-        $source = HostInstructionSource::forStep($turn->id, self::CLOSE_INPUT, $turn->attempt_version, $this->generation);
+        $source = HostInstructionSource::forStep(
+            $turn->id,
+            self::CLOSE_INPUT,
+            $turn->attempt_version,
+            $this->generation,
+        );
 
         return DriverActions::of(
             new CloseHostInputCommand($this->process->id, $source),
@@ -205,7 +210,9 @@ final class HeadlessDriver implements ProcessDriver
      */
     private function turnRequest(): DriverRequest|null
     {
-        $requestId = HostInstruction::query()->whereKey($this->process->open_instruction_id)->value('driver_request_id');
+        $requestId = HostInstruction::query()
+            ->whereKey($this->process->open_instruction_id)
+            ->value('driver_request_id');
 
         if ($requestId === null) {
             return null;

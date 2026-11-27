@@ -195,21 +195,32 @@ final readonly class DeclarativeReader
             return;
         }
 
-        $rule = $this->normalizer->hasUnsupportedControl($line) ? null : $this->definition->ruleFor($line);
+        if ($this->normalizer->hasUnsupportedControl($line)) {
+            $this->unrecognized($builder, $stream, $start, $end);
+
+            return;
+        }
+
+        $rule = $this->definition->ruleFor($line);
 
         if ($rule === null) {
-            $builder->problem(
-                ProblemCode::OutputUnrecognized,
-                $stream,
-                $start,
-                $end,
-                'No reader rule accounts for this line.',
-            );
+            $this->unrecognized($builder, $stream, $start, $end);
 
             return;
         }
 
         $builder->record(new OutputRecord($stream, $start, $end, $rule->role, $rule->captures($line)));
+    }
+
+    private function unrecognized(CheckpointBuilder $builder, OutputStream $stream, int $start, int $end): void
+    {
+        $builder->problem(
+            ProblemCode::OutputUnrecognized,
+            $stream,
+            $start,
+            $end,
+            'No reader rule accounts for this line.',
+        );
     }
 
     /**
@@ -266,19 +277,16 @@ final readonly class DeclarativeReader
         }
 
         $counts = [];
+        $total = $this->definition->totalField;
+        $fields = $total === null ? $this->definition->countFields : [...$this->definition->countFields, $total];
 
-        foreach ([
-            ...$this->definition->countFields,
-            $this->definition->totalField,
-        ] as $field) {
-            $count = $field === null ? null : $summary->count($field);
+        foreach ($fields as $field) {
+            $count = $summary->count($field);
 
-            if ($field !== null && $count !== null) {
+            if ($count !== null) {
                 $counts[$field] = $count;
             }
         }
-
-        $total = $this->definition->totalField;
 
         if ($total !== null && isset($counts[$total])) {
             $parts = array_sum(array_intersect_key($counts, array_flip($this->definition->countFields)));
@@ -312,9 +320,15 @@ final readonly class DeclarativeReader
             $builder->problemOfWholeOutput(ProblemCode::CountsInvalid, 'Progress counts more steps than its total.');
         }
 
-        $summaryTotal = $this->definition->totalField === null ? null : $summary?->count($this->definition->totalField);
+        $totalField = $this->definition->totalField;
 
-        if ($progress->total !== null && $summaryTotal !== null && $progress->total !== $summaryTotal) {
+        if ($totalField === null || $summary === null || $progress->total === null) {
+            return $progress;
+        }
+
+        $summaryTotal = $summary->count($totalField);
+
+        if ($summaryTotal !== null && $progress->total !== $summaryTotal) {
             $builder->problemOfWholeOutput(
                 ProblemCode::ProgressTotalStale,
                 'The progress total differs from the summary.',
@@ -333,22 +347,23 @@ final readonly class DeclarativeReader
     private function claimOf(OutputRecord|null $summary, array $outcomes, bool $isEmpty): ClaimedOutcome
     {
         $field = $this->definition->failureField;
-        $failures = $field === null ? null : $summary?->count($field);
 
-        if ($failures !== null) {
-            if ($failures === 0) {
-                return ClaimedOutcome::Passed;
+        if ($field !== null && $summary !== null) {
+            $failures = $summary->count($field);
+
+            if ($failures !== null) {
+                return $failures === 0 ? ClaimedOutcome::Passed : ClaimedOutcome::Failed;
             }
-
-            return ClaimedOutcome::Failed;
         }
 
-        $last = $outcomes === [] ? null : $outcomes[array_key_last($outcomes)];
+        if ($outcomes !== []) {
+            return $outcomes[array_key_last($outcomes)]->claimedOutcome();
+        }
 
-        return match (true) {
-            $last !== null => $last->claimedOutcome(),
-            $isEmpty && $this->contract->allowsEmptySuccess() => ClaimedOutcome::Passed,
-            default => ClaimedOutcome::Unknown,
-        };
+        if ($isEmpty && $this->contract->allowsEmptySuccess()) {
+            return ClaimedOutcome::Passed;
+        }
+
+        return ClaimedOutcome::Unknown;
     }
 }

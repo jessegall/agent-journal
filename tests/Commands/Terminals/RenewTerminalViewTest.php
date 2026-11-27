@@ -130,7 +130,6 @@ final class RenewTerminalViewTest extends TestCase
     {
         $agent = Agent::query()->findOrFail($runtime->session->agent_id);
         $this->app->make(AgentSessions::class)->end($runtime->session);
-        $agent->fenceRuntimes();
         $started = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId());
         $intent = new RuntimeIntent(

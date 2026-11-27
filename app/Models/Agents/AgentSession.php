@@ -65,7 +65,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $profile_revision
  * @property string $start_request_id
  * @property string|null $skill_generation_id
- * @property list<string>|null $skill_keys
+ * @property list<string> $skill_keys
  * @property string|null $current_conversation_id
  * @property SessionStatus $status
  * @property CarbonImmutable|null $ended_at
@@ -77,7 +77,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $updated_at
  * @property-read Agent|null $agent
  * @property-read DriverConversation|null $currentConversation
- * @property-read list<string> $handedSkillKeys
  * @property-read mixed $selection
  * @property-read SessionToken|null $sessionToken
  * @property-read mixed $target
@@ -94,9 +93,16 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     use RaisesEvents;
 
     /**
+     * A session's skills are none until its start records the keys it handed.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = ['skill_keys' => '[]'];
+
+    /**
      * @return array<string, string>
      *
-     * @column skill_keys list<string>|null
+     * @column skill_keys list<string>
      */
     protected function casts(): array
     {
@@ -233,7 +239,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
      */
     public function hasSkill(string $key): bool
     {
-        return in_array($key, $this->handedSkillKeys, true);
+        return in_array($key, $this->skill_keys, true);
     }
 
     // ----------[ Transformers ]----------
@@ -304,16 +310,6 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
                 new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
             );
         });
-    }
-
-    /**
-     * The skill keys the start handed this session; none before its skills are recorded.
-     *
-     * @return Attribute<list<string>, never>
-     */
-    protected function handedSkillKeys(): Attribute
-    {
-        return Accessor::get(fn () => $this->skill_keys ?? []);
     }
 
     /**

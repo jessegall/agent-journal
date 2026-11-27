@@ -44,6 +44,7 @@ use Illuminate\Process\Factory;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
 use Tests\Fixtures\Drivers\ShownDriverArrangements;
+use Tests\Support\Assertions\Facts\MadeHostInstructions;
 use Tests\Support\Connections\PublicRelease;
 use Tests\Support\Hosts\MockHost;
 use Tests\Support\Hosts\TestEnrolledHost;
@@ -333,7 +334,7 @@ trait ArrangesHostProcesses
      */
     public function hostInstructionsOf(string $name): array
     {
-        return HostInstruction::findForProcess($this->hostProcessCalled($name)->id);
+        return MadeHostInstructions::forProcess($this->hostProcessCalled($name)->id);
     }
 
     /**
@@ -343,7 +344,7 @@ trait ArrangesHostProcesses
      */
     public function hostInstructionsOn(string $host): array
     {
-        return HostInstruction::findForHostItself($this->hostCalled($host)->hostId);
+        return MadeHostInstructions::forHostItself($this->hostCalled($host)->hostId);
     }
 
     /**

@@ -73,7 +73,7 @@ final class RevokeProjectBindingTest extends TestCase
         $this->assertSame([$revoked->revokedAtText, $revoked->revokedAtText], [$first->revokedAt, $second->revokedAt]);
         $this->assertSame(2, $revoked->authority_generation);
         $this->assertCount(1, array_filter(
-            ConnectionAudit::findNewest(10),
+            self::newestAudits(),
             fn (ConnectionAudit $audit) => $audit->type === ConnectionAuditType::BindingRevoked,
         ));
     }
@@ -134,7 +134,7 @@ final class RevokeProjectBindingTest extends TestCase
         $this->recoverBinding('nonce-aaaaaaaaaaaaaaaa')->assertOk();
         $this->journal->asOwner(new RevokeProjectBindingCommand($binding));
 
-        $audits = array_reverse(ConnectionAudit::findNewest(10));
+        $audits = array_reverse(self::newestAudits());
 
         $this->assertSame(
             [
@@ -202,10 +202,20 @@ final class RevokeProjectBindingTest extends TestCase
     }
 
     /**
+     * The ten newest connection audit steps, newest first.
+     *
+     * @return list<ConnectionAudit>
+     */
+    private static function newestAudits(): array
+    {
+        return array_values(ConnectionAudit::query()->newestFirst()->limit(10)->get()->all());
+    }
+
+    /**
      * The project's Main environment, which its first line made.
      */
     private function mainOf(Project $project): Environment
     {
-        return Environment::findListedOf($project->id)[0];
+        return Environment::findListedOfProjects([$project->id])[0];
     }
 }

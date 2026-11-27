@@ -74,9 +74,11 @@ final readonly class ConversationVisits implements ConversationVisitsContract
     {
         $session = AgentSession::findLockedForUpdate($sessionId);
 
-        $conversation = $session->current_conversation_id === null ? null : DriverConversation::query()->find(
-            $session->current_conversation_id,
-        );
+        if ($session->current_conversation_id === null) {
+            return;
+        }
+
+        $conversation = DriverConversation::query()->find($session->current_conversation_id);
 
         if ($conversation !== null) {
             ConversationVisit::create($session, $conversation, $eventId, $observedAt);

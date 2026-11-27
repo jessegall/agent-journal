@@ -6,6 +6,7 @@ namespace Tests\Support\Hosts;
 
 use App\Agents\ContainerManifest;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\SecurityOptions;
 use App\Hosts\EnrolledHost;
@@ -14,6 +15,7 @@ use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Projects\Enums\ArrangementType;
+use App\Sessions\AgentClientSettings;
 use App\Support\MountRules;
 use App\Values\ExecutionBudgets;
 use App\Values\HostProcessPlan;
@@ -356,14 +358,15 @@ final class TestHost
 
     /**
      * Opens a local process of pipes on this host with the argv and the start credentials of the runtime, handed over
-     * as the journal hands them to a process it instructions opened.
+     * as the journal hands them to a process it instructions opened, at this host's address of the served journal.
      *
      * @param  list<string>  $argv
      */
     public function openWithStartCredentials(string $name, string $runtimeId, array $argv): self
     {
         $runtime = AgentRuntime::query()->whereKey($runtimeId)->sole();
-        $credentials = $runtime->handOverStartCredentials($this->journalUrl());
+        $handed = $this->journal->service(HeadlessStarts::class)->clientSettingsOf($runtime);
+        $credentials = new AgentClientSettings($this->journalUrl(), $handed->token, $handed->profile);
         $plan = new HostProcessPlan(
             HostProcessPurpose::Probe,
             HostProcessType::Pipe,

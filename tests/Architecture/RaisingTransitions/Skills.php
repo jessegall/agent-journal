@@ -10,5 +10,5 @@ return [
     'Skill::makeCurrent',
     'Skill::retireBy',
     'SkillGeneration::retire',
-    'SkillReadEntry::record',
+    'SkillReadEntry::create',
 ];

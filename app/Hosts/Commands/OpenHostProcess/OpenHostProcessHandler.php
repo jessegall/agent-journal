@@ -22,12 +22,15 @@ final readonly class OpenHostProcessHandler implements CommandHandler
         $host = $this->placement->orderingHost($command->hostId);
         $runtime = $command->runtimeId === null ? null : AgentRuntime::query()->whereKey($command->runtimeId)->sole();
 
-        $start = $command->sessionProcessId === null
-            ? null
-            : SessionProcess::findLockedById($command->sessionProcessId);
+        $start = null;
+        $plan = $command->plan;
 
         // Every process of a start runs under its session's fence, which the session's stop conditions close.
-        $plan = $start === null ? $command->plan : $command->plan->withFence($start->session_id);
+        if ($command->sessionProcessId !== null) {
+            $start = SessionProcess::findLockedById($command->sessionProcessId);
+            $plan = $plan->withFence($start->session_id);
+        }
+
         $process = HostProcess::create($host, $runtime, $plan, $start);
         $this->placement->forOpening($process, $plan, $command->source);
 

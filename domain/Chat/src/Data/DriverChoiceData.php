@@ -45,7 +45,11 @@ final class DriverChoiceData extends Data
     /**
      * @param  list<string>  $familiesWithAccounts
      */
-    private static function of(DriverCatalogue $drivers, DriverRegistration $registration, array $familiesWithAccounts): self
+    private static function of(
+        DriverCatalogue $drivers,
+        DriverRegistration $registration,
+        array $familiesWithAccounts,
+    ): self
     {
         $run = $drivers->forKey($registration->key)
             ->capabilities(BoundTarget::beforePlacement())

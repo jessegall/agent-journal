@@ -27,7 +27,7 @@ final class ProvisionLocalProjectCommand extends Command
         #[Config('journal.processes.project_key')]
         string $projectKey,
         #[Config('journal.processes.project_label')]
-        string $projectLabel,
+        string $label,
         AccessSettings $access,
         JournalCommands $commands,
     ): int {
@@ -51,7 +51,7 @@ final class ProvisionLocalProjectCommand extends Command
             new ProvisionLocalProject(
                 $ownerId,
                 $projectKey,
-                $projectLabel,
+                $label,
             ),
         );
 

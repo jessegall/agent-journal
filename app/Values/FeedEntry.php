@@ -56,6 +56,8 @@ final readonly class FeedEntry
 
     public function isWake(): bool
     {
-        return $this->frame === null && $this->chunk === null && $this->answeredInstructionId === null && ! $this->hasEnded;
+        $carriesNothing = $this->frame === null && $this->chunk === null && $this->answeredInstructionId === null;
+
+        return $carriesNothing && ! $this->hasEnded;
     }
 }

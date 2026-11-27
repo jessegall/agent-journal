@@ -18,7 +18,7 @@ final readonly class RecordSkillReadHandler implements CommandHandler
             return false;
         }
 
-        SkillReadEntry::record($session, $command->skillKey, $command->evidence);
+        SkillReadEntry::create($session, $command->skillKey, $command->evidence);
 
         return true;
     }

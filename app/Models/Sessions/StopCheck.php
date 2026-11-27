@@ -83,19 +83,6 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * The attempt of the stop under the session's policy, opened once: a retried stop finds the one it opened.
-     */
-    public static function open(HookIdentity $stop, StartPolicy $policy): self
-    {
-        return self::create(
-            $stop,
-            $policy->digest(),
-            self::FIRST_GENERATION,
-            $policy->stopConditions->definitionHashes(),
-        );
-    }
-
-    /**
      * The pending attempt of this stop callback, opened once: a retried callback finds the attempt it opened.
      *
      * @param  array<string, string>  $conditionHashes  condition key => hash of its definition
@@ -121,6 +108,19 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
         }
 
         return self::findOfStop($stop);
+    }
+
+    /**
+     * The attempt of the stop under the session's policy, opened once: a retried stop finds the one it opened.
+     */
+    public static function createForPolicy(HookIdentity $stop, StartPolicy $policy): self
+    {
+        return self::create(
+            $stop,
+            $policy->digest(),
+            self::FIRST_GENERATION,
+            $policy->stopConditions->definitionHashes(),
+        );
     }
 
     // ----------[ Mutations ]----------
@@ -330,7 +330,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      */
     public static function findRunUnder(string $orderId): array
     {
-        return array_values(self::query()->acrossSessions()->where('fence_instruction_id', $orderId)->limit(1)->get()->all());
+        return array_values(self::query()->acrossSessions()->fencedByInstruction($orderId)->limit(1)->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -411,5 +411,16 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     protected function withResults(Builder $query): void
     {
         $query->with(['results' => RelationRead::complete(max: 50)->constraint()]);
+    }
+
+    /**
+     * The attempt whose conditions run under the run_fenced order.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fencedByInstruction(Builder $query, string $orderId): void
+    {
+        $query->where('fence_instruction_id', $orderId);
     }
 }

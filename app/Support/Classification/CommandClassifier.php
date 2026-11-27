@@ -435,13 +435,27 @@ final readonly class CommandClassifier implements CommandClassifierContract
      */
     private function aliasOf(ProgramIdentity $program, array $words): AliasLookup
     {
-        $name = count($words) > 2 && $words[1]->literal() === 'run' ? $words[2]->literal() : null;
+        $name = self::runAliasName($program, $words);
 
-        if ($program->family !== 'journal' || $name === null) {
+        if ($name === null) {
             return AliasLookup::missing('');
         }
 
         return $this->aliases->find($name);
+    }
+
+    /**
+     * The alias name a journal run <name> part gives; none for any other part.
+     *
+     * @param  list<Word>  $words
+     */
+    private static function runAliasName(ProgramIdentity $program, array $words): string|null
+    {
+        if ($program->family !== 'journal' || count($words) <= 2 || $words[1]->literal() !== 'run') {
+            return null;
+        }
+
+        return $words[2]->literal();
     }
 
     /**

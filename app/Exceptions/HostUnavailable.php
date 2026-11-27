@@ -6,6 +6,7 @@ namespace App\Exceptions;
 
 use App\Agents\Drivers\Enums\DriverType;
 use App\Bus\Contracts\CommandRefusal;
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 
 /**
@@ -13,6 +14,11 @@ use RuntimeException;
  */
 final class HostUnavailable extends RuntimeException implements CommandRefusal
 {
+    /**
+     * @use ThrowsLater<HostUnavailable>
+     */
+    use ThrowsLater;
+
     public static function forHost(string $hostId): self
     {
         return new self("The host {$hostId} is not available to run agents.");

@@ -20,7 +20,7 @@ final readonly class HoldStopCheckHandler implements CommandHandler
 
     public function handle(HoldStopCheckCommand $command): void
     {
-        $attempt = StopCheck::open($command->stop(), $this->policies->policyFor($command->sessionId));
+        $attempt = StopCheck::createForPolicy($command->stop(), $this->policies->policyFor($command->sessionId));
         $attempt->settle(StopCheckStatus::Failed, self::PREPARATION_HELD_SUBMISSION, $command->heldReason);
 
         SessionRequest::findOwnerStartOf($attempt->session_id)->forAll(

@@ -13,9 +13,7 @@ use App\Values\ProjectSelection;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use PhpOption\None;
 use PhpOption\Option;
-use PhpOption\Some;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -57,20 +55,14 @@ final readonly class SelectProject
     private function chosenOf(Request $request): Option
     {
         $parameter = ProjectSelection::ADDRESS_PARAMETER;
-        $header = $request->headers->has(self::HEADER) ? $request->headers->get(self::HEADER, '') : null;
-        $query = $request->query->has($parameter) ? $request->query->getString($parameter) : null;
+        $header = Option::fromValue($request->headers->get(self::HEADER));
+        $query = Option::fromValue($request->query->get($parameter))->map(fn (mixed $value) => (string) $value);
 
-        if ($header !== null && $query !== null && $header !== $query) {
+        if ($header->isDefined() && $query->isDefined() && $header->get() !== $query->get()) {
             throw ProjectUnavailable::forChoice();
         }
 
-        $chosen = $header ?? $query;
-
-        if ($chosen === null) {
-            return None::create();
-        }
-
-        return new Some((string) $chosen);
+        return $header->orElse($query);
     }
 
     /**

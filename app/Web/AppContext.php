@@ -140,7 +140,10 @@ final readonly class AppContext
      */
     private function driverLooks(): array
     {
-        return array_map(fn (DriverFamily $family) => DriverLookData::fromDriverFamily($family), $this->drivers->families());
+        return array_map(
+            fn (DriverFamily $family) => DriverLookData::fromDriverFamily($family),
+            $this->drivers->families(),
+        );
     }
 
     /**

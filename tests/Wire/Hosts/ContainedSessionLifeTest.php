@@ -96,9 +96,9 @@ final class ContainedSessionLifeTest extends TestCase
 
         $this->journal->assertJournal(fn (Assert $journal) => $journal->where(
             'testHost.containers',
-            fn (array $containers) => $this->isSessionContainer($this->containerCalled($containers, $process->containerName())),
+            fn (array $containers) => $this->isSessionContainer($this->containerCalled($containers, $process->container_name)),
         ));
-        $this->journal->assertResult(true, in_array($process->containerName(), $removed, true));
+        $this->journal->assertResult(true, in_array($process->container_name, $removed, true));
     }
 
     /**

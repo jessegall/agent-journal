@@ -16,7 +16,7 @@ final readonly class RowGuard
     /**
      * The guard as a write_keys instruction carries it.
      */
-    public function guard(): HostRowGuardPayload
+    public function payload(): HostRowGuardPayload
     {
         return HostRowGuardPayload::from(['from' => $this->from, 'to' => $this->to, 'hash' => $this->hash]);
     }

@@ -37,7 +37,7 @@ class PlanFactory extends Factory
             'type' => PlanType::Build,
             'creator_type' => $creator->type,
             'creator_id' => $creator->id,
-            'project_id' => fn (): string => Project::findOrCreateLocal('Journal')->id,
+            'project_id' => fn (): string => Project::createForLocal('Journal')->id,
         ];
     }
 

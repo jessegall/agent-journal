@@ -48,12 +48,12 @@ final readonly class ClaimHostInstructionsHandler implements CommandHandler
         $now = $this->clock->now();
         $claimed = [];
 
-        foreach (HostInstruction::claimable($host, $now, $command->limit) as $instruction) {
+        foreach (HostInstruction::findClaimable($host, $now, $command->limit) as $instruction) {
             $instruction->claim($now);
             $claimed[] = $instruction->claimedInstruction($host->signInstruction($instruction));
         }
 
-        $retakeable = HostInstruction::secondsUntilRetakeable($host, $now);
+        $retakeable = HostInstruction::resolveSecondsUntilRetakeable($host, $now);
 
         return new HostInstructionClaim(
             $claimed,

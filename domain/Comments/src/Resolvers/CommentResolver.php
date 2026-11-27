@@ -98,7 +98,7 @@ final readonly class CommentResolver implements CommentResolverContract
      */
     private static function commentsOf(Model $record): ReadBuilder
     {
-        return Comment::query()->onTarget($record->getMorphClass(), (string) $record->getKey())->with('anchor');
+        return Comment::query()->onTarget($record->getMorphClass(), (string) $record->getKey())->withAnchor();
     }
 
     private function commentable(RecordIdentity $target): Model&Commentable

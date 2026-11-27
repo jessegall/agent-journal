@@ -6,7 +6,7 @@ namespace App\Inboxes;
 
 use App\Exceptions\InboxUnavailable;
 use App\Inboxes\Contracts\InboxProvider;
-use App\Inboxes\Contracts\InboxRegistration;
+use App\Inboxes\Contracts\InboxRegistration as InboxRegistrationContract;
 use App\Inboxes\Exceptions\InboxProviderInvalid;
 use App\Support\Reflector;
 use App\Support\Registry;
@@ -14,7 +14,7 @@ use App\Support\Registry;
 /**
  * The inbox providers registered at boot, each under one key.
  */
-final class RegisteredInboxes implements InboxRegistration
+final class InboxRegistration implements InboxRegistrationContract
 {
     /**
      * @var Registry<class-string<InboxProvider>>

@@ -23,7 +23,7 @@ final readonly class CheckSignInHandler implements CommandHandler
 
     public function handle(CheckSignInCommand $command): void
     {
-        $process = HostProcess::query()->with('runtime')->whereKey($command->processId)->sole();
+        $process = HostProcess::query()->withRuntime()->whereKey($command->processId)->sole();
         $start = $process->sessionProcess()->lockForUpdate()->sole();
         $runtime = $process->runtime;
 

@@ -18,7 +18,7 @@ final readonly class OpenTurnForAcceptedWork implements Listener
 
     public function handle(DriverRequestAccepted $fact): void
     {
-        $request = DriverRequest::query()->with('runtime')->whereKey($fact->requestId)->sole();
+        $request = DriverRequest::query()->withRuntime()->whereKey($fact->requestId)->sole();
 
         // A terminal takes its work from its own driver worker; only a headless runtime opens a turn for it.
         $runtime = $request->runtime;

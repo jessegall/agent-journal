@@ -28,7 +28,7 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
 
     public function handle(CheckDriverBuildCommand $command): void
     {
-        $process = HostProcess::query()->with('runtime')->whereKey($command->processId)->sole();
+        $process = HostProcess::query()->withRuntime()->whereKey($command->processId)->sole();
         $start = $process->sessionProcess()->lockForUpdate()->sole();
         $runtime = $process->runtime;
 
@@ -36,7 +36,7 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
             $profile = $this->profiles->of($runtime);
 
             if (! $process->hasExitedWell()) {
-                throw ProbeFailed::of($profile->family(), $process->endEvidence());
+                throw ProbeFailed::of($profile->family(), $process->end_evidence);
             }
 
             $profile->assertPinnedBuild($command->printed);

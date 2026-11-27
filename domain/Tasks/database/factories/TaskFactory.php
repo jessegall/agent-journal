@@ -34,7 +34,7 @@ class TaskFactory extends Factory
             'brief' => 'What the task asks and when it is done.',
             'creator_type' => $creator->type,
             'creator_id' => $creator->id,
-            'project_id' => fn (): string => Project::findOrCreateLocal('Journal')->id,
+            'project_id' => fn (): string => Project::createForLocal('Journal')->id,
         ];
     }
 }

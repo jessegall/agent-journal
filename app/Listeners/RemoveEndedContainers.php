@@ -25,7 +25,7 @@ final readonly class RemoveEndedContainers implements Listener
 
     public function handle(HostProcessEndEvent $fact): void
     {
-        $process = HostProcess::query()->with('host')->whereKey($fact->processId)->sole();
+        $process = HostProcess::query()->withHost()->whereKey($fact->processId)->sole();
 
         if (! $process->host->arrangement->isContained()) {
             return;

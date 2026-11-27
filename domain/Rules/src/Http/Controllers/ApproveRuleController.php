@@ -22,7 +22,7 @@ final readonly class ApproveRuleController
     #[Dispatches(ApproveRuleCommand::class)]
     public function __invoke(ReviewRuleRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $owner = $request->chosenProject()->getOrCall(fn () => Rule::findOwnerKeyOf($request->ruleId()));
+        $owner = $request->chosenProject()->getOrCall(fn () => Rule::resolveOwnerKeyOf($request->ruleId()));
         $commands->run(new ApproveRuleCommand($request->ruleId(), $owner));
 
         return $redirect->back(303);

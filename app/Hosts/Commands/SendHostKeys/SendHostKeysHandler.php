@@ -23,7 +23,7 @@ final readonly class SendHostKeysHandler implements CommandHandler
             $command->source,
             HostKeyWritePayload::from([
                 'bytes' => base64_encode($command->bytes),
-                'if_rows' => $command->rows->guard(),
+                'if_rows' => $command->rows->payload(),
                 'if_input_generation' => $command->inputGeneration,
                 'as_user' => false,
             ]),

@@ -36,12 +36,13 @@ final readonly class InstructHostUpgradeHandler implements CommandHandler
             throw HostUpgradeRefused::forLiveProcess($host->id);
         }
 
-        $instruction = $this->instructions->upgrade($host->id, HostInstructionSource::fromJournal(), HostUpgradePlanPayload::from([
+        $plan = HostUpgradePlanPayload::from([
             'version' => $this->releases->current()->version,
             'manifest' => $this->files->readNamed($this->releases->currentManifest()),
             'signature' => base64_encode($this->files->readNamed($this->releases->currentSignature())),
             'drivers' => $this->drivers->drivers()->toJson(),
-        ]));
+        ]);
+        $instruction = $this->instructions->upgrade($host->id, HostInstructionSource::fromJournal(), $plan);
 
         $host->instructionUpgrade($instruction->id);
 

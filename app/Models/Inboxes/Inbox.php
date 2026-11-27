@@ -14,6 +14,7 @@ use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Inboxes\InboxOpened;
 use App\Exceptions\InboxUnavailable;
 use App\Inboxes\Contracts\LabeledInbox;
+use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
@@ -23,6 +24,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -40,6 +42,7 @@ use PhpOption\Some;
  * @property int $last_message_number
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
+ * @property-read Option<ActorReference> $personal_actor
  * @property-read Collection<int, InboxMember> $members
  * @property-read int|null $members_count
  *
@@ -114,6 +117,24 @@ final class Inbox extends JournalModel implements Assignee, EventSource, Labeled
         return $this->last_message_number;
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * The actor this inbox is the personal inbox of; none for a shared or any other inbox.
+     *
+     * @return Attribute<Option<ActorReference>, never>
+     */
+    protected function personalActor(): Attribute
+    {
+        return Accessor::get(function () {
+            if ($this->provider_key !== self::PERSONAL_PROVIDER) {
+                return None::create();
+            }
+
+            return new Some(ActorReference::fromText($this->provider_id));
+        });
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -170,22 +191,6 @@ final class Inbox extends JournalModel implements Assignee, EventSource, Labeled
     public function members(): HasMany
     {
         return $this->hasMany(InboxMember::class);
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * The actor this inbox is the personal inbox of; none for a shared or any other inbox.
-     *
-     * @return Option<ActorReference>
-     */
-    public function personalActor(): Option
-    {
-        if ($this->provider_key !== self::PERSONAL_PROVIDER) {
-            return None::create();
-        }
-
-        return new Some(ActorReference::fromText($this->provider_id));
     }
 
     // ----------[ Scopes ]----------

@@ -31,8 +31,8 @@ final class ClearAgentSkillReadsTest extends TestCase
         $this->journal->owner()->agent('Writer')->agent('Reader');
         $writer = $this->journal->sessionOf('Writer');
         $reader = $this->journal->sessionOf('Reader');
-        SkillReadEntry::record($writer, 'journal', ReadEvidence::SkillShow);
-        SkillReadEntry::record($reader, 'journal', ReadEvidence::SkillShow);
+        SkillReadEntry::create($writer, 'journal', ReadEvidence::SkillShow);
+        SkillReadEntry::create($reader, 'journal', ReadEvidence::SkillShow);
 
         $this->boundary($writer, ContextStartType::Start);
 
@@ -57,7 +57,7 @@ final class ClearAgentSkillReadsTest extends TestCase
     {
         $this->journal->owner()->agent('Writer');
         $session = $this->journal->sessionOf('Writer');
-        SkillReadEntry::record($session, 'journal', ReadEvidence::SkillShow);
+        SkillReadEntry::create($session, 'journal', ReadEvidence::SkillShow);
 
         $this->boundary($session, $type);
 

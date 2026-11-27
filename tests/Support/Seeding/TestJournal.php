@@ -266,7 +266,7 @@ final class TestJournal
         return $this->app->make(EventUnitLifecycle::class)->run(
             DB::connection(),
             'a stop attempt of the test',
-            fn () => StopCheck::open($stop, $policy),
+            fn () => StopCheck::createForPolicy($stop, $policy),
             fn () => null,
             fn () => null,
         );

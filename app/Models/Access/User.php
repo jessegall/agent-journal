@@ -214,9 +214,6 @@ class User extends Authenticatable implements
     }
 
     /**
-     * The user with this email; a missing one fails the read.
-     */
-    /**
      * Every user's name and email: the personal values a recording made on this journal must never hold.
      *
      * @return list<string>
@@ -228,9 +225,37 @@ class User extends Authenticatable implements
         return array_merge(...$users->map(fn (self $user) => [$user->name, $user->email])->all());
     }
 
+    /**
+     * The user with this email; a missing one fails the read.
+     */
     public static function findWithEmail(string $email): self
     {
         return self::query()->withEmail($email)->sole();
+    }
+
+    /**
+     * The ids of the users not disabled among the granted ones and the owner, by name, at most this many.
+     *
+     * @param  Builder<EnvironmentUserGrant>  $ids
+     * @return list<string>
+     */
+    public static function resolveEnabledIdsGrantedOrOwner(Builder $ids, string|null $ownerId, int $limit): array
+    {
+        return array_values(array_map(strval(...), self::query()
+            ->enabled()
+            ->grantedOrOwner($ids, $ownerId)
+            ->byName()
+            ->limit($limit)
+            ->pluck('id')
+            ->all()));
+    }
+
+    /**
+     * Whether a user of the id exists and is not disabled.
+     */
+    public static function isEnabledUser(string $id): bool
+    {
+        return self::query()->whereKey($id)->enabled()->exists();
     }
 
     // ----------[ Scopes ]----------
@@ -244,5 +269,44 @@ class User extends Authenticatable implements
     protected function withEmail(Builder $query, string $email): void
     {
         $query->where('email', $email);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function enabled(Builder $query): void
+    {
+        $query->whereNull('disabled_at');
+    }
+
+    /**
+     * The users among the granted ones, and the owner.
+     *
+     * @param  Builder<self>  $query
+     * @param  Builder<EnvironmentUserGrant>  $ids
+     */
+    #[Scope]
+    protected function grantedOrOwner(Builder $query, Builder $ids, string|null $ownerId): void
+    {
+        $query->where(fn (Builder $users) => $users->whereIn('id', $ids)->orWhere('id', $ownerId));
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byName(Builder $query): void
+    {
+        $query->orderBy('name');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byId(Builder $query): void
+    {
+        $query->orderBy('id');
     }
 }

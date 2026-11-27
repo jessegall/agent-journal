@@ -72,7 +72,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
             StartOriginType::MainStart,
             null,
             null,
-            $target === null ? ConversationModeType::New : ConversationModeType::Resume,
+            $command->conversationId === null ? ConversationModeType::New : ConversationModeType::Resume,
             null,
             $profile->startPolicy(),
             conversationTarget: $target,

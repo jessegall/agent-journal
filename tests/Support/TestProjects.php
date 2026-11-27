@@ -17,7 +17,7 @@ final class TestProjects
 {
     public static function local(): Project
     {
-        return Project::findOrCreateLocal('Journal');
+        return Project::createForLocal('Journal');
     }
 
     /**

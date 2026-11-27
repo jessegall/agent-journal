@@ -37,11 +37,11 @@ final readonly class HostProcessFacts implements Facts
             },
             'instructionCounts' => fn () => array_count_values(array_map(
                 fn (HostInstruction $instruction) => $instruction->type->value,
-                HostInstruction::findForProcess($this->processId),
+                MadeHostInstructions::forProcess($this->processId),
             )),
             'instructions' => fn () => array_map(
                 fn (HostInstruction $instruction) => new HostInstructionFacts($instruction),
-                HostInstruction::findForProcess($this->processId),
+                MadeHostInstructions::forProcess($this->processId),
             ),
         ];
     }

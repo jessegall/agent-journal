@@ -26,6 +26,8 @@ final readonly class StartDriversLoader
     {
         $this->agents->visibleAgent($input->agent);
 
-        return new StartDriversData(DriverChoiceData::listed($this->drivers, $this->startAccounts->familiesWithAccounts()));
+        $families = $this->startAccounts->familiesWithAccounts();
+
+        return new StartDriversData(DriverChoiceData::listed($this->drivers, $families));
     }
 }

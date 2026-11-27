@@ -95,8 +95,8 @@ final class SkillStatusTest extends TestCase
             ->session(fn (TestSession $session) => $session->handSkills()));
         $session = AgentSession::findById($this->journal->sessionOf('Writer')->id);
         $key = $session->skill_keys[0];
-        SkillReadEntry::record($session, $key, ReadEvidence::FullFileRead);
-        SkillReadEntry::record($session, $key, ReadEvidence::SkillShow);
+        SkillReadEntry::create($session, $key, ReadEvidence::FullFileRead);
+        SkillReadEntry::create($session, $key, ReadEvidence::SkillShow);
 
         $skills = $this->skillsOf($session);
 

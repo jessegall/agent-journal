@@ -19,7 +19,6 @@ use App\Contracts\Events\EventSource;
 use App\Events\Sessions\AgentDriverTypePreferred;
 use App\Events\Sessions\AgentRetired;
 use App\Events\Sessions\AgentRuntimeAdopted;
-use App\Events\Sessions\AgentRuntimesFenced;
 use App\Exceptions\ModelMissing;
 use App\Messages\Contracts\MessageReceiver;
 use App\Messages\Contracts\MessageSender;
@@ -131,17 +130,6 @@ final class Agent extends JournalModel implements
     }
 
     /**
-     * Ends every runtime of the agent: no session stays current, so each of its credentials is refused.
-     */
-    public function fenceRuntimes(): void
-    {
-        $this->runtime_generation++;
-        $this->current_session_id = null;
-        $this->saveAndAssert();
-        $this->raise(new AgentRuntimesFenced($this->id, $this->runtime_generation));
-    }
-
-    /**
      * The agent is retired for good at the time given; it never starts again.
      */
     public function retireAt(CarbonInterface $retiredAt): void
@@ -229,11 +217,12 @@ final class Agent extends JournalModel implements
      *
      * @throws ModelMissing when there is no such agent
      */
-    public static function findProjectIdOf(string $agentId): string
+    public static function resolveProjectIdOf(string $agentId): string
     {
-        return self::query()->whereKey($agentId)->firstOr(
-            static fn () => throw ModelMissing::for(self::class, $agentId),
-        )->project_id;
+        return self::query()
+            ->whereKey($agentId)
+            ->firstOr(ModelMissing::throwing()->for(self::class, $agentId))
+            ->project_id;
     }
 
     /**

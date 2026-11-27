@@ -20,7 +20,10 @@ final readonly class HostFolderAnswer
     public static function of(HostInstruction $instruction): self
     {
         // Only a folder use answers whether the folder is bound; a made or removed folder answers that it is done.
-        if ($instruction->status === HostInstructionStatus::Done && $instruction->type === HostInstructionType::FolderUse) {
+        $isAnsweredFolderUse = $instruction->status === HostInstructionStatus::Done
+            && $instruction->type === HostInstructionType::FolderUse;
+
+        if ($isAnsweredFolderUse) {
             $reply = HostFolderUseReplyPayload::from($instruction->answer->facts ?? []);
 
             return new self($instruction->status, $reply->reason ?? '', $reply->isBound);
@@ -30,7 +33,9 @@ final readonly class HostFolderAnswer
             return new self($instruction->status, '', false);
         }
 
-        return new self($instruction->status, $instruction->answer->reason ?? $instruction->refusal->value ?? '', false);
+        $reason = $instruction->answer->reason ?? $instruction->refusal->value ?? '';
+
+        return new self($instruction->status, $reason, false);
     }
 
     public function isPending(): bool

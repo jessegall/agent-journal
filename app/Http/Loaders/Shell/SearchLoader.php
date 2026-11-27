@@ -85,11 +85,11 @@ final readonly class SearchLoader
         ];
 
         $pages = $this->pagesOf($shown);
-        $direct = $answer->directOpen === null ? null : PaletteHitData::of($answer->directOpen, $pages[0] ?? null);
+        $firstHitPage = $answer->directOpen === null ? 0 : 1;
         $hits = [];
 
         foreach ($answer->hits as $index => $hit) {
-            $hits[] = PaletteHitData::of($hit, $pages[$index + ($direct === null ? 0 : 1)] ?? null);
+            $hits[] = PaletteHitData::of($hit, $pages[$index + $firstHitPage] ?? null);
         }
 
         $fields = [
@@ -103,8 +103,8 @@ final readonly class SearchLoader
             'continuation' => $answer->continuation,
         ];
 
-        if ($direct !== null) {
-            $fields['directOpen'] = $direct;
+        if ($answer->directOpen !== null) {
+            $fields['directOpen'] = PaletteHitData::of($answer->directOpen, $pages[0] ?? null);
         }
 
         return PaletteSearchData::from($fields);

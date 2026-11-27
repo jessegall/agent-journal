@@ -48,9 +48,26 @@ final class Project extends JournalModel implements EventSource, ReadableModel
     /**
      * The journal's own project, made under the label the first time it is asked for, as seeding and tests do.
      */
-    public static function findOrCreateLocal(string $label): self
+    public static function createForLocal(string $label): self
     {
-        return self::query()->withKey(self::localKey())->first() ?? self::create(self::localKey(), $label);
+        return self::findWithKey(self::localKey()) ?? self::create(self::localKey(), $label);
+    }
+
+    // ----------[ Predicates ]----------
+
+    /**
+     * Whether this is the journal's own project rather than a connected one.
+     */
+    public function isLocal(): bool
+    {
+        return $this->key === self::localKey();
+    }
+
+    // ----------[ Internals ]----------
+
+    private static function localKey(): string
+    {
+        return Container::getInstance()->make('config')->string('journal.processes.project_key');
     }
 
     // ----------[ Queries ]----------
@@ -60,7 +77,15 @@ final class Project extends JournalModel implements EventSource, ReadableModel
      */
     public static function findForId(string $id): self
     {
-        return self::query()->whereKey($id)->firstOr(static fn () => throw ModelMissing::for(self::class, $id));
+        return self::query()->whereKey($id)->firstOr(ModelMissing::throwing()->for(self::class, $id));
+    }
+
+    /**
+     * The project under the key; none before it is made.
+     */
+    public static function findWithKey(string $key): self|null
+    {
+        return self::query()->withKey($key)->first();
     }
 
     public static function findForKey(string $key): self
@@ -86,23 +111,6 @@ final class Project extends JournalModel implements EventSource, ReadableModel
         return array_values(
             self::query()->inLabelOrder()->readAll('an installation connects a handful of projects')->get()->all(),
         );
-    }
-
-    // ----------[ Answers ]----------
-
-    /**
-     * Whether this is the journal's own project rather than a connected one.
-     */
-    public function isLocal(): bool
-    {
-        return $this->key === self::localKey();
-    }
-
-    // ----------[ Internals ]----------
-
-    private static function localKey(): string
-    {
-        return Container::getInstance()->make('config')->string('journal.processes.project_key');
     }
 
     // ----------[ Scopes ]----------

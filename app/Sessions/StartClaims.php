@@ -100,7 +100,7 @@ final readonly class StartClaims
     {
         $driver = $session->selection->driver;
         $settings = new AccountStartSettings();
-        $requested = new AccountSettingsRequested($driver, $start->accountIdentity, $directory, $settings);
+        $requested = new AccountSettingsRequested($driver, $start->account_identity, $directory, $settings);
         $this->extensions->accountSettings($requested);
 
         return $settings;

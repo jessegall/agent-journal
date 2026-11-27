@@ -32,7 +32,8 @@ final readonly class FolderInstructionWait
      */
     public function answerOf(string $instructionId): HostFolderAnswer
     {
-        $deadline = CarbonImmutable::now()->addSeconds(HostInstructionPlacement::INSTRUCTION_SECONDS + self::SPARE_SECONDS);
+        $seconds = HostInstructionPlacement::INSTRUCTION_SECONDS + self::SPARE_SECONDS;
+        $deadline = CarbonImmutable::now()->addSeconds($seconds);
 
         while (CarbonImmutable::now()->lessThan($deadline)) {
             $answer = $this->host->folderAnswer($instructionId);

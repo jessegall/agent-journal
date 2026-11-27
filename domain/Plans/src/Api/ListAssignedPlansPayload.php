@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Api;
 
 use App\Attributes\Api\Endpoint;
-use App\Attributes\SentField;
+use App\Attributes\Validation\SentField;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
 use App\Support\NumberedPage;
