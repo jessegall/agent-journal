@@ -845,13 +845,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -930,13 +930,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1044,13 +1044,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1129,13 +1129,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1243,13 +1243,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1328,13 +1328,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1442,13 +1442,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1527,13 +1527,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1616,13 +1616,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1690,13 +1690,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1779,13 +1779,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1853,13 +1853,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -1942,13 +1942,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -2016,13 +2016,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -2105,13 +2105,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -2179,13 +2179,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -2287,11 +2287,11 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -2365,11 +2365,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -2466,11 +2466,11 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -2544,11 +2544,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -2645,11 +2645,11 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -2723,11 +2723,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -2824,11 +2824,11 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -2902,11 +2902,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -2981,11 +2981,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -3048,11 +3048,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -3127,11 +3127,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -3194,11 +3194,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -3273,11 +3273,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -3340,11 +3340,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -3419,11 +3419,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -3486,11 +3486,11 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
-            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
-            "JOURNAL_START_REF=start-1"
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1"
         ],
         "folder": "/work",
         "container": null,
@@ -3593,13 +3593,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -3680,13 +3680,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -3796,13 +3796,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -3883,13 +3883,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -3999,13 +3999,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4086,13 +4086,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4202,13 +4202,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4289,13 +4289,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4380,13 +4380,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4456,13 +4456,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4547,13 +4547,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4623,13 +4623,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4714,13 +4714,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4790,13 +4790,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4881,13 +4881,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -4957,13 +4957,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
             "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1",
             "CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
             "IS_SANDBOX=1"
         ],
@@ -5073,13 +5073,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -5158,13 +5158,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -5272,13 +5272,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -5357,13 +5357,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -5471,13 +5471,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -5556,13 +5556,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -5670,13 +5670,13 @@
             "glob": "*3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77.jsonl"
         },
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -5755,13 +5755,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -5844,13 +5844,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -5918,13 +5918,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -6007,13 +6007,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -6081,13 +6081,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -6170,13 +6170,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -6244,13 +6244,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -6333,13 +6333,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -6407,13 +6407,13 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "HOME={folder:home}",
             "PATH={host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin",
             "CLAUDE_CONFIG_DIR=/accounts/a",
             "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1",
             "MCP_TIMEOUT=15000",
-            "MCP_TOOL_TIMEOUT=30000",
-            "JOURNAL_START_REF=start-1"
+            "MCP_TOOL_TIMEOUT=30000"
         ],
         "folder": "/work",
         "container": null,
@@ -7119,6 +7119,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7186,6 +7187,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7255,6 +7257,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7324,6 +7327,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7391,6 +7395,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7458,6 +7463,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7525,6 +7531,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7592,6 +7599,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7659,6 +7667,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7726,6 +7735,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7795,6 +7805,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7864,6 +7875,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7931,6 +7943,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -7998,6 +8011,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -8065,6 +8079,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -8132,6 +8147,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME={folder:files}"
         ],
         "folder": "/work",
@@ -8199,6 +8215,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8246,6 +8263,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8298,6 +8316,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8345,6 +8364,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8399,6 +8419,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8446,6 +8467,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8500,6 +8522,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8547,6 +8570,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8599,6 +8623,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8646,6 +8671,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8698,6 +8724,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8745,6 +8772,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8797,6 +8825,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8844,6 +8873,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8896,6 +8926,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8943,6 +8974,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -8995,6 +9027,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9042,6 +9075,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9094,6 +9128,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9141,6 +9176,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9195,6 +9231,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9242,6 +9279,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9296,6 +9334,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9343,6 +9382,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9395,6 +9435,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9442,6 +9483,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9494,6 +9536,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9541,6 +9584,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9593,6 +9637,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9640,6 +9685,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9692,6 +9738,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",
@@ -9739,6 +9786,7 @@
         "restart_argv": [],
         "restart_when_file": null,
         "environment": [
+            "JOURNAL_START_REF=start-1",
             "CODEX_HOME=/accounts/a"
         ],
         "folder": "/work",

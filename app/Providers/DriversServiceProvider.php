@@ -124,7 +124,7 @@ final class DriversServiceProvider extends ServiceProvider
     {
         $driver = CodexArguments::EXECUTABLE;
 
-        return DriverSetup::of(
+        return self::shared(DriverSetup::of(
             family: DefaultDrivers::CODEX,
             driver: $driver,
             arguments: CodexArguments::class,
@@ -158,20 +158,32 @@ final class DriversServiceProvider extends ServiceProvider
             skills: CodexSkills::class,
             hookAdapter: CodexAdapter::class,
             isolation: CodexIsolation::class,
-        )
+        ))
             ->refusedWhen(new OwnTerminalStart(), fn () => ProfileRefused::ownTerminalWithheld($driver))
+            // Codex reads its sign-in only from its home, so it has none to check without an account folder.
             ->signInRefusedWhen(
                 new AccountWithoutFolder(),
                 fn () => ProfileRefused::unresolvedSetting('no account to check the sign-in of'),
             )
             ->environment(
                 ConditionalPart::for(new Negation(new ContainedStart()), CodexHome::class),
-                ConditionalPart::forAccount(new ContainedStart(), ContainerAccountHome::class),
                 ConditionalPart::for(new Negation(new ContainedStart()), HostHomeAndPath::class),
             )
             ->startPlan(ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class))
             // Codex links its own executable under tmp/arg0 each run; those links never belong in the account folder.
             ->keepsScratchIn('tmp');
+    }
+
+    /**
+     * What every driver's setup holds before its own differences: the account's folder where a contained start finds
+     * it, and the reference an account start reaches the journal by. A fix here lands for every driver.
+     */
+    private static function shared(DriverSetup $setup): DriverSetup
+    {
+        return $setup->environment(
+            ConditionalPart::forAccount(new ContainedStart(), ContainerAccountHome::class),
+            ConditionalPart::forAccount(new AccountStart(), StartReference::class),
+        );
     }
 
     /**
@@ -191,7 +203,7 @@ final class DriversServiceProvider extends ServiceProvider
     {
         $installed = ClaudeCodeArguments::INSTALLED_EXECUTABLE;
 
-        return DriverSetup::of(
+        return self::shared(DriverSetup::of(
             family: DefaultDrivers::CLAUDE_CODE,
             driver: ClaudeCodeArguments::EXECUTABLE,
             arguments: ClaudeCodeArguments::class,
@@ -235,15 +247,13 @@ final class DriversServiceProvider extends ServiceProvider
             skills: ClaudeCodeSkills::class,
             hookAdapter: ClaudeCodeAdapter::class,
             isolation: ClaudeCodeIsolation::class,
-        )
+        ))
             ->environment(
                 ConditionalPart::forAccount(new Negation(new ContainedStart()), ClaudeCodeAccountHome::class),
-                ConditionalPart::forAccount(new ContainedStart(), ContainerAccountHome::class),
                 ConditionalPart::for(new AnyContext(), ClaudeCodePlatform::class),
                 ConditionalPart::for(new HostHomeStart(), HostHomeAndPath::class),
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeOwnTerminalHome::class),
                 ConditionalPart::for(new JournalServerAccount(), ClaudeCodeMcpTimeouts::class),
-                ConditionalPart::forAccount(new AccountStart(), StartReference::class),
                 ConditionalPart::for(new ProtectedAccount(), ClaudeCodeProtectedShell::class),
             )
             ->startPlan(
