@@ -119,12 +119,4 @@ final readonly class NavigationCandidate
     {
         return $this->navigation->navigationItem->count !== null;
     }
-
-    /**
-     * The group the navigation item is listed under.
-     */
-    public function group(): string|null
-    {
-        return $this->navigation->navigationItem->group;
-    }
 }

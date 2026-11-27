@@ -7,7 +7,7 @@ namespace App\Support\Execution;
 use App\Processes\Contracts\SpawnablePart;
 use App\Processes\Execution\QueuedPart;
 use App\Processes\Execution\SpawnedPart;
-use App\Processes\Execution\StopSignal;
+use App\Processes\Contracts\StopSignal;
 
 /**
  * The commands of a shell pipeline, started one after another with each reading the one before it: those still to
