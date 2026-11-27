@@ -6,7 +6,9 @@ namespace App\Pipelines;
 
 use App\Bus\Contracts\PipelineDefinition;
 use App\Pipelines\Support\Step;
+use App\Pipes\Supervision\FinishPipedCommands;
 use App\Pipes\Supervision\NotifyPipedCommandsRefused;
+use App\Pipes\Supervision\PumpPipedCommands;
 use App\Pipes\Supervision\QueuePipedCommands;
 use App\Pipes\Supervision\SpawnPart;
 use App\Support\Execution\PendingStep;
@@ -33,7 +35,7 @@ final readonly class RunPipedCommandsPipeline implements PipelineDefinition
             Step::conditional(
                 fn (PipedCommands $commands) => $commands->isRefused,
                 then: NotifyPipedCommandsRefused::class,
-                else: FinishStartedCommandsPipeline::class,
+                else: [PumpPipedCommands::class, FinishPipedCommands::class],
             ),
         ];
     }

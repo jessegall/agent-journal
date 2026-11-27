@@ -13,16 +13,16 @@ use Closure;
 final readonly class ConditionalStep extends Step
 {
     /**
-     * @param  class-string<Pipable>  $then
-     * @param  class-string<Pipable>|null  $else  none lets the value go on as it came
+     * @param  list<class-string<Pipable>|Step>  $then
+     * @param  list<class-string<Pipable>|Step>  $else  none lets the value go on as it came
      */
-    public function __construct(private Closure $condition, private string $then, private string|null $else = null) {}
+    public function __construct(private Closure $condition, private array $then, private array $else = []) {}
 
     public function run(Closure $sequence): Closure
     {
         $condition = $this->condition;
-        $then = $sequence([$this->then]);
-        $else = $this->else === null ? fn (object $stepInput): object => $stepInput : $sequence([$this->else]);
+        $then = $sequence($this->then);
+        $else = $this->else === [] ? fn (object $stepInput): object => $stepInput : $sequence($this->else);
 
         return fn (object $stepInput): object => $condition($stepInput) ? $then($stepInput) : $else($stepInput);
     }

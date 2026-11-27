@@ -6,6 +6,8 @@ namespace App\Pipelines;
 
 use App\Bus\Contracts\PipelineDefinition;
 use App\Pipelines\Support\Step;
+use App\Pipes\Supervision\DrainPart;
+use App\Pipes\Supervision\FinishPart;
 use App\Pipes\Supervision\NotifySpawnRefused;
 use App\Pipes\Supervision\QueuePart;
 use App\Pipes\Supervision\SpawnPart;
@@ -33,7 +35,7 @@ final readonly class RunExternalPartPipeline implements PipelineDefinition
             SpawnPart::class,
             Step::conditional(
                 fn (SpawnedPart|SpawnRefused $attempt) => $attempt instanceof SpawnedPart,
-                then: FinishSpawnedPartPipeline::class,
+                then: [DrainPart::class, FinishPart::class],
                 else: NotifySpawnRefused::class,
             ),
         ];

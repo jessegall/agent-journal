@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Pipelines;
 
 use App\Bus\Contracts\PipelineDefinition;
+use App\CommandRules\Execution\BuiltinCall;
 use App\Pipelines\Support\Step;
+use App\Pipes\Supervision\EndBuiltin;
 use App\Pipes\Supervision\QueuePart;
 use App\Pipes\Supervision\SkipStalePart;
+use App\Pipes\Supervision\StartBuiltin;
 use App\Processes\Execution\QueuedPart;
 use App\Support\Execution\PendingPart;
 use App\Support\Execution\StepOutcome;
@@ -30,7 +33,11 @@ final readonly class RunBuiltinPipeline implements PipelineDefinition
             Step::conditional(
                 fn (QueuedPart $queued) => $queued->isStale(),
                 then: SkipStalePart::class,
-                else: RunAdmittedBuiltinPipeline::class,
+                else: [
+                    StartBuiltin::class,
+                    Step::resolvedBy(fn (BuiltinCall $call) => $call->command->pipe()),
+                    EndBuiltin::class,
+                ],
             ),
         ];
     }

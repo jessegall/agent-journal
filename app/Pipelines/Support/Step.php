@@ -26,15 +26,18 @@ abstract readonly class Step implements Pipable
     }
 
     /**
-     * Runs one of two steps: the first when the condition holds for the value, the second when it does not.
+     * The then steps when the condition holds of the value, else the else steps; with no else steps the value goes on
+     * as it came. Each branch is one step or a list run in order.
      *
-     * @param  Closure  $condition  takes the value and answers yes or no
-     * @param  class-string<Pipable>  $then
-     * @param  class-string<Pipable>|null  $else  none lets the value go on as it came
+     * @param  class-string<Pipable>|Step|list<class-string<Pipable>|Step>  $then
+     * @param  class-string<Pipable>|Step|list<class-string<Pipable>|Step>  $else
      */
-    public static function conditional(Closure $condition, string $then, string|null $else = null): ConditionalStep
-    {
-        return new ConditionalStep($condition, $then, $else);
+    public static function conditional(
+        Closure $condition,
+        string|Step|array $then,
+        string|Step|array $else = [],
+    ): ConditionalStep {
+        return new ConditionalStep($condition, is_array($then) ? $then : [$then], is_array($else) ? $else : [$else]);
     }
 
     /**
