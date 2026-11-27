@@ -166,6 +166,14 @@ final readonly class ScenarioPlayer
                 return;
             }
 
+            // A session that ended waits for nothing more: the play ends at once with the journal's own reason (user
+            // 29751), so the cause reaches whoever runs it.
+            $endReason = $run->endReason();
+
+            if ($endReason !== null) {
+                throw ScenarioStuck::ended($run->scenario->name, $run->stepIndex(), $fact, $endReason);
+            }
+
             // A session that shows no life for a while waits for nothing more: the play ends at once (user 28825).
             $life = $run->lastLifeAt();
             $quietSeconds = $life === null ? 0 : max($life, $began)->diffInSeconds(CarbonImmutable::now());

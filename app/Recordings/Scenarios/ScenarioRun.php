@@ -174,6 +174,25 @@ final class ScenarioRun
     }
 
     /**
+     * Why the session of the agent the steps named last ended, in the journal's own words, which carry a refused
+     * start's reason; none while it runs or while no step named an agent.
+     */
+    public function endReason(): string|null
+    {
+        if ($this->lastAgent === null) {
+            return null;
+        }
+
+        $session = AgentSession::query()->find($this->lastAgent()->current_session_id);
+
+        if ($session === null || ! $session->hasEnded()) {
+            return null;
+        }
+
+        return $session->end_evidence ?? 'it ended with no evidence';
+    }
+
+    /**
      * How many turns the play asked of its session: the start's wake and each message sent since.
      */
     public function turnsAsked(): int

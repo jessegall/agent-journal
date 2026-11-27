@@ -7,6 +7,7 @@ namespace Tests\Machinery\Recordings;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Scenario;
 use App\Recordings\Scenarios\ScenarioRun;
+use App\Sessions\Commands\EndStoppedSession\EndStoppedSessionCommand;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -65,6 +66,19 @@ final class ScenarioFactTest extends TestCase
                 ScenarioFact::Interrupted->isReached($run),
             ],
         );
+    }
+
+    public function test_an_ended_session_gives_the_journal_s_own_reason_and_a_running_one_none(): void
+    {
+        $this->journal->idleAgent('Coder')->startSession('Coder', 'Coder');
+        $agent = $this->journal->agentCalled('Coder');
+        $run = $this->runOf(['Coder' => $agent->id]);
+        $run->agentNamed('Coder');
+        $running = $run->endReason();
+
+        $this->journal->asOwner(new EndStoppedSessionCommand($agent->id, (string) $agent->current_session_id));
+
+        $this->assertSame([null, 'stopped with no process running'], [$running, $run->endReason()]);
     }
 
     /**

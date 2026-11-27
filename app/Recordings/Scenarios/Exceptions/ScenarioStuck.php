@@ -28,6 +28,13 @@ final class ScenarioStuck extends RuntimeException
         return new self("The scenario {$scenario} is stuck at step {$place}: {$quiet}.");
     }
 
+    public static function ended(string $scenario, int $step, ScenarioFact $fact, string $reason): self
+    {
+        $place = $step + 1;
+
+        return new self("The scenario {$scenario} is stuck at step {$place}: waiting for {$fact->value}, its session ended: {$reason}");
+    }
+
     public static function at(string $scenario, int $step, ScenarioFact $fact, int $seconds): self
     {
         $place = $step + 1;
