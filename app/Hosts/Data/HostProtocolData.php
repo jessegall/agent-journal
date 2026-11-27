@@ -19,7 +19,7 @@ final class HostProtocolData extends Data
      * @param  array<string, string>  $statuses  each answer status with what it means
      * @param  array<string, string>  $refusals  each refusal with what it means
      * @param  array<string, HostInstructionTraitsData>  $instructions  each instruction type with its traits
-     * @param  list<string>  $placeholderKinds  the kinds of {kind:NAME} a plan may hold
+     * @param  list<string>  $placeholderTypes  the types of {type:NAME} a plan may hold
      * @param  list<string>  $hostNames  the names the host fills as {host:NAME}
      * @param  list<string>  $refusedAnswerNames  the fields a refused answer names, so the journal can say why
      * @param  array<string, list<string>>  $enums  each enum of the file with its values
@@ -35,7 +35,7 @@ final class HostProtocolData extends Data
         public readonly array $refusals,
         #[DataCollectionOf(HostInstructionTraitsData::class)]
         public readonly array $instructions,
-        public readonly array $placeholderKinds,
+        public readonly array $placeholderTypes,
         public readonly array $hostNames,
         public readonly array $refusedAnswerNames,
         public readonly HostContainedPlanData $containedPlan,

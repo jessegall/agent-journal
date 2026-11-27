@@ -34,15 +34,15 @@ final class EditTaskPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Ulid]
-        public string $taskId,
+        public readonly string $taskId,
         #[Min(1)]
-        public int $expectedRevision,
+        public readonly int $expectedRevision,
         #[Max(Task::TITLE_CHARACTER_LIMIT), RequiredWithout('brief')]
-        public string|null $title,
+        public readonly string|null $title,
         #[Max(Task::NOTE_CHARACTER_LIMIT), RequiredWithout('title')]
-        public string|null $brief,
+        public readonly string|null $brief,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

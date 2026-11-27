@@ -15,7 +15,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class PlanEdited extends Data
 {
     public function __construct(
-        public string $planId,
-        public int $revision,
+        public readonly string $planId,
+        public readonly int $revision,
     ) {}
 }

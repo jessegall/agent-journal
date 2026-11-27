@@ -22,7 +22,7 @@ final class ShowReportPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(32)]
-        public string $number,
-        public TextSelection $selection = new TextSelection(),
+        public readonly string $number,
+        public readonly TextSelection $selection = new TextSelection(),
     ) {}
 }

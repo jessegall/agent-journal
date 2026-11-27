@@ -15,6 +15,6 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class MemoryNamed extends Data
 {
     public function __construct(
-        public string $memoryId,
+        public readonly string $memoryId,
     ) {}
 }

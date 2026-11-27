@@ -131,7 +131,7 @@ function capacityNotice(capacity: CapacityData): string | null {
 function dismiss(): void {
   const operation = props.agent.status.operation;
 
-  if (operation === null) {
+  if (operation === undefined) {
     return;
   }
 

@@ -21,6 +21,6 @@ final class InspectDocumentPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(32)]
-        public string $number,
+        public readonly string $number,
     ) {}
 }

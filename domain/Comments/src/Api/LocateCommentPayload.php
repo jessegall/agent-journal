@@ -24,12 +24,12 @@ final class LocateCommentPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(64)]
-        public string $target,
+        public readonly string $target,
         #[Ulid]
-        public string $comment,
+        public readonly string $comment,
         #[MapName('first_line'), Min(1), RequiredWith('last_line')]
-        public int|null $firstLine = null,
+        public readonly int|null $firstLine = null,
         #[MapName('last_line'), Min(1), RequiredWith('first_line')]
-        public int|null $lastLine = null,
+        public readonly int|null $lastLine = null,
     ) {}
 }

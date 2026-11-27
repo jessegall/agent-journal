@@ -29,10 +29,10 @@ final class SettleReportPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(32)]
-        public string $number,
-        public string $reason,
+        public readonly string $number,
+        public readonly string $reason,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

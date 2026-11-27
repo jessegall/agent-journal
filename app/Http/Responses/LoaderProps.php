@@ -119,7 +119,7 @@ final readonly class LoaderProps
             'token' => $call->token,
             'status' => LoaderStatus::Ok,
             'value' => $value,
-            'errors' => new Optional(),
+            'errors' => Optional::create(),
         ])];
     }
 
@@ -136,7 +136,7 @@ final readonly class LoaderProps
         return LoaderReplyData::from([
             'token' => $call->token,
             'status' => LoaderStatus::Invalid,
-            'value' => new Optional(),
+            'value' => Optional::create(),
             'errors' => $errors,
         ]);
     }
@@ -146,8 +146,8 @@ final readonly class LoaderProps
         return LoaderReplyData::from([
             'token' => $call->token,
             'status' => LoaderStatus::Unavailable,
-            'value' => new Optional(),
-            'errors' => new Optional(),
+            'value' => Optional::create(),
+            'errors' => Optional::create(),
         ]);
     }
 }

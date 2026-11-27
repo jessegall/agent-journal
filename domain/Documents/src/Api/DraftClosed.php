@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 final class DraftClosed extends Data
 {
     public function __construct(
-        public int $revisionNumber,
-        public bool $isPublished,
+        public readonly int $revisionNumber,
+        public readonly bool $isPublished,
     ) {}
 }

@@ -27,11 +27,11 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 final class DockAddPayload extends Data implements ApiPayload
 {
     public function __construct(
-        public string $type,
-        public string $id,
-        public string|null $chat,
+        public readonly string $type,
+        public readonly string $id,
+        public readonly string|null $chat,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

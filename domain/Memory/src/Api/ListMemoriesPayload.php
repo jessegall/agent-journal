@@ -23,6 +23,6 @@ final class ListMemoriesPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Min(1)]
-        public int $page = 1,
+        public readonly int $page = 1,
     ) {}
 }

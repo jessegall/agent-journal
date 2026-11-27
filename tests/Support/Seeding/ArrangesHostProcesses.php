@@ -432,7 +432,7 @@ trait ArrangesHostProcesses
     public function setUpDriverFamily(DriverFamily $family, string $runsLike): self
     {
         $this->service(DriverCatalogue::class)->registerFamily($family);
-        $setups = DriversServiceProvider::setups();
+        $setups = DriversServiceProvider::setups($this->service(Repository::class));
         $like = array_values(array_filter($setups, fn (DriverSetup $setup) => $setup->family === $runsLike))[0];
         $this->app->scoped(DriverProfiles::class, fn () => new DriverProfiles(
             $this->app,

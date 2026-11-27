@@ -31,11 +31,11 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 final class SaveMemoryPayload extends Data implements ApiPayload
 {
     public function __construct(
-        public string $text,
+        public readonly string $text,
         #[Min(Memory::LIGHTEST), Max(Memory::HEAVIEST)]
-        public int $weight,
+        public readonly int $weight,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

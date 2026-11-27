@@ -148,7 +148,10 @@ final readonly class ShippedReaders
             ReaderDefinition::from([
                 'rules' => [
                     RecordRule::of(RecordRole::AllowedNoise, '{phase:word} {done:int}/{total:int}'),
-                    RecordRule::of(RecordRole::Summary, '· read {files:int} file{read:text}: {sins:int} sin{plural:rest}'),
+                    RecordRule::of(
+                        RecordRole::Summary,
+                        '· read {files:int} file{read:text}: {sins:int} sin{plural:rest}',
+                    ),
                     RecordRule::of(
                         RecordRole::Diagnostic,
                         '{file:text}, line {line:int}: {message:text} [{rule:text}]',

@@ -22,8 +22,8 @@ final class ShowDocumentRevisionPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(32)]
-        public string $number,
+        public readonly string $number,
         #[Min(1)]
-        public int $revision,
+        public readonly int $revision,
     ) {}
 }

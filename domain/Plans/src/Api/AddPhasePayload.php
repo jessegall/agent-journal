@@ -31,11 +31,11 @@ final class AddPhasePayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Ulid]
-        public string $planId,
+        public readonly string $planId,
         #[Max(240)]
-        public string $title,
+        public readonly string $title,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

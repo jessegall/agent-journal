@@ -31,11 +31,11 @@ final class CreateTaskPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(Task::TITLE_CHARACTER_LIMIT)]
-        public string $title,
+        public readonly string $title,
         #[Max(Task::NOTE_CHARACTER_LIMIT)]
-        public string $brief,
+        public readonly string $brief,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

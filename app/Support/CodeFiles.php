@@ -11,6 +11,7 @@ use App\Files\Enums\Place;
 use App\Files\FolderWalker;
 use App\Files\PathConfinement;
 use App\Files\PlaceRoots;
+use App\Files\PlaceRootSettings;
 use App\Files\Values\FolderEntries;
 use App\Navigation\Exceptions\FileOutsidePlaces;
 use App\Values\FilePath;
@@ -86,7 +87,8 @@ final class CodeFiles
      */
     public static function over(string $projectRoot): self
     {
-        $roots = new PlaceRoots(new Repository(['journal' => ['files' => ['places' => ['project' => $projectRoot]]]]));
+        $config = new Repository(['journal' => ['files' => ['places' => ['project' => $projectRoot]]]]);
+        $roots = new PlaceRoots(new PlaceRootSettings($config));
         $closed = new ClosedFolders($roots);
         $confinement = new PathConfinement($roots, $closed);
 

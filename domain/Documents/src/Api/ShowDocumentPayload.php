@@ -24,11 +24,11 @@ final class ShowDocumentPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(32)]
-        public string $number,
-        public TextSelection $selection = new TextSelection(),
+        public readonly string $number,
+        public readonly TextSelection $selection = new TextSelection(),
         #[Min(1)]
-        public int|null $revision = null,
+        public readonly int|null $revision = null,
         #[MapName('at_revision'), Min(1)]
-        public int|null $atRevision = null,
+        public readonly int|null $atRevision = null,
     ) {}
 }

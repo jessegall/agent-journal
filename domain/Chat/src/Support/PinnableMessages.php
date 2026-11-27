@@ -29,6 +29,6 @@ final readonly class PinnableMessages
             throw MessageMissing::forId($messageId);
         }
 
-        return MessageView::of(ShownMessage::of($message));
+        return MessageView::from(ShownMessage::of($message));
     }
 }

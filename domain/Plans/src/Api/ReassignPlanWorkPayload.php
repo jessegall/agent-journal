@@ -40,21 +40,21 @@ final class ReassignPlanWorkPayload extends Data implements ApiPayload
 
     public function __construct(
         #[In('plans.plan', 'plans.phase')]
-        public string $rootType,
+        public readonly string $rootType,
         #[Max(40)]
-        public string $rootId,
+        public readonly string $rootId,
         #[Ulid]
-        public string $assignmentId,
-        public string $holderType,
+        public readonly string $assignmentId,
+        public readonly string $holderType,
         #[Ulid]
-        public string $holderId,
-        public string $recipientType,
+        public readonly string $holderId,
+        public readonly string $recipientType,
         #[Ulid]
-        public string $recipientId,
+        public readonly string $recipientId,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
         #[Max(20)]
-        public string|null $rootPlan = null,
+        public readonly string|null $rootPlan = null,
     ) {}
 }

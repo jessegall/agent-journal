@@ -43,7 +43,6 @@ function agent(
       label: presenceLabel,
       reason: null,
       remedy: null,
-      operation: null,
       commandOutcome: null,
       observationAgeSeconds: null,
       actions: [{ type: "start", label: "Start session" }],

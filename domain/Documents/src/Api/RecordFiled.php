@@ -12,9 +12,9 @@ use Spatie\LaravelData\Data;
 final class RecordFiled extends Data
 {
     public function __construct(
-        public string $id,
-        public string $number,
-        public string $label,
-        public int $revision = 1,
+        public readonly string $id,
+        public readonly string $number,
+        public readonly string $label,
+        public readonly int $revision = 1,
     ) {}
 }

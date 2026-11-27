@@ -20,6 +20,6 @@ final readonly class ReadMessageController
     {
         $message = $commands->run(new ReadMessageCommand($call->messageId));
 
-        return MessageView::of($message);
+        return MessageView::from($message);
     }
 }

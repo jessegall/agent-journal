@@ -15,6 +15,6 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class PhaseCheckRecorded extends Data
 {
     public function __construct(
-        public string $checkId,
+        public readonly string $checkId,
     ) {}
 }

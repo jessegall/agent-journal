@@ -42,7 +42,6 @@ function agent(id: string, name: string, retired = false): AgentOptionData {
       label: retired ? "Retired" : "Idle",
       reason: null,
       remedy: null,
-      operation: null,
       commandOutcome: null,
       observationAgeSeconds: null,
       actions: [{ type: "start", label: "Start session" }],

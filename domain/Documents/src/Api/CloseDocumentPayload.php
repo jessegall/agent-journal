@@ -32,13 +32,13 @@ final class CloseDocumentPayload extends Data implements ApiPayload
 
     public function __construct(
         #[Max(32)]
-        public string $number,
+        public readonly string $number,
         #[Max(64)]
-        public string $token,
+        public readonly string $token,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
         #[Min(1)]
-        public int|null $version = null,
+        public readonly int|null $version = null,
     ) {}
 }

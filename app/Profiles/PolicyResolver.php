@@ -11,7 +11,6 @@ use App\Bus\Contracts\Command;
 use App\Hosts\ArrangementSetting;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
-use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\HostAccess;
 use App\Profiles\Values\ProfileProvenance;
 use App\Sessions\Values\ExecutionPolicy;
@@ -60,20 +59,20 @@ final readonly class PolicyResolver
             ProfileProvenance::from([
                 'configuration_hash' => $configurationHash,
                 'origins' => [
-                    FieldOrigin::from(['field' => 'preferredDriver', 'origin' => PolicyOriginType::Profile]),
-                    FieldOrigin::from(['field' => 'access', 'origin' => self::originOf($project, $profile->override)]),
-                    FieldOrigin::from([
+                    ['field' => 'preferredDriver', 'origin' => PolicyOriginType::Profile],
+                    ['field' => 'access', 'origin' => self::originOf($project, $profile->override)],
+                    [
                         'field' => 'stopConditions',
                         'origin' => $profile->stopConditions === []
                         ? PolicyOriginType::GlobalDefault
                         : PolicyOriginType::Profile,
-                    ]),
-                    FieldOrigin::from([
+                    ],
+                    [
                         'field' => 'execution',
                         'origin' => $profile->container === null
                         ? PolicyOriginType::GlobalDefault
                         : PolicyOriginType::Profile,
-                    ]),
+                    ],
                 ],
             ]),
         );

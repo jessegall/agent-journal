@@ -330,7 +330,9 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      */
     public static function findRunUnder(string $instructionId): array
     {
-        return array_values(self::query()->acrossSessions()->fencedByInstruction($instructionId)->limit(1)->get()->all());
+        $checks = self::query()->acrossSessions()->fencedByInstruction($instructionId)->limit(1)->get();
+
+        return array_values($checks->all());
     }
 
     // ----------[ Scopes ]----------

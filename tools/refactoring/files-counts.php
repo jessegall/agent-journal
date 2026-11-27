@@ -18,6 +18,7 @@ use App\Files\FileWriter;
 use App\Files\FolderWalker;
 use App\Files\PathConfinement;
 use App\Files\PlaceRoots;
+use App\Files\PlaceRootSettings;
 use App\Files\Values\Depth;
 use App\Support\CodeFiles;
 use App\Support\Files;
@@ -47,12 +48,10 @@ mkdir($folder.'/deep/'.implode('/', array_map(fn (int $level) => "level-{$level}
 // A file changed within the last second is never kept, so the files settle first.
 sleep(2);
 
-$config = new Repository(['files' => [
+$config = new Repository(['journal' => ['files' => [
     'places' => ['project' => $folder, 'temporary' => $folder],
-    'cached_bytes' => CACHED_BYTES,
-    'largest_cached_file' => LARGEST_CACHED_FILE,
-]]);
-$roots = new PlaceRoots($config);
+]]]);
+$roots = new PlaceRoots(new PlaceRootSettings($config));
 $closed = new ClosedFolders($roots);
 $confinement = new PathConfinement($roots, $closed);
 $contents = new FileContents(CACHED_BYTES, LARGEST_CACHED_FILE);

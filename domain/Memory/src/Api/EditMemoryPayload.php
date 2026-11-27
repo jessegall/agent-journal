@@ -33,14 +33,14 @@ final class EditMemoryPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Ulid]
-        public string $memoryId,
+        public readonly string $memoryId,
         #[Min(1)]
-        public int $revision,
-        public string|null $text,
+        public readonly int $revision,
+        public readonly string|null $text,
         #[Min(Memory::LIGHTEST), Max(Memory::HEAVIEST)]
-        public int|null $weight,
+        public readonly int|null $weight,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

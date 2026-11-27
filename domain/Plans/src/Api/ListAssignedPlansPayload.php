@@ -30,12 +30,12 @@ final class ListAssignedPlansPayload extends Data implements ApiPayload
      */
     public function __construct(
         #[Max(200)]
-        public string|null $search = null,
+        public readonly string|null $search = null,
         #[SentField]
-        public array $states = [],
+        public readonly array $states = [],
         #[Min(1)]
-        public int $page = 1,
+        public readonly int $page = 1,
         #[Min(1), Max(NumberedPage::LARGEST_SIZE)]
-        public int $perPage = 20,
+        public readonly int $perPage = 20,
     ) {}
 }

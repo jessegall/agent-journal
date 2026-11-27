@@ -29,13 +29,13 @@ final class PostCommentPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(64)]
-        public string $target,
-        public string $body,
+        public readonly string $target,
+        public readonly string $body,
         #[MapName('submission_key'), Uuid]
-        public string $submissionKey,
+        public readonly string $submissionKey,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
-        public CommentPlace|null $place = null,
+        public readonly CallKey $requestKey,
+        public readonly CommentPlace|null $place = null,
     ) {}
 }

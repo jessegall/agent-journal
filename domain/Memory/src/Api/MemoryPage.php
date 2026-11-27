@@ -18,9 +18,9 @@ final class MemoryPage extends Data
      * @param  list<array{id: string, number: int, text: string, weight: int, revision: int}>  $memories
      */
     public function __construct(
-        public array $memories,
-        public int $page,
-        public int $perPage,
-        public int $total,
+        public readonly array $memories,
+        public readonly int $page,
+        public readonly int $perPage,
+        public readonly int $total,
     ) {}
 }

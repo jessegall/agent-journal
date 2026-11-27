@@ -205,7 +205,7 @@ final readonly class DriverProfile
     }
 
     /**
-     * This driver's driver as the sign-in runner runs it, by the driver the configuration names; its status command
+     * This driver's driver as the sign-in runner runs it, by the program its setup names; its status command
      * is the host probe's sign-in command without its driver.
      */
     public function signInDriver(): SignInDriver
@@ -214,7 +214,7 @@ final readonly class DriverProfile
             $this,
             $this->setup->signIn,
             array_slice($this->setup->signInProbe, 1),
-            $this->container->make('config')->string($this->setup->signIn->executableSetting),
+            $this->setup->signIn->executable,
             $this->container,
             $this->container->make(Files::class),
             $this->container->make(SignInEgress::class),

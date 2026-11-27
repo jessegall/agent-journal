@@ -34,16 +34,16 @@ final class EditPlanPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Ulid]
-        public string $planId,
+        public readonly string $planId,
         #[Min(1)]
-        public int $expectedRevision,
+        public readonly int $expectedRevision,
         #[Max(240), RequiredWithoutAll('brief', 'type')]
-        public string|null $title,
+        public readonly string|null $title,
         #[Max(8000)]
-        public string|null $brief,
-        public PlanType|null $type,
+        public readonly string|null $brief,
+        public readonly PlanType|null $type,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

@@ -28,6 +28,6 @@ final readonly class StartDriversLoader
 
         $families = $this->startAccounts->familiesWithAccounts();
 
-        return new StartDriversData(DriverChoiceData::listed($this->drivers, $families));
+        return StartDriversData::from(['drivers' => DriverChoiceData::listed($this->drivers, $families)]);
     }
 }

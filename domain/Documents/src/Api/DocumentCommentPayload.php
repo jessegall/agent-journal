@@ -26,10 +26,10 @@ final class DocumentCommentPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[MapName('doc_id'), Ulid]
-        public string $documentId,
-        public string $body,
+        public readonly string $documentId,
+        public readonly string $body,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

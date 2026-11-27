@@ -10,7 +10,7 @@ use App\Agents\Drivers\Setup\Contracts\SignInEnvironment;
 use App\Agents\Drivers\Setup\Contracts\SignInPreparation;
 
 /**
- * How the sign-in runner runs a driver's driver: the setting that names it, its environment, its model check, its
+ * How the sign-in runner runs a driver's driver: the program it runs, its environment, its model check, its
  * sign-out, its sign-in methods (OAuth first) and what a folder needs before a run and after a sign-in.
  */
 final readonly class SignInSetup
@@ -24,7 +24,7 @@ final readonly class SignInSetup
      * @param  list<class-string<AccountFirstRun>>  $firstRuns
      */
     public function __construct(
-        public string $executableSetting,
+        public string $executable,
         public string $environment,
         public ModelCheck $modelCheck,
         public array $signOut,

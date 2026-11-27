@@ -18,9 +18,9 @@ final class CommentLocated extends Data
      * @param  array<string, mixed>|null  $part
      */
     public function __construct(
-        public CommentType $type,
-        public RecordCard $target,
-        public array|null $anchor = null,
-        public array|null $part = null,
+        public readonly CommentType $type,
+        public readonly RecordCard $target,
+        public readonly array|null $anchor = null,
+        public readonly array|null $part = null,
     ) {}
 }

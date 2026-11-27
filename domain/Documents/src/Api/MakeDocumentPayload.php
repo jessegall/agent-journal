@@ -30,16 +30,16 @@ final class MakeDocumentPayload extends Data implements ApiPayload
      * @param  list<string>  $relatedRecords
      */
     public function __construct(
-        public string $title,
-        public string $abstract,
+        public readonly string $title,
+        public readonly string $abstract,
         #[SentField]
         #[MapName('about')]
-        public array $relatedRecords,
+        public readonly array $relatedRecords,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
-        public string|null $body = null,
+        public readonly CallKey $requestKey,
+        public readonly string|null $body = null,
         #[MapName('upload_id')]
-        public string|null $uploadId = null,
+        public readonly string|null $uploadId = null,
     ) {}
 }

@@ -33,7 +33,6 @@ function agentIn(sessionState: SessionActivityStatus): AgentOptionData {
       label: "Verifying session",
       reason: "The journal is checking.",
       remedy: null,
-      operation: null,
       commandOutcome: null,
       observationAgeSeconds: null,
       actions: [

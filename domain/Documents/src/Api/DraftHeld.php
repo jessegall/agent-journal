@@ -15,11 +15,11 @@ final class DraftHeld extends Data
      * @param  list<string>  $outline
      */
     public function __construct(
-        public string $documentId,
-        public int $documentNumber,
-        public string $token,
-        public int $version,
-        public int $baseRevisionNumber,
-        public array $outline,
+        public readonly string $documentId,
+        public readonly int $documentNumber,
+        public readonly string $token,
+        public readonly int $version,
+        public readonly int $baseRevisionNumber,
+        public readonly array $outline,
     ) {}
 }

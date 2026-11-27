@@ -23,7 +23,7 @@ final class MessageView extends Data
         public readonly string $sentAt,
     ) {}
 
-    public static function of(ShownMessage $message): self
+    public static function fromShownMessage(ShownMessage $message): self
     {
         return new self(
             $message->id,

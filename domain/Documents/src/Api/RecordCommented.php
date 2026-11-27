@@ -8,5 +8,5 @@ use Spatie\LaravelData\Data;
 
 final class RecordCommented extends Data
 {
-    public function __construct(public string $commentId) {}
+    public function __construct(public readonly string $commentId) {}
 }

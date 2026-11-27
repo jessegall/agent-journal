@@ -18,6 +18,6 @@ final class RevisionList extends Data
      */
     public function __construct(
         #[DataCollectionOf(RevisionCard::class)]
-        public array $revisions,
+        public readonly array $revisions,
     ) {}
 }

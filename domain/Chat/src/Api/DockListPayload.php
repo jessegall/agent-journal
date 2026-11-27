@@ -23,7 +23,7 @@ final class DockListPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Min(1), Max(DockProjection::LARGEST_CARD_LIMIT)]
-        public int $limit = DockProjection::LARGEST_CARD_LIMIT,
-        public string|null $chat = null,
+        public readonly int $limit = DockProjection::LARGEST_CARD_LIMIT,
+        public readonly string|null $chat = null,
     ) {}
 }
