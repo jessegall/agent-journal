@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Agents\Commands\StopAgent;
 
 use App\Agents\DriverRequests;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Exceptions\StopOutdated;
 use App\Bus\Contracts\CommandHandler;
+use App\Models\Hosts\HostProcess;
+use App\Sessions\StartHeartbeats;
 use App\Terminals\TerminalControls;
 use App\Time\Contracts\ServerClock;
 use App\Values\DriverReceipt;
@@ -17,6 +20,7 @@ final readonly class StopAgentHandler implements CommandHandler
         private DriverRequests $requests,
         private TerminalControls $controls,
         private ServerClock $clock,
+        private StartHeartbeats $heartbeats,
     ) {}
 
     /**
@@ -44,8 +48,16 @@ final readonly class StopAgentHandler implements CommandHandler
             return $open->receipt;
         }
 
-        $this->controls->revokeRuntime($this->requests->runtimeOf($target)->load('session'), $this->clock->now());
+        $runtime = $this->requests->runtimeOf($target)->load('session');
+        $this->controls->revokeRuntime($runtime, $this->clock->now());
+        $receipt = $this->requests->stop($target, $command->idempotencyKey)->receipt;
 
-        return $this->requests->stop($target, $command->idempotencyKey)->receipt;
+        // A headless session runs a process only during a turn: between turns no driver is there to take the stop, so
+        // the session ends now rather than waiting for one that never comes.
+        if ($runtime->driver_type === DriverType::Headless && ! HostProcess::hasLiveOfSession($target->sessionId)) {
+            $this->heartbeats->endIdle($runtime->session, 'stopped between turns, with no process running');
+        }
+
+        return $receipt;
     }
 }

@@ -12,7 +12,6 @@ use App\Bus\Contracts\OwnerCommands;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Models\Access\User;
-use App\Models\Agents\Agent;
 use App\Models\Projects\Project;
 use App\Recordings\Exceptions\HostProtocolDrifted;
 use App\Recordings\Exceptions\RecordedEnvironmentRefused;
@@ -31,6 +30,7 @@ use App\Recordings\Scenarios\ScenarioPause;
 use App\Recordings\Scenarios\ScenarioPlayer;
 use App\Recordings\Scenarios\ScenarioRun;
 use App\Values\FilePath;
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Config;
 use Throwable;
@@ -110,11 +110,13 @@ final class PlayScenarioCommand extends Command
     private function agentsOf(Scenario $scenario, OwnerCommands $commands): array
     {
         $names = array_values(array_unique(array_filter(array_map(fn ($step) => $step->agent, $scenario->steps))));
-        $agents = Agent::query()->unretired()->whereIn('name', $names)->pluck('id', 'name')->all();
+        $play = CarbonImmutable::now()->format('His');
+        $agents = [];
 
-        // An agent the scenario names that this journal does not have yet is made, as its owner would make it.
-        foreach (array_diff($names, array_keys($agents)) as $name) {
-            $made = $commands->run(new CreateAgentCommand($name, self::AGENT_PROFILE, Project::findLocal()->id));
+        // Each play makes its own agents, so nothing an earlier play left running can hold this one up.
+        foreach ($names as $name) {
+            $project = Project::findLocal()->id;
+            $made = $commands->run(new CreateAgentCommand("{$name} {$play}", self::AGENT_PROFILE, $project));
             $agents[$name] = $made->id;
         }
 

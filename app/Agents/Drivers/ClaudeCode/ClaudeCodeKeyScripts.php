@@ -30,7 +30,7 @@ final readonly class ClaudeCodeKeyScripts implements DriverKeyScripts
         // The model and the level are named on the command line, so no picker is walked (user 28771, 28786).
         $changeModel = [
             ...KeyScript::command('/model {model}', '❯ /model {model}'),
-            KeyStep::evidence('see the model applied', 'set model to {model}'),
+            KeyStep::evidence('see the model applied', 'set model to'),
         ];
 
         $changeEffort = [

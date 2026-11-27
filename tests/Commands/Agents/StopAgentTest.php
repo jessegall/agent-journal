@@ -10,14 +10,19 @@ use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Agents\Commands\StopAgent\StopAgentCommand;
 use App\Agents\Drivers\Enums\DriverOperation;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Agents\Exceptions\StopOutdated;
 use App\Exceptions\DriverRequestRefused;
+use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Hosts\EnrolledHost;
+use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
+use App\Models\Hosts\HostProcess;
 use App\Processes\Enums\RuntimeActivity;
 use App\Sessions\Contracts\AgentDirectory;
 use App\Sessions\Enums\SessionStatus;
@@ -66,6 +71,25 @@ final class StopAgentTest extends TestCase
         $this->expectException(DriverRequestRefused::class);
 
         $this->deliver($opened, 'after-stop', 'Too late');
+    }
+
+    public function test_stopping_a_headless_session_between_its_turns_ends_it_at_once(): void
+    {
+        // Between turns no process runs, so no driver is there to take the stop: its last turn's process exited.
+        [$host, $opened] = $this->openRuntime(driverType: DriverType::Headless);
+        $turn = HostProcess::query()->live()->where('agent_runtime_id', $opened->runtimeId)->sole();
+        $this->journal->asSystem(new NotifyHostProcessCommand($host->hostId, $turn->id, HostProcessReportPayload::from([
+            'process_id' => $turn->id,
+            'report' => HostProcessReportType::Exited,
+            'identity' => 'pid:turn',
+            'generation' => 0,
+            'exit_code' => 0,
+            'evidence' => 'the program exited with 0',
+        ])));
+
+        $this->asOwner(new StopAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'stop-idle'));
+
+        $this->assertTrue(AgentSession::query()->findOrFail($opened->sessionId)->hasEnded());
     }
 
     public function test_two_stops_of_the_same_generation_converge_on_one_request(): void

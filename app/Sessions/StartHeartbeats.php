@@ -119,6 +119,14 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     }
 
     /**
+     * A session with no process to stop ends at once with that evidence, as a reported exit ends it.
+     */
+    public function endIdle(AgentSession $session, string $evidence): void
+    {
+        $this->endSession($session, $evidence);
+    }
+
+    /**
      * The host saw the driver exit, so the session ends at once with that evidence.
      */
     public function markExited(AgentSession $session, string $evidence): void
