@@ -4,18 +4,18 @@
     "scenario_hash": "9a17bb10f71747436f1a8d1fd08ef9b21a1354bb9477c3acc416dff21abda047",
     "driver": "claude-code",
     "build": "2.1.323",
-    "image_programs": "4b219f760f30faba61c4f0f2f1ae025a753659795ffe23f0a71a9a973fa85330",
-    "recorded_at": "2026-11-27T14:26:55+00:00",
+    "image_programs": "a3e2bf0f647bb58d5094039e1fe2649efb780fa0b250dfafb8e9f19235d043c3",
+    "recorded_at": "2026-11-27T19:30:35+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",
-        "02-hooks-caller-81ac05547740e327",
-        "03-hooks-caller-c16f13e58ad2e803",
-        "04-agent-caller-81ac05547740e327",
-        "05-agent-caller-c16f13e58ad2e803",
+        "02-hooks-caller-2b182bc14069b044",
+        "03-hooks-caller-a5f8f31317a8706c",
+        "04-agent-caller-2b182bc14069b044",
+        "05-agent-caller-a5f8f31317a8706c",
         "06-docker-daemon",
-        "07-driver-01m8epd9g9yqt9j593fkd6b1p6",
-        "08-driver-01m8epdas0st62e9zs0d4ef9wg",
-        "09-driver-01m8epdbtsws0sn8bc3hgamt8n",
-        "10-driver-01m8epdmkd6vjsw553cance0jm"
+        "07-driver-01m8f7sebapqe7a6srfamwrbz0",
+        "08-driver-01m8f7ses47gnmcgre9z21t21b",
+        "09-driver-01m8f7sfjz0988dknsr4thqgk8",
+        "10-driver-01m8f7sr3ryask67qw9hp7x15a"
     ]
 }
