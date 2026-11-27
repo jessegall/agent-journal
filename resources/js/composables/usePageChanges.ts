@@ -278,8 +278,8 @@ function readPage(wanted: string[], ended: (end: PageReadEnd) => void): void {
 const reads = new PageReadScheduler(readPage);
 
 /**
- * A reload the Inertia live client started: a GET partial reload that names only live props of the page and is no
- * loader call.
+ * A reload the Inertia live client started: a GET partial reload that names only live props of the page, and is no
+ * loader call and no first load of deferred props.
  */
 function isLiveVisit(visit: PendingVisit): boolean {
     const live = new Set(Object.keys(usePage().liveProps ?? {}));
@@ -287,6 +287,7 @@ function isLiveVisit(visit: PendingVisit): boolean {
     return visit.method === 'get'
         && visit.only.length > 0
         && !(LOADER_HEADER in visit.headers)
+        && !visit.deferredProps
         && visit.only.every((prop) => live.has(prop));
 }
 

@@ -80,7 +80,7 @@ final class TestHost
 
     private InvokedProcess|null $host = null;
 
-    private InvokedProcess|null $journal = null;
+    private InvokedProcess|null $servedJournal = null;
 
     private InvokedProcess|null $signIns = null;
 
@@ -202,7 +202,7 @@ final class TestHost
     {
         $printed = '';
 
-        foreach (['host' => $this->host, 'journal' => $this->journal] as $name => $process) {
+        foreach (['host' => $this->host, 'journal' => $this->servedJournal] as $name => $process) {
             $lines = explode("\n", $process?->output().$process?->errorOutput());
             $kept = preg_grep('/ (Accepted|Closing)$|Development Server/', $lines, PREG_GREP_INVERT) ?: [];
             $printed .= "--- {$name}\n".implode("\n", $kept);
@@ -412,7 +412,7 @@ final class TestHost
             posix_kill($processId, SIGKILL);
         }
 
-        $this->journal = null;
+        $this->servedJournal = null;
     }
 
     /**
@@ -462,7 +462,7 @@ final class TestHost
         // A claim's long poll and a request waiting for a host's answer each hold a worker, so the server keeps enough
         // that the answer they wait for always finds one.
         $environment = [...$this->sharedEnvironment(), 'PHP_CLI_SERVER_WORKERS' => '32'];
-        $this->journal = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
+        $this->servedJournal = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
     }
 
@@ -620,7 +620,7 @@ final class TestHost
         foreach ($steps as $step) {
             $running = is_string($step) ? new $step() : $step;
             file_put_contents("{$this->stepsRan()}/current", class_basename($running));
-            $running($this->journal);
+            $running($this->servedJournal);
             $this->markRan($running::class);
         }
 

@@ -10,10 +10,13 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Agents\Enums\ConversationModeType;
 use App\Hosts\EnrolledHost;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessReportType;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionRequest;
 use App\Sessions\AgentWakes;
+use App\Sessions\Enums\SessionStatus;
 use App\Sessions\Enums\StartOriginType;
 use App\Sessions\Enums\StartReadiness;
 use App\Sessions\InitialWakeSettlement;
@@ -26,8 +29,10 @@ use App\Values\StartRequest;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
 
 /**
@@ -54,9 +59,30 @@ final class CancelSessionStartTest extends TestCase
         'active_accounts',
         'session_processes',
         'links',
+        'host_processes',
+        'host_orders',
+        'inboxes',
+        'inbox_members',
+        'users',
     ];
 
     private const string CONVERSATION = 'conversation-1';
+
+    public function test_a_start_whose_processes_all_ended_ends_at_once_when_cancelled(): void
+    {
+        $this->journal->showDriverArrangements()
+            ->idleAgent('Probed')
+            ->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Probed', fn (TestAgent $probed) => $probed
+            ->openRuntime('Mac', base_path())
+            ->nameProcess('probe', HostProcessPurpose::BuildProbe)
+            ->process('probe', fn (TestHostProcess $probe) => $probe->report(HostProcessReportType::Exited, 0)));
+        $session = AgentSession::query()->findOrFail($this->journal->openedRuntimeOf('Probed')->sessionId);
+
+        $isStopAsked = $this->journal->asOwner(new CancelSessionStartCommand($session->agent_id, $session->id, 'cancel-1'));
+
+        $this->journal->assertResult([false, SessionStatus::Ended], [$isStopAsked, $session->refresh()->status]);
+    }
 
     /**
      * @return array{EnrolledHost, OpenedRuntime, DriverRequest, SessionRequest}

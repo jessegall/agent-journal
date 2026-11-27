@@ -1,0 +1,19 @@
+{
+    "method": "POST",
+    "url": "/profiles/journal-main/start-main",
+    "body": {
+        "requestId": "recorded-session-start",
+        "agentId": "main",
+        "model": "opus",
+        "driver": "claude-code",
+        "driverType": null,
+        "saveDriverType": false,
+        "accountId": "01JPAGEREQUESTACCOUNT00000",
+        "accountRevision": 4,
+        "conversationId": null,
+        "previewRevision": 4
+    },
+    "headers": {
+        "Idempotency-Key": "recorded-session-start"
+    }
+}

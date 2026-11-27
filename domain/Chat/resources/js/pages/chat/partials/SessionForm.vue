@@ -13,7 +13,7 @@ import Dialog from "@kit/Dialog";
 import { followPage } from "@kit/followPage";
 import { keyedPost } from "@kit/keyedPost";
 import { sendPageAction } from "@kit/pageActions";
-import { load, LoaderCancelled, webStartPreview, webStartReceipt } from "@kit/loaders";
+import { accountsStartAccounts, load, LoaderCancelled, webStartPreview, webStartReceipt } from "@kit/loaders";
 import { onPurge, protectedViewGeneration } from "@kit/protectedView";
 import { newRequestId } from "@kit/requestId";
 import { useStartRestoration } from "../../../composables/useStartRestoration";
@@ -95,7 +95,6 @@ const preview = ref<StartPreviewData | null>(null);
 const saveDriverType = ref(false);
 const accounts = ref<EligibleAccountData[]>([]);
 const accountId = ref<string | null>(null);
-const modelChoices = ref<string[]>([]);
 const defaultModel = ref<string | null>(null);
 const model = ref<string | null>(null);
 // A refusal that belongs to one field, shown under it; a refusal of the whole change stays in refusal.
@@ -139,7 +138,7 @@ const shownRefusal = computed(
 
 // The chat window's own prop: the page on Chat's own page, the window's part of Home elsewhere.
 const page = usePage();
-const { viewer } = useAppContext();
+const { viewer, drivers } = useAppContext();
 const restoration = useStartRestoration(
   viewer.value.id ?? "guest",
   props.agent.id,
@@ -285,6 +284,10 @@ const families = computed(() => [
 const familyOptions = computed(() =>
   families.value.map((choice) => ({ value: choice, label: familyLabel(choice) })),
 );
+// The chosen driver's models, from the journal's driver catalogue in the app context.
+const modelChoices = computed(
+  () => drivers.value.find((look) => look.family === driver.value)?.models ?? [],
+);
 // The model the profile's tier names for this driver is marked as its default.
 const modelOptions = computed(() =>
   modelChoices.value.map((choice) => ({
@@ -394,20 +397,25 @@ watch(
 );
 
 /**
- * Asks the chat window, read again, for the driver's eligible accounts; they arrive as part of its data.
+ * Reads the accounts a start of this agent on the chosen driver family may use, with the models its profile permits.
  */
 function readAccounts(chosen: string): void {
-  router.reload({
-    only: [chatProp],
-    data: ownPage
-      ? { accountsFor: chosen }
-      : { window: { "chat.conversation": { accountsFor: chosen } } },
-    onError: (errors) => {
+  load(accountsStartAccounts, { agent: props.agent.id, family: chosen }).then(
+    (answer) => {
+      if (answer.status === "ok") {
+        showAccounts(answer.value);
+
+        return;
+      }
+
       isAccountReadFailed.value = true;
-      refusal.value =
-        Object.values(errors)[0] ?? "The accounts could not be read.";
+      refusal.value = Object.values(answer.errors ?? {})[0] ?? "The accounts could not be read.";
     },
-  });
+    () => {
+      isAccountReadFailed.value = true;
+      refusal.value = "The accounts could not be read.";
+    },
+  );
 }
 
 // Whether the last read of the driver's accounts failed, which offers Retry instead of an empty list.
@@ -446,13 +454,8 @@ function preselectPreferredDriver(preferred: string | null): void {
  * Shows the accounts read again: a chosen account that can still start stays chosen even when another is the default;
  * a chosen one that no longer can is cleared with its reason beside the field; with none chosen the default is.
  */
-function showAccounts(read: EligibleAccountsData | undefined): void {
-  if (read === undefined) {
-    return;
-  }
-
+function showAccounts(read: EligibleAccountsData): void {
   accounts.value = read.accounts;
-  modelChoices.value = read.modelChoices;
   defaultModel.value = read.defaultModel;
   preselectPreferredDriver(read.preferredDriver);
 
@@ -462,7 +465,7 @@ function showAccounts(read: EligibleAccountsData | undefined): void {
   }
 
   model.value =
-    model.value !== null && read.modelChoices.includes(model.value)
+    model.value !== null && modelChoices.value.includes(model.value)
       ? model.value
       : read.defaultModel;
   refusal.value = null;
@@ -504,14 +507,12 @@ watch(
   { flush: "sync" },
 );
 
-watch(
-  () => page.props[chatProp] as WindowResult<ChatData> | undefined,
-  (shown) =>
-    showAccounts(
-      shown?.status === "ready" ? shown.data.eligibleAccounts : undefined,
-    ),
-);
 watch(driver, readAccounts, { immediate: true });
+// The accounts follow each new read of the chat window, so an account that can no longer start shows it.
+watch(
+  () => page.props[chatProp],
+  () => readAccounts(driver.value),
+);
 
 function sessionChoice(): SessionChoice {
   return {

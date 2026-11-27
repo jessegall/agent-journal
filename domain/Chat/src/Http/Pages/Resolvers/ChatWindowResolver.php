@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Pages\Resolvers;
 
 use App\Accounts\Contracts\StartAccounts;
-use App\Accounts\Data\EligibleAccountsData;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;
@@ -70,9 +69,8 @@ final readonly class ChatWindowResolver implements PageResolver
                 ->getOrElse(Optional::create()),
             ...$chosen->map($this->conversationFields(...))->getOrElse([]),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
-            'eligibleAccounts' => $this->eligibleAccounts($chosen),
             ...$this->chatList(),
-            'drivers' => DriverChoiceData::listed($this->drivers),
+            'drivers' => DriverChoiceData::listed($this->drivers, $this->startAccounts->familiesWithAccounts()),
         ]);
     }
 
@@ -110,27 +108,6 @@ final readonly class ChatWindowResolver implements PageResolver
             'chats' => $this->pages->summariesOf($this->chats->joined()->limit(InboxMember::ATTACHED_LIMIT)->get()),
             'canCreateChats' => $this->chats->mayCreate(),
         ];
-    }
-
-    /**
-     * The eligible accounts a start or switch form asked for, with the models the chosen agent's profile permits; none
-     * when the form asked for none.
-     *
-     * @param  Option<AgentOption>  $chosen
-     */
-    private function eligibleAccounts(Option $chosen): EligibleAccountsData|Optional
-    {
-        $askedDriver = $this->request->accountDriver();
-
-        if ($askedDriver->isEmpty()) {
-            return Optional::create();
-        }
-
-        $driver = $askedDriver->get();
-
-        return $chosen
-            ->map(fn (AgentOption $agent) => $this->startAccounts->forProfileStart($driver, $agent->profileKey))
-            ->getOrCall(fn () => $this->startAccounts->forDriver($driver));
     }
 
     /**

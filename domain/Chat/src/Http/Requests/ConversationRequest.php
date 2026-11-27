@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Requests;
 
-use App\Agents\Drivers\Contracts\DriverCatalogue;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Enum;
-use Illuminate\Validation\Rules\In;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -20,32 +16,27 @@ use PhpOption\Some;
 final class ConversationRequest extends FormRequest
 {
     /**
-     * @return array<string, list<string|Enum|In>>
+     * @return array<string, list<string>>
      */
-    public function rules(DriverCatalogue $drivers): array
+    public function rules(): array
     {
         return [
-            'agent' => ['nullable', 'string', 'ulid'],
-            'inbox' => ['nullable', 'string', 'ulid'],
-            'dock' => ['nullable', 'string', 'max:2048'],
-            'accountsFor' => ['nullable', Rule::in($drivers->familyKeys())],
+            'agent' => [
+                'nullable',
+                'string',
+                'ulid',
+            ],
+            'inbox' => [
+                'nullable',
+                'string',
+                'ulid',
+            ],
+            'dock' => [
+                'nullable',
+                'string',
+                'max:2048',
+            ],
         ];
-    }
-
-    /**
-     * The driver whose eligible accounts a start or switch form asked for; none when it asked for none.
-     *
-     * @return Option<string>
-     */
-    public function accountDriver(): Option
-    {
-        if ($this->filled('accountsFor')) {
-            $driver = $this->string('accountsFor')->toString();
-
-            return new Some($driver);
-        }
-
-        return None::create();
     }
 
     /**

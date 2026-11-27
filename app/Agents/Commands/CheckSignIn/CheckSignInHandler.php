@@ -35,7 +35,9 @@ final readonly class CheckSignInHandler implements CommandHandler
             return;
         }
 
-        $runtime->proveStart($this->clock->now());
-        $this->headless->openProven($runtime);
+        $this->heartbeats->continueStart($start, function () use ($runtime): void {
+            $runtime->proveStart($this->clock->now());
+            $this->headless->openProven($runtime);
+        });
     }
 }

@@ -37,7 +37,6 @@ final readonly class StartAccounts implements StartAccountsContract
         return EligibleAccountsData::from([
             'driver' => $accounts->driver,
             'accounts' => $accounts->accounts,
-            'modelChoices' => $family->models,
             'defaultModel' => $family->modelAt($profile->preferredTier),
             'preferredDriver' => $profile->start->preferredDriver,
         ]);
@@ -56,5 +55,12 @@ final readonly class StartAccounts implements StartAccountsContract
                 $accounts,
             )),
         ]);
+    }
+
+    public function familiesWithAccounts(): array
+    {
+        $families = array_map(fn (Account $account) => $account->account_protocol, Account::findListed());
+
+        return array_values(array_unique($families));
     }
 }

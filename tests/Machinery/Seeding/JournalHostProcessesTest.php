@@ -32,6 +32,7 @@ use App\Support\AgentImage;
 use App\Values\DriverFamily;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
+use Illuminate\Contracts\Config\Repository;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Assertions\Assert;
 use Tests\Support\Drivers\AcceptingSignInReader;
@@ -90,6 +91,13 @@ final class JournalHostProcessesTest extends TestCase
             'Spare account',
             $this->journal->chosenAccounts()[DefaultDrivers::CODEX]->label,
         );
+    }
+
+    public function test_a_journal_that_forgets_its_security_profiles_knows_no_profiles_folder(): void
+    {
+        $this->journal->arrangeContainedJournal()->forgetSecurityProfiles();
+
+        $this->journal->assertResult('', $this->app->make(Repository::class)->get('agents.security_profiles'));
     }
 
     public function test_a_contained_journal_freezes_its_sessions_into_the_agent_image(): void

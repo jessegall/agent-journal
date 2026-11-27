@@ -88,6 +88,29 @@ final class CheckDriverBuildTest extends TestCase
         );
     }
 
+    public function test_a_container_the_session_may_not_run_ends_the_start_with_its_reason(): void
+    {
+        $this->journal->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->arrangeContainedJournal()
+            ->idleAgent('Boxed')
+            ->enrollContainedHost('Box', [base_path()]);
+        $this->journal->withAgent('Boxed', fn (TestAgent $boxed) => $boxed->openRuntime('Box', base_path()));
+        $boxed = $this->journal->openedRuntimeOf('Boxed');
+        $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
+
+        $this->journal
+            ->forgetSecurityProfiles()
+            ->asSystem(new CheckDriverBuildCommand($this->probeOf($boxed->sessionId), "{$build} (Claude Code)\n"));
+
+        $refused = $this->journal->startOfSession($boxed->sessionId);
+        $this->journal->assertResult(
+            [SessionProcessStatus::Stopped, true],
+            [$refused->status, str_contains((string) $refused->refusal, 'outside the profiles folder')],
+        );
+    }
+
     private function probeOf(string $sessionId): string
     {
         $start = $this->journal->startOfSession($sessionId);

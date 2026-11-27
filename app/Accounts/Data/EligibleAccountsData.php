@@ -17,13 +17,11 @@ final class EligibleAccountsData extends Data
 {
     /**
      * @param  list<EligibleAccountData>  $accounts
-     * @param  list<string>  $modelChoices
      */
     public function __construct(
         public readonly string $driver,
         #[DataCollectionOf(EligibleAccountData::class)]
         public readonly array $accounts,
-        public readonly array $modelChoices = [],
         // The model a start runs when none is chosen: the family's model at the profile's preferred tier.
         public readonly string|null $defaultModel = null,
         // The driver family the profile prefers, which the Start dialog preselects; none when it prefers none.

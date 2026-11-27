@@ -60,6 +60,8 @@ function configurationFor(string $root, array $paths): string
             TEXT,
             $configuration,
         );
+        // The paths are the whole run: the default suites phpunit.xml names would leave the Affected suite out.
+        $configuration = (string) preg_replace('# defaultTestSuite="[^"]*"#', '', $configuration);
     }
 
     $configuration = str_replace(

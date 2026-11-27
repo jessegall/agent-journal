@@ -7,7 +7,7 @@ namespace Tests\Fixtures\MutationDocs;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A model with one mutation documented in a line, one in two lines with a tag, one with no doc comment and one whose
+ * A model with one mutation documented in a line, one in two lines with a tag line, one with no doc comment and one whose
  * doc comment runs to three lines.
  *
  * @property string $state
@@ -28,7 +28,7 @@ final class FixtureLetter extends Model
      * The letter is read: its reader is kept, and a letter read twice
      * keeps its first reader.
      *
-     * @throws \LogicException never
+     * @see self::write() for the letter before it is read
      */
     public function read(): void
     {

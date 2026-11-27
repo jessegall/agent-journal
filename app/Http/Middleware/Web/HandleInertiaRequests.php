@@ -73,7 +73,6 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             ...$this->context->data($request)->toArray(),
-            // The one loader call the request names, answered now so it can come back under either key.
             ...$this->loaders->of($request),
         ];
     }

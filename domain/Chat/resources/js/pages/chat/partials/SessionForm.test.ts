@@ -4,6 +4,7 @@ import type { VueWrapper } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, reactive } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
+import { declaredLooks } from "@kit/testing/driverLooks";
 import { holdsContract, RECORDED } from "@kit/testing/pageRequests";
 
 const posted: { url: string; body: Record<string, unknown> }[] = [];
@@ -15,7 +16,7 @@ type PostOptions = {
 };
 const postOptions: PostOptions[] = [];
 
-// The chat window's prop on Home; asking it for a driver's accounts answers them as part of its data.
+// The chat window's prop on Home; each new read of it has the form read its accounts again.
 const shownPage = reactive<{
   component: string;
   props: Record<string, unknown>;
@@ -42,8 +43,7 @@ const accountsAnswer = {
       isDefault: false,
     },
   ],
-  modelChoices: ["claude-sonnet-5-5", "claude-opus-5-5"],
-  defaultModel: "claude-opus-5-5",
+  defaultModel: "opus",
   preferredDriver: null as string | null,
 };
 
@@ -91,22 +91,10 @@ vi.mock("@inertiajs/vue3", () => ({
   usePage: () => shownPage,
   useHttp: () => ({ requestId: "", get: vi.fn(), post: vi.fn() }),
   router: {
-    reload: (options: {
-      only: string[];
-      onError?: (errors: Record<string, string>) => void;
-    }) => {
-      if (readFailures.count > 0) {
-        readFailures.count--;
-        options.onError?.({ page: "The accounts could not be read." });
-
-        return;
-      }
-
+    reload: (options: { only: string[] }) => {
       shownPage.props = {
-        [options.only[0]]: {
-          state: "ready",
-          data: { eligibleAccounts: { ...accountsAnswer }, drivers },
-        },
+        ...shownPage.props,
+        [options.only[0]]: { status: "ready", data: { drivers } },
       };
     },
     on: () => () => undefined,
@@ -128,6 +116,16 @@ vi.mock("@kit/loaders", async (importOriginal) => {
   return {
     ...original,
     load: (loader: { key: string }, input: Record<string, string | null>) => {
+      if (loader.key === "accounts.start-accounts") {
+        if (readFailures.count > 0) {
+          readFailures.count--;
+
+          return Promise.resolve({ status: "invalid", errors: { family: "The accounts could not be read." } });
+        }
+
+        return Promise.resolve({ status: "ok", value: { ...accountsAnswer, driver: input.family } });
+      }
+
       if (loader.key !== "web.start-preview") {
         return original.load(loader as never, input as never);
       }
@@ -233,12 +231,17 @@ function chosenIn(form: VueWrapper, field: string): string {
   return form.get(`button[id$="-${field}"]`).text();
 }
 
-describe("SessionForm", () => {
-  beforeEach(() => {
-    window.sessionStorage.clear();
-    shownPage.props = { viewer: { type: "guest", canShare: false } };
-  });
+// Every test starts on Home with the journal's driver catalogue and the chat window's drivers.
+beforeEach(() => {
+  window.sessionStorage.clear();
+  shownPage.props = {
+    viewer: { type: "guest", canShare: false },
+    drivers: declaredLooks,
+    window_chat_conversation: { status: "ready", data: { drivers } },
+  };
+});
 
+describe("SessionForm", () => {
   it("chooses the ready account over an expired default, says why the other is unavailable, and sends one request id twice", async () => {
     const form = mount(SessionForm, {
       props: { agent: idle, mode: "start" },
@@ -409,8 +412,8 @@ describe("SessionForm", () => {
     await flushPromises();
 
     const models = optionsOf(form, "model").map((option) => option.text());
-    expect(models).toEqual(["claude-sonnet-5-5", "claude-opus-5-5 (default)"]);
-    expect(chosenIn(form, "model")).toBe("claude-opus-5-5 (default)");
+    expect(models).toEqual(["haiku", "sonnet", "opus (default)", "fable"]);
+    expect(chosenIn(form, "model")).toBe("opus (default)");
 
     await form.find("form").trigger("submit");
     postOptions
@@ -503,9 +506,10 @@ describe("SessionForm", () => {
 
     await choose(form, "account", "Second account");
     shownPage.props = {
+      ...shownPage.props,
       window_chat_conversation: {
-        state: "ready",
-        data: { eligibleAccounts: { ...accountsAnswer }, drivers },
+        status: "ready",
+        data: { drivers },
       },
     };
     await flushPromises();

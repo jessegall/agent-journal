@@ -8,6 +8,7 @@ use App\Actors\PresenceWindow;
 use App\Agents\DriverRequestEndings;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Bus\Contracts\CommandFacts;
+use App\Bus\Contracts\CommandRefusal;
 use App\Events\Sessions\SessionClosed;
 use App\Hosts\CapacityRelease;
 use App\Models\Agents\AgentRuntime;
@@ -20,6 +21,7 @@ use App\Sessions\Contracts\StartTransaction;
 use App\Sessions\Enums\SessionStatus;
 use App\Time\Contracts\ServerClock;
 use Carbon\CarbonImmutable;
+use Closure;
 
 /**
  * Follows a start by its heartbeats. A session whose beats stop for a presence window is marked silent, which only
@@ -87,6 +89,21 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
 
         if ($session->isActive()) {
             $this->markExited($session, $evidence);
+        }
+    }
+
+    /**
+     * Runs the start's next step; a refusal on the way, such as a build or a container that may not run, ends the start
+     * with its reason instead of leaving it waiting.
+     *
+     * @param  Closure(): void  $step
+     */
+    public function continueStart(SessionProcess $start, Closure $step): void
+    {
+        try {
+            $step();
+        } catch (CommandRefusal $refusal) {
+            $this->refuseStart($start, $refusal->getMessage());
         }
     }
 

@@ -217,7 +217,7 @@ switch ($step) {
             'escapeshellarg',
             [...$bridge, '--', '/opt/journal/shell/bash', '-c', $line],
         )).' 2>&1');
-        echo implode("\n", array_filter(explode("\n", $printed), fn (string $printedLine): bool => $printedLine !== 'journal-init: ready'));
+        echo $printed;
         break;
 
     default:

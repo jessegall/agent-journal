@@ -79,8 +79,6 @@ func supervise(layout Layout, program []string) (int, error) {
 		return 1, fmt.Errorf("the init could not drop its own privileges: %w", err)
 	}
 
-	fmt.Println("journal-init: ready")
-
 	return reap(executor.Pid, client.Pid), nil
 }
 

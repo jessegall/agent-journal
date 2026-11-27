@@ -59,13 +59,13 @@ enum SessionActivityStatus: string
     }
 
     /**
-     * The sentence under a state that needs one to be understood, or none.
+     * The sentence under a state that needs one to be understood, or none; a state its label and spinner say needs none.
      */
     public function reason(): string|null
     {
         return match ($this) {
-            self::Verifying => 'The journal is checking which conversation the agent runs before it sends your messages.',
             self::Unverified => 'The journal could not confirm which conversation the agent runs, so your messages stay held.',
+            self::Verifying,
             self::Stopped,
             self::Starting,
             self::Working,

@@ -112,8 +112,6 @@ const (
 	StartProtectedAccount = "protected-account"
 	// protectedInit is the init a protected-account container starts with, never taken from a manifest.
 	protectedInit = "/opt/journal/bin/journal-init"
-	// initReadyLine is the one line the init prints once its program and executor run.
-	initReadyLine = "journal-init: ready"
 	// executorFolder is the private folder of the executor's socket in a protected-account container, kept in
 	// memory with executorFolderOptions.
 	executorFolder        = "/run/journal-exec"

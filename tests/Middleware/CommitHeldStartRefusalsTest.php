@@ -8,7 +8,6 @@ use App\Accounts\Exceptions\AccountUnavailable;
 use App\Agents\Commands\StartOwnedAgent\StartOwnedAgentCommand;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Enums\ConversationModeType;
-use App\Bus\Contracts\CommandBus;
 use App\CommandMiddleware\CommitHeldStartRefusals;
 use App\Exceptions\StartRefusalReplayed;
 use App\Models\Accounts\ActiveAccount;
@@ -66,14 +65,13 @@ final class CommitHeldStartRefusalsTest extends TestCase
     {
         ActiveAccount::query()->withoutGlobalScopes()->where('account_protocol', 'claude-code')->sole()->clear();
         $command = new StartOwnedAgentCommand($this->ownerRequest());
-        $bus = $this->app->make(CommandBus::class);
 
-        $this->assertThrows(fn () => $bus->run($command), AccountUnavailable::class);
+        $this->journal->assertRefused(AccountUnavailable::class, fn () => $this->journal->asOwner($command));
 
         $record = SessionRequest::query()->where('request_id', $command->request->requestId)->sole();
         $this->assertSame(StartDisposition::Refused, $record->disposition);
         $this->assertSame(0, AgentSession::query()->where('agent_id', $this->researcher->id)->count());
-        $this->assertThrows(fn () => $bus->run($command), StartRefusalReplayed::class);
+        $this->journal->assertRefused(StartRefusalReplayed::class, fn () => $this->journal->asOwner($command));
     }
 
     private function ownerRequest(): OwnerStartRequest

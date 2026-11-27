@@ -29,31 +29,41 @@ final class DriverChoiceData extends Data
     ) {}
 
     /**
-     * Every registered driver, in the catalogue's order.
+     * Every registered driver, in the catalogue's order; one no account can run cannot be chosen.
      *
+     * @param  list<string>  $familiesWithAccounts
      * @return list<self>
      */
-    public static function listed(DriverCatalogue $drivers): array
+    public static function listed(DriverCatalogue $drivers, array $familiesWithAccounts): array
     {
         return array_map(
-            fn (DriverRegistration $registration) => self::of($drivers, $registration),
+            fn (DriverRegistration $registration) => self::of($drivers, $registration, $familiesWithAccounts),
             $drivers->catalogue(),
         );
     }
 
-    private static function of(DriverCatalogue $drivers, DriverRegistration $registration): self
+    /**
+     * @param  list<string>  $familiesWithAccounts
+     */
+    private static function of(DriverCatalogue $drivers, DriverRegistration $registration, array $familiesWithAccounts): self
     {
         $run = $drivers->forKey($registration->key)
             ->capabilities(BoundTarget::beforePlacement())
             ->supportOf(DriverCapability::Run);
+
+        $reason = $run->isAllowed() ? null : $run->reason;
+
+        if (! in_array($registration->family, $familiesWithAccounts, true)) {
+            $reason = "No account can run {$registration->label} yet: add one under Accounts.";
+        }
 
         return new self(
             (string) $registration->key,
             $registration->label,
             $registration->family,
             $registration->driverType,
-            $run->isAllowed(),
-            $run->isAllowed() ? null : $run->reason,
+            $reason === null,
+            $reason,
         );
     }
 }

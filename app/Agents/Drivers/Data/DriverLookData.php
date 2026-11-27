@@ -27,6 +27,8 @@ final class DriverLookData extends Data
         public readonly string $markUrl,
         public readonly MarkTone $markTone,
         public readonly SignInCodeDirection $signInCode,
+        /** @var list<string> */
+        public readonly array $models,
     ) {}
 
     public static function fromDriverFamily(DriverFamily $family): self
@@ -38,6 +40,7 @@ final class DriverLookData extends Data
             markUrl: "/{$family->markAsset}",
             markTone: $family->markTone,
             signInCode: $family->signInCode,
+            models: $family->models,
         );
     }
 }

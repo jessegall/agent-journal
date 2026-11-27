@@ -12,7 +12,7 @@ type ReloadOptions = {
     onFinish: () => void;
     onCancel: () => void;
 };
-type Visit = { method: string; only: string[]; headers: Record<string, string> };
+type Visit = { method: string; only: string[]; headers: Record<string, string>; deferredProps?: boolean };
 type BeforeListener = (event: { detail: { visit: Visit } }) => boolean | void;
 
 const reloads: ReloadOptions[] = [];
@@ -102,6 +102,13 @@ describe('usePageChanges', () => {
         expect(fireBefore({ method: 'get', only: [], headers: {} })).toBeUndefined();
         expect(fireBefore({ method: 'get', only: ['load_chat_rows'], headers: { 'X-Journal-Loader': 'chat.rows' } }))
             .toBeUndefined();
+        expect(reloads).toHaveLength(0);
+    });
+
+    it('lets the first load of deferred live props through, so a page arriving again fills its windows', async () => {
+        await changes();
+
+        expect(fireBefore({ method: 'get', only: ['page'], headers: {}, deferredProps: true })).toBeUndefined();
         expect(reloads).toHaveLength(0);
     });
 

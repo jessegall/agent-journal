@@ -7,7 +7,6 @@ namespace App\Agents\Commands\CheckDriverBuild;
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Work\HeadlessStarts;
-use App\Agents\Exceptions\BuildNotPinned;
 use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
@@ -32,19 +31,14 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
         $start = $process->sessionProcess()->lockForUpdate()->sole();
         $runtime = $process->runtime;
 
-        try {
-            $this->profiles->of($runtime)->assertPinnedBuild($command->printed);
-        } catch (BuildNotPinned $refusal) {
-            $this->heartbeats->refuseStart($start, $refusal->getMessage());
+        $this->heartbeats->continueStart($start, function () use ($command, $process, $start, $runtime): void {
+            $profile = $this->profiles->of($runtime);
+            $profile->assertPinnedBuild($command->printed);
+            $probe = $profile->signInProbe($this->headless->startOf($runtime, $start));
+            $source = HostOrderSource::fromJournal();
+            $open = new OpenHostProcessCommand($process->host_id, $runtime->id, $probe, $source, $start->id);
 
-            return;
-        }
-
-        $driverStart = $this->headless->startOf($runtime, $start);
-        $probe = $this->profiles->of($runtime)->signInProbe($driverStart);
-        $source = HostOrderSource::fromJournal();
-        $open = new OpenHostProcessCommand($process->host_id, $runtime->id, $probe, $source, $start->id);
-
-        $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $open);
+            $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $open);
+        });
     }
 }

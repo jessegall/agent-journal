@@ -22,4 +22,11 @@ interface StartAccounts
      * first.
      */
     public function forProfileStart(string $driver, string $profileKey): EligibleAccountsData;
+
+    /**
+     * The driver families at least one account of the journal can run; it names no account.
+     *
+     * @return list<string>
+     */
+    public function familiesWithAccounts(): array;
 }

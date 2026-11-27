@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Accounts\Data\EligibleAccountsData;
 use App\Navigation\Data\Pages\SlotSectionData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -33,8 +32,6 @@ final class ChatData extends Data
         #[DataCollectionOf(SlotSectionData::class)]
         public readonly array $dockSections = [],
         public readonly ConversationData|Optional $conversation = new Optional(),
-        // The accounts a start or switch form asked for, read only when it asked.
-        public readonly EligibleAccountsData|Optional $eligibleAccounts = new Optional(),
         // A setup problem the reader cannot fix here, such as a missing own inbox; it replaces the conversation.
         public readonly string|Optional $setupNotice = new Optional(),
         // The chats the viewer is in, for the inbox selector, and whether it may open a new one.

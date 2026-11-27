@@ -7,6 +7,7 @@ namespace App\Sessions;
 use App\Contracts\Refusals\StartRefusal;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorReference;
+use App\Support\StackTransaction;
 use App\Values\PinnedDriver;
 use App\Values\StartRequest;
 use Closure;
@@ -24,6 +25,8 @@ final class HeldStartRefusals
      */
     private array $refusals = [];
 
+    public function __construct(private readonly StackTransaction $transaction) {}
+
     public function hold(
         StartRequest $request,
         PinnedDriver $pin,
@@ -34,7 +37,7 @@ final class HeldStartRefusals
     }
 
     /**
-     * Keeps every held refusal on its record, each in its own statement outside any transaction, and holds none after.
+     * Keeps every held refusal on its record, each in a unit of its own after the rollback, and holds none after.
      */
     public function keep(): void
     {
@@ -42,7 +45,7 @@ final class HeldStartRefusals
         $this->refusals = [];
 
         foreach ($refusals as $keepRefusal) {
-            $keepRefusal();
+            $this->transaction->run($keepRefusal);
         }
     }
 

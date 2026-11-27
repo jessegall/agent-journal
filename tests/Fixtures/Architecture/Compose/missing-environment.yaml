@@ -1,0 +1,11 @@
+x-journal-environment: &journal-environment
+    AGENTS_SECURITY_PROFILES: /etc/journal/security
+
+services:
+    app:
+        image: ${COMPOSE_PROJECT_NAME}-app
+        environment: *journal-environment
+    queue:
+        image: ${COMPOSE_PROJECT_NAME}-app
+    redis:
+        image: redis

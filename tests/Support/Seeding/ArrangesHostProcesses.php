@@ -411,6 +411,16 @@ trait ArrangesHostProcesses
     }
 
     /**
+     * The journal from here on knows no folder of security profiles, as a service started without that setting does.
+     */
+    public function forgetSecurityProfiles(): self
+    {
+        $this->app->make(Repository::class)->set('agents.security_profiles', '');
+
+        return $this;
+    }
+
+    /**
      * A driver family a module adds, registered in the catalogue and started as the existing family it runs like.
      */
     public function setUpDriverFamily(DriverFamily $family, string $runsLike): self

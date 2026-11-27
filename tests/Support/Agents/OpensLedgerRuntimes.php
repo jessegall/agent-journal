@@ -52,15 +52,15 @@ trait OpensLedgerRuntimes
     ): array {
         $number = ++$this->openedRuntimeCount;
         $this->journal->showDriverArrangements()->idleAgent("Driven agent {$number}")->enrollHost("Test host {$number}", [self::FOLDER]);
-        $opened = $this->journal->openRuntimeOn(
-            "Driven agent {$number}",
+        $this->journal->withAgent("Driven agent {$number}", fn (TestAgent $agent) => $agent->openRuntime(
             "Test host {$number}",
             self::FOLDER,
             driver: $driver,
             build: $build,
             driverType: $driverType,
             firstMessage: $firstMessage,
-        );
+        ));
+        $opened = $this->journal->openedRuntimeOf("Driven agent {$number}");
 
         return [
             $this->journal->hostCalled("Test host {$number}"),

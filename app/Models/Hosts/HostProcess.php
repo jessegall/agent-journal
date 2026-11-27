@@ -429,6 +429,14 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
+     * Whether a process of the session's runtime still runs or waits to start, so a stop has something to reach.
+     */
+    public static function hasLiveOfSession(string $sessionId): bool
+    {
+        return self::query()->live()->whereHas('runtime', fn (Builder $runtime) => $runtime->ofSessions([$sessionId]))->exists();
+    }
+
+    /**
      * Whether a live owner on the host runs the headless turns of the start's account and sign-in generation.
      */
     public static function hasLiveOwnerOf(string $hostId, SessionProcess $start): bool

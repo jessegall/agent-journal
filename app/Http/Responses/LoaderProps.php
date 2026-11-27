@@ -66,7 +66,8 @@ final readonly class LoaderProps
 
         $call = LoaderInput::fromHeader((string) $request->headers->get(LoaderInput::HEADER));
 
-        $loader = $this->declarations->loader((string) $request->headers->get(self::HEADER))
+        $loader = $this->declarations
+            ->loader((string) $request->headers->get(self::HEADER))
             ->filter($this->isOpen(...));
 
         if ($loader->isEmpty()) {

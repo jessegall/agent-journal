@@ -1,3 +1,14 @@
+# The journal's own settings, the same in every service that runs the application image.
+x-journal-environment: &journal-environment
+    # The most worker threads FrankenPHP grows to under load: about one per two active actors. The threads started at
+    # boot (two per processor) are the floor and are never removed.
+    OCTANE_MAX_THREADS: ${OCTANE_MAX_THREADS:-32}
+    # Where agents run (doc 61): local on this machine, or contained in the agent daemon's containers.
+    AGENTS_ARRANGEMENT: ${AGENTS_ARRANGEMENT:-local}
+    AGENTS_INSTALLATION_NAME: ${AGENTS_INSTALLATION_NAME:-journal}
+    # Where the agent host holds the profiles a contained manifest names (.docker/helper/seccomp-agent.json).
+    AGENTS_SECURITY_PROFILES: /etc/journal/security
+
 services:
     app:
         restart: unless-stopped
@@ -17,15 +28,7 @@ services:
                 VITE_REVERB_HOST: ${VITE_REVERB_HOST:-}
                 VITE_REVERB_PORT: ${VITE_REVERB_PORT:-}
                 VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME:-}
-        environment:
-            # The most worker threads FrankenPHP grows to under load: about one per two active actors. The threads
-            # started at boot (two per processor) are the floor and are never removed.
-            OCTANE_MAX_THREADS: ${OCTANE_MAX_THREADS:-32}
-            # Where agents run (doc 61): local on this machine, or contained in the agent daemon's containers.
-            AGENTS_ARRANGEMENT: ${AGENTS_ARRANGEMENT:-local}
-            AGENTS_INSTALLATION_NAME: ${AGENTS_INSTALLATION_NAME:-journal}
-            # Where the agent host holds the profiles a contained manifest names (.docker/helper/seccomp-agent.json).
-            AGENTS_SECURITY_PROFILES: /etc/journal/security
+        environment: *journal-environment
         # Healthy once the journal itself answers, not only its web server: an install switches to a new app container
         # only then.
         healthcheck:
@@ -70,6 +73,7 @@ services:
         env_file:
             - path: .env
               required: false
+        environment: *journal-environment
         image: ${COMPOSE_PROJECT_NAME}-app
         pull_policy: never
         command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
@@ -88,6 +92,7 @@ services:
         env_file:
             - path: .env
               required: false
+        environment: *journal-environment
         image: ${COMPOSE_PROJECT_NAME}-app
         pull_policy: never
         command: ['php', 'artisan', 'queue:work', '--tries=3', '--backoff=5']
@@ -110,6 +115,7 @@ services:
         env_file:
             - path: .env
               required: false
+        environment: *journal-environment
         image: ${COMPOSE_PROJECT_NAME}-app
         pull_policy: never
         command: ['php', 'artisan', 'drivers:supervise']
@@ -131,6 +137,7 @@ services:
         env_file:
             - path: .env
               required: false
+        environment: *journal-environment
         image: ${COMPOSE_PROJECT_NAME}-app
         pull_policy: never
         command: ['php', 'artisan', 'schedule:work']
@@ -152,6 +159,7 @@ services:
         env_file:
             - path: .env
               required: false
+        environment: *journal-environment
         image: ${COMPOSE_PROJECT_NAME}-app
         pull_policy: never
         command: ['php', 'artisan', 'engine:tick']

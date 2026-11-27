@@ -23,6 +23,7 @@ use App\Accounts\Data\SignInAttemptData;
 use App\Accounts\Data\SignInMethodData;
 use App\Accounts\Data\SignInReceiptData;
 use App\Accounts\Data\StartAccountData;
+use App\Accounts\Data\StartAccountsInput;
 use App\Accounts\Enums\AccountCheckResult;
 use App\Accounts\Enums\AccountNoticeReason;
 use App\Accounts\Enums\AccountStatus;
@@ -52,6 +53,7 @@ use App\Http\Controllers\SignInAgainController;
 use App\Http\Controllers\SignInChallengeController;
 use App\Http\Controllers\StartSignInController;
 use App\Http\Controllers\SubmitSignInCodeController;
+use App\Http\Loaders\Accounts\StartAccountsLoader;
 use App\Http\Loaders\Profiles\SignInReceiptLoader;
 use App\Http\Pages\Resolvers\AccountNoticesSection;
 use App\Http\Pages\Resolvers\AccountsWindowResolver;
@@ -101,7 +103,9 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
             Page::layout('accounts', 'Accounts', Icon::Accounts, AccountsWindowResolver::class)
                 ->at('')
                 ->visibleWhen(AccountOwnerCheck::class)
-                ->loaders(fn (PageLoaders $loaders) => $loaders->add('sign-in-receipt', SignInReceiptLoader::class))
+                ->loaders(fn (PageLoaders $loaders) => $loaders
+                    ->add('sign-in-receipt', SignInReceiptLoader::class)
+                    ->add('start-accounts', StartAccountsLoader::class))
                 ->actions(fn (PageActions $actions) => $actions
                     ->post('{account}/activate', ActivateAccountController::class, 'activate')
                     ->patch('{account}', RenameAccountController::class, 'rename')
@@ -184,6 +188,7 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
             SignInReceiptData::class,
             SignInReceiptInput::class,
             StartAccountData::class,
+            StartAccountsInput::class,
             ScriptDiagnostic::class,
             AccountCheckResult::class,
             AccountNoticeReason::class,

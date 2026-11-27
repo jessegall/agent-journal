@@ -9,6 +9,7 @@ export const declaredLooks: DriverLookData[] = [
         markUrl: '/images/drivers/claude-code.svg',
         markTone: 'own',
         signInCode: 'paste-back',
+        models: ['haiku', 'sonnet', 'opus', 'fable'],
     },
     {
         family: 'codex',
@@ -17,5 +18,6 @@ export const declaredLooks: DriverLookData[] = [
         markUrl: '/images/drivers/codex.svg',
         markTone: 'current-color',
         signInCode: 'outgoing',
+        models: ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.2-sol', 'gpt-6.2-astra'],
     },
 ];
