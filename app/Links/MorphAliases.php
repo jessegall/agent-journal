@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Links;
 
+use App\Support\Codebase;
 use App\Support\DomainEntry;
-use App\Support\FolderClasses;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 final readonly class MorphAliases
 {
     /**
-     * The folders of the core models, as FolderClasses reads them.
+     * The folders of the core models, as Codebase reads them.
      */
     private const array CORE_FOLDERS = [
         'app/Models',
@@ -37,7 +37,7 @@ final readonly class MorphAliases
         foreach (self::CORE_FOLDERS as $folder) {
             $path = base_path($folder);
 
-            foreach (FolderClasses::in($path, Model::class) as $class) {
+            foreach (Codebase::in($path, Model::class) as $class) {
                 $place = array_diff(array_slice(explode('\\', $class), 1, -1), ['Models']);
                 $areas = array_map(fn (string $area) => Str::kebab($area), $place);
 
@@ -60,7 +60,7 @@ final readonly class MorphAliases
         $map = [];
         $prefix = Str::kebab($domain->name);
 
-        foreach (FolderClasses::in("{$domain->folder}/Models", Model::class) as $class) {
+        foreach (Codebase::in("{$domain->folder}/Models", Model::class) as $class) {
             $model = self::modelName($class);
             $map["{$prefix}.{$model}"] = $class;
         }

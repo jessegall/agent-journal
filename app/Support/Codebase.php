@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Bootstrap\KnownFolderClasses;
+use App\Bootstrap\CachedCodebase;
 use App\Bootstrap\Psr4ClassNames;
 use Illuminate\Console\Command;
 
 /**
- * The classes of one type a folder declares, read through Composer's PSR-4 roots, so a list that mirrors a folder is
- * found from the folder instead of written out by hand. Each folder is listed once per process (CodeFiles), and the
- * classes found in it are kept for the process (KnownFolderClasses).
+ * The project's code as classes: those of one type a folder declares, read through Composer's PSR-4 roots, so a
+ * list that mirrors a folder is found, not written by hand. A folder's classes are kept per process (CachedCodebase).
  */
-final readonly class FolderClasses
+final readonly class Codebase
 {
     /**
      * Every class of the type declared directly in one of the folders, a folder pattern such as domain/*\/src/Commands
@@ -26,7 +25,7 @@ final readonly class FolderClasses
      */
     public static function in(string $folders, string $type): array
     {
-        $found = KnownFolderClasses::in($folders, $type, fn () => self::read($folders, $type));
+        $found = CachedCodebase::in($folders, $type, fn () => self::read($folders, $type));
 
         return array_values(array_filter(
             $found,

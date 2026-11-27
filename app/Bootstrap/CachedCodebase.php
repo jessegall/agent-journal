@@ -10,7 +10,7 @@ use Closure;
  * The classes of each folder this process already found: the files cannot change while it runs, so a boot takes the
  * classes found before instead of resolving and reflecting on the folder's files again.
  */
-final class KnownFolderClasses
+final class CachedCodebase
 {
     /**
      * @var array<string, list<class-string>>

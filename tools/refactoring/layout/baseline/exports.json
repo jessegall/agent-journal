@@ -1099,7 +1099,7 @@
     "App\\Support\\ExitReceipt",
     "App\\Bootstrap\\ExportBuilder",
     "App\\Support\\Exports",
-    "App\\Support\\FolderClasses",
+    "App\\Support\\Codebase",
     "Domain\\Sharing\\Support\\Gateways\\GatewayConfiguration",
     "Domain\\Sharing\\Support\\Gateways\\GatewayEndpoint",
     "Domain\\Sharing\\Support\\Gateways\\GatewayHealth",

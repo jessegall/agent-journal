@@ -8,8 +8,8 @@ use App\Bootstrap\CoreListenerFolders;
 use App\Bus\ListenerOwnership;
 use App\Contracts\Events\Event;
 use App\Reflection\CatalogueReflectorFactory;
+use App\Support\Codebase;
 use App\Support\DomainRegistry;
-use App\Support\FolderClasses;
 use App\Support\Reflector;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Architecture\Support\DomainFiles;
@@ -57,7 +57,7 @@ final class EventGroupTest extends TestCase
     {
         $root = base_path('tests/Fixtures/EventGroups');
         $folders = ["{$root}/Orders/Events", "{$root}/Billing/Events", "{$root}/Empty/Events"];
-        $events = array_merge(...array_map(fn (string $folder) => FolderClasses::in($folder, Event::class), $folders));
+        $events = array_merge(...array_map(fn (string $folder) => Codebase::in($folder, Event::class), $folders));
         $groups = new EventGroups($events, $folders, self::groupsIn([$root]));
 
         $this->assertSame(

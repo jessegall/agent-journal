@@ -17,8 +17,8 @@ use App\CommandMiddleware\CommitHeldStartRefusals;
 use App\CommandMiddleware\GuardTickOrigin;
 use App\CommandMiddleware\KeepStartReceipt;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
+use App\Support\Codebase;
 use App\Support\Exports;
-use App\Support\FolderClasses;
 
 /**
  * Core's own commands and middleware, read at start-up beside the domains'.
@@ -32,8 +32,8 @@ final class CoreCommands
     {
         // Each subject keeps its commands in its own Commands folder, one or two levels down (app/Agents/Drivers).
         return [
-            ...FolderClasses::in(__DIR__.'/*/Commands/*', Command::class),
-            ...FolderClasses::in(__DIR__.'/*/*/Commands/*', Command::class),
+            ...Codebase::in(__DIR__.'/*/Commands/*', Command::class),
+            ...Codebase::in(__DIR__.'/*/*/Commands/*', Command::class),
         ];
     }
 

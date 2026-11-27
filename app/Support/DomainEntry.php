@@ -239,7 +239,7 @@ final readonly class DomainEntry
      */
     public function providers(): array
     {
-        return FolderClasses::in($this->folder.'/Providers', ServiceProvider::class);
+        return Codebase::in($this->folder.'/Providers', ServiceProvider::class);
     }
 
     public function listenerFolder(): string

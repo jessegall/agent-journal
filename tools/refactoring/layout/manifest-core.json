@@ -79593,10 +79593,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "91f60f9b133d93a5f04a337513fe66ad6f5d6962",
-        "old_path": "app/Support/FolderClasses.php",
-        "old_class": "App\\Support\\FolderClasses",
-        "final_path": "app/Support/FolderClasses.php",
-        "final_class": "App\\Support\\FolderClasses",
+        "old_path": "app/Support/Codebase.php",
+        "old_class": "App\\Support\\Codebase",
+        "final_path": "app/Support/Codebase.php",
+        "final_class": "App\\Support\\Codebase",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -82044,10 +82044,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bcfb02c0b3d33d95da7e2124823a8ee6330f3ada",
-        "old_path": "app/Bootstrap/KnownFolderClasses.php",
-        "old_class": "App\\Bootstrap\\KnownFolderClasses",
-        "final_path": "app/Bootstrap/KnownFolderClasses.php",
-        "final_class": "App\\Bootstrap\\KnownFolderClasses",
+        "old_path": "app/Bootstrap/CachedCodebase.php",
+        "old_class": "App\\Bootstrap\\CachedCodebase",
+        "final_path": "app/Bootstrap/CachedCodebase.php",
+        "final_class": "App\\Bootstrap\\CachedCodebase",
         "status": "stay",
         "kind": "class",
         "generator": {

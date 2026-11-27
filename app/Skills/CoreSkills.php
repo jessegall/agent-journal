@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills;
 
 use App\Skills\Contracts\Skill;
-use App\Support\FolderClasses;
+use App\Support\Codebase;
 use App\Values\SkillOwner;
 
 /**
@@ -20,7 +20,7 @@ final class CoreSkills
      */
     public static function skills(): array
     {
-        return FolderClasses::in(__DIR__.'/Shipped', Skill::class);
+        return Codebase::in(__DIR__.'/Shipped', Skill::class);
     }
 
     /**

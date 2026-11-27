@@ -11,7 +11,7 @@ use App\Mcp\Tools\CapabilitiesReadTool;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\OverviewReadTool;
 use App\Mcp\Tools\SearchTool;
-use App\Support\FolderClasses;
+use App\Support\Codebase;
 
 /**
  * Core's own MCP tools and resources, added to the catalogue before the domains'.
@@ -37,7 +37,7 @@ final class CoreMcpTools
      */
     public static function tools(): array
     {
-        $found = FolderClasses::in(__DIR__.'/Mcp/Tools', JournalTool::class);
+        $found = Codebase::in(__DIR__.'/Mcp/Tools', JournalTool::class);
 
         return [
             ...self::ORIENTATION_TOOLS,
@@ -50,7 +50,7 @@ final class CoreMcpTools
      */
     public static function resources(): array
     {
-        $found = FolderClasses::in(__DIR__.'/Mcp/Resources', JournalResource::class);
+        $found = Codebase::in(__DIR__.'/Mcp/Resources', JournalResource::class);
 
         return [
             ...self::ORIENTATION_RESOURCES,
