@@ -6,7 +6,7 @@ namespace Domain\Comments\Providers;
 
 use App\Projects\Contracts\FileComments;
 use App\Projects\Contracts\HeldFileVersions;
-use App\Support\FolderClasses;
+use App\Support\Codebase;
 use Domain\Comments\Contracts\CommentResolver as CommentResolverContract;
 use Domain\Comments\Contracts\PublicCommentResolver as PublicCommentResolverContract;
 use Domain\Comments\Resolvers\CommentResolver;
@@ -31,6 +31,6 @@ final class CommentsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/comments.php');
-        $this->commands(FolderClasses::consoleCommandsIn(dirname(__DIR__)));
+        $this->commands(Codebase::consoleCommandsIn(dirname(__DIR__)));
     }
 }

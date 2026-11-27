@@ -7,9 +7,9 @@ namespace Domain\Questions;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Mcp\Contracts\McpToolProvider;
+use App\Support\Codebase;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\FolderClasses;
 use Domain\Questions\Commands\AnswerQuestion\AnswerQuestionCommand;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Events\QuestionAnswered;
@@ -45,7 +45,7 @@ final class QuestionsDomain extends Domain implements CommandProvider, McpToolPr
 
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
+        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function mcpResources(): array

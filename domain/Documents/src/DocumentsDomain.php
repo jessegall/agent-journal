@@ -30,9 +30,9 @@ use App\Profiles\Enums\SlotContextType;
 use App\Records\Contracts\LinkRecordProvider;
 use App\Records\Contracts\ShareRecordContributor;
 use App\Records\Values\ShareRecordDefinition;
+use App\Support\Codebase;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\FolderClasses;
 use App\Support\Searchable;
 use App\Text\Declarations\Section;
 use Domain\Chat\ChatDomain;
@@ -286,17 +286,17 @@ final class DocumentsDomain extends Domain implements
 
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
+        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function mcpTools(): array
     {
-        return FolderClasses::in($this->mcpRoot('Tools'), JournalTool::class);
+        return Codebase::in($this->mcpRoot('Tools'), JournalTool::class);
     }
 
     public function mcpResources(): array
     {
-        return FolderClasses::in($this->mcpRoot('Resources'), JournalResource::class);
+        return Codebase::in($this->mcpRoot('Resources'), JournalResource::class);
     }
 
     public function overviewContributions(): array

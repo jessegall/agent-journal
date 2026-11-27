@@ -16,10 +16,10 @@ use App\Mcp\Contracts\McpToolProvider;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Enums\Icon;
 use App\Records\Contracts\StateProvider;
+use App\Support\Codebase;
 use App\Support\Command;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\FolderClasses;
 use Domain\Documents\DocumentsDomain;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
@@ -83,7 +83,7 @@ final class HelpersDomain extends Domain implements
      */
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
+        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     /**

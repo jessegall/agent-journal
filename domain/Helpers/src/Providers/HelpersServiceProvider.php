@@ -6,7 +6,7 @@ namespace Domain\Helpers\Providers;
 
 use App\Access\Contracts\SystemEntryPolicies;
 use App\Processes\Contracts\SupervisorDispatch;
-use App\Support\FolderClasses;
+use App\Support\Codebase;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Support\HelperLifecycleEntry;
 use Domain\Helpers\Support\HelperSupervisorDispatch;
@@ -28,7 +28,7 @@ final class HelpersServiceProvider extends ServiceProvider
     public function boot(SystemEntryPolicies $systemEntries): void
     {
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
-        $this->commands(FolderClasses::consoleCommandsIn(dirname(__DIR__)));
+        $this->commands(Codebase::consoleCommandsIn(dirname(__DIR__)));
         $systemEntries->allow(HelperLifecycleEntry::NAME, HelperPolicy::class);
     }
 }

@@ -22,9 +22,9 @@ use App\Navigation\Enums\Icon;
 use App\Profiles\Enums\SlotContextType;
 use App\Search\Contracts\MessageSearch;
 use App\Skills\Contracts\SkillProvider;
+use App\Support\Codebase;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\FolderClasses;
 use App\Support\Searchable;
 use App\Text\Declarations\Section;
 use Domain\Chat\Contracts\PairChats;
@@ -93,7 +93,7 @@ final class ChatDomain extends Domain implements
 
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
+        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function policies(): array

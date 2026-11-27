@@ -30,9 +30,9 @@ use App\Navigation\Enums\Icon;
 use App\Records\Contracts\LinkRecordProvider;
 use App\Records\Contracts\StateProvider;
 use App\Skills\Contracts\SkillProvider;
+use App\Support\Codebase;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\FolderClasses;
 use App\Support\Searchable;
 use Domain\Comments\CommentsDomain;
 use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;
@@ -154,7 +154,7 @@ final class TasksDomain extends Domain implements
      */
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
+        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     /**

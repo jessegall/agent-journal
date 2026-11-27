@@ -20,9 +20,9 @@ use App\Navigation\Declarations\NavigationItem;
 use App\Navigation\Enums\Icon;
 use App\Records\Contracts\StateProvider;
 use App\Skills\Contracts\SkillProvider;
+use App\Support\Codebase;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\FolderClasses;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Http\Controllers\ChangeSequenceController;
 use Domain\Sequences\Http\Controllers\DefineSequenceController;
@@ -79,7 +79,7 @@ final class SequencesDomain extends Domain implements
      */
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
+        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     /**

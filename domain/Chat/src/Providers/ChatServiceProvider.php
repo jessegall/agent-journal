@@ -14,7 +14,7 @@ use App\Inboxes\CoreInboxes;
 use App\Navigation\Contracts\WindowOffers;
 use App\Notifications\Contracts\NotificationTargets;
 use App\Providers\TypeScriptServiceProvider;
-use App\Support\FolderClasses;
+use App\Support\Codebase;
 use Domain\Chat\Contracts\Docking\CardEncoder as CardEncoderContract;
 use Domain\Chat\Contracts\Docking\DestinationGate as DestinationGateContract;
 use Domain\Chat\Contracts\Docking\DockedSources as DockedSourcesContract;
@@ -79,6 +79,6 @@ final class ChatServiceProvider extends ServiceProvider
 
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
-        $this->commands(FolderClasses::consoleCommandsIn(dirname(__DIR__)));
+        $this->commands(Codebase::consoleCommandsIn(dirname(__DIR__)));
     }
 }

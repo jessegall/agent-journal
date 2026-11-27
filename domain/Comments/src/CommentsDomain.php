@@ -13,10 +13,10 @@ use App\Concerns\HasLinkRecords;
 use App\Records\Contracts\LinkRecordProvider;
 use App\Records\Contracts\ShareRecordContributor;
 use App\Records\Values\ShareRecordDefinition;
+use App\Support\Codebase;
 use App\Support\Command;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\FolderClasses;
 use Domain\Chat\ChatDomain;
 use Domain\Comments\Api\ListCommentsPayload;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
@@ -102,7 +102,7 @@ final class CommentsDomain extends Domain implements
 
     public function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
+        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function linkRecords(): array
