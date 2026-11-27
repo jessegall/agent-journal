@@ -8,7 +8,7 @@ use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
 /**
- * The drivers a connected machine's installer seals beside the journal-agent release, as the journal serves them.
+ * The drivers a connected machine's installer seals beside the journal-runner release, as the journal serves them.
  */
 final class DriverInstallListData extends Data
 {

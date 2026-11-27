@@ -233,7 +233,7 @@ return [
         | Release
         |--------------------------------------------------------------------------
         |
-        | The version of the journal-agent release connected machines install, a
+        | The version of the journal-runner release connected machines install, a
         | folder of the releases place (files.places.releases) that journal-
         | release wrote; empty while no release is published.
         |
@@ -276,7 +276,7 @@ return [
         | The maintenance key scripts an operator may run on an agent's terminal,
         | by name, each with its version, its parameters and their rules. The host
         | registers exactly these names and versions
-        | (programs/agent/keyscripts/scripts, recorded()); nothing else runs (doc
+        | (programs/runner/keyscripts/scripts, recorded()); nothing else runs (doc
         | 40, section 26).
         |
         */
@@ -504,7 +504,7 @@ return [
             | Releases
             |--------------------------------------------------------------------------
             |
-            | The published journal-agent releases, one folder per version as
+            | The published journal-runner releases, one folder per version as
             | journal-release writes it.
             |
             */

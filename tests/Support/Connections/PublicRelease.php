@@ -29,8 +29,8 @@ final class PublicRelease
                 ],
                 'artifacts' => [
                     [
-                        'name' => 'bin/journal-agent',
-                        'source' => 'darwin-arm64/bin/journal-agent',
+                        'name' => 'bin/journal-runner',
+                        'source' => 'darwin-arm64/bin/journal-runner',
                         'sha256' => str_repeat('a', 64),
                         'size' => 9_000_000,
                         'executable' => true,

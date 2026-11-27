@@ -36,13 +36,13 @@ In the test suite an uncontended hook call commits in a few tens of milliseconds
 
 ## Driver operations, proven live (plan 26, task 923)
 
-Run on 19 November through a local `journal-agent serve` against the version 6 server, with Core's owner commands
+Run on 19 November through a local `journal-runner serve` against the version 6 server, with Core's owner commands
 and the cheapest models. The pinned builds are Claude Code 2.1.323 and codex 0.165.0; any other build is refused by
 the host before any work starts (`build 2.1.999 of claude is not the pinned build 2.1.323`).
 
 | Operation | Claude Code, process mode (Haiku) | codex, process mode (gpt-6-luna) | Terminal mode, both drivers |
 | --- | --- | --- | --- |
-| Deliver | applied, one real turn per delivery batch | applied | not run live: needs `journal-agent attach` in a real terminal |
+| Deliver | applied, one real turn per delivery batch | applied | not run live: needs `journal-runner attach` in a real terminal |
 | ChangeModel, ChangeEffort | staged, then applied with the next turn | not run live | not run live |
 | Wake | an idle runtime with nothing pending settles as no work | not run live | not run live |
 | Interrupt | the runtime is held as interrupted until released (`agents:hold-release`) | held as interrupted; the interrupt ends with its turn | not run live |
@@ -93,7 +93,7 @@ The host shim, not the journal, answers a hook when the journal is unreachable, 
 | 422 (a payload the adapter cannot read) | refused | refused |
 | 404, 500, 503 or a malformed answer (the journal's own answer) | refused | refused |
 
-A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. The host's hook adapter (`programs/agent/hookadapter`) asks the journal, and when the journal is away or slow it answers from the start's sealed reply file, which the journal wrote in the driver's own shape (`App\Agents\Drivers\Hooks\HookReplies`); missed pre-tool calls are never replayed as fresh permission.
+A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. The host's hook adapter (`programs/runner/hookadapter`) asks the journal, and when the journal is away or slow it answers from the start's sealed reply file, which the journal wrote in the driver's own shape (`App\Agents\Drivers\Hooks\HookReplies`); missed pre-tool calls are never replayed as fresh permission.
 
 A driver that exits or is killed without an end hook is handled by `StartHeartbeats`: silence first marks the start possibly lost (`agents.silent_after_seconds`), and a long silence (`agents.timed_out_after_seconds`) or the host's report of the exit marks it lost, and the stack is closed and kept with its obligations.
 
@@ -199,7 +199,7 @@ The Accounts pages stay available while a state is missing; only account launche
 
 A project connected to a server journal runs Claude Code on the owner's own machine (`journal claude`), with the
 same pinned start profile and disabled delegation as above. Its hooks run the sealed native adapter
-(`bin/journal-hook` of the remote-project installation, `programs/agent/hookadapter`), not the PHP relay, and
+(`bin/journal-hook` of the remote-project installation, `programs/runner/hookadapter`), not the PHP relay, and
 its capabilities are registered apart from the contained ones, which stay as they are.
 
 | Capability | Local-project profile |

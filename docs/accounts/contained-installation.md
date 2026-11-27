@@ -14,8 +14,8 @@ for a clean demo. The development override runs the agent daemon rootful, since 
 Sysbox.
 
 In development, code changes reach the running services without an image build. PHP reloads through Octane's watcher
-and the frontend through Vite. For the Go host, `sh scripts/dev-watch-host.sh` builds `journal-agent` on the machine
-with Go's caches whenever a file under `programs/agent` changes, and restarts the host and the sign-in service,
+and the frontend through Vite. For the Go host, `sh scripts/dev-watch-host.sh` builds `journal-runner` on the machine
+with Go's caches whenever a file under `programs/runner` changes, and restarts the host and the sign-in service,
 which the development override points at that binary. The same watcher builds the agent image's own programs
 (journal-init, journal-exec, the shell bridge, journal-hook, journal-mcp and journal-check) into `.build/dev/protected`, and the local
 host mounts them read-only over the image's copies in every session container it starts, so the next protected start
@@ -188,7 +188,7 @@ installer downloads every release file from that same origin. Before switching o
   `https://journal.example.com`, with no path.
 - Let that origin, and the first proxy in front of it, serve `/install/*` and `/releases/*` itself: no redirect from
   `http://` to `https://`, from a bare domain to `www.`, or to a CDN. The installer follows none and stops with "the
-  journal must serve it directly"; `journal-agent install-release` stops with a release-verification error and
+  journal must serve it directly"; `journal-runner install-release` stops with a release-verification error and
   installs nothing.
 - Keep the proxy's access log from recording the path of `/install/*`, or strip its last segment, as the journal's
   own log does: the journal answers it with `Cache-Control: no-store, private` and redacts the ticket, the relay

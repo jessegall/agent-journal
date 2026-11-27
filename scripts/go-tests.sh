@@ -1,5 +1,5 @@
 #!/bin/sh
-# Runs the Go tests of programs/agent in the Go image, as Linux, with the module and build caches kept, then
+# Runs the Go tests of programs/runner in the Go image, as Linux, with the module and build caches kept, then
 # builds the host the PHP suite's real-host tests start, once per source hash. Usage: sh scripts/go-tests.sh [packages]
 set -eu
 
@@ -30,7 +30,7 @@ run_in_go() {
     local command="$2"
     mkdir -p "$root/storage/framework/test-host"
     docker run --rm \
-        -v "$root/programs/agent:/src" \
+        -v "$root/programs/runner:/src" \
         -v "$root/resources/recordings:/resources/recordings:ro" \
         -v "$root/storage/framework/test-host:/out" \
         -v journal-go-cache:/root/.cache \

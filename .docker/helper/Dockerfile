@@ -9,9 +9,9 @@ FROM --platform=$BUILDPLATFORM ${GO_IMAGE} AS protected-start
 ARG TARGETOS
 ARG TARGETARCH
 WORKDIR /src
-COPY programs/agent/go.mod programs/agent/go.sum ./
+COPY programs/runner/go.mod programs/runner/go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
-COPY programs/agent/ ./
+COPY programs/runner/ ./
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-init ./cmd/journal-init \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-exec ./cmd/journal-exec \

@@ -23,12 +23,12 @@ final class ReleasesArtifactGetTest extends RouteEntryTestCase
     {
         $folder = (string) config('journal.files.places.releases');
         mkdir("{$folder}/1.0.0/darwin-arm64/bin", 0755, true);
-        file_put_contents("{$folder}/1.0.0/darwin-arm64/bin/journal-agent", 'binary');
+        file_put_contents("{$folder}/1.0.0/darwin-arm64/bin/journal-runner", 'binary');
 
         return RouteCall::as(Caller::Public)->parameters([
             'version' => '1.0.0',
             'target' => 'darwin-arm64',
-            'name' => 'bin/journal-agent',
+            'name' => 'bin/journal-runner',
         ]);
     }
 }

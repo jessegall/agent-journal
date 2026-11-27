@@ -26,7 +26,7 @@ list_packages() {
         queue=$(printf '%s\n' "$queue" | sed '1d')
         case " $seen " in *" $package "*) continue ;; esac
         seen="$seen $package"
-        queue=$(printf '%s\n%s\n' "$queue" "$(read_imports "$root/programs/agent/$package")" | sed '/^$/d')
+        queue=$(printf '%s\n%s\n' "$queue" "$(read_imports "$root/programs/runner/$package")" | sed '/^$/d')
     done
     printf '%s\n' $seen | sort
 }
@@ -36,8 +36,8 @@ read_imports() {
     local file
     for file in "$1"/*.go; do
         case "$file" in *_test.go) continue ;; esac
-        grep -o '"journal-agent/[^"]*"' "$file" || true
-    done | tr -d '"' | sed 's#^journal-agent/##' | sort -u
+        grep -o '"journal-runner/[^"]*"' "$file" || true
+    done | tr -d '"' | sed 's#^journal-runner/##' | sort -u
 }
 
 list_files() {
@@ -45,7 +45,7 @@ list_files() {
     root=$1
     printf '%s\n' .docker/helper/Dockerfile .docker/helper/install-drivers.sh .docker/helper/driver-digests.txt
     for package in $2; do
-        for file in "$root/programs/agent/$package"/*.go; do
+        for file in "$root/programs/runner/$package"/*.go; do
             case "$file" in *_test.go) continue ;; esac
             [ -f "$file" ] || continue
             printf '%s\n' "${file#"$root"/}"

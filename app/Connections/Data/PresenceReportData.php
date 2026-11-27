@@ -11,7 +11,7 @@ use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Data;
 
 /**
- * A relay's presence report as journal-agent sends it (client.PresenceReport): its boot, sequence, release, the
+ * A relay's presence report as journal-runner sends it (client.PresenceReport): its boot, sequence, release, the
  * combinations it can run, how setting up the folder ended, whether it takes over a live boot, the setup
  * generation of the folder it reports for, and whether this boot reported what became of its earlier sessions.
  */

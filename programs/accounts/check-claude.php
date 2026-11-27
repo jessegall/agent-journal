@@ -9,7 +9,7 @@ declare(strict_types=1);
  *
  *   php programs/accounts/check-claude.php [--program=claude] [--accounts-root=<journal accounts folder>]
  *       [--account-a=<account directory>] [--account-b=<account directory>] [--allow-requests]
- *       [--host=<journal-agent>] [--host-state=<its state folder>]
+ *       [--host=<journal-runner>] [--host-state=<its state folder>]
  *
  * --allow-requests lets the hostile work settings item send one small request on account A.
  */

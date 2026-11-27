@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds and signs the journal-agent release of one version into /releases, inside a Go container, and keeps the
+# Builds and signs the journal-runner release of one version into /releases, inside a Go container, and keeps the
 # three newest so an install line issued just before an install still downloads.
 #   sh build-release.sh <version> <signing key>
 set -eu

@@ -10,7 +10,7 @@ use App\Engine\Enums\RefusalCode;
 use RuntimeException;
 
 /**
- * A journal-agent release, or a file of one, that this journal does not publish.
+ * A journal-runner release, or a file of one, that this journal does not publish.
  */
 final class ReleaseMissing extends RuntimeException implements CodedRefusal
 {
@@ -18,12 +18,12 @@ final class ReleaseMissing extends RuntimeException implements CodedRefusal
 
     public static function noneCurrent(): self
     {
-        return new self('This journal publishes no journal-agent release.');
+        return new self('This journal publishes no journal-runner release.');
     }
 
     public static function version(string $version): self
     {
-        return new self("This journal publishes no journal-agent release {$version}.");
+        return new self("This journal publishes no journal-runner release {$version}.");
     }
 
     public static function artifact(string $version, string $target, string $name): self

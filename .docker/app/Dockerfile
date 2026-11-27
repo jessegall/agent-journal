@@ -1,14 +1,14 @@
 FROM node:24-bookworm-slim AS node
 
-# journal-agent, the protected agent host, built from programs/agent for the runner image. The modules are
+# journal-runner, the protected agent host, built from programs/runner for the runner image. The modules are
 # downloaded from go.mod and go.sum alone, and both Go caches live in BuildKit cache mounts, so a code change compiles
 # only the packages it touched.
 FROM golang:1.26.4-bookworm AS agent-host
 WORKDIR /src
-COPY programs/agent/go.mod programs/agent/go.sum ./
+COPY programs/runner/go.mod programs/runner/go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
-COPY programs/agent/ ./
-RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -o /out/journal-agent ./cmd/journal-agent
+COPY programs/runner/ ./
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -o /out/journal-runner ./cmd/journal-runner
 
 # Tunler for the share service, built from one pinned commit whose source archive must match its checksum; see
 # docs/sharing/binaries.md for how the commit and the sum were checked.
@@ -144,7 +144,7 @@ COPY --from=ngrok /out/ngrok /opt/sharing/bin/ngrok
 
 CMD ["php", "artisan", "sharing:supervise"]
 
-# The runner's tools, apart from the journal's code: the pinned claude and codex, journal-agent, the Docker client and
+# The runner's tools, apart from the journal's code: the pinned claude and codex, journal-runner, the Docker client and
 # the service user and folders. A code change leaves this stage cached.
 FROM php AS runner-tools
 
@@ -168,7 +168,7 @@ RUN groupadd --gid 10001 journal \
     && chown 10001:10001 /var/lib/journal-host /srv/journal/accounts \
     && chmod 0700 /var/lib/journal-host /srv/journal/accounts
 
-COPY --from=agent-host /out/journal-agent /usr/local/bin/journal-agent
+COPY --from=agent-host /out/journal-runner /usr/local/bin/journal-runner
 
 # The runner image: the tools above and the console with no .env. The agent-host, agent-host-enroll and accounts
 # services each give it their command; it has no entrypoint of its own and runs as 10001:10001.

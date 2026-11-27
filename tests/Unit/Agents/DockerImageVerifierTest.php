@@ -13,20 +13,20 @@ final class DockerImageVerifierTest extends TestCase
     public function test_only_the_verified_agent_image_of_the_record_is_verified(): void
     {
         $verifier = $this->verifier($this->record([
-            $this->image('agent', 'journal-agent@sha256:aaa'),
+            $this->image('agent', 'journal-runner@sha256:aaa'),
             $this->image('runner', 'journal-runner@sha256:bbb'),
         ]));
 
-        $this->assertTrue($verifier->isVerified('journal-agent@sha256:aaa'));
+        $this->assertTrue($verifier->isVerified('journal-runner@sha256:aaa'));
         $this->assertFalse($verifier->isVerified('journal-runner@sha256:bbb'));
-        $this->assertFalse($verifier->isVerified('journal-agent@sha256:ccc'));
+        $this->assertFalse($verifier->isVerified('journal-runner@sha256:ccc'));
     }
 
     public function test_no_image_is_verified_before_the_build_wrote_a_record(): void
     {
         $verifier = $this->verifier(sys_get_temp_dir().'/no-docker-images-'.uniqid().'.json');
 
-        $this->assertFalse($verifier->isVerified('journal-agent@sha256:aaa'));
+        $this->assertFalse($verifier->isVerified('journal-runner@sha256:aaa'));
     }
 
     private function verifier(string $recordPath): DockerImageVerifier

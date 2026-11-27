@@ -10908,7 +10908,7 @@
         "phase": 4,
         "batch": "Connections",
         "consumers": [
-            "programs/agent/client/project_commands.go"
+            "programs/runner/client/project_commands.go"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
@@ -10948,7 +10948,7 @@
         "phase": 4,
         "batch": "Connections",
         "consumers": [
-            "programs/agent/client/project_commands.go"
+            "programs/runner/client/project_commands.go"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
@@ -12522,7 +12522,7 @@
         "phase": 4,
         "batch": "Connections",
         "consumers": [
-            "programs/agent/client/connections.go",
+            "programs/runner/client/connections.go",
             "tools/refactoring/layout/baseline/routes-normal.json"
         ],
         "ownership_checks": [],

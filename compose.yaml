@@ -327,7 +327,7 @@ services:
         image: ${RUNNER_IMAGE:-journal-runner:unset}
         user: '10001:10001'
         command:
-            - journal-agent
+            - journal-runner
             - enroll
             - --journal=${AGENTS_JOURNAL_URL:-http://app:8000}
             - --host=${AGENTS_HOST_ID:-}
@@ -355,7 +355,7 @@ services:
         healthcheck:
             disable: true
         command:
-            - journal-agent
+            - journal-runner
             - serve
             - --arrangement=contained
             - --state=/var/lib/journal-host

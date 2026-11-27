@@ -1,7 +1,7 @@
 # Skill delivery per program
 
 How the journal's published skill set reaches each pinned program, under the isolated start the journal uses
-(programs/agent/profiles). The journal runs in a container the host's programs cannot read, so the start grant
+(programs/runner/profiles). The journal runs in a container the host's programs cannot read, so the start grant
 carries the delivered files and the host writes them into the runtime's own settings folder before it spawns the
 program (host.WriteStartFolders). Evidence: report 171 (discovery) and report 174 (live delivery).
 

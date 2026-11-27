@@ -68,7 +68,7 @@ function applyGoRenames(array $names, array $options): int
         return 0;
     }
 
-    $module = 'programs/agent/';
+    $module = 'programs/runner/';
     $lines = [];
 
     foreach ($names as $declared) {

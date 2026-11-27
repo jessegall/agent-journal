@@ -119,7 +119,7 @@ final class UpdateTest extends TestCase
     public function test_a_push_that_changes_the_host_program_publishes_a_new_release(): void
     {
         $this->installation->update();
-        $pushed = $this->installation->push(['programs/agent/relay.go' => 'package relay']);
+        $pushed = $this->installation->push(['programs/runner/relay.go' => 'package relay']);
 
         $this->installation->update();
 
@@ -174,7 +174,7 @@ final class UpdateTest extends TestCase
         $this->installation->update();
         $pinned = $this->installation->setting(self::AGENT_PIN);
         $this->installation->docker->forgetCalls();
-        $pushed = $this->installation->push(['programs/agent/relay.go' => 'package relay']);
+        $pushed = $this->installation->push(['programs/runner/relay.go' => 'package relay']);
 
         $update = $this->installation->update();
 
@@ -195,7 +195,7 @@ final class UpdateTest extends TestCase
         $recorded = $this->installation->recordedImages();
         $this->installation->docker->forgetCalls();
         $this->installation->docker->buildFromCache();
-        $pushed = $this->installation->push(['programs/agent/relay_test.go' => 'package relay']);
+        $pushed = $this->installation->push(['programs/runner/relay_test.go' => 'package relay']);
 
         $update = $this->installation->update();
 
@@ -229,7 +229,7 @@ final class UpdateTest extends TestCase
         $this->installation->update();
         $installed = $this->installation->installedCommit();
         $pinned = $this->installation->setting(self::AGENT_PIN);
-        $pushed = $this->installation->push(['programs/agent/relay.go' => 'package relay']);
+        $pushed = $this->installation->push(['programs/runner/relay.go' => 'package relay']);
         $this->installation->docker->failCallsHolding('--file .docker/helper/Dockerfile');
 
         $update = $this->installation->update();
@@ -245,7 +245,7 @@ final class UpdateTest extends TestCase
         $this->installation->update();
         $pinned = $this->installation->setting(self::AGENT_PIN);
         $recorded = $this->installation->recordedImages();
-        $this->installation->push(['programs/agent/relay.go' => 'package relay']);
+        $this->installation->push(['programs/runner/relay.go' => 'package relay']);
         $this->installation->docker->failCallsHolding(self::PROTECTED_FILE_CHECK);
 
         $update = $this->installation->update();
@@ -271,7 +271,7 @@ final class UpdateTest extends TestCase
     {
         $this->installation->update();
         $pinned = $this->installation->setting(self::AGENT_PIN);
-        $this->installation->push(['programs/agent/relay.go' => 'package relay']);
+        $this->installation->push(['programs/runner/relay.go' => 'package relay']);
         $this->installation->docker->failCallsHolding(self::MCP_RELAY_CHECK);
 
         $update = $this->installation->update();

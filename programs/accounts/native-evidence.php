@@ -204,7 +204,7 @@ function run_program(array $command, array $environment, string $workingDirector
 function protected_host_items(string|null $hostAgent, string|null $hostState, string $program, string $build): array
 {
     if ($hostAgent === null) {
-        return [item('protected-host', 'missing', 'name the protected host with --host=<journal-agent>', 'task 258')];
+        return [item('protected-host', 'missing', 'name the protected host with --host=<journal-runner>', 'task 258')];
     }
 
     $command = [$hostAgent, 'protection', '--driver', $program, '--build', $build];

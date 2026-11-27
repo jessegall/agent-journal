@@ -1,0 +1,82 @@
+package main
+
+import (
+	"context"
+	"flag"
+	"fmt"
+	"net/http"
+	"os"
+	"runtime"
+	"time"
+
+	"journal-runner/device"
+	"journal-runner/release"
+)
+
+// installRelease installs this machine's target of a journal's release into a sealed folder, verifying the manifest
+// the first-stage script downloaded with the key this program pins.
+func installRelease(arguments []string) error {
+	flags := flag.NewFlagSet("install-release", flag.ContinueOnError)
+	origin := flags.String("origin", "", "the journal's canonical https origin")
+	manifestPath := flags.String("manifest", "", "the release manifest the installer downloaded")
+	signaturePath := flags.String("signature", "", "the manifest's detached signature")
+	programsPath := flags.String("programs", "", "the journal's list of the programs to seal")
+	folder := flags.String("into", "", "the absolute installation folder")
+	root := flags.String("into-root", "", "the folder whose releases/<version>-<list digest> folder the release is sealed in")
+	version := flags.String("version", "", "the release's version, naming its folder under --into-root")
+	stateFolder := flags.String("state", device.DefaultStateFolder(), "the host's private state folder the allow list is written to")
+	if err := flags.Parse(arguments); err != nil {
+		return err
+	}
+	if *origin == "" || *manifestPath == "" || *signaturePath == "" || *programsPath == "" ||
+		(*folder == "") == (*root == "" || *version == "") {
+		return fmt.Errorf("usage: journal-runner install-release --origin <url> --manifest <file> --signature <file> " +
+			"--programs <file> (--into <folder> | --into-root <folder> --version <version>)")
+	}
+
+	key, err := release.PinnedPublicKey()
+	if err != nil {
+		return err
+	}
+	manifest, err := os.ReadFile(*manifestPath)
+	if err != nil {
+		return err
+	}
+	signature, err := os.ReadFile(*signaturePath)
+	if err != nil {
+		return err
+	}
+	listed, err := os.ReadFile(*programsPath)
+	if err != nil {
+		return err
+	}
+	programs, err := release.ParseProgramList(listed)
+	if err != nil {
+		return err
+	}
+	if *root != "" {
+		*folder = release.InstallationFolder(*root, *version, listed)
+	}
+
+	installer := release.Installer{
+		Origin:    *origin,
+		Target:    release.Target{OS: runtime.GOOS, Arch: runtime.GOARCH},
+		Transport: &http.Client{Timeout: 5 * time.Minute},
+		PublicKey: key,
+		// The official installs of the listed programs are imported from the PATH of the install line's shell.
+		ProgramPath: os.Getenv("PATH"),
+	}
+
+	if err := installer.Install(context.Background(), manifest, signature, programs, *folder); err != nil {
+		return err
+	}
+
+	// A rerun with the folder already there writes the list again, from what that installation sealed.
+	if err := release.WriteAllowList(*stateFolder, *folder, programs); err != nil {
+		return err
+	}
+	// The folder is the last line, so the install line knows where the release was sealed.
+	fmt.Println(*folder)
+
+	return nil
+}

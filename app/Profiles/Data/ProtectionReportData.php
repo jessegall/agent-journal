@@ -10,7 +10,7 @@ use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
 /**
- * A contained host's protection report as journal-agent sends it (host.ProtectionReport).
+ * A contained host's protection report as journal-runner sends it (host.ProtectionReport).
  */
 final class ProtectionReportData extends Data
 {

@@ -8,8 +8,8 @@ use App\Connections\Exceptions\ReleaseManifestInvalid;
 use App\Connections\Exceptions\ReleaseMissing;
 
 /**
- * The files a published journal-agent release holds for each target, read from the manifest journal-release wrote
- * (release.Manifest in programs/agent). Only a file this manifest names is ever served.
+ * The files a published journal-runner release holds for each target, read from the manifest journal-release wrote
+ * (release.Manifest in programs/runner). Only a file this manifest names is ever served.
  */
 final readonly class ReleaseManifest
 {

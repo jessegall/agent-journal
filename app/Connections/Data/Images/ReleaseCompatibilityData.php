@@ -7,7 +7,7 @@ namespace App\Connections\Data\Images;
 use Spatie\LaravelData\Data;
 
 /**
- * The journal's answer to a relay before anything else: the journal-agent release it publishes, none while it
+ * The journal's answer to a relay before anything else: the journal-runner release it publishes, none while it
  * publishes none.
  */
 final class ReleaseCompatibilityData extends Data

@@ -16,5 +16,5 @@ final readonly class HostPlaceholders
     /**
      * The names the host fills as {host:NAME} in a plan.
      */
-    public const array HOST_FILLED = ['JOURNAL_URL', 'INSTALLATION', 'HOOK_COMMAND', 'JOURNAL_AGENT'];
+    public const array HOST_FILLED = ['JOURNAL_URL', 'INSTALLATION', 'HOOK_COMMAND', 'JOURNAL_RUNNER'];
 }

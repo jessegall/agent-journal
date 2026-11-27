@@ -6,7 +6,7 @@ namespace App\Connections\Values;
 
 /**
  * One file asked of a published release: its version, the target folder (darwin-arm64) and the name it is installed
- * under (bin/journal-agent).
+ * under (bin/journal-runner).
  */
 final readonly class ReleaseArtifact
 {

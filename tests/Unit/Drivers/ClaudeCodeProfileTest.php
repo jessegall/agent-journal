@@ -222,7 +222,7 @@ final class ClaudeCodeProfileTest extends TestCase
         $turn = $this->profile()->startPlan($this->turn($this->account()));
 
         $this->journal->assertResult(
-            [['status'], '{host:JOURNAL_AGENT} status-line --relay {folder:sockets}/status', [], false],
+            [['status'], '{host:JOURNAL_RUNNER} status-line --relay {folder:sockets}/status', [], false],
             [
                 $plan->sideSockets,
                 $this->settingsOf($plan)['statusLine']['command'],

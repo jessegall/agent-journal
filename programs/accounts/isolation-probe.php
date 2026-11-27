@@ -22,7 +22,7 @@ declare(strict_types=1);
  * hands it on: through the shell bridge to the executor, in a container started as the session's own, from its init,
  * with its mounts, users, capabilities and limits, and prints what the line printed.
  *
- * JOURNAL_AGENT_DOCKER names the docker command that reaches the agent daemon, by default
+ * JOURNAL_RUNNER_DOCKER names the docker command that reaches the agent daemon, by default
  * "docker compose exec -T agent-docker docker".
  */
 
@@ -57,7 +57,7 @@ if ($session === '' || ! array_key_exists($program, CREDENTIALS)) {
 
 // The executor step's line comes first, before a docker call can take standard input.
 $line = $step === 'executor' ? trim((string) stream_get_contents(STDIN)) : '';
-$docker = preg_split('/\s+/', trim((string) (getenv('JOURNAL_AGENT_DOCKER') ?: 'docker compose exec -T agent-docker docker')));
+$docker = preg_split('/\s+/', trim((string) (getenv('JOURNAL_RUNNER_DOCKER') ?: 'docker compose exec -T agent-docker docker')));
 
 $daemon = fn (string ...$arguments): string => (string) shell_exec(implode(' ', array_map('escapeshellarg', [
     ...$docker,

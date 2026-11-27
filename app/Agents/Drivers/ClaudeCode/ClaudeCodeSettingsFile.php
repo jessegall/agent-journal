@@ -119,7 +119,7 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
      */
     private function withStatusLine(array $settings): array
     {
-        $reader = '{host:JOURNAL_AGENT} status-line --relay {folder:sockets}/'.StatusLineLimits::SOCKET;
+        $reader = '{host:JOURNAL_RUNNER} status-line --relay {folder:sockets}/'.StatusLineLimits::SOCKET;
         $existing = $settings['statusLine'] ?? null;
 
         if ($existing === null) {

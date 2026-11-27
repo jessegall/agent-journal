@@ -1,1 +1,1 @@
-module journal-agent
+module journal-runner

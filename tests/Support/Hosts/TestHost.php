@@ -158,7 +158,7 @@ final class TestHost
      */
     public static function binary(): string
     {
-        $path = base_path(self::BUILDS.'/journal-agent-'.self::sourceHash());
+        $path = base_path(self::BUILDS.'/journal-runner-'.self::sourceHash());
         Assert::assertFileExists($path, 'No host is built for these Go sources: run composer test:go first.');
 
         return $path;
@@ -170,7 +170,7 @@ final class TestHost
      */
     public static function sourceHash(): string
     {
-        $root = base_path('programs/agent');
+        $root = base_path('programs/runner');
         $paths = [];
         $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS));
 
@@ -342,7 +342,7 @@ final class TestHost
             HostProcessPurpose::Probe,
             HostProcessType::Terminal,
             RestartPolicy::Never,
-            ["{$this->installation()}/bin/journal-agent", 'mock', 'keys', '--record', "{$this->installation()}/keys-{$name}"],
+            ["{$this->installation()}/bin/journal-runner", 'mock', 'keys', '--record', "{$this->installation()}/keys-{$name}"],
             [],
             $this->folder,
         );
@@ -660,7 +660,7 @@ final class TestHost
         copy(__DIR__.'/scripts/claude-mock.sh', "{$this->installation()}/bin/claude");
         chmod("{$this->installation()}/bin/claude", 0o700);
         copy(__DIR__.'/fixtures/claude-turn.jsonl', "{$this->installation()}/turn.jsonl");
-        symlink(self::binary(), "{$this->installation()}/bin/journal-agent");
+        symlink(self::binary(), "{$this->installation()}/bin/journal-runner");
         mkdir("{$this->installation()}/terminal-turn", 0o700);
         copy(base_path(self::TERMINAL_TURN), "{$this->installation()}/terminal-turn/fixture.json");
         copy(__DIR__.'/scripts/codex-mock.sh', "{$this->installation()}/bin/codex");

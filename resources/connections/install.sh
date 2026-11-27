@@ -1,5 +1,5 @@
 #!/bin/sh
-# Connects the folder this runs in to the journal at @@ORIGIN@@ with journal-agent release @@VERSION@@.
+# Connects the folder this runs in to the journal at @@ORIGIN@@ with journal-runner release @@VERSION@@.
 # Nothing runs before the last line, so a download cut short does nothing.
 
 main() {

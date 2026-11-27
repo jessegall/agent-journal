@@ -51,7 +51,7 @@ final class MandatoryAdmissionTest extends TestCase
 
     private const string NO_RUNTIME = 'no runtime';
 
-    private const string IMAGE = 'journal-agent@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    private const string IMAGE = 'journal-runner@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
     private CountedAdmission $admissions;
 

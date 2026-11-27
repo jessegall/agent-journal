@@ -4,7 +4,7 @@
         {
             "name": "agent",
             "architecture": "linux/arm64",
-            "reference": "journal-agent@sha256:0f4b93d96b6c9dbd569044186849dd1a25a6c34bf90be015e692ced2238e4ade",
+            "reference": "journal-runner@sha256:0f4b93d96b6c9dbd569044186849dd1a25a6c34bf90be015e692ced2238e4ade",
             "claude_code": "2.1.323",
             "codex": "0.165.0",
             "built_at": "2026-11-20T21:37:10+00:00"

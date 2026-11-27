@@ -38,7 +38,7 @@ final class DeliveredSkillsGuardTest extends TestCase
 {
     use CommittedHookStack;
 
-    private const string STATE_FOLDER = '/Users/someone/.journal-agent';
+    private const string STATE_FOLDER = '/Users/someone/.journal-runner';
 
     private const string OTHER_RUNTIME = '01jd8x0g9m3qz6v4k2t7r5w1zz';
 

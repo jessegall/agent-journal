@@ -8,7 +8,7 @@ use App\Sessions\Enums\StartRefusalReason;
 use App\Sessions\Enums\StartRefusalType;
 
 /**
- * Why a host refused a request, from the closed set journal-agent may report (contracts.RefusalReason); a reason
+ * Why a host refused a request, from the closed set journal-runner may report (contracts.RefusalReason); a reason
  * outside it is kept as unknown, never as a guess.
  */
 enum HostWakeRefusal: string

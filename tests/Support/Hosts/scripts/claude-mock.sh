@@ -45,7 +45,7 @@ play_terminal() {
     shift
     local transcript
     transcript=$(transcript_path "$@")
-    exec "$installation/bin/journal-agent" mock recording --recording "$installation/terminal-turn" \
+    exec "$installation/bin/journal-runner" mock recording --recording "$installation/terminal-turn" \
         --started "$installation/started" --transcript "$transcript" -- "$@"
 }
 
@@ -67,14 +67,14 @@ find_installation() {
 }
 
 play() {
-    exec "$1/bin/journal-agent" mock print --recording "$1/exchanges/claude-code/$2"
+    exec "$1/bin/journal-runner" mock print --recording "$1/exchanges/claude-code/$2"
 }
 
 # auth login plays the test's script for it, an address and the code typed for it; auth status plays the recorded
 # sign-in.
 answer_auth() {
     case "$2" in
-        login) exec "$1/bin/journal-agent" mock script --script "$1/mocks/claude-login.json" \
+        login) exec "$1/bin/journal-runner" mock script --script "$1/mocks/claude-login.json" \
             --failures "$1/mocks/failures.jsonl" --steps-ran "$1/mocks/steps" ;;
         *) play "$1" auth-status ;;
     esac

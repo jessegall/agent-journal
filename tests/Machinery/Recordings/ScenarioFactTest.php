@@ -74,6 +74,6 @@ final class ScenarioFactTest extends TestCase
     {
         $scenario = Scenario::read('claude-code/turn', '{"steps":[]}');
 
-        return new ScenarioRun($scenario, $this->journal->ownerUser(), $agents, 'journal-agent@sha256:1');
+        return new ScenarioRun($scenario, $this->journal->ownerUser(), $agents, 'journal-runner@sha256:1');
     }
 }

@@ -12,8 +12,8 @@ How a running agent program is driven, for a reader of the code. The design is d
 | Driver setups | `app/Agents/Drivers/Setup` (`DriverSetup`, `DriverProfile`, `DriverProfiles`), `app/Providers/DriversServiceProvider.php` | One setup per driver family: its arguments, probes, sign-in, layout, key scripts, skills, hook adapter, refusals, environment and plan parts. `DriverProfile::startPlan` turns a `DriverStart` into the `HostProcessPlan` the host opens |
 | Driver workers | `app/Agents/Drivers/Work` (`DriverSupervisor`, `DriverWorkers`, `HeadlessStarts`, `OwnTerminalPlans`) | The journal opens and drives every process itself: the supervisor starts a worker for each live process a process driver drives, and the worker hands its driver (`app/Agents/Drivers/Processes`) each output, request and order answer as it arrives |
 | Host orders | `app/Hosts/HostOrderPlacement.php`, `routes/agents/host.php` | What the journal wants a host to do (open, write, stop a process) is an order the host claims (`POST /host/orders/claim`) and answers; the host reports a process's output and state on `/host/processes/{process}` |
-| Host | `programs/agent` | A fixed relay: it opens the processes and containers the plans describe, streams their output and runs no program decision of its own |
-| Hook adapter | `programs/agent/hookadapter`, `app/Agents/Drivers/Hooks/HookReplies.php` | Answers a driver's native hook call by asking the journal, and from the start's sealed reply file when the journal is away |
+| Host | `programs/runner` | A fixed relay: it opens the processes and containers the plans describe, streams their output and runs no program decision of its own |
+| Hook adapter | `programs/runner/hookadapter`, `app/Agents/Drivers/Hooks/HookReplies.php` | Answers a driver's native hook call by asking the journal, and from the start's sealed reply file when the journal is away |
 | Key scripts and screens | `app/Terminals/KeyScripts`, `app/Terminals/Screens`, `resources/recordings/<driver>/<build>/screens` | A terminal's menus are passed by key scripts the journal runs, one frame at a time, against the screens recorded for each build |
 | Navigation and the menu library | `app/Models/Drivers/NavigationRequest.php`, `app/Models/Drivers/MenuEntry.php`, `app/Navigation` | A key script that is not certain of a menu asks the main agent; the proven way is kept as a library entry and replayed |
 
@@ -31,7 +31,7 @@ How a running agent program is driven, for a reader of the code. The design is d
 
 ## A terminal in a container
 
-In the contained arrangement a terminal runs as the container's own process (`programs/agent/host/container.go`,
+In the contained arrangement a terminal runs as the container's own process (`programs/runner/host/container.go`,
 `container_terminal.go`). The plan's container manifest names the image, the mounts and the budgets; the host creates
 the container on the agent daemon under the name the journal gave it, starts it and holds its terminal. After a
 restart of the host it attaches to the container that still runs under that name, so nothing starts anew. A proven
@@ -49,7 +49,7 @@ still be watched.
 - The browser renews its view every 10 seconds, and a view lapses 30 seconds after its last renewal. Each engine pass
   (`app/Terminals/Commands/EndTerminalViews/EndTerminalViewsCommand.php`) ends lapsed views and views of stopped
   runtimes, and deletes views that ended a day ago.
-- The host streams a terminal's screen as frames in the process's output (`programs/agent/screen/frame.go`), and
+- The host streams a terminal's screen as frames in the process's output (`programs/runner/screen/frame.go`), and
   the journal keeps the newest frame of each post as the screen (`app/Terminals/HostFrameScreens.php`); a shielded
   frame is shown hidden.
 - Only the latest frame per runtime is kept, in the cache, for 60 seconds after it arrived
@@ -105,6 +105,6 @@ unreadable screen, navigation_needed, needs attention. A user releases only an i
 
 ## Adding a program build
 
-Record its screens with `journal-agent record` into `resources/recordings/<driver>/<build>/screens`, pin the new
+Record its screens with `journal-runner record` into `resources/recordings/<driver>/<build>/screens`, pin the new
 build in its driver's compatibility (`app/Support/Compatibility/DriverCompatibility.php`), and run the driver and
 screen tests. A build that is not pinned never starts.

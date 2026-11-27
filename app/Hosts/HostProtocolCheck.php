@@ -25,7 +25,7 @@ final readonly class HostProtocolCheck
      */
     private const string PHP_ROOT = 'app/Hosts/Protocol';
 
-    private const string GO_ROOT = 'programs/agent';
+    private const string GO_ROOT = 'programs/runner';
 
     /**
      * The first line of every Go file this generator writes, the form Go tools know a generated file by.
@@ -145,7 +145,14 @@ final readonly class HostProtocolCheck
      */
     private function listed(Place $place, string $folder, string $root, string $pattern): array
     {
-        $listed = $this->files->list(FilePath::in($place, ltrim("{$folder}/{$root}", '/')), Depth::levels(6), $pattern);
+        $rootFolder = FilePath::in($place, ltrim("{$folder}/{$root}", '/'));
+
+        // A folder the generator never wrote to, as a check's own folder before its first run, holds nothing of it.
+        if (! $this->files->exists($rootFolder)) {
+            return [];
+        }
+
+        $listed = $this->files->list($rootFolder, Depth::levels(6), $pattern);
 
         return array_map(
             fn (FilePath $path) => ltrim(substr($path->relative, strlen($folder)), '/'),

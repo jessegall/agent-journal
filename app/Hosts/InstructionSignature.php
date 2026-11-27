@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hosts;
 
 /**
- * The signature a host checks an order by (programs/agent/hostapi/verify.go): an HMAC with the host's instruction secret
+ * The signature a host checks an order by (programs/runner/hostapi/verify.go): an HMAC with the host's instruction secret
  * over the instruction's id, sequence, type, process, payload digest and expiry, one to a line.
  */
 final readonly class InstructionSignature

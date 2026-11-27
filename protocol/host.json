@@ -49,7 +49,7 @@
         "JOURNAL_URL",
         "INSTALLATION",
         "HOOK_COMMAND",
-        "JOURNAL_AGENT"
+        "JOURNAL_RUNNER"
     ],
     "contained_plan": {
         "about": "A contained plan names nothing of the host it runs on: no host placeholder and none of these fields.",
@@ -83,7 +83,7 @@
             "about": "The agent image's init: it starts the executor and the program and prints nothing on the program's streams, so a probe's output is the program's own.",
             "prints_on_program_streams": false
         },
-        "journal-agent": {
+        "journal-runner": {
             "about": "The host program: the flags of each command an installation runs it with.",
             "commands": {
                 "enroll": [

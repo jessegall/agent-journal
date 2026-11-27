@@ -382,7 +382,7 @@ final class ActivateProfilesTest extends TestCase
 
     public function test_on_a_server_every_session_runs_in_the_agent_image_and_the_main_agent_gets_its_larger_budget(): void
     {
-        $image = 'journal-agent@sha256:'.str_repeat('a', 64);
+        $image = 'journal-runner@sha256:'.str_repeat('a', 64);
         $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig('contained', 'acme', '{}'));
         $this->app->instance(AgentImage::class, AgentImage::fromConfig($image));
         $this->activateProfile('journal-main', ProfileBase::mainAgent());

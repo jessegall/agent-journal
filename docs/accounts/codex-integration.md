@@ -58,7 +58,7 @@ The decision for task 236, with what is missing named:
 ## Usage on the Accounts page
 
 A protected Codex start reports usage through its account generation's app-server owner
-(`programs/agent/host/codex_owner.go`, decoders in `host/codex_usage.go`): a ChatGPT owner asks
+(`programs/runner/host/codex_owner.go`, decoders in `host/codex_usage.go`): a ChatGPT owner asks
 `account/rateLimits/read` once and hears `account/rateLimits/updated`, keeping only the `codex` limit's primary and
 secondary windows; an API-key owner (`account/read` type `apiKey`) asks for no limits and keeps each of its threads'
 latest `thread/tokenUsage/updated` total.

@@ -43,8 +43,8 @@ final class RecordingManifestTest extends TestCase
         $programs = $this->app->make(AgentImagePrograms::class);
         $before = $programs->hash();
 
-        $init = base_path('programs/agent/bootstrap/agent_image_programs_probe.go');
-        $host = base_path('programs/agent/hostapi/agent_image_programs_probe.go');
+        $init = base_path('programs/runner/bootstrap/agent_image_programs_probe.go');
+        $host = base_path('programs/runner/hostapi/agent_image_programs_probe.go');
 
         try {
             file_put_contents($host, "package hostapi\n");

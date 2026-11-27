@@ -14,7 +14,7 @@ use App\Profiles\Values\ProtectedItem;
 use App\Projects\Values\ProtectionEvidence;
 
 /**
- * What a contained host found of a driver's protected arrangement in the agent image (journal-agent protection),
+ * What a contained host found of a driver's protected arrangement in the agent image (journal-runner protection),
  * item by item; a driver no contained host has reported has no items.
  */
 final readonly class ProtectionReport

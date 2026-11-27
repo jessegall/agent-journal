@@ -141,7 +141,7 @@ final class DriverWordTest extends TestCase
 
     public function test_the_go_host_calls_a_driver_a_driver(): void
     {
-        $found = WordLines::in(WordLines::GO_DRIVER_WORDS, [base_path('programs/agent')]);
+        $found = WordLines::in(WordLines::GO_DRIVER_WORDS, [base_path('programs/runner')]);
 
         $this->assertSame([], $found, self::HOW_TO_FIX_IN_GO);
     }

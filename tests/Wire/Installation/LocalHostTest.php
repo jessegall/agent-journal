@@ -43,7 +43,7 @@ final class LocalHostTest extends TestCase
         $this->assertMatchesRegularExpression('/^sha256:[0-9a-f]{64}$/', $this->checkout->setting('RUNNER_IMAGE'));
         $this->assertSame('01mockhost', $this->checkout->setting('AGENTS_HOST_ID'));
         $this->assertSame('mock-secret', $this->checkout->hostSecret());
-        $this->assertStringContainsString('./cmd/journal-agent', $this->checkout->goBuilds()[0]);
+        $this->assertStringContainsString('./cmd/journal-runner', $this->checkout->goBuilds()[0]);
     }
 
     public function test_a_run_with_nothing_changed_builds_nothing_and_enrolls_nothing(): void
@@ -89,8 +89,8 @@ final class LocalHostTest extends TestCase
     {
         // Locally the host and the agent image's programs run from scripts/dev-watch-host.sh's builds.
         $this->setUpLocalHost();
-        $this->checkout->write('programs/agent/cmd/journal-agent/main.go', "package main\n\nfunc main() {}\n");
-        $this->checkout->write('programs/agent/cmd/journal-init/main.go', "package main\n\nfunc main() {}\n");
+        $this->checkout->write('programs/runner/cmd/journal-runner/main.go', "package main\n\nfunc main() {}\n");
+        $this->checkout->write('programs/runner/cmd/journal-init/main.go', "package main\n\nfunc main() {}\n");
 
         $this->setUpLocalHost();
 

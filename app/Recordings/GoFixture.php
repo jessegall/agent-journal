@@ -8,7 +8,7 @@ use App\Recordings\Enums\RecordedEventType;
 use App\Recordings\Enums\RecordingMode;
 
 /**
- * A driver exchange as the Go mocks replay it (programs/agent/recording/fixture.go): the opening, every chunk printed
+ * A driver exchange as the Go mocks replay it (programs/runner/recording/fixture.go): the opening, every chunk printed
  * between two inputs as one, each input and resize, faked, with offsets in nanoseconds.
  */
 final readonly class GoFixture

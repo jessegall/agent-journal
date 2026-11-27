@@ -55,7 +55,7 @@ final readonly class MockCheckout
             File::copyDirectory(base_path($folder), $checkout->path($folder));
         }
 
-        $checkout->write('programs/agent/cmd/journal-agent/main.go', "package main\n");
+        $checkout->write('programs/runner/cmd/journal-runner/main.go', "package main\n");
         $checkout->write('docs/accounts/docker-images.json', "{\"images\": []}\n");
         $checkout->write('.gitignore', self::IGNORED);
         $checkout->write('.env', "APP_PORT=54700\n");

@@ -201,7 +201,7 @@ final readonly class RecordingFinisher
      */
     private function renderFrames(FilePath $folder): void
     {
-        $hosts = $this->files->list(FilePath::in(Place::Project, self::RENDERER), pattern: 'journal-agent-*')->paths();
+        $hosts = $this->files->list(FilePath::in(Place::Project, self::RENDERER), pattern: 'journal-runner-*')->paths();
 
         if ($hosts === []) {
             throw RecordingUnfinished::framesUnrendered('no test host is built: run sh scripts/go-tests.sh');

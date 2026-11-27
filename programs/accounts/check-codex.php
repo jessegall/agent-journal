@@ -9,7 +9,7 @@ declare(strict_types=1);
  *
  *   php programs/accounts/check-codex.php [--program=codex] [--accounts-root=<journal accounts folder>]
  *       [--account-a=<account directory>] [--account-b=<account directory>]
- *       [--host=<journal-agent>] [--host-state=<its state folder>]
+ *       [--host=<journal-runner>] [--host-state=<its state folder>]
  */
 
 use App\Agents\Drivers\DefaultDrivers;

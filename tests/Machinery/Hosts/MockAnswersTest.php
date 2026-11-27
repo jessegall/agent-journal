@@ -133,7 +133,7 @@ final class MockAnswersTest extends TestCase
         copy(self::SCRIPTS.'/lib/hold.sh', "{$installation}/lib/hold.sh");
         copy(self::SCRIPTS."/{$program}-mock.sh", "{$installation}/bin/{$program}");
         chmod("{$installation}/bin/{$program}", 0o700);
-        symlink(TestHost::binary(), "{$installation}/bin/journal-agent");
+        symlink(TestHost::binary(), "{$installation}/bin/journal-runner");
 
         foreach (glob(self::RECORDINGS."/{$driver}/{$build}/exchanges/*/fixture.json") ?: [] as $fixture) {
             $folder = "{$installation}/exchanges/{$driver}/".basename(dirname($fixture));

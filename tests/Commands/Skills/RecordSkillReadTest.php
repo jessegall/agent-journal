@@ -38,7 +38,7 @@ final class RecordSkillReadTest extends TestCase
         'agent_sessions',
     ];
 
-    private const string STATE_FOLDER = '/Users/someone/.journal-agent';
+    private const string STATE_FOLDER = '/Users/someone/.journal-runner';
 
     private AgentSession $session;
 

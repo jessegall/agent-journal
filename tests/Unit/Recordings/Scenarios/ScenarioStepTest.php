@@ -43,7 +43,7 @@ final class ScenarioStepTest extends TestCase
             ['do' => 'stop', 'agent' => 'Coder'],
         ]]));
         $agents = ['Coder' => $coder->id];
-        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), $agents, 'journal-agent@sha256:1');
+        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), $agents, 'journal-runner@sha256:1');
         $drivers = $this->app->make(DriverCatalogue::class);
 
         $commands = array_map(function ($step) use ($run, $drivers) {
@@ -94,7 +94,7 @@ final class ScenarioStepTest extends TestCase
             ['do' => 'ask-user', 'text' => 'Sign in on the page and paste the code.'],
             ['do' => 'submit-code', 'from' => 'challenge'],
         ]]));
-        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), [], 'journal-agent@sha256:1');
+        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), [], 'journal-runner@sha256:1');
         $drivers = $this->app->make(DriverCatalogue::class);
 
         $begin = $scenario->steps[0]->commandFor($run, $drivers);
@@ -123,17 +123,17 @@ final class ScenarioStepTest extends TestCase
     {
         $this->journal->owner();
         $scenario = Scenario::read('installation/fresh', (string) json_encode(['steps' => [
-            ['do' => 'remove-image', 'image' => 'journal-agent:build'],
+            ['do' => 'remove-image', 'image' => 'journal-runner:build'],
             ['do' => 'stop-daemon'],
             ['do' => 'start-daemon'],
             ['do' => 'install'],
             ['do' => 'update'],
         ]]));
-        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), [], 'journal-agent@sha256:1');
+        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), [], 'journal-runner@sha256:1');
 
         $this->assertSame(
             [
-                ['docker', 'compose', 'exec', '-T', 'agent-docker', 'docker', 'rmi', '--force', 'journal-agent:build'],
+                ['docker', 'compose', 'exec', '-T', 'agent-docker', 'docker', 'rmi', '--force', 'journal-runner:build'],
                 ['docker', 'compose', 'stop', 'agent-docker'],
                 ['docker', 'compose', 'start', 'agent-docker'],
                 ['sh', 'scripts/local-host.sh', '--fresh'],

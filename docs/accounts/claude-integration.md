@@ -141,7 +141,7 @@ and a workspace `.claude/settings.json` both allowed `Read(//home/**)` and `Edit
 ## Protected inventory
 
 Every action the model or a message to it can take in Claude Code 2.1.323 under the protected-account profile, how
-it is reached and what closes it. Lines are `programs/agent/profiles/claude_code.go` unless named; the managed
+it is reached and what closes it. Lines are `programs/runner/profiles/claude_code.go` unless named; the managed
 policy is `resources/agents/claude-code-managed-settings.json` (section Managed policy).
 
 | Route | Reached by | Closed by | Where |

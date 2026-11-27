@@ -13,7 +13,7 @@ use App\Files\Enums\Place;
 use App\Values\FilePath;
 
 /**
- * The journal-agent releases this journal publishes: one folder per version in the releases place, as journal-release
+ * The journal-runner releases this journal publishes: one folder per version in the releases place, as journal-release
  * wrote it, and the current version connected machines install.
  */
 final readonly class PublishedReleases

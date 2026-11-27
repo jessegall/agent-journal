@@ -92,7 +92,7 @@ final class RecordingFakesTest extends TestCase
 
         $this->expectException(RecordingOutsideContainer::class);
 
-        new RecordingFakes([], [])->assertClean($opening, 'journal-agent@sha256:1');
+        new RecordingFakes([], [])->assertClean($opening, 'journal-runner@sha256:1');
     }
 
     public function test_each_value_becomes_one_fake_of_its_shape_the_same_on_a_rerecord(): void

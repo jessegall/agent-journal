@@ -44,11 +44,11 @@ final class HostProtocolTest extends TestCase
     {
         $this->artisan('journal:host-protocol', ['--into' => 'host-protocol-check'])->assertSuccessful();
         $files = $this->app->make(Files::class);
-        $copy = FilePath::in(Place::Temporary, 'host-protocol-check/programs/agent/hostapi/protocol_gen.go');
+        $copy = FilePath::in(Place::Temporary, 'host-protocol-check/programs/runner/hostapi/protocol_gen.go');
         $files->write($copy, $files->read($copy)."\n// changed by hand\n");
 
         $this->artisan('journal:host-protocol', ['--check' => true, '--into' => 'host-protocol-check'])
-            ->expectsOutputToContain('programs/agent/hostapi/protocol_gen.go differs')
+            ->expectsOutputToContain('programs/runner/hostapi/protocol_gen.go differs')
             ->assertFailed();
     }
 

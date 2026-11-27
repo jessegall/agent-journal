@@ -28,7 +28,7 @@ refuse_start() {
 play_terminal() {
     local installation="$1"
     shift
-    exec "$installation/bin/journal-agent" mock recording --recording "$installation/codex-terminal-turn" \
+    exec "$installation/bin/journal-runner" mock recording --recording "$installation/codex-terminal-turn" \
         --started "$installation/codex-started" --transcript "$CODEX_HOME/prompt-sent" -- "$@"
 }
 
@@ -38,14 +38,14 @@ find_installation() {
 }
 
 play() {
-    exec "$1/bin/journal-agent" mock print --recording "$1/exchanges/codex/$2"
+    exec "$1/bin/journal-runner" mock print --recording "$1/exchanges/codex/$2"
 }
 
 # The app-server plays the test's script for it in order; Codex keeps the sign-in in CODEX_HOME.
 serve_app_server() {
     local installation="$1"
     [ -e "$CODEX_HOME/auth.json" ] || : > "$CODEX_HOME/auth.json"
-    exec "$installation/bin/journal-agent" mock script --script "$installation/mocks/codex-app-server.json" \
+    exec "$installation/bin/journal-runner" mock script --script "$installation/mocks/codex-app-server.json" \
         --failures "$installation/mocks/failures.jsonl" --heard "$installation/codex-heard.jsonl" \
         --steps-ran "$installation/mocks/steps"
 }

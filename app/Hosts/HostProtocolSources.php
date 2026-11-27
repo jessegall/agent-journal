@@ -36,7 +36,7 @@ final readonly class HostProtocolSources
             'app/Hosts/Protocol/ContainedPlanFields.php' => $this->containedPlanFieldsClass(),
             ...$go->sources(),
             ...new PhpProtocolSources($this->protocol)->sources(),
-            'programs/agent/hookadapter/arguments_gen.go' => $this->hookadapterGo(),
+            'programs/runner/hookadapter/arguments_gen.go' => $this->hookadapterGo(),
         ];
     }
 
