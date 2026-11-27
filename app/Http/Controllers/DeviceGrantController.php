@@ -9,7 +9,7 @@ use App\Bus\Attributes\Dispatches;
 use App\Bus\JournalCommands;
 use App\Connections\ServerOrigin;
 use App\Engine\Enums\RefusalCode;
-use App\Hosts\Contracts\HostCalls;
+use App\Hosts\Contracts\SignedHostCalls;
 use App\Models\Projects\DeviceGrant;
 use App\Projects\Commands\PollDeviceGrant\PollDeviceGrantCommand;
 use App\Projects\Commands\StartDeviceGrant\StartDeviceGrantCommand;
@@ -25,7 +25,7 @@ use Illuminate\Support\Str;
  */
 final readonly class DeviceGrantController
 {
-    public function __construct(private HostCalls $calls, private ServerOrigin $origin) {}
+    public function __construct(private SignedHostCalls $calls, private ServerOrigin $origin) {}
 
     #[Dispatches(StartDeviceGrantCommand::class)]
     public function start(Request $request, JournalCommands $dispatchers): JsonResponse

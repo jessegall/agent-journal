@@ -120,8 +120,8 @@ final readonly class FluentChains
     }
 
     /**
-     * A getter that ends a chain is named for what it gives back: a thing called by a name, a thing of another, a
-     * service or a fixture builder.
+     * A getter that ends a chain is named for what it gives back: a row called by a name, a row of another, a service
+     * or a fixture builder.
      */
     private static function isGetter(ReflectedMethod $method): bool
     {

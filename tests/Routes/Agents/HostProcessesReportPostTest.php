@@ -23,7 +23,7 @@ final class HostProcessesReportPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::as(Caller::SharedHost, $host)
             ->parameters(['process' => 'process-1'])
-            ->payload(['report' => 'running', 'identity' => 'pid:1', 'generation' => 0])
+            ->payload(['process_id' => 'process-1', 'report' => 'running', 'identity' => 'pid:1', 'generation' => 0])
             ->expects(NotifyHostProcessCommand::class, [
                 'hostId' => $host->hostId,
                 'processId' => 'process-1',

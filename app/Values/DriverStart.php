@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Values\PlanFile;
-use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Sessions\Enums\OfflineReplyMode;
 use App\Sessions\Values\SessionContainer;
 

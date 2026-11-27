@@ -8,9 +8,10 @@ use App\Agents\ContainerManifest;
 use App\Agents\Values\PlanFile;
 use App\Agents\Values\RestartFile;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProcessType;
+use App\Hosts\Protocol\HostProtocol;
 use App\Hosts\Values\ContainerLabels;
 use App\Terminals\Screens\ShieldRule;
 
@@ -109,6 +110,38 @@ final readonly class HostProcessPlan
         }
 
         return HostOrderType::OpenContainer;
+    }
+
+    /**
+     * The plan fields of host protocol 1's contained plan rule this plan sets: none for a plan the rule takes.
+     *
+     * @return list<string>
+     */
+    public function hostFieldsNamed(): array
+    {
+        $payload = $this->payload();
+
+        return array_values(array_filter(
+            HostProtocol::CONTAINED_REFUSED_FIELDS,
+            fn (string $field) => $payload[$field] !== [],
+        ));
+    }
+
+    /**
+     * The start grant variables this plan lacks while it carries others of them: none for a whole grant or none.
+     *
+     * @return list<string>
+     */
+    public function missingGrantVariables(): array
+    {
+        $carried = array_map(fn (string $entry) => explode('=', $entry, 2)[0], $this->environment);
+        $missing = array_values(array_diff(HostProtocol::CONTAINED_START_GRANT_ENVIRONMENT, $carried));
+
+        if (count($missing) === count(HostProtocol::CONTAINED_START_GRANT_ENVIRONMENT)) {
+            return [];
+        }
+
+        return $missing;
     }
 
     /**

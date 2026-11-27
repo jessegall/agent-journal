@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\ReadFolderUse;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\HostOrderPlacement;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\Data\HostFolderPlanData;
+use App\Hosts\Protocol\HostOrders;
 use App\Values\HostOrderSource;
 
 /**
@@ -14,15 +14,14 @@ use App\Values\HostOrderSource;
  */
 final readonly class ReadFolderUseHandler implements CommandHandler
 {
-    public function __construct(private HostOrderPlacement $placement) {}
+    public function __construct(private HostOrders $orders) {}
 
     public function handle(ReadFolderUseCommand $command): string
     {
-        return $this->placement->forHost(
+        return $this->orders->folderUse(
             $command->hostId,
             HostOrderSource::keyed("folder:use:{$command->operation}"),
-            HostOrderType::FolderUse,
-            ['folder' => $command->folder, 'operation' => $command->operation],
+            HostFolderPlanData::from(['folder' => $command->folder, 'operation' => $command->operation]),
         )->getKey();
     }
 }

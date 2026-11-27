@@ -7,6 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\SettleHostUpgrade\SettleHostUpgradeCommand;
 use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
+use App\Hosts\Protocol\Data\HostInventoryData;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -62,14 +63,13 @@ final class SettleHostUpgradeTest extends TestCase
         return Host::query()->whereKey($this->journal->hostCalled('Mac')->hostId)->sole();
     }
 
-    private function inventory(): string
+    private function inventory(): HostInventoryData
     {
-        return json_encode([
+        return HostInventoryData::from([
             'protocol' => 1,
             'release' => self::RELEASE,
-            'answered_through' => null,
             'capabilities' => [],
             'processes' => [],
-        ], JSON_THROW_ON_ERROR);
+        ]);
     }
 }

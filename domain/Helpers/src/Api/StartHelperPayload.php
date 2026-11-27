@@ -6,7 +6,7 @@ namespace Domain\Helpers\Api;
 
 use App\Agents\Drivers\Enums\DriverType;
 use App\Attributes\Api\Endpoint;
-use App\Attributes\Api\PresentList;
+use App\Attributes\SentField;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
@@ -44,7 +44,7 @@ final class StartHelperPayload extends Data implements ApiPayload
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
-        #[PresentList]
+        #[SentField]
         public array $sourceSubjects = [],
         public bool $isIndependent = false,
         public DriverType|null $driverType = null,

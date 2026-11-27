@@ -2,10 +2,28 @@
 
 package hostapi
 
+import (
+	"context"
+	"fmt"
+	"net/url"
+	"slices"
+	"strconv"
+	"time"
+
+	"journal-agent/client"
+	"journal-agent/host"
+)
+
 // Protocol is the version of the host protocol this binary speaks.
 const Protocol = 1
 
-// Status is how an order ended on the host.
+// ClaimOrdersLimit is the most limit a claim_orders call takes.
+const ClaimOrdersLimit = 50
+
+// ClaimOrdersWaitLimit is the most wait a claim_orders call takes.
+const ClaimOrdersWaitLimit = 25
+
+// Status is one of the values host protocol 1 gives it.
 type Status string
 
 const (
@@ -13,7 +31,12 @@ const (
 	Refused Status = "refused"
 )
 
-// Refusal is why the host did not carry out an order.
+// IsKnown answers whether the value is one of the protocol's.
+func (value Status) IsKnown() bool {
+	return slices.Contains([]Status{Done, Refused}, value)
+}
+
+// Refusal is one of the values host protocol 1 gives it.
 type Refusal string
 
 const (
@@ -25,6 +48,11 @@ const (
 	Fenced        Refusal = "fenced"
 	UnknownOrder  Refusal = "unknown_order"
 )
+
+// IsKnown answers whether the value is one of the protocol's.
+func (value Refusal) IsKnown() bool {
+	return slices.Contains([]Refusal{GuardMoved, NotRunning, Expired, Unsafe, HostRestarted, Fenced, UnknownOrder}, value)
+}
 
 // OrderTraits are what the protocol says of an order type: whether it is about the host as a whole, and
 // whether it leaves the same result when carried out twice.
@@ -48,13 +76,14 @@ var OrderTypes = map[string]OrderTraits{
 	"stop":           {HostWide: false, Repeatable: true},
 	"stream":         {HostWide: false, Repeatable: true},
 	"snapshot":       {HostWide: false, Repeatable: true},
-	"run_fenced":     {HostWide: false, Repeatable: false},
+	"run_fenced":     {HostWide: true, Repeatable: false},
 	"allow_images":   {HostWide: true, Repeatable: false},
 	"make_folder":    {HostWide: true, Repeatable: true},
 	"remove_folder":  {HostWide: true, Repeatable: true},
 	"folder_use":     {HostWide: true, Repeatable: true},
 	"remove":         {HostWide: true, Repeatable: true},
-	"read_project":   {HostWide: false, Repeatable: true},
+	"remove_session": {HostWide: true, Repeatable: true},
+	"read_project":   {HostWide: true, Repeatable: true},
 	"record":         {HostWide: false, Repeatable: false},
 	"stop_recording": {HostWide: false, Repeatable: true},
 	"upgrade":        {HostWide: true, Repeatable: false},
@@ -65,3 +94,601 @@ var HostNames = []string{"JOURNAL_URL", "INSTALLATION", "HOOK_COMMAND", "JOURNAL
 
 // ContainedRefusedFields are the plan fields a contained plan may not name.
 var ContainedRefusedFields = []string{"folders", "side_sockets", "read_files", "inherit"}
+
+// HostCommandFlags are the flags of each command an installation runs the host program with.
+var HostCommandFlags = map[string][]string{
+	"enroll": {"journal", "host", "state", "secret-file"},
+	"serve":  {"state", "hook-command", "installation", "arrangement", "docker", "installation-name", "agent-image", "runner-image", "development-programs"},
+}
+
+// ContainedStartGrantEnvironment are the variables of a contained program's start grant, which a contained
+// plan carries whole or not at all.
+var ContainedStartGrantEnvironment = []string{"JOURNAL_URL", "JOURNAL_START_TOKEN", "JOURNAL_PROFILE", "JOURNAL_PROFILE_REVISION"}
+
+// ProcessType is one of the values host protocol 1 gives it.
+type ProcessType string
+
+const (
+	ProcessTerminal ProcessType = "terminal"
+	ProcessPipe     ProcessType = "pipe"
+)
+
+// IsKnown answers whether the value is one of the protocol's.
+func (value ProcessType) IsKnown() bool {
+	return slices.Contains([]ProcessType{ProcessTerminal, ProcessPipe}, value)
+}
+
+// ProcessReportType is one of the values host protocol 1 gives it.
+type ProcessReportType string
+
+const (
+	ProcessReportRunning   ProcessReportType = "running"
+	ProcessReportRestarted ProcessReportType = "restarted"
+	ProcessReportExited    ProcessReportType = "exited"
+	ProcessReportLost      ProcessReportType = "lost"
+)
+
+// IsKnown answers whether the value is one of the protocol's.
+func (value ProcessReportType) IsKnown() bool {
+	return slices.Contains([]ProcessReportType{ProcessReportRunning, ProcessReportRestarted, ProcessReportExited, ProcessReportLost}, value)
+}
+
+// ArgumentValues is one of the values host protocol 1 gives it.
+type ArgumentValues string
+
+const (
+	ArgumentValuesNone ArgumentValues = "none"
+	ArgumentValuesOne  ArgumentValues = "one"
+	ArgumentValuesList ArgumentValues = "list"
+)
+
+// IsKnown answers whether the value is one of the protocol's.
+func (value ArgumentValues) IsKnown() bool {
+	return slices.Contains([]ArgumentValues{ArgumentValuesNone, ArgumentValuesOne, ArgumentValuesList}, value)
+}
+
+// Order is the order of host protocol 1.
+type Order struct {
+	ID        string    `json:"id"`
+	Sequence  uint64    `json:"sequence"`
+	Type      string    `json:"type"`
+	ProcessID string    `json:"process_id"`
+	Payload   string    `json:"payload"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Signature string    `json:"signature"`
+}
+
+// Validate answers which value of the Order the protocol does not know, by its field.
+func (value Order) Validate() error {
+	return nil
+}
+
+// ClaimedOrders is the claimed_orders of host protocol 1.
+type ClaimedOrders struct {
+	Orders            []Order   `json:"orders"`
+	IdleWindowSeconds int       `json:"idle_window_seconds"`
+	Now               time.Time `json:"now"`
+}
+
+// Validate answers which value of the ClaimedOrders the protocol does not know, by its field.
+func (value ClaimedOrders) Validate() error {
+	for index, item := range value.Orders {
+		if err := item.Validate(); err != nil {
+			return fmt.Errorf("orders[%d].%w", index, err)
+		}
+	}
+	return nil
+}
+
+// Answer is the answer of host protocol 1.
+type Answer struct {
+	OrderID string         `json:"order_id"`
+	Status  Status         `json:"status"`
+	Refusal Refusal        `json:"refusal,omitempty"`
+	Reason  string         `json:"reason,omitempty"`
+	Facts   map[string]any `json:"facts,omitempty"`
+}
+
+// Validate answers which value of the Answer the protocol does not know, by its field.
+func (value Answer) Validate() error {
+	if !value.Status.IsKnown() {
+		return fmt.Errorf("status holds %q, which host protocol 1 does not know", value.Status)
+	}
+	if value.Refusal != "" && !value.Refusal.IsKnown() {
+		return fmt.Errorf("refusal holds %q, which host protocol 1 does not know", value.Refusal)
+	}
+	return nil
+}
+
+// ProcessReport is the process_report of host protocol 1.
+type ProcessReport struct {
+	ProcessID  string            `json:"process_id"`
+	Report     ProcessReportType `json:"report"`
+	Identity   string            `json:"identity,omitempty"`
+	Generation int               `json:"generation"`
+	ExitCode   *int              `json:"exit_code,omitempty"`
+	Signal     string            `json:"signal,omitempty"`
+	Evidence   string            `json:"evidence,omitempty"`
+}
+
+// Validate answers which value of the ProcessReport the protocol does not know, by its field.
+func (value ProcessReport) Validate() error {
+	if !value.Report.IsKnown() {
+		return fmt.Errorf("report holds %q, which host protocol 1 does not know", value.Report)
+	}
+	return nil
+}
+
+// Output is the output of host protocol 1.
+type Output struct {
+	Frames []Frame `json:"frames"`
+	Chunks []Chunk `json:"chunks"`
+}
+
+// Validate answers which value of the Output the protocol does not know, by its field.
+func (value Output) Validate() error {
+	for index, item := range value.Frames {
+		if err := item.Validate(); err != nil {
+			return fmt.Errorf("frames[%d].%w", index, err)
+		}
+	}
+	for index, item := range value.Chunks {
+		if err := item.Validate(); err != nil {
+			return fmt.Errorf("chunks[%d].%w", index, err)
+		}
+	}
+	return nil
+}
+
+// Frame is the frame of host protocol 1.
+type Frame struct {
+	Rows         []string `json:"rows"`
+	CursorRow    int      `json:"cursor_row"`
+	CursorColumn int      `json:"cursor_column"`
+	Columns      int      `json:"columns"`
+	Buffer       string   `json:"buffer"`
+	Captured     int64    `json:"captured"`
+	UnchangedMs  []int64  `json:"unchanged_ms"`
+	Title        string   `json:"title,omitempty"`
+	IsShielded   bool     `json:"is_shielded,omitempty"`
+}
+
+// Validate answers which value of the Frame the protocol does not know, by its field.
+func (value Frame) Validate() error {
+	return nil
+}
+
+// Chunk is the chunk of host protocol 1.
+type Chunk struct {
+	Stream string `json:"stream"`
+	Offset int64  `json:"offset"`
+	Bytes  string `json:"bytes"`
+}
+
+// Validate answers which value of the Chunk the protocol does not know, by its field.
+func (value Chunk) Validate() error {
+	return nil
+}
+
+// Inventory is the inventory of host protocol 1.
+type Inventory struct {
+	Protocol        int                `json:"protocol"`
+	Release         string             `json:"release"`
+	AnsweredThrough string             `json:"answered_through,omitempty"`
+	Capabilities    []string           `json:"capabilities"`
+	Processes       []InventoryProcess `json:"processes"`
+}
+
+// Validate answers which value of the Inventory the protocol does not know, by its field.
+func (value Inventory) Validate() error {
+	for index, item := range value.Processes {
+		if err := item.Validate(); err != nil {
+			return fmt.Errorf("processes[%d].%w", index, err)
+		}
+	}
+	return nil
+}
+
+// InventoryProcess is the inventory_process of host protocol 1.
+type InventoryProcess struct {
+	ProcessID      string `json:"process_id"`
+	Identity       string `json:"identity"`
+	Container      string `json:"container,omitempty"`
+	IsAlive        bool   `json:"is_alive"`
+	IsTerminalHeld bool   `json:"is_terminal_held"`
+	SpoolOffset    int64  `json:"spool_offset"`
+}
+
+// Validate answers which value of the InventoryProcess the protocol does not know, by its field.
+func (value InventoryProcess) Validate() error {
+	return nil
+}
+
+// HostHeartbeat is the host_heartbeat of host protocol 1.
+type HostHeartbeat struct {
+	LiveProcesses   []string `json:"live_processes"`
+	AnsweredThrough string   `json:"answered_through,omitempty"`
+}
+
+// Validate answers which value of the HostHeartbeat the protocol does not know, by its field.
+func (value HostHeartbeat) Validate() error {
+	return nil
+}
+
+// PrivateValue is the private_value of host protocol 1.
+type PrivateValue struct {
+	Value string `json:"value"`
+}
+
+// Validate answers which value of the PrivateValue the protocol does not know, by its field.
+func (value PrivateValue) Validate() error {
+	return nil
+}
+
+// OpenPlan is the open_plan of host protocol 1.
+type OpenPlan struct {
+	Type            ProcessType             `json:"type"`
+	Restart         string                  `json:"restart"`
+	Argv            []string                `json:"argv"`
+	RestartArgv     []string                `json:"restart_argv"`
+	RestartWhenFile *host.RestartFile       `json:"restart_when_file"`
+	Environment     []string                `json:"environment"`
+	Folder          string                  `json:"folder"`
+	Container       *host.ContainerManifest `json:"container"`
+	Labels          *host.ContainerLabels   `json:"labels"`
+	Size            TerminalSize            `json:"size"`
+	Files           []PlanFile              `json:"files"`
+	Folders         []string                `json:"folders"`
+	Inherit         []string                `json:"inherit"`
+	SideSockets     []string                `json:"side_sockets"`
+	ReadFiles       []string                `json:"read_files,omitempty"`
+	ShieldRules     []ShieldRule            `json:"shield_rules,omitempty"`
+	Fence           string                  `json:"fence,omitempty"`
+	KeptFiles       []string                `json:"kept_files,omitempty"`
+	RawBytes        bool                    `json:"raw_bytes,omitempty"`
+}
+
+// Validate answers which value of the OpenPlan the protocol does not know, by its field.
+func (value OpenPlan) Validate() error {
+	if !value.Type.IsKnown() {
+		return fmt.Errorf("type holds %q, which host protocol 1 does not know", value.Type)
+	}
+	if value.RestartWhenFile != nil {
+		if err := value.RestartWhenFile.Validate(); err != nil {
+			return fmt.Errorf("restart_when_file.%w", err)
+		}
+	}
+	if value.Container != nil {
+		if err := value.Container.Validate(); err != nil {
+			return fmt.Errorf("container.%w", err)
+		}
+	}
+	if value.Labels != nil {
+		if err := value.Labels.Validate(); err != nil {
+			return fmt.Errorf("labels.%w", err)
+		}
+	}
+	if err := value.Size.Validate(); err != nil {
+		return fmt.Errorf("size.%w", err)
+	}
+	for index, item := range value.Files {
+		if err := item.Validate(); err != nil {
+			return fmt.Errorf("files[%d].%w", index, err)
+		}
+	}
+	for index, item := range value.ShieldRules {
+		if err := item.Validate(); err != nil {
+			return fmt.Errorf("shield_rules[%d].%w", index, err)
+		}
+	}
+	return nil
+}
+
+// TerminalSize is the terminal_size of host protocol 1.
+type TerminalSize struct {
+	Columns uint16 `json:"columns"`
+	Rows    uint16 `json:"rows"`
+}
+
+// Validate answers which value of the TerminalSize the protocol does not know, by its field.
+func (value TerminalSize) Validate() error {
+	return nil
+}
+
+// PlanFile is the plan_file of host protocol 1.
+type PlanFile struct {
+	Name     string `json:"name"`
+	Content  string `json:"content"`
+	Template bool   `json:"template"`
+}
+
+// Validate answers which value of the PlanFile the protocol does not know, by its field.
+func (value PlanFile) Validate() error {
+	return nil
+}
+
+// ShieldRule is the shield_rule of host protocol 1.
+type ShieldRule struct {
+	Keywords    []string `json:"keywords"`
+	MinKeywords int      `json:"min_keywords"`
+}
+
+// Validate answers which value of the ShieldRule the protocol does not know, by its field.
+func (value ShieldRule) Validate() error {
+	return nil
+}
+
+// KeyWrite is the key_write of host protocol 1.
+type KeyWrite struct {
+	Bytes             []byte    `json:"bytes"`
+	IfRows            *RowGuard `json:"if_rows"`
+	IfInputGeneration *uint64   `json:"if_input_generation"`
+	AsUser            bool      `json:"as_user"`
+}
+
+// Validate answers which value of the KeyWrite the protocol does not know, by its field.
+func (value KeyWrite) Validate() error {
+	if value.IfRows != nil {
+		if err := value.IfRows.Validate(); err != nil {
+			return fmt.Errorf("if_rows.%w", err)
+		}
+	}
+	return nil
+}
+
+// RowGuard is the row_guard of host protocol 1.
+type RowGuard struct {
+	From int    `json:"from"`
+	To   int    `json:"to"`
+	Hash string `json:"hash"`
+}
+
+// Validate answers which value of the RowGuard the protocol does not know, by its field.
+func (value RowGuard) Validate() error {
+	return nil
+}
+
+// StdinWrite is the stdin_write of host protocol 1.
+type StdinWrite struct {
+	Bytes []byte `json:"bytes"`
+}
+
+// Validate answers which value of the StdinWrite the protocol does not know, by its field.
+func (value StdinWrite) Validate() error {
+	return nil
+}
+
+// PrivateWrite is the private_write of host protocol 1.
+type PrivateWrite struct {
+	Submission string `json:"submission"`
+}
+
+// Validate answers which value of the PrivateWrite the protocol does not know, by its field.
+func (value PrivateWrite) Validate() error {
+	return nil
+}
+
+// StreamPlan is the stream_plan of host protocol 1.
+type StreamPlan struct {
+	FramesPerSecond int  `json:"frames_per_second"`
+	Raw             bool `json:"raw"`
+}
+
+// Validate answers which value of the StreamPlan the protocol does not know, by its field.
+func (value StreamPlan) Validate() error {
+	return nil
+}
+
+// SignalPlan is the signal_plan of host protocol 1.
+type SignalPlan struct {
+	Signal string `json:"signal"`
+}
+
+// Validate answers which value of the SignalPlan the protocol does not know, by its field.
+func (value SignalPlan) Validate() error {
+	return nil
+}
+
+// StopPlan is the stop_plan of host protocol 1.
+type StopPlan struct {
+	GraceMs int `json:"grace_ms"`
+	ForceMs int `json:"force_ms"`
+}
+
+// Validate answers which value of the StopPlan the protocol does not know, by its field.
+func (value StopPlan) Validate() error {
+	return nil
+}
+
+// RemovePlan is the remove_plan of host protocol 1.
+type RemovePlan struct {
+	Container string `json:"container"`
+}
+
+// Validate answers which value of the RemovePlan the protocol does not know, by its field.
+func (value RemovePlan) Validate() error {
+	return nil
+}
+
+// SessionRemoval is the session_removal of host protocol 1.
+type SessionRemoval struct {
+	Network string `json:"network"`
+	Session string `json:"session"`
+}
+
+// Validate answers which value of the SessionRemoval the protocol does not know, by its field.
+func (value SessionRemoval) Validate() error {
+	return nil
+}
+
+// FencedPlan is the fenced_plan of host protocol 1.
+type FencedPlan struct {
+	Fence    string      `json:"fence"`
+	Waiting  []string    `json:"waiting"`
+	BudgetMs int         `json:"budget_ms"`
+	Runs     []FencedRun `json:"runs"`
+}
+
+// Validate answers which value of the FencedPlan the protocol does not know, by its field.
+func (value FencedPlan) Validate() error {
+	for index, item := range value.Runs {
+		if err := item.Validate(); err != nil {
+			return fmt.Errorf("runs[%d].%w", index, err)
+		}
+	}
+	return nil
+}
+
+// FencedRun is the fenced_run of host protocol 1.
+type FencedRun struct {
+	Argv        []string `json:"argv"`
+	Folder      string   `json:"folder"`
+	DeadlineMs  int      `json:"deadline_ms"`
+	OutputLimit int      `json:"output_limit"`
+}
+
+// Validate answers which value of the FencedRun the protocol does not know, by its field.
+func (value FencedRun) Validate() error {
+	return nil
+}
+
+// ImagesPlan is the images_plan of host protocol 1.
+type ImagesPlan struct {
+	Images []string `json:"images"`
+}
+
+// Validate answers which value of the ImagesPlan the protocol does not know, by its field.
+func (value ImagesPlan) Validate() error {
+	return nil
+}
+
+// FolderPlan is the folder_plan of host protocol 1.
+type FolderPlan struct {
+	Folder    string `json:"folder"`
+	Operation string `json:"operation"`
+}
+
+// Validate answers which value of the FolderPlan the protocol does not know, by its field.
+func (value FolderPlan) Validate() error {
+	return nil
+}
+
+// UpgradePlan is the upgrade_plan of host protocol 1.
+type UpgradePlan struct {
+	Version   string `json:"version"`
+	Manifest  string `json:"manifest"`
+	Signature string `json:"signature"`
+	Drivers   string `json:"drivers"`
+}
+
+// Validate answers which value of the UpgradePlan the protocol does not know, by its field.
+func (value UpgradePlan) Validate() error {
+	return nil
+}
+
+// OrderHandlers carry out every order of host protocol 1, a method to each order type, given the order and
+// its payload read strictly and validated.
+type OrderHandlers interface {
+	OpenContainer(ctx context.Context, order Order, payload OpenPlan) (map[string]any, error)
+	OpenProcess(ctx context.Context, order Order, payload OpenPlan) (map[string]any, error)
+	WriteKeys(ctx context.Context, order Order, payload KeyWrite) (map[string]any, error)
+	WriteStdin(ctx context.Context, order Order, payload StdinWrite) (map[string]any, error)
+	CloseStdin(ctx context.Context, order Order) (map[string]any, error)
+	OpenPrivate(ctx context.Context, order Order) (map[string]any, error)
+	WritePrivate(ctx context.Context, order Order, payload PrivateWrite) (map[string]any, error)
+	ClosePrivate(ctx context.Context, order Order) (map[string]any, error)
+	Resize(ctx context.Context, order Order, payload TerminalSize) (map[string]any, error)
+	Signal(ctx context.Context, order Order, payload SignalPlan) (map[string]any, error)
+	Stop(ctx context.Context, order Order, payload StopPlan) (map[string]any, error)
+	Stream(ctx context.Context, order Order, payload StreamPlan) (map[string]any, error)
+	Snapshot(ctx context.Context, order Order) (map[string]any, error)
+	RunFenced(ctx context.Context, order Order, payload FencedPlan) (map[string]any, error)
+	AllowImages(ctx context.Context, order Order, payload ImagesPlan) (map[string]any, error)
+	MakeFolder(ctx context.Context, order Order, payload FolderPlan) (map[string]any, error)
+	RemoveFolder(ctx context.Context, order Order, payload FolderPlan) (map[string]any, error)
+	FolderUse(ctx context.Context, order Order, payload FolderPlan) (map[string]any, error)
+	Remove(ctx context.Context, order Order, payload RemovePlan) (map[string]any, error)
+	RemoveSession(ctx context.Context, order Order, payload SessionRemoval) (map[string]any, error)
+	ReadProject(ctx context.Context, order Order, payload client.ProjectRead) (map[string]any, error)
+	Record(ctx context.Context, order Order) (map[string]any, error)
+	StopRecording(ctx context.Context, order Order) (map[string]any, error)
+	Upgrade(ctx context.Context, order Order, payload UpgradePlan) (map[string]any, error)
+}
+
+// Executors carry out each order of host protocol 1 through its handler, its payload read strictly into its
+// type and validated first.
+func Executors(handlers OrderHandlers) map[string]Executor {
+	executors := map[string]Executor{}
+	executors["open_container"] = carrying(handlers.OpenContainer)
+	executors["open_process"] = carrying(handlers.OpenProcess)
+	executors["write_keys"] = carrying(handlers.WriteKeys)
+	executors["write_stdin"] = carrying(handlers.WriteStdin)
+	executors["close_stdin"] = carryingNothing(handlers.CloseStdin)
+	executors["open_private"] = carryingNothing(handlers.OpenPrivate)
+	executors["write_private"] = carrying(handlers.WritePrivate)
+	executors["close_private"] = carryingNothing(handlers.ClosePrivate)
+	executors["resize"] = carrying(handlers.Resize)
+	executors["signal"] = carrying(handlers.Signal)
+	executors["stop"] = carrying(handlers.Stop)
+	executors["stream"] = carrying(handlers.Stream)
+	executors["snapshot"] = carryingNothing(handlers.Snapshot)
+	executors["run_fenced"] = carrying(handlers.RunFenced)
+	executors["allow_images"] = carrying(handlers.AllowImages)
+	executors["make_folder"] = carrying(handlers.MakeFolder)
+	executors["remove_folder"] = carrying(handlers.RemoveFolder)
+	executors["folder_use"] = carrying(handlers.FolderUse)
+	executors["remove"] = carrying(handlers.Remove)
+	executors["remove_session"] = carrying(handlers.RemoveSession)
+	executors["read_project"] = carrying(handlers.ReadProject)
+	executors["record"] = carryingNothing(handlers.Record)
+	executors["stop_recording"] = carryingNothing(handlers.StopRecording)
+	executors["upgrade"] = carrying(handlers.Upgrade)
+	return executors
+}
+
+// Journal makes the calls of host protocol 1 to the journal over the host's signed client.
+type Journal struct {
+	Client *client.Client
+}
+
+// ClaimOrders makes the claim_orders call to /host/orders/claim and answers the journal's reply.
+func (journal Journal) ClaimOrders(ctx context.Context, limit int, wait int) (ClaimedOrders, error) {
+	var reply ClaimedOrders
+	return reply, journal.Client.Call(ctx, "/host/orders/claim"+"?limit="+strconv.Itoa(limit)+"&wait="+strconv.Itoa(wait), nil, &reply)
+}
+
+// AnswerOrder makes the answer_order call to /host/orders/{order}.
+func (journal Journal) AnswerOrder(ctx context.Context, order string, body Answer) error {
+	return journal.Client.Call(ctx, "/host/orders/"+url.PathEscape(order), body, nil)
+}
+
+// PullPrivateValue makes the pull_private_value call to /host/private-values/{submission} and answers the journal's reply.
+func (journal Journal) PullPrivateValue(ctx context.Context, submission string) (PrivateValue, error) {
+	var reply PrivateValue
+	return reply, journal.Client.Call(ctx, "/host/private-values/"+url.PathEscape(submission), nil, &reply)
+}
+
+// NotifyProcessOutput makes the notify_process_output call to /host/processes/{process}/output.
+func (journal Journal) NotifyProcessOutput(ctx context.Context, process string, body Output) error {
+	return journal.Client.Call(ctx, "/host/processes/"+url.PathEscape(process)+"/output", body, nil)
+}
+
+// NotifyProcessReport makes the notify_process_report call to /host/processes/{process}.
+func (journal Journal) NotifyProcessReport(ctx context.Context, process string, body ProcessReport) error {
+	return journal.Client.Call(ctx, "/host/processes/"+url.PathEscape(process), body, nil)
+}
+
+// NotifyInventory makes the notify_inventory call to /host/inventory.
+func (journal Journal) NotifyInventory(ctx context.Context, body Inventory) error {
+	return journal.Client.Call(ctx, "/host/inventory", body, nil)
+}
+
+// NotifyHeartbeat makes the notify_heartbeat call to /host/heartbeat.
+func (journal Journal) NotifyHeartbeat(ctx context.Context, body HostHeartbeat) error {
+	return journal.Client.Call(ctx, "/host/heartbeat", body, nil)
+}
+
+// NotifyProjectRead makes the notify_project_read call to /host/reports/project-reads/{read}.
+func (journal Journal) NotifyProjectRead(ctx context.Context, read string, body client.ProjectReadReport) error {
+	return journal.Client.Call(ctx, "/host/reports/project-reads/"+url.PathEscape(read), body, nil)
+}

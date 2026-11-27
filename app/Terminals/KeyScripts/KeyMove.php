@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\KeyScripts;
 
-use App\Hosts\Data\HostFrameData;
+use App\Hosts\Protocol\Data\HostFrameData;
 use App\Navigation\Enums\NavigationReason;
 use App\Terminals\Screens\Enums\KeyMoveType;
 use App\Terminals\Screens\RowRange;

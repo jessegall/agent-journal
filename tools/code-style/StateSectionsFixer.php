@@ -19,10 +19,9 @@ use PhpParser\ParserFactory;
 use SplFileInfo;
 
 /**
- * An agent state lays out its methods as the state machine reads them (rule 94): the constructor, reference makers
- * and own answers under no marker, then Lifecycle (onEnter, onExit, onResume), Hooks (in the order the HookHandler
- * contract declares them, then the tick), Events (the on methods that hear a fact) and Internals, each section
- * opened by its marker. A state with a member below its first method is left for its author.
+ * Lays out an agent state's methods as rule 94 says: constructor, reference makers and own answers unmarked, then
+ * Lifecycle, Hooks (in HookHandler's order, then the tick), Events and Internals, each opened by its marker. A state
+ * with a member below its first method is left for its author.
  */
 final class StateSectionsFixer implements FixerInterface
 {

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Hosts\Data\HostChunkData;
-use App\Hosts\Data\HostFrameData;
+use App\Hosts\HostChunks;
+use App\Hosts\Protocol\Data\HostChunkData;
+use App\Hosts\Protocol\Data\HostFrameData;
 
 /**
  * One entry a worker read: a frame or chunk of its process, an answer to one of its orders, or a wake of its
@@ -39,6 +40,18 @@ final readonly class FeedEntry
             $fields['answered'] ?? null,
             isset($fields['ended']),
         );
+    }
+
+    /**
+     * What the entry's chunk printed, decoded; nothing for an entry without a chunk.
+     */
+    public function printed(): string
+    {
+        if ($this->chunk === null) {
+            return '';
+        }
+
+        return HostChunks::printed($this->chunk);
     }
 
     public function isWake(): bool

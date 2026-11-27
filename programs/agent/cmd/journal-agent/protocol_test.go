@@ -9,13 +9,10 @@ import (
 	"journal-agent/hostapi"
 )
 
-// The host carries out exactly the order types protocol/host.json names: none missing, none of its own.
+// A connected host carries out exactly the order types protocol/host.json names: none missing, none of its own.
 func TestTheHostCarriesOutEveryOrderOfTheProtocol(t *testing.T) {
-	table := &hostapi.ProcessTable{}
-	executors := table.Executors()
-	maps.Copy(executors, hostapi.NewProcessInput(table, nil, nil).Executors())
-	maps.Copy(executors, hostapi.ProjectReads{}.Executors())
-	maps.Copy(executors, bindingRelay{}.upgradeOrders(nil, nil))
+	connected := hostOrders{ProcessTable: &hostapi.ProcessTable{}, reads: &hostapi.ProjectReads{}, upgrade: &bindingUpgrade{}}
+	executors := connected.executors()
 
 	carried := slices.Sorted(maps.Keys(executors))
 	named := slices.Sorted(maps.Keys(hostapi.OrderTypes))

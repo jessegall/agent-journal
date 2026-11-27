@@ -39,7 +39,7 @@ func (journal *fakeJournal) ClaimOrders(ctx context.Context, _, _ int) (ClaimedO
 	return ClaimedOrders{}, ctx.Err()
 }
 
-func (journal *fakeJournal) AnswerOrder(_ context.Context, answer Answer) error {
+func (journal *fakeJournal) AnswerOrder(_ context.Context, _ string, answer Answer) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.answers = append(journal.answers, answer)
@@ -53,7 +53,7 @@ func (journal *fakeJournal) NotifyInventory(_ context.Context, inventory Invento
 	return nil
 }
 
-func (journal *fakeJournal) NotifyHostHeartbeat(_ context.Context, heartbeat HostHeartbeat) error {
+func (journal *fakeJournal) NotifyHeartbeat(_ context.Context, heartbeat HostHeartbeat) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.heartbeats = append(journal.heartbeats, heartbeat)
@@ -72,7 +72,7 @@ func relayFor(t *testing.T, journal *fakeJournal) (Relay, []byte) {
 	}
 	clock := &JournalClock{Host: time.Now}
 	dispatcher := NewDispatcher(Verifier{Secret: secret, Now: clock.Now}, record, executors, func(_ Order, answer Answer) {
-		_ = journal.AnswerOrder(context.Background(), answer)
+		_ = journal.AnswerOrder(context.Background(), answer.OrderID, answer)
 	})
 	outputs := NewOutputs(t.TempDir(), func(string, Output) error { return nil }, time.Now)
 	table := &ProcessTable{outputs: outputs, processes: map[string]*heldProcess{}}

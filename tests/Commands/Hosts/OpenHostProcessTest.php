@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Agents\Drivers\Enums\DriverType;
+use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
-use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Values\HostOrderSource;
@@ -70,5 +71,20 @@ final class OpenHostProcessTest extends TestCase
 
         $order = $this->journal->hostOrdersOf('terminal')[0];
         $this->journal->assertResult($opened->sessionId, $this->journal->payloadOf($order)['fence']);
+    }
+
+    public function test_a_contained_plan_carrying_part_of_its_start_grant_is_refused_naming_what_it_misses(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()]);
+
+        $this->journal->assertRefused(
+            HostProtocolRefused::class,
+            fn () => $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+                ->openContainer('agent', ['JOURNAL_START_TOKEN=token', 'JOURNAL_PROFILE=default'])),
+            fn (HostProtocolRefused $refusal) => $this->journal->assertResult(
+                true,
+                str_contains($refusal->getMessage(), 'misses JOURNAL_URL, JOURNAL_PROFILE_REVISION'),
+            ),
+        );
     }
 }

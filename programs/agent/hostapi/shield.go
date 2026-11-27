@@ -2,13 +2,6 @@ package hostapi
 
 import "strings"
 
-// ShieldRule is a screen the journal named as one the host must never send: enough of its keywords appear on it, in
-// any case. The host matches the rows as plain text and knows nothing of the program that drew them.
-type ShieldRule struct {
-	Keywords    []string `json:"keywords"`
-	MinKeywords int      `json:"min_keywords"`
-}
-
 // matches is whether enough of the rule's keywords appear on the rows.
 func (rule ShieldRule) matches(rows []string) bool {
 	text := strings.ToLower(strings.Join(rows, "\n"))

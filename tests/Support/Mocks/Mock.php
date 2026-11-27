@@ -21,7 +21,7 @@ abstract class Mock implements JsonSerializable
     final protected function __construct(private readonly string $driver, private readonly string $build) {}
 
     /**
-     * The next line the mock hears is of the method, and the scope says what it answers.
+     * The next line the mock reads is of the method, and the scope says what it answers.
      *
      * @param  Closure(Answer): mixed  $answer
      */

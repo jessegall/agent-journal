@@ -61,7 +61,7 @@ func TestWhatASideSocketTakesArrivesAsChunksOfItsStream(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := table.openProcess(context.Background(), Order{ID: "open-s", Type: "open_process", ProcessID: "s", Payload: string(plan)}); err != nil {
+	if _, err := carry(testOrders{ProcessTable: table}, "open_process")(context.Background(), Order{ID: "open-s", Type: "open_process", ProcessID: "s", Payload: string(plan)}); err != nil {
 		t.Fatal(err)
 	}
 	connection, err := net.Dial("unix", filepath.Join(state, "processes", "s", "sockets", "status"))

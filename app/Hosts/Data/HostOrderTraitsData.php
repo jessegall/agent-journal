@@ -10,7 +10,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * What protocol/host.json says of one order type: whether it is about one process or the host, the process type it
- * needs, and what it does to its process and after a restart.
+ * needs, the type of its payload (none for an order that carries none), and what it does to its process and after a
+ * restart.
  */
 #[MapInputName(SnakeCaseMapper::class)]
 final class HostOrderTraitsData extends Data
@@ -18,6 +19,7 @@ final class HostOrderTraitsData extends Data
     public function __construct(
         public readonly string $scope,
         public readonly string $processType,
+        public readonly string|null $payload,
         public readonly bool $opens = false,
         public readonly bool $isInput = false,
         public readonly bool $endsProcess = false,

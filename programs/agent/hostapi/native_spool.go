@@ -100,7 +100,7 @@ func (table *ProcessTable) endOrphanedTerminal(held *heldProcess, pid int) {
 			time.Sleep(spoolPollInterval)
 		}
 		held.finish()
-		table.end(held, ProcessReport{ProcessID: held.id, Report: "lost",
+		table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportLost,
 			Evidence: "the host restarted without its terminal, and the process it had started has ended"})
 	}()
 }
@@ -112,7 +112,7 @@ func (table *ProcessTable) watchAdopted(held *heldProcess) {
 	}
 	held.finish()
 	held.awaitDrained()
-	table.end(held, ProcessReport{ProcessID: held.id, Report: "exited",
+	table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportExited,
 		Evidence: "the process ended while a restarted host followed it, so its exit code is unknown"})
 }
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hosts;
 
-use App\Hosts\Data\HostFrameData;
-use App\Hosts\Data\HostOutputData;
+use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Data\HostOutputData;
 use App\Values\FeedEntry;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Redis\Connections\Connection;

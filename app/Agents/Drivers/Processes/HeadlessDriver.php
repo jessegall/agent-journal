@@ -86,7 +86,7 @@ final class HeadlessDriver implements ProcessDriver
             return DriverActions::none();
         }
 
-        $usage = $this->result->read($entry->chunk->printed(), $this->clock->now());
+        $usage = $this->result->read($entry->printed(), $this->clock->now());
 
         return DriverActions::of(...array_map($this->usageCommand(...), $usage));
     }

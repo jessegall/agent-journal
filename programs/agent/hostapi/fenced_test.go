@@ -25,7 +25,7 @@ func openFencedProcess(t *testing.T, table *ProcessTable, processID, fence strin
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = table.openProcess(context.Background(), Order{ID: "open-" + processID, Type: "open_process", ProcessID: processID, Payload: string(plan)})
+	_, err = carry(testOrders{ProcessTable: table}, "open_process")(context.Background(), Order{ID: "open-" + processID, Type: "open_process", ProcessID: processID, Payload: string(plan)})
 	return err
 }
 
@@ -49,7 +49,7 @@ func TestEachFencedRunEndsWithItsStatusAndOutputInOrder(t *testing.T) {
 		{Argv: []string{"/bin/sh", "-c", "printf 0123456789"}, Folder: folder, DeadlineMs: 5000, OutputLimit: 4},
 	}
 
-	facts, err := table.runFenced(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 30000, Runs: runs}))
+	facts, err := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 30000, Runs: runs}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,7 +81,7 @@ func TestARunPastTheBudgetIsNotRun(t *testing.T) {
 		{Argv: []string{"/bin/sh", "-c", "true"}, Folder: folder, DeadlineMs: 5000, OutputLimit: 1024},
 	}
 
-	facts, err := table.runFenced(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 200, Runs: runs}))
+	facts, err := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 200, Runs: runs}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,12 +100,16 @@ func TestALiveProcessOfTheFenceRefusesTheRunButOneWaitingOnItDoesNot(t *testing.
 	if err := openFencedProcess(t, table, "other-session", "s2"); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _, _ = table.stop(context.Background(), stopOrder(t, "agent")) })
-	t.Cleanup(func() { _, _ = table.stop(context.Background(), stopOrder(t, "other-session")) })
+	t.Cleanup(func() {
+		_, _ = carry(testOrders{ProcessTable: table}, "stop")(context.Background(), stopOrder(t, "agent"))
+	})
+	t.Cleanup(func() {
+		_, _ = carry(testOrders{ProcessTable: table}, "stop")(context.Background(), stopOrder(t, "other-session"))
+	})
 	run := []FencedRun{{Argv: []string{"/bin/sh", "-c", "true"}, Folder: t.TempDir(), DeadlineMs: 5000, OutputLimit: 64}}
 
-	_, refused := table.runFenced(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 5000, Runs: run}))
-	_, waited := table.runFenced(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", Waiting: []string{"agent"}, BudgetMs: 5000, Runs: run}))
+	_, refused := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 5000, Runs: run}))
+	_, waited := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", Waiting: []string{"agent"}, BudgetMs: 5000, Runs: run}))
 
 	var refusal RefusalError
 	if !errors.As(refused, &refusal) || refusal.Refusal != Fenced {
@@ -125,7 +129,7 @@ func TestAProcessOfAClosedFenceIsRefusedUntilItsDeadlinePasses(t *testing.T) {
 	table.closeFence("s1", time.Now().Add(-time.Second))
 	afterDeadline := openFencedProcess(t, table, "after", "s1")
 	for _, id := range []string{"elsewhere", "after"} {
-		t.Cleanup(func() { _, _ = table.stop(context.Background(), stopOrder(t, id)) })
+		t.Cleanup(func() { _, _ = carry(testOrders{ProcessTable: table}, "stop")(context.Background(), stopOrder(t, id)) })
 	}
 
 	var refusal RefusalError
@@ -141,14 +145,16 @@ func TestTheFenceOpensAgainOnceTheRunsEnd(t *testing.T) {
 	table, _ := mockTable(t, dockermock.Start(t, mockImage))
 	run := []FencedRun{{Argv: []string{"/bin/sh", "-c", "true"}, Folder: t.TempDir(), DeadlineMs: 5000, OutputLimit: 64}}
 
-	if _, err := table.runFenced(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 5000, Runs: run})); err != nil {
+	if _, err := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 5000, Runs: run})); err != nil {
 		t.Fatal(err)
 	}
 
 	if err := openFencedProcess(t, table, "next", "s1"); err != nil {
 		t.Fatalf("the fence stayed closed after its runs: %v", err)
 	}
-	t.Cleanup(func() { _, _ = table.stop(context.Background(), stopOrder(t, "next")) })
+	t.Cleanup(func() {
+		_, _ = carry(testOrders{ProcessTable: table}, "stop")(context.Background(), stopOrder(t, "next"))
+	})
 }
 
 func stopOrder(t *testing.T, processID string) Order {

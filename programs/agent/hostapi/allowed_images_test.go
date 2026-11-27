@@ -16,7 +16,7 @@ func TestAllowImagesReplacesTheImagesAContainedHostRuns(t *testing.T) {
 	allowed := host.NewAllowedImages()
 	table := &ProcessTable{containers: host.Containers{Rules: host.ContainerRules{Arrangement: host.Contained, Allowed: allowed}}}
 
-	if _, err := table.allowImages(context.Background(), imagesOrder(`"agent@sha256:aaaa"`)); err != nil {
+	if _, err := carry(testOrders{ProcessTable: table}, "allow_images")(context.Background(), imagesOrder(`"agent@sha256:aaaa"`)); err != nil {
 		t.Fatal(err)
 	}
 
@@ -29,8 +29,8 @@ func TestAnImageThatIsNoDigestOrAHostWithNoSetRefusesTheOrder(t *testing.T) {
 	contained := &ProcessTable{containers: host.Containers{Rules: host.ContainerRules{Arrangement: host.Contained, Allowed: host.NewAllowedImages()}}}
 	local := &ProcessTable{containers: host.Containers{Rules: host.ContainerRules{Arrangement: host.Local}}}
 
-	_, tagged := contained.allowImages(context.Background(), imagesOrder(`"agent:latest"`))
-	_, unset := local.allowImages(context.Background(), imagesOrder(`"agent@sha256:aaaa"`))
+	_, tagged := carry(testOrders{ProcessTable: contained}, "allow_images")(context.Background(), imagesOrder(`"agent:latest"`))
+	_, unset := carry(testOrders{ProcessTable: local}, "allow_images")(context.Background(), imagesOrder(`"agent@sha256:aaaa"`))
 
 	var refusal RefusalError
 	if !errors.As(tagged, &refusal) || !errors.As(unset, &refusal) {

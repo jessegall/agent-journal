@@ -8,7 +8,7 @@ use App\Accounts\Enums\CommandEntry;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\JournalCommands;
 use App\Exceptions\HostCredentialRejected;
-use App\Hosts\Contracts\HostCalls;
+use App\Hosts\Contracts\SignedHostCalls;
 use App\Hosts\Exceptions\ApiSignatureInvalid;
 use App\Http\Requests\Connections\RecoverBindingRequest;
 use App\Projects\Commands\RecoverProjectBinding\RecoverProjectBindingCommand;
@@ -24,7 +24,7 @@ final readonly class RecoverBindingController
     #[Dispatches(RecoverProjectBindingCommand::class)]
     public function __invoke(
         RecoverBindingRequest $request,
-        HostCalls $calls,
+        SignedHostCalls $calls,
         JournalCommands $dispatchers,
     ): JsonResponse {
         try {

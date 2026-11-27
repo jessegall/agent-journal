@@ -324,7 +324,7 @@ final class SessionLifeTest extends TestCase
 
         $turn = $this->journal->hostProcessCalled('turn')->id;
         $printed = implode('', array_map(
-            fn ($entry) => (string) $entry->chunk?->printed(),
+            fn ($entry) => $entry->printed(),
             $this->journal->service(ProcessFeed::class)->after($turn, ProcessFeed::FIRST_CURSOR, 0),
         ));
         $recorded = (string) file_get_contents(base_path('tests/Support/Hosts/fixtures/claude-turn.jsonl'));

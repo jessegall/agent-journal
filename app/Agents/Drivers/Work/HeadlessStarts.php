@@ -15,7 +15,7 @@ use App\Agents\Values\JournalServer;
 use App\Bus\Contracts\JournalCommands;
 use App\Exceptions\DriverUnknown;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;

@@ -144,7 +144,10 @@ func (binder bindingRelay) serveOrders(
 	hookCommand := filepath.Join(binder.installation.Folder, "bin", "journal-hook")
 	names := hostNamesOf(journal, binder.installation.Folder, hookCommand)
 
-	reads := hostapi.ProjectReads{Reader: host.ProjectReader{Root: binder.binding.CanonicalRoot}, Journal: journal}
+	reads := hostapi.ProjectReads{
+		Reader:  host.ProjectReader{Root: binder.binding.CanonicalRoot},
+		Journal: hostapi.Journal{Client: journal},
+	}
 
 	var table atomic.Pointer[hostapi.ProcessTable]
 	live := func() []string {
@@ -153,8 +156,7 @@ func (binder bindingRelay) serveOrders(
 		}
 		return []string{}
 	}
-	executors := reads.Executors()
-	maps.Copy(executors, binder.upgradeOrders(live, stop))
+	upgrade := bindingUpgrade{binder: binder, live: live, stop: stop}
 	// A connected host opens only the programs its installer sealed, by the names the installer gave them.
 	allowed, err := hostapi.LoadAllowedPrograms(binder.state.Folder, filepath.Base(binder.installation.Folder))
 	if err != nil {
@@ -162,7 +164,7 @@ func (binder bindingRelay) serveOrders(
 	}
 	maps.Copy(names, allowed.Programs)
 	started, err := startHostProtocol(ctx, journal, binder.binding.Enrollment, folder, names, host.Containers{},
-		binder.release, hostProtocolOptions{Extra: executors, Idle: binder.idle, Allowed: allowed})
+		binder.release, hostProtocolOptions{Reads: &reads, Upgrade: &upgrade, Idle: binder.idle, Allowed: allowed})
 	if err != nil {
 		return nil, err
 	}

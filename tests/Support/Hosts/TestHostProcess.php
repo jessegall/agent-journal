@@ -9,10 +9,11 @@ use App\Agents\Drivers\Work\DriverWorkers;
 use App\Hosts\Commands\NotifyHostOutput\NotifyHostOutputCommand;
 use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
-use App\Hosts\Data\HostProcessReportData;
-use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\ProcessFeed;
+use App\Hosts\Protocol\Data\HostOutputData;
+use App\Hosts\Protocol\Data\HostProcessReportData;
+use App\Hosts\Protocol\HostProcessReportType;
 use App\Models\Hosts\HostOrder;
 use App\Terminals\PrivateValues;
 use App\Values\HostOrderSource;
@@ -47,11 +48,25 @@ final class TestHostProcess
                 'process_id' => $process->id,
                 'report' => $report,
                 'identity' => "pid:{$this->name}",
+                'generation' => 0,
                 'exit_code' => $exitCode,
+                'evidence' => $this->evidenceOf($report, $exitCode),
             ]),
         ));
 
         return $this;
+    }
+
+    /**
+     * The evidence the host sends with a report that the process ended, as it says how; none for a running one.
+     */
+    private function evidenceOf(HostProcessReportType $report, int|null $exitCode): string|null
+    {
+        return match ($report) {
+            HostProcessReportType::Exited => "the program exited with {$exitCode}",
+            HostProcessReportType::Lost => 'the program was not found after the host restarted',
+            HostProcessReportType::Running, HostProcessReportType::Restarted => null,
+        };
     }
 
     /**
@@ -60,8 +75,9 @@ final class TestHostProcess
     public function print(string $firstRow): self
     {
         $process = $this->journal->hostProcessCalled($this->name);
-        $frame = ['rows' => [$firstRow], 'cursor_row' => 0, 'cursor_column' => 0, 'columns' => 80, 'captured' => 1];
-        $body = json_encode(['frames' => [[...$frame, 'unchanged_ms' => [0]]]], JSON_THROW_ON_ERROR);
+        $frame = ['rows' => [$firstRow], 'cursor_row' => 0, 'cursor_column' => 0, 'columns' => 80, 'buffer' => 'normal',
+            'captured' => 1];
+        $body = HostOutputData::from(['frames' => [[...$frame, 'unchanged_ms' => [0]]], 'chunks' => []]);
         $this->journal->asSystem(new NotifyHostOutputCommand($process->host_id, $process->id, $body));
 
         return $this;
@@ -74,7 +90,7 @@ final class TestHostProcess
     {
         $process = $this->journal->hostProcessCalled($this->name);
         $chunk = ['stream' => 'stdout', 'offset' => $process->output_offset, 'bytes' => base64_encode($printed)];
-        $body = json_encode(['chunks' => [$chunk]], JSON_THROW_ON_ERROR);
+        $body = HostOutputData::from(['frames' => [], 'chunks' => [$chunk]]);
         $this->journal->asSystem(new NotifyHostOutputCommand($process->host_id, $process->id, $body));
 
         return $this;
@@ -143,7 +159,7 @@ final class TestHostProcess
     }
 
     /**
-     * The kept worker, begun when there is none, takes one step, waiting up to the milliseconds; a worker that ends is
+     * The kept worker, started when there is none, takes one step, waiting up to the milliseconds; a worker that ends is
      * let go, and the next drive begins another.
      */
     public function drive(int $waitMs = 200): self
@@ -212,7 +228,7 @@ final class TestHostProcess
     }
 
     /**
-     * One step of the kept worker, begun when there is none; answers whether the worker goes on.
+     * One step of the kept worker, started when there is none; answers whether the worker goes on.
      */
     private function step(int $waitMs): bool
     {

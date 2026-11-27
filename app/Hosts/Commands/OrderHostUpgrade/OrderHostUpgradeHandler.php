@@ -9,8 +9,8 @@ use App\Connections\PublishedReleases;
 use App\Files\Contracts\Files;
 use App\Hosts\DriverInstallList;
 use App\Hosts\Exceptions\HostUpgradeRefused;
-use App\Hosts\HostOrderPlacement;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\Data\HostUpgradePlanData;
+use App\Hosts\Protocol\HostOrders;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Values\HostOrderSource;
@@ -22,7 +22,7 @@ use App\Values\HostOrderSource;
 final readonly class OrderHostUpgradeHandler implements CommandHandler
 {
     public function __construct(
-        private HostOrderPlacement $placement,
+        private HostOrders $orders,
         private PublishedReleases $releases,
         private Files $files,
         private DriverInstallList $drivers,
@@ -36,12 +36,12 @@ final readonly class OrderHostUpgradeHandler implements CommandHandler
             throw HostUpgradeRefused::forLiveProcess($host->id);
         }
 
-        $order = $this->placement->forHost($host->id, HostOrderSource::fromJournal(), HostOrderType::Upgrade, [
+        $order = $this->orders->upgrade($host->id, HostOrderSource::fromJournal(), HostUpgradePlanData::from([
             'version' => $this->releases->current()->version,
             'manifest' => $this->files->readNamed($this->releases->currentManifest()),
             'signature' => base64_encode($this->files->readNamed($this->releases->currentSignature())),
             'drivers' => $this->drivers->drivers()->toJson(),
-        ]);
+        ]));
 
         $host->orderUpgrade($order->id);
 

@@ -39,24 +39,6 @@ var fencedStages = host.StopStages{Grace: 2 * time.Second, Force: 2 * time.Secon
 // fencedEnvironment carries no variable of the host's own: no credential, token or account folder reaches a run.
 var fencedEnvironment = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "LANG=C.UTF-8", "TZ=UTC"}
 
-// FencedPlan is the payload of run_fenced: the fence it closes, the processes of the fence that wait on it, the
-// budget of the whole run and each program in turn.
-type FencedPlan struct {
-	Fence    string      `json:"fence"`
-	Waiting  []string    `json:"waiting"`
-	BudgetMs int         `json:"budget_ms"`
-	Runs     []FencedRun `json:"runs"`
-}
-
-// FencedRun is one program of a run_fenced order: an absolute argv run without a shell, in its folder, within its
-// deadline and output limit.
-type FencedRun struct {
-	Argv        []string `json:"argv"`
-	Folder      string   `json:"folder"`
-	DeadlineMs  int      `json:"deadline_ms"`
-	OutputLimit int      `json:"output_limit"`
-}
-
 // FencedResult is how one run ended, with the end of its output.
 type FencedResult struct {
 	Status    string  `json:"status"`
@@ -69,14 +51,10 @@ type FencedResult struct {
 	Truncated bool    `json:"truncated"`
 }
 
-// runFenced closes admission for the fence's processes, refuses while one of them other than those waiting still runs,
+// RunFenced closes admission for the fence's processes, refuses while one of them other than those waiting still runs,
 // then runs each program in turn within its deadline and the budget; the fence opens again when the runs end, or at
 // the budget's end if the host never got there.
-func (table *ProcessTable) runFenced(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := DecodePayload[FencedPlan](order)
-	if err != nil {
-		return nil, err
-	}
+func (table *ProcessTable) RunFenced(ctx context.Context, order Order, plan FencedPlan) (map[string]any, error) {
 	if plan.Fence == "" {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "run_fenced names no fence"}
 	}

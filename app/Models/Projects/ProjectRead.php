@@ -8,15 +8,15 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
-use App\Connections\Data\ProjectEntryData;
 use App\Contracts\Events\EventSource;
 use App\Events\Connections\ProjectReadAnsweredWithEntries;
 use App\Events\Connections\ProjectReadAnsweredWithText;
 use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
+use App\Hosts\Protocol\Data\HostProjectEntryData;
+use App\Hosts\Protocol\HostProjectReadFailure;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\JournalModel;
-use App\Projects\Enums\ProjectReadFailure;
 use App\Projects\Enums\ProjectReadStatus;
 use App\Projects\Enums\ProjectReadType;
 use App\Projects\Exceptions\ProjectReadRefused;
@@ -39,8 +39,8 @@ use Spatie\LaravelData\DataCollection;
  * @property string $actor_type
  * @property string $actor_id
  * @property ProjectReadStatus $status
- * @property ProjectReadFailure|null $failure
- * @property DataCollection<int, ProjectEntryData>|null $entries
+ * @property HostProjectReadFailure|null $failure
+ * @property DataCollection<int, HostProjectEntryData>|null $entries
  * @property string|null $text
  * @property-read ProjectBinding $binding
  * @property string|null $digest
@@ -96,8 +96,8 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
         return [
             'type' => ProjectReadType::class,
             'status' => ProjectReadStatus::class,
-            'failure' => ProjectReadFailure::class,
-            'entries' => DataCollection::class.':'.ProjectEntryData::class,
+            'failure' => HostProjectReadFailure::class,
+            'entries' => DataCollection::class.':'.HostProjectEntryData::class,
             'size' => 'integer',
             'is_truncated' => 'boolean',
             'claimed_at' => 'immutable_datetime',
@@ -146,12 +146,12 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     /**
      * Answers a folder read with its entries, cut to the entry limit and marked cut when the host or the limit cut it.
      *
-     * @param  list<ProjectEntryData>  $entries
+     * @param  list<HostProjectEntryData>  $entries
      */
     public function answerWithEntries(array $entries, bool $isTruncated): void
     {
         $kept = array_slice($entries, 0, self::DIRECTORY_ENTRY_LIMIT);
-        $this->entries = ProjectEntryData::collect($kept, DataCollection::class);
+        $this->entries = HostProjectEntryData::collect($kept, DataCollection::class);
 
         $this->is_truncated = $isTruncated || count($entries) > self::DIRECTORY_ENTRY_LIMIT;
         $this->settle(ProjectReadStatus::Answered);
@@ -174,7 +174,7 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     /**
      * The read failed with the failure given.
      */
-    public function fail(ProjectReadFailure $failure): void
+    public function fail(HostProjectReadFailure $failure): void
     {
         $this->failure = $failure;
         $this->settle(ProjectReadStatus::Failed);
@@ -206,7 +206,7 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     /**
      * The folder's entries as the host listed them; none for a file or an unanswered read.
      *
-     * @return list<ProjectEntryData>
+     * @return list<HostProjectEntryData>
      */
     public function listedEntries(): array
     {
@@ -336,7 +336,11 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     {
         $usableSince = $now->subMinutes(self::KEEP_MINUTES_LIMIT);
         $failedSince = $now->subSeconds(self::PENDING_SECONDS_LIMIT);
-        $usable = [ProjectReadStatus::Pending->value, ProjectReadStatus::Answered->value];
+
+        $usable = [
+            ProjectReadStatus::Pending->value,
+            ProjectReadStatus::Answered->value,
+        ];
 
         $query->where(fn (Builder $kept) => $kept
             ->where(fn (Builder $live) => $live->whereIn('status', $usable)->where('created_at', '>=', $usableSince))

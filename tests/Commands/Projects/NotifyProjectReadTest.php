@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Connections\Data\ProjectEntryData;
 use App\Hosts\EnrolledHost;
+use App\Hosts\Protocol\Data\HostProjectEntryData;
+use App\Hosts\Protocol\HostProjectReadFailure;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
@@ -14,7 +15,6 @@ use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectRead;
 use App\Projects\Commands\NotifyProjectRead\NotifyProjectReadCommand;
-use App\Projects\Enums\ProjectReadFailure;
 use App\Projects\Enums\ProjectReadStatus;
 use App\Projects\Enums\ProjectReadType;
 use App\Projects\Exceptions\ProjectReadRefused;
@@ -61,8 +61,8 @@ final class NotifyProjectReadTest extends TestCase
         $read = $this->read(ProjectReadType::Directory, '');
 
         $this->notify($read, entries: [
-            new ProjectEntryData('src', true, 0),
-            new ProjectEntryData('README.md', false, 6),
+            new HostProjectEntryData('src', true, 0),
+            new HostProjectEntryData('README.md', false, 6),
         ]);
 
         $entries = ProjectRead::query()->findOrFail($read->id)->listedEntries();
@@ -82,7 +82,7 @@ final class NotifyProjectReadTest extends TestCase
             ProjectReadRefused::class,
         );
         $this->assertThrows(
-            fn () => $this->notify($folder, entries: [new ProjectEntryData('../x', false, 1)]),
+            fn () => $this->notify($folder, entries: [new HostProjectEntryData('../x', false, 1)]),
             ProjectReadRefused::class,
         );
         $this->assertThrows(
@@ -101,9 +101,9 @@ final class NotifyProjectReadTest extends TestCase
     {
         $read = $this->read(ProjectReadType::File, 'missing.txt');
 
-        $this->notify($read, failure: ProjectReadFailure::Missing);
+        $this->notify($read, failure: HostProjectReadFailure::Missing);
 
-        $this->assertSame(ProjectReadFailure::Missing, ProjectRead::query()->findOrFail($read->id)->failure);
+        $this->assertSame(HostProjectReadFailure::Missing, ProjectRead::query()->findOrFail($read->id)->failure);
     }
 
     public function test_a_late_answer_to_an_expired_read_changes_nothing_and_pruning_removes_it_later(): void
@@ -140,13 +140,13 @@ final class NotifyProjectReadTest extends TestCase
     /**
      * The host's answer to the read, as the journal settles it.
      *
-     * @param  list<ProjectEntryData>  $entries
+     * @param  list<HostProjectEntryData>  $entries
      */
     private function notify(
         ProjectRead $read,
         ProjectFileText|null $text = null,
         array $entries = [],
-        ProjectReadFailure|null $failure = null,
+        HostProjectReadFailure|null $failure = null,
     ): void {
         $this->journal->asSystem(
             new NotifyProjectReadCommand($this->host->hostId, $read->id, $entries, $text, false, $failure),

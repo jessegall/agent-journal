@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Commands\Sessions;
 
 use App\Agents\Drivers\Enums\DriverType;
-use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Sessions\Commands\RunStopConditions\RunStopConditionsCommand;

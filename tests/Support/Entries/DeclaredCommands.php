@@ -6,6 +6,7 @@ namespace Tests\Support\Entries;
 
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\Command;
+use App\Hosts\Protocol\HostCalls;
 use App\Mcp\Tools\JournalTool;
 use App\Reflection\Attributes;
 use App\Support\Reflector;
@@ -30,7 +31,25 @@ final readonly class DeclaredCommands
 
         $declared = self::commandsOf(Reflector::of($controller)->method($action)->attributes(Dispatches::class));
 
-        return [...$declared, ...self::ofMiddleware($route)];
+        return [...$declared, ...self::ofHostCall($controller), ...self::ofMiddleware($route)];
+    }
+
+    /**
+     * A generated controller of host protocol 1 hands its call to HostCalls, so it sends what the bound HostCalls
+     * declares on the call's method.
+     *
+     * @return list<class-string<Command<mixed>>>
+     */
+    private static function ofHostCall(string $controller): array
+    {
+        if (! str_starts_with($controller, 'App\\Hosts\\Protocol\\Http\\')) {
+            return [];
+        }
+
+        $calls = Container::getInstance()->make(HostCalls::class);
+        $method = Str::camel(Str::beforeLast(class_basename($controller), 'Controller'));
+
+        return self::commandsOf(Reflector::of($calls::class)->method($method)->attributes(Dispatches::class));
     }
 
     /**

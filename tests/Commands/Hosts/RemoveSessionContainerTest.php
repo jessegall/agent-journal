@@ -27,7 +27,7 @@ final class RemoveSessionContainerTest extends TestCase
         $network = $this->app->make(ArrangementSetting::class)->sessionContainerName('s1');
 
         $this->journal->assertResult(
-            [HostOrderType::Remove, ['container' => '', 'network' => $network, 'session' => 's1']],
+            [HostOrderType::RemoveSession, ['network' => $network, 'session' => 's1']],
             [$removal->type, $this->journal->payloadOf($removal)],
         );
     }

@@ -6,7 +6,6 @@ import (
 	"flag"
 	"io"
 	"log"
-	"maps"
 	"os"
 	"os/signal"
 	"syscall"
@@ -82,24 +81,64 @@ func stopWhenInputEnds(stop func()) {
 	}()
 }
 
-// startHostProtocol runs host protocol 1: process reports and output kept and sent, orders claimed through the long
-// poll and carried out, the inventory sent once and a heartbeat every 30 s; extra executors carry out the orders only
-// this host takes, such as a relay's project reads; idle keeps the idle window the claim answers name, for a host that
-// leaves when idle. It answers the table of the processes it runs.
-// hostProtocolOptions are what differs between the hosts that speak protocol 1: the orders a host carries out beside
-// the common ones, the idle window that ends a relay, and the programs a connected host alone may open.
+// hostProtocolOptions are what differs between the hosts that speak protocol 1: the project reads and the upgrade a
+// connected host alone carries out, the idle window that ends a relay, and the programs a connected host alone may
+// open.
 type hostProtocolOptions struct {
-	Extra   map[string]hostapi.Executor
+	Reads   *hostapi.ProjectReads
+	Upgrade *bindingUpgrade
 	Idle    *hostapi.IdleWindow
 	Allowed *hostapi.AllowedPrograms
 }
+
+// hostOrders carry out every order of host protocol 1 on this host: the process table's, the processes' input and
+// output, and the project reads and the upgrade of a connected host, which another host does not carry.
+type hostOrders struct {
+	*hostapi.ProcessTable
+	hostapi.ProcessInput
+	reads   *hostapi.ProjectReads
+	upgrade *bindingUpgrade
+}
+
+// ReadProject answers a project read on a connected host; another host does not carry the order.
+func (orders hostOrders) ReadProject(ctx context.Context, order hostapi.Order, read client.ProjectRead) (map[string]any, error) {
+	if orders.reads == nil {
+		return nil, hostapi.RefusalError{Refusal: hostapi.UnknownOrder, Reason: "this host holds no project"}
+	}
+	return orders.reads.ReadProject(ctx, order, read)
+}
+
+// Upgrade moves a connected host to a new release; another host does not carry the order.
+func (orders hostOrders) Upgrade(ctx context.Context, order hostapi.Order, plan hostapi.UpgradePlan) (map[string]any, error) {
+	if orders.upgrade == nil {
+		return nil, hostapi.RefusalError{Refusal: hostapi.UnknownOrder, Reason: "the journal does not upgrade this host"}
+	}
+	return orders.upgrade.Upgrade(ctx, order, plan)
+}
+
+// executors are the orders this host carries out, as its inventory lists them: every order of the protocol but those
+// of a part it lacks.
+func (orders hostOrders) executors() map[string]hostapi.Executor {
+	executors := hostapi.Executors(orders)
+	if orders.reads == nil {
+		delete(executors, "read_project")
+	}
+	if orders.upgrade == nil {
+		delete(executors, "upgrade")
+	}
+	return executors
+}
+
+// startHostProtocol runs host protocol 1: process reports and output kept and sent, orders claimed through the long
+// poll and carried out, the inventory sent once and a heartbeat every 30 s; idle keeps the idle window the claim
+// answers name, for a host that leaves when idle. It answers the table of the processes it runs.
 
 func startHostProtocol(ctx context.Context, journal *client.Client, enrollment host.Enrollment, stateFolder string,
 	names map[string]string, containers host.Containers, release string, options hostProtocolOptions,
 ) (*hostapi.ProcessTable, error) {
 	calls := hostapi.Journal{Client: journal}
 	reports, err := hostapi.OpenReportQueue(stateFolder, func(report hostapi.ProcessReport) error {
-		return calls.NotifyProcessReport(ctx, report)
+		return calls.NotifyProcessReport(ctx, report.ProcessID, report)
 	})
 	if err != nil {
 		return nil, err
@@ -119,9 +158,13 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 	if err := table.Adopt(ctx); err != nil {
 		return nil, err
 	}
-	executors := table.Executors()
-	maps.Copy(executors, hostapi.NewProcessInput(table, outputs, calls.PrivateValue).Executors())
-	maps.Copy(executors, options.Extra)
+	orders := hostOrders{
+		ProcessTable: table,
+		ProcessInput: hostapi.NewProcessInput(table, outputs, calls.PullPrivateValue),
+		reads:        options.Reads,
+		upgrade:      options.Upgrade,
+	}
+	executors := orders.executors()
 	clock := &hostapi.JournalClock{Host: time.Now}
 	verifier := hostapi.Verifier{Secret: hostapi.OrderSecretOf(enrollment.Secret), Now: clock.Now}
 	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(order hostapi.Order, answer hostapi.Answer) {

@@ -28,13 +28,14 @@
         "stop": { "scope": "process", "process_type": "any", "ends_process": true, "is_repeatable": true, "payload": "stop_plan" },
         "stream": { "scope": "process", "process_type": "terminal", "is_repeatable": true, "payload": "stream_plan" },
         "snapshot": { "scope": "process", "process_type": "terminal", "is_repeatable": true, "payload": null },
-        "run_fenced": { "scope": "process", "process_type": "any", "payload": "fenced_plan" },
+        "run_fenced": { "scope": "host", "process_type": "any", "payload": "fenced_plan" },
         "allow_images": { "scope": "host", "process_type": "any", "offered_again_after_restart": false, "payload": "images_plan" },
         "make_folder": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "folder_plan" },
         "remove_folder": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "folder_plan" },
         "folder_use": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "folder_plan" },
         "remove": { "scope": "host", "process_type": "any", "ends_process": true, "is_repeatable": true, "payload": "remove_plan" },
-        "read_project": { "scope": "process", "process_type": "any", "is_repeatable": true, "payload": "project_read" },
+        "remove_session": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "session_removal" },
+        "read_project": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "project_read" },
         "record": { "scope": "process", "process_type": "any", "payload": null },
         "stop_recording": { "scope": "process", "process_type": "any", "is_repeatable": true, "payload": null },
         "upgrade": { "scope": "host", "process_type": "any", "payload": "upgrade_plan" }
@@ -56,9 +57,108 @@
             "side_sockets",
             "read_files",
             "inherit"
+        ],
+        "start_grant_about": "A contained program signs in with its start grant, read whole from these variables at the session address, so a contained plan carries all of them or none.",
+        "start_grant_environment": [
+            "JOURNAL_URL",
+            "JOURNAL_START_TOKEN",
+            "JOURNAL_PROFILE",
+            "JOURNAL_PROFILE_REVISION"
         ]
     },
+    "enums": {
+        "process_type": ["terminal", "pipe"],
+        "mount_type": ["bind", "volume", "daemon-bind", "plan-file"],
+        "process_report_type": ["running", "restarted", "exited", "lost"],
+        "argument_values": ["none", "one", "list"],
+        "project_read_failure": ["missing", "not_a_directory", "not_a_file", "binary", "too_large", "unreadable", "outside"]
+    },
+    "go_packages": {
+        "host": ["mount_type", "restart_file", "container_labels", "container_manifest", "container_mount", "container_budgets", "security_options", "workspace_preparation", "workspace_clone"],
+        "client": ["project_read", "project_read_report", "project_entry", "project_read_failure"]
+    },
     "programs": {
+        "journal-init": {
+            "about": "The agent image's init: it starts the executor and the program and prints nothing on the program's streams, so a probe's output is the program's own.",
+            "prints_on_program_streams": false
+        },
+        "journal-agent": {
+            "about": "The host program: the flags of each command an installation runs it with.",
+            "commands": {
+                "enroll": [
+                    "journal",
+                    "host",
+                    "state",
+                    "secret-file"
+                ],
+                "serve": [
+                    "state",
+                    "hook-command",
+                    "installation",
+                    "arrangement",
+                    "docker",
+                    "installation-name",
+                    "agent-image",
+                    "runner-image",
+                    "development-programs"
+                ]
+            }
+        },
+        "claude-code": {
+            "about": "Claude Code as the journal runs it: every word, option and its values a start, probe or sign-in names, and the prompt last.",
+            "executable": "claude",
+            "words": {
+                "auth": "none",
+                "login": "none",
+                "status": "none",
+                "logout": "none"
+            },
+            "options": {
+                "--version": "none",
+                "--json": "none",
+                "--claudeai": "none",
+                "--settings": "one",
+                "--setting-sources": "one",
+                "--strict-mcp-config": "none",
+                "--agents": "one",
+                "--tools": "one",
+                "--disallowedTools": "list",
+                "--mcp-config": "one",
+                "--plugin-dir": "one",
+                "--model": "one",
+                "--resume": "one",
+                "--session-id": "one",
+                "--print": "none",
+                "--output-format": "one",
+                "--verbose": "none",
+                "-p": "one",
+                "--max-turns": "one",
+                "--no-session-persistence": "none"
+            },
+            "takes_prompt": true
+        },
+        "codex": {
+            "about": "Codex as the journal runs it: every word, option and its values a start, probe or sign-in names, and the prompt last.",
+            "executable": "codex",
+            "words": {
+                "resume": "one",
+                "app-server": "none",
+                "exec": "none",
+                "login": "none",
+                "logout": "none",
+                "status": "none"
+            },
+            "options": {
+                "--version": "none",
+                "--dangerously-bypass-approvals-and-sandbox": "none",
+                "-m": "one",
+                "-c": "one",
+                "--json": "none",
+                "--skip-git-repo-check": "none",
+                "--with-api-key": "none"
+            },
+            "takes_prompt": true
+        },
         "journal-hook": {
             "about": "The native hook adapter a driver runs on every hook event.",
             "arguments": [
@@ -69,26 +169,26 @@
     },
     "types": {
         "order": { "id": "string", "sequence": "uint64", "type": "string", "process_id": "string", "payload": "string", "expires_at": "time", "signature": "string" },
-        "claimed_orders": { "orders": "list<order>", "idle_window_s": "int", "now": "time" },
-        "answer": { "order_id": "string", "status": "status", "refusal": "refusal?", "facts": "map<any>?" },
-        "process_report": { "process_id": "string", "report": "string", "identity": "string?", "generation": "int", "exit_code": "int?", "signal": "string?", "evidence": "string?" },
+        "claimed_orders": { "orders": "list<order>", "idle_window_seconds": "int", "now": "time" },
+        "answer": { "order_id": "string", "status": "status", "refusal": "refusal?", "reason": "string?", "facts": "map<any>?" },
+        "process_report": { "process_id": "string", "report": "process_report_type", "identity": "string?", "generation": "int", "exit_code": "int|null?", "signal": "string?", "evidence": "string?" },
         "output": { "frames": "list<frame>", "chunks": "list<chunk>" },
-        "frame": { "rows": "list<string>", "cursor_row": "int", "cursor_column": "int", "columns": "int", "buffer": "string", "captured": "int64", "unchanged_ms": "list<int64>", "title": "string?", "is_shielded": "bool" },
+        "frame": { "rows": "list<string>", "cursor_row": "int", "cursor_column": "int", "columns": "int", "buffer": "string", "captured": "int64", "unchanged_ms": "list<int64>", "title": "string?", "is_shielded": "bool?" },
         "chunk": { "stream": "string", "offset": "int64", "bytes": "string" },
         "inventory": { "protocol": "int", "release": "string", "answered_through": "string?", "capabilities": "list<string>", "processes": "list<inventory_process>" },
         "inventory_process": { "process_id": "string", "identity": "string", "container": "string?", "is_alive": "bool", "is_terminal_held": "bool", "spool_offset": "int64" },
         "host_heartbeat": { "live_processes": "list<string>", "answered_through": "string?" },
         "private_value": { "value": "string" },
-        "project_read_report": { "entries": "list<project_entry>?", "text": "string?", "digest": "string?", "size": "int64?", "truncated": "bool", "failure": "string?" },
+        "project_read_report": { "entries": "list<project_entry>?", "text": "string|null?", "digest": "string?", "size": "int64|null?", "truncated": "bool", "failure": "project_read_failure?" },
         "project_entry": { "name": "string", "is_folder": "bool", "size": "int64" },
-        "open_plan": { "type": "process_type", "restart": "string", "argv": "list<string>", "restart_argv": "list<string>", "restart_when_file": "restart_file|null", "environment": "list<string>", "folder": "string", "container": "container_manifest|null", "labels": "start_labels|null", "size": "terminal_size", "files": "list<plan_file>", "folders": "list<string>", "inherit": "list<string>", "side_sockets": "list<string>", "read_files": "list<string>?", "shield_rules": "list<shield_rule>?", "fence": "string?", "kept_files": "list<string>?" },
+        "open_plan": { "type": "process_type", "restart": "string", "argv": "list<string>", "restart_argv": "list<string>", "restart_when_file": "restart_file|null", "environment": "list<string>", "folder": "string", "container": "container_manifest|null", "labels": "container_labels|null", "size": "terminal_size", "files": "list<plan_file>", "folders": "list<string>", "inherit": "list<string>", "side_sockets": "list<string>", "read_files": "list<string>?", "shield_rules": "list<shield_rule>?", "fence": "string?", "kept_files": "list<string>?", "raw_bytes": "bool?" },
         "terminal_size": { "columns": "uint16", "rows": "uint16" },
         "restart_file": { "folder": "string", "glob": "string" },
-        "start_labels": { "installation": "string", "session": "string", "account": "string" },
+        "container_labels": { "installation": "string", "session": "string", "account": "string" },
         "plan_file": { "name": "string", "content": "string", "template": "bool" },
         "shield_rule": { "keywords": "list<string>", "min_keywords": "int" },
-        "container_manifest": { "image": "string", "user": "string", "workdir": "string", "isReadOnlyRoot": "bool", "capabilities": "list<string>", "blocksNewPrivileges": "bool", "isPrivileged": "bool", "network": "string", "mounts": "list<container_mount>", "publishedPorts": "list<int>", "budgets": "container_budgets", "securityOptions": "security_options", "isAttachable": "bool", "workspacePreparation": "workspace_preparation|null", "startProfile": "string", "entrypoint": "string" },
-        "container_mount": { "type": "string", "source": "string", "target": "string", "isWritable": "bool", "mustExist": "bool", "isCheckout": "bool" },
+        "container_manifest": { "image": "string", "user": "string", "workdir": "string", "isReadOnlyRoot": "bool", "capabilities": "list<string>", "blocksNewPrivileges": "bool", "isPrivileged": "bool", "network": "string", "mounts": "list<container_mount>", "publishedPorts": "list<int>", "budgets": "container_budgets", "securityOptions": "security_options", "isAttachable": "bool", "workspacePreparation": "workspace_preparation|null", "startProfile": "string", "entrypoint": "string?" },
+        "container_mount": { "type": "mount_type", "source": "string", "target": "string", "isWritable": "bool", "mustExist": "bool", "isCheckout": "bool" },
         "container_budgets": { "cpuCores": "int", "memoryBytes": "int", "memorySwapBytes": "int", "processes": "int", "openFiles": "int", "tmpBytes": "int", "homeBytes": "int", "workspaceBytes": "int" },
         "security_options": { "seccomp": "string", "apparmor": "string" },
         "workspace_preparation": { "clone": "workspace_clone|null", "folder": "string" },
@@ -100,7 +200,8 @@
         "stream_plan": { "frames_per_second": "int", "raw": "bool" },
         "signal_plan": { "signal": "string" },
         "stop_plan": { "grace_ms": "int", "force_ms": "int" },
-        "remove_plan": { "container": "string", "network": "string", "session": "string" },
+        "remove_plan": { "container": "string" },
+        "session_removal": { "network": "string", "session": "string" },
         "fenced_plan": { "fence": "string", "waiting": "list<string>", "budget_ms": "int", "runs": "list<fenced_run>" },
         "fenced_run": { "argv": "list<string>", "folder": "string", "deadline_ms": "int", "output_limit": "int" },
         "images_plan": { "images": "list<string>" },
@@ -109,13 +210,13 @@
         "upgrade_plan": { "version": "string", "manifest": "string", "signature": "string", "drivers": "string" }
     },
     "calls": {
-        "claim_orders": { "path": "/host/orders/claim", "query": { "limit": "int", "wait": "int" }, "body": null, "reply": "claimed_orders" },
-        "answer_order": { "path": "/host/orders/{order}", "body": "answer", "reply": null },
-        "pull_private_value": { "path": "/host/private-values/{submission}", "body": null, "reply": "private_value" },
-        "notify_process_output": { "path": "/host/processes/{process}/output", "body": "output", "reply": null },
-        "notify_process_report": { "path": "/host/processes/{process}", "body": "process_report", "reply": null },
-        "notify_inventory": { "path": "/host/inventory", "body": "inventory", "reply": null },
-        "notify_heartbeat": { "path": "/host/heartbeat", "body": "host_heartbeat", "reply": null },
-        "notify_project_read": { "path": "/host/reports/project-reads/{read}", "body": "project_read_report", "reply": null }
+        "claim_orders": { "route": "orders.claim", "path": "/host/orders/claim", "query": { "limit": "int", "wait": "int" }, "query_bounds": { "limit": [1, 50], "wait": [0, 25] }, "body": null, "reply": "claimed_orders" },
+        "answer_order": { "route": "orders.answer", "path": "/host/orders/{order}", "body": "answer", "reply": null },
+        "pull_private_value": { "route": "private-values.pull", "path": "/host/private-values/{submission}", "body": null, "reply": "private_value" },
+        "notify_process_output": { "route": "processes.output", "path": "/host/processes/{process}/output", "body": "output", "body_byte_limit": 262144, "reply": null },
+        "notify_process_report": { "route": "processes.report", "path": "/host/processes/{process}", "body": "process_report", "reply": null },
+        "notify_inventory": { "route": "inventory", "path": "/host/inventory", "body": "inventory", "reply": null },
+        "notify_heartbeat": { "route": "heartbeat", "path": "/host/heartbeat", "body": "host_heartbeat", "reply": null },
+        "notify_project_read": { "route": "reports.project-reads", "path": "/host/reports/project-reads/{read}", "body": "project_read_report", "reply": null }
     }
 }

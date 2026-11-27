@@ -15,8 +15,10 @@ use App\Agents\Enums\WorkspaceUse;
 use App\Agents\SecurityOptions;
 use App\Agents\Values\JournalServer;
 use App\Agents\Values\PlanFile;
-use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Exceptions\ProgramLineRefused;
+use App\Hosts\ProgramLines;
 use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Values\ContainerLabels;
 use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\Values\SessionContainer;
@@ -58,6 +60,26 @@ final class DriverPlansTest extends TestCase
         }
 
         $this->journal->assertResult($this->recorded($plans), $plans);
+    }
+
+    public function test_every_recorded_line_of_both_drivers_is_one_host_protocol_1_declares(): void
+    {
+        $lines = $this->journal->service(ProgramLines::class);
+        $recorded = json_decode((string) file_get_contents(self::FIXTURE), true, flags: JSON_THROW_ON_ERROR);
+        $built = array_filter($recorded, fn (array $plan) => array_key_exists('argv', $plan));
+
+        foreach ($built as $plan) {
+            $lines->assertDeclared($plan['argv']);
+        }
+
+        $this->journal->assertRefused(
+            ProgramLineRefused::class,
+            fn () => $lines->assertDeclared(['claude', '--dangerously-skip-permissions', '--session-id', 's-1']),
+            fn (ProgramLineRefused $refusal) => $this->journal->assertResult(
+                'The claude-code line names --dangerously-skip-permissions, which host protocol 1 does not declare for it.',
+                $refusal->getMessage(),
+            ),
+        );
     }
 
     public function test_a_start_handed_skills_writes_them_and_claude_code_loads_their_folder(): void

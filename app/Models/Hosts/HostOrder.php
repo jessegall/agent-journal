@@ -13,10 +13,12 @@ use App\Events\Connections\HostOrderClaimed;
 use App\Events\Connections\HostOrderMade;
 use App\Events\Connections\HostOrderOfferedAgain;
 use App\Events\Connections\HostOrderRefused;
-use App\Hosts\Data\HostAnswerData;
 use App\Hosts\Enums\HostOrderStatus;
 use App\Hosts\Exceptions\HostOrderStateRefused;
 use App\Hosts\HostOrderPayload;
+use App\Hosts\Protocol\Data\HostAnswerData;
+use App\Hosts\Protocol\Data\HostOrderData;
+use App\Hosts\Protocol\HostAnswerStatus;
 use App\Hosts\Protocol\HostOrderType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Values\HostOrderBody;
@@ -115,6 +117,22 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
+     * The order as a claim hands it to the host, with the signature the host checks it by.
+     */
+    public function claimedOrder(string $signature): HostOrderData
+    {
+        return HostOrderData::from([
+            'id' => $this->id,
+            'sequence' => $this->sequence,
+            'type' => $this->type->value,
+            'process_id' => (string) $this->host_process_id,
+            'payload' => $this->payload,
+            'expires_at' => $this->expires_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
+            'signature' => $signature,
+        ]);
+    }
+
+    /**
      * The host claimed the order to carry it out, at the time given.
      */
     public function claim(CarbonImmutable $at): void
@@ -144,8 +162,9 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
      */
     public function answer(HostAnswerData $answer, CarbonImmutable $at): void
     {
-        if ($answer->isRefused()) {
-            $this->refuse($answer->refusalReason(), $answer->facts, $at);
+        if ($answer->status === HostAnswerStatus::Refused) {
+            // A refusal that names no reason is taken as unsafe, the host's own answer to an order it does not trust.
+            $this->refuse($answer->refusal ?? HostRefusal::Unsafe, $answer->reason, $answer->facts, $at);
 
             return;
         }
@@ -160,22 +179,30 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * The host refused the order, with the reason and the facts it gave.
+     * The order is refused, with the refusal, the words that say why (none when the refusal says it all) and the facts.
      *
      * @param  array<string, mixed>  $facts
      *
      * @throws HostOrderStateRefused
      */
-    public function refuse(HostRefusal $refusal, array $facts, CarbonImmutable $at): void
+    public function refuse(HostRefusal $refusal, string|null $reason, array $facts, CarbonImmutable $at): void
     {
         $this->assertOpen();
         $this->forgetCarriedSecrets();
         $this->status = HostOrderStatus::Refused;
         $this->refusal = $refusal;
-        $this->answer = new HostAnswerData($this->id, HostOrderStatus::Refused, $refusal, $facts);
+
+        $this->answer = HostAnswerData::from([
+            'order_id' => $this->id,
+            'status' => HostAnswerStatus::Refused,
+            'refusal' => $refusal,
+            'reason' => $reason,
+            'facts' => $facts,
+        ]);
+
         $this->answered_at = $at;
         $this->saveAndAssert();
-        $this->raise(new HostOrderRefused($this->id, $this->host_process_id, $this->type, $refusal));
+        $this->raise(new HostOrderRefused($this->id, $this->host_process_id, $this->type, $refusal, $reason));
     }
 
     /**
@@ -185,7 +212,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
      */
     public function expire(CarbonImmutable $at): void
     {
-        $this->refuse(HostRefusal::Expired, [], $at);
+        $this->refuse(HostRefusal::Expired, null, [], $at);
     }
 
     /**
@@ -322,10 +349,9 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * The orders the host may take now, by their number: those waiting and in time, and those it claimed that went
-     * unanswered too long, locked so a claim beside this one skips them. While the host has not answered an order to
-     * allow images, no container is opened: the host carries out the two side by side, and the open would find the
-     * image not yet allowed.
+     * The orders the host may take now, by their number: those waiting and in time, and those claimed and unanswered
+     * too long, locked so a claim beside this one skips them. No container opens before the host answered its
+     * allow_images order, since the host runs the two side by side and the open would find the image not yet allowed.
      *
      * @return list<self>
      */

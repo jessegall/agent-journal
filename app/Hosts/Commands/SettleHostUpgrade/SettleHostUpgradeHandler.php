@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\SettleHostUpgrade;
 
 use App\Bus\Contracts\CommandHandler;
+use App\Hosts\Enums\HostOrderStatus;
 use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Host;
 
@@ -17,11 +18,11 @@ final readonly class SettleHostUpgradeHandler implements CommandHandler
     {
         $order = HostOrder::findLocked($command->orderId);
 
-        if (! $order->answer?->isRefused()) {
+        if ($order->status !== HostOrderStatus::Refused) {
             return;
         }
 
-        $reason = $order->answer->facts['reason'] ?? $order->answer->refusalReason()->value;
+        $reason = $order->answer->reason ?? $order->refusal?->value;
         Host::findLocked($order->host_id)->failUpgrade("The host refused the upgrade: {$reason}.");
     }
 }

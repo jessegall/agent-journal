@@ -101,21 +101,21 @@ func TestAGuardedWriteIsRefusedOnceItsRowsOrTheInputMovedAndTheUsersWriteRaisesT
 	guard := RowGuard{From: 0, To: 0, Hash: screen.RowsHash(0, 0)}
 	generation := uint64(0)
 
-	if _, err := input.writeKeys(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation})); err != nil {
+	if _, err := carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation})); err != nil {
 		t.Fatalf("a write whose guards hold is refused: %v", err)
 	}
-	facts, err := input.writeKeys(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("x"), AsUser: true}))
+	facts, err := carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("x"), AsUser: true}))
 	if err != nil || facts["input_generation"] != uint64(1) {
 		t.Fatalf("the user's write did not raise the input generation: %v, %v", facts, err)
 	}
-	_, err = input.writeKeys(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation}))
+	_, err = carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation}))
 	var refusal RefusalError
 	if !errors.As(err, &refusal) || refusal.Refusal != GuardMoved {
 		t.Fatalf("a write after the user typed is not refused as guard moved: %v", err)
 	}
 	outputs.Printed("p", []byte("\x1b[1;1Hchanged"))
 	moved := uint64(1)
-	_, err = input.writeKeys(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &moved}))
+	_, err = carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &moved}))
 	if !errors.As(err, &refusal) || refusal.Refusal != GuardMoved {
 		t.Fatalf("a write after its rows moved is not refused as guard moved: %v", err)
 	}

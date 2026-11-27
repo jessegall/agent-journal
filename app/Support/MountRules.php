@@ -10,7 +10,7 @@ use App\Agents\Exceptions\ManifestRefused;
 use App\Files\Contracts\WorkspaceSource;
 use App\Files\ManifestMount;
 use App\Files\Values\WorkspacePreparation;
-use App\Projects\Enums\MountType;
+use App\Hosts\Protocol\HostMountType;
 
 /**
  * Which mounts a helper container may have: in the local arrangement exactly one folder of this machine at
@@ -223,7 +223,7 @@ final readonly class MountRules
      */
     private function assertLocal(array $mounts): void
     {
-        if (count($mounts) !== 1 || $mounts[0]->type !== MountType::Bind || $mounts[0]->target !== '/workspace') {
+        if (count($mounts) !== 1 || $mounts[0]->type !== HostMountType::Bind || $mounts[0]->target !== '/workspace') {
             throw ManifestRefused::because('a helper has exactly one mount, its workspace at /workspace');
         }
 
@@ -250,12 +250,12 @@ final readonly class MountRules
     private function assertContainedSource(ManifestMount $mount): void
     {
         $isAllowed = match ($mount->type) {
-            MountType::Volume => str_starts_with($mount->source, $this->installationName.'-')
+            HostMountType::Volume => str_starts_with($mount->source, $this->installationName.'-')
                 && strpbrk($mount->source, "/,\n") === false,
-            MountType::DaemonBind => $this->isDaemonFolder($mount->source),
-            MountType::PlanFile => ! $mount->isWritable
+            HostMountType::DaemonBind => $this->isDaemonFolder($mount->source),
+            HostMountType::PlanFile => ! $mount->isWritable
                 && ($mount->source === '' || $this->isPlainFileName($mount->source)),
-            MountType::Bind => false,
+            HostMountType::Bind => false,
         };
 
         if (! $isAllowed) {

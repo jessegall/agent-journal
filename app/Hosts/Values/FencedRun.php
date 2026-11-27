@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hosts\Values;
 
+use App\Hosts\Protocol\Data\HostFencedRunData;
+
 /**
  * One driver a run_fenced order runs: its absolute argv, run without a shell in a clean environment, in its folder,
  * within its deadline and output limit.
@@ -21,15 +23,15 @@ final readonly class FencedRun
     ) {}
 
     /**
-     * @return array{argv: list<string>, folder: string, deadline_ms: int, output_limit: int}
+     * The run as the run_fenced order carries it.
      */
-    public function payload(): array
+    public function plan(): HostFencedRunData
     {
-        return [
+        return HostFencedRunData::from([
             'argv' => $this->argv,
             'folder' => $this->folder,
             'deadline_ms' => $this->deadlineMs,
             'output_limit' => $this->outputLimit,
-        ];
+        ]);
     }
 }

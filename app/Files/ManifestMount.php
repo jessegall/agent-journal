@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Files;
 
-use App\Projects\Enums\MountType;
+use App\Hosts\Protocol\HostMountType;
 
 /**
  * One folder a helper container sees: what it comes from, where it appears and whether it may be written.
@@ -12,7 +12,7 @@ use App\Projects\Enums\MountType;
 final readonly class ManifestMount
 {
     private function __construct(
-        public MountType $type,
+        public HostMountType $type,
         public string $source,
         public string $target,
         public bool $isWritable,
@@ -27,7 +27,7 @@ final readonly class ManifestMount
      */
     public static function bind(string $source, string $target, bool $isWritable): self
     {
-        return new self(MountType::Bind, $source, $target, $isWritable);
+        return new self(HostMountType::Bind, $source, $target, $isWritable);
     }
 
     /**
@@ -35,7 +35,7 @@ final readonly class ManifestMount
      */
     public static function volume(string $name, string $target, bool $isWritable): self
     {
-        return new self(MountType::Volume, $name, $target, $isWritable);
+        return new self(HostMountType::Volume, $name, $target, $isWritable);
     }
 
     /**
@@ -43,7 +43,7 @@ final readonly class ManifestMount
      */
     public static function existingVolume(string $name, string $target, bool $isWritable): self
     {
-        return new self(MountType::Volume, $name, $target, $isWritable, true);
+        return new self(HostMountType::Volume, $name, $target, $isWritable, true);
     }
 
     /**
@@ -60,7 +60,7 @@ final readonly class ManifestMount
      */
     public static function daemonBind(string $source, string $target, bool $isWritable): self
     {
-        return new self(MountType::DaemonBind, $source, $target, $isWritable);
+        return new self(HostMountType::DaemonBind, $source, $target, $isWritable);
     }
 
     /**
@@ -68,7 +68,7 @@ final readonly class ManifestMount
      */
     public static function planFile(string $name, string $target): self
     {
-        return new self(MountType::PlanFile, $name, $target, false);
+        return new self(HostMountType::PlanFile, $name, $target, false);
     }
 
     /**
@@ -76,6 +76,6 @@ final readonly class ManifestMount
      */
     public static function planFiles(string $target): self
     {
-        return new self(MountType::PlanFile, '', $target, false);
+        return new self(HostMountType::PlanFile, '', $target, false);
     }
 }

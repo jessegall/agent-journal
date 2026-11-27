@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Terminals;
 
-use App\Hosts\Data\HostFrameData;
-use App\Hosts\Data\HostOutputData;
 use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Data\HostOutputData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Terminals\Data\ScreenFrameData;

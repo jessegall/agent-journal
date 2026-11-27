@@ -11,19 +11,11 @@ import (
 // report, which the journal keeps for the agent that asked.
 type ProjectReads struct {
 	Reader  host.ProjectReader
-	Journal *client.Client
+	Journal Journal
 }
 
-// Executors are the order types project reads carry out.
-func (reads ProjectReads) Executors() map[string]Executor {
-	return map[string]Executor{"read_project": reads.read}
-}
-
-func (reads ProjectReads) read(ctx context.Context, order Order) (map[string]any, error) {
-	read, err := DecodePayload[client.ProjectRead](order)
-	if err != nil {
-		return nil, err
-	}
+// ReadProject answers the project read on its own report, and the order with no facts.
+func (reads ProjectReads) ReadProject(ctx context.Context, order Order, read client.ProjectRead) (map[string]any, error) {
 	if read.ID == "" {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "the read_project order names no project read"}
 	}

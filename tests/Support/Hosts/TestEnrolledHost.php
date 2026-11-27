@@ -9,8 +9,8 @@ use App\Agents\Enums\WorkspaceUse;
 use App\Agents\SecurityOptions;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
+use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Support\MountRules;
@@ -52,10 +52,12 @@ final readonly class TestEnrolledHost
     }
 
     /**
-     * The host is ordered to open a container of the test host's echo image on a workspace; the host has
-     * not reported it yet.
+     * The host is ordered to open a container of the test host's echo image on a workspace, its program given the
+     * environment; the host has not reported it yet.
+     *
+     * @param  list<string>  $environment  each variable as NAME=value
      */
-    public function openContainer(string $name): self
+    public function openContainer(string $name, array $environment = []): self
     {
         $manifest = ContainerManifest::make(
             TestHost::IMAGE,
@@ -76,7 +78,7 @@ final readonly class TestEnrolledHost
             HostProcessType::Terminal,
             RestartPolicy::Never,
             ['echo-program'],
-            [],
+            $environment,
             '/workspace',
             $manifest,
         );

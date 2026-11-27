@@ -30,7 +30,7 @@ final class RemoveHostProcessTest extends TestCase
         $removal = $orders[array_key_last($orders)];
 
         $this->journal->assertResult(
-            [HostOrderType::Remove, ['container' => "journal-process-{$processId}", 'network' => '', 'session' => '']],
+            [HostOrderType::Remove, ['container' => "journal-process-{$processId}"]],
             [$removal->type, $this->journal->payloadOf($removal)],
         );
     }

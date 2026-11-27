@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Connections\Data\ProjectEntryData;
+use App\Hosts\Protocol\Data\HostProjectEntryData;
+use App\Hosts\Protocol\HostProjectReadFailure;
 use App\Models\Projects\ProjectRead;
-use App\Projects\Enums\ProjectReadFailure;
 use App\Projects\Enums\ProjectReadStatus;
 
 /**
@@ -16,13 +16,13 @@ use App\Projects\Enums\ProjectReadStatus;
 final readonly class ProjectFileAnswer
 {
     /**
-     * @param  list<ProjectEntryData>  $entries
+     * @param  list<HostProjectEntryData>  $entries
      */
     public function __construct(
         public string $readId,
         public string $path,
         public ProjectReadStatus $status,
-        public ProjectReadFailure|null $failure,
+        public HostProjectReadFailure|null $failure,
         public array $entries,
         public string|null $text,
         public string|null $digest,

@@ -603,6 +603,7 @@ final class TerminalDriverTest extends TestCase
             'cursor_row' => 2,
             'cursor_column' => $cursorColumn,
             'columns' => 40,
+            'buffer' => 'normal',
             'captured' => $captured,
             'unchanged_ms' => array_fill(0, count($rows), 400),
         ];

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Recordings;
 
 /**
- * Puts fake values in place of the real ones that went into or came out of a recorded exchange, on any wire, so a
- * recording keeps nothing of the machine and the account it was made with: each folder its environment names becomes
- * {env:NAME} for the mock to fill, and addresses, tokens, account ids, names, the user's folders and every uuid become
- * fakes. One uuid is the same fake throughout a recording, so a replay still pairs what it hears with what it answers.
+ * Puts fakes in place of the real values of a recorded exchange on any wire, so a recording keeps nothing of its
+ * machine or account: environment folders become {env:NAME}, and addresses, tokens, ids, names and uuids become fakes,
+ * one uuid the same fake throughout, so a replay pairs each request with its answer.
  */
 final class RecordingFakes
 {

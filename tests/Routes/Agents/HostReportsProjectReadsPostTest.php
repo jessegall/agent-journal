@@ -35,6 +35,7 @@ final class HostReportsProjectReadsPostTest extends GuardedRouteEntryTestCase
                         'size' => 0,
                     ],
                 ],
+                'truncated' => false,
             ])
             ->expects(NotifyProjectReadCommand::class, [
                 'hostId' => $host->hostId,

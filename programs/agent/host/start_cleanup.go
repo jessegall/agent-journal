@@ -10,16 +10,12 @@ import (
 )
 
 // StartLabels name a container start's resources, so reconciliation finds exactly those of this installation and
-// leaves every other container alone.
+// leaves every other container alone: the labels the journal's plan gives, its account the plain id of the account
+// folder the container binds (empty for one that binds none), and the host's own id of the start.
 type StartLabels struct {
-	Installation string `json:"installation"`
-	// Start is the host's own id of the process, which the host sets and keeps with its saved plan; the journal's plan
-	// leaves it out.
-	Start   string `json:"start,omitempty"`
-	Session string `json:"session"`
-	// Account is the plain id of the account folder the container binds, so every container that binds an account's
-	// folder can be found; empty for one that binds none.
-	Account string `json:"account"`
+	ContainerLabels
+	// Start is the host's own id of the process; empty on a network or a volume, which outlive one start.
+	Start string
 }
 
 const (

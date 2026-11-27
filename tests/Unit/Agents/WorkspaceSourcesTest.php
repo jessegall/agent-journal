@@ -9,7 +9,7 @@ use App\Files\ManifestMount;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Exceptions\WorkspaceSourceMissing;
 use App\Hosts\Exceptions\WorkspaceSourcesInvalid;
-use App\Projects\Enums\MountType;
+use App\Hosts\Protocol\HostMountType;
 use App\Support\MountRules;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -36,7 +36,7 @@ final class WorkspaceSourcesTest extends TestCase
             ->mountRules(null, 'staging')
             ->workspaceMount('/ignored', WorkspaceUse::Shared);
 
-        $this->assertSame(MountType::DaemonBind, $mount->type);
+        $this->assertSame(HostMountType::DaemonBind, $mount->type);
         $this->assertSame('/srv/journal/workspaces/staging', $mount->source);
         $this->assertSame('/workspace', $mount->target);
     }

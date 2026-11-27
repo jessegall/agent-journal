@@ -6,7 +6,7 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Setup\DriverProfile;
-use App\Hosts\Data\HostFrameData;
+use App\Hosts\Protocol\Data\HostFrameData;
 use App\Terminals\KeyScripts\KeyMove;
 use App\Terminals\KeyScripts\KeyScriptCatalogue;
 use App\Terminals\KeyScripts\KeyScriptRun;

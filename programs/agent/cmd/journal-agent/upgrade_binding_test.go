@@ -11,9 +11,11 @@ import (
 func TestAnUpgradeIsRefusedWhileAProcessLives(t *testing.T) {
 	relay := bindingRelay{}
 	stopped := false
-	executor := relay.upgradeOrders(func() []string { return []string{"terminal-1"} }, func() { stopped = true })["upgrade"]
+	upgrade := bindingUpgrade{binder: relay, live: func() []string { return []string{"terminal-1"} }, stop: func() { stopped = true }}
+	executor := hostOrders{ProcessTable: &hostapi.ProcessTable{}, upgrade: &upgrade}.executors()["upgrade"]
+	payload := `{"version":"6.1.0","manifest":"","signature":"","drivers":""}`
 
-	_, err := executor(context.Background(), hostapi.Order{ID: "upgrade", Type: "upgrade", Payload: `{"version":"6.1.0"}`})
+	_, err := executor(context.Background(), hostapi.Order{ID: "upgrade", Type: "upgrade", Payload: payload})
 
 	var refusal hostapi.RefusalError
 	if !errors.As(err, &refusal) || refusal.Refusal != hostapi.Fenced || stopped {
@@ -23,10 +25,13 @@ func TestAnUpgradeIsRefusedWhileAProcessLives(t *testing.T) {
 
 func TestAnUpgradeThatNamesNoReleaseOrABadSignatureIsRefused(t *testing.T) {
 	relay := bindingRelay{}
-	executor := relay.upgradeOrders(func() []string { return []string{} }, func() {})["upgrade"]
+	upgrade := bindingUpgrade{binder: relay, live: func() []string { return []string{} }, stop: func() {}}
+	executor := hostOrders{ProcessTable: &hostapi.ProcessTable{}, upgrade: &upgrade}.executors()["upgrade"]
+	unnamedPayload := `{"version":"","manifest":"","signature":"","drivers":""}`
+	unsignedPayload := `{"version":"6.1.0","manifest":"","signature":"%%","drivers":""}`
 
-	_, unnamed := executor(context.Background(), hostapi.Order{ID: "a", Type: "upgrade", Payload: `{}`})
-	_, unsigned := executor(context.Background(), hostapi.Order{ID: "b", Type: "upgrade", Payload: `{"version":"6.1.0","signature":"%%"}`})
+	_, unnamed := executor(context.Background(), hostapi.Order{ID: "a", Type: "upgrade", Payload: unnamedPayload})
+	_, unsigned := executor(context.Background(), hostapi.Order{ID: "b", Type: "upgrade", Payload: unsignedPayload})
 
 	var refusal hostapi.RefusalError
 	if !errors.As(unnamed, &refusal) || !errors.As(unsigned, &refusal) {

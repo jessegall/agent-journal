@@ -6,9 +6,10 @@ namespace Tests\Commands\Hosts;
 
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
-use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Exceptions\HostUpgradeRefused;
+use App\Hosts\Protocol\Data\HostInventoryData;
 use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -85,8 +86,12 @@ final class UpgradeHostTest extends TestCase
 
     public function test_a_host_whose_inventory_names_no_upgrade_is_refused(): void
     {
-        $inventory = ['protocol' => 1, 'release' => '6.0.0', 'answered_through' => null, 'capabilities' => ['stop']];
-        $body = json_encode($inventory, JSON_THROW_ON_ERROR);
+        $body = HostInventoryData::from([
+            'protocol' => 1,
+            'release' => '6.0.0',
+            'capabilities' => ['stop'],
+            'processes' => [],
+        ]);
         $this->journal->asSystem(new NotifyHostInventoryCommand($this->hostId(), $body));
 
         $this->journal->assertRefused(

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Terminals\Screens;
 
 use App\Agents\Drivers\Enums\HoldReason;
-use App\Hosts\Data\HostFrameData;
+use App\Hosts\Protocol\Data\HostFrameData;
 use App\Terminals\Screens\Contracts\ScreenRegion;
 
 /**

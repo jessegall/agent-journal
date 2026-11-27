@@ -18,7 +18,7 @@ final readonly class HostFolderAnswer
     public static function of(HostOrder $order): self
     {
         $facts = $order->answer->facts ?? [];
-        $reason = $facts['reason'] ?? $order->refusal->value ?? '';
+        $reason = $order->answer->reason ?? $facts['reason'] ?? $order->refusal->value ?? '';
 
         return new self($order->status, is_string($reason) ? $reason : '', ($facts['is_bound'] ?? false) === true);
     }

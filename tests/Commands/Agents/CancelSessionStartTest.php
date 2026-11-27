@@ -11,7 +11,7 @@ use App\Agents\Drivers\Enums\RequestProgress;
 use App\Agents\Enums\ConversationModeType;
 use App\Hosts\EnrolledHost;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\HostProcessReportType;
+use App\Hosts\Protocol\HostProcessReportType;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionRequest;

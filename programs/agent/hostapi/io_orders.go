@@ -4,24 +4,8 @@ import (
 	"context"
 )
 
-// StreamPlan is the payload of stream: how many frames a second, and whether raw terminal bytes go too.
-type StreamPlan struct {
-	FramesPerSecond int  `json:"frames_per_second"`
-	Raw             bool `json:"raw"`
-}
-
-// StdinWrite is the payload of write_stdin.
-type StdinWrite struct {
-	Bytes []byte `json:"bytes"`
-}
-
-// PrivateWrite is the payload of write_private: only the submission whose value the host pulls from the journal.
-type PrivateWrite struct {
-	Submission string `json:"submission"`
-}
-
 // PrivateValuePuller pulls a private submission's value from the journal, once.
-type PrivateValuePuller func(ctx context.Context, submission string) ([]byte, error)
+type PrivateValuePuller func(ctx context.Context, submission string) (PrivateValue, error)
 
 // ProcessInput carries out the orders that write into a process, read its screen or record it.
 type ProcessInput struct {
@@ -35,58 +19,34 @@ func NewProcessInput(table *ProcessTable, outputs *Outputs, pull PrivateValuePul
 	return ProcessInput{table: table, outputs: outputs, pull: pull}
 }
 
-// Executors are the input and output orders this carries out.
-func (input ProcessInput) Executors() map[string]Executor {
-	return map[string]Executor{
-		"write_keys":     input.writeKeys,
-		"write_stdin":    input.writeStdin,
-		"close_stdin":    input.closeStdin,
-		"stream":         input.stream,
-		"snapshot":       input.snapshot,
-		"record":         input.record,
-		"stop_recording": input.stopRecording,
-		"open_private":   input.openPrivate,
-		"write_private":  input.writePrivate,
-		"close_private":  input.closePrivate,
-	}
-}
-
-// openPrivate stops every frame and recording of the process from leaving until the screen redraws after
+// OpenPrivate stops every frame and recording of the process from leaving until the screen redraws after
 // close_private, and answers once they are stopped.
-func (input ProcessInput) openPrivate(_ context.Context, order Order) (map[string]any, error) {
+func (input ProcessInput) OpenPrivate(_ context.Context, order Order) (map[string]any, error) {
 	return nil, input.outputs.OpenPrivate(order.ProcessID)
 }
 
-// writePrivate pulls the submission's value from the journal and writes it once; neither the order nor its answer
+// WritePrivate pulls the submission's value from the journal and writes it once; neither the order nor its answer
 // holds the value.
-func (input ProcessInput) writePrivate(ctx context.Context, order Order) (map[string]any, error) {
-	write, err := DecodePayload[PrivateWrite](order)
-	if err != nil {
-		return nil, err
-	}
+func (input ProcessInput) WritePrivate(ctx context.Context, order Order, write PrivateWrite) (map[string]any, error) {
 	if !input.outputs.IsPrivate(order.ProcessID) {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "a private value is written only while the entry is private"}
 	}
-	value, err := input.pull(ctx, write.Submission)
+	pulled, err := input.pull(ctx, write.Submission)
 	if err != nil {
 		return nil, err
 	}
-	return nil, input.table.Write(order.ProcessID, value)
+	return nil, input.table.Write(order.ProcessID, []byte(pulled.Value))
 }
 
-// closePrivate lets the process's frames leave again once its screen has redrawn.
-func (input ProcessInput) closePrivate(_ context.Context, order Order) (map[string]any, error) {
+// ClosePrivate lets the process's frames leave again once its screen has redrawn.
+func (input ProcessInput) ClosePrivate(_ context.Context, order Order) (map[string]any, error) {
 	input.outputs.ClosePrivate(order.ProcessID)
 	return nil, nil
 }
 
-// writeKeys writes the user's keys at once and raises the input generation; any other write only while the rows it
+// WriteKeys writes the user's keys at once and raises the input generation; any other write only while the rows it
 // was meant for and the input generation are as the journal saw them.
-func (input ProcessInput) writeKeys(_ context.Context, order Order) (map[string]any, error) {
-	write, err := DecodePayload[KeyWrite](order)
-	if err != nil {
-		return nil, err
-	}
+func (input ProcessInput) WriteKeys(_ context.Context, order Order, write KeyWrite) (map[string]any, error) {
 	screen, found := input.outputs.ScreenOf(order.ProcessID)
 	if !found {
 		return nil, RefusalError{Refusal: NotRunning, Reason: "the process has no terminal"}
@@ -115,32 +75,24 @@ func (input ProcessInput) writeKeys(_ context.Context, order Order) (map[string]
 	return facts, nil
 }
 
-func (input ProcessInput) writeStdin(_ context.Context, order Order) (map[string]any, error) {
-	write, err := DecodePayload[StdinWrite](order)
-	if err != nil {
-		return nil, err
-	}
+func (input ProcessInput) WriteStdin(_ context.Context, order Order, write StdinWrite) (map[string]any, error) {
 	input.outputs.Typed(order.ProcessID, write.Bytes, false)
 	return nil, input.table.Write(order.ProcessID, write.Bytes)
 }
 
-func (input ProcessInput) closeStdin(_ context.Context, order Order) (map[string]any, error) {
+func (input ProcessInput) CloseStdin(_ context.Context, order Order) (map[string]any, error) {
 	return nil, input.table.CloseInput(order.ProcessID)
 }
 
-func (input ProcessInput) stream(_ context.Context, order Order) (map[string]any, error) {
-	plan, err := DecodePayload[StreamPlan](order)
-	if err != nil {
-		return nil, err
-	}
+func (input ProcessInput) Stream(_ context.Context, order Order, plan StreamPlan) (map[string]any, error) {
 	return nil, input.outputs.Stream(order.ProcessID, plan.FramesPerSecond)
 }
 
-func (input ProcessInput) snapshot(_ context.Context, order Order) (map[string]any, error) {
+func (input ProcessInput) Snapshot(_ context.Context, order Order) (map[string]any, error) {
 	return nil, input.outputs.Snapshot(order.ProcessID)
 }
 
-func (input ProcessInput) record(_ context.Context, order Order) (map[string]any, error) {
+func (input ProcessInput) Record(_ context.Context, order Order) (map[string]any, error) {
 	plan, err := input.table.PlanOf(order.ProcessID)
 	if err != nil {
 		return nil, err
@@ -149,7 +101,7 @@ func (input ProcessInput) record(_ context.Context, order Order) (map[string]any
 	return nil, nil
 }
 
-func (input ProcessInput) stopRecording(_ context.Context, order Order) (map[string]any, error) {
+func (input ProcessInput) StopRecording(_ context.Context, order Order) (map[string]any, error) {
 	folder, err := input.outputs.StopRecording(order.ProcessID)
 	if err != nil {
 		return nil, err

@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strconv"
 	"time"
 )
@@ -103,45 +102,11 @@ func (client *Client) WithArrangement(arrangement string) *Client {
 	return client
 }
 
-// ProjectRead is a read of a connected project's folder or file the journal asks this host for, with how much of it
-// the answer may hold.
-type ProjectRead struct {
-	ID           string `json:"id"`
-	BindingID    string `json:"binding_id"`
-	Type         string `json:"type"`
-	Path         string `json:"path"`
-	EntriesLimit int    `json:"entries_limit"`
-	TextLimit    int    `json:"text_limit"`
-}
-
 // The two types of project read.
 const (
 	ProjectReadDirectory = "directory"
 	ProjectReadFile      = "file"
 )
-
-// ProjectEntry is one entry of a project folder: its name, whether it is a folder, and its size in bytes.
-type ProjectEntry struct {
-	Name     string `json:"name"`
-	IsFolder bool   `json:"is_folder"`
-	Size     int64  `json:"size"`
-}
-
-// ProjectReadReport is a host's one answer to a project read: a folder's entries, a file's text with the digest and
-// size of the bytes read, or the reason it could not read it.
-type ProjectReadReport struct {
-	Entries   []ProjectEntry `json:"entries,omitempty"`
-	Text      *string        `json:"text,omitempty"`
-	Digest    string         `json:"digest,omitempty"`
-	Size      *int64         `json:"size,omitempty"`
-	Truncated bool           `json:"truncated"`
-	Failure   string         `json:"failure,omitempty"`
-}
-
-// NotifyProjectRead answers one project read the journal handed this host.
-func (client *Client) NotifyProjectRead(ctx context.Context, readID string, report ProjectReadReport) error {
-	return client.call(ctx, "/host/reports/project-reads/"+url.PathEscape(readID), report, nil)
-}
 
 // answerOf posts the body to the target and decodes the journal's answer as an A.
 func answerOf[A any](ctx context.Context, client *Client, target string, body any) (A, error) {

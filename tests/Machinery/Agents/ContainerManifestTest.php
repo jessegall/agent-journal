@@ -65,7 +65,7 @@ final class ContainerManifestTest extends TestCase
         );
 
         $this->assertSame(
-            [self::IMAGE, '10001:10001', '/workspace', true, [], true, null, false, [], 'journal-start-1'],
+            [self::IMAGE, '10001:10001', '/workspace', true, [], true, '', false, [], 'journal-start-1'],
             [
                 $manifest->image,
                 $manifest->user,
@@ -488,8 +488,8 @@ final class ContainerManifestTest extends TestCase
             $this->assertRefused(fn () => $this->contained($mounts, SecurityOptions::none()));
         }
 
-        $this->assertRefused(fn () => SecurityOptions::make('unconfined,apparmor=unconfined', null, ''));
-        $this->assertRefused(fn () => SecurityOptions::make('/tmp/seccomp.json', null, '/etc/journal/profiles'));
+        $this->assertRefused(fn () => SecurityOptions::make('unconfined,apparmor=unconfined', '', ''));
+        $this->assertRefused(fn () => SecurityOptions::make('/tmp/seccomp.json', '', '/etc/journal/profiles'));
     }
 
     public function test_a_protected_start_runs_its_init_as_root_with_three_capabilities_and_says_so(): void

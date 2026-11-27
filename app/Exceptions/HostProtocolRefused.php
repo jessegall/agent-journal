@@ -8,8 +8,8 @@ use App\Bus\Contracts\CommandRefusal;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Engine\Enums\RefusalCode;
-use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProcessType;
 use RuntimeException;
 
 /**
@@ -23,6 +23,36 @@ final class HostProtocolRefused extends RuntimeException implements CodedRefusal
     public static function revoked(string $hostId): self
     {
         return new self("Host {$hostId} is revoked and takes no orders.");
+    }
+
+    /**
+     * @param  list<string>  $fields
+     */
+    public static function containedPlanNamesHost(array $fields): self
+    {
+        $named = implode(', ', $fields);
+
+        return new self("A contained plan names nothing of the host it runs on, but names {$named}.");
+    }
+
+    /**
+     * @param  list<string>  $variables
+     */
+    public static function containedGrantPartial(array $variables): self
+    {
+        $missing = implode(', ', $variables);
+
+        return new self("A contained plan carries its start grant whole, but misses {$missing}.");
+    }
+
+    public static function reportWithoutIdentity(string $processId): self
+    {
+        return new self("The host reported process {$processId} running without the identity it runs under.");
+    }
+
+    public static function reportWithoutEvidence(string $processId): self
+    {
+        return new self("The host reported process {$processId} ended without saying how.");
     }
 
     public static function notRunning(string $processId): self
@@ -43,11 +73,6 @@ final class HostProtocolRefused extends RuntimeException implements CodedRefusal
     public static function foreignOrder(string $hostId, string $orderId): self
     {
         return new self("Order {$orderId} is not an order of host {$hostId}.");
-    }
-
-    public static function outputTooLarge(string $processId, int $bytes): self
-    {
-        return new self("Output of process {$processId} is {$bytes} bytes, more than one post may hold.");
     }
 
     public static function lacksCapability(string $hostId, HostOrderType $order): self

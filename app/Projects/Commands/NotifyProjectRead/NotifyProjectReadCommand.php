@@ -6,8 +6,8 @@ namespace App\Projects\Commands\NotifyProjectRead;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
-use App\Connections\Data\ProjectEntryData;
-use App\Projects\Enums\ProjectReadFailure;
+use App\Hosts\Protocol\Data\HostProjectEntryData;
+use App\Hosts\Protocol\HostProjectReadFailure;
 use App\Projects\Values\ProjectFileText;
 use App\Support\Command;
 
@@ -22,7 +22,7 @@ use App\Support\Command;
 final readonly class NotifyProjectReadCommand extends Command
 {
     /**
-     * @param  list<ProjectEntryData>  $entries
+     * @param  list<HostProjectEntryData>  $entries
      */
     public function __construct(
         public string $hostId,
@@ -30,6 +30,6 @@ final readonly class NotifyProjectReadCommand extends Command
         public array $entries,
         public ProjectFileText|null $text,
         public bool $isTruncated,
-        public ProjectReadFailure|null $failure,
+        public HostProjectReadFailure|null $failure,
     ) {}
 }

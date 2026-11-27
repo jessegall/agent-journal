@@ -104,7 +104,7 @@ final class StateHandle
     }
 
     /**
-     * The fact happens, heard through the dispatcher as the journal hears it.
+     * The fact happens, sent through the dispatcher to its listeners as the journal sends it.
      *
      * @param  Closure(StateAssert): mixed  $check
      */

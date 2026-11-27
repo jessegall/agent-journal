@@ -6,7 +6,7 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\HoldReason;
-use App\Hosts\Data\HostFrameData;
+use App\Hosts\Protocol\Data\HostFrameData;
 use App\Terminals\Screens\Enums\ScreenType;
 use App\Terminals\Screens\ScreenClassifier;
 use App\Terminals\Screens\ScreenHolds;
@@ -115,6 +115,7 @@ final class CodexScreensTest extends TestCase
             'cursor_row' => $cursorRow,
             'cursor_column' => $cursorColumn,
             'columns' => self::COLUMNS,
+            'buffer' => 'normal',
             'captured' => 1_000,
             'unchanged_ms' => array_fill(0, self::ROWS, $unchangedMs),
             'buffer' => 'alternate',

@@ -16,16 +16,6 @@ import (
 	"journal-agent/client"
 )
 
-// The reasons a project read fails, as the journal's allowlist names them.
-const (
-	ProjectReadMissing      = "missing"
-	ProjectReadNotDirectory = "not_a_directory"
-	ProjectReadNotFile      = "not_a_file"
-	ProjectReadBinary       = "binary"
-	ProjectReadUnreadable   = "unreadable"
-	ProjectReadOutside      = "outside"
-)
-
 // binaryProbeBytes is how much of a file's start is searched for a NUL byte, the sign of a binary file.
 const binaryProbeBytes = 8000
 
@@ -41,7 +31,7 @@ type ProjectReader struct {
 // Answer reads the folder or file the read names and says what it found, or why it could not read it.
 func (reader ProjectReader) Answer(read client.ProjectRead) client.ProjectReadReport {
 	if reader.Root == "" {
-		return failedRead(ProjectReadUnreadable)
+		return failedRead(client.ProjectReadFailureUnreadable)
 	}
 	target, failure := reader.resolve(read.Path)
 	if failure != "" {
@@ -55,28 +45,28 @@ func (reader ProjectReader) Answer(read client.ProjectRead) client.ProjectReadRe
 
 // resolve turns a path relative to the root into the real path it names, refusing one outside the root or under a
 // hidden folder.
-func (reader ProjectReader) resolve(path string) (string, string) {
+func (reader ProjectReader) resolve(path string) (string, client.ProjectReadFailure) {
 	if filepath.IsAbs(path) {
-		return "", ProjectReadOutside
+		return "", client.ProjectReadFailureOutside
 	}
 	relative := filepath.Clean(path)
 	if leavesRoot(relative) || isHidden(relative) {
-		return "", ProjectReadOutside
+		return "", client.ProjectReadFailureOutside
 	}
 	root, err := filepath.EvalSymlinks(reader.Root)
 	if err != nil {
-		return "", ProjectReadUnreadable
+		return "", client.ProjectReadFailureUnreadable
 	}
 	resolved, err := filepath.EvalSymlinks(filepath.Join(root, relative))
 	if errors.Is(err, fs.ErrNotExist) {
-		return "", ProjectReadMissing
+		return "", client.ProjectReadFailureMissing
 	}
 	if err != nil {
-		return "", ProjectReadUnreadable
+		return "", client.ProjectReadFailureUnreadable
 	}
 	within, err := filepath.Rel(root, resolved)
 	if err != nil || leavesRoot(within) || isHidden(within) {
-		return "", ProjectReadOutside
+		return "", client.ProjectReadFailureOutside
 	}
 	return resolved, ""
 }
@@ -85,14 +75,14 @@ func (reader ProjectReader) resolve(path string) (string, string) {
 func listFolder(folder string, limit int) client.ProjectReadReport {
 	info, err := os.Stat(folder)
 	if err != nil {
-		return failedRead(ProjectReadUnreadable)
+		return failedRead(client.ProjectReadFailureUnreadable)
 	}
 	if !info.IsDir() {
-		return failedRead(ProjectReadNotDirectory)
+		return failedRead(client.ProjectReadFailureNotADirectory)
 	}
 	found, err := os.ReadDir(folder)
 	if err != nil {
-		return failedRead(ProjectReadUnreadable)
+		return failedRead(client.ProjectReadFailureUnreadable)
 	}
 	entries := make([]client.ProjectEntry, 0, len(found))
 	for _, item := range found {
@@ -132,26 +122,26 @@ func entryOf(folder string, item fs.DirEntry) client.ProjectEntry {
 func readText(path string, limit int) client.ProjectReadReport {
 	info, err := os.Stat(path)
 	if err != nil {
-		return failedRead(ProjectReadUnreadable)
+		return failedRead(client.ProjectReadFailureUnreadable)
 	}
 	if info.IsDir() {
-		return failedRead(ProjectReadNotFile)
+		return failedRead(client.ProjectReadFailureNotAFile)
 	}
 	file, err := os.OpenFile(path, os.O_RDONLY, 0)
 	if err != nil {
-		return failedRead(ProjectReadUnreadable)
+		return failedRead(client.ProjectReadFailureUnreadable)
 	}
 	defer file.Close()
 	content, err := io.ReadAll(io.LimitReader(file, int64(limit)+1))
 	if err != nil {
-		return failedRead(ProjectReadUnreadable)
+		return failedRead(client.ProjectReadFailureUnreadable)
 	}
 	truncated := len(content) > limit
 	if truncated {
 		content = cutAtRune(content[:limit])
 	}
 	if bytes.IndexByte(content[:min(len(content), binaryProbeBytes)], 0) >= 0 || !utf8.Valid(content) {
-		return failedRead(ProjectReadBinary)
+		return failedRead(client.ProjectReadFailureBinary)
 	}
 	digest := sha256.Sum256(content)
 	text := string(content)
@@ -180,6 +170,6 @@ func isHidden(relative string) bool {
 	return false
 }
 
-func failedRead(reason string) client.ProjectReadReport {
+func failedRead(reason client.ProjectReadFailure) client.ProjectReadReport {
 	return client.ProjectReadReport{Failure: reason}
 }

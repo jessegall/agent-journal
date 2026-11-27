@@ -23,6 +23,11 @@ final class HostCallUnreadable extends RuntimeException implements CodedRefusal,
         return new self("The host's {$call} is not JSON: {$reason}.");
     }
 
+    public static function tooLarge(string $call, int $bytes, int $limit): self
+    {
+        return new self("The host's {$call} is {$bytes} bytes, over the {$limit} bytes host protocol 1 takes.");
+    }
+
     public static function unknownField(string $call, string $field): self
     {
         return new self("The host's {$call} holds the field {$field}, which host protocol 1 does not know.");
@@ -31,6 +36,20 @@ final class HostCallUnreadable extends RuntimeException implements CodedRefusal,
     public static function missingField(string $call, string $field): self
     {
         return new self("The host's {$call} misses its field {$field}.");
+    }
+
+    /**
+     * @param  array<string, list<string>>  $errors  each field's validation errors, by its path
+     */
+    public static function invalid(string $call, array $errors): self
+    {
+        $fields = implode('; ', array_map(
+            fn (string $field, array $messages) => "{$field}: ".implode(' ', $messages),
+            array_keys($errors),
+            $errors,
+        ));
+
+        return new self("The host's {$call} holds values host protocol 1 does not take: {$fields}.");
     }
 
     public function refusalCode(): RefusalCode

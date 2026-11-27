@@ -33,7 +33,7 @@ final class ProbeDriver implements ProcessDriver
     public function onOutput(FeedEntry $entry): DriverActions
     {
         if ($entry->chunk !== null && in_array($entry->chunk->stream, $this->streams(), true)) {
-            $this->printed .= $entry->chunk->printed();
+            $this->printed .= $entry->printed();
         }
 
         return DriverActions::none();

@@ -6,7 +6,8 @@ namespace App\Hosts\Commands\NotifyHostProcess;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\HostProtocolRefused;
-use App\Hosts\Enums\HostProcessReportType;
+use App\Hosts\Protocol\Data\HostProcessReportData;
+use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Values\ProcessExit;
 use App\Models\Hosts\HostProcess;
 use App\Time\Contracts\ServerClock;
@@ -30,13 +31,33 @@ final readonly class NotifyHostProcessHandler implements CommandHandler
         $now = $this->clock->now();
 
         match ($report->report) {
-            HostProcessReportType::Running => $process->run($report->identity, $report->generation, $now),
-            HostProcessReportType::Restarted => $process->restart($report->identity),
+            HostProcessReportType::Running => $process->run($this->identityOf($report), $report->generation, $now),
+            HostProcessReportType::Restarted => $process->restart($this->identityOf($report)),
             HostProcessReportType::Exited => $process->exit(
-                new ProcessExit($report->exitCode, $report->signal, $report->evidence),
+                new ProcessExit($report->exitCode, $report->signal, $this->evidenceOf($report)),
                 $now,
             ),
-            HostProcessReportType::Lost => $process->lose($report->evidence, $now),
+            HostProcessReportType::Lost => $process->lose($this->evidenceOf($report), $now),
         };
+    }
+
+    /**
+     * The identity a running or restarted process runs under, which its report must name.
+     *
+     * @throws HostProtocolRefused
+     */
+    private function identityOf(HostProcessReportData $report): string
+    {
+        return $report->identity ?? throw HostProtocolRefused::reportWithoutIdentity($report->processId);
+    }
+
+    /**
+     * How an exited or lost process ended, which its report must say.
+     *
+     * @throws HostProtocolRefused
+     */
+    private function evidenceOf(HostProcessReportData $report): string
+    {
+        return $report->evidence ?? throw HostProtocolRefused::reportWithoutEvidence($report->processId);
     }
 }

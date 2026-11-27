@@ -6,17 +6,6 @@ import (
 	"strings"
 )
 
-// PlanFile is one file an open plan hands the process, such as a program's settings: the host writes it into the
-// process's own files folder before the process starts, and the plan names that folder as {folder:files}. Each name in
-// the plan's folders is an empty folder of the process's own, named {folder:<name>}.
-type PlanFile struct {
-	Name    string `json:"name"`
-	Content string `json:"content"`
-	// Template is a file the journal generated, whose placeholders the host fills before writing it; a handed file,
-	// such as a skill, is written as it is.
-	Template bool `json:"template"`
-}
-
 // contentOf is what the host writes for the file: a template with its placeholders filled.
 func (file PlanFile) contentOf(placeholders Placeholders) (string, error) {
 	if !file.Template {
@@ -102,16 +91,17 @@ func fillPlan(plan OpenPlan, placeholders Placeholders) (OpenPlan, error) {
 	if plan.RestartArgv, err = fillAll(plan.RestartArgv, placeholders); err != nil {
 		return plan, err
 	}
-	if plan.Container != nil && placeholderPattern.MatchString(plan.RestartWhen.Folder) {
+	if plan.Container != nil && placeholderPattern.MatchString(plan.restartFile().Folder) {
 		return plan, RefusalError{
 			Refusal: Unsafe,
 			Reason:  "a container looks for its restart file inside itself, so its folder names no host placeholder",
 		}
 	}
-	if plan.RestartWhen.Folder != "" {
-		if plan.RestartWhen.Folder, err = placeholders.Fill(plan.RestartWhen.Folder); err != nil {
+	if restart := plan.restartFile(); restart.Folder != "" {
+		if restart.Folder, err = placeholders.Fill(restart.Folder); err != nil {
 			return plan, err
 		}
+		plan.RestartWhenFile = &restart
 	}
 	if plan.Environment, err = fillAll(plan.Environment, placeholders); err != nil {
 		return plan, err

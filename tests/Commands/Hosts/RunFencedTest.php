@@ -42,7 +42,7 @@ final class RunFencedTest extends TestCase
                     'fence' => 'session-1',
                     'waiting' => ['terminal-1'],
                     'budget_ms' => 30000,
-                    'runs' => [$run->payload()],
+                    'runs' => [$run->plan()->toArray()],
                 ],
             ],
             [$order->id, $order->type, $this->journal->payloadOf($order)],

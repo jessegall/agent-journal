@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Hosts\Values;
 
-use JsonSerializable;
+use App\Hosts\Protocol\Data\HostClaimedOrdersData;
+use App\Hosts\Protocol\Data\HostOrderData;
 
 /**
  * What a host's claim answers: the orders it takes now, how long it may go without calling before it is taken as
  * idle, and the journal's time, by which the host judges each order's expiry whatever its own clock says.
  */
-final readonly class HostOrderClaim implements JsonSerializable
+final readonly class HostOrderClaim
 {
     /**
-     * @param  list<ClaimedHostOrder>  $orders
+     * @param  list<HostOrderData>  $orders
      * @param  int|null  $retakeableInSeconds  when an order the host claimed and left unanswered may be handed out
      *                                         again; null when it holds none
      * @param  int  $idleWindowSeconds  how long a host that holds no live process stays online
@@ -40,14 +41,14 @@ final readonly class HostOrderClaim implements JsonSerializable
     }
 
     /**
-     * @return array{orders: list<ClaimedHostOrder>, idle_window_s: int, now: string}
+     * The claim as the journal answers the host's claim_orders call with it.
      */
-    public function jsonSerialize(): array
+    public function reply(): HostClaimedOrdersData
     {
-        return [
+        return HostClaimedOrdersData::from([
             'orders' => $this->orders,
-            'idle_window_s' => $this->idleWindowSeconds,
+            'idle_window_seconds' => $this->idleWindowSeconds,
             'now' => $this->now,
-        ];
+        ]);
     }
 }

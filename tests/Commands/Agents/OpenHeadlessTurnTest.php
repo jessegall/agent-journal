@@ -10,7 +10,7 @@ use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\HostProcessReportType;
+use App\Hosts\Protocol\HostProcessReportType;
 use App\Messages\Data\MessageTextData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;

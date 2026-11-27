@@ -19,10 +19,9 @@ use PhpParser\Parser;
 use PhpParser\ParserFactory;
 
 /**
- * Lays arrays out as rule 111 says: an array of two or more entries is split one entry a line when it is returned,
- * assigned to a variable, property or constant, or does not fit its 120-character line; an argument that fits stays
- * on one line, and one split over lines that one line holds is joined. A commented array, array() and the left side of
- * a destructuring are left as they are.
+ * Lays arrays out as rule 111 says: two or more entries go one to a line when returned, assigned or too wide for 120
+ * characters; an argument that fits stays on one line, and a split one that fits is joined. Commented arrays,
+ * array() and destructuring are left as they are.
  */
 final readonly class ArrayLayout
 {

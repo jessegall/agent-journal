@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Projects\Commands\NotifyProjectRead;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Connections\Data\ProjectEntryData;
+use App\Hosts\Protocol\Data\HostProjectEntryData;
 use App\Models\Projects\ProjectFile;
 use App\Models\Projects\ProjectFileVersion;
 use App\Models\Projects\ProjectRead;
@@ -62,8 +62,8 @@ final readonly class NotifyProjectReadHandler implements CommandHandler
     }
 
     /**
-     * @param  list<ProjectEntryData>  $entries
-     * @return list<ProjectEntryData>
+     * @param  list<HostProjectEntryData>  $entries
+     * @return list<HostProjectEntryData>
      *
      * @throws ProjectReadRefused
      */

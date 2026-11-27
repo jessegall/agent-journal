@@ -21,59 +21,6 @@ import (
 	"journal-agent/host"
 )
 
-// OpenPlan is the payload of open_container and open_process: what runs, how it is healed, its terminal size, and
-// for a container its manifest, name and labels.
-type OpenPlan struct {
-	Type        string                  `json:"type"`
-	Restart     string                  `json:"restart"`
-	Argv        []string                `json:"argv"`
-	RestartArgv []string                `json:"restart_argv"`
-	RestartWhen host.RestartFile        `json:"restart_when_file"`
-	Environment []string                `json:"environment"`
-	Folder      string                  `json:"folder"`
-	Container   *host.ContainerManifest `json:"container"`
-	Labels      host.StartLabels        `json:"labels"`
-	Size        TerminalSize            `json:"size"`
-	Files       []PlanFile              `json:"files"`
-	Folders     []string                `json:"folders"`
-	Inherit     []string                `json:"inherit"`
-	SideSockets []string                `json:"side_sockets"`
-	// ReadFiles are files the host opens read-only for a process on this host, handed over as its descriptors 3 on,
-	// such as a token it reads on a descriptor instead of from its environment.
-	ReadFiles []string `json:"read_files,omitempty"`
-	// ShieldRules are the screens of a terminal whose frames the host shields before they leave.
-	ShieldRules []ShieldRule `json:"shield_rules,omitempty"`
-	// Fence is the session the process runs for, whose run_fenced orders close its admission; empty for none.
-	Fence string `json:"fence,omitempty"`
-	// KeptFiles are the files a device keeps for its binding between two sessions, such as the program's sign-in,
-	// named as the process sees them.
-	KeptFiles []string `json:"kept_files,omitempty"`
-}
-
-// TerminalSize is a terminal's columns and rows.
-type TerminalSize struct {
-	Columns uint16 `json:"columns"`
-	Rows    uint16 `json:"rows"`
-}
-
-// StopPlan is the payload of stop: how long the process gets to end, then how long before it is killed.
-type StopPlan struct {
-	GraceMs int `json:"grace_ms"`
-	ForceMs int `json:"force_ms"`
-}
-
-// SignalPlan is the payload of signal.
-type SignalPlan struct {
-	Signal string `json:"signal"`
-}
-
-// RemovePlan is the payload of remove: an ended start's container, network and handed files.
-type RemovePlan struct {
-	Container string `json:"container"`
-	Network   string `json:"network"`
-	Session   string `json:"session"`
-}
-
 // ProcessTable holds the processes the journal ordered the host to open: it starts each, keeps its terminal or
 // pipes, heals a crashed one whose restart policy asks it, and reports each change through the report queue.
 type ProcessTable struct {
@@ -169,30 +116,13 @@ func (table *ProcessTable) Adopt(ctx context.Context) error {
 		}
 		if err := table.reattach(ctx, held); err != nil {
 			table.keep(held)
-			table.end(held, ProcessReport{ProcessID: id, Report: "lost", Evidence: "not found after the host restarted: " + err.Error()})
+			table.end(held, ProcessReport{ProcessID: id, Report: ProcessReportLost, Evidence: "not found after the host restarted: " + err.Error()})
 			continue
 		}
 		table.keep(held)
 		go table.watchContainer(held)
 	}
 	return nil
-}
-
-// Executors are the process orders this table carries out.
-func (table *ProcessTable) Executors() map[string]Executor {
-	return map[string]Executor{
-		"open_container": table.openContainer,
-		"open_process":   table.openProcess,
-		"resize":         table.resize,
-		"signal":         table.signal,
-		"stop":           table.stop,
-		"remove":         table.remove,
-		"run_fenced":     table.runFenced,
-		"allow_images":   table.allowImages,
-		"make_folder":    table.makeFolder,
-		"remove_folder":  table.removeFolder,
-		"folder_use":     table.folderUse,
-	}
 }
 
 // Live are the ids of the processes the host holds and that still run.
@@ -272,11 +202,7 @@ func (table *ProcessTable) CloseInput(processID string) error {
 	return held.input.Close()
 }
 
-func (table *ProcessTable) openContainer(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := DecodePayload[OpenPlan](order)
-	if err != nil {
-		return nil, err
-	}
+func (table *ProcessTable) OpenContainer(ctx context.Context, order Order, plan OpenPlan) (map[string]any, error) {
 	if plan.Container == nil {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "open_container names no container"}
 	}
@@ -286,7 +212,8 @@ func (table *ProcessTable) openContainer(ctx context.Context, order Order) (map[
 	if !host.IsPinnedReference(plan.Container.Image) {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "the image " + plan.Container.Image + " is not pinned by digest"}
 	}
-	if plan, err = table.placeContainerFiles(ctx, order.ProcessID, plan); err != nil {
+	plan, err := table.placeContainerFiles(ctx, order.ProcessID, plan)
+	if err != nil {
 		return nil, err
 	}
 	if err := table.requireListed(plan); err != nil {
@@ -312,19 +239,17 @@ func (table *ProcessTable) openContainer(ctx context.Context, order Order) (map[
 
 func (table *ProcessTable) startContainer(ctx context.Context, held *heldProcess) error {
 	plan := held.plan
-	if err := table.containers.EnsureNetwork(ctx, plan.Container.Network, plan.Labels); err != nil {
+	if err := table.containers.EnsureNetwork(ctx, plan.Container.Network, plan.startLabels("")); err != nil {
 		return err
 	}
 	process := host.ContainerProcess{
 		Command:        plan.Argv,
 		Environment:    plan.Environment,
 		Restart:        plan.RestartArgv,
-		RestartWhen:    plan.RestartWhen,
+		RestartWhen:    plan.restartFile(),
 		IsHealedByHost: true,
 	}
-	labels := plan.Labels
-	labels.Start = held.id
-	if _, err := table.containers.Create(ctx, *plan.Container, held.containerName(), labels, process); err != nil {
+	if _, err := table.containers.Create(ctx, *plan.Container, held.containerName(), plan.startLabels(held.id), process); err != nil {
 		return err
 	}
 	if err := table.containers.Start(ctx, held.containerName()); err != nil {
@@ -338,10 +263,10 @@ func (table *ProcessTable) attachContainer(ctx context.Context, held *heldProces
 	if err := table.reattach(ctx, held); err != nil {
 		return err
 	}
-	report := "running"
+	report := ProcessReportRunning
 	identity, generation := held.state()
 	if generation > 0 {
-		report = "restarted"
+		report = ProcessReportRestarted
 	}
 	table.saveKept()
 	return table.reports.Add(ProcessReport{ProcessID: held.id, Report: report, Identity: identity, Generation: generation})
@@ -408,36 +333,34 @@ func (table *ProcessTable) watchContainer(held *heldProcess) {
 	for {
 		exit, err := table.containers.ExitOf(ctx, held.containerName())
 		if err != nil {
-			table.end(held, ProcessReport{ProcessID: held.id, Report: "lost", Evidence: err.Error()})
+			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportLost, Evidence: err.Error()})
 			return
 		}
 		if held.isStopping() || held.plan.Restart != "on_crash" || exit.Code == 0 {
 			code := exit.Code
 			held.awaitDrained()
-			table.end(held, ProcessReport{ProcessID: held.id, Report: "exited", ExitCode: &code, Evidence: exit.Evidence()})
+			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportExited, ExitCode: &code, Evidence: exit.Evidence()})
 			return
 		}
 		held.nextGeneration()
 		if err := table.containers.Start(ctx, held.containerName()); err != nil {
-			table.end(held, ProcessReport{ProcessID: held.id, Report: "lost", Evidence: "the crashed container could not be started again: " + err.Error()})
+			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportLost, Evidence: "the crashed container could not be started again: " + err.Error()})
 			return
 		}
 		if err := table.attachContainer(ctx, held); err != nil {
-			table.end(held, ProcessReport{ProcessID: held.id, Report: "lost", Evidence: err.Error()})
+			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportLost, Evidence: err.Error()})
 			return
 		}
 	}
 }
 
-func (table *ProcessTable) openProcess(_ context.Context, order Order) (map[string]any, error) {
-	plan, err := DecodePayload[OpenPlan](order)
-	if err != nil {
-		return nil, err
-	}
+// OpenProcess opens a native process of the plan on this host.
+func (table *ProcessTable) OpenProcess(_ context.Context, order Order, plan OpenPlan) (map[string]any, error) {
 	if err := table.admit(plan); err != nil {
 		return nil, err
 	}
-	if plan, err = writePlanFiles(table.stateFolder, order.ProcessID, plan, table.hostNames); err != nil {
+	plan, err := writePlanFiles(table.stateFolder, order.ProcessID, plan, table.hostNames)
+	if err != nil {
 		return nil, err
 	}
 	if err := table.requireListed(plan); err != nil {
@@ -513,10 +436,10 @@ func (table *ProcessTable) startNative(held *heldProcess, argv []string) error {
 	held.native = command
 	held.pid = command.Process.Pid
 	held.setIdentity(fmt.Sprintf("pid:%d", command.Process.Pid))
-	report := "running"
+	report := ProcessReportRunning
 	identity, generation := held.state()
 	if generation > 0 {
-		report = "restarted"
+		report = ProcessReportRestarted
 	}
 	return table.reports.Add(ProcessReport{ProcessID: held.id, Report: report, Identity: identity, Generation: generation})
 }
@@ -529,14 +452,14 @@ func (table *ProcessTable) watchNative(held *heldProcess) {
 		if held.isStopping() || held.plan.Restart != "on_crash" || (err == nil && code == 0) {
 			held.finish()
 			held.awaitDrained()
-			table.end(held, ProcessReport{ProcessID: held.id, Report: "exited", ExitCode: &code, Signal: signal,
+			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportExited, ExitCode: &code, Signal: signal,
 				Evidence: fmt.Sprintf("the process exited with %d", code)})
 			return
 		}
 		held.nextGeneration()
 		if startErr := table.startNative(held, held.plan.restartArgv()); startErr != nil {
 			held.finish()
-			table.end(held, ProcessReport{ProcessID: held.id, Report: "lost", Evidence: startErr.Error()})
+			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportLost, Evidence: startErr.Error()})
 			return
 		}
 		table.saveKept()
@@ -546,10 +469,10 @@ func (table *ProcessTable) watchNative(held *heldProcess) {
 // restartArgv is what a process runs when it is opened or healed: its restart argv once its restart file exists, its
 // argv otherwise.
 func (plan OpenPlan) restartArgv() []string {
-	if len(plan.RestartArgv) == 0 || plan.RestartWhen.Folder == "" {
+	if len(plan.RestartArgv) == 0 || plan.restartFile().Folder == "" {
 		return plan.Argv
 	}
-	if !hasFileNamed(plan.RestartWhen.Folder, plan.RestartWhen.Glob) {
+	if restart := plan.restartFile(); !hasFileNamed(restart.Folder, restart.Glob) {
 		return plan.Argv
 	}
 	return plan.RestartArgv
@@ -571,11 +494,7 @@ func hasFileNamed(folder, glob string) bool {
 	return errors.Is(err, found)
 }
 
-func (table *ProcessTable) resize(_ context.Context, order Order) (map[string]any, error) {
-	size, err := DecodePayload[TerminalSize](order)
-	if err != nil {
-		return nil, err
-	}
+func (table *ProcessTable) Resize(_ context.Context, order Order, size TerminalSize) (map[string]any, error) {
 	held, err := table.held(order.ProcessID)
 	if err != nil {
 		return nil, err
@@ -586,11 +505,7 @@ func (table *ProcessTable) resize(_ context.Context, order Order) (map[string]an
 	return nil, held.terminal.Resize(size.Rows, size.Columns)
 }
 
-func (table *ProcessTable) signal(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := DecodePayload[SignalPlan](order)
-	if err != nil {
-		return nil, err
-	}
+func (table *ProcessTable) Signal(ctx context.Context, order Order, plan SignalPlan) (map[string]any, error) {
 	held, err := table.held(order.ProcessID)
 	if err != nil {
 		return nil, err
@@ -605,12 +520,8 @@ func (table *ProcessTable) signal(ctx context.Context, order Order) (map[string]
 	return nil, table.containers.Kill(ctx, held.containerName(), plan.Signal)
 }
 
-// stop ends the process within its grace and force times; its one exit report comes from its watch.
-func (table *ProcessTable) stop(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := DecodePayload[StopPlan](order)
-	if err != nil {
-		return nil, err
-	}
+// Stop ends the process within its grace and force times; its one exit report comes from its watch.
+func (table *ProcessTable) Stop(ctx context.Context, order Order, plan StopPlan) (map[string]any, error) {
 	held, err := table.held(order.ProcessID)
 	if err != nil {
 		return nil, err
@@ -632,27 +543,17 @@ func (table *ProcessTable) stop(ctx context.Context, order Order) (map[string]an
 	}
 }
 
-func (table *ProcessTable) remove(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := DecodePayload[RemovePlan](order)
-	if err != nil {
+// Remove removes an ended process's container from the agent daemon.
+func (table *ProcessTable) Remove(ctx context.Context, _ Order, plan RemovePlan) (map[string]any, error) {
+	return nil, table.containers.Remove(ctx, plan.Container, 10)
+}
+
+// RemoveSession removes an ended session's network and the plan files its containers read.
+func (table *ProcessTable) RemoveSession(ctx context.Context, _ Order, removal SessionRemoval) (map[string]any, error) {
+	if err := table.containers.RemoveNetwork(ctx, removal.Network); err != nil {
 		return nil, err
 	}
-	if plan.Container != "" {
-		if err := table.containers.Remove(ctx, plan.Container, 10); err != nil {
-			return nil, err
-		}
-	}
-	if plan.Network != "" {
-		if err := table.containers.RemoveNetwork(ctx, plan.Network); err != nil {
-			return nil, err
-		}
-	}
-	if plan.Session != "" {
-		if err := table.containers.RemoveSessionFiles(ctx, plan.Session); err != nil {
-			return nil, err
-		}
-	}
-	return nil, nil
+	return nil, table.containers.RemoveSessionFiles(ctx, removal.Session)
 }
 
 func (table *ProcessTable) keep(held *heldProcess) {
@@ -815,4 +716,23 @@ func signalOf(state *os.ProcessState) string {
 		return ""
 	}
 	return status.Signal().String()
+}
+
+// restartFile is the file whose presence makes the plan's process run its restart command; none when the plan names
+// none.
+func (plan OpenPlan) restartFile() host.RestartFile {
+	if plan.RestartWhenFile == nil {
+		return host.RestartFile{}
+	}
+	return *plan.RestartWhenFile
+}
+
+// startLabels are the labels of the plan's container start: the journal's, none for a plan without, and the start's
+// own id, empty for a network or a volume.
+func (plan OpenPlan) startLabels(start string) host.StartLabels {
+	labels := host.StartLabels{Start: start}
+	if plan.Labels != nil {
+		labels.ContainerLabels = *plan.Labels
+	}
+	return labels
 }

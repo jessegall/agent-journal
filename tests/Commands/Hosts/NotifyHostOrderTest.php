@@ -62,7 +62,7 @@ final class NotifyHostOrderTest extends TestCase
         );
     }
 
-    public function test_a_refused_open_order_loses_its_process_with_the_refusal_as_evidence(): void
+    public function test_a_refused_open_order_loses_its_process_with_the_refusal_and_the_hosts_reason_as_evidence(): void
     {
         [$open] = $this->journal->hostOrdersOf('shell');
 
@@ -74,12 +74,12 @@ final class NotifyHostOrderTest extends TestCase
 
         $process = $this->journal->hostProcessCalled('shell');
         $this->journal->assertResult(
-            [HostProcessStatus::Lost, 'the host refused to open it: guard_moved'],
+            [HostProcessStatus::Lost, 'the host refused to open it (guard_moved), the rows moved on before the keys were sent'],
             [$process->status, $process->exit_evidence],
         );
     }
 
-    public function test_the_start_whose_process_the_host_refused_to_open_ends_refused(): void
+    public function test_the_start_whose_process_the_host_refused_to_open_ends_refused_with_the_hosts_reason(): void
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven');
@@ -98,7 +98,7 @@ final class NotifyHostOrderTest extends TestCase
 
         $start = $this->journal->startOfSession($opened->sessionId);
         $this->journal->assertResult(
-            [SessionProcessStatus::Stopped, 'the host refused to open it: guard_moved'],
+            [SessionProcessStatus::Stopped, 'the host refused to open it (guard_moved), the rows moved on before the keys were sent'],
             [$start->status, $start->refusal],
         );
     }
@@ -112,7 +112,7 @@ final class NotifyHostOrderTest extends TestCase
     }
 
     /**
-     * The host's answer refusing the order because the rows it was guarded by moved on.
+     * The host's answer refusing the order because the rows it was guarded by moved on, in its own words.
      */
     private function refusedAnswerTo(string $orderId): string
     {
@@ -120,6 +120,7 @@ final class NotifyHostOrderTest extends TestCase
             'order_id' => $orderId,
             'status' => 'refused',
             'refusal' => 'guard_moved',
+            'reason' => 'the rows moved on before the keys were sent',
             'facts' => ['row_hash' => 'abc'],
         ], JSON_THROW_ON_ERROR);
     }

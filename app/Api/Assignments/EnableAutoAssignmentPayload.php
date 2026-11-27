@@ -8,7 +8,7 @@ use App\Api\Assignments\Concerns\NamesAssignmentPool;
 use App\Api\Assignments\Concerns\NamesAutoAssignment;
 use App\Assignments\Data\AutoAssignmentChangeData;
 use App\Attributes\Api\Endpoint;
-use App\Attributes\Api\PresentList;
+use App\Attributes\SentField;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
@@ -54,7 +54,7 @@ final class EnableAutoAssignmentPayload extends Data implements ApiPayload
         public string $assignableType,
         #[Max(100)]
         public string $pool,
-        #[PresentList, Max(1000)]
+        #[SentField, Max(1000)]
         public array $records,
         public int $size,
         #[Min(0)]

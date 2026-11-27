@@ -10,18 +10,6 @@ import (
 	"time"
 )
 
-// ProcessReport is what the host tells the journal of one process: it runs, it was started again, it exited or it
-// was lost.
-type ProcessReport struct {
-	ProcessID  string `json:"process_id"`
-	Report     string `json:"report"`
-	Identity   string `json:"identity,omitempty"`
-	Generation int    `json:"generation"`
-	ExitCode   *int   `json:"exit_code,omitempty"`
-	Signal     string `json:"signal,omitempty"`
-	Evidence   string `json:"evidence,omitempty"`
-}
-
 // ReportsBackoffLimit is the longest the queue waits before it sends again after a failure.
 const ReportsBackoffLimit = 15 * time.Second
 

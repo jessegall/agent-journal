@@ -8,21 +8,15 @@ import (
 	"journal-agent/client"
 )
 
-// ClaimLimit is the most orders one long poll takes.
-const ClaimLimit = 50
-
-// ClaimWaitSeconds is how long one long poll waits for an order.
-const ClaimWaitSeconds = 25
-
 // HeartbeatInterval is how often the host says it is alive.
 const HeartbeatInterval = 30 * time.Second
 
 // JournalCalls are the calls of host protocol 1 the relay makes to the journal.
 type JournalCalls interface {
-	ClaimOrders(ctx context.Context, limit, waitSeconds int) (ClaimedOrders, error)
-	AnswerOrder(ctx context.Context, answer Answer) error
-	NotifyInventory(ctx context.Context, inventory Inventory) error
-	NotifyHostHeartbeat(ctx context.Context, heartbeat HostHeartbeat) error
+	ClaimOrders(ctx context.Context, limit int, wait int) (ClaimedOrders, error)
+	AnswerOrder(ctx context.Context, order string, body Answer) error
+	NotifyInventory(ctx context.Context, body Inventory) error
+	NotifyHeartbeat(ctx context.Context, body HostHeartbeat) error
 }
 
 // Relay carries host protocol 1 between the journal and the host: it claims orders through the long poll and hands
@@ -44,7 +38,7 @@ type Relay struct {
 // Claim long-polls until the context ends; a journal that does not take protocol 1 stops it with that refusal.
 func (relay Relay) Claim(ctx context.Context) error {
 	for ctx.Err() == nil {
-		claimed, err := relay.Journal.ClaimOrders(ctx, ClaimLimit, ClaimWaitSeconds)
+		claimed, err := relay.Journal.ClaimOrders(ctx, ClaimOrdersLimit, ClaimOrdersWaitLimit)
 		if errors.Is(err, client.ErrProtocolRefused) {
 			return err
 		}
@@ -81,7 +75,7 @@ func (relay Relay) Beat(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			_ = relay.Journal.NotifyHostHeartbeat(ctx, HostHeartbeat{
+			_ = relay.Journal.NotifyHeartbeat(ctx, HostHeartbeat{
 				LiveProcesses:   relay.Table.Live(),
 				AnsweredThrough: relay.Record.AnsweredThrough(),
 			})

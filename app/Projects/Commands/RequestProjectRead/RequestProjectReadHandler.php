@@ -6,12 +6,11 @@ namespace App\Projects\Commands\RequestProjectRead;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\HostProtocolRefused;
-use App\Hosts\HostOrderPlacement;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\Data\HostProjectReadData;
+use App\Hosts\Protocol\HostOrders;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectRead;
 use App\Projects\Exceptions\ProjectReadRefused;
-use App\Projects\Values\ProjectReadClaim;
 use App\Time\Contracts\ServerClock;
 use App\Values\HostOrderSource;
 use App\Values\ProjectFileAnswer;
@@ -19,7 +18,7 @@ use App\Values\ProjectFileAnswers;
 
 final readonly class RequestProjectReadHandler implements CommandHandler
 {
-    public function __construct(private ServerClock $clock, private HostOrderPlacement $orders) {}
+    public function __construct(private ServerClock $clock, private HostOrders $orders) {}
 
     /**
      * @throws ProjectReadRefused
@@ -59,8 +58,14 @@ final readonly class RequestProjectReadHandler implements CommandHandler
      */
     private function ordered(ProjectBinding $binding, ProjectRead $read): ProjectRead
     {
-        $payload = ProjectReadClaim::of($read)->jsonSerialize();
-        $this->orders->forHost($binding->host_id, HostOrderSource::fromJournal(), HostOrderType::ReadProject, $payload);
+        $this->orders->readProject($binding->host_id, HostOrderSource::fromJournal(), HostProjectReadData::from([
+            'id' => $read->id,
+            'binding_id' => $read->binding_id,
+            'type' => $read->type->value,
+            'path' => $read->path,
+            'entries_limit' => ProjectRead::DIRECTORY_ENTRY_LIMIT,
+            'text_limit' => ProjectRead::FILE_TEXT_BYTE_LIMIT,
+        ]));
 
         return $read;
     }

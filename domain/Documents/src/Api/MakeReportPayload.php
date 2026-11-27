@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Api;
 
 use App\Attributes\Api\Endpoint;
-use App\Attributes\Api\PresentList;
+use App\Attributes\SentField;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
@@ -32,7 +32,7 @@ final class MakeReportPayload extends Data implements ApiPayload
     public function __construct(
         public string $title,
         public string $abstract,
-        #[PresentList]
+        #[SentField]
         #[MapName('about')]
         public array $relatedRecords,
         #[LiteralTypeScriptType('string')]

@@ -8,20 +8,20 @@ use App\Agents\Exceptions\ManifestRefused;
 
 /**
  * The seccomp and AppArmor profiles a helper container runs under, each a profile name or a path in the profiles
- * folder the journal names (agents.security_profiles), both optional. The host passes each as one --security-opt.
+ * folder the journal names (agents.security_profiles), empty when not set; the host passes each as one --security-opt.
  */
 final readonly class SecurityOptions
 {
     private const string AGENT_SECCOMP_PROFILE = 'seccomp-agent.json';
 
     private function __construct(
-        public string|null $seccomp,
-        public string|null $apparmor,
+        public string $seccomp,
+        public string $apparmor,
     ) {}
 
     public static function none(): self
     {
-        return new self(null, null);
+        return new self('', '');
     }
 
     /**
@@ -31,13 +31,13 @@ final readonly class SecurityOptions
      */
     public static function agent(string $profilesFolder): self
     {
-        return self::make("{$profilesFolder}/".self::AGENT_SECCOMP_PROFILE, null, $profilesFolder);
+        return self::make("{$profilesFolder}/".self::AGENT_SECCOMP_PROFILE, '', $profilesFolder);
     }
 
     /**
      * @throws ManifestRefused
      */
-    public static function make(string|null $seccomp, string|null $apparmor, string $profilesFolder): self
+    public static function make(string $seccomp, string $apparmor, string $profilesFolder): self
     {
         foreach ([
             $seccomp,
@@ -52,9 +52,9 @@ final readonly class SecurityOptions
     /**
      * @throws ManifestRefused
      */
-    private static function assertPlain(string|null $profile, string $profilesFolder): void
+    private static function assertPlain(string $profile, string $profilesFolder): void
     {
-        if ($profile === null) {
+        if ($profile === '') {
             return;
         }
 

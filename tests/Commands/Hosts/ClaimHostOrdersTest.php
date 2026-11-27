@@ -8,9 +8,10 @@ use App\Hosts\Commands\ClaimHostOrders\ClaimHostOrdersCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\WriteHostInput\WriteHostInputCommand;
 use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Enums\HostProcessReportType;
-use App\Hosts\Enums\HostProcessType;
-use App\Hosts\Values\ClaimedHostOrder;
+use App\Hosts\Protocol\Data\HostInventoryData;
+use App\Hosts\Protocol\Data\HostOrderData;
+use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Values\HostOrderClaim;
 use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Host;
@@ -43,7 +44,7 @@ final class ClaimHostOrdersTest extends TestCase
         $claim = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
         $again = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
 
-        $orders = array_column(array_map(fn ($order) => $order->jsonSerialize(), $claim->orders), null, 'id');
+        $orders = array_column(array_map(fn (HostOrderData $order) => $order->toArray(), $claim->orders), null, 'id');
         $this->journal->assertResult(
             [2, Host::query()->whereKey($hostId)->sole()->signOrder($open->refresh()), HostOrderStatus::Claimed, true],
             [count($orders), $orders[$open->id]['signature'], $open->status, $again->isEmpty()],
@@ -79,7 +80,7 @@ final class ClaimHostOrdersTest extends TestCase
             [
                 $soon->isEmpty(),
                 $soon->retakeableInSeconds,
-                array_map(fn ($order) => $order->jsonSerialize()['id'], $later->orders),
+                array_map(fn (HostOrderData $order) => $order->id, $later->orders),
             ],
         );
     }
@@ -104,19 +105,19 @@ final class ClaimHostOrdersTest extends TestCase
 
         $claim = $this->journal->asSystem(new ClaimHostOrdersCommand($this->journal->hostCalled('Mac')->hostId, 10));
 
-        $this->journal->assertResult(42, $claim->jsonSerialize()['idle_window_s']);
+        $this->journal->assertResult(42, $claim->reply()->idleWindowSeconds);
     }
 
     public function test_a_contained_host_is_ordered_the_agent_image_once_and_again_after_its_restart(): void
     {
         $this->journal->enrollContainedHost('Box', [base_path()]);
         $hostId = $this->journal->hostCalled('Box')->hostId;
-        $inventory = json_encode([
+        $inventory = HostInventoryData::from([
             'protocol' => 1,
             'release' => '6.0.0',
-            'answered_through' => null,
+            'capabilities' => [],
             'processes' => [],
-        ], JSON_THROW_ON_ERROR);
+        ]);
 
         $first = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
         $second = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
@@ -124,7 +125,7 @@ final class ClaimHostOrdersTest extends TestCase
         $afterRestart = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
 
         $typesOf = fn (HostOrderClaim $claim) => array_map(
-            fn (ClaimedHostOrder $order) => $order->type,
+            fn (HostOrderData $order) => $order->type,
             $claim->orders,
         );
         $image = $this->journal->service(AgentImage::class)->reference;
@@ -146,7 +147,7 @@ final class ClaimHostOrdersTest extends TestCase
             ->host('Box', fn (TestEnrolledHost $box) => $box->openContainer('probe'));
         $hostId = $this->journal->hostCalled('Box')->hostId;
         $typesOf = fn (HostOrderClaim $claim) => array_map(
-            fn (ClaimedHostOrder $order) => $order->type,
+            fn (HostOrderData $order) => $order->type,
             $claim->orders,
         );
 

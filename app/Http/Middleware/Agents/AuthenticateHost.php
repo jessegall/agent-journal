@@ -10,8 +10,8 @@ use App\Bus\Attributes\Dispatches;
 use App\Bus\CommandEntrance;
 use App\Bus\Contracts\CommandBus;
 use App\Exceptions\HostCredentialRejected;
-use App\Hosts\Contracts\HostCalls;
 use App\Hosts\Contracts\LocalProjectHosts;
+use App\Hosts\Contracts\SignedHostCalls;
 use App\Hosts\Data\FailedHostCallData;
 use App\Hosts\Exceptions\ApiSignatureInvalid;
 use App\Hosts\Exceptions\HostRoleRefused;
@@ -51,7 +51,7 @@ final readonly class AuthenticateHost
 
     public function __construct(
         private Container $container,
-        private HostCalls $calls,
+        private SignedHostCalls $calls,
         private LocalProjectHosts $localHosts,
         private ActorStore $actors,
         private CommandEntrance $entrance,

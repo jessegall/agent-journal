@@ -28,6 +28,9 @@ func enroll(arguments []string) error {
 	hostID := flags.String("host", "", "the host id agents:host-enroll printed")
 	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	secretFile := flags.String("secret-file", "", "a file holding the secret, instead of standard input")
+	if err := assertDeclaredFlags(flags); err != nil {
+		return err
+	}
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -99,6 +102,9 @@ func serve(arguments []string) error {
 	runnerImage := flags.String("runner-image", "", "the sign-in runner image of a contained host, by digest")
 	developmentPrograms := flags.String("development-programs", os.Getenv("JOURNAL_DEVELOPMENT_PROGRAMS"),
 		"local development only: a daemon folder of the checkout's builds of the image's programs, mounted over them")
+	if err := assertDeclaredFlags(flags); err != nil {
+		return err
+	}
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}

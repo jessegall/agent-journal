@@ -17,6 +17,9 @@ func (table *ProcessTable) placeContainerFiles(ctx context.Context, processID st
 	if named := hostThingsNamed(plan); len(named) > 0 {
 		return plan, RefusalError{Refusal: Unsafe, Reason: "a contained plan names nothing of the host it runs on, but names " + strings.Join(named, ", ")}
 	}
+	if missing := missingGrantVariables(plan.Environment); len(missing) > 0 {
+		return plan, RefusalError{Refusal: Unsafe, Reason: "a contained plan carries its start grant whole, but misses " + strings.Join(missing, ", ")}
+	}
 
 	placeholders := Placeholders{Folders: map[string]string{filesFolderName: host.PlanFileFolder}}
 	files, names, err := containerPlanFiles(plan.Files, placeholders)
@@ -29,7 +32,7 @@ func (table *ProcessTable) placeContainerFiles(ctx context.Context, processID st
 		return plan, err
 	}
 
-	session := plan.Labels.Session
+	session := plan.startLabels("").Session
 	for index, mount := range filled.Container.Mounts {
 		if mount.Type != host.MountPlanFile {
 			continue
@@ -70,6 +73,24 @@ func containerPlanFiles(planFiles []PlanFile, placeholders Placeholders) ([]host
 	}
 
 	return files, names, nil
+}
+
+// missingGrantVariables are the variables of ContainedStartGrantEnvironment a plan that carries any of them lacks.
+func missingGrantVariables(environment []string) []string {
+	carried := map[string]bool{}
+	for _, entry := range environment {
+		carried[strings.SplitN(entry, "=", 2)[0]] = true
+	}
+	missing := []string{}
+	for _, name := range ContainedStartGrantEnvironment {
+		if !carried[name] {
+			missing = append(missing, name)
+		}
+	}
+	if len(missing) == len(ContainedStartGrantEnvironment) {
+		return nil
+	}
+	return missing
 }
 
 // hostThingsNamed are the fields of the protocol's ContainedRefusedFields the plan sets, by their JSON names.

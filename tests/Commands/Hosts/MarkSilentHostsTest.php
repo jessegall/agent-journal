@@ -8,6 +8,7 @@ use App\Hosts\Commands\MarkSilentHosts\MarkSilentHostsCommand;
 use App\Hosts\Commands\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\HostLinkAlarms;
+use App\Hosts\Protocol\Data\HostInventoryData;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
@@ -44,11 +45,21 @@ final class MarkSilentHostsTest extends TestCase
     {
         $this->journal->publishRelease('6.2.0')->enrollHost('Mac', [base_path()]);
         $hostId = $this->journal->hostCalled('Mac')->hostId;
-        $inventory = json_encode(['protocol' => 1, 'release' => '6.1.0', 'processes' => []], JSON_THROW_ON_ERROR);
+        $inventory = HostInventoryData::from([
+            'protocol' => 1,
+            'release' => '6.1.0',
+            'capabilities' => [],
+            'processes' => [],
+        ]);
         $this->journal->asSystem(new NotifyHostInventoryCommand($hostId, $inventory));
         $behind = $this->journal->service(HostLinkAlarms::class)->current();
 
-        $current = json_encode(['protocol' => 1, 'release' => '6.2.0', 'processes' => []], JSON_THROW_ON_ERROR);
+        $current = HostInventoryData::from([
+            'protocol' => 1,
+            'release' => '6.2.0',
+            'capabilities' => [],
+            'processes' => [],
+        ]);
         $this->journal->asSystem(new NotifyHostInventoryCommand($hostId, $current));
 
         $this->journal->assertResult(

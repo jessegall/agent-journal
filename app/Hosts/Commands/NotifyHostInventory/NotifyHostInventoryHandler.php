@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\NotifyHostInventory;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\Data\HostInventoryData;
-use App\Hosts\Data\InventoryProcessData;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
-use App\Hosts\HostCallReader;
 use App\Hosts\HostOrderPlacement;
+use App\Hosts\Protocol\Data\HostInventoryProcessData;
 use App\Hosts\Protocol\HostProtocol;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostOrder;
@@ -26,20 +24,19 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
     public function __construct(
         private HostOrderPlacement $placement,
         private ServerClock $clock,
-        private HostCallReader $reader,
     ) {}
 
     public function handle(NotifyHostInventoryCommand $command): void
     {
         $host = $this->placement->orderingHost($command->hostId);
-        $inventory = $this->reader->read($command->body, HostInventoryData::class, 'inventory');
+        $inventory = $command->inventory;
 
         if ($inventory->protocol !== HostProtocol::VERSION) {
             throw HostProtocolUnsupported::forHost($host->id, $inventory->protocol);
         }
 
         $reported = array_column(
-            array_map(fn (InventoryProcessData $process) => [
+            array_map(fn (HostInventoryProcessData $process) => [
                 $process->processId,
                 $process,
             ], $inventory->processes),
@@ -71,7 +68,7 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
         // An order the new process cannot carry out again ends here; any other goes to it, answered again from its record.
         foreach (HostOrder::findClaimedOf($host) as $order) {
             if (! $order->type->isOfferedAgainAfterRestart()) {
-                $order->refuse(HostRefusal::HostRestarted, [], $now);
+                $order->refuse(HostRefusal::HostRestarted, null, [], $now);
 
                 continue;
             }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
-use App\Hosts\Data\HostAnswerData;
-use App\Hosts\Data\HostInventoryData;
-use App\Hosts\Data\HostProcessReportData;
 use App\Hosts\Exceptions\HostCallUnreadable;
 use App\Hosts\HostCallReader;
 use App\Hosts\HostOrderPayload;
+use App\Hosts\Protocol\Data\HostAnswerData;
+use App\Hosts\Protocol\Data\HostInventoryData;
+use App\Hosts\Protocol\Data\HostProcessReportData;
 use App\Hosts\Protocol\HostOrderType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostOrder;
@@ -62,7 +62,7 @@ final class HostProtocolConformanceTest extends TestCase
         $inventory = $reader->read($this->encoded($vectors['inventory']), HostInventoryData::class, 'inventory');
 
         $this->assertSame([HostRefusal::GuardMoved, HostRefusal::UnknownOrder], array_map(
-            fn (HostAnswerData $answer) => $answer->refusalReason(),
+            fn (HostAnswerData $answer) => $answer->refusal,
             $answers,
         ));
         $this->assertSame([3, 'pid:42'], [$report->exitCode, $report->identity]);

@@ -11,13 +11,13 @@ use App\Connections\Enums\FileWindowStatus;
 use App\Connections\Layout\LayoutBodyData;
 use App\Hosts\Contracts\ProjectFiles;
 use App\Hosts\Contracts\ServedEnvironment;
+use App\Hosts\Protocol\HostProjectReadFailure;
 use App\Http\Requests\Connections\FileWindowRequest;
 use App\Models\Agents\Agent;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectFile;
 use App\Navigation\Contracts\PageResolver;
 use App\Projects\Contracts\FileComments;
-use App\Projects\Enums\ProjectReadFailure;
 use App\Projects\Enums\ProjectReadStatus;
 use App\Values\ProjectFileAnswer;
 use Carbon\CarbonImmutable;
@@ -76,8 +76,8 @@ final readonly class FileWindowResolver implements PageResolver
     private function failedState(ProjectFileAnswer $answer): FileWindowStatus
     {
         return match ($answer->failure) {
-            ProjectReadFailure::Binary => FileWindowStatus::Binary,
-            ProjectReadFailure::TooLarge => FileWindowStatus::TooLarge,
+            HostProjectReadFailure::Binary => FileWindowStatus::Binary,
+            HostProjectReadFailure::TooLarge => FileWindowStatus::TooLarge,
             default => FileWindowStatus::Failed,
         };
     }

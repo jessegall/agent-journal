@@ -6,6 +6,7 @@ namespace App\Hosts\Commands\NotifyHostInventory;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
+use App\Hosts\Protocol\Data\HostInventoryData;
 use App\Support\Command;
 
 /**
@@ -18,6 +19,6 @@ final readonly class NotifyHostInventoryCommand extends Command
 {
     public function __construct(
         public string $hostId,
-        public string $body,
+        public HostInventoryData $inventory,
     ) {}
 }

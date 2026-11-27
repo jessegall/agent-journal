@@ -83,7 +83,7 @@ func containedOrder(t *testing.T, change func(plan *OpenPlan)) Order {
 				{Type: host.MountPlanFile, Source: "settings.json", Target: "/etc/program/settings.json"},
 			},
 		},
-		Labels: host.StartLabels{Installation: "journal", Session: "s1"},
+		Labels: &host.ContainerLabels{Installation: "journal", Session: "s1"},
 		Size:   TerminalSize{Columns: 80, Rows: 24},
 	}
 	change(&plan)
@@ -97,7 +97,7 @@ func containedOrder(t *testing.T, change func(plan *OpenPlan)) Order {
 func TestAContainedPlanOpensWithEachFileMountedWhereItNames(t *testing.T) {
 	table, daemon, written := containedTable(t)
 
-	if _, err := table.openContainer(context.Background(), containedOrder(t, func(*OpenPlan) {})); err != nil {
+	if _, err := carry(testOrders{ProcessTable: table}, "open_container")(context.Background(), containedOrder(t, func(*OpenPlan) {})); err != nil {
 		t.Fatal(err)
 	}
 
@@ -138,7 +138,7 @@ func TestAContainedPlanNamingThisHostIsRefused(t *testing.T) {
 
 	for name, change := range changes {
 		table, _, _ := containedTable(t)
-		_, err := table.openContainer(context.Background(), containedOrder(t, change))
+		_, err := carry(testOrders{ProcessTable: table}, "open_container")(context.Background(), containedOrder(t, change))
 		var refusal RefusalError
 		if !errors.As(err, &refusal) || refusal.Refusal != Unsafe {
 			t.Errorf("%s: the plan was not refused as unsafe: %v", name, err)

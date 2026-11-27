@@ -6,7 +6,8 @@ namespace App\Hosts\Commands\ForwardUserKeys;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Hosts\HostOrderPlacement;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\Data\HostKeyWriteData;
+use App\Hosts\Protocol\HostOrders;
 use App\Models\Hosts\HostProcess;
 
 /**
@@ -15,15 +16,19 @@ use App\Models\Hosts\HostProcess;
  */
 final readonly class ForwardUserKeysHandler implements CommandHandler
 {
-    public function __construct(private HostOrderPlacement $placement) {}
+    public function __construct(private HostOrders $orders) {}
 
     public function handle(ForwardUserKeysCommand $command): string
     {
-        $order = $this->placement->forProcess(
+        $order = $this->orders->writeKeys(
             $command->processId,
             $command->source,
-            HostOrderType::WriteKeys,
-            ['bytes' => base64_encode($command->bytes), 'as_user' => true],
+            HostKeyWriteData::from([
+                'bytes' => base64_encode($command->bytes),
+                'if_rows' => null,
+                'if_input_generation' => null,
+                'as_user' => true,
+            ]),
             HostOrderPlacement::KEY_SECONDS,
         );
 

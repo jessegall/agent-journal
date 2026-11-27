@@ -43,7 +43,7 @@ final class ForwardUserKeysTest extends TestCase
             [
                 $id,
                 HostOrderType::WriteKeys,
-                ['bytes' => base64_encode("hi\r"), 'as_user' => true],
+                ['bytes' => base64_encode("hi\r"), 'if_rows' => null, 'if_input_generation' => null, 'as_user' => true],
                 CarbonImmutable::parse(self::NOW)->addSeconds(5)->toIso8601String(),
                 $process->input_generation + 1,
             ],

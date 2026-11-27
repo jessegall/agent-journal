@@ -11,7 +11,6 @@ use App\Hosts\Commands\AllowHostImages\AllowHostImagesCommand;
 use App\Hosts\Commands\RequestHostProtection\RequestHostProtectionCommand;
 use App\Hosts\HostOrderPlacement;
 use App\Hosts\Protocol\HostOrderType;
-use App\Hosts\Values\ClaimedHostOrder;
 use App\Hosts\Values\HostOrderClaim;
 use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Host;
@@ -51,7 +50,7 @@ final readonly class ClaimHostOrdersHandler implements CommandHandler
 
         foreach (HostOrder::claimable($host, $now, $command->limit) as $order) {
             $order->claim($now);
-            $claimed[] = ClaimedHostOrder::of($order, $host->signOrder($order));
+            $claimed[] = $order->claimedOrder($host->signOrder($order));
         }
 
         $retakeable = HostOrder::secondsUntilRetakeable($host, $now);

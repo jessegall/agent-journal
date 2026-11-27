@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
-use App\Hosts\Data\HostOutputData;
 use App\Hosts\HostWake;
 use App\Hosts\ProcessFeed;
+use App\Hosts\Protocol\Data\HostOutputData;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -70,8 +70,9 @@ final class ProcessFeedTest extends TestCase
             'cursor_row' => 0,
             'cursor_column' => 0,
             'columns' => 80,
+            'buffer' => 'normal',
             'captured' => 1,
             'unchanged_ms' => [0],
-        ]]]);
+        ]], 'chunks' => []]);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus;
 
+use App\Attributes\ValidationOnRead;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Reflection\AttributeEntry;
 use App\Reflection\Contracts\ReflectorFactory;
@@ -206,7 +207,8 @@ final readonly class PropertyRules
     }
 
     /**
-     * A value a command carries checks itself, so a validation attribute on one of its properties is never read.
+     * A value a command carries checks itself, so a validation attribute on one of its properties is never read; one
+     * validated where it is read has its rules checked before the command is made.
      *
      * @param  Reflector<object>  $command
      * @param  list<string>  $seen  the value classes already walked, so a value holding itself ends
@@ -216,6 +218,10 @@ final readonly class PropertyRules
         $name = self::namedTypeOf($property);
 
         if (! Reflector::exists($name) || ! $this->reflectors->make($name)->isClass() || in_array($name, $seen, true)) {
+            return;
+        }
+
+        if ($this->reflectors->make($name)->hasAttribute(ValidationOnRead::class)) {
             return;
         }
 

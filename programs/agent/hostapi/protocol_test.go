@@ -1,6 +1,7 @@
 package hostapi
 
 import (
+	"context"
 	"reflect"
 	"slices"
 	"strings"
@@ -24,6 +25,42 @@ func TestAContainedPlanThatNamesAHostFieldIsRefusedByItsName(t *testing.T) {
 		if got := hostThingsNamed(named); !slices.Equal(got, []string{name}) {
 			t.Fatalf("a contained plan setting %s is refused for %v", name, got)
 		}
+	}
+}
+
+// A contained plan carries its start grant whole or not at all: one that carries part of it is refused naming each
+// variable it misses, and one with none of it or all of it is taken.
+func TestAContainedPlanCarryingPartOfItsStartGrantIsRefusedNamingWhatItMisses(t *testing.T) {
+	whole := []string{}
+	for _, name := range ContainedStartGrantEnvironment {
+		whole = append(whole, name+"=x")
+	}
+	cases := map[string]struct {
+		environment []string
+		missing     []string
+	}{
+		"none":    {[]string{"TERM=xterm"}, nil},
+		"whole":   {whole, nil},
+		"partial": {[]string{"JOURNAL_START_TOKEN=x", "JOURNAL_PROFILE=p"}, []string{"JOURNAL_URL", "JOURNAL_PROFILE_REVISION"}},
+	}
+	for name, known := range cases {
+		if got := missingGrantVariables(known.environment); !slices.Equal(got, known.missing) {
+			t.Errorf("a plan carrying %s of its grant misses %v, not %v", name, got, known.missing)
+		}
+	}
+}
+
+// A plan the journal records with its raw bytes names raw_bytes, which the strict reader takes.
+func TestAPlanWithRawBytesIsRead(t *testing.T) {
+	payload := `{"type":"pipe","restart":"never","argv":["sh"],"restart_argv":[],"restart_when_file":null,"environment":[],` +
+		`"folder":"/w","container":null,"labels":null,"size":{"columns":80,"rows":24},"files":[],"folders":[],"inherit":[],` +
+		`"side_sockets":[],"raw_bytes":true}`
+	plan, err := DecodePayload[OpenPlan](Order{Type: "open_process", Payload: payload})
+	if err != nil || !plan.RawBytes {
+		t.Fatalf("a plan with raw_bytes was answered %v, %v", plan.RawBytes, err)
+	}
+	if _, err := DecodePayload[OpenPlan](Order{Type: "open_process", Payload: strings.Replace(payload, `"raw_bytes"`, `"raw_bites"`, 1)}); err == nil {
+		t.Fatal("a plan with a field the protocol does not know was read")
 	}
 }
 
@@ -56,5 +93,26 @@ func TestAnOrderPayloadIsReadStrictly(t *testing.T) {
 	}
 	if size, err := DecodePayload[TerminalSize](Order{Type: "resize", Payload: `{"columns":80,"rows":24}`}); err != nil || size.Rows != 24 {
 		t.Fatalf("a whole payload did not read: %v %v", size, err)
+	}
+}
+
+// The generated dispatch reads every order through its type and Validate: a field missing deep inside the payload and
+// an enum value the protocol does not know are refused as unsafe by their path, before the handler is called.
+func TestTheDispatchRefusesANestedMissingFieldAndAnUnknownValueByTheirPath(t *testing.T) {
+	plan := func(processType, size string) string {
+		return `{"type":"` + processType + `","restart":"","argv":["sh"],"restart_argv":[],"restart_when_file":null,` +
+			`"environment":[],"folder":"/","container":null,"labels":null,"size":` + size + `,"files":[],` +
+			`"folders":[],"inherit":[],"side_sockets":[]}`
+	}
+	cases := map[string]string{
+		plan("terminal", `{"columns":80}`):         `the payload of open_process misses its field size.rows`,
+		plan("window", `{"columns":80,"rows":24}`): `the payload of open_process type holds "window", which host protocol 1 does not know`,
+	}
+	for payload, reason := range cases {
+		_, err := carry(testOrders{}, "open_process")(context.Background(), Order{Type: "open_process", Payload: payload})
+		refusal, isRefusal := err.(RefusalError)
+		if !isRefusal || refusal.Refusal != Unsafe || refusal.Reason != reason {
+			t.Errorf("the payload %s was answered %v, not %q", payload, err, reason)
+		}
 	}
 }

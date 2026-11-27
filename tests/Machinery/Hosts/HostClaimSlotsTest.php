@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Machinery\Hosts;
 
 use App\Hosts\HostClaimSlots;
-use App\Http\Controllers\Hosts\ClaimOrdersController;
+use App\Hosts\Protocol\HostCalls;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
@@ -37,7 +37,7 @@ final class HostClaimSlotsTest extends TestCase
                 $held,
                 $stillTaken,
                 $slots->isTaken($host),
-                (int) config('database.redis.default.read_timeout') > ClaimOrdersController::WAIT_SECONDS_LIMIT,
+                (int) config('database.redis.default.read_timeout') > HostCalls::CLAIM_ORDERS_WAIT_LIMIT,
             ],
         );
     }

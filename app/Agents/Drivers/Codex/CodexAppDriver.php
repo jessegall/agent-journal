@@ -138,7 +138,10 @@ final class CodexAppDriver implements ProcessDriver
             return DriverActions::none();
         }
 
-        $client = ['clientInfo' => ['name' => 'journal', 'version' => '6']];
+        $client = ['clientInfo' => [
+            'name' => 'journal',
+            'version' => '6',
+        ]];
 
         return $this->write(self::INITIALIZE_ID, 'initialize', $client);
     }
@@ -149,7 +152,7 @@ final class CodexAppDriver implements ProcessDriver
             return DriverActions::none();
         }
 
-        $lines = explode("\n", $this->unfinishedLine.$entry->chunk->printed());
+        $lines = explode("\n", $this->unfinishedLine.$entry->printed());
         $this->unfinishedLine = (string) array_pop($lines);
         $actions = DriverActions::none();
 
@@ -196,7 +199,10 @@ final class CodexAppDriver implements ProcessDriver
         $reports = [];
 
         foreach (array_keys($this->turns) as $thread) {
-            $reports = [...$reports, ...$this->endReports($thread, $ended)];
+            $reports = [
+                ...$reports,
+                ...$this->endReports($thread, $ended),
+            ];
         }
 
         foreach ($this->waiting as $request) {
@@ -378,7 +384,10 @@ final class CodexAppDriver implements ProcessDriver
     {
         $params = [
             'threadId' => $thread,
-            'input' => [['type' => 'text', 'text' => $request->prompt()]],
+            'input' => [[
+                'type' => 'text',
+                'text' => $request->prompt(),
+            ]],
             'model' => $request->model,
             'effort' => $request->effort,
         ];
@@ -463,7 +472,12 @@ final class CodexAppDriver implements ProcessDriver
         }
 
         $this->interrupts[$thread][$request->requestId] = $request->attempt;
-        $params = ['threadId' => $thread, 'turnId' => $running['turn']];
+
+        $params = [
+            'threadId' => $thread,
+            'turnId' => $running['turn'],
+        ];
+
         $id = $this->idOf($request, self::INTERRUPT_STEP);
 
         return $this->write($id, 'turn/interrupt', $params, $this->sourceOf($request, self::INTERRUPT_STEP));

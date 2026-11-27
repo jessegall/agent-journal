@@ -22,10 +22,10 @@ use App\Hosts\Commands\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Contracts\HostChannel;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
 use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
@@ -555,7 +555,7 @@ trait ArrangesHostProcesses
             base64_decode($encoded, true),
             JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE,
         ) : '';
-        $reason = $order->answer?->facts['reason'] ?? '';
+        $reason = $order->answer?->reason ?? '';
 
         return "{$order->type->value} {$order->status->value} {$order->refusal?->value} {$reason} {$written}";
     }
@@ -573,7 +573,7 @@ trait ArrangesHostProcesses
             foreach ($entries as $entry) {
                 $cursor = $entry->cursor;
                 $chunks[] = $entry->chunk === null ? null : "{$entry->chunk->stream}: ".json_encode(
-                    $entry->chunk->printed(),
+                    $entry->printed(),
                     JSON_UNESCAPED_SLASHES,
                 );
             }

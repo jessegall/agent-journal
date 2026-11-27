@@ -18,5 +18,6 @@ final readonly class HostOrderRefused implements ConnectionEvent, HostOrderAnswe
         public string|null $processId,
         public HostOrderType $type,
         public HostRefusal $refusal,
+        public string|null $reason,
     ) {}
 }

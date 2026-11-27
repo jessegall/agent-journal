@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens;
 
-use App\Hosts\Data\HostFrameData;
+use App\Hosts\Protocol\Data\HostFrameData;
 
 /**
  * The fingerprint of a still screen: what stays the same each time the same menu is drawn, with the composer, the
@@ -43,7 +43,13 @@ final readonly class ScreenFingerprint
         ]);
 
         $markers = $layout->optionList()->markers;
-        $lines = [self::VERSION, $driver, $frame->buffer, $menu ?? self::UNKNOWN_MENU];
+
+        $lines = [
+            self::VERSION,
+            $driver,
+            $frame->buffer,
+            $menu ?? self::UNKNOWN_MENU,
+        ];
 
         foreach ($frame->rows as $row => $text) {
             $normalised = self::normalised($text, $markers);

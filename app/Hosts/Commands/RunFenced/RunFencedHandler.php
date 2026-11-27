@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\RunFenced;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\HostOrderPlacement;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\Data\HostFencedPlanData;
+use App\Hosts\Protocol\HostOrders;
 use App\Hosts\Values\FencedRun;
 use App\Values\HostOrderSource;
 
@@ -15,22 +15,17 @@ use App\Values\HostOrderSource;
  */
 final readonly class RunFencedHandler implements CommandHandler
 {
-    public function __construct(private HostOrderPlacement $placement) {}
+    public function __construct(private HostOrders $orders) {}
 
     public function handle(RunFencedCommand $command): string
     {
-        $payload = [
+        $plan = HostFencedPlanData::from([
             'fence' => $command->fence,
             'waiting' => $command->waiting,
             'budget_ms' => $command->budgetMs,
-            'runs' => array_map(fn (FencedRun $run) => $run->payload(), $command->runs),
-        ];
+            'runs' => array_map(fn (FencedRun $run) => $run->plan(), $command->runs),
+        ]);
 
-        return $this->placement->forHost(
-            $command->hostId,
-            HostOrderSource::fromJournal(),
-            HostOrderType::RunFenced,
-            $payload,
-        )->getKey();
+        return $this->orders->runFenced($command->hostId, HostOrderSource::fromJournal(), $plan)->getKey();
     }
 }

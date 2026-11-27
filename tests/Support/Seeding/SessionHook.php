@@ -24,7 +24,7 @@ use Tests\Fixtures\Hooks\ListedCommandParser;
 
 /**
  * A hook a state test's session sends: a shell line it wants to run, a file edit, a tool it finished or a stop, signed
- * for the session whose stack hears it.
+ * for the session whose stack listens for it.
  */
 final readonly class SessionHook
 {

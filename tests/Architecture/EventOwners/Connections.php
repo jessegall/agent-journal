@@ -59,8 +59,8 @@ use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
 use App\Events\Connections\WorkspaceReadAnswered;
 use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProjectReadFailure;
 use App\Hosts\Protocol\HostRefusal;
-use App\Projects\Enums\ProjectReadFailure;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -312,7 +312,7 @@ return [
         'owner' => 'ProjectRead::fail',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProjectReadFailed('read', ProjectReadFailure::cases()[0]),
+        'sample' => fn () => new ProjectReadFailed('read', HostProjectReadFailure::cases()[0]),
     ],
     WorkspaceReadAnswered::class => [
         'role' => EventRole::RowFact,
@@ -403,7 +403,13 @@ return [
         'owner' => 'HostOrder::refuse',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostOrderRefused('order', 'process', HostOrderType::cases()[0], HostRefusal::cases()[0]),
+        'sample' => fn () => new HostOrderRefused(
+            'order',
+            'process',
+            HostOrderType::cases()[0],
+            HostRefusal::cases()[0],
+            'the rows moved on',
+        ),
     ],
     HostProcessOutputRecorded::class => [
         'role' => EventRole::RowFact,

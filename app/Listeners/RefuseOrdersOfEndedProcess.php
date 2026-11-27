@@ -27,7 +27,7 @@ final readonly class RefuseOrdersOfEndedProcess implements Listener
                 continue;
             }
 
-            $order->refuse(HostRefusal::NotRunning, [], $this->clock->now());
+            $order->refuse(HostRefusal::NotRunning, null, [], $this->clock->now());
         }
     }
 }

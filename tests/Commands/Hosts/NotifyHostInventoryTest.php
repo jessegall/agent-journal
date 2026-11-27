@@ -8,10 +8,11 @@ use App\Hosts\Commands\ClaimHostOrders\ClaimHostOrdersCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Enums\HostProcessStatus;
-use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
+use App\Hosts\Protocol\Data\HostInventoryData;
+use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostOrder;
 use App\Values\HostOrderSource;
@@ -48,12 +49,19 @@ final class NotifyHostInventoryTest extends TestCase
         $keys = new SendHostKeysCommand($kept, 'hi', new RowGuard(0, 0, 'rows'), 0, HostOrderSource::fromJournal());
         $keysId = $this->journal->asSystem($keys);
         $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 50));
-        $inventory = json_encode([
+        $inventory = HostInventoryData::from([
             'protocol' => 1,
             'release' => '6.0.0',
             'answered_through' => $goneOpen->id,
-            'processes' => [['process_id' => $kept, 'identity' => 'pid:kept', 'is_alive' => true]],
-        ], JSON_THROW_ON_ERROR);
+            'capabilities' => [],
+            'processes' => [[
+                'process_id' => $kept,
+                'identity' => 'pid:kept',
+                'is_alive' => true,
+                'is_terminal_held' => false,
+                'spool_offset' => 0,
+            ]],
+        ]);
 
         $this->journal->asSystem(new NotifyHostInventoryCommand($hostId, $inventory));
 
@@ -87,12 +95,18 @@ final class NotifyHostInventoryTest extends TestCase
             ->hostProcess('turn', fn (TestHostProcess $turn) => $turn
                 ->report(HostProcessReportType::Running)->printOnPipe("{\"type\":\"system\"}\n"));
         $process = $this->journal->hostProcessCalled('turn');
-        $inventory = json_encode([
+        $inventory = HostInventoryData::from([
             'protocol' => 1,
             'release' => '6.0.0',
-            'answered_through' => null,
-            'processes' => [['process_id' => $process->id, 'identity' => 'pid:turn', 'is_alive' => true, 'spool_offset' => 0]],
-        ], JSON_THROW_ON_ERROR);
+            'capabilities' => [],
+            'processes' => [[
+                'process_id' => $process->id,
+                'identity' => 'pid:turn',
+                'is_alive' => true,
+                'is_terminal_held' => false,
+                'spool_offset' => 0,
+            ]],
+        ]);
 
         $this->journal->asSystem(new NotifyHostInventoryCommand($process->host_id, $inventory));
 
@@ -105,7 +119,12 @@ final class NotifyHostInventoryTest extends TestCase
     public function test_a_host_that_names_no_protocol_is_told_to_update(): void
     {
         $this->journal->enrollHost('Mac', [base_path()]);
-        $inventory = json_encode(['release' => '5.9.0', 'answered_through' => null], JSON_THROW_ON_ERROR);
+        $inventory = HostInventoryData::from([
+            'protocol' => 0,
+            'release' => '5.9.0',
+            'capabilities' => [],
+            'processes' => [],
+        ]);
 
         $this->journal->assertRefused(
             HostProtocolUnsupported::class,

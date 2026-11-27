@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Api\Processes;
 
 use App\Attributes\Api\Endpoint;
-use App\Attributes\Api\PresentList;
+use App\Attributes\SentField;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
 use Spatie\LaravelData\Data;
@@ -22,7 +22,7 @@ final class ListProposalsPayload extends Data implements ApiPayload
      * @param  list<string>  $states
      */
     public function __construct(
-        #[PresentList]
+        #[SentField]
         public array $states = [],
     ) {}
 }

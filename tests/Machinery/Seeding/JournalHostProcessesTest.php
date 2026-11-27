@@ -18,12 +18,12 @@ use App\Hosts\Commands\PullHostPrivateValue\PullHostPrivateValueCommand;
 use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Hosts\Enums\HostOrderStatus;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Enums\HostProcessStatus;
-use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
 use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
@@ -461,7 +461,7 @@ final class JournalHostProcessesTest extends TestCase
         $chunks = array_map(
             fn ($entry) => [
                 $entry->chunk?->offset,
-                $entry->chunk?->printed(),
+                $entry->chunk === null ? null : $entry->printed(),
             ],
             $this->journal->service(ProcessFeed::class)->after($process->id, ProcessFeed::FIRST_CURSOR, 0),
         );

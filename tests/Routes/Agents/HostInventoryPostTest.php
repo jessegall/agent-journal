@@ -22,7 +22,7 @@ final class HostInventoryPostTest extends GuardedRouteEntryTestCase
         $host = $journal->owner()->enrolledHost();
 
         return RouteCall::as(Caller::SharedHost, $host)
-            ->payload(['protocol' => 1, 'release' => '6.0.0', 'processes' => []])
+            ->payload(['protocol' => 1, 'release' => '6.0.0', 'capabilities' => [], 'processes' => []])
             ->expects(NotifyHostInventoryCommand::class, ['hostId' => $host->hostId]);
     }
 }

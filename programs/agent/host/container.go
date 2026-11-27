@@ -18,22 +18,6 @@ import (
 	"github.com/moby/moby/client"
 )
 
-// MountType is what a container mount takes its files from: a folder of this machine (the local arrangement), a named
-// volume of the agent daemon, or a folder under /srv/journal on the agent daemon.
-type MountType string
-
-const (
-	// MountBind is a folder of the machine the host runs on, the one mount of a local helper.
-	MountBind MountType = "bind"
-	// MountVolume is a named volume of the agent daemon, its name opening with the installation name.
-	MountVolume MountType = "volume"
-	// MountDaemonBind is a folder under /srv/journal/ on the agent daemon, such as an account's folder.
-	MountDaemonBind MountType = "daemon-bind"
-	// MountPlanFile is a file of the plan, or with no source all of them, which the host writes into the session's
-	// folder on the agent daemon and mounts read-only at the target.
-	MountPlanFile MountType = "plan-file"
-)
-
 // daemonBindRoot is the one folder of the agent daemon a daemon-bind mount may come from.
 const daemonBindRoot = "/srv/journal/"
 
@@ -46,66 +30,6 @@ const mostContainedMounts = 5
 
 // PlanFileFolder is the one folder outside /etc a plan's files may be mounted at, which holds them all.
 const PlanFileFolder = "/tmp/journal-session"
-
-// ContainerMount mirrors App\Agents\Support\ManifestMount: one folder a container sees, and where it comes from.
-type ContainerMount struct {
-	Type       MountType `json:"type"`
-	Source     string    `json:"source"`
-	Target     string    `json:"target"`
-	IsWritable bool      `json:"isWritable"`
-	// MustExist is a volume the host finds and never makes, such as the history of a resumed conversation.
-	MustExist bool `json:"mustExist"`
-	// IsCheckout is a writer's workspace: the host clones the source into the session's own checkout volume and mounts
-	// that, read-write, at the target instead.
-	IsCheckout bool `json:"isCheckout"`
-}
-
-// ContainerBudgets mirrors App\Agents\Support\ExecutionBudgets: the bounds a container runs under.
-type ContainerBudgets struct {
-	CPUCores        int `json:"cpuCores"`
-	MemoryBytes     int `json:"memoryBytes"`
-	MemorySwapBytes int `json:"memorySwapBytes"`
-	Processes       int `json:"processes"`
-	OpenFiles       int `json:"openFiles"`
-	TmpBytes        int `json:"tmpBytes"`
-	HomeBytes       int `json:"homeBytes"`
-	// WorkspaceBytes bounds a writer's own checkout volume.
-	WorkspaceBytes int `json:"workspaceBytes"`
-}
-
-// SecurityOptions are the seccomp and AppArmor profiles a container runs under, each a profile path or name, both
-// optional.
-type SecurityOptions struct {
-	Seccomp  string `json:"seccomp"`
-	AppArmor string `json:"apparmor"`
-}
-
-// ContainerManifest mirrors App\Agents\Support\ContainerManifest, which the journal already validated: the host
-// translates it, it never builds a policy of its own.
-type ContainerManifest struct {
-	Image               string           `json:"image"`
-	User                string           `json:"user"`
-	Workdir             string           `json:"workdir"`
-	IsReadOnlyRoot      bool             `json:"isReadOnlyRoot"`
-	Capabilities        []string         `json:"capabilities"`
-	BlocksNewPrivileges bool             `json:"blocksNewPrivileges"`
-	IsPrivileged        bool             `json:"isPrivileged"`
-	Network             string           `json:"network"`
-	Mounts              []ContainerMount `json:"mounts"`
-	PublishedPorts      []int            `json:"publishedPorts"`
-	Budgets             ContainerBudgets `json:"budgets"`
-	SecurityOptions     SecurityOptions  `json:"securityOptions"`
-	// IsAttachable is a session's own terminal process, such as the main agent's program: it gets a tty and an open
-	// stdin, and the host attaches to it, again after a restart. Helpers are not attachable.
-	IsAttachable bool `json:"isAttachable"`
-	// WorkspacePreparation is what the host fills or checks before the container mounts the workspace; nil locally.
-	WorkspacePreparation *WorkspacePreparation `json:"workspacePreparation"`
-	// StartProfile is how the container starts: standard, or protected-account, whose init starts as root to hand the
-	// sign-in to the program's own user; empty reads as standard.
-	StartProfile string `json:"startProfile"`
-	// Entrypoint is refused when set: the host alone chooses a container's init.
-	Entrypoint string `json:"entrypoint"`
-}
 
 const (
 	StartStandard         = "standard"
@@ -521,13 +445,6 @@ type ContainerProcess struct {
 	// IsHealedByHost leaves restarting a crashed container to the host's own supervision, which reports each restart,
 	// instead of the daemon's restart policy.
 	IsHealedByHost bool
-}
-
-// RestartFile is a folder and a file name pattern in it, such as a conversation's transcript: a restarted container
-// runs its restart command once a file of the folder matches the pattern.
-type RestartFile struct {
-	Folder string `json:"folder"`
-	Glob   string `json:"glob"`
 }
 
 // into puts the process into what the daemon creates the container from: its environment, and its command after

@@ -98,7 +98,7 @@ func (dispatcher *Dispatcher) carryOut(ctx context.Context, order Order) {
 	defer dispatcher.running.Done()
 	answer := dispatcher.answerOf(ctx, order)
 	if err := dispatcher.record.Keep(order, answer, dispatcher.verifier.Now()); err != nil {
-		answer = RefusedFor(order, Unsafe, map[string]any{"reason": "the host could not record its answer: " + err.Error()})
+		answer = RefusedFor(order, Unsafe, "the host could not record its answer: "+err.Error(), nil)
 	}
 	dispatcher.mutex.Lock()
 	delete(dispatcher.inFlight, order.ID)
@@ -112,14 +112,14 @@ func (dispatcher *Dispatcher) answerOf(ctx context.Context, order Order) Answer 
 	}
 	executor, found := dispatcher.executors[order.Type]
 	if !found {
-		return RefusedFor(order, UnknownOrder, map[string]any{"reason": "this host does not carry out " + order.Type})
+		return RefusedFor(order, UnknownOrder, "this host does not carry out "+order.Type, nil)
 	}
 	if dispatcher.record.IsInterrupted(order.ID) && !OrderTypes[order.Type].Repeatable {
 		reason := "the host stopped while it carried this order out, so it is not carried out twice"
-		return RefusedFor(order, HostRestarted, map[string]any{"reason": reason})
+		return RefusedFor(order, HostRestarted, reason, nil)
 	}
 	if err := dispatcher.record.Start(order, dispatcher.verifier.Now()); err != nil {
-		return RefusedFor(order, Unsafe, map[string]any{"reason": "the host could not record the order: " + err.Error()})
+		return RefusedFor(order, Unsafe, "the host could not record the order: "+err.Error(), nil)
 	}
 	facts, err := executor(ctx, order)
 	if err != nil {
@@ -130,14 +130,9 @@ func (dispatcher *Dispatcher) answerOf(ctx context.Context, order Order) Answer 
 
 // refusalAnswer is the answer of a refused order, with the facts the host saw, such as the current row hash.
 func refusalAnswer(order Order, err error, facts map[string]any) Answer {
-	if facts == nil {
-		facts = map[string]any{}
-	}
 	var refusal RefusalError
 	if errors.As(err, &refusal) {
-		facts["reason"] = refusal.Reason
-		return RefusedFor(order, refusal.Refusal, facts)
+		return RefusedFor(order, refusal.Refusal, refusal.Reason, facts)
 	}
-	facts["reason"] = err.Error()
-	return RefusedFor(order, Unsafe, facts)
+	return RefusedFor(order, Unsafe, err.Error(), facts)
 }

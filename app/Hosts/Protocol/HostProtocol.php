@@ -36,6 +36,16 @@ final readonly class HostProtocol
     ];
 
     /**
+     * The variables of a contained program's start grant: a contained plan carries all of them or none.
+     */
+    public const array CONTAINED_START_GRANT_ENVIRONMENT = [
+        'JOURNAL_URL',
+        'JOURNAL_START_TOKEN',
+        'JOURNAL_PROFILE',
+        'JOURNAL_PROFILE_REVISION',
+    ];
+
+    /**
      * What journal-hook takes after its own name, in order.
      */
     public const array HOOK_ARGUMENTS = [

@@ -63,10 +63,10 @@ func (journal *mockJournal) answerClaim(writer http.ResponseWriter, now time.Tim
 	} else {
 		time.Sleep(50 * time.Millisecond)
 	}
-	writeJSON(writer, map[string]any{"orders": orders, "now": now, "idle_window_s": journal.idle})
+	writeJSON(writer, map[string]any{"orders": orders, "now": now, "idle_window_seconds": journal.idle})
 }
 
-func (journal *mockJournal) reportsOf(kind string) int {
+func (journal *mockJournal) reportsOf(kind hostapi.ProcessReportType) int {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	count := 0

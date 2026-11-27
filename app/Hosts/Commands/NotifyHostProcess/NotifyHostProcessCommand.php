@@ -6,7 +6,7 @@ namespace App\Hosts\Commands\NotifyHostProcess;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
-use App\Hosts\Data\HostProcessReportData;
+use App\Hosts\Protocol\Data\HostProcessReportData;
 use App\Support\Command;
 
 /**

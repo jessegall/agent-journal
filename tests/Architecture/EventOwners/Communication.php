@@ -46,8 +46,7 @@ return [
         'role' => EventRole::RowFact,
         'owner' => [
             'NotificationScope::addReceipt',
-            'NotificationScope::addUnread',
-            'NotificationScope::removeUnread',
+            'NotificationScope::changeUnread',
             'NotificationScope::recordChange',
         ],
         'migrated' => true,

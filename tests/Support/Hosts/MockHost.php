@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Hosts;
 
 use App\Hosts\Contracts\HostChannel;
-use App\Hosts\Data\HostFrameData;
+use App\Hosts\Protocol\Data\HostFrameData;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Generator;

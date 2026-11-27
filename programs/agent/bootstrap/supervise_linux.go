@@ -105,7 +105,8 @@ func startChild(role string, program []string, output *os.File) (*os.Process, er
 	return child.Process, nil
 }
 
-// waitForExecutor waits until the executor prints that its socket listens, then passes on whatever else it prints.
+// waitForExecutor waits until the executor prints that its socket listens, and keeps whatever else it prints off the
+// program's streams, as host protocol 1 says of journal-init.
 func waitForExecutor(layout Layout, output *os.File) error {
 	ready := make(chan bool, 1)
 	lines := bufio.NewScanner(output)
@@ -117,7 +118,6 @@ func waitForExecutor(layout Layout, output *os.File) error {
 				ready <- true
 				continue
 			}
-			fmt.Println(lines.Text())
 		}
 		if !listening {
 			ready <- false

@@ -7,6 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\MarkFailedUpgrades\MarkFailedUpgradesCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
+use App\Hosts\Protocol\Data\HostInventoryData;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -44,7 +45,12 @@ final class MarkFailedUpgradesTest extends TestCase
     public function test_an_upgrade_whose_inventory_named_the_release_stays_settled(): void
     {
         $this->upgradeAnsweredAt(CarbonImmutable::parse('2026-11-26 10:00:00'));
-        $inventory = json_encode(['protocol' => 1, 'release' => self::RELEASE, 'processes' => []], JSON_THROW_ON_ERROR);
+        $inventory = HostInventoryData::from([
+            'protocol' => 1,
+            'release' => self::RELEASE,
+            'capabilities' => [],
+            'processes' => [],
+        ]);
         $this->journal->asSystem(new NotifyHostInventoryCommand($this->host()->id, $inventory));
 
         $later = CarbonImmutable::parse('2026-11-26 10:04:00');

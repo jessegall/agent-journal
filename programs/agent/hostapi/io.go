@@ -22,32 +22,6 @@ const OutputLimit = 256 * 1024
 // SpoolLimit is the most bytes a pipe process's spool keeps, so a reattach after a host restart resumes from it.
 const SpoolLimit = 16 * 1024 * 1024
 
-// Frame is one screen of a terminal process, timed on the host's monotonic clock.
-type Frame struct {
-	Rows         []string `json:"rows"`
-	CursorRow    int      `json:"cursor_row"`
-	CursorColumn int      `json:"cursor_column"`
-	Columns      int      `json:"columns"`
-	Buffer       string   `json:"buffer"`
-	Captured     int64    `json:"captured"`
-	UnchangedMs  []int64  `json:"unchanged_ms"`
-	Title        string   `json:"title,omitempty"`
-	IsShielded   bool     `json:"is_shielded"`
-}
-
-// Chunk is bytes a process wrote on one stream from an offset, base64 encoded.
-type Chunk struct {
-	Stream string `json:"stream"`
-	Offset int64  `json:"offset"`
-	Bytes  string `json:"bytes"`
-}
-
-// Output is one post of a process's output.
-type Output struct {
-	Frames []Frame `json:"frames"`
-	Chunks []Chunk `json:"chunks"`
-}
-
 // MarshalJSON sends a list the output has none of as an empty list, never as null, as the protocol fixes both.
 func (output Output) MarshalJSON() ([]byte, error) {
 	type wire Output

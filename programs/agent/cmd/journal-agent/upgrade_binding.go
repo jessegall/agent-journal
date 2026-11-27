@@ -31,61 +31,45 @@ const (
 	upgradePoll = 250 * time.Millisecond
 )
 
-// UpgradePlan is the payload of upgrade: the release to move to, with its signed manifest and the programs to seal.
-type UpgradePlan struct {
-	Version   string `json:"version"`
-	Manifest  string `json:"manifest"`
-	Signature string `json:"signature"`
-	Programs  string `json:"drivers"`
-}
-
-// upgradeOrders carries out the journal's upgrade order for this binding: refused while a process lives, the release
+// bindingUpgrade carries out the journal's upgrade order for this binding: refused while a process lives, the release
 // verified and installed beside the running one, answered, and then handed to a detached upgrade step once the relay
 // let go of its lock. live answers the live processes; stop ends the relay's run.
-func (binder bindingRelay) upgradeOrders(live func() []string, stop func()) map[string]hostapi.Executor {
-	return map[string]hostapi.Executor{"upgrade": func(ctx context.Context, order hostapi.Order) (map[string]any, error) {
-		if running := live(); len(running) > 0 {
-			return nil, hostapi.RefusalError{Refusal: hostapi.Fenced, Reason: "a process still runs on this host"}
-		}
-		var plan UpgradePlan
-		if err := decodeUpgrade(order, &plan); err != nil {
-			return nil, err
-		}
-		folder, err := binder.installUpgrade(ctx, plan)
-		if err != nil {
-			return nil, err
-		}
-		time.AfterFunc(upgradeAnswerGrace, func() {
-			if err := binder.startUpgradeStep(folder); err != nil {
-				fmt.Fprintf(os.Stderr, "the upgrade step did not start: %v\n", err)
-				return
-			}
-			stop()
-		})
-
-		return map[string]any{"release": plan.Version}, nil
-	}}
+type bindingUpgrade struct {
+	binder bindingRelay
+	live   func() []string
+	stop   func()
 }
 
-func decodeUpgrade(order hostapi.Order, plan *UpgradePlan) error {
-	decoded, err := hostapi.DecodePayload[UpgradePlan](order)
+// Upgrade installs the release the plan names and hands the binding to it once the answer went out.
+func (upgrade bindingUpgrade) Upgrade(ctx context.Context, _ hostapi.Order, plan hostapi.UpgradePlan) (map[string]any, error) {
+	if running := upgrade.live(); len(running) > 0 {
+		return nil, hostapi.RefusalError{Refusal: hostapi.Fenced, Reason: "a process still runs on this host"}
+	}
+	if plan.Version == "" {
+		return nil, hostapi.RefusalError{Refusal: hostapi.Unsafe, Reason: "the upgrade order names no release"}
+	}
+	folder, err := upgrade.binder.installUpgrade(ctx, plan)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if decoded.Version == "" {
-		return hostapi.RefusalError{Refusal: hostapi.Unsafe, Reason: "the upgrade order names no release"}
-	}
-	*plan = decoded
-	return nil
+	time.AfterFunc(upgradeAnswerGrace, func() {
+		if err := upgrade.binder.startUpgradeStep(folder); err != nil {
+			fmt.Fprintf(os.Stderr, "the upgrade step did not start: %v\n", err)
+			return
+		}
+		upgrade.stop()
+	})
+
+	return map[string]any{"release": plan.Version}, nil
 }
 
 // installUpgrade verifies the release with the pinned key and installs it beside the running installation.
-func (binder bindingRelay) installUpgrade(ctx context.Context, plan UpgradePlan) (string, error) {
+func (binder bindingRelay) installUpgrade(ctx context.Context, plan hostapi.UpgradePlan) (string, error) {
 	signature, err := base64.StdEncoding.DecodeString(plan.Signature)
 	if err != nil {
 		return "", hostapi.RefusalError{Refusal: hostapi.Unsafe, Reason: "the upgrade's signature does not read"}
 	}
-	programs, err := release.ParseProgramList([]byte(plan.Programs))
+	programs, err := release.ParseProgramList([]byte(plan.Drivers))
 	if err != nil {
 		return "", hostapi.RefusalError{Refusal: hostapi.Unsafe, Reason: err.Error()}
 	}
@@ -102,7 +86,7 @@ func (binder bindingRelay) installUpgrade(ctx context.Context, plan UpgradePlan)
 	}
 	// The running installation sits in <root>/releases; the new one goes beside it, named for its version and list.
 	folder := release.InstallationFolder(filepath.Dir(filepath.Dir(binder.installation.Folder)), plan.Version,
-		[]byte(plan.Programs))
+		[]byte(plan.Drivers))
 	if err := installer.Install(ctx, []byte(plan.Manifest), signature, programs, folder); err != nil {
 		return "", err
 	}

@@ -62,22 +62,6 @@ func ReadDeployKey(secret string) ([]byte, error) {
 	return key, nil
 }
 
-// WorkspacePreparation mirrors App\Agents\Values\WorkspacePreparation: what the host makes ready before a contained
-// container mounts the workspace, a Git workspace's volume to fill or an operator's folder to check.
-type WorkspacePreparation struct {
-	Clone  *WorkspaceClone `json:"clone"`
-	Folder string          `json:"folder"`
-}
-
-// WorkspaceClone mirrors App\Agents\Values\WorkspaceClone: the environment's volume, the repository and revision
-// cloned into it, and the name of the compose secret holding its deploy key.
-type WorkspaceClone struct {
-	Volume          string `json:"volume"`
-	Repository      string `json:"repository"`
-	Revision        string `json:"revision"`
-	DeployKeySecret string `json:"deployKeySecret"`
-}
-
 // PrepareWorkspace makes the workspace ready before a container mounts it: an operator's folder is checked at every
 // start, a Git workspace's volume is filled the first time and left as it is once it exists. A refusal is named and
 // nothing is created; a manifest without a preparation, as a local one, needs nothing.

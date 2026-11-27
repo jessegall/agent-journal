@@ -6,8 +6,8 @@ namespace Tests\Commands\Hosts;
 
 use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Commands\NotifyHostOutput\NotifyHostOutputCommand;
-use App\Hosts\Data\HostOutputData;
 use App\Hosts\ProcessFeed;
+use App\Hosts\Protocol\Data\HostOutputData;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
@@ -23,7 +23,7 @@ final class NotifyHostOutputTest extends TestCase
     use RefreshHookDatabase;
 
     private const string FRAME = '{"frames":[{"rows":["ready"],"cursor_row":0,"cursor_column":5,"columns":80,'
-        .'"captured":1,"unchanged_ms":[0]}]}';
+        .'"buffer":"normal","captured":1,"unchanged_ms":[0]}],"chunks":[]}';
 
     protected function setUp(): void
     {
@@ -43,7 +43,7 @@ final class NotifyHostOutputTest extends TestCase
         $this->journal->asSystem(new NotifyHostOutputCommand(
             $this->journal->hostCalled('Mac')->hostId,
             $process,
-            self::FRAME,
+            HostOutputData::from(json_decode(self::FRAME, true, flags: JSON_THROW_ON_ERROR)),
         ));
 
         $this->journal->assertResult(
@@ -52,16 +52,14 @@ final class NotifyHostOutputTest extends TestCase
         );
     }
 
-    public function test_output_of_another_hosts_process_or_over_the_limit_is_refused_and_not_kept(): void
+    public function test_output_of_another_hosts_process_is_refused_and_not_kept(): void
     {
         $process = $this->journal->hostProcessCalled('shell')->id;
-        $foreign = new NotifyHostOutputCommand($this->journal->hostCalled('Other')->hostId, $process, self::FRAME);
-        $tooLarge = str_pad(self::FRAME, HostOutputData::BYTE_LIMIT + 1);
-        $oversized = new NotifyHostOutputCommand($this->journal->hostCalled('Mac')->hostId, $process, $tooLarge);
+        $output = HostOutputData::from(json_decode(self::FRAME, true, flags: JSON_THROW_ON_ERROR));
+        $foreign = new NotifyHostOutputCommand($this->journal->hostCalled('Other')->hostId, $process, $output);
 
         $this->journal
             ->assertRefused(HostProtocolRefused::class, fn () => $this->journal->asSystem($foreign))
-            ->assertRefused(HostProtocolRefused::class, fn () => $this->journal->asSystem($oversized))
             ->assertResult(null, $this->journal->service(ProcessFeed::class)->latestFrame($process));
     }
 }

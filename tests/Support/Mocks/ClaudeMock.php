@@ -8,7 +8,7 @@ use Closure;
 use Tests\Support\Mocks\Exceptions\MockRefused;
 
 /**
- * The script of Claude Code's sign-in on the test host: it shows the recorded sign-in address, hears the code the
+ * The script of Claude Code's sign-in on the test host: it shows the recorded sign-in address, reads the code the
  * owner typed and answers it from the recordings of the build, then ends as the real login does.
  */
 final class ClaudeMock extends Mock
@@ -25,7 +25,7 @@ final class ClaudeMock extends Mock
     }
 
     /**
-     * The next line the login hears is the code the owner typed, and the scope says what it answers.
+     * The next line the login reads is the code the owner typed, and the scope says what it answers.
      *
      * @param  Closure(Answer): mixed  $answer
      */

@@ -15,7 +15,7 @@ use App\Agents\Drivers\StartConditions\ResumedStart;
 use App\Agents\Drivers\StartConditions\ResumedTerminal;
 use App\Agents\Drivers\StartConditions\ResumedTurn;
 use App\Agents\Drivers\StartConditions\TurnStart;
-use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Processes\Contracts\Condition;
 use App\Sessions\Enums\TransportProfileType;
 use App\Values\DriverAccount;

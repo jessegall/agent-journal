@@ -10,11 +10,11 @@ use App\Events\Connections\HostProcessStarted;
 use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
-use App\Hosts\Data\HostProcessReportData;
 use App\Hosts\Enums\HostOrderStatus;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\Protocol\Data\HostProcessReportData;
+use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -168,6 +168,7 @@ final class NotifyHostProcessTest extends TestCase
                 'process_id' => $this->journal->hostProcessCalled('shell')->id,
                 'report' => 'running',
                 'identity' => 'pid:1',
+                'generation' => 0,
             ]),
         );
 

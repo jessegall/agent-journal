@@ -57,9 +57,11 @@ use App\Files\Contracts\WorkspaceReader as WorkspaceReaderContract;
 use App\Files\Enums\Place;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Contracts\DockerImageVerifier as DockerImageVerifierContract;
-use App\Hosts\Contracts\HostCalls as HostCallsContract;
 use App\Hosts\Contracts\HostCapabilities as HostCapabilitiesContract;
-use App\Hosts\HostCalls;
+use App\Hosts\Contracts\SignedHostCalls as SignedHostCallsContract;
+use App\Hosts\JournalHostCalls;
+use App\Hosts\Protocol\HostCalls;
+use App\Hosts\SignedHostCalls;
 use App\Inboxes\Contracts\InboxParticipationEnding;
 use App\Inboxes\KeptInboxParticipation;
 use App\Models\Agents\Agent;
@@ -158,6 +160,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(ReadGrantContract::class, ReadGrant::class);
         $this->app->bind(AgentResolver::class, AgentLabels::class);
         $this->app->bind(ActivityLogContract::class, ActivityLog::class);
+        $this->app->bind(HostCalls::class, JournalHostCalls::class);
 
         $this->app->scoped(RequestSession::class, static fn (Container $app) => new RequestSession(
             static fn (): Option => $app->resolved(AgentContext::class)
@@ -238,7 +241,7 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make(ServerOrigin::class),
         ));
 
-        $this->app->bind(HostCallsContract::class, HostCalls::class);
+        $this->app->bind(SignedHostCallsContract::class, SignedHostCalls::class);
 
         $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
             $this->app->make('config')->string('agents.server_origin'),
@@ -336,6 +339,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $actors->registerVisibility(Agent::class, AgentVisibility::class);
         $this->loadCoreRoutes('agents/agents.php');
         $this->loadCoreRoutes('agents/host.php');
+        $this->loadCoreRoutes('agents/host-protocol.php');
         $this->loadCoreRoutes('agents/releases.php');
 
         $assignments->registerAssignees(new AssigneeDefinition(Agent::storedType(), AgentAssignees::class));

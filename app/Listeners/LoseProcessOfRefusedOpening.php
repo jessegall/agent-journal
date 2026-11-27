@@ -28,7 +28,8 @@ final readonly class LoseProcessOfRefusedOpening implements Listener
         $process = HostProcess::findLocked($fact->processId);
 
         if ($process->isOrdered()) {
-            $process->lose("the host refused to open it: {$fact->refusal->value}", $this->clock->now());
+            $reason = $fact->reason === null ? '' : ", {$fact->reason}";
+            $process->lose("the host refused to open it ({$fact->refusal->value}){$reason}", $this->clock->now());
         }
     }
 }

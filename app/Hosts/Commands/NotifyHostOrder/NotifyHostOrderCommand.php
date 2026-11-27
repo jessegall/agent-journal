@@ -9,7 +9,7 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * A host answers an order it claimed: carried out with its facts, or refused with its reason, sent as its JSON body. Run for an authenticated host by the journal itself (internal, not exported).
+ * A host answers an order it claimed: carried out with its facts, or refused with its reason, as the JSON of the answer its call was read and validated into. Run for an authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<null>
  */
@@ -19,6 +19,6 @@ final readonly class NotifyHostOrderCommand extends Command
     public function __construct(
         public string $hostId,
         public string $orderId,
-        public string $body,
+        public string $answer,
     ) {}
 }
