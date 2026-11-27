@@ -30,7 +30,7 @@ final class WireTestsTest extends TestCase
     {
         $misplaced = [];
 
-        foreach (self::testFiles() as $path) {
+        foreach (self::filesUnderTests() as $path) {
             $isMarked = str_contains((string) file_get_contents($path), '#[OverTheWire]');
             $isInWire = str_starts_with($path, base_path('tests/Wire/'));
             $relative = substr($path, strlen(base_path()) + 1);
@@ -51,7 +51,7 @@ final class WireTestsTest extends TestCase
     {
         $named = [];
 
-        foreach (self::testFiles() as $path) {
+        foreach (self::filesUnderTests() as $path) {
             if ($path === __FILE__) {
                 continue;
             }
@@ -69,7 +69,7 @@ final class WireTestsTest extends TestCase
      *
      * @return list<string>
      */
-    private static function test_files(): array
+    private static function filesUnderTests(): array
     {
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(base_path('tests'), FilesystemIterator::SKIP_DOTS),

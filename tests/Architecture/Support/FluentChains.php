@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Support\DeclaredType;
+use App\Support\ReflectedMethod;
+use App\Support\Reflector;
 use FilesystemIterator;
 use Illuminate\Database\Eloquent\Model;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
 
 /**
  * The faults of rule 115 in a set of classes: a public method of a fluent class that hands back another fluent class
@@ -53,7 +53,7 @@ final readonly class FluentChains
 
                 $class = $namespace.str_replace('/', '\\', substr($file->getPathname(), strlen($folder) + 1, -4));
 
-                if (class_exists($class)) {
+                if (Reflector::exists($class) && Reflector::of($class)->isClass()) {
                     $classes[] = $class;
                 }
             }
@@ -77,17 +77,16 @@ final readonly class FluentChains
         foreach ($fluent as $class) {
             foreach (self::publicMethods($class) as $method) {
                 $returned = self::returnedClass($method);
-                $name = new ReflectionClass($class)->getShortName().'::'.$method->getName();
+                $name = Reflector::of($class)->shortName().'::'.$method->name();
+                $switches = $returned !== null && $returned !== $class && in_array($returned, $fluent, true);
 
-                if ($returned !== null && $returned !== $class && in_array($returned, $fluent, true) && ! self::isGetter($method)) {
+                if ($switches && ! self::isGetter($method)) {
                     $faults[] = "{$name} switches the chain to {$returned}";
                 }
 
-                if (preg_match(self::FLATTENED, $method->getName()) === 1 && ! in_array(
-                    $method->getName(),
-                    self::SCOPE_VERBS,
-                    true,
-                )) {
+                $flattens = preg_match(self::FLATTENED, $method->name()) === 1;
+
+                if ($flattens && ! in_array($method->name(), self::SCOPE_VERBS, true)) {
                     $faults[] = "{$name} names an inner subject: open that subject in a scope";
                 }
             }
@@ -102,14 +101,17 @@ final readonly class FluentChains
     private static function isFluent(string $class): bool
     {
         // A row is no chain's subject: a model's own changes answer it, never a chain of verbs on it.
-        if (is_subclass_of($class, Model::class)) {
+        if (Reflector::of($class)->isSubclassOf(Model::class)) {
             return false;
         }
 
         foreach (self::publicMethods($class) as $method) {
-            $type = $method->getReturnType();
+            $returnsItself = $method->returnType()
+                ->map(fn (DeclaredType $type) => $type->isNamed()
+                    && in_array($type->name(), ['self', 'static', $class], true))
+                ->getOrElse(false);
 
-            if ($type instanceof ReflectionNamedType && in_array($type->getName(), ['self', 'static', $class], true)) {
+            if ($returnsItself) {
                 return true;
             }
         }
@@ -121,48 +123,48 @@ final readonly class FluentChains
      * A getter that ends a chain is named for what it gives back: a thing called by a name, a thing of another, a
      * service or a fixture builder.
      */
-    private static function isGetter(ReflectionMethod $method): bool
+    private static function isGetter(ReflectedMethod $method): bool
     {
-        $name = $method->getName();
+        $name = $method->name();
 
         return str_ends_with($name, 'Called') || str_ends_with($name, 'Of') || in_array($name, ['service', 'fixtures'], true);
     }
 
     /**
+     * The class the method hands back; none for one of PHP's own types, itself or no single named type.
+     *
      * @return class-string|null
      */
-    private static function returnedClass(ReflectionMethod $method): string|null
+    private static function returnedClass(ReflectedMethod $method): string|null
     {
-        $type = $method->getReturnType();
-
-        if (! $type instanceof ReflectionNamedType || $type->isBuiltin() || in_array(
-            $type->getName(),
-            ['self', 'static'],
-            true,
-        )) {
-            return null;
-        }
-
-        return $type->getName();
+        return $method->returnType()
+            ->filter(fn (DeclaredType $type) => $type->isNamed()
+                && ! $type->isBuiltin()
+                && ! in_array($type->name(), ['self', 'static'], true))
+            ->map(fn (DeclaredType $type) => $type->className())
+            ->getOrElse(null);
     }
 
     /**
+     * The public methods the class declares itself, neither static nor its constructor.
+     *
      * @param  class-string  $class
-     * @return list<ReflectionMethod>
+     * @return list<ReflectedMethod>
      */
     private static function publicMethods(string $class): array
     {
-        $type = new ReflectionClass($class);
+        $type = Reflector::of($class);
 
         if ($type->isInterface() || $type->isTrait() || $type->isEnum()) {
             return [];
         }
 
         return array_values(array_filter(
-            $type->getMethods(ReflectionMethod::IS_PUBLIC),
-            fn (ReflectionMethod $method) => ! $method->isStatic()
-                && ! $method->isConstructor()
-                && $method->getDeclaringClass()->getName() === $class,
+            $type->methods(),
+            fn (ReflectedMethod $method) => $method->isPublic()
+                && ! $method->isStatic()
+                && $method->name() !== '__construct'
+                && $method->declaringClass()->name() === $class,
         ));
     }
 }

@@ -18,6 +18,8 @@ final class PageLoaders
 
     /**
      * The read under the name, answered by the reader class.
+     *
+     * @param  class-string  $reader
      */
     public function add(string $name, string $reader): self
     {
