@@ -134,9 +134,7 @@ final readonly class ScenarioPlayer
         }
 
         if ($step->stepType === ScenarioStepType::AskUser) {
-            $attempt = $run->signInAttempt();
-            $link = $attempt === null ? null : $this->challenges->challengeOf($attempt)?->address;
-            $typed = trim($askUser($step->pause($link)));
+            $typed = trim($askUser($step->pause($this->signInLinkOf($run))));
 
             if ($typed !== '') {
                 $run->holdSignInCode($typed);
@@ -204,5 +202,29 @@ final readonly class ScenarioPlayer
         }
 
         throw ScenarioStuck::machineChangeUnanswered(implode(' ', $argv), self::MACHINE_CHANGE_SECOND_LIMIT);
+    }
+
+    /**
+     * The link of the run's sign-in, waited for a moment: the attempt shows as waiting just before its link is kept.
+     */
+    private function signInLinkOf(ScenarioRun $run): string|null
+    {
+        $attempt = $run->signInAttempt();
+
+        if ($attempt === null) {
+            return null;
+        }
+
+        for ($look = 0; $look < self::LINK_LOOKS; $look++) {
+            $challenge = $this->challenges->challengeOf($attempt);
+
+            if ($challenge !== null) {
+                return $challenge->address;
+            }
+
+            $this->sleeper->sleep(self::LOOK_NANOSECONDS);
+        }
+
+        return null;
     }
 }

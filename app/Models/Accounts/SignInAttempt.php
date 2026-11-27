@@ -518,6 +518,14 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     }
 
     /**
+     * Whether the sign-in finished signed in: as a new account, or as one the journal already held.
+     */
+    public function isSignedIn(): bool
+    {
+        return in_array($this->status, [SignInStatus::Complete, SignInStatus::AlreadyAdded], true);
+    }
+
+    /**
      * The attempt, while the owner may read it; none once it is gone or another owner's.
      */
     public static function findReadableByOwner(string $attemptId): self|null
@@ -535,6 +543,14 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
         return self::query()->whereKey($attemptId)->lockForUpdate()->firstOr(
             SignInAttemptMissing::throwing()->for($attemptId),
         );
+    }
+
+    /**
+     * The attempt as the journal itself reads it, whoever acts; none once it is gone.
+     */
+    public static function findForJournal(string $attemptId): self|null
+    {
+        return self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($attemptId)->first();
     }
 
     /**
