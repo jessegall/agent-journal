@@ -51,7 +51,9 @@ final class RecordPageRequest extends FormRequest
      */
     public function commentIdsToLocate(): array
     {
-        return array_values(array_filter([$this->optionalText('commentLocation')], is_string(...)));
+        $asked = $this->optionalText('commentLocation');
+
+        return $asked === null ? [] : [$asked];
     }
 
     /**
@@ -61,7 +63,9 @@ final class RecordPageRequest extends FormRequest
      */
     public function sectionsVersions(): array
     {
-        return array_values(array_filter([$this->optionalText('sectionsVersion')], is_string(...)));
+        $asked = $this->optionalText('sectionsVersion');
+
+        return $asked === null ? [] : [$asked];
     }
 
     /**

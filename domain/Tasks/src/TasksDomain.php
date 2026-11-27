@@ -146,10 +146,6 @@ final class TasksDomain extends Domain implements
     }
 
     /**
-     * @return list<class-string>
-     */
-
-    /**
      * @return list<class-string<Domain>>
      */
     public function requires(): array

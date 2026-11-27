@@ -6,7 +6,9 @@ namespace Domain\Chat\Http\Requests;
 
 use App\Http\Requests\Concerns\ReadsOptionalText;
 use Illuminate\Foundation\Http\FormRequest;
+use PhpOption\None;
 use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The chat window's own query: the agent it talks to, when one is chosen, the chat, and where the dock's next page
@@ -67,7 +69,9 @@ final class ConversationRequest extends FormRequest
      */
     public function chosenInbox(): Option
     {
-        return Option::fromValue($this->optionalText('inbox'))->map(strtolower(...));
+        $chosen = $this->optionalText('inbox');
+
+        return $chosen === null ? None::create() : new Some(strtolower($chosen));
     }
 
     /**
@@ -83,6 +87,8 @@ final class ConversationRequest extends FormRequest
      */
     public function chosenAgent(): Option
     {
-        return Option::fromValue($this->optionalText('agent'))->map(strtolower(...));
+        $chosen = $this->optionalText('agent');
+
+        return $chosen === null ? None::create() : new Some(strtolower($chosen));
     }
 }
