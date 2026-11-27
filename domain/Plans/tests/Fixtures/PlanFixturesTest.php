@@ -31,11 +31,14 @@ final class PlanFixturesTest extends TestCase
         $plans = $this->journal->owner()->fixtures(PlanFixtures::class)
             ->plan('Release')
             ->pausedPlan('Later')
-            ->phase('Release', 'Design')
-            ->phase('Release', 'Build');
+            ->withPlan('Release', fn (TestPlan $plan) => $plan->addPhase('Design')->addPhase('Build'));
 
         $plans->assertStatus('Release', PlanStatus::Planned)->assertStatus('Later', PlanStatus::Paused);
-        $plans->assertPhase('Design', plan: 'Release', number: 1)->assertPhase('Build', plan: 'Release', number: 2);
+
+        $plans
+            ->withPhase('Design', fn (TestPhase $phase) => $phase->assertNumberIn($plans->planCalled('Release'), 1))
+            ->withPhase('Build', fn (TestPhase $phase) => $phase->assertNumberIn($plans->planCalled('Release'), 2));
+
         $this->assertSame($this->journal->ownerUser()->id, $plans->planCalled('Release')->creator_id);
     }
 
@@ -59,8 +62,9 @@ final class PlanFixturesTest extends TestCase
 
         $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release')
-            ->phaseWithTask('Release', 'Build', $task)
-            ->assertPhaseTask('Build', $task, 1);
+            ->withPlan('Release', fn (TestPlan $plan) => $plan
+                ->addPhase('Build')->withPhase('Build', fn (TestPhase $phase) => $phase->place($task)))
+            ->withPhase('Build', fn (TestPhase $phase) => $phase->assertTask($task, 1));
     }
 
     public function test_a_record_that_is_no_task_is_not_placed(): void
@@ -68,7 +72,10 @@ final class PlanFixturesTest extends TestCase
         $plans = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Release');
         $plan = $plans->planCalled('Release')->assignmentIdentity();
 
-        $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->phaseWithTask('Release', 'Build', $plan));
+        $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->withPlan('Release', fn (TestPlan $release) => $release
+            ->addPhase('Build')
+            ->withPhase('Build', fn (TestPhase $phase) => $phase->place($plan))));
+
         $this->assertSame(0, Phase::query()->count());
     }
 
@@ -77,14 +84,13 @@ final class PlanFixturesTest extends TestCase
         $plans = $this->journal->owner()->fixtures(PlanFixtures::class)
             ->plan('First')
             ->plan('Second')
-            ->phase('First', 'First build', title: 'Build')
-            ->phase('Second', 'Second build', title: 'Build');
+            ->withPlan('First', fn (TestPlan $first) => $first->addPhase('First build', title: 'Build'))
+            ->withPlan('Second', fn (TestPlan $second) => $second->addPhase('Second build', title: 'Build'));
 
-        $plans->assertPhase('First build', plan: 'First', number: 1)->assertPhase(
-            'Second build',
-            plan: 'Second',
-            number: 1,
-        );
+        $plans
+            ->withPhase('First build', fn (TestPhase $phase) => $phase->assertNumberIn($plans->planCalled('First'), 1))
+            ->withPhase('Second build', fn (TestPhase $phase) => $phase
+                ->assertNumberIn($plans->planCalled('Second'), 1));
 
         $this->assertNotSame($plans->phaseCalled('First build')->id, $plans->phaseCalled('Second build')->id);
     }
@@ -94,7 +100,10 @@ final class PlanFixturesTest extends TestCase
         $plans = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Release');
 
         $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->plan('Release'));
-        $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->phase('Missing', 'Build'));
+
+        $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->withPlan('Missing', fn (TestPlan $plan) => $plan
+            ->addPhase('Build')));
+
         $this->assertSame(1, Plan::query()->count());
         $this->assertSame(0, Phase::query()->count());
     }
@@ -129,9 +138,8 @@ final class PlanFixturesTest extends TestCase
 
         $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release')
-            ->phase('Release', 'Work')
-            ->placeTasks('Work', $first, $second)
-            ->assertPhaseTask('Work', $first, 1)
-            ->assertPhaseTask('Work', $second, 2);
+            ->withPlan('Release', fn (TestPlan $plan) => $plan->addPhase('Work'))
+            ->withPhase('Work', fn (TestPhase $phase) => $phase
+                ->place($first, $second)->assertTask($first, 1)->assertTask($second, 2));
     }
 }

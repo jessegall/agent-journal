@@ -6,7 +6,6 @@ namespace Domain\Sequences\Tests\States;
 
 use App\Hooks\Enums\AnswerType;
 use App\Support\ActorReference;
-use App\Support\Inputs\StopRequested;
 use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStepReached;
@@ -14,10 +13,11 @@ use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Support\States\FollowSequenceState;
 use Domain\Sequences\Support\States\Support\FollowSequenceStateReference;
 use Domain\Sequences\Tests\TestCase;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
+use Tests\Support\Seeding\SessionHook;
 use Tests\Support\Seeding\StateHandle;
-use Tests\Support\Seeding\StateObservation;
 
 /**
  * The follow-sequence state on the real engine: it holds the agent's stop with the step in hand, moves on with each
@@ -42,57 +42,56 @@ final class FollowSequenceStateTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Writer');
+        $this->journal->owner()->agent('Writer')->pushState('Writer', $this->following());
     }
 
     public function test_a_running_step_refuses_the_stop(): void
     {
-        $this->following()->given(
-            $this->stop(),
-            fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
-        );
+        $this->journal->stateOn('Writer', $this->following(), fn (StateHandle $following) => $following->steps(
+            [SessionHook::stop()],
+            fn (StateAssert $state) => $state->answers(AnswerType::Deny),
+        ));
     }
 
     public function test_the_refused_stop_names_the_step_in_hand_and_the_next_once_the_run_reaches_it(): void
     {
-        $hooks = $this->journal->hooksFor($this->journal->sessionOf('Writer'));
 
-        $this->following()
-            ->given($hooks->stop('turn-1'), fn (StateObservation $state) => $state->assertRefusedWith('Read the brief'))
-            ->given(
-                [new SequenceStepReached(self::RUN, $this->follower(), 2), $hooks->stop('turn-2')],
-                fn (StateObservation $state) => $state->assertRefusedWith('Write the code'),
-            );
+        $this->journal->stateOn('Writer', $this->following(), fn (StateHandle $following) => $following
+            ->steps([SessionHook::stop('turn-1')], fn (StateAssert $state) => $state->refuses('Read the brief'))
+            ->steps(
+                [new SequenceStepReached(self::RUN, $this->follower(), 2), SessionHook::stop('turn-2')],
+                fn (StateAssert $state) => $state->refuses('Write the code'),
+            ));
     }
 
     public function test_hearing_the_next_step_moves_it_on_and_another_run_does_not(): void
     {
-        $this->following()->given(
+        $this->journal->stateOn('Writer', $this->following(), fn (StateHandle $following) => $following->steps(
             [
                 new SequenceStepReached('run-2', $this->follower(), 3),
                 new SequenceStepReached(self::RUN, $this->follower(), 2),
             ],
-            fn (StateObservation $state) => $state->assertValue('currentStep', 2),
-        );
+            fn (StateAssert $state) => $state->where('currentStep', 2),
+        ));
     }
 
     public function test_the_end_of_its_run_ends_it_and_another_run_does_not(): void
     {
-        $this->following()
-            ->given(
+        $this->journal->stateOn('Writer', $this->following(), fn (StateHandle $following) => $following
+            ->event(
                 new SequenceEnded('run-2', $this->follower(), SequenceRunStatus::Finished),
-                fn (StateObservation $state) => $state->assertLive(),
+                fn (StateAssert $state) => $state->isLive(),
             )
-            ->given(
+            ->event(
                 new SequenceEnded(self::RUN, $this->follower(), SequenceRunStatus::Finished),
-                fn (StateObservation $state) => $state->assertFinished(),
-            );
+                fn (StateAssert $state) => $state->isFinished(),
+            ));
     }
 
     /**
      * A run of three steps at its first, held in memory only: the state keeps what it needs of it in its own values.
      */
-    private function following(): StateHandle
+    private function following(): FollowSequenceStateReference
     {
         $run = new SequenceRun();
         $run->id = self::RUN;
@@ -106,19 +105,11 @@ final class FollowSequenceStateTest extends TestCase
 
         $run->current_step = 1;
 
-        return $this->journal->pushState(
-            $this->journal->sessionOf('Writer'),
-            FollowSequenceStateReference::forRun($run),
-        );
+        return FollowSequenceStateReference::forRun($run);
     }
 
     private function follower(): ActorReference
     {
         return $this->journal->actorCalled('Writer');
-    }
-
-    private function stop(): StopRequested
-    {
-        return $this->journal->hooksFor($this->journal->sessionOf('Writer'))->stop();
     }
 }

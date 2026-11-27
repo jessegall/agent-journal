@@ -158,7 +158,7 @@ func leftmostStatement(statement *syntax.Stmt) *syntax.Stmt {
 	}
 }
 
-// spanNode is a stand-in node covering a chosen range.
+// spanNode is a placeholder node covering a chosen range.
 type spanNode struct{ start, end syntax.Pos }
 
 func (node spanNode) Pos() syntax.Pos { return node.start }

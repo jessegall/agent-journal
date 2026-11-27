@@ -9,6 +9,7 @@ use App\Hosts\Commands\NotifyHostOutput\NotifyHostOutputCommand;
 use App\Hosts\Data\HostOutputData;
 use App\Hosts\ProcessFeed;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -28,16 +29,27 @@ final class NotifyHostOutputTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->enrollHost('Mac', [base_path()])->enrollHost('Other', [base_path()])->openHostProcess('Mac', 'shell');
+        $this->journal
+            ->enrollHost('Mac', [base_path()])
+            ->enrollHost('Other', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac
+                ->openProcess('shell'));
     }
 
     public function test_the_output_is_kept_as_the_processs_latest_frame(): void
     {
         $process = $this->journal->hostProcessCalled('shell')->id;
 
-        $this->journal->asSystem(new NotifyHostOutputCommand($this->journal->hostCalled('Mac')->hostId, $process, self::FRAME));
+        $this->journal->asSystem(new NotifyHostOutputCommand(
+            $this->journal->hostCalled('Mac')->hostId,
+            $process,
+            self::FRAME,
+        ));
 
-        $this->journal->assertResult('ready', $this->journal->service(ProcessFeed::class)->latestFrame($process)?->rows[0]);
+        $this->journal->assertResult(
+            'ready',
+            $this->journal->service(ProcessFeed::class)->latestFrame($process)?->rows[0],
+        );
     }
 
     public function test_output_of_another_hosts_process_or_over_the_limit_is_refused_and_not_kept(): void

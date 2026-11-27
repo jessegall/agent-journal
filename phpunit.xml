@@ -4,6 +4,7 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="tests/bootstrap.php"
          colors="true"
+         defaultTestSuite="Unit,Entry,Machinery,Architecture"
 >
     <extensions>
         <bootstrap class="Tests\Support\TimeLimits\TimeLimitExtension"/>
@@ -21,7 +22,6 @@
             <directory>tests/Hooks</directory>
             <directory>tests/Middleware</directory>
             <directory>tests/Reads</directory>
-            <directory>tests/StandIn</directory>
             <directory>domain/*/tests/Commands</directory>
             <directory>domain/*/tests/States</directory>
             <directory>domain/*/tests/Routes</directory>
@@ -35,6 +35,10 @@
         </testsuite>
         <testsuite name="Architecture">
             <directory>tests/Architecture</directory>
+        </testsuite>
+        <!-- What crosses the wire between the journal, the Go host and the programs it starts: run with test:wire. -->
+        <testsuite name="Wire">
+            <directory>tests/Wire</directory>
         </testsuite>
     </testsuites>
     <source>

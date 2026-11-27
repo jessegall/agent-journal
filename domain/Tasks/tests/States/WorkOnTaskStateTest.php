@@ -14,7 +14,6 @@ use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
-use App\Support\Inputs\ToolFinished;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
@@ -40,12 +39,12 @@ use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\HookInputs;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
-use Tests\Support\Seeding\SessionHooks;
+use Tests\Support\Seeding\SessionHook;
 use Tests\Support\Seeding\StateHandle;
-use Tests\Support\Seeding\StateObservation;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -105,45 +104,44 @@ final class WorkOnTaskStateTest extends TestCase
         $this->startWork();
         $other = $this->journal->fixtures(TaskFixtures::class)->createTask('Other', 'Independent work');
 
-        $this->working()
-            ->given(
+        $this->journal->stateOn($this->work->session, $this->working(), fn (StateHandle $working) => $working
+            ->event(
                 new $ending($other->id, TaskStatus::Started, 'entry-1'),
-                fn (StateObservation $state) => $state->assertLive(),
+                fn (StateAssert $state) => $state->isLive(),
             )
-            ->given(
+            ->event(
                 new $ending($this->work->task->id, TaskStatus::Started, 'entry-2'),
-                fn (StateObservation $state) => $state->assertFinished(),
-            );
+                fn (StateAssert $state) => $state->isFinished(),
+            ));
     }
 
     public function test_a_stop_is_held_back_while_its_claim_holds_and_let_through_once_a_claim_assignment_ended(): void
     {
         $this->startWork();
 
-        $this->working()
-            ->given([
+        $this->journal->stateOn($this->work->session, $this->working(), fn (StateHandle $working) => $working
+            ->steps([
                 $this->claimed($this->agent(), ['claim-1', 'seat-1', 'work-1']),
-                $this->hooks()->stop('turn-1'),
-            ], fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny))
-            ->given([
+                SessionHook::stop('turn-1'),
+            ], fn (StateAssert $state) => $state->answers(AnswerType::Deny))
+            ->steps([
                 new AssignmentsEnded(['seat-1']),
-                $this->hooks()->stop('turn-2'),
-            ], function (StateObservation $state) {
-                $state->assertStateAnswer(AnswerType::Delegate);
-                $state->assertFinished();
-            });
+                SessionHook::stop('turn-2'),
+            ], fn (StateAssert $state) => $state
+                ->answers(AnswerType::Delegate)
+                ->isFinished()));
     }
 
     public function test_the_late_end_of_an_earlier_claim_leaves_a_resumed_run_held(): void
     {
         $this->startWork();
 
-        $this->working()->given([
+        $this->journal->stateOn($this->work->session, $this->working(), fn (StateHandle $working) => $working->steps([
             $this->claimed($this->agent(), ['claim-1', 'work-1']),
             $this->claimed($this->agent(), ['claim-2', 'work-1']),
             new AssignmentsEnded(['claim-1']),
-            $this->hooks()->stop(),
-        ], fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny));
+            SessionHook::stop(),
+        ], fn (StateAssert $state) => $state->answers(AnswerType::Deny)));
     }
 
     public function test_a_newer_run_of_its_task_ends_the_older_run(): void
@@ -157,7 +155,8 @@ final class WorkOnTaskStateTest extends TestCase
             ['claim-9'],
         );
 
-        $this->working()->given($newer, fn (StateObservation $state) => $state->assertFinished());
+        $this->journal->stateOn($this->work->session, $this->working(), fn (StateHandle $working) => $working
+            ->steps([$newer], fn (StateAssert $state) => $state->isFinished()));
     }
 
     public function test_a_claim_another_agent_took_lets_the_stop_through(): void
@@ -165,39 +164,38 @@ final class WorkOnTaskStateTest extends TestCase
         $this->startWork();
         $other = ActorReference::fromText('agent:01jd8x0g9m3qz6v4k2t7r5w1cz');
 
-        $this->working()->given(
-            [$this->claimed($other, ['claim-3']), $this->hooks()->stop()],
-            fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-        );
+        $this->journal->stateOn($this->work->session, $this->working(), fn (StateHandle $working) => $working->steps(
+            [$this->claimed($other, ['claim-3']), SessionHook::stop()],
+            fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+        ));
     }
 
     public function test_a_log_falls_due_after_the_tool_use_limit(): void
     {
         $this->startWork();
-        $uses = array_fill(0, WorkOnTaskState::LOG_DUE_AFTER - 1, $this->toolFinished());
+        $uses = array_fill(0, WorkOnTaskState::LOG_DUE_AFTER - 1, SessionHook::toolFinished());
 
-        $this->working()
-            ->given(
+        $this->journal->stateOn($this->work->session, $this->working(), fn (StateHandle $working) => $working
+            ->steps(
                 $uses,
-                fn (StateObservation $state) => $state->assertValue(
+                fn (StateAssert $state) => $state->where(
                     'toolUsesSinceLog',
                     WorkOnTaskState::LOG_DUE_AFTER - 1,
                 ),
             )
-            ->given($this->toolFinished(), function (StateObservation $state) {
-                $state->assertPushed(LogDueStateReference::forTask($this->work->task->id, $this->work->task->number));
-                $state->assertValue('toolUsesSinceLog', 0);
-            });
+            ->steps([SessionHook::toolFinished()], fn (StateAssert $state) => $state
+                ->pushed(LogDueStateReference::forTask($this->work->task->id, $this->work->task->number))
+                ->where('toolUsesSinceLog', 0)));
     }
 
     public function test_a_log_on_its_task_starts_the_count_again(): void
     {
         $this->startWork();
 
-        $this->working()->given(
-            [$this->toolFinished(), new TaskLogged($this->work->task->id, 'entry-1')],
-            fn (StateObservation $state) => $state->assertValue('toolUsesSinceLog', 0),
-        );
+        $this->journal->stateOn($this->work->session, $this->working(), fn (StateHandle $working) => $working->steps(
+            [SessionHook::toolFinished(), new TaskLogged($this->work->task->id, 'entry-1')],
+            fn (StateAssert $state) => $state->where('toolUsesSinceLog', 0),
+        ));
     }
 
     public function test_entering_or_resuming_focuses_its_task_and_exiting_takes_the_focus_away(): void
@@ -209,12 +207,12 @@ final class WorkOnTaskStateTest extends TestCase
         $second = $this->journal->startScenario(new StartNamedTask('Jo', 'Writer', 'Second'));
         $this->journal->sinkCommands();
 
-        $this->journal
-            ->stateOn($second->session, WorkOnTaskStateReference::forTask($second->task))
-            ->given(
-                new TaskFinished($second->task->id, TaskStatus::Started, 'entry-1'),
-                fn (StateObservation $state) => $state->assertFinished(),
-            );
+        $secondWork = WorkOnTaskStateReference::forTask($second->task);
+
+        $this->journal->stateOn($second->session, $secondWork, fn (StateHandle $working) => $working->event(
+            new TaskFinished($second->task->id, TaskStatus::Started, 'entry-1'),
+            fn (StateAssert $state) => $state->isFinished(),
+        ));
 
         $this->journal->assertDispatchedInOrder([
             ExpectedCommand::of(UnfocusTaskCommand::class, ['taskId' => $second->task->id]),
@@ -335,10 +333,9 @@ final class WorkOnTaskStateTest extends TestCase
     /**
      * The work state its start pushed for the agent's task.
      */
-    private function working(): StateHandle
+    private function working(): WorkOnTaskStateReference
     {
-        return $this->journal->stateOn($this->work->session, WorkOnTaskStateReference::forTask($this->work->task))
-            ->given([], fn (StateObservation $state) => $state->assertLive());
+        return WorkOnTaskStateReference::forTask($this->work->task);
     }
 
     /**
@@ -364,16 +361,6 @@ final class WorkOnTaskStateTest extends TestCase
     private function agent(): ActorReference
     {
         return $this->journal->actorCalled('Writer');
-    }
-
-    private function hooks(): SessionHooks
-    {
-        return $this->journal->hooksFor($this->work->session);
-    }
-
-    private function toolFinished(): ToolFinished
-    {
-        return $this->hooks()->toolFinished();
     }
 
     /**

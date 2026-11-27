@@ -13,11 +13,11 @@ use App\Skills\Enums\ReadEvidence;
 use App\Stacks\ReadSkillState;
 use App\Stacks\Support\ReadSkillStateReference;
 use Tests\Fixtures\Hooks\ListedCommandParser;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
-use Tests\Support\Seeding\SessionHooks;
+use Tests\Support\Seeding\SessionHook;
 use Tests\Support\Seeding\StateHandle;
-use Tests\Support\Seeding\StateObservation;
 use Tests\TestCase;
 
 /**
@@ -37,7 +37,7 @@ final class ReadSkillStateTest extends TestCase
 
     private AgentSession $session;
 
-    private SessionHooks $hooks;
+    private ReadSkillStateReference $reading;
 
     protected function setUp(): void
     {
@@ -46,124 +46,113 @@ final class ReadSkillStateTest extends TestCase
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
         $this->journal->owner()->agent('Writer');
         $this->session = $this->journal->sessionOf('Writer');
-        $this->hooks = $this->journal->hooksFor($this->session);
+        $this->reading = ReadSkillStateReference::forSession($this->session->id);
+        $this->journal->pushState('Writer', $this->reading);
     }
 
     public function test_pushed_empty_it_stays_live_asks_nothing_and_refuses_nothing(): void
     {
-        $this->reading()
-            ->given(
-                $this->hooks->fileEdit('app/Thing.php'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+        $this->journal->stateOn('Writer', $this->reading, fn (StateHandle $reading) => $reading
+            ->fileEdit(
+                'app/Thing.php',
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
             )
-            ->given($this->hooks->stop(), function (StateObservation $state) {
-                $state->assertStateAnswer(AnswerType::Delegate);
-                $state->assertLive();
-            });
+            ->stop(fn (StateAssert $state) => $state
+                ->answers(AnswerType::Delegate)
+                ->isLive()));
     }
 
     public function test_an_ask_puts_its_skills_on_the_list_once_each_in_the_order_asked(): void
     {
-        $this->reading()
-            ->given($this->asked('alpha', 'beta'), function (StateObservation $state) {
-                $state->assertValue('skillKeys', ['alpha', 'beta']);
-                $state->assertValue('hasBeenAsked', true);
-            })
-            ->given($this->asked('beta', 'gamma'), function (StateObservation $state) {
-                $state->assertValue('skillKeys', ['alpha', 'beta', 'gamma']);
-            });
+        $this->journal->stateOn('Writer', $this->reading, fn (StateHandle $reading) => $reading
+            ->steps([$this->asked('alpha', 'beta')], fn (StateAssert $state) => $state
+                ->where('skillKeys', ['alpha', 'beta'])
+                ->where('hasBeenAsked', true))
+            ->steps([$this->asked('beta', 'gamma')], fn (StateAssert $state) => $state
+                ->where('skillKeys', ['alpha', 'beta', 'gamma'])));
     }
 
     public function test_a_replayed_ask_changes_nothing_and_a_new_skill_starts_a_fresh_budget(): void
     {
-        $this->reading()
-            ->given(
-                [$this->asked('alpha'), $this->hooks->toolFinished(), $this->hooks->toolFinished('pwd')],
-                fn (StateObservation $state) => $state->assertValue('toolUses', 2),
+        $this->journal->stateOn('Writer', $this->reading, fn (StateHandle $reading) => $reading
+            ->steps(
+                [$this->asked('alpha'), SessionHook::toolFinished(), SessionHook::toolFinished('pwd')],
+                fn (StateAssert $state) => $state->where('toolUses', 2),
             )
-            ->given($this->asked('alpha'), fn (StateObservation $state) => $state->assertValue('toolUses', 2))
-            ->given($this->asked('beta'), fn (StateObservation $state) => $state->assertValue('toolUses', 0));
+            ->steps([$this->asked('alpha')], fn (StateAssert $state) => $state->where('toolUses', 2))
+            ->steps([$this->asked('beta')], fn (StateAssert $state) => $state->where('toolUses', 0)));
     }
 
     public function test_a_read_takes_only_its_skill_off_and_an_empty_list_ends_the_state(): void
     {
-        $this->reading()
-            ->given([$this->asked('alpha', 'beta'), $this->read('alpha')], function (StateObservation $state) {
-                $state->assertValue('skillKeys', ['beta']);
-                $state->assertLive();
-            })
-            ->given($this->read('beta'), fn (StateObservation $state) => $state->assertFinished());
+        $this->journal->stateOn('Writer', $this->reading, fn (StateHandle $reading) => $reading
+            ->steps([$this->asked('alpha', 'beta'), $this->read('alpha')], fn (StateAssert $state) => $state
+                ->where('skillKeys', ['beta'])
+                ->isLive())
+            ->steps([$this->read('beta')], fn (StateAssert $state) => $state->isFinished()));
     }
 
     public function test_a_read_or_an_ask_of_another_session_does_not_reach_it(): void
     {
-        $this->reading()->given(
+        $this->journal->stateOn('Writer', $this->reading, fn (StateHandle $reading) => $reading->steps(
             [
                 new SkillReadAsked('another-session', ['alpha']),
                 new SkillRead('another-session', 'alpha', ReadEvidence::SkillShow),
             ],
-            fn (StateObservation $state) => $state->assertValue('skillKeys', []),
-        );
+            fn (StateAssert $state) => $state->where('skillKeys', []),
+        ));
     }
 
     public function test_once_five_tool_uses_are_spent_changes_are_refused_naming_only_the_skills_to_read(): void
     {
-        $this->reading()
-            ->given([$this->asked('alpha', 'beta'), $this->read('alpha')], fn (StateObservation $s) => $s->assertLive())
-            ->given(
-                $this->hooks->fileEdit('app/Thing.php'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+        $this->journal->stateOn('Writer', $this->reading, fn (StateHandle $reading) => $reading
+            ->steps([$this->asked('alpha', 'beta'), $this->read('alpha')], fn (StateAssert $s) => $s->isLive())
+            ->fileEdit(
+                'app/Thing.php',
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
             )
-            ->given(
+            ->steps(
                 [
-                    $this->hooks->toolFinished(),
-                    $this->hooks->toolFinished('pwd'),
-                    $this->hooks->toolFinished('ls'),
-                    $this->hooks->toolFinished('date'),
-                    $this->hooks->toolFinished('whoami'),
-                    $this->hooks->fileEdit('app/Thing.php'),
+                    SessionHook::toolFinished(),
+                    SessionHook::toolFinished('pwd'),
+                    SessionHook::toolFinished('ls'),
+                    SessionHook::toolFinished('date'),
+                    SessionHook::toolFinished('whoami'),
+                    SessionHook::fileEdit('app/Thing.php'),
                 ],
-                function (StateObservation $state) {
-                    $state->assertValue('toolUses', 5);
-                    $state->assertStateAnswer(AnswerType::Deny);
-                    $state->assertRefusedWith('beta');
-                },
+                fn (StateAssert $state) => $state
+                    ->where('toolUses', 5)
+                    ->answers(AnswerType::Deny)
+                    ->refuses('beta'),
             )
-            ->given(
-                $this->hooks->shell('composer update'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
+            ->shell(
+                'composer update',
+                fn (StateAssert $state) => $state->answers(AnswerType::Deny),
             )
-            ->given(
-                $this->hooks->shell('git status'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+            ->shell(
+                'git status',
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
             )
-            ->given(
-                $this->hooks->shell('php artisan skill:show beta'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+            ->shell(
+                'php artisan skill:show beta',
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
             )
-            ->given(
-                $this->hooks->shell('php artisan skill:show beta; rm -rf x'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
+            ->shell(
+                'php artisan skill:show beta; rm -rf x',
+                fn (StateAssert $state) => $state->answers(AnswerType::Deny),
             )
-            ->given($this->read('beta'), fn (StateObservation $state) => $state->assertFinished());
+            ->steps([$this->read('beta')], fn (StateAssert $state) => $state->isFinished()));
     }
 
     public function test_a_stop_with_skills_unread_is_refused_once_and_passes_right_after_the_refusal(): void
     {
-        $this->reading()
-            ->given([$this->asked('alpha'), $this->hooks->stop()], function (StateObservation $state) {
-                $state->assertStateAnswer(AnswerType::Deny);
-                $state->assertRefusedWith('alpha');
-            })
-            ->given(
-                $this->hooks->stopAfterRefusal(),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-            );
-    }
-
-    private function reading(): StateHandle
-    {
-        return $this->journal->pushState($this->session, ReadSkillStateReference::forSession($this->session->id));
+        $this->journal->stateOn('Writer', $this->reading, fn (StateHandle $reading) => $reading
+            ->steps([$this->asked('alpha'), SessionHook::stop()], fn (StateAssert $state) => $state
+                ->answers(AnswerType::Deny)
+                ->refuses('alpha'))
+            ->stopAfterRefusal(
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+            ));
     }
 
     private function asked(string ...$keys): SkillReadAsked

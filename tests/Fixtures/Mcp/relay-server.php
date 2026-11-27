@@ -3,15 +3,18 @@
 declare(strict_types=1);
 
 /*
- * A stand-in journal for the relay tests, run with php -S: it logs each call's body and headers to RELAY_SERVER_LOG
+ * A mock journal for the relay tests, run with php -S: it logs each call's body and headers to RELAY_SERVER_LOG
  * and answers like the MCP route would. A notification gets 202, "slow" waits two seconds, "broken" answers 500.
  */
 $body = (string) file_get_contents('php://input');
 $headers = array_change_key_case(getallheaders(), CASE_LOWER);
 file_put_contents(
-(string) getenv('RELAY_SERVER_LOG'),
- json_encode(['path' => parse_url((string) $_SERVER['REQUEST_URI'], PHP_URL_PATH), 'body' => $body, 'headers' => $headers])."\n",
- FILE_APPEND,
+    (string) getenv('RELAY_SERVER_LOG'),
+    json_encode(['path' => parse_url(
+        (string) $_SERVER['REQUEST_URI'],
+        PHP_URL_PATH,
+    ), 'body' => $body, 'headers' => $headers])."\n",
+    FILE_APPEND,
 );
 $frame = json_decode($body, true);
 header('Content-Type: application/json');

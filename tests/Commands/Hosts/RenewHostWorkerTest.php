@@ -10,6 +10,7 @@ use App\Hosts\Commands\RenewHostWorker\RenewHostWorkerCommand;
 use App\Models\Hosts\HostProcess;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -24,7 +25,11 @@ final class RenewHostWorkerTest extends TestCase
     public function test_the_current_worker_renews_its_lease_and_a_deposed_one_is_fenced(): void
     {
         $claimed = CarbonImmutable::parse('2026-11-26 10:00:00');
-        $this->journal->useServerClockAt($claimed)->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell');
+        $this->journal
+            ->useServerClockAt($claimed)
+            ->enrollHost('Mac', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac
+                ->openProcess('shell'));
         $id = $this->journal->hostProcessCalled('shell')->id;
         $generation = $this->journal->asSystem(new ClaimHostWorkerCommand($id));
 

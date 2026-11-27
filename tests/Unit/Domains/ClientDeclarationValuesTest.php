@@ -8,9 +8,13 @@ use App\Declarations\ActionRoute;
 use App\Declarations\ChoiceOption;
 use App\Declarations\FloatSize;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageLoaders;
+use App\Declarations\PageSlots;
 use App\Declarations\PaneChoice;
 use App\Declarations\SlotContext;
 use App\Declarations\ToggleOption;
+use App\Navigation\Declarations\Loader;
 use App\Navigation\Declarations\NavigationItem;
 use App\Navigation\Enums\Icon;
 use App\Navigation\Exceptions\InvalidNavigationDeclaration;
@@ -35,6 +39,34 @@ use ValueError;
  */
 final class ClientDeclarationValuesTest extends TestCase
 {
+    public function test_a_pages_scoped_parts_are_the_parts_their_values_declare_in_the_order_added(): void
+    {
+        $page = Page::make('plan', 'Plan', Icon::Plan, RecentNotesResolver::class, 'PlanResolver.vue')
+            ->slots(fn (PageSlots $slots) => $slots
+                ->add('bar', SlotContextType::Nothing)
+                ->record('inspector', 'plan', 'plan'))
+            ->actions(fn (PageActions $actions) => $actions
+                ->get('read', LooseResolver::class, 'read')
+                ->post('start', LooseResolver::class, 'start')
+                ->patch('rename', LooseResolver::class, 'rename')
+                ->delete('drop', LooseResolver::class, 'drop'))
+            ->loaders(fn (PageLoaders $loaders) => $loaders->add('rows', RecentNotesResolver::class));
+
+        $this->assertEquals(
+            [
+                [Slot::make('bar', SlotContextType::Nothing), Slot::record('inspector', 'plan', 'plan')],
+                [
+                    ActionRoute::get('read', LooseResolver::class, 'read'),
+                    ActionRoute::post('start', LooseResolver::class, 'start'),
+                    ActionRoute::patch('rename', LooseResolver::class, 'rename'),
+                    ActionRoute::delete('drop', LooseResolver::class, 'drop'),
+                ],
+                [Loader::make('rows', RecentNotesResolver::class)],
+            ],
+            [$page->slots, $page->actions, $page->loaders],
+        );
+    }
+
     public function test_a_parameterised_page_records_its_reader_data_class_slots_and_actions(): void
     {
         $page = Page::make('plan', 'Plan', Icon::Plan, RecentNotesResolver::class, 'PlanResolver.vue')
@@ -52,8 +84,8 @@ final class ClientDeclarationValuesTest extends TestCase
                     'new',
                 ),
             )
-            ->slots(Slot::record('inspector', 'plan', 'plan'))
-            ->actions(ActionRoute::post('start', LooseResolver::class, 'start'));
+            ->slots(fn (PageSlots $slots) => $slots->record('inspector', 'plan', 'plan'))
+            ->actions(fn (PageActions $actions) => $actions->post('start', LooseResolver::class, 'start'));
 
         $this->assertSame('{plan}', $page->path);
         $this->assertSame(RecentNotesData::class, $page->dataClass);

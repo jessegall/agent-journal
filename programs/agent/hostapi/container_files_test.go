@@ -13,22 +13,22 @@ import (
 	"testing"
 	"time"
 
-	"journal-agent/dockerstandin"
+	"journal-agent/dockermock"
 	"journal-agent/host"
 )
 
-// containedTable is a process table on a contained host whose agent daemon is the stand-in; the files the host
+// containedTable is a process table on a contained host whose agent daemon is the mock; the files the host
 // writes through its throwaway come back as the throwaway's standard input.
-func containedTable(t *testing.T) (*ProcessTable, *dockerstandin.Daemon, func() []byte) {
+func containedTable(t *testing.T) (*ProcessTable, *dockermock.Daemon, func() []byte) {
 	t.Helper()
-	daemon := dockerstandin.Start(t, standinImage)
+	daemon := dockermock.Start(t, mockImage)
 	var mutex sync.Mutex
 	var written []byte
-	daemon.Programs = func(container *dockerstandin.Container) dockerstandin.Program {
+	daemon.Programs = func(container *dockermock.Container) dockermock.Program {
 		if container.Config.Tty {
 			return nil
 		}
-		return func(_ context.Context, _ *dockerstandin.Container, input io.Reader, _ io.Writer) int {
+		return func(_ context.Context, _ *dockermock.Container, input io.Reader, _ io.Writer) int {
 			read, _ := io.ReadAll(input)
 			mutex.Lock()
 			written = read
@@ -37,8 +37,8 @@ func containedTable(t *testing.T) (*ProcessTable, *dockerstandin.Daemon, func() 
 		}
 	}
 	allowed := host.NewAllowedImages()
-	allowed.Replace([]string{standinImage})
-	rules := host.ContainerRules{Arrangement: host.Contained, InstallationName: "journal", Allowed: allowed, AgentImage: standinImage}
+	allowed.Replace([]string{mockImage})
+	rules := host.ContainerRules{Arrangement: host.Contained, InstallationName: "journal", Allowed: allowed, AgentImage: mockImage}
 	containers, err := host.ContainersOn(daemon.Host(), rules)
 	if err != nil {
 		t.Fatal(err)
@@ -71,7 +71,7 @@ func containedOrder(t *testing.T, change func(plan *OpenPlan)) Order {
 			{Name: "skills/a/SKILL.md", Content: "# a"},
 		},
 		Container: &host.ContainerManifest{
-			Image:          standinImage,
+			Image:          mockImage,
 			User:           "10001:10001",
 			Workdir:        "/workspace",
 			IsReadOnlyRoot: true,

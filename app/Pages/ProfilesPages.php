@@ -37,8 +37,9 @@ use App\Accounts\Enums\SignInType;
 use App\Accounts\Enums\UsageWindowSlot;
 use App\Agents\Drivers\Contracts\NativePartProvider;
 use App\Asks\Enums\SupervisorCoverageType;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageLoaders;
 use App\Http\Controllers\ActivateAccountController;
 use App\Http\Controllers\CancelSignInController;
 use App\Http\Controllers\DismissAccountNoticeController;
@@ -61,7 +62,6 @@ use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Contracts\SectionProvider;
 use App\Navigation\Declarations\DomainClient;
-use App\Navigation\Declarations\Loader;
 use App\Navigation\Declarations\NavigationItem;
 use App\Navigation\Enums\Icon;
 use App\Profiles\Data\ScriptDiagnostic;
@@ -101,25 +101,24 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
             Page::layout('accounts', 'Accounts', Icon::Accounts, AccountsWindowResolver::class)
                 ->at('')
                 ->visibleWhen(AccountOwnerCheck::class)
-                ->loaders(Loader::make('sign-in-receipt', SignInReceiptLoader::class))
-                ->actions(
-                    ActionRoute::post('{account}/activate', ActivateAccountController::class, 'activate'),
-                    ActionRoute::patch('{account}', RenameAccountController::class, 'rename'),
-                    ActionRoute::post('sign-ins', StartSignInController::class, 'start-sign-in'),
-                    ActionRoute::post('{account}/sign-in-again', SignInAgainController::class, 'sign-in-again'),
-                    ActionRoute::delete('{account}', RemoveAccountController::class, 'remove'),
-                    ActionRoute::post('{account}/cleanup/retry', RetryAccountCleanupController::class, 'retry-cleanup'),
-                    ActionRoute::post('{account}/recheck', RecheckAccountController::class, 'recheck'),
-                    ActionRoute::post(
+                ->loaders(fn (PageLoaders $loaders) => $loaders->add('sign-in-receipt', SignInReceiptLoader::class))
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('{account}/activate', ActivateAccountController::class, 'activate')
+                    ->patch('{account}', RenameAccountController::class, 'rename')
+                    ->post('sign-ins', StartSignInController::class, 'start-sign-in')
+                    ->post('{account}/sign-in-again', SignInAgainController::class, 'sign-in-again')
+                    ->delete('{account}', RemoveAccountController::class, 'remove')
+                    ->post('{account}/cleanup/retry', RetryAccountCleanupController::class, 'retry-cleanup')
+                    ->post('{account}/recheck', RecheckAccountController::class, 'recheck')
+                    ->post(
                         'sign-ins/{attempt}/cleanup/retry',
                         RetryAttemptCleanupController::class,
                         'retry-sign-in-cleanup',
-                    ),
-                    ActionRoute::post('notices/{notice}/dismiss', DismissAccountNoticeController::class, 'dismiss'),
-                    ActionRoute::post('sign-ins/{attempt}/challenge', SignInChallengeController::class, 'challenge'),
-                    ActionRoute::post('sign-ins/{attempt}/code', SubmitSignInCodeController::class, 'submit-code'),
-                    ActionRoute::post('sign-ins/{attempt}/cancel', CancelSignInController::class, 'cancel-sign-in'),
-                ),
+                    )
+                    ->post('notices/{notice}/dismiss', DismissAccountNoticeController::class, 'dismiss')
+                    ->post('sign-ins/{attempt}/challenge', SignInChallengeController::class, 'challenge')
+                    ->post('sign-ins/{attempt}/code', SubmitSignInCodeController::class, 'submit-code')
+                    ->post('sign-ins/{attempt}/cancel', CancelSignInController::class, 'cancel-sign-in')),
             Page::layout('profiles', 'Profiles', Icon::Accounts, ProfilesWindowResolver::class)
                 ->at('profiles')
                 ->visibleWhen(AccountOwnerCheck::class),

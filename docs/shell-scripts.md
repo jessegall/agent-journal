@@ -53,11 +53,11 @@ Code two scripts need lives once in `scripts/lib` and is sourced.
 
 ## Tests
 
-Everything a script does with Docker is tested against a stand-in Docker in the normal test suite. The stand-in
+Everything a script does with Docker is tested against a mock Docker in the normal test suite. The mock
 scenarios are written anew in plan 80, which replaces the host; until then none exists (user message 25301).
 
 - The normal suite never reaches a real Docker.
 - The Go host runs no `docker` command: it talks to the daemon through Docker's own Go client
-  (`programs/agent/host/daemon.go`). Its tests talk to `programs/agent/dockerstandin`, a stand-in daemon that
+  (`programs/agent/host/daemon.go`). Its tests talk to `programs/agent/dockermock`, a mock daemon that
   speaks the Docker Engine API, keeps containers, volumes and networks in memory and runs the program a test gives a
   container. `programs/agent/architecture/docker_client_test.go` fails on Go code that runs the command line.

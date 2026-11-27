@@ -1,5 +1,5 @@
 #!/bin/sh
-# A stand-in for the go program in tests: it records each call in $STAND_IN/go-calls.log and writes an empty program
+# A mock for the go program in tests: it records each call in $STAND_IN/go-calls.log and writes an empty program
 # where a build names its output, a file or a folder.
 set -eu
 here=$(dirname "$0")

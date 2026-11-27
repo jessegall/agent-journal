@@ -7,6 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\RemoveHostProcess\RemoveHostProcessCommand;
 use App\Hosts\Enums\HostOrderType;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -20,7 +21,8 @@ final class RemoveHostProcessTest extends TestCase
 
     public function test_the_host_is_ordered_to_remove_the_processs_container(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'probe');
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('probe'));
         $processId = $this->journal->hostProcessCalled('probe')->id;
 
         $this->journal->asSystem(new RemoveHostProcessCommand($processId));

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"journal-agent/dockerstandin"
+	"journal-agent/dockermock"
 	"journal-agent/host"
 )
 
@@ -42,7 +42,7 @@ func (sent *sentChunks) textOf(stream string) string {
 
 func TestWhatASideSocketTakesArrivesAsChunksOfItsStream(t *testing.T) {
 	state := t.TempDir()
-	daemon := dockerstandin.Start(t, standinImage)
+	daemon := dockermock.Start(t, mockImage)
 	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
 		t.Fatal(err)

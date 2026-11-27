@@ -18,6 +18,7 @@ use App\Web\Enums\PageDestination;
 use App\Web\Enums\PageSkeleton;
 use App\Web\Enums\WindowPlace;
 use App\Web\Exceptions\InvalidPageDeclaration;
+use Closure;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
@@ -141,22 +142,44 @@ final class Page
         return clone ($this, ['options' => array_values($options)]);
     }
 
-    public function slots(Slot ...$slots): self
+    /**
+     * The places on the page where sections of any domain may show, added in the scope.
+     *
+     * @param  Closure(PageSlots): mixed  $scope
+     */
+    public function slots(Closure $scope): self
     {
-        return clone ($this, ['slots' => array_values($slots)]);
-    }
+        $slots = new PageSlots();
+        $scope($slots);
 
-    public function actions(ActionRoute ...$actions): self
-    {
-        return clone ($this, ['actions' => array_values($actions)]);
+        return clone ($this, ['slots' => $slots->slots()]);
     }
 
     /**
-     * The reads the page offers beside its own result, each guarded by the page's visibility as its actions are.
+     * The actions the page offers, added in the scope.
+     *
+     * @param  Closure(PageActions): mixed  $scope
      */
-    public function loaders(Loader ...$loaders): self
+    public function actions(Closure $scope): self
     {
-        return clone ($this, ['loaders' => array_values($loaders)]);
+        $actions = new PageActions();
+        $scope($actions);
+
+        return clone ($this, ['actions' => $actions->routes()]);
+    }
+
+    /**
+     * The reads the page offers beside its own result, each guarded by the page's visibility as its actions are,
+     * added in the scope.
+     *
+     * @param  Closure(PageLoaders): mixed  $scope
+     */
+    public function loaders(Closure $scope): self
+    {
+        $loaders = new PageLoaders();
+        $scope($loaders);
+
+        return clone ($this, ['loaders' => $loaders->loaders()]);
     }
 
     /**

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"journal-agent/dockerstandin"
+	"journal-agent/dockermock"
 )
 
 func fencedOrder(t *testing.T, plan FencedPlan) Order {
@@ -39,7 +39,7 @@ func resultsOf(t *testing.T, facts map[string]any) []FencedResult {
 }
 
 func TestEachFencedRunEndsWithItsStatusAndOutputInOrder(t *testing.T) {
-	table, _ := standinTable(t, dockerstandin.Start(t, standinImage))
+	table, _ := mockTable(t, dockermock.Start(t, mockImage))
 	folder := t.TempDir()
 	runs := []FencedRun{
 		{Argv: []string{"/bin/sh", "-c", "echo clean"}, Folder: folder, DeadlineMs: 5000, OutputLimit: 1024},
@@ -74,7 +74,7 @@ func TestEachFencedRunEndsWithItsStatusAndOutputInOrder(t *testing.T) {
 }
 
 func TestARunPastTheBudgetIsNotRun(t *testing.T) {
-	table, _ := standinTable(t, dockerstandin.Start(t, standinImage))
+	table, _ := mockTable(t, dockermock.Start(t, mockImage))
 	folder := t.TempDir()
 	runs := []FencedRun{
 		{Argv: []string{"/bin/sh", "-c", "sleep 5"}, Folder: folder, DeadlineMs: 5000, OutputLimit: 1024},
@@ -93,7 +93,7 @@ func TestARunPastTheBudgetIsNotRun(t *testing.T) {
 }
 
 func TestALiveProcessOfTheFenceRefusesTheRunButOneWaitingOnItDoesNot(t *testing.T) {
-	table, _ := standinTable(t, dockerstandin.Start(t, standinImage))
+	table, _ := mockTable(t, dockermock.Start(t, mockImage))
 	if err := openFencedProcess(t, table, "agent", "s1"); err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +117,7 @@ func TestALiveProcessOfTheFenceRefusesTheRunButOneWaitingOnItDoesNot(t *testing.
 }
 
 func TestAProcessOfAClosedFenceIsRefusedUntilItsDeadlinePasses(t *testing.T) {
-	table, _ := standinTable(t, dockerstandin.Start(t, standinImage))
+	table, _ := mockTable(t, dockermock.Start(t, mockImage))
 	table.closeFence("s1", time.Now().Add(time.Hour))
 
 	refused := openFencedProcess(t, table, "during", "s1")
@@ -138,7 +138,7 @@ func TestAProcessOfAClosedFenceIsRefusedUntilItsDeadlinePasses(t *testing.T) {
 }
 
 func TestTheFenceOpensAgainOnceTheRunsEnd(t *testing.T) {
-	table, _ := standinTable(t, dockerstandin.Start(t, standinImage))
+	table, _ := mockTable(t, dockermock.Start(t, mockImage))
 	run := []FencedRun{{Argv: []string{"/bin/sh", "-c", "true"}, Folder: t.TempDir(), DeadlineMs: 5000, OutputLimit: 64}}
 
 	if _, err := table.runFenced(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 5000, Runs: run})); err != nil {

@@ -34,7 +34,11 @@ final class SendPostTest extends GuardedRouteEntryTestCase
         $this->chooseActiveAccounts();
         $inbox = $this->journal->owner()->inboxCalled('Owner');
         $this->journal->showDriverArrangements()->idleAgent('Turning agent')->enrollHost('Turn host', ['/work']);
-        $opened = $this->journal->openRuntimeOn('Turning agent', 'Turn host', '/work');
+
+        $this->journal->withAgent('Turning agent', fn (TestAgent $turningAgent) => $turningAgent
+            ->openRuntime('Turn host', '/work'));
+
+        $opened = $this->journal->openedRuntimeOf('Turning agent');
 
         $running = AgentSession::query()->where('agent_id', $this->journal->agentCalled('Turning agent')->id)
             ->running()->pluck('id')->all();

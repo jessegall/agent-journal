@@ -4,22 +4,40 @@ declare(strict_types=1);
 
 namespace Tests\Support\Hosts;
 
+use App\Agents\ContainerManifest;
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Enums\WorkspaceUse;
+use App\Agents\SecurityOptions;
 use App\Hosts\EnrolledHost;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Enums\RestartPolicy;
+use App\Models\Agents\AgentRuntime;
 use App\Projects\Enums\ArrangementType;
+use App\Support\MountRules;
+use App\Values\ExecutionBudgets;
+use App\Values\HostProcessPlan;
+use Closure;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Process\InputStream;
+use Tests\Support\Hosts\Steps\CompletesBrowserSignIn;
+use Tests\Support\Hosts\Steps\Contracts\HostStep;
+use Tests\Support\Hosts\Steps\ReleasesTurns;
+use Tests\Support\Mocks\Mock;
+use Tests\Support\Seeding\TestJournal;
 
 /**
- * The test host binary, built from the checkout, run against the Docker stand-in daemon it carries and the test
+ * The test host binary, built from the checkout, run against the Docker mock daemon it carries and the test
  * application served on a port of its own, so a test sees host protocol 1 work end to end without a real Docker.
- * Every process it starts ends when it is stopped or let go.
+ * A test acts on it in the scope runTestHost() opens, each verb returning the host; every process it starts ends
+ * when it is stopped or let go.
  */
 final class TestHost
 {
     /**
-     * The image the stand-in daemon holds, pinned by digest as a host requires.
+     * The image the mock daemon holds, pinned by digest as a host requires.
      */
     public const string IMAGE = 'registry.example/journal-echo@sha256:'
         .'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -27,17 +45,17 @@ final class TestHost
     private const string BUILDS = 'storage/framework/test-host';
 
     /**
-     * The installation name a contained stand-in host prefixes its containers with.
+     * The installation name a contained mock host prefixes its containers with.
      */
     public const string INSTALLATION_NAME = 'journaltest';
 
     /**
-     * The terminal recording the Claude Code stand-in plays by what is typed.
+     * The terminal recording the Claude Code mock plays by what is typed.
      */
     private const string TERMINAL_TURN = 'resources/recordings/claude-code/2.1.323/turns/terminal-turn/fixture.json';
 
     /**
-     * The terminal recording the Codex stand-in plays by what is typed.
+     * The terminal recording the Codex mock plays by what is typed.
      */
     private const string CODEX_TERMINAL_TURN = 'resources/recordings/codex/0.165.0/turns/terminal-turn/fixture.json';
 
@@ -55,6 +73,11 @@ final class TestHost
      */
     private array $running = [];
 
+    /**
+     * @var array<string, Mock> each script the programs' mocks play, by its file
+     */
+    private array $mocks = [];
+
     private InvokedProcess|null $host = null;
 
     private InvokedProcess|null $journal = null;
@@ -63,7 +86,7 @@ final class TestHost
 
     /**
      * The open standard input of each host process this started: it ends when this test's process dies, and with it
-     * the host and the stand-in daemon, even when the test was killed before it could stop them.
+     * the host and the mock daemon, even when the test was killed before it could stop them.
      *
      * @var list<InputStream>
      */
@@ -72,6 +95,8 @@ final class TestHost
     public private(set) int $port = 0;
 
     private function __construct(
+        private readonly TestJournal $journal,
+        public readonly string $name,
         private readonly Factory $processes,
         public readonly string $folder,
         private readonly string $database,
@@ -81,11 +106,13 @@ final class TestHost
     ) {}
 
     /**
-     * Starts the test application on the test's own database with the test journal's owner, the stand-in daemon and the
+     * Starts the test application on the test's own database with the test journal's owner, the mock daemon and the
      * host enrolled as the host given, in the arrangement it was enrolled with: a contained one runs every program in
-     * a stand-in container, its session containers playing Claude Code's terminal recording.
+     * a mock container, its session containers playing Claude Code's terminal recording.
      */
     public static function start(
+        TestJournal $journal,
+        string $name,
         Factory $processes,
         EnrolledHost $host,
         string $database,
@@ -95,17 +122,26 @@ final class TestHost
     ): self {
         $folder = sys_get_temp_dir().'/journal-real-host-'.bin2hex(random_bytes(6));
         mkdir($folder, 0o700, true);
-        $real = new self($processes, $folder, $database, $ownerEmail, $arrangement, $showsDriverArrangements);
+        $real = new self(
+            $journal,
+            $name,
+            $processes,
+            $folder,
+            $database,
+            $ownerEmail,
+            $arrangement,
+            $showsDriverArrangements,
+        );
         $real->port = self::freePort();
         $real->serveJournal();
-        $real->run($real->standInDocker());
+        $real->run($real->mockDocker());
         file_put_contents("{$folder}/secret", $host->secret);
         $enrolled = $processes->run([
             self::binary(), 'enroll', '--journal', "http://127.0.0.1:{$real->port}", '--host', $host->hostId,
             '--state', "{$folder}/state", '--secret-file', "{$folder}/secret",
         ]);
         Assert::assertTrue($enrolled->successful(), 'The test host did not enroll: '.$enrolled->errorOutput());
-        $real->installStandIns();
+        $real->installMocks();
         $real->startHost();
 
         return $real;
@@ -182,26 +218,33 @@ final class TestHost
     }
 
     /**
-     * Stops the host binary and starts it again; the stand-in daemon and its containers run on.
+     * Stops the host binary and starts it again; the mock daemon and its containers run on.
      */
-    public function restartHost(): void
+    public function restartHost(): self
     {
         self::end($this->host, SIGTERM);
         $this->startHost();
+
+        return $this;
     }
 
     /**
      * The served journal and all its workers are killed, as in a crash of the app, and it comes back on the same port
      * after the seconds.
      */
-    public function restartJournal(float $seconds): void
+    public function restartJournal(float $seconds = 1.0): self
     {
         $this->killJournal();
         usleep((int) ($seconds * 1_000_000));
         $this->serveJournal();
+
+        return $this;
     }
 
-    public function stop(): void
+    /**
+     * The host, its Docker mock and its served journal stop; a host stopped already stays stopped.
+     */
+    public function stop(): self
     {
         $this->killJournal();
 
@@ -211,6 +254,135 @@ final class TestHost
 
         $this->host = null;
         $this->running = [];
+
+        return $this;
+    }
+
+    /**
+     * The host stops, and no process of the journal it was served on runs any more, server or worker.
+     */
+    public function assertStopsWholly(): self
+    {
+        $this->stop();
+        Assert::assertSame([], self::journalProcessesOn($this->port));
+
+        return $this;
+    }
+
+    /**
+     * The driver accounts are chosen in folders of this host, so a mock started for an account can write into
+     * its account folder, as Claude Code writes a conversation's transcript there.
+     */
+    public function chooseActiveAccounts(): self
+    {
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            mkdir(TestJournal::accountFolderOf($this->accountsFolder(), $driver), 0o700, true);
+        }
+
+        $this->journal->chooseActiveAccounts($this->accountsFolder());
+
+        return $this;
+    }
+
+    /**
+     * The owner's sign-ins are made as this host runs them: the test reads the cache the served journal and its
+     * runner share, and makes each attempt's folder under the host's own accounts folder.
+     */
+    public function shareSignIns(): self
+    {
+        $this->journal->shareSignIns($this->accountsFolder());
+
+        return $this;
+    }
+
+    /**
+     * Opens a container of the mock's echo program on this host.
+     */
+    public function openEchoContainer(
+        string $name,
+        string|null $runtimeId = null,
+        RestartPolicy $restart = RestartPolicy::Never,
+    ): self {
+        $manifest = ContainerManifest::make(
+            self::IMAGE,
+            '10001:10001',
+            true,
+            [],
+            false,
+            "journal-net-{$name}",
+            [MountRules::local()->workspaceMount($this->folder, WorkspaceUse::Shared)],
+            [],
+            ExecutionBudgets::defaults(),
+            MountRules::local(),
+            SecurityOptions::none(),
+            true,
+        );
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Terminal,
+            $restart,
+            ['echo-program'],
+            [],
+            '/workspace',
+            $manifest,
+        );
+        $this->journal->openPlannedProcess($this->name, $name, $plan, $runtimeId);
+
+        return $this;
+    }
+
+    /**
+     * Opens the key recorder on this host as a native terminal: every byte typed on it is written to a file of the
+     * installation and the typed text drawn on its screen.
+     */
+    public function openKeyRecorder(string $name): self
+    {
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Terminal,
+            RestartPolicy::Never,
+            ["{$this->installation()}/bin/journal-agent", 'mock', 'keys', '--record', "{$this->installation()}/keys-{$name}"],
+            [],
+            $this->folder,
+        );
+        $this->journal->openPlannedProcess($this->name, $name, $plan);
+
+        return $this;
+    }
+
+    /**
+     * Opens a local process of pipes on this host with the argv and the start credentials of the runtime, handed over
+     * as the journal hands them to a process it orders opened.
+     *
+     * @param  list<string>  $argv
+     */
+    public function openWithStartCredentials(string $name, string $runtimeId, array $argv): self
+    {
+        $runtime = AgentRuntime::query()->whereKey($runtimeId)->sole();
+        $credentials = $runtime->handOverStartCredentials($this->journalUrl());
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Pipe,
+            RestartPolicy::Never,
+            $argv,
+            $credentials->environment(),
+            base_path(),
+        );
+        $this->journal->openPlannedProcess($this->name, $name, $plan, $runtimeId);
+
+        return $this;
+    }
+
+    /**
+     * A process of this host the test named, handed to the scope.
+     *
+     * @param  Closure(TestHostProcess): mixed  $scope
+     */
+    public function process(string $name, Closure $scope): self
+    {
+        $this->journal->hostProcess($name, $scope);
+
+        return $this;
     }
 
     public function __destruct()
@@ -319,7 +491,7 @@ final class TestHost
     }
 
     /**
-     * The journal's settings of a contained stand-in host: its arrangement, installation name, agent image, the
+     * The journal's settings of a contained mock host: its arrangement, installation name, agent image, the
      * agent containers' security profiles and one workspace.
      *
      * @return array<string, string>
@@ -342,9 +514,9 @@ final class TestHost
 
     /**
      * Starts one pass of the sign-in runner as a host runs it, signed with this host's secret, signing in with the
-     * installation's stand-ins; it ends once the sign-in it took ended.
+     * installation's mocks; it ends once the sign-in it took ended.
      */
-    public function startSignIns(): void
+    public function startSignIns(): self
     {
         chmod("{$this->folder}/secret", 0o600);
         $environment = [
@@ -356,44 +528,61 @@ final class TestHost
         ];
         $this->signIns = $this->processes->env($environment)->timeout(60)
             ->start(['php', base_path('artisan'), 'accounts:run-sign-ins', '--once']);
+
+        return $this;
     }
 
     /**
-     * Waits for the sign-in runner's pass to end and answers whether it ended well.
+     * Waits for the sign-in runner's pass to end, which must end well.
      */
-    public function waitForSignIns(): bool
+    public function waitForSignIns(): self
     {
-        return $this->signIns?->wait()->successful() ?? false;
+        Assert::assertTrue(
+            $this->signIns?->wait()->successful() ?? false,
+            'The sign-in runner failed: '.$this->printed(),
+        );
+
+        return $this;
     }
 
     /**
-     * Holds the stand-in's next headless turn after its first lines, until it is released.
+     * Holds the mock's next headless turn after its first lines, until it is released.
      */
-    public function holdTurns(): void
+    public function holdTurns(): self
     {
         touch("{$this->installation()}/hold");
+        $this->forgetStep(ReleasesTurns::class);
+
+        return $this;
     }
 
-    public function releaseTurns(): void
+    public function releaseTurns(): self
     {
         unlink("{$this->installation()}/hold");
+        $this->markRan(ReleasesTurns::class);
+
+        return $this;
     }
 
     /**
-     * The Claude Code stand-in plays the named recorded terminal turn of its build in place of the one it played.
+     * The Claude Code mock plays the named recorded terminal turn of its build in place of the one it played.
      */
-    public function playClaudeTerminal(string $recording): void
+    public function playClaudeTerminal(string $recording): self
     {
         $turns = dirname(base_path(self::TERMINAL_TURN), 2);
         copy("{$turns}/{$recording}/fixture.json", "{$this->installation()}/terminal-turn/fixture.json");
+
+        return $this;
     }
 
     /**
-     * The user completes the device sign-in in the browser, so the stand-in's login completes.
+     * The user completes the device sign-in in the browser, so the mock's login completes.
      */
-    public function completeBrowserSignIn(): void
+    public function completeBrowserSignIn(): self
     {
-        touch("{$this->installation()}/browser-signed-in");
+        $this->markRan(CompletesBrowserSignIn::class);
+
+        return $this;
     }
 
     public function installation(): string
@@ -402,30 +591,86 @@ final class TestHost
     }
 
     /**
-     * The protected installation the host runs account starts from holds the stand-in for Claude Code and the recorded
+     * The programs' mocks play these scripts from now on, each from its first step.
+     */
+    public function mocks(Mock ...$mocks): self
+    {
+        foreach ($mocks as $mock) {
+            $script = "{$this->mocksFolder()}/{$mock->scriptName()}";
+            file_put_contents($script, json_encode($mock, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+
+            if (is_file("{$script}.played")) {
+                unlink("{$script}.played");
+            }
+
+            $this->mocks[$mock->scriptName()] = $mock;
+        }
+
+        return $this;
+    }
+
+    /**
+     * The steps run in order, each a step class or a step made with its values; a mock waiting for a step answers
+     * on once it ran.
+     *
+     * @param  HostStep|class-string<HostStep>  ...$steps
+     */
+    public function story(HostStep|string ...$steps): self
+    {
+        foreach ($steps as $step) {
+            $running = is_string($step) ? new $step() : $step;
+            file_put_contents("{$this->stepsRan()}/current", class_basename($running));
+            $running($this->journal);
+            $this->markRan($running::class);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Every mock heard only what its script expected, and heard every line it expected.
+     */
+    public function assertMocksPlayed(): self
+    {
+        $failures = is_file($this->failuresFile()) ? (string) file_get_contents($this->failuresFile()) : '';
+        Assert::assertSame('', trim($failures), "A mock heard what its script did not expect:\n{$failures}");
+
+        foreach ($this->mocks as $name => $mock) {
+            $played = "{$this->mocksFolder()}/{$name}.played";
+            $count = is_file($played) ? (int) trim((string) file_get_contents($played)) : 0;
+            $unheard = array_slice($mock->methods(), $count);
+            Assert::assertSame([], $unheard, "The {$mock->program()} mock never heard what its script expected.");
+        }
+
+        return $this;
+    }
+
+    /**
+     * The protected installation the host runs account starts from holds the mock for Claude Code and the recorded
      * headless turn it plays.
      */
-    private function installStandIns(): void
+    private function installMocks(): void
     {
         mkdir("{$this->installation()}/bin", 0o700, true);
         mkdir("{$this->installation()}/lib", 0o700);
         copy(__DIR__.'/scripts/lib/hold.sh', "{$this->installation()}/lib/hold.sh");
-        copy(__DIR__.'/scripts/claude-stand-in.sh', "{$this->installation()}/bin/claude");
+        copy(__DIR__.'/scripts/claude-mock.sh', "{$this->installation()}/bin/claude");
         chmod("{$this->installation()}/bin/claude", 0o700);
         copy(__DIR__.'/fixtures/claude-turn.jsonl', "{$this->installation()}/turn.jsonl");
         symlink(self::binary(), "{$this->installation()}/bin/journal-agent");
         mkdir("{$this->installation()}/terminal-turn", 0o700);
         copy(base_path(self::TERMINAL_TURN), "{$this->installation()}/terminal-turn/fixture.json");
-        copy(__DIR__.'/scripts/codex-stand-in.sh', "{$this->installation()}/bin/codex");
+        copy(__DIR__.'/scripts/codex-mock.sh', "{$this->installation()}/bin/codex");
         chmod("{$this->installation()}/bin/codex", 0o700);
         mkdir("{$this->installation()}/codex-terminal-turn", 0o700);
+        mkdir($this->stepsRan(), 0o700, true);
         copy(base_path(self::CODEX_TERMINAL_TURN), "{$this->installation()}/codex-terminal-turn/fixture.json");
         $this->installExchanges('claude-code', self::CLAUDE_BUILD);
         $this->installExchanges('codex', self::CODEX_BUILD);
     }
 
     /**
-     * The exchanges the real driver of the build recorded, which its stand-in plays, under exchanges/<driver>.
+     * The exchanges the real driver of the build recorded, which its mock plays, under exchanges/<driver>.
      */
     private function installExchanges(string $driver, string $build): void
     {
@@ -437,7 +682,7 @@ final class TestHost
     }
 
     /**
-     * Each start of the Codex stand-in on a terminal, by the arguments it was started with, oldest first.
+     * Each start of the Codex mock on a terminal, by the arguments it was started with, oldest first.
      *
      * @return list<list<string>>
      */
@@ -447,7 +692,7 @@ final class TestHost
     }
 
     /**
-     * Each start of the Claude Code stand-in on a terminal, by the arguments it was started with, oldest first.
+     * Each start of the Claude Code mock on a terminal, by the arguments it was started with, oldest first.
      *
      * @return list<list<string>>
      */
@@ -457,7 +702,7 @@ final class TestHost
     }
 
     /**
-     * The starts a stand-in wrote to the file, one JSON list of arguments a line; none before its first.
+     * The starts a mock wrote to the file, one JSON list of arguments a line; none before its first.
      *
      * @return list<list<string>>
      */
@@ -474,7 +719,7 @@ final class TestHost
     }
 
     /**
-     * Each line the journal wrote to Codex's app-server, oldest first, as the stand-in heard it.
+     * Each line the journal wrote to Codex's app-server, oldest first, as the mock heard it.
      *
      * @return list<array<string, mixed>>
      */
@@ -484,7 +729,23 @@ final class TestHost
     }
 
     /**
-     * Each container the stand-in daemon started, oldest first, with its image, user, labels, argv, environment,
+     * Every byte each key recorder read so far, as it reached the program, by the recorder's name.
+     *
+     * @return array<string, string>
+     */
+    public function keysRecorded(): array
+    {
+        $recorded = [];
+
+        foreach (glob("{$this->installation()}/keys-*") ?: [] as $file) {
+            $recorded[substr(basename($file), strlen('keys-'))] = (string) file_get_contents($file);
+        }
+
+        return $recorded;
+    }
+
+    /**
+     * Each container the mock daemon started, oldest first, with its image, user, labels, argv, environment,
      * network and mounts.
      *
      * @return list<array<string, mixed>>
@@ -497,10 +758,10 @@ final class TestHost
     /**
      * @return list<string>
      */
-    private function standInDocker(): array
+    private function mockDocker(): array
     {
         $command = [
-            self::binary(), 'standin', 'docker', '--socket', "{$this->folder}/docker.sock", '--image', self::IMAGE,
+            self::binary(), 'mock', 'docker', '--socket', "{$this->folder}/docker.sock", '--image', self::IMAGE,
             '--containers', "{$this->folder}/containers.jsonl", '--until-input-ends',
         ];
 
@@ -531,7 +792,7 @@ final class TestHost
             $command = [...$command, '--installation-name', self::INSTALLATION_NAME, '--agent-image', self::IMAGE];
         }
 
-        // The installation's programs come first on the host's path, so a program started by name runs its stand-in.
+        // The installation's programs come first on the host's path, so a program started by name runs its mock.
         $environment = [...getenv(), 'PATH' => "{$this->installation()}/bin:".getenv('PATH')];
         $this->host = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
@@ -553,5 +814,42 @@ final class TestHost
         fclose($socket);
 
         return (int) substr($name, strrpos($name, ':') + 1);
+    }
+
+    private function mocksFolder(): string
+    {
+        return "{$this->installation()}/mocks";
+    }
+
+    private function stepsRan(): string
+    {
+        return "{$this->mocksFolder()}/steps";
+    }
+
+    private function failuresFile(): string
+    {
+        return "{$this->mocksFolder()}/failures.jsonl";
+    }
+
+    /**
+     * The step ran, so a mock that waits for it answers on.
+     *
+     * @param  class-string<HostStep>  $step
+     */
+    private function markRan(string $step): void
+    {
+        touch("{$this->stepsRan()}/".class_basename($step));
+    }
+
+    /**
+     * @param  class-string<HostStep>  $step
+     */
+    private function forgetStep(string $step): void
+    {
+        $file = "{$this->stepsRan()}/".class_basename($step);
+
+        if (is_file($file)) {
+            unlink($file);
+        }
     }
 }

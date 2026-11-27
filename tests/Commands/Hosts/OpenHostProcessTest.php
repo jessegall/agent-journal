@@ -15,7 +15,9 @@ use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -59,9 +61,12 @@ final class OpenHostProcessTest extends TestCase
     {
         $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Fenced')
             ->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Fenced', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $this->journal->withAgent('Fenced', fn (TestAgent $fenced) => $fenced
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Fenced');
 
-        $this->journal->openHostProcessForStart('Mac', 'terminal', $opened->sessionId);
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcessForStart('terminal', $opened->sessionId));
 
         $order = $this->journal->hostOrdersOf('terminal')[0];
         $this->journal->assertResult($opened->sessionId, $this->journal->payloadOf($order)['fence']);

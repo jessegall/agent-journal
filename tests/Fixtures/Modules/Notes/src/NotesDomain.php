@@ -19,6 +19,7 @@ use App\Concerns\HasAssignables;
 use App\Concerns\HasLinkRecords;
 use App\Concerns\HasStates;
 use App\Declarations\Page;
+use App\Declarations\PageSlots;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Contracts\SectionProvider;
@@ -36,7 +37,6 @@ use App\Text\Declarations\Section;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
-use App\Web\Declarations\Slot;
 use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Api\NoteValue;
@@ -134,8 +134,14 @@ final class NotesDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyDefinition(NotePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
-            new PolicyDefinition(NoteWorkPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
+            new PolicyDefinition(
+                NotePolicy::class,
+                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
+            ),
+            new PolicyDefinition(
+                NoteWorkPolicy::class,
+                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
+            ),
         ];
     }
 
@@ -158,7 +164,7 @@ final class NotesDomain extends Domain implements
             Page::make('index', 'Notes', Icon::Docs, NotesWindowResolver::class, 'Index.vue')->at(''),
             Page::make('collection', 'Collection', Icon::Docs, CollectionWindowResolver::class, 'Collection.vue')
                 ->at('collections/{collection}')
-                ->slots(Slot::record('note', 'collection', 'collection')),
+                ->slots(fn (PageSlots $slots) => $slots->record('note', 'collection', 'collection')),
         ];
     }
 

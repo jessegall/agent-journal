@@ -40,8 +40,8 @@ use App\CommandRules\Enums\UnsupportedKeyword;
 use App\CommandRules\Enums\WordPlace;
 use App\CommandRules\Enums\WordSegmentType;
 use App\Data\Pages\RequestWindowData;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
 use App\Http\Controllers\ApproveBundlePageController;
 use App\Http\Controllers\ApproveProposalPageController;
 use App\Http\Controllers\ApproveSamplePageController;
@@ -232,35 +232,20 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
     {
         return Page::layout('command-requests', 'Command review', Icon::Rules, RequestListResolver::class)
             ->at('')
-            ->actions(ActionRoute::post('bundles/approval', ApproveBundlePageController::class, 'approve-rule-bundle'));
+            ->actions(fn (PageActions $actions) => $actions
+                ->post('bundles/approval', ApproveBundlePageController::class, 'approve-rule-bundle'));
     }
 
     private function requestPage(): Page
     {
-        $sample = ActionRoute::post(
-            'requests/{request}/sample-approval',
-            ApproveSamplePageController::class,
-            'approve-sample',
-        );
-
-        $approve = ActionRoute::post(
-            'proposals/{proposal}/approval',
-            ApproveProposalPageController::class,
-            'approve-proposal',
-        );
-
-        $reject = ActionRoute::post(
-            'proposals/{proposal}/rejection',
-            RejectProposalPageController::class,
-            'reject-proposal',
-        );
-
-        $retire = ActionRoute::post('rules/{rule}/retirement', RetireRulePageController::class, 'retire-rule');
-        $restore = ActionRoute::post('rules/{rule}/restoration', RestoreRulePageController::class, 'restore-rule');
-
         return Page::layout('command-request', 'Command request', Icon::Rules, RequestWindowResolver::class)
             ->at('requests/{request}')
-            ->actions($sample, $approve, $reject, $retire, $restore);
+            ->actions(fn (PageActions $actions) => $actions
+                ->post('requests/{request}/sample-approval', ApproveSamplePageController::class, 'approve-sample')
+                ->post('proposals/{proposal}/approval', ApproveProposalPageController::class, 'approve-proposal')
+                ->post('proposals/{proposal}/rejection', RejectProposalPageController::class, 'reject-proposal')
+                ->post('rules/{rule}/retirement', RetireRulePageController::class, 'retire-rule')
+                ->post('rules/{rule}/restoration', RestoreRulePageController::class, 'restore-rule'));
     }
 
     private function runsPage(): Page
@@ -283,14 +268,13 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
     {
         return Page::layout('run', 'Run', Icon::Rules, RunWindowResolver::class)
             ->at('runs/{run}')
-            ->actions(
-                ActionRoute::post('runs/{run}/stop', StopRunPageController::class, 'stop-run'),
-                ActionRoute::post('runs/{run}/clean', CleanRunPageController::class, 'clean-run'),
-                ActionRoute::post(
+            ->actions(fn (PageActions $actions) => $actions
+                ->post('runs/{run}/stop', StopRunPageController::class, 'stop-run')
+                ->post('runs/{run}/clean', CleanRunPageController::class, 'clean-run')
+                ->post(
                     'runs/{run}/restored-output-check',
                     VerifyRestoredOutputPageController::class,
                     'verify-restored-output',
-                ),
-            );
+                ));
     }
 }

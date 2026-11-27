@@ -15,10 +15,10 @@ use Domain\Helpers\Support\States\HelperJobState;
 use Domain\Helpers\Support\States\Support\HelperJobStateReference;
 use Domain\Helpers\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\Seeding\StateHandle;
-use Tests\Support\Seeding\StateObservation;
 
 /**
  * The helper job state on the real engine: steering for its job joins what it shows the helper, and its job held,
@@ -43,18 +43,18 @@ final class HelperJobStateTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Writer');
+        $this->journal->owner()->agent('Writer')->pushState('Writer', $this->working());
     }
 
     public function test_steering_for_its_job_joins_and_another_jobs_does_not(): void
     {
-        $this->working()->given(
+        $this->journal->stateOn('Writer', $this->working(), fn (StateHandle $working) => $working->steps(
             [
                 new HelperJobSteered('job-2', 'Look at the cache too.'),
                 new HelperJobSteered(self::JOB, 'Read the routes first.'),
             ],
-            fn (StateObservation $state) => $state->assertValue('steering', ['Read the routes first.']),
-        );
+            fn (StateAssert $state) => $state->where('steering', ['Read the routes first.']),
+        ));
     }
 
     /**
@@ -81,15 +81,15 @@ final class HelperJobStateTest extends TestCase
     #[DataProvider('endings')]
     public function test_its_job_ending_ends_it_and_another_jobs_does_not(Event $other, Event $own): void
     {
-        $this->working()
-            ->given($other, fn (StateObservation $state) => $state->assertLive())
-            ->given($own, fn (StateObservation $state) => $state->assertFinished());
+        $this->journal->stateOn('Writer', $this->working(), fn (StateHandle $working) => $working
+            ->steps([$other], fn (StateAssert $state) => $state->isLive())
+            ->steps([$own], fn (StateAssert $state) => $state->isFinished()));
     }
 
     /**
      * A job of a debugging helper, held in memory only: the state keeps what it needs of it in its own values.
      */
-    private function working(): StateHandle
+    private function working(): HelperJobStateReference
     {
         $job = new HelperJob();
         $job->id = self::JOB;
@@ -101,9 +101,6 @@ final class HelperJobStateTest extends TestCase
         $identity->id = 'helper-1';
         $identity->profile_key = 'journal-debugger';
 
-        return $this->journal->pushState(
-            $this->journal->sessionOf('Writer'),
-            HelperJobStateReference::forJob($job, $identity, 'Debugging'),
-        );
+        return HelperJobStateReference::forJob($job, $identity, 'Debugging');
     }
 }

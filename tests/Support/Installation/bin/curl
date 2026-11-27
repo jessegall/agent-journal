@@ -1,5 +1,5 @@
 #!/bin/sh
-# A stand-in for curl in tests: every address answers with an empty page and the call is recorded in
+# A mock for curl in tests: every address answers with an empty page and the call is recorded in
 # $STAND_IN/requests.log; a download of the update script gets the project's own.
 set -eu
 here=$(dirname "$0")

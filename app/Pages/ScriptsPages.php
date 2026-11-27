@@ -6,8 +6,8 @@ namespace App\Pages;
 
 use App\Accounts\AccountOwnerCheck;
 use App\CommandRules\Enums\SyntaxForm;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
 use App\Http\Controllers\Pages\CheckDraftPageController;
 use App\Http\Controllers\Pages\SaveDraftPageController;
 use App\Http\Pages\Resolvers\ProfileScriptWindowResolver;
@@ -49,10 +49,9 @@ final class ScriptsPages implements PageProvider, TypeProvider
             )
                 ->at('{profile}')
                 ->visibleWhen(AccountOwnerCheck::class)
-                ->actions(
-                    ActionRoute::post('{profile}/draft/check', CheckDraftPageController::class, 'check-draft'),
-                    ActionRoute::post('{profile}/draft/save', SaveDraftPageController::class, 'save-draft'),
-                ),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('{profile}/draft/check', CheckDraftPageController::class, 'check-draft')
+                    ->post('{profile}/draft/save', SaveDraftPageController::class, 'save-draft')),
         ];
     }
 

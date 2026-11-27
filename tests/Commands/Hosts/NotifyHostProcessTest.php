@@ -19,8 +19,11 @@ use App\Hosts\Enums\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Values\HostOrderSource;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -57,9 +60,11 @@ final class NotifyHostProcessTest extends TestCase
 
     public function test_a_running_report_moves_the_row_and_raises_its_event(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell')->observeEvents(HostProcessStarted::class);
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('shell'))->observeEvents(HostProcessStarted::class);
 
-        $this->journal->reportHostProcess('shell', HostProcessReportType::Running);
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell
+            ->report(HostProcessReportType::Running));
 
         $this->journal
             ->assertEvent(HostProcessStarted::class)
@@ -70,15 +75,19 @@ final class NotifyHostProcessTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
-        $this->journal->openHostProcess('Mac', 'agent', runtimeId: $opened->runtimeId);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Driven');
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('agent', runtimeId: $opened->runtimeId));
         $generation = AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->process_generation;
 
         $this->journal
-            ->reportHostProcess('agent', HostProcessReportType::Running)
-            ->reportHostProcess('agent', HostProcessReportType::Restarted);
+            ->hostProcess('agent', fn (TestHostProcess $agent) => $agent
+                ->report(HostProcessReportType::Running)->report(HostProcessReportType::Restarted));
         $healed = AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->process_generation;
-        $this->journal->reportHostProcess('agent', HostProcessReportType::Exited, 1);
+        $this->journal->hostProcess('agent', fn (TestHostProcess $agent) => $agent
+            ->report(HostProcessReportType::Exited, 1));
 
         $this->journal->assertResult(
             [$generation + 1, false],
@@ -90,12 +99,17 @@ final class NotifyHostProcessTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
-        $this->journal->openHostProcessForStart('Mac', 'agent', $opened->sessionId);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Driven');
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcessForStart('agent', $opened->sessionId));
 
-        $this->journal->reportHostProcess('agent', HostProcessReportType::Running);
+        $this->journal->hostProcess('agent', fn (TestHostProcess $agent) => $agent
+            ->report(HostProcessReportType::Running));
         $running = $this->journal->startOfSession($opened->sessionId);
-        $this->journal->reportHostProcess('agent', HostProcessReportType::Exited, 0);
+        $this->journal->hostProcess('agent', fn (TestHostProcess $agent) => $agent
+            ->report(HostProcessReportType::Exited, 0));
 
         $this->journal->assertResult(
             [[SessionProcessStatus::Running, 'pid:agent'], SessionProcessStatus::Stopped],
@@ -107,12 +121,15 @@ final class NotifyHostProcessTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
-        $this->journal->openHostProcessForStart('Mac', 'turn', $opened->sessionId, HostProcessPurpose::AgentTurn);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Driven');
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcessForStart('turn', $opened->sessionId, HostProcessPurpose::AgentTurn));
 
         $this->journal
-            ->reportHostProcess('turn', HostProcessReportType::Running)
-            ->reportHostProcess('turn', HostProcessReportType::Exited, 0);
+            ->hostProcess('turn', fn (TestHostProcess $turn) => $turn
+                ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0));
 
         $this->journal->assertResult(
             SessionProcessStatus::Running,
@@ -122,11 +139,13 @@ final class NotifyHostProcessTest extends TestCase
 
     public function test_an_exited_process_refuses_its_open_orders_but_its_stop(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell');
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('shell'));
         $process = $this->journal->hostProcessCalled('shell')->id;
         $this->journal->asSystem(new StopHostProcessCommand($process, 1000, 1000, HostOrderSource::fromJournal()));
 
-        $this->journal->reportHostProcess('shell', HostProcessReportType::Exited, 0);
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell
+            ->report(HostProcessReportType::Exited, 0));
 
         [$open, $stop] = $this->journal->hostOrdersOf('shell');
         $this->journal->assertResult(
@@ -137,7 +156,11 @@ final class NotifyHostProcessTest extends TestCase
 
     public function test_a_report_about_another_hosts_process_is_refused(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->enrollHost('Other', [base_path()])->openHostProcess('Mac', 'shell');
+        $this->journal
+            ->enrollHost('Mac', [base_path()])
+            ->enrollHost('Other', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac
+                ->openProcess('shell'));
         $report = new NotifyHostProcessCommand(
             $this->journal->hostCalled('Other')->hostId,
             $this->journal->hostProcessCalled('shell')->id,

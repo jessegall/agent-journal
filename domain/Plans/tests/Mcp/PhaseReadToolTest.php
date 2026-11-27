@@ -7,6 +7,7 @@ namespace Domain\Plans\Tests\Mcp;
 use Domain\Plans\Mcp\Tools\PhaseReadTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -27,7 +28,12 @@ final class PhaseReadToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Planner');
-        $phase = $journal->fixtures(PlanFixtures::class)->plan('Release')->phase('Release', 'Design')->phaseCalled('Design');
+
+        $journal->withFixtures(PlanFixtures::class, fn (PlanFixtures $plans) => $plans
+            ->plan('Release')
+            ->withPlan('Release', fn (TestPlan $release) => $release->addPhase('Design')));
+
+        $phase = $journal->fixtures(PlanFixtures::class)->phaseCalled('Design');
 
         return ToolCall::by($start)->arguments(['phase_id' => $phase->id]);
     }

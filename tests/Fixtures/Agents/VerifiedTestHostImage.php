@@ -8,7 +8,7 @@ use App\Hosts\Contracts\DockerImageVerifier;
 use Tests\Support\Hosts\TestHost;
 
 /**
- * The image record of a test journal: the stand-in agent image the test host runs is the one verified image.
+ * The image record of a test journal: the mock agent image the test host runs is the one verified image.
  */
 final readonly class VerifiedTestHostImage implements DockerImageVerifier
 {

@@ -15,8 +15,10 @@ use App\Models\Sessions\SessionProcess;
 use App\Sessions\OpenedRuntime;
 use App\Terminals\RuntimeScreen;
 use App\Terminals\ScreenRegistration;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
 
 /**
@@ -42,7 +44,8 @@ final class OpenJournalTerminalTest extends TestCase
             ->where('session_process_id', $start->id)
             ->where('purpose', HostProcessPurpose::AgentTerminal)
             ->sole();
-        $this->journal->callJournalProcess('terminal', $opened->runtimeId, HostProcessPurpose::AgentTerminal);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
         [$open] = $this->journal->hostOrdersOf('terminal');
         $this->journal->assertResult(
             [RestartPolicy::OnCrash->value, null],
@@ -57,9 +60,10 @@ final class OpenJournalTerminalTest extends TestCase
     public function test_what_the_terminal_shows_reaches_the_terminal_page(): void
     {
         [$opened] = $this->provenTerminal();
-        $this->journal->callJournalProcess('terminal', $opened->runtimeId, HostProcessPurpose::AgentTerminal);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
 
-        $this->journal->printOnHostProcess('terminal', '❯ ready');
+        $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->print('❯ ready'));
 
         $runtime = AgentRuntime::query()->whereKey($opened->runtimeId)->sole();
         $screen = $this->journal->service(RuntimeScreen::class)->latest(ScreenRegistration::of($runtime));
@@ -73,9 +77,16 @@ final class OpenJournalTerminalTest extends TestCase
      */
     private function provenTerminal(): array
     {
-        $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
-        $this->journal->passBuildProbe('Driven', $opened->runtimeId);
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->idleAgent('Driven')
+            ->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Driven');
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->passBuildProbe('Driven'));
         $start = $this->journal->startOfSession($opened->sessionId);
         $signedIn = ['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => $start->directory];
 

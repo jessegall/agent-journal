@@ -21,6 +21,8 @@ use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPhase;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
@@ -122,10 +124,9 @@ final class CancelPlanTest extends TestCase
     {
         $tasks = array_map(fn (TaskStatus $status) => $this->taskIn($status)->assignmentIdentity(), $states);
 
-        return $this->plans->startedPlan('Release')->phase(
-            'Release',
-            'Work',
-        )->placeTasks('Work', ...$tasks)->planCalled('Release');
+        return $this->plans->startedPlan('Release')->withPlan('Release', fn (TestPlan $plan) => $plan
+            ->addPhase('Work'))->withPhase('Work', fn (TestPhase $phase) => $phase
+            ->place(...$tasks))->planCalled('Release');
     }
 
     private function taskIn(TaskStatus $status): Task

@@ -4,46 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Accounts\SignInChallenges;
-use App\Agents\Commands\CheckDriverBuild\CheckDriverBuildCommand;
-use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
-use App\Agents\ContainerManifest;
 use App\Agents\DriverCatalogue;
 use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
 use App\Agents\Drivers\Contracts\DriverCompatibilities;
 use App\Agents\Drivers\Contracts\ProcessDriver;
-use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Drivers\Processes\ProcessDrivers;
 use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
-use App\Agents\Drivers\Work\DriverWork;
-use App\Agents\Drivers\Work\DriverWorkers;
 use App\Agents\Enums\SessionProcessStatus;
-use App\Agents\Enums\WorkspaceUse;
-use App\Agents\SecurityOptions;
 use App\Connections\PublishedReleases;
-use App\Files\Contracts\Files;
-use App\Files\Enums\Permissions;
-use App\Files\Enums\Place;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\ClaimedRequests;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Hosts\Commands\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
-use App\Hosts\Commands\NotifyHostOrder\NotifyHostOrderCommand;
-use App\Hosts\Commands\NotifyHostOutput\NotifyHostOutputCommand;
-use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
-use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Contracts\HostChannel;
-use App\Hosts\Data\HostProcessReportData;
 use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\HostProcessReportType;
-use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\HostProcessType;
-use App\Hosts\Enums\HostRefusal;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
 use App\Models\Agents\AgentRuntime;
@@ -54,26 +34,22 @@ use App\Models\Sessions\SessionProcess;
 use App\Providers\DriversServiceProvider;
 use App\Support\AgentImage;
 use App\Support\Compatibility\PinnedBuilds;
-use App\Support\MountRules;
-use App\Terminals\PrivateValues;
 use App\Values\ClaimedRequest;
 use App\Values\DriverFamily;
-use App\Values\ExecutionBudgets;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
-use App\Values\RowGuard;
-use App\Values\SignInChallenge;
 use Closure;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Process\Factory;
 use Illuminate\Process\PendingProcess;
-use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Process;
-use PHPUnit\Framework\Assert;
 use Tests\Fixtures\Drivers\ShownDriverArrangements;
 use Tests\Support\Connections\PublicRelease;
-use Tests\Support\Hosts\StandInHost;
+use Tests\Support\Hosts\MockHost;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
+use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
@@ -95,60 +71,9 @@ trait ArrangesHostProcesses
     private TestHost|null $testHost = null;
 
     /**
-     * The named host is ordered to open a native process of the type given, for the runtime given when it runs one;
-     * the host has not reported it yet.
+     * @var array<string, TestHostProcess> each named process's scope, kept so its driver worker carries on
      */
-    public function openHostProcess(
-        string $host,
-        string $name,
-        HostProcessType $type = HostProcessType::Terminal,
-        string|null $runtimeId = null,
-    ): self {
-        if (array_key_exists($name, $this->hostProcesses)) {
-            throw FixtureRefused::occupiedAlias($name, 'host process');
-        }
-
-        $plan = new HostProcessPlan(
-            HostProcessPurpose::Probe,
-            $type,
-            RestartPolicy::Never,
-            ['sh', '-c', 'cat'],
-            [],
-            base_path(),
-        );
-        $this->openPlanned($host, $name, $runtimeId, $plan);
-
-        return $this;
-    }
-
-    /**
-     * The session's start is taken, by the named host or, for a driver the journal drives, by the journal already, and
-     * the host is ordered to open a process of the purpose for it, which has not reported yet; the test showed the
-     * driver's arrangement before it opened the runtime.
-     */
-    public function openHostProcessForStart(
-        string $host,
-        string $name,
-        string $sessionId,
-        HostProcessPurpose $purpose = HostProcessPurpose::AgentTerminal,
-    ): self {
-        $hostId = $this->hostCalled($host)->hostId;
-        $start = SessionProcess::findCurrentOf($sessionId) ?? throw FixtureRefused::missingAlias('start', $sessionId, self::OWNER);
-
-        $this->claimStartOf($hostId, $sessionId);
-
-        $plan = new HostProcessPlan($purpose, HostProcessType::Terminal, RestartPolicy::Never, [
-            'sh',
-            '-c',
-            'cat',
-        ], [], base_path());
-        $source = HostOrderSource::fromJournal();
-        $runtimeId = AgentRuntime::findForSession($sessionId)?->id;
-        $command = new OpenHostProcessCommand($hostId, $runtimeId, $plan, $source, $start->id);
-        $this->hostProcesses[$name] = $this->asSystem($command);
-
-        return $this;
-    }
+    private array $processScopes = [];
 
     /**
      * The request as a claim of the host's accepted requests hands it out, claimed as its driver worker claims it.
@@ -225,51 +150,141 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * Names the runtime's newest process of the purpose, one the journal opened itself, so the test can report on it.
+     * The named host runs for real: the host binary built from the checkout, against the Docker mock it carries
+     * and the test application on a port of its own, with the test journal's owner, made here when the test named
+     * none; the scope acts on it. The test commits its rows, so the served application sees them.
+     *
+     * @param  Closure(TestHost): mixed  $scope
      */
-    public function callJournalProcess(string $name, string $runtimeId, HostProcessPurpose $purpose): self
+    public function runTestHost(string $host, Closure $scope): self
     {
-        $this->hostProcesses[$name] = HostProcess::query()
-            ->where('agent_runtime_id', $runtimeId)
-            ->where('purpose', $purpose)
-            ->latest('id')
-            ->firstOrFail()
-            ->id;
+        if ($this->testHost !== null) {
+            throw FixtureRefused::testHostRuns($this->testHost->name);
+        }
+
+        $database = (string) $this->app->make(Repository::class)->get('database.connections.pgsql.database');
+        $this->testHost = TestHost::start(
+            $this,
+            $host,
+            $this->app->make(Factory::class),
+            $this->hostCalled($host),
+            $database,
+            ($this->owner ?? $this->owner()->ownerUser())->email,
+            Host::query()->findOrFail($this->hostCalled($host)->hostId)->arrangement,
+            $this->app->make(DriverCompatibilities::class) instanceof ShownDriverArrangements,
+        );
+        $scope($this->testHost);
 
         return $this;
     }
 
     /**
-     * The runtime's build probe, which the journal ordered, prints the pinned build, so its sign-in probe is ordered
-     * next; both are named for the test as <name>-probe and <name>-sign-in.
+     * The test host already running, handed to the scope.
+     *
+     * @param  Closure(TestHost): mixed  $scope
      */
-    public function passBuildProbe(string $name, string $runtimeId): self
+    public function testHost(Closure $scope): self
     {
-        $build = $this->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
-        $this->callJournalProcess("{$name}-probe", $runtimeId, HostProcessPurpose::BuildProbe);
-        $this->asSystem(new CheckDriverBuildCommand($this->hostProcessCalled("{$name}-probe")->id, "{$build} (Claude Code)\n"));
+        $scope($this->testHost ?? throw FixtureRefused::noTestHost());
 
-        return $this->callJournalProcess("{$name}-sign-in", $runtimeId, HostProcessPurpose::SignInProbe);
+        return $this;
     }
 
     /**
-     * The Codex runtime's build probe prints the pinned build, its account holds a sign-in file and its sign-in probe
-     * prints a ChatGPT sign-in, so its start is proven; the probes are named <name>-probe and <name>-sign-in.
+     * The test host the test runs stops, before the test's rows are emptied, and every mock it ran must have heard what
+     * its script expected; nothing happens when none runs.
      */
-    public function passCodexProbes(string $name, string $runtimeId): self
+    public function stopRunningHost(): self
     {
-        $build = $this->driverProfile(DefaultDrivers::CODEX)->build();
-        $this->callJournalProcess("{$name}-probe", $runtimeId, HostProcessPurpose::BuildProbe);
-        $this->asSystem(new CheckDriverBuildCommand($this->hostProcessCalled("{$name}-probe")->id, "codex-cli {$build}\n"));
-        $this->callJournalProcess("{$name}-sign-in", $runtimeId, HostProcessPurpose::SignInProbe);
-        $signIn = $this->hostProcessCalled("{$name}-sign-in");
-        $files = $this->service(Files::class);
-        $folder = $files->pathIn(Place::Accounts, $signIn->sessionProcess()->sole()->directory);
-        $files->makeFolder($folder, Permissions::OwnerOnly);
-        $files->write($folder->child('auth.json'), '{}', Permissions::OwnerOnly);
-        $this->asSystem(new CheckSignInCommand($signIn->id, "Logged in using ChatGPT\n"));
+        $host = $this->testHost;
+        $this->testHost = null;
+        $host?->stop()->assertMocksPlayed();
 
         return $this;
+    }
+
+    /**
+     * An enrolled host that runs no binary, handed to the scope to open processes on and report as.
+     *
+     * @param  Closure(TestEnrolledHost): mixed  $scope
+     */
+    public function host(string $host, Closure $scope): self
+    {
+        $this->hostCalled($host);
+        $scope(new TestEnrolledHost($this, $host));
+
+        return $this;
+    }
+
+    /**
+     * The host process the test named, handed to the scope; the same process keeps its driver worker from one scope
+     * to the next.
+     *
+     * @param  Closure(TestHostProcess): mixed  $scope
+     */
+    public function hostProcess(string $name, Closure $scope): self
+    {
+        if (! array_key_exists($name, $this->hostProcesses)) {
+            throw FixtureRefused::unknownHostProcess($name, array_keys($this->hostProcesses));
+        }
+
+        $scope($this->processScopes[$name] ??= new TestHostProcess($this, $name));
+
+        return $this;
+    }
+
+    /**
+     * The order, handed to the scope to answer or refuse as its host.
+     *
+     * @param  Closure(TestHostOrder): mixed  $scope
+     */
+    public function hostOrder(HostOrder $order, Closure $scope): self
+    {
+        $scope(new TestHostOrder($this, $order));
+
+        return $this;
+    }
+
+    /**
+     * The test calls the host process of this id by the name, a process the journal opened itself or a test's open
+     * order made.
+     */
+    public function nameHostProcess(string $name, string $processId): self
+    {
+        if (array_key_exists($name, $this->hostProcesses)) {
+            throw FixtureRefused::occupiedAlias($name, 'host process');
+        }
+
+        $this->hostProcesses[$name] = $processId;
+
+        return $this;
+    }
+
+    /**
+     * The named host is ordered to open the planned process for the runtime given, if any, and the test calls it by
+     * the name; the host has not reported it yet.
+     */
+    public function openPlannedProcess(
+        string $host,
+        string $name,
+        HostProcessPlan $plan,
+        string|null $runtimeId = null,
+    ): self {
+        $hostId = $this->hostCalled($host)->hostId;
+
+        return $this->nameHostProcess(
+            $name,
+            $this->asSystem(new OpenHostProcessCommand($hostId, $runtimeId, $plan, HostOrderSource::fromJournal())),
+        );
+    }
+
+    /**
+     * What the named process got and showed so far, for a failure to say: each order with what it wrote, everything
+     * the process printed, its last screen and what the test host printed.
+     */
+    public function processReport(string $name): string
+    {
+        return $this->drivenSoFar($name);
     }
 
     /**
@@ -285,32 +300,13 @@ trait ArrangesHostProcesses
         );
 
         return array_values(array_map(
-            fn (HostOrder $order) => json_decode(base64_decode($this->payloadOf($order)['bytes']), true, flags: JSON_THROW_ON_ERROR),
+            fn (HostOrder $order) => json_decode(
+                base64_decode($this->payloadOf($order)['bytes']),
+                true,
+                flags: JSON_THROW_ON_ERROR,
+            ),
             $writes,
         ));
-    }
-
-    /**
-     * Names the live owner that runs the headless turns of the runtime's current start's account.
-     */
-    public function callAccountOwner(string $name, string $runtimeId): self
-    {
-        $runtime = AgentRuntime::query()->whereKey($runtimeId)->sole();
-        $start = SessionProcess::findCurrentOf($runtime->agent_session_id) ?? throw FixtureRefused::missingAlias(
-            'current start',
-            $runtimeId,
-            self::OWNER,
-        );
-
-        $this->hostProcesses[$name] = HostProcess::query()
-            ->ofPurposes([HostProcessPurpose::AccountOwner])
-            ->live()
-            ->whereHas('sessionProcess', fn ($owned) => $owned->onAccountGenerationOf($start))
-            ->latest('id')
-            ->firstOrFail()
-            ->id;
-
-        return $this;
     }
 
     /**
@@ -328,21 +324,6 @@ trait ArrangesHostProcesses
         $id = $this->hostProcesses[$name] ?? throw FixtureRefused::missingAlias('host process', $name, self::OWNER);
 
         return HostProcess::query()->whereKey($id)->sole();
-    }
-
-    /**
-     * The process's host reports it as the report type says, with the exit code given when it exited.
-     */
-    public function reportHostProcess(string $name, HostProcessReportType $report, int|null $exitCode = null): self
-    {
-        $process = $this->hostProcessCalled($name);
-        $this->asSystem(new NotifyHostProcessCommand(
-            $process->host_id,
-            $process->id,
-            HostProcessReportData::from(['report' => $report, 'identity' => "pid:{$name}", 'exit_code' => $exitCode]),
-        ));
-
-        return $this;
     }
 
     /**
@@ -387,68 +368,6 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * A browser submitted the private value under the submission id, which now waits for its host to pull it.
-     */
-    public function submitPrivateValue(string $submissionId, string $value): self
-    {
-        $this->app->make(PrivateValues::class)->keep($submissionId, $value);
-
-        return $this;
-    }
-
-    /**
-     * The named pipe process's host sends what it printed next on its standard output, right after what it sent before.
-     */
-    public function printOnPipe(string $name, string $printed): self
-    {
-        $process = $this->hostProcessCalled($name);
-        $chunk = ['stream' => 'stdout', 'offset' => $process->output_offset, 'bytes' => base64_encode($printed)];
-        $body = json_encode(['chunks' => [$chunk]], JSON_THROW_ON_ERROR);
-        $this->asSystem(new NotifyHostOutputCommand($process->host_id, $process->id, $body));
-
-        return $this;
-    }
-
-    /**
-     * The named process's host sends a frame whose first row reads as given.
-     */
-    public function printOnHostProcess(string $name, string $firstRow): self
-    {
-        $process = $this->hostProcessCalled($name);
-        $frame = ['rows' => [$firstRow], 'cursor_row' => 0, 'cursor_column' => 0, 'columns' => 80, 'captured' => 1];
-        $body = json_encode(['frames' => [[
-            ...$frame,
-            'unchanged_ms' => [0],
-        ]]], JSON_THROW_ON_ERROR);
-        $this->asSystem(new NotifyHostOutputCommand($process->host_id, $process->id, $body));
-
-        return $this;
-    }
-
-    /**
-     * The order's host answers it as carried out.
-     */
-    public function answerHostOrder(HostOrder $order): self
-    {
-        $this->asSystem(new NotifyHostOrderCommand($order->host_id, $order->id, '{"status":"done"}'));
-
-        return $this;
-    }
-
-    /**
-     * The order's host answers it as carried out, with the facts it found.
-     *
-     * @param  array<string, mixed>  $facts
-     */
-    public function answerHostOrderWith(HostOrder $order, array $facts): self
-    {
-        $body = json_encode(['status' => 'done', 'facts' => $facts], JSON_THROW_ON_ERROR);
-        $this->asSystem(new NotifyHostOrderCommand($order->host_id, $order->id, $body));
-
-        return $this;
-    }
-
-    /**
      * The profile the journal starts the driver family by.
      */
     public function driverProfile(string $family): DriverProfile
@@ -470,7 +389,7 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The journal runs its agents contained, as a contained stand-in host's served journal does: the same arrangement,
+     * The journal runs its agents contained, as a contained mock host's served journal does: the same arrangement,
      * installation name, agent image, security profiles and workspace, so the sessions it opens freeze a container
      * policy.
      */
@@ -530,17 +449,6 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The order's host refuses it for the reason given.
-     */
-    public function refuseHostOrder(HostOrder $order, HostRefusal $refusal): self
-    {
-        $body = json_encode(['status' => 'refused', 'refusal' => $refusal->value], JSON_THROW_ON_ERROR);
-        $this->asSystem(new NotifyHostOrderCommand($order->host_id, $order->id, $body));
-
-        return $this;
-    }
-
-    /**
      * Programs the journal starts run as fakes that end at once, so a test reads what was started.
      */
     public function fakeStartedPrograms(): self
@@ -561,433 +469,26 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The host channel plays the committed recording in the folder, relative to the journal's recordings.
+     * The host channel is a mock host that plays the committed recording in the folder, relative to the journal's
+     * recordings; service(MockHost::class) reaches the same mock.
      */
-    public function playsRecording(string $recording): self
+    public function playRecording(string $recording): self
     {
-        $this->app->instance(
-            HostChannel::class,
-            StandInHost::playing(resource_path("recordings/{$recording}")),
-        );
-
-        return $this;
-    }
-
-    public function standInHost(): StandInHost
-    {
-        return $this->app->make(HostChannel::class);
-    }
-
-    /**
-     * The named host runs for real: the host binary built from the checkout, against the Docker stand-in it carries
-     * and the test application on a port of its own, with the test journal's owner, made here when the test named none.
-     * The test commits its rows, so the served application sees them.
-     */
-    public function runTestHost(string $host): self
-    {
-        $database = (string) $this->app->make(Repository::class)->get('database.connections.pgsql.database');
-        $this->testHost = TestHost::start(
-            $this->app->make(Factory::class),
-            $this->hostCalled($host),
-            $database,
-            ($this->owner ?? $this->owner()->ownerUser())->email,
-            Host::query()->findOrFail($this->hostCalled($host)->hostId)->arrangement,
-            $this->app->make(DriverCompatibilities::class) instanceof ShownDriverArrangements,
-        );
+        $host = MockHost::playing(resource_path("recordings/{$recording}"));
+        $this->app->instance(HostChannel::class, $host);
+        $this->app->instance(MockHost::class, $host);
 
         return $this;
     }
 
     /**
-     * Opens a container of the stand-in's echo program on the named host, which must run for real.
-     */
-    public function openEchoContainer(
-        string $host,
-        string $name,
-        string|null $runtimeId = null,
-        RestartPolicy $restart = RestartPolicy::Never,
-    ): self {
-        $plan = new HostProcessPlan(
-            HostProcessPurpose::Probe,
-            HostProcessType::Terminal,
-            $restart,
-            ['echo-program'],
-            [],
-            '/workspace',
-            ContainerManifest::make(
-                TestHost::IMAGE,
-                '10001:10001',
-                true,
-                [],
-                false,
-                "journal-net-{$name}",
-                [MountRules::local()->workspaceMount($this->testHostFolder(), WorkspaceUse::Shared)],
-                [],
-                ExecutionBudgets::defaults(),
-                MountRules::local(),
-                SecurityOptions::none(),
-                true,
-            ),
-        );
-        $this->openPlanned($host, $name, $runtimeId, $plan);
-
-        return $this;
-    }
-
-    /**
-     * Opens the key recorder on the named host, which must run for real, as a native terminal: every byte typed on it
-     * is written to a file of the installation and the typed text drawn on its screen.
-     */
-    public function openKeyRecorder(string $host, string $name): self
-    {
-        $installation = $this->testHostInstallation();
-        $plan = new HostProcessPlan(
-            HostProcessPurpose::Probe,
-            HostProcessType::Terminal,
-            RestartPolicy::Never,
-            ["{$installation}/bin/journal-agent", 'standin', 'keys', '--record', "{$installation}/keys-{$name}"],
-            [],
-            $this->testHostFolder(),
-        );
-        $this->openPlanned($host, $name, null, $plan);
-
-        return $this;
-    }
-
-    /**
-     * Every byte the named key recorder read so far, as it reached the program.
-     */
-    public function keysRecordedBy(string $name): string
-    {
-        $file = "{$this->testHostInstallation()}/keys-{$name}";
-
-        return is_file($file) ? (string) file_get_contents($file) : '';
-    }
-
-    /**
-     * Opens a local process of pipes on the named host, which must run for real, with the argv and the start
-     * credentials of the runtime, handed over as the journal hands them to a process it orders opened.
+     * The mock host the journal's host channel is, handed to the scope.
      *
-     * @param  list<string>  $argv
+     * @param  Closure(MockHost): mixed  $scope
      */
-    public function openWithStartCredentials(string $host, string $name, string $runtimeId, array $argv): self
+    public function mockHost(Closure $scope): self
     {
-        $runtime = AgentRuntime::query()->whereKey($runtimeId)->sole();
-        $credentials = $runtime->handOverStartCredentials($this->testHostJournalUrl());
-        $plan = new HostProcessPlan(
-            HostProcessPurpose::Probe,
-            HostProcessType::Pipe,
-            RestartPolicy::Never,
-            $argv,
-            $credentials->environment(),
-            base_path(),
-        );
-        $this->openPlanned($host, $name, $runtimeId, $plan);
-
-        return $this;
-    }
-
-    /**
-     * The journal the test host reaches goes away for the seconds and comes back, as after a crash of the app.
-     */
-    public function restartJournalOfTestHost(float $seconds = 1.0): self
-    {
-        $this->testHost?->restartJournal($seconds);
-
-        return $this;
-    }
-
-    /**
-     * A driver worker begins on the named process in this test's process. The worker service is taken anew for each
-     * call, as the test's sync queue forgets scoped services after every job, which no real worker process runs.
-     */
-    public function beginDriverWorker(string $name): DriverWork
-    {
-        return $this->app->make(DriverWorkers::class)->begin($this->hostProcessCalled($name)->id);
-    }
-
-    /**
-     * The worker takes its next step, waiting up to the milliseconds, and answers whether it goes on.
-     */
-    public function stepDriverWorker(DriverWork $work, int $waitMs): bool
-    {
-        return $this->app->make(DriverWorkers::class)->step($work, $waitMs);
-    }
-
-    /**
-     * The test host, its Docker stand-in and its served journal stop, before the test's rows are emptied; nothing
-     * happens when none runs.
-     */
-    public function stopTestHost(): self
-    {
-        $this->testHost?->stop();
-        $this->testHost = null;
-
-        return $this;
-    }
-
-    /**
-     * The running test host stops, and no process of the journal it was served on runs any more, server or worker.
-     */
-    public function assertTestHostStopsWholly(): self
-    {
-        $port = ($this->testHost ?? throw FixtureRefused::noTestHost())->port;
-        $this->stopTestHost();
-        $this->test->assertSame([], TestHost::journalProcessesOn($port));
-
-        return $this;
-    }
-
-    /**
-     * The owner completes the device sign-in the test host's Codex shows in the browser, so its login completes.
-     */
-    public function completeBrowserSignInOnTestHost(): self
-    {
-        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'browser sign-in', self::OWNER);
-        $host->completeBrowserSignIn();
-
-        return $this;
-    }
-
-    /**
-     * The test host's stand-in for Claude Code plays the named terminal recording of its build from now on, such as
-     * terminal-interrupt, where the real program was interrupted during its turn.
-     */
-    public function playClaudeTerminalRecordingOnTestHost(string $recording): self
-    {
-        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'terminal recording', self::OWNER);
-        $host->playClaudeTerminal($recording);
-
-        return $this;
-    }
-
-    /**
-     * The test host's stand-in for Claude Code holds each headless turn after its first lines until it is released.
-     */
-    public function holdStandInTurns(): self
-    {
-        $this->testHost?->holdTurns();
-
-        return $this;
-    }
-
-    public function releaseStandInTurns(): self
-    {
-        $this->testHost?->releaseTurns();
-
-        return $this;
-    }
-
-    /**
-     * The driver accounts are chosen in folders of the running test host, so a stand-in started for an account can
-     * write into its account folder, as Claude Code writes a conversation's transcript there.
-     */
-    public function chooseActiveAccountsOnTestHost(): self
-    {
-        $folder = "{$this->testHostFolder()}/accounts";
-
-        foreach (DefaultDrivers::familyKeys() as $driver) {
-            mkdir(self::accountFolderOf($folder, $driver), 0o700, true);
-        }
-
-        return $this->chooseActiveAccounts($folder);
-    }
-
-    /**
-     * The journal types the keys on the named process, guarded by the screen its host last sent, as a key script does.
-     */
-    public function typeOnHostProcess(string $name, string $keys): self
-    {
-        $process = $this->hostProcessCalled($name);
-        $rows = $this->service(ProcessFeed::class)->latestFrame($process->id)?->rows
-            ?? throw FixtureRefused::missingAlias('screen of host process', $name, self::OWNER);
-        $guard = new RowGuard(0, count($rows) - 1, hash('sha256', implode("\n", $rows)));
-
-        $this->asSystem(new SendHostKeysCommand($process->id, $keys, $guard, 0, HostOrderSource::fromJournal()));
-
-        return $this;
-    }
-
-    /**
-     * The journal proves the runtime's start on the test host: its build probe, then its sign-in probe, run there and
-     * are driven until the process the proven start opens is ordered, which the test then calls by the name. An
-     * account's owner belongs to the account rather than the runtime, so it is found by the runtime's account.
-     */
-    public function proveStartOnTestHost(string $runtimeId, HostProcessPurpose $opens, string $name): self
-    {
-        $ordered = fn (HostProcessPurpose $purpose) => fn () => HostProcess::query()
-            ->where('agent_runtime_id', $runtimeId)
-            ->where('purpose', $purpose)
-            ->exists();
-        $isOwner = $opens === HostProcessPurpose::AccountOwner;
-        $ownerOrdered = fn () => AgentRuntime::query()->whereKey($runtimeId)->sole()->hasProvenStart()
-            && HostProcess::query()->ofPurposes([HostProcessPurpose::AccountOwner])->live()->exists();
-        $this->callJournalProcess('probe', $runtimeId, HostProcessPurpose::BuildProbe)
-            ->driveHostProcess('probe', $ordered(HostProcessPurpose::SignInProbe));
-        $this->callJournalProcess('sign-in', $runtimeId, HostProcessPurpose::SignInProbe)
-            ->driveHostProcess('sign-in', $isOwner ? $ownerOrdered : $ordered($opens));
-
-        if ($isOwner) {
-            return $this->callAccountOwner($name, $runtimeId);
-        }
-
-        return $this->callJournalProcess($name, $runtimeId, $opens);
-    }
-
-    /**
-     * Each row of the newest screen the named process's host sent, as the journal's feed holds it; none before the
-     * first.
-     *
-     * @return list<string>
-     */
-    public function hostProcessRows(string $name): array
-    {
-        $frame = $this->service(ProcessFeed::class)->latestFrame($this->hostProcessCalled($name)->id);
-
-        return $frame === null ? [] : $frame->rows;
-    }
-
-    /**
-     * Each start of the test host's Claude Code stand-in on a terminal, by the arguments it was started with.
-     *
-     * @return list<list<string>>
-     */
-    public function testHostClaudeStarts(): array
-    {
-        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'starts', self::OWNER);
-
-        return $host->claudeStarts();
-    }
-
-    /**
-     * The owner's sign-ins are made as the test host runs them: this test reads the cache the served journal and its
-     * runner share, and makes each attempt's folder under the host's own accounts folder.
-     */
-    public function shareSignInsWithTestHost(): self
-    {
-        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'sign-ins', self::OWNER);
-        $this->app->make(Repository::class)->set([
-            'cache.default' => 'file',
-            'accounts.root' => $host->accountsFolder(),
-        ]);
-        $this->app->forgetInstance('cache');
-        $this->app->forgetInstance('cache.store');
-        Facade::clearResolvedInstance('cache');
-
-        return $this;
-    }
-
-    /**
-     * One pass of the test host's sign-in runner starts, taking the sign-in that waits for a host.
-     */
-    public function runSignInsOnTestHost(): self
-    {
-        ($this->testHost ?? throw FixtureRefused::missingAlias('test host', 'sign-ins', self::OWNER))->startSignIns();
-
-        return $this;
-    }
-
-    /**
-     * The challenge the test host's runner published for the attempt, waited for until it is there.
-     */
-    public function signInChallengeOf(string $attemptId, int $seconds = 20): SignInChallenge
-    {
-        $challenges = $this->app->make(SignInChallenges::class);
-        $deadline = microtime(true) + $seconds;
-
-        while ($challenges->challengeOf($attemptId) === null && microtime(true) < $deadline) {
-            usleep(100_000);
-        }
-
-        return $challenges->challengeOf($attemptId)
-            ?? throw FixtureRefused::missingAlias('sign-in challenge', $attemptId, self::OWNER);
-    }
-
-    /**
-     * Waits for the test host's sign-in runner to end its pass, which must end well.
-     */
-    public function waitForSignInsOnTestHost(): self
-    {
-        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'sign-ins', self::OWNER);
-        Assert::assertTrue($host->waitForSignIns(), 'The sign-in runner failed: '.$host->printed());
-
-        return $this;
-    }
-
-    /**
-     * Each start of the test host's Codex stand-in on a terminal, by the arguments it was started with.
-     *
-     * @return list<list<string>>
-     */
-    public function testHostCodexStarts(): array
-    {
-        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'starts', self::OWNER);
-
-        return $host->codexStarts();
-    }
-
-    /**
-     * The test host the test runs, to ask it what its stand-ins saw.
-     */
-    public function testHost(): TestHost
-    {
-        return $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'running', self::OWNER);
-    }
-
-    /**
-     * The protected installation folder the test host runs account starts from.
-     */
-    public function testHostInstallation(): string
-    {
-        return $this->testHost?->installation() ?? throw FixtureRefused::missingAlias('test host', 'installation', self::OWNER);
-    }
-
-    /**
-     * The test host's binary stops and starts again, its containers left running.
-     */
-    public function restartTestHost(): self
-    {
-        $this->testHost?->restartHost();
-
-        return $this;
-    }
-
-    /**
-     * A driver worker drives the named process in this test's own process until the condition holds or the seconds
-     * pass, and answers the worker for further driving.
-     *
-     * @param  Closure(): bool  $until
-     */
-    public function driveHostProcess(
-        string $name,
-        Closure $until,
-        DriverWork|null $work = null,
-        int $seconds = 30,
-    ): DriverWork {
-        $work ??= $this->beginDriverWorker($name);
-        $deadline = microtime(true) + $seconds;
-
-        while (! $until() && microtime(true) < $deadline && $this->stepDriverWorker($work, 200)) {
-            continue;
-        }
-
-        Assert::assertTrue($until(), $this->drivenSoFar($name));
-
-        return $work;
-    }
-
-    /**
-     * Waits up to the seconds for the named process to reach the status, as its host reports it.
-     */
-    public function waitForHostProcess(string $name, HostProcessStatus $status, int $seconds = 30): self
-    {
-        $deadline = microtime(true) + $seconds;
-
-        while ($this->hostProcessCalled($name)->status !== $status && microtime(true) < $deadline) {
-            usleep(100_000);
-        }
-
-        Assert::assertSame($status, $this->hostProcessCalled($name)->status, $this->drivenSoFar($name));
+        $scope($this->app->make(MockHost::class));
 
         return $this;
     }
@@ -1005,7 +506,7 @@ trait ArrangesHostProcesses
         $screen = implode("\n", $frame);
 
         return <<<TEXT
-            The worker of {$name} did not reach what the test waits for; its process is {$process->status->value}
+            The process {$name} did not reach what the test waits for; it is {$process->status->value}
             ({$process->exit_evidence}).
             --- what the journal ordered and wrote
             {$orders}
@@ -1023,9 +524,13 @@ trait ArrangesHostProcesses
     {
         $folder = $this->testHost?->installation();
         $state = $folder === null ? '' : dirname($folder).'/state/orders/answered.json';
-        $ids = implode(',', array_map(fn (HostOrder $order) => $order->id.':'.$order->sequence, HostOrder::query()->where('status', 'claimed')->get()->all()));
+        $ids = implode(',', array_map(fn (HostOrder $order) => $order
+            ->id.':'.$order->sequence, HostOrder::query()->where('status', 'claimed')->get()->all()));
 
-        return 'claimed in journal: '.$ids."\nhost answered: ".(is_file($state) ? substr((string) file_get_contents($state), -3000) : 'none');
+        return 'claimed in journal: '.$ids."\nhost answered: ".(is_file($state) ? substr(
+            (string) file_get_contents($state),
+            -3000,
+        ) : 'none');
     }
 
     /**
@@ -1035,7 +540,10 @@ trait ArrangesHostProcesses
     {
         $payload = $this->payloadOf($order);
         $encoded = $payload['bytes'] ?? null;
-        $written = is_string($encoded) ? json_encode(base64_decode($encoded, true), JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE) : '';
+        $written = is_string($encoded) ? json_encode(
+            base64_decode($encoded, true),
+            JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE,
+        ) : '';
         $reason = $order->answer?->facts['reason'] ?? '';
 
         return "{$order->type->value} {$order->status->value} {$order->refusal?->value} {$reason} {$written}";
@@ -1053,30 +561,13 @@ trait ArrangesHostProcesses
         while (($entries = $feed->after($processId, $cursor, 0)) !== []) {
             foreach ($entries as $entry) {
                 $cursor = $entry->cursor;
-                $chunks[] = $entry->chunk === null ? null : "{$entry->chunk->stream}: ".json_encode($entry->chunk->printed(), JSON_UNESCAPED_SLASHES);
+                $chunks[] = $entry->chunk === null ? null : "{$entry->chunk->stream}: ".json_encode(
+                    $entry->chunk->printed(),
+                    JSON_UNESCAPED_SLASHES,
+                );
             }
         }
 
         return implode("\n", array_filter($chunks));
-    }
-
-    private function testHostJournalUrl(): string
-    {
-        $testHost = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'running', self::OWNER);
-
-        return $testHost->journalUrl();
-    }
-
-    private function openPlanned(string $host, string $name, string|null $runtimeId, HostProcessPlan $plan): void
-    {
-        $hostId = $this->hostCalled($host)->hostId;
-        $this->hostProcesses[$name] = $this->asSystem(
-            new OpenHostProcessCommand($hostId, $runtimeId, $plan, HostOrderSource::fromJournal()),
-        );
-    }
-
-    private function testHostFolder(): string
-    {
-        return $this->testHost?->folder ?? throw FixtureRefused::missingAlias('test host', 'running', self::OWNER);
     }
 }

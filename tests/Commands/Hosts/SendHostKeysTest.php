@@ -14,6 +14,8 @@ use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -41,7 +43,7 @@ final class SendHostKeysTest extends TestCase
         $this->journal
             ->useServerClockAt(CarbonImmutable::parse(self::NOW))
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
     }
 
     public function test_it_orders_the_host_with_its_payload_and_expiry(): void
@@ -60,18 +62,25 @@ final class SendHostKeysTest extends TestCase
         $replaced = HostOrderSource::forStep('request-1', 'step', 0, 1);
         $current = HostOrderSource::forStep('request-1', 'step', 0, 0);
 
-        $this->journal->assertRefused(WorkerFenced::class, fn () => $this->journal->asSystem($this->command($replaced)));
+        $this->journal->assertRefused(
+            WorkerFenced::class,
+            fn () => $this->journal->asSystem($this->command($replaced)),
+        );
         $first = $this->journal->asSystem($this->command($current));
         $again = $this->journal->asSystem($this->command($current));
 
         $orders = $this->journal->hostOrdersOf('shell');
 
-        $this->journal->assertResult([$first, 'request-1:step:0', 2], [$again, $orders[1]->idempotency_key, count($orders)]);
+        $this->journal->assertResult(
+            [$first, 'request-1:step:0', 2],
+            [$again, $orders[1]->idempotency_key, count($orders)],
+        );
     }
 
     public function test_a_process_that_exited_takes_no_order(): void
     {
-        $this->journal->reportHostProcess('shell', HostProcessReportType::Exited, 0);
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell
+            ->report(HostProcessReportType::Exited, 0));
 
         $this->journal->assertRefused(
             HostProtocolRefused::class,
@@ -81,7 +90,7 @@ final class SendHostKeysTest extends TestCase
 
     public function test_a_pipe_process_takes_no_keys(): void
     {
-        $this->journal->openHostProcess('Mac', 'pipe', HostProcessType::Pipe);
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('pipe', HostProcessType::Pipe));
         $pipe = $this->journal->hostProcessCalled('pipe')->id;
         $keys = new SendHostKeysCommand($pipe, 'hi', new RowGuard(0, 1, 'abc'), 3, HostOrderSource::fromJournal());
 
@@ -90,6 +99,12 @@ final class SendHostKeysTest extends TestCase
 
     private function command(HostOrderSource $source): SendHostKeysCommand
     {
-        return new SendHostKeysCommand($this->journal->hostProcessCalled('shell')->id, 'hi', new RowGuard(0, 1, 'abc'), 3, $source);
+        return new SendHostKeysCommand(
+            $this->journal->hostProcessCalled('shell')->id,
+            'hi',
+            new RowGuard(0, 1, 'abc'),
+            3,
+            $source,
+        );
     }
 }

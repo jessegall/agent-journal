@@ -21,14 +21,17 @@ use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPhase;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Seeding\StateObservation;
+use Tests\Support\Seeding\StateHandle;
 
 /**
  * A plan under review holds still. Requesting a review puts the plan in Reviewing and refuses
@@ -142,10 +145,10 @@ final class RequestPlanReviewTest extends TestCase
 
         $this->journal
             ->stateOn(
-                $this->journal->sessionOf('Reviewer'),
+                'Reviewer',
                 ReviewPlanStateReference::forPlan($plan->id, $plan->number),
-            )
-            ->given([], fn (StateObservation $state) => $state->assertOnTop());
+                fn (StateHandle $reviewing) => $reviewing->steps([], fn (StateAssert $state) => $state->isOnTop()),
+            );
     }
 
     public function test_a_review_with_only_a_user_as_reviewer_changes_no_stack(): void
@@ -184,7 +187,9 @@ final class RequestPlanReviewTest extends TestCase
 
         $plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release', title: 'Build the release page')
-            ->phaseWithTask('Release', 'Reading', $task->assignmentIdentity())
+            ->withPlan('Release', fn (TestPlan $plan) => $plan
+                ->addPhase('Reading')->withPhase('Reading', fn (TestPhase $phase) => $phase
+                ->place($task->assignmentIdentity())))
             ->planCalled('Release');
 
         return [

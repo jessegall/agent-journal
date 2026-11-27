@@ -34,6 +34,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
+use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
@@ -71,6 +72,7 @@ use Tests\Support\Agents\StartsAgents;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\FixedServerClock;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
 use Throwable;
 
@@ -265,9 +267,12 @@ final class StartAgentTest extends TestCase
     public function test_a_start_a_host_took_up_stays_running_when_it_falls_silent(): void
     {
         $receipt = $this->start($this->request());
-        $runtimeId = (string) AgentRuntime::findForSession($receipt->sessionId)?->id;
-        $this->journal->callJournalProcess('probe', $runtimeId, HostProcessPurpose::BuildProbe)
-            ->reportHostProcess('probe', HostProcessReportType::Running);
+        $probe = HostProcess::query()
+            ->where('agent_runtime_id', AgentRuntime::findForSession($receipt->sessionId)?->id)
+            ->where('purpose', HostProcessPurpose::BuildProbe)
+            ->sole();
+        $this->journal->nameHostProcess('probe', $probe->id)
+            ->hostProcess('probe', fn (TestHostProcess $probe) => $probe->report(HostProcessReportType::Running));
         $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addSeconds(121)));
 
         $this->app->make(StartHeartbeats::class)->markSilentStarts();

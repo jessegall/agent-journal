@@ -34,6 +34,7 @@ use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -157,7 +158,8 @@ final class AnswerNavigationTest extends TestCase
 
         $this->assertSame($first->id, $again->id);
         // The journal drives a Claude Code terminal, so its own driver worker claims the round.
-        $this->journal->openHostProcess(self::HOST, 'terminal', runtimeId: $navigation->agent_runtime_id);
+        $this->journal->host(self::HOST, fn (TestEnrolledHost $host) => $host
+            ->openProcess('terminal', runtimeId: $navigation->agent_runtime_id));
         $process = $this->journal->hostProcessCalled('terminal')->id;
         $generation = $this->journal->asSystem(new ClaimHostWorkerCommand($process));
         $claimed = collect($this->journal->asSystem(new ClaimRuntimeRequestsCommand($process, $generation, 10))->requests)

@@ -14,12 +14,11 @@ use App\Stacks\Support\AnswerMessageStateReference;
 use App\Stacks\Values\AnswerBudget;
 use App\Support\ActorReference;
 use Tests\Fixtures\Hooks\ListedCommandParser;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
-use Tests\Support\ScenarioTick;
-use Tests\Support\Seeding\SessionHooks;
+use Tests\Support\Seeding\SessionHook;
 use Tests\Support\Seeding\StateHandle;
-use Tests\Support\Seeding\StateObservation;
 use Tests\TestCase;
 
 /**
@@ -41,8 +40,6 @@ final class AnswerMessageStateTest extends TestCase
 
     private const string MESSAGE = 'message-1';
 
-    private SessionHooks $hooks;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -50,104 +47,102 @@ final class AnswerMessageStateTest extends TestCase
         $this->app->instance(AnswerBudget::class, new AnswerBudget(2));
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
         $this->journal->owner()->agent('Writer')->agent('Other');
-        $this->hooks = $this->journal->hooksFor($this->journal->sessionOf('Writer'));
+        $this->journal->pushState('Writer', $this->answering());
     }
 
     public function test_a_pushed_state_stays_until_its_agent_answers(): void
     {
-        $this->answering()
-            ->given(
-                $this->sent($this->journal->actorCalled('Owner')),
-                fn (StateObservation $state) => $state->assertLive(),
+        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering
+            ->steps(
+                [$this->sent($this->journal->actorCalled('Owner'))],
+                fn (StateAssert $state) => $state->isLive(),
             )
-            ->given(
-                $this->sent($this->journal->actorCalled('Other')),
-                fn (StateObservation $state) => $state->assertLive(),
+            ->steps(
+                [$this->sent($this->journal->actorCalled('Other'))],
+                fn (StateAssert $state) => $state->isLive(),
             )
-            ->given($this->sent($this->agent()), fn (StateObservation $state) => $state->assertFinished());
+            ->steps([$this->sent($this->agent())], fn (StateAssert $state) => $state->isFinished()));
     }
 
     public function test_a_reply_to_another_message_does_not_answer_it(): void
     {
-        $this->answering()->given(
+        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering->event(
             new MessageSent('reply-1', self::INBOX, 2, 'message-9', $this->agent()),
-            fn (StateObservation $state) => $state->assertLive(),
-        );
+            fn (StateAssert $state) => $state->isLive(),
+        ));
     }
 
     public function test_the_agent_leaving_the_inbox_ends_it(): void
     {
-        $this->answering()
-            ->given(new InboxLeft('inbox-9', $this->agent()), fn (StateObservation $state) => $state->assertLive())
-            ->given(
+        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering
+            ->event(new InboxLeft('inbox-9', $this->agent()), fn (StateAssert $state) => $state->isLive())
+            ->event(
                 new InboxLeft(self::INBOX, $this->agent()),
-                fn (StateObservation $state) => $state->assertFinished(),
-            );
+                fn (StateAssert $state) => $state->isFinished(),
+            ));
     }
 
     public function test_each_tool_use_takes_one_off_the_budget_and_then_it_refuses_a_write(): void
     {
-        $this->answering()
-            ->given([
-                $this->hooks->toolFinished(),
-                $this->hooks->shell('composer update'),
-            ], function (StateObservation $state) {
-                $state->assertValue('toolUses', 1);
-                $state->assertStateAnswer(AnswerType::Delegate);
-            })
-            ->given([
-                $this->hooks->toolFinished(),
-                $this->hooks->shell('composer update'),
-            ], function (StateObservation $state) {
-                $state->assertValue('toolUses', 2);
-                $state->assertStateAnswer(AnswerType::Deny);
-            })
-            ->given(
-                $this->hooks->shell('git status'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-            );
+        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering
+            ->steps([
+                SessionHook::toolFinished(),
+                SessionHook::shell('composer update'),
+            ], fn (StateAssert $state) => $state
+                ->where('toolUses', 1)
+                ->answers(AnswerType::Delegate))
+            ->steps([
+                SessionHook::toolFinished(),
+                SessionHook::shell('composer update'),
+            ], fn (StateAssert $state) => $state
+                ->where('toolUses', 2)
+                ->answers(AnswerType::Deny))
+            ->shell(
+                'git status',
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+            ));
     }
 
     public function test_a_stop_is_refused_until_it_is_answered(): void
     {
-        $this->answering()
-            ->given($this->hooks->stop(), fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny))
-            ->given($this->sent($this->agent()), fn (StateObservation $state) => $state->assertFinished());
+        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering
+            ->stop(fn (StateAssert $state) => $state->answers(AnswerType::Deny))
+            ->steps([$this->sent($this->agent())], fn (StateAssert $state) => $state->isFinished()));
     }
 
     public function test_a_file_edit_passes_until_the_budget_is_spent(): void
     {
-        $this->answering()
-            ->given(
-                $this->hooks->fileEdit('app/Thing.php'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering
+            ->fileEdit(
+                'app/Thing.php',
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
             )
-            ->given([
-                $this->hooks->toolFinished(),
-                $this->hooks->toolFinished('pwd'),
-                $this->hooks->fileEdit('app/Thing.php'),
-            ], fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny));
+            ->steps([
+                SessionHook::toolFinished(),
+                SessionHook::toolFinished('pwd'),
+                SessionHook::fileEdit('app/Thing.php'),
+            ], fn (StateAssert $state) => $state->answers(AnswerType::Deny)));
     }
 
     public function test_a_stop_right_after_a_refused_one_passes(): void
     {
-        $this->answering()
-            ->given($this->hooks->stop(), fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny))
-            ->given(
-                $this->hooks->stopAfterRefusal(),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-            );
+        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering
+            ->stop(fn (StateAssert $state) => $state->answers(AnswerType::Deny))
+            ->stopAfterRefusal(
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+            ));
     }
 
     public function test_a_tick_leaves_it_as_it_was(): void
     {
-        $this->answering()->given(new ScenarioTick(), fn (StateObservation $state) => $state->assertLive());
+        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering
+            ->tick(fn (StateAssert $state) => $state->isLive()));
     }
 
     /**
      * The state of a message held in memory only: it keeps what it needs of the message in its own values.
      */
-    private function answering(): StateHandle
+    private function answering(): AnswerMessageStateReference
     {
         $message = new Message();
         $message->id = self::MESSAGE;
@@ -155,10 +150,7 @@ final class AnswerMessageStateTest extends TestCase
         $message->inbox_id = self::INBOX;
         $writer = $this->journal->agentCalled('Writer')->id;
 
-        return $this->journal->pushState(
-            $this->journal->sessionOf('Writer'),
-            AnswerMessageStateReference::forMessage($message, $writer),
-        );
+        return AnswerMessageStateReference::forMessage($message, $writer);
     }
 
     private function sent(ActorReference $sender): MessageSent

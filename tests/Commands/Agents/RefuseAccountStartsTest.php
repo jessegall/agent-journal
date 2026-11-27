@@ -6,6 +6,7 @@ namespace Tests\Commands\Agents;
 
 use App\Agents\Commands\RefuseAccountStarts\RefuseAccountStartsCommand;
 use App\Sessions\Enums\StartRefusalReason;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -20,9 +21,17 @@ final class RefuseAccountStartsTest extends TestCase
 
     public function test_the_accounts_unresolved_start_is_refused_as_not_signed_in(): void
     {
-        $this->journal->owner()->chooseActiveAccounts(config('accounts.root'))->showDriverArrangements()->idleAgent('Coder')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openCodexRuntimeOn('Coder', 'Mac', base_path(), 'Run: ls.');
-        $this->journal->passCodexProbes('coder', $opened->runtimeId)->callAccountOwner('owner', $opened->runtimeId);
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts(config('accounts.root'))
+            ->showDriverArrangements()
+            ->idleAgent('Coder')
+            ->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder
+            ->openCodexRuntime('Mac', base_path(), 'Run: ls.'));
+        $opened = $this->journal->openedRuntimeOf('Coder');
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder
+            ->passCodexProbes('coder')->callAccountOwner('owner'));
 
         $this->journal->asSystem(new RefuseAccountStartsCommand($this->journal->hostProcessCalled('owner')->id));
 

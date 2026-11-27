@@ -6,6 +6,7 @@ namespace Domain\Plans\Tests\Routes;
 
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
@@ -27,7 +28,10 @@ final class PhasesChecksPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $start = $journal->owner()->signedStart('Planner');
-        $plans = $journal->fixtures(PlanFixtures::class)->plan('Release')->phase('Release', 'Design');
+
+        $plans = $journal->fixtures(PlanFixtures::class)->plan('Release')->withPlan('Release', fn (TestPlan $plan) => $plan
+            ->addPhase('Design'));
+
         $plan = $plans->planCalled('Release');
         $phase = $plans->phaseCalled('Design');
 

@@ -9,6 +9,7 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
@@ -50,7 +51,8 @@ final class JournalRuntimesTest extends TestCase
         $this->chooseActiveAccounts();
         $this->journal->owner()->idleAgent('Driven')->enrollHost('Laptop', ['/work/project']);
 
-        $opened = $this->journal->openRuntimeOn('Driven', 'Laptop', '/work/project');
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openRuntime('Laptop', '/work/project'));
+        $opened = $this->journal->openedRuntimeOf('Driven');
 
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $host = $this->journal->hostCalled('Laptop')->hostId;
@@ -61,13 +63,13 @@ final class JournalRuntimesTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->idleAgent('Driven')->enrollHost('Laptop', ['/work/project']);
-        $opened = $this->journal->openRuntimeOn(
-            'Driven',
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openRuntime(
             'Laptop',
             '/work/project',
             driverType: DriverType::Terminal,
             firstMessage: 'Hello',
-        );
+        ));
+        $opened = $this->journal->openedRuntimeOf('Driven');
         $hostId = $this->journal->hostCalled('Laptop')->hostId;
 
         $start = $this->journal->claimStartOf($hostId, $opened->sessionId);
@@ -80,14 +82,23 @@ final class JournalRuntimesTest extends TestCase
                 $this->journal->claimRequestsOnHost($hostId)->requests,
             ],
         );
-        $this->assertThrows(fn () => $this->journal->claimedRequestOnHost($hostId, 'no-such-request'), FixtureRefused::class);
+        $this->assertThrows(
+            fn () => $this->journal->claimedRequestOnHost($hostId, 'no-such-request'),
+            FixtureRefused::class,
+        );
     }
 
     public function test_the_owner_chooses_an_account_for_every_driver_and_a_start_runs_with_it(): void
     {
-        $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Laptop', ['/work/project']);
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->idleAgent('Driven')
+            ->enrollHost('Laptop', ['/work/project']);
 
-        $opened = $this->journal->openRuntimeOn('Driven', 'Laptop', '/work/project');
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openRuntime('Laptop', '/work/project'));
+        $opened = $this->journal->openedRuntimeOf('Driven');
 
         $chosen = $this->journal->chosenAccounts();
         $this->journal->assertResult(
@@ -134,7 +145,11 @@ final class JournalRuntimesTest extends TestCase
         $this->journal->markHostAnswered($host);
 
         $this->assertFalse(
-            Host::query()->findOrFail($host->hostId)->hasAnswerToRecord('/host/orders/claim', [], CarbonImmutable::now()),
+            Host::query()->findOrFail($host->hostId)->hasAnswerToRecord(
+                '/host/orders/claim',
+                [],
+                CarbonImmutable::now(),
+            ),
         );
     }
 }

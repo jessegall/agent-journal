@@ -6,6 +6,7 @@ namespace Domain\Tasks\Tests\Fixtures;
 
 use App\Actors\Contracts\Actor;
 use App\Processes\Contracts\RunClaims;
+use Closure;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
@@ -13,7 +14,6 @@ use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
 use Domain\Tasks\Models\TaskRun;
-use Domain\Tasks\Models\TaskWait;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
 use Tests\Support\Seeding\TestJournal;
@@ -162,9 +162,15 @@ final class TaskFixtures
         return $this;
     }
 
-    public function assertRunCount(string $task, int $count): self
+    /**
+     * The task the test named, handed to the scope to assert its runs and waits.
+     *
+     * @param  Closure(TestTask): mixed  $scope
+     */
+    public function withTask(string $task, Closure $scope): self
     {
-        Assert::assertSame($count, TaskRun::query()->where('task_id', $this->taskCalled($task)->id)->count());
+        $this->taskCalled($task);
+        $scope(new TestTask($this, $task));
 
         return $this;
     }
@@ -184,21 +190,6 @@ final class TaskFixtures
             ->all();
 
         Assert::assertSame($lines, $logged, "Run {$run} of {$task} holds other log lines.");
-
-        return $this;
-    }
-
-    /**
-     * The task waits on the prerequisite, met or not, waived or not.
-     */
-    public function assertWait(string $task, string $prerequisite, bool $isSatisfied, bool $isWaived = false): self
-    {
-        $before = $this->taskCalled($prerequisite);
-
-        $wait = TaskWait::findBetween($this->taskCalled($task)->id, $before->id)
-            ?? Assert::fail("{$task} does not wait on {$prerequisite}.");
-
-        Assert::assertSame([$isSatisfied, $isWaived], [$wait->isSatisfiedBy($before->status), $wait->isWaived()]);
 
         return $this;
     }

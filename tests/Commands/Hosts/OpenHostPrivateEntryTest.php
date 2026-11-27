@@ -8,6 +8,7 @@ use App\Hosts\Commands\OpenHostPrivateEntry\OpenHostPrivateEntryCommand;
 use App\Hosts\Enums\HostOrderType;
 use App\Values\HostOrderSource;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -21,7 +22,8 @@ final class OpenHostPrivateEntryTest extends TestCase
 
     public function test_the_open_order_goes_to_the_processs_host_with_no_payload(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'claude');
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('claude'));
         $process = $this->journal->hostProcessCalled('claude');
 
         $this->journal->asSystem(new OpenHostPrivateEntryCommand($process->id, HostOrderSource::fromJournal()));

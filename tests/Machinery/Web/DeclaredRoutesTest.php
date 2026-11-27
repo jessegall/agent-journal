@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Tests\Machinery\Web;
 
 use App\Access\AccessSettings;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageSlots;
 use App\Models\Access\User;
 use App\Navigation\Enums\Icon;
 use App\Profiles\Enums\SlotContextType;
@@ -14,7 +15,6 @@ use App\Support\ClientDeclarations;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainEntry;
 use App\Text\Declarations\Section;
-use App\Web\Declarations\Slot;
 use Illuminate\Routing\Router;
 use Tests\Fixtures\ClientDeclarations\Desk\DeskDomain;
 use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;
@@ -76,12 +76,12 @@ final class DeclaredRoutesTest extends TestCase
         $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
             Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')
                 ->at('')
-                ->slots(Slot::make('aside', SlotContextType::Nothing))
-                ->actions(ActionRoute::post('books', AddBook::class, 'add')),
+                ->slots(fn (PageSlots $slots) => $slots->add('aside', SlotContextType::Nothing))
+                ->actions(fn (PageActions $actions) => $actions->post('books', AddBook::class, 'add')),
             Page::make('hidden', 'Hidden', Icon::Docs, BooksResolver::class, 'Books.vue')
                 ->at('hidden')
                 ->visibleWhen(NobodySees::class)
-                ->actions(ActionRoute::post('hidden/books', AddBook::class, 'add-hidden')),
+                ->actions(fn (PageActions $actions) => $actions->post('hidden/books', AddBook::class, 'add-hidden')),
         ]);
         $desk = DomainEntry::fromClass(DeskDomain::class)->declaring(sections: [
             Section::make(
@@ -93,7 +93,7 @@ final class DeclaredRoutesTest extends TestCase
                 'Notes.vue',
             )
                 ->visibleWhen(NobodySees::class)
-                ->actions(ActionRoute::post('drafts', SaveDraft::class, 'save')),
+                ->actions(fn (PageActions $actions) => $actions->post('drafts', SaveDraft::class, 'save')),
         ]);
 
         return ClientDeclarations::check([$library, $desk]);

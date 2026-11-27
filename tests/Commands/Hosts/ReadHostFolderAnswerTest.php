@@ -9,6 +9,7 @@ use App\Hosts\Commands\MakeHostFolder\MakeHostFolderCommand;
 use App\Hosts\Commands\ReadHostFolderAnswer\ReadHostFolderAnswerCommand;
 use App\Hosts\Enums\HostRefusal;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostOrder;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -30,7 +31,9 @@ final class ReadHostFolderAnswerTest extends TestCase
         $waiting = $this->journal->asSystem(new ReadHostFolderAnswerCommand($hostId, $made));
         [$first, $second] = $this->journal->hostOrdersOn('Box');
 
-        $this->journal->answerHostOrderWith($first, ['is_bound' => true])->refuseHostOrder($second, HostRefusal::Unsafe);
+        $this->journal->hostOrder($first, fn (TestHostOrder $order) => $order
+            ->answerWith(['is_bound' => true]))->hostOrder($second, fn (TestHostOrder $order) => $order
+            ->refuse(HostRefusal::Unsafe));
         $done = $this->journal->asSystem(new ReadHostFolderAnswerCommand($hostId, $made));
         $refused = $this->journal->asSystem(new ReadHostFolderAnswerCommand($hostId, $used));
 

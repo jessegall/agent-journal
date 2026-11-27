@@ -8,6 +8,7 @@ use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Models\Agents\AgentRuntime;
 use App\Sessions\Enums\StartRefusalReason;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
@@ -68,8 +69,10 @@ final class CheckSignInTest extends TestCase
 
         foreach ($answers as $agent => $answer) {
             $this->journal->idleAgent($agent);
-            $opened = $this->journal->openRuntimeOn($agent, 'Mac', base_path());
-            $this->journal->passBuildProbe($agent, $opened->runtimeId);
+            $this->journal->withAgent($agent, fn (TestAgent $probed) => $probed
+                ->openRuntime('Mac', base_path())
+                ->passBuildProbe($agent));
+            $opened = $this->journal->openedRuntimeOf($agent);
             $start = $this->journal->startOfSession($opened->sessionId);
 
             $this->journal->asSystem(new CheckSignInCommand(

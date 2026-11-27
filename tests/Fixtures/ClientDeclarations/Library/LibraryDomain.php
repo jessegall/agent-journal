@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations\Library;
 
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageSlots;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Contracts\SidebarGroupProvider;
@@ -15,7 +16,6 @@ use App\Navigation\Enums\Icon;
 use App\Profiles\Enums\SlotContextType;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Web\Declarations\Slot;
 
 /**
  * A fixture domain with a list page, a record page offering a slot, an action, nested navigation and its own sidebar
@@ -45,12 +45,12 @@ final class LibraryDomain extends Domain implements NavigationProvider, PageProv
             Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')
                 ->at('')
                 ->onHome(10)
-                ->slots(Slot::make('aside', SlotContextType::Session))
-                ->actions(ActionRoute::post('books', AddBook::class, 'add')),
+                ->slots(fn (PageSlots $slots) => $slots->add('aside', SlotContextType::Session))
+                ->actions(fn (PageActions $actions) => $actions->post('books', AddBook::class, 'add')),
             Page::make('book', 'Book', Icon::Docs, BooksResolver::class, 'Book/Reader.vue')
                 ->at('{book}')
                 ->inInspector()
-                ->slots(Slot::record('book-inspector', 'book', 'book')),
+                ->slots(fn (PageSlots $slots) => $slots->record('book-inspector', 'book', 'book')),
         ];
     }
 

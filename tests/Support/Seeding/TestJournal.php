@@ -10,6 +10,7 @@ use App\Accounts\Enums\CommandEntry;
 use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Agents\Drivers\Contracts\DriverCompatibilities;
 use App\Bus\EventUnitLifecycle;
+use App\Hosts\ProcessFeed;
 use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Messages\Enums\InboxPermission;
 use App\Models\Access\User;
@@ -36,6 +37,7 @@ use App\Values\SelectedDriver;
 use App\Values\StackTarget;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Testing\TestCase;
@@ -45,6 +47,8 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Drivers\ShownDriverArrangements;
 use Tests\Fixtures\Projects\LocalAgentProjects;
+use Tests\Support\Assertions\Assert;
+use Tests\Support\Assertions\Facts\JournalFacts;
 use Tests\Support\FakeServerClock;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\TestProjects;
@@ -61,6 +65,7 @@ final class TestJournal
     use ArrangesProfiles;
     use ArrangesSettings;
     use ArrangesShares;
+    use ArrangesSignIns;
     use ArrangesSkills;
     use AssertsLinks;
     use AssertsMessages;
@@ -125,7 +130,7 @@ final class TestJournal
 
     private readonly FixtureRequests $requests;
 
-    private bool $hasStandInOwner = false;
+    private bool $hasMockOwner = false;
 
     private readonly FixtureInboxes $inboxes;
 
@@ -158,6 +163,27 @@ final class TestJournal
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
 
         return $this->actAs($this->owner->name);
+    }
+
+    /**
+     * The scope asserts the journal's facts, as Inertia's assertInertia asserts a page: its hosts, host processes,
+     * agents, accounts, sign-ins and the running test host, each by its name; a fact it does not touch passes.
+     *
+     * @param  Closure(Assert): mixed  $scope
+     */
+    public function assertJournal(Closure $scope): self
+    {
+        $scope(Assert::root(new JournalFacts(
+            $this->hosts,
+            $this->hostProcesses,
+            $this->agents,
+            $this->signIns,
+            $this->signInChallenges,
+            $this->testHost,
+            $this->app->make(ProcessFeed::class),
+        )));
+
+        return $this;
     }
 
     /**
@@ -199,6 +225,21 @@ final class TestJournal
     public function fixtures(string $fixtures): object
     {
         return $this->registry->fixtures($fixtures, $this);
+    }
+
+    /**
+     * The fixture builder of the class, handed to the scope; its entities are reached in scopes of their own.
+     *
+     * @template TFixtures of object
+     *
+     * @param  class-string<TFixtures>  $fixtures
+     * @param  Closure(TFixtures): mixed  $scope
+     */
+    public function withFixtures(string $fixtures, Closure $scope): self
+    {
+        $scope($this->fixtures($fixtures));
+
+        return $this;
     }
 
     /**
@@ -479,9 +520,9 @@ final class TestJournal
      */
     public function actAsUserId(string $userId): self
     {
-        if ($this->owner === null && ! $this->hasStandInOwner) {
+        if ($this->owner === null && ! $this->hasMockOwner) {
             $this->app->instance(AccessSettings::class, new AccessSettings($userId));
-            $this->hasStandInOwner = true;
+            $this->hasMockOwner = true;
         }
 
         $this->requests->asUserId($userId);

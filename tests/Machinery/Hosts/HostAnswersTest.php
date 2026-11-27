@@ -14,6 +14,7 @@ use App\Values\HostOrderSource;
 use Illuminate\Database\DatabaseManager;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\TestCase;
 
 /**
@@ -37,7 +38,8 @@ final class HostAnswersTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'pipe', HostProcessType::Pipe);
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('pipe', HostProcessType::Pipe));
     }
 
     public function test_an_answered_stop_is_read_and_an_unanswered_one_comes_back_open(): void
@@ -80,6 +82,11 @@ final class HostAnswersTest extends TestCase
     {
         $process = $this->journal->hostProcessCalled('pipe')->id;
 
-        return $this->journal->asSystem(new StopHostProcessCommand($process, 1000, 1000, HostOrderSource::fromJournal()));
+        return $this->journal->asSystem(new StopHostProcessCommand(
+            $process,
+            1000,
+            1000,
+            HostOrderSource::fromJournal(),
+        ));
     }
 }

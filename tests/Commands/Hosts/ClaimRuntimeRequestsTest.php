@@ -8,8 +8,10 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Exceptions\WorkerFenced;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Hosts\Commands\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -48,8 +50,11 @@ final class ClaimRuntimeRequestsTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal, firstMessage: 'hello');
-        $this->journal->openHostProcess('Mac', 'shell', runtimeId: $opened->runtimeId);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal, firstMessage: 'hello'));
+        $opened = $this->journal->openedRuntimeOf('Driven');
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('shell', runtimeId: $opened->runtimeId));
         $id = $this->journal->hostProcessCalled('shell')->id;
         $generation = $this->journal->asSystem(new ClaimHostWorkerCommand($id));
 

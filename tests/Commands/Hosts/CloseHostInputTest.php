@@ -12,6 +12,8 @@ use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Enums\HostProcessType;
 use App\Values\HostOrderSource;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -30,8 +32,8 @@ final class CloseHostInputTest extends TestCase
 
         $this->journal
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell')
-            ->openHostProcess('Mac', 'pipe', HostProcessType::Pipe);
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac
+                ->openProcess('shell')->openProcess('pipe', HostProcessType::Pipe));
     }
 
     public function test_it_orders_the_host_to_close_the_input(): void
@@ -39,20 +41,27 @@ final class CloseHostInputTest extends TestCase
         $id = $this->journal->asSystem($this->command('pipe', HostOrderSource::fromJournal()));
         $order = $this->journal->hostOrdersOf('pipe')[1];
 
-        $this->journal->assertResult([$id, HostOrderType::CloseStdin, []], [$order->id, $order->type, $this->journal->payloadOf($order)]);
+        $this->journal->assertResult(
+            [$id, HostOrderType::CloseStdin, []],
+            [$order->id, $order->type, $this->journal->payloadOf($order)],
+        );
     }
 
     public function test_a_replaced_worker_is_fenced(): void
     {
         $this->journal->assertRefused(
             WorkerFenced::class,
-            fn () => $this->journal->asSystem($this->command('pipe', HostOrderSource::forStep('request-1', 'close', 0, 1))),
+            fn () => $this->journal->asSystem($this->command(
+                'pipe',
+                HostOrderSource::forStep('request-1', 'close', 0, 1),
+            )),
         );
     }
 
     public function test_an_ended_or_a_terminal_process_takes_no_close(): void
     {
-        $this->journal->reportHostProcess('pipe', HostProcessReportType::Exited, 0);
+        $this->journal->hostProcess('pipe', fn (TestHostProcess $pipe) => $pipe
+            ->report(HostProcessReportType::Exited, 0));
 
         foreach (['pipe', 'shell'] as $name) {
             $this->journal->assertRefused(

@@ -6,13 +6,13 @@ namespace Domain\Plans\Tests\Fixtures;
 
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
+use Closure;
 use Domain\Plans\Commands\AddPhase\AddPhaseCommand;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
-use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
 use PHPUnit\Framework\Assert;
@@ -110,34 +110,49 @@ final class PlanFixtures
         return $this;
     }
 
-    public function phase(string $plan, string $name, string|null $title = null): self
+    /**
+     * The plan the test named, handed to the scope to add and reach its phases.
+     *
+     * @param  Closure(TestPlan): mixed  $scope
+     */
+    public function withPlan(string $plan, Closure $scope): self
     {
-        $planId = (string) $this->aliases->read(Plan::class, $plan);
-        $this->aliases->claim($name);
-
-        $this->aliases->rememberResult(
-            $name,
-            $this->journal->asOwner(new AddPhaseCommand($planId, $title ?? $name)),
-            Phase::class,
-        );
+        $this->planCalled($plan);
+        $scope(new TestPlan($this, $plan));
 
         return $this;
     }
 
     /**
-     * A new phase of the plan with the task placed in it, as the Plans command places one.
+     * The phase the test named, handed to the scope to place and assert its tasks.
+     *
+     * @param  Closure(TestPhase): mixed  $scope
      */
-    public function phaseWithTask(string $plan, string $name, RecordIdentity $task): self
+    public function withPhase(string $phase, Closure $scope): self
     {
-        self::assertTasks([$task]);
+        $this->phaseCalled($phase);
+        $scope(new TestPhase($this, $phase));
 
-        return $this->phase($plan, $name)->placeTasks($name, $task);
+        return $this;
     }
 
     /**
-     * The tasks placed at the end of the phase, in this order, as the Plans command places them.
+     * A new phase of the named plan under its own name, titled as given or by its name, as the Plans command adds one.
      */
-    public function placeTasks(string $phase, RecordIdentity ...$tasks): self
+    public function addPhaseTo(string $plan, string $name, string|null $title = null): self
+    {
+        $planId = (string) $this->aliases->read(Plan::class, $plan);
+        $this->aliases->claim($name);
+        $added = $this->journal->asOwner(new AddPhaseCommand($planId, $title ?? $name));
+        $this->aliases->rememberResult($name, $added, Phase::class);
+
+        return $this;
+    }
+
+    /**
+     * The tasks placed at the end of the named phase, in this order, as the Plans command places them.
+     */
+    public function placeIn(string $phase, RecordIdentity ...$tasks): self
     {
         self::assertTasks($tasks);
         $placed = $this->phaseCalled($phase);
@@ -160,32 +175,6 @@ final class PlanFixtures
     public function assertStatus(string $plan, PlanStatus $status): self
     {
         Assert::assertSame($status, $this->planCalled($plan)->status, "The plan {$plan} is in another state.");
-
-        return $this;
-    }
-
-    /**
-     * The phase of this name belongs to the plan and has this number in it.
-     */
-    public function assertPhase(string $name, string $plan, int $number): self
-    {
-        $phase = $this->phaseCalled($name);
-
-        Assert::assertSame([$this->planCalled($plan)->id, $number], [$phase->plan_id, $phase->number]);
-
-        return $this;
-    }
-
-    /**
-     * The task stands at this place among the phase's tasks, counted from 1.
-     */
-    public function assertPhaseTask(string $phase, RecordIdentity $task, int $position): self
-    {
-        $placed = PhaseTask::query()->ofPhase(
-            $this->phaseCalled($phase)->id,
-        )->inPositionOrder()->pluck('task_id')->all();
-
-        Assert::assertSame($task->id, $placed[$position - 1] ?? null, "The phase {$phase} holds another task there.");
 
         return $this;
     }

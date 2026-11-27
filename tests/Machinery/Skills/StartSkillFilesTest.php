@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Tests\Machinery\Skills;
 
 use App\Agents\Values\PlanFile;
+use App\Models\Agents\AgentSession;
 use App\Skills\StartSkillFiles;
+use Tests\Support\Agents\TestAgent;
+use Tests\Support\Agents\TestSession;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
@@ -40,7 +43,9 @@ final class StartSkillFilesTest extends TestCase
     public function test_a_handed_session_writes_each_skill_in_its_drivers_folder(): void
     {
         $this->journal->refreshSkills()->actAs('Owner');
-        $session = $this->journal->handSkillsTo('Writer');
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session->handSkills()));
+        $session = AgentSession::findById($this->journal->sessionOf('Writer')->id);
 
         $names = array_map(
             fn (PlanFile $file) => $file->name,

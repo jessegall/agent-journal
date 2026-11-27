@@ -1,5 +1,5 @@
 #!/bin/sh
-# Shared by the project's shell scripts: reading the arguments a script or a stand-in program was called with.
+# Shared by the project's shell scripts: reading the arguments a script or a mock program was called with.
 #   . scripts/lib/arguments.sh
 
 # The value that follows an option, such as the tag after --tag: read_option --tag "$@"

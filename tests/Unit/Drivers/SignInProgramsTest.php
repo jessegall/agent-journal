@@ -11,14 +11,14 @@ use Tests\TestCase;
 
 /**
  * Pins what the sign-in runner runs for each driver: the argv, the environment it names and what it reads from each
- * answer, for start, status, model check and sign-out, recorded from a stand-in the first time and compared after.
+ * answer, for start, status, model check and sign-out, recorded from a mock the first time and compared after.
  */
 final class SignInProgramsTest extends TestCase
 {
     private const string FIXTURE = __DIR__.'/../../Fixtures/Drivers/sign-in-programs.json';
 
     /**
-     * The stand-in program: it writes each call's argv and the variables a program reads, then answers as the real
+     * The mock program: it writes each call's argv and the variables a program reads, then answers as the real
      * program would for that command.
      */
     private const string PROGRAM = <<<'SH'
@@ -121,7 +121,7 @@ final class SignInProgramsTest extends TestCase
     }
 
     /**
-     * The calls the stand-in program wrote since the last read, with the account folder named {folder}.
+     * The calls the mock program wrote since the last read, with the account folder named {folder}.
      *
      * @return list<string>
      */

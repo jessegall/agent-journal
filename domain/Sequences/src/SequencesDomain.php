@@ -11,8 +11,8 @@ use App\Agents\Enums\AccessType;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasStates;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
 use App\Navigation\Contracts\DraftProducerProvider;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
@@ -113,13 +113,15 @@ final class SequencesDomain extends Domain implements
         return [
             Page::layout('index', 'Sequences', Icon::Sequence, SequenceIndexResolver::class)
                 ->at('')
-                ->actions(ActionRoute::post('create', DefineSequenceController::class, 'define-sequence')),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('create', DefineSequenceController::class, 'define-sequence')),
             Page::layout('new', 'New sequence', Icon::Sequence, NewSequenceResolver::class)->at('new'),
             Page::layout('runs', 'Runs', Icon::Activity, SequenceRunsResolver::class)->at('runs'),
             Page::layout('edit', 'Edit steps', Icon::Sequence, SequenceEditorResolver::class)->at('{sequence}/edit'),
             Page::layout('sequence', 'Sequence', Icon::Sequence, SequenceWindowResolver::class)
                 ->at('{sequence}')
-                ->actions(ActionRoute::patch('{sequence}', ChangeSequenceController::class, 'change-sequence')),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->patch('{sequence}', ChangeSequenceController::class, 'change-sequence')),
             Page::layout('run', 'Sequence run', Icon::Activity, SequenceRunWindowResolver::class)->at('runs/{run}'),
         ];
     }

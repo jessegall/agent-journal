@@ -17,7 +17,7 @@ import (
 	"journal-agent/hostapi"
 )
 
-// developmentCommands are the subcommands only a development build carries, such as the stand-in Docker daemon;
+// developmentCommands are the subcommands only a development build carries, such as the mock Docker daemon;
 // a release build has none.
 var developmentCommands = map[string]func([]string) error{}
 

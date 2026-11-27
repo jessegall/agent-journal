@@ -7,7 +7,7 @@ namespace Tests\Unit\Accounts;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The Codex native evidence procedure, run against a stand-in program: the trusted empty working root keeps a work
+ * The Codex native evidence procedure, run against a mock program: the trusted empty working root keeps a work
  * folder's configuration out while trusting the folder itself lets it in, signed-in items are missing without
  * accounts, and a journal account is checked for its own file store without printing the login.
  */

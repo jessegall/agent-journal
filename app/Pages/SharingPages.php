@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pages;
 
 use App\Agents\Drivers\Contracts\NativePartProvider;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
 use App\Http\Controllers\Sharing\ApproveShareRequestController;
 use App\Http\Controllers\Sharing\ConfigureShareGatewayController;
 use App\Http\Controllers\Sharing\CreateShareController;
@@ -112,44 +112,41 @@ final class SharingPages implements NativePartProvider, PageProvider, TypeProvid
             Page::layout('share', 'Share', Icon::Docs, ShareDetailResolver::class)
                 ->at('shares/{share}')
                 ->visibleWhen(SharingOwnerCheck::class)
-                ->actions(
-                    ActionRoute::post('shares/{share}/link', RevealShareLinkController::class, 'reveal-share-link'),
-                    ActionRoute::post('shares/{share}/retry', RetryShareController::class, 'retry-share'),
-                    ActionRoute::delete('shares/{share}', RevokeShareController::class, 'revoke-share'),
-                ),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('shares/{share}/link', RevealShareLinkController::class, 'reveal-share-link')
+                    ->post('shares/{share}/retry', RetryShareController::class, 'retry-share')
+                    ->delete('shares/{share}', RevokeShareController::class, 'revoke-share')),
             Page::layout('gateways', 'Share gateways', Icon::Docs, GatewaySettingsResolver::class)
                 ->at('gateways')
                 ->visibleWhen(SharingOwnerCheck::class)
-                ->actions(
-                    ActionRoute::post('gateways', ConfigureShareGatewayController::class, 'configure-share-gateway'),
-                    ActionRoute::post(
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('gateways', ConfigureShareGatewayController::class, 'configure-share-gateway')
+                    ->post(
                         'gateways/{configuration}/default',
                         MakeShareGatewayDefaultController::class,
                         'make-share-gateway-default',
-                    ),
-                    ActionRoute::delete(
+                    )
+                    ->delete(
                         'gateways/{configuration}',
                         DisableShareGatewayController::class,
                         'disable-share-gateway',
-                    ),
-                ),
+                    )),
             Page::make('share-preview', 'Share', Icon::Docs, SharePreviewResolver::class, 'SharePreview.vue')
                 ->at('{reference}')
                 ->visibleWhen(SharingOwnerCheck::class)
-                ->actions(
-                    ActionRoute::post('{reference}/previews', SharePreviewController::class, 'save-share-preview'),
-                    ActionRoute::post('{reference}/shares', CreateShareController::class, 'create-share'),
-                    ActionRoute::post(
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('{reference}/previews', SharePreviewController::class, 'save-share-preview')
+                    ->post('{reference}/shares', CreateShareController::class, 'create-share')
+                    ->post(
                         'shares/{share}/approval',
                         ApproveShareRequestController::class,
                         'approve-share-request',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'shares/{share}/scope',
                         RefreshShareScopeController::class,
                         'refresh-share-scope',
-                    ),
-                ),
+                    )),
         ];
     }
 

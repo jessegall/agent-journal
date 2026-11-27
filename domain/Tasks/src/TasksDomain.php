@@ -18,8 +18,9 @@ use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasAssignables;
 use App\Concerns\HasLinkRecords;
 use App\Concerns\HasStates;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageSlots;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Navigation\Contracts\DraftProducerProvider;
 use App\Navigation\Contracts\NavigationProvider;
@@ -33,7 +34,6 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\Searchable;
-use App\Web\Declarations\Slot;
 use Domain\Comments\CommentsDomain;
 use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
@@ -191,19 +191,19 @@ final class TasksDomain extends Domain implements
             Page::layout('list', 'Tasks', Icon::Tasks, TasksWindowResolver::class)
                 ->at('')
                 ->onHome(25)
-                ->actions(ActionRoute::post('create', CreateTaskPageController::class, 'create-task')),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('create', CreateTaskPageController::class, 'create-task')),
             Page::layout('task', 'Task', Icon::Tasks, TaskWindowResolver::class)
                 ->at('{task}')
                 ->inInspector()
-                ->actions(
-                    ActionRoute::post('{task}/start', StartTaskPageController::class, 'start'),
-                    ActionRoute::post('{task}/block', BlockTaskPageController::class, 'block'),
-                    ActionRoute::post('{task}/cancel', CancelTaskPageController::class, 'cancel'),
-                    ActionRoute::post('{task}/waits', AddTaskWaitPageController::class, 'add-wait'),
-                    ActionRoute::post('{task}/waits/remove', RemoveTaskWaitPageController::class, 'remove-wait'),
-                    ActionRoute::post('{task}/waits/waive', WaiveTaskWaitPageController::class, 'waive-wait'),
-                )
-                ->slots(Slot::record('inspector', 'task', 'task')),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('{task}/start', StartTaskPageController::class, 'start')
+                    ->post('{task}/block', BlockTaskPageController::class, 'block')
+                    ->post('{task}/cancel', CancelTaskPageController::class, 'cancel')
+                    ->post('{task}/waits', AddTaskWaitPageController::class, 'add-wait')
+                    ->post('{task}/waits/remove', RemoveTaskWaitPageController::class, 'remove-wait')
+                    ->post('{task}/waits/waive', WaiveTaskWaitPageController::class, 'waive-wait'))
+                ->slots(fn (PageSlots $slots) => $slots->record('inspector', 'task', 'task')),
         ];
     }
 

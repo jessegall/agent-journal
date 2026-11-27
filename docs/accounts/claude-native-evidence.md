@@ -46,4 +46,4 @@ missing with what it needs.
 | host-* | missing: the protected host's native boundary for each item, as the journal's protection report of the host reports it ([host-protection.md](host-protection.md)) | task 258 |
 
 Help text and flags are never authentication proof: `launch-flags` only shows the build accepts them.
-`tests/Unit/Accounts/ClaudeNativeEvidenceTest.php` runs the procedure against a stand-in program.
+`tests/Unit/Accounts/ClaudeNativeEvidenceTest.php` runs the procedure against a mock program.

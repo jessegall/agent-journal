@@ -1,5 +1,5 @@
 #!/bin/sh
-# A stand-in for the docker program in tests: it records each call in $STAND_IN/calls.log and answers as a healthy
+# A mock for the docker program in tests: it records each call in $STAND_IN/calls.log and answers as a healthy
 # Docker with well-built images would. A call that holds a line of $STAND_IN/failing fails instead.
 set -eu
 here=$(dirname "$0")
@@ -35,7 +35,7 @@ fail_when_asked() {
     local part
     [ -f "$STAND_IN/failing" ] || return 0
     while IFS= read -r part; do
-        case "$*" in *"$part"*) echo "stand-in docker: told to fail a call that holds: $part" >&2; exit 1 ;; esac
+        case "$*" in *"$part"*) echo "mock docker: told to fail a call that holds: $part" >&2; exit 1 ;; esac
     done < "$STAND_IN/failing"
 }
 
@@ -48,7 +48,7 @@ fail_once_as_docker() {
             *"$part"*)
                 grep -vxF "$part" "$STAND_IN/docker-errors" > "$STAND_IN/docker-errors.next" || true
                 mv "$STAND_IN/docker-errors.next" "$STAND_IN/docker-errors"
-                echo "stand-in docker: a passing daemon error on a call that holds: $part" >&2
+                echo "mock docker: a passing daemon error on a call that holds: $part" >&2
                 exit 125 ;;
         esac
     done < "$STAND_IN/docker-errors"
@@ -117,7 +117,7 @@ read_name_filter() {
     done
 }
 
-# With $STAND_IN/daemon-images the stand-in is the agent daemon, holding the image ids that file lists.
+# With $STAND_IN/daemon-images the mock is the agent daemon, holding the image ids that file lists.
 answer_image() {
     local last
     for last; do :; done
@@ -211,7 +211,7 @@ answer_compose() {
         *"--scale app=2"*) start_new_app ;;
         *"--scale app=1"*) keep_newest_app ;;
         *"up -d --wait"*) start_first_app ;;
-        *agents:host-enroll*) fill_template "$answers/host-enrolled.txt" host=01standinhost secret=stand-in-secret ;;
+        *agents:host-enroll*) fill_template "$answers/host-enrolled.txt" host=01mockhost secret=mock-secret ;;
         *"artisan tinker"*) answer_host_known ;;
     esac
 }

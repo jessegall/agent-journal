@@ -23,8 +23,10 @@ use App\Data\Pages\HomeData;
 use App\Data\Pages\HomeWindowData;
 use App\Data\Pages\LayoutData;
 use App\Data\Pages\ReadyWindow;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageLoaders;
+use App\Declarations\PageSlots;
 use App\Http\Controllers\Runtimes\CancelRuntimeRequestController;
 use App\Http\Controllers\Runtimes\CancelScriptRuntimeRequestController;
 use App\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
@@ -66,7 +68,6 @@ use App\Navigation\Data\NavigationData;
 use App\Navigation\Data\NavigationGroupData;
 use App\Navigation\Data\NavigationItemData;
 use App\Navigation\Declarations\DomainClient;
-use App\Navigation\Declarations\Loader;
 use App\Navigation\Declarations\NavigationItem;
 use App\Navigation\Enums\Icon;
 use App\Processes\Data\RecoveryRefusalPartData;
@@ -81,7 +82,6 @@ use App\Web\Data\InstallationData;
 use App\Web\Data\LoaderReplyData;
 use App\Web\Data\Pages\UnavailableWindow;
 use App\Web\Data\ViewerData;
-use App\Web\Declarations\Slot;
 use App\Web\Drafts\Data\DraftAnswersInput;
 use App\Web\Drafts\Data\DraftQuestionsInput;
 use App\Web\Enums\LoaderStatus;
@@ -166,55 +166,53 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
         return [
             Page::make('home', 'Home', Icon::Home, HomeWindowResolver::class, 'Home.vue')
                 ->at('')
-                ->slots(Slot::make('bar', SlotContextType::Nothing))
-                ->loaders(
-                    Loader::make('draft-questions', DraftQuestionsLoader::class),
-                    Loader::make('draft-record', DraftRecordLoader::class),
-                    Loader::make('start-receipt', StartReceiptLoader::class),
-                    Loader::make('capacity', CapacityLoader::class),
-                    Loader::make('start-preview', StartPreviewLoader::class),
-                ),
+                ->slots(fn (PageSlots $slots) => $slots->add('bar', SlotContextType::Nothing))
+                ->loaders(fn (PageLoaders $loaders) => $loaders
+                    ->add('draft-questions', DraftQuestionsLoader::class)
+                    ->add('draft-record', DraftRecordLoader::class)
+                    ->add('start-receipt', StartReceiptLoader::class)
+                    ->add('capacity', CapacityLoader::class)
+                    ->add('start-preview', StartPreviewLoader::class)),
             Page::make('asks', 'Asks', Icon::Speech, AskInboxResolver::class, 'Asks.vue')->at('asks')->onHome(26),
             Page::make('ask', 'Ask', Icon::Speech, AskDetailResolver::class, 'AskDetail.vue')->at('asks/{ask}'),
             Page::layout('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class)
                 ->at('runtimes')
-                ->actions(
-                    ActionRoute::post(
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post(
                         'runtimes/{session}/release-hold',
                         ReleaseRuntimeHoldController::class,
                         'release-runtime-hold',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'runtimes/requests/{driver_request}/retry',
                         RetryRuntimeRequestController::class,
                         'retry-runtime-request',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'runtimes/requests/{driver_request}/send-again',
                         SendRuntimeRequestAgainController::class,
                         'send-runtime-request-again',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'runtimes/requests/{driver_request}/cancel',
                         CancelRuntimeRequestController::class,
                         'cancel-runtime-request',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'runtimes/requests/{driver_request}/resolve',
                         ResolveRuntimeRequestController::class,
                         'resolve-runtime-request',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'runtimes/requests/{driver_request}/resume-script',
                         ResumeScriptRuntimeRequestController::class,
                         'resume-runtime-script',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'runtimes/requests/{driver_request}/cancel-script',
                         CancelScriptRuntimeRequestController::class,
                         'cancel-runtime-script',
-                    ),
-                ),
+                    )),
             Page::make('activity', 'Activity', Icon::Activity, ActivityWindowResolver::class, 'ActivityPanel.vue')
                 ->at('activity')
                 ->onHome(62)
@@ -222,79 +220,78 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                 ->visibleWhen(ActivityOwnerCheck::class),
             Page::make('terminal', 'Terminal', Icon::Activity, TerminalWindowResolver::class, 'TerminalWindow.vue')
                 ->at('agents/{agent}/terminal')
-                ->actions(
-                    ActionRoute::post(
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post(
                         'agents/{agent}/terminal/interests',
                         OpenTerminalController::class,
                         'open-terminal-interest',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/interests/renew',
                         RenewTerminalController::class,
                         'renew-terminal-interest',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/interests/close',
                         CloseTerminalController::class,
                         'close-terminal-interest',
-                    ),
-                    ActionRoute::get('agents/{agent}/terminal/frame', TerminalFrameController::class, 'terminal-frame'),
-                    ActionRoute::post(
+                    )
+                    ->get('agents/{agent}/terminal/frame', TerminalFrameController::class, 'terminal-frame')
+                    ->post(
                         'agents/{agent}/terminal/control/take',
                         TakeTerminalControlController::class,
                         'take-terminal-control',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/control/cancel',
                         CancelTerminalTakeController::class,
                         'cancel-terminal-take',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/control/renew',
                         RenewTerminalControlController::class,
                         'renew-terminal-control',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/control/release',
                         ReleaseTerminalControlController::class,
                         'release-terminal-control',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/control/input',
                         SendTerminalInputController::class,
                         'send-terminal-input',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/control/draft',
                         ChooseTerminalDraftController::class,
                         'choose-terminal-draft',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/control/check',
                         CheckTerminalScreenController::class,
                         'check-terminal-screen',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/private/open',
                         OpenPrivateEntryController::class,
                         'open-private-entry',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/private/submit',
                         SubmitPrivateInputController::class,
                         'submit-private-input',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         'agents/{agent}/terminal/private/cancel',
                         CancelPrivateEntryController::class,
                         'cancel-private-entry',
-                    ),
-                    ActionRoute::get(
+                    )
+                    ->get(
                         'agents/{agent}/terminal/control',
                         TerminalControlReceiptController::class,
                         'terminal-control',
-                    ),
-                ),
+                    )),
         ];
     }
 

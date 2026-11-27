@@ -9,6 +9,7 @@ use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostProcess;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
@@ -52,8 +53,10 @@ final class CheckDriverBuildTest extends TestCase
             ->idleAgent('Pinned')
             ->idleAgent('Other')
             ->enrollHost('Mac', [base_path()]);
-        $pinned = $this->journal->openRuntimeOn('Pinned', 'Mac', base_path());
-        $other = $this->journal->openRuntimeOn('Other', 'Mac', base_path());
+        $this->journal->withAgent('Pinned', fn (TestAgent $pinned) => $pinned->openRuntime('Mac', base_path()));
+        $pinned = $this->journal->openedRuntimeOf('Pinned');
+        $this->journal->withAgent('Other', fn (TestAgent $other) => $other->openRuntime('Mac', base_path()));
+        $other = $this->journal->openedRuntimeOf('Other');
         $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
 
         $this->journal
@@ -62,7 +65,8 @@ final class CheckDriverBuildTest extends TestCase
             ->asSystem(new CheckDriverBuildCommand($this->probeOf($other->sessionId), "9.9.9 (Claude Code)\n"));
 
         $refused = $this->journal->startOfSession($other->sessionId);
-        $this->journal->callJournalProcess('sign-in', $pinned->runtimeId, HostProcessPurpose::SignInProbe);
+        $this->journal->withAgent('Pinned', fn (TestAgent $pinned) => $pinned
+            ->nameProcess('sign-in', HostProcessPurpose::SignInProbe));
         $this->journal->assertResult(
             [
                 SessionProcessStatus::Starting,

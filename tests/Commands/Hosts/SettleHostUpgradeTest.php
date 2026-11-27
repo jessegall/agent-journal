@@ -10,6 +10,7 @@ use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
 use App\Hosts\Enums\HostRefusal;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostOrder;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -34,7 +35,8 @@ final class SettleHostUpgradeTest extends TestCase
 
     public function test_a_refused_order_fails_the_upgrade_with_the_hosts_reason(): void
     {
-        $this->journal->refuseHostOrder($this->journal->hostOrdersOn('Mac')[0], HostRefusal::Fenced);
+        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+            ->refuse(HostRefusal::Fenced));
 
         $this->journal->assertResult(
             [null, 'The host refused the upgrade: fenced.'],
@@ -44,7 +46,8 @@ final class SettleHostUpgradeTest extends TestCase
 
     public function test_a_done_order_waits_until_the_inventory_names_the_new_release(): void
     {
-        $this->journal->answerHostOrderWith($this->journal->hostOrdersOn('Mac')[0], ['release' => self::RELEASE]);
+        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+            ->answerWith(['release' => self::RELEASE]));
         $waiting = $this->host()->upgrade_release;
         $this->journal->asSystem(new NotifyHostInventoryCommand($this->host()->id, $this->inventory()));
 

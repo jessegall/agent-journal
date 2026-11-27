@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Fixtures;
 
+use Closure;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
@@ -100,32 +101,14 @@ final class DocumentFixtures
     }
 
     /**
-     * The revision of this number was written by the named author and holds this body.
+     * The document the test named, handed to the scope to assert its revisions and drafts.
+     *
+     * @param  Closure(TestDocument): mixed  $scope
      */
-    public function assertRevision(string $name, int $number, string $author, string $body): self
+    public function withDocument(string $name, Closure $scope): self
     {
-        $revision = $this->revisionOf($name, $number);
-        $writer = $this->journal->actorCalled($author);
-
-        Assert::assertSame(
-            [$writer->type, $writer->id, $body],
-            [$revision->author_type, $revision->author_id, $revision->body],
-            "Revision {$number} of {$name} was written otherwise.",
-        );
-
-        return $this;
-    }
-
-    /**
-     * The editor keeps an open draft of the document with this body.
-     */
-    public function assertDraft(string $name, string $editor, string $body): self
-    {
-        Assert::assertSame(
-            $body,
-            $this->draftOf($name, $editor)->body,
-            "{$editor}'s draft of {$name} holds another body.",
-        );
+        $this->documentCalled($name);
+        $scope(new TestDocument($this, $this->journal, $name));
 
         return $this;
     }
@@ -150,7 +133,10 @@ final class DocumentFixtures
         return new DraftTarget((string) $this->documentCalled($name)->number, $draft->token, $draft->version);
     }
 
-    private function draftOf(string $name, string $editor): DocumentDraft
+    /**
+     * The editor's open draft of the named document.
+     */
+    public function draftOf(string $name, string $editor): DocumentDraft
     {
         return $this->findDraftOf(
             $this->documentCalled($name),
