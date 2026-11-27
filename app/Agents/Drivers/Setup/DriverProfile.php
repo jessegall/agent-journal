@@ -223,13 +223,13 @@ final readonly class DriverProfile
     }
 
     /**
-     * The plan files this driver reads at places of its own, mounted there in its contained session.
+     * The mounts this driver adds to its contained session: plan files where it reads them, and its scratch folders.
      *
      * @return list<ManifestMount>
      */
-    public function planFileMounts(): array
+    public function containerMounts(): array
     {
-        return $this->setup->planFileMounts;
+        return $this->setup->containerMounts;
     }
 
     /**

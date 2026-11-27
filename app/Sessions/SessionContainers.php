@@ -71,7 +71,7 @@ final readonly class SessionContainers
             $this->arrangement->mountRules(
                 $account,
                 ArrangementSetting::ENVIRONMENT,
-                $this->drivers->ofFamily($runtime->family)->planFileMounts(),
+                $this->drivers->ofFamily($runtime->family)->containerMounts(),
             ),
             null,
             SecurityOptions::agent($this->securityProfiles),

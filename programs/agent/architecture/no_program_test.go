@@ -15,11 +15,8 @@ import (
 // program decision is the journal's. The list is fixed, written once from the PHP profiles and layouts.
 var programWords = regexp.MustCompile(`(?i)claude|codex|anthropic|openai|folder[-_ ]?trust|onboarding|theme[-_ ]?picker`)
 
-// exempt are the folders allowed to name a program: the helpers that run inside a program's image, the hook binary
-// that is a program's entry point, recordings and other test data, and this test.
-var exempt = []string{
-	"cmd/journal-init", "cmd/journal-exec", "cmd/journal-shell", "cmd/journal-hook", "testdata", "architecture",
-}
+// exempt is the one folder allowed to name a program: this test, which holds the words it refuses.
+var exempt = []string{"architecture"}
 
 func TestNoGoFileNamesAProgram(t *testing.T) {
 	for file, line := range filesNamingAProgram(t) {

@@ -23,12 +23,12 @@ const journalRoot = "/srv/journal"
 // CheckAccountFolder checks, on the agent daemon's side, that the account's folder is a real folder owned by the
 // program's user with mode 0700 and no ACL, that everything in it is that user's with no group or other bits and no
 // link leaving it, and that the folders above it are root's and not writable by others. It prints only a verdict.
-func (containers Containers) CheckAccountFolder(ctx context.Context, accountID string) error {
+func (containers Containers) CheckAccountFolder(ctx context.Context, accountID string, mountPoints []string) error {
 	if !plainAccountID.MatchString(accountID) {
 		return fmt.Errorf("%w: %q is not a plain account id", ErrAccountFolderUnsafe, accountID)
 	}
 
-	if err := containers.makeHistoryMountPoint(ctx, accountID); err != nil {
+	if err := containers.makeMountPoints(ctx, accountID, mountPoints); err != nil {
 		return err
 	}
 
@@ -87,18 +87,31 @@ func accountFolderScript(root, accountID string, owner, rootOwner int) string {
 // historyFolder is the folder in an account where each session's own history volume is mounted.
 const historyFolder = "projects"
 
-// makeHistoryMountPoint makes the account's history folder as the program's user with mode 0700 when it is missing,
-// so the agent daemon never makes it as root while it mounts a session's history volume there. It runs with only the
-// account's own folder mounted, so it reaches nothing above it.
-func (containers Containers) makeHistoryMountPoint(ctx context.Context, accountID string) error {
-	output, err := containers.runScript(ctx,
-		`[ -L /account/`+historyFolder+` ] || [ -e /account/`+historyFolder+` ] || mkdir -m 0700 /account/`+historyFolder,
-		accountMount(accountID))
+// makeMountPoints makes each folder of the account that a mount goes over, as the program's user with mode 0700, when
+// it is missing, so the agent daemon never makes one as root while it mounts there. It runs with only the account's
+// own folder mounted, so it reaches nothing above it.
+func (containers Containers) makeMountPoints(ctx context.Context, accountID string, folders []string) error {
+	if len(folders) == 0 {
+		return nil
+	}
+
+	output, err := containers.runScript(ctx, mountPointsScript("/account", folders), accountMount(accountID))
 	if err != nil {
-		return fmt.Errorf("%w: making its history folder failed: %v: %s", ErrAccountFolderUnsafe, err, output)
+		return fmt.Errorf("%w: making its mount points failed: %v: %s", ErrAccountFolderUnsafe, err, output)
 	}
 
 	return nil
+}
+
+// mountPointsScript makes each named folder under the root that is neither there nor a link.
+func mountPointsScript(root string, folders []string) string {
+	lines := []string{"set -e"}
+	for _, folder := range folders {
+		at := shellwords.Quoted(root + "/" + folder)
+		lines = append(lines, `[ -L `+at+` ] || [ -e `+at+` ] || mkdir -m 0700 `+at)
+	}
+
+	return strings.Join(lines, "\n")
 }
 
 // keepAccountFilesPrivate takes the group and other bits off everything in the account's folder, as the program's

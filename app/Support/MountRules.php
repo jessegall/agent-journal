@@ -63,7 +63,7 @@ final readonly class MountRules
     ];
 
     /**
-     * @param  list<ManifestMount>  $driverMounts  the plan files the session's driver reads where it looks for them
+     * @param  list<ManifestMount>  $driverMounts  the mounts the session's driver adds: plan files, scratch
      */
     private function __construct(
         public string|null $installationName,
@@ -156,7 +156,7 @@ final readonly class MountRules
     /**
      * The mounts a contained session has beside its workspace: its own history volume over the account's projects
      * folder, which a resumed conversation takes from the session that held it, and its plan's files read-only, with
-     * the plan files its driver reads where the driver looks for them. A local session has none.
+     * the mounts its driver adds. A local session has none.
      *
      * @return list<ManifestMount>
      */
@@ -257,6 +257,7 @@ final readonly class MountRules
             HostMountType::DaemonBind => $this->isDaemonFolder($mount->source),
             HostMountType::PlanFile => ! $mount->isWritable
                 && ($mount->source === null || $this->isPlainFileName($mount->source)),
+            HostMountType::Scratch => $mount->source === null && $mount->isWritable,
             HostMountType::Bind => false,
         };
 

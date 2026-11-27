@@ -165,7 +165,9 @@ final class DriversServiceProvider extends ServiceProvider
                 ConditionalPart::forAccount(new ContainedStart(), ContainerAccountHome::class),
                 ConditionalPart::for(new Negation(new ContainedStart()), HostHomeAndPath::class),
             )
-            ->startPlan(ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class));
+            ->startPlan(ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class))
+            // Codex links its own executable under tmp/arg0 each run; those links never belong in the account folder.
+            ->keepsScratchIn('tmp');
     }
 
     /**

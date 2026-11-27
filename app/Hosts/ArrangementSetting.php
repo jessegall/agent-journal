@@ -60,7 +60,7 @@ final readonly class ArrangementSetting
      * environment without a source is refused before any container exists.
      *
      *
-     * @param  list<ManifestMount>  $driverMounts  the plan files the session's driver mounts where it reads them
+     * @param  list<ManifestMount>  $driverMounts  the mounts the session's driver adds
      *
      * @throws WorkspaceSourceMissing
      * @throws AccountFolderInvalid

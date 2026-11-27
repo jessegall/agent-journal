@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -278,6 +279,11 @@ func bindMount(source, target string, writable bool) mount.Mount {
 		Type: mount.TypeBind, Source: source, Target: target, ReadOnly: !writable,
 		BindOptions: &mount.BindOptions{Propagation: mount.PropagationRPrivate},
 	}
+}
+
+// scratchMount is a writable folder in the container's memory at the target, gone with the container.
+func scratchMount(target string) mount.Mount {
+	return mount.Mount{Type: mount.TypeTmpfs, Target: target, TmpfsOptions: &mount.TmpfsOptions{Mode: os.ModeSticky | 0o777}}
 }
 
 // volumeMount is a named volume of the daemon at the target, read-only unless writable.

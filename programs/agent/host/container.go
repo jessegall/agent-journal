@@ -25,7 +25,7 @@ const daemonBindRoot = "/srv/journal/"
 // of its plan's files.
 var containedTargets = []string{"/workspace", "/home/journal/.account", "/home/journal/.account/projects"}
 
-// mostContainedMounts is the most mounts a contained container may have: its folders and two of its plan's files.
+// mostContainedMounts is the most mounts a contained container may have: its folders and two its driver adds.
 const mostContainedMounts = 5
 
 // PlanFileFolder is the one folder outside /etc a plan's files may be mounted at, which holds them all.
@@ -270,7 +270,8 @@ func (rules ContainerRules) permit(mounts []ContainerMount) bool {
 	seen := map[string]bool{}
 	for _, mount := range mounts {
 		isPlanFile := IsPlanFileTarget(mount.Target)
-		isTarget := slices.Contains(containedTargets, mount.Target) || isPlanFile && !mount.IsWritable
+		isScratch := mount.Type == MountScratch && isCleanTarget(mount.Target)
+		isTarget := slices.Contains(containedTargets, mount.Target) || isPlanFile && !mount.IsWritable || isScratch
 		if seen[mount.Target] || !isTarget || !rules.permitsSource(mount) {
 			return false
 		}
@@ -293,6 +294,8 @@ func (rules ContainerRules) permitsSource(mount ContainerMount) bool {
 			!strings.Contains(mount.Source, "..") && !strings.ContainsAny(mount.Source, ",\n")
 	case MountPlanFile:
 		return !mount.IsWritable && (mount.Source == "" || isPlainFileName(mount.Source))
+	case MountScratch:
+		return mount.Source == "" && mount.IsWritable
 	}
 
 	return false
@@ -305,6 +308,40 @@ func IsPlanFileTarget(target string) bool {
 		!strings.Contains(target, "..") && !strings.ContainsAny(target, ",\n")
 }
 
+// isCleanTarget is whether the target is a clean absolute path the daemon takes as one argument.
+func isCleanTarget(target string) bool {
+	return path.IsAbs(target) && path.Clean(target) == target && !strings.ContainsAny(target, ",\n")
+}
+
+// AccountMountPoints are the folders right inside the account mount that the manifest mounts something else over,
+// which must exist as the program's user's before the daemon mounts there.
+func (manifest ContainerManifest) AccountMountPoints() []string {
+	account, bound := manifest.accountMount()
+	if !bound {
+		return nil
+	}
+
+	var folders []string
+	for _, mount := range manifest.Mounts {
+		if path.Dir(mount.Target) == account.Target && isPlainFileName(path.Base(mount.Target)) {
+			folders = append(folders, path.Base(mount.Target))
+		}
+	}
+
+	return folders
+}
+
+// accountMount is the mount that binds an account's own folder, when the manifest has one.
+func (manifest ContainerManifest) accountMount() (ContainerMount, bool) {
+	for _, mount := range manifest.Mounts {
+		if mount.Type == MountDaemonBind && strings.HasPrefix(mount.Source, accountsRoot+"/") {
+			return mount, true
+		}
+	}
+
+	return ContainerMount{}, false
+}
+
 // isPlainFileName is whether a name is one plain file name, not hidden and with no folder.
 func isPlainFileName(name string) bool {
 	return name != "" && path.Base(name) == name && !strings.HasPrefix(name, ".") && !strings.ContainsAny(name, ",\n")
@@ -314,6 +351,10 @@ func isPlainFileName(name string) bool {
 func (mounted ContainerMount) daemonMount() mount.Mount {
 	if mounted.Type == MountVolume {
 		return volumeMount(mounted.Source, mounted.Target, mounted.IsWritable)
+	}
+
+	if mounted.Type == MountScratch {
+		return scratchMount(mounted.Target)
 	}
 
 	return bindMount(mounted.Source, mounted.Target, mounted.IsWritable)
@@ -491,7 +532,7 @@ func (containers Containers) Create(
 	}
 
 	if manifest.IsProtected() {
-		if err := containers.CheckAccountFolder(ctx, manifest.AccountFolder()); err != nil {
+		if err := containers.CheckAccountFolder(ctx, manifest.AccountFolder(), manifest.AccountMountPoints()); err != nil {
 			return "", err
 		}
 	}

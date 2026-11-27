@@ -15,6 +15,7 @@ use App\Files\ManifestMount;
 use App\Processes\ArgumentBuilder;
 use App\Processes\Contracts\Condition;
 use App\Skills\Contracts\DriverSkills;
+use App\Support\MountRules;
 use App\Values\DriverStart;
 use Closure;
 
@@ -38,7 +39,7 @@ final readonly class DriverSetup
      * @param  list<StartRefusal>  $signInRefusals
      * @param  list<ConditionalPart>  $environment
      * @param  list<ConditionalPart>  $plan
-     * @param  list<ManifestMount>  $planFileMounts
+     * @param  list<ManifestMount>  $containerMounts
      */
     private function __construct(
         public string $family,
@@ -59,7 +60,7 @@ final readonly class DriverSetup
         public array $signInRefusals = [],
         public array $environment = [],
         public array $plan = [],
-        public array $planFileMounts = [],
+        public array $containerMounts = [],
     ) {}
 
     /**
@@ -177,6 +178,17 @@ final readonly class DriverSetup
      */
     public function mountsPlanFile(string $file, string $target): self
     {
-        return clone ($this, ['planFileMounts' => [...$this->planFileMounts, ManifestMount::planFile($file, $target)]]);
+        return clone ($this, ['containerMounts' => [...$this->containerMounts, ManifestMount::planFile($file, $target)]]);
+    }
+
+    /**
+     * A folder of the driver's account where it keeps only its own scratch, held in its container's memory so the
+     * scratch never reaches the account folder.
+     */
+    public function keepsScratchIn(string $accountFolder): self
+    {
+        $scratch = ManifestMount::scratch(MountRules::ACCOUNT_TARGET.'/'.$accountFolder);
+
+        return clone ($this, ['containerMounts' => [...$this->containerMounts, $scratch]]);
     }
 }

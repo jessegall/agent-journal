@@ -67,7 +67,7 @@
     },
     "enums": {
         "process_type": ["terminal", "pipe"],
-        "mount_type": ["bind", "volume", "daemon-bind", "plan-file"],
+        "mount_type": ["bind", "volume", "daemon-bind", "plan-file", "scratch"],
         "process_report_type": ["running", "restarted", "exited", "lost"],
         "argument_values": ["none", "one", "list"],
         "project_read_failure": ["missing", "not_a_directory", "not_a_file", "binary", "too_large", "unreadable", "outside"]

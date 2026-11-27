@@ -85,4 +85,12 @@ final readonly class ManifestMount
     {
         return new self(HostMountType::PlanFile, null, $target, false);
     }
+
+    /**
+     * A writable folder in the container's memory, gone with the container, where a driver keeps its own scratch.
+     */
+    public static function scratch(string $target): self
+    {
+        return new self(HostMountType::Scratch, null, $target, true);
+    }
 }

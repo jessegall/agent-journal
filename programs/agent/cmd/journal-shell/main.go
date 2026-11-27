@@ -1,5 +1,5 @@
-// Command journal-shell is the shell a protected-account container gives Claude Code (CLAUDE_CODE_SHELL, installed as
-// /opt/journal/shell/bash, since Claude Code takes a shell only by that name). It parses nothing: the command string
+// Command journal-shell is the shell a protected-account container gives its program, installed as
+// /opt/journal/shell/bash, the one name the plan points the program's shell at. It parses nothing: the command string
 // of each `bash -c` call goes, as it came, to the executor, which runs it as the tools user in the workspace, so no
 // expansion, redirection or startup script ever runs as the program's user. Streams, the terminal size, signals and
 // the exit code pass through as if bash had run it here.

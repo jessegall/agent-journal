@@ -17,9 +17,11 @@ use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\SecurityOptions;
 use App\Agents\Values\JournalServer;
 use App\Agents\Values\PlanFile;
+use App\Files\ManifestMount;
 use App\Hosts\Exceptions\ProgramLineRefused;
 use App\Hosts\ProgramLines;
 use App\Hosts\Protocol\HostInstructionType;
+use App\Hosts\Protocol\HostMountType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\Payloads\HostContainerLabelsPayload;
 use App\Sessions\Enums\TransportProfileType;
@@ -178,6 +180,22 @@ final class DriverPlansTest extends TestCase
                     fn (string $text) => str_contains($text, '{host:') || str_contains($text, 'sockets'),
                 )),
             ],
+        );
+    }
+
+    public function test_each_driver_adds_its_own_mounts_to_its_contained_session(): void
+    {
+        $mounts = fn (string $driver) => array_map(
+            fn (ManifestMount $mount) => [$mount->type, $mount->source, $mount->target, $mount->isWritable],
+            $this->journal->driverProfile($driver)->containerMounts(),
+        );
+
+        $this->journal->assertResult(
+            [
+                [[HostMountType::PlanFile, ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET, false]],
+                [[HostMountType::Scratch, null, MountRules::ACCOUNT_TARGET.'/tmp', true]],
+            ],
+            [$mounts(DefaultDrivers::CLAUDE_CODE), $mounts(DefaultDrivers::CODEX)],
         );
     }
 

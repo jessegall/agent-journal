@@ -15,11 +15,12 @@ const (
 	MountVolume     MountType = "volume"
 	MountDaemonBind MountType = "daemon-bind"
 	MountPlanFile   MountType = "plan-file"
+	MountScratch    MountType = "scratch"
 )
 
 // IsKnown answers whether the value is one of the protocol's.
 func (value MountType) IsKnown() bool {
-	return slices.Contains([]MountType{MountBind, MountVolume, MountDaemonBind, MountPlanFile}, value)
+	return slices.Contains([]MountType{MountBind, MountVolume, MountDaemonBind, MountPlanFile, MountScratch}, value)
 }
 
 // RestartFile is the restart_file of host protocol 1.
