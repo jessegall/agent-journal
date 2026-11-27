@@ -1,0 +1,23 @@
+{
+    "description": "A Claude Code start while the agent daemon is down ends refused, and the daemon comes back",
+    "steps": [
+        {
+            "do": "stop-daemon"
+        },
+        {
+            "do": "start-session",
+            "agent": "Coder",
+            "type": "terminal",
+            "model": "claude-haiku-5-5",
+            "effort": "low"
+        },
+        {
+            "do": "wait-for",
+            "fact": "start-refused",
+            "seconds": 120
+        },
+        {
+            "do": "start-daemon"
+        }
+    ]
+}

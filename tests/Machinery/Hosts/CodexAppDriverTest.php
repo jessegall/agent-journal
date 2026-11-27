@@ -80,12 +80,21 @@ final class CodexAppDriverTest extends TestCase
                 ['Run: ls.', 'Run: pwd.'],
                 [RequestProgress::Applied, RequestProgress::Failed],
                 ['thread-0', 'thread-1'],
+                [true, true, true, true],
             ],
             [
                 array_column($this->journal->pipeInputOf('owner'), 'method'),
                 array_map(fn (array $turn) => $turn['params']['input'][0]['text'], $turnStarts),
                 [$this->progressOf($turnStarts[0]['id']), $this->progressOf($turnStarts[1]['id'])],
                 [$this->conversationOf($first->runtimeId), $this->conversationOf($second->runtimeId)],
+                [
+                    ...array_map(fn (array $start) => ($start['params']['model'] ?? '') !== '', $threadStarts),
+                    ...array_map(
+                        fn (array $turn) => ($turn['params']['model'] ?? '') !== ''
+                            && ($turn['params']['effort'] ?? '') !== '',
+                        $turnStarts,
+                    ),
+                ],
             ],
         );
     }

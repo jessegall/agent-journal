@@ -36,6 +36,8 @@ final readonly class OwnTerminalPlans
             sessionId: $runtime->agent_session_id,
             type: HostProcessType::Terminal,
             workFolder: $runtime->canonical_folder,
+            model: $runtime->startModel(),
+            effort: $runtime->startEffort(),
             hookCommand: self::HOOK_COMMAND,
             executablePlace: $runtime->executablePlace(),
             offlineReply: $this->offlineReplies->of($runtime->agent_session_id),

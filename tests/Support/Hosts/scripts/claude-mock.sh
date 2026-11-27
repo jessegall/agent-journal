@@ -17,10 +17,27 @@ main() {
 start_session() {
     local installation="$1"
     shift
+    assert_model_and_effort "$@"
     case " $* " in
         *" --print "*) print_turn "$installation" ;;
         *) play_terminal "$installation" "$@" ;;
     esac
+}
+
+# A start names its model with --model and its effort in the settings file --settings names, never the driver's own.
+assert_model_and_effort() {
+    local settings=""
+    case " $* " in *" --model "*) ;; *) refuse_start "a start without --model" ;; esac
+    while [ "$#" -gt 1 ]; do
+        [ "$1" = "--settings" ] && settings="$2"
+        shift
+    done
+    grep -q '"effortLevel"' "$settings" 2>/dev/null || refuse_start "a start whose settings name no effortLevel"
+}
+
+refuse_start() {
+    printf 'claude mock: %s\n' "$1" >&2
+    exit 1
 }
 
 play_terminal() {

@@ -102,6 +102,13 @@ final class Files implements FilesContract
         });
     }
 
+    public function readJsonLines(FilePath $file): array
+    {
+        $lines = array_values(array_filter(explode("\n", $this->read($file)), fn (string $line) => $line !== ''));
+
+        return array_map(fn (string $line) => $this->decoded($file, $line), $lines);
+    }
+
     public function readJson(FilePath $file): array
     {
         return $this->whileReading($file, function () use ($file) {

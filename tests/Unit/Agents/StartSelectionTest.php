@@ -52,9 +52,10 @@ final class StartSelectionTest extends TestCase
         $selected = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
+            null,
             $this->profile(tier: ModelTier::Inventive),
             null,
-            $this->app->make(DriverCatalogue::class),
+            $this->app->make(DriverCatalogue::class)
         );
 
         $this->assertSame(ModelSelectionType::ProfileDefault, $selected->requested->type);
@@ -68,7 +69,7 @@ final class StartSelectionTest extends TestCase
 
     public function test_a_main_start_with_an_explicit_program_records_no_profile(): void
     {
-        $selected = SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class));
+        $selected = SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, null, $this->app->make(DriverCatalogue::class));
 
         $this->assertSame(
             [DefaultDrivers::CLAUDE_CODE, 'claude-opus-5-5', ModelSelectionType::Named],
@@ -85,9 +86,10 @@ final class StartSelectionTest extends TestCase
         $selected = SelectedDriver::resolve(
             null,
             ModelSelection::named('m'),
+            null,
             $this->profile(driver: null),
             'claude-code',
-            $this->app->make(DriverCatalogue::class),
+            $this->app->make(DriverCatalogue::class)
         );
 
         $this->assertSame(
@@ -98,7 +100,7 @@ final class StartSelectionTest extends TestCase
 
     public function test_a_supplied_program_wins_over_an_open_profile_program(): void
     {
-        $selected = SelectedDriver::resolve('claude-code', ModelSelection::named('m'), $this->profile(), null, $this->app->make(DriverCatalogue::class));
+        $selected = SelectedDriver::resolve('claude-code', ModelSelection::named('m'), null, $this->profile(), null, $this->app->make(DriverCatalogue::class));
 
         $this->assertSame(
             [DefaultDrivers::CLAUDE_CODE, DriverSourceType::Explicit],
@@ -169,9 +171,10 @@ final class StartSelectionTest extends TestCase
         $selected = SelectedDriver::resolve(
             null,
             ModelSelection::profileDefault(),
+            null,
             $this->profile($driver, $tier),
             null,
-            $this->app->make(DriverCatalogue::class),
+            $this->app->make(DriverCatalogue::class)
         );
 
         $this->assertSame($model, $selected->model);
@@ -182,9 +185,10 @@ final class StartSelectionTest extends TestCase
         $selected = SelectedDriver::resolve(
             DefaultDrivers::CLAUDE_CODE,
             ModelSelection::named('any-model'),
+            null,
             $this->profile(DefaultDrivers::CODEX, ModelTier::Simplest),
             null,
-            $this->app->make(DriverCatalogue::class),
+            $this->app->make(DriverCatalogue::class)
         );
 
         $this->assertSame([DefaultDrivers::CLAUDE_CODE, 'any-model'], [$selected->driver, $selected->model]);
@@ -196,19 +200,19 @@ final class StartSelectionTest extends TestCase
             DefaultUnavailable::class,
             StartRefusalType::DefaultUnavailable,
             DefaultUnavailable::forStart()->getMessage(),
-            fn () => SelectedDriver::resolve('codex', ModelSelection::profileDefault(), null, null, $this->app->make(DriverCatalogue::class)),
+            fn () => SelectedDriver::resolve('codex', ModelSelection::profileDefault(), null, null, null, $this->app->make(DriverCatalogue::class)),
         );
         $this->assertRefused(
             DriverRequired::class,
             StartRefusalType::DriverRequired,
             DriverRequired::forStart()->getMessage(),
-            fn () => SelectedDriver::resolve(null, ModelSelection::named('m'), null, null, $this->app->make(DriverCatalogue::class)),
+            fn () => SelectedDriver::resolve(null, ModelSelection::named('m'), null, null, null, $this->app->make(DriverCatalogue::class)),
         );
         $this->assertRefused(
             DriverUnsupported::class,
             StartRefusalType::DriverUnsupported,
             DriverUnsupported::for('gemini')->getMessage(),
-            fn () => SelectedDriver::resolve('gemini', ModelSelection::named('m'), null, null, $this->app->make(DriverCatalogue::class)),
+            fn () => SelectedDriver::resolve('gemini', ModelSelection::named('m'), null, null, null, $this->app->make(DriverCatalogue::class)),
         );
     }
 

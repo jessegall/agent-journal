@@ -1,0 +1,13 @@
+{
+    "description": "A fresh installation builds both images, writes its settings and enrolls its host",
+    "steps": [
+        {
+            "do": "install"
+        },
+        {
+            "do": "wait-for",
+            "fact": "installed",
+            "seconds": 1200
+        }
+    ]
+}

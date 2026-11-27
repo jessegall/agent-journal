@@ -10,8 +10,19 @@ main() {
         --version) play "$installation" version ;;
         login) play "$installation" login-status ;;
         app-server) serve_app_server "$installation" ;;
-        *) play_terminal "$installation" "$@" ;;
+        *) assert_model_and_effort "$@"; play_terminal "$installation" "$@" ;;
     esac
+}
+
+# A start names its model with -m and its effort with -c model_reasoning_effort, never the driver's own.
+assert_model_and_effort() {
+    case " $* " in *" -m "*) ;; *) refuse_start "a start without -m" ;; esac
+    case " $* " in *" model_reasoning_effort="*) ;; *) refuse_start "a start without model_reasoning_effort" ;; esac
+}
+
+refuse_start() {
+    printf 'codex mock: %s\n' "$1" >&2
+    exit 1
 }
 
 play_terminal() {

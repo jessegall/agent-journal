@@ -39,8 +39,9 @@ final class ContinuePostTest extends GuardedRouteEntryTestCase
                 new SelectedDriver(
                     DefaultDrivers::CLAUDE_CODE,
                     'claude-opus-5-5',
+                    'medium',
                     ModelSelection::named('claude-opus-5-5'),
-                    new SelectionSource(DriverSourceType::Profile, 'main-agent', 1),
+                    new SelectionSource(DriverSourceType::Profile, 'main-agent', 1)
                 ),
                 false,
                 ConversationModeType::Resume,

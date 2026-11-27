@@ -708,6 +708,20 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     // ----------[ Queries ]----------
 
     /**
+     * Whether a request of the operation was carried out on the session's runtime.
+     */
+    public static function hasAppliedOf(string $sessionId, DriverOperation $operation): bool
+    {
+        $runtime = AgentRuntime::findForSession($sessionId);
+
+        return $runtime !== null && self::query()
+            ->ofRuntime($runtime)
+            ->where('operation', $operation)
+            ->where('progress', RequestProgress::Applied)
+            ->exists();
+    }
+
+    /**
      * The sequence the runtime's next request takes: one past its newest.
      */
     public static function resolveNextSequence(AgentRuntime $runtime): int

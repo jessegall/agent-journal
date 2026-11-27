@@ -20,6 +20,7 @@ final readonly class SelectedDriver
     public function __construct(
         public string $driver,
         public string $model,
+        public string $effort,
         public ModelSelection $requested,
         public SelectionSource $source,
     ) {}
@@ -31,7 +32,7 @@ final readonly class SelectedDriver
     {
         $source = new SelectionSource($this->source->driverSource, $profileKey, $revision);
 
-        return new self($this->driver, $this->model, $this->requested, $source);
+        return new self($this->driver, $this->model, $this->effort, $this->requested, $source);
     }
 
     /**
@@ -45,6 +46,7 @@ final readonly class SelectedDriver
     public static function resolve(
         string|null $driverKey,
         ModelSelection $requested,
+        string|null $effort,
         ProfileDefaults|null $profile,
         string|null $parentDriver,
         DriverCatalogue $drivers,
@@ -52,7 +54,10 @@ final readonly class SelectedDriver
         [$driver, $driverSource] = self::driver($driverKey, $profile, $parentDriver, $drivers);
         $source = new SelectionSource($driverSource, $profile?->key, $profile?->revision);
 
-        return new self($driver, self::model($requested, $profile, $drivers->family($driver)), $requested, $source);
+        $family = $drivers->family($driver);
+        $model = self::model($requested, $profile, $family);
+
+        return new self($driver, $model, self::effort($effort, $profile, $family), $requested, $source);
     }
 
     /**
@@ -108,6 +113,23 @@ final readonly class SelectedDriver
         }
 
         return $family->modelAt($profile->preferredTier);
+    }
+
+    /**
+     * The effort named, or the journal's effort for the profile's tier, or the family's own default effort: never the
+     * driver's default.
+     */
+    private static function effort(string|null $effort, ProfileDefaults|null $profile, DriverFamily $family): string
+    {
+        if ($effort !== null) {
+            return $effort;
+        }
+
+        if ($profile === null) {
+            return $family->defaultEffort;
+        }
+
+        return $family->effortAt($profile->preferredTier);
     }
 
     /**

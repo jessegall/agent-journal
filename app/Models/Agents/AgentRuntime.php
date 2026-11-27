@@ -325,7 +325,10 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
      */
     public function liveAgentProcessIds(): array
     {
-        $agentProcesses = [HostProcessPurpose::AgentTerminal, HostProcessPurpose::AgentTurn];
+        $agentProcesses = [
+            HostProcessPurpose::AgentTerminal,
+            HostProcessPurpose::AgentTurn,
+        ];
 
         return array_values(array_map(
             strval(...),
@@ -355,6 +358,22 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $this->raise(new AgentRuntimeStartGrantClaimed($this->id));
 
         return $token;
+    }
+
+    /**
+     * The model a start of the runtime runs at: the one a change asked for, else the one its session was started at.
+     */
+    public function startModel(): string
+    {
+        return $this->requested_model ?? AgentSession::query()->findOrFail($this->agent_session_id)->model;
+    }
+
+    /**
+     * The effort a start of the runtime runs at: the one a change asked for, else the one its session was started at.
+     */
+    public function startEffort(): string
+    {
+        return $this->requested_effort ?? AgentSession::query()->findOrFail($this->agent_session_id)->effort;
     }
 
     /**

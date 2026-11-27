@@ -1,0 +1,26 @@
+{
+    "description": "A Codex terminal of a fresh account passes its first-run screens and answers",
+    "steps": [
+        {
+            "do": "start-session",
+            "agent": "Coder",
+            "type": "terminal",
+            "model": "gpt-6-luna",
+            "effort": "low"
+        },
+        {
+            "do": "wait-for",
+            "fact": "answering",
+            "seconds": 180
+        },
+        {
+            "do": "stop",
+            "agent": "Coder"
+        },
+        {
+            "do": "wait-for",
+            "fact": "stopped",
+            "seconds": 60
+        }
+    ]
+}

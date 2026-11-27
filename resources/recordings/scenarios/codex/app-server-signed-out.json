@@ -1,0 +1,31 @@
+{
+    "description": "A Codex app-server turn started while its account is signed out fails, saying so (sign the account out first)",
+    "steps": [
+        {
+            "do": "start-session",
+            "agent": "Coder",
+            "type": "headless",
+            "model": "gpt-6-luna",
+            "effort": "low"
+        },
+        {
+            "do": "send-message",
+            "agent": "Coder",
+            "text": "Run: ls."
+        },
+        {
+            "do": "wait-for",
+            "fact": "turn-ended",
+            "seconds": 120
+        },
+        {
+            "do": "stop",
+            "agent": "Coder"
+        },
+        {
+            "do": "wait-for",
+            "fact": "stopped",
+            "seconds": 60
+        }
+    ]
+}

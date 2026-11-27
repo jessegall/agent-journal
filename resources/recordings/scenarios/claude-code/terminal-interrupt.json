@@ -1,0 +1,40 @@
+{
+    "description": "A Claude Code terminal is interrupted mid-turn and holds",
+    "steps": [
+        {
+            "do": "start-session",
+            "agent": "Coder",
+            "type": "terminal",
+            "model": "claude-haiku-5-5",
+            "effort": "low"
+        },
+        {
+            "do": "wait-for",
+            "fact": "answering",
+            "seconds": 120
+        },
+        {
+            "do": "send-message",
+            "agent": "Coder",
+            "text": "Count slowly from 1 to 100, one number per line."
+        },
+        {
+            "do": "interrupt",
+            "agent": "Coder"
+        },
+        {
+            "do": "wait-for",
+            "fact": "interrupted",
+            "seconds": 60
+        },
+        {
+            "do": "stop",
+            "agent": "Coder"
+        },
+        {
+            "do": "wait-for",
+            "fact": "stopped",
+            "seconds": 60
+        }
+    ]
+}

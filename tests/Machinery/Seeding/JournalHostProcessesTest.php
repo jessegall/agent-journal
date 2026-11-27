@@ -66,6 +66,8 @@ final class JournalHostProcessesTest extends TestCase
             'echo',
             false,
             [],
+            ['low', 'medium', 'high', 'high'],
+            'medium',
             [],
             'images/drivers/example.svg',
             MarkTone::CurrentColor,

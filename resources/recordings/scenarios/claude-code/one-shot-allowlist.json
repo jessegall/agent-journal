@@ -1,0 +1,31 @@
+{
+    "description": "A headless Claude Code turn may run the allowed command and is refused the denied one",
+    "steps": [
+        {
+            "do": "start-session",
+            "agent": "Coder",
+            "type": "headless",
+            "model": "claude-haiku-5-5",
+            "effort": "low"
+        },
+        {
+            "do": "send-message",
+            "agent": "Coder",
+            "text": "Run: ls. Then run: rm -rf /tmp/journal-denied."
+        },
+        {
+            "do": "wait-for",
+            "fact": "turn-ended",
+            "seconds": 120
+        },
+        {
+            "do": "stop",
+            "agent": "Coder"
+        },
+        {
+            "do": "wait-for",
+            "fact": "stopped",
+            "seconds": 60
+        }
+    ]
+}

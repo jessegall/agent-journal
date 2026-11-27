@@ -1,0 +1,13 @@
+{
+    "description": "An installation run again builds only what changed and keeps its host",
+    "steps": [
+        {
+            "do": "update"
+        },
+        {
+            "do": "wait-for",
+            "fact": "installed",
+            "seconds": 1200
+        }
+    ]
+}

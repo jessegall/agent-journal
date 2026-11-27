@@ -472,6 +472,30 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
     }
 
     /**
+     * The session request made under this start request; none before it.
+     */
+    public static function findUnderRequest(string $requestId): self|null
+    {
+        return self::query()->underRequest($requestId)->first();
+    }
+
+    /**
+     * Whether the driver proved the conversation it runs, its start hook arrived and answered.
+     */
+    public function isReady(): bool
+    {
+        return $this->readiness === StartReadiness::Ready;
+    }
+
+    /**
+     * Whether the start ended refused, with the reason it was refused for.
+     */
+    public function isRefused(): bool
+    {
+        return $this->readiness === StartReadiness::Refused && $this->refusal_reason !== null;
+    }
+
+    /**
      * The session request made under this start request, locked; none before it.
      */
     public static function findLockedUnderRequest(string $requestId): self|null

@@ -1,0 +1,17 @@
+{
+    "description": "An installation with its agent image removed builds it again",
+    "steps": [
+        {
+            "do": "remove-image",
+            "image": "agent"
+        },
+        {
+            "do": "update"
+        },
+        {
+            "do": "wait-for",
+            "fact": "installed",
+            "seconds": 1200
+        }
+    ]
+}

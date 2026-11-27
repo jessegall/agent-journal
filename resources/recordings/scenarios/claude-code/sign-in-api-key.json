@@ -1,0 +1,24 @@
+{
+    "description": "A Claude Code account signs in with an API key",
+    "steps": [
+        {
+            "do": "sign-in",
+            "driver": "claude-code",
+            "method": "api_key"
+        },
+        {
+            "do": "wait-for",
+            "fact": "challenge-shown",
+            "seconds": 60
+        },
+        {
+            "do": "ask-user",
+            "text": "Paste the API key into the sign-in form; press Enter once it is accepted."
+        },
+        {
+            "do": "wait-for",
+            "fact": "signed-in",
+            "seconds": 120
+        }
+    ]
+}

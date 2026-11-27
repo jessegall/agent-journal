@@ -1,0 +1,36 @@
+{
+    "description": "A Claude Code terminal shows its MCP servers when asked for them",
+    "steps": [
+        {
+            "do": "start-session",
+            "agent": "Coder",
+            "type": "terminal",
+            "model": "claude-haiku-5-5",
+            "effort": "low"
+        },
+        {
+            "do": "wait-for",
+            "fact": "answering",
+            "seconds": 120
+        },
+        {
+            "do": "send-message",
+            "agent": "Coder",
+            "text": "/mcp"
+        },
+        {
+            "do": "wait-for",
+            "fact": "turn-ended",
+            "seconds": 60
+        },
+        {
+            "do": "stop",
+            "agent": "Coder"
+        },
+        {
+            "do": "wait-for",
+            "fact": "stopped",
+            "seconds": 60
+        }
+    ]
+}

@@ -185,6 +185,12 @@ func mockScript(arguments []string) error {
 		if *heardFile != "" {
 			_ = appendLine(*heardFile, line)
 		}
+		// A thread or turn written without its model or effort would run at the driver's own default.
+		if method, isMissing := withoutModelOrEffort(line); isMissing {
+			place.Failed(recording.ScriptFailure{Program: filepath.Base(*scriptFile),
+				Expected: method + " with a model and an effort", Got: line})
+			os.Exit(1)
+		}
 	}
 	if err := recording.ScriptReplay(script, place, os.Stdin, os.Stdout, os.Stderr, os.Getenv, heard); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -192,6 +198,28 @@ func mockScript(arguments []string) error {
 	}
 	os.Exit(script.ExitCode)
 	return nil
+}
+
+// withoutModelOrEffort answers the method of an app-server line that starts a thread without a model, or a turn
+// without a model or an effort.
+func withoutModelOrEffort(line string) (string, bool) {
+	var written struct {
+		Method string `json:"method"`
+		Params struct {
+			Model  string `json:"model"`
+			Effort string `json:"effort"`
+		} `json:"params"`
+	}
+	if json.Unmarshal([]byte(line), &written) != nil {
+		return "", false
+	}
+	switch written.Method {
+	case "thread/start":
+		return written.Method, written.Params.Model == ""
+	case "turn/start":
+		return written.Method, written.Params.Model == "" || written.Params.Effort == ""
+	}
+	return "", false
 }
 
 // mockPrint answers a program that only prints, such as its version or its sign-in status, as it was recorded, and

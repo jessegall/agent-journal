@@ -83,7 +83,8 @@ final class HelperFixtures
                 ModelSelection::named('claude-sonnet-5-5'),
                 null,
                 null,
-                $this->journal->service(DriverCatalogue::class),
+                null,
+                $this->journal->service(DriverCatalogue::class)
             ),
             true,
             ConversationModeType::New,

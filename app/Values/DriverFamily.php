@@ -23,6 +23,9 @@ final readonly class DriverFamily
      *                                         project folder needs to run it isolated
      * @param  list<string>  $models  the models the family's drivers run, one per tier, cheapest first; every one
      *                                can be chosen at any start
+     * @param  list<string>  $efforts  the effort the journal starts the family's drivers at for each tier, cheapest first,
+     *                                 never the driver's own default
+     * @param  string  $defaultEffort  the effort the journal starts the family's drivers at when no tier is preferred
      * @param  list<string>  $aliases  the other names the family's records may hold: a short name or a registration key
      * @param  string  $markAsset  the family's mark under public, such as images/drivers/claude-code.svg
      * @param  MarkTone  $markTone  whether the mark is drawn in its own colours or in the text colour
@@ -35,6 +38,8 @@ final readonly class DriverFamily
         public string $hostName,
         public bool $isolatesHooksPerSession,
         public array $models,
+        public array $efforts,
+        public string $defaultEffort,
         public array $aliases,
         public string $markAsset,
         public MarkTone $markTone,
@@ -47,5 +52,13 @@ final readonly class DriverFamily
     public function modelAt(ModelTier $tier): string
     {
         return $this->models[$tier->value - 1];
+    }
+
+    /**
+     * The family's effort for work of a tier: the default effort of a start whose profile prefers that tier.
+     */
+    public function effortAt(ModelTier $tier): string
+    {
+        return $this->efforts[$tier->value - 1];
     }
 }

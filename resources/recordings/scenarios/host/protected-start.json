@@ -1,0 +1,8 @@
+{
+    "description": "The host is asked to prove its protection and answers with its evidence",
+    "steps": [
+        {
+            "do": "protect-host"
+        }
+    ]
+}

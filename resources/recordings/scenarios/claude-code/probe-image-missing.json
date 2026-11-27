@@ -1,0 +1,21 @@
+{
+    "description": "A Claude Code start whose agent image is missing ends refused, naming the missing image",
+    "steps": [
+        {
+            "do": "remove-image",
+            "image": "agent"
+        },
+        {
+            "do": "start-session",
+            "agent": "Coder",
+            "type": "terminal",
+            "model": "claude-haiku-5-5",
+            "effort": "low"
+        },
+        {
+            "do": "wait-for",
+            "fact": "start-refused",
+            "seconds": 120
+        }
+    ]
+}

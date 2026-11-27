@@ -33,6 +33,8 @@ final class DriverNameDispatchTest extends TestCase
     private const array ALLOWED = [
         'app/Agents/Drivers/DefaultDrivers.php',
         'app/Support/Compatibility/DriverCompatibility.php',
+        // The command lines host protocol 1 declares for each driver program, generated from protocol/host.json.
+        'app/Hosts/Protocol/HostProgramLines.php',
     ];
 
     public function test_no_code_outside_the_registrations_dispatches_on_a_driver_name(): void

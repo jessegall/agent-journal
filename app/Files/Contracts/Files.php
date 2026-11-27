@@ -64,6 +64,13 @@ interface Files
     public function readJson(FilePath $file): array;
 
     /**
+     * Each line of a file of JSON lines, decoded, in order; an empty line is no line.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function readJsonLines(FilePath $file): array;
+
+    /**
      * The sha256 of the file, hashed once while the file is unchanged.
      */
     public function digest(FilePath $file): string;

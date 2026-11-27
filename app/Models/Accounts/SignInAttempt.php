@@ -505,6 +505,19 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     }
 
     /**
+     * Whether the attempt shows its challenge, waiting for the code or the browser.
+     */
+    public function isWaiting(): bool
+    {
+        return $this->status === SignInStatus::Waiting;
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->status === SignInStatus::Complete;
+    }
+
+    /**
      * The attempt, while the owner may read it; none once it is gone or another owner's.
      */
     public static function findReadableByOwner(string $attemptId): self|null

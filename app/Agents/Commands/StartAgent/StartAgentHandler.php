@@ -181,7 +181,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $driver,
             $request->driverType,
             $request->selection->model,
-            null,
+            $request->selection->effort,
             null,
             $request->savesDriverType,
         );

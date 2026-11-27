@@ -12,6 +12,14 @@ use RuntimeException;
  */
 final class ProfileRefused extends RuntimeException
 {
+    /**
+     * A driver start with no model or no effort, which would run at the driver's own default.
+     */
+    public static function withoutModelOrEffort(string $driver): self
+    {
+        return new self("A {$driver} start names no model or no effort, so it would run at the driver's own default.");
+    }
+
     public static function unresolvedSetting(string $what): self
     {
         return new self("the start has an unresolved setting: {$what}");

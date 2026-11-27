@@ -1,0 +1,9 @@
+{
+    "description": "The host reads a folder of a connected project for the journal",
+    "steps": [
+        {
+            "do": "read-project",
+            "path": "."
+        }
+    ]
+}

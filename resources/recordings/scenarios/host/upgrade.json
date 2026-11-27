@@ -1,0 +1,8 @@
+{
+    "description": "The host is ordered to upgrade to the journal's release",
+    "steps": [
+        {
+            "do": "upgrade-host"
+        }
+    ]
+}

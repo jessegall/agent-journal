@@ -329,7 +329,7 @@ final class CodexAppDriver implements ProcessDriver
             'cwd' => $runtime->canonical_folder,
             'sandbox' => CodexArguments::NO_SANDBOX,
             'approvalPolicy' => 'never',
-            'model' => $request->model ?? $runtime->requested_model,
+            'model' => $request->model ?? $runtime->startModel(),
             'config' => $this->featuresOff(),
         ];
 
@@ -382,14 +382,16 @@ final class CodexAppDriver implements ProcessDriver
 
     private function startTurn(ClaimedRequest $request, string $thread): DriverActions
     {
+        $runtime = AgentRuntime::query()->findOrFail($request->runtimeId);
+
         $params = [
             'threadId' => $thread,
             'input' => [[
                 'type' => 'text',
                 'text' => $request->prompt(),
             ]],
-            'model' => $request->model,
-            'effort' => $request->effort,
+            'model' => $request->model ?? $runtime->startModel(),
+            'effort' => $request->effort ?? $runtime->startEffort(),
         ];
 
         $id = $this->idOf($request, self::TURN_STEP);

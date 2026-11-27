@@ -12,6 +12,7 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Enums\WorkspaceUse;
+use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\SecurityOptions;
 use App\Agents\Values\JournalServer;
 use App\Agents\Values\PlanFile;
@@ -38,6 +39,10 @@ use Throwable;
 final class DriverPlansTest extends TestCase
 {
     private const string FIXTURE = __DIR__.'/../../Fixtures/Drivers/plans.json';
+
+    private const string MODEL = 'sonnet';
+
+    private const string EFFORT = 'medium';
 
     private const string SESSION = '3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77';
 
@@ -82,12 +87,48 @@ final class DriverPlansTest extends TestCase
         );
     }
 
+    public function test_every_start_of_both_drivers_names_its_model_and_effort_and_one_without_them_is_refused(): void
+    {
+        $named = [];
+
+        foreach ([HostProcessType::Terminal, HostProcessType::Pipe] as $type) {
+            $start = new DriverStart(self::SESSION, $type, '/work', 'Run: ls.', model: 'chosen-model', effort: 'high');
+            $claude = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->startPlan($start);
+            $codex = $this->journal->driverProfile(DefaultDrivers::CODEX)->startPlan($start);
+            $claudeSettings = array_values(array_filter(
+                $claude->files,
+                fn (PlanFile $file) => str_ends_with($file->name, 'settings.json'),
+            ))[0]->content;
+            $named[] = [
+                in_array('chosen-model', $claude->argv, true),
+                json_decode($claudeSettings, true)['effortLevel'] ?? null,
+                in_array('chosen-model', $codex->argv, true),
+                in_array('model_reasoning_effort=high', $codex->argv, true),
+            ];
+        }
+
+        $this->journal->assertResult([[true, 'high', true, true], [true, 'high', true, true]], $named);
+        $this->journal->assertRefused(
+            ProfileRefused::class,
+            fn () => $this->journal->driverProfile(DefaultDrivers::CODEX)->startPlan(
+                new DriverStart(self::SESSION, HostProcessType::Terminal, '/work', model: 'chosen-model'),
+            ),
+        );
+    }
+
     public function test_a_start_handed_skills_writes_them_and_claude_code_loads_their_folder(): void
     {
         $skill = new PlanFile('journal-skills/skills/review/SKILL.md', 'Read the diff.');
         $codexSkill = new PlanFile('skills/review/SKILL.md', 'Read the diff.');
         $planOf = fn (string $family, PlanFile $file) => $this->journal->driverProfile($family)->startPlan(
-            new DriverStart(self::SESSION, HostProcessType::Terminal, '/work', skillFiles: [$file]),
+            new DriverStart(
+                self::SESSION,
+                HostProcessType::Terminal,
+                '/work',
+                skillFiles: [$file],
+                model: self::MODEL,
+                effort: self::EFFORT,
+            ),
         );
         $claude = $planOf(DefaultDrivers::CLAUDE_CODE, $skill);
         $codex = $planOf(DefaultDrivers::CODEX, $codexSkill);
@@ -117,6 +158,8 @@ final class DriverPlansTest extends TestCase
             account: $account,
             executablePlace: ExecutablePlace::Image,
             container: new SessionContainer($manifest, $labels),
+            model: self::MODEL,
+            effort: self::EFFORT,
         );
 
         $plan = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->startPlan($start);
@@ -168,6 +211,8 @@ final class DriverPlansTest extends TestCase
                 $manifest,
                 HostContainerLabelsData::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']),
             ),
+            model: self::MODEL,
+            effort: self::EFFORT,
         );
         $profile = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE);
 
@@ -197,7 +242,16 @@ final class DriverPlansTest extends TestCase
                     true,
                 ] as $isResume) {
                     $name = "{$type->value} on {$accountName}".($isResume ? ' resumed' : '');
-                    $starts[$name] = new DriverStart(self::SESSION, $type, '/work', 'Run: ls.', $isResume, account: $account);
+                    $starts[$name] = new DriverStart(
+                        self::SESSION,
+                        $type,
+                        '/work',
+                        'Run: ls.',
+                        $isResume,
+                        account: $account,
+                        model: self::MODEL,
+                        effort: self::EFFORT,
+                    );
                     $starts["{$name} with everything"] = new DriverStart(
                         self::SESSION,
                         $type,

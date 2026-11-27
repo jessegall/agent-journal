@@ -1,0 +1,24 @@
+{
+    "description": "A Codex device sign-in shows its code and completes once the user enters it in the browser",
+    "steps": [
+        {
+            "do": "sign-in",
+            "driver": "codex",
+            "method": "oauth"
+        },
+        {
+            "do": "wait-for",
+            "fact": "challenge-shown",
+            "seconds": 60
+        },
+        {
+            "do": "ask-user",
+            "text": "Open the link, enter the code it shows, and press Enter once the page says you are signed in."
+        },
+        {
+            "do": "wait-for",
+            "fact": "signed-in",
+            "seconds": 180
+        }
+    ]
+}

@@ -57,6 +57,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $driver_label
  * @property string|null $driver_build
  * @property string $model
+ * @property string $effort
  * @property ModelSelectionType $requested_model_type
  * @property string|null $requested_model
  * @property DriverSourceType $driver_source
@@ -125,6 +126,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
 
         $this->driver_key = $selection->driver;
         $this->model = $selection->model;
+        $this->effort = $selection->effort;
         $this->requested_model_type = $selection->requested->type;
         $this->requested_model = $selection->requested->model;
         $this->driver_source = $selection->source->driverSource;
@@ -216,6 +218,11 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
 
     // ----------[ Predicates ]----------
 
+    public function hasEnded(): bool
+    {
+        return $this->status === SessionStatus::Ended;
+    }
+
     public function isActive(): bool
     {
         return $this->status->isRunning();
@@ -292,6 +299,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
             return new SelectedDriver(
                 (string) $this->driver_key,
                 $this->model,
+                $this->effort,
                 $requested,
                 new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
             );

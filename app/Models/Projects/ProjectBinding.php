@@ -476,6 +476,14 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
     }
 
     /**
+     * The first binding on the host that is not revoked; none while it binds no project.
+     */
+    public static function findFirstServingOn(string $hostId): self|null
+    {
+        return self::query()->onHost($hostId)->unrevoked()->first();
+    }
+
+    /**
      * The binding this host's redemption made under its installation nonce.
      *
      * @throws BindingUnrecoverable

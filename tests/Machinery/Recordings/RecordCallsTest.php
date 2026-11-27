@@ -6,6 +6,7 @@ namespace Tests\Machinery\Recordings;
 
 use App\Files\Enums\Place;
 use App\Recordings\RecordingDrafts;
+use App\Recordings\Scenarios\Scenario;
 use Illuminate\Support\Facades\File;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Files\UsesTemporaryPlaces;
@@ -41,7 +42,7 @@ final class RecordCallsTest extends TestCase
     public function test_on_a_call_and_a_refused_one_are_kept_as_asked_and_answered_without_a_signature(): void
     {
         config(['agents.recording' => true]);
-        $this->app->make(RecordingDrafts::class)->openRun('claude-code/terminal-turn');
+        $this->app->make(RecordingDrafts::class)->openRun(Scenario::read('claude-code/terminal-turn', '{"steps":[]}'));
 
         $this->heartbeat(['live_processes' => []]);
         $this->heartbeat(['live_processes' => [], 'mood' => 'sunny']);
@@ -77,7 +78,7 @@ final class RecordCallsTest extends TestCase
         $this->journal->agentCall($start, 'POST', $target, ['request_key' => 'heartbeat-off']);
         $isKeptOff = File::isDirectory("{$this->drafts()}/agent");
         config(['agents.recording' => true]);
-        $this->app->make(RecordingDrafts::class)->openRun('claude-code/terminal-turn');
+        $this->app->make(RecordingDrafts::class)->openRun(Scenario::read('claude-code/terminal-turn', '{"steps":[]}'));
 
         $this->journal->agentCall($start, 'POST', $target, ['request_key' => 'heartbeat-on']);
 

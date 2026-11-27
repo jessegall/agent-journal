@@ -39,7 +39,7 @@ final readonly class ProfileSelections implements ProfileSelectionsContract
         );
 
         return new ProfileSelection(
-            SelectedDriver::resolve($driverKey, $requested, $defaults, $parentDriver, $this->drivers),
+            SelectedDriver::resolve($driverKey, $requested, null, $defaults, $parentDriver, $this->drivers),
             $snapshot->base,
             $snapshot->revision,
             $start,

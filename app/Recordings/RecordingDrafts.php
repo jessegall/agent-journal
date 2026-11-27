@@ -9,6 +9,7 @@ use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Files\Values\Depth;
 use App\Recordings\Enums\Wire;
+use App\Recordings\Scenarios\Scenario;
 use App\Values\FilePath;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Attributes\Config;
@@ -29,7 +30,7 @@ final readonly class RecordingDrafts
     private FilePath $drafts;
 
     public function __construct(private Files $files, #[Config('agents.recording')]
- private bool $isOn)
+        private bool $isOn)
     {
         $this->drafts = FilePath::in(Place::Project, self::DRAFTS);
     }
@@ -51,7 +52,7 @@ final readonly class RecordingDrafts
      * Opens a recording run of the scenario: the drafts an earlier run left are removed first, so an interrupted run
      * leaves nothing half written.
      */
-    public function openRun(string $scenario): void
+    public function openRun(Scenario $scenario): void
     {
         if (! $this->isOn) {
             return;
@@ -62,7 +63,7 @@ final readonly class RecordingDrafts
         }
 
         $this->files->makeFolder($this->drafts, Permissions::Shared);
-        $this->writeRun(['scenario' => $scenario, 'opened_at' => self::moment(), 'closed_at' => null]);
+        $this->writeRun(['scenario' => $scenario->name, 'opened_at' => self::moment(), 'closed_at' => null]);
     }
 
     /**
@@ -138,14 +139,9 @@ final readonly class RecordingDrafts
             }
 
             foreach ($this->files->list($folder, pattern: '*.jsonl')->paths() as $draft) {
-                $lines = array_values(array_filter(explode("\n", $this->files->read($draft))));
-                $first = (string) array_shift($lines);
-                $opening = RecordingOpening::fromLine(json_decode($first, true, flags: JSON_THROW_ON_ERROR));
-
-                $events = array_map(
-                    fn (string $line) => RecordedEvent::fromLine(json_decode($line, true, flags: JSON_THROW_ON_ERROR)),
-                    $lines,
-                );
+                $lines = $this->files->readJsonLines($draft);
+                $opening = RecordingOpening::fromLine((array) array_shift($lines));
+                $events = array_map(fn (array $line) => RecordedEvent::fromLine($line), $lines);
 
                 $exchanges[] = new CutExchange($opening, $events, null);
             }

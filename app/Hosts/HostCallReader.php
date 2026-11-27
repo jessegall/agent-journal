@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hosts;
 
+use App\Attributes\Rules\DecodesAnyJson;
 use App\Hosts\Exceptions\HostCallUnreadable;
 use Illuminate\Validation\ValidationException;
 use JsonException;
@@ -25,6 +26,7 @@ final readonly class HostCallReader
      * @param  class-string<T>  $class
      * @return T
      */
+    #[DecodesAnyJson]
     public function read(string $body, string $class, string $call): Data
     {
         try {

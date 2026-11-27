@@ -75,6 +75,7 @@ final readonly class StartRequest
             $this->agentId,
             $this->selection->driver,
             $this->selection->model,
+            $this->selection->effort,
             $requested->type->value,
             $requested->model,
             $source->driverSource->value,

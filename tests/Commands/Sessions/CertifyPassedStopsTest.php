@@ -107,7 +107,8 @@ final class CertifyPassedStopsTest extends TestCase
                 ModelSelection::named('claude-opus-5-5'),
                 null,
                 null,
-                $this->app->make(DriverCatalogue::class),
+                null,
+                $this->app->make(DriverCatalogue::class)
             ),
             StartOriginType::OwnerRequest,
             $work,

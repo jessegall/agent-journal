@@ -31,10 +31,29 @@ final class StartAgentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'requestId' => ['required', 'ulid'],
-            'driver' => ['nullable', 'string', 'max:32'],
-            'model' => ['nullable', 'string', 'max:100'],
-            'driverType' => ['nullable', Rule::enum(DriverType::class)],
+            'requestId' => [
+                'required',
+                'ulid',
+            ],
+            'driver' => [
+                'nullable',
+                'string',
+                'max:32',
+            ],
+            'model' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+            'effort' => [
+                'nullable',
+                'string',
+                'max:32',
+            ],
+            'driverType' => [
+                'nullable',
+                Rule::enum(DriverType::class),
+            ],
             'actor' => ['prohibited'],
             'session' => ['prohibited'],
         ];
@@ -50,6 +69,7 @@ final class StartAgentRequest extends FormRequest
         $selection = SelectedDriver::resolve(
             $this->filled('driver') ? $this->string('driver')->toString() : null,
             ModelSelection::fromInput($this->filled('model') ? $this->string('model')->toString() : null),
+            $this->filled('effort') ? $this->string('effort')->toString() : null,
             null,
             null,
             $drivers,

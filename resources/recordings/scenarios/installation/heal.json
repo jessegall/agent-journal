@@ -1,0 +1,16 @@
+{
+    "description": "An installation whose agent daemon was stopped is healed by running it again",
+    "steps": [
+        {
+            "do": "stop-daemon"
+        },
+        {
+            "do": "heal"
+        },
+        {
+            "do": "wait-for",
+            "fact": "installed",
+            "seconds": 1200
+        }
+    ]
+}

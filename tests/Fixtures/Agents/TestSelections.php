@@ -25,7 +25,7 @@ final class TestSelections
 
     public static function of(string $driver = 'claude-code'): SelectedDriver
     {
-        return SelectedDriver::resolve($driver, ModelSelection::named(self::MODEL), null, null, app(DriverCatalogue::class));
+        return SelectedDriver::resolve($driver, ModelSelection::named(self::MODEL), null, null, null, app(DriverCatalogue::class));
     }
 
     public static function requestId(): string
@@ -52,6 +52,7 @@ final class TestSelections
         return [
             'driver_key' => $driver,
             'model' => self::MODEL,
+            'effort' => 'medium',
             'requested_model_type' => 'named',
             'requested_model' => self::MODEL,
             'driver_source' => 'explicit',

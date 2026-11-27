@@ -67,6 +67,8 @@ final class ApproveDriverTest extends TestCase
                 'acme',
                 $claude->isolatesHooksPerSession,
                 [],
+                ['low', 'medium', 'high', 'high'],
+                'medium',
                 [],
                 'images/drivers/acme.svg',
                 MarkTone::CurrentColor,

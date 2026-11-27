@@ -70,6 +70,10 @@ final readonly class DriverProfile
      */
     public function startPlan(DriverStart $start): HostProcessPlan
     {
+        if ($start->model === null || $start->effort === null) {
+            throw ProfileRefused::withoutModelOrEffort($this->family());
+        }
+
         foreach ($this->setup->refusals as $refusal) {
             $refusal->assertAllows($start);
         }

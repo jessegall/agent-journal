@@ -1,0 +1,36 @@
+{
+    "description": "A Claude Code terminal starts, answers one message and stops",
+    "steps": [
+        {
+            "do": "start-session",
+            "agent": "Coder",
+            "type": "terminal",
+            "model": "claude-haiku-5-5",
+            "effort": "low"
+        },
+        {
+            "do": "wait-for",
+            "fact": "answering",
+            "seconds": 120
+        },
+        {
+            "do": "send-message",
+            "agent": "Coder",
+            "text": "Run: ls."
+        },
+        {
+            "do": "wait-for",
+            "fact": "turn-ended",
+            "seconds": 120
+        },
+        {
+            "do": "stop",
+            "agent": "Coder"
+        },
+        {
+            "do": "wait-for",
+            "fact": "stopped",
+            "seconds": 60
+        }
+    ]
+}

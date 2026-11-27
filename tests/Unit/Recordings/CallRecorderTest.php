@@ -10,6 +10,7 @@ use App\Recordings\Enums\Wire;
 use App\Recordings\RecordedCall;
 use App\Recordings\RecordedEvent;
 use App\Recordings\RecordingDrafts;
+use App\Recordings\Scenarios\Scenario;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;
@@ -43,7 +44,7 @@ final class CallRecorderTest extends TestCase
     public function test_on_keeps_each_callers_calls_asked_then_answered_in_their_own_draft(): void
     {
         config(['agents.recording' => true]);
-        $this->app->make(RecordingDrafts::class)->openRun('claude-code/terminal-turn');
+        $this->app->make(RecordingDrafts::class)->openRun(Scenario::read('claude-code/terminal-turn', '{"steps":[]}'));
 
         $this->recordCall('first', 10);
         $this->recordCall('second', 20);
@@ -69,10 +70,10 @@ final class CallRecorderTest extends TestCase
     {
         config(['agents.recording' => true]);
         $drafts = $this->app->make(RecordingDrafts::class);
-        $drafts->openRun('claude-code/terminal-turn');
+        $drafts->openRun(Scenario::read('claude-code/terminal-turn', '{"steps":[]}'));
         $this->recordCall('first', 10);
 
-        $drafts->openRun('codex/terminal-turn');
+        $drafts->openRun(Scenario::read('codex/terminal-turn', '{"steps":[]}'));
 
         $this->assertSame([], glob("{$this->project}/".RecordingDrafts::DRAFTS.'/host/*.jsonl') ?: []);
     }

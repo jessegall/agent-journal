@@ -32,7 +32,7 @@ final readonly class StartPreviews
         ProfileDefaults $profile,
         string|null $parentFamily,
     ): StartPreview {
-        $selection = SelectedDriver::resolve($family, $model, $profile, $parentFamily, $this->drivers);
+        $selection = SelectedDriver::resolve($family, $model, null, $profile, $parentFamily, $this->drivers);
         $offered = $this->driverTypesOf($selection->driver);
 
         [$chosen, $source] = $this->chosenDriverType(

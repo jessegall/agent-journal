@@ -39,8 +39,9 @@ final class StartMainPostTest extends GuardedRouteEntryTestCase
             new SelectedDriver(
                 DefaultDrivers::CLAUDE_CODE,
                 'claude-opus-5-5',
+                'medium',
                 ModelSelection::named('claude-opus-5-5'),
-                new SelectionSource(DriverSourceType::Profile, 'journal-main', 4),
+                new SelectionSource(DriverSourceType::Profile, 'journal-main', 4)
             ),
             true,
             ConversationModeType::New,

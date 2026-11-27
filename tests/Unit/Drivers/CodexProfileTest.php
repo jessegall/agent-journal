@@ -25,13 +25,17 @@ use Tests\TestCase;
  */
 final class CodexProfileTest extends TestCase
 {
+    private const string MODEL = 'chosen-model';
+
+    private const string EFFORT = 'high';
+
     private const string RECORDINGS = __DIR__.'/../../../resources/recordings/codex/0.165.0';
 
     private const string CONVERSATION = '019a0000-0000-7000-8000-000000000001';
 
     public function test_an_accounts_headless_turns_run_on_one_app_server_that_is_never_restarted(): void
     {
-        $start = new DriverStart(self::CONVERSATION, HostProcessType::Pipe, '/work');
+        $start = new DriverStart(self::CONVERSATION, HostProcessType::Pipe, '/work', model: self::MODEL, effort: self::EFFORT);
 
         $plan = $this->profile()->ownerPlan($start);
 
@@ -52,13 +56,17 @@ final class CodexProfileTest extends TestCase
             'screens/first-start',
         ] as $name) {
             $recorded = $this->recordedStart($name);
-            $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, $recorded['working_folder']);
+            $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, $recorded['working_folder'], model: self::MODEL, effort: self::EFFORT);
             $planned[] = $this->profile()->startPlan($start)->argv;
             // The recordings ran under Codex's own sandbox, which the journal never uses: their sandbox flag pair is the
             // one flag that skips every approval and sandbox now, and the rest is as they ran.
             $expected[] = [
                 $recorded['arguments'][0],
                 '--dangerously-bypass-approvals-and-sandbox',
+                '-m',
+                self::MODEL,
+                '-c',
+                'model_reasoning_effort='.self::EFFORT,
                 ...array_slice($recorded['arguments'], 3),
             ];
         }
@@ -68,7 +76,7 @@ final class CodexProfileTest extends TestCase
 
     public function test_a_resumed_terminal_names_the_conversation_first(): void
     {
-        $terminal = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', isResume: true);
+        $terminal = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', isResume: true, model: self::MODEL, effort: self::EFFORT);
 
         $terminalArguments = $this->profile()->startPlan($terminal)->argv;
 
@@ -87,7 +95,7 @@ final class CodexProfileTest extends TestCase
     public function test_a_start_on_a_protected_account_is_refused(): void
     {
         $account = $this->account(isProtected: true);
-        $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', account: $account);
+        $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', account: $account, model: self::MODEL, effort: self::EFFORT);
 
         $this->journal->assertRefused(ProfileRefused::class, fn () => $this->profile()->startPlan($start));
     }
@@ -101,6 +109,8 @@ final class CodexProfileTest extends TestCase
             '/work',
             account: $this->account(isProtected: false),
             executablePlace: ExecutablePlace::Sealed,
+            model: self::MODEL,
+            effort: self::EFFORT,
         );
 
         $this->journal->assertResult(
@@ -111,7 +121,7 @@ final class CodexProfileTest extends TestCase
 
     public function test_a_start_with_no_account_trusts_each_hook_it_writes(): void
     {
-        $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', hookCommand: '/opt/journal/bin/hook');
+        $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', hookCommand: '/opt/journal/bin/hook', model: self::MODEL, effort: self::EFFORT);
 
         $files = $this->profile()->startPlan($start)->files;
         $config = $files[1]->content;

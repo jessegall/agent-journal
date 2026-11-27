@@ -182,6 +182,22 @@ final class DriverTurn extends JournalModel implements EventSource, ReadableMode
     }
 
     /**
+     * Whether the newest turn of the session's runtime has ended; false while one runs or none was started.
+     */
+    public static function hasLastEndedOf(string $sessionId): bool
+    {
+        $runtime = AgentRuntime::findForSession($sessionId);
+
+        if ($runtime === null) {
+            return false;
+        }
+
+        $last = self::query()->ofRuntime($runtime->id)->lastStartedFirst()->newestFirst()->first();
+
+        return $last !== null && $last->finished_at !== null;
+    }
+
+    /**
      * The newest turn of the session's runtime with closing words offered or delivered.
      */
     public static function findWithClosingWordsOf(string $sessionId): self|null

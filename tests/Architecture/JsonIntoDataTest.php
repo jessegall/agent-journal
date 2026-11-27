@@ -45,6 +45,7 @@ final class JsonIntoDataTest extends TestCase
         'App\\Agents\\Drivers\\ClaudeCode\\TurnResult::readLine',
         'App\\Agents\\Drivers\\Codex\\CodexAppDriver::readLine',
         'App\\Agents\\Drivers\\ClaudeCode\\ClaudeSettingsMerge::withProtection',
+        'App\\Hosts\\HostCallReader::read',
     ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void
@@ -56,7 +57,7 @@ final class JsonIntoDataTest extends TestCase
             $relative = substr($path, strlen(base_path()) + 1);
 
             // The Files area decodes a file as it reads it, behind the Files contract.
-            if ($relative === 'app/Support/Files.php') {
+            if ($relative === 'app/Files/Files.php') {
                 continue;
             }
 

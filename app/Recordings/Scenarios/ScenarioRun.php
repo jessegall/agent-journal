@@ -1,0 +1,208 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Recordings\Scenarios;
+
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
+use App\Models\Projects\Host;
+use App\Models\Projects\ProjectBinding;
+use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
+
+/**
+ * One play of a scenario: the owner it runs as, the agents it plays with by their names in it, the sign-in attempt
+ * and the code the user typed, which a submit-code step answers, and how many steps have run, which keys each step.
+ */
+final class ScenarioRun
+{
+    /**
+     * The name a step gives the agent image, whichever build it is pinned to.
+     */
+    private const string AGENT_IMAGE = 'agent';
+
+    private string|null $signInAttempt = null;
+
+    private string|null $signInCode = null;
+
+    private int $stepsRun = 0;
+
+    private string|null $lastAgent = null;
+
+    private string|null $startRequest = null;
+
+    private int|null $installerExit = null;
+
+    /**
+     * @param  array<string, string>  $agents  each agent's id, by its name in the scenario
+     */
+    public function __construct(
+        public readonly Scenario $scenario,
+        public readonly User $owner,
+        private array $agents,
+        public readonly string $agentImage,
+    ) {}
+
+    /**
+     * The image a step names: the agent image, whichever build it is pinned to, for the name agent; else as named.
+     */
+    public function imageNamed(string $name): string
+    {
+        if ($name === self::AGENT_IMAGE) {
+            return $this->agentImage;
+        }
+
+        return $name;
+    }
+
+    /**
+     * @throws ScenarioInvalid
+     */
+    public function agentNamed(string $name): Agent
+    {
+        $id = $this->agents[$name] ?? throw ScenarioInvalid::at(
+            $this->scenario->name,
+            $this->stepsRun,
+            "names the agent {$name}, which the run has not",
+        );
+
+        $this->lastAgent = $name;
+
+        return Agent::query()->findOrFail($id);
+    }
+
+    /**
+     * The agent the steps named last, whose session the facts are about.
+     *
+     * @throws ScenarioInvalid
+     */
+    public function lastAgent(): Agent
+    {
+        $missing = 'waits for an agent\'s fact before any step named an agent';
+
+        $name = $this->lastAgent ?? throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, $missing);
+
+        return $this->agentNamed($name);
+    }
+
+    /**
+     * The host the scenario's host orders go to: this journal's first serving enrolled host.
+     *
+     * @throws ScenarioInvalid
+     */
+    public function hostId(): string
+    {
+        $hosts = Host::findServingEnrolled();
+
+        if ($hosts === []) {
+            throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, 'orders a host, and none is enrolled');
+        }
+
+        return $hosts[0]->id;
+    }
+
+    /**
+     * The project binding on the host a project read reads through.
+     *
+     * @throws ScenarioInvalid
+     */
+    public function bindingIdOn(string $hostId): string
+    {
+        $binding = ProjectBinding::findFirstServingOn($hostId);
+
+        if ($binding === null) {
+            $unbound = 'reads a project, and its host binds none';
+
+            throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, $unbound);
+        }
+
+        return $binding->id;
+    }
+
+    public function holdStartRequest(string $requestId): void
+    {
+        $this->startRequest = $requestId;
+    }
+
+    /**
+     * The request id of the scenario's start, which its start and answering facts are about.
+     *
+     * @throws ScenarioInvalid
+     */
+    public function startRequest(): string
+    {
+        $missing = 'waits for a start before any step started one';
+
+        return $this->startRequest ?? throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, $missing);
+    }
+
+    public function holdInstallerExit(int $exitCode): void
+    {
+        $this->installerExit = $exitCode;
+    }
+
+    public function installerExit(): int|null
+    {
+        return $this->installerExit;
+    }
+
+    public function signInAttempt(): string|null
+    {
+        return $this->signInAttempt;
+    }
+
+    /**
+     * The key of the step running now, the same each time the scenario is played, so a step is never carried out twice.
+     */
+    public function stepKey(): string
+    {
+        return 'scenario-'.str_replace('/', '-', $this->scenario->name).'-'.$this->stepsRun;
+    }
+
+    /**
+     * The place of the step running now in the scenario, from 0.
+     */
+    public function stepIndex(): int
+    {
+        return $this->stepsRun;
+    }
+
+    public function stepRan(): void
+    {
+        $this->stepsRun++;
+    }
+
+    public function holdSignInAttempt(string $attemptId): void
+    {
+        $this->signInAttempt = $attemptId;
+    }
+
+    /**
+     * The code the user typed at an ask-user step, from the sign-in page the challenge showed.
+     */
+    public function holdSignInCode(string $code): void
+    {
+        $this->signInCode = $code;
+    }
+
+    /**
+     * The sign-in attempt and its code a submit-code step answers.
+     *
+     * @return array{string, string}
+     *
+     * @throws ScenarioInvalid
+     */
+    public function challenge(): array
+    {
+        if ($this->signInAttempt === null || $this->signInCode === null) {
+            $missing = 'submits a code no sign-in and ask-user gave';
+
+            throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, $missing);
+        }
+
+        return [
+            $this->signInAttempt,
+            $this->signInCode,
+        ];
+    }
+}

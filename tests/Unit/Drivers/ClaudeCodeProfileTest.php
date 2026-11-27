@@ -30,6 +30,10 @@ use Tests\TestCase;
  */
 final class ClaudeCodeProfileTest extends TestCase
 {
+    private const string MODEL = 'chosen-model';
+
+    private const string EFFORT = 'high';
+
     private const string RECORDINGS = __DIR__.'/../../../resources/recordings/claude-code/2.1.323';
 
     /** How the driver prints its version, as its version probe shows it. */
@@ -48,10 +52,14 @@ final class ClaudeCodeProfileTest extends TestCase
                 type: HostProcessType::Pipe,
                 workFolder: $recorded['working_folder'],
                 prompt: $arguments[array_key_last($arguments)],
+                model: self::MODEL,
+                effort: self::EFFORT,
             );
 
             $plan = $this->profile()->startPlan($start);
             $arguments[array_search('--settings', $arguments, true) + 1] = '{folder:files}/settings.json';
+            // The recordings ran at the driver's own model; every start names its model now.
+            array_splice($arguments, (int) array_search('--session-id', $arguments, true), 0, ['--model', self::MODEL]);
 
             $this->journal->assertResult(
                 [$arguments, [], HostProcessPurpose::AgentTurn],
@@ -111,6 +119,8 @@ final class ClaudeCodeProfileTest extends TestCase
             'Run: ls.',
             account: $this->account(),
             executablePlace: ExecutablePlace::Sealed,
+            model: self::MODEL,
+            effort: self::EFFORT,
         );
 
         $this->journal->assertResult(
@@ -166,7 +176,7 @@ final class ClaudeCodeProfileTest extends TestCase
     public function test_an_account_terminal_is_healed_by_resuming_its_conversation_once_its_transcript_exists(): void
     {
         $id = '3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77';
-        $terminal = new DriverStart($id, HostProcessType::Terminal, '/work', account: $this->account());
+        $terminal = new DriverStart($id, HostProcessType::Terminal, '/work', account: $this->account(), model: self::MODEL, effort: self::EFFORT);
 
         $plan = $this->profile()->startPlan($terminal);
         $resumed = $plan->argv;
@@ -189,10 +199,14 @@ final class ClaudeCodeProfileTest extends TestCase
             sessionId: $arguments[array_search('--session-id', $arguments, true) + 1],
             type: HostProcessType::Terminal,
             workFolder: $recorded['working_folder'],
+            model: self::MODEL,
+            effort: self::EFFORT,
         );
 
         $plan = $this->profile()->startPlan($start);
         $arguments[array_search('--settings', $arguments, true) + 1] = '{folder:files}/settings.json';
+        // The recording ran at the driver's own model; every start names its model now.
+        array_splice($arguments, (int) array_search('--session-id', $arguments, true), 0, ['--model', self::MODEL]);
 
         $this->journal->assertResult(
             [$arguments, HostProcessPurpose::AgentTerminal],
@@ -202,7 +216,7 @@ final class ClaudeCodeProfileTest extends TestCase
 
     public function test_an_account_terminal_hands_its_status_line_to_a_side_socket(): void
     {
-        $terminal = new DriverStart('3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77', HostProcessType::Terminal, '/work', account: $this->account());
+        $terminal = new DriverStart('3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77', HostProcessType::Terminal, '/work', account: $this->account(), model: self::MODEL, effort: self::EFFORT);
 
         $plan = $this->profile()->startPlan($terminal);
         $turn = $this->profile()->startPlan($this->turn($this->account()));
@@ -249,7 +263,7 @@ final class ClaudeCodeProfileTest extends TestCase
 
     private function turn(DriverAccount|null $account = null): DriverStart
     {
-        return new DriverStart('3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77', HostProcessType::Pipe, '/work', 'Run: ls.', account: $account);
+        return new DriverStart('3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77', HostProcessType::Pipe, '/work', 'Run: ls.', account: $account, model: self::MODEL, effort: self::EFFORT);
     }
 
     private function account(string|null $protection = null, JournalServer|null $server = null): DriverAccount

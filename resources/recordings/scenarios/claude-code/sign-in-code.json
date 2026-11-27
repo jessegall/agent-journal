@@ -1,0 +1,28 @@
+{
+    "description": "A Claude Code sign-in shows its link and takes the code the user pastes back",
+    "steps": [
+        {
+            "do": "sign-in",
+            "driver": "claude-code",
+            "method": "oauth"
+        },
+        {
+            "do": "wait-for",
+            "fact": "challenge-shown",
+            "seconds": 60
+        },
+        {
+            "do": "ask-user",
+            "text": "Open the link, sign in, and paste the code the page shows."
+        },
+        {
+            "do": "submit-code",
+            "from": "challenge"
+        },
+        {
+            "do": "wait-for",
+            "fact": "signed-in",
+            "seconds": 120
+        }
+    ]
+}
