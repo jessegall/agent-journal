@@ -39,7 +39,6 @@ parameters:
         - tests/Fixtures/StateReturns/*
         # These fixtures break one code rule each on purpose, and the architecture test of that rule reads them.
         - tests/Fixtures/TestOverlap/*
-        - tests/Fixtures/ArrayLines/*
         - tests/Fixtures/SingleKeySpreads/*
         - tests/Fixtures/ArrayCasts/*
         - tests/Fixtures/ModelAccessors/*

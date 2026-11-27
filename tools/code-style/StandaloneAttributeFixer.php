@@ -64,7 +64,7 @@ final class StandaloneAttributeFixer implements FixerInterface
 
     public function supports(SplFileInfo $file): bool
     {
-        return true;
+        return new ProjectFolders(['app', 'domain'])->holds($file);
     }
 
     public function fix(SplFileInfo $file, Tokens $tokens): void
