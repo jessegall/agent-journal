@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Recordings;
 
-use App\Hosts\Protocol\HostProtocol;
+use App\Hosts\Protocol\HostProtocolVersion;
 use App\Recordings\Enums\StaleReason;
 use JsonSerializable;
 
@@ -49,7 +49,7 @@ final readonly class RecordingManifest implements JsonSerializable
     ): self {
         return new self(
             self::FORMAT,
-            HostProtocol::VERSION,
+            HostProtocolVersion::CURRENT,
             $scenarioHash,
             $driver,
             $build,
@@ -84,7 +84,7 @@ final readonly class RecordingManifest implements JsonSerializable
     {
         return match (true) {
             $this->format !== self::FORMAT => StaleReason::Format,
-            $this->protocol < HostProtocol::VERSION => StaleReason::Protocol,
+            $this->protocol < HostProtocolVersion::CURRENT => StaleReason::Protocol,
             $this->scenarioHash !== $scenarioHash => StaleReason::Scenario,
             $this->imagePrograms !== $imagePrograms => StaleReason::ImagePrograms,
             default => null,

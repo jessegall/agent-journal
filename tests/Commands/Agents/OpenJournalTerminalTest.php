@@ -10,7 +10,7 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
-use App\Hosts\Protocol\HostProtocol;
+use App\Hosts\Protocol\ContainedPlanFields;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
@@ -88,7 +88,7 @@ final class OpenJournalTerminalTest extends TestCase
 
         [$open] = $this->journal->hostInstructionsOf('terminal');
         $plan = $this->journal->payloadOf($open);
-        $refusedFieldsSet = array_filter(array_intersect_key($plan, array_flip(HostProtocol::CONTAINED_REFUSED_FIELDS)));
+        $refusedFieldsSet = array_filter(array_intersect_key($plan, array_flip(ContainedPlanFields::REFUSED)));
         $this->journal->assertResult([[], false], [$refusedFieldsSet, str_contains((string) json_encode($plan), '{host:')]);
         $this->journal->assertResult(
             ['JOURNAL_URL='.TestHost::SESSION_JOURNAL_URL],

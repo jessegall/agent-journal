@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
@@ -26,6 +27,25 @@ var imagePrograms = sync.OnceValues(func() (string, error) {
 	}
 	printed, err := exec.Command("sh", filepath.Join(root, "scripts/agent-image-programs.sh")).Output()
 	return strings.TrimSpace(string(printed)), err
+})
+
+// protocolVersion is the host protocol's version as protocol/host.json, its one source, names it.
+var protocolVersion = sync.OnceValues(func() (int, error) {
+	root, err := Root()
+	if err != nil {
+		return 0, err
+	}
+	content, err := os.ReadFile(filepath.Join(root, rootMark))
+	if err != nil {
+		return 0, err
+	}
+	var protocol struct {
+		Version int `json:"version"`
+	}
+	if err := json.Unmarshal(content, &protocol); err != nil {
+		return 0, err
+	}
+	return protocol.Version, nil
 })
 
 // Root is the repository the working directory is in, found by walking up to the folder that holds the protocol.

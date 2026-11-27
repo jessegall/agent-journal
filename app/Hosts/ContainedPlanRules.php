@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts;
 
 use App\Exceptions\HostProtocolRefused;
-use App\Hosts\Protocol\HostProtocol;
+use App\Hosts\Protocol\ContainedPlanFields;
+use App\Hosts\Protocol\HostPlaceholders;
 use App\Hosts\Protocol\Payloads\HostOpenPlanPayload;
 
 /**
@@ -26,7 +27,7 @@ final readonly class ContainedPlanRules
         $wire = $plan->toArray();
 
         $named = array_values(array_filter(
-            HostProtocol::CONTAINED_REFUSED_FIELDS,
+            ContainedPlanFields::REFUSED,
             fn (string $field) => $wire[$field] !== [],
         ));
 
@@ -35,7 +36,7 @@ final readonly class ContainedPlanRules
         }
 
         $hostNames = array_values(array_filter(
-            HostProtocol::HOST_NAMES,
+            HostPlaceholders::HOST_FILLED,
             fn (string $name) => str_contains((string) json_encode($wire), "{host:{$name}}"),
         ));
 
@@ -61,9 +62,9 @@ final readonly class ContainedPlanRules
     private function missingGrantVariables(array $environment): array
     {
         $carried = array_map(fn (string $entry) => explode('=', $entry, 2)[0], $environment);
-        $missing = array_values(array_diff(HostProtocol::CONTAINED_START_GRANT_ENVIRONMENT, $carried));
+        $missing = array_values(array_diff(ContainedPlanFields::START_GRANT_ENVIRONMENT, $carried));
 
-        if (count($missing) === count(HostProtocol::CONTAINED_START_GRANT_ENVIRONMENT)) {
+        if (count($missing) === count(ContainedPlanFields::START_GRANT_ENVIRONMENT)) {
             return [];
         }
 

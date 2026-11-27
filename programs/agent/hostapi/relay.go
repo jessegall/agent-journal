@@ -58,7 +58,7 @@ func (relay Relay) Claim(ctx context.Context) error {
 // SendInventory tells the journal what the host holds now and the newest instruction it answered.
 func (relay Relay) SendInventory(ctx context.Context) error {
 	return relay.Journal.NotifyInventory(ctx, Inventory{
-		Protocol:        Protocol,
+		Protocol:        ProtocolVersion,
 		Release:         relay.Release,
 		AnsweredThrough: relay.Record.AnsweredThrough(),
 		Capabilities:    relay.Dispatcher.Capabilities(),

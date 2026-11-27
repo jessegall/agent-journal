@@ -429,6 +429,8 @@ final readonly class PhpProtocolSources
         $namespace = self::NAMESPACE;
         $generated = self::GENERATED;
 
+        $hookArguments = implode(', ', array_map(fn (string $argument) => "'{$argument}'", $this->protocol->hook()->arguments));
+
         return <<<PHP
             <?php
 
@@ -451,6 +453,11 @@ final readonly class PhpProtocolSources
                 public const array LINES = [
             {$body}
                 ];
+
+                /**
+                 * What journal-hook takes after its own name, in order.
+                 */
+                public const array HOOK_ARGUMENTS = [{$hookArguments}];
             }
 
             PHP;

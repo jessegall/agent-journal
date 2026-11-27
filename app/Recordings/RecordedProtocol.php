@@ -10,7 +10,6 @@ use App\Hosts\Exceptions\HostCallUnreadable;
 use App\Hosts\HostCallReader;
 use App\Hosts\Protocol\HostAnswerStatus;
 use App\Hosts\Protocol\HostInstructionType;
-use App\Hosts\Protocol\HostProtocol;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\HostRoute;
 use App\Hosts\Protocol\Payloads\HostAnswerPayload;
@@ -127,7 +126,7 @@ final readonly class RecordedProtocol
             return;
         }
 
-        foreach (HostProtocol::REFUSED_ANSWER_NAMES as $field) {
+        foreach (HostRefusal::ANSWER_FIELDS as $field) {
             if ($body->{$field} === null) {
                 throw HostCallUnreadable::missingField('refused answer', $field);
             }

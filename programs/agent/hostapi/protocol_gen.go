@@ -14,8 +14,8 @@ import (
 	"journal-agent/host"
 )
 
-// Protocol is the version of the host protocol this binary speaks.
-const Protocol = 1
+// ProtocolVersion is the version of the host protocol this binary speaks.
+const ProtocolVersion = 1
 
 // ClaimInstructionLimit is the most limit a claim_instruction call takes.
 const ClaimInstructionLimit = 50

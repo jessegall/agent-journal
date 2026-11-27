@@ -175,8 +175,8 @@ final readonly class GoProtocolSources
         $grantEnvironment = $this->goList($this->protocol->containedPlan->startGrantEnvironment);
 
         return <<<GO
-            // Protocol is the version of the host protocol this binary speaks.
-            const Protocol = {$version}
+            // ProtocolVersion is the version of the host protocol this binary speaks.
+            const ProtocolVersion = {$version}
             {$bounds}
 
             {$statuses}

@@ -7,7 +7,7 @@ namespace App\Hosts\Commands\NotifyHostInventory;
 use App\Bus\Contracts\CommandHandler;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
 use App\Hosts\HostInstructionPlacement;
-use App\Hosts\Protocol\HostProtocol;
+use App\Hosts\Protocol\HostProtocolVersion;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\Payloads\HostInventoryProcessPayload;
 use App\Models\Hosts\HostInstruction;
@@ -31,7 +31,7 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
         $host = $this->placement->orderingHost($command->hostId);
         $inventory = $command->inventory;
 
-        if ($inventory->protocol !== HostProtocol::VERSION) {
+        if ($inventory->protocol !== HostProtocolVersion::CURRENT) {
             throw HostProtocolUnsupported::forHost($host->id, $inventory->protocol);
         }
 

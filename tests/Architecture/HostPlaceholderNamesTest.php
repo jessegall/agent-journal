@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Hosts\Protocol\HostProtocol;
+use App\Hosts\Protocol\HostPlaceholders;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\HostPlaceholderScan;
 use Tests\Support\ScanCache\ScanCache;
@@ -23,7 +23,7 @@ final class HostPlaceholderNamesTest extends TestCase
 
         foreach (ScanCache::findingsInFolders(new HostPlaceholderScan(), [app_path(), ...DomainFiles::domainCode()]) as $path => $names) {
             foreach ($names as $found) {
-                if (! in_array($found['name'], HostProtocol::HOST_NAMES, true)) {
+                if (! in_array($found['name'], HostPlaceholders::HOST_FILLED, true)) {
                     $unknown[] = substr($path, strlen(base_path()) + 1).":{$found['line']} {host:{$found['name']}}";
                 }
             }

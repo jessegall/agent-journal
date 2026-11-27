@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Recordings;
 
-use App\Hosts\Protocol\HostProtocol;
+use App\Hosts\Protocol\HostProtocolVersion;
 use App\Recordings\AgentImagePrograms;
 use App\Recordings\Enums\StaleReason;
 use App\Recordings\RecordingManifest;
@@ -22,7 +22,7 @@ final class RecordingManifestTest extends TestCase
             '01-terminal',
         ]);
         $written = $manifest->jsonSerialize();
-        $older = RecordingManifest::fromFile([...$written, 'protocol' => HostProtocol::VERSION - 1]);
+        $older = RecordingManifest::fromFile([...$written, 'protocol' => HostProtocolVersion::CURRENT - 1]);
         $otherFormat = RecordingManifest::fromFile([...$written, 'format' => RecordingManifest::FORMAT - 1]);
 
         $this->assertSame(

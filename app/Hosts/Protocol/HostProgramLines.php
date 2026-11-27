@@ -71,4 +71,9 @@ final readonly class HostProgramLines
             'takes_prompt' => true,
         ],
     ];
+
+    /**
+     * What journal-hook takes after its own name, in order.
+     */
+    public const array HOOK_ARGUMENTS = ['driver', 'reply file'];
 }

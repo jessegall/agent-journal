@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"journal-agent/hostapi"
 	"journal-agent/recording"
 )
 
@@ -75,11 +74,15 @@ func Load(root, driver, name string) (Scenario, error) {
 	if err := readJSON(filepath.Join(folder, "scenario.json"), &manifest); err != nil {
 		return Scenario{}, fmt.Errorf("%w: %s has no recording in %s", ErrRecordingMissing, scenario, folder)
 	}
+	protocol, err := protocolVersion()
+	if err != nil {
+		return Scenario{}, err
+	}
 	programs, err := imagePrograms()
 	if err != nil {
 		return Scenario{}, fmt.Errorf("reading the agent image's programs: %w", err)
 	}
-	if reason := manifest.staleReason(definitionHash, programs); reason != "" {
+	if reason := manifest.staleReason(protocol, definitionHash, programs); reason != "" {
 		return Scenario{}, fmt.Errorf("%w: %s: %s", ErrRecordingStale, scenario, reason)
 	}
 	exchanges := []Exchange{}
@@ -141,11 +144,11 @@ func (scenario Scenario) Calls(wire recording.Wire) ([]Call, error) {
 	return calls, nil
 }
 
-func (manifest Manifest) staleReason(definitionHash, imagePrograms string) string {
+func (manifest Manifest) staleReason(protocol int, definitionHash, imagePrograms string) string {
 	switch {
 	case manifest.Format != Format:
 		return staleFormat
-	case manifest.Protocol < hostapi.Protocol:
+	case manifest.Protocol < protocol:
 		return staleProtocol
 	case manifest.ScenarioHash != definitionHash:
 		return staleScenario

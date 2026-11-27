@@ -20,4 +20,9 @@ enum HostRefusal: string
     case HostRestarted = 'host_restarted';
     case Fenced = 'fenced';
     case UnknownInstruction = 'unknown_instruction';
+
+    /**
+     * The fields a refused answer names, so the journal can say why the host refused.
+     */
+    public const array ANSWER_FIELDS = ['refusal', 'reason'];
 }
