@@ -6,20 +6,20 @@ namespace App\Sessions;
 
 use App\Agents\ContainerManifest;
 use App\Agents\Drivers\Setup\DriverProfiles;
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\SecurityOptions;
-use App\Agents\Enums\WorkspaceUse;
 use App\Hosts\ArrangementSetting;
-use App\Hosts\HelperRuns;
-use App\Hosts\Protocol\Payloads\HostContainerRunPayload;
-use App\Support\MountRules;
 use App\Hosts\Exceptions\AccountFolderInvalid;
 use App\Hosts\Exceptions\WorkspaceSourceMissing;
+use App\Hosts\HelperRuns;
+use App\Hosts\Protocol\Payloads\HostContainerRunPayload;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Profiles\StartProfiles;
 use App\Sessions\Contracts\SessionPolicyReader;
 use App\Sessions\Values\SessionContainer;
+use App\Support\MountRules;
 use App\Values\SelectedAccount;
 use Illuminate\Container\Attributes\Config;
 
@@ -86,8 +86,8 @@ final readonly class SessionContainers
             $rules,
             null,
             SecurityOptions::agent($this->securityProfiles),
-            $this->arrangement->labelsFor($sessionId, $account),
             $startProfile,
+            $this->arrangement->labelsFor($sessionId, $account),
         );
 
         return new SessionContainer($manifest->withDevelopmentPrograms($this->developmentPrograms)->preparedBy([

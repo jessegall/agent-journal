@@ -30,15 +30,12 @@ final class RemoveHostFolderTest extends TestCase
 
         $instruction = $this->journal->hostInstructionsOn('Box')[0];
         $this->journal->assertResult(
-            [$first, false, HostInstructionType::RemoveFolder, [
-                'folder' => 'a7',
-                'operation' => 'operation-1',
-            ], 2],
+            [$first, false, HostInstructionType::RunContainers, ['account-folder-remove', '/accounts', 'a7'], 2],
             [
                 $again,
                 $first === $other,
                 $instruction->type,
-                $this->journal->payloadOf($instruction),
+                array_slice($this->journal->payloadOf($instruction)['runs'][0]['command'], 3, 3),
                 count($this->journal->hostInstructionsOn('Box')),
             ],
         );

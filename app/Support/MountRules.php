@@ -192,7 +192,7 @@ final readonly class MountRules
             'name' => $this->historyVolume($sessionId, $resumedSessionId),
             'labels' => $labels,
             'sizeBytes' => 0,
-            'mustExist' => $resumedSessionId !== null,
+            'isAlreadyMade' => $resumedSessionId !== null,
         ])];
 
         if ($use->isOwnCheckout()) {
@@ -200,7 +200,7 @@ final readonly class MountRules
                 'name' => $this->checkoutVolume($sessionId),
                 'labels' => $labels,
                 'sizeBytes' => $workspaceBytes,
-                'mustExist' => false,
+                'isAlreadyMade' => false,
             ]);
         }
 

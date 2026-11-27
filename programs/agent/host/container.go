@@ -408,7 +408,7 @@ func (containers Containers) EnsureVolumes(ctx context.Context, volumes []Contai
 			continue
 		}
 
-		if volume.MustExist {
+		if volume.IsAlreadyMade {
 			return fmt.Errorf("%w: %s", ErrVolumeMissing, volume.Name)
 		}
 

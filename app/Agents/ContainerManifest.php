@@ -193,8 +193,8 @@ final readonly class ContainerManifest
         MountRules $rules,
         string|null $resumedSessionId,
         SecurityOptions $security,
-        array $labels,
         StartProfileType $startProfile = StartProfileType::Standard,
+        array $labels = [],
     ): self {
         $mounts = [
             $rules->workspaceMount($workspace, $use, $sessionId),
@@ -202,6 +202,42 @@ final readonly class ContainerManifest
             ...$rules->sessionMounts($sessionId, $resumedSessionId),
         ];
 
+        return self::make(
+            (string) $policy->imageReference,
+            $network,
+            $mounts,
+            $policy->budgets,
+            $rules,
+            $security,
+            $policy->isAttachable,
+            $startProfile,
+            $labels,
+            $rules->sessionVolumes($sessionId, $resumedSessionId, $use, $policy->budgets->workspaceBytes),
+        );
+    }
+
+    /**
+     * A container on a network of its own, its mounts as the rules allow them, its user, entrypoint and capabilities
+     * those of its start profile.
+     *
+     * @param  list<ManifestMount>  $mounts
+     * @param  list<HostContainerLabelPayload>  $labels
+     * @param  list<HostContainerVolumePayload>  $volumes
+     *
+     * @throws ManifestRefused
+     */
+    public static function make(
+        string $image,
+        string $network,
+        array $mounts,
+        ExecutionBudgets $budgets,
+        MountRules $rules,
+        SecurityOptions $security,
+        bool $isAttachable = false,
+        StartProfileType $startProfile = StartProfileType::Standard,
+        array $labels = [],
+        array $volumes = [],
+    ): self {
         if ($startProfile->isForAnAccount() && ! $rules->bindsAccount($mounts)) {
             throw ManifestRefused::because('a protected start binds the account folder it protects');
         }
@@ -214,16 +250,16 @@ final readonly class ContainerManifest
 
         return new self(
             '',
-            self::pinned((string) $policy->imageReference),
+            self::pinned($image),
             self::WORKDIR,
             $security,
             $network,
             $mounts,
-            self::memoryFolders($policy->budgets),
-            $rules->sessionVolumes($sessionId, $resumedSessionId, $use, $policy->budgets->workspaceBytes),
+            self::memoryFolders($budgets),
+            $volumes,
             $labels,
-            $policy->budgets,
-            $policy->isAttachable,
+            $budgets,
+            $isAttachable,
             $startProfile,
             [],
         );

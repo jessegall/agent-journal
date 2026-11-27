@@ -23,7 +23,7 @@ final readonly class ContainedPlans
      */
     private const string FILES_PLACEHOLDER = '{folder:files}';
 
-    public function __construct(private HelperRuns $runs, private ArrangementSetting $arrangement) {}
+    public function __construct(private HelperRuns $runs) {}
 
     /**
      * @throws ManifestRefused
@@ -55,7 +55,7 @@ final readonly class ContainedPlans
         $restart = array_map($this->filledText(...), $plan->restartArgv);
 
         return $plan->asContained(
-            $container->named($this->arrangement->processContainerName($process->id)),
+            $container->named($process->container_name),
             $container->startProfile->commandOf($this->command($argv, $restart, $plan)),
             array_map($this->filledText(...), $plan->environment),
         );

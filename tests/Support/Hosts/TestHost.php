@@ -311,13 +311,8 @@ final class TestHost
     ): self {
         $manifest = ContainerManifest::make(
             self::IMAGE,
-            '10001:10001',
-            true,
-            [],
-            false,
             "journal-net-{$name}",
-            [MountRules::local()->workspaceMount($this->folder, WorkspaceUse::Shared)],
-            [],
+            [MountRules::local()->workspaceMount($this->folder, WorkspaceUse::Shared, $name)],
             ExecutionBudgets::defaults(),
             MountRules::local(),
             SecurityOptions::none(),

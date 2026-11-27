@@ -89,14 +89,6 @@ final readonly class ArrangementSetting
     }
 
     /**
-     * The name of a process's container on the agent daemon.
-     */
-    public function processContainerName(string $processId): string
-    {
-        return "{$this->installationName}-process-{$processId}";
-    }
-
-    /**
      * The labels of a contained session's container: the session and its account's folder; the host adds its own.
      *
      * @return list<HostContainerLabelPayload>

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\RemoveHostFolder;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\Protocol\HostInstructions;
 use App\Hosts\HelperRuns;
+use App\Hosts\Protocol\HostInstructions;
 use App\Hosts\Protocol\Payloads\HostContainerRunsPayload;
 use App\Values\HostInstructionSource;
 

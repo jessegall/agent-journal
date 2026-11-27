@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Hosts;
 
-use App\Hosts\Data\HostCallData;
 use App\Hosts\Data\HostProtocolData;
 use App\Hosts\Exceptions\HostFieldTypeUnknown;
 use App\Hosts\Values\HostFieldType;

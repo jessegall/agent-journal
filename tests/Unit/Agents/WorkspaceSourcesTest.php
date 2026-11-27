@@ -25,16 +25,16 @@ final class WorkspaceSourcesTest extends TestCase
 
         $this->assertEquals(
             ManifestMount::volume('acme-workspace-main', '/workspace', true),
-            $rules->workspaceMount('/ignored', WorkspaceUse::Shared),
+            $rules->workspaceMount('/ignored', WorkspaceUse::Shared, 's1'),
         );
-        $this->assertFalse($rules->workspaceMount('/ignored', WorkspaceUse::ReadOnly)->isWritable);
+        $this->assertFalse($rules->workspaceMount('/ignored', WorkspaceUse::ReadOnly, 's1')->isWritable);
     }
 
     public function test_a_contained_start_with_a_folder_source_binds_its_server_folder(): void
     {
         $mount = ArrangementSetting::fromConfig('contained', 'acme', self::SOURCES)
             ->mountRules(null, 'staging', [])
-            ->workspaceMount('/ignored', WorkspaceUse::Shared);
+            ->workspaceMount('/ignored', WorkspaceUse::Shared, 's1');
 
         $this->assertSame(HostMountType::DaemonBind, $mount->type);
         $this->assertSame('/srv/journal/workspaces/staging', $mount->source);
@@ -58,7 +58,7 @@ final class WorkspaceSourcesTest extends TestCase
         $this->assertEquals(MountRules::local(), $rules);
         $this->assertEquals(
             ManifestMount::bind('/Users/me/work/shop', '/workspace', true),
-            $rules->workspaceMount('/Users/me/work/shop', WorkspaceUse::Shared),
+            $rules->workspaceMount('/Users/me/work/shop', WorkspaceUse::Shared, 's1'),
         );
     }
 

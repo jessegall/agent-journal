@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\ReadFolderUse;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\Protocol\HostInstructions;
 use App\Hosts\ContainerLabels;
+use App\Hosts\Protocol\HostInstructions;
 use App\Hosts\Protocol\Payloads\HostContainerLabelPayload;
 use App\Values\HostInstructionSource;
 

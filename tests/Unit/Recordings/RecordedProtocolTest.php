@@ -138,13 +138,8 @@ final class RecordedProtocolTest extends TestCase
     {
         $manifest = ContainerManifest::make(
             TestHost::IMAGE,
-            '10001:10001',
-            true,
-            [],
-            false,
             'journal-net-test',
-            [MountRules::local()->workspaceMount(base_path('storage/framework'), WorkspaceUse::Shared)],
-            [],
+            [MountRules::local()->workspaceMount(base_path('storage/framework'), WorkspaceUse::Shared, 'test')],
             ExecutionBudgets::defaults(),
             MountRules::local(),
             SecurityOptions::none(),

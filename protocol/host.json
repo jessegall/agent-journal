@@ -212,7 +212,7 @@
         "project_read": { "id": "string", "binding_id": "string", "type": "string", "path": "string", "entries_limit": "int", "text_limit": "int" },
         "upgrade_plan": { "version": "string", "manifest": "string", "signature": "string", "drivers": "string" },
         "container_tmpfs": { "target": "string", "options": "string" },
-        "container_volume": { "name": "string", "labels": "list<container_label>", "sizeBytes": "int64", "mustExist": "bool" },
+        "container_volume": { "name": "string", "labels": "list<container_label>", "sizeBytes": "int64", "isAlreadyMade": "bool" },
         "container_label": { "name": "string", "value": "string" },
         "container_run": { "manifest": "container_manifest", "command": "list<string>", "environment": "list<string>", "input": "bytes?", "inputSecret": "string?", "outputLimit": "int" },
         "container_runs": { "runs": "list<container_run>" },

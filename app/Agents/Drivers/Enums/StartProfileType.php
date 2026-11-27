@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Enums;
 
 use App\Hosts\Protocol\Payloads\HostContainerTmpfsPayload;
+
 /**
  * How a helper container is started: the standard way, as one unprivileged user, or protected, where a root-owned
  * init starts the driver and the shell executor as two users and then drops its rights.

@@ -250,7 +250,7 @@ final readonly class PhpProtocolSources
      */
     private function propertyName(string $wireName, HostFieldType $field): string
     {
-        $isQuestion = preg_match('/^(is|has|can|as)_/', $wireName) === 1;
+        $isQuestion = preg_match('/^(is|has|can|as)(_|[A-Z])/', $wireName) === 1;
 
         if ($field->name === 'bool' && ! $isQuestion) {
             return 'is'.Str::studly($wireName);

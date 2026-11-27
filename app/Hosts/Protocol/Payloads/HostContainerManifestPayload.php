@@ -40,9 +40,8 @@ final class HostContainerManifestPayload extends Data
         public readonly string $workdir,
         #[Present]
         public readonly array $entrypoint,
-        #[MapName('isReadOnlyRoot')]
         #[Present]
-        public readonly bool $isIsReadOnlyRoot,
+        public readonly bool $isReadOnlyRoot,
         #[Present]
         public readonly array $capabilities,
         #[MapName('blocksNewPrivileges')]
@@ -69,9 +68,8 @@ final class HostContainerManifestPayload extends Data
         public readonly HostContainerBudgetsPayload $budgets,
         #[Present]
         public readonly HostSecurityOptionsPayload $securityOptions,
-        #[MapName('isAttachable')]
         #[Present]
-        public readonly bool $isIsAttachable,
+        public readonly bool $isAttachable,
         #[Present]
         public readonly string $restart,
         #[DataCollectionOf(HostContainerRunPayload::class)]

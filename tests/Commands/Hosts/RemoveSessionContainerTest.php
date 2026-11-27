@@ -23,12 +23,22 @@ final class RemoveSessionContainerTest extends TestCase
 
         $this->journal->asSystem(new RemoveSessionContainerCommand($hostId, 's1'));
         $instructions = $this->journal->hostInstructionsOn('Box');
-        $removal = $instructions[array_key_last($instructions)];
-        $network = $this->app->make(ArrangementSetting::class)->sessionContainerName('s1');
+        [$files, $network] = array_slice($instructions, -2);
+        $networkName = $this->app->make(ArrangementSetting::class)->sessionContainerName('s1');
 
         $this->journal->assertResult(
-            [HostInstructionType::RemoveSession, ['network' => $network, 'session' => 's1']],
-            [$removal->type, $this->journal->payloadOf($removal)],
+            [
+                HostInstructionType::RunContainers,
+                ['session-files-remove', '/sessions/s1'],
+                HostInstructionType::RemoveNetwork,
+                ['network' => $networkName],
+            ],
+            [
+                $files->type,
+                array_slice($this->journal->payloadOf($files)['runs'][0]['command'], 3, 2),
+                $network->type,
+                $this->journal->payloadOf($network),
+            ],
         );
     }
 }

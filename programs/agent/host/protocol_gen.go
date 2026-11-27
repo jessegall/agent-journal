@@ -81,10 +81,10 @@ type ContainerTmpfs struct {
 
 // ContainerVolume is the container_volume of host protocol 1.
 type ContainerVolume struct {
-	Name      string           `json:"name"`
-	Labels    []ContainerLabel `json:"labels"`
-	SizeBytes int64            `json:"sizeBytes"`
-	MustExist bool             `json:"mustExist"`
+	Name          string           `json:"name"`
+	Labels        []ContainerLabel `json:"labels"`
+	SizeBytes     int64            `json:"sizeBytes"`
+	IsAlreadyMade bool             `json:"isAlreadyMade"`
 }
 
 // ContainerLabel is the container_label of host protocol 1.
