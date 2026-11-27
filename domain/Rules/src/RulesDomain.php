@@ -100,10 +100,6 @@ final class RulesDomain extends Domain implements
         ];
     }
 
-    /**
-     * @return list<class-string>
-     */
-
     public function pages(): array
     {
         return [

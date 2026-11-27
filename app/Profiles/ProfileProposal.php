@@ -75,7 +75,7 @@ final readonly class ProfileProposal
      */
     public function withBuiltIns(): self
     {
-        return new self($this->revision, $this->baseOverrides, [...BuiltInProfiles::proposed(), ...$this->profiles]);
+        return clone ($this, ['profiles' => [...BuiltInProfiles::proposed(), ...$this->profiles]]);
     }
 
     /**

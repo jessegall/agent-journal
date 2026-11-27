@@ -30,7 +30,7 @@ final readonly class CompoundParts
 
     public function closedAt(SourceRange $range): self
     {
-        return new self($this->toParse, $this->node, $range, []);
+        return clone ($this, ['range' => $range, 'redirects' => []]);
     }
 
     public function withRedirect(Redirect $redirect): self

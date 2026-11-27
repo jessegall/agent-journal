@@ -54,7 +54,7 @@ final readonly class PendingStep
 
     public function firstChild(): self
     {
-        return new self($this->step->children[0], $this->context, $this->state);
+        return clone ($this, ['step' => $this->step->children[0]]);
     }
 
     /**

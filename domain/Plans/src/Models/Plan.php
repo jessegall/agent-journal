@@ -237,20 +237,23 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
     }
 
     /**
-     * Puts the planned plan up for review by its reviewers; any other state refuses. The plan holds still until the
-     * review ends.
+     * Puts the planned plan up for review by its reviewers in an edition its author opens; any other state refuses.
+     * The plan holds still until the review ends.
      *
      * @param  list<ActorReference>  $reviewers
      *
      * @throws PlanReviewRefused
      */
-    public function requestReview(PlanReviewEdition $review, array $reviewers): void
+    public function openReview(ActorReference $author, array $reviewers): PlanReviewEdition
     {
         $this->assertPlanned();
 
+        $review = PlanReviewEdition::create($this, $author);
         $this->status = PlanStatus::Reviewing;
         $this->saveAndAssert();
         $this->raise(new PlanReviewRequested($this->id, $review->id, $reviewers, $this->number));
+
+        return $review;
     }
 
     /**

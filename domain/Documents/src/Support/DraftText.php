@@ -21,7 +21,7 @@ final readonly class DraftText
 
     public function withBody(MarkdownText $body): self
     {
-        return new self($this->title, $this->abstract, $body);
+        return clone ($this, ['body' => $body]);
     }
 
     public function withSectionReplaced(string $numberOrHeading, string $body): self

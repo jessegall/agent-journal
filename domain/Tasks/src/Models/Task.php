@@ -217,10 +217,16 @@ final class Task extends JournalModel implements
     }
 
     /**
-     * The task is blocked, for the reason given.
+     * The started task is blocked, for the reason given; a task in any other state changed since it was read.
+     *
+     * @throws TaskChangedSinceRead
      */
     public function block(string $reason): void
     {
+        if ($this->status !== TaskStatus::Started) {
+            throw TaskChangedSinceRead::notBlockable($this->number, $this->status);
+        }
+
         $previousState = $this->status;
         $this->status = TaskStatus::Blocked;
         $this->block_reason = $reason;

@@ -148,7 +148,7 @@ final class FinishPlanTest extends TestCase
 
         match ($status) {
             TaskStatus::Started => $task->start(ActorReference::system()),
-            TaskStatus::Blocked => $task->block('Waits.'),
+            TaskStatus::Blocked => self::block($task),
             TaskStatus::Finished => $task->finish('Done.'),
             TaskStatus::Cancelled => $task->cancel('Not needed.'),
             TaskStatus::Open => null,
@@ -168,5 +168,14 @@ final class FinishPlanTest extends TestCase
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
+
+    /**
+     * Blocks the task as an agent does: it is started first, as only a started task blocks.
+     */
+    private static function block(Task $task): void
+    {
+        $task->start(ActorReference::system());
+        $task->block('Waits.');
     }
 }

@@ -19,6 +19,6 @@ final readonly class WordSegment
 
     public function shiftedBy(int $bytes): self
     {
-        return new self($this->type, $this->text, $this->range->shiftedBy($bytes));
+        return clone ($this, ['range' => $this->range->shiftedBy($bytes)]);
     }
 }

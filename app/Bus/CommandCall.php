@@ -148,15 +148,7 @@ final readonly class CommandCall
             throw CommandReplacedWithOtherClass::for($this->name(), $command::class);
         }
 
-        return new self(
-            $command->withDispatcher($this->actor()),
-            $this->original,
-            $this->owner,
-            $this->isExported,
-            $this->isRepeatableRead,
-            $this->actor,
-            trail: $this->trail,
-        );
+        return clone ($this, ['command' => $command->withDispatcher($this->actor()), 'authorized' => []]);
     }
 
     /**
