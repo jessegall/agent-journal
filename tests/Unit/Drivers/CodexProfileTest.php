@@ -10,7 +10,6 @@ use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Exceptions\BuildNotPinned;
-use App\Agents\Exceptions\ProfileRefused;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
@@ -21,7 +20,7 @@ use Tests\TestCase;
 
 /**
  * The PHP profile plans a Codex terminal exactly as the pinned build was recorded running it, apart from paths and
- * ids, and an account's headless turns on one app-server; it refuses another build, a protected account and an argument that would undo it.
+ * ids, and an account's headless turns on one app-server; it refuses another build and an argument that would undo it.
  */
 final class CodexProfileTest extends TestCase
 {
@@ -92,14 +91,6 @@ final class CodexProfileTest extends TestCase
         $this->journal->assertRefused(BuildNotPinned::class, fn () => $profile->assertPinnedBuild($printed('0.170.0')));
     }
 
-    public function test_a_start_on_a_protected_account_is_refused(): void
-    {
-        $account = $this->account(isProtected: true);
-        $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', account: $account, model: self::MODEL, effort: self::EFFORT);
-
-        $this->journal->assertRefused(ProfileRefused::class, fn () => $this->profile()->startPlan($start));
-    }
-
     public function test_a_connected_machine_runs_every_plan_from_its_sealed_program(): void
     {
         $profile = $this->profile();
@@ -107,7 +98,7 @@ final class CodexProfileTest extends TestCase
             self::CONVERSATION,
             HostProcessType::Terminal,
             '/work',
-            account: $this->account(isProtected: false),
+            account: $this->account(),
             executablePlace: ExecutablePlace::Sealed,
             model: self::MODEL,
             effort: self::EFFORT,
@@ -150,7 +141,7 @@ final class CodexProfileTest extends TestCase
         return $state;
     }
 
-    private function account(bool $isProtected): DriverAccount
+    private function account(): DriverAccount
     {
         return new DriverAccount(
             new AccountStartRecipe(
@@ -167,7 +158,6 @@ final class CodexProfileTest extends TestCase
                 readFiles: [],
             ),
             'start-reference',
-            isProtected: $isProtected,
         );
     }
 

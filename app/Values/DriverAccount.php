@@ -11,7 +11,7 @@ use App\Sessions\Enums\TransportProfileType;
 /**
  * The saved account a driver start signs in with: the recipe its adapter checked, the journal's own MCP server the
  * start loads when it reaches the journal over MCP, the reference that names the start to the journal's relays, and
- * whether it runs under the protected-account profile.
+ * the account's folder.
  */
 final readonly class DriverAccount
 {
@@ -19,7 +19,6 @@ final readonly class DriverAccount
         public AccountStartRecipe $recipe,
         public string $startReference,
         public JournalServer|null $journalServer = null,
-        public bool $isProtected = false,
         /**
          * the account's folder on the host
          */

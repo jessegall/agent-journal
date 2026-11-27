@@ -20,7 +20,6 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeMcpTimeouts;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeModelAnswer;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeOwnTerminalHome;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodePlatform;
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeProtectedShell;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSettingsFile;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSignInEnvironment;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSignInReader;
@@ -72,7 +71,6 @@ use App\Agents\Drivers\StartConditions\HostAccountTerminal;
 use App\Agents\Drivers\StartConditions\HostHomeStart;
 use App\Agents\Drivers\StartConditions\JournalServerAccount;
 use App\Agents\Drivers\StartConditions\OwnTerminalStart;
-use App\Agents\Drivers\StartConditions\ProtectedAccount;
 use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\SignInEgress;
 use App\Files\Contracts\Files;
@@ -264,7 +262,6 @@ final class DriversServiceProvider extends ServiceProvider
                 ConditionalPart::for(new HostHomeStart(), HostHomeAndPath::class),
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeOwnTerminalHome::class),
                 ConditionalPart::for(new JournalServerAccount(), ClaudeCodeMcpTimeouts::class),
-                ConditionalPart::for(new ProtectedAccount(), ClaudeCodeProtectedShell::class),
             )
             ->startPlan(
                 ConditionalPart::for(new AnyContext(), ClaudeCodeSettingsFile::class),

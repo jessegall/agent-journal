@@ -199,7 +199,7 @@ final class OpenAgentRuntimeTest extends TestCase
     {
         $this->app->instance(DockerImageVerifier::class, new CountingImageVerifier());
 
-        $this->useArrangement(ArrangementType::Contained);
+        $this->journal->arrangeContainedJournal();
 
         $this->assertNotSame('', $this->openOn(ArrangementType::Contained)->runtimeId);
     }
@@ -217,7 +217,7 @@ final class OpenAgentRuntimeTest extends TestCase
     {
         $this->app->instance(DockerImageVerifier::class, new CountingImageVerifier());
 
-        $this->useArrangement(ArrangementType::Contained);
+        $this->journal->arrangeContainedJournal();
 
         $this->assertNotSame('', $this->openOn(ArrangementType::Contained, 'codex')->runtimeId);
     }

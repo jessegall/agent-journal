@@ -79,6 +79,7 @@ check_agent_image() {
     check_no_node
     check_users
     check_agent_programs
+    check_protected_start
     check_protected_files
     check_folders
     check_hook_refusal
@@ -100,6 +101,18 @@ check_agent_programs() {
             exit 1
         fi
     done < .docker/helper/checks/agent-programs.txt
+}
+
+# Under the protected init a command run through the program's login shell runs as the executor's user, which cannot
+# read what only the program's user may.
+check_protected_start() {
+    run_in_image getent passwd journal | grep -q ':/opt/journal/shell/bash$'
+    if ! run_in_image --user=0:0 --cap-drop=ALL --cap-add=SETUID --cap-add=SETGID --cap-add=SETPCAP \
+        --tmpfs=/run/journal-exec:uid=10002,gid=10001,mode=0750,size=1m /opt/journal/bin/journal-init -- \
+        /opt/journal/shell/bash -c 'id -u' | grep -qx 10002; then
+        echo "The agent image's protected start runs the model's commands as the program's user: it is refused." >&2
+        exit 1
+    fi
 }
 
 # Root owns what a session must not change: the start programs, the relays and the shell bridge.

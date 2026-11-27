@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sessions;
 
 use App\Agents\ContainerManifest;
+use App\Agents\Drivers\Enums\StartProfileType;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
@@ -16,7 +17,6 @@ use App\Hosts\HelperRuns;
 use App\Hosts\Protocol\Payloads\HostContainerRunPayload;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
-use App\Profiles\StartProfiles;
 use App\Sessions\Contracts\SessionPolicyReader;
 use App\Sessions\Values\SessionContainer;
 use App\Support\MountRules;
@@ -33,7 +33,6 @@ final readonly class SessionContainers
     public function __construct(
         private SessionPolicyReader $policies,
         private ArrangementSetting $arrangement,
-        private StartProfiles $startProfiles,
         private DriverProfiles $drivers,
         private HelperRuns $runs,
         #[Config('journal.agents.development_programs')]
@@ -75,7 +74,8 @@ final readonly class SessionContainers
             ArrangementSetting::ENVIRONMENT,
             $this->drivers->ofFamily($runtime->family)->containerMounts(),
         );
-        $startProfile = $this->startProfiles->for($runtime->family, $account);
+        // Every driver starts protected: its own user reads the sign-in, the commands its model runs cannot.
+        $startProfile = StartProfileType::ProtectedAccount;
 
         $manifest = ContainerManifest::compile(
             $sessionId,
@@ -92,9 +92,7 @@ final readonly class SessionContainers
 
         return new SessionContainer($manifest->withDevelopmentPrograms($this->developmentPrograms)->preparedBy([
             ...$this->workspacePreparations($rules, $use, $sessionId),
-            ...($startProfile->isForAnAccount()
-                ? $this->runs->accountFolderChecks($account->folder(), $manifest->accountMountPoints())
-                : []),
+            ...$this->runs->accountFolderChecks($account->folder(), $manifest->accountMountPoints()),
         ]));
     }
 

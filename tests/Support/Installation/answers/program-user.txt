@@ -1,0 +1,1 @@
+journal:x:10001:10001::/home/journal:/opt/journal/shell/bash

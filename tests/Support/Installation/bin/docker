@@ -177,6 +177,8 @@ answer_run() {
         *"--entrypoint claude "*) cat "$STAND_IN/claude-version" ;;
         *"--entrypoint codex "*) cat "$STAND_IN/codex-version" ;;
         *"--entrypoint id "*journal-tools) cat "$answers/tools-user.txt" ;;
+        *"--entrypoint getent "*"passwd journal") cat "$answers/program-user.txt" ;;
+        *"--entrypoint /opt/journal/bin/journal-init "*"-c id -u") echo 10002 ;;
         *"--entrypoint id "*) echo 10001 ;;
         *"--entrypoint test "*"-e /app/.env") exit 1 ;;
         *"--entrypoint stat "*managed-settings.json) echo "root:root 444" ;;

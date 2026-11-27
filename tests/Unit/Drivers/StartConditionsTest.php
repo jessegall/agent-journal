@@ -11,7 +11,6 @@ use App\Agents\Drivers\StartConditions\AccountTerminal;
 use App\Agents\Drivers\StartConditions\AccountWithoutFolder;
 use App\Agents\Drivers\StartConditions\CliTransportAccount;
 use App\Agents\Drivers\StartConditions\JournalServerAccount;
-use App\Agents\Drivers\StartConditions\ProtectedAccount;
 use App\Agents\Drivers\StartConditions\ResumedStart;
 use App\Agents\Drivers\StartConditions\ResumedTerminal;
 use App\Agents\Drivers\StartConditions\ResumedTurn;
@@ -42,10 +41,6 @@ final class StartConditionsTest extends TestCase
                 HostProcessType::Pipe,
                 account: $this->account(TransportProfileType::Mcp, '/accounts/a'),
             ),
-            'terminal on a protected account' => $this->start(
-                HostProcessType::Terminal,
-                account: $this->account(TransportProfileType::Mcp, '/accounts/a', isProtected: true),
-            ),
             'contained terminal on an account' => new DriverStart(
                 'session-1',
                 HostProcessType::Terminal,
@@ -62,19 +57,15 @@ final class StartConditionsTest extends TestCase
             AccountStart::class => [
                 'resumed terminal on a CLI account',
                 'turn on an account with a folder',
-                'terminal on a protected account',
                 'contained terminal on an account',
             ],
             AccountTerminal::class => [
                 'resumed terminal on a CLI account',
-                'terminal on a protected account',
                 'contained terminal on an account',
             ],
             AccountWithoutFolder::class => ['resumed terminal on a CLI account'],
-            ProtectedAccount::class => ['terminal on a protected account'],
             JournalServerAccount::class => [
                 'turn on an account with a folder',
-                'terminal on a protected account',
                 'contained terminal on an account',
             ],
             CliTransportAccount::class => ['resumed terminal on a CLI account'],
@@ -104,7 +95,6 @@ final class StartConditionsTest extends TestCase
     private function account(
         TransportProfileType $transport,
         string|null $folder = null,
-        bool $isProtected = false,
     ): DriverAccount {
         $recipe = new AccountStartRecipe(
             environment: [],
@@ -120,6 +110,6 @@ final class StartConditionsTest extends TestCase
             readFiles: [],
         );
 
-        return new DriverAccount($recipe, 'start-1', isProtected: $isProtected, folder: $folder);
+        return new DriverAccount($recipe, 'start-1', folder: $folder);
     }
 }

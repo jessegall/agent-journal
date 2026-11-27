@@ -77,7 +77,6 @@ use App\Policies\ActivityPolicy;
 use App\Policies\AgentMaintenancePolicy;
 use App\Policies\AgentPolicy;
 use App\Policies\AgentTerminalControlPolicy;
-use App\Profiles\StartProfiles;
 use App\Projects\WorkspaceReader;
 use App\Reads\Contracts\SessionOutputAccess as SessionOutputAccessContract;
 use App\Reads\ReadGrant;
@@ -231,12 +230,6 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
             $this->app->make('config')->string('journal.agents.server_origin'),
             $this->app->isLocal(),
-        ));
-
-        $this->app->bind(StartProfiles::class, fn () => new StartProfiles(
-            $this->app->make(ArrangementSetting::class),
-            $this->app->make(HostCapabilitiesContract::class),
-            StartProfiles::trialOf($this->app->make('config')->string('journal.agents.protected_account_trial')),
         ));
 
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(

@@ -54,7 +54,10 @@ RUN chmod 0555 /opt/journal/bin/* /opt/journal/shell/bash
 # The program's user 10001 alone reads the sign-in; under the protected-account profile the commands the model runs go
 # through the executor's user 10002, and the init drops to 10003. The program and the executor share the workspace
 # through the group journal-work (10010), and no launcher, setting or hook lies under a path either can write.
-RUN groupadd --gid 10001 journal && useradd --uid 10001 --gid 10001 --home-dir /home/journal --no-create-home journal \
+# The program's login shell is the shell bridge, so every command Codex or Claude Code runs for its model goes to the
+# executor's user, which cannot read the sign-in.
+RUN groupadd --gid 10001 journal \
+    && useradd --uid 10001 --gid 10001 --home-dir /home/journal --no-create-home --shell /opt/journal/shell/bash journal \
     && groupadd --gid 10002 journal-tools \
     && useradd --uid 10002 --gid 10002 --home-dir /home/journal-tools --create-home journal-tools \
     && groupadd --gid 10003 journal-init \
@@ -68,5 +71,8 @@ RUN mkdir -p /workspace && chown 10001:10010 /workspace && chmod 2770 /workspace
 # user alone, or the program could not keep the conversation a later turn resumes.
 RUN mkdir -p /home/journal/.account/projects && chown -R 10001:10001 /home/journal \
     && chmod 0700 /home/journal/.account /home/journal/.account/projects
+# Claude Code takes its shell from CLAUDE_CODE_SHELL rather than the login shell, and IS_SANDBOX lets it skip its
+# permission prompts in a container whose commands the executor already confines.
+ENV CLAUDE_CODE_SHELL=/opt/journal/shell/bash IS_SANDBOX=1
 USER 10001:10001
 WORKDIR /workspace

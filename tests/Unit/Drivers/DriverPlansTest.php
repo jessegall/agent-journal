@@ -338,13 +338,6 @@ final class DriverPlansTest extends TestCase
             'no account' => null,
             'an MCP account' => new DriverAccount($this->recipe($family, TransportProfileType::Mcp), 'start-1', $server),
             'a CLI account' => new DriverAccount($this->recipe($family, TransportProfileType::Cli), 'start-1', $server),
-            'a protected account' => new DriverAccount(
-                $this->recipe($family, TransportProfileType::Mcp),
-                'start-1',
-                $server,
-                isProtected: true,
-                folder: '/accounts/a',
-            ),
             'a host account with a folder' => new DriverAccount(
                 $this->recipe($family, TransportProfileType::Mcp),
                 'start-1',

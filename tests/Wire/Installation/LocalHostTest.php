@@ -95,6 +95,16 @@ final class LocalHostTest extends TestCase
         $this->assertStringContainsString('lacks /usr/local/bin/codex-code-mode-host', $run->getErrorOutput());
     }
 
+    public function test_an_agent_image_whose_protected_start_runs_commands_as_the_program_is_refused(): void
+    {
+        $this->checkout->docker->failCallsHolding('/opt/journal/shell/bash -c id -u');
+
+        $run = $this->checkout->runLocalHost();
+
+        $this->assertNotSame(0, $run->getExitCode());
+        $this->assertStringContainsString('protected start runs the model', $run->getErrorOutput());
+    }
+
     public function test_a_go_change_builds_no_image_as_the_mac_runs_the_checkouts_builds(): void
     {
         // Locally the host and the agent image's programs run from scripts/dev-watch-host.sh's builds.
