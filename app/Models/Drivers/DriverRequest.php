@@ -726,6 +726,16 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     }
 
     /**
+     * The newest request of the session's runtime; none before its runtime opened.
+     */
+    public static function findNewestOf(string $sessionId): self|null
+    {
+        $runtime = AgentRuntime::findForSession($sessionId);
+
+        return $runtime === null ? null : self::query()->ofRuntime($runtime)->orderByDesc('sequence')->first();
+    }
+
+    /**
      * How many turns of the session's runtime ended: each wake and message whose turn the driver reported done.
      */
     public static function countTurnsEndedOf(string $sessionId): int

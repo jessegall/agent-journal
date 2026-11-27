@@ -9,6 +9,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\HookCall;
+use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
@@ -190,6 +191,31 @@ final class ScenarioRun
         }
 
         return $session->end_evidence ?? 'it ended with no evidence';
+    }
+
+    /**
+     * What the journal holds of the session of the agent the steps named last, in words: its state, its newest request
+     * and its newest process with how it ended, so a play that gives up says what it saw.
+     */
+    public function sessionState(): string
+    {
+        if ($this->lastAgent === null) {
+            return 'no step named an agent';
+        }
+
+        $sessionId = (string) $this->lastAgent()->current_session_id;
+        $session = AgentSession::query()->find($sessionId);
+        $request = DriverRequest::findNewestOf($sessionId);
+        $process = HostProcess::findNewestOfSession($sessionId);
+
+        return implode('; ', [
+            $session === null ? 'no session' : "the session is {$session->status->value}",
+            $request === null ? 'no request' : "its newest request {$request->operation->value} is "
+                .$request->progress->value.($request->outcome === null ? '' : " ({$request->outcome->value})")
+                .($request->refusal_reason === null ? '' : ", refused: {$request->refusal_reason->value}"),
+            $process === null ? 'no process' : "its newest process {$process->purpose->value} is "
+                .$process->status->value.($process->exit_evidence === null ? '' : ": {$process->exit_evidence}"),
+        ]);
     }
 
     /**

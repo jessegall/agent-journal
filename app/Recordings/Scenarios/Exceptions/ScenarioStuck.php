@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Recordings\Scenarios\Exceptions;
 
 use App\Recordings\Scenarios\Enums\ScenarioFact;
+use App\Recordings\Scenarios\ScenarioRun;
 use RuntimeException;
 
 /**
@@ -19,13 +20,12 @@ final class ScenarioStuck extends RuntimeException
         return new self("The record script did not run \"{$line}\" within {$seconds} seconds: {$script}");
     }
 
-    public static function quiet(string $scenario, int $step, ScenarioFact $fact, int $seconds): self
+    public static function quiet(ScenarioRun $run, ScenarioFact $fact, int $seconds): self
     {
-        $place = $step + 1;
-
+        $place = $run->stepIndex() + 1;
         $quiet = "waiting for {$fact->value}, its session showed no life for {$seconds} seconds";
 
-        return new self("The scenario {$scenario} is stuck at step {$place}: {$quiet}.");
+        return new self("The scenario {$run->scenario->name} is stuck at step {$place}: {$quiet}: {$run->sessionState()}.");
     }
 
     public static function ended(string $scenario, int $step, ScenarioFact $fact, string $reason): self

@@ -81,6 +81,17 @@ final class ScenarioFactTest extends TestCase
         $this->assertSame([null, 'stopped with no process running'], [$running, $run->endReason()]);
     }
 
+    public function test_a_play_says_what_the_journal_holds_of_its_session(): void
+    {
+        $this->journal->idleAgent('Coder')->startSession('Coder', 'Coder');
+        $unnamed = $this->runOf([]);
+        $run = $this->runOf(['Coder' => $this->journal->agentCalled('Coder')->id]);
+        $run->agentNamed('Coder');
+
+        $this->assertSame('no step named an agent', $unnamed->sessionState());
+        $this->assertStringStartsWith('the session is active; ', $run->sessionState());
+    }
+
     /**
      * @param  array<string, string>  $agents
      */

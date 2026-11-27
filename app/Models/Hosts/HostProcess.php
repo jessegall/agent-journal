@@ -452,6 +452,14 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
+     * The newest process opened for the session's runtime; none before one opened.
+     */
+    public static function findNewestOfSession(string $sessionId): self|null
+    {
+        return self::query()->withoutGlobalScopes()->ofSession($sessionId)->latest('created_at')->first();
+    }
+
+    /**
      * The process with its host, locked until the transaction ends, so its instructions are numbered and its worker
      * checked one at a time.
      */

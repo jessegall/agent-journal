@@ -180,7 +180,7 @@ final readonly class ScenarioPlayer
             $isQuiet = $quietSeconds > self::QUIET_SECOND_LIMIT;
 
             if ($isQuiet) {
-                throw ScenarioStuck::quiet($run->scenario->name, $run->stepIndex(), $fact, self::QUIET_SECOND_LIMIT);
+                throw ScenarioStuck::quiet($run, $fact, self::QUIET_SECOND_LIMIT);
             }
 
             $this->sleeper->sleep(self::LOOK_NANOSECONDS);
