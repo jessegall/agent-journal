@@ -6,6 +6,7 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Methods\ListToolsAndRecordDiscovery;
 use App\Mcp\Support\McpCatalogue;
+use App\Support\AgentContext;
 use App\Support\Reflector;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
@@ -15,7 +16,8 @@ use Laravel\Mcp\Server\Contracts\Transport;
 
 /**
  * The journal's one MCP server: tools and resources only, both with a list that never changes during a connection,
- * taken from the catalogue Core and the domains fill. Its tools/list records the caller's tool discovery.
+ * taken from the catalogue Core and the domains fill as the start's transport offers it. Its tools/list records the
+ * caller's tool discovery.
  */
 #[Name('journal')]
 #[Version('1.0.0')]
@@ -36,8 +38,11 @@ final class JournalServer extends Server
         self::CAPABILITY_RESOURCES => ['listChanged' => false],
     ];
 
-    public function __construct(Transport $transport, private readonly McpCatalogue $catalogue)
-    {
+    public function __construct(
+        Transport $transport,
+        private readonly McpCatalogue $catalogue,
+        private readonly AgentContext $agent,
+    ) {
         parent::__construct($transport);
     }
 
@@ -48,8 +53,9 @@ final class JournalServer extends Server
 
     protected function boot(): void
     {
-        $this->tools = $this->catalogue->toolClasses();
-        $this->resources = $this->catalogue->resourceClasses();
+        $offer = $this->catalogue->forTransport($this->agent->transport);
+        $this->tools = $offer->tools;
+        $this->resources = $offer->resources;
         $this->addMethod('tools/list', ListToolsAndRecordDiscovery::class);
     }
 }

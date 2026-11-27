@@ -15,6 +15,7 @@ use App\Api\Hooks\AgentStateMachine;
 use App\Api\SignedCall;
 use App\Bus\OutsideCommandAllowance;
 use App\Models\Access\User;
+use App\Models\Sessions\SessionProcess;
 use App\Stacks\HookAnswer;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
@@ -218,6 +219,7 @@ final class FixtureRequests
             $target->sessionId,
             new SignedCall($callId, CarbonImmutable::now(), str_repeat('a', 64)),
             null,
+            SessionProcess::transportOfSession($target->sessionId),
         ));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorReference::forAgent($target->agentId),

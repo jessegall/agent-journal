@@ -10,6 +10,7 @@ use App\Api\SignedCall;
 use App\Engine\EngineAccess;
 use App\Events\Hooks\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
+use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Stacks\AgentStacks;
 use App\Stacks\Contracts\Work\CurrentState;
@@ -79,6 +80,7 @@ final class StackChangeTest extends TestCase
                 TestIds::of(10),
                 new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
                 null,
+                TransportProfileType::Mcp,
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(

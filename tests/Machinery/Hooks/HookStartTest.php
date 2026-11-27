@@ -18,6 +18,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ProfileMissing;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
+use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\StartedAgent;
 use App\Sessions\StartSessions;
 use App\Stacks\HookAnswer;
@@ -207,6 +208,7 @@ final class HookStartTest extends TestCase
             $started->session->id,
             new SignedCall($callId, CarbonImmutable::now(), hash('sha256', $callId)),
             null,
+            TransportProfileType::Mcp,
         ));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorReference::forAgent($started->session->agent_id),

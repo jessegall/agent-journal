@@ -8,6 +8,8 @@ use App\Actors\Contracts\Actor;
 use App\Api\SignedCall;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
+use App\Models\Sessions\SessionProcess;
+use App\Sessions\Enums\TransportProfileType;
 use Carbon\CarbonImmutable;
 
 /**
@@ -21,14 +23,17 @@ final readonly class AgentContext implements Actor
         public string $sessionId,
         public SignedCall $call,
         public CarbonImmutable|null $lastHeartbeatAt,
+        public TransportProfileType $transport,
     ) {}
 
     /**
-     * The context of a call signed for this started session.
+     * The context of a call signed for this started session, on the transport its latest start runs on.
      */
     public static function ofSession(AgentSession $session, SignedCall $call): self
     {
-        return new self($session->agent_id, $session->id, $call, $session->last_heartbeat_at);
+        $transport = SessionProcess::transportOfSession($session->id);
+
+        return new self($session->agent_id, $session->id, $call, $session->last_heartbeat_at, $transport);
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Tests\Machinery\Bus;
 
 use App\Api\SignedCall;
 use App\Http\Middleware\Mcp\SetCallDeadline;
+use App\Sessions\Enums\TransportProfileType;
 use App\Support\AgentContext;
 use App\Support\OperationDeadline;
 use App\Support\StackTransaction;
@@ -95,6 +96,7 @@ final class CallDeadlineTest extends TestCase
                 'session-1',
                 new SignedCall('call-1', CarbonImmutable::now()->subSeconds($seconds), 'digest'),
                 null,
+                TransportProfileType::Mcp,
             ),
         );
     }

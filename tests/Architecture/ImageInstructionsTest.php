@@ -105,7 +105,7 @@ final class ImageInstructionsTest extends TestCase
     }
 
     /**
-     * Whether a found copy is a driver's Dockerfile copying from its own folder: no source climbs out of it or is named
+     * Whether a found copy is a driver's Dockerfile copying from its own folder: no source escapes it or is named
      * from the root.
      */
     private function isDriverFolderCopy(string $found): bool

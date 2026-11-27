@@ -23,6 +23,7 @@ use App\Models\Inboxes\Inbox;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
 use App\Sessions\AgentRuntimes;
+use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
@@ -169,6 +170,7 @@ trait CommittedHookStack
                 TestIds::of(10),
                 new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest()),
                 null,
+                TransportProfileType::Mcp,
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(

@@ -16,6 +16,7 @@ use App\Exceptions\StackTargetRefused;
 use App\Exceptions\StackTransactionRequired;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Records\SettingsRecord;
+use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
@@ -92,6 +93,7 @@ final class AgentStacksTest extends TestCase
                 TestIds::of(10),
                 new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
                 null,
+                TransportProfileType::Mcp,
             ),
         );
         $this->app->instance(

@@ -9,6 +9,7 @@ use App\Bus\Exceptions\ApiFailedUnexpectedly;
 use App\Mcp\Exceptions\ResultTooLarge;
 use App\Mcp\Support\McpCatalogue;
 use App\Models\Records\Layout;
+use App\Sessions\Enums\TransportProfileType;
 use App\Support\AgentContext;
 use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
 use App\Terminals\Data\LayoutShape;
@@ -61,6 +62,7 @@ final class JournalToolTest extends TestCase
                 'session-1',
                 new SignedCall(self::CALL_ID, CarbonImmutable::now(), 'digest'),
                 null,
+                TransportProfileType::Mcp,
             ),
         );
     }

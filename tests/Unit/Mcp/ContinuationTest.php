@@ -13,6 +13,7 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Support\Continuations;
 use App\Mcp\Support\TextChunk;
 use App\Mcp\Support\ToolArguments;
+use App\Sessions\Enums\TransportProfileType;
 use App\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Laravel\Mcp\Request;
@@ -157,6 +158,7 @@ final class ContinuationTest extends TestCase
             $sessionId,
             new SignedCall('call-1', CarbonImmutable::now(), 'digest'),
             null,
+            TransportProfileType::Mcp,
         );
     }
 

@@ -13,6 +13,7 @@ use App\Exceptions\SettingsUnavailable;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Records\SettingsRecord;
 use App\Reflection\CatalogueReflectorFactory;
+use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Settings\CoreSettings;
 use App\Settings\SettingCommands;
@@ -89,6 +90,7 @@ final class ConditionalStatePushTest extends TestCase
                 TestIds::of(10),
                 new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
                 null,
+                TransportProfileType::Mcp,
             ),
         );
 

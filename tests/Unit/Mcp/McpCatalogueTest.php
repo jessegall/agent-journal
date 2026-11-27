@@ -12,6 +12,7 @@ use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Servers\JournalServer;
 use App\Mcp\Support\McpCatalogue;
 use App\Reflection\CatalogueReflectorFactory;
+use App\Sessions\Enums\TransportProfileType;
 use App\Support\AgentContext;
 use App\Support\CommandRegistry;
 use App\Support\DomainRegistry;
@@ -35,7 +36,13 @@ final class McpCatalogueTest extends TestCase
 
         $this->app->instance(
             AgentContext::class,
-            new AgentContext('agent-1', 'session-1', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null),
+            new AgentContext(
+                'agent-1',
+                'session-1',
+                new SignedCall('call-1', CarbonImmutable::now(), 'digest'),
+                null,
+                TransportProfileType::Mcp,
+            ),
         );
     }
 
@@ -47,6 +54,26 @@ final class McpCatalogueTest extends TestCase
         $this->mock(ToolDiscovery::class)->shouldReceive('recordDiscovery')->once();
 
         JournalServer::tools()->assertRegistered(LedgerReadTool::class);
+    }
+
+    public function test_a_start_on_the_cli_is_offered_no_tool_or_resource_refused_a_direct_call_and_records_nothing(): void
+    {
+        $catalogue = new McpCatalogue(CommandRegistry::of([]), new CatalogueReflectorFactory(), $this->app);
+        DomainRegistry::from([LedgerDomain::class])->registerMcpToolsIn($catalogue);
+        $this->app->instance(McpCatalogue::class, $catalogue);
+        $this->app->instance(AgentContext::class, new AgentContext(
+            'agent-1',
+            'session-1',
+            new SignedCall('call-1', CarbonImmutable::now(), 'digest'),
+            null,
+            TransportProfileType::Cli,
+        ));
+        $this->mock(ToolDiscovery::class)->shouldNotReceive('recordDiscovery');
+
+        JournalServer::tools()->assertNotRegistered(LedgerReadTool::class);
+        JournalServer::tool(LedgerReadTool::class)->assertHasErrors();
+        $offer = $catalogue->forTransport(TransportProfileType::Cli);
+        $this->assertSame([[], []], [$offer->tools, $offer->resources]);
     }
 
     public function test_the_application_starts_with_a_catalogue(): void

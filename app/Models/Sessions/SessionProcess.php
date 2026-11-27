@@ -329,6 +329,17 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     }
 
     /**
+     * The transport the session's latest supervised start runs on: how its agent reaches the journal's tools. A
+     * session the journal does not supervise runs on MCP, as every start does unless its account chose the CLI.
+     */
+    public static function transportOfSession(string $sessionId): TransportProfileType
+    {
+        $start = self::findLatestOfSession($sessionId);
+
+        return $start === null ? TransportProfileType::Mcp : $start->transport_profile;
+    }
+
+    /**
      * The id of each of these sessions' latest supervised start, by session; a session the journal does not supervise
      * is not in it. A host's claim binds its report to it.
      *

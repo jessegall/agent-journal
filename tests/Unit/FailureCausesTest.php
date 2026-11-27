@@ -14,6 +14,7 @@ use App\Mcp\Support\Frame;
 use App\Mcp\Support\McpCall;
 use App\Mcp\Support\RelayFrames;
 use App\Mcp\Support\ResultBudget;
+use App\Sessions\Enums\TransportProfileType;
 use App\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -41,7 +42,7 @@ final class FailureCausesTest extends TestCase
             }
         };
         $call = new McpCall(
-            new AgentContext('agent', 'session', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null),
+            new AgentContext('agent', 'session', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null, TransportProfileType::Mcp),
             $mapper,
             new ResultBudget(),
             $logger,

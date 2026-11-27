@@ -16,6 +16,7 @@ use App\Models\Messages\Message;
 use App\Models\Projects\Environment;
 use App\Models\Records\Link;
 use App\Records\Contracts\RecordResolver;
+use App\Sessions\Enums\TransportProfileType;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\RecordIdentity;
@@ -192,7 +193,7 @@ final class LinkRecordsTest extends TestCase
             TestStartAuthority::forAgent(TestIds::of($agent)),
         );
         $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
-        $context = new AgentContext(TestIds::of($agent), TestIds::of($agent * 10), $call, null);
+        $context = new AgentContext(TestIds::of($agent), TestIds::of($agent * 10), $call, null, TransportProfileType::Mcp);
         $this->app->instance(AgentContext::class, $context);
     }
 

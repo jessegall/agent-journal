@@ -18,6 +18,7 @@ use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Reflection\Contracts\ReflectorFactory;
+use App\Sessions\Enums\TransportProfileType;
 use App\Support\CommandRegistry;
 use Illuminate\Contracts\Container\Container;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -129,6 +130,17 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     public function resourceClasses(): array
     {
         return array_values($this->resources);
+    }
+
+    /**
+     * What the journal's server offers a start on the transport: every tool and resource on MCP, nothing on the CLI.
+     */
+    public function forTransport(TransportProfileType $transport): McpOffer
+    {
+        return match ($transport) {
+            TransportProfileType::Mcp => new McpOffer($this->toolClasses(), $this->resourceClasses()),
+            TransportProfileType::Cli => McpOffer::nothing(),
+        };
     }
 
     /**

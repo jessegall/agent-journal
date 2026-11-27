@@ -60,7 +60,7 @@ final readonly class TestStart
     public function startRequest(Application $app): void
     {
         $call = new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64));
-        $context = new AgentContext($this->agent->id, $this->session->id, $call, null);
+        $context = AgentContext::ofSession($this->session, $call);
         $app->forgetScopedInstances();
         $app->instance(AgentContext::class, $context);
         $app->make(CurrentActorSetter::class)->set(

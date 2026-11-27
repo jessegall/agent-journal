@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Api\SignedCall;
 use App\Events\Hooks\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
+use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\StartedAgent;
 use App\Sessions\StartSessions;
 use App\Stacks\AgentStacks;
@@ -133,6 +134,7 @@ final class TickingStackFlagTest extends TestCase
                 $started->session->id,
                 new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
                 null,
+                TransportProfileType::Mcp,
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(

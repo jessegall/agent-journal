@@ -32,6 +32,7 @@ use App\Models\Drivers\FailureReceipt;
 use App\Models\Drivers\HookCall;
 use App\Models\Records\Link;
 use App\Sessions\Enums\SessionStatus;
+use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\IsolatedHookSettings;
 use App\Sessions\StartedAgent;
 use App\Sessions\StartHeartbeats;
@@ -462,6 +463,7 @@ final class ClaudeCodeHooksTest extends TestCase
                 $started->session->id,
                 new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
                 null,
+                TransportProfileType::Mcp,
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
@@ -843,6 +845,7 @@ final class ClaudeCodeHooksTest extends TestCase
                 TestIds::of(9),
                 new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
                 null,
+                TransportProfileType::Mcp,
             ),
         );
     }

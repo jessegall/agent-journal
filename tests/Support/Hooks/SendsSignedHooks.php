@@ -6,6 +6,7 @@ namespace Tests\Support\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Api\SignedCall;
+use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
@@ -74,6 +75,7 @@ trait SendsSignedHooks
             $this->start->session->id,
             new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
             null,
+            TransportProfileType::Mcp,
         ));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorReference::forAgent($this->start->agent->id),
