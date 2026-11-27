@@ -12,6 +12,7 @@ use App\Agents\Drivers\Contracts\DriverAdapter;
 use App\Agents\Drivers\Contracts\DriverCall;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Drivers\Hooks\DriverReply;
 use App\Agents\Drivers\Hooks\GuardedFiles;
@@ -58,6 +59,8 @@ use App\Values\Operation;
 final readonly class ClaudeCodeAdapter implements DriverAdapter
 {
     private const string DRIVER = 'Claude Code';
+
+    private const ToolAllowance ALLOWANCE = ToolAllowance::AllowDecision;
 
     /**
      * The tools of each recorded build that start or reach another agent.
@@ -203,7 +206,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
     public function renderShell(HookAnswer $answer, DriverToolInput $original, AgentTexts $texts): DriverReply
     {
-        return DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval, $texts);
+        return DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval, self::ALLOWANCE, $texts);
     }
 
     public function renderStop(HookAnswer $answer, AgentTexts $texts): DriverReply
@@ -246,7 +249,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
     private function toolCall(HookPayload $hookInput, HookIdentity $hook): DriverCall
     {
         if ($this->journalTools->names($hookInput->toolNameText())) {
-            return JournalToolCall::starting();
+            return JournalToolCall::starting(self::ALLOWANCE);
         }
 
         $tool = ClaudeCodeTool::named($hookInput->toolNameText());
@@ -256,7 +259,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         }
 
         if ($tool->discoversJournalTools()) {
-            return JournalToolCall::starting();
+            return JournalToolCall::starting(self::ALLOWANCE);
         }
 
         if ($tool->isFileReader()) {
@@ -308,7 +311,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         }
 
         if ($tool->keepsOwnTaskList()) {
-            return new UnjudgedCall(DriverReplies::allowTool([]));
+            return new UnjudgedCall(DriverReplies::allowTool([], self::ALLOWANCE));
         }
 
         return $this->judgedTool($hook, $tool->operation($hookInput->toolArguments()), $hookInput);

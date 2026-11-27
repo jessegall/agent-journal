@@ -6,6 +6,7 @@ namespace Tests\Unit\Hooks\Programs;
 
 use App\Agents\Drivers\Capabilities\DriverCapabilities;
 use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Exceptions\UnsupportedHook;
 use App\Stacks\AgentStack;
@@ -68,8 +69,8 @@ final class ProgramCapabilitiesTest extends TestCase
         );
         $original = new DriverToolInput(['command' => 'composer test']);
 
-        $taken = DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval, TestText::renderer());
-        $refused = DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval, TestText::renderer());
+        $taken = DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval, ToolAllowance::AllowDecision, TestText::renderer());
+        $refused = DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval, ToolAllowance::NoDecision, TestText::renderer());
 
         $this->assertStringContainsString(
             trim((string) json_encode(['updatedInput' => ['command' => 'journal run tests']]), '{}'),

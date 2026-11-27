@@ -8,8 +8,10 @@ use App\Agents\Drivers\Codex\CodexAccountSettings;
 use App\Agents\Drivers\Codex\CodexAdapter;
 use App\Agents\Drivers\Codex\CodexArguments;
 use App\Agents\Drivers\Codex\CodexIsolation;
+use App\Agents\Drivers\Codex\CodexJournalServer;
 use App\Agents\Drivers\Codex\CodexKeyScripts;
 use App\Agents\Drivers\Codex\CodexLayout;
+use App\Agents\Drivers\Codex\CodexManagedHooks;
 use App\Agents\Drivers\Codex\CodexModelAnswer;
 use App\Agents\Drivers\Codex\CodexSignInEnvironment;
 use App\Agents\Drivers\Codex\CodexSignInReader;
@@ -18,6 +20,7 @@ use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\HookReplies;
+use App\Agents\Drivers\Setup\ConditionalPart;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
 use App\Agents\Drivers\Setup\HeadlessTurns;
@@ -25,6 +28,8 @@ use App\Agents\Drivers\Setup\ModelCheck;
 use App\Agents\Drivers\Setup\SignInSetup;
 use App\Agents\Drivers\Setup\VersionLine;
 use App\Agents\Drivers\Setup\VersionProbe;
+use App\Agents\Drivers\StartConditions\ContainedStart;
+use App\Agents\Drivers\StartConditions\JournalServerAccount;
 use App\Agents\Exceptions\DriverSetupInvalid;
 use App\Agents\SignInEgress;
 use App\Exceptions\PlanAdditionClash;
@@ -113,6 +118,8 @@ final class DriverSetupTest extends TestCase
             skills: CodexSkills::class,
             hookAdapter: CodexAdapter::class,
             isolation: CodexIsolation::class,
+            journalServer: ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class),
+            hookRelay: ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class),
         );
     }
 }

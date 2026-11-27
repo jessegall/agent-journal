@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Hooks;
 
 use App\Agents\Drivers\Contracts\DriverCall;
+use App\Agents\Drivers\Enums\ToolAllowance;
 use Closure;
 
 /**
@@ -18,9 +19,9 @@ final readonly class JournalToolCall implements DriverCall
     /**
      * Before the call: allowed, so the driver asks no user; the bus guard judges what the journal call does.
      */
-    public static function starting(): self
+    public static function starting(ToolAllowance $allowance): self
     {
-        return new self(DriverReplies::allowTool([]));
+        return new self(DriverReplies::allowTool([], $allowance));
     }
 
     /**

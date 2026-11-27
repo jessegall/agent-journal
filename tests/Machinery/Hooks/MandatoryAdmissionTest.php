@@ -7,6 +7,7 @@ namespace Tests\Machinery\Hooks;
 use App\Access\Contracts\ShellAdmission;
 use App\Actors\Contracts\AgentTexts;
 use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Drivers\Hooks\DriverReply;
 use App\Agents\Enums\ExecutionModeType;
@@ -207,6 +208,6 @@ final class MandatoryAdmissionTest extends TestCase
     {
         $input = new DriverToolInput(['command' => $line]);
 
-        return fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::shell($answer, $input, $rewrites, $texts);
+        return fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::shell($answer, $input, $rewrites, ToolAllowance::AllowDecision, $texts);
     }
 }

@@ -6,7 +6,6 @@ namespace App\Agents\Drivers\ClaudeCode;
 
 use App\Agents\Drivers\Contracts\AccountPlanPart;
 use App\Agents\Exceptions\ProfileRefused;
-use App\Agents\Values\HostPath;
 use App\Agents\Values\PlanFile;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
@@ -33,16 +32,8 @@ final readonly class ClaudeCodeJournalServer implements AccountPlanPart
      */
     public function __invoke(DriverStart $start, DriverAccount $account): PlanAddition
     {
-        $server = $account->journalServer ?? throw ProfileRefused::unresolvedSetting('no journal MCP server');
-
-        foreach ([
-            $server->command,
-            ...$server->arguments(),
-        ] as $path) {
-            if (! new HostPath($path)->isResolved()) {
-                throw ProfileRefused::unresolvedSetting("the journal MCP path {$path}");
-            }
-        }
+        $server = ($account->journalServer ?? throw ProfileRefused::unresolvedSetting('no journal MCP server'))
+            ->resolved();
 
         $descriptor = ['mcpServers' => [self::JOURNAL_SERVER => [
             'type' => 'stdio',

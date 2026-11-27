@@ -38,6 +38,7 @@ use App\Agents\Drivers\Codex\CodexFileCredentialStore;
 use App\Agents\Drivers\Codex\CodexHome;
 use App\Agents\Drivers\Codex\CodexHomeFiles;
 use App\Agents\Drivers\Codex\CodexIsolation;
+use App\Agents\Drivers\Codex\CodexJournalServer;
 use App\Agents\Drivers\Codex\CodexKeyScripts;
 use App\Agents\Drivers\Codex\CodexKeySignIn;
 use App\Agents\Drivers\Codex\CodexLayout;
@@ -159,6 +160,8 @@ final class DriversServiceProvider extends ServiceProvider
             skills: CodexSkills::class,
             hookAdapter: CodexAdapter::class,
             isolation: CodexIsolation::class,
+            journalServer: ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class),
+            hookRelay: ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class),
         ))
             ->refusedWhen(new OwnTerminalStart(), fn () => ProfileRefused::ownTerminalWithheld($driver))
             // Codex reads its sign-in only from its home, so it has none to check without an account folder.
@@ -172,9 +175,9 @@ final class DriversServiceProvider extends ServiceProvider
             )
             ->startPlan(
                 ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class),
-                ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class),
             )
             ->mountsPlanFile(CodexManagedHooks::FILE, CodexManagedHooks::TARGET)
+            ->mountsPlanFile(CodexJournalServer::FILE, CodexJournalServer::TARGET)
             // Codex links its own executable under tmp/arg0 each run; those links never belong in the account folder.
             ->keepsScratchIn('tmp');
     }
@@ -252,6 +255,8 @@ final class DriversServiceProvider extends ServiceProvider
             skills: ClaudeCodeSkills::class,
             hookAdapter: ClaudeCodeAdapter::class,
             isolation: ClaudeCodeIsolation::class,
+            journalServer: ConditionalPart::forAccount(new JournalServerAccount(), ClaudeCodeJournalServer::class),
+            hookRelay: ConditionalPart::for(new ContainedStart(), ClaudeCodeManagedSettings::class),
         ))
             ->environment(
                 ConditionalPart::forAccount(new Negation(new ContainedStart()), ClaudeCodeAccountHome::class),
@@ -263,9 +268,7 @@ final class DriversServiceProvider extends ServiceProvider
             )
             ->startPlan(
                 ConditionalPart::for(new AnyContext(), ClaudeCodeSettingsFile::class),
-                ConditionalPart::forAccount(new JournalServerAccount(), ClaudeCodeJournalServer::class),
                 ConditionalPart::for(new HostAccountTerminal(), StatusLineSocket::class),
-                ConditionalPart::for(new ContainedStart(), ClaudeCodeManagedSettings::class),
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeKeptSignIn::class),
                 ConditionalPart::forAccount(new AccountTerminal(), ClaudeCodeTranscriptRestart::class),
             )

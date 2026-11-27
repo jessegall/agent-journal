@@ -12,6 +12,7 @@ use App\Agents\Drivers\Contracts\DriverCall;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\CodexTool;
 use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Drivers\Hooks\DriverReply;
 use App\Agents\Drivers\Hooks\GuardedFiles;
@@ -49,6 +50,8 @@ use App\Support\Inputs\Values\HookIdentity;
 final readonly class CodexAdapter implements DriverAdapter
 {
     private const string DRIVER = 'Codex';
+
+    private const ToolAllowance ALLOWANCE = ToolAllowance::NoDecision;
 
     public const array NATIVE_EVENTS = [
         'SessionStart',
@@ -184,7 +187,7 @@ final readonly class CodexAdapter implements DriverAdapter
 
     public function renderShell(HookAnswer $answer, DriverToolInput $original, AgentTexts $texts): DriverReply
     {
-        return DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval, $texts);
+        return DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval, self::ALLOWANCE, $texts);
     }
 
     public function renderStop(HookAnswer $answer, AgentTexts $texts): DriverReply
@@ -206,7 +209,7 @@ final readonly class CodexAdapter implements DriverAdapter
     private function toolCall(HookPayload $hookInput, HookIdentity $hook): DriverCall
     {
         if ($this->journalTools->names($hookInput->toolNameText())) {
-            return JournalToolCall::starting();
+            return JournalToolCall::starting(self::ALLOWANCE);
         }
 
         $tool = CodexTool::named($hookInput->toolNameText());
@@ -216,7 +219,7 @@ final readonly class CodexAdapter implements DriverAdapter
         }
 
         if ($tool->discoversJournalTools()) {
-            return JournalToolCall::starting();
+            return JournalToolCall::starting(self::ALLOWANCE);
         }
 
         $original = $hookInput->toolArguments();

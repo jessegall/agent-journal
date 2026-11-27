@@ -6,6 +6,7 @@ namespace Tests\Unit\Hooks\Programs;
 
 use App\Agents\Drivers\Enums\DriverPermission;
 use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Drivers\Hooks\DriverReply;
 use App\Agents\Exceptions\InvalidStopAnswer;
@@ -63,6 +64,7 @@ final class ProgramRepliesTest extends TestCase
             $this->answer(Decision::rewrite('journal run tests')),
             $original,
             RewriteSupport::WithoutApproval,
+            ToolAllowance::AllowDecision,
             TestText::renderer()
         );
 
@@ -77,12 +79,23 @@ final class ProgramRepliesTest extends TestCase
         ]], json_decode($reply->stdout, true));
     }
 
+    public function test_an_allowed_call_tells_codex_no_decision_and_claude_code_to_allow_it(): void
+    {
+        $codex = DriverReplies::allowTool(['context'], ToolAllowance::NoDecision)->stdout;
+        $claudeCode = DriverReplies::allowTool(['context'], ToolAllowance::AllowDecision)->stdout;
+
+        $this->assertStringNotContainsString('permissionDecision', $codex);
+        $this->assertStringContainsString('context', $codex);
+        $this->assertStringContainsString('"permissionDecision":"allow"', $claudeCode);
+    }
+
     public function test_a_rewrite_the_program_cannot_take_without_approval_is_refused_with_the_journal_command(): void
     {
         $reply = DriverReplies::shell(
             $this->answer(Decision::rewrite('journal run tests')),
             new DriverToolInput(['command' => 'composer test']),
             RewriteSupport::NeedsApproval,
+            ToolAllowance::NoDecision,
             TestText::renderer()
         );
 
@@ -143,6 +156,7 @@ final class ProgramRepliesTest extends TestCase
                 $this->answer(Decision::rewrite('journal run tests')),
                 new DriverToolInput(['command' => 'x']),
                 RewriteSupport::WithoutApproval,
+                ToolAllowance::AllowDecision,
                 TestText::renderer()
             ),
         ];
@@ -181,6 +195,7 @@ final class ProgramRepliesTest extends TestCase
             $this->answer($decision, $context),
             new DriverToolInput(['command' => 'git status']),
             RewriteSupport::WithoutApproval,
+            ToolAllowance::AllowDecision,
             TestText::renderer()
         );
     }

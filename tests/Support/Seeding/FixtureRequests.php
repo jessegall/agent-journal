@@ -9,6 +9,7 @@ use App\Access\Values\OwnerAuthority;
 use App\Actors\Contracts\AgentTexts;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Api\Hooks\AgentStateMachine;
 use App\Api\SignedCall;
@@ -63,7 +64,7 @@ final class FixtureRequests
 
             return $input instanceof StopRequested
                 ? DriverReplies::stop($answer, $texts)
-                : DriverReplies::allowTool($answer->shownContext($texts));
+                : DriverReplies::allowTool($answer->shownContext($texts), ToolAllowance::AllowDecision);
         };
 
         $this->during(

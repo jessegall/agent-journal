@@ -8,6 +8,7 @@ use App\Actors\Contracts\AgentTexts;
 use App\Agents\Drivers\Capabilities\DriverCapabilities;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Inputs\Values\FileChange;
 use App\Agents\Inputs\Values\FileChanges;
@@ -82,7 +83,7 @@ final class AgentMessageDeliveryTest extends TestCase
             ),
             $this->messagingCapabilities(),
         );
-        $reply = DriverReplies::allowTool($answer->context)->stdout;
+        $reply = DriverReplies::allowTool($answer->context, ToolAllowance::AllowDecision)->stdout;
 
         $this->assertSame(MessageState::TEXT, $this->contextOf($reply));
         $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorReference()));

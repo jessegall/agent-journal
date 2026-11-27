@@ -8,6 +8,7 @@ use App\Actors\Contracts\AgentTexts;
 use App\Agents\Drivers\Enums\DriverPermission;
 use App\Agents\Drivers\Enums\DriverStopDecision;
 use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Exceptions\InvalidObservationAnswer;
 use App\Agents\Exceptions\InvalidShellAnswer;
 use App\Agents\Exceptions\InvalidStopAnswer;
@@ -23,14 +24,14 @@ use App\Values\AgentText;
 final class DriverReplies
 {
     /**
-     * The reply to a tool call the journal admitted: the driver runs it without asking a user.
+     * The reply to a tool call the journal admitted: the driver runs it without asking a user, told so as it takes it.
      *
      * @param  list<string>  $context
      */
-    public static function allowTool(array $context): DriverReply
+    public static function allowTool(array $context, ToolAllowance $allowance): DriverReply
     {
         return DriverReply::json(PreToolBody::from(['hookSpecificOutput' => [
-            'permissionDecision' => DriverPermission::Allow,
+            ...$allowance->decisionFields(),
             'additionalContext' => PreToolOutput::contextText($context),
         ]]));
     }
@@ -84,12 +85,13 @@ final class DriverReplies
         HookAnswer $answer,
         DriverToolInput $original,
         RewriteSupport $rewrites,
+        ToolAllowance $allowance,
         AgentTexts $texts,
     ): DriverReply {
         $type = $answer->decision->answerType();
 
         return match ($type) {
-            AnswerType::Allow => self::allowTool($answer->shownContext($texts)),
+            AnswerType::Allow => self::allowTool($answer->shownContext($texts), $allowance),
             AnswerType::Deny => self::denyTool(
                 $texts->render($answer->decision->refusalReason()),
                 $answer->shownContext($texts),

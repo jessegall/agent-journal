@@ -73,6 +73,8 @@ final readonly class DriverSetup
      * @param  class-string<DriverSkills>  $skills
      * @param  class-string<DriverAdapter>  $hookAdapter
      * @param  class-string<DriverIsolation>  $isolation
+     * @param  ConditionalPart  $journalServer  how the program is given the journal's MCP server, which every agent uses
+     * @param  ConditionalPart  $hookRelay  how the program relays its hooks to the journal, which every agent needs
      */
     public static function of(
         string $family,
@@ -89,6 +91,8 @@ final readonly class DriverSetup
         string $skills,
         string $hookAdapter,
         string $isolation,
+        ConditionalPart $journalServer,
+        ConditionalPart $hookRelay,
     ): self {
         return new self(
             $family,
@@ -105,6 +109,7 @@ final readonly class DriverSetup
             $skills,
             $hookAdapter,
             $isolation,
+            plan: [$journalServer, $hookRelay],
         );
     }
 

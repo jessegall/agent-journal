@@ -10,6 +10,7 @@ use App\Agents\ContainerManifest;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeManagedSettings;
+use App\Agents\Drivers\Codex\CodexJournalServer;
 use App\Agents\Drivers\Codex\CodexManagedHooks;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
@@ -192,6 +193,7 @@ final class DriverPlansTest extends TestCase
                 [[HostMountType::DaemonBind, ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET, false]],
                 [
                     [HostMountType::DaemonBind, CodexManagedHooks::FILE, CodexManagedHooks::TARGET, false],
+                    [HostMountType::DaemonBind, CodexJournalServer::FILE, CodexJournalServer::TARGET, false],
                     [HostMountType::Scratch, null, MountRules::ACCOUNT_TARGET.'/tmp', true],
                 ],
             ],
