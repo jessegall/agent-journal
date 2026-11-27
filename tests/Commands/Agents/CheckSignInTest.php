@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Commands\Agents;
 
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Models\Agents\AgentRuntime;
 use App\Sessions\Enums\StartRefusalReason;
+use App\Support\MountRules;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -101,6 +103,33 @@ final class CheckSignInTest extends TestCase
                 'Out' => $notSignedIn,
             ],
             $results,
+        );
+    }
+
+    public function test_a_proven_start_whose_next_process_is_refused_ends_with_the_refusal(): void
+    {
+        $this->journal->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->arrangeContainedJournal()
+            ->idleAgent('Boxed')
+            ->enrollContainedHost('Box', [base_path()]);
+        $this->journal->withAgent('Boxed', fn (TestAgent $boxed) => $boxed
+            ->openRuntime('Box', base_path(), driverType: DriverType::Terminal)
+            ->passBuildProbe('Boxed'));
+        $opened = $this->journal->openedRuntimeOf('Boxed');
+        $start = $this->journal->startOfSession($opened->sessionId);
+        $signedIn = ['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => MountRules::ACCOUNT_TARGET];
+
+        $this->journal->forgetSecurityProfiles()->asSystem(new CheckSignInCommand(
+            $this->journal->hostProcessCalled('Boxed-sign-in')->id,
+            (string) json_encode($signedIn),
+        ));
+
+        $start->refresh();
+        $this->journal->assertResult(
+            [SessionProcessStatus::Stopped, true],
+            [$start->status, str_contains((string) $start->refusal, 'outside the profiles folder')],
         );
     }
 }
