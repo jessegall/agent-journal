@@ -29,10 +29,9 @@ use Tests\Support\Mocks\Mock;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The test host binary, built from the checkout, run against the Docker mock daemon it carries and the test
- * application served on a port of its own, so a test sees host protocol 1 work end to end without a real Docker.
- * A test acts on it in the scope runTestHost() opens, each verb returning the host; every process it starts ends
- * when it is stopped or let go.
+ * The test host binary, built from the checkout, run against its Docker mock daemon and the test application, so a
+ * test sees host protocol 1 end to end without a real Docker. Its verbs run in the scope runTestHost() opens, and
+ * every process it starts ends when stopped or let go.
  */
 final class TestHost
 {
@@ -48,6 +47,11 @@ final class TestHost
      * The installation name a contained mock host prefixes its containers with.
      */
     public const string INSTALLATION_NAME = 'journaltest';
+
+    /**
+     * The address a contained mock host's session containers reach the journal at.
+     */
+    public const string SESSION_JOURNAL_URL = 'http://journal.test:54700';
 
     /**
      * The terminal recording the Claude Code mock plays by what is typed.
@@ -504,6 +508,7 @@ final class TestHost
             'AGENT_IMAGE' => self::IMAGE,
             'AGENTS_SECURITY_PROFILES' => base_path('.docker/helper'),
             'AGENTS_WORKSPACES' => '{"main":{"folder":"main"}}',
+            'AGENTS_SESSION_JOURNAL_URL' => self::SESSION_JOURNAL_URL,
         ];
     }
 

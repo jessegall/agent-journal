@@ -30,6 +30,7 @@ use App\Support\MountRules;
 use App\Values\DriverAccount;
 use App\Values\DriverRegistration;
 use App\Values\DriverStart;
+use Illuminate\Container\Attributes\Config;
 
 /**
  * The start of a headless Claude Code runtime the journal drives itself, as each of its processes runs it: in the
@@ -69,6 +70,8 @@ final readonly class HeadlessStarts
         private SessionOfflineReplies $offlineReplies,
         private StartSkillFiles $skills,
         private SessionContainers $containers,
+        #[Config('agents.session_journal_url')]
+        private string $sessionJournalUrl,
     ) {}
 
     /**
@@ -116,7 +119,8 @@ final readonly class HeadlessStarts
 
     /**
      * How a process of the runtime signs in to the journal: the first takes the start's grant, each later one a fresh
-     * token, as the process before it has ended.
+     * token, as the process before it has ended. A contained process reaches the journal at the session address, as
+     * its plan names nothing of the host; one the host runs itself is given the host's own address.
      */
     public function clientSettingsOf(AgentRuntime $runtime): AgentClientSettings
     {
@@ -124,7 +128,9 @@ final readonly class HeadlessStarts
         $token = $runtime->claimStartGrant() ?? $this->tokens->rotate($session);
         $profile = new StartProfilePin($session->profile_key, $session->profile_revision);
 
-        return new AgentClientSettings(self::JOURNAL_URL, $token, $profile);
+        $journalUrl = $runtime->executablePlace() === ExecutablePlace::Image ? $this->sessionJournalUrl : self::JOURNAL_URL;
+
+        return new AgentClientSettings($journalUrl, $token, $profile);
     }
 
     /**

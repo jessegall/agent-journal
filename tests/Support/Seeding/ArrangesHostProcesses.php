@@ -401,6 +401,7 @@ trait ArrangesHostProcesses
             'agents.agent_image' => 'AGENT_IMAGE',
             'agents.security_profiles' => 'AGENTS_SECURITY_PROFILES',
             'agents.workspaces' => 'AGENTS_WORKSPACES',
+            'agents.session_journal_url' => 'AGENTS_SESSION_JOURNAL_URL',
         ];
         $environment = TestHost::containedEnvironment();
         $this->app->make(Repository::class)->set(array_map(fn (string $name) => $environment[$name], $settings));

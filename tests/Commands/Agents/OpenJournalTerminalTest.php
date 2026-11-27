@@ -7,6 +7,7 @@ namespace Tests\Commands\Agents;
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Models\Agents\AgentRuntime;
@@ -18,6 +19,7 @@ use App\Terminals\ScreenRegistration;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
 
@@ -70,8 +72,31 @@ final class OpenJournalTerminalTest extends TestCase
         $this->journal->assertResult('❯ ready', $screen?->frame->rows[0]->runs[0]->text);
     }
 
+    public function test_a_contained_terminal_reaches_the_journal_at_the_session_address(): void
+    {
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->arrangeContainedJournal()
+            ->idleAgent('Driven')
+            ->enrollContainedHost('Box', [base_path()]);
+        $this->proveTerminalOn('Box');
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
+
+        [$open] = $this->journal->hostOrdersOf('terminal');
+        $this->journal->assertResult(
+            ['JOURNAL_URL='.TestHost::SESSION_JOURNAL_URL],
+            array_values(array_filter(
+                $this->journal->payloadOf($open)['environment'],
+                fn (string $variable) => str_starts_with($variable, 'JOURNAL_URL='),
+            )),
+        );
+    }
+
     /**
-     * A Claude Code terminal start whose build and sign-in probes passed.
+     * A Claude Code terminal start on a host that runs agents itself, whose build and sign-in probes passed.
      *
      * @return array{OpenedRuntime, SessionProcess}
      */
@@ -83,12 +108,25 @@ final class OpenJournalTerminalTest extends TestCase
             ->showDriverArrangements()
             ->idleAgent('Driven')
             ->enrollHost('Mac', [base_path()]);
+
+        return $this->proveTerminalOn('Mac');
+    }
+
+    /**
+     * Opens the agent's terminal start on the host named and passes its build and sign-in probes.
+     *
+     * @return array{OpenedRuntime, SessionProcess}
+     */
+    private function proveTerminalOn(string $hostName): array
+    {
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
-            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+            ->openRuntime($hostName, base_path(), driverType: DriverType::Terminal));
         $opened = $this->journal->openedRuntimeOf('Driven');
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->passBuildProbe('Driven'));
         $start = $this->journal->startOfSession($opened->sessionId);
-        $signedIn = ['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => $start->directory];
+        $runtime = AgentRuntime::query()->whereKey($opened->runtimeId)->sole();
+        $folder = $this->journal->service(HeadlessStarts::class)->accountFolderSeenBy($runtime, $start);
+        $signedIn = ['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => $folder];
 
         $this->journal->asSystem(new CheckSignInCommand(
             $this->journal->hostProcessCalled('Driven-sign-in')->id,
