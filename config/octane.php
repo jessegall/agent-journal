@@ -198,7 +198,9 @@ return [
 
     'watch' => [
         'app',
-        'bootstrap',
+        'domain',
+        // Not bootstrap/cache, which the app writes itself, so a watch of it reloads the workers without end.
+        'bootstrap/*.php',
         'config/**/*.php',
         'database/**/*.php',
         'public/**/*.php',
