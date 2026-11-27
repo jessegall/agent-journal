@@ -124,12 +124,9 @@ final class ReflectedMethod
         }
 
         $type = $this->method->getReturnType();
+        $this->returnType = $type === null ? None::create() : new Some(new DeclaredType($type));
 
-        if ($this->returnType = $type === null) {
-            return None::create();
-        }
-
-        return new Some(new DeclaredType($type));
+        return $this->returnType;
     }
 
     /**
