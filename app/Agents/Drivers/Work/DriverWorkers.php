@@ -81,9 +81,9 @@ final readonly class DriverWorkers
 
         $cursors = array_combine($streams, array_map($this->feed->lastCursor(...), $streams));
 
-        // The process's first worker reads all it printed, as a short process may print before a worker begins; an
-        // owner's later worker reads it all again too, to rebuild the threads and turns its runtimes stand at.
-        if ($generation === 1 || $isOwner) {
+        // The process's first worker reads all it printed, as a short process may print before a worker begins; a
+        // later worker of a probe or an owner reads it all again too (HostProcessPurpose::readsItsOutputWhole).
+        if ($generation === 1 || $process->purpose->readsItsOutputWhole()) {
             $cursors[$output] = ProcessFeed::FIRST_CURSOR;
         }
 

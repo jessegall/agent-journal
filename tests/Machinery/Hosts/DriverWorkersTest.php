@@ -56,6 +56,17 @@ final class DriverWorkersTest extends TestCase
         );
     }
 
+    public function test_a_later_worker_of_a_probe_reads_what_it_printed_before_that_worker_began(): void
+    {
+        $this->journal->service(DriverWorkers::class)->begin($this->journal->hostProcessCalled('shell')->id);
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell->print('> '));
+
+        $second = $this->journal->service(DriverWorkers::class)->begin($this->journal->hostProcessCalled('shell')->id);
+        $this->journal->service(DriverWorkers::class)->step($second, self::WAIT_MS);
+
+        $this->journal->assertResult(1, $this->instructionsOf(HostInstructionType::WriteKeys));
+    }
+
     public function test_an_answer_to_its_instruction_wakes_the_worker(): void
     {
         $work = $this->journal->service(DriverWorkers::class)->begin($this->journal->hostProcessCalled('shell')->id);
