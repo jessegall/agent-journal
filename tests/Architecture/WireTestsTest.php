@@ -31,6 +31,10 @@ final class WireTestsTest extends TestCase
         $misplaced = [];
 
         foreach (self::filesUnderTests() as $path) {
+            if ($path === __FILE__) {
+                continue;
+            }
+
             $isMarked = str_contains((string) file_get_contents($path), '#[OverTheWire]');
             $isInWire = str_starts_with($path, base_path('tests/Wire/'));
             $relative = substr($path, strlen(base_path()) + 1);

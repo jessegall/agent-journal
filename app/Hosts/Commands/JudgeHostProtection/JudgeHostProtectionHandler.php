@@ -26,7 +26,7 @@ final readonly class JudgeHostProtectionHandler implements CommandHandler
             $this->builds->versionOf($command->family),
             $command->platform,
             $this->mechanisms->for($command->platform, $command->family),
-            $host->protectionEvidence(),
+            $host->protection_evidence,
         );
 
         $host->recordProtection($report);

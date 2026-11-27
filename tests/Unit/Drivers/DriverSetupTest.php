@@ -99,7 +99,7 @@ final class DriverSetupTest extends TestCase
             keyScripts: CodexKeyScripts::class,
             headlessTurns: HeadlessTurns::onAccountOwner(['codex', 'app-server']),
             signIn: new SignInSetup(
-                executableSetting: 'accounts.codex_program',
+                executable: 'codex',
                 environment: CodexSignInEnvironment::class,
                 modelCheck: new ModelCheck(['exec', 'Reply with OK.'], CodexModelAnswer::class, 1),
                 signOut: ['logout'],

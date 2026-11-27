@@ -23,12 +23,12 @@ use Spatie\LaravelData\Data;
 final class ListReportsPayload extends Data implements ApiPayload
 {
     public function __construct(
-        public AttentionFilter $attention = AttentionFilter::Active,
+        public readonly AttentionFilter $attention = AttentionFilter::Active,
         #[Min(1)]
-        public int $page = 1,
+        public readonly int $page = 1,
         #[Max(200)]
-        public string|null $query = null,
+        public readonly string|null $query = null,
         #[Ulid]
-        public string|null $after = null,
+        public readonly string|null $after = null,
     ) {}
 }

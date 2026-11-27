@@ -116,9 +116,7 @@ final readonly class ReadHereDocumentBodies implements Pipe
                 continue;
             }
 
-            $expansion = ($character === '`' || ($character === '$' && $cursor->at(
-                $cursor->position + 1,
-            ) === '(')) ? $this->expansions->read($cursor) : null;
+            $expansion = $this->substitutionAt($cursor, $character);
 
             if ($expansion !== null) {
                 $segments[] = $expansion;
@@ -130,5 +128,19 @@ final readonly class ReadHereDocumentBodies implements Pipe
         }
 
         return new Word($segments, $body);
+    }
+
+    /**
+     * The command substitution a here-document body holds at the cursor; none where the character starts none.
+     *
+     * @throws ShellLineUnreadable
+     */
+    private function substitutionAt(LexerCursor $cursor, string $character): WordSegment|null
+    {
+        if ($character !== '`' && ($character !== '$' || $cursor->at($cursor->position + 1) !== '(')) {
+            return null;
+        }
+
+        return $this->expansions->read($cursor);
     }
 }

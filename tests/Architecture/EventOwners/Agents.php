@@ -24,7 +24,6 @@ use App\Events\Sessions\AgentRuntimeObserved;
 use App\Events\Sessions\AgentRuntimeProcessGenerationAdvanced;
 use App\Events\Sessions\AgentRuntimeReassigned;
 use App\Events\Sessions\AgentRuntimeSettingsObserved;
-use App\Events\Sessions\AgentRuntimesFenced;
 use App\Events\Sessions\AgentRuntimeStarted;
 use App\Events\Sessions\AgentRuntimeStartGrantClaimed;
 use App\Events\Sessions\AgentRuntimeStartGrantHeld;
@@ -346,13 +345,6 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new AgentRuntimeAdopted('agent', 'session', 2),
-    ],
-    AgentRuntimesFenced::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Agent::fenceRuntimes',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new AgentRuntimesFenced('agent', 2),
     ],
     AgentFocusCleared::class => [
         'role' => EventRole::RowFact,

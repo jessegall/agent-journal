@@ -30,15 +30,17 @@ final readonly class MapSessionOutputs
         $start->advanceOutputGeneration();
         $granted = SessionOutputGrant::resolveHeldBy($session->id) ?: $this->continuedFrom($session);
 
-        $paths = $transcriptPath === null ? null : SessionOutputPaths::verified(
-            $this->adapters->for((string) $session->driver_key),
-            $start->directory,
-            $conversation->native_id,
-            $transcriptPath,
-        );
+        if ($transcriptPath !== null) {
+            $paths = SessionOutputPaths::verified(
+                $this->adapters->for((string) $session->driver_key),
+                $start->directory,
+                $conversation->native_id,
+                $transcriptPath,
+            );
 
-        if ($paths !== null) {
-            $granted[$conversation->id] = $paths;
+            if ($paths !== null) {
+                $granted[$conversation->id] = $paths;
+            }
         }
 
         $this->replaceFor($start, $granted);

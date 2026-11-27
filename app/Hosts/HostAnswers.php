@@ -56,7 +56,9 @@ final readonly class HostAnswers
 
     private function isWaiting(HostInstruction $instruction, int $deadline): bool
     {
-        return $instruction->isOpen() && hrtime(true) < $deadline && $this->clock->now()->lessThan($instruction->expires_at);
+        $isInTime = hrtime(true) < $deadline && $this->clock->now()->lessThan($instruction->expires_at);
+
+        return $instruction->isOpen() && $isInTime;
     }
 
     /**

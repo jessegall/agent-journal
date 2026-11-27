@@ -88,21 +88,17 @@ final class Skill extends JournalModel implements EventSource, Numbered, Readabl
     }
 
     /**
-     * Takes the skill out of every future selection, when its owner asks; its revisions stay readable. Answers the
-     * revision that was current.
+     * Takes the skill out of every future selection, when its owner asks; its revisions stay readable.
      *
      * @throws SkillOwnerRequired
      */
-    public function retireBy(ActorReference $actor): SkillRevision
+    public function retireBy(ActorReference $actor): void
     {
         $this->assertOwnedBy($actor);
 
         $this->retired_at = CarbonImmutable::now();
         $this->saveAndAssert();
-        $current = SkillRevision::findCurrentOf($this);
-        $this->raise(new SkillsChanged($this->id, $current->revision));
-
-        return $current;
+        $this->raise(new SkillsChanged($this->id, SkillRevision::findCurrentOf($this)->revision));
     }
 
     // ----------[ Predicates ]----------

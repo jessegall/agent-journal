@@ -21,7 +21,7 @@ final readonly class HostFacts implements Facts
             'id' => $this->host->hostId,
             'instructions' => fn () => array_map(
                 fn (HostInstruction $instruction) => new HostInstructionFacts($instruction),
-                HostInstruction::findForHostItself($this->host->hostId),
+                MadeHostInstructions::forHostItself($this->host->hostId),
             ),
         ];
     }

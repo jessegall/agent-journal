@@ -22,7 +22,7 @@ final readonly class InstructUpgradeOfQuietHost implements Listener
 
     public function handle(HostProcessEndEvent $fact): void
     {
-        $host = HostProcess::query()->with('host')->whereKey($fact->processId)->sole()->host;
+        $host = HostProcess::query()->withHost()->whereKey($fact->processId)->sole()->host;
 
         if (! $host->awaitsUpgradeInstruction() || HostProcess::query()->onHost($host)->live()->exists()) {
             return;

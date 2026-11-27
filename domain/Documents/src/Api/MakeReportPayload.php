@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Api;
 
 use App\Attributes\Api\Endpoint;
-use App\Attributes\SentField;
+use App\Attributes\Validation\SentField;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
@@ -30,16 +30,16 @@ final class MakeReportPayload extends Data implements ApiPayload
      * @param  list<string>  $relatedRecords
      */
     public function __construct(
-        public string $title,
-        public string $abstract,
+        public readonly string $title,
+        public readonly string $abstract,
         #[SentField]
         #[MapName('about')]
-        public array $relatedRecords,
+        public readonly array $relatedRecords,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
-        public string|null $body = null,
+        public readonly CallKey $requestKey,
+        public readonly string|null $body = null,
         #[MapName('upload_id')]
-        public string|null $uploadId = null,
+        public readonly string|null $uploadId = null,
     ) {}
 }

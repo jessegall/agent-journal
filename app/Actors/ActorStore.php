@@ -11,9 +11,13 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Support\ActorReference;
+use App\Values\StartProfileAuthority;
 use App\Values\TrustedEntryAuthority;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The one place this request's actor is kept, bound once per request as both CurrentActor and CurrentActorSetter, so
@@ -43,6 +47,21 @@ final class ActorStore implements ActorRunner, CurrentActor, CurrentActorSetter
     public function hasActor(): bool
     {
         return $this->installed !== [];
+    }
+
+    public function startProfileAuthority(): Option
+    {
+        if (! $this->hasActor()) {
+            return None::create();
+        }
+
+        $authority = $this->authority();
+
+        if (! $authority instanceof StartProfileAuthority) {
+            return None::create();
+        }
+
+        return new Some($authority);
     }
 
     public function set(Actor $actor, AuthoritySource $authority): void

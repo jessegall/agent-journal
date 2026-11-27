@@ -46,12 +46,12 @@ final class ApproveDriverTest extends TestCase
     public function test_a_third_party_driver_is_approved_with_only_the_builds_named(): void
     {
         $this->registryWithAcme();
-        $this->assertSame([], DriverApproval::resolveBuildsByKey(['acme/reader']));
+        $this->assertFalse(DriverApproval::create(DriverKey::from('acme/reader'))->exists);
 
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ApproveDriverCommand(DriverKey::from('acme/reader'), ['1.0.0']));
 
-        $this->assertSame(['acme/reader' => ['1.0.0']], DriverApproval::resolveBuildsByKey(['acme/reader']));
+        $this->assertSame(['1.0.0'], DriverApproval::create(DriverKey::from('acme/reader'))->build_pins);
     }
 
     private function registryWithAcme(): DriverCatalogue

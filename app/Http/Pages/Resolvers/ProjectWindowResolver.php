@@ -90,7 +90,7 @@ final readonly class ProjectWindowResolver implements PageResolver
      */
     private function tree(ProjectFileAnswers $answers, string $folder, array $entries, array $open): array
     {
-        return array_map(function (HostProjectEntryPayload $entry) use ($answers, $folder, $open): ProjectTreeEntryData {
+        $entryOf = function (HostProjectEntryPayload $entry) use ($answers, $folder, $open): ProjectTreeEntryData {
             $path = $folder === '' ? $entry->name : "{$folder}/{$entry->name}";
             $isOpen = $entry->isFolder && in_array($path, $open, true);
             $answer = $isOpen ? $answers->of($path) : null;
@@ -107,6 +107,8 @@ final readonly class ProjectWindowResolver implements PageResolver
                     ? $this->tree($answers, $path, $answer->entries, $open)
                     : [],
             ]);
-        }, $entries);
+        };
+
+        return array_map($entryOf, $entries);
     }
 }

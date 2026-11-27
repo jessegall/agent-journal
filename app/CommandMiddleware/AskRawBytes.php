@@ -13,7 +13,7 @@ use Closure;
 
 /**
  * While recording is on, a terminal is opened asking the host for its bytes from the first one, so the recording
- * keeps what the program printed; with recording off nothing changes, and no command knows the recorder.
+ * keeps what the driver printed; with recording off nothing changes, and no command knows the recorder.
  */
 final readonly class AskRawBytes implements CommandMiddleware
 {

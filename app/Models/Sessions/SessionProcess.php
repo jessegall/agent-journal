@@ -57,7 +57,7 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property string|null $refusal
- * @property-read mixed $account_identity
+ * @property-read RecordIdentity $account_identity
  * @property-read mixed $settings_identity
  *
  * @mixin \Eloquent
@@ -629,5 +629,27 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
                 ->withAnyStatus(SessionStatus::running())
                 ->neverBeat()
                 ->keys());
+    }
+
+    /**
+     * Only the id of each start, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ids(Builder $query): void
+    {
+        $query->select('id');
+    }
+
+    /**
+     * Only the session of each start, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sessionIds(Builder $query): void
+    {
+        $query->select('session_id');
     }
 }

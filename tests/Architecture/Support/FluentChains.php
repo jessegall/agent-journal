@@ -14,15 +14,16 @@ use RecursiveIteratorIterator;
 
 /**
  * The faults of rule 115 in a set of classes: a public method of a fluent class that hands back another fluent class
- * switches the chain's subject, and a verb that names an inner subject flattens it. A fluent class is one, not a
- * model, that declares a public method returning itself; a getter that ends a chain is named for what it gives back.
+ * switches the chain's subject, and a verb that names an inner subject flattens it. A fluent class is one, neither a
+ * model nor a readonly value, that declares a public method returning itself; a getter that ends a chain is named for
+ * what it gives back.
  */
 final readonly class FluentChains
 {
     /**
      * The words of an inner subject a flattened verb carries in its name.
      */
-    private const string FLATTENED = '/On(TestHost|HostProcess|Mock)|StandIn|TestHost(?!$)|MockTurns/';
+    private const string FLATTENED = '/On(TestHost|HostProcess|Mock)|TestHost(?!$)|MockTurns/';
 
     /**
      * Verbs that carry a subject's word as the scope verb of that subject itself.
@@ -100,8 +101,11 @@ final readonly class FluentChains
      */
     private static function isFluent(string $class): bool
     {
-        // A row is no chain's subject: a model's own changes answer it, never a chain of verbs on it.
-        if (Reflector::of($class)->isSubclassOf(Model::class)) {
+        // A row is no chain's subject: a model's own changes answer it, never a chain of verbs on it. Nor is a readonly
+        // value: what it hands back of its own class is a new value, never the same subject changed.
+        $type = Reflector::of($class);
+
+        if ($type->isSubclassOf(Model::class) || $type->isReadOnly()) {
             return false;
         }
 

@@ -20,7 +20,7 @@ final readonly class RunStartWithItsProcess implements Listener
 
     public function handle(HostProcessStarted $fact): void
     {
-        $process = HostProcess::query()->with('sessionProcess')->whereKey($fact->processId)->sole();
+        $process = HostProcess::query()->withSessionProcess()->whereKey($fact->processId)->sole();
         $start = $process->sessionProcess;
 
         // A probe runs before the start's agent does: only the agent's own process moves the start to running.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus;
 
-use App\Attributes\ValidationOnRead;
+use App\Attributes\Validation\ValidationOnRead;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Reflection\AttributeEntry;
 use App\Reflection\Contracts\ReflectorFactory;

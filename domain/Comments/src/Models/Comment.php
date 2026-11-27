@@ -130,18 +130,6 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
         });
     }
 
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses every edit: a comment stays as it was written.
-     *
-     * @throws CommentImmutable
-     */
-    private function assertUnedited(): never
-    {
-        throw CommentImmutable::for($this->id);
-    }
-
     // ----------[ Relations ]----------
 
     /**
@@ -152,6 +140,18 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     public function anchor(): HasOne
     {
         return $this->hasOne(CommentAnchor::class);
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses every edit: a comment stays as it was written.
+     *
+     * @throws CommentImmutable
+     */
+    private function assertUnedited(): never
+    {
+        throw CommentImmutable::for($this->id);
     }
 
     // ----------[ Queries ]----------
@@ -223,5 +223,14 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     protected function submittedAs(Builder $query, ActorReference $author, string $key): void
     {
         $query->where('author_type', $author->type)->where('author_id', $author->id)->where('submission_key', $key);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withAnchor(Builder $query): void
+    {
+        $query->with('anchor');
     }
 }

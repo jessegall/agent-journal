@@ -13,7 +13,7 @@ so who sits where is read like any other holding. A desk is never an actor.
 - Every agent gets a personal desk when it is created (`CreateAgentHandler` through `ActorProvisioning`); the owner gets
   one when seeded, and a user who registers gets one in the same transaction (`CreateNewUser`).
 - A main start takes main's seat (`MainSeatTakeover`, implemented by `Desks\Support\MainTakeover`). A different agent
-  holding it is replaced and fenced: `Agent::fenceRuntimes` ends its current runtime, so its credentials are refused.
+  holding it is replaced.
 - Work held by a desk counts as held by everyone seated there (`SharedHolders`), and losing a seat ends the claims it
   carried.
 
@@ -21,7 +21,7 @@ so who sits where is read like any other holding. A desk is never an actor.
 
 An inbox (`App\Inboxes\Contracts\LabeledInbox`, row `InboxRecord`) belongs to a provider registered on
 `InboxRegistration` with an `InboxAccess`: shared and exclusive guards, the membership of one actor, all members, and
-the inboxes an actor sits at. Desks are one provider (`DeskInboxAccess`); the registry (`RegisteredInboxes`) combines
+the inboxes an actor sits at. Desks are one provider (`DeskInboxAccess`); the registry (`InboxRegistration`) combines
 every provider, so visibility and pending work never assume desks. `InboxDestinationResolver` turns an assignee into
 the inbox to write to: its forwarding desk (main for the agent at main), else its own.
 

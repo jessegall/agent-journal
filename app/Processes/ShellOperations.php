@@ -85,9 +85,14 @@ final readonly class ShellOperations
 
         foreach ($node->redirects as $redirect) {
             $access = self::redirectAccess($redirect);
-            $target = $redirect->target instanceof Word ? $redirect->target->literal() : null;
 
-            if ($access !== [] && $target !== null) {
+            if ($access === [] || ! $redirect->target instanceof Word) {
+                continue;
+            }
+
+            $target = $redirect->target->literal();
+
+            if ($target !== null) {
                 $operations[] = new Operation(
                     self::SURFACE,
                     "shell:redirect.{$redirect->type->value}",

@@ -33,25 +33,25 @@ final class EditDocumentPayload extends Data implements ApiPayload
 
     public function __construct(
         #[Max(32)]
-        public string $number,
+        public readonly string $number,
         #[Max(64)]
-        public string $token,
+        public readonly string $token,
         #[Min(1)]
-        public int $version,
+        public readonly int $version,
         #[In('body', 'section', 'text', 'details')]
-        public string $mode,
-        public string|null $section,
-        public string|null $body,
+        public readonly string $mode,
+        public readonly string|null $section,
+        public readonly string|null $body,
         #[MapName('old')]
-        public string|null $originalText,
+        public readonly string|null $originalText,
         #[MapName('new')]
-        public string|null $replacementText,
-        public string|null $title,
-        public string|null $abstract,
+        public readonly string|null $replacementText,
+        public readonly string|null $title,
+        public readonly string|null $abstract,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
         #[MapName('upload_id')]
-        public string|null $uploadId = null,
+        public readonly string|null $uploadId = null,
     ) {}
 }

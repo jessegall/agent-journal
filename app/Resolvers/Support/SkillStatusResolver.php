@@ -72,7 +72,7 @@ final readonly class SkillStatusResolver
         ) {
             $key = $entry->key->key;
             $selected = in_array($key, $selection['selected'], true);
-            $handedDigest = $session->hasSkill($key) ? $handedGeneration?->entry($key)?->digest : null;
+            $handedDigest = self::handedDigestOf($session, $handedGeneration, $key);
 
             $changed = $selected !== ($handedDigest !== null)
                 || ($handedDigest !== null && $handedDigest !== $entry->rendered->digest);
@@ -89,6 +89,21 @@ final readonly class SkillStatusResolver
                 in_array($key, $waitingKeys, true),
             );
         }, $skillEntries);
+    }
+
+    /**
+     * The digest of the skill as the session was handed it; none for a skill it was not handed.
+     */
+    private static function handedDigestOf(
+        AgentSession $session,
+        SkillGeneration|null $generation,
+        string $key,
+    ): string|null {
+        if (! $session->hasSkill($key)) {
+            return null;
+        }
+
+        return $generation?->entry($key)?->digest;
     }
 
     /**

@@ -60,19 +60,13 @@ final readonly class InboxEligibility implements InboxEligibilityContract
             ->allowing(InboxPermission::ReceiveInvitations)
             ->userIds();
 
-        return array_values(array_map(strval(...), User::query()
-            ->whereNull('disabled_at')
-            ->where(fn ($users) => $users->whereIn('id', $granted)->orWhere('id', $this->settings->ownerId))
-            ->orderBy('name')
-            ->limit($limit)
-            ->pluck('id')
-            ->all()));
+        return User::resolveEnabledIdsGrantedOrOwner($granted, $this->settings->ownerId, $limit);
     }
 
     private function isActiveUser(ActorReference $user): bool
     {
         return $user->isUser()
-            && User::query()->whereKey($user->id)->whereNull('disabled_at')->exists();
+            && User::isEnabledUser($user->id);
     }
 
     private function isOwner(ActorReference $user): bool

@@ -579,7 +579,11 @@ final class TerminalDriver implements ProcessDriver
             $actions = DriverActions::of($this->activity(RuntimeActivity::Idle, HoldReason::None));
         }
 
-        $request = $this->isTaken ? null : array_shift($this->waiting);
+        if ($this->isTaken) {
+            return $actions;
+        }
+
+        $request = array_shift($this->waiting);
 
         if ($request === null) {
             return $actions;

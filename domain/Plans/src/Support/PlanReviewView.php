@@ -8,6 +8,7 @@ use App\Access\Contracts\CurrentAuthorizer;
 use App\Agents\Enums\AccessType;
 use App\Assignments\AssignmentGroup;
 use App\Assignments\Contracts\AssigneeResolver;
+use App\Support\AssigneeName;
 use App\Support\IdListPage;
 use Domain\Plans\Data\PlanReviewData;
 use Domain\Plans\Data\PlanReviewReceiptData;
@@ -76,8 +77,18 @@ final readonly class PlanReviewView
             'movingTasks' => $progress->unfinished(),
             'stayingTasks' => $progress->finished + $progress->cancelled,
             'isOverLimit' => 1 + $phaseCount + $progress->total > AssignmentGroup::LARGEST,
-            'recipients' => $this->assignees->eligible('agent', new IdListPage(null, self::RECIPIENTS_SHOWN))->assignees,
+            'recipients' => $this->recipients(),
         ]);
+    }
+
+    /**
+     * The agents a plan's work may be handed to, the first page of them.
+     *
+     * @return list<AssigneeName>
+     */
+    private function recipients(): array
+    {
+        return $this->assignees->eligible('agent', new IdListPage(null, self::RECIPIENTS_SHOWN))->assignees;
     }
 
     private static function receiptOrMissing(PlanReviewEdition|null $edition): PlanReviewReceiptData|Optional

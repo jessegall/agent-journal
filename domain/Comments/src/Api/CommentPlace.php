@@ -29,18 +29,18 @@ final class CommentPlace extends Data
 
     public function __construct(
         #[Max(64)]
-        public string $version,
+        public readonly string $version,
         #[Min(1)]
-        public int|null $section = null,
+        public readonly int|null $section = null,
         #[MapName('first_line'), Min(1)]
-        public int|null $firstLine = null,
+        public readonly int|null $firstLine = null,
         #[MapName('last_line'), Min(1)]
-        public int|null $lastLine = null,
-        public string|null $quote = null,
+        public readonly int|null $lastLine = null,
+        public readonly string|null $quote = null,
         #[MapName('start_offset'), Min(0)]
-        public int|null $startOffset = null,
+        public readonly int|null $startOffset = null,
         #[MapName('end_offset'), Min(0)]
-        public int|null $endOffset = null,
+        public readonly int|null $endOffset = null,
     ) {}
 
     /**

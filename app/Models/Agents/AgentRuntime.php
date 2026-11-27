@@ -28,7 +28,6 @@ use App\Events\Sessions\AgentRuntimeStartGrantClaimed;
 use App\Events\Sessions\AgentRuntimeStartGrantHeld;
 use App\Events\Sessions\AgentRuntimeStartProven;
 use App\Events\Sessions\AgentRuntimeStopRequested;
-use App\Exceptions\CredentialRejected;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalView;
@@ -38,9 +37,7 @@ use App\Models\Sessions\SessionRequest;
 use App\Models\Support\JournalModel;
 use App\Processes\Data\RuntimeStatus;
 use App\Processes\Enums\RuntimeActivity;
-use App\Profiles\StartProfilePin;
 use App\Records\Contracts\ReadableModel;
-use App\Sessions\AgentClientSettings;
 use App\Support\RuntimeStatuses;
 use App\Values\PinnedDriver;
 use Carbon\CarbonImmutable;
@@ -258,21 +255,6 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Hands over the start's token once, with the address the process reaches the journal at and the profile its
-     * session was pinned to.
-     *
-     * @throws CredentialRejected
-     */
-    public function handOverStartCredentials(string $journalUrl): AgentClientSettings
-    {
-        $token = $this->claimStartGrant() ?? throw CredentialRejected::unknown();
-        $session = $this->session()->sole();
-        $profile = new StartProfilePin($session->profile_key, $session->profile_revision);
-
-        return new AgentClientSettings($journalUrl, $token, $profile);
-    }
-
-    /**
      * The conversation every turn of a runtime the journal opens itself continues, chosen when it opens, or when its
      * driver names the conversation it started.
      */
@@ -303,7 +285,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Whether the runtime's start was proven: its program is known to run.
+     * Whether the runtime's start was proven: its driver is known to run.
      */
     public function hasProvenStart(): bool
     {
@@ -315,7 +297,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
      */
     public function hasLiveProcess(HostProcessPurpose $purpose): bool
     {
-        return $this->hostProcesses()->live()->where('purpose', $purpose)->exists();
+        return $this->hostProcesses()->live()->ofPurposes([$purpose])->exists();
     }
 
     /**
@@ -332,7 +314,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
 
         return array_values(array_map(
             strval(...),
-            $this->hostProcesses()->live()->whereIn('purpose', $agentProcesses)->limit(8)->pluck('id')->all(),
+            $this->hostProcesses()->live()->ofPurposes($agentProcesses)->limit(8)->pluck('id')->all(),
         ));
     }
 
@@ -343,7 +325,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     public function continuesConversation(): bool
     {
         return $this->conversation_named_at !== null
-            || $this->hostProcesses()->where('purpose', HostProcessPurpose::AgentTurn)->exists()
+            || $this->hostProcesses()->ofPurposes([HostProcessPurpose::AgentTurn])->exists()
             || SessionRequest::resolveConversationTargetOf($this->agent_session_id) === $this->conversation_id;
     }
 
@@ -929,5 +911,27 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     protected function exceptDrivers(Builder $query, array $keys): void
     {
         $query->whereNotIn('driver_key', $keys);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
+     */
+    #[Scope]
+    protected function withIds(Builder $query, array|Builder|Closure $ids): void
+    {
+        $query->whereIn('id', $ids);
+    }
+
+    /**
+     * The runtimes of the drivers named.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $keys
+     */
+    #[Scope]
+    protected function ofDrivers(Builder $query, array $keys): void
+    {
+        $query->whereIn('driver_key', $keys);
     }
 }

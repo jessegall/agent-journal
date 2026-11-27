@@ -49,7 +49,7 @@ final readonly class CancelAccountUsesHandler implements CommandHandler
     private function stopProcessesOf(RecordIdentity $account): void
     {
         $processes = HostProcess::query()->live()
-            ->whereIn('session_process_id', SessionProcess::query()->supervised()->onAccount($account)->select('id'))
+            ->ofStarts(SessionProcess::query()->supervised()->onAccount($account)->ids())
             ->get();
 
         foreach ($processes as $process) {

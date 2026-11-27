@@ -9,7 +9,6 @@ use App\Api\Communication\UnreadMessages;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Messages\Commands\ReadUnreadMessages\ReadUnreadMessagesCommand;
-use App\Messages\Data\MessageView;
 
 /**
  * Reads the caller's unread messages and records each read.
@@ -21,6 +20,6 @@ final readonly class ReadUnreadMessagesController
     {
         $shown = $commands->run(new ReadUnreadMessagesCommand());
 
-        return UnreadMessages::from(['messages' => array_map(MessageView::of(...), $shown->messages)]);
+        return UnreadMessages::from(['messages' => $shown->messages]);
     }
 }

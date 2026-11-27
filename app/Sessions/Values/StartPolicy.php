@@ -63,14 +63,16 @@ final readonly class StartPolicy
      */
     public static function mainInContainer(string $imageReference): self
     {
-        return self::withoutProfile(new ExecutionPolicy(
-            ExecutionModeType::RequiredContainer,
-            $imageReference,
-            ProfileStartPolicy::WORKSPACE,
-            ExecutionBudgets::defaults(),
-            [],
-            true,
-        ));
+        return self::withoutProfile(
+            ExecutionPolicy::from([
+                'mode' => ExecutionModeType::RequiredContainer,
+                'image_reference' => $imageReference,
+                'worktree' => ProfileStartPolicy::WORKSPACE,
+                'budgets' => ExecutionBudgets::defaults(),
+                'network_capabilities' => [],
+                'is_attachable' => true,
+            ]),
+        );
     }
 
     /**

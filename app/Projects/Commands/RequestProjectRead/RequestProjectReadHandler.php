@@ -58,14 +58,15 @@ final readonly class RequestProjectReadHandler implements CommandHandler
      */
     private function ordered(ProjectBinding $binding, ProjectRead $read): ProjectRead
     {
-        $this->instructions->readProject($binding->host_id, HostInstructionSource::fromJournal(), HostProjectReadPayload::from([
+        $payload = HostProjectReadPayload::from([
             'id' => $read->id,
             'binding_id' => $read->binding_id,
             'type' => $read->type->value,
             'path' => $read->path,
             'entries_limit' => ProjectRead::DIRECTORY_ENTRY_LIMIT,
             'text_limit' => ProjectRead::FILE_TEXT_BYTE_LIMIT,
-        ]));
+        ]);
+        $this->instructions->readProject($binding->host_id, HostInstructionSource::fromJournal(), $payload);
 
         return $read;
     }

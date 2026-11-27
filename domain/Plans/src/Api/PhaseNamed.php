@@ -15,6 +15,6 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class PhaseNamed extends Data
 {
     public function __construct(
-        public string $phaseId,
+        public readonly string $phaseId,
     ) {}
 }

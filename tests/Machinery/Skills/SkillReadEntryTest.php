@@ -25,7 +25,7 @@ final class SkillReadEntryTest extends TestCase
         $this->journal->owner()->agent('Writer');
         $session = $this->journal->sessionOf('Writer');
 
-        $entry = SkillReadEntry::record($session, 'journal', ReadEvidence::SkillShow);
+        $entry = SkillReadEntry::create($session, 'journal', ReadEvidence::SkillShow);
 
         $stored = SkillReadEntry::query()->whereKey($entry->id)->sole();
         $this->assertSame($session->agent_id, $stored->agent_id);
@@ -43,8 +43,8 @@ final class SkillReadEntryTest extends TestCase
         $this->journal->owner()->agent('Writer');
         $session = $this->journal->sessionOf('Writer');
 
-        SkillReadEntry::record($session, 'journal', ReadEvidence::FullFileRead);
-        $second = SkillReadEntry::record($session, 'journal', ReadEvidence::ClaudeSkillTool);
+        SkillReadEntry::create($session, 'journal', ReadEvidence::FullFileRead);
+        $second = SkillReadEntry::create($session, 'journal', ReadEvidence::ClaudeSkillTool);
 
         $entries = SkillReadEntry::findLatestOfSession($session->id, 10);
         $this->assertCount(2, $entries);
@@ -56,9 +56,9 @@ final class SkillReadEntryTest extends TestCase
         $this->journal->owner()->agent('Writer')->agent('Reader');
         $writer = $this->journal->sessionOf('Writer');
         $reader = $this->journal->sessionOf('Reader');
-        SkillReadEntry::record($writer, 'journal', ReadEvidence::SkillShow);
-        SkillReadEntry::record($writer, 'journal-plans', ReadEvidence::SkillShow);
-        SkillReadEntry::record($reader, 'journal', ReadEvidence::SkillShow);
+        SkillReadEntry::create($writer, 'journal', ReadEvidence::SkillShow);
+        SkillReadEntry::create($writer, 'journal-plans', ReadEvidence::SkillShow);
+        SkillReadEntry::create($reader, 'journal', ReadEvidence::SkillShow);
 
         foreach (SkillReadEntry::findBatchOfAgent($writer->agent_id) as $entry) {
             $entry->forget();

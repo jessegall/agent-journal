@@ -28,7 +28,7 @@ final readonly class ClaudeCodeKeyScripts implements DriverKeyScripts
      */
     public function __invoke(): array
     {
-        // The model and the level are named on the command line, so no picker is walked (user 28771, 28786).
+        // The model and the level are named on the command line, so no picker is walked.
         $changeModel = [
             ...KeyScript::pastedCommand('/model {model}', '❯ /model', '{model}'),
             // Once a conversation began Claude Code asks first, as it is read again on the new model; the dialog opens

@@ -29,6 +29,7 @@ use App\Hosts\Values\ProcessExit;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionProcess;
+use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Models\Support\SessionProcessScope;
 use App\Records\Contracts\ReadableModel;
@@ -36,6 +37,7 @@ use App\Values\HostProcessPlan;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -63,6 +65,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable|null $ended_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
+ * @property-read string $container_name
+ * @property-read string $end_evidence
  * @property-read Host $host
  * @property-read AgentRuntime|null $runtime
  * @property-read SessionProcess|null $sessionProcess
@@ -136,34 +140,6 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $process->raise(new HostProcessOpened($process->id, $process->agent_runtime_id, $runtime?->agent_session_id));
 
         return $process;
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * The start the process runs for, whoever's agent it belongs to.
-     *
-     * @return BelongsTo<SessionProcess, $this>
-     */
-    public function sessionProcess(): BelongsTo
-    {
-        return $this->belongsTo(SessionProcess::class)->withoutGlobalScope(SessionProcessScope::class);
-    }
-
-    /**
-     * @return BelongsTo<Host, $this>
-     */
-    public function host(): BelongsTo
-    {
-        return $this->belongsTo(Host::class);
-    }
-
-    /**
-     * @return BelongsTo<AgentRuntime, $this>
-     */
-    public function runtime(): BelongsTo
-    {
-        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
     }
 
     // ----------[ Mutations ]----------
@@ -338,14 +314,6 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         return $this->input_generation;
     }
 
-    /**
-     * The name the host gives the container a contained process runs in.
-     */
-    public function containerName(): string
-    {
-        return self::CONTAINER_PREFIX.$this->id;
-    }
-
     // ----------[ Predicates ]----------
 
     /**
@@ -375,19 +343,63 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         return $this->status === HostProcessStatus::Exited && $this->exit_code === 0;
     }
 
-    /**
-     * How the host reported the process ended: its exit code, or its loss with the host's reason.
-     */
-    public function endEvidence(): string
-    {
-        $ended = $this->status === HostProcessStatus::Lost ? 'was lost' : "exited with {$this->exit_code}";
-
-        return $this->exit_evidence === null ? $ended : "{$ended}: {$this->exit_evidence}";
-    }
-
     public function isOrdered(): bool
     {
         return $this->status === HostProcessStatus::Ordered;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The name the host gives the container a contained process runs in.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function containerName(): Attribute
+    {
+        return Accessor::get(fn () => self::CONTAINER_PREFIX.$this->id);
+    }
+
+    /**
+     * How the host reported the process ended: its exit code, or its loss with the host's reason.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function endEvidence(): Attribute
+    {
+        return Accessor::get(function () {
+            $ended = $this->status === HostProcessStatus::Lost ? 'was lost' : "exited with {$this->exit_code}";
+
+            return $this->exit_evidence === null ? $ended : "{$ended}: {$this->exit_evidence}";
+        });
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * The start the process runs for, whoever's agent it belongs to.
+     *
+     * @return BelongsTo<SessionProcess, $this>
+     */
+    public function sessionProcess(): BelongsTo
+    {
+        return $this->belongsTo(SessionProcess::class)->withoutGlobalScope(SessionProcessScope::class);
+    }
+
+    /**
+     * @return BelongsTo<Host, $this>
+     */
+    public function host(): BelongsTo
+    {
+        return $this->belongsTo(Host::class);
+    }
+
+    /**
+     * @return BelongsTo<AgentRuntime, $this>
+     */
+    public function runtime(): BelongsTo
+    {
+        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
     }
 
     // ----------[ Asserts ]----------
@@ -457,7 +469,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
      */
     public static function hasLiveOfPurposesOn(string $hostId, array $purposes): bool
     {
-        return self::query()->where('host_id', $hostId)->ofPurposes($purposes)->live()->exists();
+        return self::query()->onHostWithId($hostId)->ofPurposes($purposes)->live()->exists();
     }
 
     /**
@@ -465,10 +477,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
      */
     public static function hasLiveOfSession(string $sessionId): bool
     {
-        return self::query()
-            ->live()
-            ->whereHas('runtime', fn (Builder $runtime) => $runtime->ofSessions([$sessionId]))
-            ->exists();
+        return self::query()->live()->ofSession($sessionId)->exists();
     }
 
     /**
@@ -477,10 +486,10 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     public static function hasLiveOwnerOf(string $hostId, SessionProcess $start): bool
     {
         return self::query()
-            ->where('host_id', $hostId)
+            ->onHostWithId($hostId)
             ->ofPurposes([HostProcessPurpose::AccountOwner])
             ->live()
-            ->whereHas('sessionProcess', fn (Builder $owned) => $owned->onAccountGenerationOf($start))
+            ->openedForAccountGenerationOf($start)
             ->exists();
     }
 
@@ -491,6 +500,37 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     protected function onHost(Builder $query, Host $host): void
     {
         $query->where('host_id', $host->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onHostWithId(Builder $query, string $hostId): void
+    {
+        $query->where('host_id', $hostId);
+    }
+
+    /**
+     * The processes of the session's runtimes.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSession(Builder $query, string $sessionId): void
+    {
+        $query->whereHas('runtime', fn (Builder $runtime) => $runtime->ofSessions([$sessionId]));
+    }
+
+    /**
+     * The processes opened for a start on the account and sign-in generation of this start.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function openedForAccountGenerationOf(Builder $query, SessionProcess $start): void
+    {
+        $query->whereHas('sessionProcess', fn (Builder $owned) => $owned->onAccountGenerationOf($start));
     }
 
     /**
@@ -556,5 +596,44 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     protected function startIds(Builder $query): void
     {
         $query->whereNotNull('session_process_id')->select('session_process_id');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRuntime(Builder $query): void
+    {
+        $query->with('runtime');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withHost(Builder $query): void
+    {
+        $query->with('host');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withSessionProcess(Builder $query): void
+    {
+        $query->with('sessionProcess');
+    }
+
+    /**
+     * The processes opened for these starts.
+     *
+     * @param  Builder<self>  $query
+     * @param  Builder<SessionProcess>  $ids
+     */
+    #[Scope]
+    protected function ofStarts(Builder $query, Builder $ids): void
+    {
+        $query->whereIn('session_process_id', $ids);
     }
 }

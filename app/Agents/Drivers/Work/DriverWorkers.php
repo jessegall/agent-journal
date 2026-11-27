@@ -65,7 +65,7 @@ final readonly class DriverWorkers
     public function begin(string $processId): DriverWork
     {
         $generation = $this->run(new ClaimHostWorkerCommand($processId));
-        $process = HostProcess::query()->with('runtime')->whereKey($processId)->sole();
+        $process = HostProcess::query()->withRuntime()->whereKey($processId)->sole();
         $output = ProcessFeed::streamKey($process->id);
         $streams = [$output];
 
@@ -170,7 +170,10 @@ final readonly class DriverWorkers
     {
         $runtimes = $this->owners->runtimesOf($process)->get();
         $inFlight = array_values(DriverRequest::query()->inFlightForAny($runtimes)->get()->all());
-        $ordered = array_merge(...array_map(fn (DriverRequest $request) => HostInstruction::orderedFor($request), $inFlight));
+        $ordered = array_merge(...array_map(
+            fn (DriverRequest $request) => HostInstruction::findOrderedFor($request),
+            $inFlight,
+        ));
 
         return $work->driver->resume($inFlight, $ordered);
     }

@@ -28,12 +28,12 @@ use App\Inboxes\ActorInboxResolver;
 use App\Inboxes\Contracts\InboxDestinationResolver as InboxDestinationResolverContract;
 use App\Inboxes\Contracts\InboxMemberPolicies;
 use App\Inboxes\Contracts\InboxMemberRoutes;
-use App\Inboxes\Contracts\InboxRegistration;
+use App\Inboxes\Contracts\InboxRegistration as InboxRegistrationContract;
 use App\Inboxes\Contracts\MainInbox as MainInboxContract;
 use App\Inboxes\CoreInboxes;
 use App\Inboxes\InboxAssignees;
 use App\Inboxes\MainInbox;
-use App\Inboxes\RegisteredInboxes;
+use App\Inboxes\InboxRegistration;
 use App\Inboxes\SharedHolders;
 use App\Links\MessageLinkRecords;
 use App\Messages\Contracts\MessageParticipants as MessageParticipantsContract;
@@ -71,8 +71,8 @@ final class CommunicationServiceProvider extends ServiceProvider
     {
         $this->app->bind(NotificationDeliveryContract::class, NotificationDelivery::class);
         $this->app->bind(MessageParticipantsContract::class, MessageParticipants::class);
-        $this->app->singleton(RegisteredInboxes::class);
-        $this->app->singleton(InboxRegistration::class, RegisteredInboxes::class);
+        $this->app->singleton(InboxRegistration::class);
+        $this->app->singleton(InboxRegistrationContract::class, InboxRegistration::class);
         $this->app->scoped(ActorProvisioningContract::class, ActorProvisioning::class);
         $this->app->scoped(ActorInboxResolverContract::class, ActorInboxResolver::class);
         $this->app->scoped(RunClaimsContract::class, RunClaims::class);
@@ -81,7 +81,6 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->singleton(DestinationRegistry::class);
         $this->app->scoped(AssignmentDestinationResolverContract::class, AssignmentDestinationResolver::class);
         $this->app->scoped(InboxDestinationResolverContract::class, InboxDestinationResolver::class);
-        $this->app->singleton(RegisteredInboxes::class);
         $this->app->bind(AgentNoticesContract::class, AgentNotices::class);
         $this->app->singleton(NotificationTargets::class);
         $this->app->singleton(NotificationTargetsContract::class, NotificationTargets::class);
@@ -96,7 +95,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         RecordProviderRegistration $records,
         PolicyCatalogue $policies,
         ReadEntitlements $reads,
-        InboxRegistration $inboxes,
+        InboxRegistrationContract $inboxes,
         DestinationRegistry $destinations,
         AssignmentRegistration $assignments,
         NotificationTargets $notificationTargets,

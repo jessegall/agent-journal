@@ -52,11 +52,6 @@ final class CommentAnchor extends JournalModel implements ReadableModel
         ];
     }
 
-    public function defaultReadOrder(): ReadOrder
-    {
-        return ReadOrder::by(['comment_anchors.comment_id'], 'comment_anchors.id');
-    }
-
     // ----------[ Constructors ]----------
 
     /**
@@ -83,6 +78,11 @@ final class CommentAnchor extends JournalModel implements ReadableModel
 
     // ----------[ Transformers ]----------
 
+    public function defaultReadOrder(): ReadOrder
+    {
+        return ReadOrder::by(['comment_anchors.comment_id'], 'comment_anchors.id');
+    }
+
     /**
      * The anchor its columns hold.
      *
@@ -104,6 +104,16 @@ final class CommentAnchor extends JournalModel implements ReadableModel
             $isQuote ? (int) $this->start_offset : 0,
             $isQuote ? (int) $this->end_offset : 0,
         );
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<Comment, $this>
+     */
+    public function comment(): BelongsTo
+    {
+        return $this->belongsTo(Comment::class);
     }
 
     // ----------[ Asserts ]----------
@@ -138,15 +148,5 @@ final class CommentAnchor extends JournalModel implements ReadableModel
         }
 
         return $type;
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return BelongsTo<Comment, $this>
-     */
-    public function comment(): BelongsTo
-    {
-        return $this->belongsTo(Comment::class);
     }
 }

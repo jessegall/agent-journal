@@ -47,8 +47,7 @@ final readonly class ReadRequestKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $call = $request->route()?->defaults[ApiRegistrar::CALL_DEFAULT] ?? null;
-        $declaration = is_string($call) && Reflector::exists($call) ? ApiDeclaration::of($call) : null;
+        $declaration = self::declarationOf($request);
 
         if ($declaration !== null) {
             self::requireDeclaredFields($request, $declaration);
@@ -75,6 +74,20 @@ final readonly class ReadRequestKey
         } finally {
             $this->key->forget();
         }
+    }
+
+    /**
+     * The declaration of the call the route was registered from; none for an older route.
+     */
+    private static function declarationOf(Request $request): ApiDeclaration|null
+    {
+        $call = $request->route()?->defaults[ApiRegistrar::CALL_DEFAULT] ?? null;
+
+        if (! is_string($call) || ! Reflector::exists($call)) {
+            return null;
+        }
+
+        return ApiDeclaration::of($call);
     }
 
     private static function readRequest(ApiDeclaration $declaration, Request $request): ReadRequest

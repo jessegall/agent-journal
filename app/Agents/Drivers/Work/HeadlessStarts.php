@@ -128,7 +128,8 @@ final readonly class HeadlessStarts
         $token = $runtime->claimStartGrant() ?? $this->tokens->rotate($session);
         $profile = new StartProfilePin($session->profile_key, $session->profile_revision);
 
-        $journalUrl = $runtime->executablePlace() === ExecutablePlace::Image ? $this->sessionJournalUrl : self::JOURNAL_URL;
+        $isContained = $runtime->executablePlace() === ExecutablePlace::Image;
+        $journalUrl = $isContained ? $this->sessionJournalUrl : self::JOURNAL_URL;
 
         return new AgentClientSettings($journalUrl, $token, $profile);
     }

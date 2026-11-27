@@ -55,6 +55,6 @@ final class RevokeProjectBindingsTest extends TestCase
      */
     private function mainOf(Project $project): Environment
     {
-        return Environment::findListedOf($project->id)[0];
+        return Environment::findListedOfProjects([$project->id])[0];
     }
 }

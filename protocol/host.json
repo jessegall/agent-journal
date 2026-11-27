@@ -38,7 +38,7 @@
         "read_project": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "project_read", "reply": "empty" },
         "upgrade": { "scope": "host", "process_type": "any", "payload": "upgrade_plan", "reply": "upgrade_started" }
     },
-    "placeholder_kinds": [
+    "placeholder_types": [
         "folder",
         "host"
     ],

@@ -26,8 +26,8 @@ final class ListPhaseChecksPayload extends Data implements ApiPayload
 
     public function __construct(
         #[Min(1)]
-        public int $plan,
+        public readonly int $plan,
         #[Min(1)]
-        public int $phase,
+        public readonly int $phase,
     ) {}
 }

@@ -18,7 +18,7 @@ final readonly class OpenStopCheckHandler implements CommandHandler
     public function handle(OpenStopCheckCommand $command): void
     {
         $policy = $this->policies->policyFor($command->sessionId);
-        $attempt = StopCheck::open($command->stop(), $policy);
+        $attempt = StopCheck::createForPolicy($command->stop(), $policy);
 
         // A stop with no conditions has nothing to wait on: it passes as it opens.
         if ($policy->stopConditions->isEmpty() && ! $attempt->isSettled()) {

@@ -20,7 +20,7 @@ final readonly class WakeWorkerForRequest implements Listener
 
     public function handle(DriverRequestAccepted $fact): void
     {
-        $request = DriverRequest::query()->with('runtime')->whereKey($fact->requestId)->sole();
+        $request = DriverRequest::query()->withRuntime()->whereKey($fact->requestId)->sole();
         $this->wake->wakeRuntime($request->agent_runtime_id);
         $start = SessionProcess::findCurrentOf($request->runtime->agent_session_id);
 

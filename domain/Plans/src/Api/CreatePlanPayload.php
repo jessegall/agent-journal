@@ -31,12 +31,12 @@ final class CreatePlanPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(240)]
-        public string $title,
+        public readonly string $title,
         #[Max(8000)]
-        public string $brief,
-        public PlanType $type,
+        public readonly string $brief,
+        public readonly PlanType $type,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

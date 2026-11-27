@@ -11,5 +11,5 @@ use Spatie\LaravelData\Data;
  */
 final class CommentPosted extends Data
 {
-    public function __construct(public string $comment) {}
+    public function __construct(public readonly string $comment) {}
 }

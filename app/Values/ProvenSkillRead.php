@@ -44,7 +44,11 @@ final readonly class ProvenSkillRead
     private static function skillTool(ToolResult $call): self|null
     {
         $prefix = ClaudeCodeSkills::PLUGIN_NAME.':';
-        $skill = $call->toolName === 'Skill' ? $call->arguments->textArgument('skill') : null;
+        if ($call->toolName !== 'Skill') {
+            return null;
+        }
+
+        $skill = $call->arguments->textArgument('skill');
 
         if ($skill !== null && str_starts_with($skill, $prefix)) {
             return new self(substr($skill, strlen($prefix)), ReadEvidence::ClaudeSkillTool);
@@ -55,8 +59,13 @@ final readonly class ProvenSkillRead
 
     private static function fileRead(ToolResult $call, string $runtimeId): self|null
     {
-        $partial = $call->arguments->hasArgument('offset') || $call->arguments->hasArgument('limit');
-        $path = $call->toolName === 'Read' && ! $partial ? $call->arguments->textArgument('file_path') : null;
+        $isPartial = $call->arguments->hasArgument('offset') || $call->arguments->hasArgument('limit');
+
+        if ($call->toolName !== 'Read' || $isPartial) {
+            return null;
+        }
+
+        $path = $call->arguments->textArgument('file_path');
 
         if ($path !== null) {
             return self::fromPath($path, $runtimeId);

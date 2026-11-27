@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 use Throwable;
 
 final class StartRefused extends RuntimeException
 {
+    /**
+     * @use ThrowsLater<StartRefused>
+     */
+    use ThrowsLater;
+
     public static function projectNotServed(string $label): self
     {
         return new self("No folder of {$label} is connected right now.");

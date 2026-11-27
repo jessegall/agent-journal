@@ -75,6 +75,7 @@ use App\Agents\Exceptions\ProfileRefused;
 use App\Processes\AnyContext;
 use App\Processes\Negation;
 use App\Support\PrivateAccountProcess;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -111,11 +112,11 @@ final class DriversServiceProvider extends ServiceProvider
             $app->make(DriverCatalogueContract::class),
             $app->make(PinnedBuilds::class),
             $app->make(HookReplies::class),
-            self::setups(),
+            self::setups($app->make('config')),
         ));
     }
 
-    private static function codex(): DriverSetup
+    private static function codex(string $signInExecutable): DriverSetup
     {
         $driver = CodexArguments::EXECUTABLE;
 
@@ -134,7 +135,7 @@ final class DriversServiceProvider extends ServiceProvider
             keyScripts: CodexKeyScripts::class,
             headlessTurns: HeadlessTurns::onAccountOwner([$driver, 'app-server']),
             signIn: new SignInSetup(
-                executableSetting: 'journal.accounts.codex_program',
+                executable: $signInExecutable,
                 environment: CodexSignInEnvironment::class,
                 modelCheck: new ModelCheck(
                     ['exec', '--json', '--skip-git-repo-check', 'Reply with OK.'],
@@ -172,15 +173,15 @@ final class DriversServiceProvider extends ServiceProvider
      *
      * @return list<DriverSetup>
      */
-    public static function setups(): array
+    public static function setups(Repository $config): array
     {
         return [
-            self::claudeCode(),
-            self::codex(),
+            self::claudeCode($config->string('journal.accounts.claude_program')),
+            self::codex($config->string('journal.accounts.codex_program')),
         ];
     }
 
-    private static function claudeCode(): DriverSetup
+    private static function claudeCode(string $signInExecutable): DriverSetup
     {
         $installed = ClaudeCodeArguments::INSTALLED_EXECUTABLE;
 
@@ -199,7 +200,7 @@ final class DriversServiceProvider extends ServiceProvider
             keyScripts: ClaudeCodeKeyScripts::class,
             headlessTurns: HeadlessTurns::eachInAProcess(TurnResults::class),
             signIn: new SignInSetup(
-                executableSetting: 'journal.accounts.claude_program',
+                executable: $signInExecutable,
                 environment: ClaudeCodeSignInEnvironment::class,
                 modelCheck: new ModelCheck(
                     [

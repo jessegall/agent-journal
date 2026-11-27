@@ -48,6 +48,7 @@ use Illuminate\Process\Factory;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
 use Tests\Fixtures\Drivers\ShownDriverArrangements;
+use Tests\Support\Assertions\Facts\MadeHostInstructions;
 use Tests\Support\Connections\PublicRelease;
 use Tests\Support\Hosts\MockHost;
 use Tests\Support\Hosts\TestEnrolledHost;
@@ -337,7 +338,7 @@ trait ArrangesHostProcesses
      */
     public function hostInstructionsOf(string $name): array
     {
-        return HostInstruction::findForProcess($this->hostProcessCalled($name)->id);
+        return MadeHostInstructions::forProcess($this->hostProcessCalled($name)->id);
     }
 
     /**
@@ -347,7 +348,7 @@ trait ArrangesHostProcesses
      */
     public function hostInstructionsOn(string $host): array
     {
-        return HostInstruction::findForHostItself($this->hostCalled($host)->hostId);
+        return MadeHostInstructions::forHostItself($this->hostCalled($host)->hostId);
     }
 
     /**
@@ -431,7 +432,7 @@ trait ArrangesHostProcesses
     public function setUpDriverFamily(DriverFamily $family, string $runsLike): self
     {
         $this->service(DriverCatalogue::class)->registerFamily($family);
-        $setups = DriversServiceProvider::setups();
+        $setups = DriversServiceProvider::setups($this->service(Repository::class));
         $like = array_values(array_filter($setups, fn (DriverSetup $setup) => $setup->family === $runsLike))[0];
         $this->app->scoped(DriverProfiles::class, fn () => new DriverProfiles(
             $this->app,

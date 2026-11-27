@@ -30,10 +30,10 @@ final class CoreNamesNoDomainTest extends TestCase
 
         $this->assertSame(
             [
-                'app/Support/ShelfLookup.php:6',
-                'config/library.php:4',
+                'app/Support/ShelfLookup.php:8',
+                'config/library.php:6',
                 'resources/js/pages/Shelf.ts:2',
-                'tests/Support/ShelfJournal.php:4',
+                'tests/Support/ShelfJournal.php:6',
             ],
             array_map(fn (array $match) => "{$match[1]}:{$match[2]}", $found),
         );

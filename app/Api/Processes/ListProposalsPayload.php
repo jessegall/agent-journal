@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Api\Processes;
 
 use App\Attributes\Api\Endpoint;
-use App\Attributes\SentField;
+use App\Attributes\Validation\SentField;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
 use Spatie\LaravelData\Data;

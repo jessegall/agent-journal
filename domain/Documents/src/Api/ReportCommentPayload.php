@@ -26,10 +26,10 @@ final class ReportCommentPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[MapName('report_id'), Ulid]
-        public string $reportId,
-        public string $body,
+        public readonly string $reportId,
+        public readonly string $body,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

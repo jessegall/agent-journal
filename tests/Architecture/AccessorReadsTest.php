@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\ToolCheck;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * A model's Attribute accessor is read by its snake case name, as the generated @property block names it, never by its
  * camel case method name, though Laravel resolves both.
  * tools/refactoring/accessor-reads.php lists every other.
  */
+#[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]
 final class AccessorReadsTest extends TestCase
 {
     private const string HOW_TO_FIX = 'Read each accessor by its snake case name: ';

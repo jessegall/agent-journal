@@ -15,6 +15,6 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class TaskNamed extends Data
 {
     public function __construct(
-        public string $taskId,
+        public readonly string $taskId,
     ) {}
 }

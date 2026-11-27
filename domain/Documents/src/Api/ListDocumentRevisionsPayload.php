@@ -21,8 +21,8 @@ final class ListDocumentRevisionsPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(32)]
-        public string $number,
+        public readonly string $number,
         #[Min(1)]
-        public int $page = 1,
+        public readonly int $page = 1,
     ) {}
 }

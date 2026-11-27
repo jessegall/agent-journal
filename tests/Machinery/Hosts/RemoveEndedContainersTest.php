@@ -36,7 +36,7 @@ final class RemoveEndedContainersTest extends TestCase
             $this->journal->hostInstructionsOn($host),
             fn ($instruction) => $instruction->type === HostInstructionType::Remove,
         ));
-        $contained = $this->journal->hostProcessCalled('contained')->containerName();
+        $contained = $this->journal->hostProcessCalled('contained')->container_name;
 
         $this->journal->assertResult(
             [[$contained], []],

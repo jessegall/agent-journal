@@ -8,6 +8,7 @@ use App\Sessions\Enums\SessionActivityStatus;
 use App\Support\AgentStatus;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -29,7 +30,7 @@ final class AgentStatusData extends Data
         public readonly string $label,
         public readonly string|null $reason,
         public readonly string|null $remedy,
-        public readonly StatusOperationData|null $operation,
+        public readonly StatusOperationData|Optional $operation,
         public readonly string|null $commandOutcome,
         public readonly int|null $observationAgeSeconds,
         #[DataCollectionOf(StatusActionData::class)]
@@ -46,7 +47,7 @@ final class AgentStatusData extends Data
             'label' => $status->label,
             'reason' => $status->reason,
             'remedy' => $status->remedy,
-            'operation' => $status->operation,
+            'operation' => $status->operation ?? Optional::create(),
             'commandOutcome' => $status->commandOutcome,
             'observationAgeSeconds' => $status->observationAgeSeconds,
             'actions' => $status->actions,

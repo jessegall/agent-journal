@@ -97,17 +97,6 @@ final class Environment extends JournalModel implements EventSource, ProjectOwne
     }
 
     /**
-     * The environments of the project, by label.
-     *
-     * @return list<self>
-     */
-    public static function findListedOf(string $projectId): array
-    {
-        return array_values(self::query()->ofProject($projectId)->inLabelOrder()->limit(self::LISTED_LIMIT)
-            ->get()->all());
-    }
-
-    /**
      * The environments of these projects, by label, in one read.
      *
      * @param  list<string>  $ids

@@ -157,6 +157,19 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
         $this->raise(new NotificationsChanged($this->id));
     }
 
+    // ----------[ Internals ]----------
+
+    /**
+     * Moves the unread count by the change and announces the new version of the scope.
+     */
+    private function changeUnread(int $change): void
+    {
+        $this->unread_count += $change;
+        $this->mutation_version++;
+        $this->saveAndAssert();
+        $this->raise(new NotificationsChanged($this->id));
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -189,19 +202,6 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
     public static function findLockedFor(string $key, ActorReference $recipient): self
     {
         return self::query()->ofRecipient($key, $recipient)->lockForUpdate()->firstOrFail();
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * Moves the unread count by the change and announces the new version of the scope.
-     */
-    private function changeUnread(int $change): void
-    {
-        $this->unread_count += $change;
-        $this->mutation_version++;
-        $this->saveAndAssert();
-        $this->raise(new NotificationsChanged($this->id));
     }
 
     // ----------[ Scopes ]----------

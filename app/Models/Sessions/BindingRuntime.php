@@ -59,11 +59,11 @@ final class BindingRuntime extends JournalModel implements EventSource, Readable
      *
      * @return list<AgentRuntime>
      */
-    public static function findRuntimeForBinding(string $bindingId, string $startId): array
+    public static function resolveRuntimeForBinding(string $bindingId, string $startId): array
     {
         $runtimeIds = self::query()->ofBindingAndStart($bindingId, $startId)->select('runtime_id');
 
-        return array_values(AgentRuntime::query()->whereIn('id', $runtimeIds)->limit(1)->get()->all());
+        return array_values(AgentRuntime::query()->withIds($runtimeIds)->limit(1)->get()->all());
     }
 
     // ----------[ Scopes ]----------

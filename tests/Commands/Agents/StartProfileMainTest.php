@@ -196,7 +196,6 @@ final class StartProfileMainTest extends TestCase
     private function endSession(AgentSession $session): void
     {
         $this->app->make(AgentSessions::class)->end($session);
-        $this->main->fenceRuntimes();
     }
 
     /**

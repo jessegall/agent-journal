@@ -28,7 +28,8 @@ final class DriverWordTest extends TestCase
 
     /**
      * The files where program means an operating-system executable: the command classifier and its rules, the shell, the
-     * sharing gateways' binaries, a shell part's program and the sign-in executable.
+     * sharing gateways' binaries, a shell part's program, the sign-in executable, and the programs the host protocol
+     * ships and declares the command lines of.
      */
     private const array EXECUTABLE_SENSE = [
         'app/Api/Processes/ProposalList.php',
@@ -103,6 +104,15 @@ final class DriverWordTest extends TestCase
         'app/Processes/Values/ProgramIdentity.php',
         'app/CommandRules/Values/ProgramSpellings.php',
         'app/Values/WrapperRule.php',
+        'app/Hosts/Data/HostProgramData.php',
+        'app/Hosts/Data/HostProtocolData.php',
+        'app/Hosts/Exceptions/ProgramLineRefused.php',
+        'app/Hosts/GoProtocolSources.php',
+        'app/Hosts/HostProtocolSources.php',
+        'app/Hosts/PhpProtocolSources.php',
+        'app/Hosts/ProgramLines.php',
+        'app/Hosts/Protocol/ContainedPlanFields.php',
+        'app/Hosts/Protocol/HostProgramLines.php',
         'resources/js/sharing/pages/sharing/GatewayConfigureForm.vue',
     ];
 

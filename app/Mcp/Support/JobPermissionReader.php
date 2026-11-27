@@ -6,6 +6,7 @@ namespace App\Mcp\Support;
 
 use App\Access\Contracts\ReadGrant;
 use App\Actors\Contracts\CurrentActor;
+use App\Attributes\Commands\Authorize;
 use App\Bus\Attributes\Dispatches;
 use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
 use App\Mcp\Enums\DiscoveryProfile;
@@ -49,24 +50,16 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
 
     public function profileKey(): string
     {
-        if (! $this->actors->hasActor()) {
-            return DiscoveryProfile::MainAgent->value;
-        }
-
-        $authority = $this->actors->authority();
-
-        if ($authority instanceof StartProfileAuthority) {
-            return $authority->profileKey();
-        }
-
-        return DiscoveryProfile::MainAgent->value;
+        return $this->actors->startProfileAuthority()->map(
+            fn (StartProfileAuthority $authority) => $authority->profileKey(),
+        )->getOrElse(DiscoveryProfile::MainAgent->value);
     }
 
     private function allowsCommand(StartProfileAuthority $authority, Dispatches $write): bool
     {
-        $authorize = $this->commands->has($write->command) ? $this->commands->authorizeOf($write->command) : null;
-
-        return $authorize !== null && $authority->admits($write->command, $authorize);
+        return $this->commands->applicationAuthorizeOf($write->command)->map(
+            fn (Authorize $authorize) => $authority->admits($write->command, $authorize),
+        )->getOrElse(false);
     }
 
     private function isVisible(JournalTool $tool): bool

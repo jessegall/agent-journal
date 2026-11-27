@@ -19,17 +19,17 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class StopConditionResultData extends Data
 {
     public function __construct(
-        public string $conditionKey,
-        public string $definitionHash,
-        public StopConditionResultType $status,
-        public CarbonImmutable $startedAt,
-        public CarbonImmutable|null $endedAt,
-        public int|null $exitCode,
-        public string|null $signal,
-        public string $summary,
-        public string|null $output,
+        public readonly string $conditionKey,
+        public readonly string $definitionHash,
+        public readonly StopConditionResultType $status,
+        public readonly CarbonImmutable $startedAt,
+        public readonly CarbonImmutable|null $endedAt,
+        public readonly int|null $exitCode,
+        public readonly string|null $signal,
+        public readonly string $summary,
+        public readonly string|null $output,
         #[MapInputName('truncated')]
-        public bool $isTruncated,
+        public readonly bool $isTruncated,
     ) {}
 
     public function report(): StopConditionResultReport

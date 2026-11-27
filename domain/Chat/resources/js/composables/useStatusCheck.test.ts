@@ -9,7 +9,6 @@ function statusReportedSecondsAgo(age: number | null): AgentStatusData {
     label: "Status unknown",
     reason: null,
     remedy: null,
-    operation: null,
     commandOutcome: null,
     observationAgeSeconds: age,
     actions: [],

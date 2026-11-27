@@ -54,7 +54,7 @@ final readonly class SessionContainers
         $policy = $this->policies->policyFor($sessionId);
 
         $account = new SelectedAccount(
-            $start->accountIdentity,
+            $start->account_identity,
             $runtime->family,
             $start->directory,
             $start->account_generation,

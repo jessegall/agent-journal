@@ -10,7 +10,6 @@ use App\Navigation\Exceptions\FileOutsidePlaces;
 use App\Navigation\Exceptions\FilePathInvalid;
 use App\Navigation\Exceptions\FolderClosed;
 use App\Values\FilePath;
-use Illuminate\Contracts\Config\Repository;
 use SensitiveParameter;
 
 /**
@@ -19,7 +18,7 @@ use SensitiveParameter;
  */
 final readonly class PlaceRoots
 {
-    public function __construct(private Repository $config) {}
+    public function __construct(private PlaceRootSettings $settings) {}
 
     /**
      * The real root of the place; a missing root is made with the place's mode when it can be, and only a root that
@@ -136,9 +135,9 @@ final readonly class PlaceRoots
      */
     private function madeRoot(Place $place): string|null
     {
-        $configured = $this->config->get($place->rootSetting());
+        $configured = $this->settings->configuredRoot($place);
 
-        if (! is_string($configured) || $configured === '' || ! @mkdir($configured, $place->folderMode(), true)) {
+        if ($configured === null || ! @mkdir($configured, $place->folderMode(), true)) {
             return null;
         }
 
@@ -147,9 +146,9 @@ final readonly class PlaceRoots
 
     private function existingRoot(Place $place): string|null
     {
-        $configured = $this->config->get($place->rootSetting());
+        $configured = $this->settings->configuredRoot($place);
 
-        if (! is_string($configured) || $configured === '') {
+        if ($configured === null) {
             return null;
         }
 

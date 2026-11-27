@@ -70,7 +70,7 @@ final readonly class AppContext
                     fn () => $this->navigation->tree($request),
                     LiveListeners::pageChanges($signedIn->id),
                 ))
-                ->getOrElse(new Optional()),
+                ->getOrElse(Optional::create()),
             // An inbox member is shown no journal counts: it sees only the inboxes it is in.
             'navigationCounts' => $user
                 ->filter(fn () => $type === ViewerType::Owner)
@@ -79,7 +79,7 @@ final readonly class AppContext
                     self::COUNTS_GROUP,
                     LiveListeners::pageChanges($signedIn->id),
                 ))
-                ->getOrElse(new Optional()),
+                ->getOrElse(Optional::create()),
             ...$this->projectChoice($type),
         ]);
     }
@@ -125,8 +125,8 @@ final readonly class AppContext
     {
         return ViewerData::from([
             'type' => $type,
-            'id' => $user->map(fn (CurrentUser $signedIn) => $signedIn->id)->getOrElse(new Optional()),
-            'name' => $user->map(fn (CurrentUser $signedIn) => $signedIn->name)->getOrElse(new Optional()),
+            'id' => $user->map(fn (CurrentUser $signedIn) => $signedIn->id)->getOrElse(Optional::create()),
+            'name' => $user->map(fn (CurrentUser $signedIn) => $signedIn->name)->getOrElse(Optional::create()),
             'canShare' => $user
                 ->map(fn (CurrentUser $signedIn) => $this->sharing->mayManage(ActorReference::forUser($signedIn->id)))
                 ->getOrElse(false),
@@ -140,7 +140,10 @@ final readonly class AppContext
      */
     private function driverLooks(): array
     {
-        return array_map(fn (DriverFamily $family) => DriverLookData::fromDriverFamily($family), $this->drivers->families());
+        return array_map(
+            fn (DriverFamily $family) => DriverLookData::fromDriverFamily($family),
+            $this->drivers->families(),
+        );
     }
 
     /**
@@ -171,6 +174,6 @@ final readonly class AppContext
             return $code;
         }
 
-        return new Optional();
+        return Optional::create();
     }
 }

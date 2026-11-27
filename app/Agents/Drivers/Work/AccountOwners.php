@@ -46,11 +46,11 @@ final readonly class AccountOwners
             ->supervised()
             ->unresolved()
             ->onAccountGenerationOf($owned)
-            ->select('session_id');
+            ->sessionIds();
 
         return AgentRuntime::query()
             ->onHost($process->host_id)
-            ->whereIn('driver_key', $this->servedKeys())
+            ->ofDrivers($this->servedKeys())
             ->ofSessions($sessions);
     }
 

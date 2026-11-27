@@ -257,8 +257,7 @@ final readonly class ShellWordScanner
                 continue;
             }
 
-            $startsExpansion = ($character === '$' && $next !== "'") || $character === '`';
-            $expansion = $startsExpansion ? $this->expansions->read($cursor) : null;
+            $expansion = $this->quotedExpansionAt($cursor, $character, $next);
 
             if ($expansion !== null) {
                 if ($text !== '') {
@@ -291,5 +290,19 @@ final readonly class ShellWordScanner
         $cursor->position++;
 
         return $segments;
+    }
+
+    /**
+     * The expansion a double-quoted word holds at the cursor; none where the character starts none or a lone $ stands.
+     *
+     * @throws ShellLineUnreadable
+     */
+    private function quotedExpansionAt(LexerCursor $cursor, string $character, string $next): WordSegment|null
+    {
+        if ($character !== '`' && ($character !== '$' || $next === "'")) {
+            return null;
+        }
+
+        return $this->expansions->read($cursor);
     }
 }

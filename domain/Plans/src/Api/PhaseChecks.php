@@ -15,8 +15,8 @@ final class PhaseChecks extends Data
      * @param  list<array{operation: string, outcome: string, receipt: string, recorded_by: string}>  $checks
      */
     public function __construct(
-        public int $phase,
-        public string $title,
-        public array $checks,
+        public readonly int $phase,
+        public readonly string $title,
+        public readonly array $checks,
     ) {}
 }

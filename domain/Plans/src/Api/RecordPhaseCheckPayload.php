@@ -34,13 +34,13 @@ final class RecordPhaseCheckPayload extends Data implements ApiPayload
 
     public function __construct(
         #[Min(1)]
-        public int $plan,
+        public readonly int $plan,
         #[Min(1)]
-        public int $phase,
+        public readonly int $phase,
         #[Max(26)]
-        public string $receipt,
+        public readonly string $receipt,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

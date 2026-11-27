@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Attributes;
+namespace App\Attributes\Validation;
 
 use Attribute;
 use Spatie\LaravelData\Attributes\Validation\StringValidationAttribute;

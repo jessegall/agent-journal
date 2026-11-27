@@ -34,7 +34,8 @@ final readonly class AccountFolderUses implements AccountFolderUsesContract
         }
 
         try {
-            $answer = $this->wait->answerOf($this->host->instructionFolderUse(basename($directory), (string) Str::uuid()));
+            $instruction = $this->host->instructionFolderUse(basename($directory), (string) Str::uuid());
+            $answer = $this->wait->answerOf($instruction);
         } catch (AccountFolderRefused) {
             return false;
         }

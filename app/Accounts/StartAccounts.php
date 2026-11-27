@@ -46,7 +46,10 @@ final readonly class StartAccounts implements StartAccountsContract
     {
         $this->authorizer->authorize(ProfileAdministrationPolicy::class, Profile::class, AccessType::Create);
         $default = ActiveAccount::resolveDefaultAccountIdOf($driver);
-        $accounts = array_filter(Account::findListed(), fn (Account $account) => $account->account_protocol === $driver);
+        $accounts = array_filter(
+            Account::findListed(),
+            fn (Account $account) => $account->account_protocol === $driver,
+        );
 
         return EligibleAccountsData::from([
             'driver' => $driver,

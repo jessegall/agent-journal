@@ -471,7 +471,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
         return $bindings->first(
             fn (self $binding) => $binding->readinessAt($now) === BindingReadiness::Ready
                 && $binding->host->runsPlacement($placement),
-            fn () => throw StartRefused::projectNotServed($project->label),
+            StartRefused::throwing()->projectNotServed($project->label),
         );
     }
 

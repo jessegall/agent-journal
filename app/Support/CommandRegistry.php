@@ -21,6 +21,7 @@ use App\Pipes\CheckExportedCommands;
 use App\Pipes\ReadCommandHandlers;
 use App\Pipes\RegisterCommands;
 use PhpOption\None;
+use PhpOption\Option;
 
 /**
  * Every registered command with its handler, owner and middleware, checked once at start-up so a wrong declaration
@@ -92,6 +93,20 @@ final readonly class CommandRegistry
     public function authorizeOf(string $command): Authorize|null
     {
         return $this->entry($command)->authorize;
+    }
+
+    /**
+     * The policy and access of a registered application command; none for an unknown or a trusted command.
+     *
+     * @return Option<Authorize>
+     */
+    public function applicationAuthorizeOf(string $command): Option
+    {
+        if (! $this->has($command)) {
+            return None::create();
+        }
+
+        return Option::fromValue($this->entry($command)->authorize);
     }
 
     /**

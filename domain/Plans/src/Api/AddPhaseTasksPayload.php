@@ -36,14 +36,14 @@ final class AddPhaseTasksPayload extends Data implements ApiPayload
      */
     public function __construct(
         #[Ulid]
-        public string $phaseId,
+        public readonly string $phaseId,
         #[Min(1)]
-        public int $expectedRevision,
+        public readonly int $expectedRevision,
         #[Min(1)]
         #[Max(AddPhaseTasksCommand::MAX_TASKS)]
-        public array $taskIds,
+        public readonly array $taskIds,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }
