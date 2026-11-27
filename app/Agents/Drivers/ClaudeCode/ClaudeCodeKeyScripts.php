@@ -6,8 +6,10 @@ namespace App\Agents\Drivers\ClaudeCode;
 
 use App\Agents\Drivers\Contracts\DriverKeyScripts;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Navigation\Enums\NavigationKey;
 use App\Terminals\KeyScripts\KeyScript;
 use App\Terminals\KeyScripts\KeyStep;
+use App\Terminals\KeyScripts\ScreenExpectation;
 
 /**
  * The key scripts recorded for Claude Code: each changes a setting for this session only and ends on Claude
@@ -30,8 +32,13 @@ final readonly class ClaudeCodeKeyScripts implements DriverKeyScripts
         // The model and the level are named on the command line, so no picker is walked (user 28771, 28786).
         $changeModel = [
             ...KeyScript::pastedCommand('/model {model}', '❯ /model', '{model}'),
-            // After a turn Claude Code asks first, as the cached conversation is read again on the new model.
-            KeyStep::chooseOnScreen('Yes, switch to'),
+            // After a turn Claude Code asks first, as the cached conversation is read again on the new model; the
+            // dialog opens on its "Yes, switch to <model>" entry, which Enter takes.
+            KeyStep::press(
+                'confirm the switch',
+                ScreenExpectation::shows('Yes, switch to'),
+                NavigationKey::Enter->bytes(),
+            ),
             KeyStep::evidence('see the model applied', 'set model to'),
         ];
 
