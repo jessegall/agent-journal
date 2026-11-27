@@ -77,10 +77,6 @@ use App\Values\TurnEnd;
  */
 final class TerminalDriver implements ProcessDriver
 {
-    private const string BRACKETED_PASTE_START = "\e[200~";
-
-    private const string BRACKETED_PASTE_END = "\e[201~";
-
     /**
      * The line kill that empties the composer's line in the drivers the journal runs.
      */
@@ -269,7 +265,10 @@ final class TerminalDriver implements ProcessDriver
      */
     public function onAnswer(HostInstruction $instruction): DriverActions
     {
-        if ($instruction->type !== HostInstructionType::WriteKeys || $instruction->status !== HostInstructionStatus::Refused) {
+        $isRefusedKeys = $instruction->type === HostInstructionType::WriteKeys
+            && $instruction->status === HostInstructionStatus::Refused;
+
+        if (! $isRefusedKeys) {
             return DriverActions::none();
         }
 
@@ -450,7 +449,7 @@ final class TerminalDriver implements ProcessDriver
 
         $bytes = match ($input->type) {
             TerminalInputType::Key => $input->key?->bytes() ?? '',
-            TerminalInputType::Paste => self::BRACKETED_PASTE_START.$input->text.self::BRACKETED_PASTE_END.$enter,
+            TerminalInputType::Paste => KeyScript::PASTE_START.$input->text.KeyScript::PASTE_END.$enter,
             default => $input->text.$enter,
         };
 
@@ -618,7 +617,7 @@ final class TerminalDriver implements ProcessDriver
         $pasted = $text;
 
         if ($this->layout->isBracketedPaste) {
-            $pasted = self::BRACKETED_PASTE_START.$text.self::BRACKETED_PASTE_END;
+            $pasted = KeyScript::PASTE_START.$text.KeyScript::PASTE_END;
         }
 
         $this->delivery = $request;
@@ -1138,6 +1137,8 @@ final class TerminalDriver implements ProcessDriver
 
     private function snapshot(): TakeHostProcessSnapshotCommand
     {
-        return new TakeHostProcessSnapshotCommand($this->process->id, HostInstructionSource::forWorker($this->generation));
+        $source = HostInstructionSource::forWorker($this->generation);
+
+        return new TakeHostProcessSnapshotCommand($this->process->id, $source);
     }
 }

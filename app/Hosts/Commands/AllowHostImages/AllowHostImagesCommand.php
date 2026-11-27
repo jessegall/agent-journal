@@ -9,7 +9,7 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * Instructions a contained host to let its containers run only these pinned images. Run by the journal itself after the
+ * Instructs a contained host to let its containers run only these pinned images. Run by the journal itself after the
  * host's inventory and whenever the agent image changed (internal, not exported).
  *
  * @extends Command<string>

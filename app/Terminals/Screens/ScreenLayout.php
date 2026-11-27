@@ -17,6 +17,11 @@ final readonly class ScreenLayout
     private const string OPTIONS = 'options';
 
     /**
+     * The region a driver draws while it works, such as Claude Code's spinner line above its composer.
+     */
+    public const string WORKING = 'spinner';
+
+    /**
      * @param  list<MenuFamily>  $menus
      * @param  list<ScreenRegion>  $others
      */
@@ -41,6 +46,18 @@ final readonly class ScreenLayout
         $secret = array_filter($this->menus, fn (MenuFamily $family) => $family->isSecret);
 
         return array_values(array_map(fn (MenuFamily $family) => $family->shieldRule(), $secret));
+    }
+
+    /**
+     * Whether the frame draws the driver at work: its working line is shown, whatever the composer looks like, as a
+     * driver may keep its composer open while it works.
+     */
+    public function isWorkingOn(HostFramePayload $frame): bool
+    {
+        return array_any(
+            $this->others,
+            fn (ScreenRegion $region) => $region->name() === self::WORKING && $region->rowsOf($frame) !== null,
+        );
     }
 
     /**

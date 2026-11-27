@@ -40,10 +40,11 @@ final readonly class StartStacks
 
         $bottom = new FrameRecord(
             (string) Str::ulid(),
-            ReadyStateReference::bottom(),
+            ReadyStateReference::bottomOf($target),
             true,
             1,
             $this->clock->now(),
+            ReadyStateReference::valuesOf($target),
         );
 
         $carried = $this->carriedFrames($target);

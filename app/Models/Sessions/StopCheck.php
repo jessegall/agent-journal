@@ -119,7 +119,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
         $this->status = $status;
         $this->submission_digest = $submissionDigest;
         $this->saveAndAssert();
-        $this->raise(new StopCheckSettled($this->id, $status, $this->outcomeOf($failureSummary)));
+        $this->raise(new StopCheckSettled($this->id, $this->session_id, $status, $this->outcomeOf($failureSummary)));
     }
 
     /**

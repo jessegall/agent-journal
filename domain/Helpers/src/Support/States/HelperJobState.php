@@ -19,6 +19,7 @@ use Domain\Helpers\Events\HelperJobLeftUnfinished;
 use Domain\Helpers\Events\HelperJobSteered;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\States\Support\HelperJobStateReference;
+use Generator;
 
 /**
  * The helper job a helper works on in this session: it keeps the brief, the purpose, the profile revision and the
@@ -62,19 +63,23 @@ final class HelperJobState extends AgentState implements UniqueSubjectState
     // ----------[ Hooks ]----------
 
     /**
-     * @return iterable<ContextLine>
+     * @return Generator<int, ContextLine>
      */
-    public function onSessionStart(SessionStarted $input): iterable
+    public function onSessionStart(SessionStarted $input): Generator
     {
-        yield from $this->contextLines();
+        foreach ($this->contextLines() as $line) {
+            yield $line;
+        }
     }
 
     /**
-     * @return iterable<ContextLine>
+     * @return Generator<int, ContextLine>
      */
-    public function onCompaction(ContextCompacted $input): iterable
+    public function onCompaction(ContextCompacted $input): Generator
     {
-        yield from $this->contextLines();
+        foreach ($this->contextLines() as $line) {
+            yield $line;
+        }
     }
 
     // ----------[ Events ]----------
@@ -127,9 +132,9 @@ final class HelperJobState extends AgentState implements UniqueSubjectState
      * What the helper must be told when its context starts: who it is, the purpose, the whole brief, the steering so
      * far and the records it was given.
      *
-     * @return iterable<ContextLine>
+     * @return list<ContextLine>
      */
-    private function contextLines(): iterable
+    private function contextLines(): array
     {
         $texts = [
             AgentText::of('helpers.identity', [
@@ -150,8 +155,6 @@ final class HelperJobState extends AgentState implements UniqueSubjectState
             ),
         ];
 
-        foreach ($texts as $text) {
-            yield new ContextLine($text);
-        }
+        return array_map(fn (AgentText $text) => new ContextLine($text), $texts);
     }
 }

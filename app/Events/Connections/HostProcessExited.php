@@ -14,6 +14,7 @@ final readonly class HostProcessExited implements ConnectionEvent, HostProcessEn
     public function __construct(
         public string $processId,
         public string|null $runtimeId,
+        public string|null $sessionId,
         public int|null $exitCode,
         public string|null $signal,
         public string $evidence,

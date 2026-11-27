@@ -28,6 +28,7 @@ use App\Support\RecordIdentity;
 use App\Values\AgentText;
 use PhpOption\Option;
 use PhpOption\Some;
+use Generator;
 
 /**
  * An agent attached to an inbox with messages there it has not read. It keeps the unread messages and its tool uses;
@@ -146,9 +147,9 @@ final class ReadMessageState extends AgentState implements DurableState, UniqueS
     /**
      * The agent read one of its unread messages: it now answers that message.
      *
-     * @return iterable<StateReference>
+     * @return Generator<int, StateReference>
      */
-    public function onMessageRead(MessageRead $event): iterable
+    public function onMessageRead(MessageRead $event): Generator
     {
         if (! in_array($event->messageId, $this->unreadIds, true) || ! $this->isOwnAgent($event->reader)) {
             return;

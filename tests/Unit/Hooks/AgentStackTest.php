@@ -24,7 +24,6 @@ use App\Stacks\ReadyState;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use App\Support\Storage\WalkStep;
 use App\Values\AccessDecision;
@@ -90,7 +89,7 @@ final class AgentStackTest extends TestCase
     public function test_a_shell_write_is_refused_by_the_message_and_the_task_is_not_asked(): void
     {
         $answer = $this->exampleStack(isTaskStarted: true, doesMessageWait: true)
-            ->answer(HookInputs::all()['shell command'], TestText::renderer());
+            ->answer(HookInputs::of('shell command'), TestText::renderer());
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertSame(['message-95 deny'], $this->stepsOf($answer));
@@ -124,8 +123,9 @@ final class AgentStackTest extends TestCase
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
-    public function test_states_that_pass_let_every_state_below_answer_and_the_hook_is_allowed(HookInput $input): void
+    public function test_states_that_pass_let_every_state_below_answer_and_the_hook_is_allowed(string $hook): void
     {
+        $input = HookInputs::of($hook);
         $top = ScriptedState::passing();
         $middle = ScriptedState::passing();
         $stack = $this->stack($this->ready(), $this->frame('middle', $middle), $this->frame('top', $top));
@@ -143,7 +143,7 @@ final class AgentStackTest extends TestCase
         $passing = $this->frame('guide', ScriptedState::passing());
         $stack = $this->stack($this->ready(changesFiles: false), $passing);
 
-        $file = $stack->answer(HookInputs::all()['file edit'], TestText::renderer());
+        $file = $stack->answer(HookInputs::of('file edit'), TestText::renderer());
 
         $this->assertSame(['guide delegate', 'ready deny'], $this->stepsOf($file));
     }
@@ -159,13 +159,13 @@ final class AgentStackTest extends TestCase
         $ready = new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState($policy, new AllowedStops()),
+            new ReadyState($policy, new AllowedStops(), 'agent', 'session'),
             CarbonImmutable::now(),
             isBottom: true,
         );
         $stack = $this->stack($ready, $this->frame('guide', ScriptedState::passing()));
 
-        $answer = $stack->answer(HookInputs::all()['tool requested'], TestText::renderer());
+        $answer = $stack->answer(HookInputs::of('tool requested'), TestText::renderer());
 
         $this->assertSame(
             TestText::words(AgentText::of('core.access.refused', ['reason' => $refusal->reason])),
@@ -183,8 +183,8 @@ final class AgentStackTest extends TestCase
             $this->frame('guide', ScriptedState::passing()),
         );
 
-        $this->assertSame([], $stack->answer(HookInputs::all()['session start'], TestText::renderer())->context);
-        $this->assertSame([], $stack->answer(HookInputs::all()['compaction'], TestText::renderer())->context);
+        $this->assertSame([], $stack->answer(HookInputs::of('session start'), TestText::renderer())->context);
+        $this->assertSame([], $stack->answer(HookInputs::of('compaction'), TestText::renderer())->context);
     }
 
     public function test_no_state_below_a_denial_is_asked(): void
@@ -196,7 +196,7 @@ final class AgentStackTest extends TestCase
             $this->frame('top', new ScriptedState(Decision::deny(TestText::of('Not now.')))),
         );
 
-        $answer = $stack->answer(HookInputs::all()['prompt'], TestText::renderer());
+        $answer = $stack->answer(HookInputs::of('prompt'), TestText::renderer());
 
         $this->assertSame(['top deny'], $this->stepsOf($answer));
         $this->assertSame(0, $below->askedCount);
@@ -258,7 +258,7 @@ final class AgentStackTest extends TestCase
             $this->frame('top', new ShellAnswerState(fn () => $highest)),
         );
 
-        $answer = $stack->answer(HookInputs::all()['shell command'], TestText::renderer());
+        $answer = $stack->answer(HookInputs::of('shell command'), TestText::renderer());
 
         $this->assertSame($highest, $answer->decision);
         $this->assertSame(['top rewrite', 'lower rewrite', 'ready delegate'], $this->stepsOf($answer));
@@ -361,7 +361,7 @@ final class AgentStackTest extends TestCase
 
         $this->expectException(InvalidHookAnswer::class);
 
-        $stack->answer(HookInputs::all()['prompt'], TestText::renderer());
+        $stack->answer(HookInputs::of('prompt'), TestText::renderer());
     }
 
     /**
@@ -469,8 +469,9 @@ final class AgentStackTest extends TestCase
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
-    public function test_a_finished_state_is_never_asked(HookInput $input): void
+    public function test_a_finished_state_is_never_asked(string $hook): void
     {
+        $input = HookInputs::of($hook);
         $stack = $this->exampleStack(isTaskStarted: false, doesMessageWait: false);
 
         $this->assertSame(
@@ -592,7 +593,7 @@ final class AgentStackTest extends TestCase
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedOperationPolicy($changesFiles), new AllowedStops()),
+            new ReadyState(new FixedOperationPolicy($changesFiles), new AllowedStops(), 'agent', 'session'),
             CarbonImmutable::now(),
             isBottom: true,
         );
@@ -621,7 +622,7 @@ final class AgentStackTest extends TestCase
 
     private function stop(): StopRequested
     {
-        $stop = HookInputs::all()['stop'];
+        $stop = HookInputs::of('stop');
         $this->assertInstanceOf(StopRequested::class, $stop);
 
         return $stop;

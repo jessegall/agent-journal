@@ -42,15 +42,39 @@ use App\Values\ShellCommand;
 final class HookInputs
 {
     /**
-     * Every hook input as a PHPUnit data set named for its hook.
+     * The hooks, each by the name of its input in all().
+     */
+    public const array HOOKS = [
+        'session start',
+        'prompt',
+        'shell command',
+        'file edit',
+        'tool requested',
+        'stop',
+        'compaction',
+        'tool finished',
+        'session end',
+    ];
+
+    /**
+     * Every hook as a PHPUnit data set named for it. A data set holds only the hook's name: its input is built in
+     * the test with of(), as some inputs build Data, which needs the booted app a data provider runs before.
      *
-     * @return iterable<string, array{HookInput}>
+     * @return iterable<string, array{string}>
      */
     public static function dataSets(): iterable
     {
-        foreach (self::all() as $name => $input) {
-            yield $name => [$input];
+        foreach (self::HOOKS as $hook) {
+            yield $hook => [$hook];
         }
+    }
+
+    /**
+     * The input of the hook of this name.
+     */
+    public static function of(string $hook): HookInput
+    {
+        return self::all()[$hook];
     }
 
     /**

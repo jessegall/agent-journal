@@ -135,7 +135,7 @@ final class HookRewriteTest extends TestCase
 
     private function stack(AgentState $rewriter, ShellAnswerState ...$guards): AgentStack
     {
-        $ready = new ReadyState(new FixedOperationPolicy(), new AllowedStops());
+        $ready = new ReadyState(new FixedOperationPolicy(), new AllowedStops(), 'agent', 'session');
 
         return new AgentStack([
             $this->frame('ready', $ready, isBottom: true),

@@ -20,6 +20,7 @@ use App\Support\Reflector;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
+use Generator;
 
 /**
  * Checks and caches effective hook and event declarations by state class.
@@ -138,7 +139,7 @@ final class StateMethods
 
         if (! $this->answersAsHooksDo($method)) {
             throw InvalidStateMethod::for($method, 'must return void or what a hook returns: an AnswerPart, a Command, '
-                .'an Event, a StateReference to push or an iterable of them, never null or an array.');
+                .'an Event, a StateReference to push or a Generator of them, never null, an array or an iterable.');
         }
 
         return $event->name();
@@ -169,8 +170,12 @@ final class StateMethods
 
         $name = $type->name();
 
+        if ($name === Generator::class) {
+            return true;
+        }
+
         if ($type->isBuiltin() || ! Reflector::exists($name)) {
-            return $name === 'iterable';
+            return false;
         }
 
         $declared = Reflector::of($name);
@@ -210,6 +215,7 @@ final class StateMethods
         foreach ($state->methods() as $method) {
             $name = $method->name();
             $declared = StateMethod::fromMethod($state->name(), $method);
+            $this->assertAnswersOneByOne($method);
 
             if ($hooks->hasMethod($name)) {
                 if ($this->isHookOverride($method, $hooks->method($name))) {
@@ -233,6 +239,33 @@ final class StateMethods
             ],
             'events' => $events,
         ];
+    }
+
+    /**
+     * Refuses a hook, event or lifecycle method of a state that declares several answers as an array or an iterable:
+     * several answers are yielded, so only a Generator declares them, and an array is refused when the states load,
+     * never when the method runs.
+     */
+    private function assertAnswersOneByOne(ReflectedMethod $method): void
+    {
+        $isStateMoment = str_starts_with($method->name(), 'on') && $this->isPublicInstanceMethod($method);
+        $declaresMany = $method->returnType()
+            ->map(fn (DeclaredType $type) => $this->namesArrayOrIterable($type))
+            ->getOrElse(false);
+
+        if ($isStateMoment && $declaresMany) {
+            throw InvalidStateMethod::for($method, 'must declare several answers as a Generator, never an array or '
+                .'an iterable.');
+        }
+    }
+
+    private function namesArrayOrIterable(DeclaredType $type): bool
+    {
+        if (! $type->isNamed()) {
+            return array_any($type->members, fn (DeclaredType $member) => $this->namesArrayOrIterable($member));
+        }
+
+        return in_array($type->name(), ['array', 'iterable'], true);
     }
 
     private function isHookOverride(ReflectedMethod $method, ReflectedMethod $hook): bool

@@ -431,7 +431,7 @@ return [
         'owner' => 'HostProcess::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostProcessOpened('process', 'runtime'),
+        'sample' => fn () => new HostProcessOpened('process', 'runtime', 'session'),
     ],
     HostProcessStarted::class => [
         'role' => EventRole::RowFact,
@@ -452,13 +452,13 @@ return [
         'owner' => 'HostProcess::exit',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostProcessExited('process', 'runtime', 0, null, 'exited 0'),
+        'sample' => fn () => new HostProcessExited('process', 'runtime', 'session', 0, null, 'exited 0'),
     ],
     HostProcessLost::class => [
         'role' => EventRole::RowFact,
         'owner' => 'HostProcess::lose',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostProcessLost('process', 'runtime', 'lost'),
+        'sample' => fn () => new HostProcessLost('process', 'runtime', 'session', 'lost'),
     ],
 ];

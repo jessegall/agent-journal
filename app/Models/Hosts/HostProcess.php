@@ -133,7 +133,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $process->restart = $plan->restart;
         $process->status = HostProcessStatus::Ordered;
         $process->saveAndAssert();
-        $process->raise(new HostProcessOpened($process->id, $process->agent_runtime_id));
+        $process->raise(new HostProcessOpened($process->id, $process->agent_runtime_id, $runtime?->agent_session_id));
 
         return $process;
     }
@@ -208,6 +208,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->raise(new HostProcessExited(
             $this->id,
             $this->agent_runtime_id,
+            $this->sessionId(),
             $exit->exitCode,
             $exit->signal,
             $exit->evidence,
@@ -223,7 +224,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->exit_evidence = $evidence;
         $this->ended_at = $at;
         $this->saveAndAssert();
-        $this->raise(new HostProcessLost($this->id, $this->agent_runtime_id, $evidence));
+        $this->raise(new HostProcessLost($this->id, $this->agent_runtime_id, $this->sessionId(), $evidence));
     }
 
     /**
@@ -348,12 +349,14 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     // ----------[ Predicates ]----------
 
     /**
-     * Whether the host had answered the order that opened the process when it built a report through that instruction: a
-     * process opened after it is not missing from the report, only newer than it.
+     * Whether the host had answered the order that opened the process when it built a report through that instruction:
+     * a process opened after it is not missing from the report, only newer than it.
      */
     public function isOpenedBy(string|null $answeredThrough): bool
     {
-        return $this->open_instruction_id !== null && $answeredThrough !== null && $this->open_instruction_id <= $answeredThrough;
+        return $this->open_instruction_id !== null
+            && $answeredThrough !== null
+            && $this->open_instruction_id <= $answeredThrough;
     }
 
     public function isLive(): bool
@@ -402,6 +405,17 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     // ----------[ Queries ]----------
 
     /**
+     * The session the process runs for, through its runtime; none for a process of no runtime, such as a probe the
+     * host itself runs.
+     */
+    private function sessionId(): string|null
+    {
+        return $this->agent_runtime_id === null
+            ? null
+            : AgentRuntime::query()->whereKey($this->agent_runtime_id)->value('agent_session_id');
+    }
+
+    /**
      * The host's live processes, locked, as a report of the host's walks them.
      *
      * @return list<self>
@@ -428,8 +442,8 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
-     * The process with its host, locked until the transaction ends, so its instructions are numbered and its worker checked
-     * one at a time.
+     * The process with its host, locked until the transaction ends, so its instructions are numbered and its worker
+     * checked one at a time.
      */
     public static function findLocked(string $id): self
     {
@@ -451,7 +465,10 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
      */
     public static function hasLiveOfSession(string $sessionId): bool
     {
-        return self::query()->live()->whereHas('runtime', fn (Builder $runtime) => $runtime->ofSessions([$sessionId]))->exists();
+        return self::query()
+            ->live()
+            ->whereHas('runtime', fn (Builder $runtime) => $runtime->ofSessions([$sessionId]))
+            ->exists();
     }
 
     /**

@@ -208,7 +208,9 @@ final class StackRestorerTest extends TestCase
 
     private function bottom(string $id = 'ready'): FrameRecord
     {
-        return new FrameRecord($id, ReadyStateReference::bottom(), true, 1, CarbonImmutable::now());
+        $reference = ReadyStateReference::bottomOf(new StackTarget('agent-1', 'session-1'));
+
+        return new FrameRecord($id, $reference, true, 1, CarbonImmutable::now(), ['agentId' => 'agent-1', 'sessionId' => 'session-1']);
     }
 
     private function bottomOf(string $typeKey): FrameRecord

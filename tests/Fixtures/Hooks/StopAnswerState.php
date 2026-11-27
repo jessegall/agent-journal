@@ -10,6 +10,7 @@ use App\Stacks\AgentState;
 use App\Stacks\Decisions\Contracts\AnswerPart;
 use App\Stacks\References\StateReference;
 use App\Support\Inputs\StopRequested;
+use Generator;
 
 /**
  * A test state that answers a stop with what it was given: nothing, a decision, a line, or several to yield.
@@ -17,14 +18,14 @@ use App\Support\Inputs\StopRequested;
 final class StopAnswerState extends AgentState
 {
     /**
-     * @param  AnswerPart|Command<mixed>|Event|iterable<AnswerPart|Command<mixed>|Event>  $answer
+     * @param  AnswerPart|Command<mixed>|Event|Generator<int, AnswerPart|Command<mixed>|Event>  $answer
      */
-    public function __construct(private readonly AnswerPart|Command|Event|StateReference|iterable $answer) {}
+    public function __construct(private readonly AnswerPart|Command|Event|StateReference|Generator $answer) {}
 
     /**
-     * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
+     * @return AnswerPart|Command<mixed>|Event|StateReference|Generator<int, AnswerPart|Command<mixed>|Event|StateReference>
      */
-    public function onStop(StopRequested $input): AnswerPart|Command|Event|StateReference|iterable
+    public function onStop(StopRequested $input): AnswerPart|Command|Event|StateReference|Generator
     {
         return $this->answer;
     }

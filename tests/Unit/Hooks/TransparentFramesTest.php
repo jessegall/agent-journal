@@ -201,7 +201,7 @@ final class TransparentFramesTest extends TestCase
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedOperationPolicy(), new AllowedStops()),
+            new ReadyState(new FixedOperationPolicy(), new AllowedStops(), 'agent', 'session'),
             CarbonImmutable::now(),
             isBottom: true,
         );

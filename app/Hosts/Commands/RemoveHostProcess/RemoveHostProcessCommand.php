@@ -9,7 +9,7 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * Instructions the host to remove the container an ended process ran in, so no ended container is left on the agent
+ * Instructs the host to remove the container an ended process ran in, so no ended container is left on the agent
  * daemon. Answers the instruction's id (internal, not exported).
  *
  * @extends Command<string>

@@ -12,9 +12,9 @@ use App\Stacks\AgentState;
 use App\Stacks\Contracts\StopConditionGate;
 use App\Stacks\Inputs\Contracts\HookHandler;
 use App\Stacks\ReadyState;
+use App\Stacks\References\StateReference;
 use App\Stacks\Support\ReadyStateReference;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
@@ -78,7 +78,7 @@ final class ReadyStateTest extends TestCase
     public function test_each_role_leaves_every_shell_line_to_cores_admission(bool $editsFiles, string $line): void
     {
         $this->grantFileChanges($editsFiles);
-        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->shell(
+        $this->journal->stateOn('Writer', $this->ready(), fn (StateHandle $ready) => $ready->shell(
             $line,
             fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
         ));
@@ -87,7 +87,7 @@ final class ReadyStateTest extends TestCase
     public function test_a_profile_that_edits_files_may_edit(): void
     {
         $this->grantFileChanges(true);
-        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->fileEdit(
+        $this->journal->stateOn('Writer', $this->ready(), fn (StateHandle $ready) => $ready->fileEdit(
             'app/Domains/Contracts/Domain.php',
             fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
         ));
@@ -96,7 +96,7 @@ final class ReadyStateTest extends TestCase
     public function test_a_profile_without_file_changes_refuses_the_whole_edit_by_its_first_path(): void
     {
         $this->grantFileChanges(false);
-        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->fileEdit(
+        $this->journal->stateOn('Writer', $this->ready(), fn (StateHandle $ready) => $ready->fileEdit(
             ['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md'],
             fn (StateAssert $state) => $state
                 ->answers(AnswerType::Deny)
@@ -107,7 +107,7 @@ final class ReadyStateTest extends TestCase
     public function test_it_never_finishes(): void
     {
         $this->grantFileChanges(true);
-        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready
+        $this->journal->stateOn('Writer', $this->ready(), fn (StateHandle $ready) => $ready
             ->tick(fn (StateAssert $state) => $state->isLive()));
     }
 
@@ -116,13 +116,13 @@ final class ReadyStateTest extends TestCase
         $gate = $this->countingStops();
 
         $this->grantFileChanges(true);
-        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->steps([
+        $this->journal->stateOn('Writer', $this->ready(), fn (StateHandle $ready) => $ready->steps([
             SessionHook::stop('turn-1'),
             SessionHook::stop('turn-2'),
             SessionHook::stop('turn-3'),
-            new StopCheckSettled('stop-turn-3', StopCheckStatus::Failed, 'same'),
-            new StopCheckSettled('stop-turn-1', StopCheckStatus::Failed, 'other'),
-            new StopCheckSettled('stop-turn-2', StopCheckStatus::Failed, 'same'),
+            new StopCheckSettled('stop-turn-3', $this->writerSession(), StopCheckStatus::Failed, 'same'),
+            new StopCheckSettled('stop-turn-1', $this->writerSession(), StopCheckStatus::Failed, 'other'),
+            new StopCheckSettled('stop-turn-2', $this->writerSession(), StopCheckStatus::Failed, 'same'),
             SessionHook::stop('turn-4'),
         ], fn (StateAssert $state) => $state->isLive()));
 
@@ -135,10 +135,10 @@ final class ReadyStateTest extends TestCase
         $gate = $this->countingStops();
 
         $this->grantFileChanges(true);
-        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->steps([
+        $this->journal->stateOn('Writer', $this->ready(), fn (StateHandle $ready) => $ready->steps([
             SessionHook::stop('turn-1'),
-            new StopCheckSettled('elsewhere', StopCheckStatus::Failed, 'same'),
-            new StopCheckSettled('stop-turn-1', StopCheckStatus::Failed, 'same'),
+            new StopCheckSettled('elsewhere', $this->writerSession(), StopCheckStatus::Failed, 'same'),
+            new StopCheckSettled('stop-turn-1', $this->writerSession(), StopCheckStatus::Failed, 'same'),
             SessionHook::stop('turn-2'),
         ], fn (StateAssert $state) => $state->isLive()));
 
@@ -169,9 +169,10 @@ final class ReadyStateTest extends TestCase
      * answered by the state itself.
      */
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
-    public function test_ready_passes_each_hook_its_policy_grants(HookInput $input): void
+    public function test_ready_passes_each_hook_its_policy_grants(string $hook): void
     {
-        $answer = $input->answerBy(new ReadyState(new FixedOperationPolicy(), new AllowedStops()));
+        $input = HookInputs::of($hook);
+        $answer = $input->answerBy(new ReadyState(new FixedOperationPolicy(), new AllowedStops(), 'agent', 'session'));
 
         $this->assertEquals(Decision::delegate(), $answer);
     }
@@ -213,5 +214,15 @@ final class ReadyStateTest extends TestCase
                 fn (ReflectedMethod $method) => $state->method($method->name())->declaringClass()->name() !== $class,
             ),
         ));
+    }
+
+    private function ready(): StateReference
+    {
+        return ReadyStateReference::bottomOf($this->journal->sessionOf('Writer')->target);
+    }
+
+    private function writerSession(): string
+    {
+        return $this->journal->sessionOf('Writer')->id;
     }
 }

@@ -12,15 +12,14 @@ use App\Stacks\Exceptions\InvalidStateClass;
 use App\Stacks\Exceptions\InvalidStateMethod;
 use App\Stacks\References\StateReference;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\Contracts\HookInput;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
-use PHPUnit\Framework\TestCase;
 use stdClass;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\DomainBoot;
+use Tests\TestCase;
 
 final class StateMethodsTest extends TestCase
 {
@@ -108,7 +107,7 @@ final class StateMethodsTest extends TestCase
                     return [Decision::delegate()];
                 }
             },
-            '::onTaskStarted must return void or what a hook returns',
+            '::onTaskStarted must declare several answers as a Generator',
         ];
     }
 
@@ -139,8 +138,9 @@ final class StateMethodsTest extends TestCase
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
-    public function test_the_base_state_passes_each_hook(HookInput $input): void
+    public function test_the_base_state_passes_each_hook(string $hook): void
     {
+        $input = HookInputs::of($hook);
         $this->assertEquals(Decision::delegate(), $input->answerBy(new class extends AgentState {}));
     }
 }

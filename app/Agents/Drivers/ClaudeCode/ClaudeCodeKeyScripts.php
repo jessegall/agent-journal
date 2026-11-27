@@ -29,7 +29,9 @@ final readonly class ClaudeCodeKeyScripts implements DriverKeyScripts
     {
         // The model and the level are named on the command line, so no picker is walked (user 28771, 28786).
         $changeModel = [
-            ...KeyScript::command('/model {model}', '❯ /model {model}'),
+            ...KeyScript::pastedCommand('/model {model}', '❯ /model', '{model}'),
+            // After a turn Claude Code asks first, as the cached conversation is read again on the new model.
+            KeyStep::chooseOnScreen('Yes, switch to'),
             KeyStep::evidence('see the model applied', 'set model to'),
         ];
 

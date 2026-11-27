@@ -17,6 +17,7 @@ use App\Projects\CurrentProject;
 use App\Resolvers\AgentDirectory;
 use App\Stacks\Decisions\StateReferenceKeys;
 use App\Stacks\ReadMessageState;
+use App\Stacks\References\StateReference;
 use App\Stacks\Support\AnswerMessageStateReference;
 use App\Stacks\Support\ReadMessageStateReference;
 use App\Stacks\Values\AnswerBudget;
@@ -198,7 +199,7 @@ final class ReadMessageStateTest extends TestCase
         $this->assertEquals($chosen, $this->app->make(CurrentProjectContract::class)->selection());
     }
 
-    private function reading(): ReadMessageStateReference
+    private function reading(): StateReference
     {
         return ReadMessageStateReference::forInbox($this->inbox->id, $this->writerId());
     }

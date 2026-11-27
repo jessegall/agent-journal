@@ -28,7 +28,11 @@ final readonly class ScreenClassifier
 
         $composer = $layout->composer->rowsOf($frame);
 
-        if ($composer !== null && self::holdsEmptyComposer($layout, $frame, $composer)) {
+        $isReady = $composer !== null
+            && self::holdsEmptyComposer($layout, $frame, $composer)
+            && ! $layout->isWorkingOn($frame);
+
+        if ($isReady) {
             $isStill = self::isStill($frame, $composer, $layout->composerStillMs);
 
             return new ScreenReading(ScreenType::PromptReady, null, $isStill, $hasOptions);

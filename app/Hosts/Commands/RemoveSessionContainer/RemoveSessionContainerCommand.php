@@ -9,7 +9,7 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * Instructions a contained host to remove what an ended session left on the agent daemon besides its containers: its own
+ * Instructs a contained host to remove what an ended session left on the agent daemon besides its containers: its own
  * network and its folder of plan files. Answers the instruction's id (internal, not exported).
  *
  * @extends Command<string>

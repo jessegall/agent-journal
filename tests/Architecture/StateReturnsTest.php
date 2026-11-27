@@ -26,10 +26,13 @@ final class StateReturnsTest extends TestCase
     public function test_an_array_type_and_an_array_or_plain_value_given_are_named_and_a_closure_is_not(): void
     {
         $this->assertSame([
-            self::FIXTURE.':15 onEnter declares an array',
-            self::FIXTURE.':17 onEnter gives an array',
-            self::FIXTURE.':22 onSessionStart gives an array',
-            self::FIXTURE.':24 onSessionStart gives a plain value',
+            self::FIXTURE.':19 onEnter declares an array',
+            self::FIXTURE.':21 onEnter gives an array',
+            self::FIXTURE.':24 onSessionStart declares an iterable, not a Generator',
+            self::FIXTURE.':26 onSessionStart gives an array',
+            self::FIXTURE.':28 onSessionStart gives a plain value',
+            self::FIXTURE.':36 onCompaction always yields its one answer: return it',
+            self::FIXTURE.':43 onSessionEnd yields from elsewhere: yield each answer here',
         ], $this->faultsIn([base_path('tests/Fixtures/StateReturns')]));
     }
 

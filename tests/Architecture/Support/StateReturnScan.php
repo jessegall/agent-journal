@@ -24,7 +24,7 @@ final readonly class StateReturnScan implements FileScan
 
     public function key(): string
     {
-        return 'state-returns-1';
+        return 'state-returns-5';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -68,6 +68,20 @@ final readonly class StateReturnScan implements FileScan
             $faults[] = "{$method->getStartLine()} {$name} declares an array";
         }
 
+        if ($method->returnType !== null && self::namesBuiltin($method->returnType, 'iterable')) {
+            $faults[] = "{$method->getStartLine()} {$name} declares an iterable, not a Generator";
+        }
+
+        foreach (self::ownNodes($method->stmts ?? []) as $node) {
+            if ($node instanceof Expr\YieldFrom) {
+                $faults[] = "{$node->getStartLine()} {$name} yields from elsewhere: yield each answer here";
+            }
+        }
+
+        if (self::yieldsOnceAlways($method)) {
+            $faults[] = "{$method->getStartLine()} {$name} always yields its one answer: return it";
+        }
+
         foreach (self::ownNodes($method->stmts ?? []) as $node) {
             $given = match (true) {
                 $node instanceof Stmt\Return_ => $node->expr,
@@ -89,15 +103,38 @@ final readonly class StateReturnScan implements FileScan
 
     private static function namesArray(Node $type): bool
     {
+        return self::namesBuiltin($type, 'array');
+    }
+
+    private static function namesBuiltin(Node $type, string $builtin): bool
+    {
         return match (true) {
-            $type instanceof Node\Identifier => strtolower($type->toString()) === 'array',
+            $type instanceof Node\Identifier => strtolower($type->toString()) === $builtin,
             $type instanceof Node\UnionType, $type instanceof Node\IntersectionType => array_any(
                 $type->types,
-                fn (Node $member) => self::namesArray($member),
+                fn (Node $member) => self::namesBuiltin($member, $builtin),
             ),
-            $type instanceof Node\NullableType => self::namesArray($type->type),
+            $type instanceof Node\NullableType => self::namesBuiltin($type->type, $builtin),
             default => false,
         };
+    }
+
+    /**
+     * Whether the method yields exactly once, from a statement of its own body that always runs and with no return
+     * before it: one answer, which is returned, not yielded.
+     */
+    private static function yieldsOnceAlways(Stmt\ClassMethod $method): bool
+    {
+        $own = self::ownNodes($method->stmts ?? []);
+        $yields = array_filter($own, fn (Node $node) => $node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom);
+        $topLevel = array_filter(
+            $method->stmts ?? [],
+            fn (Stmt $statement) => $statement instanceof Stmt\Expression && $statement->expr instanceof Expr\Yield_,
+        );
+
+        $returns = array_filter($own, fn (Node $node) => $node instanceof Stmt\Return_);
+
+        return count($yields) === 1 && count($topLevel) === 1 && $returns === [];
     }
 
     private static function isBoolean(Node|null $given): bool

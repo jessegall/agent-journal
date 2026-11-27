@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\States;
 
 use App\Contracts\Events\Event;
+use App\Stacks\References\StateReference;
 use Domain\Helpers\Events\HelperJobCancelled;
 use Domain\Helpers\Events\HelperJobFinished;
 use Domain\Helpers\Events\HelperJobHeld;
@@ -89,7 +90,7 @@ final class HelperJobStateTest extends TestCase
     /**
      * A job of a debugging helper, held in memory only: the state keeps what it needs of it in its own values.
      */
-    private function working(): HelperJobStateReference
+    private function working(): StateReference
     {
         $job = new HelperJob();
         $job->id = self::JOB;

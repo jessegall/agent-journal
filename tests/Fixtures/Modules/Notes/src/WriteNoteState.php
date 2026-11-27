@@ -13,6 +13,7 @@ use App\Stacks\References\StateReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Values\AgentText;
+use Generator;
 use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
 use Tests\Fixtures\Modules\Notes\Events\NotePublished;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
@@ -30,9 +31,9 @@ final class WriteNoteState extends AgentState implements DurableState
     }
 
     /**
-     * @return iterable<Command<mixed>|StateReference>
+     * @return Generator<int, Command<mixed>|StateReference>
      */
-    public function onNoteWritten(NoteWritten $event): iterable
+    public function onNoteWritten(NoteWritten $event): Generator
     {
         if ($event->doesListenerFail) {
             throw NoteWorkFailed::whileListening();
@@ -46,9 +47,9 @@ final class WriteNoteState extends AgentState implements DurableState
     }
 
     /**
-     * @return iterable<Command<mixed>|StateReference>
+     * @return Generator<int, Command<mixed>|StateReference>
      */
-    public function onNotePublished(NotePublished $event): iterable
+    public function onNotePublished(NotePublished $event): Generator
     {
         yield from $this->onNoteWritten($event->note);
     }

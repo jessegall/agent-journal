@@ -5,7 +5,14 @@ declare(strict_types=1);
 namespace App\Stacks;
 
 use App\Access\Contracts\OperationPolicy;
+use App\Contracts\Events\Event;
+use App\Events\Connections\HostProcessExited;
+use App\Events\Connections\HostProcessLost;
+use App\Events\Connections\HostProcessOpened;
+use App\Events\Sessions\AgentRuntimeStopRequested;
 use App\Events\Sessions\StopCheckSettled;
+use App\Sessions\Commands\EndStoppedSession\EndStoppedSessionCommand;
+use App\Sessions\Contracts\SessionFact;
 use App\Stacks\Attributes\StateType;
 use App\Stacks\Contracts\StopConditionGate;
 use App\Stacks\Contracts\Work\UniqueState;
@@ -24,11 +31,14 @@ use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Values\AgentText;
 use App\Values\Operation;
+use Generator;
 
 /**
  * The bottom of every stack, which answers every hook: a file change or tool call passes only when the agent's policy
  * grants it, a shell line is left to Core's admission, and a stop waits on the session's stop conditions. It keeps the
- * outcomes of the attempts it opened, so unchanged failures are counted from its own record.
+ * outcomes of the attempts it opened, so unchanged failures are counted from its own record. It also owns whether the
+ * session runs: it keeps its runtime's live processes and whether a stop was asked, and ends a stopped session once no
+ * process of it runs, as a headless one has none between its turns.
  */
 #[StateType(ReadyStateReference::class, schemaVersion: 1)]
 class ReadyState extends AgentState implements UniqueState
@@ -47,10 +57,26 @@ class ReadyState extends AgentState implements UniqueState
      */
     private array $settledAttempts = [];
 
+    /**
+     * The processes of the session's runtime the host was told to open and that have not ended.
+     *
+     * @var list<string>
+     */
+    private array $liveProcesses = [];
+
+    private bool $isStopAsked = false;
+
     public function __construct(
         private readonly OperationPolicy $policy,
         private readonly StopConditionGate $stops,
+        private readonly string $agentId,
+        private readonly string $sessionId,
     ) {}
+
+    public function listensTo(Event $event): bool
+    {
+        return ! $event instanceof SessionFact || $event->sessionId === $this->sessionId;
+    }
 
     // ----------[ Hooks ]----------
 
@@ -125,7 +151,58 @@ class ReadyState extends AgentState implements UniqueState
         );
     }
 
+    /**
+     * A stop was asked of the session: it ends now when nothing of it runs, else once its last process ends.
+     *
+     * @return Generator<int, EndStoppedSessionCommand>
+     */
+    public function onAgentRuntimeStopRequested(AgentRuntimeStopRequested $event): Generator
+    {
+        $this->isStopAsked = true;
+
+        if ($this->isStoppedAndIdle()) {
+            yield new EndStoppedSessionCommand($this->agentId, $this->sessionId);
+        }
+    }
+
+    public function onHostProcessOpened(HostProcessOpened $event): void
+    {
+        $this->liveProcesses = array_values(array_unique([...$this->liveProcesses, $event->processId]));
+    }
+
+    /**
+     * @return Generator<int, EndStoppedSessionCommand>
+     */
+    public function onHostProcessExited(HostProcessExited $event): Generator
+    {
+        $this->liveProcesses = array_values(array_diff($this->liveProcesses, [$event->processId]));
+
+        if ($this->isStoppedAndIdle()) {
+            yield new EndStoppedSessionCommand($this->agentId, $this->sessionId);
+        }
+    }
+
+    /**
+     * @return Generator<int, EndStoppedSessionCommand>
+     */
+    public function onHostProcessLost(HostProcessLost $event): Generator
+    {
+        $this->liveProcesses = array_values(array_diff($this->liveProcesses, [$event->processId]));
+
+        if ($this->isStoppedAndIdle()) {
+            yield new EndStoppedSessionCommand($this->agentId, $this->sessionId);
+        }
+    }
+
     // ----------[ Internals ]----------
+
+    /**
+     * Whether a stop was asked and none of the session's processes runs: the session is over.
+     */
+    private function isStoppedAndIdle(): bool
+    {
+        return $this->isStopAsked && $this->liveProcesses === [];
+    }
 
     /**
      * Notes an attempt the gate opened for a stop, once; a retried stop callback finds the attempt it opened.

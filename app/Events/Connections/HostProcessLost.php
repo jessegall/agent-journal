@@ -11,5 +11,10 @@ use App\Hosts\Contracts\HostProcessEndEvent;
  */
 final readonly class HostProcessLost implements ConnectionEvent, HostProcessEndEvent
 {
-    public function __construct(public string $processId, public string|null $runtimeId, public string $evidence) {}
+    public function __construct(
+        public string $processId,
+        public string|null $runtimeId,
+        public string|null $sessionId,
+        public string $evidence,
+    ) {}
 }

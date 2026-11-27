@@ -157,7 +157,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     {
         $this->activity = RuntimeActivity::Stopping;
         $this->saveAndAssert();
-        $this->raise(new AgentRuntimeStopRequested($this->id));
+        $this->raise(new AgentRuntimeStopRequested($this->id, $this->agent_session_id));
     }
 
     /**

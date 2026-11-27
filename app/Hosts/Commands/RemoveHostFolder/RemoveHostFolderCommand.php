@@ -9,8 +9,8 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * Instructions the host to remove an account folder; the same operation asked again finds the instruction already made. Run for
- * the host's sign-in runner (internal, not exported).
+ * Instructs the host to remove an account folder; the same operation asked again finds the instruction already made.
+ * Run for the host's sign-in runner (internal, not exported).
  *
  * @extends Command<string>
  */

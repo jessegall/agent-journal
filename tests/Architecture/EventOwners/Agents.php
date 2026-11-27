@@ -394,7 +394,7 @@ return [
         'owner' => 'AgentRuntime::markStopping',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AgentRuntimeStopRequested('runtime'),
+        'sample' => fn () => new AgentRuntimeStopRequested('runtime', 'session'),
     ],
     AgentRuntimeHeld::class => [
         'role' => EventRole::RowFact,
@@ -695,7 +695,7 @@ return [
         'owner' => 'StopCheck::settle',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StopCheckSettled('attempt', StopCheckStatus::cases()[0], 'outcome'),
+        'sample' => fn () => new StopCheckSettled('attempt', 'session', StopCheckStatus::cases()[0], 'outcome'),
     ],
     StopCheckOpened::class => [
         'role' => EventRole::RowFact,

@@ -104,7 +104,7 @@ final class OperationPolicyTest extends TestCase
             {
                 return $this->access->decide($operation);
             }
-        }, new AllowedStops());
+        }, new AllowedStops(), 'agent', 'session');
     }
 
     private function hook(): HookIdentity

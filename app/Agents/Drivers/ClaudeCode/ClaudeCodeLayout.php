@@ -163,7 +163,7 @@ final readonly class ClaudeCodeLayout implements DriverLayout
                 ),
             ],
             others: [
-                new MarkedRow('spinner', self::SPINNER_GLYPHS, ['…']),
+                new MarkedRow(ScreenLayout::WORKING, self::SPINNER_GLYPHS, ['…']),
                 new MarkedRow('status', ['  '], ['shift+tab'], 3),
             ],
             isBracketedPaste: true,

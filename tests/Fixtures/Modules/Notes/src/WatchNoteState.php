@@ -7,6 +7,7 @@ namespace Tests\Fixtures\Modules\Notes;
 use App\Bus\Contracts\Command;
 use App\Stacks\AgentState;
 use App\Stacks\Attributes\StateType;
+use Generator;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 
 /**
@@ -16,9 +17,9 @@ use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 final class WatchNoteState extends AgentState
 {
     /**
-     * @return iterable<Command<mixed>>
+     * @return Generator<int, Command<mixed>>
      */
-    public function onNoteWritten(NoteWritten $event): iterable
+    public function onNoteWritten(NoteWritten $event): Generator
     {
         yield from $event->ordinary;
     }

@@ -15,8 +15,8 @@ use App\Sessions\Enums\StopCheckStatus;
 use App\Values\StopCondition;
 
 /**
- * Instructions the attempt's conditions run under the session's fence on its runtime's host, the agent itself waiting at
- * its stop; the attempt of a session with no runtime stays pending, as no host can run its conditions.
+ * Instructs the host to run the attempt's conditions under the session's fence on its runtime's host, the agent itself
+ * waiting at its stop; the attempt of a session with no runtime stays pending, as no host can run its conditions.
  */
 final readonly class RunStopConditionsHandler implements CommandHandler
 {
