@@ -38,11 +38,25 @@ final readonly class AgentClientSettings
      */
     public function environment(): array
     {
+        return array_map(
+            fn (string $name, string $value) => "{$name}={$value}",
+            array_keys($this->variables()),
+            $this->variables(),
+        );
+    }
+
+    /**
+     * The credentials by their variable's name, as a program's configuration hands them to a server it starts.
+     *
+     * @return array<string, string>
+     */
+    public function variables(): array
+    {
         return [
-            self::JOURNAL_URL.'='.$this->journalUrl,
-            self::START_TOKEN.'='.$this->token,
-            self::PROFILE.'='.$this->profile->key,
-            self::PROFILE_REVISION.'='.$this->profile->revision,
+            self::JOURNAL_URL => $this->journalUrl,
+            self::START_TOKEN => $this->token,
+            self::PROFILE => $this->profile->key,
+            self::PROFILE_REVISION => (string) $this->profile->revision,
         ];
     }
 }

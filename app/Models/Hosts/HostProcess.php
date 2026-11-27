@@ -456,6 +456,17 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
+     * When a process working for the session last moved, its output or its state: one of its runtime, or an account's
+     * owner opened for one of its starts, which serves the session without being its runtime's.
+     */
+    public static function resolveLastMovedAtOfSession(string $sessionId): CarbonImmutable|null
+    {
+        $moved = self::query()->withoutGlobalScopes()->workingForSession($sessionId)->max('updated_at');
+
+        return $moved === null ? null : CarbonImmutable::parse((string) $moved);
+    }
+
+    /**
      * The newest process opened for the session's runtime; none before one opened.
      */
     public static function findNewestOfSession(string $sessionId): self|null
@@ -530,6 +541,19 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     protected function ofSession(Builder $query, string $sessionId): void
     {
         $query->whereHas('runtime', fn (Builder $runtime) => $runtime->ofSessions([$sessionId]));
+    }
+
+    /**
+     * The processes of the session's runtime and those opened for one of its starts, such as an account's owner.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function workingForSession(Builder $query, string $sessionId): void
+    {
+        $query->where(fn (Builder $working) => $working
+            ->whereHas('runtime', fn (Builder $runtime) => $runtime->ofSessions([$sessionId]))
+            ->orWhereHas('sessionProcess', fn (Builder $start) => $start->ofSessions([$sessionId])));
     }
 
     /**

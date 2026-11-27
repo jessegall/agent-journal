@@ -258,12 +258,14 @@ final class RecordingFakes
     }
 
     /**
-     * The tokens, names and organizations a program prints under their JSON keys, and an organization a screen names.
+     * The tokens, names and organizations a program prints or is handed under their JSON keys, such as the start grant
+     * of a thread's config, and an organization a screen names.
      */
     private function replaceNamedValues(string $text): string
     {
         $named = (string) preg_replace(
-            '/("(?:access_?token|refresh_?token|id_?token|api_?key|accessToken|refreshToken|idToken|apiKey|token)'
+            '/("(?:access_?token|refresh_?token|id_?token|api_?key|accessToken|refreshToken|idToken|apiKey|token'
+                .'|journal_start_token)'
                 .'\\\\?"\s*:\s*\\\\?")[^"\\\\]+/i',
             '${1}'.self::TOKEN,
             $text,

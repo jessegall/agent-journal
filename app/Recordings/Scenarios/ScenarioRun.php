@@ -156,8 +156,8 @@ final class ScenarioRun
     }
 
     /**
-     * When the session of the agent the steps named last last showed life: a request of it moved on or its driver
-     * called a hook; none while no step named an agent.
+     * When the session of the agent the steps named last last showed life: a request of it moved on, its driver called
+     * a hook, or a process working for it printed or changed; none while no step named an agent.
      */
     public function lastLifeAt(): CarbonImmutable|null
     {
@@ -169,6 +169,7 @@ final class ScenarioRun
         $moments = array_filter([
             DriverRequest::resolveLastMovedAtOf($session),
             HookCall::resolveLastAtOf($session),
+            HostProcess::resolveLastMovedAtOfSession($session),
         ]);
 
         return $moments === [] ? null : max($moments);

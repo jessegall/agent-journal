@@ -81,6 +81,7 @@ final class CodexAppDriverTest extends TestCase
                 [RequestProgress::Applied, RequestProgress::Failed],
                 ['thread-0', 'thread-1'],
                 [true, true, true, true],
+                [true, true],
             ],
             [
                 array_column($this->journal->pipeInputOf('owner'), 'method'),
@@ -95,6 +96,7 @@ final class CodexAppDriverTest extends TestCase
                         $turnStarts,
                     ),
                 ],
+                array_map(fn (array $start) => $this->grantOf($start) !== '', $threadStarts),
             ],
         );
     }
@@ -176,5 +178,15 @@ final class CodexAppDriverTest extends TestCase
         $instructions = $this->journal->hostInstructionsOf('owner');
 
         return $instructions[array_key_last($instructions)];
+    }
+
+    /**
+     * The start token a thread's journal server signs in with, as its thread/start config hands it over.
+     *
+     * @param  array<string, mixed>  $start
+     */
+    private function grantOf(array $start): string
+    {
+        return (string) ($start['params']['config']['mcp_servers.journal.env']['JOURNAL_START_TOKEN'] ?? '');
     }
 }

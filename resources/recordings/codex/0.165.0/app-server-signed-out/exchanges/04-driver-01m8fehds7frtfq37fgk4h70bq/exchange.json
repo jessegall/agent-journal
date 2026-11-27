@@ -1,0 +1,41 @@
+{
+    "opening": {
+        "wire": "driver",
+        "exchange": "01m8fehds7frtfq37fgk4h70bq",
+        "mode": "process",
+        "argv": [
+            "codex",
+            "--version"
+        ],
+        "environment": {},
+        "inherited": [],
+        "folder": "/workspace",
+        "columns": 0,
+        "rows": 0,
+        "image": "sha256:4d0d5dc2e016890e78176696d0750373c2df23a530bb6ec29c26bc22f9c2638d",
+        "openedAt": 1795814898545319
+    },
+    "events": [
+        {
+            "type": "printed",
+            "at": 1795814898685810,
+            "bytes": "V0FSTklORzogcHJvY2VlZGluZywgZXZlbiB0aG91Z2ggd2UgY291bGQgbm90IGNyZWF0ZSBQQVRIIGFsaWFzZXM6IFBlcm1pc3Npb24gZGVuaWVkIChvcyBlcnJvciAxMykK",
+            "stream": "stderr",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795814898698983,
+            "bytes": "Y29kZXgtY2xpIDAuMTY1LjAK",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        }
+    ],
+    "exit_code": 0
+}

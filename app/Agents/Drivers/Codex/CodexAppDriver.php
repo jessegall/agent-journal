@@ -9,6 +9,7 @@ use App\Accounts\Commands\RecordUsageWindow\RecordUsageWindowCommand;
 use App\Accounts\Enums\SignInMethod;
 use App\Accounts\Enums\UsageWindowSlot;
 use App\Agents\Commands\ChooseRuntimeConversation\ChooseRuntimeConversationCommand;
+use App\Agents\Commands\IssueThreadGrant\IssueThreadGrantCommand;
 use App\Agents\Commands\RefuseAccountStarts\RefuseAccountStartsCommand;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Agents\Drivers\Contracts\ProcessDriver;
@@ -25,6 +26,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
+use App\Sessions\AgentClientSettings;
 use App\Support\Command;
 use App\Time\Contracts\ServerClock;
 use App\Values\ClaimedRequest;
@@ -60,6 +62,11 @@ final class CodexAppDriver implements ProcessDriver
      */
     private const string OWNER_EXITED = 'ownerExited';
 
+    /**
+     * The configuration key of the environment the journal's server of a thread starts with.
+     */
+    private const string JOURNAL_SERVER_ENVIRONMENT = 'mcp_servers.journal.env';
+
     private const int STOP_GRACE_MS = 5000;
 
     private const int STOP_FORCE_MS = 5000;
@@ -77,6 +84,20 @@ final class CodexAppDriver implements ProcessDriver
     private int $linesRead = 0;
 
     private bool $isAccountChecked = false;
+
+    /**
+     * The grant each runtime's thread signs in to the journal with, by runtime, once issued.
+     *
+     * @var array<string, array<string, string>>
+     */
+    private array $grants = [];
+
+    /**
+     * The requests of each runtime that wait to run until its thread's grant is issued, by runtime, in claim order.
+     *
+     * @var array<string, list<ClaimedRequest>>
+     */
+    private array $awaitingGrant = [];
 
     /**
      * The requests claimed before the account was checked, which run once it is.
@@ -190,7 +211,20 @@ final class CodexAppDriver implements ProcessDriver
      */
     public function onAnswered(Command $command, mixed $answer): DriverActions
     {
-        return DriverActions::none();
+        if (! $command instanceof IssueThreadGrantCommand || ! $answer instanceof AgentClientSettings) {
+            return DriverActions::none();
+        }
+
+        $waiting = $this->awaitingGrant[$command->runtimeId] ?? [];
+        unset($this->awaitingGrant[$command->runtimeId]);
+        $this->grants[$command->runtimeId] = $answer->variables();
+        $actions = DriverActions::none();
+
+        foreach ($waiting as $request) {
+            $actions = $actions->then($this->runTurn($request));
+        }
+
+        return $actions;
     }
 
     public function onExit(): DriverActions
@@ -308,6 +342,14 @@ final class CodexAppDriver implements ProcessDriver
             return $this->onThreadOf($request, $thread);
         }
 
+        // A thread starts only once its grant is issued, as one owner serves several runtimes and carries none itself.
+        if (! array_key_exists($request->runtimeId, $this->grants)) {
+            $isFirst = ! array_key_exists($request->runtimeId, $this->awaitingGrant);
+            $this->awaitingGrant[$request->runtimeId][] = $request;
+
+            return $isFirst ? DriverActions::of(new IssueThreadGrantCommand($request->runtimeId)) : DriverActions::none();
+        }
+
         $runtime = AgentRuntime::query()->findOrFail($request->runtimeId);
         // A runtime's conversation is a Codex thread once Codex named it or its start chose one; before that it is the
         // journal's own.
@@ -319,7 +361,9 @@ final class CodexAppDriver implements ProcessDriver
 
             $source = $this->sourceOf($request, self::RESUME_STEP);
 
-            return $this->write($id, 'thread/resume', ['threadId' => $known], $source);
+            $resumed = ['threadId' => $known, 'config' => $this->threadConfigOf($runtime)];
+
+            return $this->write($id, 'thread/resume', $resumed, $source);
         }
 
         $id = $this->idOf($request, self::THREAD_STEP);
@@ -330,7 +374,7 @@ final class CodexAppDriver implements ProcessDriver
             'sandbox' => CodexArguments::NO_SANDBOX,
             'approvalPolicy' => 'never',
             'model' => $request->model ?? $runtime->startModel(),
-            'config' => $this->featuresOff(),
+            'config' => $this->threadConfigOf($runtime),
         ];
 
         return $this->write($id, 'thread/start', $params, $this->sourceOf($request, self::THREAD_STEP));
@@ -661,7 +705,18 @@ final class CodexAppDriver implements ProcessDriver
     }
 
     /**
-     * @return array<string, false>
+     * The configuration a thread of the runtime starts or resumes with: no feature that starts another agent, and the
+     * journal's server signed in as this runtime, as one owner serves several runtimes and carries no grant of its own.
+     *
+     * @return array<string, mixed>
+     */
+    private function threadConfigOf(AgentRuntime $runtime): array
+    {
+        return [...$this->featuresOff(), self::JOURNAL_SERVER_ENVIRONMENT => $this->grants[$runtime->id]];
+    }
+
+    /**
+     * @return array<string, bool>
      */
     private function featuresOff(): array
     {
