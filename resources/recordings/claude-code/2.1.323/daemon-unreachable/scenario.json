@@ -4,10 +4,11 @@
     "scenario_hash": "bb29f05084587f1fc52f4f3f67f920b051a8e9b0b455437730c9adf083a59553",
     "driver": "claude-code",
     "build": "2.1.323",
-    "image_programs": "a3e2bf0f647bb58d5094039e1fe2649efb780fa0b250dfafb8e9f19235d043c3",
-    "recorded_at": "2026-11-27T19:33:41+00:00",
+    "image_programs": "efabd7db62059a1f2dca3cd38dd886c85e51462c28085ece2ed106be26264418",
+    "recorded_at": "2026-11-27T22:37:46+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",
-        "02-docker-daemon"
+        "02-docker-daemon",
+        "03-driver-01m8fjghgk46gw4r9cp79n9eqq"
     ]
 }

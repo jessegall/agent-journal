@@ -20,7 +20,7 @@ func (table *ProcessTable) RunContainers(ctx context.Context, _ Instruction, pla
 	for _, run := range plan.Runs {
 		result, err := table.containers.RunToEnd(ctx, run)
 		if err != nil {
-			return ContainerRunResults{Results: results}, RefusalError{Refusal: Unsafe, Reason: err.Error()}
+			return ContainerRunResults{Results: results}, refusalOf(err)
 		}
 		results = append(results, result)
 	}

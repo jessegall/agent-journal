@@ -35,6 +35,7 @@ enum HostInstructionType: string
     case Remove = 'remove';
     case ReadProject = 'read_project';
     case Upgrade = 'upgrade';
+    case BuildImage = 'build_image';
 
     /**
      * Whether the instruction ends its process, so a process that ended still lets its host answer it.
@@ -70,6 +71,7 @@ enum HostInstructionType: string
             self::CloseStdin,
             self::WritePrivate,
             self::AllowImages,
+            self::BuildImage,
         ], true);
     }
 
@@ -131,6 +133,7 @@ enum HostInstructionType: string
             self::Remove => Payloads\HostRemovePlanPayload::class,
             self::ReadProject => Payloads\HostProjectReadPayload::class,
             self::Upgrade => Payloads\HostUpgradePlanPayload::class,
+            self::BuildImage => Payloads\HostImageBuildPayload::class,
         };
     }
 
@@ -162,6 +165,7 @@ enum HostInstructionType: string
             self::RunContainers => Payloads\HostContainerRunResultsPayload::class,
             self::ListContainers => Payloads\HostContainerNamesPayload::class,
             self::Upgrade => Payloads\HostUpgradeStartedPayload::class,
+            self::BuildImage => Payloads\HostImageBuiltPayload::class,
         };
     }
 }

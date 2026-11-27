@@ -88,6 +88,12 @@ func (code ExitedWith) Error() string {
 // it printed on each stream, the first bytes of each up to the run's output limit. Its input, or the host secret it
 // names, is written to its standard input and closed. The container and its anonymous volumes are removed after.
 func (containers Containers) RunToEnd(ctx context.Context, run ContainerRun) (ContainerRunResult, error) {
+	result, err := containers.runToEnd(ctx, run)
+
+	return result, aboutImage(run.Manifest.Image, err)
+}
+
+func (containers Containers) runToEnd(ctx context.Context, run ContainerRun) (ContainerRunResult, error) {
 	input, err := containers.inputOf(run)
 	if err != nil {
 		return ContainerRunResult{}, err
@@ -110,7 +116,7 @@ func (containers Containers) RunToEnd(ctx context.Context, run ContainerRun) (Co
 
 	created, err := containers.Daemon.ContainerCreate(ctx, options)
 	if err != nil {
-		return ContainerRunResult{}, fmt.Errorf("%w: %v", ErrContainerNotCreated, err)
+		return ContainerRunResult{}, createFailure(run.Manifest.Image, err)
 	}
 	defer containers.discard(created.ID)
 

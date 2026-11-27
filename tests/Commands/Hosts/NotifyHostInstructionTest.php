@@ -10,6 +10,7 @@ use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Commands\NotifyHostInstruction\NotifyHostInstructionCommand;
 use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\Exceptions\HostCallUnreadable;
 use App\Hosts\ProcessFeed;
 use App\Hosts\Protocol\HostRefusal;
 use Tests\Support\Agents\TestAgent;
@@ -26,6 +27,8 @@ use Tests\TestCase;
 #[TestsCommand(NotifyHostInstructionCommand::class)]
 final class NotifyHostInstructionTest extends TestCase
 {
+    private const string VECTORS = 'programs/runner/hostapi/testdata/conformance.json';
+
     use RefreshHookDatabase;
     use WithActiveAccount;
 
@@ -101,6 +104,18 @@ final class NotifyHostInstructionTest extends TestCase
             [SessionProcessStatus::Stopped, 'the host refused to open it (guard_moved), the rows moved on before the keys were sent'],
             [$start->status, $start->refusal],
         );
+    }
+
+    public function test_an_image_fault_whose_facts_the_protocol_does_not_know_is_refused(): void
+    {
+        [$open] = $this->journal->hostInstructionsOf('shell');
+        $fault = json_decode((string) file_get_contents(base_path(self::VECTORS)), true)['answers'][2];
+        $fault['instruction_id'] = $open->id;
+        $fault['facts']['fault'] = 'image_gone';
+
+        $this->journal->assertRefused(HostCallUnreadable::class, fn () => $this->journal->asSystem(
+            new NotifyHostInstructionCommand($this->journal->hostCalled('Mac')->hostId, $open->id, json_encode($fault)),
+        ));
     }
 
     public function test_an_answer_to_another_hosts_instruction_is_refused(): void

@@ -6,6 +6,7 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeHooks;
 use App\Agents\Drivers\Codex\CodexHomeFiles;
+use App\Agents\Drivers\Hooks\HookReplies;
 use App\Hosts\Protocol\ContainedPlanFields;
 use App\Support\MountRules;
 use ReflectionClassConstant;
@@ -40,6 +41,9 @@ final class DriverImageFoldersTest extends TestCase
         $events = new ReflectionClassConstant(CodexHomeFiles::class, 'HOOK_EVENTS')->getValue();
         $hooks = $this->jsonFile('.docker/drivers/codex/hooks.json')['hooks'];
 
+        $inputs = array_map(fn (array $event) => $event[0]['hooks'][0]['input'], $hooks);
+        $handlers = array_map(fn (array $event) => [['hooks' => [array_diff_key($event[0]['hooks'][0], ['input' => 0])]]], $hooks);
+
         $this->assertSame(
             array_map(fn (array $event) => [['hooks' => [[
                 'type' => 'mcp_tool',
@@ -47,8 +51,21 @@ final class DriverImageFoldersTest extends TestCase
                 'tool' => 'hook',
                 'timeout' => $event[1],
             ]]]], $events),
-            $hooks,
+            $handlers,
         );
+
+        // Each event's input rebuilds the event from its own fields, as Codex fills ${field} from the event it runs.
+        foreach ($inputs as $input) {
+            $this->assertSame(array_map(fn (string $field) => '${'.$field.'}', array_keys($input)), array_values($input));
+        }
+    }
+
+    public function test_codexs_journal_server_answers_its_hooks_with_journal_hooks_arguments(): void
+    {
+        $config = (string) file_get_contents(base_path('.docker/drivers/codex/config.toml'));
+        $replies = MountRules::SESSION_TARGET.'/'.HookReplies::REPLY_FILE;
+
+        $this->assertStringContainsString('args = '.json_encode(['codex', $replies], JSON_UNESCAPED_SLASHES), str_replace('", "', '","', $config));
     }
 
     public function test_codexs_journal_server_takes_the_start_grants_variables(): void

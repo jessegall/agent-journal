@@ -7,9 +7,11 @@ namespace Tests\Machinery\Hosts;
 use App\Hosts\Exceptions\HostCallUnreadable;
 use App\Hosts\HostCallReader;
 use App\Hosts\HostPayloadJson;
+use App\Hosts\Protocol\HostImageFaultType;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\Payloads\HostAnswerPayload;
+use App\Hosts\Protocol\Payloads\HostImageFaultFactsPayload;
 use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
 use App\Models\Hosts\HostInstruction;
@@ -61,7 +63,7 @@ final class HostProtocolConformanceTest extends TestCase
         $report = $reader->read($this->encoded($vectors['reports'][0]), HostProcessReportPayload::class, 'report');
         $inventory = $reader->read($this->encoded($vectors['inventory']), HostInventoryPayload::class, 'inventory');
 
-        $this->assertSame([HostRefusal::GuardMoved, HostRefusal::UnknownInstruction], array_map(
+        $this->assertSame([HostRefusal::GuardMoved, HostRefusal::UnknownInstruction, HostRefusal::ImageFault, null], array_map(
             fn (HostAnswerPayload $answer) => $answer->refusal,
             $answers,
         ));
@@ -73,6 +75,30 @@ final class HostProtocolConformanceTest extends TestCase
             ], '01jprocess000000000000000001', true],
             [$inventory->capabilities, $inventory->processes[0]->processId, $inventory->processes[0]->isTerminalHeld],
         );
+    }
+
+    public function test_an_image_fault_and_a_built_image_are_read_as_their_types(): void
+    {
+        [, , $fault, $built] = $this->vectors()['answers'];
+        $reader = $this->app->make(HostCallReader::class);
+
+        $facts = $reader->read($this->encoded($fault['facts']), HostRefusal::ImageFault->factsPayload(), 'facts');
+        $image = $reader->read($this->encoded($built['facts']), HostInstructionType::BuildImage->replyPayload(), 'reply');
+
+        $this->assertSame(
+            [HostImageFaultType::ImageAbsent, 'journal-driver-codex:0123456789ab', 'sha256:'.str_repeat('b', 64), 0],
+            [$facts->fault, $facts->reference, $image->image, $image->exitCode],
+        );
+    }
+
+    public function test_an_image_fault_of_a_type_the_protocol_does_not_know_is_refused(): void
+    {
+        $facts = $this->vectors()['answers'][2]['facts'];
+        $facts['fault'] = 'image_gone';
+
+        $this->expectException(HostCallUnreadable::class);
+
+        $this->app->make(HostCallReader::class)->read($this->encoded($facts), HostImageFaultFactsPayload::class, 'facts');
     }
 
     public function test_a_host_call_with_a_field_the_protocol_does_not_know_is_refused_by_its_name(): void

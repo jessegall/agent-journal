@@ -161,21 +161,27 @@ type Relay struct {
 	Output io.Writer
 	Errors io.Writer
 	Now    func() time.Time
+	// Hook answers the driver's mcp_tool hooks on the hook tool; a relay without one has no hook tool.
+	Hook HookAnswerer
 
-	mutex      sync.Mutex
-	arrived    *sync.Cond
-	queue      []frame
-	ended      bool
-	negotiated string
+	mutex        sync.Mutex
+	arrived      *sync.Cond
+	queue        []frame
+	ended        bool
+	negotiated   string
+	hooks        sync.WaitGroup
+	runningHooks map[string]bool
 }
 
-// Run reads the input to its end and answers every frame; it returns once the input ended and the queue is empty.
+// Run reads the input to its end and answers every frame; it returns once the input ended, the queue is empty and
+// every hook call is answered.
 func (relay *Relay) Run(ctx context.Context, input io.Reader) {
 	if relay.Now == nil {
 		relay.Now = time.Now
 	}
 	relay.arrived = sync.NewCond(&relay.mutex)
 	go relay.read(input)
+	defer relay.hooks.Wait()
 
 	for {
 		next, found := relay.next()
@@ -187,6 +193,8 @@ func (relay *Relay) Run(ctx context.Context, input io.Reader) {
 		expired := call.Err() != nil
 		cancel()
 		switch {
+		case err != nil && next.method == "initialize" && next.isRequest():
+			relay.initializedLocally(next)
 		case err != nil && expired:
 			relay.refuse(next, deadlineExpired, "The call passed its deadline before the journal answered.", nil)
 		case err != nil:
@@ -252,7 +260,17 @@ func (relay *Relay) admit(line []byte) {
 }
 
 func (relay *Relay) enqueue(admitted frame) {
+	if relay.Hook != nil && admitted.isHookCall() {
+		relay.startHook(admitted)
+
+		return
+	}
 	relay.mutex.Lock()
+	if cancelled, cancels := admitted.cancelledID(); cancels && relay.cancelHook(cancelled) {
+		relay.mutex.Unlock()
+
+		return
+	}
 	if cancelled, cancels := admitted.cancelledID(); cancels {
 		kept := relay.queue[:0]
 		for _, queued := range relay.queue {

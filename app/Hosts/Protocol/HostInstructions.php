@@ -11,6 +11,7 @@ use App\Hosts\HostInstructionPlacement;
 use App\Hosts\Protocol\Payloads\HostContainerLabelPayload;
 use App\Hosts\Protocol\Payloads\HostContainerRunsPayload;
 use App\Hosts\Protocol\Payloads\HostFencedPlanPayload;
+use App\Hosts\Protocol\Payloads\HostImageBuildPayload;
 use App\Hosts\Protocol\Payloads\HostImagesPlanPayload;
 use App\Hosts\Protocol\Payloads\HostKeyWritePayload;
 use App\Hosts\Protocol\Payloads\HostNetworkRemovalPayload;
@@ -342,5 +343,15 @@ final readonly class HostInstructions
     public function upgrade(string $hostId, HostInstructionSource $source, HostUpgradePlanPayload $payload): HostInstruction
     {
         return $this->placement->forHost($hostId, $source, HostInstructionType::Upgrade, $payload->toArray());
+    }
+
+    /**
+     * Places the build_image instruction on the host.
+     *
+     * @throws HostProtocolRefused
+     */
+    public function buildImage(string $hostId, HostInstructionSource $source, HostImageBuildPayload $payload): HostInstruction
+    {
+        return $this->placement->forHost($hostId, $source, HostInstructionType::BuildImage, $payload->toArray());
     }
 }

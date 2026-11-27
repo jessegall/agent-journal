@@ -131,6 +131,9 @@ func (dispatcher *Dispatcher) answerOf(ctx context.Context, instruction Instruct
 // refusalAnswer is the answer of a refused instruction, with the facts the host saw, such as the current row hash.
 func refusalAnswer(instruction Instruction, err error, facts map[string]any) Answer {
 	var refusal RefusalError
+	if errors.As(err, &refusal) && refusal.Facts != nil {
+		return RefusedFor(instruction, refusal.Refusal, refusal.Reason, refusal.Facts)
+	}
 	if errors.As(err, &refusal) {
 		return RefusedFor(instruction, refusal.Refusal, refusal.Reason, facts)
 	}

@@ -91,7 +91,7 @@ func missingField(shape reflect.Type, text json.RawMessage, path string) string 
 			return ""
 		}
 		for index, item := range items {
-			if missing := missingField(shape.Elem(), item, path+"["+strconv.Itoa(index)+"]"); missing != "" {
+			if missing := missingField(shape.Elem(), item, path+strconv.Itoa(index)+"."); missing != "" {
 				return missing
 			}
 		}

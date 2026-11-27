@@ -12,7 +12,11 @@
         "unsafe": "the instruction is unsigned, altered, or names something the host may not do",
         "host_restarted": "the host restarted while carrying the instruction out, and the instruction may not run twice",
         "fenced": "a newer generation of the process fences the instruction out",
-        "unknown_instruction": "this host does not carry out the instruction's type"
+        "unknown_instruction": "this host does not carry out the instruction's type",
+        "image_fault": "the Docker daemon lacks the image, holds another digest under its name, or cannot be reached; the answer's facts say which and name the image"
+    },
+    "refusal_facts": {
+        "image_fault": "image_fault_facts"
     },
     "instructions": {
         "open_container": { "scope": "process", "process_type": "any", "opens": true, "payload": "open_plan", "reply": "opened" },
@@ -35,7 +39,8 @@
         "remove_network": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "network_removal", "reply": "empty" },
         "remove": { "scope": "host", "process_type": "any", "ends_process": true, "is_repeatable": true, "payload": "remove_plan", "reply": "empty" },
         "read_project": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "project_read", "reply": "empty" },
-        "upgrade": { "scope": "host", "process_type": "any", "payload": "upgrade_plan", "reply": "upgrade_started" }
+        "upgrade": { "scope": "host", "process_type": "any", "payload": "upgrade_plan", "reply": "upgrade_started" },
+        "build_image": { "scope": "host", "process_type": "any", "offered_again_after_restart": false, "payload": "image_build", "reply": "image_built" }
     },
     "placeholder_types": [
         "folder",
@@ -72,10 +77,15 @@
         "mount_type": ["bind", "volume", "daemon-bind", "scratch"],
         "process_report_type": ["running", "restarted", "exited", "lost"],
         "argument_values": ["none", "one", "list"],
-        "project_read_failure": ["missing", "not_a_directory", "not_a_file", "binary", "too_large", "unreadable", "outside"]
+        "project_read_failure": ["missing", "not_a_directory", "not_a_file", "binary", "too_large", "unreadable", "outside"],
+        "image_fault_type": [
+            "image_absent",
+            "digest_mismatch",
+            "daemon_unavailable"
+        ]
     },
     "go_packages": {
-        "host": ["mount_type", "restart_file", "container_manifest", "container_mount", "container_budgets", "security_options", "container_tmpfs", "container_volume", "container_label", "container_run", "container_run_result"],
+        "host": ["mount_type", "restart_file", "container_manifest", "container_mount", "container_budgets", "security_options", "container_tmpfs", "container_volume", "container_label", "container_run", "container_run_result", "image_build", "build_argument", "image_built"],
         "client": ["project_read", "project_read_report", "project_entry", "project_read_failure"]
     },
     "programs": {
@@ -204,7 +214,11 @@
         "keys_written": { "input_generation": "uint64", "row_hash": "string?" },
         "fenced_results": { "results": "list<fenced_result>" },
         "fenced_result": { "status": "string", "started_at": "string", "ended_at": "string|null", "exit_code": "int|null", "signal": "string|null", "summary": "string", "output": "string|null", "truncated": "bool" },
-        "images_allowed": { "allowed": "int" },
+        "images_allowed": { "allowed": "int", "absent": "list<string>" },
+        "image_build": { "name": "string", "base": "string", "context": "bytes", "dockerfile": "string", "build_arguments": "list<build_argument>", "deadline_ms": "int", "output_limit": "int" },
+        "build_argument": { "name": "string", "value": "string" },
+        "image_built": { "image": "string", "history": "list<string>", "stdout": "string", "stderr": "string", "exit_code": "int" },
+        "image_fault_facts": { "fault": "image_fault_type", "reference": "string" },
         "upgrade_started": { "release": "string" },
         "remove_plan": { "container": "string", "stop_seconds": "int" },
         "fenced_plan": { "fence": "string", "waiting": "list<string>", "budget_ms": "int", "runs": "list<fenced_run>" },

@@ -18,6 +18,7 @@ final class HostProtocolData extends Data
     /**
      * @param  array<string, string>  $statuses  each answer status with what it means
      * @param  array<string, string>  $refusals  each refusal with what it means
+     * @param  array<string, string>  $refusalFacts  each refusal whose facts have a type of the file, with that type
      * @param  array<string, HostInstructionTraitsData>  $instructions  each instruction type with its traits
      * @param  list<string>  $placeholderTypes  the types of {type:NAME} a plan may hold
      * @param  list<string>  $hostNames  the names the host fills as {host:NAME}
@@ -33,6 +34,7 @@ final class HostProtocolData extends Data
         public readonly int $version,
         public readonly array $statuses,
         public readonly array $refusals,
+        public readonly array $refusalFacts,
         #[DataCollectionOf(HostInstructionTraitsData::class)]
         public readonly array $instructions,
         public readonly array $placeholderTypes,

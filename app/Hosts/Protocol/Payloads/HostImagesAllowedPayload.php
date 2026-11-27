@@ -17,8 +17,13 @@ use Spatie\LaravelData\Data;
 #[ValidationOnRead]
 final class HostImagesAllowedPayload extends Data
 {
+    /**
+     * @param  list<string>  $absent
+     */
     public function __construct(
         #[Present]
         public readonly int $allowed,
+        #[Present]
+        public readonly array $absent,
     ) {}
 }

@@ -185,3 +185,18 @@ func TestAContainerRunAnswersItsExitCodeAndOutput(t *testing.T) {
 		t.Fatalf("the run answered %+v", results)
 	}
 }
+
+// A container whose image the daemon no longer holds is refused as an image fault about that image, never as a
+// container that merely failed.
+func TestAContainerWhoseImageIsGoneIsAnImageFaultAboutTheImage(t *testing.T) {
+	table, daemon, _ := containedTable(t, 0)
+	delete(daemon.Images, mockImage)
+
+	_, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), containedInstruction(t, func(*OpenPlan) {}))
+
+	var refusal RefusalError
+	if !errors.As(err, &refusal) || refusal.Refusal != ImageFault || refusal.Facts["fault"] != "image_absent" ||
+		refusal.Facts["reference"] != mockImage {
+		t.Fatalf("a container of a lost image was answered %v", err)
+	}
+}

@@ -74,6 +74,32 @@ type SecurityOptions struct {
 	AppArmor string `json:"apparmor"`
 }
 
+// ImageBuild is the image_build of host protocol 1.
+type ImageBuild struct {
+	Name           string          `json:"name"`
+	Base           string          `json:"base"`
+	Context        []byte          `json:"context"`
+	Dockerfile     string          `json:"dockerfile"`
+	BuildArguments []BuildArgument `json:"build_arguments"`
+	DeadlineMs     int             `json:"deadline_ms"`
+	OutputLimit    int             `json:"output_limit"`
+}
+
+// BuildArgument is the build_argument of host protocol 1.
+type BuildArgument struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+// ImageBuilt is the image_built of host protocol 1.
+type ImageBuilt struct {
+	Image    string   `json:"image"`
+	History  []string `json:"history"`
+	Stdout   string   `json:"stdout"`
+	Stderr   string   `json:"stderr"`
+	ExitCode int      `json:"exit_code"`
+}
+
 // ContainerTmpfs is the container_tmpfs of host protocol 1.
 type ContainerTmpfs struct {
 	Target  string `json:"target"`

@@ -8,13 +8,13 @@ RELEASES=https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa
 main() {
     local architecture="$1" version="$2" folder="$3" platform
     mkdir -p "$folder"
-    platform=$(platform_of "$architecture")
+    platform=$(name_platform "$architecture")
     curl -fsSL -o "$folder/claude" "$RELEASES/$version/$platform/claude"
     check_digest "$version" "$architecture" "$folder/claude"
     chmod 0555 "$folder/claude"
 }
 
-platform_of() {
+name_platform() {
     case "$1" in
         arm64) echo linux-arm64 ;;
         amd64) echo linux-x64 ;;

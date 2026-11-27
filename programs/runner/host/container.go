@@ -1,7 +1,6 @@
 package host
 
 import (
-	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -319,31 +318,16 @@ func (containers Containers) AssertBudgetsEnforced(ctx context.Context) error {
 	return nil
 }
 
-// AssertImagePinned refuses an image the Docker daemon lacks or holds under another digest than the reference names;
-// a reference matches the image's id or one of its repository digests. A daemon it cannot reach is named as that.
-func (containers Containers) AssertImagePinned(ctx context.Context, reference string) error {
-	image, err := containers.Daemon.ImageInspect(ctx, reference)
-	if isAbsent(err) {
-		return fmt.Errorf("%w: the image %s is not loaded into the Docker daemon", ErrInstallationChanged, reference)
-	}
-
-	if err != nil {
-		return unreachable(err)
-	}
-
-	_, wanted, _ := strings.Cut(reference, "@")
-	if slices.Contains(image.RepoDigests, reference) || (wanted != "" && image.ID == wanted) || image.ID == reference {
-		return nil
-	}
-
-	return fmt.Errorf("%w: %s names %s, but the Docker daemon holds %s", ErrInstallationChanged, reference,
-		cmp.Or(wanted, reference), image.ID)
-}
-
 // Create makes the container the manifest describes: its preparations run first, in order, then its network and
 // volumes are made when the daemon lacks them, and the container is created running the process. It answers the
 // container's id.
 func (containers Containers) Create(ctx context.Context, manifest ContainerManifest, process ContainerProcess) (string, error) {
+	created, err := containers.create(ctx, manifest, process)
+
+	return created, aboutImage(manifest.Image, err)
+}
+
+func (containers Containers) create(ctx context.Context, manifest ContainerManifest, process ContainerProcess) (string, error) {
 	options, err := manifest.CreateOptions(containers.Rules, process)
 	if err != nil {
 		return "", err
@@ -374,7 +358,7 @@ func (containers Containers) Create(ctx context.Context, manifest ContainerManif
 
 	created, err := containers.Daemon.ContainerCreate(ctx, options)
 	if err != nil {
-		return "", fmt.Errorf("%w: %v", ErrContainerNotCreated, err)
+		return "", createFailure(manifest.Image, err)
 	}
 
 	return created.ID, nil

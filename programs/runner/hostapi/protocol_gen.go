@@ -36,11 +36,12 @@ const (
 	HostRestarted      Refusal = "host_restarted"
 	Fenced             Refusal = "fenced"
 	UnknownInstruction Refusal = "unknown_instruction"
+	ImageFault         Refusal = "image_fault"
 )
 
 // IsKnown answers whether the value is one of the protocol's.
 func (value Refusal) IsKnown() bool {
-	return slices.Contains([]Refusal{GuardMoved, NotRunning, Expired, Unsafe, HostRestarted, Fenced, UnknownInstruction}, value)
+	return slices.Contains([]Refusal{GuardMoved, NotRunning, Expired, Unsafe, HostRestarted, Fenced, UnknownInstruction, ImageFault}, value)
 }
 
 // InstructionTraits are what the protocol says of an instruction type: whether it is about the host as a whole, and
@@ -73,6 +74,7 @@ var InstructionTypes = map[string]InstructionTraits{
 	"remove":          {HostWide: true, Repeatable: true},
 	"read_project":    {HostWide: true, Repeatable: true},
 	"upgrade":         {HostWide: true, Repeatable: false},
+	"build_image":     {HostWide: true, Repeatable: false},
 }
 
 // ProcessType is one of the values host protocol 1 gives it.
@@ -115,6 +117,20 @@ const (
 // IsKnown answers whether the value is one of the protocol's.
 func (value ArgumentValues) IsKnown() bool {
 	return slices.Contains([]ArgumentValues{ArgumentValuesNone, ArgumentValuesOne, ArgumentValuesList}, value)
+}
+
+// ImageFaultType is one of the values host protocol 1 gives it.
+type ImageFaultType string
+
+const (
+	ImageFaultImageAbsent       ImageFaultType = "image_absent"
+	ImageFaultDigestMismatch    ImageFaultType = "digest_mismatch"
+	ImageFaultDaemonUnavailable ImageFaultType = "daemon_unavailable"
+)
+
+// IsKnown answers whether the value is one of the protocol's.
+func (value ImageFaultType) IsKnown() bool {
+	return slices.Contains([]ImageFaultType{ImageFaultImageAbsent, ImageFaultDigestMismatch, ImageFaultDaemonUnavailable}, value)
 }
 
 // Instruction is the instruction of host protocol 1.
@@ -339,7 +355,14 @@ type FencedResult struct {
 
 // ImagesAllowed is the images_allowed of host protocol 1.
 type ImagesAllowed struct {
-	Allowed int `json:"allowed"`
+	Allowed int      `json:"allowed"`
+	Absent  []string `json:"absent"`
+}
+
+// ImageFaultFacts is the image_fault_facts of host protocol 1.
+type ImageFaultFacts struct {
+	Fault     ImageFaultType `json:"fault"`
+	Reference string         `json:"reference"`
 }
 
 // UpgradeStarted is the upgrade_started of host protocol 1.

@@ -31,6 +31,7 @@ type InstructionHandlers interface {
 	Remove(ctx context.Context, instruction Instruction, payload RemovePlan) (Empty, error)
 	ReadProject(ctx context.Context, instruction Instruction, payload client.ProjectRead) (Empty, error)
 	Upgrade(ctx context.Context, instruction Instruction, payload UpgradePlan) (UpgradeStarted, error)
+	BuildImage(ctx context.Context, instruction Instruction, payload host.ImageBuild) (host.ImageBuilt, error)
 }
 
 // Executors carry out each instruction through its handler, its payload read strictly into its type first.
@@ -57,5 +58,6 @@ func Executors(handlers InstructionHandlers) map[string]Executor {
 		"remove":          carrying(handlers.Remove),
 		"read_project":    carrying(handlers.ReadProject),
 		"upgrade":         carrying(handlers.Upgrade),
+		"build_image":     carrying(handlers.BuildImage),
 	}
 }

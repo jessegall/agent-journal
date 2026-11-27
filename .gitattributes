@@ -9,3 +9,5 @@
 CHANGELOG.md export-ignore
 README.md export-ignore
 .github/workflows/browser-tests.yml export-ignore
+# Recorded program and daemon streams are kept byte for byte, their line ends included.
+programs/runner/dockermock/recordings/** -text

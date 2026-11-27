@@ -3,6 +3,9 @@ package hookadapter
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
+	"strconv"
 
 	"journal-runner/client"
 )
@@ -35,5 +38,17 @@ func AskJournal(grant client.StartGrant, driver string, generation int) func(con
 		}
 
 		return Reply{Stdout: answer.Stdout, Stderr: answer.Stderr, ExitCode: answer.ExitCode}, nil
+	}
+}
+
+// InContainer is the adapter of a hook call in a session container: asked of the journal with the start's grant as
+// the process generation the start names, answered from the sealed reply file when the journal is away or slow.
+func InContainer(grant client.StartGrant, driver string, repliesFile string) Adapter {
+	generation, _ := strconv.Atoi(os.Getenv("JOURNAL_PROCESS_GENERATION"))
+
+	return Adapter{
+		Ask:             AskJournal(grant, driver, generation),
+		RepliesFile:     repliesFile,
+		PreparationFile: filepath.Join(os.TempDir(), "journal-hook-"+strconv.Itoa(os.Getuid())+".prepared"),
 	}
 }

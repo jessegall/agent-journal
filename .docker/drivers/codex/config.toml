@@ -1,6 +1,6 @@
 [mcp_servers.journal]
 command = "/opt/journal/bin/journal-mcp"
-args = []
+args = ["codex", "/tmp/journal-session/hook-replies.json"]
 env_vars = ["JOURNAL_URL", "JOURNAL_START_TOKEN", "JOURNAL_PROFILE", "JOURNAL_PROFILE_REVISION"]
 startup_timeout_sec = 30
 tool_timeout_sec = 600

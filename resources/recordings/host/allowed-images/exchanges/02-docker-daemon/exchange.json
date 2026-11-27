@@ -1,0 +1,64 @@
+{
+    "opening": {
+        "wire": "docker",
+        "exchange": "daemon",
+        "mode": "calls",
+        "argv": [],
+        "environment": {},
+        "inherited": [],
+        "folder": "",
+        "columns": 0,
+        "rows": 0,
+        "image": "",
+        "openedAt": 1795818854777124
+    },
+    "events": [
+        {
+            "type": "asked",
+            "at": 1795818854777124,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "GET",
+                "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000002/json",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795818854778546,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "GET",
+                "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000002/json",
+                "query": [],
+                "status": 200,
+                "headers": {
+                    "Api-Version": "1.51",
+                    "Content-Type": "application/json",
+                    "Docker-Experimental": "false",
+                    "Ostype": "linux",
+                    "Server": "Docker/28.5.2 (linux)"
+                },
+                "body": "eyJJZCI6InNoYTI1NjowMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAyIiwiUmVwb1RhZ3MiOlsiam91cm5hbC1hZ2VudDpidWlsZCJdLCJSZXBvRGlnZXN0cyI6W10sIlBhcmVudCI6IiIsIkNvbW1lbnQiOiJidWlsZGtpdC5kb2NrZXJmaWxlLnYwIiwiQ3JlYXRlZCI6IjIwMjYtMTEtMjdUMjM6MTc6MzQuNjE5MTkxMzg5KzAxOjAwIiwiRG9ja2VyVmVyc2lvbiI6IiIsIkF1dGhvciI6IiIsIkFyY2hpdGVjdHVyZSI6ImFybTY0IiwiT3MiOiJsaW51eCIsIlNpemUiOjk2Mzc5MTE1MSwiR3JhcGhEcml2ZXIiOnsiRGF0YSI6eyJMb3dlckRpciI6Ii92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAzL2RpZmY6L3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDQvZGlmZjovdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNS9kaWZmOi92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA2L2RpZmY6L3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDcvZGlmZjovdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwOC9kaWZmOi92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA5L2RpZmY6L3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTAvZGlmZjovdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMS9kaWZmOi92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEyL2RpZmY6L3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTMvZGlmZjovdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxNC9kaWZmIiwiTWVyZ2VkRGlyIjoiL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTUvbWVyZ2VkIiwiVXBwZXJEaXIiOiIvdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxNS9kaWZmIiwiV29ya0RpciI6Ii92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDE1L3dvcmsifSwiTmFtZSI6Im92ZXJsYXkyIn0sIlJvb3RGUyI6eyJUeXBlIjoibGF5ZXJzIiwiTGF5ZXJzIjpbInNoYTI1NjowMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDE2Iiwic2hhMjU2OjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTciLCJzaGEyNTY6MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxOCIsInNoYTI1NjowMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDE5Iiwic2hhMjU2OjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMjAiLCJzaGEyNTY6MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAyMSIsInNoYTI1NjowMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIyIiwic2hhMjU2OjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMjMiLCJzaGEyNTY6MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAyNCIsInNoYTI1NjowMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDI1Iiwic2hhMjU2OjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMjYiLCJzaGEyNTY6MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAyNyIsInNoYTI1NjowMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDI2Il19LCJNZXRhZGF0YSI6eyJMYXN0VGFnVGltZSI6IjAwMDEtMDEtMDFUMDA6MDA6MDBaIn0sIkNvbmZpZyI6eyJDbWQiOlsiYmFzaCJdLCJFbnRyeXBvaW50IjpudWxsLCJFbnYiOlsiUEFUSD0vdXNyL2xvY2FsL3NiaW46L3Vzci9sb2NhbC9iaW46L3Vzci9zYmluOi91c3IvYmluOi9zYmluOi9iaW4iLCJDTEFVREVfQ09ERV9TSEVMTD0vb3B0L2pvdXJuYWwvc2hlbGwvYmFzaCIsIklTX1NBTkRCT1g9MSJdLCJMYWJlbHMiOm51bGwsIk9uQnVpbGQiOm51bGwsIlVzZXIiOiIxMDAwMToxMDAwMSIsIlZvbHVtZXMiOm51bGwsIldvcmtpbmdEaXIiOiIvd29ya3NwYWNlIn19Cg==",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        }
+    ],
+    "exit_code": null
+}

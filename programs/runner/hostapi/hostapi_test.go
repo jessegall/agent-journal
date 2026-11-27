@@ -32,16 +32,10 @@ func testVerifier() Verifier {
 }
 
 func TestTheJournalsSignatureOfAFixedInstructionIsAccepted(t *testing.T) {
-	instruction := Instruction{
-		ID:        "01jorder0000000000000000001",
-		Sequence:  7,
-		Type:      "write_keys",
-		ProcessID: "01jprocess000000000000000001",
-		Payload:   `{"bytes":"aGk=","as_user":true}`,
-		ExpiresAt: time.Date(2026, 11, 26, 10, 0, 5, 0, time.UTC),
-	}
-	if got := Sign(testSecret, instruction); got != "cc55054280b01d6115d7cf90a9f2ff3e9be711a0787a7d5cbbeb90683ace968d" {
-		t.Fatalf("the signature is %s, not the one the journal makes", got)
+	vectors, _ := loadConformance(t)
+	fixed := vectors.Instructions[0].Instruction
+	if string(testSecret) != vectors.Secret || Sign(testSecret, fixed) != fixed.Signature {
+		t.Fatalf("the committed instruction signs to %s, not the one the journal makes", Sign(testSecret, fixed))
 	}
 	if err := testVerifier().Verify(signedInstruction("a", "p", 1)); err != nil {
 		t.Fatalf("a signed instruction in time is refused: %v", err)

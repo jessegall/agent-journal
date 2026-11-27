@@ -13,6 +13,8 @@ import (
 type RefusalError struct {
 	Refusal Refusal
 	Reason  string
+	// Facts are the typed facts a refusal of protocol 1 carries, such as an image fault's; none for the others.
+	Facts map[string]any
 }
 
 func (refusal RefusalError) Error() string {

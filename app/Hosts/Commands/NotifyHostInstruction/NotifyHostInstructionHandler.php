@@ -35,6 +35,12 @@ final readonly class NotifyHostInstructionHandler implements CommandHandler
             $this->reader->read($reply, $instruction->type->replyPayload(), "reply to {$instruction->type->value}");
         }
 
+        // A refusal whose facts have a protocol type, such as an image fault, carries them as strictly.
+        if ($answer->refusal?->hasTypedFacts() === true) {
+            $facts = json_encode($answer->facts, JSON_THROW_ON_ERROR);
+            $this->reader->read($facts, $answer->refusal->factsPayload(), "facts of {$answer->refusal->value}");
+        }
+
         $instruction->answer($answer, $this->clock->now());
     }
 }

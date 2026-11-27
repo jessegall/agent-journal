@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"journal-runner/client"
@@ -26,9 +25,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	adapter := adapterFor(os.Args[1])
-	adapter.RepliesFile = os.Args[2]
-	reply := adapter.Answer(native)
+	reply := adapterFor(os.Args[1], os.Args[2]).Answer(native)
 	fmt.Fprint(os.Stdout, reply.Stdout)
 	fmt.Fprint(os.Stderr, reply.Stderr)
 	os.Exit(reply.ExitCode)
@@ -37,22 +34,19 @@ func main() {
 // adapterFor is the adapter of this call's session. On a machine connected to a server journal the run folder
 // locates the session socket, and the relay serving it holds the runtime's authority. In a session container there
 // is no relay: the start's own grant is in the environment, and the call goes to the journal directly.
-func adapterFor(driver string) hookadapter.Adapter {
+func adapterFor(driver string, repliesFile string) hookadapter.Adapter {
 	if runFolder := os.Getenv("JOURNAL_SESSION_RUN"); runFolder != "" {
 		return hookadapter.Adapter{
 			Ask:             hookadapter.AskThroughSocket(filepath.Join(runFolder, hookadapter.SocketName), driver),
+			RepliesFile:     repliesFile,
 			PreparationFile: filepath.Join(runFolder, "prepared"),
 		}
 	}
 
 	grant, granted := client.StartGrantFrom(os.LookupEnv)
 	if !granted {
-		return hookadapter.Adapter{Ask: hookadapter.RefuseWithoutGrant}
+		return hookadapter.Adapter{Ask: hookadapter.RefuseWithoutGrant, RepliesFile: repliesFile}
 	}
-	generation, _ := strconv.Atoi(os.Getenv("JOURNAL_PROCESS_GENERATION"))
 
-	return hookadapter.Adapter{
-		Ask:             hookadapter.AskJournal(grant, driver, generation),
-		PreparationFile: filepath.Join(os.TempDir(), "journal-hook-"+strconv.Itoa(os.Getuid())+".prepared"),
-	}
+	return hookadapter.InContainer(grant, driver, repliesFile)
 }

@@ -154,6 +154,11 @@ final readonly class HostProtocolSources
         $refusals = array_map(strval(...), array_keys($this->protocol->refusals));
         $cases = $this->enumCases($refusals);
         $answerFields = $this->phpList($this->protocol->refusedAnswerNames);
+        $typedFacts = $this->factsArms(fn (string $type) => 'true', 'false');
+        $factsPayloads = $this->factsArms(
+            fn (string $type) => 'Payloads\\'.new PhpProtocolSources($this->protocol)->dataName($type).'::class',
+            'Payloads\\HostEmptyPayload::class',
+        );
         $generated = self::GENERATED;
         $source = self::PROTOCOL_FILE;
 
@@ -179,9 +184,47 @@ final readonly class HostProtocolSources
                  * The fields a refused answer names, so the journal can say why the host refused.
                  */
                 public const array ANSWER_FIELDS = [{$answerFields}];
+
+                /**
+                 * Whether the facts of this refusal have a type of the protocol, so the journal reads them strictly.
+                 */
+                public function hasTypedFacts(): bool
+                {
+                    return match (\$this) {
+            {$typedFacts}
+                    };
+                }
+
+                /**
+                 * The Data the facts of this refusal are read into; the empty payload for a refusal whose facts have no type.
+                 *
+                 * @return class-string<\\Spatie\\LaravelData\\Data>
+                 */
+                public function factsPayload(): string
+                {
+                    return match (\$this) {
+            {$factsPayloads}
+                    };
+                }
             }
 
             PHP;
+    }
+
+    /**
+     * The arms of a match over the refusals: one for each refusal with typed facts, then the default for the rest.
+     *
+     * @param  callable(string): string  $answer  the answer of a refusal whose facts have the given type
+     */
+    private function factsArms(callable $answer, string $otherwise): string
+    {
+        $arms = array_map(
+            fn (string $refusal, string $type) => '            self::'.Str::studly($refusal)." => {$answer($type)},",
+            array_keys($this->protocol->refusalFacts),
+            $this->protocol->refusalFacts,
+        );
+
+        return implode("\n", [...$arms, "            default => {$otherwise},"]);
     }
 
     private function versionClass(): string

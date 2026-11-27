@@ -228,7 +228,7 @@ func (table *ProcessTable) OpenContainer(ctx context.Context, instruction Instru
 	}
 	if err := table.startContainer(ctx, held); err != nil {
 		closeSides()
-		return Opened{}, err
+		return Opened{}, refusalOf(err)
 	}
 	table.keep(held)
 	go table.watchContainer(held)

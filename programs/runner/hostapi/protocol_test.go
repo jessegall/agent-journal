@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 	"testing"
+
+	"journal-runner/host"
 )
 
 // A plan the journal records with its raw bytes names raw_bytes, which the strict reader takes.
@@ -69,6 +71,30 @@ func TestTheHostRefusesTheRemovedRecordInstructionsAsUnknown(t *testing.T) {
 		_, known := InstructionTypes[removed]
 		if carried || known {
 			t.Errorf("the host still knows the instruction %s", removed)
+		}
+	}
+}
+
+// A build_image payload, from the committed conformance vector, is read strictly: an unknown, a missing and a mistyped
+// field of it, a build argument's too, are each refused as unsafe by name.
+func TestAnImageBuildIsReadStrictly(t *testing.T) {
+	vectors, _ := loadConformance(t)
+	payload := vectors.Instructions[1].Instruction.Payload
+	build, err := DecodePayload[host.ImageBuild](Instruction{Type: "build_image", Payload: payload})
+	if err != nil || build.Dockerfile != "Dockerfile" || string(build.Context) != "hi" || build.BuildArguments[0].Value != "0.165.0" {
+		t.Fatalf("the committed build was read as %+v, %v", build, err)
+	}
+	cases := map[string]string{
+		strings.Replace(payload, `"dockerfile"`, `"dockerfiles"`, 1):                `the payload of build_image holds the field "dockerfiles", which the protocol does not know`,
+		strings.Replace(payload, `,"output_limit":65536`, ``, 1):                    `the payload of build_image misses its field output_limit`,
+		strings.Replace(payload, `"deadline_ms":600000`, `"deadline_ms":"soon"`, 1): `the payload of build_image holds deadline_ms as string, not int`,
+		strings.Replace(payload, `{"name":"VERSION",`, `{`, 1):                      `the payload of build_image misses its field build_arguments.0.name`,
+	}
+	for changed, reason := range cases {
+		_, err := DecodePayload[host.ImageBuild](Instruction{Type: "build_image", Payload: changed})
+		refusal, isRefusal := err.(RefusalError)
+		if !isRefusal || refusal.Refusal != Unsafe || refusal.Reason != reason {
+			t.Errorf("the payload %s was answered %v, not %q", changed, err, reason)
 		}
 	}
 }

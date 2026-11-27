@@ -16,7 +16,7 @@ main() {
 # One program of a Codex release, from its own archive, into the folder under its plain name.
 fetch_program() {
     local program="$1" architecture="$2" version="$3" folder="$4" triple
-    triple="$(machine_of "$architecture")-unknown-linux-musl"
+    triple="$(name_machine "$architecture")-unknown-linux-musl"
     curl -fsSL -o "$folder/$program.tar.gz" "$RELEASES/rust-v$version/$program-$triple.tar.gz"
     check_digest "$program" "$version" "$architecture" "$folder/$program.tar.gz"
     tar -xzf "$folder/$program.tar.gz" -C "$folder"
@@ -24,7 +24,7 @@ fetch_program() {
     rm -f -- "$folder/$program.tar.gz"
 }
 
-machine_of() {
+name_machine() {
     case "$1" in
         arm64) echo aarch64 ;;
         amd64) echo x86_64 ;;

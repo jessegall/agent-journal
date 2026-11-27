@@ -6,9 +6,10 @@ import (
 	"journal-runner/host"
 )
 
-// AllowImages makes the pinned images the journal names the only ones a container of this host may run; an image
-// that is no exact digest, or a host that holds no allowed set, refuses the instruction.
-func (table *ProcessTable) AllowImages(_ context.Context, instruction Instruction, plan ImagesPlan) (ImagesAllowed, error) {
+// AllowImages makes the pinned images the journal names the only ones a container of this host may run, and answers
+// those the daemon does not hold; an image that is no exact digest, a host that holds no allowed set, and an image the
+// daemon holds under another digest or a daemon it cannot reach refuse the instruction.
+func (table *ProcessTable) AllowImages(ctx context.Context, instruction Instruction, plan ImagesPlan) (ImagesAllowed, error) {
 	if table.containers.Rules.Allowed == nil {
 		return ImagesAllowed{}, RefusalError{Refusal: Unsafe, Reason: "this host runs no containers of allowed images"}
 	}
@@ -17,7 +18,14 @@ func (table *ProcessTable) AllowImages(_ context.Context, instruction Instructio
 			return ImagesAllowed{}, RefusalError{Refusal: Unsafe, Reason: "the image " + image + " is no exact digest"}
 		}
 	}
+	if table.containers.Daemon == nil {
+		return ImagesAllowed{}, imageFault(ImageFaultDaemonUnavailable, plan.Images[0], errNoDaemon)
+	}
+	absent, err := table.containers.AbsentImages(ctx, plan.Images)
+	if err != nil {
+		return ImagesAllowed{}, refusalOf(err)
+	}
 	table.containers.Rules.Allowed.Replace(plan.Images)
 
-	return ImagesAllowed{Allowed: len(plan.Images)}, nil
+	return ImagesAllowed{Allowed: len(plan.Images), Absent: absent}, nil
 }

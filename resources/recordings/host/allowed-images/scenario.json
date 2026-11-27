@@ -4,9 +4,10 @@
     "scenario_hash": "ef107ab7eccdb104eeaefb0609cb5de4945707d71650f4a8e8fe073150ddb065",
     "driver": "host",
     "build": "",
-    "image_programs": "a3e2bf0f647bb58d5094039e1fe2649efb780fa0b250dfafb8e9f19235d043c3",
-    "recorded_at": "2026-11-27T19:38:47+00:00",
+    "image_programs": "efabd7db62059a1f2dca3cd38dd886c85e51462c28085ece2ed106be26264418",
+    "recorded_at": "2026-11-27T22:34:16+00:00",
     "exchanges": [
-        "01-host-caller-915b0be9afb2601e"
+        "01-host-caller-915b0be9afb2601e",
+        "02-docker-daemon"
     ]
 }
