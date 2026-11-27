@@ -10,6 +10,7 @@ use App\Accounts\Enums\CommandEntry;
 use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Agents\Drivers\Contracts\DriverCompatibilities;
 use App\Bus\EventUnitLifecycle;
+use App\Hosts\ProcessFeed;
 use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Messages\Enums\InboxPermission;
 use App\Models\Access\User;
@@ -33,9 +34,11 @@ use App\Support\Inputs\Values\HookIdentity;
 use App\Time\Contracts\ServerClock;
 use App\Values\ProjectSelection;
 use App\Values\SelectedDriver;
+use App\Values\SignInChallenge;
 use App\Values\StackTarget;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Testing\TestCase;
@@ -45,6 +48,8 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Drivers\ShownDriverArrangements;
 use Tests\Fixtures\Projects\LocalAgentProjects;
+use Tests\Support\Assertions\Assert;
+use Tests\Support\Assertions\Facts\JournalFacts;
 use Tests\Support\FakeServerClock;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\TestProjects;
@@ -138,6 +143,16 @@ final class TestJournal
      */
     private array $remembered = [];
 
+    /**
+     * @var array<string, string> each sign-in attempt the test began, by the name it gave it
+     */
+    private array $signIns = [];
+
+    /**
+     * @var array<string, SignInChallenge> the challenge each named sign-in showed the owner
+     */
+    private array $signInChallenges = [];
+
     public function __construct(private readonly Application $app, private readonly TestCase $test)
     {
         $this->requests = new FixtureRequests($app);
@@ -158,6 +173,27 @@ final class TestJournal
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
 
         return $this->actAs($this->owner->name);
+    }
+
+    /**
+     * The scope asserts the journal's facts, as Inertia's assertInertia asserts a page: its hosts, host processes,
+     * agents, accounts, sign-ins and the running test host, each by its name; a fact it does not touch passes.
+     *
+     * @param  Closure(Assert): mixed  $scope
+     */
+    public function assertJournal(Closure $scope): self
+    {
+        $scope(Assert::root(new JournalFacts(
+            $this->hosts,
+            $this->hostProcesses,
+            $this->agents,
+            $this->signIns,
+            $this->signInChallenges,
+            $this->testHost,
+            $this->app->make(ProcessFeed::class),
+        )));
+
+        return $this;
     }
 
     /**
