@@ -68,6 +68,23 @@ final class NotifyRuntimeExitTest extends TestCase
         $this->assertSame(SessionStatus::Ended, AgentSession::query()->findOrFail($opened->sessionId)->status);
     }
 
+    /**
+     * The host reports an exit once the session already ended, as when its stop ended it on that very exit: the report
+     * is taken and the end stays as it was recorded, so the host's later reports are not held behind a refusal.
+     */
+    public function test_an_exit_after_the_session_ended_is_taken_and_changes_nothing(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
+        $exit = new NotifyRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0');
+        $this->journal->asSystem($exit);
+        $ended = AgentSession::query()->findOrFail($opened->sessionId);
+
+        $this->journal->asSystem($exit);
+
+        $this->assertEquals($ended->ended_at, AgentSession::query()->findOrFail($opened->sessionId)->ended_at);
+    }
+
     public function test_a_confirmed_stop_ends_the_session_revokes_it_and_leaves_no_request_open(): void
     {
         [$host, $opened] = $this->openRuntime();

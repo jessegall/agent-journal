@@ -38,7 +38,7 @@ class ReadyState extends AgentState implements UniqueState
         private readonly string $agentId,
         private readonly string $sessionId,
     ) {
-        $this->run = SessionRun::started();
+        $this->run = SessionRun::from([]);
     }
 
     public function listensTo(Event $event): bool
@@ -67,7 +67,7 @@ class ReadyState extends AgentState implements UniqueState
      */
     public function onAgentRuntimeStopRequested(AgentRuntimeStopRequested $event): Generator
     {
-        $this->run = $this->run->withStopAsked();
+        $this->run->askStop();
 
         if ($this->run->isOver()) {
             yield new EndStoppedSessionCommand($this->agentId, $this->sessionId);
@@ -76,7 +76,7 @@ class ReadyState extends AgentState implements UniqueState
 
     public function onHostProcessOpened(HostProcessOpened $event): void
     {
-        $this->run = $this->run->withOpened($event->processId);
+        $this->run->openProcess($event->processId);
     }
 
     /**
@@ -86,7 +86,7 @@ class ReadyState extends AgentState implements UniqueState
      */
     public function onHostProcessEndEvent(HostProcessEndEvent $event): Generator
     {
-        $this->run = $this->run->withEnded($event->processId);
+        $this->run->endProcess($event->processId);
 
         if ($this->run->isOver()) {
             yield new EndStoppedSessionCommand($this->agentId, $this->sessionId);

@@ -6,7 +6,6 @@ namespace App\Agents;
 
 use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatHandler;
-use App\Exceptions\CredentialRejected;
 use App\Exceptions\HostReportRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -34,8 +33,9 @@ final readonly class DriverHeartbeatSource
     {
         $this->requireCurrent($session, $exit->hostId, $exit->processGeneration);
 
+        // An exit that arrives after the session ended, such as one its stop ended on, only confirms that end.
         if (! $session->isActive()) {
-            throw CredentialRejected::sessionEnded();
+            return;
         }
 
         $this->heartbeats->markExited($session, $exit->evidence);

@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 
 /**
  * What of a session runs: the processes its runtime was told to open that have not ended, and whether a stop was
- * asked. The session is over once a stop was asked and none of them runs.
+ * asked. The session is over once a stop was asked and none of them runs. Its state alone holds it and changes it.
  */
 final class SessionRun extends Data
 {
@@ -16,28 +16,23 @@ final class SessionRun extends Data
      * @param  list<string>  $liveProcesses
      */
     public function __construct(
-        public readonly array $liveProcesses,
-        public readonly bool $isStopAsked,
+        public array $liveProcesses = [],
+        public bool $isStopAsked = false,
     ) {}
 
-    public static function started(): self
+    public function openProcess(string $processId): void
     {
-        return new self([], false);
+        $this->liveProcesses = array_values(array_unique([...$this->liveProcesses, $processId]));
     }
 
-    public function withOpened(string $processId): self
+    public function endProcess(string $processId): void
     {
-        return new self(array_values(array_unique([...$this->liveProcesses, $processId])), $this->isStopAsked);
+        $this->liveProcesses = array_values(array_diff($this->liveProcesses, [$processId]));
     }
 
-    public function withEnded(string $processId): self
+    public function askStop(): void
     {
-        return new self(array_values(array_diff($this->liveProcesses, [$processId])), $this->isStopAsked);
-    }
-
-    public function withStopAsked(): self
-    {
-        return new self($this->liveProcesses, true);
+        $this->isStopAsked = true;
     }
 
     public function isOver(): bool

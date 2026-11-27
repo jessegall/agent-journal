@@ -61,7 +61,7 @@ final class ProfileState extends AgentState implements BaseState
         private readonly string $agentId,
         private readonly string $sessionId,
     ) {
-        $this->unchangedFailures = UnchangedFailures::none();
+        $this->unchangedFailures = UnchangedFailures::from([]);
     }
 
     // ----------[ Hooks ]----------
@@ -174,7 +174,7 @@ final class ProfileState extends AgentState implements BaseState
      */
     private function passed(): Decision
     {
-        $this->unchangedFailures = UnchangedFailures::none();
+        $this->unchangedFailures->passStop();
 
         return Decision::delegate();
     }
@@ -189,7 +189,7 @@ final class ProfileState extends AgentState implements BaseState
     {
         $failure = $attempt->outcomeOf($failureSummary);
 
-        $this->unchangedFailures = $this->unchangedFailures->after($attempt->id, $failure);
+        $this->unchangedFailures->failAttempt($attempt->id, $failure);
 
         if ($this->unchangedFailures->count < self::UNCHANGED_FAILURE_LIMIT) {
             return [Decision::deny(AgentText::of('core.stop.refused', ['conditions' => $failureSummary]))];
