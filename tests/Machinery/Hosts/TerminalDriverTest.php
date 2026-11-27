@@ -20,7 +20,10 @@ use App\Agents\Drivers\Values\ScriptGoal;
 use App\Hosts\Commands\ForwardUserKeys\ForwardUserKeysCommand;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
+use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessPurpose;
+use App\Models\Hosts\HostOrder;
 use App\Navigation\Commands\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
 use App\Navigation\Commands\RaiseNavigation\RaiseNavigationCommand;
 use App\Navigation\Enums\NavigationKey;
@@ -118,7 +121,7 @@ final class TerminalDriverTest extends TestCase
                 2,
                 1,
                 2,
-            ]],
+            ], true],
             [
                 $this->hasOrdered(StopHostProcessCommand::class),
                 $this->isHeldFor(HoldReason::TrustRequired),
@@ -128,6 +131,51 @@ final class TerminalDriverTest extends TestCase
                     $this->keyOrdersOf('interrupt-1'),
                     $this->keyOrdersOf('deliver-2'),
                 ],
+                // Escape is guarded on the composer, which holds still while the turn above it moves.
+                $this->firstGuardedRowOf('interrupt-1') > 0,
+            ],
+        );
+    }
+
+    public function test_an_interrupt_whose_escape_the_host_refused_presses_it_again_on_the_next_frame(): void
+    {
+        $driver = $this->drivenTerminal();
+        $inputs = $this->journal->standInHost()->recordedInputs();
+        $events = [
+            0 => fn () => $this->typeAsUser(0),
+            1 => fn () => $this->typeAsUser(1),
+            2 => fn () => $driver->onRequest($this->claim('deliver-1', DriverOperation::Deliver, $inputs[2])),
+        ];
+        $presses = 0;
+        // The interrupt comes once the reply runs, and the host refuses its first Escape as the screen moved.
+        $interrupt = function () use ($driver, &$presses) {
+            if ($presses === 0 && $this->isApplying('deliver-1')) {
+                $presses = 1;
+
+                return $driver->onRequest($this->claim('interrupt-1', DriverOperation::Interrupt));
+            }
+
+            if ($presses !== 1) {
+                return null;
+            }
+
+            $presses = 2;
+            $refused = new HostOrder()->forceFill([
+                'type' => HostOrderType::WriteKeys,
+                'status' => HostOrderStatus::Refused,
+                'driver_request_id' => 'interrupt-1',
+            ]);
+
+            return $driver->onAnswer($refused);
+        };
+
+        $this->stream($driver, $events, $interrupt);
+
+        $this->journal->assertResult(
+            [2, ['interrupt', 'interrupt-2']],
+            [
+                $this->keyOrdersOf('interrupt-1'),
+                array_map(fn (SendHostKeysCommand $keys) => $keys->source->step, $this->keysOf('interrupt-1')),
             ],
         );
     }
@@ -579,10 +627,28 @@ final class TerminalDriverTest extends TestCase
      */
     private function keyOrdersOf(string $requestId): int
     {
-        return count(array_filter(
+        return count($this->keysOf($requestId));
+    }
+
+    /**
+     * The keys the driver ordered for the request, oldest first.
+     *
+     * @return list<SendHostKeysCommand>
+     */
+    private function keysOf(string $requestId): array
+    {
+        return array_values(array_filter(
             $this->ordered,
             fn (object $command) => $command instanceof SendHostKeysCommand && $command->source->driverRequestId === $requestId,
         ));
+    }
+
+    /**
+     * The first screen row the request's first keys were guarded on.
+     */
+    private function firstGuardedRowOf(string $requestId): int
+    {
+        return $this->keysOf($requestId)[0]->rows->from;
     }
 
     /**

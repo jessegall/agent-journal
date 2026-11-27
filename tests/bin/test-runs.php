@@ -7,6 +7,9 @@ require_once __DIR__.'/worktree-databases.php';
 // The workers a run starts when its --processes names none: room is left for the containers beside it.
 const DEFAULT_PROCESSES = 8;
 
+// The tests one worker takes before the run starts another.
+const TESTS_PER_PROCESS = 25;
+
 /**
  * Runs a command in the given environment: its output answered when kept, otherwise shown as it comes and its exit
  * code answered.
@@ -185,8 +188,9 @@ function dropDatabasesOfRemovedWorktrees(PDO $server, string $root, string $runn
 }
 
 /**
- * How many workers a run of these paths starts: its --processes, else at most four, and never more than the test
- * files it runs, since each worker gets a database copy of its own.
+ * How many workers a run of these paths starts: its --processes, else one for the first TESTS_PER_PROCESS tests it
+ * runs and one more for each TESTS_PER_PROCESS after them, at most DEFAULT_PROCESSES, as each worker costs a start and
+ * a database copy of its own.
  *
  * @param  list<string>  $options
  * @param  list<string>  $paths  the run's folders and test files; none runs every test
@@ -203,19 +207,58 @@ function processesFor(string $root, array $options, array $paths): int
         return DEFAULT_PROCESSES;
     }
 
-    return max(1, min(DEFAULT_PROCESSES, testFileCount($root, $paths)));
+    $tests = testCount($root, $paths, filterOf($options));
+
+    return max(1, min(DEFAULT_PROCESSES, intdiv(max(0, $tests - 1), TESTS_PER_PROCESS) + 1));
 }
 
 /**
+ * The run's --filter pattern, matched against each test's name as PHPUnit matches it; none runs every test.
+ *
+ * @param  list<string>  $options
+ */
+function filterOf(array $options): string|null
+{
+    foreach ($options as $option) {
+        if (str_starts_with($option, '--filter=')) {
+            return substr($option, strlen('--filter='));
+        }
+    }
+
+    return null;
+}
+
+/**
+ * The test methods the paths hold that the filter lets through.
+ *
  * @param  list<string>  $paths
  */
-function testFileCount(string $root, array $paths): int
+function testCount(string $root, array $paths, string|null $filter): int
 {
     $count = 0;
 
+    foreach (testFilesOf($root, $paths) as $file) {
+        preg_match_all('/function (test_\w+)\(/', (string) file_get_contents($file), $methods);
+        $kept = array_filter($methods[1], fn (string $method) => $filter === null || preg_match("/{$filter}/", $method) === 1);
+        $count += count($kept);
+    }
+
+    return $count;
+}
+
+/**
+ * The test files the paths name or hold.
+ *
+ * @param  list<string>  $paths
+ * @return list<string>
+ */
+function testFilesOf(string $root, array $paths): array
+{
+    $files = [];
+
     foreach ($paths as $path) {
         if (is_file("{$root}/{$path}")) {
-            $count++;
+            $files[] = "{$root}/{$path}";
 
             continue;
         }
@@ -223,11 +266,13 @@ function testFileCount(string $root, array $paths): int
         $folder = new RecursiveDirectoryIterator("{$root}/{$path}", FilesystemIterator::SKIP_DOTS);
 
         foreach (new RecursiveIteratorIterator($folder) as $file) {
-            $count += str_ends_with($file->getFilename(), 'Test.php') ? 1 : 0;
+            if (str_ends_with($file->getFilename(), 'Test.php')) {
+                $files[] = $file->getPathname();
+            }
         }
     }
 
-    return $count;
+    return $files;
 }
 
 /**

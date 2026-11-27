@@ -44,7 +44,8 @@ var errCrashed = errors.New("crash typed")
 // serves the Docker stand-in daemon on that socket, its containers running the echo program, until stopped;
 // "standin recording --recording <folder> --started <file> --transcript <file> -- <arguments>" plays a terminal
 // recording in place of the program it was recorded from; "standin keys --record <file>" writes every byte typed on its
-// terminal into the file and draws the typed text on its screen.
+// terminal into the file and draws the typed text on its screen; "standin exchange --recording <folder>" answers what
+// is written to it on pipes as the recorded program did.
 func standin(arguments []string) error {
 	if len(arguments) > 0 && arguments[0] == "docker" {
 		return standinDocker(arguments[1:])
@@ -54,6 +55,9 @@ func standin(arguments []string) error {
 	}
 	if len(arguments) > 0 && arguments[0] == "keys" {
 		return standinKeys(arguments[1:])
+	}
+	if len(arguments) > 0 && arguments[0] == "exchange" {
+		return standinExchange(arguments[1:])
 	}
 
 	return errors.New("usage: journal-agent standin docker --socket <path> --image <reference>... | standin recording ...")
@@ -146,6 +150,87 @@ func standinRecording(arguments []string) error {
 	return err
 }
 
+// standinExchange stands in for a program on pipes: it answers what is written to it as the recorded program did,
+// with this environment's values, and exits as the recording did. While the hold file exists, a line of the held method
+// waits, and a recording with no input waits after its first lines; a line of the released method waits until its
+// file exists, as a sign-in waits for the user who completes it.
+func standinExchange(arguments []string) error {
+	flags := flag.NewFlagSet("standin exchange", flag.ContinueOnError)
+	var folders recordingFolders
+	flags.Var(&folders, "recording", "a folder of an exchange recording to play; repeat it to answer from several")
+	holdFile := flags.String("hold", "", "the file whose existence holds the answer")
+	held := flags.String("hold-before", "", "the method whose lines wait while the hold file exists")
+	released := flags.String("release-before", "", "a method and a file, as method=file: its lines wait until the file exists")
+	heardFile := flags.String("heard", "", "the file each line written to the program is added to")
+	holdAfter := flags.Int("hold-after-lines", -1, "for a recording with no input, the lines played before it holds")
+	endsAfterLast := flags.Bool("ends-after-last", false, "end once the recording's last written line is answered")
+	if err := flags.Parse(arguments); err != nil {
+		return err
+	}
+	fixtures := make([]recording.Fixture, 0, len(folders))
+	for _, folder := range folders {
+		fixture, err := recording.Load(folder)
+		if err != nil {
+			return err
+		}
+		fixtures = append(fixtures, fixture)
+	}
+	if len(fixtures) == 0 {
+		return errors.New("standin exchange plays at least one --recording")
+	}
+	hold := func() {
+		for *holdFile != "" && isPresent(*holdFile) {
+			time.Sleep(standinPause)
+		}
+	}
+	releasedMethod, releaseFile, _ := strings.Cut(*released, "=")
+	holdBefore := func(method string) {
+		for method == releasedMethod && releaseFile != "" && !isPresent(releaseFile) {
+			time.Sleep(standinPause)
+		}
+		if method == *held {
+			hold()
+		}
+	}
+	heard := func(line string) {
+		if *heardFile != "" {
+			_ = appendLine(*heardFile, line)
+		}
+	}
+	err := recording.ExchangeReplay(fixtures, os.Stdin, os.Stdout, os.Stderr, os.Getenv, heard, holdBefore, *holdAfter, hold, *endsAfterLast)
+	if err != nil {
+		return err
+	}
+	os.Exit(fixtures[0].ExitCode)
+	return nil
+}
+
+// recordingFolders are the recordings a flag repeated names, in order.
+type recordingFolders []string
+
+func (folders *recordingFolders) String() string { return strings.Join(*folders, ",") }
+
+func (folders *recordingFolders) Set(folder string) error {
+	*folders = append(*folders, folder)
+	return nil
+}
+
+// appendLine adds the line to the file, made when missing.
+func appendLine(path, line string) error {
+	opened, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+	if err != nil {
+		return err
+	}
+	defer opened.Close()
+	_, err = fmt.Fprintln(opened, line)
+	return err
+}
+
+func isPresent(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
 // standinKeys records what reaches its terminal byte for byte, its terminal raw so nothing is changed on the way, and
 // draws the typed text, so a test compares what was sent, what arrived and what the screen showed.
 func standinKeys(arguments []string) error {
@@ -181,7 +266,8 @@ type standinProgram struct {
 // the session's recording; a container that does not run it, such as a throwaway, ends at once.
 func programInContainer(program standinProgram, session dockerstandin.Program) func(*dockerstandin.Container) dockerstandin.Program {
 	return func(container *dockerstandin.Container) dockerstandin.Program {
-		arguments, found := argumentsAfter(container.Config.Cmd, program.name)
+		// A container runs its entrypoint with its command as arguments, so the program may be named in either.
+		arguments, found := argumentsAfter(slices.Concat(container.Config.Entrypoint, container.Config.Cmd), program.name)
 		switch {
 		case !found:
 			return nil
@@ -261,13 +347,7 @@ func noteContainer(file string, container *dockerstandin.Container) error {
 	if err != nil {
 		return err
 	}
-	opened, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
-	if err != nil {
-		return err
-	}
-	defer opened.Close()
-	_, err = fmt.Fprintln(opened, string(line))
-	return err
+	return appendLine(file, string(line))
 }
 
 func noteStart(file string, arguments []string) error {
@@ -275,13 +355,7 @@ func noteStart(file string, arguments []string) error {
 	if err != nil {
 		return err
 	}
-	opened, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
-	if err != nil {
-		return err
-	}
-	defer opened.Close()
-	_, err = fmt.Fprintln(opened, string(line))
-	return err
+	return appendLine(file, string(line))
 }
 
 func writeTranscript(path string) error {

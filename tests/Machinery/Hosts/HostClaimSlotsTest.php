@@ -41,4 +41,15 @@ final class HostClaimSlotsTest extends TestCase
             ],
         );
     }
+
+    public function test_a_hosts_start_ends_the_claim_its_earlier_process_left_open(): void
+    {
+        $slots = $this->journal->service(HostClaimSlots::class);
+        $host = (string) Str::ulid();
+        $left = $slots->take($host);
+
+        $slots->endEarlierClaims($host);
+
+        $this->journal->assertResult([false, false], [$slots->isHeldBy($host, $left), $slots->isTaken($host)]);
+    }
 }

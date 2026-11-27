@@ -22,14 +22,15 @@ use Tests\TestCase;
 
 /**
  * After a host started, a process it still runs is kept, one it no longer holds is lost, one opened after its
- * inventory was built is left alone, and every input order it had claimed is refused host_restarted.
+ * inventory was built is left alone and its claimed opening offered again, and every input order it had claimed is
+ * refused host_restarted.
  */
 #[TestsCommand(NotifyHostInventoryCommand::class)]
 final class NotifyHostInventoryTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    public function test_held_processes_are_kept_missing_ones_lost_newer_ones_left_and_claimed_keys_refused(): void
+    public function test_held_processes_are_kept_missing_ones_lost_newer_ones_offered_again_and_claimed_keys_refused(): void
     {
         $this->journal
             ->enrollHost('Mac', [base_path()])
@@ -54,6 +55,7 @@ final class NotifyHostInventoryTest extends TestCase
         $this->journal->asSystem(new NotifyHostInventoryCommand($hostId, $inventory));
 
         $refused = HostOrder::query()->whereKey($keysId)->sole();
+        [$newerOpen] = $this->journal->hostOrdersOf('newer');
         $this->journal->assertResult(
             [
                 HostProcessStatus::Running,
@@ -61,6 +63,7 @@ final class NotifyHostInventoryTest extends TestCase
                 HostProcessStatus::Ordered,
                 HostOrderStatus::Refused,
                 HostRefusal::HostRestarted,
+                HostOrderStatus::Pending,
             ],
             [
                 $this->journal->hostProcessCalled('kept')->status,
@@ -68,6 +71,7 @@ final class NotifyHostInventoryTest extends TestCase
                 $this->journal->hostProcessCalled('newer')->status,
                 $refused->status,
                 $refused->refusal,
+                $newerOpen->status,
             ],
         );
     }

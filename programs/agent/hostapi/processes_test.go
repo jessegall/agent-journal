@@ -402,6 +402,31 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 }
 
 // A healed process resumes once its restart file lies anywhere under its folder, as a transcript in a project folder.
+func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(t *testing.T) {
+	containers, err := host.ContainersOn(dockerstandin.Start(t, standinImage).Host(), host.ContainerRules{Arrangement: host.Local})
+	if err != nil {
+		t.Fatal(err)
+	}
+	queue, err := OpenReportQueue(t.TempDir(), (&sentReports{}).send)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runQueue(t, queue)
+	state, chunks := t.TempDir(), &sentChunks{}
+	table := OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
+	plan, err := json.Marshal(OpenPlan{Type: "pipe", Restart: "never", Folder: t.TempDir(),
+		Argv: []string{"sh", "-c", `echo out; echo "Logged in using ChatGPT" >&2; echo after`}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	order := Order{ID: "open-e", Type: "open_process", ProcessID: "e", Payload: string(plan)}
+	if _, err := table.openProcess(context.Background(), order); err != nil {
+		t.Fatal(err)
+	}
+
+	waitForText(t, chunks, "out\nLogged in using ChatGPT\nafter\n")
+}
+
 func TestAHealedProcessRunsItsRestartArgvOnceItsFileExistsUnderItsFolder(t *testing.T) {
 	folder := t.TempDir()
 	plan := OpenPlan{Argv: []string{"program", "--session-id", "c1"}, RestartArgv: []string{"program", "--resume", "c1"},

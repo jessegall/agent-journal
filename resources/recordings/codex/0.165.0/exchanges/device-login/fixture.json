@@ -1,0 +1,80 @@
+{
+  "driver": "codex",
+  "driver_version": "0.165.0",
+  "profile": "",
+  "mode": "process",
+  "geometry": {
+    "columns": 0,
+    "rows": 0
+  },
+  "recorded_at": "2026-11-27T01:17:00.367862+01:00",
+  "initial_state": {
+    "working_folder": "/workspace",
+    "arguments": [
+      "codex",
+      "app-server"
+    ],
+    "environment_names": [
+      "HOME",
+      "PATH"
+    ]
+  },
+  "output": [
+    {
+      "offset": 134399791,
+      "stream": "stdout",
+      "bytes": "eyJpZCI6MCwicmVzdWx0Ijp7InVzZXJBZ2VudCI6ImpvdXJuYWwvMC4xNjUuMCAoTGludXg7IGFybTY0KSB1bmtub3duIChqb3VybmFsOyA2KSIsImNvZGV4SG9tZSI6Ii9wcml2YXRlL3RtcC9jbGF1ZGUtNTAxLy1Vc2Vycy1qZXNzZWdhbGwtcHJvamVjdHMtYWdlbnQtam91cm5hbC02LzAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAxNS9zY3JhdGNocGFkL3JlYy9jb2RleC1ob21lIiwicGxhdGZvcm1GYW1pbHkiOiJ1bml4IiwicGxhdGZvcm1PcyI6Im1hY29zIn19Cg=="
+    },
+    {
+      "offset": 134796625,
+      "stream": "stdout",
+      "bytes": "eyJtZXRob2QiOiJyZW1vdGVDb250cm9sL3N0YXR1cy9jaGFuZ2VkIiwicGFyYW1zIjp7InN0YXR1cyI6ImRpc2FibGVkIiwic2VydmVyTmFtZSI6InN0YW5kLWluIiwiaW5zdGFsbGF0aW9uSWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCJlbnZpcm9ubWVudElkIjpudWxsfSwiZW1pdHRlZEF0TXMiOjE3OTU3Mzg2MjA1MDB9Cg=="
+    },
+    {
+      "offset": 343082458,
+      "stream": "stdout",
+      "bytes": "eyJpZCI6MSwicmVzdWx0Ijp7InR5cGUiOiJjaGF0Z3B0RGV2aWNlQ29kZSIsImxvZ2luSWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMTkiLCJ2ZXJpZmljYXRpb25VcmwiOiJodHRwczovL2F1dGgub3BlbmFpLmNvbS9jb2RleC9kZXZpY2UiLCJ1c2VyQ29kZSI6IlNUQU5ELUlOIn19Cg=="
+    },
+    {
+      "offset": 54527565500,
+      "stream": "stdout",
+      "bytes": "eyJtZXRob2QiOiJhY2NvdW50L2xvZ2luL2NvbXBsZXRlZCIsInBhcmFtcyI6eyJsb2dpbklkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDE5Iiwic3VjY2VzcyI6dHJ1ZSwiZXJyb3IiOm51bGwsIm9uYm9hcmRpbmdFbnRyeXBvaW50IjpudWxsfSwiZW1pdHRlZEF0TXMiOjE3OTU3Mzg2NzQ4OTN9Cg=="
+    },
+    {
+      "offset": 54527954250,
+      "stream": "stdout",
+      "bytes": "eyJtZXRob2QiOiJhY2NvdW50L3VwZGF0ZWQiLCJwYXJhbXMiOnsiYXV0aE1vZGUiOiJjaGF0Z3B0IiwicGxhblR5cGUiOiJwbHVzIn0sImVtaXR0ZWRBdE1zIjoxNzk1NzM4Njc0ODk0fQo="
+    },
+    {
+      "offset": 54529703541,
+      "stream": "stdout",
+      "bytes": "eyJpZCI6MiwicmVzdWx0Ijp7ImFjY291bnQiOnsidHlwZSI6ImNoYXRncHQiLCJlbWFpbCI6IjxyZWRhY3RlZD4iLCJwbGFuVHlwZSI6InBsdXMifSwicmVxdWlyZXNPcGVuYWlBdXRoIjp0cnVlLCJ3b3Jrc3BhY2VSb3V0aW5nIjp7ImNoYXRncHRBY2NvdW50SWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMTMiLCJiYWNrZW5kT3JpZ2luIjoiaHR0cHM6Ly9jaGF0Z3B0LmNvbSIsImFjY291bnRSb3V0aW5nT3ZlcnJpZGUiOiJOT19DT05TVFJBSU5UIn19fQo="
+    }
+  ],
+  "inputs": [
+    {
+      "offset": 1406458,
+      "bytes": "eyJpZCI6MCwibWV0aG9kIjoiaW5pdGlhbGl6ZSIsInBhcmFtcyI6eyJjbGllbnRJbmZvIjp7Im5hbWUiOiJqb3VybmFsIiwidmVyc2lvbiI6IjYifX19Cg==",
+      "secret": false,
+      "length": 88
+    },
+    {
+      "offset": 134659416,
+      "bytes": "eyJtZXRob2QiOiJpbml0aWFsaXplZCJ9CnsiaWQiOjEsIm1ldGhvZCI6ImFjY291bnRcL2xvZ2luXC9zdGFydCIsInBhcmFtcyI6eyJ0eXBlIjoiY2hhdGdwdERldmljZUNvZGUifX0K",
+      "secret": false,
+      "length": 105
+    },
+    {
+      "offset": 54527859083,
+      "bytes": "eyJpZCI6MiwibWV0aG9kIjoiYWNjb3VudFwvcmVhZCIsInBhcmFtcyI6e319Cg==",
+      "secret": false,
+      "length": 46
+    }
+  ],
+  "resizes": [],
+  "exit_code": 0,
+  "checkpoints": [],
+  "script_parameters": [],
+  "expected_keys": [],
+  "expected_transitions": []
+}

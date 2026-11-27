@@ -122,6 +122,17 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
+     * Offers the claimed order to the host again, as a claim of its earlier process never reached it or its answer
+     * never reached the journal.
+     */
+    public function offerAgain(): void
+    {
+        $this->status = HostOrderStatus::Pending;
+        $this->claimed_at = null;
+        $this->saveAndAssert();
+    }
+
+    /**
      * @throws HostOrderStateRefused
      */
     public function answer(HostAnswerData $answer, CarbonImmutable $at): void
@@ -259,18 +270,13 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * The input orders the host claimed and did not answer, locked: after a restart none of them may land.
+     * The orders a host claimed and has not answered, locked, as its start reads them.
      *
      * @return list<self>
      */
-    public static function findClaimedInputsOf(Host $host): array
+    public static function findClaimedOf(Host $host): array
     {
-        $orders = self::query()
-            ->forHost($host)
-            ->where('status', HostOrderStatus::Claimed)
-            ->whereIn('type', HostOrderType::inputs())
-            ->lockForUpdate()
-            ->get();
+        $orders = self::query()->forHost($host)->where('status', HostOrderStatus::Claimed)->lockForUpdate()->get();
 
         return array_values($orders->all());
     }

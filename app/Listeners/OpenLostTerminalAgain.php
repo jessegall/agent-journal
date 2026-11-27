@@ -7,7 +7,6 @@ namespace App\Listeners;
 use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Contracts\Events\Listener;
 use App\Events\Connections\HostProcessLost;
-use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 
@@ -21,19 +20,10 @@ final readonly class OpenLostTerminalAgain implements Listener
 
     public function handle(HostProcessLost $fact): void
     {
-        if ($fact->runtimeId === null) {
-            return;
-        }
-
         $process = HostProcess::query()->whereKey($fact->processId)->sole();
-        $runtime = AgentRuntime::query()->whereKey($fact->runtimeId)->sole();
 
-        $isJournalTerminal = $process->purpose === HostProcessPurpose::AgentTerminal
-            && $this->starts->drives($runtime)
-            && $this->starts->opensTerminal($runtime);
-
-        if ($isJournalTerminal) {
-            $this->starts->openProven($runtime);
+        if ($this->starts->opensAgainWhenLost($process)) {
+            $this->starts->openProven(AgentRuntime::query()->whereKey($process->agent_runtime_id)->sole());
         }
     }
 }

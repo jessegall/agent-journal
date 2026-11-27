@@ -17,7 +17,7 @@ find_root() {
 run_tests() {
     local root="$1"
     local packages="$2"
-    run_in_go "$root" "go test -count=1 $packages"
+    run_in_go "$root" "go test -tags standin -count=1 $packages"
 }
 
 # The harness finds the binary by the same hash of the Go sources (tests/Support/Hosts/TestHost.php).

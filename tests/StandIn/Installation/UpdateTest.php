@@ -35,7 +35,7 @@ final class UpdateTest extends TestCase
 
     private const string GENERATED_FILE = 'resources/js/generated/routes.ts';
 
-    private const string PROTECTED_FILE_CHECK = '--entrypoint test';
+    private const string PROTECTED_FILE_CHECK = '/opt/journal/bin/journal-check';
 
     private const string MCP_RELAY_CHECK = '--entrypoint /opt/journal/bin/journal-mcp';
 

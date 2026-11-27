@@ -10,7 +10,7 @@ use App\Terminals\Data\LayoutShape;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Client\StrayRequestException;
 use Illuminate\Support\Facades\Http;
-use Tests\Commands\Layouts\SaveLayoutTest;
+use Tests\Commands\Terminals\SaveLayoutTest;
 use Tests\Support\Exceptions\BusUsedInUnitTest;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
 use Tests\Support\Exceptions\HttpUsedInUnitTest;

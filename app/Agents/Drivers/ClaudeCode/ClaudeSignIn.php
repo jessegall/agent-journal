@@ -81,7 +81,9 @@ final readonly class ClaudeSignIn implements SignInProtocol
         $isSignedIn = $status->isSignedInBy(SignInMethod::OAuth);
 
         $identity = $isSignedIn
-            ? new SignInIdentity($status->email, null, null, $status->expiresAt)
+            // Claude Code names the signed-in user by email and its organization by id, which is what an account
+            // signed in again is compared on.
+            ? new SignInIdentity($status->email, $status->email, $status->organization, $status->expiresAt)
             : SignInIdentity::unproved();
 
         return new SignInVerification($isSignedIn, $identity, $status->isReadable);

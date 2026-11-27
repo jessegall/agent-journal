@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('family', 64);
             // The conversation a runtime the journal opens itself continues in every turn; none for one a host opens.
             $table->string('conversation_id', 128)->nullable();
+            $table->timestampTz('conversation_named_at')->nullable();
             // When the journal proved the installed build of a runtime it opens itself, before its first turn.
             $table->timestampTz('start_proven_at')->nullable();
             $table->string('driver_label', 64);

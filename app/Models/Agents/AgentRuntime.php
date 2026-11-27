@@ -34,6 +34,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalView;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
+use App\Models\Sessions\SessionRequest;
 use App\Models\Support\JournalModel;
 use App\Processes\Data\RuntimeStatus;
 use App\Processes\Enums\RuntimeActivity;
@@ -61,6 +62,7 @@ use PhpOption\Option;
  * @property string $driver_key
  * @property string $family
  * @property string|null $conversation_id
+ * @property CarbonImmutable|null $conversation_named_at
  * @property CarbonImmutable|null $start_proven_at
  * @property string $driver_label
  * @property bool $has_screen
@@ -118,6 +120,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
             'settings_observed_at' => 'immutable_datetime',
             'last_observed_at' => 'immutable_datetime',
             'start_proven_at' => 'immutable_datetime',
+            'conversation_named_at' => 'immutable_datetime',
             'generation_started_at' => 'immutable_datetime',
         ];
     }
@@ -282,6 +285,15 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
+     * The runtime's driver named the conversation its program started, such as a Codex thread, so later turns resume it.
+     */
+    public function nameConversation(string $conversationId, CarbonImmutable $at): void
+    {
+        $this->conversation_named_at = $at;
+        $this->chooseConversation($conversationId);
+    }
+
+    /**
      * Records that the probe printed the pinned build, so the runtime's turns may open.
      */
     public function proveStart(CarbonImmutable $now): void
@@ -320,11 +332,14 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Whether a turn of the runtime ran before, so the next one resumes its conversation.
+     * Whether the runtime's conversation is one its program already holds, so its next turn resumes it: a headless turn
+     * ran in it, its driver named it, or its start chose it to continue.
      */
-    public function hasRunTurn(): bool
+    public function continuesConversation(): bool
     {
-        return $this->hostProcesses()->where('purpose', HostProcessPurpose::AgentTurn)->exists();
+        return $this->conversation_named_at !== null
+            || $this->hostProcesses()->where('purpose', HostProcessPurpose::AgentTurn)->exists()
+            || SessionRequest::resolveConversationTargetOf($this->agent_session_id) === $this->conversation_id;
     }
 
     /**

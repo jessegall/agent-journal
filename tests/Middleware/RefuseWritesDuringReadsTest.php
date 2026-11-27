@@ -10,7 +10,7 @@ use App\Models\Records\Layout;
 use App\Reads\ReadOnlyStretch;
 use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
 use App\Terminals\Data\LayoutShape;
-use Tests\Commands\Layouts\SaveLayoutTest;
+use Tests\Commands\Terminals\SaveLayoutTest;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

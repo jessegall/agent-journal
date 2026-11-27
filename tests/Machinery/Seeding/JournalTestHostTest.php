@@ -206,6 +206,41 @@ final class JournalTestHostTest extends TestCase
         $this->journal->stopTestHost();
     }
 
+    public function test_the_claude_code_stand_in_plays_the_terminal_recording_a_test_names(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()])->runTestHost('Mac')->playClaudeTerminalRecordingOnTestHost('terminal-interrupt');
+        $played = "{$this->journal->testHostInstallation()}/terminal-turn/fixture.json";
+
+        $this->journal->assertResult(
+            file_get_contents(base_path('resources/recordings/claude-code/2.1.323/turns/terminal-interrupt/fixture.json')),
+            file_get_contents($played),
+        );
+        $this->journal->stopTestHost();
+    }
+
+    public function test_the_test_host_the_test_runs_is_the_one_its_installation_belongs_to(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()])->runTestHost('Mac');
+
+        $this->journal->assertResult(
+            [$this->journal->testHostInstallation(), []],
+            [$this->journal->testHost()->installation(), $this->journal->testHost()->heardByCodex()],
+        );
+        $this->journal->stopTestHost();
+    }
+
+    public function test_the_owner_completes_the_browser_sign_in_the_test_hosts_codex_waits_for(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()])->runTestHost('Mac');
+        $signedIn = "{$this->journal->testHostInstallation()}/browser-signed-in";
+        $before = file_exists($signedIn);
+
+        $this->journal->completeBrowserSignInOnTestHost();
+
+        $this->journal->assertResult([false, true], [$before, file_exists($signedIn)]);
+        $this->journal->stopTestHost();
+    }
+
     public function test_the_real_hosts_installation_holds_the_stand_in_whose_turns_are_held_and_released(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->runTestHost('Mac')->holdStandInTurns();

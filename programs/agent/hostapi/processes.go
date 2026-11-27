@@ -499,7 +499,10 @@ func (table *ProcessTable) startNative(held *heldProcess, argv []string) error {
 		if err != nil {
 			return err
 		}
+		// The error output goes to the same spool in the order it was printed, as a program such as Codex prints its
+		// sign-in line there; a host that drops it would read every such program as saying nothing.
 		command.Stdout = spool
+		command.Stderr = spool
 		err = command.Start()
 		_ = spool.Close()
 		if err != nil {

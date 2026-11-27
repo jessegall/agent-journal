@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\StandIn\Hosts;
 
 use App\Agents\Commands\InterruptAgent\InterruptAgentCommand;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
@@ -20,6 +21,7 @@ use App\Hosts\ProcessFeed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostOrder;
+use App\Processes\Enums\RuntimeActivity;
 use App\Sessions\OpenedRuntime;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
@@ -52,11 +54,6 @@ final class SessionLifeTest extends TestCase
      * How many times keys a moved screen refused are typed again.
      */
     private const int TYPING_TRIES = 5;
-
-    /**
-     * The thread the recorded Codex exec turn started, which the turn's request is bound to.
-     */
-    private const string CODEX_THREAD = '01a1eea7-3f30-73b0-909d-32c186306641';
 
     /**
      * The row of the recorded Codex terminal that shows it took the first message.
@@ -214,43 +211,13 @@ final class SessionLifeTest extends TestCase
     public function test_an_interrupt_presses_escape_on_a_running_claude_code_and_codex_turn_and_holds_each(): void
     {
         $this->arrangeTerminalHost();
+        // The recording in which Claude Code was interrupted during its turn, so its turn still runs when the journal
+        // presses Escape.
+        $this->journal->playClaudeTerminalRecordingOnTestHost('terminal-interrupt');
         $claude = $this->interruptRunningTurn('Terminal', 'terminal', $this->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5'));
         $codex = $this->interruptRunningTurn('Codex', 'codex', $this->openTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5'));
 
         $this->journal->assertResult([HoldReason::Interrupted, HoldReason::Interrupted], [$claude->hold_reason, $codex->hold_reason]);
-    }
-
-    public function test_a_codex_exec_turn_is_opened_driven_and_finished_with_its_thread_bound(): void
-    {
-        $this->journal->owner()
-            ->showDriverArrangements()
-            ->idleAgent('Exec')
-            ->enrollHost('Mac', [base_path()])
-            ->runTestHost('Mac')
-            ->chooseActiveAccountsOnTestHost();
-        $opened = $this->journal->openRuntimeOn(
-            'Exec',
-            'Mac',
-            base_path(),
-            driver: 'codex',
-            build: '0.165.0',
-            profile: 'codex',
-            model: 'gpt-5.5',
-            firstMessage: 'Run: ls.',
-        );
-
-        $applied = fn () => $this->progressOf($opened->firstRequestId) === RequestProgress::Applied;
-        $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTurn, 'turn')
-            ->driveHostProcess('turn', $applied);
-
-        $this->journal->assertResult(
-            [HostProcessStatus::Exited, self::CODEX_THREAD, self::CODEX_THREAD],
-            [
-                $this->journal->hostProcessCalled('turn')->status,
-                $this->bindingOf($opened->firstRequestId),
-                AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->conversation_id,
-            ],
-        );
     }
 
     public function test_a_claude_code_and_a_codex_terminal_lost_with_their_hosts_restart_are_both_opened_again(): void
@@ -458,14 +425,17 @@ final class SessionLifeTest extends TestCase
      */
     private function interruptRunningTurn(string $agent, string $name, OpenedRuntime $opened): AgentRuntime
     {
-        $isTurning = fn () => $this->journal->hostProcessCalled($name)->output_offset > 0;
+        $isTurning = fn () => AgentRuntime::query()->findOrFail($opened->runtimeId)->activity === RuntimeActivity::Running;
         $work = $this->journal->driveHostProcess($name, $isTurning);
         $this->journal->asOwner(new InterruptAgentCommand($this->journal->agentCalled($agent)->id, $opened->sessionId, "interrupt-{$name}"));
+        // An input's bytes are forgotten once the host took it, so the Escape is known by the interrupt it was pressed for.
+        $interrupts = fn () => DriverRequest::query()->where('agent_runtime_id', $opened->runtimeId)
+            ->where('operation', DriverOperation::Interrupt)->pluck('id')->all();
         $escaped = fn () => array_filter(
             $this->journal->hostOrdersOf($name),
             fn (HostOrder $order) => $order->type === HostOrderType::WriteKeys
                 && $order->status === HostOrderStatus::Done
-                && str_contains($order->kept_payload, '\\u001b'),
+                && in_array($order->driver_request_id, $interrupts(), true),
         ) !== [];
         $this->journal->driveHostProcess($name, $escaped, $work);
 

@@ -77,7 +77,7 @@ final class EnforceSessionStartLimitsTest extends TestCase
     private function runningStart(): TestStart
     {
         $start = $this->journal->signedStart('Test agent '.++$this->startCount, 'writing-helper');
-        $start->openRuntime($this->app);
+        $start->openRuntime($this->app, $this->journal->enrolledHost()->hostId);
         $start->openStack($this->app);
         $request = new StartRequest(
             $start->session->start_request_id,

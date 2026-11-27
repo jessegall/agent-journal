@@ -20,13 +20,16 @@ final class ChooseRuntimeConversationTest extends TestCase
 
     private const string THREAD = 'thread-1';
 
-    public function test_the_named_conversation_is_the_one_the_runtime_continues(): void
+    public function test_the_conversation_its_driver_named_is_the_one_the_runtime_continues(): void
     {
         $this->journal->owner()->chooseActiveAccounts(config('accounts.root'))->showDriverArrangements()->idleAgent('Coder')->enrollHost('Mac', [base_path()]);
         $opened = $this->journal->openCodexRuntimeOn('Coder', 'Mac', base_path(), 'Run: ls.');
 
+        $before = AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->continuesConversation();
+
         $this->journal->asSystem(new ChooseRuntimeConversationCommand($opened->runtimeId, self::THREAD));
 
-        $this->journal->assertResult(self::THREAD, AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->conversation_id);
+        $runtime = AgentRuntime::query()->whereKey($opened->runtimeId)->sole();
+        $this->journal->assertResult([false, self::THREAD, true], [$before, $runtime->conversation_id, $runtime->continuesConversation()]);
     }
 }

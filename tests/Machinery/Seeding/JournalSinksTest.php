@@ -14,7 +14,7 @@ use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
 use App\Terminals\Data\LayoutShape;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\AssertionFailedError;
-use Tests\Commands\Layouts\SaveLayoutTest;
+use Tests\Commands\Terminals\SaveLayoutTest;
 use Tests\Support\Bus\Exceptions\SunkReplyRefused;
 use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\CommitsHookRows;

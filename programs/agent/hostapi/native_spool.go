@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-// spoolName is the file in a process's own folder that a native process without a terminal prints its standard
-// output to, so what it prints outlives the host that started it.
+// spoolName is the file in a process's own folder that a native process without a terminal prints its standard and
+// error output to, so what it prints outlives the host that started it.
 const spoolName = "stdout"
 
 // spoolPollInterval is how often a followed spool is read again once it was read to its end.

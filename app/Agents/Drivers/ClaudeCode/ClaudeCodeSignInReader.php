@@ -39,6 +39,13 @@ final readonly class ClaudeCodeSignInReader implements SignInReader
         $isInFolder = $status->configDirectory !== null && $folder->isReportedAs($status->configDirectory);
         $isSignedIn = $status->isLoggedIn && $method !== null && $isInFolder;
 
-        return new SignInReport(true, $isSignedIn, $isSignedIn ? $method : null, $status->email, $status->loginExpiresAt);
+        return new SignInReport(
+            true,
+            $isSignedIn,
+            $isSignedIn ? $method : null,
+            $status->email,
+            $status->loginExpiresAt,
+            $status->organization,
+        );
     }
 }

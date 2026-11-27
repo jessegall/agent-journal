@@ -303,8 +303,9 @@ final class CodexAppDriver implements ProcessDriver
         }
 
         $runtime = AgentRuntime::query()->findOrFail($request->runtimeId);
-        // A runtime's conversation names a Codex thread only once a turn of it ran; before that it is the journal's own.
-        $known = $runtime->hasRunTurn() ? $runtime->conversation_id : null;
+        // A runtime's conversation is a Codex thread once Codex named it or its start chose one; before that it is the
+        // journal's own.
+        $known = $runtime->continuesConversation() ? $runtime->conversation_id : null;
 
         if ($known !== null) {
             $id = $this->idOf($request, self::RESUME_STEP);

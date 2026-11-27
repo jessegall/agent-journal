@@ -18,6 +18,10 @@ final readonly class SignInReport
         public SignInMethod|null $method,
         public string|null $email = null,
         public string|null $expiresAt = null,
+        /**
+         * The organization the sign-in belongs to, where the driver names one
+         */
+        public string|null $organization = null,
     ) {}
 
     public static function unreadable(): self

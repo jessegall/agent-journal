@@ -13,8 +13,9 @@ require __DIR__.'/../../../../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../../../../bootstrap/app.php';
 
+// Bound once the providers booted, as a provider's own binding of the same contract would replace an earlier one.
 if (getenv('TEST_SHOWS_DRIVER_ARRANGEMENTS') === '1') {
-    $app->instance(DriverCompatibilities::class, new ShownDriverArrangements());
+    $app->booted(fn () => $app->instance(DriverCompatibilities::class, new ShownDriverArrangements()));
 }
 
 $app->handleRequest(Request::capture());

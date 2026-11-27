@@ -33,6 +33,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
         private StackAdmission $admission,
         private StateEventScope $eventScope,
         private UnitOfWork $lifecycle,
+        private ActiveEventUnits $units,
     ) {}
 
     /**
@@ -107,7 +108,9 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
      */
     public function runWithin(OperationDeadline $deadline, Closure $work): mixed
     {
-        if ($this->database->transactionLevel() > 0) {
+        // Inside a unit already open the work joins it; a transaction with no unit, such as a test's own, still
+        // gets one of its own, so every stack write belongs to a unit.
+        if ($this->database->transactionLevel() > 0 && $this->units->activeFor($this->database)->isDefined()) {
             $this->assertLimitsAreSet();
 
             return $work();

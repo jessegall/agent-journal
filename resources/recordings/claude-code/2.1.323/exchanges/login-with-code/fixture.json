@@ -1,0 +1,50 @@
+{
+  "driver": "claude-code",
+  "driver_version": "2.1.323",
+  "profile": "",
+  "mode": "process",
+  "geometry": {
+    "columns": 0,
+    "rows": 0
+  },
+  "recorded_at": "2026-11-27T00:23:34.759524414Z",
+  "initial_state": {
+    "working_folder": "/workspace",
+    "arguments": [
+      "claude",
+      "auth",
+      "login",
+      "--claudeai"
+    ],
+    "environment_names": [
+      "HOME",
+      "PATH"
+    ]
+  },
+  "output": [
+    {
+      "offset": 404243290,
+      "stream": "stdout",
+      "bytes": "T3BlbmluZyBicm93c2VyIHRvIHNpZ24gaW7igKYKSWYgdGhlIGJyb3dzZXIgZGlkbid0IG9wZW4sIHZpc2l0OiBodHRwczovL2NsYXVkZS5jb20vY2FpL29hdXRoL2F1dGhvcml6ZT9jb2RlPXRydWUmY2xpZW50X2lkPTAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAxMSZyZXNwb25zZV90eXBlPWNvZGUmcmVkaXJlY3RfdXJpPWh0dHBzJTNBJTJGJTJGcGxhdGZvcm0uY2xhdWRlLmNvbSUyRm9hdXRoJTJGY29kZSUyRmNhbGxiYWNrJnNjb3BlPW9yZyUzQWNyZWF0ZV9hcGlfa2V5K3VzZXIlM0Fwcm9maWxlK3VzZXIlM0FpbmZlcmVuY2UrdXNlciUzQXNlc3Npb25zJTNBY2xhdWRlX2NvZGUrdXNlciUzQW1jcF9zZXJ2ZXJzK3VzZXIlM0FmaWxlX3VwbG9hZCt1c2VyJTNBcGx1Z2lucyZjb2RlX2NoYWxsZW5nZT1zdGFuZC1pbi1jaGFsbGVuZ2UmY29kZV9jaGFsbGVuZ2VfbWV0aG9kPVMyNTYmc3RhdGU9c3RhbmQtaW4tc3RhdGUKUGFzdGUgY29kZSBoZXJlIGlmIHByb21wdGVkID4g"
+    },
+    {
+      "offset": 57743569272,
+      "stream": "stdout",
+      "bytes": "TG9naW4gc3VjY2Vzc2Z1bC4K"
+    }
+  ],
+  "inputs": [
+    {
+      "offset": 56380455835,
+      "bytes": "c3RhbmQtaW4tY29kZSNzdGFuZC1pbi1zdGF0ZQo=",
+      "secret": false,
+      "length": 29
+    }
+  ],
+  "resizes": [],
+  "exit_code": 0,
+  "checkpoints": [],
+  "script_parameters": [],
+  "expected_keys": [],
+  "expected_transitions": []
+}

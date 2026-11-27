@@ -1,0 +1,36 @@
+{
+  "driver": "codex",
+  "driver_version": "0.165.0",
+  "profile": "",
+  "mode": "process",
+  "geometry": {
+    "columns": 0,
+    "rows": 0
+  },
+  "recorded_at": "2026-11-27T01:12:24.654391+01:00",
+  "initial_state": {
+    "working_folder": "/workspace",
+    "arguments": [
+      "codex",
+      "--version"
+    ],
+    "environment_names": [
+      "HOME",
+      "PATH"
+    ]
+  },
+  "output": [
+    {
+      "offset": 7959333,
+      "stream": "stdout",
+      "bytes": "Y29kZXgtY2xpIDAuMTY1LjAK"
+    }
+  ],
+  "inputs": [],
+  "resizes": [],
+  "exit_code": 0,
+  "checkpoints": [],
+  "script_parameters": [],
+  "expected_keys": [],
+  "expected_transitions": []
+}

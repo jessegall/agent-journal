@@ -14,10 +14,11 @@ use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Values\JournalServer;
 use App\Bus\Contracts\JournalCommands;
 use App\Exceptions\DriverUnknown;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessType;
 use App\Models\Agents\AgentRuntime;
+use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
-use App\Models\Sessions\SessionRequest;
 use App\Profiles\StartProfilePin;
 use App\Sessions\AgentClientSettings;
 use App\Sessions\SessionContainers;
@@ -81,6 +82,21 @@ final readonly class HeadlessStarts
             : new OpenHeadlessTurnCommand($runtime->id);
 
         $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $open);
+    }
+
+    /**
+     * Whether a terminal of a runtime the journal drives is opened again once it is lost, as with its host's restart,
+     * so its start goes on.
+     */
+    public function opensAgainWhenLost(HostProcess $process): bool
+    {
+        if ($process->purpose !== HostProcessPurpose::AgentTerminal || $process->agent_runtime_id === null) {
+            return false;
+        }
+
+        $runtime = AgentRuntime::query()->whereKey($process->agent_runtime_id)->sole();
+
+        return $this->drives($runtime) && $this->opensTerminal($runtime);
     }
 
     /**
@@ -164,7 +180,7 @@ final readonly class HeadlessStarts
             type: HostProcessType::Pipe,
             workFolder: $runtime->canonical_folder,
             prompt: $prompt,
-            isResume: $this->isResume($runtime),
+            isResume: $runtime->continuesConversation(),
             model: $model ?? $runtime->requested_model,
             effort: $effort ?? $runtime->requested_effort,
             hookCommand: self::HOOK_COMMAND,
@@ -194,7 +210,7 @@ final readonly class HeadlessStarts
             type: HostProcessType::Pipe,
             workFolder: ContainerManifest::WORKDIR,
             prompt: $prompt,
-            isResume: $this->isResume($runtime),
+            isResume: $runtime->continuesConversation(),
             model: $model ?? $runtime->requested_model,
             effort: $effort ?? $runtime->requested_effort,
             hookCommand: self::IMAGE_HOOK_COMMAND,
@@ -218,11 +234,5 @@ final readonly class HeadlessStarts
         );
 
         return array_values($registrations)[0] ?? throw DriverUnknown::for($runtime->driver_key);
-    }
-
-    private function isResume(AgentRuntime $runtime): bool
-    {
-        return $runtime->hasRunTurn()
-            || SessionRequest::resolveConversationTargetOf($runtime->agent_session_id) === $runtime->conversation_id;
     }
 }

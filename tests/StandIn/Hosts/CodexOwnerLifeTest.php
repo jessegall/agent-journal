@@ -65,8 +65,11 @@ final class CodexOwnerLifeTest extends TestCase
         $work = $this->journal->driveHostProcess('owner', fn () => $this->isApplying($coder) && $this->isApplying($tester));
         $owners = HostProcess::query()->ofPurposes([HostProcessPurpose::AccountOwner])->count();
 
-        $this->journal->restartTestHost()->waitForHostProcess('owner', HostProcessStatus::Lost);
-        $failed = $this->progressOf($coder->firstRequestId);
+        // The owner reads its input from the host, so it ends with the host and exits.
+        $this->journal->restartTestHost()->waitForHostProcess('owner', HostProcessStatus::Exited);
+        // The owner's worker sees its process end and fails the turn it was running.
+        $isFailed = fn () => $this->progressOf($coder->firstRequestId) === RequestProgress::Failed;
+        $this->journal->driveHostProcess('owner', $isFailed, $work);
         $thread = AgentRuntime::query()->whereKey($coder->runtimeId)->sole()->conversation_id;
         $this->journal->releaseStandInTurns()->asOwner(DeliverAgentCommand::text(
             $this->journal->agentCalled('Coder')->id,
@@ -75,11 +78,11 @@ final class CodexOwnerLifeTest extends TestCase
             'Run: ls again.',
         ));
         $this->journal->callAccountOwner('again', $coder->runtimeId)
-            ->driveHostProcess('again', fn () => $this->resumedThreadOf('again') !== null, $work);
+            ->driveHostProcess('again', fn () => $this->resumedThread() !== null);
 
         $this->journal->assertResult(
-            [1, RequestProgress::Failed, $thread],
-            [$owners, $failed, $this->resumedThreadOf('again')],
+            [1, $thread],
+            [$owners, $this->resumedThread()],
         );
     }
 
@@ -106,12 +109,12 @@ final class CodexOwnerLifeTest extends TestCase
     }
 
     /**
-     * The thread the owner was asked to resume, from the thread/resume it was written; none before it.
+     * The thread an owner was asked to resume, from the thread/resume Codex heard; none before it.
      */
-    private function resumedThreadOf(string $owner): string|null
+    private function resumedThread(): string|null
     {
         $resumes = array_filter(
-            $this->journal->pipeInputOf($owner),
+            $this->journal->testHost()->heardByCodex(),
             fn (array $message) => ($message['method'] ?? null) === 'thread/resume',
         );
 

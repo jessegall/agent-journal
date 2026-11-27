@@ -50,7 +50,7 @@ trait OpensRuntimes
     public function syntheticRuntime(string|AgentSession $agent): self
     {
         $intent = new RuntimeIntent(
-            'host-1',
+            $this->enrolledHost()->hostId,
             base_path(),
             'claude-code',
             '1.0.0',

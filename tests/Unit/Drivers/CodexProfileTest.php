@@ -41,7 +41,7 @@ final class CodexProfileTest extends TestCase
         );
     }
 
-    public function test_a_terminal_is_planned_as_the_recorded_terminals_ran_and_asks_no_user(): void
+    public function test_a_terminal_is_planned_as_the_recorded_terminals_ran_with_no_approval_or_sandbox(): void
     {
         $planned = [];
         $expected = [];
@@ -54,11 +54,11 @@ final class CodexProfileTest extends TestCase
             $recorded = $this->recordedStart($name);
             $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, $recorded['working_folder']);
             $planned[] = $this->profile()->startPlan($start)->argv;
-            // The recordings were made before the terminal asked no user; the rest is as they ran.
+            // The recordings ran under Codex's own sandbox, which the journal never uses: their sandbox flag pair is the
+            // one flag that skips every approval and sandbox now, and the rest is as they ran.
             $expected[] = [
-                ...array_slice($recorded['arguments'], 0, 3),
-                '--ask-for-approval',
-                'never',
+                $recorded['arguments'][0],
+                '--dangerously-bypass-approvals-and-sandbox',
                 ...array_slice($recorded['arguments'], 3),
             ];
         }

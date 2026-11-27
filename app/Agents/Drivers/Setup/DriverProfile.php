@@ -131,6 +131,7 @@ final readonly class DriverProfile
             argv: $this->placed($this->setup->headlessTurns->ownerArgv, $start->executablePlace),
             environment: $environment->variables,
             folder: $start->workFolder,
+            files: $this->planOf($start)->files,
             container: $start->container?->manifest,
             folders: $environment->folders,
             inherit: $this->inheritedOn($environment->inherited, $start->executablePlace),
@@ -153,7 +154,8 @@ final readonly class DriverProfile
     }
 
     /**
-     * The short process that prints whether the start's account is signed in, in the start's own environment.
+     * The short process that prints whether the start's account is signed in, in the start's own environment and with
+     * its files, so a container mounts for it what it mounts for the start.
      *
      * @throws ProfileRefused
      */
@@ -176,6 +178,7 @@ final readonly class DriverProfile
             argv: $this->placed($this->setup->signInProbe, $start->executablePlace),
             environment: $environment->variables,
             folder: $start->workFolder,
+            files: $this->planOf($start)->files,
             container: $start->container?->manifest,
             folders: $environment->folders,
             inherit: $this->inheritedOn($environment->inherited, $start->executablePlace),

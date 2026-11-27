@@ -7,7 +7,7 @@ namespace Tests\Machinery\Seeding;
 use App\CommandRules\Enums\ReceiptStatus;
 use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
 use App\Terminals\Data\LayoutShape;
-use Tests\Commands\Layouts\SaveLayoutTest;
+use Tests\Commands\Terminals\SaveLayoutTest;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\TestJournal;

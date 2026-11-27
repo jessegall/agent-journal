@@ -17,7 +17,7 @@ use App\Terminals\Data\LayoutShape;
 use LogicException;
 use PHPUnit\Framework\AssertionFailedError;
 use RuntimeException;
-use Tests\Commands\Layouts\SaveLayoutTest;
+use Tests\Commands\Terminals\SaveLayoutTest;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\TestJournal;

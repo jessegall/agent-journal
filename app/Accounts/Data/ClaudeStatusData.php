@@ -19,5 +19,7 @@ final class ClaudeStatusData extends Data
         public readonly string|null $configDirectory = null,
         public readonly string|null $email = null,
         public readonly string|null $loginExpiresAt = null,
+        #[MapInputName('orgId')]
+        public readonly string|null $organization = null,
     ) {}
 }

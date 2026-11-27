@@ -60,6 +60,14 @@ final readonly class HostClaimSlots
         }
     }
 
+    /**
+     * Ends every claim the host holds open now: woken, such a claim passes the wake on and claims nothing.
+     */
+    public function endEarlierClaims(string $hostId): void
+    {
+        $this->connection()->del(self::key($hostId));
+    }
+
     private static function key(string $hostId): string
     {
         return "host:claim:{$hostId}";

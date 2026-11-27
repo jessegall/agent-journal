@@ -14,7 +14,7 @@ use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
 use App\Terminals\Data\LayoutShape;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Exceptions;
-use Tests\Commands\Layouts\SaveLayoutTest;
+use Tests\Commands\Terminals\SaveLayoutTest;
 use Tests\Fixtures\Mcp\FixtureReadTool;
 use Tests\Fixtures\Mcp\FixtureServer;
 use Tests\Support\CommitsHookRows;

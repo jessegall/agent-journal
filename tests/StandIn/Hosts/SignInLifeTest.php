@@ -65,7 +65,7 @@ final class SignInLifeTest extends TestCase
         $this->journal->waitForSignInsOnTestHost();
 
         $this->journal->assertResult(
-            ['claude.ai', SignInStatus::Complete, 1],
+            ['claude.com', SignInStatus::Complete, 1],
             [
                 parse_url($challenge->address, PHP_URL_HOST),
                 SignInAttempt::query()->whereKey($started->attemptId)->sole()->status,
@@ -81,14 +81,15 @@ final class SignInLifeTest extends TestCase
 
         $this->journal->runSignInsOnTestHost();
         $challenge = $this->journal->signInChallengeOf($started->attemptId);
-        $this->journal->waitForSignInsOnTestHost();
+        $this->journal->completeBrowserSignInOnTestHost()->waitForSignInsOnTestHost();
 
         $this->journal->assertResult(
-            ['auth.openai.com', 'STAND-IN', SignInStatus::Complete, 1],
+            ['auth.openai.com', 'STAND-IN', SignInStatus::Complete, null, 1],
             [
                 parse_url($challenge->address, PHP_URL_HOST),
                 $challenge->code,
                 SignInAttempt::query()->whereKey($started->attemptId)->sole()->status,
+                SignInAttempt::query()->whereKey($started->attemptId)->sole()->refusal,
                 Account::query()->where('account_protocol', 'codex')->count(),
             ],
         );
@@ -97,11 +98,17 @@ final class SignInLifeTest extends TestCase
     public function test_a_sign_in_again_of_an_account_whose_terminal_runs_stops_it_before_the_host_signs_in(): void
     {
         $this->arrangeTestHost();
-        $this->journal->chooseActiveAccountsOnTestHost()->idleAgent('Terminal');
+        // The account is signed in through the host first, so it knows who it belongs to.
+        $first = $this->journal->asOwner(new BeginSignInCommand('claude-code', SignInMethod::OAuth));
+        $this->journal->runSignInsOnTestHost();
+        $this->journal->signInChallengeOf($first->attemptId);
+        $this->journal->asOwner(new SubmitSignInCodeCommand($first->attemptId, 'stand-in-code', 'code-1'));
+        $this->journal->waitForSignInsOnTestHost();
+        $account = Account::query()->where('account_protocol', 'claude-code')->sole();
+        $this->journal->idleAgent('Terminal');
         $opened = $this->journal->openRuntimeOn('Terminal', 'Mac', base_path(), driverType: DriverType::Terminal);
         $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
             ->waitForHostProcess('terminal', HostProcessStatus::Running);
-        $account = $this->journal->chosenAccounts()['claude-code'];
 
         $again = $this->journal->asOwner(new BeginSignInAgainCommand($account->id));
         $this->artisan('accounts:reconcile')->assertSuccessful();
@@ -109,7 +116,7 @@ final class SignInLifeTest extends TestCase
         $this->artisan('accounts:reconcile')->assertSuccessful();
         $this->journal->runSignInsOnTestHost();
         $this->journal->signInChallengeOf($again->attemptId);
-        $this->journal->asOwner(new SubmitSignInCodeCommand($again->attemptId, 'stand-in-code', 'code-1'));
+        $this->journal->asOwner(new SubmitSignInCodeCommand($again->attemptId, 'stand-in-code', 'code-2'));
         $this->journal->waitForSignInsOnTestHost();
 
         $this->journal->assertResult(

@@ -1,14 +1,14 @@
 #!/bin/sh
-# Stands in for the installed Codex in a real-host test: the pinned build, a ChatGPT sign-in for CODEX_HOME and its
-# device-code login, a recorded exec turn, or a terminal recording played by what is typed.
+# Stands in for the installed Codex in a real-host test: each call plays what the real Codex recorded for it, its
+# exchanges on pipes or a terminal recording by what is typed.
 set -eu
 
 main() {
     local installation
     installation=$(find_installation)
     case "${1:-}" in
-        --version) print_build ;;
-        login) print_sign_in ;;
+        --version) play "$installation" version ;;
+        login) play "$installation" login-status ;;
         exec) print_turn "$installation" ;;
         app-server) serve_app_server "$installation" ;;
         *) play_terminal "$installation" "$@" ;;
@@ -27,80 +27,24 @@ find_installation() {
     cd "$(dirname "$0")/.." && pwd -P
 }
 
-print_build() {
-    echo "codex-cli 0.165.0"
+play() {
+    exec "$1/bin/journal-agent" standin exchange --recording "$1/exchanges/codex/$2"
 }
 
-print_sign_in() {
-    echo "Logged in using ChatGPT"
-}
-
-# The app-server answers a device-code login and announces it completed a moment later, reads the account, and runs
-# an owner's threads and turns; the login's sign-in is kept in CODEX_HOME as Codex keeps it.
+# The app-server answers its device login and its turns as recorded: a turn's end is held by the hold file, a login
+# completes once the user signed in in the browser; Codex keeps the sign-in in CODEX_HOME.
 serve_app_server() {
     local installation="$1"
-    local request id threads=0
     [ -e "$CODEX_HOME/auth.json" ] || : > "$CODEX_HOME/auth.json"
-    while IFS= read -r request; do
-        id=$(read_request_id "$request")
-        case "$request" in
-            *'"account/login/start"'*) answer_login "$installation" ;;
-            *'"account/read"'*) answer "$installation" account-read "$id" ;;
-            *'"initialize"'*) answer "$installation" initialized "$id" ;;
-            *'"thread/start"'*) threads=$((threads + 1)); answer "$installation" thread-started "$id" "thread=thread-$threads" ;;
-            *'"thread/resume"'*) answer "$installation" thread-started "$id" "thread=$(read_thread "$request")" ;;
-            *'"turn/start"'*) run_turn "$installation" "$id" "$(read_thread "$request")" & ;;
-        esac
-    done
-}
-
-# A turn is started at once and completes after its usage and limits, once the hold file is gone.
-run_turn() {
-    local installation="$1"
-    local id="$2"
-    local thread="$3"
-    answer "$installation" turn-started "$id" "turn=turn-of-$thread"
-    wait_while_held "$installation/hold"
-    answer "$installation" token-usage "" "thread=$thread"
-    answer "$installation" rate-limits ""
-    answer "$installation" turn-completed "" "thread=$thread" "turn=turn-of-$thread"
-}
-
-# An answer of the exchange folder with its request id and named values filled in.
-answer() {
-    local installation="$1"
-    local name="$2"
-    local id="$3"
-    shift 3
-    local line value
-    line=$(sed "s/{id}/$id/" "$installation/codex-app-server/$name.json")
-    for value in "$@"; do
-        line=$(printf '%s' "$line" | sed "s/{${value%%=*}}/${value#*=}/g")
-    done
-    printf '%s\n' "$line"
-}
-
-# The request's id as it was written, a number or a quoted string.
-read_request_id() {
-    printf '%s' "$1" | sed -n 's/^{"id":\("[^"]*"\|[0-9]*\),.*/\1/p'
-}
-
-read_thread() {
-    printf '%s' "$1" | sed -n 's/.*"threadId":"\([^"]*\)".*/\1/p'
-}
-
-answer_login() {
-    local installation="$1"
-    cat "$installation/codex-app-server/login-started.json"
-    sleep 1
-    cat "$installation/codex-app-server/login-completed.json"
+    exec "$installation/bin/journal-agent" standin exchange --recording "$installation/exchanges/codex/app-server" \
+        --recording "$installation/exchanges/codex/device-login" \
+        --recording "$installation/exchanges/codex/resume-and-interrupt" --hold "$installation/hold" --hold-before turn/completed \
+        --release-before "account/login/completed=$installation/browser-signed-in" --heard "$installation/codex-heard.jsonl"
 }
 
 print_turn() {
     local installation="$1"
     cat "$installation/codex-turn.jsonl"
 }
-
-. "$(dirname "$0")/../lib/hold.sh"
 
 main "$@"

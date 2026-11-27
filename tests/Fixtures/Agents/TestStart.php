@@ -70,12 +70,12 @@ final readonly class TestStart
     }
 
     /**
-     * Opens the session's runtime in the project folder, so a line Core admits has a runner to run in.
+     * Opens the session's runtime on the host in the project folder, so a line Core admits has a runner to run in.
      */
-    public function openRuntime(Application $app): void
+    public function openRuntime(Application $app, string $hostId): void
     {
         $intent = new RuntimeIntent(
-            'host-1',
+            $hostId,
             base_path(),
             'claude-code',
             '1.0.0',

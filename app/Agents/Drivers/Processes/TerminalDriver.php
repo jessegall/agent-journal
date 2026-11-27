@@ -177,6 +177,21 @@ final class TerminalDriver implements ProcessDriver
      */
     private array $interrupts = [];
 
+    /**
+     * The Escapes pressed for each interrupt, by request id; one the host refused, as the screen moved before it came,
+     * is pressed again on the next frame.
+     *
+     * @var array<string, int>
+     */
+    private array $escapesPressed = [];
+
+    /**
+     * The interrupts whose last Escape the host refused, by request id.
+     *
+     * @var array<string, true>
+     */
+    private array $escapesRefused = [];
+
     public function __construct(
         private readonly HostProcess $process,
         private readonly int $generation,
@@ -258,6 +273,10 @@ final class TerminalDriver implements ProcessDriver
             return DriverActions::none();
         }
 
+        if ($order->driver_request_id !== null && isset($this->interrupts[$order->driver_request_id])) {
+            $this->escapesRefused[$order->driver_request_id] = true;
+        }
+
         if ($this->delivery !== null && $order->driver_request_id === $this->delivery->requestId) {
             $this->waiting = [
                 $this->delivery,
@@ -334,12 +353,43 @@ final class TerminalDriver implements ProcessDriver
 
         $reading = $this->classifier->readingOf($this->layout, $frame);
 
-        return match (true) {
+        return $this->escapesAgain($frame)->then(match (true) {
             $this->delivery !== null => $this->delivered($this->delivery, $frame),
             $this->script !== null => $this->scripted($this->script, $frame),
             $this->turn !== null => $this->turnEnded($this->turn, $reading, $frame),
             default => $this->idle($reading, $frame),
-        };
+        });
+    }
+
+    /**
+     * Presses Escape again for each interrupt whose last one the host refused, while its turn still runs.
+     */
+    private function escapesAgain(HostFrameData $frame): DriverActions
+    {
+        $refused = $this->turn === null ? [] : array_keys($this->escapesRefused);
+        $this->escapesRefused = [];
+
+        $presses = array_map(
+            fn (string $requestId) => $this->escape($requestId, $this->interrupts[$requestId], $frame),
+            $refused,
+        );
+
+        return DriverActions::of(...$presses);
+    }
+
+    /**
+     * Escape for the interrupt, guarded on the composer, which holds still while the turn above it moves, or on the
+     * whole screen; each press is its own step, so one the host refused is not answered again in its place.
+     */
+    private function escape(string $requestId, int $attempt, HostFrameData $frame): SendHostKeysCommand
+    {
+        $pressed = ($this->escapesPressed[$requestId] ?? 0) + 1;
+        $this->escapesPressed[$requestId] = $pressed;
+        $guarded = $this->layout->composer->rowsOf($frame) ?? new RowRange(0, count($frame->rows));
+        $step = $pressed === 1 ? 'interrupt' : "interrupt-{$pressed}";
+        $source = HostOrderSource::forStep($requestId, $step, $attempt, $this->generation);
+
+        return $this->keys(NavigationKey::Esc->bytes(), $guarded, $frame, $source);
     }
 
     private function stage(ClaimedRequest $request): DriverActions
@@ -364,11 +414,9 @@ final class TerminalDriver implements ProcessDriver
         }
 
         $this->interrupts[$request->requestId] = $request->attempt;
-        $frame = $this->frame;
-        $whole = new RowRange(0, count($frame->rows));
 
         return DriverActions::of(
-            $this->keys(NavigationKey::Esc->bytes(), $whole, $frame, $this->sourceOf($request, 'interrupt')),
+            $this->escape($request->requestId, $request->attempt, $this->frame),
             $this->activity(RuntimeActivity::Interrupting, HoldReason::Interrupted),
         );
     }
@@ -664,6 +712,7 @@ final class TerminalDriver implements ProcessDriver
 
         $this->turn = null;
         $this->interrupts = [];
+        $this->escapesPressed = [];
 
         return DriverActions::of(...$reports)->then($this->ready($frame));
     }

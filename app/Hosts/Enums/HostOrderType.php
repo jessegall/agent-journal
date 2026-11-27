@@ -34,16 +34,6 @@ enum HostOrderType: string
     case Upgrade = 'upgrade';
 
     /**
-     * The orders that write into a process, so a host restart while one was claimed may have half carried it out.
-     *
-     * @return list<self>
-     */
-    public static function inputs(): array
-    {
-        return array_values(array_filter(self::cases(), fn (self $type) => $type->isInput()));
-    }
-
-    /**
      * Whether the order ends its process, so a process that ended still lets its host answer it.
      */
     public function endsProcess(): bool

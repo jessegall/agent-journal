@@ -4,6 +4,10 @@ ${hit.title}, ${hit.locationLabel}
 ${node.line}: ${node.label}
 ${option.description} ${option.billingNote}
 01JPAGEREQUESTMESSAGE00000
+1 day
+1 hour
+30 days
+7 days
 : {{ step.action }} by {{ step.actor }}, project {{ step.projectId ?? 'not recorded' }}
 = range.from && line
 A sample run: it shows what the command does and gives no result.
@@ -15,6 +19,7 @@ Activate this bundle
 Activity
 Activity levels
 Add
+Add a secret
 Add a window
 Add a window…
 Add account
@@ -37,13 +42,16 @@ Anywhere
 Approve
 Approve a terminal
 Approve only when the terminal shows this same code.
+Approve proposal {{ proposal.number }}
 Approve revision {{ proposal.currentRevision }}
 Ask
 Asks
 Attempt
+Audit
 Back
 Back to Accounts
 Back to agent chat
+Before you share
 Breadcrumb
 Build
 Cancel
@@ -73,6 +81,7 @@ Choose another way
 Choose one
 Chosen: {{ describeRange(chosen) }}.
 Claude Code
+Cleared old entries on {{ audit.lastPrunedAt }}: {{ audit.prunedAllowedReads }} allowed and {{ audit.prunedDeniedReads }} refused reads, and {{ audit.prunedLifecycleRows }} others.
 Close
 Close all
 Close others
@@ -81,7 +90,7 @@ Close to the right
 Code from the sign-in page
 Code theme
 Codex
-Codex cannot run in a container yet: its sandbox does not keep its tools
+Codex cannot run in a container yet: its tools would run as its own user
 Coding where the way is clear.
 Color scheme
 Command output
@@ -95,6 +104,8 @@ Comment on {{ range }} · “{{ quote }}”
 Compare code
 Complex coding that needs invention.
 Complex work
+Configure a gateway
+Confirm
 Confirm {{ mayConfirm ? highlightedLabel : '' }}
 Connect a project
 Connected projects
@@ -135,6 +146,7 @@ Drafted by {{ agent }}. Nothing is saved until you submit.
 Drafting
 Driver
 Driver menu
+Driver version
 Dropped compared with the rule in use: {{ revision.removedClasses.join(", ") || "none" }}
 Edit
 Email
@@ -152,6 +164,7 @@ Expires
 Expires {{ dateOnly(account.expiresAt) }}
 Failed
 Finish signing in
+Fixed public address
 Float this window
 Floating
 Floating windows
@@ -160,6 +173,8 @@ Follow the system color scheme
 From line
 Full
 Full screen
+Gateway
+Gateway runtime
 General work
 Generate install line
 Give back
@@ -201,13 +216,18 @@ Last contact
 Layout file to import
 Layout name
 Layouts
+Leave blank to keep the stored one
 Leave terminal
 Left to spend
 Light
 Link copied.
+Linked
+Linked records
+Listener port
 Load older
 Loading notifications…
 Make default
+Make it the default once it is ready
 Mark all read
 Mark read
 Menus and lists
@@ -228,8 +248,10 @@ Next option
 No
 No capacity
 No connected host runs agents in this place.
+No endpoint is serving this share.
 No file is open
 No install line was issued in the last 30 days.
+No linked record can be shared with it.
 No matches
 No matches in {{ search.within.value.label }}
 No memories yet
@@ -249,6 +271,7 @@ Normal and up
 Not filled in yet: {{ revision.missingFields.join(", ") }}
 Not in contact yet
 Not run yet.
+Not shared yet
 Notable
 Nothing at this level
 Nothing is open in this pane.
@@ -258,6 +281,8 @@ Nothing needs you
 Notifications
 Off
 Offline
+Offline: start the sharing service.
+Older entries
 One piece of text, without spaces.
 Only one new {{ driverLabel(shownDriver) }} account signs in at a time. Resume this one, or cancel it and choose again.
 Only when you ask for it.
@@ -293,6 +318,7 @@ Period
 Pool empty
 Pool too large
 Presets
+Preview saved; it can be confirmed until {{ data.savedPreview.expiresAt }}.
 Previous option
 Private input
 Private input is unavailable: this driver and host have not proved they can keep a secret off every screen and recording.
@@ -303,6 +329,8 @@ Process control
 Project
 Project files
 Proposal by {{ proposal.author }}: {{ proposal.state }}, revision {{ proposal.currentRevision }}
+Provider host
+Public address
 Question {{ step + 1 }} of {{ questions.length }}
 Read
 Read before acting on who may use the journal.
@@ -354,6 +382,7 @@ Retry cleanup
 Retry revoke
 Retry stop
 Return to Settings
+Reveal address
 Review this proposal
 Revision {{ revision.revision }}: {{ revision.operation }} ({{ revision.owner }})
 Revoke
@@ -371,7 +400,9 @@ Run {{ sample.runId }}: {{ sample.parts.join("; ") }}
 Samples
 Save
 Save and clear
+Save gateway
 Save layout
+Save preview
 Save revision {{ revision + 1 }}
 Save the current layout to it
 Saved
@@ -385,6 +416,7 @@ Search results
 Search windows
 Search {{ key }}
 Searching
+Secrets
 Send
 Send Shift+Tab to the agent
 Send again
@@ -398,6 +430,7 @@ Set it up with an agent
 Setting up
 Settled
 Share
+Share for
 Shell actions
 Shielding the screen before private input…
 Show everything
@@ -467,10 +500,12 @@ That conversation is not one this agent can continue.
 That conversation ran on another driver; start a new conversation instead.
 That conversation was for other work; start a new conversation instead.
 That item is no longer available.
+The address is not available.
 The chosen option cannot be read from the screen; refresh or go back.
 The comment was not sent. Your text is kept.
 The desk
 The draft is ready. Drafted by {{ draft.agent }}.
+The gateway provider can see the public address and everything this share shows.
 The journal cannot be reached to check this line is still valid, so it cannot be copied now.
 The new session failed to start
 The project's files could not be read.
@@ -483,6 +518,7 @@ The unfinished line
 This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
 This item is unavailable
+This machine and the share service must keep running for the link to work.
 This paste has {{ preview.lines }} lines; each line break may run a command in the terminal.
 This project is empty
 This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
@@ -492,6 +528,7 @@ This usually takes a few seconds. You can close this window: the account appears
 To
 To renew it, choose Sign in again on the account.
 Try again
+Turning off traffic inspection does not hide the content from the provider.
 Type a command, a page, a task, a document or a file
 Type a source's name
 Type at least two characters
@@ -502,6 +539,7 @@ Undo
 Unfinished input
 Unfinished sign-ins
 Unknown
+Update share {{ liveShare.number }}
 Usage
 Usage unavailable
 Use
@@ -521,10 +559,14 @@ Waiting for sign-in
 Waiting for the host to confirm the start
 Waiting for the host to confirm the stop
 Waiting for you to finish on the {{ label }} sign-in page…
+What
 What the journal is and how to read and write its records.
 What the line connects
+When
 Where the request stands
 Where to get it.
+Who
+Why
 Window menu
 Windows to add
 Working
@@ -538,6 +580,7 @@ Your last answer did not arrive. Paste it again.
 Your last code did not arrive. Paste it again.
 a file the user names on the command line, wherever it lies
 a sharing gateway's program in the host's tool folders
+and read its sign-in.
 approved by {{ signIn.approvedBy }}
 as {{ sample.approvedClasses.join(", ") }}
 characters
@@ -547,7 +590,6 @@ effort
 executable parts
 exit %s: %s when %s
 expected
-from its sign-in.
 in the folder
 in the list.
 in {{ problem.stream }} bytes {{ problem.start }} to {{ problem.end }}:
@@ -592,6 +634,7 @@ until {{ dateTime(signIn.expiresAt) }}
 {{ provider.label }}: start it with
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
 {{ row.entry.name }} could not be read
+{{ runtime.isHealthy ? 'Running' : 'Not answering: no sign of life in the last 45 seconds' }}. Version {{ runtime.endpointVersion }}, last seen {{ runtime.lastHealthAt ?? 'never' }}.
 {{ summary.length }} more outcomes
 {{ target.name }} is not offered yet: its size was not measured.
 {{ target.name }} is not offered yet: the release does not say what it needs installed first.

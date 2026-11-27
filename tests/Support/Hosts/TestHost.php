@@ -41,6 +41,10 @@ final class TestHost
      */
     private const string CODEX_TERMINAL_TURN = 'resources/recordings/codex/0.165.0/turns/terminal-turn/fixture.json';
 
+    private const string CLAUDE_BUILD = '2.1.323';
+
+    private const string CODEX_BUILD = '0.165.0';
+
     private const string CODEX_EXEC_TURN = 'resources/recordings/codex/0.165.0/turns/process-turn/fixture.json';
 
     /**
@@ -165,6 +169,12 @@ final class TestHost
             $printed .= "--- {$name}\n".implode("\n", $kept);
         }
 
+        $containers = array_map(
+            fn (array $container) => implode(' ', [...$container['entrypoint'] ?? [], ...$container['cmd'] ?? []]),
+            $this->startedContainers(),
+        );
+        $printed .= "\n--- containers\n".implode("\n", $containers);
+
         return $printed;
     }
 
@@ -274,8 +284,9 @@ final class TestHost
     {
         $server = ['php', '-S', "127.0.0.1:{$this->port}", '-t', base_path('public'), __DIR__.'/scripts/served-journal.php'];
         $command = [__DIR__.'/scripts/serve-until-input-ends.sh', ...$server];
-        // The host holds one claim open as a long poll, so the server answers its reports beside it on other workers.
-        $environment = [...$this->sharedEnvironment(), 'PHP_CLI_SERVER_WORKERS' => '8'];
+        // A claim's long poll and a request waiting for a host's answer each hold a worker, so the server keeps enough
+        // that the answer they wait for always finds one.
+        $environment = [...$this->sharedEnvironment(), 'PHP_CLI_SERVER_WORKERS' => '32'];
         $this->journal = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
     }
@@ -365,6 +376,23 @@ final class TestHost
         unlink("{$this->installation()}/hold");
     }
 
+    /**
+     * The Claude Code stand-in plays the named recorded terminal turn of its build in place of the one it played.
+     */
+    public function playClaudeTerminal(string $recording): void
+    {
+        $turns = dirname(base_path(self::TERMINAL_TURN), 2);
+        copy("{$turns}/{$recording}/fixture.json", "{$this->installation()}/terminal-turn/fixture.json");
+    }
+
+    /**
+     * The user completes the device sign-in in the browser, so the stand-in's login completes.
+     */
+    public function completeBrowserSignIn(): void
+    {
+        touch("{$this->installation()}/browser-signed-in");
+    }
+
     public function installation(): string
     {
         return "{$this->folder}/installation";
@@ -389,13 +417,22 @@ final class TestHost
         chmod("{$this->installation()}/bin/codex", 0o700);
         mkdir("{$this->installation()}/codex-terminal-turn", 0o700);
         copy(base_path(self::CODEX_TERMINAL_TURN), "{$this->installation()}/codex-terminal-turn/fixture.json");
-        mkdir("{$this->installation()}/codex-app-server", 0o700);
-
-        foreach (glob(__DIR__.'/scripts/codex-app-server/*.json') ?: [] as $answer) {
-            copy($answer, "{$this->installation()}/codex-app-server/".basename($answer));
-        }
+        $this->installExchanges('claude-code', self::CLAUDE_BUILD);
+        $this->installExchanges('codex', self::CODEX_BUILD);
 
         file_put_contents("{$this->installation()}/codex-turn.jsonl", $this->standardOutputOf(self::CODEX_EXEC_TURN));
+    }
+
+    /**
+     * The exchanges the real driver of the build recorded, which its stand-in plays, under exchanges/<driver>.
+     */
+    private function installExchanges(string $driver, string $build): void
+    {
+        foreach (glob(base_path("resources/recordings/{$driver}/{$build}/exchanges/*/fixture.json")) ?: [] as $fixture) {
+            $folder = "{$this->installation()}/exchanges/{$driver}/".basename(dirname($fixture));
+            mkdir($folder, 0o700, true);
+            copy($fixture, "{$folder}/fixture.json");
+        }
     }
 
     /**
@@ -444,6 +481,16 @@ final class TestHost
             fn (string $line) => json_decode($line, true, flags: JSON_THROW_ON_ERROR),
             file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [],
         );
+    }
+
+    /**
+     * Each line the journal wrote to Codex's app-server, oldest first, as the stand-in heard it.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function heardByCodex(): array
+    {
+        return $this->startsIn("{$this->installation()}/codex-heard.jsonl");
     }
 
     /**

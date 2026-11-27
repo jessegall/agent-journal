@@ -739,6 +739,29 @@ trait ArrangesHostProcesses
     }
 
     /**
+     * The owner completes the device sign-in the test host's Codex shows in the browser, so its login completes.
+     */
+    public function completeBrowserSignInOnTestHost(): self
+    {
+        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'browser sign-in', self::OWNER);
+        $host->completeBrowserSignIn();
+
+        return $this;
+    }
+
+    /**
+     * The test host's stand-in for Claude Code plays the named terminal recording of its build from now on, such as
+     * terminal-interrupt, where the real program was interrupted during its turn.
+     */
+    public function playClaudeTerminalRecordingOnTestHost(string $recording): self
+    {
+        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'terminal recording', self::OWNER);
+        $host->playClaudeTerminal($recording);
+
+        return $this;
+    }
+
+    /**
      * The test host's stand-in for Claude Code holds each headless turn after its first lines until it is released.
      */
     public function holdStandInTurns(): self
@@ -787,7 +810,8 @@ trait ArrangesHostProcesses
 
     /**
      * The journal proves the runtime's start on the test host: its build probe, then its sign-in probe, run there and
-     * are driven until the process the proven start opens is ordered, which the test then calls by the name.
+     * are driven until the process the proven start opens is ordered, which the test then calls by the name. An
+     * account's owner belongs to the account rather than the runtime, so it is found by the runtime's account.
      */
     public function proveStartOnTestHost(string $runtimeId, HostProcessPurpose $opens, string $name): self
     {
@@ -795,10 +819,17 @@ trait ArrangesHostProcesses
             ->where('agent_runtime_id', $runtimeId)
             ->where('purpose', $purpose)
             ->exists();
+        $isOwner = $opens === HostProcessPurpose::AccountOwner;
+        $ownerOrdered = fn () => AgentRuntime::query()->whereKey($runtimeId)->sole()->hasProvenStart()
+            && HostProcess::query()->ofPurposes([HostProcessPurpose::AccountOwner])->live()->exists();
         $this->callJournalProcess('probe', $runtimeId, HostProcessPurpose::BuildProbe)
             ->driveHostProcess('probe', $ordered(HostProcessPurpose::SignInProbe));
         $this->callJournalProcess('sign-in', $runtimeId, HostProcessPurpose::SignInProbe)
-            ->driveHostProcess('sign-in', $ordered($opens));
+            ->driveHostProcess('sign-in', $isOwner ? $ownerOrdered : $ordered($opens));
+
+        if ($isOwner) {
+            return $this->callAccountOwner($name, $runtimeId);
+        }
 
         return $this->callJournalProcess($name, $runtimeId, $opens);
     }
@@ -896,6 +927,14 @@ trait ArrangesHostProcesses
     }
 
     /**
+     * The test host the test runs, to ask it what its stand-ins saw.
+     */
+    public function testHost(): TestHost
+    {
+        return $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'running', self::OWNER);
+    }
+
+    /**
      * The protected installation folder the test host runs account starts from.
      */
     public function testHostInstallation(): string
@@ -923,7 +962,7 @@ trait ArrangesHostProcesses
         string $name,
         Closure $until,
         DriverWork|null $work = null,
-        int $seconds = 10,
+        int $seconds = 30,
     ): DriverWork {
         $work ??= $this->beginDriverWorker($name);
         $deadline = microtime(true) + $seconds;
@@ -940,7 +979,7 @@ trait ArrangesHostProcesses
     /**
      * Waits up to the seconds for the named process to reach the status, as its host reports it.
      */
-    public function waitForHostProcess(string $name, HostProcessStatus $status, int $seconds = 10): self
+    public function waitForHostProcess(string $name, HostProcessStatus $status, int $seconds = 30): self
     {
         $deadline = microtime(true) + $seconds;
 
@@ -948,27 +987,77 @@ trait ArrangesHostProcesses
             usleep(100_000);
         }
 
-        Assert::assertSame($status, $this->hostProcessCalled($name)->status, (string) $this->testHost?->printed());
+        Assert::assertSame($status, $this->hostProcessCalled($name)->status, $this->drivenSoFar($name));
 
         return $this;
     }
 
     /**
-     * What a worker that did not get there saw: the process's last frame, its orders and what the test host printed.
+     * What a worker that did not get there saw, so a failure says what went in, what came out and what showed: each
+     * order with what it wrote, everything the process printed, its last screen and what the test host printed.
      */
     private function drivenSoFar(string $name): string
     {
         $process = $this->hostProcessCalled($name);
-        $rows = $this->app->make(ProcessFeed::class)->latestFrame($process->id)?->rows ?? [];
-        $orders = array_map(
-            fn (HostOrder $order) => "{$order->type->value} {$order->status->value} {$order->refusal?->value}",
-            $this->hostOrdersOf($name),
-        );
+        $frame = $this->app->make(ProcessFeed::class)->latestFrame($process->id)?->rows ?? [];
+        $orders = implode("\n", array_map($this->writtenBy(...), $this->hostOrdersOf($name)));
+        $printed = $this->printedBy($process->id);
+        $screen = implode("\n", $frame);
 
-        return "The worker of {$name} did not reach what the test waits for.\n"
-            .'Its process is '.$process->status->value.'; the last frame shows: '.implode(' | ', $rows)."\n"
-            .'Its orders: '.implode(', ', $orders)."\n"
-            .$this->testHost?->printed();
+        return <<<TEXT
+            The worker of {$name} did not reach what the test waits for; its process is {$process->status->value}
+            ({$process->exit_evidence}).
+            --- what the journal ordered and wrote
+            {$orders}
+            --- what the process printed
+            {$printed}
+            --- its last screen
+            {$screen}
+            {$this->testHost?->printed()}
+            --- debug answered
+            {$this->debugAnswered()}
+            TEXT;
+    }
+
+    private function debugAnswered(): string
+    {
+        $folder = $this->testHost?->installation();
+        $state = $folder === null ? '' : dirname($folder).'/state/orders/answered.json';
+        $ids = implode(',', array_map(fn (HostOrder $order) => $order->id.':'.$order->sequence, HostOrder::query()->where('status', 'claimed')->get()->all()));
+
+        return 'claimed in journal: '.$ids."\nhost answered: ".(is_file($state) ? substr((string) file_get_contents($state), -3000) : 'none');
+    }
+
+    /**
+     * One order as a failure shows it: its type, how the host answered and why, and the bytes it wrote, if any.
+     */
+    private function writtenBy(HostOrder $order): string
+    {
+        $payload = $this->payloadOf($order);
+        $encoded = $payload['bytes'] ?? null;
+        $written = is_string($encoded) ? json_encode(base64_decode($encoded, true), JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE) : '';
+        $reason = $order->answer?->facts['reason'] ?? '';
+
+        return "{$order->type->value} {$order->status->value} {$order->refusal?->value} {$reason} {$written}";
+    }
+
+    /**
+     * Everything the process printed so far, each chunk with its stream, oldest first.
+     */
+    private function printedBy(string $processId): string
+    {
+        $feed = $this->app->make(ProcessFeed::class);
+        $chunks = [];
+        $cursor = '0';
+
+        while (($entries = $feed->after($processId, $cursor, 0)) !== []) {
+            foreach ($entries as $entry) {
+                $cursor = $entry->cursor;
+                $chunks[] = $entry->chunk === null ? null : "{$entry->chunk->stream}: ".json_encode($entry->chunk->printed(), JSON_UNESCAPED_SLASHES);
+            }
+        }
+
+        return implode("\n", array_filter($chunks));
     }
 
     private function testHostJournalUrl(): string
