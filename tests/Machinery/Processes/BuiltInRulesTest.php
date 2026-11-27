@@ -190,7 +190,7 @@ final class BuiltInRulesTest extends TestCase
             ShellDialect::Bash,
         );
         $part = array_values(
-            array_filter($explanation->nodes, fn (ExplainedNodeData $node): bool => $node->purpose !== ''),
+            array_filter($explanation->nodes, fn (ExplainedNodeData $node): bool => $node->purpose !== null),
         )[0];
 
         $this->assertSame(CommandClass::Verification->label(), $part->purpose);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Octane;
 
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Container\Attributes\Config;
 
 /**
  * Gives each request the whole time limit from its own start: a FrankenPHP worker sets the limit once when it starts,
@@ -12,11 +12,11 @@ use Illuminate\Contracts\Foundation\Application;
  */
 final readonly class GiveRequestItsTimeLimit
 {
-    /**
-     * @param  object{sandbox: Application}  $event
-     */
-    public function handle(object $event): void
+    public function __construct(#[Config('octane.max_execution_time')]
+private int $seconds) {}
+
+    public function handle(): void
     {
-        set_time_limit($event->sandbox->make('config')->integer('octane.max_execution_time'));
+        set_time_limit($this->seconds);
     }
 }

@@ -50,10 +50,18 @@ final readonly class DocumentsIndex extends DocumentsPage
         PublicationList|null $reports,
         LayoutPartData ...$reader,
     ): DeclaredLayoutData {
-        $rows = [
-            ...($documents === null ? [] : $this->rowsOf($documents, 'doc', 'docs', true)),
-            ...($reports === null ? [] : $this->rowsOf($reports, 'report', 'reports', false)),
-        ];
+        $rows = [];
+
+        if ($documents !== null) {
+            $rows = $this->rowsOf($documents, 'doc', 'docs', true);
+        }
+
+        if ($reports !== null) {
+            $rows = [
+                ...$rows,
+                ...$this->rowsOf($reports, 'report', 'reports', false),
+            ];
+        }
 
         return ListPage::make('Documents', $rows, $this->emptyFor($filters))
             ->searching(

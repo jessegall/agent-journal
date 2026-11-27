@@ -19,16 +19,48 @@ final class DraftRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'number' => ['required', 'string'],
-            'token' => ['nullable', 'string'],
-            'version' => ['nullable', 'integer', 'min:1'],
-            'mode' => ['nullable', 'string', 'in:body,section,text,details'],
-            'section' => ['nullable', 'string'],
-            'body' => ['nullable', 'string'],
-            'old' => ['nullable', 'string'],
-            'new' => ['nullable', 'string'],
-            'title' => ['nullable', 'string'],
-            'abstract' => ['nullable', 'string'],
+            'number' => [
+                'required',
+                'string',
+            ],
+            'token' => [
+                'nullable',
+                'string',
+            ],
+            'version' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'mode' => [
+                'nullable',
+                'string',
+                'in:body,section,text,details',
+            ],
+            'section' => [
+                'nullable',
+                'string',
+            ],
+            'body' => [
+                'nullable',
+                'string',
+            ],
+            'old' => [
+                'nullable',
+                'string',
+            ],
+            'new' => [
+                'nullable',
+                'string',
+            ],
+            'title' => [
+                'nullable',
+                'string',
+            ],
+            'abstract' => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 
@@ -61,6 +93,6 @@ final class DraftRequest extends FormRequest
 
     public function text(string $field): string
     {
-        return (string) $this->input($field, '');
+        return $this->string($field)->toString();
     }
 }

@@ -12,14 +12,15 @@ use App\Bus\Contracts\CommandHandler;
 use App\Models\Accounts\SignInAttempt;
 use App\Values\SignInCode;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Config\Repository;
+use Illuminate\Container\Attributes\Config;
 
 final readonly class SubmitSignInCodeHandler implements CommandHandler
 {
     public function __construct(
         private SignInChallenges $challenges,
         private SignInProtocols $protocols,
-        private Repository $config,
+        #[Config('app.key')]
+        private string $appKey,
     ) {}
 
     public function handle(SubmitSignInCodeCommand $command): void
@@ -50,8 +51,7 @@ final readonly class SubmitSignInCodeHandler implements CommandHandler
     private function secretOf(SignInAttempt $attempt, string $text): string
     {
         $secret = SignInSecret::from($text);
-        $key = $this->config->string('app.key');
-        $attempt->keepFingerprint($secret->fingerprintFor($attempt->account_protocol, $attempt->method, $key));
+        $attempt->keepFingerprint($secret->fingerprintFor($attempt->account_protocol, $attempt->method, $this->appKey));
 
         return $secret->secret;
     }

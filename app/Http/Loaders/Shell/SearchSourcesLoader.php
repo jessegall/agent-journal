@@ -21,7 +21,7 @@ final readonly class SearchSourcesLoader
     public function __invoke(SearchSourcesInput $input): PaletteSourcesData
     {
         $reader = new SearchReader($this->actors->actor(), SearchSurface::Palette);
-        $page = $this->eligibility->discover($reader, trim((string) $input->prefix), after: $input->after);
+        $page = $this->eligibility->discover($reader, trim($input->prefix), after: $input->after);
 
         return PaletteSourcesData::from([
             'prefix' => $page->prefix,

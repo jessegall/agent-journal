@@ -39,7 +39,7 @@ type ProjectCommand struct {
 	Stdin      string   `json:"stdin"`
 }
 
-// CommandFrame mirrors App\Connections\Values\CommandFrame: output in sequence, or the exit frame with its code.
+// CommandFrame mirrors App\Api\Connections\ProjectCommandFrame: output in sequence, or the exit frame with its code.
 type CommandFrame struct {
 	Sequence int    `json:"sequence"`
 	Stream   string `json:"stream"`

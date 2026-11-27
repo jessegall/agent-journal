@@ -12,7 +12,7 @@ use App\Profiles\ProfileProposal;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\DraftExpectations;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Config\Repository;
+use Illuminate\Container\Attributes\Config;
 
 /**
  * The local owner activates the proposal in config/profiles.php: it is checked whole, and each profile gets its next
@@ -31,8 +31,15 @@ final class ProfileActivateCommand extends Command
 
     protected $description = 'Activate the built-in profiles and the profile proposal in config/profiles.php';
 
-    public function handle(ConsoleOwner $owner, CommandBus $commands, Repository $config): int
-    {
+    /**
+     * @param  array<string, mixed>  $profiles
+     */
+    public function handle(
+        ConsoleOwner $owner,
+        CommandBus $commands,
+        #[Config('profiles')]
+        array $profiles,
+    ): int {
         try {
             $owner->actAsOwner();
         } catch (ConsoleOwnerMissing) {
@@ -41,7 +48,7 @@ final class ProfileActivateCommand extends Command
             return self::SUCCESS;
         }
 
-        $proposal = ProfileProposal::fromConfiguration((array) $config->get('profiles', []))->withBuiltIns();
+        $proposal = ProfileProposal::fromConfiguration($profiles)->withBuiltIns();
         $drafts = DraftExpectations::fromOptions(array_values(array_filter($this->option('draft'), is_string(...))));
         $activation = $commands->run(new ActivateProfilesCommand($proposal, $drafts));
 

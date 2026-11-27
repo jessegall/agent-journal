@@ -27,8 +27,16 @@ final class StartSignInRequest extends FormRequest
     public function rules(DriverCatalogue $drivers): array
     {
         return [
-            'driver' => ['required', 'string', Rule::in($drivers->familyKeys())],
-            'method' => ['required', 'string', Rule::enum(SignInMethod::class)],
+            'driver' => [
+                'required',
+                'string',
+                Rule::in($drivers->familyKeys()),
+            ],
+            'method' => [
+                'required',
+                'string',
+                Rule::enum(SignInMethod::class),
+            ],
         ];
     }
 
@@ -41,7 +49,7 @@ final class StartSignInRequest extends FormRequest
     public function after(SignInProtocols $protocols): array
     {
         return [function (Validator $validator) use ($protocols): void {
-            $method = SignInMethod::tryFrom((string) $this->input('method'));
+            $method = $this->enum('method', SignInMethod::class);
 
             if ($validator->errors()->hasAny(['driver', 'method']) || $method === null) {
                 return;

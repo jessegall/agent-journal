@@ -134,7 +134,10 @@ final readonly class ListPage
             return DeclaredLayoutData::of(LayoutPartData::box('index', 'page', $this->header(), $this->empty->page()));
         }
 
-        $parts = [...$this->filters, $this->content()];
+        $parts = [
+            ...$this->filters,
+            $this->content(),
+        ];
 
         if (! $this->back instanceof LayoutBackData) {
             return DeclaredLayoutData::of(LayoutPartData::box('list', 'page', $this->header(), ...$parts));
@@ -201,10 +204,16 @@ final readonly class ListPage
             return $this->empty->parts();
         }
 
-        return [
-            LayoutPartData::collection('rows', 'list', $this->rows),
-            ...($this->paging instanceof ListPaging ? $this->paging->parts() : []),
-        ];
+        $parts = [LayoutPartData::collection('rows', 'list', $this->rows)];
+
+        if ($this->paging instanceof ListPaging) {
+            $parts = [
+                ...$parts,
+                ...$this->paging->parts(),
+            ];
+        }
+
+        return $parts;
     }
 
     /**

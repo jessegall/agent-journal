@@ -18,11 +18,33 @@ final class ProjectCommandRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'request_key' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
-            'binding' => ['required', 'string', 'ulid'],
-            'argv' => ['required', 'array', 'min:1', 'max:200'],
-            'argv.*' => ['string', 'max:8192'],
-            'stdin' => ['present', 'nullable', 'string', 'max:1048576'],
+            'request_key' => [
+                'required',
+                'string',
+                'max:64',
+                'regex:/^[A-Za-z0-9_-]+$/',
+            ],
+            'binding' => [
+                'required',
+                'string',
+                'ulid',
+            ],
+            'argv' => [
+                'required',
+                'array',
+                'min:1',
+                'max:200',
+            ],
+            'argv.*' => [
+                'string',
+                'max:8192',
+            ],
+            'stdin' => [
+                'present',
+                'nullable',
+                'string',
+                'max:1048576',
+            ],
         ];
     }
 
@@ -41,7 +63,7 @@ final class ProjectCommandRequest extends FormRequest
      */
     public function argv(): array
     {
-        return array_values(array_map(strval(...), (array) $this->input('argv')));
+        return array_values(array_map(strval(...), $this->array('argv')));
     }
 
     public function stdin(): string

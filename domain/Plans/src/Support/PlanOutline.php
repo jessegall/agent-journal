@@ -36,18 +36,23 @@ final readonly class PlanOutline
         $headings = Phase::findHeadingsIn($planId, $ask->phasesAfter, self::PHASES_PER_PAGE + 1);
         $shown = $headings->take(self::PHASES_PER_PAGE);
 
-        return PlanOutlineData::from([
+        $fields = [
             'phases' => array_values($shown->map(
                 fn (Phase $phase) => PhaseHeadingData::ofPhase($phase, $currentPhase),
             )->all()),
             'phasesAfter' => (string) $ask->phasesAfter,
-            'nextPhasesAfter' => $headings->count() > self::PHASES_PER_PAGE
-                ? (string) $headings[self::PHASES_PER_PAGE - 1]->number
-                : Optional::create(),
-            'phaseTasks' => $ask->phase === null
-                ? Optional::create()
-                : $this->tasksOf(Phase::findNumberedInPlanId($planId, $ask->phase), $ask->tasksAfter, $ask->revision),
-        ]);
+        ];
+
+        if ($headings->count() > self::PHASES_PER_PAGE) {
+            $fields['nextPhasesAfter'] = (string) $headings[self::PHASES_PER_PAGE - 1]->number;
+        }
+
+        if ($ask->phase !== null) {
+            $phase = Phase::findNumberedInPlanId($planId, $ask->phase);
+            $fields['phaseTasks'] = $this->tasksOf($phase, $ask->tasksAfter, $ask->revision);
+        }
+
+        return PlanOutlineData::from($fields);
     }
 
     /**

@@ -10,7 +10,6 @@ use App\Hosts\CapacityCheck;
 use App\Models\Agents\Agent;
 use App\Sessions\Enums\StartRefusalType;
 use App\Sessions\StartRemedyWords;
-use Spatie\LaravelData\Optional;
 
 /**
  * Whether a start of the agent with these choices would fit the host now, or which resource it lacks, in the words of
@@ -26,12 +25,7 @@ final readonly class CapacityLoader
         $shortage = $this->check->shortageFor($agent, $input->mode, $input->budgets());
 
         if ($shortage === null) {
-            return CapacityData::from([
-                'fits' => true,
-                'resource' => new Optional(),
-                'explanation' => new Optional(),
-                'remedy' => new Optional(),
-            ]);
+            return CapacityData::from(['fits' => true]);
         }
 
         return CapacityData::from([

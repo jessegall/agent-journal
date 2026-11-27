@@ -80,7 +80,7 @@ export function useSearchPalette() {
     }
 
     function nextPage(continuation: string): SearchInput {
-        return { query: null, within: null, limit: null, continuation };
+        return { query: '', within: null, limit: null, continuation };
     }
 
     /**

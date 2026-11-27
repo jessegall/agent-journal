@@ -8,12 +8,10 @@ use App\Access\Contracts\CurrentAuthorizer;
 use App\Agents\Enums\AccessType;
 use App\Assignments\AssignmentGroup;
 use App\Assignments\Contracts\AssigneeResolver;
-use App\Support\AssigneeName;
 use App\Support\IdListPage;
 use Domain\Plans\Data\PlanReviewData;
 use Domain\Plans\Data\PlanReviewReceiptData;
 use Domain\Plans\Data\PlanWorkPreviewData;
-use Domain\Plans\Data\PlanWorkRecipientData;
 use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
@@ -78,10 +76,7 @@ final readonly class PlanReviewView
             'movingTasks' => $progress->unfinished(),
             'stayingTasks' => $progress->finished + $progress->cancelled,
             'isOverLimit' => 1 + $phaseCount + $progress->total > AssignmentGroup::LARGEST,
-            'recipients' => array_map(
-                fn (AssigneeName $name) => PlanWorkRecipientData::ofName($name),
-                $this->assignees->eligible('agent', new IdListPage(null, self::RECIPIENTS_SHOWN))->assignees,
-            ),
+            'recipients' => $this->assignees->eligible('agent', new IdListPage(null, self::RECIPIENTS_SHOWN))->assignees,
         ]);
     }
 

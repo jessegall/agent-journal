@@ -55,14 +55,14 @@ final readonly class NotificationChanges
         $isDone = $examined === [] || $last >= $upper || count($examined) < NotificationChangePage::SIZE;
         $after = $isDone ? $upper : $last;
 
-        return new NotificationChangePage(
-            false,
-            (string) $scope->mutation_version,
-            $scope->unread_count,
-            $isDone ? null : NotificationChangeCursor::at($scope->id, $after, $upper)->text(),
-            NotificationChangeCursor::at($scope->id, $after, $isDone ? $after : $upper)->text(),
-            $this->itemsOf($examined),
-        );
+        return NotificationChangePage::from([
+            'isReset' => false,
+            'version' => (string) $scope->mutation_version,
+            'unread' => $scope->unread_count,
+            'nextCursor' => $isDone ? null : NotificationChangeCursor::at($scope->id, $after, $upper)->text(),
+            'cursor' => NotificationChangeCursor::at($scope->id, $after, $isDone ? $after : $upper)->text(),
+            'changes' => $this->itemsOf($examined),
+        ]);
     }
 
     /**
@@ -86,14 +86,14 @@ final readonly class NotificationChanges
 
     private function reset(NotificationScope $scope): NotificationChangePage
     {
-        return new NotificationChangePage(
-            true,
-            (string) $scope->mutation_version,
-            $scope->unread_count,
-            null,
-            self::cursorAt($scope),
-            [],
-        );
+        return NotificationChangePage::from([
+            'isReset' => true,
+            'version' => (string) $scope->mutation_version,
+            'unread' => $scope->unread_count,
+            'nextCursor' => null,
+            'cursor' => self::cursorAt($scope),
+            'changes' => [],
+        ]);
     }
 
     /**
@@ -111,12 +111,12 @@ final readonly class NotificationChanges
         return array_map(function (NotificationChange $change) use ($items): NotificationChangeItem {
             $item = Option::fromArraysValue($items, $change->receipt_id);
 
-            return new NotificationChangeItem(
-                (string) $change->version,
-                $item->isEmpty() ? NotificationMutationType::Remove : $change->mutation_type,
-                $change->receipt_id,
-                $item->getOrElse(Optional::create()),
-            );
+            return NotificationChangeItem::from([
+                'version' => (string) $change->version,
+                'type' => $item->isEmpty() ? NotificationMutationType::Remove : $change->mutation_type,
+                'receiptId' => $change->receipt_id,
+                'item' => $item->getOrElse(Optional::create()),
+            ]);
         }, $changes);
     }
 }

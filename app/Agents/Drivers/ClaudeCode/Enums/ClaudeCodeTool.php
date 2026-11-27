@@ -148,7 +148,7 @@ enum ClaudeCodeTool: string
             self::SURFACE,
             sprintf('claude:%s', $this->value),
             $access,
-            [new ResourceRequest($type, $target)],
+            [ResourceRequest::from(['type' => $type, 'target' => $target])],
             [$target],
             self::DECLARATION_REVISION,
         );

@@ -85,6 +85,11 @@ final class CheckpointBuilder
 
     public function build(): ReaderCheckpoint
     {
-        return new ReaderCheckpoint($this->offsets, $this->pending, $this->records, $this->problems);
+        return ReaderCheckpoint::from([
+            'offsets' => $this->offsets,
+            'pending' => $this->pending,
+            'records' => $this->records,
+            'problems' => $this->problems,
+        ]);
     }
 }

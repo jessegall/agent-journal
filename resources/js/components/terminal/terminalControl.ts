@@ -95,7 +95,7 @@ export const RECEIPT_POLL_MILLISECONDS = 500;
  */
 export class TerminalControl {
     private takeId = '';
-    private grantId = '';
+    private grantId: string | null = null;
     private nextSequence = 1;
     private cancelled = false;
     private lastAchievedSize = '';
@@ -121,14 +121,14 @@ export class TerminalControl {
     }
 
     hasGrant(): boolean {
-        return this.grantId !== '';
+        return this.grantId !== null;
     }
 
     /**
      * Asks for control through the view's read interest; a pending take is asked about until the host answers.
      */
-    async take(interest: string): Promise<void> {
-        if (interest === '' || this.current.state !== 'watching') {
+    async take(interest: string | null): Promise<void> {
+        if (interest === null || this.current.state !== 'watching') {
             return;
         }
         this.takeId = this.newTakeId();
@@ -157,7 +157,7 @@ export class TerminalControl {
     }
 
     async renew(): Promise<void> {
-        if (this.grantId === '') {
+        if (this.grantId === null) {
             return;
         }
 
@@ -179,7 +179,7 @@ export class TerminalControl {
      * Sends one input at the next sequence for the prompt revision the writer saw, and follows its receipt.
      */
     async sendInput(input: TerminalInputPayload, screenRevision: number): Promise<void> {
-        if (this.grantId === '' || this.current.state !== 'controlling') {
+        if (this.grantId === null || this.current.state !== 'controlling') {
             return;
         }
         const sequence = this.nextSequence;
@@ -220,7 +220,7 @@ export class TerminalControl {
      * Gives the input back: at once with nothing unsent, otherwise after the writer chose what becomes of the line.
      */
     async giveBack(): Promise<void> {
-        if (this.grantId === '') {
+        if (this.grantId === null) {
             return;
         }
         if (this.current.unsentLine !== '') {
@@ -228,7 +228,7 @@ export class TerminalControl {
 
             return;
         }
-        await this.release();
+        await this.release(this.grantId);
     }
 
     keepTyping(): void {
@@ -240,11 +240,16 @@ export class TerminalControl {
      * line in this tab's memory only, and a clear that did not show keeps control with a way to check the screen.
      */
     async choose(choice: DraftChoice): Promise<void> {
+        const grantId = this.grantId;
+
+        if (grantId === null) {
+            return;
+        }
         const sequence = this.nextSequence;
         const line = this.current.unsentLine;
 
         try {
-            const answer = await this.client.choose(this.grantId, choice, sequence);
+            const answer = await this.client.choose(grantId, choice, sequence);
             this.nextSequence = answer.nextSequence;
             const outcome = await this.followReceipt(sequence);
 
@@ -254,14 +259,14 @@ export class TerminalControl {
             const savedDrafts =
                 choice === 'save-and-clear' ? [...this.current.savedDrafts, line] : this.current.savedDrafts;
             this.publish({ unsentLine: '', savedDrafts });
-            await this.release();
+            await this.release(grantId);
         } catch (failure) {
             this.inputRefused(failure);
         }
     }
 
     async check(): Promise<void> {
-        if (this.grantId === '') {
+        if (this.grantId === null) {
             return;
         }
 
@@ -277,7 +282,7 @@ export class TerminalControl {
      * Asks the host to close every output sink; the masked field shows only once its receipt says it did.
      */
     async openPrivate(): Promise<void> {
-        if (this.grantId === '' || this.current.state !== 'controlling' || !this.current.privateEntry) {
+        if (this.grantId === null || this.current.state !== 'controlling' || !this.current.privateEntry) {
             return;
         }
         const sequence = this.nextSequence;
@@ -396,8 +401,7 @@ export class TerminalControl {
         }
     }
 
-    private async release(): Promise<void> {
-        const grantId = this.grantId;
+    private async release(grantId: string): Promise<void> {
         this.publish({ state: 'releasing', notice: '' });
 
         try {
@@ -426,7 +430,7 @@ export class TerminalControl {
 
     private forget(state: ControlState): void {
         this.takeId = state === 'watching' || state === 'watch_only' ? '' : this.takeId;
-        this.grantId = '';
+        this.grantId = null;
         this.nextSequence = 1;
         this.publish({ state });
     }

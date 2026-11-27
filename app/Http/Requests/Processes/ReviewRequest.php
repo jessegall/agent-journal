@@ -20,20 +20,53 @@ final class ReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'expected_revision' => ['nullable', 'integer', 'min:0'],
-            'expected_active_revision' => ['nullable', 'integer', 'min:0'],
-            'reader_revision' => ['nullable', 'string', 'max:64', 'required_with:proof'],
-            'proof' => ['nullable', 'string', 'max:64', 'required_with:reader_revision'],
-            'from_revision' => ['nullable', 'integer', 'min:1'],
-            'request_id' => ['nullable', 'string', 'max:255'],
-            'reason' => ['nullable', 'string', 'max:2000'],
+            'expected_revision' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'expected_active_revision' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'reader_revision' => [
+                'nullable',
+                'string',
+                'max:64',
+                'required_with:proof',
+            ],
+            'proof' => [
+                'nullable',
+                'string',
+                'max:64',
+                'required_with:reader_revision',
+            ],
+            'from_revision' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'request_id' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'reason' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
         ];
     }
 
     public function approval(): OwnerApproval
     {
         $readers = $this->filled('proof')
-            ? [new ReaderApproval($this->string('reader_revision')->toString(), $this->string('proof')->toString())]
+            ? [ReaderApproval::from([
+                'reader_revision_id' => $this->string('reader_revision')->toString(),
+                'proof_id' => $this->string('proof')->toString(),
+            ])]
             : [];
 
         return new OwnerApproval(

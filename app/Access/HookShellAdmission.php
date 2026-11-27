@@ -111,7 +111,7 @@ final readonly class HookShellAdmission
             return $answer->replacedBy(Decision::deny($refusal->message()), $stackBefore);
         }
 
-        $runnerLine = "journal process run --admission {$admission->runId}";
+        $runnerLine = "journal process run --admission {$admission->runId()}";
 
         return $answer->replacedBy(Decision::rewrite($runnerLine), $answer->stack);
     }

@@ -38,7 +38,14 @@ final readonly class NotificationFeed
     {
         return NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
             ->map(fn (NotificationScope $scope) => $this->pageOf($scope, $cursor))
-            ->getOrCall(fn () => new NotificationPage(null, '0', 0, null, null, []));
+            ->getOrCall(fn () => NotificationPage::from([
+                'through' => null,
+                'version' => '0',
+                'unread' => 0,
+                'nextCursor' => null,
+                'changesCursor' => null,
+                'items' => [],
+            ]));
     }
 
     private function pageOf(NotificationScope $scope, string|null $cursor): NotificationPage
@@ -49,14 +56,14 @@ final readonly class NotificationFeed
         $last = end($receipts);
         $hasOlder = count($examined) > NotificationPage::SIZE && $last !== false;
 
-        return new NotificationPage(
-            $receipts === [] ? null : (string) $receipts[0]->sequence,
-            (string) $scope->mutation_version,
-            $scope->unread_count,
-            $hasOlder ? NotificationCursor::at($scope->id, $last->sequence)->text() : null,
-            NotificationChanges::cursorAt($scope),
-            array_values($this->itemsOf($receipts)),
-        );
+        return NotificationPage::from([
+            'through' => $receipts === [] ? null : (string) $receipts[0]->sequence,
+            'version' => (string) $scope->mutation_version,
+            'unread' => $scope->unread_count,
+            'nextCursor' => $hasOlder ? NotificationCursor::at($scope->id, $last->sequence)->text() : null,
+            'changesCursor' => NotificationChanges::cursorAt($scope),
+            'items' => array_values($this->itemsOf($receipts)),
+        ]);
     }
 
     /**
@@ -76,18 +83,18 @@ final readonly class NotificationFeed
             return None::create();
         }
 
-        return new Some(new NotificationItem(
-            $receipt->id,
-            $receipt->sequence,
-            $receipt->read_at?->toIso8601String(),
-            $link->map(fn (NotificationLink $found) => $found->title)
+        return new Some(NotificationItem::from([
+            'id' => $receipt->id,
+            'sequence' => $receipt->sequence,
+            'readAt' => $receipt->read_at?->toIso8601String(),
+            'title' => $link->map(fn (NotificationLink $found) => $found->title)
                 ->getOrElse(NotificationItem::UNAVAILABLE_TITLE),
-            $link->map(fn (NotificationLink $found) => new NotificationDestination(
+            'target' => $link->map(fn (NotificationLink $found) => new NotificationDestination(
                 $occurrence->target_key,
                 $occurrence->target_id,
                 $found->url,
             ))->getOrElse(Optional::create()),
-        ));
+        ]));
     }
 
     /**

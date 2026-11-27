@@ -24,11 +24,26 @@ final class CreateRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string'],
-            'abstract' => ['required', 'string'],
-            'body' => ['required', 'string'],
-            'about' => ['nullable', 'array'],
-            'about.*' => ['string', 'max:64'],
+            'title' => [
+                'required',
+                'string',
+            ],
+            'abstract' => [
+                'required',
+                'string',
+            ],
+            'body' => [
+                'required',
+                'string',
+            ],
+            'about' => [
+                'nullable',
+                'array',
+            ],
+            'about.*' => [
+                'string',
+                'max:64',
+            ],
             ...$this->projectRules(),
         ];
     }
@@ -53,13 +68,13 @@ final class CreateRecordRequest extends FormRequest
         return array_values(
             array_map(
                 fn (string $reference) => $records->identify(RecordReference::parse(trim($reference))),
-                array_filter((array) $this->input('about', []), is_string(...)),
+                array_filter($this->array('about'), is_string(...)),
             ),
         );
     }
 
     public function body(): string
     {
-        return (string) $this->input('body');
+        return $this->string('body')->toString();
     }
 }

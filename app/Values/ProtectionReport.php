@@ -94,7 +94,12 @@ final readonly class ProtectionReport
             'reason' => $item->reason,
         ]), $this->items);
 
-        return new ProtectionReportData($this->driver, $this->build, $this->platform, $items);
+        return ProtectionReportData::from([
+            'driver' => $this->driver,
+            'build' => $this->build,
+            'platform' => $this->platform,
+            'items' => $items,
+        ]);
     }
 
     /**

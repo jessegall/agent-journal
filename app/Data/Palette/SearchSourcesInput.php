@@ -14,7 +14,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class SearchSourcesInput extends Data
 {
     public function __construct(
-        public readonly string|null $prefix = null,
+        public readonly string $prefix = '',
         public readonly string|null $after = null,
     ) {}
 }

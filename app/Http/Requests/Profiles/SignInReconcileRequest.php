@@ -17,8 +17,14 @@ final class SignInReconcileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'running' => ['present', 'array'],
-            'running.*' => ['string', 'max:64'],
+            'running' => [
+                'present',
+                'array',
+            ],
+            'running.*' => [
+                'string',
+                'max:64',
+            ],
         ];
     }
 
@@ -27,6 +33,6 @@ final class SignInReconcileRequest extends FormRequest
      */
     public function runningAttemptIds(): array
     {
-        return array_values(array_map(strval(...), (array) $this->input('running', [])));
+        return array_values(array_map(strval(...), $this->array('running')));
     }
 }

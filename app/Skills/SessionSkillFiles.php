@@ -27,7 +27,7 @@ final readonly class SessionSkillFiles
     {
         $skills = [];
 
-        foreach ($session->skill_keys ?? [] as $key) {
+        foreach ($session->handedSkillKeys as $key) {
             $entry = $generation->entry($key);
 
             if ($entry !== null) {

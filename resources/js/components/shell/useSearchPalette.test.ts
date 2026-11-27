@@ -105,7 +105,7 @@ describe('the search palette reads', () => {
         answers[1](ok({ status: 'more', hits: [hit('b')], continuation: 'c2', hints: [] }));
         await vi.runAllTimersAsync();
 
-        expect(asked[1]).toEqual({ query: null, within: null, limit: null, continuation: 'c1' });
+        expect(asked[1]).toEqual({ query: '', within: null, limit: null, continuation: 'c1' });
         expect(search.hits.value.map((found) => found.recordId)).toEqual(['a', 'b']);
         expect(answers).toHaveLength(2);
     });

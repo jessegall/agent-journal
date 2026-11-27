@@ -366,7 +366,7 @@ export function notificationStore(
                 return;
             }
 
-            await mark(MARK_ALL, () => client.markAll(through), () => (snapshot.value?.unread ?? 0) > 0);
+            await mark(MARK_ALL, () => client.markAll(through), () => snapshot.value !== null && snapshot.value.unread > 0);
         },
         markTargetRead: (targetKey, targetId) =>
             mark(

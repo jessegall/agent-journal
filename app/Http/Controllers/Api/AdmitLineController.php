@@ -31,6 +31,6 @@ final readonly class AdmitLineController
             throw LineRefused::for($admission->decision, $this->texts);
         }
 
-        return LineAdmitted::from(['runId' => (string) $admission->runId]);
+        return LineAdmitted::from(['runId' => $admission->runId()]);
     }
 }

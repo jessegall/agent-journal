@@ -85,11 +85,19 @@ final readonly class PlanReadResult
             ), $text);
         }
 
-        return ToolResult::ok([
+        $fields = [
             ...$this->summary($plan),
             'phases' => array_map($this->phase(...), $page),
-            ...($inline && $position->offset === 0 && $phaseOffset === 0 ? $text : []),
-        ], $next === null ? [] : [$this->continuations->link($next, 'plan_id')]);
+        ];
+
+        if ($inline && $position->offset === 0 && $phaseOffset === 0) {
+            $fields = [
+                ...$fields,
+                ...$text,
+            ];
+        }
+
+        return ToolResult::ok($fields, $next === null ? [] : [$this->continuations->link($next, 'plan_id')]);
     }
 
     private function nextPhases(

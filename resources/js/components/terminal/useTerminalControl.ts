@@ -62,7 +62,7 @@ function failureOf(failure: unknown): ControlFailure {
  */
 export function useTerminalControl(
     agentId: Ref<string>,
-    readInterest: () => string,
+    readInterest: () => string | null,
     screen: Ref<TerminalScreen>,
     isShown: Ref<boolean>,
 ) {

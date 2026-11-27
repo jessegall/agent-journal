@@ -22,12 +22,33 @@ final class DraftPageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => ['sometimes', 'required', 'string'],
-            'version' => ['sometimes', 'required', 'integer', 'min:1'],
-            'title' => ['sometimes', 'string'],
-            'abstract' => ['sometimes', 'string'],
-            'body' => ['sometimes', 'string'],
-            'reason' => ['sometimes', 'string'],
+            'token' => [
+                'sometimes',
+                'required',
+                'string',
+            ],
+            'version' => [
+                'sometimes',
+                'required',
+                'integer',
+                'min:1',
+            ],
+            'title' => [
+                'sometimes',
+                'string',
+            ],
+            'abstract' => [
+                'sometimes',
+                'string',
+            ],
+            'body' => [
+                'sometimes',
+                'string',
+            ],
+            'reason' => [
+                'sometimes',
+                'string',
+            ],
         ];
     }
 
@@ -62,6 +83,6 @@ final class DraftPageRequest extends FormRequest
 
     public function body(): string
     {
-        return (string) $this->input('body', '');
+        return $this->string('body')->toString();
     }
 }

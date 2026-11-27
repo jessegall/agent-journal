@@ -55,7 +55,7 @@ final readonly class DocumentResolver implements DocumentResolverContract
                 ),
             )
             ->when(
-                $filters->after !== '',
+                $filters->after !== null,
                 fn (Builder $query) => $query->where('id', '<', $filters->after),
                 fn (Builder $query) => $query->offset(($filters->page - 1) * $size),
             )

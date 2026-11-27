@@ -20,15 +20,21 @@ const sentToDialog = useFormSent();
 const isConfirmed = ref(false);
 const draft = useFormDraft();
 
-watch(
-    () => draft?.value,
-    (fields) => {
-        for (const [name, value] of Object.entries(fields ?? {})) {
-            form[name] = value;
-        }
-    },
-    { immediate: true },
-);
+if (draft !== null) {
+    watch(
+        draft,
+        (fields) => {
+            if (fields === null) {
+                return;
+            }
+
+            for (const [name, value] of Object.entries(fields)) {
+                form[name] = value;
+            }
+        },
+        { immediate: true },
+    );
+}
 provideLayoutForm(form);
 
 const LIVE_PAUSE_MS = 600;

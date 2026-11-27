@@ -8,8 +8,8 @@ use App\Access\AccessSettings;
 use App\Accounts\Enums\CommandEntry;
 use App\Bus\Contracts\JournalCommands;
 use App\Projects\Commands\ProvisionLocalProject\ProvisionLocalProjectCommand as ProvisionLocalProject;
-use Illuminate\Config\Repository;
 use Illuminate\Console\Command;
+use Illuminate\Container\Attributes\Config;
 
 /**
  * Makes the installation's own project, its Main environment and the owner's grants on it, once the owner exists and
@@ -21,9 +21,17 @@ final class ProvisionLocalProjectCommand extends Command
 
     protected $description = 'Create the local project, its Main environment and the owner\'s grants on it';
 
-    public function handle(Repository $config, AccessSettings $access, JournalCommands $commands): int
-    {
-        if (! $config->boolean('processes.local_execution')) {
+    public function handle(
+        #[Config('processes.local_execution')]
+        bool $isLocalExecution,
+        #[Config('processes.project_key')]
+        string $projectKey,
+        #[Config('processes.project_label')]
+        string $projectLabel,
+        AccessSettings $access,
+        JournalCommands $commands,
+    ): int {
+        if (! $isLocalExecution) {
             $this->info('Local execution is off, so no local project is made.');
 
             return self::SUCCESS;
@@ -42,8 +50,8 @@ final class ProvisionLocalProjectCommand extends Command
             'projects local-provision',
             new ProvisionLocalProject(
                 $ownerId,
-                $config->string('processes.project_key'),
-                $config->string('processes.project_label'),
+                $projectKey,
+                $projectLabel,
             ),
         );
 

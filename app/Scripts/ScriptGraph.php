@@ -77,7 +77,12 @@ final class ScriptGraph
         ksort($this->definitions);
         $digest = hash('sha256', json_encode($this->definitions, JSON_THROW_ON_ERROR));
 
-        return new CompiledScript($sourceHash, $handlers, $this->instructions, $digest);
+        return CompiledScript::from([
+            'sourceHash' => $sourceHash,
+            'handlers' => $handlers,
+            'instructions' => $this->instructions,
+            'definitionDigest' => $digest,
+        ]);
     }
 
     private function remainingSeconds(string $successor): int

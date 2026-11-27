@@ -94,7 +94,7 @@ function isSameStream(first: TerminalScreenIdentityData, second: TerminalScreenI
  */
 export class TerminalSubscription {
     private nonce = 0;
-    private interest = '';
+    private interest: string | null = null;
     private opening = false;
     private reading = false;
     private stopped = false;
@@ -123,9 +123,9 @@ export class TerminalSubscription {
     }
 
     /**
-     * The read interest the subscription reads through now; empty while it opens or after it stopped.
+     * The read interest the subscription reads through now; none while it opens or after it stopped.
      */
-    readInterest(): string {
+    readInterest(): string | null {
         return this.interest;
     }
 
@@ -164,7 +164,7 @@ export class TerminalSubscription {
         if (this.stopped) {
             return;
         }
-        if (this.interest === '') {
+        if (this.interest === null) {
             if (!this.opening && this.current.state === 'opening') {
                 this.open();
             }
@@ -202,7 +202,7 @@ export class TerminalSubscription {
     }
 
     renew(): void {
-        if (this.interest === '') {
+        if (this.interest === null) {
             return;
         }
         const nonce = this.nonce;
@@ -220,7 +220,7 @@ export class TerminalSubscription {
         const now = this.now();
         const slept = now - this.lastTick > WAKE_GAP_MILLISECONDS;
         this.lastTick = now;
-        if (slept && this.interest !== '') {
+        if (slept && this.interest !== null) {
             this.open();
 
             return;
@@ -254,7 +254,7 @@ export class TerminalSubscription {
             return;
         }
         if (answer.status === 'ended') {
-            this.interest = '';
+            this.interest = null;
             this.publish({
                 ...blank('ended', this.current.receivedAt),
                 frame: answer.frame ?? null,
@@ -319,10 +319,10 @@ export class TerminalSubscription {
         this.reads = new AbortController();
         this.reading = false;
         this.opening = false;
-        if (this.interest !== '') {
+        if (this.interest !== null) {
             this.closeQuietly(this.interest);
         }
-        this.interest = '';
+        this.interest = null;
         this.identity = null;
         this.liveUntil = 0;
     }

@@ -22,6 +22,6 @@ final readonly class OperationRule
 
     public function grant(): OperationGrant
     {
-        return new OperationGrant($this->name, $this->resources);
+        return OperationGrant::from(['operation' => $this->name, 'resources' => $this->resources]);
     }
 }

@@ -49,7 +49,7 @@ final readonly class RootRule
      */
     public function isProtected(): bool
     {
-        $root = new ResourceRequest(ResourceType::Path, $this->root)->normalizedPath();
+        $root = ResourceRequest::from(['type' => ResourceType::Path, 'target' => $this->root])->normalizedPath();
 
         return array_any(
             AccessPolicy::PROTECTED_PATHS,

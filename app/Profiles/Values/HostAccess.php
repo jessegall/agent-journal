@@ -63,7 +63,7 @@ final class HostAccess extends Data
         }
 
         $path = $resource->normalizedPath();
-        $root = new ResourceRequest(ResourceType::Path, $this->scope)->normalizedPath();
+        $root = ResourceRequest::from(['type' => ResourceType::Path, 'target' => $this->scope])->normalizedPath();
 
         return $root === '.' || $path === $root || str_starts_with($path, $root.'/');
     }

@@ -17,6 +17,6 @@ final readonly class DraftQuestionsLoader
 
     public function __invoke(DraftQuestionsInput $input): DraftQuestionsData
     {
-        return new DraftQuestionsData($this->producers->producerFor($input->noun)->questions());
+        return DraftQuestionsData::from(['questions' => $this->producers->producerFor($input->noun)->questions()]);
     }
 }

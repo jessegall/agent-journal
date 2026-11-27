@@ -101,7 +101,7 @@ final readonly class PackageRules
 
                 $rules[] = CommandRule::forProgram(
                     "core.{$program}.{$subcommand}",
-                    new ProgramSpellings($program),
+                    ProgramSpellings::from(['family' => $program]),
                     [$subcommand],
                     ArgumentGrammar::operands(OperandType::Name)->repeating()->withOptions(
                         ...array_map(fn (string $flag) => OptionGrammar::flag($flag), $options),

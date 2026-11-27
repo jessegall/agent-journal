@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Access\Values;
 
+use App\Access\Exceptions\AdmissionStartedNoRun;
 use App\Values\AdmissionRefusal;
 
 /**
@@ -12,7 +13,10 @@ use App\Values\AdmissionRefusal;
  */
 final readonly class Admission
 {
-    private function __construct(public AdmittedRun|AdmissionRefusal $decision, public string $runId) {}
+    private function __construct(
+        public AdmittedRun|AdmissionRefusal $decision,
+        private string|null $queuedRunId,
+    ) {}
 
     public static function allowed(AdmittedRun $run, string $runId): self
     {
@@ -21,11 +25,21 @@ final readonly class Admission
 
     public static function refused(AdmissionRefusal $refusal): self
     {
-        return new self($refusal, '');
+        return new self($refusal, null);
     }
 
     public function isAllowed(): bool
     {
         return $this->decision instanceof AdmittedRun;
+    }
+
+    /**
+     * The id of the run the admission queued.
+     *
+     * @throws AdmissionStartedNoRun
+     */
+    public function runId(): string
+    {
+        return $this->queuedRunId ?? throw AdmissionStartedNoRun::refused();
     }
 }

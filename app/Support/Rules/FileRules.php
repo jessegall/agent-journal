@@ -169,7 +169,7 @@ final readonly class FileRules
     ): CommandRule {
         return CommandRule::forProgram(
             "core.{$program}",
-            new ProgramSpellings($program),
+            ProgramSpellings::from(['family' => $program]),
             [],
             $arguments->withOptions(...$this->flags(...$flags)),
             $classes,

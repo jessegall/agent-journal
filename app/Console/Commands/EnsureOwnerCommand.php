@@ -9,8 +9,8 @@ use App\Bus\Contracts\JournalCommands;
 use App\Inboxes\Commands\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Models\Access\User;
 use App\Support\ActorReference;
-use Illuminate\Config\Repository;
 use Illuminate\Console\Command;
+use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Hashing\Hasher;
 
 /**
@@ -23,12 +23,15 @@ final class EnsureOwnerCommand extends Command
 
     protected $description = 'Create the owner account from JOURNAL_OWNER_EMAIL and JOURNAL_OWNER_PASSWORD, or reset its password';
 
-    public function handle(Repository $config, Hasher $hasher, JournalCommands $commands): int
-    {
-        $email = (string) $config->get('access.owner_email');
-        $password = (string) $config->get('access.owner_password');
-
-        if ($email === '' || $password === '') {
+    public function handle(
+        #[Config('access.owner_email')]
+        string|null $email,
+        #[Config('access.owner_password')]
+        string|null $password,
+        Hasher $hasher,
+        JournalCommands $commands,
+    ): int {
+        if ($email === null || $email === '' || $password === null || $password === '') {
             $this->info('No owner email and password are set, so no owner account is made.');
 
             return self::SUCCESS;

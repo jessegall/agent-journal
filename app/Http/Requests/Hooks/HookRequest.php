@@ -20,23 +20,75 @@ final class HookRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'hook_event_name' => ['required', 'string'],
-            'session_id' => ['required', 'string'],
-            'tool_name' => ['sometimes', 'string'],
-            'tool_input' => ['sometimes', 'array'],
+            'hook_event_name' => [
+                'required',
+                'string',
+            ],
+            'session_id' => [
+                'required',
+                'string',
+            ],
+            'tool_name' => [
+                'sometimes',
+                'string',
+            ],
+            'tool_input' => [
+                'sometimes',
+                'array',
+            ],
             // Claude Code sends the tool's response as an object, Codex as the text the tool printed.
-            'tool_response' => ['sometimes', new TextOrArrayRule()],
-            'prompt' => ['sometimes', 'string'],
-            'source' => ['sometimes', 'string'],
-            'transcript_path' => ['sometimes', 'string', 'max:1024'],
-            'cwd' => ['sometimes', 'string', 'max:1024'],
-            'reason' => ['sometimes', 'string'],
-            'stop_hook_active' => ['sometimes', 'boolean'],
-            'last_assistant_message' => ['sometimes', 'nullable', 'string'],
-            'agent_id' => ['sometimes', 'string'],
-            'prompt_id' => ['sometimes', 'string'],
-            'turn_id' => ['sometimes', 'string'],
-            'error' => ['sometimes', 'string', 'max:80'],
+            'tool_response' => [
+                'sometimes',
+                new TextOrArrayRule(),
+            ],
+            'prompt' => [
+                'sometimes',
+                'string',
+            ],
+            'source' => [
+                'sometimes',
+                'string',
+            ],
+            'transcript_path' => [
+                'sometimes',
+                'string',
+                'max:1024',
+            ],
+            'cwd' => [
+                'sometimes',
+                'string',
+                'max:1024',
+            ],
+            'reason' => [
+                'sometimes',
+                'string',
+            ],
+            'stop_hook_active' => [
+                'sometimes',
+                'boolean',
+            ],
+            'last_assistant_message' => [
+                'sometimes',
+                'nullable',
+                'string',
+            ],
+            'agent_id' => [
+                'sometimes',
+                'string',
+            ],
+            'prompt_id' => [
+                'sometimes',
+                'string',
+            ],
+            'turn_id' => [
+                'sometimes',
+                'string',
+            ],
+            'error' => [
+                'sometimes',
+                'string',
+                'max:80',
+            ],
         ];
     }
 
@@ -50,7 +102,7 @@ final class HookRequest extends FormRequest
      */
     public function processGeneration(): int|null
     {
-        if ($this->query('generation') === null) {
+        if (! $this->has('generation')) {
             return null;
         }
 

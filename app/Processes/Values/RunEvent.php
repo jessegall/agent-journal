@@ -8,6 +8,7 @@ use App\Api\Processes\RunPart;
 use App\Processes\Contracts\Events\RunEvents;
 use App\Processes\Enums\PartEndType;
 use App\Processes\Enums\RunEventType;
+use App\Processes\Exceptions\RunEventWithoutPart;
 use App\Values\PartEnd;
 use Spatie\LaravelData\Data;
 
@@ -35,21 +36,27 @@ final class RunEvent extends Data
      */
     public function applyTo(RunEvents $events): void
     {
-        $part = $this->part?->key() ?? new PartKey(0, 0, '');
-
         match ($this->type) {
-            RunEventType::PartQueued => $events->queued($part),
-            RunEventType::PartStarted => $events->started($part, (int) $this->pid, (string) $this->host),
-            RunEventType::PartStartedInside => $events->startedInside($part, (string) $this->host),
-            RunEventType::PartEnded => $events->ended($part, $this->partEnd(), $this->drained === true),
-            RunEventType::PartSkipped => $events->skipped($part, (string) $this->because),
-            RunEventType::PartStartFailed => $events->spawnFailed($part, (string) $this->reason),
-            RunEventType::PartStopped => $events->stopped($part, (string) $this->reason),
-            RunEventType::PartLost => $events->lost($part),
+            RunEventType::PartQueued => $events->queued($this->partKey()),
+            RunEventType::PartStarted => $events->started($this->partKey(), (int) $this->pid, (string) $this->host),
+            RunEventType::PartStartedInside => $events->startedInside($this->partKey(), (string) $this->host),
+            RunEventType::PartEnded => $events->ended($this->partKey(), $this->partEnd(), $this->drained === true),
+            RunEventType::PartSkipped => $events->skipped($this->partKey(), (string) $this->because),
+            RunEventType::PartStartFailed => $events->spawnFailed($this->partKey(), (string) $this->reason),
+            RunEventType::PartStopped => $events->stopped($this->partKey(), (string) $this->reason),
+            RunEventType::PartLost => $events->lost($this->partKey()),
             RunEventType::RunStopped => $events->runStopped((string) $this->reason),
             RunEventType::RunFinished => $events->runFinished((int) $this->code),
             RunEventType::Heartbeat => null,
         };
+    }
+
+    /**
+     * @throws RunEventWithoutPart
+     */
+    private function partKey(): PartKey
+    {
+        return $this->part?->key() ?? throw RunEventWithoutPart::of($this->type);
     }
 
     private function partEnd(): PartEnd

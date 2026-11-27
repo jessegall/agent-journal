@@ -19,6 +19,6 @@ final class BindingProviderData extends Data
         public readonly string $label,
         public readonly bool $canStart,
         public readonly string $startCommand,
-        public readonly string $unavailableReason,
+        public readonly string|null $unavailableReason,
     ) {}
 }

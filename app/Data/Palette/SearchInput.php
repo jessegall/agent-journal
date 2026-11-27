@@ -15,7 +15,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class SearchInput extends Data
 {
     public function __construct(
-        public readonly string|null $query = null,
+        public readonly string $query = '',
         public readonly string|null $within = null,
         public readonly int|null $limit = null,
         public readonly string|null $continuation = null,

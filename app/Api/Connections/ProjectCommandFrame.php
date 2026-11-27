@@ -8,14 +8,15 @@ use Spatie\LaravelData\Data;
 
 /**
  * One frame of a journal verb's output, in the order it was written, as a run keeps it and as it goes on the wire:
- * standard output or error as text, or as base64 when it is not UTF-8, or the exit frame with the verb's code.
+ * standard output or error as text, or as base64 when it is not UTF-8, or the exit frame with the verb's code and
+ * no text.
  */
 final class ProjectCommandFrame extends Data
 {
     public function __construct(
         public readonly int $sequence,
         public readonly string $stream,
-        public readonly string $text,
+        public readonly string|null $text,
         public readonly bool $isBase64,
         public readonly int $exitCode,
     ) {}
@@ -30,6 +31,6 @@ final class ProjectCommandFrame extends Data
 
     public static function exit(int $sequence, int $code): self
     {
-        return new self($sequence, 'exit', '', false, $code);
+        return new self($sequence, 'exit', null, false, $code);
     }
 }

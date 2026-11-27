@@ -25,7 +25,13 @@ const { pressedButtons } = await import("./pressedButtons");
 pressedButtons.watch();
 
 function emit(name: string, visit: object): void {
-  for (const listener of listeners.get(name) ?? []) {
+  const named = listeners.get(name);
+
+  if (named === undefined) {
+    throw new Error(`Nothing listens for ${name}.`);
+  }
+
+  for (const listener of named) {
     listener({ detail: { visit }, defaultPrevented: false });
   }
 }
