@@ -33,10 +33,12 @@ func (table *ProcessTable) placeContainerFiles(ctx context.Context, processID st
 	}
 
 	session := plan.startLabels("").Session
+	mountsPlanFiles := false
 	for index, mount := range filled.Container.Mounts {
 		if mount.Type != host.MountPlanFile {
 			continue
 		}
+		mountsPlanFiles = true
 		if mount.Source != "" && !names[mount.Source] {
 			return plan, RefusalError{Refusal: Unsafe, Reason: "the plan-file mount names " + mount.Source + ", which the plan has not"}
 		}
@@ -47,7 +49,8 @@ func (table *ProcessTable) placeContainerFiles(ctx context.Context, processID st
 		filled.Container.Mounts[index] = host.ContainerMount{Type: host.MountDaemonBind, Source: source, Target: mount.Target}
 	}
 
-	if len(files) > 0 {
+	// A plan-file mount binds the folder even when the plan has no file, so the folder is made either way.
+	if mountsPlanFiles {
 		if err := table.containers.WritePlanFiles(ctx, session, processID, files); err != nil {
 			return plan, err
 		}

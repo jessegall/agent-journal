@@ -126,6 +126,27 @@ func TestAContainedPlanOpensWithEachFileMountedWhereItNames(t *testing.T) {
 	}
 }
 
+func TestAContainedPlanWithNoFileStillHasTheFolderItsPlanFileMountBinds(t *testing.T) {
+	table, _, written := containedTable(t)
+	instruction := containedInstruction(t, func(plan *OpenPlan) {
+		plan.Argv = []string{"program"}
+		plan.Environment = nil
+		plan.Files = nil
+		plan.Container.Mounts = []host.ContainerMount{{Type: host.MountPlanFile, Target: host.PlanFileFolder}}
+	})
+
+	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), instruction); err != nil {
+		t.Fatal(err)
+	}
+
+	if written() == nil {
+		t.Fatal("the host made no files folder for the plan-file mount")
+	}
+	if archived := archivedFiles(t, written()); len(archived) != 0 {
+		t.Fatalf("the host wrote %v into the session folder", archived)
+	}
+}
+
 func TestAContainedPlanNamingThisHostIsRefused(t *testing.T) {
 	changes := map[string]func(plan *OpenPlan){
 		"a host name":           func(plan *OpenPlan) { plan.Argv = []string{"{host:INSTALLATION}/bin/program"} },
