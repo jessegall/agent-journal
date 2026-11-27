@@ -23,6 +23,12 @@ final readonly class ClaimRuntimeRequestsHandler implements CommandHandler
         $process = HostProcess::findLocked($command->processId);
         $process->assertWorker($command->workerGeneration);
 
+        // A probe acts on no request, so it takes none: a stop or an interrupt it took would be lost to the process
+        // that runs the runtime's turns.
+        if ($process->purpose->isProbe()) {
+            return new ClaimedRequests([]);
+        }
+
         $runtimes = $this->owners->runtimesOf($process)
             ->withSessionAgent()
             ->withAcceptedRequest()

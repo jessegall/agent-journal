@@ -15,6 +15,7 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Recordings\Scenarios\Scenario;
 use App\Recordings\Scenarios\ScenarioRun;
+use App\Sessions\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -40,6 +41,7 @@ final class ScenarioStepTest extends TestCase
             ],
             ['do' => 'send-message', 'agent' => 'Coder', 'text' => 'Run: ls.'],
             ['do' => 'interrupt', 'agent' => 'Coder'],
+            ['do' => 'release-hold', 'agent' => 'Coder'],
             ['do' => 'stop', 'agent' => 'Coder'],
         ]]));
         $agents = ['Coder' => $coder->id];
@@ -53,14 +55,14 @@ final class ScenarioStepTest extends TestCase
             return $command;
         }, $scenario->steps);
 
-        [$start, $delivery, $interrupt, $stop] = $commands;
+        [$start, $delivery, $interrupt, $release, $stop] = $commands;
         $this->assertInstanceOf(StartAgentCommand::class, $start);
         $this->assertInstanceOf(DeliverAgentCommand::class, $delivery);
         $this->assertSame(
             [
                 ['claude-code', 'claude-haiku-5-5', 'low', DriverType::Headless, $coder->id],
                 'scenario-claude-code-turn-'.$run->startedAt->format('YmdHisv').'-1',
-                [InterruptAgentCommand::class, StopAgentCommand::class],
+                [InterruptAgentCommand::class, ReleaseAgentHoldCommand::class, StopAgentCommand::class],
             ],
             [
                 [
@@ -71,7 +73,7 @@ final class ScenarioStepTest extends TestCase
                     $start->request->agentId,
                 ],
                 $delivery->idempotencyKey,
-                [$interrupt::class, $stop::class],
+                [$interrupt::class, $release::class, $stop::class],
             ],
         );
     }

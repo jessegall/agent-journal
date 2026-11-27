@@ -12,6 +12,7 @@ enum ScenarioStepType: string
     case StartSession = 'start-session';
     case SendMessage = 'send-message';
     case Interrupt = 'interrupt';
+    case ReleaseHold = 'release-hold';
     case Stop = 'stop';
     case ChangeModel = 'change-model';
     case ChangeEffort = 'change-effort';
@@ -43,6 +44,7 @@ enum ScenarioStepType: string
             self::StartSession,
             self::SendMessage,
             self::Interrupt,
+            self::ReleaseHold,
             self::Stop,
             self::ChangeModel,
             self::ChangeEffort,
@@ -109,7 +111,7 @@ enum ScenarioStepType: string
                 'agent',
                 'text',
             ],
-            self::Interrupt, self::Stop => ['agent'],
+            self::Interrupt, self::ReleaseHold, self::Stop => ['agent'],
             self::ChangeModel => [
                 'agent',
                 'model',

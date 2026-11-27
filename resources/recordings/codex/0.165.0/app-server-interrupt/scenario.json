@@ -1,0 +1,17 @@
+{
+    "format": 2,
+    "protocol": 1,
+    "scenario_hash": "6d9437dbddf5ff2e4eb44b9ac44b5763b81e3cc0d59a0382c94721da28fc5187",
+    "driver": "codex",
+    "build": "0.165.0",
+    "image_programs": "07a2626ea7e69e54ecdc55abcd19cdc106991e438200cc6ac34dd3c9b974b39f",
+    "recorded_at": "2026-11-27T21:47:02+00:00",
+    "exchanges": [
+        "01-host-caller-915b0be9afb2601e",
+        "02-agent-caller-1b0c344961c604fc",
+        "03-docker-daemon",
+        "04-driver-01m8ffkhwxfpcb813mz42vzzmh",
+        "05-driver-01m8ffkk6q7edxmv9e0tsgt0a7",
+        "06-driver-01m8ffkkxgh81v86r2b05d3mvz"
+    ]
+}

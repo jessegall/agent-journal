@@ -8,6 +8,8 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Exceptions\WorkerFenced;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Hosts\Commands\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Protocol\HostProcessType;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -54,7 +56,7 @@ final class ClaimRuntimeRequestsTest extends TestCase
             ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal, firstMessage: 'hello'));
         $opened = $this->journal->openedRuntimeOf('Driven');
         $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
-            ->openProcess('shell', runtimeId: $opened->runtimeId));
+            ->openProcess('shell', runtimeId: $opened->runtimeId, purpose: HostProcessPurpose::AgentTerminal));
         $id = $this->journal->hostProcessCalled('shell')->id;
         $generation = $this->journal->asSystem(new ClaimHostWorkerCommand($id));
 
@@ -67,5 +69,22 @@ final class ClaimRuntimeRequestsTest extends TestCase
                 fn () => $this->journal->asSystem(new ClaimRuntimeRequestsCommand($id, $generation - 1, 10)),
             )
             ->assertResult([1, 0], [count($first->requests), count($again->requests)]);
+    }
+
+    public function test_a_probe_of_the_runtime_claims_none_of_its_requests(): void
+    {
+        $this->chooseActiveAccounts();
+        $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal, firstMessage: 'hello'));
+        $opened = $this->journal->openedRuntimeOf('Driven');
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('probe', HostProcessType::Pipe, $opened->runtimeId, HostProcessPurpose::SignInProbe));
+        $id = $this->journal->hostProcessCalled('probe')->id;
+        $generation = $this->journal->asSystem(new ClaimHostWorkerCommand($id));
+
+        $claimed = $this->journal->asSystem(new ClaimRuntimeRequestsCommand($id, $generation, 10));
+
+        $this->journal->assertResult(0, count($claimed->requests));
     }
 }

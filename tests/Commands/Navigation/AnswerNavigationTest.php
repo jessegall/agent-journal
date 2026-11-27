@@ -18,6 +18,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Hosts\Commands\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Hosts\EnrolledHost;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
@@ -159,7 +160,11 @@ final class AnswerNavigationTest extends TestCase
         $this->assertSame($first->id, $again->id);
         // The journal drives a Claude Code terminal, so its own driver worker claims the round.
         $this->journal->host(self::HOST, fn (TestEnrolledHost $host) => $host
-            ->openProcess('terminal', runtimeId: $navigation->agent_runtime_id));
+            ->openProcess(
+                'terminal',
+                runtimeId: $navigation->agent_runtime_id,
+                purpose: HostProcessPurpose::AgentTerminal,
+            ));
         $process = $this->journal->hostProcessCalled('terminal')->id;
         $generation = $this->journal->asSystem(new ClaimHostWorkerCommand($process));
         $claimed = collect($this->journal->asSystem(new ClaimRuntimeRequestsCommand($process, $generation, 10))->requests)

@@ -30,16 +30,17 @@ final readonly class TestEnrolledHost
     public function __construct(private TestJournal $journal, private string $name) {}
 
     /**
-     * The host is ordered to open a native process of the type given, for the runtime given when it runs one; the
-     * host has not reported it yet.
+     * The host is ordered to open a native process of the type and purpose given, for the runtime given when it runs
+     * one; the host has not reported it yet.
      */
     public function openProcess(
         string $name,
         HostProcessType $type = HostProcessType::Terminal,
         string|null $runtimeId = null,
+        HostProcessPurpose $purpose = HostProcessPurpose::Probe,
     ): self {
         $plan = new HostProcessPlan(
-            HostProcessPurpose::Probe,
+            $purpose,
             $type,
             RestartPolicy::Never,
             ['sh', '-c', 'cat'],

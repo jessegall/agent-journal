@@ -26,7 +26,7 @@ enum HostProcessPurpose: string
 
     /**
      * Whether the process is its runtime's own: it takes the runtime's work and its end is the runtime's end. A turn
-     * or a probe the journal opened for a runtime takes only stops and interrupts, and ends alone.
+     * the journal opened for a runtime takes only stops and interrupts, a probe none, and both end alone.
      */
     /**
      * Whether every worker of the process reads all it printed again: a probe, whose verdict needs the whole of what

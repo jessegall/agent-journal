@@ -1,5 +1,5 @@
 {
-    "description": "A Codex app-server turn is interrupted, and its thread resumes for the next one",
+    "description": "A Codex app-server turn is interrupted, released as a user releases it, and its thread resumes for the next one",
     "steps": [
         {
             "do": "start-session",
@@ -14,6 +14,11 @@
             "text": "Count slowly from 1 to 100, one number per line."
         },
         {
+            "do": "wait-for",
+            "fact": "answering",
+            "seconds": 120
+        },
+        {
             "do": "interrupt",
             "agent": "Coder"
         },
@@ -21,6 +26,10 @@
             "do": "wait-for",
             "fact": "interrupted",
             "seconds": 60
+        },
+        {
+            "do": "release-hold",
+            "agent": "Coder"
         },
         {
             "do": "send-message",

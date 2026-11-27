@@ -15,6 +15,7 @@ use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Commands\StopAgent\StopAgentCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Enums\ConversationModeType;
 use App\Hosts\Commands\AllowHostImages\AllowHostImagesCommand;
 use App\Hosts\Commands\InstructHostUpgrade\InstructHostUpgradeCommand;
@@ -27,6 +28,7 @@ use App\Projects\Enums\ProjectReadType;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Enums\ScenarioStepType;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
+use App\Sessions\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Sessions\Enums\StartOriginType;
 use App\Sessions\Values\StartPolicy;
 use App\Support\Command;
@@ -137,6 +139,13 @@ final class ScenarioStep extends Data
                 $agent->id,
                 (string) $agent->current_session_id,
                 $key,
+            ),
+            // Releasing an interrupted runtime, as a user does from its hold, lets the work held behind it run.
+            ScenarioStepType::ReleaseHold => new ReleaseAgentHoldCommand(
+                $agent->id,
+                (string) $agent->current_session_id,
+                HoldReason::Interrupted,
+                'the scenario goes on after its interrupt',
             ),
             ScenarioStepType::Stop => new StopAgentCommand($agent->id, (string) $agent->current_session_id, $key),
             ScenarioStepType::ChangeModel => new ChangeAgentModelCommand(
