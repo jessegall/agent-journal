@@ -221,17 +221,6 @@ return [
 
         'installation_name' => (string) env('AGENTS_INSTALLATION_NAME', (string) env('COMPOSE_PROJECT_NAME', '')),
         'security_profiles' => (string) env('AGENTS_SECURITY_PROFILES', ''),
-        /*
-        |--------------------------------------------------------------------------
-        | Recording
-        |--------------------------------------------------------------------------
-        |
-        | Whether the journal records the calls on its wires for the recordings
-        | the tests play; a deployed journal never does.
-        |
-        */
-
-        'recording' => (bool) env('AGENTS_RECORDING', false),
 
         /*
         |--------------------------------------------------------------------------

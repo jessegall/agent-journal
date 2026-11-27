@@ -10,6 +10,7 @@ use App\Hosts\Protocol\HostRoute;
 use App\Recordings\RecordedProtocol;
 use App\Recordings\Recordings;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -17,6 +18,7 @@ use Tests\TestCase;
  * in one of them, and every recorded host exchange is one the generated readers accept.
  */
 #[TestsMachinery(RecordedProtocol::class)]
+#[TimeLimit(seconds: 15, reason: 'It reads every recording of the project.')]
 final class RecordedProtocolCoverageTest extends TestCase
 {
     public function test_every_call_order_and_refusal_is_recorded_and_every_recording_keeps_the_protocol(): void

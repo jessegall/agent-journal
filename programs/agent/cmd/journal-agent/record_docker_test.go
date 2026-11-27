@@ -29,7 +29,7 @@ func TestTheInstallersDockerCallsPassThroughAndAreKept(t *testing.T) {
 	daemon.Listener = daemonListener
 	daemon.Start()
 	t.Cleanup(daemon.Close)
-	drafts := recording.Drafts{Folder: filepath.Join(folder, "drafts"), IsOn: true}
+	drafts := recording.Drafts{Folder: filepath.Join(folder, "drafts")}
 	if err := os.MkdirAll(drafts.Folder, 0o775); err != nil {
 		t.Fatal(err)
 	}

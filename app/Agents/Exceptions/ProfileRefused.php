@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Bus\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
  * A profile cannot make a start safe: an unresolved path, account settings that would undo the profile, or an
  * argument that would.
  */
-final class ProfileRefused extends RuntimeException
+final class ProfileRefused extends RuntimeException implements CommandRefusal
 {
     /**
      * A driver start with no model or no effort, which would run at the driver's own default.

@@ -12,16 +12,15 @@ import (
 const DraftsFolder = "/srv/journal/recordings/drafts"
 
 // Drafts writes the drafts of the journal's open recording run, as the PHP RecordingDrafts does: line 1 of an
-// exchange is its opening, each later line one event, appended under the draft's lock. Off, or outside an open run,
-// nothing is written.
+// exchange is its opening, each later line one event, appended under the draft's lock. Outside an open run nothing is
+// written; the journal opens one only while its recording switch is on, so the host needs no switch of its own.
 type Drafts struct {
 	Folder string
-	IsOn   bool
 }
 
-// DraftsFromEnvironment are the drafts AGENTS_RECORDING switches on, the host's one read of the variable.
-func DraftsFromEnvironment() Drafts {
-	return Drafts{Folder: DraftsFolder, IsOn: os.Getenv("AGENTS_RECORDING") == "true"}
+// JournalDrafts are the drafts of the journal's recording runs, in the folder the journal shares with the host.
+func JournalDrafts() Drafts {
+	return Drafts{Folder: DraftsFolder}
 }
 
 // Begin opens the exchange's draft with its opening, once.
@@ -52,9 +51,6 @@ func (drafts Drafts) Add(wire Wire, exchange string, event Event) error {
 }
 
 func (drafts Drafts) isRunOpen() bool {
-	if !drafts.IsOn {
-		return false
-	}
 	content, err := os.ReadFile(filepath.Join(drafts.Folder, "run.json"))
 	if err != nil {
 		return false

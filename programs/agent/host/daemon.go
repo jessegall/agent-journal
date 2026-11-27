@@ -23,7 +23,7 @@ import (
 // ContainersOn are the containers of the agent daemon that listens at the socket, under the rules given, reached
 // through Docker's own client. With no socket named, the daemon is the one this machine's environment names.
 func ContainersOn(socket string, rules ContainerRules) (Containers, error) {
-	return containersRecordedInto(socket, rules, recording.DraftsFromEnvironment())
+	return containersRecordedInto(socket, rules, recording.JournalDrafts())
 }
 
 // containersRecordedInto are the daemon's containers, each call to the daemon kept in the drafts while they are on.
@@ -33,14 +33,11 @@ func containersRecordedInto(socket string, rules ContainerRules, drafts recordin
 		where = client.WithHost(socket)
 	}
 
-	options := []client.Opt{where}
-	if drafts.IsOn {
-		recorded, err := recordedDaemon(where, drafts)
-		if err != nil {
-			return Containers{}, fmt.Errorf("%w: %v", ErrAgentDaemonUnreachable, err)
-		}
-		options = append(options, recorded...)
+	recorded, err := recordedDaemon(where, drafts)
+	if err != nil {
+		return Containers{}, fmt.Errorf("%w: %v", ErrAgentDaemonUnreachable, err)
 	}
+	options := append([]client.Opt{where}, recorded...)
 
 	daemon, err := client.New(options...)
 	if err != nil {

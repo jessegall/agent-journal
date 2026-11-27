@@ -42,6 +42,11 @@ use Throwable;
  */
 final class PlayScenarioCommand extends Command
 {
+    /**
+     * Where the last failed play says why, for whoever runs the record script.
+     */
+    public const string LAST_FAILURE = 'storage/recordings/last-failure.txt';
+
     protected $signature = 'recordings:play
         {scenario : The scenario as driver/name, its file under resources/recordings/scenarios}
         {--owner= : The owner the steps run as, by email}';
@@ -86,20 +91,35 @@ final class PlayScenarioCommand extends Command
             $drafts->clear();
         } catch (RecordingSwitchedOff|ScenarioInvalid|ScenarioStuck|RecordingUnfinished|RecordedEnvironmentRefused
             |RecordingOutsideContainer|RecordingBreaksProtocol|RecordingLeaks|HostProtocolDrifted $refused) {
-                $this->error($refused->getMessage());
                 $this->stopAgentsOf($run, $commands);
+                $files->write(FilePath::in(Place::Project, self::LAST_FAILURE), $refused->getMessage()."\n");
+                $this->error($refused->getMessage());
 
                 return self::FAILURE;
             } catch (Throwable $failed) {
-                // Any other failure ends the play too, and still leaves no agent of it running.
+                // Any other failure ends the play at once: no agent of it keeps running and no half run is kept.
                 $this->stopAgentsOf($run, $commands);
+                $drafts->clear();
+                $why = $this->failureLine($name, $run, $failed);
+                $files->write(FilePath::in(Place::Project, self::LAST_FAILURE), "{$why}\n");
+                $this->error($why);
 
-                throw $failed;
+                return self::FAILURE;
             }
 
         $this->info("Recorded {$name} into {$folder->relative}.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * The one line that says why a play failed: the scenario, the step it was on and what was thrown there.
+     */
+    private function failureLine(string $name, ScenarioRun|null $run, Throwable $failed): string
+    {
+        $step = $run === null ? 'before its first step' : 'at step '.($run->stepIndex() + 1);
+
+        return "The scenario {$name} failed {$step}: ".$failed::class.": {$failed->getMessage()}";
     }
 
     /**

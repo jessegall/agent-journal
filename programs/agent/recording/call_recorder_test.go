@@ -21,7 +21,7 @@ func openRun(t *testing.T) Drafts {
 	if err := os.WriteFile(filepath.Join(folder, "run.json"), []byte(`{"scenario":"x","opened_at":1,"closed_at":null}`), 0o664); err != nil {
 		t.Fatal(err)
 	}
-	return Drafts{Folder: folder, IsOn: true}
+	return Drafts{Folder: folder}
 }
 
 func draftLines(t *testing.T, drafts Drafts, exchange string) []map[string]any {
@@ -51,9 +51,8 @@ func callOf(t *testing.T, line map[string]any) Call {
 	return call
 }
 
-func TestOffTheRecorderWritesNothing(t *testing.T) {
-	drafts := openRun(t)
-	drafts.IsOn = false
+func TestOutsideAnOpenRunTheRecorderWritesNothing(t *testing.T) {
+	drafts := Drafts{Folder: t.TempDir()}
 	request, _ := http.NewRequest("GET", "http://docker/containers/json", nil)
 
 	if err := NewCallRecorder(WireDocker, drafts).Add("run", Asked(request, time.Now())); err != nil {

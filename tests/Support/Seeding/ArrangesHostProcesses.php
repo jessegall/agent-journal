@@ -15,6 +15,8 @@ use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Connections\PublishedReleases;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\ClaimedRequests;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
@@ -32,10 +34,12 @@ use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionProcess;
 use App\Providers\DriversServiceProvider;
+use App\Recordings\RecordingDrafts;
 use App\Support\AgentImage;
 use App\Support\Compatibility\PinnedBuilds;
 use App\Values\ClaimedRequest;
 use App\Values\DriverFamily;
+use App\Values\FilePath;
 use App\Values\HostInstructionSource;
 use App\Values\HostProcessPlan;
 use Closure;
@@ -396,12 +400,12 @@ trait ArrangesHostProcesses
     public function arrangeContainedJournal(): self
     {
         $settings = [
-            'agents.arrangement' => 'AGENTS_ARRANGEMENT',
-            'agents.installation_name' => 'AGENTS_INSTALLATION_NAME',
-            'agents.agent_image' => 'AGENT_IMAGE',
-            'agents.security_profiles' => 'AGENTS_SECURITY_PROFILES',
-            'agents.workspaces' => 'AGENTS_WORKSPACES',
-            'agents.session_journal_url' => 'AGENTS_SESSION_JOURNAL_URL',
+            'journal.agents.arrangement' => 'AGENTS_ARRANGEMENT',
+            'journal.agents.installation_name' => 'AGENTS_INSTALLATION_NAME',
+            'journal.agents.agent_image' => 'AGENT_IMAGE',
+            'journal.agents.security_profiles' => 'AGENTS_SECURITY_PROFILES',
+            'journal.agents.workspaces' => 'AGENTS_WORKSPACES',
+            'journal.agents.session_journal_url' => 'AGENTS_SESSION_JOURNAL_URL',
         ];
         $environment = TestHost::containedEnvironment();
         $this->app->make(Repository::class)->set(array_map(fn (string $name) => $environment[$name], $settings));
@@ -488,6 +492,16 @@ trait ArrangesHostProcesses
         $host = MockHost::playing(resource_path("recordings/{$recording}"));
         $this->app->instance(HostChannel::class, $host);
         $this->app->instance(MockHost::class, $host);
+
+        return $this;
+    }
+
+    /**
+     * Switches recording on as the record script does, by the switch file the running journal reads at each play.
+     */
+    public function switchRecordingOn(): self
+    {
+        $this->app->make(Files::class)->write(FilePath::in(Place::Project, RecordingDrafts::SWITCH), '');
 
         return $this;
     }
