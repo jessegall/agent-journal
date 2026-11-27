@@ -22,7 +22,7 @@ use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
 use App\Exceptions\StartRefused;
 use App\Hosts\Data\FailedHostCallData;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Hosts\HostOrder;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;

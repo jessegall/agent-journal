@@ -138,4 +138,28 @@ final class ClaimHostOrdersTest extends TestCase
             ],
         );
     }
+
+    public function test_a_container_is_not_handed_out_until_the_host_answered_the_agent_image(): void
+    {
+        $this->journal
+            ->enrollContainedHost('Box', [base_path()])
+            ->host('Box', fn (TestEnrolledHost $box) => $box->openContainer('probe'));
+        $hostId = $this->journal->hostCalled('Box')->hostId;
+        $typesOf = fn (HostOrderClaim $claim) => array_map(
+            fn (ClaimedHostOrder $order) => $order->type,
+            $claim->orders,
+        );
+
+        $whileAllowing = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
+        $this->journal->hostOrder(
+            $this->journal->hostOrdersOn('Box')[0],
+            fn (TestHostOrder $allow) => $allow->answerWith(['allowed' => 1]),
+        );
+        $onceAllowed = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
+
+        $this->journal->assertResult(
+            [['allow_images'], ['open_container']],
+            [$typesOf($whileAllowing), $typesOf($onceAllowed)],
+        );
+    }
 }

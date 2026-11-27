@@ -9,7 +9,7 @@ use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Hosts\Commands\SettleHostUpgrade\SettleHostUpgradeCommand;
 use App\Hosts\Contracts\HostOrderAnswerEvent;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 
 /**
  * The host's answer to its upgrade order, or its refusal, settles the upgrade it waits on.

@@ -15,7 +15,7 @@ use App\Hosts\Enums\HostOrderStatus;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Enums\HostProcessStatus;
-use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Protocol\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Values\HostOrderSource;
@@ -164,7 +164,11 @@ final class NotifyHostProcessTest extends TestCase
         $report = new NotifyHostProcessCommand(
             $this->journal->hostCalled('Other')->hostId,
             $this->journal->hostProcessCalled('shell')->id,
-            HostProcessReportData::from(['report' => 'running', 'identity' => 'pid:1']),
+            HostProcessReportData::from([
+                'process_id' => $this->journal->hostProcessCalled('shell')->id,
+                'report' => 'running',
+                'identity' => 'pid:1',
+            ]),
         );
 
         $this->journal->assertRefused(HostProtocolRefused::class, fn () => $this->journal->asSystem($report));

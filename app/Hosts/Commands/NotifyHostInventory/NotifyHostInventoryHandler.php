@@ -7,10 +7,11 @@ namespace App\Hosts\Commands\NotifyHostInventory;
 use App\Bus\Contracts\CommandHandler;
 use App\Hosts\Data\HostInventoryData;
 use App\Hosts\Data\InventoryProcessData;
-use App\Hosts\Enums\HostRefusal;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
+use App\Hosts\HostCallReader;
 use App\Hosts\HostOrderPlacement;
-use App\Hosts\HostProtocol;
+use App\Hosts\Protocol\HostProtocol;
+use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Time\Contracts\ServerClock;
@@ -22,12 +23,16 @@ use App\Time\Contracts\ServerClock;
  */
 final readonly class NotifyHostInventoryHandler implements CommandHandler
 {
-    public function __construct(private HostOrderPlacement $placement, private ServerClock $clock) {}
+    public function __construct(
+        private HostOrderPlacement $placement,
+        private ServerClock $clock,
+        private HostCallReader $reader,
+    ) {}
 
     public function handle(NotifyHostInventoryCommand $command): void
     {
         $host = $this->placement->orderingHost($command->hostId);
-        $inventory = HostInventoryData::from(json_decode($command->body, true, flags: JSON_THROW_ON_ERROR));
+        $inventory = $this->reader->read($command->body, HostInventoryData::class, 'inventory');
 
         if ($inventory->protocol !== HostProtocol::VERSION) {
             throw HostProtocolUnsupported::forHost($host->id, $inventory->protocol);

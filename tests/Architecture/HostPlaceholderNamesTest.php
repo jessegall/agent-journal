@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Hosts\HostProtocol;
+use App\Hosts\Protocol\HostProtocol;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\HostPlaceholderScan;
 use Tests\Support\ScanCache\ScanCache;

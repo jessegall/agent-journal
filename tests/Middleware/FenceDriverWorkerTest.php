@@ -35,7 +35,7 @@ final class FenceDriverWorkerTest extends TestCase
         $report = new NotifyHostProcessCommand(
             $process->host_id,
             $process->id,
-            HostProcessReportData::from(['report' => 'running', 'identity' => 'pid:1']),
+            HostProcessReportData::from(['process_id' => $process->id, 'report' => 'running', 'identity' => 'pid:1']),
         );
         $lease = $this->journal->service(WorkerLease::class);
 

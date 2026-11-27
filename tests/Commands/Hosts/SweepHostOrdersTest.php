@@ -7,7 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Commands\SweepHostOrders\SweepHostOrdersCommand;
 use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Protocol\HostRefusal;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Carbon\CarbonImmutable;

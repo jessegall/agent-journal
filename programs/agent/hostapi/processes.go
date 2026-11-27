@@ -31,7 +31,6 @@ type OpenPlan struct {
 	RestartWhen host.RestartFile        `json:"restart_when_file"`
 	Environment []string                `json:"environment"`
 	Folder      string                  `json:"folder"`
-	Isolation   string                  `json:"isolation"`
 	Container   *host.ContainerManifest `json:"container"`
 	Labels      host.StartLabels        `json:"labels"`
 	Size        TerminalSize            `json:"size"`
@@ -274,7 +273,7 @@ func (table *ProcessTable) CloseInput(processID string) error {
 }
 
 func (table *ProcessTable) openContainer(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := decodePayload[OpenPlan](order)
+	plan, err := DecodePayload[OpenPlan](order)
 	if err != nil {
 		return nil, err
 	}
@@ -431,12 +430,9 @@ func (table *ProcessTable) watchContainer(held *heldProcess) {
 }
 
 func (table *ProcessTable) openProcess(_ context.Context, order Order) (map[string]any, error) {
-	plan, err := decodePayload[OpenPlan](order)
+	plan, err := DecodePayload[OpenPlan](order)
 	if err != nil {
 		return nil, err
-	}
-	if plan.Isolation != "" && plan.Isolation != "none" {
-		return nil, RefusalError{Refusal: Unsafe, Reason: "this host does not launch with " + plan.Isolation}
 	}
 	if err := table.admit(plan); err != nil {
 		return nil, err
@@ -576,7 +572,7 @@ func hasFileNamed(folder, glob string) bool {
 }
 
 func (table *ProcessTable) resize(_ context.Context, order Order) (map[string]any, error) {
-	size, err := decodePayload[TerminalSize](order)
+	size, err := DecodePayload[TerminalSize](order)
 	if err != nil {
 		return nil, err
 	}
@@ -591,7 +587,7 @@ func (table *ProcessTable) resize(_ context.Context, order Order) (map[string]an
 }
 
 func (table *ProcessTable) signal(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := decodePayload[SignalPlan](order)
+	plan, err := DecodePayload[SignalPlan](order)
 	if err != nil {
 		return nil, err
 	}
@@ -611,7 +607,7 @@ func (table *ProcessTable) signal(ctx context.Context, order Order) (map[string]
 
 // stop ends the process within its grace and force times; its one exit report comes from its watch.
 func (table *ProcessTable) stop(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := decodePayload[StopPlan](order)
+	plan, err := DecodePayload[StopPlan](order)
 	if err != nil {
 		return nil, err
 	}
@@ -637,7 +633,7 @@ func (table *ProcessTable) stop(ctx context.Context, order Order) (map[string]an
 }
 
 func (table *ProcessTable) remove(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := decodePayload[RemovePlan](order)
+	plan, err := DecodePayload[RemovePlan](order)
 	if err != nil {
 		return nil, err
 	}
@@ -819,13 +815,4 @@ func signalOf(state *os.ProcessState) string {
 		return ""
 	}
 	return status.Signal().String()
-}
-
-// decodePayload reads an order's payload into its shape; a payload of another shape is unsafe.
-func decodePayload[T any](order Order) (T, error) {
-	var decoded T
-	if err := json.Unmarshal([]byte(order.Payload), &decoded); err != nil {
-		return decoded, RefusalError{Refusal: Unsafe, Reason: "the payload of " + order.Type + " does not read: " + err.Error()}
-	}
-	return decoded, nil
 }

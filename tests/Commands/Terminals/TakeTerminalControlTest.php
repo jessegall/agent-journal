@@ -6,7 +6,7 @@ namespace Tests\Commands\Terminals;
 
 use App\Access\Contracts\CurrentAuthorizer;
 use App\Agents\Drivers\Enums\DriverOperation;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;

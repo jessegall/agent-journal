@@ -60,7 +60,7 @@ func (input ProcessInput) openPrivate(_ context.Context, order Order) (map[strin
 // writePrivate pulls the submission's value from the journal and writes it once; neither the order nor its answer
 // holds the value.
 func (input ProcessInput) writePrivate(ctx context.Context, order Order) (map[string]any, error) {
-	write, err := decodePayload[PrivateWrite](order)
+	write, err := DecodePayload[PrivateWrite](order)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (input ProcessInput) closePrivate(_ context.Context, order Order) (map[stri
 // writeKeys writes the user's keys at once and raises the input generation; any other write only while the rows it
 // was meant for and the input generation are as the journal saw them.
 func (input ProcessInput) writeKeys(_ context.Context, order Order) (map[string]any, error) {
-	write, err := decodePayload[KeyWrite](order)
+	write, err := DecodePayload[KeyWrite](order)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (input ProcessInput) writeKeys(_ context.Context, order Order) (map[string]
 }
 
 func (input ProcessInput) writeStdin(_ context.Context, order Order) (map[string]any, error) {
-	write, err := decodePayload[StdinWrite](order)
+	write, err := DecodePayload[StdinWrite](order)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (input ProcessInput) closeStdin(_ context.Context, order Order) (map[string
 }
 
 func (input ProcessInput) stream(_ context.Context, order Order) (map[string]any, error) {
-	plan, err := decodePayload[StreamPlan](order)
+	plan, err := DecodePayload[StreamPlan](order)
 	if err != nil {
 		return nil, err
 	}

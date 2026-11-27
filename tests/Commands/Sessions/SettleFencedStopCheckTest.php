@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Sessions;
 
 use App\Agents\Drivers\Enums\DriverType;
-use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Protocol\HostRefusal;
 use App\Models\Sessions\StopCheck;
 use App\Models\Sessions\StopConditionResult;
 use App\Sessions\Commands\SettleFencedStopCheck\SettleFencedStopCheckCommand;

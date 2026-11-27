@@ -6,8 +6,8 @@ namespace Tests\Machinery\Hosts;
 
 use App\Agents\Drivers\Work\DriverRestartSignal;
 use App\Agents\Drivers\Work\DriverWorkers;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Hosts\HostOrder;
 use App\Time\Contracts\ServerClock;
 use Tests\Support\Drivers\MockProcessDriver;

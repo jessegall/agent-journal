@@ -6,8 +6,8 @@ namespace App\Hosts\Commands\RemoveSessionContainer;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Hosts\ArrangementSetting;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\HostOrderPlacement;
+use App\Hosts\Protocol\HostOrderType;
 use App\Values\HostOrderSource;
 
 final readonly class RemoveSessionContainerHandler implements CommandHandler

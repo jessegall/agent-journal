@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hosts\Values;
 
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Values\HostOrderSource;
 
 /**

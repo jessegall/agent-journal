@@ -7,7 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\SettleHostUpgrade\SettleHostUpgradeCommand;
 use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
-use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Protocol\HostRefusal;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestHostOrder;

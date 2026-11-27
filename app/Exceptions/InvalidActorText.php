@@ -12,4 +12,9 @@ final class InvalidActorText extends RuntimeException
     {
         return new self("An actor is written as type:id, such as agent:12 or user:1; \"{$text}\" is not.");
     }
+
+    public static function missing(string $name): self
+    {
+        return new self("{$name} names no actor: write one as type:id, such as agent:12 or user:1.");
+    }
 }

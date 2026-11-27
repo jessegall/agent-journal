@@ -7,10 +7,10 @@ namespace App\Values;
 use App\Agents\ContainerManifest;
 use App\Agents\Values\PlanFile;
 use App\Agents\Values\RestartFile;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
+use App\Hosts\Protocol\HostOrderType;
 use App\Hosts\Values\ContainerLabels;
 use App\Terminals\Screens\ShieldRule;
 

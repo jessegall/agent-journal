@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -69,10 +68,14 @@ func (binder bindingRelay) upgradeOrders(live func() []string, stop func()) map[
 }
 
 func decodeUpgrade(order hostapi.Order, plan *UpgradePlan) error {
-	if err := json.Unmarshal([]byte(order.Payload), plan); err != nil || plan.Version == "" {
+	decoded, err := hostapi.DecodePayload[UpgradePlan](order)
+	if err != nil {
+		return err
+	}
+	if decoded.Version == "" {
 		return hostapi.RefusalError{Refusal: hostapi.Unsafe, Reason: "the upgrade order names no release"}
 	}
-
+	*plan = decoded
 	return nil
 }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Hosts\Commands\RunFenced\RunFencedCommand;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Hosts\Values\FencedRun;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

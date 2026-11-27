@@ -344,14 +344,33 @@ func variablesOf(environment []string) func(string) string {
 	}
 }
 
-// argumentsAfter are the arguments after the program in an argv, past any launcher before it.
+// argumentsAfter are the arguments after the program in an argv, past any launcher before it, or inside the script of
+// a shell that runs it, as a container with a restart command does.
 func argumentsAfter(argv []string, program string) ([]string, bool) {
 	for index, argument := range argv {
 		if filepath.Base(argument) == program {
 			return argv[index+1:], true
 		}
+		if words := scriptWords(argument); len(words) > 1 {
+			if arguments, found := argumentsAfter(words, program); found {
+				return arguments, true
+			}
+		}
 	}
 	return nil, false
+}
+
+// scriptWords are the words of a shell script up to its first statement's end, each without its quotes.
+func scriptWords(script string) []string {
+	words := []string{}
+	for _, word := range strings.Fields(script) {
+		unquoted := strings.Trim(word, "';")
+		words = append(words, unquoted)
+		if strings.HasSuffix(word, ";") && len(words) > 1 && words[0] != "if" {
+			return words
+		}
+	}
+	return words
 }
 
 // replayProgram plays the recording in a session's container by what is typed into it, as its program would.

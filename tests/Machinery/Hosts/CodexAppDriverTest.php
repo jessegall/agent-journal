@@ -6,7 +6,7 @@ namespace Tests\Machinery\Hosts;
 
 use App\Agents\Drivers\Codex\CodexAppDriver;
 use App\Agents\Drivers\Enums\RequestProgress;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostOrder;

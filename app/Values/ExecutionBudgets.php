@@ -89,13 +89,15 @@ final class ExecutionBudgets extends Data
     }
 
     /**
-     * The budgets as the host reads them, by their property names; the stored column keeps its snake case keys.
+     * The budgets the host enforces, by their property names; the stored column keeps its snake case keys. The wall
+     * time is not one of them: the journal ends a session at its deadline itself.
      *
      * @return array<string, int|float>
      */
     public function hostBudgets(): array
     {
-        return $this->transform(TransformationContextFactory::create()->withoutPropertyNameMapping());
+        return $this->except('wallSeconds')
+            ->transform(TransformationContextFactory::create()->withoutPropertyNameMapping());
     }
 
     /**

@@ -10,8 +10,8 @@ use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Commands\NotifyHostOrder\NotifyHostOrderCommand;
 use App\Hosts\Enums\HostOrderStatus;
 use App\Hosts\Enums\HostProcessStatus;
-use App\Hosts\Enums\HostRefusal;
 use App\Hosts\ProcessFeed;
+use App\Hosts\Protocol\HostRefusal;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
@@ -28,8 +28,6 @@ final class NotifyHostOrderTest extends TestCase
 {
     use RefreshHookDatabase;
     use WithActiveAccount;
-
-    private const string REFUSED = '{"status":"refused","refusal":"guard_moved","facts":{"row_hash":"abc"}}';
 
     protected function setUp(): void
     {
@@ -49,7 +47,7 @@ final class NotifyHostOrderTest extends TestCase
         $this->journal->asSystem(new NotifyHostOrderCommand(
             $this->journal->hostCalled('Mac')->hostId,
             $open->id,
-            self::REFUSED,
+            $this->refusedAnswerTo($open->id),
         ));
 
         $open->refresh();
@@ -71,7 +69,7 @@ final class NotifyHostOrderTest extends TestCase
         $this->journal->asSystem(new NotifyHostOrderCommand(
             $this->journal->hostCalled('Mac')->hostId,
             $open->id,
-            self::REFUSED,
+            $this->refusedAnswerTo($open->id),
         ));
 
         $process = $this->journal->hostProcessCalled('shell');
@@ -95,7 +93,7 @@ final class NotifyHostOrderTest extends TestCase
         $this->journal->asSystem(new NotifyHostOrderCommand(
             $this->journal->hostCalled('Mac')->hostId,
             $open->id,
-            self::REFUSED,
+            $this->refusedAnswerTo($open->id),
         ));
 
         $start = $this->journal->startOfSession($opened->sessionId);
@@ -108,8 +106,21 @@ final class NotifyHostOrderTest extends TestCase
     public function test_an_answer_to_another_hosts_order_is_refused(): void
     {
         [$open] = $this->journal->hostOrdersOf('shell');
-        $answer = new NotifyHostOrderCommand($this->journal->hostCalled('Other')->hostId, $open->id, self::REFUSED);
+        $answer = new NotifyHostOrderCommand($this->journal->hostCalled('Other')->hostId, $open->id, $this->refusedAnswerTo($open->id));
 
         $this->journal->assertRefused(HostProtocolRefused::class, fn () => $this->journal->asSystem($answer));
+    }
+
+    /**
+     * The host's answer refusing the order because the rows it was guarded by moved on.
+     */
+    private function refusedAnswerTo(string $orderId): string
+    {
+        return json_encode([
+            'order_id' => $orderId,
+            'status' => 'refused',
+            'refusal' => 'guard_moved',
+            'facts' => ['row_hash' => 'abc'],
+        ], JSON_THROW_ON_ERROR);
     }
 }

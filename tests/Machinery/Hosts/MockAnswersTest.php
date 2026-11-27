@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Tests\Machinery\Hosts;
 
 use Illuminate\Support\Facades\Process;
+use Symfony\Component\Process\InputStream;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\TestHost;
+use Tests\Support\Mocks\Answer;
+use Tests\Support\Mocks\CodexMock;
 use Tests\TestCase;
 
 /**
@@ -55,21 +58,66 @@ final class MockAnswersTest extends TestCase
     public function test_the_codex_app_server_stand_in_answers_each_request_under_its_own_id(): void
     {
         $installation = $this->installation('codex', '0.165.0', 'codex');
+        $mock = CodexMock::from('codex/0.165.0')
+            ->expects('initialize', fn (Answer $answer) => $answer->replies('device-login'))
+            ->expects('initialized', fn (Answer $answer) => $answer)
+            ->expects('account/read', fn (Answer $answer) => $answer->replies('device-login'))
+            ->expects('account/login/start', fn (Answer $answer) => $answer->replies('device-login'));
+        mkdir("{$installation}/mocks", 0o700);
+        file_put_contents("{$installation}/mocks/{$mock->scriptName()}", json_encode($mock, JSON_THROW_ON_ERROR));
         $written = [
             ['id' => 'journal.initialize', 'method' => 'initialize', 'params' => ['clientInfo' => ['name' => 'journal']]],
             ['method' => 'initialized'],
             ['id' => 'journal.account', 'method' => 'account/read', 'params' => []],
             ['id' => 7, 'method' => 'account/login/start', 'params' => ['type' => 'chatgptDeviceCode']],
         ];
-        $input = implode('', array_map(fn (array $line) => json_encode($line, JSON_THROW_ON_ERROR)."\n", $written));
 
-        $answers = array_map(
-            fn (string $line) => json_decode($line, true, flags: JSON_THROW_ON_ERROR),
-            explode("\n", $this->printed($installation, 'codex', ['app-server'], $input)),
-        );
-        $ids = array_values(array_filter(array_map(fn (array $answer) => $answer['id'] ?? null, $answers)));
+        $ids = $this->answeredIds($installation, $written, 3);
 
         $this->journal->assertResult(['journal.initialize', 'journal.account', 7], $ids);
+    }
+
+    /**
+     * The ids the app-server mock answers the lines under, its input held open, as the journal holds it, until the
+     * count of answers came or ten seconds went by: a mock whose input ends cuts off the answers still under way.
+     *
+     * @param  list<array<string, mixed>>  $written
+     * @return list<int|string>
+     */
+    private function answeredIds(string $installation, array $written, int $count): array
+    {
+        $input = new InputStream();
+        $running = Process::env(['CODEX_HOME' => "{$installation}/home"])
+            ->input($input)
+            ->start(["{$installation}/bin/codex", 'app-server']);
+
+        foreach ($written as $line) {
+            $input->write(json_encode($line, JSON_THROW_ON_ERROR)."\n");
+        }
+
+        $deadline = microtime(true) + 10;
+
+        while (count($this->idsIn($running->output())) < $count && microtime(true) < $deadline) {
+            usleep(50_000);
+        }
+
+        $input->close();
+        $running->wait();
+
+        return $this->idsIn($running->output());
+    }
+
+    /**
+     * @return list<int|string>
+     */
+    private function idsIn(string $printed): array
+    {
+        $answers = array_map(
+            fn (string $line) => json_decode($line, true, flags: JSON_THROW_ON_ERROR),
+            array_filter(explode("\n", $printed), fn (string $line) => str_starts_with($line, '{')),
+        );
+
+        return array_values(array_filter(array_map(fn (array $answer) => $answer['id'] ?? null, $answers)));
     }
 
     /**

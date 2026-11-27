@@ -7,7 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Commands\MakeHostFolder\MakeHostFolderCommand;
 use App\Hosts\Commands\ReadHostFolderAnswer\ReadHostFolderAnswerCommand;
-use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Protocol\HostRefusal;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestHostOrder;
 use Tests\Support\RefreshHookDatabase;

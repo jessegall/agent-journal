@@ -8,8 +8,8 @@ use App\Bus\Contracts\CommandRefusal;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Engine\Enums\RefusalCode;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Protocol\HostOrderType;
 use RuntimeException;
 
 /**

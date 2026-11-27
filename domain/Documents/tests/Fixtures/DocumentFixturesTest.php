@@ -69,4 +69,13 @@ final class DocumentFixturesTest extends TestCase
             [$revision->document_id, $revision->body],
         );
     }
+
+    public function test_an_editors_open_draft_is_found_by_the_documents_name(): void
+    {
+        $documents = $this->journal->owner()->fixtures(DocumentFixtures::class)
+            ->publishedDocument('Design', author: 'Owner', body: 'First words.')
+            ->draft('Design', editor: 'Owner', body: 'Unsaved words.');
+
+        $this->journal->assertResult('Unsaved words.', $documents->draftOf('Design', 'Owner')->body);
+    }
 }

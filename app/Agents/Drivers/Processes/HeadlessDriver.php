@@ -17,7 +17,7 @@ use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Hosts\Commands\CloseHostInput\CloseHostInputCommand;
 use App\Hosts\Commands\SignalHostProcess\SignalHostProcessCommand;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostOrder;

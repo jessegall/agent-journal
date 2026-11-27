@@ -6,9 +6,9 @@ namespace Tests\Wire\Hosts;
 
 use App\Agents\Drivers\Enums\DriverType;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Hosts\HostOrder;
 use App\Values\HostOrderSource;
 use Tests\Support\Agents\TestAgent;

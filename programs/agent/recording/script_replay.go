@@ -46,8 +46,8 @@ type Script struct {
 	Opening string `json:"opening"`
 	// ExitCode is what the mock exits with once its input ends.
 	ExitCode int `json:"exitCode"`
-	// EndsAfterLast ends the mock once its last step is answered, as a login does.
-	EndsAfterLast bool         `json:"endsAfterLast"`
+	// EndsAfterEach ends the mock once it answered a step, as a login does, so the next step is the next run's.
+	EndsAfterEach bool         `json:"endsAfterEach"`
 	Steps         []ScriptStep `json:"steps"`
 }
 
@@ -139,8 +139,7 @@ func ScriptReplay(
 		if err != nil {
 			return err
 		}
-		last := script.EndsAfterLast && position == len(script.Steps)
-		if last {
+		if script.EndsAfterEach {
 			answer.play(answers, place)
 			break
 		}

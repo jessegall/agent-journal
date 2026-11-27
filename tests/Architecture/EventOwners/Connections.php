@@ -58,8 +58,8 @@ use App\Events\Connections\ProjectReadAnsweredWithText;
 use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
 use App\Events\Connections\WorkspaceReadAnswered;
-use App\Hosts\Enums\HostOrderType;
-use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostRefusal;
 use App\Projects\Enums\ProjectReadFailure;
 use Tests\Architecture\Support\EventRole;
 

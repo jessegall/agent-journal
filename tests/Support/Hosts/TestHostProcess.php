@@ -43,7 +43,12 @@ final class TestHostProcess
         $this->journal->asSystem(new NotifyHostProcessCommand(
             $process->host_id,
             $process->id,
-            HostProcessReportData::from(['report' => $report, 'identity' => "pid:{$this->name}", 'exit_code' => $exitCode]),
+            HostProcessReportData::from([
+                'process_id' => $process->id,
+                'report' => $report,
+                'identity' => "pid:{$this->name}",
+                'exit_code' => $exitCode,
+            ]),
         ));
 
         return $this;

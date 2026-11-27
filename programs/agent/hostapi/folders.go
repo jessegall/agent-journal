@@ -43,7 +43,7 @@ func (table *ProcessTable) removeFolder(ctx context.Context, order Order) (map[s
 // folderUse answers whether a container still binds the account folder, so a displaced folder is removed only once
 // none does; a daemon that cannot be asked counts as binding it, and a host with no daemon binds none.
 func (table *ProcessTable) folderUse(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := decodePayload[FolderPlan](order)
+	plan, err := DecodePayload[FolderPlan](order)
 	if err != nil {
 		return nil, err
 	}
@@ -64,5 +64,5 @@ func (table *ProcessTable) folderPlan(order Order) (FolderPlan, error) {
 		return FolderPlan{}, RefusalError{Refusal: Unsafe, Reason: errNoAccountFolders}
 	}
 
-	return decodePayload[FolderPlan](order)
+	return DecodePayload[FolderPlan](order)
 }

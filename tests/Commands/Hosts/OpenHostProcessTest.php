@@ -6,11 +6,11 @@ namespace Tests\Commands\Hosts;
 
 use App\Agents\Drivers\Enums\DriverType;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Values\HostOrderSource;

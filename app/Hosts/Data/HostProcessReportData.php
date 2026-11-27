@@ -16,6 +16,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class HostProcessReportData extends Data
 {
     public function __construct(
+        public readonly string $processId,
         public readonly HostProcessReportType $report,
         public readonly string $identity = '',
         public readonly int $generation = 0,

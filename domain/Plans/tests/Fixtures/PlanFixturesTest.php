@@ -6,6 +6,7 @@ namespace Domain\Plans\Tests\Fixtures;
 
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Phase;
+use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
@@ -78,7 +79,7 @@ final class PlanFixturesTest extends TestCase
             ->addPhase('Build')
             ->withPhase('Build', fn (TestPhase $phase) => $phase->place($plan))));
 
-        $this->assertSame(0, Phase::query()->count());
+        $this->assertSame(0, PhaseTask::query()->count());
     }
 
     public function test_two_phases_with_one_title_under_two_plans_stay_apart(): void
@@ -145,5 +146,29 @@ final class PlanFixturesTest extends TestCase
             ->withPlan('Release', fn (TestPlan $plan) => $plan->addPhase('Work'))
             ->withPhase('Work', fn (TestPhase $phase) => $phase
                 ->place($first, $second)->assertTask($first, 1)->assertTask($second, 2));
+    }
+
+    public function test_a_phase_added_by_the_plans_name_takes_its_next_number_and_holds_the_tasks_placed_in_it(): void
+    {
+        $this->journal->owner();
+
+        $task = Task::create(
+            'Write it',
+            'The first step.',
+            $this->journal->ownerUser(),
+            TestProjects::ownerOf($this->journal->ownerUser()),
+        )->assignmentIdentity();
+
+        $plans = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Release')
+            ->addPhaseTo('Release', 'Design')
+            ->addPhaseTo('Release', 'Build', 'Build it')
+            ->placeIn('Build', $task);
+
+        $plans
+            ->withPhase('Design', fn (TestPhase $phase) => $phase->assertNumberIn($plans->planCalled('Release'), 1))
+            ->withPhase('Build', fn (TestPhase $phase) => $phase
+                ->assertNumberIn($plans->planCalled('Release'), 2)
+                ->assertTask($task, 1));
     }
 }

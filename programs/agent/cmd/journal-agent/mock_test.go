@@ -32,3 +32,25 @@ func TestAContainerWhoseEntrypointNamesTheProgramPrintsItsSignIn(t *testing.T) {
 		t.Fatalf("printed %q", printed.String())
 	}
 }
+
+// A container brought back by its restart policy runs a shell that runs the program, so its tty session still plays.
+func TestAContainerWhoseShellRunsTheProgramPlaysTheSession(t *testing.T) {
+	container := &dockermock.Container{}
+	container.Config.Tty = true
+	container.Config.Cmd = []string{"/bin/sh", "-c",
+		`if find "$1" -name "$2" -print -quit | grep -q .; then exec 'agent-program' '--resume' 'a'; fi; exec 'agent-program' '--session-id' 'a'`,
+		"journal-session", "/home/agent/projects", "*a.jsonl"}
+	session := dockermock.Printing("session", 0)
+	programs := programInContainer(mockProgram{"agent-program", recording.Fixture{}, recording.Fixture{}}, session)
+
+	program := programs(container)
+	if program == nil {
+		t.Fatal("the container's shell was not answered as the program's session")
+	}
+	var printed bytes.Buffer
+	program(context.Background(), container, bytes.NewReader(nil), &printed)
+
+	if printed.String() != "session" {
+		t.Fatalf("printed %q", printed.String())
+	}
+}

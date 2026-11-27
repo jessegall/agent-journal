@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\RunFenced;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\HostOrderPlacement;
+use App\Hosts\Protocol\HostOrderType;
 use App\Hosts\Values\FencedRun;
 use App\Values\HostOrderSource;
 

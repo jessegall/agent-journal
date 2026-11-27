@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessReportType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Listeners\RemoveEndedContainers;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\TestEnrolledHost;

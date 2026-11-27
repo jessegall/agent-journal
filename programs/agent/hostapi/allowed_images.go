@@ -14,7 +14,7 @@ type ImagesPlan struct {
 // allowImages makes the pinned images the journal names the only ones a container of this host may run; an image
 // that is no exact digest, or a host that holds no allowed set, refuses the order.
 func (table *ProcessTable) allowImages(_ context.Context, order Order) (map[string]any, error) {
-	plan, err := decodePayload[ImagesPlan](order)
+	plan, err := DecodePayload[ImagesPlan](order)
 	if err != nil {
 		return nil, err
 	}

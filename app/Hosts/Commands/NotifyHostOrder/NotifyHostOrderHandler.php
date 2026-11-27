@@ -7,6 +7,7 @@ namespace App\Hosts\Commands\NotifyHostOrder;
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Data\HostAnswerData;
+use App\Hosts\HostCallReader;
 use App\Models\Hosts\HostOrder;
 use App\Time\Contracts\ServerClock;
 
@@ -15,7 +16,7 @@ use App\Time\Contracts\ServerClock;
  */
 final readonly class NotifyHostOrderHandler implements CommandHandler
 {
-    public function __construct(private ServerClock $clock) {}
+    public function __construct(private ServerClock $clock, private HostCallReader $reader) {}
 
     public function handle(NotifyHostOrderCommand $command): void
     {
@@ -25,7 +26,7 @@ final readonly class NotifyHostOrderHandler implements CommandHandler
             throw HostProtocolRefused::foreignOrder($command->hostId, $order->id);
         }
 
-        $answer = HostAnswerData::from(json_decode($command->body, true, flags: JSON_THROW_ON_ERROR));
+        $answer = $this->reader->read($command->body, HostAnswerData::class, 'answer to order '.$order->id);
         $order->answer($answer, $this->clock->now());
     }
 }

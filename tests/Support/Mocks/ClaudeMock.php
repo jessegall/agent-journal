@@ -49,7 +49,7 @@ final class ClaudeMock extends Mock
         return 'login-with-code';
     }
 
-    protected function endsAfterLast(): bool
+    protected function endsAfterEach(): bool
     {
         return true;
     }

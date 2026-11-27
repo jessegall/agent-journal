@@ -38,3 +38,23 @@ func TestAContainedPlanFileNamingAHostNameIsRefused(t *testing.T) {
 		}
 	}
 }
+
+// An order's payload is read strictly: a field the protocol does not know, a missing field and a value of the wrong
+// type are each refused as unsafe, naming the field and the order type.
+func TestAnOrderPayloadIsReadStrictly(t *testing.T) {
+	cases := map[string]string{
+		`{"columns":80,"rows":24,"colour":"red"}`: `the payload of resize holds the field "colour", which the protocol does not know`,
+		`{"columns":80}`:               `the payload of resize misses its field rows`,
+		`{"columns":"wide","rows":24}`: `the payload of resize holds columns as string, not uint16`,
+	}
+	for payload, reason := range cases {
+		_, err := DecodePayload[TerminalSize](Order{Type: "resize", Payload: payload})
+		refusal, isRefusal := err.(RefusalError)
+		if !isRefusal || refusal.Refusal != Unsafe || refusal.Reason != reason {
+			t.Errorf("the payload %s was answered %v, not %q", payload, err, reason)
+		}
+	}
+	if size, err := DecodePayload[TerminalSize](Order{Type: "resize", Payload: `{"columns":80,"rows":24}`}); err != nil || size.Rows != 24 {
+		t.Fatalf("a whole payload did not read: %v %v", size, err)
+	}
+}

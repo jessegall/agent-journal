@@ -7,9 +7,11 @@ namespace Tests\Machinery\Hosts;
 use App\Hosts\Data\HostAnswerData;
 use App\Hosts\Data\HostInventoryData;
 use App\Hosts\Data\HostProcessReportData;
-use App\Hosts\Enums\HostOrderType;
-use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Exceptions\HostCallUnreadable;
+use App\Hosts\HostCallReader;
 use App\Hosts\HostOrderPayload;
+use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
@@ -22,6 +24,7 @@ use Tests\TestCase;
  * reads each committed answer, report and inventory.
  */
 #[TestsMachinery(HostOrderPayload::class)]
+#[TestsMachinery(HostCallReader::class)]
 final class HostProtocolConformanceTest extends TestCase
 {
     private const string VECTORS = __DIR__.'/../../../programs/agent/hostapi/testdata/conformance.json';
@@ -50,9 +53,13 @@ final class HostProtocolConformanceTest extends TestCase
     {
         $vectors = $this->vectors();
 
-        $answers = array_map(fn (array $answer) => HostAnswerData::from($answer), $vectors['answers']);
-        $report = HostProcessReportData::from($vectors['reports'][0]);
-        $inventory = HostInventoryData::from($vectors['inventory']);
+        $reader = $this->app->make(HostCallReader::class);
+        $answers = array_map(
+            fn (array $answer) => $reader->read($this->encoded($answer), HostAnswerData::class, 'answer'),
+            $vectors['answers'],
+        );
+        $report = $reader->read($this->encoded($vectors['reports'][0]), HostProcessReportData::class, 'report');
+        $inventory = $reader->read($this->encoded($vectors['inventory']), HostInventoryData::class, 'inventory');
 
         $this->assertSame([HostRefusal::GuardMoved, HostRefusal::UnknownOrder], array_map(
             fn (HostAnswerData $answer) => $answer->refusalReason(),
@@ -66,6 +73,34 @@ final class HostProtocolConformanceTest extends TestCase
             ], '01jprocess000000000000000001', true],
             [$inventory->capabilities, $inventory->processes[0]->processId, $inventory->processes[0]->isTerminalHeld],
         );
+    }
+
+    public function test_a_host_call_with_a_field_the_protocol_does_not_know_is_refused_by_its_name(): void
+    {
+        $inventory = $this->vectors()['inventory'];
+        $inventory['processes'][0]['colour'] = 'red';
+
+        $this->expectExceptionObject(HostCallUnreadable::unknownField('inventory', 'processes.0.colour'));
+
+        $this->app->make(HostCallReader::class)->read($this->encoded($inventory), HostInventoryData::class, 'inventory');
+    }
+
+    public function test_a_host_call_missing_a_field_it_needs_is_refused_by_its_name(): void
+    {
+        $answer = $this->vectors()['answers'][0];
+        unset($answer['status']);
+
+        $this->expectExceptionObject(HostCallUnreadable::missingField('answer', 'status'));
+
+        $this->app->make(HostCallReader::class)->read($this->encoded($answer), HostAnswerData::class, 'answer');
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $fields
+     */
+    private function encoded(array $fields): string
+    {
+        return json_encode($fields, JSON_THROW_ON_ERROR);
     }
 
     /**

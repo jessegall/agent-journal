@@ -9,7 +9,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Hosts\Contracts\ProjectFiles;
 use App\Hosts\EnrolledHost;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Hosts\HostOrder;

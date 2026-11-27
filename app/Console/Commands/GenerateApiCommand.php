@@ -61,7 +61,7 @@ final class GenerateApiCommand extends Command
         foreach (self::apiFolders($files, 'app/Api/*') as $folder) {
             $area = basename($folder->relative);
             $namespace = "App\\Api\\{$area}";
-            $source = ApiGroups::group($files->realPath($folder), $namespace, $area);
+            $source = ApiGroups::group($files->realPath($folder), $folder->relative, $namespace, $area);
 
             if ($source !== null) {
                 $groupName = ApiGroups::groupName($area);
@@ -76,7 +76,13 @@ final class GenerateApiCommand extends Command
 
         foreach (self::apiFolders($files, 'domain/*/src/Api') as $folder) {
             $domain = basename(dirname($folder->relative, 2));
-            $source = ApiGroups::group($files->realPath($folder), "Domain\\{$domain}\\Api", $domain);
+
+            $source = ApiGroups::group(
+                $files->realPath($folder),
+                $folder->relative,
+                "Domain\\{$domain}\\Api",
+                $domain,
+            );
 
             if ($source !== null) {
                 $generated["{$folder->relative}/".ApiGroups::groupName($domain).'.php'] = $source;

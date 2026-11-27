@@ -6,7 +6,7 @@ namespace Tests\Commands\Hosts;
 
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Commands\RemoveSessionContainer\RemoveSessionContainerCommand;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

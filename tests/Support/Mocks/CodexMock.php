@@ -38,7 +38,7 @@ final class CodexMock extends Mock
         return '';
     }
 
-    protected function endsAfterLast(): bool
+    protected function endsAfterEach(): bool
     {
         return false;
     }

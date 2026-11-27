@@ -7,6 +7,7 @@ namespace App\Hosts\Commands\NotifyHostOutput;
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Data\HostOutputData;
+use App\Hosts\HostCallReader;
 use App\Hosts\ProcessFeed;
 use App\Models\Hosts\HostProcess;
 use App\Terminals\HostFrameScreens;
@@ -25,6 +26,7 @@ final readonly class NotifyHostOutputHandler implements CommandHandler
         private HostFrameScreens $screens,
         private RateLimiter $limiter,
         private LoggerInterface $log,
+        private HostCallReader $reader,
     ) {}
 
     public function handle(NotifyHostOutputCommand $command): void
@@ -43,7 +45,7 @@ final readonly class NotifyHostOutputHandler implements CommandHandler
             throw HostProtocolRefused::foreignProcess($command->hostId, $process->id);
         }
 
-        $output = HostOutputData::from(json_decode($command->body, true, flags: JSON_THROW_ON_ERROR));
+        $output = $this->reader->read($command->body, HostOutputData::class, 'output of process '.$command->processId);
         $this->feed->push($process->id, $output);
         $this->screens->show($process, $output, CarbonImmutable::now());
         $process->recordOutputThrough($output->stdoutThrough());

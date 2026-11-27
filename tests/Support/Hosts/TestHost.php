@@ -625,7 +625,7 @@ final class TestHost
         foreach ($steps as $step) {
             $running = is_string($step) ? new $step() : $step;
             file_put_contents("{$this->stepsRan()}/current", class_basename($running));
-            $running($this->servedJournal);
+            $running($this->journal);
             $this->markRan($running::class);
         }
 

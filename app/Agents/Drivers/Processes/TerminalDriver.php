@@ -26,7 +26,7 @@ use App\Hosts\Commands\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
 use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Hosts\Data\HostFrameData;
 use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Messages\Data\DraftChoiceMessageData;
 use App\Messages\Data\PrivateInputMessageData;
 use App\Messages\Data\TerminalInputMessageData;
@@ -588,7 +588,11 @@ final class TerminalDriver implements ProcessDriver
 
         $operation = DriverOperation::from($request->operation);
 
-        $scripted = [DriverOperation::ChangeModel, DriverOperation::ChangeEffort, DriverOperation::KeyScript];
+        $scripted = [
+            DriverOperation::ChangeModel,
+            DriverOperation::ChangeEffort,
+            DriverOperation::KeyScript,
+        ];
 
         if (in_array($operation, $scripted, true)) {
             return $actions->then($this->startScript($request, $operation, $frame));

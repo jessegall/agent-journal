@@ -8,7 +8,7 @@ use App\Accounts\Enums\CommandEntry;
 use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Hosts\Contracts\HostOrderAnswerEvent;
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 use App\Sessions\Commands\SettleFencedStopCheck\SettleFencedStopCheckCommand;
 
 /**

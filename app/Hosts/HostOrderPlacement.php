@@ -6,8 +6,9 @@ namespace App\Hosts;
 
 use App\Exceptions\HostProtocolRefused;
 use App\Exceptions\WorkerFenced;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
+use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostProtocol;
 use App\Hosts\Values\HostOrderBody;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;

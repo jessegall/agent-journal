@@ -6,8 +6,8 @@ namespace App\Projects\Commands\RequestProjectRead;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\HostProtocolRefused;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\HostOrderPlacement;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectRead;
 use App\Projects\Exceptions\ProjectReadRefused;

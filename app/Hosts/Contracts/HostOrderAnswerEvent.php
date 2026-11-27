@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hosts\Contracts;
 
-use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Protocol\HostOrderType;
 
 /**
  * A host answered an order, or refused it, or it expired unanswered: the order's worker reads the answer.

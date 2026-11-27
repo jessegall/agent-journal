@@ -112,8 +112,8 @@ final class CodexOwnerLifeTest extends TestCase
 
         return $opened($opened(CodexMock::from('codex/0.165.0'))
             ->expects('thread/start', fn (Answer $answer) => $answer->replies('app-server'))
-            ->expects('turn/start', $turn)
             ->expects('thread/start', fn (Answer $answer) => $answer->replies('app-server'))
+            ->expects('turn/start', $turn)
             ->expects('turn/start', $turn))
             ->expects('thread/resume', fn (Answer $answer) => $answer->replies('resume-and-interrupt'))
             ->expects('turn/start', fn (Answer $answer) => $answer->replies('resume-and-interrupt'));

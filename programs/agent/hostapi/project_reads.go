@@ -2,7 +2,6 @@ package hostapi
 
 import (
 	"context"
-	"encoding/json"
 
 	"journal-agent/client"
 	"journal-agent/host"
@@ -21,8 +20,11 @@ func (reads ProjectReads) Executors() map[string]Executor {
 }
 
 func (reads ProjectReads) read(ctx context.Context, order Order) (map[string]any, error) {
-	var read client.ProjectRead
-	if err := json.Unmarshal([]byte(order.Payload), &read); err != nil || read.ID == "" {
+	read, err := DecodePayload[client.ProjectRead](order)
+	if err != nil {
+		return nil, err
+	}
+	if read.ID == "" {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "the read_project order names no project read"}
 	}
 	if err := reads.Journal.NotifyProjectRead(ctx, read.ID, reads.Reader.Answer(read)); err != nil {

@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Support\Hosts;
 
+use App\Agents\ContainerManifest;
+use App\Agents\Enums\WorkspaceUse;
+use App\Agents\SecurityOptions;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
+use App\Support\MountRules;
+use App\Values\ExecutionBudgets;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
 use Closure;
@@ -42,6 +47,40 @@ final readonly class TestEnrolledHost
             base_path(),
         );
         $this->journal->openPlannedProcess($this->name, $name, $plan, $runtimeId);
+
+        return $this;
+    }
+
+    /**
+     * The host is ordered to open a container of the test host's echo image on a workspace; the host has
+     * not reported it yet.
+     */
+    public function openContainer(string $name): self
+    {
+        $manifest = ContainerManifest::make(
+            TestHost::IMAGE,
+            '10001:10001',
+            true,
+            [],
+            false,
+            "journal-net-{$name}",
+            [MountRules::local()->workspaceMount(base_path('storage/framework'), WorkspaceUse::Shared)],
+            [],
+            ExecutionBudgets::defaults(),
+            MountRules::local(),
+            SecurityOptions::none(),
+            true,
+        );
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Terminal,
+            RestartPolicy::Never,
+            ['echo-program'],
+            [],
+            '/workspace',
+            $manifest,
+        );
+        $this->journal->openPlannedProcess($this->name, $name, $plan);
 
         return $this;
     }

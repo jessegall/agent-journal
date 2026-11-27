@@ -10,7 +10,7 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
-use App\Hosts\HostProtocol;
+use App\Hosts\Protocol\HostProtocol;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\OpenHostPrivateEntry;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\HostOrderPlacement;
+use App\Hosts\Protocol\HostOrderType;
 
 final readonly class OpenHostPrivateEntryHandler implements CommandHandler
 {

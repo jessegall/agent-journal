@@ -8,7 +8,9 @@ use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Hosts\Data\HostProcessReportData;
+use App\Hosts\HostCallReader;
 use App\Hosts\Values\HostContext;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 /**
@@ -19,10 +21,12 @@ final readonly class ProcessReportController
     #[Dispatches(NotifyHostProcessCommand::class)]
     public function __invoke(
         string $process,
-        HostProcessReportData $report,
+        Request $request,
+        HostCallReader $reader,
         HostContext $host,
         CommandBus $commands,
     ): Response {
+        $report = $reader->read($request->getContent(), HostProcessReportData::class, "report of process {$process}");
         $commands->run(new NotifyHostProcessCommand($host->hostId, $process, $report));
 
         return new Response(status: Response::HTTP_NO_CONTENT);

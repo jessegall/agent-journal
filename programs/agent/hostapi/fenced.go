@@ -73,7 +73,7 @@ type FencedResult struct {
 // then runs each program in turn within its deadline and the budget; the fence opens again when the runs end, or at
 // the budget's end if the host never got there.
 func (table *ProcessTable) runFenced(ctx context.Context, order Order) (map[string]any, error) {
-	plan, err := decodePayload[FencedPlan](order)
+	plan, err := DecodePayload[FencedPlan](order)
 	if err != nil {
 		return nil, err
 	}

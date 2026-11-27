@@ -10,11 +10,11 @@ use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
 use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Hosts\HostOrder;
 use App\Processes\Enums\RuntimeActivity;
 use App\Values\HostOrderSource;
@@ -87,6 +87,7 @@ final class SessionLifeTest extends TestCase
             ->hostProcess('echo', fn (TestHostProcess $echo) => $echo->driveUntil($this->echoed('hello')))
             ->testHost(fn (TestHost $mac) => $mac->restartHost())
             ->hostProcess('echo', fn (TestHostProcess $echo) => $echo
+                ->beginWorker()
                 ->driveUntil($this->ordered('echo', HostOrderType::Snapshot, 2)))
             ->asSystem($this->stopOf('echo'));
 
@@ -214,8 +215,8 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_and_a_codex_terminal_lost_with_their_hosts_restart_are_both_opened_again(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5', 'done')
-            ->answerTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5', self::CODEX_ANSWER)
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5', 'done');
+        $this->answerTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5', self::CODEX_ANSWER)
             ->testHost(fn (TestHost $mac) => $mac->restartHost())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Lost))
             ->hostProcess('codex', fn (TestHostProcess $codex) => $codex->waitFor(HostProcessStatus::Lost))

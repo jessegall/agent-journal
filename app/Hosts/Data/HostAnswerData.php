@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hosts\Data;
 
 use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Protocol\HostRefusal;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -21,6 +21,7 @@ final class HostAnswerData extends Data
      * @param  array<string, mixed>  $facts
      */
     public function __construct(
+        public readonly string $orderId,
         public readonly HostOrderStatus $status,
         public readonly HostRefusal|null $refusal = null,
         public readonly array $facts = [],

@@ -94,3 +94,4 @@ secrets/*
 !/storage/framework/
 !/storage/logs/
 /storage/framework/*.txt
+.claude/hooks/phase-end.reason

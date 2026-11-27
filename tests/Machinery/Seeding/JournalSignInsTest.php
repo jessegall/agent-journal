@@ -50,4 +50,12 @@ final class JournalSignInsTest extends TestCase
             fn (TestJournal $journal) => $journal->submitSignInCode('claude', 'code', 'code-1'),
         );
     }
+
+    public function test_the_newest_sign_in_is_the_one_asked_for_last(): void
+    {
+        $this->journal->owner()
+            ->beginSignIn('claude', 'claude-code')
+            ->beginSignIn('codex', 'codex')
+            ->assertResult('codex', $this->journal->newestSignIn());
+    }
 }

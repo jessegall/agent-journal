@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Hosts\Contracts\HostProcessEndEvent;
-use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostOrder;
 use App\Time\Contracts\ServerClock;
 

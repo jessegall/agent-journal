@@ -214,3 +214,29 @@ func TestAStartCarriesOnWhereTheStartBeforeItLeftOff(t *testing.T) {
 		t.Fatalf("played %d: %v", place.played, err)
 	}
 }
+
+// A login answers one step a run: it ends once it answered, its input still open, and the next run takes the next step.
+func TestAMockThatEndsAfterEachStepAnswersOneStepARun(t *testing.T) {
+	script := scriptOf(t,
+		ScriptStep{Method: "thread/start", Actions: reply()},
+		ScriptStep{Method: "thread/start", Actions: reply()},
+	)
+	script.EndsAfterEach = true
+	place := &testPlace{ran: map[string]bool{}}
+	reader, writer := io.Pipe()
+	defer writer.Close()
+	done := make(chan error, 1)
+	go func() {
+		done <- ScriptReplay(script, place, reader, &lockedBuilder{}, io.Discard, os.Getenv, func(string) {})
+	}()
+	_, _ = io.WriteString(writer, `{"id":"t","method":"thread/start","params":{}}`+"\n")
+
+	select {
+	case err := <-done:
+		if err != nil || place.played != 1 {
+			t.Fatalf("played %d: %v", place.played, err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("the run did not end once it answered its step")
+	}
+}

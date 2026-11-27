@@ -50,9 +50,9 @@ abstract class Mock implements JsonSerializable
     abstract protected function opening(): string;
 
     /**
-     * Whether the mock ends once its last step is answered, as a login does.
+     * Whether each run of the mock ends once it answered a step, as a login does, so the next run takes the next step.
      */
-    abstract protected function endsAfterLast(): bool;
+    abstract protected function endsAfterEach(): bool;
 
     /**
      * The methods of the lines the mock expects, in order.
@@ -75,7 +75,7 @@ abstract class Mock implements JsonSerializable
             'program' => $this->program(),
             'opening' => $opening,
             'exitCode' => $opening === '' ? 0 : self::exitCodeOf($opening),
-            'endsAfterLast' => $this->endsAfterLast(),
+            'endsAfterEach' => $this->endsAfterEach(),
             'steps' => $this->steps,
         ];
     }

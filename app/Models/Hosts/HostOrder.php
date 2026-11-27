@@ -15,10 +15,10 @@ use App\Events\Connections\HostOrderOfferedAgain;
 use App\Events\Connections\HostOrderRefused;
 use App\Hosts\Data\HostAnswerData;
 use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Enums\HostOrderType;
-use App\Hosts\Enums\HostRefusal;
 use App\Hosts\Exceptions\HostOrderStateRefused;
 use App\Hosts\HostOrderPayload;
+use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Values\HostOrderBody;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
@@ -172,7 +172,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $this->forgetCarriedSecrets();
         $this->status = HostOrderStatus::Refused;
         $this->refusal = $refusal;
-        $this->answer = new HostAnswerData(HostOrderStatus::Refused, $refusal, $facts);
+        $this->answer = new HostAnswerData($this->id, HostOrderStatus::Refused, $refusal, $facts);
         $this->answered_at = $at;
         $this->saveAndAssert();
         $this->raise(new HostOrderRefused($this->id, $this->host_process_id, $this->type, $refusal));
@@ -323,15 +323,24 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
 
     /**
      * The orders the host may take now, by their number: those waiting and in time, and those it claimed that went
-     * unanswered too long, locked so a claim beside this one skips them.
+     * unanswered too long, locked so a claim beside this one skips them. While the host has not answered an order to
+     * allow images, no container is opened: the host carries out the two side by side, and the open would find the
+     * image not yet allowed.
      *
      * @return list<self>
      */
     public static function claimable(Host $host, CarbonImmutable $now, int $limit): array
     {
+        $isAllowingImages = self::query()
+            ->forHost($host)
+            ->where('type', HostOrderType::AllowImages)
+            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed])
+            ->exists();
+
         $orders = self::query()
             ->forHost($host)
             ->takeableAt($now)
+            ->when($isAllowingImages, fn (Builder $query) => $query->where('type', '!=', HostOrderType::OpenContainer))
             ->orderBy('sequence')
             ->lock('for update skip locked')
             ->readExactly($limit)

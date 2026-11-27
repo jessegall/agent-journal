@@ -32,8 +32,6 @@ final class HostAnswersTest extends TestCase
         'host_orders',
     ];
 
-    private const string DONE = '{"status":"done","facts":{"stopped":true}}';
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -47,7 +45,11 @@ final class HostAnswersTest extends TestCase
         $answers = $this->journal->service(HostAnswers::class);
         $answered = $this->stop();
         $hostId = $this->journal->hostCalled('Mac')->hostId;
-        $this->journal->asSystem(new NotifyHostOrderCommand($hostId, $answered, self::DONE));
+        $this->journal->asSystem(new NotifyHostOrderCommand(
+            $hostId,
+            $answered,
+            json_encode(['order_id' => $answered, 'status' => 'done', 'facts' => ['stopped' => true]], JSON_THROW_ON_ERROR),
+        ));
 
         $unanswered = $this->stop();
 

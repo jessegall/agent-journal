@@ -17,7 +17,7 @@ trait ReadsActorText
      */
     protected function actorOption(string $name): ActorReference
     {
-        return ActorReference::fromText((string) $this->option($name));
+        return $this->actorOf($this->option($name), "--{$name}");
     }
 
     /**
@@ -25,6 +25,18 @@ trait ReadsActorText
      */
     protected function actorArgument(string $name): ActorReference
     {
-        return ActorReference::fromText((string) $this->argument($name));
+        return $this->actorOf($this->argument($name), $name);
+    }
+
+    /**
+     * @throws InvalidActorText
+     */
+    private function actorOf(mixed $text, string $name): ActorReference
+    {
+        if (! is_string($text)) {
+            throw InvalidActorText::missing($name);
+        }
+
+        return ActorReference::fromText($text);
     }
 }

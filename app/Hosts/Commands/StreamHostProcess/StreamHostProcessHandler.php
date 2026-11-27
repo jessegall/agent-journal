@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\StreamHostProcess;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\Enums\HostOrderType;
 use App\Hosts\HostOrderPlacement;
+use App\Hosts\Protocol\HostOrderType;
 
 /**
  * Makes the stream order of a running process, refused to a replaced worker.
