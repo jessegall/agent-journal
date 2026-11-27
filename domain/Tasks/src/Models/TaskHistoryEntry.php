@@ -14,10 +14,9 @@ use App\Records\Values\ReadOrder;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskStatus;
+use Domain\Tasks\Models\Concerns\TaskSequence;
 use Domain\Tasks\Values\TaskTransition;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -43,6 +42,7 @@ final class TaskHistoryEntry extends JournalModel implements ReadableModel
     use BoundedReads;
     use Linkable;
     use OrdersById;
+    use TaskSequence;
 
     public const null UPDATED_AT = null;
 
@@ -144,40 +144,5 @@ final class TaskHistoryEntry extends JournalModel implements ReadableModel
             ->newestFirst()
             ->limit($limit)
             ->get();
-    }
-
-    // ----------[ Scopes ]----------
-
-    /**
-     * The task's history.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofTask(Builder $query, string $taskId): void
-    {
-        $query->where('task_id', $taskId);
-    }
-
-    /**
-     * The entries before that sequence number; all of them with none.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function before(Builder $query, int|null $sequence): void
-    {
-        $query->when($sequence !== null, fn (Builder $earlier) => $earlier->where('sequence', '<', $sequence));
-    }
-
-    /**
-     * The entries newest sequence number first.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function newestSequenceFirst(Builder $query): void
-    {
-        $query->orderByDesc('sequence');
     }
 }

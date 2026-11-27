@@ -7,7 +7,6 @@ namespace Domain\Rules;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
-use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasLinkRecords;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
@@ -23,8 +22,6 @@ use App\Support\Exports;
 use App\Support\Searchable;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
-use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
-use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Enums\RuleStatus;
@@ -54,7 +51,6 @@ use Domain\Rules\Values\RuleList;
 use Domain\Rules\Values\RuleView;
 
 final class RulesDomain extends Domain implements
-    CommandProvider,
     LinkRecordProvider,
     McpToolProvider,
     NavigationProvider,
@@ -107,15 +103,6 @@ final class RulesDomain extends Domain implements
     /**
      * @return list<class-string>
      */
-    public function commands(): array
-    {
-        return [
-            ApproveRuleCommand::class,
-            DenyRuleCommand::class,
-            ProposeRuleCommand::class,
-            RemoveRuleCommand::class,
-        ];
-    }
 
     public function pages(): array
     {

@@ -8,17 +8,15 @@ use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageSent;
 use App\Models\Messages\Message;
 use App\Stacks\Attributes\StateType;
+use App\Stacks\Concerns\ToolBudgetDecisions;
 use App\Stacks\Contracts\Work\DurableState;
 use App\Stacks\Contracts\Work\UniqueSubjectState;
 use App\Stacks\Support\AnswerMessageStateReference;
 use App\Stacks\Values\AnswerBudget;
 use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\FileEditRequested;
-use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
-use App\Support\Inputs\ToolRequested;
 use App\Support\RecordIdentity;
 use App\Values\AgentText;
 use PhpOption\Option;
@@ -32,6 +30,8 @@ use PhpOption\Some;
 #[StateType(AnswerMessageStateReference::class, schemaVersion: 1)]
 final class AnswerMessageState extends AgentState implements DurableState, UniqueSubjectState
 {
+    use ToolBudgetDecisions;
+
     private bool $isAnswered = false;
 
     private int $toolUses = 0;
@@ -59,33 +59,10 @@ final class AnswerMessageState extends AgentState implements DurableState, Uniqu
      */
     public function instruction(): Option
     {
-        return new Some($this->mustAnswerNow() ? $this->answerNowText() : $this->replyText());
+        return new Some($this->mustActNow() ? $this->actNowText() : $this->replyText());
     }
 
     // ----------[ Hooks ]----------
-
-    public function onShellCommand(ShellCommandRequested $input): Decision
-    {
-        if ($input->isReadOnly()) {
-            return Decision::delegate();
-        }
-
-        return $this->decide();
-    }
-
-    public function onToolRequested(ToolRequested $input): Decision
-    {
-        if ($input->isReadOnly()) {
-            return Decision::delegate();
-        }
-
-        return $this->decide();
-    }
-
-    public function onFileEdit(FileEditRequested $input): Decision
-    {
-        return $this->decide();
-    }
 
     public function onStop(StopRequested $input): Decision
     {
@@ -93,7 +70,7 @@ final class AnswerMessageState extends AgentState implements DurableState, Uniqu
             return Decision::delegate();
         }
 
-        return Decision::deny($this->answerNowText());
+        return Decision::deny($this->actNowText());
     }
 
     public function onToolFinished(ToolFinished $input): Decision
@@ -132,16 +109,7 @@ final class AnswerMessageState extends AgentState implements DurableState, Uniqu
         return $actor->isAgent() && $actor->id === $this->agentId;
     }
 
-    private function decide(): Decision
-    {
-        if ($this->mustAnswerNow()) {
-            return Decision::deny($this->answerNowText());
-        }
-
-        return Decision::delegate();
-    }
-
-    private function mustAnswerNow(): bool
+    private function mustActNow(): bool
     {
         return ! $this->isAnswered && $this->budget->leftAfter($this->toolUses) === 0;
     }
@@ -155,7 +123,7 @@ final class AnswerMessageState extends AgentState implements DurableState, Uniqu
         ]);
     }
 
-    private function answerNowText(): AgentText
+    private function actNowText(): AgentText
     {
         return AgentText::of('core.messages.answer_now', [
             'message' => $this->messageNumber,

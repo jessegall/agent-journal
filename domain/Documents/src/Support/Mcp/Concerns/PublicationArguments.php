@@ -27,7 +27,7 @@ trait PublicationArguments
     protected function target(ToolArguments $arguments, int|null $expectedRevision = null): DraftTarget
     {
         return new DraftTarget(
-            (string) $arguments->recordReference('doc_id'),
+            $arguments->recordReferenceText('doc_id'),
             $arguments->text('edit_id'),
             $expectedRevision,
         );

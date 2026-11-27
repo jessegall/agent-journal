@@ -19,6 +19,7 @@ use App\Bootstrap\Exceptions\TraitInterfaceMissing;
 use App\Bootstrap\ExportValidator as ExportsCheck;
 use App\Bootstrap\TraitRequirements;
 use App\Bus\CommandOwner;
+use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandMiddlewareProvider;
 use App\Bus\Contracts\CommandProvider;
 use App\Bus\Contracts\CommandRuleProvider;
@@ -653,13 +654,17 @@ final readonly class DomainEntry
     }
 
     /**
+     * The commands the domain keeps in its Commands folder, with any it provides from elsewhere.
+     *
      * @return list<class-string>
      */
     private function commands(): array
     {
-        return $this->provided(CommandProvider::class)
+        $provided = $this->provided(CommandProvider::class)
             ->map(fn (CommandProvider $domain) => $domain->commands())
             ->getOrElse([]);
+
+        return array_values(array_unique([...Codebase::in($this->folder.'/Commands/*', Command::class), ...$provided]));
     }
 
     /**

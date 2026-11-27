@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions;
 
-use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandProvider;
 use App\Mcp\Contracts\McpToolProvider;
-use App\Support\Codebase;
 use App\Support\Domain;
 use App\Support\Exports;
 use Domain\Questions\Commands\AnswerQuestion\AnswerQuestionCommand;
@@ -18,7 +15,7 @@ use Domain\Questions\Support\ShownQuestion;
 use Domain\Questions\Values\QuestionNotificationKeys;
 use Domain\Questions\Values\QuestionSummary;
 
-final class QuestionsDomain extends Domain implements CommandProvider, McpToolProvider
+final class QuestionsDomain extends Domain implements McpToolProvider
 {
     public function description(): string
     {
@@ -41,11 +38,6 @@ final class QuestionsDomain extends Domain implements CommandProvider, McpToolPr
             ->contracts(QuestionSummaryReader::class)
             ->values(QuestionNotificationKeys::class, QuestionSummary::class, ShownQuestion::class)
             ->build();
-    }
-
-    public function commands(): array
-    {
-        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function mcpResources(): array
