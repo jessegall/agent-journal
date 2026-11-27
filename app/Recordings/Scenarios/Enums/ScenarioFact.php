@@ -10,6 +10,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Projects\Host;
+use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Recordings\Scenarios\ScenarioRun;
@@ -43,7 +44,7 @@ enum ScenarioFact: string
                 (string) $run->lastAgent()->current_session_id,
                 DriverOperation::Wake,
             ),
-            self::StartRefused => SessionRequest::findUnderRequest($run->startRequest())?->isRefused() === true,
+            self::StartRefused => $this->isStartRefused($run),
             // A turn ends when its wake or message is applied: the driver reports it so once the turn is done.
             self::TurnEnded => $run->turnsAsked() > 0 && $this->turnsEndedOf($run) >= $run->turnsAsked(),
             self::Interrupted => DriverRequest::hasAppliedOf(
@@ -64,5 +65,20 @@ enum ScenarioFact: string
     private function turnsEndedOf(ScenarioRun $run): int
     {
         return DriverRequest::countTurnsEndedOf((string) $run->lastAgent()->current_session_id);
+    }
+
+    /**
+     * Whether the run's start was refused: its request refused, or the start it made ended on the host's refusal.
+     */
+    private function isStartRefused(ScenarioRun $run): bool
+    {
+        $request = SessionRequest::findUnderRequest($run->startRequest());
+
+        if ($request === null || $request->isRefused()) {
+            return $request !== null;
+        }
+
+        return $request->session_id !== null
+            && SessionProcess::findLatestOfSession($request->session_id)?->isRefused() === true;
     }
 }

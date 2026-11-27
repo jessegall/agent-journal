@@ -82,7 +82,13 @@ play_scenario() {
     docker compose exec $(read_terminal_flag) app php -d memory_limit="$PLAY_MEMORY" artisan recordings:play "$2" \
         --owner="$1" || status=$?
     kill "$watcher" 2>/dev/null || true
+    restore_daemon
     return "$status"
+}
+
+# A play stopped part-way can leave the agents' Docker daemon down, which the next scenario needs running.
+restore_daemon() {
+    docker compose up -d --wait agent-docker >/dev/null
 }
 
 # An ask-user step reads your terminal when there is one; without one the play's lines still reach the log.

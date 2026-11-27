@@ -207,6 +207,14 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     }
 
     /**
+     * Whether the host refused the start for good.
+     */
+    public function isRefused(): bool
+    {
+        return $this->refusal !== null;
+    }
+
+    /**
      * A pending start that will never run ends cancelled now.
      */
     public function cancelPending(): void
