@@ -14,6 +14,7 @@ use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\FixtureRegistry;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**

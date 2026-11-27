@@ -15,11 +15,13 @@ use App\Models\Projects\Project;
 use App\Processes\OutputRecorder;
 use App\Support\Domain;
 use App\Support\DomainRegistry;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\ConnectionEstablished;
+use Illuminate\Database\Seeder;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithCachedConfig;
@@ -74,7 +76,6 @@ abstract class TestCase extends BaseTestCase
 
         Http::preventStrayRequests();
         $this->withoutVite();
-        $this->app->make(OuterTransactionOwner::class)->register();
         $this->app->make(Translator::class)->addNamespace('tests', base_path('tests/Fixtures/AgentTexts/lang'));
         $this->beforeApplicationDestroyed(fn () => $this->closeConnections());
         $this->keepProcessOutputApart();
@@ -95,15 +96,31 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Lets the test seed before any trait's own setUp writes rows.
+     * Lets the test seed, and owns its outer transaction, before any trait's own setUp writes rows or sends commands.
      *
      * @return array<class-string, class-string>
      */
     protected function setUpTraits(): array
     {
         $this->allowSeedingOutsideCommands();
+        $this->app->make(OuterTransactionOwner::class)->register();
 
         return parent::setUpTraits();
+    }
+
+    /**
+     * Runs each seeder as the test's own seeding, which may write outside a command, never through the seed command,
+     * which the test runs as the app runs it.
+     *
+     * @param  class-string<Seeder>|list<class-string<Seeder>>  $class
+     */
+    public function seed($class = DatabaseSeeder::class): static
+    {
+        foreach ((array) $class as $seeder) {
+            $this->app->make($seeder)->setContainer($this->app)->__invoke();
+        }
+
+        return $this;
     }
 
     /**
@@ -175,9 +192,9 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * The application with only the domains this test case boots: none for a core test, so no domain receives or answers
-     * core's events; a domain's test case boots that domain and the domains it requires. A class of any other domain
-     * refuses to load.
+     * The application with only the domains this test case boots: none for a core test, so no domain receives or
+     * answers core's events; a domain's test case boots that domain and the domains it requires. A class of any other
+     * domain refuses to load.
      */
     public function createApplication(): Application
     {

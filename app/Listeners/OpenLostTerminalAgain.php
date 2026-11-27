@@ -22,8 +22,11 @@ final readonly class OpenLostTerminalAgain implements Listener
     {
         $process = HostProcess::query()->whereKey($fact->processId)->sole();
 
-        if ($this->starts->opensAgainWhenLost($process)) {
-            $this->starts->openProven(AgentRuntime::query()->whereKey($process->agent_runtime_id)->sole());
+        if (! $this->starts->opensAgainWhenLost($process)) {
+            return;
         }
+
+        $runtime = AgentRuntime::query()->whereKey($process->agent_runtime_id)->sole();
+        $this->starts->openProven($runtime);
     }
 }

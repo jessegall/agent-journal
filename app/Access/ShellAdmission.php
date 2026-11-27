@@ -32,6 +32,7 @@ use App\Processes\RunnerCapability;
 use App\Projects\SelectedProject;
 use App\Projects\ServedEnvironment;
 use App\Support\ActorReference;
+use App\Support\StackTransaction;
 use App\Support\Syntax\TreeParser;
 use App\Time\Contracts\VerificationTiming;
 use App\Values\AdmissionRefusal;
@@ -66,6 +67,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         private ServedEnvironment $projects,
         private OutputDiskCapacity $capacity,
         private SelectedProject $selected,
+        private StackTransaction $transaction,
     ) {}
 
     public function admit(
@@ -342,7 +344,8 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         $policy = $this->permissions->forActor($actor);
         $references = array_map(fn (ClassFact $fact) => $fact->origin->reference(), $classification->facts());
 
-        $stored = ProcessRun::create($actor, new RunAdmission(
+        // The admitted run is written in the unit of the hook or command that asks, or in one of its own from a route.
+        $stored = $this->transaction->run(fn () => ProcessRun::create($actor, new RunAdmission(
             $requestKey,
             RunMode::Normal,
             $this->selected->find()->id,
@@ -352,7 +355,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
             "{$policy->source}@{$policy->revision}",
             $context->workingFolder,
             $plan,
-        ));
+        )));
 
         $run = $this->runOf($stored, $plan, $tree, $actor, array_values(array_unique($references)));
 

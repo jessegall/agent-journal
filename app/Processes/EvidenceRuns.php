@@ -21,6 +21,7 @@ use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\PhaseTimingRefused;
 use App\Projects\SelectedProject;
 use App\Support\ActorReference;
+use App\Support\StackTransaction;
 use App\Support\Syntax\TreeParser;
 use App\Time\Contracts\VerificationTiming;
 use App\Time\Values\TimingVerdict;
@@ -45,6 +46,7 @@ final readonly class EvidenceRuns
         private SelectedProject $projects,
         private VerificationTiming $timing,
         private AgentTexts $texts,
+        private StackTransaction $transaction,
     ) {}
 
     /**
@@ -123,22 +125,25 @@ final readonly class EvidenceRuns
 
         $plan = $this->planner->plan($classification->tree, $classification);
 
-        $run = ProcessRun::create($runner, new RunAdmission(
-            "evidence-{$permit->id}",
-            RunMode::Evidence,
-            $permit->project_id,
-            $permit->source_digest,
-            ShellDialect::Bash,
-            $permit->classification_digest,
-            'evidence-permit',
-            $permit->working_folder,
-            $plan,
-            RunRequestIntent::ScheduledCheck,
-        ));
+        // The run and the permit it consumes are written together, in the unit of the caller or in one of their own.
+        return $this->transaction->run(function () use ($runner, $permit, $plan, $requestId): ProcessRun {
+            $run = ProcessRun::create($runner, new RunAdmission(
+                "evidence-{$permit->id}",
+                RunMode::Evidence,
+                $permit->project_id,
+                $permit->source_digest,
+                ShellDialect::Bash,
+                $permit->classification_digest,
+                'evidence-permit',
+                $permit->working_folder,
+                $plan,
+                RunRequestIntent::ScheduledCheck,
+            ));
 
-        $permit->consume($requestId, $run);
+            $permit->consume($requestId, $run);
 
-        return $run;
+            return $run;
+        });
     }
 
     /**

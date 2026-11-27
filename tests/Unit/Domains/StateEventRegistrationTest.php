@@ -7,6 +7,8 @@ namespace Tests\Unit\Domains;
 use App\Bus\Exceptions\InvalidListener;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\Delivery\StateEventBridge;
+use App\Support\Domain;
+use App\Support\DomainRegistry;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Fixtures\Modules\Notes\WriteNoteState;
@@ -16,6 +18,16 @@ use Tests\TestCase;
 
 final class StateEventRegistrationTest extends TestCase
 {
+    /**
+     * It reads what every installed domain declares, so it boots them all.
+     *
+     * @return list<class-string<Domain>>
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
     use RegistersNoteStates;
     use SetsEventCachePath;
 

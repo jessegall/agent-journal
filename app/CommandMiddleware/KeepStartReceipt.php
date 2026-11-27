@@ -14,6 +14,7 @@ use App\Models\Sessions\SessionRequest;
 use App\Sessions\HeldStartRefusals;
 use App\Sessions\StartRequestLock;
 use App\Support\ActorReference;
+use App\Support\StackTransaction;
 use App\Values\PinnedDriver;
 use App\Values\StartRequest;
 use Closure;
@@ -32,6 +33,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         private StartRequestLock $locks,
         private HeldStartRefusals $heldRefusals,
         private DriverCatalogue $drivers,
+        private StackTransaction $transaction,
     ) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
@@ -55,8 +57,8 @@ final readonly class KeepStartReceipt implements CommandMiddleware
     }
 
     /**
-     * The intent commits before admission, so the refusal finds its record after the rollback; a failure that is no
-     * refusal leaves the key free again.
+     * The intent commits in a transaction of its own before admission, so the refusal finds its record after the
+     * rollback; a failure that is no refusal leaves the key free again.
      *
      * @param  Closure(): mixed  $start
      */
@@ -65,16 +67,17 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         ActorReference $requester,
         Closure $start,
     ): mixed {
-        $intent = SessionRequest::create($request, $this->pinOf($request), $requester);
+        $pin = $this->pinOf($request);
+        $intent = $this->transaction->run(fn () => SessionRequest::create($request, $pin, $requester));
 
         try {
             return $start();
         } catch (StartRefusal $refusal) {
-            $intent->refuse($refusal);
+            $this->transaction->run(fn () => $intent->refuse($refusal));
 
             throw $refusal;
         } catch (Throwable $failure) {
-            $intent->forgetIntent();
+            $this->transaction->run(fn () => $intent->forgetIntent());
 
             throw $failure;
         }

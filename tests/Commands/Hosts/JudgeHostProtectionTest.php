@@ -30,11 +30,11 @@ final class JudgeHostProtectionTest extends TestCase
         $report = Host::query()->whereKey($hostId)->sole()->protection->items()['codex@0.165.0']->report();
 
         $this->journal->assertResult(
-            ['no native mechanism', 'no native mechanism', 'native evidence missing', false],
+            ['no native mechanism', 'no native mechanism', 'no native mechanism', false],
             [
                 substr($report->items[0]->reason, 0, 19),
                 substr($report->items[4]->reason, 0, 19),
-                substr($report->items[5]->reason, 0, 23),
+                substr($report->items[5]->reason, 0, 19),
                 $report->isEnforcedInContainer(),
             ],
         );

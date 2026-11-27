@@ -375,18 +375,13 @@ final class AgentStacksTest extends TestCase
         $this->assertSame(5000, $this->app->make(OperationDeadline::class)->milliseconds);
     }
 
-    public function test_a_caller_transaction_without_limits_is_refused_before_the_work_runs(): void
+    public function test_a_caller_transaction_without_limits_runs_the_work_in_a_unit_of_its_own_with_the_limits_set(): void
     {
-        $ran = false;
+        $limit = DB::transaction(fn () => $this->transaction()->run(
+            fn () => DB::scalar("SELECT current_setting('lock_timeout')"),
+        ));
 
-        try {
-            DB::transaction(fn () => $this->transaction()->run(function () use (&$ran): void {
-                $ran = true;
-            }));
-            $this->fail('A transaction without limits was joined.');
-        } catch (StackTransactionRequired) {
-            $this->assertFalse($ran);
-        }
+        $this->journal->assertResult(true, $limit !== '0');
     }
 
     private function startStacks(): StartStacks

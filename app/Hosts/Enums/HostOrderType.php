@@ -50,6 +50,15 @@ enum HostOrderType: string
     }
 
     /**
+     * Whether a claim of this order cut off by the host's restart is offered to the new process: never an input, which
+     * is never written twice, nor the allowed images, which the journal orders anew once the restart forgot them.
+     */
+    public function isOfferedAgainAfterRestart(): bool
+    {
+        return ! $this->isInput() && $this !== self::AllowImages;
+    }
+
+    /**
      * Whether this order opens a process, so its payload carries the process's environment.
      */
     public function isOpening(): bool

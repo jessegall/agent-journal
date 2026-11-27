@@ -28,7 +28,12 @@ final readonly class OpenJournalTerminalHandler implements CommandHandler
 
     public function handle(OpenJournalTerminalCommand $command): string|null
     {
-        $runtime = AgentRuntime::query()->withSessionAgent()->whereKey($command->runtimeId)->lockForUpdate()->sole();
+        $runtime = AgentRuntime::query()
+            ->withSessionAgent()
+            ->whereKey($command->runtimeId)
+            ->lockForUpdate()
+            ->sole();
+
         $isOpen = $runtime->hasLiveProcess(HostProcessPurpose::AgentTerminal);
 
         if (! $this->starts->drives($runtime) || ! $runtime->hasProvenStart() || $isOpen) {

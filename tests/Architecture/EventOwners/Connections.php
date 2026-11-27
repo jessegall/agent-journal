@@ -17,6 +17,7 @@ use App\Events\Connections\HostHeartbeatRecorded;
 use App\Events\Connections\HostOrderAnswered;
 use App\Events\Connections\HostOrderClaimed;
 use App\Events\Connections\HostOrderMade;
+use App\Events\Connections\HostOrderOfferedAgain;
 use App\Events\Connections\HostOrderRefused;
 use App\Events\Connections\HostProcessExited;
 use App\Events\Connections\HostProcessInputGenerationRaised;
@@ -368,6 +369,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new HostOrderClaimed('order', 'process'),
+    ],
+    HostOrderOfferedAgain::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostOrder::offerAgain',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostOrderOfferedAgain('order', 'process'),
     ],
     HostHeartbeatRecorded::class => [
         'role' => EventRole::RowFact,

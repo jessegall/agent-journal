@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Domain\Chat\Events\ChatMessageChanged;
 use Domain\Chat\Events\DockChanged;
+use Domain\Chat\Events\DockedSourceChanged;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -25,5 +26,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DockChanged('conversation'),
+    ],
+    DockedSourceChanged::class => [
+        'role' => EventRole::Projection,
+        'migrated' => false,
+        'producers' => [
+            'domain/Chat/src/Listeners/BroadcastDockedSourceChange.php',
+        ],
     ],
 ];

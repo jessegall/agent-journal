@@ -11,6 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Events\Connections\HostOrderAnswered;
 use App\Events\Connections\HostOrderClaimed;
 use App\Events\Connections\HostOrderMade;
+use App\Events\Connections\HostOrderOfferedAgain;
 use App\Events\Connections\HostOrderRefused;
 use App\Hosts\Data\HostAnswerData;
 use App\Hosts\Enums\HostOrderStatus;
@@ -130,6 +131,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $this->status = HostOrderStatus::Pending;
         $this->claimed_at = null;
         $this->saveAndAssert();
+        $this->raise(new HostOrderOfferedAgain($this->id, $this->host_process_id));
     }
 
     /**

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\AgentRequests;
 
 use App\Api\ApiGroups;
+use App\Support\Domain;
+use App\Support\DomainRegistry;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -15,6 +17,16 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 20, reason: 'The check formats every generated file with Pint.')]
 final class GeneratedApiTest extends TestCase
 {
+    /**
+     * It reads what every installed domain declares, so it boots them all.
+     *
+     * @return list<class-string<Domain>>
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
     private const string WRITE_METHOD = 'public function writeNote(';
 
     private const string CLASS_DECLARATION = 'final readonly class NoteApi';

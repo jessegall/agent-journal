@@ -160,12 +160,16 @@ final readonly class HeadlessStarts
     }
 
     /**
-     * The account folder as the runtime's program sees it: the account home its container mounts, or the account's
-     * own folder on the host, so what the program reports as its folder is checked against the right one.
+     * The account folder as the runtime's driver sees it: the account home its container mounts, or the account's
+     * own folder on the host, so what the driver reports as its folder is checked against the right one.
      */
     public function accountFolderSeenBy(AgentRuntime $runtime, SessionProcess $start): string
     {
-        return $runtime->executablePlace() === ExecutablePlace::Image ? MountRules::ACCOUNT_TARGET : $start->directory;
+        if ($runtime->executablePlace() === ExecutablePlace::Image) {
+            return MountRules::ACCOUNT_TARGET;
+        }
+
+        return $start->directory;
     }
 
     public function startOf(

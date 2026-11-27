@@ -6,15 +6,13 @@ namespace Tests\Unit\Events;
 
 use App\Asks\Contracts\AnsweredAtOnce;
 use App\Support\DeclaredType;
+use App\Support\DomainRegistry;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use Closure;
-use Domain\Plans\PlansDomain;
-use Domain\Tasks\TasksDomain;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -28,7 +26,7 @@ final class EventPayloadTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 
     /**

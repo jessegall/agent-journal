@@ -62,9 +62,9 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
             }
         }
 
-        // An input is never written twice; any other order goes to the new process, which answers it again from its record.
+        // An order the new process cannot carry out again ends here; any other goes to it, answered again from its record.
         foreach (HostOrder::findClaimedOf($host) as $order) {
-            if ($order->type->isInput()) {
+            if (! $order->type->isOfferedAgainAfterRestart()) {
                 $order->refuse(HostRefusal::HostRestarted, [], $now);
 
                 continue;

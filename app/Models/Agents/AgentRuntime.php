@@ -285,7 +285,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The runtime's driver named the conversation its program started, such as a Codex thread, so later turns resume it.
+     * The runtime's driver named the conversation it started, such as a Codex thread, so later turns resume it.
      */
     public function nameConversation(string $conversationId, CarbonImmutable $at): void
     {
@@ -332,7 +332,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Whether the runtime's conversation is one its program already holds, so its next turn resumes it: a headless turn
+     * Whether the runtime's conversation is one its driver already holds, so its next turn resumes it: a headless turn
      * ran in it, its driver named it, or its start chose it to continue.
      */
     public function continuesConversation(): bool

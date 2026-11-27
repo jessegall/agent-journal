@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Bus\OutsideCommandAllowance;
 use Domain\Documents\Database\Seeders\DocumentsSeeder;
 use Domain\Plans\Database\Seeders\PlansSeeder;
 use Domain\Sequences\Database\Seeders\SequencesSeeder;
@@ -13,12 +14,12 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seeds the local app: the owner, and sample tasks, plans, a document and a sequence in the local project. Every
-     * seeder skips what it already made, so seeding again adds nothing.
+     * Seeds the local app: the owner, and sample tasks, plans, a document and a sequence in the local project. Seeding
+     * has no request, so its rows are written outside a bus command; every seeder skips what it already made.
      */
-    public function run(): void
+    public function run(OutsideCommandAllowance $outsideCommands): void
     {
-        $this->call(NumbersSeeder::class);
+        $outsideCommands->allow();
         $this->call(InboxesSeeder::class);
         $this->call(OwnerSeeder::class);
         $owner = $this->container->make(OwnerSeeder::class)->owner();

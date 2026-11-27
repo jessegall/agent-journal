@@ -12,6 +12,7 @@ use App\Exceptions\RunAdmissionStale;
 use App\Exceptions\RunnerUnavailable;
 use App\Models\Runs\ProcessRun;
 use App\Processes\RunnerCapability;
+use App\Support\StackTransaction;
 use Illuminate\Container\Attributes\Config;
 
 /**
@@ -23,6 +24,7 @@ final readonly class FetchAdmissionController
     public function __construct(
         #[Config('app.key')]
         private string $appKey,
+        private StackTransaction $transaction,
     ) {}
 
     /**
@@ -39,7 +41,7 @@ final readonly class FetchAdmissionController
             throw RunAdmissionStale::because($processRun->stale_reason);
         }
 
-        $eventKey = $processRun->consumeFor($call->requestKey->value, $this->appKey);
+        $eventKey = $this->transaction->run(fn () => $processRun->consumeFor($call->requestKey->value, $this->appKey));
 
         if ($eventKey === null) {
             return AdmissionAlreadyStarted::from(['runId' => $processRun->id]);

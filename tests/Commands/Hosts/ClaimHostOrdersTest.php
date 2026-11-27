@@ -119,7 +119,7 @@ final class ClaimHostOrdersTest extends TestCase
         );
         $image = $this->journal->service(AgentImage::class)->reference;
         $this->journal->assertResult(
-            [['allow_images', 'open_container'], [], ['allow_images'], ['images' => [$image]]],
+            [['allow_images'], [], ['allow_images'], ['images' => [$image]]],
             [
                 $typesOf($first),
                 $typesOf($second),

@@ -11,7 +11,9 @@ use App\Agents\Enums\AccessType;
 use App\Bootstrap\Contracts\Domains\DomainAvailability;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\GrantNotRegistered;
+use App\Support\Domain;
 use App\Support\DomainEntry;
+use App\Support\DomainRegistry;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Policies\NotePolicy;
@@ -20,6 +22,16 @@ use Tests\TestCase;
 
 final class PolicyCatalogueTest extends TestCase
 {
+    /**
+     * It reads what every installed domain declares, so it boots them all.
+     *
+     * @return list<class-string<Domain>>
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
     private bool $notesEnabled = true;
 
     protected function setUp(): void

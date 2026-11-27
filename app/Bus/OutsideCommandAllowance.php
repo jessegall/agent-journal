@@ -15,11 +15,6 @@ final class OutsideCommandAllowance
 {
     private bool $isAllowed = false;
 
-    /**
-     * How many runs of forbidDuring are open now, one inside another.
-     */
-    private int $openRefusals = 0;
-
     public function allow(): void
     {
         $this->isAllowed = true;
@@ -31,8 +26,8 @@ final class OutsideCommandAllowance
     }
 
     /**
-     * Runs the work with writes outside a command refused, as the running app refuses them; the allowance holds again
-     * once the work ends.
+     * Runs the work as the running app runs it, where writes outside a command are refused until the work itself
+     * allows them, as the database seeder does; the allowance from before holds again once the work ends.
      *
      * @template TResult
      *
@@ -41,17 +36,18 @@ final class OutsideCommandAllowance
      */
     public function forbidDuring(Closure $work): mixed
     {
-        $this->openRefusals++;
+        $wasAllowed = $this->isAllowed;
+        $this->isAllowed = false;
 
         try {
             return $work();
         } finally {
-            $this->openRefusals--;
+            $this->isAllowed = $wasAllowed;
         }
     }
 
     public function isAllowed(): bool
     {
-        return $this->isAllowed && $this->openRefusals === 0;
+        return $this->isAllowed;
     }
 }

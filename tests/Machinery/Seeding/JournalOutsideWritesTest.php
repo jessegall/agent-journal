@@ -26,7 +26,7 @@ final class JournalOutsideWritesTest extends TestCase
     {
         $this->journal->project('Alpha');
 
-        $this->assertSame(['Alpha'], Project::query()->where('name', 'Alpha')->pluck('name')->all());
+        $this->assertSame(['Alpha'], Project::query()->where('key', 'alpha')->pluck('label')->all());
     }
 
     public function test_an_artisan_command_refuses_a_write_outside_a_command(): void
@@ -42,7 +42,9 @@ final class JournalOutsideWritesTest extends TestCase
     public function test_a_request_refuses_a_write_outside_a_command(): void
     {
         $journal = $this->journal;
-        Route::get('test-seed-outside', fn () => $journal->project('Gamma')->projectCalled('Gamma')->id);
+        Route::get('test-seed-outside', function () use ($journal): void {
+            $journal->project('Gamma');
+        });
         $this->withoutExceptionHandling();
 
         $this->expectExceptionObject(RaisedOutsideUnit::for(Project::class));
@@ -58,6 +60,6 @@ final class JournalOutsideWritesTest extends TestCase
         $this->assertThrows(fn () => $this->artisan('test:seed-outside')->run(), RaisedOutsideUnit::class);
         $this->journal->project('Epsilon');
 
-        $this->assertSame(['Epsilon'], Project::query()->where('name', 'Epsilon')->pluck('name')->all());
+        $this->assertSame(['Epsilon'], Project::query()->where('key', 'epsilon')->pluck('label')->all());
     }
 }

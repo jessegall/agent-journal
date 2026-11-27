@@ -21,7 +21,8 @@
             "isSignedIn": true,
             "method": "oauth",
             "email": "owner@example.test",
-            "expiresAt": null
+            "expiresAt": null,
+            "organization": null
         }
     },
     "claude model check": {
@@ -57,7 +58,8 @@
             "isSignedIn": false,
             "method": null,
             "email": null,
-            "expiresAt": null
+            "expiresAt": null,
+            "organization": null
         }
     },
     "codex model check": {

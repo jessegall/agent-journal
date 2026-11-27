@@ -7,6 +7,7 @@ namespace Tests\Unit\Skills;
 use App\Exceptions\SkillDeclarationRefused;
 use App\Skills\Contracts\Skill;
 use App\Skills\CoreSkills;
+use App\Support\Domain;
 use App\Support\DomainRegistry;
 use App\Values\SkillOwner;
 use Tests\Fixtures\Domains\FalseSkills\FalseSkillsDomain;
@@ -22,6 +23,16 @@ use Tests\TestCase;
  */
 final class SkillDeclarationsTest extends TestCase
 {
+    /**
+     * It reads what every installed domain declares, so it boots them all.
+     *
+     * @return list<class-string<Domain>>
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
     private const string OUTSIDE_PACKAGE = "it lies outside the domain's own package";
 
     public function test_core_comes_first_and_a_domain_without_skills_contributes_none(): void
