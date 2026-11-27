@@ -42,4 +42,20 @@ final class OpenAccountOwnerTest extends TestCase
             [$unproven, $again, HostProcess::query()->ofPurposes([HostProcessPurpose::AccountOwner])->count()],
         );
     }
+
+    public function test_an_owner_belongs_to_the_session_of_the_start_it_was_opened_for(): void
+    {
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts(config('journal.accounts.root'))
+            ->showDriverArrangements()
+            ->idleAgent('Coder')
+            ->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder
+            ->openCodexRuntime('Mac', base_path(), 'Run: ls.')
+            ->passCodexProbes('coder'));
+        $owner = HostProcess::query()->ofPurposes([HostProcessPurpose::AccountOwner])->sole();
+
+        $this->journal->assertResult($this->journal->openedRuntimeOf('Coder')->sessionId, $owner->sessionId());
+    }
 }

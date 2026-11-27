@@ -415,14 +415,18 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     // ----------[ Queries ]----------
 
     /**
-     * The session the process runs for, through its runtime; none for a process of no runtime, such as a probe the
-     * host itself runs.
+     * The session the process runs for: its runtime's, or for an account's owner, which serves no one runtime, that of
+     * the start it was opened for; none for a process of neither, such as a probe the host itself runs.
      */
     public function sessionId(): string|null
     {
-        return $this->agent_runtime_id === null
+        if ($this->agent_runtime_id !== null) {
+            return AgentRuntime::query()->whereKey($this->agent_runtime_id)->value('agent_session_id');
+        }
+
+        return $this->session_process_id === null
             ? null
-            : AgentRuntime::query()->whereKey($this->agent_runtime_id)->value('agent_session_id');
+            : SessionProcess::query()->supervised()->whereKey($this->session_process_id)->value('session_id');
     }
 
     /**
