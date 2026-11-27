@@ -15,9 +15,7 @@ final readonly class NotifyStop implements Pipe
 {
     public function handle(RunEnded $run): StepOutcome
     {
-        if ($run->state->stop->isRequested()) {
-            $run->state->events->runStopped($run->state->stop->reason());
-        }
+        $run->state->reportStop();
 
         return $run->outcome;
     }

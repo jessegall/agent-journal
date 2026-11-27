@@ -16,8 +16,8 @@ final readonly class TrackBackgroundPart implements Pipe
 {
     public function handle(SpawnedPart $part): StepOutcome
     {
-        $part->queued->state->track($part);
+        $part->runInBackground();
 
-        return new StepOutcome(ExitStatus::Success->status(), $part->queued->context);
+        return new StepOutcome(ExitStatus::Success->status(), $part->context());
     }
 }

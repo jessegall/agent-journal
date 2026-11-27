@@ -70,4 +70,22 @@ final class RunState
 
         return $background;
     }
+
+    /**
+     * Records that the run was stopped, with the reason, when a stop was asked for.
+     */
+    public function reportStop(): void
+    {
+        if ($this->stop->isRequested()) {
+            $this->events->runStopped($this->stop->reason());
+        }
+    }
+
+    /**
+     * Why the run was asked to stop.
+     */
+    public function stopReason(): string
+    {
+        return $this->stop->reason();
+    }
 }

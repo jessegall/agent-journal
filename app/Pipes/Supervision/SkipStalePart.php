@@ -17,7 +17,7 @@ final readonly class SkipStalePart implements Pipe
 {
     public function handle(QueuedPart $queued): StepOutcome
     {
-        $queued->state->events->skipped($queued->part, $queued->staleReason());
+        $queued->skipAsStale();
 
         return new StepOutcome(ExitStatus::CommandNotFound->status(), $queued->context);
     }
