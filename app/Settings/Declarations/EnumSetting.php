@@ -151,7 +151,7 @@ final readonly class EnumSetting implements OptionSetting
         return $this->defaultValue;
     }
 
-    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): BackedEnum
+    public function valueDecodedBy(SettingCodec $codec, string $owner, EncodedValue $input): BackedEnum
     {
         return $codec->decodeEnum($owner, $this, $input);
     }

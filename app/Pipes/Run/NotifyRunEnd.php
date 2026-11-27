@@ -22,7 +22,7 @@ final readonly class NotifyRunEnd implements Pipe
 
     public function handle(ChannelRunEnded $run): SupervisedRun
     {
-        $run->report();
+        $run->notify();
         $preview = mb_substr($run->outcome->output, -self::PREVIEW_CHARACTER_LIMIT);
 
         return new SupervisedRun($run->runId(), CommandReport::ending($run->exitCode())->output($preview));

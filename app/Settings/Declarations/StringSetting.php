@@ -99,7 +99,7 @@ final readonly class StringSetting implements Setting
         return $this->defaultValue;
     }
 
-    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): string
+    public function valueDecodedBy(SettingCodec $codec, string $owner, EncodedValue $input): string
     {
         return $codec->decodeString($owner, $this, $input);
     }

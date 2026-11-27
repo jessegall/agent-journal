@@ -48,7 +48,7 @@ interface Setting
      *
      * @throws SettingStorageInvalid
      */
-    public function decodedBy(
+    public function valueDecodedBy(
         SettingCodec $codec,
         string $owner,
         EncodedValue $input,

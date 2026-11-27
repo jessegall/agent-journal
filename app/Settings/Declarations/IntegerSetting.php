@@ -98,7 +98,7 @@ final readonly class IntegerSetting implements Setting
         return $this->defaultValue;
     }
 
-    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): int
+    public function valueDecodedBy(SettingCodec $codec, string $owner, EncodedValue $input): int
     {
         return $codec->decodeInteger($owner, $this, $input);
     }

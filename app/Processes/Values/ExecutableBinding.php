@@ -10,10 +10,8 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
- * What the host will actually execute for a program family: a built-in or module
- * program trusted by the folders it is installed in, with no content digest, or a project tool trusted by its path
- * and content digest.
- * Relocating a program changes its binding, never its grammar.
+ * What the host executes for a program family: a built-in or module program trusted by its installed folders, or a
+ * project tool trusted by its path and content digest. Relocating a program changes its binding, never its grammar.
  */
 #[MapName(SnakeCaseMapper::class)]
 final class ExecutableBinding extends Data

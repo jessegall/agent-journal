@@ -103,7 +103,7 @@ final readonly class ChoiceSetting implements OptionSetting
         return $this->defaultValue;
     }
 
-    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): string|int
+    public function valueDecodedBy(SettingCodec $codec, string $owner, EncodedValue $input): string|int
     {
         return $codec->decodeChoice($owner, $this, $input);
     }

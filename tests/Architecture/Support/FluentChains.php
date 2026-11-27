@@ -13,10 +13,9 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
- * The faults of rule 115 in a set of classes: a public method of a fluent class that hands back another fluent class
- * switches the chain's subject, and a verb that names an inner subject flattens it. A fluent class is one, neither a
- * model nor a readonly value, that declares a public method returning itself; a getter that ends a chain is named for
- * what it gives back.
+ * The faults of rule 115: a public method of a fluent class that hands back another fluent class switches the chain's
+ * subject, and a verb naming an inner subject flattens it. A fluent class, neither a model nor a readonly value,
+ * declares a public method returning itself; a getter that ends a chain is named for what it gives back.
  */
 final readonly class FluentChains
 {

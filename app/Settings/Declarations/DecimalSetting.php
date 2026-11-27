@@ -134,7 +134,7 @@ final readonly class DecimalSetting implements Setting
         return $this->defaultValue;
     }
 
-    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): Decimal
+    public function valueDecodedBy(SettingCodec $codec, string $owner, EncodedValue $input): Decimal
     {
         return $codec->decodeDecimal($owner, $this, $input);
     }

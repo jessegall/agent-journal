@@ -14,9 +14,9 @@ final readonly class ChannelRunEnded
     public function __construct(public RunChannel $channel, public StepOutcome $outcome) {}
 
     /**
-     * Reports the run's end over its channel and sends what is still spooled.
+     * Notifies the run's end over its channel and sends what is still spooled.
      */
-    public function report(): void
+    public function notify(): void
     {
         $this->channel->finish($this->exitCode());
     }

@@ -162,7 +162,7 @@ final readonly class SettingsCatalogue implements SettingsCatalogueContract
     private function configured(string $owner, Setting $setting, EncodedSetting $entry): CatalogueValue
     {
         try {
-            return $setting->catalogueValue($setting->decodedBy($this->codec, $owner, $entry->encodedSetting));
+            return $setting->catalogueValue($setting->valueDecodedBy($this->codec, $owner, $entry->encodedSetting));
         } catch (SettingStorageInvalid) {
             return InvalidValueData::from([]);
         }

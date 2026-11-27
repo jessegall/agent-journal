@@ -12,7 +12,7 @@ use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use PhpParser\ParserFactory;
 
 /**
- * The one place a PHP file of ours is parsed: each file's tree is kept on disk by its content, so every scan, test,
+ * The one place a PHP file of this project is parsed: each file's tree is kept on disk by its content, so every scan, test,
  * refactoring tool and parallel worker reads the tree made once; a file this process already parsed throws ParsedTwice.
  */
 final class ParsedTrees

@@ -67,7 +67,7 @@ final readonly class BooleanSetting implements Setting
         return $this->isDefault;
     }
 
-    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): bool
+    public function valueDecodedBy(SettingCodec $codec, string $owner, EncodedValue $input): bool
     {
         return $codec->decodeBoolean($owner, $this, $input);
     }

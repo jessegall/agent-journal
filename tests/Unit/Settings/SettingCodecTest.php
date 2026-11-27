@@ -44,7 +44,7 @@ final class SettingCodecTest extends TestCase
         foreach (['Reviews', ' spaced ', str_repeat('é', 10)] as $text) {
             $this->assertSame(
                 $text,
-                $settings->title->decodedBy(
+                $settings->title->valueDecodedBy(
                     $this->codec,
                     'Reviews',
                     $this->codec->encodeString('Reviews', $settings->title, $text),
@@ -55,14 +55,14 @@ final class SettingCodecTest extends TestCase
         foreach ([true, false] as $flag) {
             $this->assertSame(
                 $flag,
-                $settings->notifyOwner->decodedBy($this->codec, 'Reviews', $this->codec->encodeBoolean($flag)),
+                $settings->notifyOwner->valueDecodedBy($this->codec, 'Reviews', $this->codec->encodeBoolean($flag)),
             );
         }
 
         foreach ([3, 0, 10] as $number) {
             $this->assertSame(
                 $number,
-                $settings->retryLimit->decodedBy(
+                $settings->retryLimit->valueDecodedBy(
                     $this->codec,
                     'Reviews',
                     $this->codec->encodeInteger('Reviews', $settings->retryLimit, $number),
@@ -71,7 +71,7 @@ final class SettingCodecTest extends TestCase
         }
 
         foreach (['0.50', '999.99', '1'] as $text) {
-            $decoded = $settings->weight->decodedBy(
+            $decoded = $settings->weight->valueDecodedBy(
                 $this->codec,
                 'Reviews',
                 $this->codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse($text)),
@@ -83,7 +83,7 @@ final class SettingCodecTest extends TestCase
         foreach (['short', 'long'] as $style) {
             $this->assertSame(
                 $style,
-                $settings->summaryStyle->decodedBy(
+                $settings->summaryStyle->valueDecodedBy(
                     $this->codec,
                     'Reviews',
                     $this->codec->encodeOption('Reviews', $settings->summaryStyle, $style),
@@ -94,7 +94,7 @@ final class SettingCodecTest extends TestCase
         foreach ([0, 1] as $priority) {
             $this->assertSame(
                 $priority,
-                $settings->priority->decodedBy(
+                $settings->priority->valueDecodedBy(
                     $this->codec,
                     'Reviews',
                     $this->codec->encodeOption('Reviews', $settings->priority, $priority),
@@ -105,7 +105,7 @@ final class SettingCodecTest extends TestCase
         foreach (ReviewMode::cases() as $mode) {
             $this->assertSame(
                 $mode,
-                $settings->reviewMode->decodedBy(
+                $settings->reviewMode->valueDecodedBy(
                     $this->codec,
                     'Reviews',
                     $this->codec->encodeEnum('Reviews', $settings->reviewMode, $mode),
@@ -116,7 +116,7 @@ final class SettingCodecTest extends TestCase
         foreach (ReviewLevel::cases() as $level) {
             $this->assertSame(
                 $level,
-                $settings->reviewLevel->decodedBy(
+                $settings->reviewLevel->valueDecodedBy(
                     $this->codec,
                     'Reviews',
                     $this->codec->encodeEnum('Reviews', $settings->reviewLevel, $level),
@@ -136,11 +136,11 @@ final class SettingCodecTest extends TestCase
 
         $this->assertSame(
             '01',
-            $setting->decodedBy($this->codec, 'Reviews', $this->codec->encodeOption('Reviews', $setting, '01')),
+            $setting->valueDecodedBy($this->codec, 'Reviews', $this->codec->encodeOption('Reviews', $setting, '01')),
         );
         $this->assertSame(
             '1',
-            $setting->decodedBy($this->codec, 'Reviews', $this->codec->encodeOption('Reviews', $setting, '1')),
+            $setting->valueDecodedBy($this->codec, 'Reviews', $this->codec->encodeOption('Reviews', $setting, '1')),
         );
     }
 
@@ -153,7 +153,7 @@ final class SettingCodecTest extends TestCase
         );
         $this->assertSame(
             ReviewLevel::SecondPass,
-            $this->settings->reviewLevel->decodedBy($this->codec, 'Reviews', EncodedValue::of(2)),
+            $this->settings->reviewLevel->valueDecodedBy($this->codec, 'Reviews', EncodedValue::of(2)),
         );
     }
 
@@ -196,7 +196,7 @@ final class SettingCodecTest extends TestCase
         $this->expectException(SettingStorageInvalid::class);
         $this->expectExceptionMessage(SettingStorageInvalid::for('Reviews', $setting->key())->getMessage());
 
-        $setting->decodedBy($this->codec, 'Reviews', EncodedValue::of($stored));
+        $setting->valueDecodedBy($this->codec, 'Reviews', EncodedValue::of($stored));
     }
 
     public function test_a_toggle_is_only_a_json_boolean(): void
