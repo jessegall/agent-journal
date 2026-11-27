@@ -8,6 +8,7 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Hosts\Enums\HostProcessStatus;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -59,7 +60,7 @@ final class StartCredentialsTest extends TestCase
 
         $this->journal
             ->openWithStartCredentials('Mac', 'relay', $opened->runtimeId, $argv)
-            ->waitForHostProcess('relay', HostProcessStatus::Exited, 30);
+            ->hostProcess('relay', fn (TestHostProcess $relay) => $relay->waitFor(HostProcessStatus::Exited, 30));
 
         $this->assertStringContainsString('"serverInfo"', (string) file_get_contents($answer));
     }

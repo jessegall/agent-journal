@@ -24,12 +24,11 @@ use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\CountingStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
-use Tests\Support\ScenarioTick;
-use Tests\Support\Seeding\SessionHooks;
+use Tests\Support\Seeding\SessionHook;
 use Tests\Support\Seeding\StateHandle;
-use Tests\Support\Seeding\StateObservation;
 use Tests\TestCase;
 
 /**
@@ -47,14 +46,11 @@ final class ReadyStateTest extends TestCase
      */
     private const array TABLES = ['agent_stacks', 'command_receipts'];
 
-    private SessionHooks $hooks;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->journal->owner()->agent('Writer');
-        $this->hooks = $this->journal->hooksFor($this->journal->sessionOf('Writer'));
     }
 
     /**
@@ -81,49 +77,53 @@ final class ReadyStateTest extends TestCase
     #[DataProvider('rolesAndLines')]
     public function test_each_role_leaves_every_shell_line_to_cores_admission(bool $editsFiles, string $line): void
     {
-        $this->ready($editsFiles)->given(
-            $this->hooks->shell($line),
-            fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-        );
+        $this->grantFileChanges($editsFiles);
+        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->shell(
+            $line,
+            fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+        ));
     }
 
     public function test_a_profile_that_edits_files_may_edit(): void
     {
-        $this->ready(true)->given(
-            $this->hooks->fileEdit('app/Domains/Contracts/Domain.php'),
-            fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-        );
+        $this->grantFileChanges(true);
+        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->fileEdit(
+            'app/Domains/Contracts/Domain.php',
+            fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+        ));
     }
 
     public function test_a_profile_without_file_changes_refuses_the_whole_edit_by_its_first_path(): void
     {
-        $this->ready(false)->given(
-            $this->hooks->fileEdit('app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md'),
-            function (StateObservation $state) {
-                $state->assertStateAnswer(AnswerType::Deny);
-                $state->assertRefusedWith('app/Domains/Contracts/Domain.php');
-            },
-        );
+        $this->grantFileChanges(false);
+        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->fileEdit(
+            ['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md'],
+            fn (StateAssert $state) => $state
+                ->answers(AnswerType::Deny)
+                ->refuses('app/Domains/Contracts/Domain.php'),
+        ));
     }
 
     public function test_it_never_finishes(): void
     {
-        $this->ready(true)->given(new ScenarioTick(), fn (StateObservation $state) => $state->assertLive());
+        $this->grantFileChanges(true);
+        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->tick(fn (StateAssert $state) => $state->isLive()));
     }
 
     public function test_unchanged_failures_are_counted_in_the_order_the_attempts_were_opened(): void
     {
         $gate = $this->countingStops();
 
-        $this->ready(true)->given([
-            $this->hooks->stop('turn-1'),
-            $this->hooks->stop('turn-2'),
-            $this->hooks->stop('turn-3'),
+        $this->grantFileChanges(true);
+        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->steps([
+            SessionHook::stop('turn-1'),
+            SessionHook::stop('turn-2'),
+            SessionHook::stop('turn-3'),
             new StopCheckSettled('stop-turn-3', StopCheckStatus::Failed, 'same'),
             new StopCheckSettled('stop-turn-1', StopCheckStatus::Failed, 'other'),
             new StopCheckSettled('stop-turn-2', StopCheckStatus::Failed, 'same'),
-            $this->hooks->stop('turn-4'),
-        ], fn (StateObservation $state) => $state->assertLive());
+            SessionHook::stop('turn-4'),
+        ], fn (StateAssert $state) => $state->isLive()));
 
         $this->assertSame(2, $gate->lastSettled->unchangedBefore('stop-turn-4', 'same'));
         $this->assertSame(0, $gate->lastSettled->unchangedBefore('stop-turn-4', 'other'));
@@ -133,12 +133,13 @@ final class ReadyStateTest extends TestCase
     {
         $gate = $this->countingStops();
 
-        $this->ready(true)->given([
-            $this->hooks->stop('turn-1'),
+        $this->grantFileChanges(true);
+        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->steps([
+            SessionHook::stop('turn-1'),
             new StopCheckSettled('elsewhere', StopCheckStatus::Failed, 'same'),
             new StopCheckSettled('stop-turn-1', StopCheckStatus::Failed, 'same'),
-            $this->hooks->stop('turn-2'),
-        ], fn (StateObservation $state) => $state->assertLive());
+            SessionHook::stop('turn-2'),
+        ], fn (StateAssert $state) => $state->isLive()));
 
         $this->assertSame(1, $gate->lastSettled->unchangedBefore('stop-turn-2', 'same'));
     }
@@ -175,16 +176,11 @@ final class ReadyStateTest extends TestCase
     }
 
     /**
-     * The bottom frame of the agent's stack, with a policy that grants file changes or grants none.
+     * The agent's profile grants file changes, or grants none.
      */
-    private function ready(bool $editsFiles): StateHandle
+    private function grantFileChanges(bool $editsFiles): void
     {
         $this->app->instance(OperationPolicy::class, new FixedOperationPolicy($editsFiles));
-
-        return $this->journal->stateOn(
-            $this->journal->sessionOf('Writer'),
-            ReadyStateReference::bottom(),
-        );
     }
 
     /**

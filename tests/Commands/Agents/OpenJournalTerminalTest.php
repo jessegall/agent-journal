@@ -17,6 +17,7 @@ use App\Terminals\RuntimeScreen;
 use App\Terminals\ScreenRegistration;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
 
 /**
@@ -59,7 +60,7 @@ final class OpenJournalTerminalTest extends TestCase
         [$opened] = $this->provenTerminal();
         $this->journal->callJournalProcess('terminal', $opened->runtimeId, HostProcessPurpose::AgentTerminal);
 
-        $this->journal->printOnHostProcess('terminal', '❯ ready');
+        $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->print('❯ ready'));
 
         $runtime = AgentRuntime::query()->whereKey($opened->runtimeId)->sole();
         $screen = $this->journal->service(RuntimeScreen::class)->latest(ScreenRegistration::of($runtime));

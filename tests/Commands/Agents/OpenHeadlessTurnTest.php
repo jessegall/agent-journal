@@ -17,6 +17,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostProcess;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
 
 /**
@@ -57,8 +58,8 @@ final class OpenHeadlessTurnTest extends TestCase
         ));
         $this->journal->assertResult(1, $this->turnCount($opened->runtimeId));
 
-        $this->journal->reportHostProcess('first', HostProcessReportType::Running)
-            ->reportHostProcess('first', HostProcessReportType::Exited, 0);
+        $this->journal->hostProcess('first', fn (TestHostProcess $first) => $first->report(HostProcessReportType::Running))
+            ->hostProcess('first', fn (TestHostProcess $first) => $first->report(HostProcessReportType::Exited, 0));
         $first = DriverRequest::query()->findOrFail($this->journal->hostOrdersOf('first')[0]->driver_request_id);
         $this->journal->asSystem(new NotifyRequestProgressCommand(
             $this->journal->hostCalled('Mac')->hostId,

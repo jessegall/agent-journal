@@ -13,6 +13,8 @@ use App\Hosts\Enums\HostProcessReportType;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -35,7 +37,7 @@ final class TakeHostProcessSnapshotTest extends TestCase
         $this->journal
             ->useServerClockAt(CarbonImmutable::parse(self::NOW))
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
     }
 
     public function test_it_orders_the_host_with_its_payload_and_expiry(): void
@@ -65,7 +67,7 @@ final class TakeHostProcessSnapshotTest extends TestCase
 
     public function test_a_process_that_exited_takes_no_order(): void
     {
-        $this->journal->reportHostProcess('shell', HostProcessReportType::Exited, 0);
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell->report(HostProcessReportType::Exited, 0));
 
         $this->journal->assertRefused(
             HostProtocolRefused::class,

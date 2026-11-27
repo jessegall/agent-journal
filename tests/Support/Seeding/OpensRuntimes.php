@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support\Seeding;
 
 use App\Accounts\Values\AccountLabel;
-use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverType;
-use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Values\RuntimeIntent;
 use App\Hosts\Contracts\DockerImageVerifier;
 use App\Hosts\EnrolledHost;
@@ -21,13 +19,15 @@ use App\Projects\Commands\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
 use App\Projects\Enums\ArrangementType;
 use App\Sessions\AgentRuntimes;
 use App\Sessions\OpenedRuntime;
+use Closure;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\VerifiedTestHostImage;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
- * The runtimes a test's agents run in: a stand-in runtime for an agent whose commands only need one open, or a real
- * one opened on a host the journal enrolled, as the owner opens one.
+ * The runtimes a test's agents run in: a synthetic runtime for an agent whose commands only need one open, or a real
+ * one an agent opens in its scope on a host the journal enrolled, as the owner opens one.
  */
 trait OpensRuntimes
 {
@@ -42,6 +42,11 @@ trait OpensRuntimes
      * @var array<string, Account>
      */
     private array $chosenAccounts = [];
+
+    /**
+     * @var array<string, TestAgent> each agent's scope, kept so what it opened carries on
+     */
+    private array $agentScopes = [];
 
     /**
      * An open headless runtime for the named agent's one session, or for this session, so a command that needs a
@@ -166,7 +171,7 @@ trait OpensRuntimes
     /**
      * The folder a test saves the family's account in: plain letters and digits, as an account folder's name is.
      */
-    private static function accountFolderOf(string $folder, string $family): string
+    public static function accountFolderOf(string $folder, string $family): string
     {
         return "{$folder}/".str_replace('-', '', $family);
     }
@@ -187,52 +192,26 @@ trait OpensRuntimes
     }
 
     /**
-     * The owner opens a headless Codex runtime of the agent on the host, on the pinned build, through the real start
-     * path; the test chose the driver's account first.
+     * The agent of this name, handed to the scope to open its runtime, prove its start and reach its session; the
+     * same agent keeps what it opened from one scope to the next.
+     *
+     * @param  Closure(TestAgent): mixed  $scope
      */
-    public function openCodexRuntimeOn(string $agent, string $host, string $folder, string|null $firstMessage = null): OpenedRuntime
+    public function withAgent(string $name, Closure $scope): self
     {
-        $build = $this->service(DriverProfiles::class)->ofFamily(DefaultDrivers::CODEX)->build();
+        $this->agentCalled($name);
+        $scope($this->agentScopes[$name] ??= new TestAgent($this, $name));
 
-        return $this->openRuntimeOn(
-            $agent,
-            $host,
-            $folder,
-            DefaultDrivers::CODEX,
-            $build,
-            'codex',
-            model: 'gpt-5.5',
-            firstMessage: $firstMessage,
-        );
+        return $this;
     }
 
     /**
-     * The owner opens the agent's runtime on the host in one of its folders, through the real start path; the test
-     * chose the driver's account first.
+     * The runtime the agent of this name opened in its scope, for a command that names it by its ids.
      */
-    public function openRuntimeOn(
-        string $agent,
-        string $host,
-        string $folder,
-        string $driver = 'claude-code',
-        string $build = '2.1.323',
-        string $profile = 'claude',
-        DriverType $driverType = DriverType::Headless,
-        string|null $model = 'claude-opus-5-5',
-        string|null $firstMessage = null,
-    ): OpenedRuntime {
-        $command = new OpenAgentRuntimeCommand(
-            $this->agentCalled($agent)->id,
-            $this->hostCalled($host)->hostId,
-            $folder,
-            $driver,
-            $build,
-            $profile,
-            $driverType,
-            $model,
-            firstMessage: $firstMessage,
-        );
+    public function openedRuntimeOf(string $agent): OpenedRuntime
+    {
+        $scope = $this->agentScopes[$agent] ?? throw FixtureRefused::missingAlias('opened runtime', $agent, self::OWNER);
 
-        return $this->asOwner($command);
+        return $scope->runtime();
     }
 }

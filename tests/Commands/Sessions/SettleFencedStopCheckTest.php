@@ -11,6 +11,7 @@ use App\Models\Sessions\StopConditionResult;
 use App\Sessions\Commands\SettleFencedStopCheck\SettleFencedStopCheckCommand;
 use App\Sessions\Enums\StopCheckStatus;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostOrder;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -39,7 +40,7 @@ final class SettleFencedStopCheckTest extends TestCase
     {
         $order = $this->journal->hostOrdersOn('Mac')[0];
 
-        $this->journal->answerHostOrderWith($order, ['results' => [$this->conditionResult('failed', 'NOTE is not committed')]]);
+        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order->answerWith(['results' => [$this->conditionResult('failed', 'NOTE is not committed')]]));
 
         $result = StopConditionResult::query()->sole();
         $this->journal->assertResult(
@@ -52,7 +53,7 @@ final class SettleFencedStopCheckTest extends TestCase
     {
         $order = $this->journal->hostOrdersOn('Mac')[0];
 
-        $this->journal->answerHostOrderWith($order, ['results' => [$this->conditionResult('passed', 'clean')]]);
+        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order->answerWith(['results' => [$this->conditionResult('passed', 'clean')]]));
 
         $this->journal->assertResult(StopCheckStatus::Passed, $this->attempt->refresh()->status);
     }
@@ -61,7 +62,7 @@ final class SettleFencedStopCheckTest extends TestCase
     {
         $order = $this->journal->hostOrdersOn('Mac')[0];
 
-        $this->journal->refuseHostOrder($order, HostRefusal::Fenced);
+        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order->refuse(HostRefusal::Fenced));
 
         $this->journal->assertResult(StopCheckStatus::Unresolved, $this->attempt->refresh()->status);
     }

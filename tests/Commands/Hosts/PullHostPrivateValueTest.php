@@ -9,6 +9,7 @@ use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Terminals\Exceptions\PrivateValueRefused;
 use App\Values\HostOrderSource;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -30,7 +31,7 @@ final class PullHostPrivateValueTest extends TestCase
         $this->journal
             ->enrollHost('Mac', [base_path()])
             ->enrollHost('Pi', [base_path()])
-            ->openHostProcess('Mac', 'claude')
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('claude'))
             ->submitPrivateValue('submission-1', self::VALUE);
         $process = $this->journal->hostProcessCalled('claude')->id;
         $this->journal->asSystem(new WriteHostPrivateValueCommand($process, 'submission-1', HostOrderSource::fromJournal()));

@@ -15,7 +15,8 @@ use Throwable;
 trait AssertsResults
 {
     /**
-     * The result is the expected one: the same scalar, or an object whose properties are the same.
+     * A plain value the test worked out itself is the expected one: the same scalar, or an object whose properties are
+     * the same; facts of the journal are asserted with assertJournal().
      */
     public function assertResult(mixed $expected, mixed $actual): self
     {
@@ -31,8 +32,8 @@ trait AssertsResults
     }
 
     /**
-     * Runs the act once and asserts it was refused with the type given; the refusal goes to the verifier, any other
-     * failure passes on as it was, and an act that ends without a refusal fails the test.
+     * Runs the act once, handing it the journal, and asserts it was refused with the type given; the refusal goes to
+     * the verifier, any other failure passes on as it was, and an act that ends without a refusal fails the test.
      *
      * @template TRefusal of Throwable
      *
@@ -61,7 +62,7 @@ trait AssertsResults
     private function refusalOf(string $type, Closure $act): Throwable|null
     {
         try {
-            $act();
+            $act($this);
         } catch (Throwable $failure) {
             if (! Reflector::of($type)->isInstance($failure)) {
                 throw $failure;

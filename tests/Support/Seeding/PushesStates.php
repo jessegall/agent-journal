@@ -14,21 +14,23 @@ use App\Stacks\HookAnswer;
 use App\Stacks\References\StateReference;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Values\StackTarget;
+use Closure;
 use PHPUnit\Framework\Assert;
 
 /**
  * A state of a test on the real stack of an agent's session: pushed through the stack machinery inside the real
- * transaction under the agent's authority, or followed where a command already put it, bound to its one frame.
+ * transaction under the agent's authority, or followed where a command already put it, bound to its one frame and
+ * handed to the test's scope.
  */
 trait PushesStates
 {
     /**
-     * Pushes the state onto the stack and binds the frame the push left for it, a new one or the one it reused.
+     * Pushes the state onto the stack of the agent of this name, or of the session or target given, as the stack
+     * machinery pushes it; stateOn() then reaches the frame the push left, a new one or the one it reused.
      */
-    public function pushState(AgentSession|StackTarget $on, StateReference $reference): StateHandle
+    public function pushState(string|AgentSession|StackTarget $on, StateReference $reference): self
     {
-        $target = $on instanceof AgentSession ? $on->target : $on;
-        $stack = new StateStack($this->app, $target);
+        $target = $this->stackTargetOf($on);
 
         $this->requests->during(
             fn () => $this->requests->asAgent($target->agentId, $target->sessionId),
@@ -37,27 +39,29 @@ trait PushesStates
             ),
         );
 
-        return $this->stateHandle($stack, $reference);
+        return $this;
     }
 
     /**
-     * The state a command already put on the stack, such as the work state a started task pushes, followed from there.
+     * The one frame of the state on the stack, pushed by the test or by a command, such as the work state a started
+     * task pushes, handed to the scope bound to that frame.
+     *
+     * @param  Closure(StateHandle): mixed  $scope
      */
-    public function stateOn(AgentSession|StackTarget $on, StateReference $reference): StateHandle
+    public function stateOn(string|AgentSession|StackTarget $on, StateReference $reference, Closure $scope): self
     {
-        $target = $on instanceof AgentSession ? $on->target : $on;
+        $scope($this->stateHandle(new StateStack($this->app, $this->stackTargetOf($on)), $reference));
 
-        return $this->stateHandle(new StateStack($this->app, $target), $reference);
+        return $this;
     }
 
     /**
      * The session's stack holds no frame of the reference, live or finished.
      */
-    public function assertNoFrame(AgentSession|StackTarget $on, StateReference $reference): self
+    public function assertNoFrame(string|AgentSession|StackTarget $on, StateReference $reference): self
     {
-        $target = $on instanceof AgentSession ? $on->target : $on;
         $frames = array_filter(
-            new StateStack($this->app, $target)->stack()->frames(),
+            new StateStack($this->app, $this->stackTargetOf($on))->stack()->frames(),
             fn (Frame $frame) => $frame->isFor($reference),
         );
 
@@ -69,17 +73,24 @@ trait PushesStates
     /**
      * Sends one hook through the session's state machine as its agent and returns the answer its stack gave.
      */
-    public function answerHook(AgentSession|StackTarget $on, HookInput $input, DriverCapabilities $driver): HookAnswer
-    {
-        return $this->requests->answerHook($on instanceof AgentSession ? $on->target : $on, $input, $driver);
+    public function answerHook(
+        string|AgentSession|StackTarget $on,
+        HookInput $input,
+        DriverCapabilities $driver,
+    ): HookAnswer {
+        return $this->requests->answerHook($this->stackTargetOf($on), $input, $driver);
     }
 
     /**
-     * The hook inputs of the session, signed for it.
+     * The stack target of the agent of this name, of the session or the target itself.
      */
-    public function hooksFor(AgentSession|StackTarget $on): SessionHooks
+    private function stackTargetOf(string|AgentSession|StackTarget $on): StackTarget
     {
-        return new SessionHooks($on instanceof AgentSession ? $on->target : $on);
+        return match (true) {
+            is_string($on) => $this->sessionOf($on)->target,
+            $on instanceof AgentSession => $on->target,
+            default => $on,
+        };
     }
 
     private function stateHandle(StateStack $stack, StateReference $reference): StateHandle

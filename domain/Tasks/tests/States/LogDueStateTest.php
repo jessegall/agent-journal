@@ -11,11 +11,11 @@ use Domain\Tasks\Support\States\LogDueState;
 use Domain\Tasks\Support\States\Support\LogDueStateReference;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Fixtures\Hooks\ListedCommandParser;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
-use Tests\Support\Seeding\SessionHooks;
+use Tests\Support\Seeding\SessionHook;
 use Tests\Support\Seeding\StateHandle;
-use Tests\Support\Seeding\StateObservation;
 use Tests\Support\TestIds;
 
 /**
@@ -35,51 +35,45 @@ final class LogDueStateTest extends TestCase
         'command_receipts',
     ];
 
-    private SessionHooks $hooks;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
-        $this->journal->owner()->agent('Writer');
-        $this->hooks = $this->journal->hooksFor($this->journal->sessionOf('Writer'));
+        $this->journal->owner()->agent('Writer')->pushState('Writer', $this->logDue());
     }
 
     public function test_work_passes_until_the_budget_is_spent_and_is_refused_after(): void
     {
-        $uses = array_fill(0, LogDueState::TOOL_USE_LIMIT - 1, $this->hooks->toolFinished());
+        $uses = array_fill(0, LogDueState::TOOL_USE_LIMIT - 1, SessionHook::toolFinished());
 
-        $this->logDue()
-            ->given(
-                [...$uses, $this->hooks->shell('composer update')],
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+        $this->journal->stateOn('Writer', $this->logDue(), fn (StateHandle $logDue) => $logDue
+            ->steps(
+                [...$uses, SessionHook::shell('composer update')],
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
             )
-            ->given(
-                [$this->hooks->toolFinished(), $this->hooks->shell('composer update')],
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
+            ->steps(
+                [SessionHook::toolFinished(), SessionHook::shell('composer update')],
+                fn (StateAssert $state) => $state->answers(AnswerType::Deny),
             )
-            ->given(
-                $this->hooks->shell('git status'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-            );
+            ->shell(
+                'git status',
+                fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+            ));
     }
 
     public function test_a_log_on_its_task_ends_it_and_a_log_on_another_does_not(): void
     {
-        $this->logDue()
-            ->given(new TaskLogged(TestIds::of(43), 'entry-1'), fn (StateObservation $state) => $state->assertLive())
-            ->given(
+        $this->journal->stateOn('Writer', $this->logDue(), fn (StateHandle $logDue) => $logDue
+            ->event(new TaskLogged(TestIds::of(43), 'entry-1'), fn (StateAssert $state) => $state->isLive())
+            ->event(
                 new TaskLogged(TestIds::of(42), 'entry-2'),
-                fn (StateObservation $state) => $state->assertFinished(),
-            );
+                fn (StateAssert $state) => $state->isFinished(),
+            ));
     }
 
-    private function logDue(): StateHandle
+    private function logDue(): LogDueStateReference
     {
-        return $this->journal->pushState(
-            $this->journal->sessionOf('Writer'),
-            LogDueStateReference::forTask(TestIds::of(42), 42),
-        );
+        return LogDueStateReference::forTask(TestIds::of(42), 42);
     }
 }

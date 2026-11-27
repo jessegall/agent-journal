@@ -24,7 +24,15 @@ final class FixtureRefused extends LogicException
 
     public static function noTestHost(): self
     {
-        return new self(FixtureRefusalType::NoTestHost, 'No host runs for real: call runTestHost() first.');
+        return new self(FixtureRefusalType::NoTestHost, 'No test host runs: run one with runTestHost() first.');
+    }
+
+    public static function testHostRuns(string $host): self
+    {
+        return new self(
+            FixtureRefusalType::TestHostRuns,
+            "The test host {$host} runs already: act on it with testHost() instead of running another.",
+        );
     }
 
     public static function secondOwner(): self
@@ -54,6 +62,19 @@ final class FixtureRefused extends LogicException
     public static function missingAlias(string $type, string $alias, string $owner): self
     {
         return new self(FixtureRefusalType::MissingAlias, "{$owner} has no {$type} called {$alias}: arrange it first.");
+    }
+
+    /**
+     * @param  list<string>  $named
+     */
+    public static function unknownHostProcess(string $name, array $named): self
+    {
+        $known = $named === [] ? 'none' : implode(', ', $named);
+
+        return new self(
+            FixtureRefusalType::MissingAlias,
+            "No host process is called {$name}; the test named {$known}: open or name it first.",
+        );
     }
 
     public static function notOneStart(string $agent, int $count): self

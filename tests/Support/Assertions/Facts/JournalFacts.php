@@ -45,7 +45,7 @@ final readonly class JournalFacts implements Facts
                 $this->hostProcesses,
             ),
             'purposes' => fn () => $this->processesByPurpose(),
-            'agents' => fn () => array_map(fn (Agent $agent) => new AgentFacts($agent), $this->agents),
+            'agents' => fn () => array_map(fn (Agent $agent) => new AgentFacts($agent, $this->feed), $this->agents),
             'accounts' => fn () => array_map(
                 fn (Account $account) => new AccountFacts($account),
                 Account::query()->orderBy('id')->get()->all(),

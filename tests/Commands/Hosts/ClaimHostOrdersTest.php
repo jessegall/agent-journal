@@ -18,6 +18,9 @@ use App\Support\AgentImage;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -32,7 +35,7 @@ final class ClaimHostOrdersTest extends TestCase
 
     public function test_every_waiting_order_is_claimed_signed_and_not_handed_out_twice(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'second')->openHostProcess('Mac', 'first');
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('second'))->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('first'));
         $hostId = $this->journal->hostCalled('Mac')->hostId;
         [$open] = $this->journal->hostOrdersOf('first');
 
@@ -52,10 +55,10 @@ final class ClaimHostOrdersTest extends TestCase
         $this->journal
             ->useServerClockAt($claimedAt)
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell', HostProcessType::Pipe);
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell', HostProcessType::Pipe));
         $hostId = $this->journal->hostCalled('Mac')->hostId;
         [$open] = $this->journal->hostOrdersOf('shell');
-        $this->journal->answerHostOrder($open)->reportHostProcess('shell', HostProcessReportType::Running);
+        $this->journal->hostOrder($open, fn (TestHostOrder $order) => $order->answer())->hostProcess('shell', fn (TestHostProcess $shell) => $shell->report(HostProcessReportType::Running));
         $input = $this->journal->asSystem(new WriteHostInputCommand(
             $this->journal->hostProcessCalled('shell')->id,
             "hello\n",
@@ -80,7 +83,7 @@ final class ClaimHostOrdersTest extends TestCase
 
     public function test_a_host_claims_none_of_another_hosts_orders(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->enrollHost('Other', [base_path()])->openHostProcess('Mac', 'shell');
+        $this->journal->enrollHost('Mac', [base_path()])->enrollHost('Other', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
 
         $claim = $this->journal->asSystem(new ClaimHostOrdersCommand($this->journal->hostCalled('Other')->hostId, 10));
 

@@ -4,17 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Support\Hosts;
 
+use App\Agents\ContainerManifest;
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Enums\WorkspaceUse;
+use App\Agents\SecurityOptions;
 use App\Hosts\EnrolledHost;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Enums\RestartPolicy;
+use App\Models\Agents\AgentRuntime;
 use App\Projects\Enums\ArrangementType;
+use App\Support\MountRules;
+use App\Values\ExecutionBudgets;
+use App\Values\HostProcessPlan;
+use Closure;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Process\InputStream;
+use Tests\Support\Seeding\TestJournal;
 
 /**
  * The test host binary, built from the checkout, run against the Docker stand-in daemon it carries and the test
  * application served on a port of its own, so a test sees host protocol 1 work end to end without a real Docker.
- * Every process it starts ends when it is stopped or let go.
+ * A test acts on it in the scope runTestHost() opens, each verb returning the host; every process it starts ends
+ * when it is stopped or let go.
  */
 final class TestHost
 {
@@ -72,6 +86,8 @@ final class TestHost
     public private(set) int $port = 0;
 
     private function __construct(
+        private readonly TestJournal $journal,
+        public readonly string $name,
         private readonly Factory $processes,
         public readonly string $folder,
         private readonly string $database,
@@ -86,6 +102,8 @@ final class TestHost
      * a stand-in container, its session containers playing Claude Code's terminal recording.
      */
     public static function start(
+        TestJournal $journal,
+        string $name,
         Factory $processes,
         EnrolledHost $host,
         string $database,
@@ -95,7 +113,16 @@ final class TestHost
     ): self {
         $folder = sys_get_temp_dir().'/journal-real-host-'.bin2hex(random_bytes(6));
         mkdir($folder, 0o700, true);
-        $real = new self($processes, $folder, $database, $ownerEmail, $arrangement, $showsDriverArrangements);
+        $real = new self(
+            $journal,
+            $name,
+            $processes,
+            $folder,
+            $database,
+            $ownerEmail,
+            $arrangement,
+            $showsDriverArrangements,
+        );
         $real->port = self::freePort();
         $real->serveJournal();
         $real->run($real->standInDocker());
@@ -184,24 +211,31 @@ final class TestHost
     /**
      * Stops the host binary and starts it again; the stand-in daemon and its containers run on.
      */
-    public function restartHost(): void
+    public function restartHost(): self
     {
         self::end($this->host, SIGTERM);
         $this->startHost();
+
+        return $this;
     }
 
     /**
      * The served journal and all its workers are killed, as in a crash of the app, and it comes back on the same port
      * after the seconds.
      */
-    public function restartJournal(float $seconds): void
+    public function restartJournal(float $seconds = 1.0): self
     {
         $this->killJournal();
         usleep((int) ($seconds * 1_000_000));
         $this->serveJournal();
+
+        return $this;
     }
 
-    public function stop(): void
+    /**
+     * The host, its Docker stand-in and its served journal stop; a host stopped already stays stopped.
+     */
+    public function stop(): self
     {
         $this->killJournal();
 
@@ -211,6 +245,135 @@ final class TestHost
 
         $this->host = null;
         $this->running = [];
+
+        return $this;
+    }
+
+    /**
+     * The host stops, and no process of the journal it was served on runs any more, server or worker.
+     */
+    public function assertStopsWholly(): self
+    {
+        $this->stop();
+        Assert::assertSame([], self::journalProcessesOn($this->port));
+
+        return $this;
+    }
+
+    /**
+     * The driver accounts are chosen in folders of this host, so a stand-in started for an account can write into
+     * its account folder, as Claude Code writes a conversation's transcript there.
+     */
+    public function chooseActiveAccounts(): self
+    {
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            mkdir(TestJournal::accountFolderOf($this->accountsFolder(), $driver), 0o700, true);
+        }
+
+        $this->journal->chooseActiveAccounts($this->accountsFolder());
+
+        return $this;
+    }
+
+    /**
+     * The owner's sign-ins are made as this host runs them: the test reads the cache the served journal and its
+     * runner share, and makes each attempt's folder under the host's own accounts folder.
+     */
+    public function shareSignIns(): self
+    {
+        $this->journal->shareSignIns($this->accountsFolder());
+
+        return $this;
+    }
+
+    /**
+     * Opens a container of the stand-in's echo program on this host.
+     */
+    public function openEchoContainer(
+        string $name,
+        string|null $runtimeId = null,
+        RestartPolicy $restart = RestartPolicy::Never,
+    ): self {
+        $manifest = ContainerManifest::make(
+            self::IMAGE,
+            '10001:10001',
+            true,
+            [],
+            false,
+            "journal-net-{$name}",
+            [MountRules::local()->workspaceMount($this->folder, WorkspaceUse::Shared)],
+            [],
+            ExecutionBudgets::defaults(),
+            MountRules::local(),
+            SecurityOptions::none(),
+            true,
+        );
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Terminal,
+            $restart,
+            ['echo-program'],
+            [],
+            '/workspace',
+            $manifest,
+        );
+        $this->journal->openPlannedProcess($this->name, $name, $plan, $runtimeId);
+
+        return $this;
+    }
+
+    /**
+     * Opens the key recorder on this host as a native terminal: every byte typed on it is written to a file of the
+     * installation and the typed text drawn on its screen.
+     */
+    public function openKeyRecorder(string $name): self
+    {
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Terminal,
+            RestartPolicy::Never,
+            ["{$this->installation()}/bin/journal-agent", 'standin', 'keys', '--record', "{$this->installation()}/keys-{$name}"],
+            [],
+            $this->folder,
+        );
+        $this->journal->openPlannedProcess($this->name, $name, $plan);
+
+        return $this;
+    }
+
+    /**
+     * Opens a local process of pipes on this host with the argv and the start credentials of the runtime, handed over
+     * as the journal hands them to a process it orders opened.
+     *
+     * @param  list<string>  $argv
+     */
+    public function openWithStartCredentials(string $name, string $runtimeId, array $argv): self
+    {
+        $runtime = AgentRuntime::query()->whereKey($runtimeId)->sole();
+        $credentials = $runtime->handOverStartCredentials($this->journalUrl());
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Pipe,
+            RestartPolicy::Never,
+            $argv,
+            $credentials->environment(),
+            base_path(),
+        );
+        $this->journal->openPlannedProcess($this->name, $name, $plan, $runtimeId);
+
+        return $this;
+    }
+
+    /**
+     * A process of this host the test named, handed to the scope.
+     *
+     * @param  Closure(TestHostProcess): mixed  $scope
+     */
+    public function process(string $name, Closure $scope): self
+    {
+        $this->journal->hostProcess($name, $scope);
+
+        return $this;
     }
 
     public function __destruct()
@@ -344,7 +507,7 @@ final class TestHost
      * Starts one pass of the sign-in runner as a host runs it, signed with this host's secret, signing in with the
      * installation's stand-ins; it ends once the sign-in it took ended.
      */
-    public function startSignIns(): void
+    public function startSignIns(): self
     {
         chmod("{$this->folder}/secret", 0o600);
         $environment = [
@@ -356,44 +519,56 @@ final class TestHost
         ];
         $this->signIns = $this->processes->env($environment)->timeout(60)
             ->start(['php', base_path('artisan'), 'accounts:run-sign-ins', '--once']);
+
+        return $this;
     }
 
     /**
-     * Waits for the sign-in runner's pass to end and answers whether it ended well.
+     * Waits for the sign-in runner's pass to end, which must end well.
      */
-    public function waitForSignIns(): bool
+    public function waitForSignIns(): self
     {
-        return $this->signIns?->wait()->successful() ?? false;
+        Assert::assertTrue($this->signIns?->wait()->successful() ?? false, 'The sign-in runner failed: '.$this->printed());
+
+        return $this;
     }
 
     /**
      * Holds the stand-in's next headless turn after its first lines, until it is released.
      */
-    public function holdTurns(): void
+    public function holdTurns(): self
     {
         touch("{$this->installation()}/hold");
+
+        return $this;
     }
 
-    public function releaseTurns(): void
+    public function releaseTurns(): self
     {
         unlink("{$this->installation()}/hold");
+
+        return $this;
     }
 
     /**
      * The Claude Code stand-in plays the named recorded terminal turn of its build in place of the one it played.
      */
-    public function playClaudeTerminal(string $recording): void
+    public function playClaudeTerminal(string $recording): self
     {
         $turns = dirname(base_path(self::TERMINAL_TURN), 2);
         copy("{$turns}/{$recording}/fixture.json", "{$this->installation()}/terminal-turn/fixture.json");
+
+        return $this;
     }
 
     /**
      * The user completes the device sign-in in the browser, so the stand-in's login completes.
      */
-    public function completeBrowserSignIn(): void
+    public function completeBrowserSignIn(): self
     {
         touch("{$this->installation()}/browser-signed-in");
+
+        return $this;
     }
 
     public function installation(): string
@@ -481,6 +656,22 @@ final class TestHost
     public function heardByCodex(): array
     {
         return $this->startsIn("{$this->installation()}/codex-heard.jsonl");
+    }
+
+    /**
+     * Every byte each key recorder read so far, as it reached the program, by the recorder's name.
+     *
+     * @return array<string, string>
+     */
+    public function keysRecorded(): array
+    {
+        $recorded = [];
+
+        foreach (glob("{$this->installation()}/keys-*") ?: [] as $file) {
+            $recorded[substr(basename($file), strlen('keys-'))] = (string) file_get_contents($file);
+        }
+
+        return $recorded;
     }
 
     /**

@@ -24,12 +24,11 @@ use App\Support\ActorReference;
 use App\Values\ProjectSelection;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Fixtures\Projects\AskedAgentProjects;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
-use Tests\Support\ScenarioTick;
-use Tests\Support\Seeding\SessionHooks;
+use Tests\Support\Seeding\SessionHook;
 use Tests\Support\Seeding\StateHandle;
-use Tests\Support\Seeding\StateObservation;
 use Tests\TestCase;
 
 /**
@@ -47,8 +46,6 @@ final class ReadMessageStateTest extends TestCase
      */
     private const array TABLES = ['agent_stacks', 'command_receipts'];
 
-    private SessionHooks $hooks;
-
     private Inbox $inbox;
 
     private Message $first;
@@ -65,110 +62,117 @@ final class ReadMessageStateTest extends TestCase
         $this->inbox = $this->journal->sharedInboxOf('Owner', 'Writer');
         $this->first = $this->journal->post('Owner', $this->inbox, 'First');
         $this->second = $this->journal->post('Owner', $this->inbox, 'Second');
-        $this->hooks = $this->journal->hooksFor($this->journal->sessionOf('Writer'));
     }
 
     public function test_it_starts_with_every_message_its_agent_has_not_read(): void
     {
-        $this->reading()->given(
-            new MessageSent('sent-9', 'inbox-9', 9, null, $this->journal->actorCalled('Owner')),
-            fn (StateObservation $state) => $state->assertValue('unreadIds', [$this->first->id, $this->second->id]),
-        );
+        $this->journal
+            ->pushState('Writer', $this->reading())
+            ->stateOn('Writer', $this->reading(), fn (StateHandle $reading) => $reading->event(
+                new MessageSent('sent-9', 'inbox-9', 9, null, $this->journal->actorCalled('Owner')),
+                fn (StateAssert $state) => $state->where('unreadIds', [$this->first->id, $this->second->id]),
+            ));
     }
 
     public function test_an_inbox_with_nothing_unread_ends_it_as_it_enters(): void
     {
         $this->journal->sharedInbox('Owner', 'Other');
-        $quiet = $this->journal->sharedInboxOf('Owner', 'Other');
         $other = $this->journal->agentCalled('Other')->id;
+        $quiet = ReadMessageStateReference::forInbox($this->journal->sharedInboxOf('Owner', 'Other')->id, $other);
 
-        $this->journal
-            ->pushState($this->journal->sessionOf('Other'), ReadMessageStateReference::forInbox($quiet->id, $other))
-            ->given(new ScenarioTick(), fn (StateObservation $state) => $state->assertFinished());
+        $this->journal->pushState('Other', $quiet)->stateOn('Other', $quiet, fn (StateHandle $empty) => $empty
+            ->tick(fn (StateAssert $state) => $state->isFinished()));
     }
 
     public function test_a_message_someone_else_sends_waits_to_be_read_and_its_agents_own_does_not(): void
     {
-        $this->reading()
-            ->given(
-                new MessageSent('sent-1', $this->inbox->id, 3, null, $this->agent()),
-                fn (StateObservation $state) => $state->assertValue('unreadIds', [$this->first->id, $this->second->id]),
-            )
-            ->given(
-                new MessageSent('sent-2', $this->inbox->id, 4, null, $this->journal->actorCalled('Owner')),
-                fn (StateObservation $state) => $state->assertValue(
-                    'unreadIds',
-                    [$this->first->id, $this->second->id, 'sent-2'],
-                ),
-            );
+        $this->journal
+            ->pushState('Writer', $this->reading())
+            ->stateOn('Writer', $this->reading(), fn (StateHandle $reading) => $reading
+                ->event(
+                    new MessageSent('sent-1', $this->inbox->id, 3, null, $this->agent()),
+                    fn (StateAssert $state) => $state->where('unreadIds', [$this->first->id, $this->second->id]),
+                )
+                ->event(
+                    new MessageSent('sent-2', $this->inbox->id, 4, null, $this->journal->actorCalled('Owner')),
+                    fn (StateAssert $state) => $state->where(
+                        'unreadIds',
+                        [$this->first->id, $this->second->id, 'sent-2'],
+                    ),
+                ));
     }
 
     public function test_each_read_pushes_the_answer_for_that_message_and_the_last_ends_it(): void
     {
-        $this->reading()
-            ->given(
-                new MessageRead($this->first->id, $this->inbox->id, $this->journal->actorCalled('Other')),
-                fn (StateObservation $state) => $state->assertStack(
-                    ['core.ready', StateReferenceKeys::of(ReadMessageStateReference::class)],
-                ),
-            )
-            ->given(new MessageRead(
-                $this->first->id,
-                $this->inbox->id,
-                $this->agent(),
-            ), function (StateObservation $state) {
-                $state->assertPushed(AnswerMessageStateReference::forMessage($this->first, $this->writerId()));
-                $state->assertValue('unreadIds', [$this->second->id]);
-            })
-            ->given(
-                new MessageRead($this->second->id, $this->inbox->id, $this->agent()),
-                fn (StateObservation $state) => $state->assertFinished(),
-            );
+        $this->journal
+            ->pushState('Writer', $this->reading())
+            ->stateOn('Writer', $this->reading(), fn (StateHandle $reading) => $reading
+                ->event(
+                    new MessageRead($this->first->id, $this->inbox->id, $this->journal->actorCalled('Other')),
+                    fn (StateAssert $state) => $state->stackIs(
+                        ['core.ready', StateReferenceKeys::of(ReadMessageStateReference::class)],
+                    ),
+                )
+                ->event(new MessageRead(
+                    $this->first->id,
+                    $this->inbox->id,
+                    $this->agent(),
+                ), fn (StateAssert $state) => $state
+                    ->pushed(AnswerMessageStateReference::forMessage($this->first, $this->writerId()))
+                    ->where('unreadIds', [$this->second->id]))
+                ->event(
+                    new MessageRead($this->second->id, $this->inbox->id, $this->agent()),
+                    fn (StateAssert $state) => $state->isFinished(),
+                ));
     }
 
     public function test_the_agent_leaving_the_inbox_ends_it(): void
     {
-        $this->reading()
-            ->given(new InboxLeft('inbox-9', $this->agent()), fn (StateObservation $state) => $state->assertLive())
-            ->given(
-                new InboxLeft($this->inbox->id, $this->agent()),
-                fn (StateObservation $state) => $state->assertFinished(),
-            );
+        $this->journal
+            ->pushState('Writer', $this->reading())
+            ->stateOn('Writer', $this->reading(), fn (StateHandle $reading) => $reading
+                ->event(new InboxLeft('inbox-9', $this->agent()), fn (StateAssert $state) => $state->isLive())
+                ->event(
+                    new InboxLeft($this->inbox->id, $this->agent()),
+                    fn (StateAssert $state) => $state->isFinished(),
+                ));
     }
 
     public function test_once_the_budget_is_spent_it_refuses_writes_but_not_reads_until_the_agent_reads(): void
     {
-        $this->reading()
-            ->given(
-                $this->hooks->fileEdit('app/Thing.php'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-            )
-            ->given([
-                $this->hooks->toolFinished(),
-                $this->hooks->toolFinished('pwd'),
-                $this->hooks->shell('composer update'),
-            ], function (StateObservation $state) {
-                $state->assertValue('toolUses', 2);
-                $state->assertStateAnswer(AnswerType::Deny);
-            })
-            ->given(
-                $this->hooks->shell('git status'),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-            )
-            ->given(
-                new MessageRead($this->first->id, $this->inbox->id, $this->agent()),
-                fn (StateObservation $state) => $state->assertValue('toolUses', 0),
-            );
+        $this->journal
+            ->pushState('Writer', $this->reading())
+            ->stateOn('Writer', $this->reading(), fn (StateHandle $reading) => $reading
+                ->fileEdit(
+                    'app/Thing.php',
+                    fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+                )
+                ->steps([
+                    SessionHook::toolFinished(),
+                    SessionHook::toolFinished('pwd'),
+                    SessionHook::shell('composer update'),
+                ], fn (StateAssert $state) => $state
+                    ->where('toolUses', 2)
+                    ->answers(AnswerType::Deny))
+                ->shell(
+                    'git status',
+                    fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+                )
+                ->event(
+                    new MessageRead($this->first->id, $this->inbox->id, $this->agent()),
+                    fn (StateAssert $state) => $state->where('toolUses', 0),
+                ));
     }
 
     public function test_a_stop_is_refused_while_a_message_is_unread_and_passes_right_after_a_refusal(): void
     {
-        $this->reading()
-            ->given($this->hooks->stop(), fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny))
-            ->given(
-                $this->hooks->stopAfterRefusal(),
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
-            );
+        $this->journal
+            ->pushState('Writer', $this->reading())
+            ->stateOn('Writer', $this->reading(), fn (StateHandle $reading) => $reading
+                ->stop(fn (StateAssert $state) => $state->answers(AnswerType::Deny))
+                ->stopAfterRefusal(
+                    fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
+                ));
     }
 
     public function test_a_send_by_an_owner_on_another_project_is_read_under_the_agents_own_project(): void
@@ -180,24 +184,23 @@ final class ReadMessageStateTest extends TestCase
         $chosen = ProjectSelection::of($this->journal->projectCalled('Shop')->id);
         $this->app->make(CurrentProject::class)->select($chosen);
 
-        $this->reading()->given(
-            new MessageSent('sent-3', $this->inbox->id, 3, null, $this->journal->actorCalled('Owner')),
-            fn (StateObservation $state) => $state->assertValue(
-                'unreadIds',
-                [$this->first->id, $this->second->id, 'sent-3'],
-            ),
-        );
+        $this->journal
+            ->pushState('Writer', $this->reading())
+            ->stateOn('Writer', $this->reading(), fn (StateHandle $reading) => $reading->event(
+                new MessageSent('sent-3', $this->inbox->id, 3, null, $this->journal->actorCalled('Owner')),
+                fn (StateAssert $state) => $state->where(
+                    'unreadIds',
+                    [$this->first->id, $this->second->id, 'sent-3'],
+                ),
+            ));
 
         $this->assertContains($this->writerId(), $asked->askedAgentIds);
         $this->assertEquals($chosen, $this->app->make(CurrentProjectContract::class)->selection());
     }
 
-    private function reading(): StateHandle
+    private function reading(): ReadMessageStateReference
     {
-        return $this->journal->pushState(
-            $this->journal->sessionOf('Writer'),
-            ReadMessageStateReference::forInbox($this->inbox->id, $this->writerId()),
-        );
+        return ReadMessageStateReference::forInbox($this->inbox->id, $this->writerId());
     }
 
     private function agent(): ActorReference

@@ -12,9 +12,10 @@ use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Support\States\Support\FollowSequenceStateReference;
 use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Domain\Sequences\Tests\TestCase;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Seeding\StateObservation;
+use Tests\Support\Seeding\StateHandle;
 
 /**
  * An agent starts a run in its session: the run runs at its first step, follows the agent and puts its state on the
@@ -55,9 +56,10 @@ final class StartSequenceTest extends TestCase
         $this->runs->startRun(self::RUN, 'Writer')->assertStep(self::RUN, 1, 'Writer');
 
         $this->journal->stateOn(
-            $this->journal->sessionOf('Writer'),
+            'Writer',
             FollowSequenceStateReference::forRun($this->runs->runCalled(self::RUN)),
-        )->given([], fn (StateObservation $state) => $state->assertOnTop());
+            fn (StateHandle $following) => $following->steps([], fn (StateAssert $state) => $state->isOnTop()),
+        );
     }
 
     public function test_a_failed_push_rolls_the_start_back(): void

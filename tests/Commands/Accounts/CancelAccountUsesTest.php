@@ -31,6 +31,8 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Links\Note;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -100,8 +102,8 @@ final class CancelAccountUsesTest extends TestCase
         $account = $this->account();
         $running = $this->sessionOn($account);
         $this->journal->enrollHost('Mac', [base_path()])
-            ->openHostProcessForStart('Mac', 'terminal', $running->id)
-            ->reportHostProcess('terminal', HostProcessReportType::Running);
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcessForStart('terminal', $running->id))
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->report(HostProcessReportType::Running));
 
         $this->actAsOwner();
 

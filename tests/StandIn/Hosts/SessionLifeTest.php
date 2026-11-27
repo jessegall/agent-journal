@@ -29,6 +29,7 @@ use Closure;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
 use Tests\Support\Hosts\EchoProcessDriver;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -92,7 +93,7 @@ final class SessionLifeTest extends TestCase
         $this->journal->asSystem(new StopHostProcessCommand($process, 1000, 1000, HostOrderSource::fromJournal()));
 
         $this->journal
-            ->waitForHostProcess('echo', HostProcessStatus::Exited)
+            ->hostProcess('echo', fn (TestHostProcess $echo) => $echo->waitFor(HostProcessStatus::Exited))
             ->assertResult([1, true], [$this->ordersOf(HostOrderType::WriteKeys), $work->generation >= 1]);
     }
 
@@ -129,7 +130,7 @@ final class SessionLifeTest extends TestCase
             ->enrollHost('Mac', [base_path()])
             ->runTestHost('Mac')
             ->openEchoContainer('Mac', 'echo', restart: RestartPolicy::OnCrash)
-            ->waitForHostProcess('echo', HostProcessStatus::Running);
+            ->hostProcess('echo', fn (TestHostProcess $echo) => $echo->waitFor(HostProcessStatus::Running));
         $process = $this->journal->hostProcessCalled('echo');
         $feed = $this->journal->service(ProcessFeed::class);
         $work = $this->journal->driveHostProcess('echo', fn () => $feed->latestFrame($process->id) !== null);
@@ -170,7 +171,7 @@ final class SessionLifeTest extends TestCase
             HostOrderSource::fromJournal(),
         ));
 
-        $this->journal->waitForHostProcess('terminal', HostProcessStatus::Exited);
+        $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Exited));
         $this->journal->assertResult(1, count($this->journal->testHostClaudeStarts()));
     }
 
@@ -178,9 +179,9 @@ final class SessionLifeTest extends TestCase
     {
         $runtimeId = $this->openAnsweredTerminal();
 
-        $this->journal->restartTestHost()->waitForHostProcess('terminal', HostProcessStatus::Lost);
+        $this->journal->restartTestHost()->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Lost));
         $this->journal->callJournalProcess('again', $runtimeId, HostProcessPurpose::AgentTerminal)
-            ->waitForHostProcess('again', HostProcessStatus::Running);
+            ->hostProcess('again', fn (TestHostProcess $again) => $again->waitFor(HostProcessStatus::Running));
         $this->journal->driveHostProcess('again', fn () => $this->isComposerShownOn('again'));
 
         $this->journal->assertResult(
@@ -204,7 +205,7 @@ final class SessionLifeTest extends TestCase
             HostOrderSource::fromJournal(),
         ));
 
-        $this->journal->waitForHostProcess('codex', HostProcessStatus::Exited);
+        $this->journal->hostProcess('codex', fn (TestHostProcess $codex) => $codex->waitFor(HostProcessStatus::Exited));
         $this->journal->assertResult([1, []], [count($this->journal->testHostCodexStarts()), $this->journal->testHostClaudeStarts()]);
     }
 
@@ -227,12 +228,12 @@ final class SessionLifeTest extends TestCase
         $codex = $this->answerTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5', self::CODEX_ANSWER);
 
         $this->journal->restartTestHost()
-            ->waitForHostProcess('terminal', HostProcessStatus::Lost)
-            ->waitForHostProcess('codex', HostProcessStatus::Lost);
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Lost))
+            ->hostProcess('codex', fn (TestHostProcess $codex) => $codex->waitFor(HostProcessStatus::Lost));
         $this->journal->callJournalProcess('again', $claude, HostProcessPurpose::AgentTerminal)
             ->callJournalProcess('codex again', $codex, HostProcessPurpose::AgentTerminal)
-            ->waitForHostProcess('again', HostProcessStatus::Running)
-            ->waitForHostProcess('codex again', HostProcessStatus::Running);
+            ->hostProcess('again', fn (TestHostProcess $again) => $again->waitFor(HostProcessStatus::Running))
+            ->hostProcess('codex again', fn (TestHostProcess $codexAgain) => $codexAgain->waitFor(HostProcessStatus::Running));
 
         $this->journal->assertResult(
             [2, 2, true],
@@ -296,13 +297,13 @@ final class SessionLifeTest extends TestCase
             ->enrollHost('Mac', [base_path()])
             ->runTestHost('Mac')
             ->openKeyRecorder('Mac', 'keys')
-            ->waitForHostProcess('keys', HostProcessStatus::Running);
+            ->hostProcess('keys', fn (TestHostProcess $keys) => $keys->waitFor(HostProcessStatus::Running));
         $shows = fn (string $text) => fn () => str_contains(implode("\n", $this->journal->hostProcessRows('keys')), $text);
         $work = $this->journal->driveHostProcess('keys', $shows('keys>'));
 
         foreach ($sent as $keys => $screen) {
             $arrived = fn () => str_ends_with($this->journal->keysRecordedBy('keys'), $keys) && $shows($screen)();
-            $this->journal->typeOnHostProcess('keys', $keys)->driveHostProcess('keys', $arrived, $work);
+            $this->journal->hostProcess('keys', fn (TestHostProcess $process) => $process->type($keys))->driveHostProcess('keys', $arrived, $work);
         }
 
         $shown = array_slice(array_map(rtrim(...), $this->journal->hostProcessRows('keys')), 0, 2);
@@ -452,7 +453,7 @@ final class SessionLifeTest extends TestCase
             // Taken once the host says so, or once what the keys do shows.
             $isTaken = fn () => $this->lastKeysOrder()->status === HostOrderStatus::Done || $isDone();
             $isAnswered = fn () => $isTaken() || $this->lastKeysOrder()->status === HostOrderStatus::Refused;
-            $this->journal->typeOnHostProcess('terminal', $keys)->driveHostProcess('terminal', $isAnswered, $work);
+            $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->type($keys))->driveHostProcess('terminal', $isAnswered, $work);
 
             if ($isTaken()) {
                 return;
@@ -532,7 +533,7 @@ final class SessionLifeTest extends TestCase
         );
         $this->journal
             ->openEchoContainer('Mac', 'echo', $opened->runtimeId)
-            ->waitForHostProcess('echo', HostProcessStatus::Running);
+            ->hostProcess('echo', fn (TestHostProcess $echo) => $echo->waitFor(HostProcessStatus::Running));
         $process = $this->journal->hostProcessCalled('echo')->id;
         $feed = $this->journal->service(ProcessFeed::class);
 

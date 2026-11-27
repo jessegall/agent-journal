@@ -34,7 +34,6 @@ use App\Support\Inputs\Values\HookIdentity;
 use App\Time\Contracts\ServerClock;
 use App\Values\ProjectSelection;
 use App\Values\SelectedDriver;
-use App\Values\SignInChallenge;
 use App\Values\StackTarget;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
@@ -66,6 +65,7 @@ final class TestJournal
     use ArrangesProfiles;
     use ArrangesSettings;
     use ArrangesShares;
+    use ArrangesSignIns;
     use ArrangesSkills;
     use AssertsLinks;
     use AssertsMessages;
@@ -142,16 +142,6 @@ final class TestJournal
      * @var array<string, Inbox> the inboxes a test kept under a name of its own
      */
     private array $remembered = [];
-
-    /**
-     * @var array<string, string> each sign-in attempt the test began, by the name it gave it
-     */
-    private array $signIns = [];
-
-    /**
-     * @var array<string, SignInChallenge> the challenge each named sign-in showed the owner
-     */
-    private array $signInChallenges = [];
 
     public function __construct(private readonly Application $app, private readonly TestCase $test)
     {

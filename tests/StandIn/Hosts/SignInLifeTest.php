@@ -16,6 +16,7 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -108,11 +109,11 @@ final class SignInLifeTest extends TestCase
         $this->journal->idleAgent('Terminal');
         $opened = $this->journal->openRuntimeOn('Terminal', 'Mac', base_path(), driverType: DriverType::Terminal);
         $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
-            ->waitForHostProcess('terminal', HostProcessStatus::Running);
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Running));
 
         $again = $this->journal->asOwner(new BeginSignInAgainCommand($account->id));
         $this->artisan('accounts:reconcile')->assertSuccessful();
-        $this->journal->waitForHostProcess('terminal', HostProcessStatus::Exited, seconds: 15);
+        $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Exited, seconds: 15));
         $this->artisan('accounts:reconcile')->assertSuccessful();
         $this->journal->runSignInsOnTestHost();
         $this->journal->signInChallengeOf($again->attemptId);

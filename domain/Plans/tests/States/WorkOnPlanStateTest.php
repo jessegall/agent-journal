@@ -15,9 +15,10 @@ use Domain\Plans\Support\States\WorkOnPlanState;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
-use Tests\Support\Seeding\StateObservation;
+use Tests\Support\Seeding\StateHandle;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -59,8 +60,8 @@ final class WorkOnPlanStateTest extends TestCase
         $this->journal->actAs('Planner')->run(new StartPlanCommand($this->planId()));
         $this->journal->run(new StartPlanCommand($this->planId()));
 
-        $this->journal->stateOn($this->planner(), WorkOnPlanStateReference::forPlan($this->planId()))
-            ->given([], fn (StateObservation $state) => $state->assertOnTop());
+        $this->journal->stateOn($this->planner(), $this->working(), fn (StateHandle $working) => $working
+            ->steps([], fn (StateAssert $state) => $state->isOnTop()));
     }
 
     public function test_a_user_starting_a_plan_changes_no_stack(): void
@@ -72,13 +73,16 @@ final class WorkOnPlanStateTest extends TestCase
 
     public function test_a_plan_frame_is_finished_once_the_plan_is_done_or_cancelled(): void
     {
-        $working = $this->journal->pushState($this->planner(), WorkOnPlanStateReference::forPlan($this->planId()))
-            ->given([], fn (StateObservation $state) => $state->assertOnTop());
+        $this->journal
+            ->pushState($this->planner(), $this->working())
+            ->stateOn($this->planner(), $this->working(), fn (StateHandle $working) => $working
+                ->steps([], fn (StateAssert $state) => $state->isOnTop()));
 
         $plan = $this->plans->planCalled(self::PLAN);
         $this->journal->actAs('Owner')->run(new CancelPlanCommand($plan->id, $plan->revision, 'No longer needed'));
 
-        $working->given([], fn (StateObservation $state) => $state->assertFinished());
+        $this->journal->stateOn($this->planner(), $this->working(), fn (StateHandle $working) => $working
+            ->steps([], fn (StateAssert $state) => $state->isFinished()));
     }
 
     public function test_the_frame_shows_the_newest_counts_it_heard_and_ignores_an_older_count_arriving_late(): void
@@ -114,6 +118,14 @@ final class WorkOnPlanStateTest extends TestCase
                 1,
             ],
         );
+    }
+
+    /**
+     * The work state a started plan puts on its planner's stack.
+     */
+    private function working(): WorkOnPlanStateReference
+    {
+        return WorkOnPlanStateReference::forPlan($this->planId());
     }
 
     private function planId(): string

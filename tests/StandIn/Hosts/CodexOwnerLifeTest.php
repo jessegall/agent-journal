@@ -14,6 +14,7 @@ use App\Models\Hosts\HostProcess;
 use App\Sessions\OpenedRuntime;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -66,7 +67,7 @@ final class CodexOwnerLifeTest extends TestCase
         $owners = HostProcess::query()->ofPurposes([HostProcessPurpose::AccountOwner])->count();
 
         // The owner reads its input from the host, so it ends with the host and exits.
-        $this->journal->restartTestHost()->waitForHostProcess('owner', HostProcessStatus::Exited);
+        $this->journal->restartTestHost()->hostProcess('owner', fn (TestHostProcess $owner) => $owner->waitFor(HostProcessStatus::Exited));
         // The owner's worker sees its process end and fails the turn it was running.
         $isFailed = fn () => $this->progressOf($coder->firstRequestId) === RequestProgress::Failed;
         $this->journal->driveHostProcess('owner', $isFailed, $work);

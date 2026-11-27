@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Assertions\Facts;
 
+use App\Hosts\ProcessFeed;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -14,7 +15,7 @@ use Tests\Support\Assertions\Contracts\Facts;
  */
 final readonly class AgentFacts implements Facts
 {
-    public function __construct(private Agent $agent) {}
+    public function __construct(private Agent $agent, private ProcessFeed $feed) {}
 
     public function facts(): array
     {
@@ -25,7 +26,7 @@ final readonly class AgentFacts implements Facts
                 $session = $this->newestSession();
                 $runtime = $session === null ? null : AgentRuntime::findForSession($session->id);
 
-                return $runtime === null ? null : new RuntimeFacts($runtime);
+                return $runtime === null ? null : new RuntimeFacts($runtime, $this->feed);
             },
         ];
     }

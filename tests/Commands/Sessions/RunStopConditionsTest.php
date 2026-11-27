@@ -12,6 +12,9 @@ use App\Models\Agents\AgentRuntime;
 use App\Sessions\Commands\RunStopConditions\RunStopConditionsCommand;
 use App\Values\StopCondition;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -29,8 +32,8 @@ final class RunStopConditionsTest extends TestCase
         $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Writer', 'writing-helper')
             ->enrollHost('Mac', [base_path()]);
         $opened = $this->journal->openRuntimeOn('Writer', 'Mac', base_path(), driverType: DriverType::Terminal);
-        $this->journal->openHostProcessForStart('Mac', 'terminal', $opened->sessionId)
-            ->reportHostProcess('terminal', HostProcessReportType::Running);
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcessForStart('terminal', $opened->sessionId))
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->report(HostProcessReportType::Running));
 
         $attempt = $this->journal->openStopAttempt($opened->sessionId);
 
@@ -67,7 +70,7 @@ final class RunStopConditionsTest extends TestCase
             ->enrollHost('Mac', [base_path()]);
         $opened = $this->journal->openRuntimeOn('Writer', 'Mac', base_path(), driverType: DriverType::Terminal);
         $attempt = $this->journal->openStopAttempt($opened->sessionId);
-        $this->journal->refuseHostOrder($this->journal->hostOrdersOn('Mac')[0], HostRefusal::Fenced);
+        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order->refuse(HostRefusal::Fenced));
 
         $this->journal->asSystem(new RunStopConditionsCommand($attempt->id));
 

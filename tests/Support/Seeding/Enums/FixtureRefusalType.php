@@ -30,4 +30,5 @@ enum FixtureRefusalType
     case FreshNameTwice;
     case SettingValue;
     case NoTestHost;
+    case TestHostRuns;
 }

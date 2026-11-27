@@ -170,7 +170,7 @@ abstract class TestCase extends BaseTestCase
             TestAlarm::disarm();
         }
 
-        $this->journal->stopTestHost();
+        $this->journal->stopRunningHost();
 
         Relation::morphMap($this->applicationMorphMap, false);
 

@@ -14,6 +14,7 @@ use App\Values\HostOrderSource;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
 use Tests\Support\Hosts\TestHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -78,7 +79,7 @@ final class ContainedSessionLifeTest extends TestCase
             ->driveHostProcess('terminal', $answered, seconds: 20);
         $process = $this->journal->hostProcessCalled('terminal');
         $this->journal->asSystem(new StopHostProcessCommand($process->id, 1000, 1000, HostOrderSource::fromJournal()));
-        $this->journal->waitForHostProcess('terminal', HostProcessStatus::Exited);
+        $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Exited));
 
         $session = $this->sessionContainerOf($process->containerName());
         $removed = HostOrder::query()

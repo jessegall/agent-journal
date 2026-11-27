@@ -15,11 +15,11 @@ use App\Stacks\Support\ReadSkillStateReference;
 use App\Values\ProfileBase;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
-use Tests\Support\ScenarioTick;
-use Tests\Support\Seeding\SessionHooks;
-use Tests\Support\Seeding\StateObservation;
+use Tests\Support\Seeding\SessionHook;
+use Tests\Support\Seeding\StateHandle;
 use Tests\TestCase;
 
 /**
@@ -105,21 +105,19 @@ final class AskRequiredSkillReadsTest extends TestCase
         $session = $this->started('Reviewer', 'claude-code');
         $this->journal->startContext($session, ContextStartType::Start);
         $reference = ReadSkillStateReference::forSession($session->id);
-        $this->journal->stateOn($session, $reference)->given(
-            [$this->hooks($session)->toolFinished(), $this->hooks($session)->toolFinished('pwd')],
-            fn (StateObservation $state) => $state->assertValue('toolUses', 2),
-        );
+        $this->journal->stateOn($session, $reference, fn (StateHandle $reading) => $reading->steps(
+            [SessionHook::toolFinished(), SessionHook::toolFinished('pwd')],
+            fn (StateAssert $state) => $state->where('toolUses', 2),
+        ));
 
         $this->journal->startContext($session, ContextStartType::Clear);
         $this->journal->startContext($session, ContextStartType::Compact);
 
-        $this->journal->stateOn($session, $reference)->given(
-            new ScenarioTick(),
-            function (StateObservation $state) {
-                $state->assertValue('skillKeys', ['user-first']);
-                $state->assertValue('toolUses', 2);
-            },
-        );
+        $this->journal->stateOn($session, $reference, fn (StateHandle $reading) => $reading->tick(
+            fn (StateAssert $state) => $state
+                ->where('skillKeys', ['user-first'])
+                ->where('toolUses', 2),
+        ));
     }
 
     public function test_a_compaction_asks_again_after_the_state_finished(): void
@@ -128,22 +126,16 @@ final class AskRequiredSkillReadsTest extends TestCase
         $session = $this->started('Reviewer', 'claude-code');
         $this->journal->startContext($session, ContextStartType::Start);
         $reference = ReadSkillStateReference::forSession($session->id);
-        $this->journal->stateOn($session, $reference)->given(
+        $this->journal->stateOn($session, $reference, fn (StateHandle $reading) => $reading->event(
             new SkillRead($session->id, 'user-first', ReadEvidence::SkillShow),
-            fn (StateObservation $state) => $state->assertFinished(),
-        );
+            fn (StateAssert $state) => $state->isFinished(),
+        ));
 
         $this->journal->startContext($session, ContextStartType::Compact);
 
-        $this->journal->stateOn($session, $reference)->given(
-            new ScenarioTick(),
-            fn (StateObservation $state) => $state->assertValue('skillKeys', ['user-first']),
-        );
-    }
-
-    private function hooks(AgentSession $session): SessionHooks
-    {
-        return $this->journal->hooksFor($session);
+        $this->journal->stateOn($session, $reference, fn (StateHandle $reading) => $reading->tick(
+            fn (StateAssert $state) => $state->where('skillKeys', ['user-first']),
+        ));
     }
 
     /**
@@ -174,9 +166,8 @@ final class AskRequiredSkillReadsTest extends TestCase
      */
     private function assertListed(AgentSession $session, array $keys): void
     {
-        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id))->given(
-            new ScenarioTick(),
-            fn (StateObservation $state) => $state->assertValue('skillKeys', $keys),
-        );
+        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading->tick(
+            fn (StateAssert $state) => $state->where('skillKeys', $keys),
+        ));
     }
 }

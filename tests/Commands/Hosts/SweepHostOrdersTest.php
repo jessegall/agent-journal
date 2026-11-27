@@ -12,6 +12,8 @@ use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostOrder;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -29,12 +31,12 @@ final class SweepHostOrdersTest extends TestCase
         $this->journal
             ->useServerClockAt(CarbonImmutable::parse('2026-11-26 10:00:00'))
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
         $process = $this->journal->hostProcessCalled('shell')->id;
         $keys = new SendHostKeysCommand($process, 'hi', new RowGuard(0, 0, 'rows'), 0, HostOrderSource::fromJournal());
         $this->journal->asSystem($keys);
         [$open, $typed] = $this->journal->hostOrdersOf('shell');
-        $this->journal->answerHostOrder($typed);
+        $this->journal->hostOrder($typed, fn (TestHostOrder $order) => $order->answer());
         $erased = $this->journal->payloadOf($typed->refresh());
 
         $this->journal->moveServerClockTo(CarbonImmutable::parse('2026-11-26 10:01:00'));

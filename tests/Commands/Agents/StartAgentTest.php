@@ -71,6 +71,7 @@ use Tests\Support\Agents\StartsAgents;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\FixedServerClock;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
 use Throwable;
 
@@ -267,7 +268,7 @@ final class StartAgentTest extends TestCase
         $receipt = $this->start($this->request());
         $runtimeId = (string) AgentRuntime::findForSession($receipt->sessionId)?->id;
         $this->journal->callJournalProcess('probe', $runtimeId, HostProcessPurpose::BuildProbe)
-            ->reportHostProcess('probe', HostProcessReportType::Running);
+            ->hostProcess('probe', fn (TestHostProcess $probe) => $probe->report(HostProcessReportType::Running));
         $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addSeconds(121)));
 
         $this->app->make(StartHeartbeats::class)->markSilentStarts();

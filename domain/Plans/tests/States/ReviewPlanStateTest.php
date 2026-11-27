@@ -7,7 +7,6 @@ namespace Domain\Plans\Tests\States;
 use App\Events\Hooks\HelperAssigned;
 use App\Events\Hooks\HelperFinishedOnRecord;
 use App\Hooks\Enums\AnswerType;
-use App\Support\Inputs\StopRequested;
 use App\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Events\PlanReviewDecided;
@@ -16,10 +15,11 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\States\ReviewPlanState;
 use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 use Domain\Plans\Tests\TestCase;
+use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
+use Tests\Support\Seeding\SessionHook;
 use Tests\Support\Seeding\StateHandle;
-use Tests\Support\Seeding\StateObservation;
 use Tests\Support\TestIds;
 
 /**
@@ -43,26 +43,25 @@ final class ReviewPlanStateTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Writer');
+        $this->journal->owner()->agent('Writer')->pushState('Writer', $this->reviewing());
     }
 
     public function test_a_review_refuses_the_stop(): void
     {
-        $this->reviewing()->given(
-            $this->stop(),
-            fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
-        );
+        $this->journal->stateOn('Writer', $this->reviewing(), fn (StateHandle $reviewing) => $reviewing->steps(
+            [SessionHook::stop()],
+            fn (StateAssert $state) => $state->answers(AnswerType::Deny),
+        ));
     }
 
     public function test_with_a_reviewer_out_the_stop_passes_to_the_states_below(): void
     {
-        $this->reviewing()->given(
-            [new HelperAssigned($this->plan(), TestIds::of(7)), $this->stop()],
-            function (StateObservation $state) {
-                $state->assertStateAnswer(AnswerType::Delegate);
-                $state->assertValue('reviewersOut.agentIds', [TestIds::of(7)]);
-            },
-        );
+        $this->journal->stateOn('Writer', $this->reviewing(), fn (StateHandle $reviewing) => $reviewing->steps(
+            [new HelperAssigned($this->plan(), TestIds::of(7)), SessionHook::stop()],
+            fn (StateAssert $state) => $state
+                ->answers(AnswerType::Delegate)
+                ->where('reviewersOut.agentIds', [TestIds::of(7)]),
+        ));
     }
 
     public function test_a_report_back_removes_that_reviewer_and_the_review_holds_the_stop_again(): void
@@ -77,67 +76,59 @@ final class ReviewPlanStateTest extends TestCase
             $this->journal->agentCalled('Reviewer 8')->id,
         ];
 
-        $this->reviewing()
-            ->given(
+        $this->journal->stateOn('Writer', $this->reviewing(), fn (StateHandle $reviewing) => $reviewing
+            ->steps(
                 [
                     new HelperAssigned($this->plan(), $seven),
                     new HelperAssigned($this->plan(), $eight),
                     new HelperFinishedOnRecord($this->plan(), $seven),
                 ],
-                fn (StateObservation $state) => $state->assertValue('reviewersOut.agentIds', [$eight]),
+                fn (StateAssert $state) => $state->where('reviewersOut.agentIds', [$eight]),
             )
-            ->given(
-                [new HelperFinishedOnRecord($this->plan(), $eight), $this->stop()],
-                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
-            );
+            ->steps(
+                [new HelperFinishedOnRecord($this->plan(), $eight), SessionHook::stop()],
+                fn (StateAssert $state) => $state->answers(AnswerType::Deny),
+            ));
     }
 
     public function test_a_helper_on_another_record_is_not_counted(): void
     {
         $other = new RecordIdentity(Plan::linkType(), TestIds::of(6));
 
-        $this->reviewing()->given(
+        $this->journal->stateOn('Writer', $this->reviewing(), fn (StateHandle $reviewing) => $reviewing->event(
             new HelperAssigned($other, TestIds::of(7)),
-            fn (StateObservation $state) => $state->assertValue('reviewersOut.agentIds', []),
-        );
+            fn (StateAssert $state) => $state->where('reviewersOut.agentIds', []),
+        ));
     }
 
     public function test_the_review_ends_when_it_is_decided(): void
     {
-        $this->reviewing()->given(
+        $this->journal->stateOn('Writer', $this->reviewing(), fn (StateHandle $reviewing) => $reviewing->event(
             new PlanReviewDecided(TestIds::of(5), 'edition-1', PlanReviewStatus::Approved),
-            fn (StateObservation $state) => $state->assertFinished(),
-        );
+            fn (StateAssert $state) => $state->isFinished(),
+        ));
     }
 
     public function test_the_review_ends_when_it_is_withdrawn_and_not_for_another_plan(): void
     {
-        $this->reviewing()
-            ->given(
+        $this->journal->stateOn('Writer', $this->reviewing(), fn (StateHandle $reviewing) => $reviewing
+            ->event(
                 new PlanReviewWithdrawn(TestIds::of(6), 'edition-1'),
-                fn (StateObservation $state) => $state->assertLive(),
+                fn (StateAssert $state) => $state->isLive(),
             )
-            ->given(
+            ->event(
                 new PlanReviewWithdrawn(TestIds::of(5), 'edition-1'),
-                fn (StateObservation $state) => $state->assertFinished(),
-            );
+                fn (StateAssert $state) => $state->isFinished(),
+            ));
     }
 
-    private function reviewing(): StateHandle
+    private function reviewing(): ReviewPlanStateReference
     {
-        return $this->journal->pushState(
-            $this->journal->sessionOf('Writer'),
-            ReviewPlanStateReference::forPlan(TestIds::of(5), 12),
-        );
+        return ReviewPlanStateReference::forPlan(TestIds::of(5), 12);
     }
 
     private function plan(): RecordIdentity
     {
         return new RecordIdentity(Plan::linkType(), TestIds::of(5));
-    }
-
-    private function stop(): StopRequested
-    {
-        return $this->journal->hooksFor($this->journal->sessionOf('Writer'))->stop();
     }
 }
