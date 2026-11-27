@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Pipelines;
 
 use App\Bus\Contracts\PipelineDefinition;
+use App\Pipes\StateLoading\CastConstructorValues;
+use App\Pipes\StateLoading\CastPropertyValues;
 use App\Pipes\StateLoading\MakeState;
 use App\Pipes\StateLoading\WriteStateValues;
 use App\Support\StateLoading\BuiltState;
@@ -25,7 +27,8 @@ final readonly class BuildStatePipeline implements PipelineDefinition
     public function pipes(): array
     {
         return [
-            CastStateValuesPipeline::class,
+            CastConstructorValues::class,
+            CastPropertyValues::class,
             MakeState::class,
             WriteStateValues::class,
         ];
