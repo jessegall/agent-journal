@@ -6,7 +6,7 @@ namespace Tests\Support\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Api\SignedCall;
-use App\Sessions\States\SessionStateLifecycle;
+use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\StackTransaction;

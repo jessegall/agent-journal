@@ -15,7 +15,7 @@ use App\Engine\Enums\NoSubject;
 use App\Hooks\Exceptions\StateEventReentry;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Agents\PendingAgentMessage;
-use App\Sessions\States\SessionStateLifecycle;
+use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Stacks\AgentStacks;
 use App\Stacks\HookAnswer;
 use App\Stacks\References\StateReference;

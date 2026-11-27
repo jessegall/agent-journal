@@ -17,9 +17,10 @@ use Tests\Architecture\Support\StringScan;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * Proves the scans survive real code; what the checker permits is proven elsewhere.
+ * Proves the scans survive code the project did not write; the project's own files are read by the scans that judge
+ * them (NamesUsedAnywhere), and what the checker permits is proven elsewhere.
  */
-#[TimeLimit(seconds: 30, reason: 'It parses every PHP file of the project, once per scan.')]
+#[TimeLimit(seconds: 15, reason: 'It parses two of Laravel\'s folders.')]
 final class ScanSmokeTest extends TestCase
 {
     /**
@@ -27,8 +28,6 @@ final class ScanSmokeTest extends TestCase
      */
     public static function folders(): iterable
     {
-        yield 'the application' => ['app'];
-
         yield 'Laravel support' => ['vendor/laravel/framework/src/Illuminate/Support'];
 
         yield 'Eloquent' => ['vendor/laravel/framework/src/Illuminate/Database/Eloquent'];

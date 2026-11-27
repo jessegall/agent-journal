@@ -16,7 +16,7 @@ use App\Exceptions\StackTargetRefused;
 use App\Exceptions\StackTransactionRequired;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Records\SettingsRecord;
-use App\Sessions\States\SessionStateLifecycle;
+use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Stacks\AgentStack;

@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\SessionClosed;
-use App\Sessions\States\SessionStateLifecycle;
+use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Values\StackTarget;
 
 /**

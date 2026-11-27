@@ -12,5 +12,8 @@ use App\Values\StackTarget;
  */
 interface BaseStateReference
 {
+    /**
+     * The reference of this base state on one session's stack.
+     */
     public static function forSession(StackTarget $target): StateReference;
 }

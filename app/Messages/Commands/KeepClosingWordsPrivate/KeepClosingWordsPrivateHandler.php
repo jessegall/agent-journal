@@ -11,6 +11,12 @@ final readonly class KeepClosingWordsPrivateHandler implements CommandHandler
 {
     public function handle(KeepClosingWordsPrivateCommand $command): void
     {
-        DriverTurn::findForSessionTurn($command->sessionId, $command->turnId)?->keepClosingWordsPrivate();
+        $turn = DriverTurn::findForSessionTurn($command->sessionId, $command->turnId);
+
+        if ($turn === null) {
+            return;
+        }
+
+        $turn->keepClosingWordsPrivate();
     }
 }

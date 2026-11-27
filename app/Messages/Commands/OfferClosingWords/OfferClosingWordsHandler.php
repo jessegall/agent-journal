@@ -11,6 +11,12 @@ final readonly class OfferClosingWordsHandler implements CommandHandler
 {
     public function handle(OfferClosingWordsCommand $command): void
     {
-        DriverTurn::findForSessionTurn($command->sessionId, $command->turnId)?->offerClosingWords($command->words);
+        $turn = DriverTurn::findForSessionTurn($command->sessionId, $command->turnId);
+
+        if ($turn === null) {
+            return;
+        }
+
+        $turn->offerClosingWords($command->words);
     }
 }

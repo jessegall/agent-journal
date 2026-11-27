@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Sessions\States;
+namespace App\Sessions\States\Support;
 
 use App\Models\Agents\AgentStackRow;
 use App\Models\Sessions\SessionRequest;

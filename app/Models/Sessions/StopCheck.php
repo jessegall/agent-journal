@@ -310,7 +310,9 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      */
     public static function findOpenedFor(HookIdentity $stop): Option
     {
-        return Option::fromValue(self::query()->withoutGlobalScope(AgentSessionScope::class)->ofStop($stop)->first());
+        $check = self::query()->withoutGlobalScope(AgentSessionScope::class)->ofStop($stop)->first();
+
+        return Option::fromValue($check);
     }
 
     /**

@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use PhpParser\Error;
 use PhpParser\Node;
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\NodeVisitor\ParentConnectingVisitor;
-use PhpParser\ParserFactory;
 
 /**
- * One PHP file parsed once, with every name resolved and every node linked to its parent.
+ * One PHP file's tree, with every name resolved and every node linked to its parent, as ParsedTrees made it once.
  */
 final readonly class ParsedFile
 {
@@ -38,18 +33,6 @@ final readonly class ParsedFile
 
     private static function fromCode(string $path, string $code): self
     {
-        try {
-            $statements = new ParserFactory()->createForNewestSupportedVersion()->parse($code);
-        } catch (Error $error) {
-            throw ParseFailed::for($path, $error);
-        }
-
-        if ($statements === null) {
-            throw ParseFailed::unreadable($path);
-        }
-
-        $traverser = new NodeTraverser(new NameResolver(), new ParentConnectingVisitor());
-
-        return new self($path, $code, array_values($traverser->traverse($statements)));
+        return new self($path, $code, ParsedTrees::of($path, $code));
     }
 }

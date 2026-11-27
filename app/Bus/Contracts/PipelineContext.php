@@ -10,5 +10,8 @@ namespace App\Bus\Contracts;
  */
 interface PipelineContext
 {
+    /**
+     * The value the step before carried to this pipe.
+     */
     public function carried(): object;
 }

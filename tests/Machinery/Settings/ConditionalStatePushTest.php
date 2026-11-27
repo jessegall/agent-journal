@@ -13,7 +13,7 @@ use App\Exceptions\SettingsUnavailable;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Records\SettingsRecord;
 use App\Reflection\CatalogueReflectorFactory;
-use App\Sessions\States\SessionStateLifecycle;
+use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Settings\CoreSettings;
 use App\Settings\SettingCommands;
 use App\Settings\SettingRegistry;

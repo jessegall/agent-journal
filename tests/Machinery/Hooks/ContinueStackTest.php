@@ -13,7 +13,7 @@ use App\Models\Sessions\SessionRequest;
 use App\Sessions\AgentSessions;
 use App\Sessions\Contracts\StartTransaction;
 use App\Sessions\Enums\StartOriginType;
-use App\Sessions\States\SessionStateLifecycle;
+use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Sessions\Values\StartPolicy;
 use App\Stacks\Exceptions\StateTransferUnknown;
 use App\Stacks\References\StateReference;

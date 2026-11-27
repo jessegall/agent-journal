@@ -23,7 +23,7 @@ use App\Models\Inboxes\Inbox;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
 use App\Sessions\AgentRuntimes;
-use App\Sessions\States\SessionStateLifecycle;
+use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
 use App\Support\ActorReference;
