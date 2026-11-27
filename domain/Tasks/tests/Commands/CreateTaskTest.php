@@ -50,7 +50,9 @@ final class CreateTaskTest extends TestCase
 
     public function test_a_task_is_open_at_its_first_revision_with_its_brief_and_creator(): void
     {
-        $task = Task::query()->findOrFail($this->journal->run(new CreateTaskCommand('Write it', 'Write the page.', $this->localId())));
+        $task = Task::query()->findOrFail(
+            $this->journal->run(new CreateTaskCommand('Write it', 'Write the page.', $this->localId())),
+        );
 
         $this->assertSame(
             [TaskStatus::Open, 1, 'Write the page.', User::storedType(), $this->journal->ownerUser()->id],

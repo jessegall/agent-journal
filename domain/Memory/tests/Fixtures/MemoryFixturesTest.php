@@ -41,7 +41,9 @@ final class MemoryFixturesTest extends TestCase
     {
         $memories = $this->journal->owner()->agent('Keeper', 'read-only-helper')->fixtures(MemoryFixtures::class);
 
-        $this->assertTrue($memories->createMemory('Plan', 'Keeper', 'First words.')->is($memories->memoryCalled('Plan')));
+        $this->assertTrue(
+            $memories->createMemory('Plan', 'Keeper', 'First words.')->is($memories->memoryCalled('Plan')),
+        );
     }
 
     public function test_a_removed_memory_is_forgotten_and_a_kept_one_is_not(): void

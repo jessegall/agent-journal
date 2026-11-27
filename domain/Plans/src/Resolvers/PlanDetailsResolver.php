@@ -58,7 +58,10 @@ final readonly class PlanDetailsResolver implements PlanDetailsResolverContract
         $end = $taskOffset + self::TASKS_PER_READ;
 
         $planPhases = $plan->phases()->readAll('a plan read lists every phase')->get();
-        $taskIdsByPhase = PhaseTask::resolveTaskIdsByPhase(array_values(array_map(strval(...), $planPhases->modelKeys())));
+
+        $taskIdsByPhase = PhaseTask::resolveTaskIdsByPhase(
+            array_values(array_map(strval(...), $planPhases->modelKeys())),
+        );
 
         foreach ($planPhases as $phase) {
             $taskIds = $taskIdsByPhase[$phase->id];

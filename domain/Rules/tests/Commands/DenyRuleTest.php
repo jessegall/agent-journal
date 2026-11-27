@@ -51,7 +51,11 @@ final class DenyRuleTest extends TestCase
     {
         $this->journal->actAs('Planner');
 
-        $this->assertThrows(fn () => $this->journal->run(new DenyRuleCommand($this->proposed->id)), CommandAdmissionRefused::class);
+        $this->assertThrows(
+            fn () => $this->journal->run(new DenyRuleCommand($this->proposed->id)),
+            CommandAdmissionRefused::class,
+        );
+
         $this->assertSame(RuleStatus::Proposed, $this->proposed->refresh()->status);
     }
 

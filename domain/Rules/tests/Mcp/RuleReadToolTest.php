@@ -27,7 +27,12 @@ final class RuleReadToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Builder');
-        $rule = $journal->fixtures(RuleFixtures::class)->proposedRule('Tests', 'Run the phase tests once.', 'Builder')->ruleCalled('Tests');
+
+        $rule = $journal->fixtures(RuleFixtures::class)->proposedRule(
+            'Tests',
+            'Run the phase tests once.',
+            'Builder',
+        )->ruleCalled('Tests');
 
         return ToolCall::by($start)->arguments(['rule_id' => $rule->id]);
     }

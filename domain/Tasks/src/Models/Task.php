@@ -511,8 +511,11 @@ final class Task extends JournalModel implements
      *
      * @throws CandidateLimitInvalid
      */
-    public static function resolveCandidates(PoolMembers $members, QueryBuilder $assignedIds, int $limit): OrderedRecordIds
-    {
+    public static function resolveCandidates(
+        PoolMembers $members,
+        QueryBuilder $assignedIds,
+        int $limit,
+    ): OrderedRecordIds {
         self::assertCandidateLimit($limit);
 
         if ($members->type === PoolMembersType::Ordered && $members->ids->ids === []) {

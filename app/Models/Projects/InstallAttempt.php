@@ -20,8 +20,8 @@ use App\Numbers\ShortReference;
 use App\Projects\Enums\InstallAttemptStatus;
 use App\Projects\Enums\InvitationMode;
 use App\Projects\Exceptions\InstallAttemptRefused;
+use App\Reads\Values\RelationRead;
 use App\Records\Contracts\ReadableModel;
-use App\Values\RelationRead;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -303,7 +303,13 @@ final class InstallAttempt extends JournalModel implements EventSource, Readable
     public static function findLockedWithKey(string $userId, string $idempotencyKey): array
     {
         return array_values(
-            self::query()->ofOwner($userId)->withIdempotencyKey($idempotencyKey)->lockForUpdate()->limit(1)->get()->all(),
+            self::query()
+                ->ofOwner($userId)
+                ->withIdempotencyKey($idempotencyKey)
+                ->lockForUpdate()
+                ->limit(1)
+                ->get()
+                ->all(),
         );
     }
 

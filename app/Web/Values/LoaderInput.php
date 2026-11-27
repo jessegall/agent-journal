@@ -22,7 +22,7 @@ final class LoaderInput extends Data
      * The most bytes the header may hold: three answers of 2000 four-byte characters fit, far below what Caddy and
      * RoadRunner allow.
      */
-    public const int MOST_BYTES = 40960;
+    public const int BYTE_LIMIT = 40960;
 
     private const string BASE64URL = '/^[A-Za-z0-9_-]*$/';
 
@@ -56,8 +56,8 @@ final class LoaderInput extends Data
      */
     public static function fromHeader(string $header): self
     {
-        if (strlen($header) > self::MOST_BYTES) {
-            throw LoaderInputUnreadable::tooLarge(self::MOST_BYTES);
+        if (strlen($header) > self::BYTE_LIMIT) {
+            throw LoaderInputUnreadable::tooLarge(self::BYTE_LIMIT);
         }
 
         $json = preg_match(self::BASE64URL, $header) === 1 ? base64_decode(strtr($header, '-_', '+/'), true) : false;

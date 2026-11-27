@@ -88,7 +88,10 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
     private function environmentOf(ProjectInvitation $invitation, string $label): Environment
     {
         if ($invitation->project_id !== null) {
-            return Environment::findLockedOfProjectForLine((string) $invitation->environment_id, $invitation->project_id);
+            return Environment::findLockedOfProjectForLine(
+                (string) $invitation->environment_id,
+                $invitation->project_id,
+            );
         }
 
         $slug = Str::slug($label);

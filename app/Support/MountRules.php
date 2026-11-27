@@ -254,7 +254,7 @@ final readonly class MountRules
                 && strpbrk($mount->source, "/,\n") === false,
             MountType::DaemonBind => $this->isDaemonFolder($mount->source),
             MountType::PlanFile => ! $mount->isWritable
-                && ($mount->source === '' || ($mount->source === basename($mount->source) && ! str_starts_with($mount->source, '.'))),
+                && ($mount->source === '' || $this->isPlainFileName($mount->source)),
             MountType::Bind => false,
         };
 
@@ -275,5 +275,13 @@ final readonly class MountRules
         $isAccount = $source === self::ACCOUNTS_ROOT || str_starts_with($source, self::ACCOUNTS_ROOT.'/');
 
         return $isClean && (! $isAccount || $source === $this->accountSource);
+    }
+
+    /**
+     * Whether the source is a bare file name, with no folder and not hidden.
+     */
+    private function isPlainFileName(string $source): bool
+    {
+        return $source === basename($source) && ! str_starts_with($source, '.');
     }
 }

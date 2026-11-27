@@ -37,7 +37,10 @@ final class CreateDocumentToolTest extends McpToolEntryTestCase
                 'body' => '# Design',
                 'request_key' => 'documents-1',
             ])
-            ->reply(CreateDocumentCommand::class, new CreatedRecord(strtolower((string) Str::ulid()), 7, 'documents.document'))
+            ->reply(
+                CreateDocumentCommand::class,
+                new CreatedRecord(strtolower((string) Str::ulid()), 7, 'documents.document'),
+            )
             ->expects(CreateDocumentCommand::class, [
                 'title' => 'Design',
                 'abstract' => 'The plan.',

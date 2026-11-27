@@ -23,7 +23,11 @@ final class QuestionFixturesTest extends TestCase
 
     public function test_a_created_question_is_given_back_and_still_found_by_its_name(): void
     {
-        $chat = $this->journal->owner()->agent('Planner')->sharedInbox('Owner', 'Planner')->sharedInboxOf('Owner', 'Planner');
+        $chat = $this->journal->owner()->agent('Planner')->sharedInbox(
+            'Owner',
+            'Planner',
+        )->sharedInboxOf('Owner', 'Planner');
+
         $questions = $this->journal->fixtures(QuestionFixtures::class);
 
         $question = $questions->createQuestion('Database', $chat, 'Planner', 'Owner');

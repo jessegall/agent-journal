@@ -11,7 +11,10 @@ use App\Values\ScriptSource;
 
 final readonly class ScriptCompiler
 {
-    public function __construct(private ScriptKeywordRegistration $keywords, private ScriptObjectRegistration $objects) {}
+    public function __construct(
+        private ScriptKeywordRegistration $keywords,
+        private ScriptObjectRegistration $objects,
+    ) {}
 
     /**
      * @param  list<ParsedHandler>  $handlers

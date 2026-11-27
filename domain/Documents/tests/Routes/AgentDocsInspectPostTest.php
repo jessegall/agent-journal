@@ -28,7 +28,11 @@ final class AgentDocsInspectPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $start = $journal->owner()->signedStart('Writer');
-        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
+
+        $document = $journal->runAs(
+            'Writer',
+            new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id),
+        );
 
         return RouteCall::as(Caller::Agent, $start)
             ->payload(['number' => (string) $document->number]);

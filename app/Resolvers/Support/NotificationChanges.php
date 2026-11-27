@@ -44,7 +44,13 @@ final readonly class NotificationChanges
             return $this->reset($scope);
         }
 
-        $examined = NotificationChange::findBetween($scope->id, $read->afterVersion, $upper, NotificationChangePage::SIZE);
+        $examined = NotificationChange::findBetween(
+            $scope->id,
+            $read->afterVersion,
+            $upper,
+            NotificationChangePage::SIZE,
+        );
+
         $last = $examined === [] ? $upper : end($examined)->version;
         $isDone = $examined === [] || $last >= $upper || count($examined) < NotificationChangePage::SIZE;
         $after = $isDone ? $upper : $last;

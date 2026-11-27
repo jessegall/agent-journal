@@ -28,7 +28,7 @@ final readonly class HookReplies
     /**
      * The longest a hook call waits for the journal, its one retry included, before it answers from the file.
      */
-    private const int WAIT_LIMIT_MILLISECONDS = 5000;
+    private const int WAIT_MILLISECONDS_LIMIT = 5000;
 
     private const int RETRIES = 1;
 
@@ -45,7 +45,11 @@ final readonly class HookReplies
     {
         $key = Str::random(self::KEY_LENGTH);
         $body = json_encode($this->bodyOf($adapter, $offlineReply), JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-        $sealed = ['body' => $body, 'seal' => self::sealOf($body, $key)];
+
+        $sealed = [
+            'body' => $body,
+            'seal' => self::sealOf($body, $key),
+        ];
 
         return [
             new PlanFile(self::REPLY_FILE, json_encode($sealed, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)),
@@ -75,7 +79,7 @@ final readonly class HookReplies
             'events' => $events,
             'toolEvents' => array_values($toolEvents),
             'spawnTools' => $adapter::nativeChildTools(),
-            'budgetMs' => self::WAIT_LIMIT_MILLISECONDS,
+            'budgetMs' => self::WAIT_MILLISECONDS_LIMIT,
             'retries' => self::RETRIES,
             'unknownEvent' => $this->replies->unknownEvent(),
             'replies' => [

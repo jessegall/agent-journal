@@ -49,7 +49,10 @@ final readonly class SignInDriver
             ...$handover->variables,
         ];
 
-        $command = [$this->driver, ...$arguments];
+        $command = [
+            $this->driver,
+            ...$arguments,
+        ];
 
         return PrivateAccountProcess::start($command, $environment, $directory, $handover->readFiles);
     }
@@ -100,7 +103,10 @@ final readonly class SignInDriver
         $folder = $this->accountFolder($directory);
 
         $holdsSignIn = $this->setup->credentialFiles === []
-            || array_any($this->setup->credentialFiles, fn (string $name) => $this->files->exists($folder->child($name)));
+            || array_any(
+                $this->setup->credentialFiles,
+                fn (string $name) => $this->files->exists($folder->child($name)),
+            );
 
         return new SignInFolder($directory, $this->files->realPath($folder), $holdsSignIn);
     }

@@ -58,8 +58,11 @@ final readonly class RuleProposals
     /**
      * @throws RuleProposalRefused
      */
-    private function record(RuleProposal $proposal, ProposedRule $proposed, ActorReference $author): RuleProposalRevision
-    {
+    private function record(
+        RuleProposal $proposal,
+        ProposedRule $proposed,
+        ActorReference $author,
+    ): RuleProposalRevision {
         $proposal->assertAcceptsRevision();
         $revision = RuleProposalRevision::create($proposal, $proposed, $author);
         $proposal->adopt($revision, $proposed);

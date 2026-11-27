@@ -56,7 +56,7 @@ final class NotifyHostOutputTest extends TestCase
     {
         $process = $this->journal->hostProcessCalled('shell')->id;
         $foreign = new NotifyHostOutputCommand($this->journal->hostCalled('Other')->hostId, $process, self::FRAME);
-        $tooLarge = str_pad(self::FRAME, HostOutputData::MAXIMUM_BYTES + 1);
+        $tooLarge = str_pad(self::FRAME, HostOutputData::BYTE_LIMIT + 1);
         $oversized = new NotifyHostOutputCommand($this->journal->hostCalled('Mac')->hostId, $process, $tooLarge);
 
         $this->journal

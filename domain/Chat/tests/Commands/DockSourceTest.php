@@ -192,7 +192,13 @@ final class DockSourceTest extends TestCase
         );
 
         $this->journal->relayAgentCommands($this->start);
-        $add = ['type' => 'tasks.task', 'id' => $this->task->id, '--request-key' => self::KEY, '--json' => true];
+
+        $add = [
+            'type' => 'tasks.task',
+            'id' => $this->task->id,
+            '--request-key' => self::KEY,
+            '--json' => true,
+        ];
 
         $this->artisan('dock:add', $add)->expectsOutputToContain('"outcome":"added"')->assertExitCode(0);
         $placement = DockPlacement::query()->sole();
@@ -285,10 +291,16 @@ final class DockSourceTest extends TestCase
         $agentsNote = new Note(['text' => 'Feed the cat']);
         $agentsNote->saveFor($this->agent->agent->id);
 
-        $this->runKeyed(new DockSourceCommand($this->chatInboxId, Note::linkType(), $ownersNote->id), (string) Str::ulid());
+        $this->runKeyed(
+            new DockSourceCommand($this->chatInboxId, Note::linkType(), $ownersNote->id),
+            (string) Str::ulid(),
+        );
 
         $this->journal->keyed(
-            fn () => $this->journal->runAsStart($this->agent, new DockSourceCommand(null, Note::linkType(), $agentsNote->id)),
+            fn () => $this->journal->runAsStart(
+                $this->agent,
+                new DockSourceCommand(null, Note::linkType(), $agentsNote->id),
+            ),
         );
 
         $this->agent->startRequest($this->app);

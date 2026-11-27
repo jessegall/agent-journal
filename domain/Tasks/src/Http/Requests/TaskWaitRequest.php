@@ -26,8 +26,16 @@ final class TaskWaitRequest extends FormRequest
     {
         return [
             ...$this->idempotencyKeyRules(),
-            'prerequisite' => ['required', 'string', 'regex:/^[1-9][0-9]{0,18}$/'],
-            'reason' => ['sometimes', 'string', 'max:'.Task::NOTE_CHARACTER_LIMIT],
+            'prerequisite' => [
+                'required',
+                'string',
+                'regex:/^[1-9][0-9]{0,18}$/',
+            ],
+            'reason' => [
+                'sometimes',
+                'string',
+                'max:'.Task::NOTE_CHARACTER_LIMIT,
+            ],
         ];
     }
 
@@ -38,7 +46,9 @@ final class TaskWaitRequest extends FormRequest
 
     public function prerequisiteId(): string
     {
-        return Task::resolveIdOfNumber((int) $this->string('prerequisite')->toString()) ?? throw new NotFoundHttpException();
+        return Task::resolveIdOfNumber(
+            (int) $this->string('prerequisite')->toString(),
+        ) ?? throw new NotFoundHttpException();
     }
 
     public function reason(): string

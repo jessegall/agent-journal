@@ -51,7 +51,11 @@ final class ScriptsServiceProvider extends ServiceProvider
 
         $objects->register(WorkspaceObject::class);
         $keywords->register(ScriptKeywordDefinition::structure('ON', SyntaxForm::Handler, 'Open a trigger handler.'));
-        $keywords->register(ScriptKeywordDefinition::structure('ELSE', SyntaxForm::ElseBlock, 'Open the other branch.'));
+
+        $keywords->register(
+            ScriptKeywordDefinition::structure('ELSE', SyntaxForm::ElseBlock, 'Open the other branch.'),
+        );
+
         $keywords->register(ScriptKeywordDefinition::structure('END', SyntaxForm::EndBlock, 'Close the block.'));
         $keywords->register(ScriptKeywordDefinition::trigger('STOP', ScriptTrigger::class));
         $keywords->register(ScriptKeywordDefinition::negation());

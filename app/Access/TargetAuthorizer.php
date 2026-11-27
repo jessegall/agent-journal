@@ -23,8 +23,12 @@ final readonly class TargetAuthorizer implements TargetAuthorizerContract
         $this->authorizers->assertAllowed($this->authorizers->forTarget($actor), $policy, $actor, $subject, $access);
     }
 
-    public function filterActions(ActorReference $target, string $policy, object|string $subject, array $accesses): array
-    {
+    public function filterActions(
+        ActorReference $target,
+        string $policy,
+        object|string $subject,
+        array $accesses,
+    ): array {
         $actor = $this->actors->get($target);
         $authorizer = $this->authorizers->forTarget($actor);
 

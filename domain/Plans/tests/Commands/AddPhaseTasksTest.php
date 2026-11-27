@@ -63,7 +63,9 @@ final class AddPhaseTasksTest extends TestCase
     {
         parent::setUp();
 
-        $this->plans = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Build')->withPlan('Build', fn (TestPlan $plan) => $plan
+        $this->plans = $this->journal->owner()->fixtures(
+            PlanFixtures::class,
+        )->plan('Build')->withPlan('Build', fn (TestPlan $plan) => $plan
             ->addPhase('Read'));
 
         $this->tasks = $this->journal->fixtures(TaskFixtures::class)->task('First')->task('Second');

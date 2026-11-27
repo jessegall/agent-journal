@@ -30,8 +30,12 @@ final readonly class FeedEntry
         return new self(
             $stream,
             $cursor,
-            isset($fields['frame']) ? HostFrameData::from(json_decode($fields['frame'], true, flags: JSON_THROW_ON_ERROR)) : null,
-            isset($fields['chunk']) ? HostChunkData::from(json_decode($fields['chunk'], true, flags: JSON_THROW_ON_ERROR)) : null,
+            isset($fields['frame']) ? HostFrameData::from(
+                json_decode($fields['frame'], true, flags: JSON_THROW_ON_ERROR),
+            ) : null,
+            isset($fields['chunk']) ? HostChunkData::from(
+                json_decode($fields['chunk'], true, flags: JSON_THROW_ON_ERROR),
+            ) : null,
             $fields['answered'] ?? null,
             isset($fields['ended']),
         );

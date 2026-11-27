@@ -33,7 +33,12 @@ final class RecoverDraftToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Writer');
-        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
+
+        $document = $journal->runAs(
+            'Writer',
+            new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id),
+        );
+
         $opened = $journal->runAs('Writer', new OpenDocumentCommand((string) $document->number));
 
         $retained = RetainedDraft::create(

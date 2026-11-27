@@ -42,12 +42,23 @@ final readonly class SessionContainers
     {
         $sessionId = $runtime->agent_session_id;
 
-        if (! $this->policies->isFrozenFor($sessionId) || ! $this->policies->policyFor($sessionId)->runsInOwnContainer()) {
-            throw ManifestRefused::because('a contained session runs only in its own container, from its frozen policy');
+        $isOwnContainer = $this->policies->isFrozenFor($sessionId)
+            && $this->policies->policyFor($sessionId)->runsInOwnContainer();
+
+        if (! $isOwnContainer) {
+            throw ManifestRefused::because(
+                'a contained session runs only in its own container, from its frozen policy',
+            );
         }
 
         $policy = $this->policies->policyFor($sessionId);
-        $account = new SelectedAccount($start->accountIdentity, $runtime->family, $start->directory, $start->account_generation);
+
+        $account = new SelectedAccount(
+            $start->accountIdentity,
+            $runtime->family,
+            $start->directory,
+            $start->account_generation,
+        );
 
         $manifest = ContainerManifest::compile(
             $sessionId,

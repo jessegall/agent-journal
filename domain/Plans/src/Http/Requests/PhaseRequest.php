@@ -31,7 +31,10 @@ final class PhaseRequest extends FormRequest
 
     public function phase(): Phase
     {
-        $plan = Plan::query()->find(Plan::resolveIdOfNumber($this->routeNumber('plan'))) ?? throw new NotFoundHttpException();
+        $plan = Plan::query()->findOr(
+            Plan::resolveIdOfNumber($this->routeNumber('plan')),
+            fn () => throw new NotFoundHttpException(),
+        );
 
         try {
             $number = $this->routeNumber('phase');

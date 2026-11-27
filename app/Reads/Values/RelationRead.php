@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Values;
+namespace App\Reads\Values;
 
 use App\Support\ReadBuilder;
 use Closure;

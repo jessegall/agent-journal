@@ -21,7 +21,7 @@ final class DraftAnswersInput extends Data
     /**
      * The most characters one answer holds.
      */
-    private const int MOST_ANSWER_CHARACTERS = 2000;
+    private const int ANSWER_CHARACTER_LIMIT = 2000;
 
     /**
      * @param  list<string>  $answers
@@ -48,7 +48,7 @@ final class DraftAnswersInput extends Data
             'answers.*' => [
                 'required',
                 'string',
-                'max:'.self::MOST_ANSWER_CHARACTERS,
+                'max:'.self::ANSWER_CHARACTER_LIMIT,
             ],
         ];
     }

@@ -25,7 +25,10 @@ final class DockCardTest extends TestCase
 {
     public function test_a_card_of_a_title_and_a_subtitle_is_built_within_its_budget(): void
     {
-        $card = DockCard::named('Release review', Stack::of('root', new Title('title', 'x'), new Subtitle('state', 'y')));
+        $card = DockCard::named(
+            'Release review',
+            Stack::of('root', new Title('title', 'x'), new Subtitle('state', 'y')),
+        );
 
         $this->assertSame(['title', 'state'], array_map(fn (DockPart $part) => $part->key(), $card->root->children()));
         $this->assertFalse($card->isOverBudget);

@@ -18,7 +18,12 @@ final readonly class CheckKeyword implements ScriptStatement
 {
     public static function definition(): ScriptKeywordDefinition
     {
-        return ScriptKeywordDefinition::statement('CHECK', SyntaxForm::Expression, self::class, 'Require a true member.');
+        return ScriptKeywordDefinition::statement(
+            'CHECK',
+            SyntaxForm::Expression,
+            self::class,
+            'Require a true member.',
+        );
     }
 
     public function compile(ParsedStatement $statement, CompileContext $context): Instruction

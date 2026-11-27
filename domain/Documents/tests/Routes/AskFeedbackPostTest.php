@@ -47,7 +47,11 @@ final class AskFeedbackPostTest extends GuardedRouteEntryTestCase
     private function askFeedback(TestJournal $journal, array $lines, string $subject): RouteCall
     {
         $journal->owner();
-        $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
+
+        $document = $journal->run(
+            new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id),
+        );
+
         $journal->idleAgent('Reviewer');
         $inboxId = strtolower((string) Str::ulid());
 

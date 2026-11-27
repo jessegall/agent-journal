@@ -61,7 +61,12 @@ final readonly class AccountsWindowResolver implements PageResolver
         $counts = $this->uses->counts(array_map(fn (Account $account) => $account->record_identity, $accounts));
         $now = CarbonImmutable::now();
         $windows = AccountUsageWindow::findCurrentOf($accounts);
-        $costs = AccountUsageCost::resolveMonthTotals(array_map(fn (Account $account) => $account->id, $accounts), $now);
+
+        $costs = AccountUsageCost::resolveMonthTotals(
+            array_map(fn (Account $account) => $account->id, $accounts),
+            $now,
+        );
+
         $threads = AccountUsageTokens::findNewestOf($accounts);
 
         return AccountListData::from([

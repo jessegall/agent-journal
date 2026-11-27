@@ -4,7 +4,7 @@
     "sin": {
         "name": "inertia-fetch",
         "description": "A frontend file sends a request with fetch, around Inertia: its answer is no page and its errors never reach the page's props.",
-        "rule": "The sign-in challenge is the one page read kept out of Inertia, so no page prop or history entry holds its secret. Never bypass Inertia (user message 13525): read through the page's props and a partial router.reload({ only: [...] }), and change through router.post/put/delete to the page's own action routes.",
+        "rule": "The sign-in challenge is the one page read kept out of Inertia, so no page prop or history entry holds its secret; the channel sign-in (echo.ts) and the presence heartbeat are machine requests with no page to answer. Never bypass Inertia (user message 13525): read through the page's props and a partial router.reload({ only: [...] }), and change through router.post/put/delete to the page's own action routes.",
         "skill": "inertia-bypass"
     },
     "find": {
@@ -26,7 +26,7 @@
                 [
                     "matchesText",
                     "$c.file.path",
-                    "(^|/)resources/js/(framework/jsonRequests|profiles/signIn)\\.ts$"
+                    "(^|/)resources/js/(framework/jsonRequests|profiles/signIn|echo|composables/usePresenceHeartbeat)\\.ts$"
                 ]
             ]
         ],

@@ -41,7 +41,9 @@ final readonly class PhaseWindowResolver implements PageResolver
             'finishedTasks' => $progress->finished,
             'cancelledTasks' => $progress->cancelled,
             'totalTasks' => $progress->total,
-            'isCurrent' => (Phase::resolveCurrentNumbersOf([$phase->plan_id])[$phase->plan_id] ?? null) === $phase->number,
+            'isCurrent' => (Phase::resolveCurrentNumbersOf(
+                [$phase->plan_id],
+            )[$phase->plan_id] ?? null) === $phase->number,
             'canRunChecks' => $this->timing->forCaller()->isAllowed(),
             'tasks' => $this->outline->tasksOf($phase, $ask->tasksAfter, $ask->revision),
             'checkReceipt' => self::checkReceiptOf($phase),

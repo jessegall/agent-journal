@@ -24,6 +24,8 @@ final class CommandTypeShowCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ShowCommandRequestPayload::from(['commandRequest' => (string) $this->argument('request')]));
+        return $this->runCall(
+            ShowCommandRequestPayload::from(['commandRequest' => (string) $this->argument('request')]),
+        );
     }
 }

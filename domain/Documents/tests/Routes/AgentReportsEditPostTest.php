@@ -32,14 +32,22 @@ final class AgentReportsEditPostTest extends GuardedRouteEntryTestCase
         $call = $this->arrangedCall();
         $this->journal->sinkCommands();
 
-        $this->send($call, $call->caller)->assertConflict()->assertJsonPath('message', ReportUnchangeable::snapshot()->getMessage());
+        $this->send($call, $call->caller)->assertConflict()->assertJsonPath(
+            'message',
+            ReportUnchangeable::snapshot()->getMessage(),
+        );
+
         $this->journal->assertDispatchedExactly([]);
     }
 
     protected function arrange(TestJournal $journal): RouteCall
     {
         $start = $journal->owner()->signedStart('Writer');
-        $report = $journal->runAs('Writer', new CreateReportCommand('Check', 'What we found', "Text\n", TestProjects::local()->id));
+
+        $report = $journal->runAs(
+            'Writer',
+            new CreateReportCommand('Check', 'What we found', "Text\n", TestProjects::local()->id),
+        );
 
         return RouteCall::as(Caller::Agent, $start)
             ->payload(['number' => (string) $report->number]);

@@ -107,8 +107,11 @@ final class ClaimAuthorization extends JournalModel implements ReadableModel
     /**
      * A task run claimed through the claimant's membership of the inbox that holds the task.
      */
-    public static function findForInboxRun(AssignmentReference $claim, InboxMember $member, AssignmentReference $work): self
-    {
+    public static function findForInboxRun(
+        AssignmentReference $claim,
+        InboxMember $member,
+        AssignmentReference $work,
+    ): self {
         return self::prove($claim, ClaimBasis::InboxRun, $member->id, $work->id);
     }
 

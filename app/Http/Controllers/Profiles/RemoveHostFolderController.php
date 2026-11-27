@@ -19,7 +19,9 @@ final readonly class RemoveHostFolderController
     #[Dispatches(RemoveHostFolderCommand::class)]
     public function __invoke(HostFolderRequest $request, HostContext $host, CommandBus $commands): JsonResponse
     {
-        $orderId = $commands->run(new RemoveHostFolderCommand($host->hostId, $request->folder(), $request->operation()));
+        $orderId = $commands->run(
+            new RemoveHostFolderCommand($host->hostId, $request->folder(), $request->operation()),
+        );
 
         return new JsonResponse(['order_id' => $orderId], JsonResponse::HTTP_ACCEPTED);
     }

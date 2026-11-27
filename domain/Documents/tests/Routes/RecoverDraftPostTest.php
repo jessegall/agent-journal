@@ -32,7 +32,11 @@ final class RecoverDraftPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();
-        $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
+
+        $document = $journal->run(
+            new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id),
+        );
+
         $opened = $journal->run(new OpenDocumentCommand((string) $document->number));
 
         return RouteCall::as(Caller::User)

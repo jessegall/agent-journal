@@ -123,8 +123,12 @@ final class PlanReviewEdition extends JournalModel implements EventSource, Reada
 
     // ----------[ Internals ]----------
 
-    private function decide(PlanReviewStatus $status, ActorReference $actor, string $requestKey, string|null $reason): void
-    {
+    private function decide(
+        PlanReviewStatus $status,
+        ActorReference $actor,
+        string $requestKey,
+        string|null $reason,
+    ): void {
         $this->status = $status;
         $this->decided_by_type = $actor->type;
         $this->decided_by_id = $actor->id;
