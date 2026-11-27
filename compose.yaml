@@ -8,7 +8,6 @@ x-journal-environment: &journal-environment
     AGENTS_INSTALLATION_NAME: ${AGENTS_INSTALLATION_NAME:-journal}
     # Where the agent host holds the profiles a contained manifest names (.docker/helper/seccomp-agent.json).
     AGENTS_SECURITY_PROFILES: /etc/journal/security
-    # Whether the journal records its wires for the tests' recordings (scripts/record-scenarios.sh); never on a server.
 
 services:
     app:
@@ -355,8 +354,6 @@ services:
         group_add: ['1000']
         healthcheck:
             disable: true
-        environment:
-            # Whether the host records the Docker daemon's calls into the recording run's drafts.
         command:
             - journal-agent
             - serve
