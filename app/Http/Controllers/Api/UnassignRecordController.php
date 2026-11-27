@@ -24,9 +24,6 @@ final readonly class UnassignRecordController
     ): AssignmentResultData {
         $assignmentChange = $commands->run(new UnassignRecordCommand($call->record(), $call->expected()));
 
-        return AssignmentResultData::of(
-            $assignmentChange,
-            $assignees->holdersOf($assignmentChange->currentAssignments()),
-        );
+        return AssignmentResultData::withHolders($assignmentChange, $assignees);
     }
 }

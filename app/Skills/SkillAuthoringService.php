@@ -79,25 +79,14 @@ final readonly class SkillAuthoringService
     }
 
     /**
-     * The body a --body option names: its text, or standard input when it is -.
-     */
-    public function bodyOf(string $body): string
-    {
-        if ($body === '-') {
-            return (string) file_get_contents('php://stdin');
-        }
-
-        return $body;
-    }
-
-    /**
-     * A Markdown body as sections: one per heading at its top level, or one Instructions section when it has none.
+     * The Markdown body a --body option names, its text or standard input when it is -, as sections: one per heading
+     * at its top level, or one Instructions section when it has none.
      *
      * @return list<SectionDraft>
      */
-    public function sectionsOf(string $body): array
+    public function sectionsOf(string $bodyOption): array
     {
-        $text = MarkdownText::body($body);
+        $text = MarkdownText::body(self::bodyOf($bodyOption));
         $headings = array_values(array_filter($text->sections, fn ($section) => $section->level > 0));
 
         if ($headings === []) {
@@ -269,5 +258,17 @@ final readonly class SkillAuthoringService
             copiedFrom: $revision->source_key,
             savedAt: $revision->created_at->toIso8601String(),
         ), SkillRevision::findHistoryOf($skill, $rows));
+    }
+
+    /**
+     * The body a --body option names: its text, or standard input when it is -.
+     */
+    private static function bodyOf(string $body): string
+    {
+        if ($body === '-') {
+            return (string) file_get_contents('php://stdin');
+        }
+
+        return $body;
     }
 }

@@ -53,15 +53,12 @@ final readonly class PhaseRecords implements RecordProvider
 
     protected function cardOf(Model $record): RecordCard
     {
-        return RecordCard::from([
-            'type' => Phase::linkType(),
-            'id' => $record->id,
-            'number' => (string) $record->number,
-            'label' => "plan {$record->plan->number}, phase {$record->number}",
-            'title' => $record->title,
-            'abstract' => null,
-            'route' => "/plans/{$record->plan->number}/phases/{$record->number}",
-        ]);
+        return $this->numberedCard(
+            $record,
+            "plan {$record->plan->number}, phase {$record->number}",
+            $record->title,
+            "/plans/{$record->plan->number}/phases/{$record->number}",
+        );
     }
 
     protected function mayChange(Model $record): bool

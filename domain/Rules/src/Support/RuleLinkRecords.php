@@ -45,15 +45,7 @@ final readonly class RuleLinkRecords implements RecordProvider
 
     protected function cardOf(Model $record): RecordCard
     {
-        return RecordCard::from([
-            'type' => Rule::linkType(),
-            'id' => $record->id,
-            'number' => (string) $record->number,
-            'label' => "rule {$record->number}",
-            'title' => $record->text,
-            'abstract' => null,
-            'route' => "/rules?rule={$record->id}",
-        ]);
+        return $this->numberedCard($record, "rule {$record->number}", $record->text, "/rules?rule={$record->id}");
     }
 
     protected function mayChange(Model $record): bool

@@ -55,13 +55,7 @@ final readonly class RuleSearchProvider implements SearchProvider
      */
     private static function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
-        $query = Rule::query();
-
-        if ($constraints->recordIds->isRestricted()) {
-            $query->whereKey($constraints->recordIds->names());
-        }
-
-        return $query;
+        return $constraints->narrow(Rule::query());
     }
 
     private static function hitOf(Rule $rule, ScoreTier $tier): SearchResult

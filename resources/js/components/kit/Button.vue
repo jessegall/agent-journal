@@ -31,9 +31,13 @@ const props = withDefaults(
     },
 );
 
-const kind = computed(() =>
-    props.variant === 'quiet-to-primary' ? (props.filled ? 'primary' : 'quiet') : props.variant,
-);
+const kind = computed(() => {
+    if (props.variant !== 'quiet-to-primary') {
+        return props.variant;
+    }
+
+    return props.filled ? 'primary' : 'quiet';
+});
 
 const look = computed(() => {
     if (props.pressed) {

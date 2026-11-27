@@ -198,7 +198,7 @@ final readonly class ShippedReaderInstaller
         });
 
         $this->summaries->of($run);
-        $read = EvidenceRange::bytes($part->id, EvidenceSource::of(OutputStream::Stdout), 0, strlen($bytes));
+        $read = EvidenceRange::whole($part->id, EvidenceSource::of(OutputStream::Stdout), $bytes);
         $this->commands->run(new RecordEvidenceReadsCommand($run->id, [$read]));
         $this->commands->run(new SettleSampleCommand($requestId));
 

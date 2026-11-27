@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Data;
 
 use App\Assignments\AssignmentOutcome;
+use App\Assignments\Contracts\AssigneeResolver;
 use App\Support\AssignmentHolders;
 use App\Support\AssignmentResult;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -24,6 +25,14 @@ final class AssignmentResultData extends Data
         public readonly array $outcomes,
         public readonly int $changed,
     ) {}
+
+    /**
+     * The change with the current holder of each record it touched.
+     */
+    public static function withHolders(AssignmentResult $change, AssigneeResolver $assignees): self
+    {
+        return self::of($change, $assignees->holdersOf($change->currentAssignments()));
+    }
 
     public static function of(AssignmentResult $change, AssignmentHolders $holders): self
     {

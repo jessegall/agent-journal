@@ -47,15 +47,13 @@ final readonly class ReportLinkRecords implements RecordProvider
 
     protected function cardOf(Model $record): RecordCard
     {
-        return RecordCard::from([
-            'type' => Report::linkType(),
-            'id' => $record->id,
-            'number' => (string) $record->number,
-            'label' => "report {$record->number}",
-            'title' => $record->title,
-            'abstract' => $record->abstract,
-            'route' => "/documents/reports/{$record->number}",
-        ]);
+        return $this->numberedCard(
+            $record,
+            "report {$record->number}",
+            $record->title,
+            "/documents/reports/{$record->number}",
+            $record->abstract,
+        );
     }
 
     protected function mayChange(Model $record): bool

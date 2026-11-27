@@ -53,6 +53,23 @@ final class RecordIdentity extends Data
         return array_values(array_filter($records, fn (self $record) => in_array($record->id, $found, true)));
     }
 
+    /**
+     * The records grouped by their type, each group in the order given.
+     *
+     * @param  list<self>  $records
+     * @return array<string, list<self>>
+     */
+    public static function groupedByType(array $records): array
+    {
+        $grouped = [];
+
+        foreach ($records as $record) {
+            $grouped[$record->type][] = $record;
+        }
+
+        return $grouped;
+    }
+
     public static function assertKnownType(string $type): void
     {
         if (preg_match(self::ALIAS_PATTERN, $type) !== 1) {

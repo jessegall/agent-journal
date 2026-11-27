@@ -36,21 +36,35 @@ final readonly class RunClaims implements RunClaimsContract
         $current = $this->store->lockCurrent($run);
 
         if ($current->isDefined()) {
-            $proof = ClaimAuthorization::findForClaim($current->get()->reference->id);
-            $holder = $current->get()->holder();
+            $held = $current->get();
+            $proof = ClaimAuthorization::findForClaim($held->reference->id);
 
-            if ($proof !== null && $proof->isValidFor($holder)) {
-                if ($holder->isSameAs($claimant)) {
-                    return new RunClaim($current->get()->reference, $proof->sourceIds());
-                }
-
-                throw RunClaimRefused::claimedByAnother($run->id);
+            if ($proof !== null && $proof->isValidFor($held->holder())) {
+                return self::keptFor($run, $held, $proof, $claimant);
             }
 
-            $this->responsibilities->release($run, $current->get()->reference);
+            $this->responsibilities->release($run, $held->reference);
         }
 
         return $this->claim($run, $this->workOf($work, $claimant), $claimant);
+    }
+
+    /**
+     * The claim the run is held under by proof, kept when the claimant holds it and refused when another does.
+     *
+     * @throws RunClaimRefused
+     */
+    private static function keptFor(
+        RecordIdentity $run,
+        Assignment $held,
+        ClaimAuthorization $proof,
+        AssigneeIdentity $claimant,
+    ): RunClaim {
+        if (! $held->holder()->isSameAs($claimant)) {
+            throw RunClaimRefused::claimedByAnother($run->id);
+        }
+
+        return new RunClaim($held->reference, $proof->sourceIds());
     }
 
     public function holdersOf(array $runs): array

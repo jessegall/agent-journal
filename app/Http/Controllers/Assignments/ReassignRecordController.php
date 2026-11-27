@@ -31,7 +31,7 @@ final readonly class ReassignRecordController
         ));
 
         return new JsonResponse(
-            AssignmentResultData::of($assignmentChange, $assignees->holdersOf($assignmentChange->currentAssignments())),
+            AssignmentResultData::withHolders($assignmentChange, $assignees),
         );
     }
 }

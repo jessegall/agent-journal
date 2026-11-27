@@ -11,7 +11,9 @@ use App\Settings\Data\StringConstraintsData;
 use App\Settings\Data\StringValueData;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\SettingCodec;
 use App\Settings\SettingKey;
+use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\Decimal;
 use BackedEnum;
 use Spatie\LaravelData\Optional;
@@ -95,6 +97,11 @@ final readonly class StringSetting implements Setting
     public function isEnabledByDefault(): string
     {
         return $this->defaultValue;
+    }
+
+    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): string
+    {
+        return $codec->decodeString($owner, $this, $input);
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

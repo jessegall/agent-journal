@@ -64,13 +64,7 @@ final readonly class DocumentSearchProvider implements SearchProvider
      */
     private static function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
-        $query = Document::query()->withPublishedRevision();
-
-        if ($constraints->recordIds->isRestricted()) {
-            $query->whereIn('documents.id', $constraints->recordIds->names());
-        }
-
-        return $query;
+        return $constraints->narrow(Document::query()->withPublishedRevision());
     }
 
     private static function hitOf(Document $document, ScoreTier $tier): SearchResult

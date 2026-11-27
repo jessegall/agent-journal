@@ -45,15 +45,7 @@ final readonly class TaskRecords implements RecordProvider
 
     protected function cardOf(Model $record): RecordCard
     {
-        return RecordCard::from([
-            'type' => Task::linkType(),
-            'id' => $record->id,
-            'number' => (string) $record->number,
-            'label' => "task {$record->number}",
-            'title' => $record->title,
-            'abstract' => null,
-            'route' => "/tasks/{$record->number}",
-        ]);
+        return $this->numberedCard($record, "task {$record->number}", $record->title, "/tasks/{$record->number}");
     }
 
     protected function mayChange(Model $record): bool

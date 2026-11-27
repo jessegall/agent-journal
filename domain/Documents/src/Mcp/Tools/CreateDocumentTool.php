@@ -25,19 +25,13 @@ use PhpOption\None;
 #[Description('Publish a document from text or one sealed upload.')]
 final class CreateDocumentTool extends JournalWriteTool
 {
-    public function __construct(private readonly ProjectDestination $destination) {}
-
     use PublicationArguments;
+
+    public function __construct(private readonly ProjectDestination $destination) {}
 
     protected function writeSchema(JsonSchema $schema): array
     {
-        return [
-            'title' => $schema->string()->max(240)->required(),
-            'abstract' => $schema->string()->max(1000)->required(),
-            'body' => $schema->string(),
-            'upload_id' => $this->optionalRecordIdArgument($schema),
-            'source_references' => $schema->array()->items($schema->string()->max(128))->max(50),
-        ];
+        return $this->newPublicationSchema($schema);
     }
 
     protected function command(ToolArguments $arguments): CreateDocumentCommand

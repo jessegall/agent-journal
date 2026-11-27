@@ -218,11 +218,7 @@ final readonly class DomainEntry
      */
     public function scriptFolder(): string
     {
-        if ($this->isPackage()) {
-            return dirname($this->folder).'/resources/js';
-        }
-
-        return $this->folder.'/Resources/js';
+        return $this->laidOutFolder('resources/js', 'Resources/js');
     }
 
     /**
@@ -231,6 +227,19 @@ final readonly class DomainEntry
     private function isPackage(): bool
     {
         return basename($this->folder) === 'src';
+    }
+
+    /**
+     * A folder of the domain's own layout: the package path beside src in a package, or the module path in the class
+     * folder of a flat test module.
+     */
+    private function laidOutFolder(string $packagePath, string $modulePath): string
+    {
+        if ($this->isPackage()) {
+            return dirname($this->folder).'/'.$packagePath;
+        }
+
+        return $this->folder.'/'.$modulePath;
     }
 
     /**
@@ -248,17 +257,13 @@ final readonly class DomainEntry
         return $this->folder.'/Listeners';
     }
 
+    /**
+     * Where the domain's migrations sit: Laravel's database/migrations beside src in a package, or Database/Migrations
+     * in a flat test module's folder.
+     */
     public function migrationFolder(): string
     {
-        // A domain package keeps Laravel's own layout beside its src (domain/<Name>/database/migrations); a flat test
-        // module keeps them in its class folder.
-        if ($this->isPackage()) {
-            return dirname(
-                $this->folder,
-            ).'/database/migrations';
-        }
-
-        return $this->folder.'/Database/Migrations';
+        return $this->laidOutFolder('database/migrations', 'Database/Migrations');
     }
 
     /**

@@ -159,13 +159,7 @@ final class ReflectedProperty
      */
     public function docComment(): Option
     {
-        $comment = $this->property->getDocComment();
-
-        if ($comment === false) {
-            return None::create();
-        }
-
-        return new Some($comment);
+        return Option::fromValue($this->property->getDocComment(), false);
     }
 
     /**

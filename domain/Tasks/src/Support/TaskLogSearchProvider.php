@@ -149,7 +149,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
     private function refresh(RefreshCandidates $query, AdmittedConstraints $constraints): SearchBatch
     {
         $entryIds = array_values(array_filter(array_map(fn ($held) => $held->locationId, $query->candidates)));
-        $query->budget()->chargePolicyChecks(count($entryIds));
+        $query->budget()->chargePolicyChecks($entryIds);
 
         $milliseconds = $query->budget()->remainingMilliseconds();
 
@@ -181,11 +181,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
      */
     private function lines(AdmittedConstraints $constraints): ReadBuilder
     {
-        $tasks = Task::query()->inEnvironments($this->environment->environmentIds());
-
-        if ($constraints->recordIds->isRestricted()) {
-            $tasks->whereKey($constraints->recordIds->names());
-        }
+        $tasks = $constraints->narrow(Task::query()->inEnvironments($this->environment->environmentIds()));
 
         return TaskLogEntry::query()->ofTasksIn($tasks);
     }

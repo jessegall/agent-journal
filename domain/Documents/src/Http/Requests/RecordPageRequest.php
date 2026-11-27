@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Requests;
 
+use App\Http\Requests\Concerns\ReadsOptionalText;
 use App\Http\Requests\Web\Concerns\ReadsCommentsPage;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Reads\Values\PageSize;
@@ -16,6 +17,7 @@ use Illuminate\Foundation\Http\FormRequest;
 final class RecordPageRequest extends FormRequest
 {
     use ReadsCommentsPage;
+    use ReadsOptionalText;
     use ReadsRouteNumber;
 
     /**
@@ -49,11 +51,7 @@ final class RecordPageRequest extends FormRequest
      */
     public function commentIdsToLocate(): array
     {
-        if ($this->filled('commentLocation')) {
-            return [$this->string('commentLocation')->toString()];
-        }
-
-        return [];
+        return array_values(array_filter([$this->optionalText('commentLocation')], is_string(...)));
     }
 
     /**
@@ -63,11 +61,7 @@ final class RecordPageRequest extends FormRequest
      */
     public function sectionsVersions(): array
     {
-        if ($this->filled('sectionsVersion')) {
-            return [$this->string('sectionsVersion')->toString()];
-        }
-
-        return [];
+        return array_values(array_filter([$this->optionalText('sectionsVersion')], is_string(...)));
     }
 
     /**

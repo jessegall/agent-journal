@@ -236,13 +236,7 @@ final class Reflector implements ReflectorContract
      */
     public function docComment(): Option
     {
-        $comment = $this->type->getDocComment();
-
-        if ($comment === false) {
-            return None::create();
-        }
-
-        return new Some($comment);
+        return Option::fromValue($this->type->getDocComment(), false);
     }
 
     /**

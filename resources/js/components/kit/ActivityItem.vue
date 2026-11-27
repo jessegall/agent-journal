@@ -27,6 +27,7 @@ const expanded = defineModel<boolean>('expanded', { default: false });
 
 const glyph = computed(() => ({ 3: '●', 2: '○', 1: '·' })[props.level]);
 const levelWords = computed(() => ({ 3: 'Reaches the chat', 2: 'In the panel', 1: 'Detail' })[props.level]);
+const levelText = computed(() => ({ 3: 'text-text', 2: 'text-text-2', 1: 'text-text-3' })[props.level]);
 const hasFound = computed(() => props.found.length > 0);
 const toggle = (): void => {
     if (hasFound.value) {
@@ -51,7 +52,7 @@ const toggle = (): void => {
             :type="hasFound ? 'button' : undefined"
             :aria-expanded="hasFound ? expanded : undefined"
             class="flex w-full items-center gap-2 px-3 py-1.25 text-left text-small hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
-            :class="level === 3 ? 'text-text' : level === 1 ? 'text-text-3' : 'text-text-2'"
+            :class="levelText"
             @click="toggle"
         >
             <span class="w-9.5 shrink-0 text-text-3 tabular-nums">{{ time }}</span>

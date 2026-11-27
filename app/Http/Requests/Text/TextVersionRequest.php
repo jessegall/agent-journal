@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Text;
 
+use App\Http\Requests\Concerns\ReadsOptionalText;
 use App\Http\Requests\RecordTargetRequest;
 
 /**
@@ -11,6 +12,8 @@ use App\Http\Requests\RecordTargetRequest;
  */
 final class TextVersionRequest extends RecordTargetRequest
 {
+    use ReadsOptionalText;
+
     /**
      * @return array<string, list<string>>
      */
@@ -21,10 +24,6 @@ final class TextVersionRequest extends RecordTargetRequest
 
     public function version(): string|null
     {
-        if ($this->filled('version')) {
-            return $this->string('version')->toString();
-        }
-
-        return null;
+        return $this->optionalText('version');
     }
 }

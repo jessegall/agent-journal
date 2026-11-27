@@ -318,7 +318,7 @@ final readonly class TieredSearch implements TieredSearchContract
     private function refresh(RefreshCandidates $query, TieredSearchSource $source): SearchBatch
     {
         $ids = $query->recordIds();
-        $query->budget()->chargePolicyChecks(count($ids));
+        $query->budget()->chargePolicyChecks($ids);
         $reference = $source->referenceHit($query->original);
 
         $rows = $this->read($query->original, fn () => $this->rowsWithText($source, $ids));
