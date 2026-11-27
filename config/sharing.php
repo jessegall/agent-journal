@@ -6,24 +6,41 @@ $tunnels = env('SHARING_TUNNELS_DIR', storage_path('sharing'));
 
 return [
     /*
-     * The folder that holds every gateway's configuration folder: the root of the file funnel's private place
-     * sharing-tunnels, so a gateway's folder must lie inside it.
-     */
+    |--------------------------------------------------------------------------
+    | Tunnels Dir
+    |--------------------------------------------------------------------------
+    |
+    | The folder that holds every gateway's configuration folder: the root of
+    | the file funnel's private place sharing-tunnels, so a gateway's folder
+    | must lie inside it.
+    |
+    */
+
     'tunnels_dir' => $tunnels,
 
     /*
-     * The share-only listener: it serves public share links and nothing else, on loopback inside its container, on
-     * its own port. Gateways forward only there.
-     */
-    /*
-     * The cache store the public listener counts its rate limits in; Redis, so every listener process shares them.
-     */
+    |--------------------------------------------------------------------------
+    | Rate Limit Store
+    |--------------------------------------------------------------------------
+    |
+    | The cache store the public listener counts its rate limits in; Redis, so
+    | every listener process shares them.
+    |
+    */
+
     'rate_limit_store' => env('SHARING_RATE_LIMIT_STORE', 'redis'),
 
     /*
-     * The Tunler gateway: its pinned program, the configuration folder kept for the journal alone (never a user's
-     * home), and the subdomain it opens, the setting version 5 named journal.tunnels.tunler.subdomain.
-     */
+    |--------------------------------------------------------------------------
+    | Tunler
+    |--------------------------------------------------------------------------
+    |
+    | The Tunler gateway: its pinned program, the configuration folder kept
+    | for the journal alone (never a user's home), and the subdomain it opens,
+    | the setting version 5 named journal.tunnels.tunler.subdomain.
+    |
+    */
+
     'tunler' => [
         'binary' => env('SHARING_TUNLER_BINARY', '/opt/sharing/bin/tunler'),
         'config_dir' => env('SHARING_TUNLER_CONFIG_DIR', "{$tunnels}/tunler"),
@@ -31,9 +48,15 @@ return [
     ],
 
     /*
-     * The ngrok gateway: its pinned program, the journal's own configuration folder and the loopback port of its
-     * control API.
-     */
+    |--------------------------------------------------------------------------
+    | Ngrok
+    |--------------------------------------------------------------------------
+    |
+    | The ngrok gateway: its pinned program, the journal's own configuration
+    | folder and the loopback port of its control API.
+    |
+    */
+
     'ngrok' => [
         'binary' => env('SHARING_NGROK_BINARY', '/opt/sharing/bin/ngrok'),
         'config_dir' => env('SHARING_NGROK_CONFIG_DIR', "{$tunnels}/ngrok"),
@@ -41,9 +64,27 @@ return [
     ],
 
     /*
-     * The gateways' secrets, one file per secret reference, readable by the share service alone.
-     */
+    |--------------------------------------------------------------------------
+    | Secrets Dir
+    |--------------------------------------------------------------------------
+    |
+    | The gateways' secrets, one file per secret reference, readable by the
+    | share service alone.
+    |
+    */
+
     'secrets_dir' => env('SHARING_SECRETS_DIR', storage_path('sharing/secrets')),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Listener
+    |--------------------------------------------------------------------------
+    |
+    | The share-only listener: it serves public share links and nothing else,
+    | on loopback inside its container, on its own port. Gateways forward only
+    | there.
+    |
+    */
 
     'listener' => [
         'host' => '127.0.0.1',
@@ -51,8 +92,15 @@ return [
     ],
 
     /*
-     * How often the sharing supervisor checks the gateways' health, expires shares and prunes the audit, in seconds.
-     */
+    |--------------------------------------------------------------------------
+    | Timers
+    |--------------------------------------------------------------------------
+    |
+    | How often the sharing supervisor checks the gateways' health, expires
+    | shares and prunes the audit, in seconds.
+    |
+    */
+
     'timers' => [
         'health_seconds' => 15,
         'expiry_seconds' => 60,

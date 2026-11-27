@@ -5,7 +5,13 @@ declare(strict_types=1);
 return [
 
     /*
-    | The rows a plain read returns, the largest page a list may ask for, and the keys one batch reads at once.
+    |--------------------------------------------------------------------------
+    | Default Limit
+    |--------------------------------------------------------------------------
+    |
+    | The rows a plain read returns, the largest page a list may ask for, and
+    | the keys one batch reads at once.
+    |
     */
 
     'default_limit' => 50,

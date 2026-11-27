@@ -106,14 +106,23 @@ return [
     'wrap' => null,
 
     /*
-     * A VarDumper caster that hides some properties of data objects and collections in `dump` and `dd`:
-     * 'enabled', 'disabled' or 'development', which enables it only locally.
+     * Adds a specific caster to the Symphony VarDumper component which hides
+     * some properties from data objects and collections when being dumped
+     * by `dump` or `dd`. Can be 'enabled', 'disabled' or 'development'
+     * which will only enable the caster locally.
      */
     'var_dumper_caster_mode' => 'development',
 
     /*
-     * Caches the reflection analysis of the data objects in these folders, in this store, so production skips it;
-     * a structure is kept until the next deploy, or for the duration in seconds when one is set.
+     * It is possible to skip the PHP reflection analysis of data objects
+     * when running in production. This will speed up the package. You
+     * can configure where data objects are stored and which cache
+     * store should be used.
+     *
+     * Structures are cached forever as they'll become stale when your
+     * application is deployed with changes. You can set a duration
+     * in seconds if you want the cache to clear after a certain
+     * timeframe.
      */
     'structure_caching' => [
         'enabled' => true,
@@ -154,8 +163,10 @@ return [
     'ignore_invalid_partials' => false,
 
     /*
-     * The deepest a nested chain of data objects is transformed, so a recursive relationship cannot loop for
-     * ever; null sets no limit.
+     * When transforming a nested chain of data objects, the package can end up in an infinite
+     * loop when including a recursive relationship. The max transformation depth can be
+     * set as a safety measure to prevent this from happening. When set to null, the
+     * package will not enforce a maximum depth.
      */
     'max_transformation_depth' => null,
 

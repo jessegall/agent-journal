@@ -186,7 +186,7 @@ function commentsOf(string $file): array
     $source = (string) file_get_contents($file);
 
     return match (languageOf($file)) {
-        'php' => phpComments($source),
+        'php' => phpComments($source, str_starts_with($file, 'config/')),
         'slashes' => markedComments($source, '//', true),
         'hash' => markedComments($source, '#', false),
         default => [],
@@ -196,7 +196,7 @@ function commentsOf(string $file): array
 /**
  * @return list<array{int, list<string>}>
  */
-function phpComments(string $source): array
+function phpComments(string $source, bool $isConfig): array
 {
     $comments = [];
     $pendingLine = 0;
@@ -222,7 +222,8 @@ function phpComments(string $source): array
             $pending = [];
         }
 
-        if ($token[0] === T_DOC_COMMENT || $token[0] === T_COMMENT) {
+        // A config file's block comments document its settings, as Laravel and the packages ship them: kept as written.
+        if (($token[0] === T_DOC_COMMENT || $token[0] === T_COMMENT) && ! $isConfig) {
             $comments[] = [
                 $token[2],
                 prose(blockLines($token[1])),

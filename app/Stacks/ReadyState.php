@@ -24,8 +24,8 @@ use Generator;
 
 /**
  * The bottom of every stack: a file change or tool call passes only when the agent's policy grants it. It owns whether
- * the session runs: it keeps its runtime's live processes and whether a stop was asked, and ends a stopped session
- * once no process of it runs, as a headless one has none between its turns.
+ * the session runs, and ends a stopped session once none of its processes runs, as a headless one has none between
+ * its turns.
  */
 #[StateType(ReadyStateReference::class, schemaVersion: 1)]
 class ReadyState extends AgentState implements UniqueState
