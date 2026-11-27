@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Pages\Resolvers;
 
-use App\Accounts\Contracts\StartAccounts;
-use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\StackTargetRefused;
@@ -20,7 +18,6 @@ use App\Support\AgentOption;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
-use Domain\Chat\Data\DriverChoiceData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Resolvers\Support\ChatPages;
 use Domain\Chat\Support\PairChats;
@@ -44,8 +41,6 @@ final readonly class ChatWindowResolver implements PageResolver
         private ChatPages $pages,
         private PairChats $chats,
         private SlotSections $slots,
-        private StartAccounts $startAccounts,
-        private DriverCatalogue $drivers,
     ) {}
 
     public function read(): ChatData
@@ -70,7 +65,6 @@ final readonly class ChatWindowResolver implements PageResolver
             ...$chosen->map($this->conversationFields(...))->getOrElse([]),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->chatList(),
-            'drivers' => DriverChoiceData::listed($this->drivers, $this->startAccounts->familiesWithAccounts()),
         ]);
     }
 

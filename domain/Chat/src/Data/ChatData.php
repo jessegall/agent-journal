@@ -21,7 +21,6 @@ final class ChatData extends Data
      * @param  list<AgentOptionData>  $agents
      * @param  list<ChatSummaryData>  $chats
      * @param  list<SlotSectionData>  $dockSections
-     * @param  list<DriverChoiceData>  $drivers
      */
     public function __construct(
         #[DataCollectionOf(AgentOptionData::class)]
@@ -38,9 +37,6 @@ final class ChatData extends Data
         #[DataCollectionOf(ChatSummaryData::class)]
         public readonly array $chats = [],
         public readonly bool $canCreateChats = false,
-        // The registered drivers a start or switch form offers.
-        #[DataCollectionOf(DriverChoiceData::class)]
-        public readonly array $drivers = [],
         public readonly string|Optional $selectedInboxId = new Optional(),
     ) {}
 }

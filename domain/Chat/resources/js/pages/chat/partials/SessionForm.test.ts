@@ -116,6 +116,10 @@ vi.mock("@kit/loaders", async (importOriginal) => {
   return {
     ...original,
     load: (loader: { key: string }, input: Record<string, string | null>) => {
+      if (loader.key === "chat.start-drivers") {
+        return Promise.resolve({ status: "ok", value: { drivers } });
+      }
+
       if (loader.key === "accounts.start-accounts") {
         if (readFailures.count > 0) {
           readFailures.count--;
@@ -231,13 +235,12 @@ function chosenIn(form: VueWrapper, field: string): string {
   return form.get(`button[id$="-${field}"]`).text();
 }
 
-// Every test starts on Home with the journal's driver catalogue and the chat window's drivers.
+// Every test starts on Home with the journal's driver catalogue; the form reads its drivers with its loader.
 beforeEach(() => {
   window.sessionStorage.clear();
   shownPage.props = {
     viewer: { type: "guest", canShare: false },
     drivers: declaredLooks,
-    window_chat_conversation: { status: "ready", data: { drivers } },
   };
 });
 
@@ -505,13 +508,7 @@ describe("SessionForm", () => {
     await flushPromises();
 
     await choose(form, "account", "Second account");
-    shownPage.props = {
-      ...shownPage.props,
-      window_chat_conversation: {
-        status: "ready",
-        data: { drivers },
-      },
-    };
+    await form.setProps({ agent: { ...idle } });
     await flushPromises();
 
     expect(chosenIn(form, "account")).toBe("Second account");

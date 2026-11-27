@@ -44,6 +44,7 @@ use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\UndockController;
 use Domain\Chat\Http\Loaders\ChatCandidatesLoader;
 use Domain\Chat\Http\Loaders\ChatRowsLoader;
+use Domain\Chat\Http\Loaders\StartDriversLoader;
 use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Pages\Resolvers\ChosenAgentSection;
 use Domain\Chat\Policies\DockPlacementPolicy;
@@ -131,7 +132,8 @@ final class ChatDomain extends Domain implements
                     ->post('chats/close', CloseChatController::class, 'close'))
                 ->loaders(fn (PageLoaders $loaders) => $loaders
                     ->add('rows', ChatRowsLoader::class)
-                    ->add('candidates', ChatCandidatesLoader::class)),
+                    ->add('candidates', ChatCandidatesLoader::class)
+                    ->add('start-drivers', StartDriversLoader::class)),
         ];
     }
 

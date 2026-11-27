@@ -13,14 +13,13 @@ import Dialog from "@kit/Dialog";
 import { followPage } from "@kit/followPage";
 import { keyedPost } from "@kit/keyedPost";
 import { sendPageAction } from "@kit/pageActions";
-import { accountsStartAccounts, load, LoaderCancelled, webStartPreview, webStartReceipt } from "@kit/loaders";
+import { accountsStartAccounts, chatStartDrivers, load, LoaderCancelled, webStartPreview, webStartReceipt } from "@kit/loaders";
 import { onPurge, protectedViewGeneration } from "@kit/protectedView";
 import { newRequestId } from "@kit/requestId";
 import { useStartRestoration } from "../../../composables/useStartRestoration";
 import { useSwitchOperation } from "../../../composables/useSwitchOperation";
 import type {
   AgentOptionData,
-  ChatData,
   DriverChoiceData,
 } from "@generated/types/chat";
 import type {
@@ -28,7 +27,6 @@ import type {
   DriverTypeSource,
   StartPreviewData,
 } from "@kit/CoreTypes";
-import type { WindowResult } from "@kit/PageTypes";
 import type { DriverType } from "@kit/CoreTypes";
 import {
   accountsPage,
@@ -272,11 +270,19 @@ function cancelStart(): void {
 }
 const ownPage = page.component === "chat/ChatWindow";
 const chatProp = ownPage ? "page" : "window_chat_conversation";
-const driverChoices = computed<DriverChoiceData[]>(() => {
-  const shown = page.props[chatProp] as WindowResult<ChatData> | undefined;
+// The drivers this agent may start on, read where the form opens, so every page that shows the form has them.
+const driverChoices = ref<DriverChoiceData[]>([]);
 
-  return shown?.status === "ready" ? shown.data.drivers : [];
-});
+function readDrivers(): void {
+  load(chatStartDrivers, { agent: props.agent.id }).then(
+    (answer) => {
+      if (answer.status === "ok") {
+        driverChoices.value = answer.value.drivers;
+      }
+    },
+    () => undefined,
+  );
+}
 // Each driver family once, in the catalogue's order.
 const families = computed(() => [
   ...new Set(driverChoices.value.map((choice) => choice.family)),
@@ -507,11 +513,27 @@ watch(
   { flush: "sync" },
 );
 
-watch(driver, readAccounts, { immediate: true });
-// The accounts follow each new read of the chat window, so an account that can no longer start shows it.
+readDrivers();
+// No driver is known until the drivers are read, and without one there are no accounts to read.
 watch(
-  () => page.props[chatProp],
-  () => readAccounts(driver.value),
+  driver,
+  (chosen) => {
+    if (chosen !== "") {
+      readAccounts(chosen);
+    }
+  },
+  { immediate: true },
+);
+// The drivers and accounts follow each new read of the agent, so a driver or account that can no longer start shows it.
+watch(
+  () => props.agent,
+  () => {
+    readDrivers();
+
+    if (driver.value !== "") {
+      readAccounts(driver.value);
+    }
+  },
 );
 
 function sessionChoice(): SessionChoice {
