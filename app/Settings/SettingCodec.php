@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Settings;
 
 use App\Settings\Contracts\OptionSetting;
-use App\Settings\Contracts\Setting;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
 use App\Settings\Declarations\DecimalSetting;
@@ -14,7 +13,6 @@ use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Declarations\StringSetting;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\DecimalInvalid;
-use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Exceptions\SettingStorageInvalid;
 use App\Settings\Exceptions\SettingValueInvalid;
 use App\Settings\Storage\EncodedValue;
@@ -104,27 +102,6 @@ final readonly class SettingCodec
         throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
-    /**
-     * The native value of a stored override, of the type its declaration holds.
-     *
-     * @throws SettingStorageInvalid
-     * @throws SettingHandleUnknown for a declaration class outside the settings types
-     */
-    public function decode(
-        string $owner,
-        Setting $setting,
-        EncodedValue $input,
-    ): string|bool|int|Decimal|BackedEnum {
-        return match (true) {
-            $setting instanceof StringSetting => $this->decodeString($owner, $setting, $input),
-            $setting instanceof BooleanSetting => $this->decodeBoolean($owner, $setting, $input),
-            $setting instanceof IntegerSetting => $this->decodeInteger($owner, $setting, $input),
-            $setting instanceof DecimalSetting => $this->decodeDecimal($owner, $setting, $input),
-            $setting instanceof ChoiceSetting => $this->decodeChoice($owner, $setting, $input),
-            $setting instanceof EnumSetting => $this->decodeEnum($owner, $setting, $input),
-            default => throw SettingHandleUnknown::for($setting::class, $setting->key()),
-        };
-    }
 
     /**
      * @throws SettingStorageInvalid

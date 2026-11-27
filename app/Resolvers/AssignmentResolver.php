@@ -48,7 +48,7 @@ final readonly class AssignmentResolver implements AssignmentResolverContract
 
         $visibleIdsByType = [];
 
-        foreach ($this->byType($records) as $type => $ofType) {
+        foreach (RecordIdentity::groupedByType($records) as $type => $ofType) {
             $visible = $this->visibleAmong($type, $ofType);
             $visibleIdsByType[$type] = array_map(fn (RecordIdentity $record) => $record->id, $visible);
         }
@@ -133,20 +133,6 @@ final readonly class AssignmentResolver implements AssignmentResolverContract
         return $ids;
     }
 
-    /**
-     * @param  list<RecordIdentity>  $records
-     * @return array<string, list<RecordIdentity>>
-     */
-    private function byType(array $records): array
-    {
-        $byType = [];
-
-        foreach ($records as $record) {
-            $byType[$record->type][] = $record;
-        }
-
-        return $byType;
-    }
 
     /**
      * The owner's visible subset of records of one type, kept to the records asked about.

@@ -37,12 +37,7 @@ final class CoreMcpTools
      */
     public static function tools(): array
     {
-        $found = Codebase::in(__DIR__.'/Mcp/Tools', JournalTool::class);
-
-        return [
-            ...self::ORIENTATION_TOOLS,
-            ...array_values(array_diff($found, self::ORIENTATION_TOOLS)),
-        ];
+        return self::orientationFirst(Codebase::in(__DIR__.'/Mcp/Tools', JournalTool::class), self::ORIENTATION_TOOLS);
     }
 
     /**
@@ -52,10 +47,7 @@ final class CoreMcpTools
     {
         $found = Codebase::in(__DIR__.'/Mcp/Resources', JournalResource::class);
 
-        return [
-            ...self::ORIENTATION_RESOURCES,
-            ...array_values(array_diff($found, self::ORIENTATION_RESOURCES)),
-        ];
+        return self::orientationFirst($found, self::ORIENTATION_RESOURCES);
     }
 
     public static function registerIn(McpRegistration $registration): void
@@ -67,5 +59,19 @@ final class CoreMcpTools
         foreach (self::resources() as $resource) {
             $registration->registerResource($resource);
         }
+    }
+
+    /**
+     * The classes found, the orientation ones first in their own order.
+     *
+     * @template T of object
+     *
+     * @param  list<class-string<T>>  $found
+     * @param  list<class-string<T>>  $orientation
+     * @return list<class-string<T>>
+     */
+    private static function orientationFirst(array $found, array $orientation): array
+    {
+        return [...$orientation, ...array_values(array_diff($found, $orientation))];
     }
 }

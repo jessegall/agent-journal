@@ -54,15 +54,12 @@ final readonly class MessageLinkRecords implements RecordProvider
 
     protected function cardOf(Model $record): RecordCard
     {
-        return RecordCard::from([
-            'type' => Message::linkType(),
-            'id' => $record->id,
-            'number' => (string) $record->number,
-            'label' => "message {$record->number}",
-            'title' => strtok($record->body, "\n") ?: $record->body,
-            'abstract' => null,
-            'route' => null,
-        ]);
+        return $this->numberedCard(
+            $record,
+            "message {$record->number}",
+            strtok($record->body, "\n") ?: $record->body,
+            null,
+        );
     }
 
     /**

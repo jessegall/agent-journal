@@ -30,17 +30,7 @@ final readonly class PathConfinement
      */
     public function resolved(FilePath $file): string
     {
-        $this->closed->assertNotClosed($file);
-        $root = $this->roots->root($file->place);
-        $real = $this->freshRealPath($root, $file);
-
-        if ($real === null) {
-            throw $this->isLinkLoop($file, $root)
-                ? LinkLoop::at($file->label())
-                : FileMissing::at($file->label());
-        }
-
-        return $this->confined($file, $root, $real);
+        return $this->existingRealPath($file) ?? throw $this->missing($file, FileMissing::at($file->label()));
     }
 
     /**
@@ -64,21 +54,13 @@ final readonly class PathConfinement
      */
     public function resolvedFolder(FilePath $folder): string
     {
-        $this->closed->assertNotClosed($folder);
-        $root = $this->roots->root($folder->place);
-        $real = $this->freshRealPath($root, $folder);
-
-        if ($real === null) {
-            throw $this->isLinkLoop($folder, $root)
-                ? LinkLoop::at($folder->label())
-                : FolderMissing::at($folder->label());
-        }
+        $real = $this->existingRealPath($folder) ?? throw $this->missing($folder, FolderMissing::at($folder->label()));
 
         if (! is_dir($real)) {
             throw FolderMissing::at($folder->label());
         }
 
-        return $this->confined($folder, $root, $real);
+        return $real;
     }
 
     /**
@@ -246,5 +228,17 @@ final readonly class PathConfinement
         }
 
         return $links > self::LINK_LIMIT;
+    }
+
+    /**
+     * Why nothing is at the path: a loop of links, or the given missing failure.
+     */
+    private function missing(FilePath $file, FileMissing|FolderMissing $missing): LinkLoop|FileMissing|FolderMissing
+    {
+        if ($this->isLinkLoop($file, $this->roots->root($file->place))) {
+            return LinkLoop::at($file->label());
+        }
+
+        return $missing;
     }
 }

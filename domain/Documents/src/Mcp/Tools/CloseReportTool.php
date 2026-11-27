@@ -38,7 +38,7 @@ final class CloseReportTool extends JournalWriteTool
 
     protected function command(ToolArguments $arguments): CloseReportCommand
     {
-        return new CloseReportCommand((string) $arguments->recordReference('report_id'), $arguments->text('reason'));
+        return new CloseReportCommand($arguments->recordReferenceText('report_id'), $arguments->text('reason'));
     }
 
     protected function present(mixed $commandResult): ToolResult

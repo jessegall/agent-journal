@@ -28,9 +28,13 @@ interface WorkAllowance
     public function chargeRelationships(int $count): void;
 
     /**
+     * Charges one policy check for each record checked.
+     *
+     * @param  list<string>  $recordIds
+     *
      * @throws WorkBudgetSpent
      */
-    public function chargePolicyChecks(int $count): void;
+    public function chargePolicyChecks(array $recordIds): void;
 
     /**
      * @throws WorkBudgetSpent

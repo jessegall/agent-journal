@@ -35,7 +35,7 @@ final class CommentOnDocumentTool extends JournalWriteTool
 
     protected function command(ToolArguments $arguments): CommentOnDocumentCommand
     {
-        return new CommentOnDocumentCommand((string) $arguments->recordReference('doc_id'), $arguments->text('body'));
+        return new CommentOnDocumentCommand($arguments->recordReferenceText('doc_id'), $arguments->text('body'));
     }
 
     protected function present(mixed $commentId): ToolResult

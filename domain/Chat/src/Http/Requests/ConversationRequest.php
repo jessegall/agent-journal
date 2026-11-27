@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Requests;
 
+use App\Http\Requests\Concerns\ReadsOptionalText;
 use Illuminate\Foundation\Http\FormRequest;
-use PhpOption\None;
 use PhpOption\Option;
-use PhpOption\Some;
 
 /**
  * The chat window's own query: the agent it talks to, when one is chosen, the chat, and where the dock's next page
@@ -15,6 +14,8 @@ use PhpOption\Some;
  */
 final class ConversationRequest extends FormRequest
 {
+    use ReadsOptionalText;
+
     /**
      * @return array<string, list<string>>
      */
@@ -66,11 +67,7 @@ final class ConversationRequest extends FormRequest
      */
     public function chosenInbox(): Option
     {
-        if ($this->filled('inbox')) {
-            return Some::create($this->string('inbox')->lower()->toString());
-        }
-
-        return None::create();
+        return Option::fromValue($this->optionalText('inbox'))->map(strtolower(...));
     }
 
     /**
@@ -78,11 +75,7 @@ final class ConversationRequest extends FormRequest
      */
     public function dockToken(): string|null
     {
-        if ($this->filled('dock')) {
-            return $this->string('dock')->toString();
-        }
-
-        return null;
+        return $this->optionalText('dock');
     }
 
     /**
@@ -90,10 +83,6 @@ final class ConversationRequest extends FormRequest
      */
     public function chosenAgent(): Option
     {
-        if ($this->filled('agent')) {
-            return Some::create($this->string('agent')->lower()->toString());
-        }
-
-        return None::create();
+        return Option::fromValue($this->optionalText('agent'))->map(strtolower(...));
     }
 }

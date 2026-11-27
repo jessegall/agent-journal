@@ -7,8 +7,6 @@ namespace Domain\Chat;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
-use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandProvider;
 use App\Contracts\Events\EngineListenerProvider;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
@@ -22,7 +20,6 @@ use App\Navigation\Enums\Icon;
 use App\Profiles\Enums\SlotContextType;
 use App\Search\Contracts\MessageSearch;
 use App\Skills\Contracts\SkillProvider;
-use App\Support\Codebase;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\Searchable;
@@ -54,7 +51,6 @@ use Domain\Questions\QuestionsDomain;
 use Domain\Sequences\SequencesDomain;
 
 final class ChatDomain extends Domain implements
-    CommandProvider,
     EngineListenerProvider,
     McpToolProvider,
     PageProvider,
@@ -89,11 +85,6 @@ final class ChatDomain extends Domain implements
     public function engineListeners(): array
     {
         return [];
-    }
-
-    public function commands(): array
-    {
-        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function policies(): array

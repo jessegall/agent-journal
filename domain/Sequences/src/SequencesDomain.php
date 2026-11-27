@@ -8,8 +8,6 @@ use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Drivers\Contracts\NativePartProvider;
 use App\Agents\Enums\AccessType;
-use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasStates;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
@@ -20,7 +18,6 @@ use App\Navigation\Declarations\NavigationItem;
 use App\Navigation\Enums\Icon;
 use App\Records\Contracts\StateProvider;
 use App\Skills\Contracts\SkillProvider;
-use App\Support\Codebase;
 use App\Support\Domain;
 use App\Support\Exports;
 use Domain\Sequences\Events\SequenceStarted;
@@ -39,7 +36,6 @@ use Domain\Sequences\Support\Skills\SequencesSkill;
 use Domain\Sequences\Support\States\FollowSequenceState;
 
 final class SequencesDomain extends Domain implements
-    CommandProvider,
     DraftProducerProvider,
     NativePartProvider,
     NavigationProvider,
@@ -77,10 +73,6 @@ final class SequencesDomain extends Domain implements
     /**
      * @return list<class-string>
      */
-    public function commands(): array
-    {
-        return Codebase::in(__DIR__.'/Commands/*', Command::class);
-    }
 
     /**
      * @return list<class-string<Domain>>

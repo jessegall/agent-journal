@@ -32,7 +32,7 @@ final readonly class HostCallReader
         try {
             $fields = json_decode($body, true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $unreadable) {
-            throw HostCallUnreadable::notJson($call, $unreadable->getMessage());
+            throw HostCallUnreadable::notJson($call, $unreadable);
         }
 
         $this->checkFields(is_array($fields) ? $fields : [], $class, $call, '');

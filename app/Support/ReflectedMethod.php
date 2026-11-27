@@ -134,13 +134,7 @@ final class ReflectedMethod
      */
     public function docComment(): Option
     {
-        $comment = $this->method->getDocComment();
-
-        if ($comment === false) {
-            return None::create();
-        }
-
-        return new Some($comment);
+        return Option::fromValue($this->method->getDocComment(), false);
     }
 
     /**

@@ -54,13 +54,7 @@ final readonly class PlanSearchProvider implements SearchProvider
      */
     private static function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
-        $query = Plan::query();
-
-        if ($constraints->recordIds->isRestricted()) {
-            $query->whereKey($constraints->recordIds->names());
-        }
-
-        return $query;
+        return $constraints->narrow(Plan::query());
     }
 
     private static function hitOf(Plan $plan, ScoreTier $tier): SearchResult

@@ -72,13 +72,7 @@ final readonly class TaskSearchProvider implements SearchProvider
      */
     private function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
-        $query = Task::query()->inEnvironments($this->environment->environmentIds());
-
-        if ($constraints->recordIds->isRestricted()) {
-            $query->whereKey($constraints->recordIds->names());
-        }
-
-        return $query;
+        return $constraints->narrow(Task::query()->inEnvironments($this->environment->environmentIds()));
     }
 
     private static function hitOf(Task $task, ScoreTier $tier): SearchResult

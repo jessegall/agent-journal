@@ -202,23 +202,29 @@ final class Files implements FilesContract
 
     public function write(FilePath $file, string $bytes, Permissions $permissions = Permissions::Shared): void
     {
-        $real = $this->writablePath($file);
-        $this->writer->replace($real, $bytes, $permissions->mode(), $file->label());
-        $this->contents->drop($real);
+        $this->writeThrough($file, fn (string $real) => $this->writer->replace(
+            $real,
+            $bytes,
+            $permissions->mode(),
+            $file->label(),
+        ));
     }
 
     public function create(FilePath $file, string $bytes, Permissions $permissions = Permissions::Shared): void
     {
-        $real = $this->writablePath($file);
-        $this->writer->create($real, $bytes, $permissions->mode(), $file->label());
-        $this->contents->drop($real);
+        $this->writeThrough($file, fn (string $real) => $this->writer->create(
+            $real,
+            $bytes,
+            $permissions->mode(),
+            $file->label(),
+        ));
     }
 
     public function append(FilePath $file, string $line): void
     {
-        $real = $this->writablePath($file);
-        $this->writer->append($real, $line, Permissions::of($file->place)->mode(), $file->label());
-        $this->contents->drop($real);
+        $mode = Permissions::of($file->place)->mode();
+
+        $this->writeThrough($file, fn (string $real) => $this->writer->append($real, $line, $mode, $file->label()));
     }
 
     public function makeFolder(FilePath $folder, Permissions $permissions): void
@@ -403,5 +409,17 @@ final class Files implements FilesContract
         }
 
         return $decoded;
+    }
+
+    /**
+     * Writes the file at its real path and forgets what was kept of its old content.
+     *
+     * @param  Closure(string): void  $write
+     */
+    private function writeThrough(FilePath $file, Closure $write): void
+    {
+        $real = $this->writablePath($file);
+        $write($real);
+        $this->contents->drop($real);
     }
 }

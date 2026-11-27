@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Settings\Contracts;
 
 use App\Settings\Enums\SettingType;
+use App\Settings\Exceptions\SettingStorageInvalid;
+use App\Settings\SettingCodec;
+use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\Decimal;
 use BackedEnum;
 use Spatie\LaravelData\Optional;
@@ -39,6 +42,17 @@ interface Setting
      * The value the setting has while nobody changed it.
      */
     public function isEnabledByDefault(): string|bool|int|Decimal|BackedEnum;
+
+    /**
+     * The native value of a stored override of this setting, read by the codec of its own type.
+     *
+     * @throws SettingStorageInvalid
+     */
+    public function decodedBy(
+        SettingCodec $codec,
+        string $owner,
+        EncodedValue $input,
+    ): string|bool|int|Decimal|BackedEnum;
 
     /**
      * A value of this setting as the settings catalogue shows it.

@@ -19,10 +19,12 @@ final readonly class ExportVariables implements Pipe
         $assignments = [];
 
         foreach ($call->arguments as $argument) {
-            if (str_contains($argument, '=')) {
-                [$name, $assigned] = explode('=', $argument, 2);
-                $assignments[$name] = $assigned;
+            if (! str_contains($argument, '=')) {
+                continue;
             }
+
+            [$name, $assigned] = explode('=', $argument, 2);
+            $assignments[$name] = $assigned;
         }
 
         $context = $call->context();

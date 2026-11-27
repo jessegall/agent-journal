@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
+use App\Http\Requests\Concerns\ReadsOptionalText;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -11,6 +12,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class SignInChallengeRequest extends FormRequest
 {
+    use ReadsOptionalText;
+
     /**
      * @return array<string, list<string>>
      */
@@ -34,10 +37,6 @@ final class SignInChallengeRequest extends FormRequest
 
     public function code(): string|null
     {
-        if ($this->filled('code')) {
-            return $this->string('code')->toString();
-        }
-
-        return null;
+        return $this->optionalText('code');
     }
 }

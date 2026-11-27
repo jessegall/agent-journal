@@ -141,6 +141,16 @@ final readonly class ToolArguments
         return null;
     }
 
+    /**
+     * A record's number or id as the text a command takes it in.
+     *
+     * @throws ToolArgumentInvalid
+     */
+    public function recordReferenceText(string $name): string
+    {
+        return (string) $this->recordReference($name);
+    }
+
     public function recordReference(string $name): int|string
     {
         $argument = $this->arguments[$name] ?? null;

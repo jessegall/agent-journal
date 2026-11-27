@@ -7,7 +7,6 @@ namespace Domain\Reminders;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
-use App\Bus\Contracts\CommandProvider;
 use App\Declarations\Page;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Navigation\Contracts\PageProvider;
@@ -15,14 +14,11 @@ use App\Navigation\Enums\Icon;
 use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;
-use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
 use Domain\Reminders\Http\Pages\Resolvers\RemindersWindowResolver;
 use Domain\Reminders\Policies\ReminderPolicy;
 use Domain\Reminders\Support\Skills\RemindersSkill;
 
 final class RemindersDomain extends Domain implements
-    CommandProvider,
     McpToolProvider,
     PageProvider,
     PolicyProvider,
@@ -64,14 +60,6 @@ final class RemindersDomain extends Domain implements
                 ReminderPolicy::class,
                 [AccessType::Read, AccessType::Create, AccessType::Edit],
             ),
-        ];
-    }
-
-    public function commands(): array
-    {
-        return [
-            CreateReminderCommand::class,
-            FinishReminderCommand::class,
         ];
     }
 

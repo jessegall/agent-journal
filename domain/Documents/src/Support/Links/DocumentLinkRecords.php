@@ -50,15 +50,13 @@ final readonly class DocumentLinkRecords implements RecordProvider
     {
         $revision = DocumentRevision::findCurrentOf($record);
 
-        return RecordCard::from([
-            'type' => Document::linkType(),
-            'id' => $record->id,
-            'number' => (string) $record->number,
-            'label' => "doc {$record->number}",
-            'title' => $revision->title,
-            'abstract' => $revision->abstract,
-            'route' => "/documents/docs/{$record->number}",
-        ]);
+        return $this->numberedCard(
+            $record,
+            "doc {$record->number}",
+            $revision->title,
+            "/documents/docs/{$record->number}",
+            $revision->abstract,
+        );
     }
 
     protected function mayChange(Model $record): bool

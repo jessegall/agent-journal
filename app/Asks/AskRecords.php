@@ -17,16 +17,12 @@ final readonly class AskRecords
 
     public function read(AskReference $reference): Ask
     {
-        return $this->visible()->whereKey($reference->id)->firstOr(
-            RecordUnavailable::throwing()->for(new RecordIdentity(Ask::linkType(), $reference->id)),
-        );
+        return $this->foundIn($this->visible(), $reference);
     }
 
     public function lock(AskReference $reference): Ask
     {
-        return $this->visible()->whereKey($reference->id)->lockForUpdate()->firstOr(
-            RecordUnavailable::throwing()->for(new RecordIdentity(Ask::linkType(), $reference->id)),
-        );
+        return $this->foundIn($this->visible()->lockForUpdate(), $reference);
     }
 
     /**
@@ -35,5 +31,17 @@ final readonly class AskRecords
     public function visible(): ReadBuilder
     {
         return Ask::query()->visibleToParticipant($this->current->actor(), $this->owner->resolve());
+    }
+
+    /**
+     * The ask the reference names among the query's rows; unavailable when it is not there.
+     *
+     * @param  ReadBuilder<Ask>  $query
+     */
+    private function foundIn(ReadBuilder $query, AskReference $reference): Ask
+    {
+        return $query->whereKey($reference->id)->firstOr(
+            RecordUnavailable::throwing()->for(new RecordIdentity(Ask::linkType(), $reference->id)),
+        );
     }
 }

@@ -8,6 +8,7 @@ use App\Bus\Contracts\CommandRefusal;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Engine\Enums\RefusalCode;
+use JsonException;
 use RuntimeException;
 
 /**
@@ -18,9 +19,9 @@ final class HostCallUnreadable extends RuntimeException implements CodedRefusal,
 {
     use RendersRefusal;
 
-    public static function notJson(string $call, string $reason): self
+    public static function notJson(string $call, JsonException $unreadable): self
     {
-        return new self("The host's {$call} is not JSON: {$reason}.");
+        return new self("The host's {$call} is not JSON: {$unreadable->getMessage()}.", previous: $unreadable);
     }
 
     public static function tooLarge(string $call, int $bytes, int $limit): self

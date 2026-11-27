@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Requests;
 
+use App\Http\Requests\Concerns\ReadsOptionalText;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\LibraryTypeFilter;
@@ -15,6 +16,8 @@ use Illuminate\Validation\Rule;
  */
 final class ListRecordsRequest extends FormRequest
 {
+    use ReadsOptionalText;
+
     /**
      * @return array<string, list<mixed>>
      */
@@ -39,18 +42,6 @@ final class ListRecordsRequest extends FormRequest
             revisions: $this->boolean('revisions'),
             after: $this->optionalText('after'),
         );
-    }
-
-    /**
-     * The text given for the key, none when it was left out or empty.
-     */
-    private function optionalText(string $key): string|null
-    {
-        if (! $this->filled($key)) {
-            return null;
-        }
-
-        return $this->string($key)->toString();
     }
 
     /**

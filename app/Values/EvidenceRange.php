@@ -24,6 +24,14 @@ final readonly class EvidenceRange
         return new self($partRunId, EvidenceSource::Envelope, 0, 0);
     }
 
+    /**
+     * The range of every byte the source printed.
+     */
+    public static function whole(string $partRunId, EvidenceSource $source, string $bytes): self
+    {
+        return new self($partRunId, $source, 0, strlen($bytes));
+    }
+
     public static function bytes(string $partRunId, EvidenceSource $source, int $firstByte, int $endByte): self
     {
         return new self($partRunId, $source, $firstByte, $endByte);

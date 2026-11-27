@@ -77,10 +77,21 @@ function escape(event: KeyboardEvent): void {
     }
 }
 
-watch(open, (isOpen) => isOpen && position(), { flush: 'post' });
+watch(
+    open,
+    (isOpen) => {
+        if (isOpen) {
+            position();
+        }
+    },
+    { flush: 'post' },
+);
 onMounted(() => {
     window.addEventListener('pointerdown', pressOutside, true);
-    open.value && position();
+
+    if (open.value) {
+        position();
+    }
 });
 onBeforeUnmount(() => window.removeEventListener('pointerdown', pressOutside, true));
 </script>

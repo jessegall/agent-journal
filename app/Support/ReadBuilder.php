@@ -350,16 +350,30 @@ class ReadBuilder extends Builder
         $this->orderForReading();
     }
 
+    /**
+     * A grouped read without an order of its own is read in the order of its groups.
+     *
+     * @param  array<mixed>  $groups
+     */
+    private function orderByGroups(array $groups): void
+    {
+        $query = $this->getQuery();
+
+        if ($query->orders !== null && $query->orders !== []) {
+            return;
+        }
+
+        foreach ($groups as $group) {
+            $query->orderBy($group);
+        }
+    }
+
     private function orderForReading(): void
     {
         $query = $this->getQuery();
 
         if ($query->groups !== null && $query->groups !== []) {
-            if ($query->orders === null || $query->orders === []) {
-                foreach ($query->groups as $group) {
-                    $query->orderBy($group);
-                }
-            }
+            $this->orderByGroups($query->groups);
 
             return;
         }

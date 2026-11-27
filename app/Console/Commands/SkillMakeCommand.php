@@ -38,7 +38,7 @@ final class SkillMakeCommand extends Command
             $draft = new SkillDraft(
                 (string) ($this->option('name') ?? $key),
                 (string) $this->option('description'),
-                $console->sectionsOf($console->bodyOf((string) $this->option('body'))),
+                $console->sectionsOf((string) $this->option('body')),
                 $console->conditionOf($this->conditionsOption(), $this->audience()),
             );
 

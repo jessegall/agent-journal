@@ -7,15 +7,11 @@ namespace Domain\Memory;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
-use App\Bus\Contracts\CommandProvider;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\Searchable;
-use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
-use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
-use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Mcp\Resources\MemoryResource;
@@ -27,7 +23,6 @@ use Domain\Memory\Values\MemoryCard;
 use Domain\Memory\Values\MemoryPage;
 
 final class MemoryDomain extends Domain implements
-    CommandProvider,
     McpToolProvider,
     PolicyProvider,
     SkillProvider
@@ -61,15 +56,6 @@ final class MemoryDomain extends Domain implements
                 MemoryPolicy::class,
                 [AccessType::Read, AccessType::Create, AccessType::Edit],
             ),
-        ];
-    }
-
-    public function commands(): array
-    {
-        return [
-            SaveMemoryCommand::class,
-            EditMemoryCommand::class,
-            RemoveMemoryCommand::class,
         ];
     }
 

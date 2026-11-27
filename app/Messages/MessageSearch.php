@@ -57,13 +57,7 @@ final readonly class MessageSearch implements MessageSearchContract
     private static function admitted(AdmittedConstraints $constraints, SearchReader $reader): ReadBuilder
     {
         $actor = ActorReference::fromStored($reader->actor->actorType(), $reader->actor->actorId());
-        $query = Message::query()->inInboxesOf($actor);
-
-        if ($constraints->recordIds->isRestricted()) {
-            $query->whereKey($constraints->recordIds->names());
-        }
-
-        return $query;
+        return $constraints->narrow(Message::query()->inInboxesOf($actor));
     }
 
     private static function hitOf(Message $message, ScoreTier $tier): SearchResult

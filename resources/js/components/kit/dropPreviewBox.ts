@@ -23,8 +23,7 @@ export function dropPreviewBox(area: Box, target: DropTarget, scope: 'pane' | 'h
         return { ...area, height: STRIP_HEIGHT };
     }
 
-    const isContent = kind !== 'window';
-    const share = scope === 'pane' ? PANE_SPLIT_SHARE : isContent ? HOME_EDGE_SHARE_FOR_CONTENT : HOME_EDGE_SHARE;
+    const share = edgeShare(scope, kind);
     const width = area.width * share;
     const height = area.height * share;
 
@@ -34,4 +33,13 @@ export function dropPreviewBox(area: Box, target: DropTarget, scope: 'pane' | 'h
         up: { ...area, height },
         down: { ...area, y: area.y + area.height - height, height },
     }[target];
+}
+
+/** How much of the area a side drop takes: half of a pane, or Home's share for what is dropped. */
+function edgeShare(scope: 'pane' | 'home', kind: DockedKind): number {
+    if (scope === 'pane') {
+        return PANE_SPLIT_SHARE;
+    }
+
+    return kind === 'window' ? HOME_EDGE_SHARE : HOME_EDGE_SHARE_FOR_CONTENT;
 }

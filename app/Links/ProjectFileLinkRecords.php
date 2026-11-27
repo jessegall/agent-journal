@@ -45,15 +45,7 @@ final readonly class ProjectFileLinkRecords implements RecordProvider
 
     protected function cardOf(Model $record): RecordCard
     {
-        return RecordCard::from([
-            'type' => ProjectFile::linkType(),
-            'id' => $record->id,
-            'number' => (string) $record->number,
-            'label' => "file {$record->number}",
-            'title' => $record->path,
-            'abstract' => null,
-            'route' => null,
-        ]);
+        return $this->numberedCard($record, "file {$record->number}", $record->path, null);
     }
 
     protected function mayChange(Model $record): bool

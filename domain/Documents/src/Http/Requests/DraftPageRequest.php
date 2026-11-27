@@ -52,15 +52,18 @@ final class DraftPageRequest extends FormRequest
         ];
     }
 
-    public function documentNumber(): int
+    /**
+     * The document's number as the text a command takes a document reference in.
+     */
+    public function documentReference(): string
     {
-        return $this->routeNumber('document');
+        return (string) $this->routeNumber('document');
     }
 
     public function target(): DraftTarget
     {
         return new DraftTarget(
-            (string) $this->documentNumber(),
+            $this->documentReference(),
             $this->string('token')->toString(),
             $this->integer('version'),
         );

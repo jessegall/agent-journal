@@ -8,13 +8,10 @@ use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Drivers\Contracts\NativePartProvider;
 use App\Agents\Enums\AccessType;
-use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasLinkRecords;
 use App\Records\Contracts\LinkRecordProvider;
 use App\Records\Contracts\ShareRecordContributor;
 use App\Records\Values\ShareRecordDefinition;
-use App\Support\Codebase;
-use App\Support\Command;
 use App\Support\Domain;
 use App\Support\Exports;
 use Domain\Chat\ChatDomain;
@@ -42,7 +39,6 @@ use Domain\Comments\Support\PublicComment;
 use Domain\Comments\Support\PublicCommentPage;
 
 final class CommentsDomain extends Domain implements
-    CommandProvider,
     LinkRecordProvider,
     NativePartProvider,
     PolicyProvider,
@@ -98,11 +94,6 @@ final class CommentsDomain extends Domain implements
     public function nativeParts(): array
     {
         return ['RecordComments.vue'];
-    }
-
-    public function commands(): array
-    {
-        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function linkRecords(): array
