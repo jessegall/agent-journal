@@ -25,8 +25,6 @@ final readonly class StateBuilder
      */
     public function build(RegisteredStateType $type, array $values): AgentState
     {
-        $result = $this->pipelines->run(BuildStatePipeline::class, new SavedState($type, $values), BuiltState::class);
-
-        return $result->state;
+        return $this->pipelines->run(BuildStatePipeline::class, new SavedState($type, $values), AgentState::class);
     }
 }

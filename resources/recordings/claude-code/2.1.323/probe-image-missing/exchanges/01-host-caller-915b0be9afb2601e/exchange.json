@@ -1,0 +1,300 @@
+{
+    "opening": {
+        "wire": "host",
+        "exchange": "caller-915b0be9afb2601e",
+        "mode": "calls",
+        "argv": [],
+        "environment": {},
+        "inherited": [],
+        "folder": null,
+        "columns": 0,
+        "rows": 0,
+        "image": null,
+        "openedAt": 1795790222654621
+    },
+    "events": [
+        {
+            "type": "answered",
+            "at": 1795790222654598,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbnMiOlt7ImlkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEiLCJzZXF1ZW5jZSI6MSwidHlwZSI6Im9wZW5fY29udGFpbmVyIiwicHJvY2Vzc19pZCI6IjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAyIiwicGF5bG9hZCI6IntcInR5cGVcIjpcInBpcGVcIixcInJlc3RhcnRcIjpcIm5ldmVyXCIsXCJhcmd2XCI6W1wiY2xhdWRlXCIsXCItLXZlcnNpb25cIl0sXCJyZXN0YXJ0X2FyZ3ZcIjpbXSxcInJlc3RhcnRfd2hlbl9maWxlXCI6bnVsbCxcImVudmlyb25tZW50XCI6W10sXCJmb2xkZXJcIjpcIlwvd29ya3NwYWNlXCIsXCJjb250YWluZXJcIjp7XCJpbWFnZVwiOlwic2hhMjU2OjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDRcIixcInVzZXJcIjpcIjEwMDAxOjEwMDAxXCIsXCJ3b3JrZGlyXCI6XCJcL3dvcmtzcGFjZVwiLFwiaXNSZWFkT25seVJvb3RcIjp0cnVlLFwiY2FwYWJpbGl0aWVzXCI6W10sXCJibG9ja3NOZXdQcml2aWxlZ2VzXCI6dHJ1ZSxcImlzUHJpdmlsZWdlZFwiOmZhbHNlLFwibmV0d29ya1wiOlwibm9uZVwiLFwibW91bnRzXCI6W10sXCJwdWJsaXNoZWRQb3J0c1wiOltdLFwiYnVkZ2V0c1wiOntcImNwdUNvcmVzXCI6MixcIm1lbW9yeUJ5dGVzXCI6NDI5NDk2NzI5NixcIm1lbW9yeVN3YXBCeXRlc1wiOjQyOTQ5NjcyOTYsXCJwcm9jZXNzZXNcIjoyNTYsXCJvcGVuRmlsZXNcIjoxMDI0LFwidG1wQnl0ZXNcIjoyNjg0MzU0NTYsXCJob21lQnl0ZXNcIjo2NzEwODg2NCxcIndvcmtzcGFjZUJ5dGVzXCI6MTA3Mzc0MTgyNDB9LFwic2VjdXJpdHlPcHRpb25zXCI6e1wic2VjY29tcFwiOlwiXC9ldGNcL2pvdXJuYWxcL3NlY3VyaXR5XC9zZWNjb21wLWFnZW50Lmpzb25cIixcImFwcGFybW9yXCI6XCJcIn0sXCJpc0F0dGFjaGFibGVcIjpmYWxzZSxcIndvcmtzcGFjZVByZXBhcmF0aW9uXCI6bnVsbCxcInN0YXJ0UHJvZmlsZVwiOlwic3RhbmRhcmRcIixcImVudHJ5cG9pbnRcIjpudWxsfSxcImxhYmVsc1wiOm51bGwsXCJzaXplXCI6e1wiY29sdW1uc1wiOjEyMCxcInJvd3NcIjo0MH0sXCJmaWxlc1wiOltdLFwiZm9sZGVyc1wiOltdLFwiaW5oZXJpdFwiOltdLFwic2lkZV9zb2NrZXRzXCI6W10sXCJyZWFkX2ZpbGVzXCI6W10sXCJzaGllbGRfcnVsZXNcIjpbXSxcImZlbmNlXCI6XCIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM1wiLFwia2VwdF9maWxlc1wiOltdLFwicmF3X2J5dGVzXCI6ZmFsc2V9IiwiZXhwaXJlc19hdCI6IjIwMjYtMTEtMjdUMTQ6Mzc6MzJaIiwic2lnbmF0dXJlIjoiYzllMGRjMzM1YmIwN2Y5ZTVmNDRkOWVhNGIyMmQ5YzJmNmUzY2NiOWFmZDdjOWRjYWEzMzVjZmU1MjM5NjJlMyJ9XSwiaWRsZV93aW5kb3dfc2Vjb25kcyI6NjAwLCJub3ciOiIyMDI2LTExLTI3VDE0OjM3OjAyLjY0OVoifQ==",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790222661740,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "e30=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790222670515,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000001",
+                "query": [],
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbl9pZCI6IjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwic3RhdHVzIjoicmVmdXNlZCIsInJlZnVzYWwiOiJ1bnNhZmUiLCJyZWFzb24iOiJ0aGUgYWdlbnQgZGFlbW9uIGRpZCBub3QgY3JlYXRlIHRoZSBjb250YWluZXI6IEVycm9yIHJlc3BvbnNlIGZyb20gZGFlbW9uOiBObyBzdWNoIGltYWdlOiBzaGEyNTY6MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNCIsImZhY3RzIjp7ImdlbmVyYXRpb24iOjAsImlkZW50aXR5IjoiIn19",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795790222691337,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000001",
+                "query": [],
+                "status": 204,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795790222698101,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbnMiOlt7ImlkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDYiLCJzZXF1ZW5jZSI6MCwidHlwZSI6InJlbW92ZSIsInByb2Nlc3NfaWQiOiIiLCJwYXlsb2FkIjoie1wiY29udGFpbmVyXCI6XCJqb3VybmFsLXByb2Nlc3MtMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDJcIn0iLCJleHBpcmVzX2F0IjoiMjAyNi0xMS0yN1QxNDozNzozMloiLCJzaWduYXR1cmUiOiI2N2U0MTA1MTQ3ZjQ5YzhiZDRiYjk2NWVhNzFlNWQ5NjE2MzMzZGYxYjkwOGViNGU5OGQzOWI1YzhmNTU0YWIyIn1dLCJpZGxlX3dpbmRvd19zZWNvbmRzIjo2MDAsIm5vdyI6IjIwMjYtMTEtMjdUMTQ6Mzc6MDIuNjk0WiJ9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790222702482,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000006",
+                "query": [],
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbl9pZCI6IjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA2Iiwic3RhdHVzIjoiZG9uZSJ9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790222702551,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "e30=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795790222708677,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000006",
+                "query": [],
+                "status": 204,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795790223072075,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbnMiOlt7ImlkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDgiLCJzZXF1ZW5jZSI6MCwidHlwZSI6InJlbW92ZV9zZXNzaW9uIiwicHJvY2Vzc19pZCI6IiIsInBheWxvYWQiOiJ7XCJuZXR3b3JrXCI6XCJsb2NhbC0wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM1wiLFwic2Vzc2lvblwiOlwiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDNcIn0iLCJleHBpcmVzX2F0IjoiMjAyNi0xMS0yN1QxNDozNzozM1oiLCJzaWduYXR1cmUiOiI2YWQyMzBhNGU1MjBiZDNlMDhjOGUyZjIxMGZmMTM5Njc4OWE5OWQwNGZkMDBiYWIwMjhmYTUyZTM2NTllMDc4In1dLCJpZGxlX3dpbmRvd19zZWNvbmRzIjo2MDAsIm5vdyI6IjIwMjYtMTEtMjdUMTQ6Mzc6MDMuMDY3WiJ9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790223076194,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "e30=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790223077677,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000008",
+                "query": [],
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbl9pZCI6IjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA4Iiwic3RhdHVzIjoicmVmdXNlZCIsInJlZnVzYWwiOiJ1bnNhZmUiLCJyZWFzb24iOiJyZW1vdmluZyB0aGUgc2Vzc2lvbiBmaWxlcyBmYWlsZWQ6IEVycm9yIHJlc3BvbnNlIGZyb20gZGFlbW9uOiBObyBzdWNoIGltYWdlOiBzaGEyNTY6MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNDogIn0=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795790223084472,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000008",
+                "query": [],
+                "status": 204,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        }
+    ],
+    "exit_code": null
+}

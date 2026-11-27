@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Pipes\StateLoading;
 
 use App\Bus\Contracts\Pipe;
+use App\Stacks\AgentState;
 use App\Stacks\Exceptions\StateValuesRefused;
 use App\Stacks\StateLoading\StateValues;
-use App\Support\StateLoading\BuiltState;
 use App\Support\StateLoading\DraftState;
 use TypeError;
 
@@ -19,7 +19,7 @@ final readonly class WriteStateValues implements Pipe
     /**
      * @throws StateValuesRefused when a value is not of the property's type
      */
-    public function handle(DraftState $draft): BuiltState
+    public function handle(DraftState $draft): AgentState
     {
         foreach (StateValues::dataProperties($draft->type->stateClass) as $property) {
             if (! array_key_exists($property->name(), $draft->propertyValues)) {
@@ -35,6 +35,6 @@ final readonly class WriteStateValues implements Pipe
             }
         }
 
-        return new BuiltState($draft->state);
+        return $draft->state;
     }
 }

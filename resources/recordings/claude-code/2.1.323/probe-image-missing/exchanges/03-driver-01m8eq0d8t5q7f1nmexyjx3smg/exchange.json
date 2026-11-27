@@ -1,0 +1,20 @@
+{
+    "opening": {
+        "wire": "driver",
+        "exchange": "01m8eq0d8t5q7f1nmexyjx3smg",
+        "mode": "process",
+        "argv": [
+            "claude",
+            "--version"
+        ],
+        "environment": {},
+        "inherited": [],
+        "folder": "/workspace",
+        "columns": 0,
+        "rows": 0,
+        "image": "sha256:b9e657f52de91aa6aacb17668a1784ef04033386169ad13bb094221e1ba6f257",
+        "openedAt": 1795790222654598
+    },
+    "events": [],
+    "exit_code": null
+}

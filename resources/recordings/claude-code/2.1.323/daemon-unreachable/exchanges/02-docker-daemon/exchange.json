@@ -1,0 +1,262 @@
+{
+    "opening": {
+        "wire": "docker",
+        "exchange": "daemon",
+        "mode": "calls",
+        "argv": [],
+        "environment": {},
+        "inherited": [],
+        "folder": "",
+        "columns": 0,
+        "rows": 0,
+        "image": "",
+        "openedAt": 1795790214128367
+    },
+    "events": [
+        {
+            "type": "asked",
+            "at": 1795790214128367,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "HEAD",
+                "path": "/_ping",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214129054,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "GET",
+                "path": "/_ping",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214129181,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "GET",
+                "path": "/v1.57/networks/none",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214129893,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "HEAD",
+                "path": "/_ping",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214130063,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "GET",
+                "path": "/_ping",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214130180,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/v1.57/networks/create",
+                "query": [],
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJOYW1lIjoibm9uZSIsIkRyaXZlciI6IiIsIlNjb3BlIjoiIiwiSVBBTSI6bnVsbCwiSW50ZXJuYWwiOmZhbHNlLCJBdHRhY2hhYmxlIjpmYWxzZSwiSW5ncmVzcyI6ZmFsc2UsIkNvbmZpZ09ubHkiOmZhbHNlLCJDb25maWdGcm9tIjpudWxsLCJPcHRpb25zIjpudWxsLCJMYWJlbHMiOnsiam91cm5hbC5pbnN0YWxsYXRpb24iOiIiLCJqb3VybmFsLnNlc3Npb24iOiIifX0=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214193246,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "HEAD",
+                "path": "/_ping",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214193477,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "GET",
+                "path": "/_ping",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214193609,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/v1.57/containers/journal-process-00000000000000000000000002/stop",
+                "query": {
+                    "t": "10"
+                },
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214585186,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "HEAD",
+                "path": "/_ping",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214585460,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "GET",
+                "path": "/_ping",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795790214585628,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "DELETE",
+                "path": "/v1.57/networks/local-00000000000000000000000003",
+                "query": [],
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        }
+    ],
+    "exit_code": null
+}
