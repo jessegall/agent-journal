@@ -16,7 +16,7 @@ use App\Hosts\Protocol\Payloads\HostContainerVolumePayload;
 
 /**
  * Which mounts a helper container may have: in the local arrangement exactly one folder of this machine at
- * /workspace; contained, one to four mounts of the agent daemon on their own folders, volumes of this installation
+ * /workspace; contained, mounts of the agent daemon each on a folder of its own, volumes of this installation
  * and folders under /srv/journal/, an account folder only the session's own.
  */
 final readonly class MountRules
@@ -32,8 +32,6 @@ final readonly class MountRules
      * Where each process's plan files are written on the agent daemon, one folder to a session.
      */
     public const string SESSIONS_ROOT = self::DATA_FOLDER.'/sessions';
-
-    private const int MOST_CONTAINED_MOUNTS = 5;
 
     /**
      * Where a contained session finds its account's own folder.
@@ -237,8 +235,8 @@ final readonly class MountRules
             return;
         }
 
-        if ($mounts === [] || count($mounts) > self::MOST_CONTAINED_MOUNTS) {
-            throw ManifestRefused::because('a contained helper has one to four mounts');
+        if ($mounts === []) {
+            throw ManifestRefused::because('a contained helper mounts at least its workspace');
         }
 
         $targets = array_map(static fn (ManifestMount $mount) => $mount->target, $mounts);
