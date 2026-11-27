@@ -160,8 +160,19 @@ func (outputs *Outputs) Open(processID string, plan OpenPlan) error {
 	return nil
 }
 
-// Printed takes what the process printed.
+// Printed takes what the process printed on its standard output, or on its terminal.
 func (outputs *Outputs) Printed(processID string, printed []byte) {
+	outputs.PrintedOn(processID, StandardOutput, printed)
+}
+
+// The names of the streams a process prints on, as each chunk carries them; the journal chooses which it reads.
+const (
+	StandardOutput = "stdout"
+	StandardError  = "stderr"
+)
+
+// PrintedOn takes what the process printed on the named stream.
+func (outputs *Outputs) PrintedOn(processID string, stream string, printed []byte) {
 	outputs.mutex.Lock()
 	screen, isTerminal := outputs.screens[processID]
 	spool := outputs.spools[processID]
@@ -180,12 +191,12 @@ func (outputs *Outputs) Printed(processID string, printed []byte) {
 			return
 		}
 	}
-	outputs.sendChunks(processID, spool, printed)
+	outputs.sendChunks(processID, spool, stream, printed)
 }
 
 // sendChunks spools what the process printed and sends it as chunks; a process with no spool, such as a terminal
 // opened without raw bytes, sends none.
-func (outputs *Outputs) sendChunks(processID string, spool *Spool, printed []byte) {
+func (outputs *Outputs) sendChunks(processID string, spool *Spool, stream string, printed []byte) {
 	if spool == nil {
 		return
 	}
@@ -193,7 +204,7 @@ func (outputs *Outputs) sendChunks(processID string, spool *Spool, printed []byt
 	if err != nil {
 		return
 	}
-	outputs.send(processID, Output{Chunks: chunksOf("stdout", offset, printed)})
+	outputs.send(processID, Output{Chunks: chunksOf(stream, offset, printed)})
 }
 
 // ScreenOf is the process's screen, when it has a terminal.

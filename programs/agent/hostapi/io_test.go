@@ -1,8 +1,10 @@
 package hostapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"strings"
@@ -138,6 +140,30 @@ func TestAPipeReattachesAtItsSpoolOffset(t *testing.T) {
 	if err != nil || string(after) != "second" || posted.outputs[1].Chunks[0].Offset != 6 {
 		t.Fatalf("the spool does not resume at its offset: %q, %v", after, err)
 	}
+}
+
+func TestAContainersLogReachesTheJournalUnderTheNameOfEachStream(t *testing.T) {
+	posted := &postedOutputs{}
+	outputs := NewOutputs(t.TempDir(), posted.post, time.Now)
+	if err := outputs.Open("pipe", OpenPlan{Type: "pipe"}); err != nil {
+		t.Fatal(err)
+	}
+	table := &ProcessTable{outputs: outputs}
+	log := bytes.NewReader(append(framed(1, "build 1.2.3\n"), framed(2, "signed in\n")...))
+
+	table.copyLog("pipe", log, 0)
+
+	if len(posted.outputs) != 2 || posted.outputs[0].Chunks[0].Stream != "stdout" || posted.outputs[1].Chunks[0].Stream != "stderr" {
+		t.Fatalf("the journal was sent %+v", posted.outputs)
+	}
+}
+
+// framed is one piece of a container's log as Docker frames it: the stream, the size, then the bytes.
+func framed(stream byte, printed string) []byte {
+	header := make([]byte, 8)
+	header[0] = stream
+	binary.BigEndian.PutUint32(header[4:], uint32(len(printed)))
+	return append(header, printed...)
 }
 
 func TestAnOutputOverTheLimitIsSplitIntoPosts(t *testing.T) {

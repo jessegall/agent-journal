@@ -297,10 +297,7 @@ func (table *ProcessTable) followPipes(ctx context.Context, held *heldProcess) e
 	}()
 	go func() {
 		defer close(drained)
-		if _, err := io.CopyN(io.Discard, printed, counted); err != nil {
-			return
-		}
-		table.copyOutput(held.id, printed)
+		table.copyLog(held.id, printed, counted)
 	}()
 	return nil
 }
@@ -642,6 +639,28 @@ func (table *ProcessTable) copyOutput(processID string, printed io.Reader) {
 		if err != nil {
 			return
 		}
+	}
+}
+
+// copyLog hands on each piece of a container's log under the name of the stream it was printed on, past the bytes the
+// spool already counted, so a host that restarted sends nothing twice.
+func (table *ProcessTable) copyLog(processID string, log io.Reader, counted int64) {
+	for {
+		piece, err := host.NextPrinted(log)
+		if err != nil {
+			return
+		}
+		skipped := min(counted, int64(len(piece.Bytes)))
+		counted -= skipped
+		printed := piece.Bytes[skipped:]
+		if len(printed) == 0 {
+			continue
+		}
+		stream := StandardOutput
+		if piece.IsError {
+			stream = StandardError
+		}
+		table.outputs.PrintedOn(processID, stream, printed)
 	}
 }
 
