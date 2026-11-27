@@ -54,10 +54,8 @@ RUN chmod 0555 /opt/journal/bin/* /opt/journal/shell/bash
 # The program's user 10001 alone reads the sign-in; under the protected-account profile the commands the model runs go
 # through the executor's user 10002, and the init drops to 10003. The program and the executor share the workspace
 # through the group journal-work (10010), and no launcher, setting or hook lies under a path either can write.
-# The program's login shell is the shell bridge, so every command Codex or Claude Code runs for its model goes to the
-# executor's user, which cannot read the sign-in.
 RUN groupadd --gid 10001 journal \
-    && useradd --uid 10001 --gid 10001 --home-dir /home/journal --no-create-home --shell /opt/journal/shell/bash journal \
+    && useradd --uid 10001 --gid 10001 --home-dir /home/journal --no-create-home journal \
     && groupadd --gid 10002 journal-tools \
     && useradd --uid 10002 --gid 10002 --home-dir /home/journal-tools --create-home journal-tools \
     && groupadd --gid 10003 journal-init \
