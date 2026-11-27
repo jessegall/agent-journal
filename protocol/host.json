@@ -172,7 +172,7 @@
         "instruction": { "id": "string", "sequence": "uint64", "type": "string", "process_id": "string", "payload": "string", "expires_at": "time", "signature": "string" },
         "claimed_instructions": { "instructions": "list<instruction>", "idle_window_seconds": "int", "now": "time" },
         "answer": { "instruction_id": "string", "status": "status", "refusal": "refusal?", "reason": "string?", "facts": "map<any>?" },
-        "process_report": { "process_id": "string", "report": "process_report_type", "identity": "string?", "generation": "int", "exit_code": "int|null?", "signal": "string?", "evidence": "string?", "is_out_of_memory": "bool?", "last_printed": "string?" },
+        "process_report": { "process_id": "string", "report": "process_report_type", "identity": "string?", "generation": "int", "exit_code": "int|null?", "signal": "string?", "evidence": "string?", "is_out_of_memory": "bool?", "last_printed": "string?", "output_offset": "int?" },
         "output": { "frames": "list<frame>", "chunks": "list<chunk>" },
         "frame": { "rows": "list<string>", "cursor_row": "int", "cursor_column": "int", "columns": "int", "buffer": "string", "captured": "int64", "unchanged_ms": "list<int64>", "title": "string?", "is_shielded": "bool?" },
         "chunk": { "stream": "string", "offset": "int64", "bytes": "string" },

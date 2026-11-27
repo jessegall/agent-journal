@@ -35,6 +35,11 @@ final readonly class NotifyHostProcessHandler implements CommandHandler
         $report = $command->report;
         $now = $this->clock->now();
 
+        // An exit is read only once the output printed before it has arrived, as output and reports travel apart.
+        if ($report->report === HostProcessReportType::Exited && $report->outputOffset > $process->output_offset) {
+            throw HostProtocolRefused::exitBeforeItsOutput($process->id, $report->outputOffset, $process->output_offset);
+        }
+
         match ($report->report) {
             HostProcessReportType::Running => $process->run($this->identityOf($report), $report->generation, $now),
             HostProcessReportType::Restarted => $process->restart($this->identityOf($report)),

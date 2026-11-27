@@ -55,6 +55,14 @@ final class HostProtocolRefused extends RuntimeException implements CodedRefusal
         return new self("The host reported process {$processId} ended without saying how.");
     }
 
+    /**
+     * The exit came in before the output the process printed ahead of it; the host sends it again, after that output.
+     */
+    public static function exitBeforeItsOutput(string $processId, int $sent, int $arrived): self
+    {
+        return new self("Process {$processId} ended after printing {$sent} bytes, of which {$arrived} have arrived.");
+    }
+
     public static function notRunning(string $processId): self
     {
         return new self("Process {$processId} no longer runs.");

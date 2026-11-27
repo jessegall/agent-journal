@@ -43,5 +43,8 @@ final class HostProcessReportPayload extends Data
         #[MapName('last_printed')]
         #[OptionalField]
         public readonly string|null $lastPrinted = null,
+        #[MapName('output_offset')]
+        #[OptionalField]
+        public readonly int $outputOffset = 0,
     ) {}
 }

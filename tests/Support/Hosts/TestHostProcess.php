@@ -36,9 +36,10 @@ final class TestHostProcess
     public function __construct(private readonly TestJournal $journal, private readonly string $name) {}
 
     /**
-     * The process's host reports it as the report type says, with the exit code given when it exited.
+     * The process's host reports it as the report type says, with the exit code given when it exited and how far its
+     * output had come when it ended.
      */
-    public function report(HostProcessReportType $report, int|null $exitCode = null): self
+    public function report(HostProcessReportType $report, int|null $exitCode = null, int $outputOffset = 0): self
     {
         $process = $this->journal->hostProcessCalled($this->name);
         $this->journal->asSystem(new NotifyHostProcessCommand(
@@ -51,6 +52,7 @@ final class TestHostProcess
                 'generation' => 0,
                 'exit_code' => $exitCode,
                 'evidence' => $this->evidenceOf($report, $exitCode),
+                'output_offset' => $outputOffset,
             ]),
         ));
 
