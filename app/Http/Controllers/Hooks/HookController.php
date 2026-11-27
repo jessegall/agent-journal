@@ -65,7 +65,7 @@ final readonly class HookController
                     [],
                 );
 
-                return new JsonResponse(HookResponse::fromDriverReply($refusal)->toArray());
+                return new JsonResponse(HookResponse::fromDriverReply($refusal));
             }
 
             $sessionId = $access->target()->sessionId;
@@ -96,11 +96,11 @@ final readonly class HookController
             return $this->failure($unavailable->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
-        return new JsonResponse(HookResponse::fromDriverReply($reply)->toArray());
+        return new JsonResponse(HookResponse::fromDriverReply($reply));
     }
 
     private function failure(string $message, int $status): JsonResponse
     {
-        return new JsonResponse(HookFailure::from(['message' => $message])->toArray(), $status);
+        return new JsonResponse(HookFailure::from(['message' => $message]), $status);
     }
 }

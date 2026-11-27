@@ -44,6 +44,6 @@ final class DockListTool extends JournalReadTool
         $limit = $arguments->positiveIntegerOr('limit', $largest, $largest);
         $listed = $this->listing->of($inbox, $limit);
 
-        return ToolResult::ok($listed->toArray());
+        return ToolResult::ok($listed);
     }
 }

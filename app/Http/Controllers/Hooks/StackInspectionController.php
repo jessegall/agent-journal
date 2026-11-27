@@ -17,6 +17,6 @@ final readonly class StackInspectionController
 
     public function __invoke(string $agentId, string $sessionId): JsonResponse
     {
-        return new JsonResponse($this->inspections->forTarget(new StackTarget($agentId, $sessionId))->toArray());
+        return new JsonResponse($this->inspections->forTarget(new StackTarget($agentId, $sessionId)));
     }
 }

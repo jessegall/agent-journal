@@ -59,6 +59,6 @@ final class OutputsReadTool extends JournalWriteTool
      */
     protected function present(mixed $reply): ToolResult
     {
-        return ToolResult::ok($reply->toArray());
+        return ToolResult::ok($reply);
     }
 }

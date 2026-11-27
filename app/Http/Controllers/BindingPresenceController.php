@@ -26,6 +26,6 @@ final readonly class BindingPresenceController
     ): JsonResponse {
         $receipt = $commands->run(new RecordBindingPresenceCommand($host->hostId, $binding, $report->report()));
 
-        return new JsonResponse($receipt->toArray());
+        return new JsonResponse($receipt);
     }
 }

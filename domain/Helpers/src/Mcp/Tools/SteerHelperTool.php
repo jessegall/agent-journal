@@ -39,6 +39,6 @@ final class SteerHelperTool extends JournalWriteTool
 
     protected function present(mixed $commandResult): ToolResult
     {
-        return ToolResult::ok(HelperSteerData::from($commandResult)->toArray());
+        return ToolResult::ok(HelperSteerData::from($commandResult));
     }
 }

@@ -58,7 +58,7 @@ final class SendHelperTool extends JournalWriteTool
 
     protected function present(mixed $commandResult): ToolResult
     {
-        return ToolResult::ok(HelperReceiptData::from($commandResult)->toArray());
+        return ToolResult::ok(HelperReceiptData::from($commandResult));
     }
 
     /**

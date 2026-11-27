@@ -31,6 +31,6 @@ final class SignedApiRefusal
 
         $headers = $failure instanceof HttpExceptionInterface ? $failure->getHeaders() : [];
 
-        return new JsonResponse($refusal->toArray(), $refusal->code->status(), $headers);
+        return new JsonResponse($refusal, $refusal->code->status(), $headers);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Api\Processes\ProposalReceived;
 use App\Bus\Attributes\Dispatches;
 use App\CommandRules\Commands\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
 use App\CommandRules\Values\ProposalReceipt;
@@ -52,6 +53,6 @@ final class CommandTypeProposeTool extends JournalWriteTool
      */
     protected function present(mixed $reply): ToolResult
     {
-        return ToolResult::ok($reply->toArray());
+        return ToolResult::ok(ProposalReceived::from($reply->toArray()));
     }
 }

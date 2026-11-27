@@ -49,6 +49,6 @@ final class DockRemoveTool extends JournalWriteTool
      */
     protected function present(mixed $commandReply): ToolResult
     {
-        return ToolResult::ok(DockAnswerData::fromDockResult($commandReply)->toArray());
+        return ToolResult::ok(DockAnswerData::fromDockResult($commandReply));
     }
 }

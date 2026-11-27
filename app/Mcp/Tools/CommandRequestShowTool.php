@@ -35,6 +35,6 @@ final class CommandRequestShowTool extends JournalReadTool
 
     protected function read(ToolArguments $arguments): ToolResult
     {
-        return ToolResult::ok($this->requests->show($arguments->ulid('request'))->toArray(), []);
+        return ToolResult::ok($this->requests->show($arguments->ulid('request')));
     }
 }

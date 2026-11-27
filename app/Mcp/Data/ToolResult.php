@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Data;
 
+use JsonSerializable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
@@ -26,14 +27,16 @@ final class ToolResult extends Data
     ) {}
 
     /**
-     * A successful answer.
+     * A successful answer: its fields, or the Data or value whose JSON they are, turned into the payload here.
      *
-     * @param  array<string, mixed>  $responseFields
+     * @param  array<string, mixed>|JsonSerializable  $responseFields
      * @param  list<NextAction>  $nextActions
      */
-    public static function ok(array $responseFields, array $nextActions = []): self
+    public static function ok(array|JsonSerializable $responseFields, array $nextActions = []): self
     {
-        return self::from(['status' => 'ok', 'payload' => $responseFields, 'nextActions' => $nextActions]);
+        $payload = $responseFields instanceof JsonSerializable ? $responseFields->jsonSerialize() : $responseFields;
+
+        return self::from(['status' => 'ok', 'payload' => $payload, 'nextActions' => $nextActions]);
     }
 
     /**

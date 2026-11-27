@@ -86,7 +86,7 @@ final readonly class TerminalAnswers
             return $this->uncached(new Response(status: 204));
         }
 
-        return $this->uncached(new JsonResponse($data->toArray()));
+        return $this->uncached(new JsonResponse($data));
     }
 
     private function uncached(JsonResponse|Response $response): JsonResponse|Response

@@ -32,6 +32,7 @@ use App\Values\TextRange;
 use Carbon\CarbonImmutable;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
+use Domain\Comments\CommentsDomain;
 use Domain\Comments\Contracts\CommentResolver;
 use Domain\Comments\Data\RecordCommentView;
 use Domain\Comments\Data\TextCommentView;
@@ -39,11 +40,13 @@ use Domain\Comments\Exceptions\TargetNotCommentable;
 use Domain\Comments\Models\Comment;
 use Domain\Comments\Models\CommentAnchor;
 use Domain\Comments\Tests\TestCase;
+use Domain\Rules\RulesDomain;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsNotesModule;
 
@@ -77,6 +80,14 @@ final class PostTextCommentTest extends TestCase
         'hosts',
         'hook_calls',
     ];
+
+    /**
+     * The Notes test module this test installs needs the Rules domain booted beside Comments.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(CommentsDomain::class, RulesDomain::class);
+    }
 
     private EnrolledHost $host;
 

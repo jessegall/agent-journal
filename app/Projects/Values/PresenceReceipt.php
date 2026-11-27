@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Projects\Values;
 
+use JsonSerializable;
+
 /**
  * What the journal holds of a binding's presence: the binding, the boot generation it holds, the folder's setup
  * generation it acknowledged, the server's time and when the presence expires, in ISO 8601, the binding's authority
  * generation its relay renews runtime leases under, its effective readiness now and its last confirmed contact.
  */
-final readonly class PresenceReceipt
+final readonly class PresenceReceipt implements JsonSerializable
 {
     public function __construct(
         public string $bindingId,
@@ -27,7 +29,7 @@ final readonly class PresenceReceipt
      *
      * @return array<string, int|string|null>
      */
-    public function toArray(): array
+    public function jsonSerialize(): array
     {
         return [
             'bindingId' => $this->bindingId,
