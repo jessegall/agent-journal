@@ -17,9 +17,9 @@ use App\Agents\Values\JournalServer;
 use App\Agents\Values\PlanFile;
 use App\Hosts\Exceptions\ProgramLineRefused;
 use App\Hosts\ProgramLines;
+use App\Hosts\Protocol\Data\HostContainerLabelsData;
 use App\Hosts\Protocol\HostOrderType;
 use App\Hosts\Protocol\HostProcessType;
-use App\Hosts\Values\ContainerLabels;
 use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\Values\SessionContainer;
 use App\Support\MountRules;
@@ -106,7 +106,7 @@ final class DriverPlansTest extends TestCase
     public function test_a_contained_start_opens_in_its_container_with_nothing_of_the_host(): void
     {
         $manifest = ContainerManifest::probe('registry.example/agent@sha256:'.str_repeat('a', 64), SecurityOptions::none());
-        $labels = new ContainerLabels('acme', 's1', '01a1');
+        $labels = HostContainerLabelsData::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']);
         $server = new JournalServer('/opt/journal/bin/journal-mcp');
         $account = new DriverAccount($this->recipe(DefaultDrivers::CLAUDE_CODE, TransportProfileType::Mcp), 'start-1', $server);
         $start = new DriverStart(
@@ -164,7 +164,10 @@ final class DriverPlansTest extends TestCase
             hookCommand: '/opt/journal/bin/journal-hook',
             account: $account,
             executablePlace: ExecutablePlace::Image,
-            container: new SessionContainer($manifest, new ContainerLabels('acme', 's1', '01a1')),
+            container: new SessionContainer(
+                $manifest,
+                HostContainerLabelsData::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']),
+            ),
         );
         $profile = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE);
 
@@ -278,7 +281,7 @@ final class DriverPlansTest extends TestCase
             ];
         }
 
-        $planned = ['purpose' => $built->purpose->value, ...$built->payload()];
+        $planned = ['purpose' => $built->purpose->value, ...$built->payload()->toArray()];
 
         return json_decode(json_encode($planned, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
     }

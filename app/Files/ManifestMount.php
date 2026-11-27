@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Files;
 
+use App\Hosts\Protocol\Data\HostContainerMountData;
 use App\Hosts\Protocol\HostMountType;
 
 /**
- * One folder a helper container sees: what it comes from, where it appears and whether it may be written.
+ * One folder a helper container sees: what it comes from (nothing for the whole plan-file folder), where it appears
+ * and whether it may be written.
  */
 final readonly class ManifestMount
 {
     private function __construct(
         public HostMountType $type,
-        public string $source,
+        public string|null $source,
         public string $target,
         public bool $isWritable,
         // A volume the host must find, never make: the history of a conversation being resumed.
@@ -21,6 +23,11 @@ final readonly class ManifestMount
         // A writer's own clone: the host clones the source into the session's checkout volume and mounts that.
         public bool $isCheckout = false,
     ) {}
+
+    public function protocolData(): HostContainerMountData
+    {
+        return HostContainerMountData::from(get_object_vars($this));
+    }
 
     /**
      * A folder of the machine the host runs on, the one mount of a local helper.
@@ -76,6 +83,6 @@ final readonly class ManifestMount
      */
     public static function planFiles(string $target): self
     {
-        return new self(HostMountType::PlanFile, '', $target, false);
+        return new self(HostMountType::PlanFile, null, $target, false);
     }
 }

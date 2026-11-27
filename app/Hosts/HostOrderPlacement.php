@@ -7,7 +7,6 @@ namespace App\Hosts;
 use App\Exceptions\HostProtocolRefused;
 use App\Exceptions\WorkerFenced;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
-use App\Hosts\Protocol\Data\HostOpenPlanData;
 use App\Hosts\Protocol\HostOrderType;
 use App\Hosts\Protocol\HostProtocol;
 use App\Hosts\Values\HostOrderBody;
@@ -76,9 +75,11 @@ final readonly class HostOrderPlacement
      */
     public function forOpening(HostProcess $process, HostProcessPlan $plan, HostOrderSource $source): HostOrder
     {
-        $this->assertReadable($plan);
         $host = $this->orderingHost($process->host_id);
-        $order = $this->place($host, $process, HostOrderBody::from($plan->orderType(), $plan->payload(), $source));
+        $payload = $plan->payload();
+        $this->reader->assertValid($payload, 'open plan');
+        $this->assertContainedRules($plan);
+        $order = $this->place($host, $process, HostOrderBody::from($plan->orderType(), $payload->toArray(), $source));
         $process->holdOpenOrder($order->id);
 
         return $order;
@@ -113,15 +114,12 @@ final readonly class HostOrderPlacement
     }
 
     /**
-     * The plan as the host reads it: every field one host protocol 1 declares, and a contained plan naming nothing of
-     * the host and carrying its start grant whole.
+     * A contained plan names nothing of the host and carries its start grant whole.
      *
      * @throws HostProtocolRefused
      */
-    private function assertReadable(HostProcessPlan $plan): void
+    private function assertContainedRules(HostProcessPlan $plan): void
     {
-        $this->reader->read(json_encode($plan->payload(), JSON_THROW_ON_ERROR), HostOpenPlanData::class, 'open plan');
-
         if ($plan->container === null) {
             return;
         }

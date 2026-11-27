@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents;
 
 use App\Agents\Exceptions\ManifestRefused;
+use App\Hosts\Protocol\Data\HostSecurityOptionsData;
 
 /**
  * The seccomp and AppArmor profiles a helper container runs under, each a profile name or a path in the profiles
@@ -18,6 +19,11 @@ final readonly class SecurityOptions
         public string $seccomp,
         public string $apparmor,
     ) {}
+
+    public function protocolData(): HostSecurityOptionsData
+    {
+        return HostSecurityOptionsData::from(['seccomp' => $this->seccomp, 'apparmor' => $this->apparmor]);
+    }
 
     public static function none(): self
     {

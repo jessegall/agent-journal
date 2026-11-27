@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use JsonSerializable;
+use App\Hosts\Protocol\Data\HostPlanFileData;
 
 /**
  * One file a process plan hands its process, such as a driver's settings: a plain name in the process's own files
  * folder, and its whole content.
  */
-final readonly class PlanFile implements JsonSerializable
+final readonly class PlanFile
 {
     public function __construct(
         public string $name,
@@ -29,14 +29,14 @@ final readonly class PlanFile implements JsonSerializable
     }
 
     /**
-     * @return array{name: string, content: string, template: bool}
+     * The file as a plan carries it.
      */
-    public function jsonSerialize(): array
+    public function protocolData(): HostPlanFileData
     {
-        return [
+        return HostPlanFileData::from([
             'name' => $this->name,
             'content' => $this->content,
             'template' => $this->isTemplate,
-        ];
+        ]);
     }
 }

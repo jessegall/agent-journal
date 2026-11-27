@@ -26,8 +26,8 @@ use App\Agents\Drivers\Setup\SignInSetup;
 use App\Agents\Drivers\Setup\VersionLine;
 use App\Agents\Drivers\Setup\VersionProbe;
 use App\Agents\Exceptions\DriverSetupInvalid;
-use App\Agents\Values\RestartFile;
 use App\Exceptions\PlanAdditionClash;
+use App\Hosts\Protocol\Data\HostRestartFileData;
 use App\Values\PlanAddition;
 use Tests\TestCase;
 
@@ -64,7 +64,7 @@ final class DriverSetupTest extends TestCase
 
     public function test_a_plan_takes_one_restart_file(): void
     {
-        $restart = new PlanAddition(restartWhenFile: new RestartFile('/home', '*.jsonl'));
+        $restart = new PlanAddition(restartWhenFile: HostRestartFileData::from(['folder' => '/home', 'glob' => '*.jsonl']));
 
         $joined = $restart->with(new PlanAddition(sideSockets: ['status']));
 

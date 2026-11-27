@@ -254,7 +254,7 @@ final readonly class MountRules
                 && strpbrk($mount->source, "/,\n") === false,
             HostMountType::DaemonBind => $this->isDaemonFolder($mount->source),
             HostMountType::PlanFile => ! $mount->isWritable
-                && ($mount->source === '' || $this->isPlainFileName($mount->source)),
+                && ($mount->source === null || $this->isPlainFileName($mount->source)),
             HostMountType::Bind => false,
         };
 

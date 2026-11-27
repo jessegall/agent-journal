@@ -142,17 +142,17 @@ final class ContainerManifestTest extends TestCase
             null,
             SecurityOptions::none(),
         );
-        $wire = json_decode((string) json_encode($manifest), true);
+        $wire = $manifest->protocolData()->toArray();
         $workspace = $wire['mounts'][0];
 
         $this->assertSame(
             [
                 'type' => 'volume',
-                'source' => 'acme-workspace-main',
                 'target' => '/workspace',
                 'isWritable' => true,
                 'mustExist' => false,
                 'isCheckout' => true,
+                'source' => 'acme-workspace-main',
             ],
             $workspace,
         );
@@ -285,33 +285,33 @@ final class ContainerManifestTest extends TestCase
             'journal-agent',
             '/etc/journal/profiles',
         ));
-        $wire = json_decode((string) json_encode($manifest), true);
+        $wire = $manifest->protocolData()->toArray();
 
         $this->assertSame(
             [
                 [
                     'type' => 'volume',
-                    'source' => 'acme-workspace-s1',
                     'target' => '/workspace',
                     'isWritable' => false,
                     'mustExist' => false,
                     'isCheckout' => false,
+                    'source' => 'acme-workspace-s1',
                 ],
                 [
                     'type' => 'daemon-bind',
-                    'source' => '/srv/journal/accounts/a1',
                     'target' => '/home/journal/.account',
                     'isWritable' => true,
                     'mustExist' => false,
                     'isCheckout' => false,
+                    'source' => '/srv/journal/accounts/a1',
                 ],
                 [
                     'type' => 'volume',
-                    'source' => 'acme-history-s1',
                     'target' => '/home/journal/.account/projects',
                     'isWritable' => true,
                     'mustExist' => false,
                     'isCheckout' => false,
+                    'source' => 'acme-history-s1',
                 ],
             ],
             $wire['mounts'],
@@ -340,13 +340,13 @@ final class ContainerManifestTest extends TestCase
         $this->assertSame(
             [
                 'type' => 'bind',
-                'source' => '/workspaces/helper-7',
                 'target' => '/workspace',
                 'isWritable' => true,
                 'mustExist' => false,
                 'isCheckout' => false,
+                'source' => '/workspaces/helper-7',
             ],
-            json_decode((string) json_encode($manifest), true)['mounts'][0],
+            $manifest->protocolData()->toArray()['mounts'][0],
         );
     }
 
@@ -495,7 +495,7 @@ final class ContainerManifestTest extends TestCase
     public function test_a_protected_start_runs_its_init_as_root_with_three_capabilities_and_says_so(): void
     {
         $manifest = $this->protected($this->containedMounts(), ['SETUID', 'SETGID', 'SETPCAP'], '0:0');
-        $sent = json_decode((string) json_encode($manifest), true);
+        $sent = $manifest->protocolData()->toArray();
 
         $this->assertSame(['0:0', ['SETUID', 'SETGID', 'SETPCAP'], 'protected-account', true, false], [
             $sent['user'],
@@ -524,10 +524,7 @@ final class ContainerManifestTest extends TestCase
 
     public function test_a_standard_start_still_sends_its_standard_start_profile(): void
     {
-        $sent = json_decode(
-            (string) json_encode($this->contained($this->containedMounts(), SecurityOptions::none())),
-            true,
-        );
+        $sent = $this->contained($this->containedMounts(), SecurityOptions::none())->protocolData()->toArray();
 
         $this->assertSame('standard', $sent['startProfile']);
     }

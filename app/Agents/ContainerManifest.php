@@ -9,17 +9,17 @@ use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Files\ManifestMount;
 use App\Files\Values\WorkspacePreparation;
+use App\Hosts\Protocol\Data\HostContainerManifestData;
 use App\Sessions\Values\ExecutionPolicy;
 use App\Support\MountRules;
 use App\Values\ExecutionBudgets;
-use JsonSerializable;
 
 /**
  * What the protected host starts a helper container with: the image by digest, an unprivileged user, a read-only root
  * without capabilities, the allowed mounts, security profiles, rotated logs, the start's budgets and the source of a
  * contained workspace. Anything else is refused by name.
  */
-final readonly class ContainerManifest implements JsonSerializable
+final readonly class ContainerManifest
 {
     public const string USER = '10001:10001';
 
@@ -63,16 +63,18 @@ final readonly class ContainerManifest implements JsonSerializable
     }
 
     /**
-     * The manifest as the host reads it, with the budgets under their property names.
-     *
-     * @return array<string, mixed>
+     * The manifest as the host reads it.
      */
-    public function jsonSerialize(): array
+    public function protocolData(): HostContainerManifestData
     {
-        return [
+        return HostContainerManifestData::from([
             ...get_object_vars($this),
+            'securityOptions' => $this->securityOptions->protocolData(),
+            'mounts' => array_map(fn (ManifestMount $mount) => $mount->protocolData(), $this->mounts),
             'budgets' => $this->budgets->hostBudgets(),
-        ];
+            'workspacePreparation' => $this->workspacePreparation?->protocolData(),
+            'startProfile' => $this->startProfile->value,
+        ]);
     }
 
     /**

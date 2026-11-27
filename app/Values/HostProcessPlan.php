@@ -6,13 +6,14 @@ namespace App\Values;
 
 use App\Agents\ContainerManifest;
 use App\Agents\Values\PlanFile;
-use App\Agents\Values\RestartFile;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
+use App\Hosts\Protocol\Data\HostContainerLabelsData;
+use App\Hosts\Protocol\Data\HostOpenPlanData;
+use App\Hosts\Protocol\Data\HostRestartFileData;
 use App\Hosts\Protocol\HostOrderType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\HostProtocol;
-use App\Hosts\Values\ContainerLabels;
 use App\Terminals\Screens\ShieldRule;
 
 /**
@@ -60,7 +61,7 @@ final readonly class HostProcessPlan
          * What a process the host heals after a crash runs once its restart file exists, such as a resume.
          */
         public array $restartArgv = [],
-        public RestartFile|null $restartWhenFile = null,
+        public HostRestartFileData|null $restartWhenFile = null,
         /**
          * The fence of the session the process runs for, which a run_fenced order of that session closes; none for a
          * process of no session.
@@ -69,7 +70,7 @@ final readonly class HostProcessPlan
         /**
          * The labels the container carries on the agent daemon, so the host finds it again; none outside a container.
          */
-        public ContainerLabels|null $labels = null,
+        public HostContainerLabelsData|null $labels = null,
         /**
          * The files a device keeps for its binding between two sessions, such as the driver's sign-in, each named
          * as the process sees it.
@@ -119,7 +120,7 @@ final readonly class HostProcessPlan
      */
     public function hostFieldsNamed(): array
     {
-        $payload = $this->payload();
+        $payload = $this->payload()->toArray();
 
         return array_values(array_filter(
             HostProtocol::CONTAINED_REFUSED_FIELDS,
@@ -146,33 +147,28 @@ final readonly class HostProcessPlan
 
     /**
      * The order's payload as the host reads it.
-     *
-     * @return array<string, mixed>
      */
-    public function payload(): array
+    public function payload(): HostOpenPlanData
     {
-        return [
-            'type' => $this->type->value,
+        return HostOpenPlanData::from([
+            'type' => $this->type,
             'restart' => $this->restart->value,
             'argv' => $this->argv,
+            'restart_argv' => $this->restartArgv,
+            'restart_when_file' => $this->restartWhenFile,
             'environment' => $this->environment,
             'folder' => $this->folder,
-            'container' => $this->container,
-            'size' => [
-                'columns' => $this->columns,
-                'rows' => $this->rows,
-            ],
-            'files' => $this->files,
+            'container' => $this->container?->protocolData(),
+            'labels' => $this->labels,
+            'size' => ['columns' => $this->columns, 'rows' => $this->rows],
+            'files' => array_map(fn (PlanFile $file) => $file->protocolData(), $this->files),
             'folders' => $this->folders,
             'inherit' => $this->inherit,
             'side_sockets' => $this->sideSockets,
             'read_files' => $this->readFiles,
-            'shield_rules' => $this->shieldRules,
-            'restart_argv' => $this->restartArgv,
-            'restart_when_file' => $this->restartWhenFile,
+            'shield_rules' => array_map(fn (ShieldRule $rule) => $rule->protocolData(), $this->shieldRules),
             'fence' => $this->fence,
-            'labels' => $this->labels,
             'kept_files' => $this->keptFiles,
-        ];
+        ]);
     }
 }

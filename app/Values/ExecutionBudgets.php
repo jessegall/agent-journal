@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\ExecutionBudgetInvalid;
+use App\Hosts\Protocol\Data\HostContainerBudgetsData;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -89,15 +90,14 @@ final class ExecutionBudgets extends Data
     }
 
     /**
-     * The budgets the host enforces, by their property names; the stored column keeps its snake case keys. The wall
-     * time is not one of them: the journal ends a session at its deadline itself.
-     *
-     * @return array<string, int|float>
+     * The budgets the host enforces; the wall time is not one of them, as the journal ends a session at its
+     * deadline itself.
      */
-    public function hostBudgets(): array
+    public function hostBudgets(): HostContainerBudgetsData
     {
-        return $this->except('wallSeconds')
-            ->transform(TransformationContextFactory::create()->withoutPropertyNameMapping());
+        $byPropertyName = TransformationContextFactory::create()->withoutPropertyNameMapping();
+
+        return HostContainerBudgetsData::from($this->except('wallSeconds')->transform($byPropertyName));
     }
 
     /**

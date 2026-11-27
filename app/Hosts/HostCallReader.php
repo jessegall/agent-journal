@@ -43,6 +43,18 @@ final readonly class HostCallReader
     }
 
     /**
+     * Checks Data the journal built itself against its protocol rules, refusing it with every field's error.
+     */
+    public function assertValid(Data $data, string $call): void
+    {
+        try {
+            $data::validate($data->toArray());
+        } catch (ValidationException $invalid) {
+            throw HostCallUnreadable::invalid($call, $invalid->errors());
+        }
+    }
+
+    /**
      * Reads the body as read() does once it is known to hold no more than the bytes.
      *
      * @template T of Data

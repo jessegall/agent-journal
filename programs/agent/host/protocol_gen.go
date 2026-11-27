@@ -89,7 +89,7 @@ func (value ContainerManifest) Validate() error {
 // ContainerMount is the container_mount of host protocol 1.
 type ContainerMount struct {
 	Type       MountType `json:"type"`
-	Source     string    `json:"source"`
+	Source     string    `json:"source,omitempty"`
 	Target     string    `json:"target"`
 	IsWritable bool      `json:"isWritable"`
 	MustExist  bool      `json:"mustExist"`
@@ -135,7 +135,7 @@ func (value SecurityOptions) Validate() error {
 // WorkspacePreparation is the workspace_preparation of host protocol 1.
 type WorkspacePreparation struct {
 	Clone  *WorkspaceClone `json:"clone"`
-	Folder string          `json:"folder"`
+	Folder string          `json:"folder,omitempty"`
 }
 
 // Validate answers which value of the WorkspacePreparation the protocol does not know, by its field.
