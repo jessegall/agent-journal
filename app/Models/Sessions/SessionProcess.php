@@ -215,6 +215,17 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     }
 
     /**
+     * The start ends stopped because its session ended before it did.
+     */
+    public function endWithSession(CarbonImmutable $time): void
+    {
+        $this->status = SessionProcessStatus::Stopped;
+        $this->ended_at = $time;
+        $this->saveAndAssert();
+        $this->raise(new SessionProcessStopped($this->id));
+    }
+
+    /**
      * A pending start that will never run ends cancelled now.
      */
     public function cancelPending(): void

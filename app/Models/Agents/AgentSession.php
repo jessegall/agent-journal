@@ -23,6 +23,7 @@ use App\Events\Sessions\AgentSessionSelectionUsed;
 use App\Events\Sessions\AgentSessionSkillsGenerated;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
+use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\SessionToken;
 use App\Models\Skills\SkillGeneration;
@@ -178,7 +179,8 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The session ends at the time given.
+     * The session ends at the time given, and so does every start of it that had not ended yet: a start outliving its
+     * session would keep its account held for a session that no longer runs.
      */
     public function endAt(CarbonImmutable $time): void
     {
@@ -186,6 +188,14 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $this->ended_at = $time;
         $this->saveAndAssert();
         $this->raise(new AgentSessionEnded($this->id));
+
+        $starts = SessionProcess::query()->supervised()->ofSessions([$this->id])->unresolved()
+            ->readAll('every start of an ending session ends with it')
+            ->get();
+
+        foreach ($starts as $start) {
+            $start->endWithSession($time);
+        }
     }
 
     /**

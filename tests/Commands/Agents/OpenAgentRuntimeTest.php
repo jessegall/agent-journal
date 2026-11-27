@@ -37,6 +37,7 @@ use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Projects\Commands\EnrollHost\EnrollHostCommand;
 use App\Projects\Enums\ArrangementType;
 use App\Projects\Exceptions\HostArrangementRefused;
+use App\Sessions\Commands\EndStoppedSession\EndStoppedSessionCommand;
 use App\Sessions\Enums\SessionStatus;
 use App\Sessions\OpenedRuntime;
 use App\Skills\Exceptions\SkillSelectionConflict;
@@ -269,6 +270,18 @@ final class OpenAgentRuntimeTest extends TestCase
         $refused = $this->assertThrowsAccountWriterTaken(fn () => $this->open($host, DriverType::Headless));
 
         $this->assertSame($alone->sessionId, $refused->ownerSessionId);
+    }
+
+    public function test_an_account_is_free_again_once_the_session_holding_it_ended_before_its_start_did(): void
+    {
+        $this->registerFamily();
+        $this->journal->chooseActiveAccount('example', 'Shared account');
+
+        $host = $this->enrollHost();
+        $alone = $this->open($host, DriverType::Terminal);
+        $this->asOwner(new EndStoppedSessionCommand($this->agent()->id, $alone->sessionId));
+
+        $this->assertNotSame('', $this->open($host, DriverType::Headless)->runtimeId);
     }
 
     public function test_an_unfamiliar_registration_delivers_a_turn_and_returns_its_outcome(): void
