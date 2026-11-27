@@ -15,7 +15,6 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeIsolation;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeJournalServer;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeKeptSignIn;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeLayout;
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeManagedSettings;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeMcpTimeouts;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeModelAnswer;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeOwnTerminalHome;
@@ -39,10 +38,8 @@ use App\Agents\Drivers\Codex\CodexFileCredentialStore;
 use App\Agents\Drivers\Codex\CodexHome;
 use App\Agents\Drivers\Codex\CodexHomeFiles;
 use App\Agents\Drivers\Codex\CodexIsolation;
-use App\Agents\Drivers\Codex\CodexJournalServer;
 use App\Agents\Drivers\Codex\CodexKeySignIn;
 use App\Agents\Drivers\Codex\CodexLayout;
-use App\Agents\Drivers\Codex\CodexManagedHooks;
 use App\Agents\Drivers\Codex\CodexModelAnswer;
 use App\Agents\Drivers\Codex\CodexSignIn;
 use App\Agents\Drivers\Codex\CodexSignInEnvironment;
@@ -67,7 +64,6 @@ use App\Agents\Drivers\Setup\VersionProbe;
 use App\Agents\Drivers\StartConditions\AccountStart;
 use App\Agents\Drivers\StartConditions\AccountTerminal;
 use App\Agents\Drivers\StartConditions\AccountWithoutFolder;
-use App\Agents\Drivers\StartConditions\ContainedStart;
 use App\Agents\Drivers\StartConditions\HostAccountTerminal;
 use App\Agents\Drivers\StartConditions\HostHomeStart;
 use App\Agents\Drivers\StartConditions\JournalServerAccount;
@@ -154,8 +150,6 @@ final class DriversServiceProvider extends ServiceProvider
             ->skills(CodexSkills::class)
             ->hookAdapter(CodexAdapter::class)
             ->isolation(CodexIsolation::class)
-            ->journalServer(ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class))
-            ->hookRelay(ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class))
             ->local(
                 ConditionalPart::for(new AnyContext(), CodexHome::class),
                 ConditionalPart::for(new AnyContext(), HostHomeAndPath::class),
@@ -167,8 +161,6 @@ final class DriversServiceProvider extends ServiceProvider
                 new AccountWithoutFolder(),
                 fn () => ProfileRefused::unresolvedSetting('no account to check the sign-in of'),
             )
-            ->mountsPlanFile(CodexManagedHooks::FILE, CodexManagedHooks::TARGET)
-            ->mountsPlanFile(CodexJournalServer::FILE, CodexJournalServer::TARGET)
             // Codex links its own executable under tmp/arg0 each run; those links never belong in the account folder.
             ->keepsScratchIn('tmp')
             ->build();
@@ -215,7 +207,6 @@ final class DriversServiceProvider extends ServiceProvider
             ->hookAdapter(ClaudeCodeAdapter::class)
             ->isolation(ClaudeCodeIsolation::class)
             ->journalServer(ConditionalPart::forAccount(new JournalServerAccount(), ClaudeCodeJournalServer::class))
-            ->hookRelay(ConditionalPart::for(new ContainedStart(), ClaudeCodeManagedSettings::class))
             ->local(ConditionalPart::forAccount(new AnyContext(), ClaudeCodeAccountHome::class))
             ->perStart(
                 ConditionalPart::for(new AnyContext(), ClaudeCodePlatform::class),
@@ -227,7 +218,6 @@ final class DriversServiceProvider extends ServiceProvider
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeKeptSignIn::class),
                 ConditionalPart::forAccount(new AccountTerminal(), ClaudeCodeTranscriptRestart::class),
             )
-            ->mountsPlanFile(ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET)
             ->build();
     }
 

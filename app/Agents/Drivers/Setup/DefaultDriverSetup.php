@@ -40,6 +40,7 @@ final readonly class DefaultDriverSetup
      * @param  class-string<AccountSettingsFiller>|null  $accountSettings
      * @param  class-string<DriverSkills>|null  $skills
      * @param  class-string<DriverAdapter>|null  $hookAdapter
+     * @param  list<ConditionalPart>  $journalServer  the part that gives the program the journal's server, when it has one
      * @param  class-string<DriverIsolation>|null  $isolation
      * @param  list<StartRefusal>  $refusals
      * @param  list<StartRefusal>  $signInRefusals
@@ -62,8 +63,7 @@ final readonly class DefaultDriverSetup
         private string|null $skills = null,
         private string|null $hookAdapter = null,
         private string|null $isolation = null,
-        private ConditionalPart|null $journalServer = null,
-        private ConditionalPart|null $hookRelay = null,
+        private array $journalServer = [],
         private array $refusals = [],
         private array $signInRefusals = [],
         private array $parts = [],
@@ -169,19 +169,12 @@ final readonly class DefaultDriverSetup
     }
 
     /**
-     * How the program is given the journal's MCP server, which every agent uses.
+     * How the program is given the journal's MCP server on a start; a driver whose image holds its server's
+     * configuration declares none.
      */
     public function journalServer(ConditionalPart $part): self
     {
-        return clone ($this, ['journalServer' => $part]);
-    }
-
-    /**
-     * How the program relays its hooks to the journal, which every agent needs.
-     */
-    public function hookRelay(ConditionalPart $part): self
-    {
-        return clone ($this, ['hookRelay' => $part]);
+        return clone ($this, ['journalServer' => [$part]]);
     }
 
     /**
@@ -222,16 +215,6 @@ final readonly class DefaultDriverSetup
     public function signInRefusedWhen(Condition $condition, Closure $refusal): self
     {
         return clone ($this, ['signInRefusals' => [...$this->signInRefusals, new StartRefusal($condition, $refusal)]]);
-    }
-
-    /**
-     * A plan file the driver reads at a place of its own, mounted there read-only in its contained session.
-     */
-    public function mountsPlanFile(string $file, string $target): self
-    {
-        $mount = ManifestMount::planFile($file, $target);
-
-        return clone ($this, ['containerMounts' => [...$this->containerMounts, $mount]]);
     }
 
     /**
@@ -276,8 +259,7 @@ final readonly class DefaultDriverSetup
             $this->signInRefusals,
             $environment,
             [
-                $this->required($this->journalServer, 'journalServer'),
-                $this->required($this->hookRelay, 'hookRelay'),
+                ...$this->journalServer,
                 ...$plan,
             ],
             $this->containerMounts,

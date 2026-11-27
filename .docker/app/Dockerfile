@@ -148,14 +148,15 @@ CMD ["php", "artisan", "sharing:supervise"]
 # the service user and folders. A code change leaves this stage cached.
 FROM php AS runner-tools
 
-ARG CLAUDE_CODE_VERSION=2.1.323
-ARG CODEX_VERSION=0.165.0
+# Each driver's pinned build is its image folder's VERSION, the one place a driver's version is written.
+COPY .docker/drivers/claude-code/VERSION /tmp/drivers/claude-code.version
+COPY .docker/drivers/codex/VERSION /tmp/drivers/codex.version
 
 RUN --mount=type=cache,target=/root/.npm --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates nodejs npm \
-    && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}" \
-    && apt-get purge -y npm && apt-get autoremove -y
+    && npm install -g "@anthropic-ai/claude-code@$(cat /tmp/drivers/claude-code.version)" "@openai/codex@$(cat /tmp/drivers/codex.version)" \
+    && apt-get purge -y npm && apt-get autoremove -y && rm -rf /tmp/drivers
 
 # The Docker client the contained agent host starts containers with, on the agent daemon only.
 COPY --from=docker:28-cli /usr/local/bin/docker /usr/local/bin/docker

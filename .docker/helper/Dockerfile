@@ -20,19 +20,9 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-mcp ./cmd/journal-mcp \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-check ./cmd/journal-check
 
-# Claude Code and Codex as their native release builds, each checked against its pinned digest: no Node in the image.
-FROM --platform=$BUILDPLATFORM ${BASE} AS drivers
-ARG TARGETARCH
-ARG CLAUDE_CODE_VERSION=2.1.323
-ARG CODEX_VERSION=0.165.0
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-COPY .docker/helper/install-drivers.sh .docker/helper/driver-digests.txt /drivers/
-RUN sh /drivers/install-drivers.sh "$TARGETARCH" "$CLAUDE_CODE_VERSION" "$CODEX_VERSION" /out
-
-# The driver-free base every driver image of .docker/drivers builds on: the journal's programs, users and folders, no
-# driver and nothing only one driver reads. Built alone with --target candidate.
-FROM ${BASE} AS candidate
+# The agent base every driver image of .docker/drivers builds on: the journal's programs, users and folders, no driver
+# and nothing only one driver reads.
+FROM ${BASE}
 
 ARG TOOLCHAIN_PACKAGES=""
 
@@ -71,16 +61,5 @@ RUN mkdir -p /workspace && chown 10001:10010 /workspace && chmod 2770 /workspace
 # user alone, or the program could not keep the conversation a later turn resumes.
 RUN mkdir -p /home/journal/.account/projects && chown -R 10001:10001 /home/journal \
     && chmod 0700 /home/journal/.account /home/journal/.account/projects
-USER 10001:10001
-WORKDIR /workspace
-
-# The agent image every session runs today: the candidate with both drivers, until each session runs its own driver
-# image.
-FROM candidate
-USER root
-COPY --from=drivers --chown=root:root /out/claude /out/codex /out/codex-code-mode-host /usr/local/bin/
-# Claude Code takes its shell from CLAUDE_CODE_SHELL rather than the login shell, and IS_SANDBOX lets it skip its
-# permission prompts in a container whose commands the executor already confines.
-ENV CLAUDE_CODE_SHELL=/opt/journal/shell/bash IS_SANDBOX=1
 USER 10001:10001
 WORKDIR /workspace

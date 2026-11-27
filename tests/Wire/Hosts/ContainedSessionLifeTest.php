@@ -106,8 +106,8 @@ final class ContainedSessionLifeTest extends TestCase
     }
 
     /**
-     * The session's container runs the driver image the session froze on the installation's network, with the managed
-     * settings mounted read-only and no value left for the host to fill.
+     * The session's container runs the driver image the session froze on the installation's network, which holds the
+     * managed settings itself, so none is mounted, and no value is left for the host to fill.
      *
      * @param  array<string, mixed>  $session
      */
@@ -115,7 +115,7 @@ final class ContainedSessionLifeTest extends TestCase
     {
         return $session['image'] === $image
             && str_starts_with((string) $session['network'], TestHost::INSTALLATION_NAME.'-')
-            && $this->hasMountAt($session, '/etc/claude-code/managed-settings.json')
+            && ! $this->hasMountAt($session, '/etc/claude-code/managed-settings.json')
             && array_filter($session['env'], fn (string $entry) => str_contains($entry, '{host:')) === [];
     }
 

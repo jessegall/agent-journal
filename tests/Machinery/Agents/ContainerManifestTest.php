@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Machinery\Agents;
 
 use App\Agents\ContainerManifest;
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeManagedSettings;
 use App\Agents\Drivers\Enums\StartProfileType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\WorkspaceUse;
@@ -33,6 +32,13 @@ use Tests\TestCase;
 #[TestsMachinery(ContainerManifest::class)]
 final class ContainerManifestTest extends TestCase
 {
+    /**
+     * A plan file a contained session mounts read-only at a place of its own.
+     */
+    private const string POLICY_FILE = 'managed-settings.json';
+
+    private const string POLICY_TARGET = '/etc/claude-code/managed-settings.json';
+
     private const string SESSION = 'session-1';
 
     private const string WORKSPACE = '/workspaces/helper-7';
@@ -560,7 +566,7 @@ final class ContainerManifestTest extends TestCase
             [],
             array_values(array_filter(
                 $codex->sessionMounts('s1', null),
-                fn (ManifestMount $mount) => $mount->target === ClaudeCodeManagedSettings::TARGET,
+                fn (ManifestMount $mount) => $mount->target === self::POLICY_TARGET,
             )),
         );
     }
@@ -572,6 +578,6 @@ final class ContainerManifestTest extends TestCase
      */
     private static function claudeMounts(): array
     {
-        return [ManifestMount::planFile(ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET)];
+        return [ManifestMount::planFile(self::POLICY_FILE, self::POLICY_TARGET)];
     }
 }

@@ -39,6 +39,7 @@ final readonly class MockInstallation
 
         File::copyDirectory(__DIR__.'/repository', $installation->repository());
         File::copyDirectory(base_path('.docker/helper'), $installation->repository().'/.docker/helper');
+        File::copyDirectory(base_path('.docker/drivers'), $installation->repository().'/.docker/drivers');
         File::copyDirectory(base_path('.docker/updater'), $installation->repository().'/.docker/updater');
         File::copyDirectory(base_path('scripts/lib'), $installation->repository().'/scripts/lib');
         File::copy(__DIR__.'/installation.env', $installation->root().'/.env');

@@ -87,12 +87,12 @@ final class LocalHostTest extends TestCase
 
     public function test_an_agent_image_without_a_program_its_agents_run_is_refused(): void
     {
-        $this->checkout->docker->failCallsHolding('-x /usr/local/bin/codex-code-mode-host');
+        $this->checkout->docker->failCallsHolding('-x /opt/journal/bin/journal-mcp');
 
         $run = $this->checkout->runLocalHost();
 
         $this->assertNotSame(0, $run->getExitCode());
-        $this->assertStringContainsString('lacks /usr/local/bin/codex-code-mode-host', $run->getErrorOutput());
+        $this->assertStringContainsString('lacks /opt/journal/bin/journal-mcp', $run->getErrorOutput());
     }
 
     public function test_an_agent_image_whose_protected_start_runs_commands_as_the_program_is_refused(): void

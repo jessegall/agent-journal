@@ -6,8 +6,8 @@ set -eu
 
 main() {
     . scripts/lib/docker.sh
-    claude_code=2.1.323
-    codex=0.165.0
+    claude_code=$(read_version claude-code)
+    codex=$(read_version codex)
     architecture="${1:?name the architecture, such as linux/arm64}"
     name="${2:-agent}"
     tag="journal-$name:build"
@@ -20,7 +20,6 @@ main() {
     if is_archived; then
         echo "The $name image did not change: its archive and its record are kept."
     else
-        check_clients
         "check_${name}_image"
         check_no_credentials
         save_archive
@@ -28,6 +27,11 @@ main() {
     fi
     remove_build_tag
     sh .docker/helper/prune.sh
+}
+
+# The driver's pinned build, from its image folder: the one place a driver's version is written.
+read_version() {
+    tr -d '[:space:]' < ".docker/drivers/$1/VERSION"
 }
 
 # The options that name the image's Dockerfile and, for the runner, its stage.
@@ -40,8 +44,7 @@ select_dockerfile() {
 }
 
 build_image() {
-    docker buildx build --platform "$architecture" $dockerfile_options \
-        --build-arg "CLAUDE_CODE_VERSION=$claude_code" --build-arg "CODEX_VERSION=$codex" --tag "$tag" --load .
+    docker buildx build --platform "$architecture" $dockerfile_options --tag "$tag" --load .
 }
 
 read_built_image() {
@@ -70,12 +73,21 @@ check_clients() {
     run_in_image codex --version | grep -q "$codex"
 }
 
+# The agent base holds no driver: each driver is its own image, built on the host from its folder.
+check_no_drivers() {
+    if run_in_image sh -c 'command -v claude || command -v codex' >/dev/null; then
+        echo "The agent base holds a driver: it is refused." >&2
+        exit 1
+    fi
+}
+
 # Claude Code and Codex are native builds, so the agent image holds no Node.
 check_no_node() {
     ! run_in_image sh -c 'command -v node || command -v npm' >/dev/null
 }
 
 check_agent_image() {
+    check_no_drivers
     check_no_node
     check_users
     check_agent_programs
@@ -160,6 +172,7 @@ check_absent_programs() {
 }
 
 check_runner_image() {
+    check_clients
     run_in_image id -u | grep -qx 10001
     run_in_image --workdir=/app php artisan list >/dev/null
     run_in_image --workdir=/app php artisan accounts:run-sign-ins --help >/dev/null

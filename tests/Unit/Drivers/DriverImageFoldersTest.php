@@ -13,27 +13,23 @@ use ReflectionClassConstant;
 use Tests\TestCase;
 
 /**
- * What a driver's image folder fixes for every contained start is what the journal hands a contained start today:
- * Claude Code's managed policy with its hooks, and Codex's hooks with their events and timeouts and its journal server
- * with the start grant's variables.
+ * What a driver's image folder fixes for every contained start matches what the journal answers: Claude Code's
+ * managed policy runs its hooks, and Codex's hooks keep their events and timeouts and its journal server the start
+ * grant's variables.
  */
 final class DriverImageFoldersTest extends TestCase
 {
     private const string IMAGE_HOOK_COMMAND = '/opt/journal/bin/journal-hook';
 
-    public function test_claude_codes_managed_policy_is_the_template_with_the_hooks_a_contained_start_runs(): void
+    public function test_claude_codes_managed_policy_runs_every_hook_a_contained_start_answers(): void
     {
-        $template = $this->jsonFile('resources/agents/claude-code-managed-settings.json');
         $hooks = json_decode(str_replace(
             '{folder:files}',
             MountRules::SESSION_TARGET,
             (string) json_encode(ClaudeCodeHooks::running(self::IMAGE_HOOK_COMMAND), JSON_UNESCAPED_SLASHES),
         ), true);
 
-        $this->assertSame(
-            [...$template, 'hooks' => $hooks],
-            $this->jsonFile('.docker/drivers/claude-code/managed-settings.json'),
-        );
+        $this->assertSame($hooks, $this->jsonFile('.docker/drivers/claude-code/managed-settings.json')['hooks']);
     }
 
     public function test_codexs_hooks_hold_every_event_with_its_timeout_through_the_relays_hook_tool(): void

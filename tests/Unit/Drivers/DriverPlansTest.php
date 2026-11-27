@@ -9,9 +9,6 @@ use App\Accounts\StartSetting;
 use App\Agents\ContainerManifest;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeManagedSettings;
-use App\Agents\Drivers\Codex\CodexJournalServer;
-use App\Agents\Drivers\Codex\CodexManagedHooks;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Enums\WorkspaceUse;
@@ -42,6 +39,11 @@ use Throwable;
  */
 final class DriverPlansTest extends TestCase
 {
+    /**
+     * Claude Code's managed policy, which its driver image holds, so no start hands it.
+     */
+    private const string IMAGE_POLICY = 'managed-settings.json';
+
     private const string FIXTURE = __DIR__.'/../../Fixtures/Drivers/plans.json';
 
     private const string MODEL = 'sonnet';
@@ -168,11 +170,11 @@ final class DriverPlansTest extends TestCase
         $plan = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->startPlan($start);
 
         $this->journal->assertResult(
-            [HostInstructionType::OpenContainer, [], true, []],
+            [HostInstructionType::OpenContainer, [], false, []],
             [
                 $plan->instructionType(),
                 $plan->inherit,
-                in_array(ClaudeCodeManagedSettings::FILE, array_map(fn (PlanFile $file) => $file->name, $plan->files), true),
+                in_array(self::IMAGE_POLICY, array_map(fn (PlanFile $file) => $file->name, $plan->files), true),
                 array_values(array_filter(
                     [...$plan->argv, ...$plan->environment, ...array_map(fn (PlanFile $file) => $file->content, $plan->files)],
                     fn (string $text) => str_contains($text, '{host:') || str_contains($text, 'sockets'),
@@ -190,12 +192,8 @@ final class DriverPlansTest extends TestCase
 
         $this->journal->assertResult(
             [
-                [[HostMountType::DaemonBind, ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET, false]],
-                [
-                    [HostMountType::DaemonBind, CodexManagedHooks::FILE, CodexManagedHooks::TARGET, false],
-                    [HostMountType::DaemonBind, CodexJournalServer::FILE, CodexJournalServer::TARGET, false],
-                    [HostMountType::Scratch, null, MountRules::ACCOUNT_TARGET.'/tmp', true],
-                ],
+                [],
+                [[HostMountType::Scratch, null, MountRules::ACCOUNT_TARGET.'/tmp', true]],
             ],
             [$mounts(DefaultDrivers::CLAUDE_CODE), $mounts(DefaultDrivers::CODEX)],
         );

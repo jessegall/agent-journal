@@ -55,17 +55,19 @@ fail_once_as_docker() {
 }
 
 # A build counts, so each one gives an image of its own digest, unless the test said its layers are all cached; it
-# keeps the client versions it was given.
+# keeps the client versions the build context's driver folders pin, as the runner image installs them.
 remember_build() {
-    local argument tag
+    local tag
     tag=$(read_option --tag "$@")
     count_build "$tag"
-    for argument in "$@"; do
-        case "$argument" in
-            CLAUDE_CODE_VERSION=*) echo "${argument#*=} (Claude Code)" > "$STAND_IN/claude-version" ;;
-            CODEX_VERSION=*) echo "codex-cli ${argument#*=}" > "$STAND_IN/codex-version" ;;
-        esac
-    done
+    keep_version claude-code "%s (Claude Code)" claude-version
+    keep_version codex "codex-cli %s" codex-version
+}
+
+keep_version() {
+    local folder=".docker/drivers/$1"
+    [ -f "$folder/VERSION" ] || return 0
+    printf "$2\n" "$(tr -d '[:space:]' < "$folder/VERSION")" > "$STAND_IN/$3"
 }
 
 # A build of the tag counts, unless the test said every layer is cached.

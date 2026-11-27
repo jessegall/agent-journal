@@ -1,11 +1,11 @@
 package recorded
 
 import (
-	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,8 +16,8 @@ import (
 // rootMark is the file only the repository root holds, the one source of the host protocol.
 const rootMark = "protocol/host.json"
 
-// pinsFile names the driver builds the agent image installs, the builds a driver's recordings are made with.
-const pinsFile = ".docker/helper/driver-digests.txt"
+// versionFile is a driver's pinned build in its image folder, the build its recordings are made with.
+const versionFile = "VERSION"
 
 // imagePrograms is the digest scripts/agent-image-programs.sh prints, worked out once for the whole test run.
 var imagePrograms = sync.OnceValues(func() (string, error) {
@@ -77,19 +77,15 @@ func folderOf(root, driver, name string) (string, error) {
 }
 
 func buildOf(root, driver string) (string, error) {
-	pins, err := os.Open(filepath.Join(root, pinsFile))
+	version, err := os.ReadFile(filepath.Join(root, ".docker/drivers", driver, versionFile))
+	// The host's and the installer's scenarios have no image folder, so no build: they are kept under their name.
+	if errors.Is(err, fs.ErrNotExist) {
+		return "", nil
+	}
 	if err != nil {
 		return "", err
 	}
-	defer pins.Close()
-	lines := bufio.NewScanner(pins)
-	for lines.Scan() {
-		fields := strings.Fields(lines.Text())
-		if len(fields) == 4 && fields[0] == driver {
-			return fields[1], nil
-		}
-	}
-	return "", lines.Err()
+	return strings.TrimSpace(string(version)), nil
 }
 
 func fileDigest(file string) (string, error) {

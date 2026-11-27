@@ -22,7 +22,7 @@ final readonly class MockCheckout
         'scripts/prepare-hook-test-database.sh',
     ];
 
-    private const array FOLDERS = ['scripts/lib', 'scripts/local-host', '.docker/helper', '.docker/app'];
+    private const array FOLDERS = ['scripts/lib', 'scripts/local-host', '.docker/helper', '.docker/app', '.docker/drivers'];
 
     // What the scripts write into the checkout and git does not hold, as in the project's own .gitignore.
     private const string IGNORED = ".env*\n/images\n/.build\n/secrets\n";

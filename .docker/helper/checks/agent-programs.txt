@@ -1,6 +1,3 @@
-/usr/local/bin/claude
-/usr/local/bin/codex
-/usr/local/bin/codex-code-mode-host
 /opt/journal/bin/journal-hook
 /opt/journal/bin/journal-mcp
 /opt/journal/bin/journal-check

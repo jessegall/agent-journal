@@ -43,7 +43,7 @@ read_imports() {
 list_files() {
     local root package file
     root=$1
-    printf '%s\n' .docker/helper/Dockerfile .docker/helper/install-drivers.sh .docker/helper/driver-digests.txt
+    printf '%s\n' .docker/helper/Dockerfile
     for package in $2; do
         for file in "$root/programs/runner/$package"/*.go; do
             case "$file" in *_test.go) continue ;; esac

@@ -10,9 +10,7 @@ use App\Agents\Drivers\Codex\CodexArguments;
 use App\Agents\Drivers\Codex\CodexChangeEffort;
 use App\Agents\Drivers\Codex\CodexChangeModel;
 use App\Agents\Drivers\Codex\CodexIsolation;
-use App\Agents\Drivers\Codex\CodexJournalServer;
 use App\Agents\Drivers\Codex\CodexLayout;
-use App\Agents\Drivers\Codex\CodexManagedHooks;
 use App\Agents\Drivers\Codex\CodexModelAnswer;
 use App\Agents\Drivers\Codex\CodexSignInEnvironment;
 use App\Agents\Drivers\Codex\CodexSignInReader;
@@ -21,7 +19,6 @@ use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\HookReplies;
-use App\Agents\Drivers\Setup\ConditionalPart;
 use App\Agents\Drivers\Setup\DefaultDriverSetup;
 use App\Agents\Drivers\Setup\DriverImage;
 use App\Agents\Drivers\Setup\DriverProfiles;
@@ -31,8 +28,6 @@ use App\Agents\Drivers\Setup\ModelCheck;
 use App\Agents\Drivers\Setup\SignInSetup;
 use App\Agents\Drivers\Setup\VersionLine;
 use App\Agents\Drivers\Setup\VersionProbe;
-use App\Agents\Drivers\StartConditions\ContainedStart;
-use App\Agents\Drivers\StartConditions\JournalServerAccount;
 use App\Agents\Exceptions\DriverSetupInvalid;
 use App\Agents\SignInEgress;
 use App\Exceptions\PlanAdditionClash;
@@ -87,18 +82,18 @@ final class DriverSetupTest extends TestCase
      */
     public function test_a_declaration_that_misses_a_part_every_driver_needs_is_refused_naming_it(): void
     {
-        $withoutServer = $this->partlyDeclared()
-            ->hookRelay(ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class));
-        $withoutRelay = $this->partlyDeclared()
-            ->journalServer(ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class));
         $naming = fn (string $part) => fn (DriverSetupInvalid $refusal) => $this->assertStringContainsString(
             "declared without its {$part}",
             $refusal->getMessage(),
         );
 
         $this->journal
-            ->assertRefused(DriverSetupInvalid::class, fn () => $withoutServer->build(), $naming('journalServer'))
-            ->assertRefused(DriverSetupInvalid::class, fn () => $withoutRelay->build(), $naming('hookRelay'));
+            ->assertRefused(DriverSetupInvalid::class, fn () => DefaultDriverSetup::for('lone')->build(), $naming('driver'))
+            ->assertRefused(
+                DriverSetupInvalid::class,
+                fn () => DefaultDriverSetup::for('lone')->driver('lone')->build(),
+                $naming('image'),
+            );
     }
 
     /**
@@ -146,10 +141,6 @@ final class DriverSetupTest extends TestCase
      */
     private function codex(string $family): DriverSetup
     {
-        return $this->partlyDeclared()
-            ->journalServer(ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class))
-            ->hookRelay(ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class))
-            ->build()
-            ->forFamily($family);
+        return $this->partlyDeclared()->build()->forFamily($family);
     }
 }

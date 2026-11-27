@@ -39,7 +39,6 @@ func TestAScenarioNeverRecordedIsMissing(t *testing.T) {
 func TestARecordingOfAChangedScenarioIsStale(t *testing.T) {
 	root, _ := Root()
 	copied := t.TempDir()
-	copyFile(t, filepath.Join(root, pinsFile), filepath.Join(copied, pinsFile))
 	copyTree(t, filepath.Join(root, "resources/recordings/host/folders"), filepath.Join(copied, "resources/recordings/host/folders"))
 	definition := filepath.Join(copied, "resources/recordings/scenarios/host/folders.json")
 	copyFile(t, filepath.Join(root, "resources/recordings/scenarios/host/folders.json"), definition)
