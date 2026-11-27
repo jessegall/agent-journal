@@ -22,8 +22,15 @@ final readonly class ConditionalStep extends Step
     {
         $condition = $this->condition;
         $then = $sequence($this->then);
-        $else = $this->else === [] ? fn (object $stepInput): object => $stepInput : $sequence($this->else);
+        $else = $sequence($this->else);
 
-        return fn (object $stepInput): object => $condition($stepInput) ? $then($stepInput) : $else($stepInput);
+        return fn (object $carried, Closure $next): object => $condition($carried)
+            ? $then($carried, $next)
+            : $else($carried, $next);
+    }
+
+    public function carriesOn(array $carried, Closure $follow): array
+    {
+        return array_values(array_unique([...$follow($this->then, $carried), ...$follow($this->else, $carried)]));
     }
 }

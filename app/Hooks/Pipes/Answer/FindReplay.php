@@ -8,32 +8,33 @@ use App\Agents\Drivers\Hooks\DriverReply;
 use App\Bus\Contracts\Pipe;
 use App\Hooks\CallStages\LockedCall;
 use App\Hooks\Exceptions\HookDigestChanged;
-use App\Hooks\Exceptions\ReplayFound;
 use App\Models\Drivers\HookCall;
+use Closure;
 
 /**
- * Leaves the run with the recorded reply of a call answered before, under the stack lock and before anything else
- * runs; the same call id with other input is refused. A new call passes on unchanged.
+ * Answers a call answered before with its recorded reply, under the stack lock and before the rest of the pipeline
+ * runs; the same call id with other input is refused. A new call runs on through the rest.
  */
 final readonly class FindReplay implements Pipe
 {
     /**
-     * @throws ReplayFound
+     * @param  Closure(LockedCall): DriverReply  $next
+     *
      * @throws HookDigestChanged
      */
-    public function handle(LockedCall $locked): LockedCall
+    public function handle(LockedCall $locked, Closure $next): DriverReply
     {
         $identity = $locked->call->identity;
         $recorded = HookCall::query()->forHookId($identity->hookId)->first();
 
         if ($recorded === null) {
-            return $locked;
+            return $next($locked);
         }
 
         if (! $recorded->isSameCallAs($identity)) {
             throw HookDigestChanged::forCall($identity->hookId);
         }
 
-        throw ReplayFound::answeredBefore($identity->hookId, DriverReply::fromRecorded($recorded->answer));
+        return DriverReply::fromRecorded($recorded->answer);
     }
 }

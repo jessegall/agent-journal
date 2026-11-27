@@ -11,9 +11,11 @@ use App\Pipelines\Support\Step;
 use App\Reflection\CatalogueReflectorFactory;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Pipelines\AddOneToCount;
 use Tests\Fixtures\Pipelines\Counted;
 use Tests\Fixtures\Pipelines\CountIntoWordsPipeline;
 use Tests\Fixtures\Pipelines\CountLastWordPipeline;
+use Tests\Fixtures\Pipelines\CountTextPipeline;
 use Tests\Fixtures\Pipelines\CountWords;
 use Tests\Fixtures\Pipelines\CountWordsPipeline;
 use Tests\Fixtures\Pipelines\DropFirstWord;
@@ -42,7 +44,7 @@ final class PipelineRunnerTest extends TestCase
     public function test_each_pipe_turns_its_stage_into_the_next_and_the_pipeline_is_resolved_once(): void
     {
         CountWords::$built = 0;
-        $pipelines = new PipelineRunner(new CatalogueReflectorFactory());
+        $pipelines = new PipelineRunner(new CatalogueReflectorFactory(), []);
 
         $first = $pipelines->run(CountWordsPipeline::class, new Words('three small words'), Counted::class);
         $second = $pipelines->run(CountWordsPipeline::class, new Words('two words'), Counted::class);
@@ -55,7 +57,7 @@ final class PipelineRunnerTest extends TestCase
     {
         CountWords::$built = 0;
         $container = Container::getInstance();
-        $pipelines = new PipelineRunner(new CatalogueReflectorFactory());
+        $pipelines = new PipelineRunner(new CatalogueReflectorFactory(), []);
 
         $pipelines->run(CountWordsPipeline::class, new Words('one'), Counted::class);
         $pipelines->run(CountWordsPipeline::class, new Words('two'), Counted::class);
@@ -68,7 +70,7 @@ final class PipelineRunnerTest extends TestCase
     public function test_a_runner_made_before_a_request_builds_in_the_container_of_that_request(): void
     {
         $madeIn = Container::getInstance();
-        $pipelines = new PipelineRunner(new CatalogueReflectorFactory());
+        $pipelines = new PipelineRunner(new CatalogueReflectorFactory(), []);
         $request = new Container();
         Container::setInstance($request);
 
@@ -81,7 +83,7 @@ final class PipelineRunnerTest extends TestCase
 
     public function test_steps_listed_inline_run_in_order_with_no_definition_class(): void
     {
-        $pipelines = new PipelineRunner(new CatalogueReflectorFactory());
+        $pipelines = new PipelineRunner(new CatalogueReflectorFactory(), []);
 
         $counted = $pipelines->runSteps([CountWords::class], new Words('three small words'), Counted::class);
 
@@ -92,7 +94,7 @@ final class PipelineRunnerTest extends TestCase
 
     public function test_a_conditional_step_with_no_else_lets_the_value_go_on_when_its_condition_fails(): void
     {
-        $pipelines = new PipelineRunner(new CatalogueReflectorFactory());
+        $pipelines = new PipelineRunner(new CatalogueReflectorFactory(), []);
         $dropWhenLong = [
             Step::conditional(fn (Words $words) => str_word_count($words->text) > 2, then: DropFirstWord::class),
         ];
@@ -110,7 +112,7 @@ final class PipelineRunnerTest extends TestCase
         $this->expectException(StepOutOfOrder::class);
         $this->expectExceptionMessage(StepOutOfOrder::handing(CountWords::class, new Counted(0))->getMessage());
 
-        new PipelineRunner(new CatalogueReflectorFactory())->run(CountWordsPipeline::class, new Words('a b'), Counted::class);
+        new PipelineRunner(new CatalogueReflectorFactory(), [])->run(CountWordsPipeline::class, new Words('a b'), Counted::class);
     }
 
     public function test_a_run_that_ends_on_another_stage_is_named(): void
@@ -120,7 +122,7 @@ final class PipelineRunnerTest extends TestCase
             StepOutOfOrder::ending(CountWordsPipeline::class, Words::class, new Counted(0))->getMessage(),
         );
 
-        new PipelineRunner(new CatalogueReflectorFactory())->run(CountWordsPipeline::class, new Words('a b'), Words::class);
+        new PipelineRunner(new CatalogueReflectorFactory(), [])->run(CountWordsPipeline::class, new Words('a b'), Words::class);
     }
 
     public function test_a_value_the_pipeline_does_not_take_is_refused_before_its_first_step(): void
@@ -130,7 +132,7 @@ final class PipelineRunnerTest extends TestCase
             StepOutOfOrder::entering(CountWordsPipeline::class, Words::class, new Counted(0))->getMessage(),
         );
 
-        new PipelineRunner(new CatalogueReflectorFactory())->run(CountWordsPipeline::class, new Counted(0), Counted::class);
+        new PipelineRunner(new CatalogueReflectorFactory(), [])->run(CountWordsPipeline::class, new Counted(0), Counted::class);
     }
 
     public function test_a_pipeline_that_ends_on_another_type_than_it_declares_is_refused(): void
@@ -140,16 +142,35 @@ final class PipelineRunnerTest extends TestCase
             StepOutOfOrder::leaving(CountIntoWordsPipeline::class, Words::class, new Counted(2))->getMessage(),
         );
 
-        new PipelineRunner(new CatalogueReflectorFactory())->run(CountIntoWordsPipeline::class, new Words('a b'), Words::class);
+        new PipelineRunner(new CatalogueReflectorFactory(), [])->run(CountIntoWordsPipeline::class, new Words('a b'), Words::class);
     }
 
     public function test_a_nested_pipeline_a_repeated_pipeline_and_a_choice_run_as_steps(): void
     {
-        $pipelines = new PipelineRunner(new CatalogueReflectorFactory());
+        $pipelines = new PipelineRunner(new CatalogueReflectorFactory(), []);
 
         $counted = $pipelines->run(CountLastWordPipeline::class, new Words('one two three'), Counted::class);
         $nothing = $pipelines->run(CountLastWordPipeline::class, new Words(''), Counted::class);
 
         $this->assertSame([1, -1], [$counted->count, $nothing->count]);
+    }
+
+    public function test_a_pipe_with_next_answers_without_the_rest_and_a_context_pipe_carries_its_value_on(): void
+    {
+        $pipelines = new PipelineRunner(new CatalogueReflectorFactory(), []);
+
+        $empty = $pipelines->run(CountTextPipeline::class, new Words(''), Counted::class);
+        $words = $pipelines->run(CountTextPipeline::class, new Words('two words'), Counted::class);
+
+        $this->assertSame([0, 2], [$empty->count, $words->count]);
+    }
+
+    public function test_middleware_config_names_for_a_pipeline_runs_around_its_steps(): void
+    {
+        $pipelines = new PipelineRunner(new CatalogueReflectorFactory(), [CountTextPipeline::class => [AddOneToCount::class]]);
+
+        $counted = $pipelines->run(CountTextPipeline::class, new Words('two words'), Counted::class);
+
+        $this->assertSame(3, $counted->count);
     }
 }

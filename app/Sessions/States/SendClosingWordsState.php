@@ -7,7 +7,7 @@ namespace App\Sessions\States;
 use App\Messages\Commands\KeepClosingWordsPrivate\KeepClosingWordsPrivateCommand;
 use App\Messages\Commands\OfferClosingWords\OfferClosingWordsCommand;
 use App\Models\Drivers\DriverTurn;
-use App\Sessions\States\Support\ClosingWordsStateReference;
+use App\Sessions\States\Support\SendClosingWordsStateReference;
 use App\Stacks\AgentState;
 use App\Stacks\Attributes\StateType;
 use App\Stacks\Contracts\Work\BaseState;
@@ -21,8 +21,8 @@ use Generator;
  * The agent's closing words, for the session's whole life: a stop that ends a turn with words the turn has not offered
  * yet is refused once with the offer to send them, and a stop that repeats the words it was offered keeps them private.
  */
-#[StateType(ClosingWordsStateReference::class, schemaVersion: 1)]
-final class ClosingWordsState extends AgentState implements BaseState
+#[StateType(SendClosingWordsStateReference::class, schemaVersion: 1)]
+final class SendClosingWordsState extends AgentState implements BaseState
 {
     public function __construct(private readonly string $agentId, private readonly string $sessionId) {}
 

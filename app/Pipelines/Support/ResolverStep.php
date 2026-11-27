@@ -18,13 +18,18 @@ final readonly class ResolverStep extends Step
     {
         $resolve = $this->resolve;
 
-        return function (object $stepInput) use ($resolve, $sequence): object {
+        return function (object $carried, Closure $next) use ($resolve, $sequence): object {
             /**
              * @var class-string<Pipable> $chosen
              */
-            $chosen = $resolve($stepInput);
+            $chosen = $resolve($carried);
 
-            return $sequence([$chosen])($stepInput);
+            return $sequence([$chosen])($carried, $next);
         };
+    }
+
+    public function carriesOn(array $carried, Closure $follow): array
+    {
+        return ['mixed'];
     }
 }

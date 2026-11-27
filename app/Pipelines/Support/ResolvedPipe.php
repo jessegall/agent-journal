@@ -10,19 +10,21 @@ use App\Pipelines\Exceptions\StepOutOfOrder;
 use App\Reflection\Exceptions\ClassMissing;
 use App\Support\DeclaredType;
 use App\Support\Reflector;
-use PhpOption\None;
+use Closure;
 
 /**
- * A pipe of a resolved pipeline, with the input class its handle method takes, read once by reflection.
+ * A pipe of a resolved pipeline, with how its handle method is called, read once by reflection: with the carried
+ * value or the context, and with or without the rest of the pipeline as $next.
  */
 final readonly class ResolvedPipe
 {
     /**
-     * @param  Reflector<object>|null  $takes  the input class handle takes, or null when it takes any object
+     * @param  Reflector<object>|null  $takes  the value class handle takes, or null when it takes the context or any object
      */
     private function __construct(
         private Pipe $pipe,
         private Reflector|null $takes,
+        private PipeSignature $signature,
     ) {}
 
     /**
@@ -35,31 +37,38 @@ final readonly class ResolvedPipe
             throw NotAPipelineStep::named($pipe::class);
         }
 
-        $parameters = Reflector::of($pipe)->method('handle')->parameters();
-
-        $type = $parameters === [] ? None::create() : $parameters[0]->type()
-            ->filter(fn (DeclaredType $declared) => $declared->namesClass());
+        $signature = PipeSignature::of($pipe::class);
+        $type = $signature->takes->filter(fn (DeclaredType $declared) => $declared->namesClass());
 
         if ($type->isEmpty()) {
-            return new self($pipe, null);
+            return new self($pipe, null, $signature);
         }
 
-        $takes = $type->get()->name();
+        $takes = Reflector::find($type->get()->name())->getOrThrow(ClassMissing::for($type->get()->name()));
 
-        return new self($pipe, Reflector::find($takes)->getOrThrow(ClassMissing::for($takes)));
+        return new self($pipe, $takes, $signature);
     }
 
     /**
-     * Hands the input to the pipe and returns its output.
+     * Hands the carried value, or its context, to the pipe. A pipe that takes $next is handed the rest of the pipeline
+     * and returns the pipeline's output; any other returns the value the rest of the pipeline is run on.
      *
-     * @throws StepOutOfOrder when the pipe takes another input
+     * @param  Closure(object): object  $next
+     *
+     * @throws StepOutOfOrder when the pipe takes another value
      */
-    public function handle(object $input): object
+    public function handle(object $carried, Closure $next): object
     {
-        if ($this->takes !== null && $this->takes->not()->isInstance($input)) {
-            throw StepOutOfOrder::handing($this->pipe::class, $input);
+        if ($this->takes !== null && $this->takes->not()->isInstance($carried)) {
+            throw StepOutOfOrder::handing($this->pipe::class, $carried);
         }
 
-        return $this->pipe->handle($input);
+        $argument = $this->signature->takesContext ? new CarriedValue($carried) : $carried;
+
+        if ($this->signature->takesNext) {
+            return $this->pipe->handle($argument, $next);
+        }
+
+        return $next($this->pipe->handle($argument));
     }
 }

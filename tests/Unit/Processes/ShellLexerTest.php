@@ -35,7 +35,7 @@ final class ShellLexerTest extends TestCase
     {
         parent::setUp();
 
-        $this->lexer = new ShellLexer(new LexerScan(new PipelineRunner(new CatalogueReflectorFactory())));
+        $this->lexer = new ShellLexer(new LexerScan(new PipelineRunner(new CatalogueReflectorFactory(), [])));
     }
 
     public function test_a_quoted_separator_stays_inside_one_word(): void

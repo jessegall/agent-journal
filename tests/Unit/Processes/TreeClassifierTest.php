@@ -157,7 +157,7 @@ final class TreeClassifierTest extends TestCase
     private function classify(string $line): Classification
     {
         $container = new Container();
-        $container->bind(PipelineRunnerContract::class, PipelineRunner::class);
+        $container->instance(PipelineRunnerContract::class, new PipelineRunner(new CatalogueReflectorFactory(), []));
         $container->bind(ReflectorFactory::class, CatalogueReflectorFactory::class);
         $container->instance(ContainerContract::class, $container);
         $parser = $container->make(TreeParser::class);

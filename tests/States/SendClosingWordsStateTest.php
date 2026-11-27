@@ -7,8 +7,8 @@ namespace Tests\States;
 use App\Hooks\Enums\AnswerType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverTurn;
-use App\Sessions\States\ClosingWordsState;
-use App\Sessions\States\Support\ClosingWordsStateReference;
+use App\Sessions\States\SendClosingWordsState;
+use App\Sessions\States\Support\SendClosingWordsStateReference;
 use App\Stacks\References\StateReference;
 use Carbon\CarbonImmutable;
 use Tests\Support\Assertions\StateAssert;
@@ -23,8 +23,8 @@ use Tests\TestCase;
  * refused once with the offer to send them, a stop that repeats them keeps them private, and a stop with no words
  * passes.
  */
-#[TestsState(ClosingWordsState::class)]
-final class ClosingWordsStateTest extends TestCase
+#[TestsState(SendClosingWordsState::class)]
+final class SendClosingWordsStateTest extends TestCase
 {
     use CommitsHookRows;
 
@@ -60,6 +60,6 @@ final class ClosingWordsStateTest extends TestCase
 
     private function closingWords(): StateReference
     {
-        return ClosingWordsStateReference::forSession($this->journal->sessionOf('Planner')->target);
+        return SendClosingWordsStateReference::forSession($this->journal->sessionOf('Planner')->target);
     }
 }

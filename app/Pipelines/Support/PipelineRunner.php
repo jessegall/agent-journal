@@ -5,23 +5,31 @@ declare(strict_types=1);
 namespace App\Pipelines\Support;
 
 use App\Bus\Contracts\Pipable;
+use App\Bus\Contracts\Pipe;
 use App\Bus\Contracts\PipelineDefinition;
 use App\Bus\Contracts\PipelineRunner as PipelineRunnerContract;
 use App\Pipelines\Exceptions\StepOutOfOrder;
 use App\Reflection\Contracts\ReflectorFactory;
 use Closure;
+use Illuminate\Container\Attributes\Config;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Container\Container;
 
 /**
- * Runs a pipeline definition, each step taking the output of the one before. It outlives a request, so it builds every
- * pipe once per request from the container in hand, never the one it was made in. A pipe handed an input it does not
- * take, or an output the caller does not read, throws StepOutOfOrder.
+ * Runs a pipeline: each step is handed the carried value and the rest, configured middleware first (docs/pipelines.md).
+ * It builds every pipe once per request from the container in hand; a value out of order throws StepOutOfOrder.
  */
 #[Singleton]
 final class PipelineRunner implements PipelineRunnerContract
 {
-    public function __construct(private readonly ReflectorFactory $reflectors) {}
+    /**
+     * @param  array<class-string<PipelineDefinition<object, object>>, list<class-string<Pipe>>>  $middleware
+     */
+    public function __construct(
+        private readonly ReflectorFactory $reflectors,
+        #[Config('journal.pipelines.middleware')]
+        private readonly array $middleware,
+    ) {}
 
     /**
      * Runs the input through every step of the definition and returns the output of the last step.
@@ -34,7 +42,7 @@ final class PipelineRunner implements PipelineRunnerContract
      */
     public function run(string $definition, object $input, string $output): object
     {
-        $pipelineOutput = $this->step($definition)($input);
+        $pipelineOutput = $this->step($definition)($input, self::end(...));
 
         if (! $this->reflectors->make($output)->isInstance($pipelineOutput)) {
             throw StepOutOfOrder::ending($definition, $output, $pipelineOutput);
@@ -54,7 +62,7 @@ final class PipelineRunner implements PipelineRunnerContract
      */
     public function runSteps(array $steps, object $input, string $output): object
     {
-        $pipelineOutput = $this->sequence($steps)($input);
+        $pipelineOutput = $this->sequence($steps)($input, self::end(...));
 
         if (! $this->reflectors->make($output)->isInstance($pipelineOutput)) {
             throw StepOutOfOrder::endingSteps($output, $pipelineOutput);
@@ -67,7 +75,7 @@ final class PipelineRunner implements PipelineRunnerContract
      * The pipe or pipeline a class names, built the first time it runs in the request in hand.
      *
      * @param  class-string<Pipable>  $class
-     * @return Closure(object): object
+     * @return Closure(object, Closure(object): object): object
      */
     private function step(string $class): Closure
     {
@@ -77,15 +85,20 @@ final class PipelineRunner implements PipelineRunnerContract
     }
 
     /**
-     * @return Closure(object): object
+     * A pipeline runs whole as one step, its middleware first, and what it hands out is carried on.
+     *
+     * @return Closure(object, Closure(object): object): object
      */
     private function build(object $made): Closure
     {
-        if ($made instanceof PipelineDefinition) {
-            return $this->checked($made, $this->sequence($made->pipes()));
+        if (! $made instanceof PipelineDefinition) {
+            return ResolvedPipe::of($made)->handle(...);
         }
 
-        return ResolvedPipe::of($made)->handle(...);
+        $steps = $this->sequence([...$this->middleware[$made::class] ?? [], ...$made->pipes()]);
+        $whole = $this->checked($made, fn (object $input): object => $steps($input, self::end(...)));
+
+        return fn (object $carried, Closure $next): object => $next($whole($carried));
     }
 
     /**
@@ -117,37 +130,41 @@ final class PipelineRunner implements PipelineRunnerContract
     }
 
     /**
-     * One run through the steps in order. A pipe or pipeline is looked up only when the run reaches it, so a pipeline
-     * may list a pipeline that lists it again.
+     * One run through the steps in order, chained from the last back so each step's next is the rest. A pipe or
+     * pipeline is looked up only when the run reaches it, so a pipeline may list a pipeline that lists it again.
      *
      * @param  list<class-string<Pipable>|Step>  $steps
-     * @return Closure(object): object
+     * @return Closure(object, Closure(object): object): object
      */
     private function sequence(array $steps): Closure
     {
         $runs = array_map($this->runOf(...), $steps);
 
-        return function (object $input) use ($runs): object {
-            $stepInput = $input;
-
-            foreach ($runs as $run) {
-                $stepInput = $run($stepInput);
-            }
-
-            return $stepInput;
-        };
+        return fn (object $carried, Closure $next): object => array_reduce(
+            array_reverse($runs),
+            fn (Closure $rest, Closure $run): Closure => fn (object $value): object => $run($value, $rest),
+            $next,
+        )($carried);
     }
 
     /**
      * @param  class-string<Pipable>|Step  $step
-     * @return Closure(object): object
+     * @return Closure(object, Closure(object): object): object
      */
     private function runOf(string|Step $step): Closure
     {
         if (is_string($step)) {
-            return fn (object $stepInput): object => $this->step($step)($stepInput);
+            return fn (object $carried, Closure $next): object => $this->step($step)($carried, $next);
         }
 
         return $step->run($this->sequence(...));
+    }
+
+    /**
+     * The end of a run: the value the last step carried is the run's output.
+     */
+    private static function end(object $carried): object
+    {
+        return $carried;
     }
 }

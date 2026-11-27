@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Sessions\States\ClosingWordsState;
 use App\Sessions\States\ProfileState;
 use App\Sessions\States\ReadyState;
+use App\Sessions\States\SendClosingWordsState;
 
 $tunnels = env('SHARING_TUNNELS_DIR', storage_path('sharing'));
 
@@ -26,7 +26,7 @@ return [
         'base_states' => [
             ReadyState::class,
             ProfileState::class,
-            ClosingWordsState::class,
+            SendClosingWordsState::class,
         ],
 
     ],
@@ -637,6 +637,21 @@ return [
             'workspace.status',
             'script.run-evidence',
         ],
+    ],
+
+    'pipelines' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Middleware
+        |--------------------------------------------------------------------------
+        |
+        | Pipes that run around a pipeline, before its own steps, keyed by the
+        | pipeline class. Each takes the context or the carried value and $next,
+        | and returns the pipeline's output.
+        |
+        */
+
+        'middleware' => [],
     ],
 
     'processes' => [

@@ -16,7 +16,7 @@ use Illuminate\Container\Attributes\Scoped;
 final class BuiltSteps
 {
     /**
-     * @var array<class-string<Pipable>, Closure(object): object>
+     * @var array<class-string<Pipable>, Closure(object, Closure(object): object): object>
      */
     private array $steps = [];
 
@@ -24,8 +24,8 @@ final class BuiltSteps
      * The step built for the class in this request, built now when it is the first time.
      *
      * @param  class-string<Pipable>  $class
-     * @param  Closure(): (Closure(object): object)  $build
-     * @return Closure(object): object
+     * @param  Closure(): (Closure(object, Closure(object): object): object)  $build
+     * @return Closure(object, Closure(object): object): object
      */
     public function remember(string $class, Closure $build): Closure
     {

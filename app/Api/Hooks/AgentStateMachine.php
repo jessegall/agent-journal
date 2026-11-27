@@ -10,7 +10,6 @@ use App\Agents\Drivers\Hooks\DriverReply;
 use App\Bus\Contracts\PipelineRunner;
 use App\Hooks\CallStages\HookCallStage;
 use App\Hooks\Exceptions\HookDeadlineExpired;
-use App\Hooks\Exceptions\ReplayFound;
 use App\Hooks\Pipelines\AnswerHookPipeline;
 use App\Hooks\StateEvents\StateEventActivity;
 use App\Stacks\HookAnswer;
@@ -55,17 +54,13 @@ final readonly class AgentStateMachine
         $target = $this->access->target();
         $call = new HookCallStage($input, $capabilities, $render, $identity, $target);
 
-        try {
-            return $this->transaction->runAdmittedForTarget(
+        return $this->transaction->runAdmittedForTarget(
+            $target,
+            $deadline,
+            fn (): DriverReply => $this->eventActivity->evaluate(
                 $target,
-                $deadline,
-                fn (): DriverReply => $this->eventActivity->evaluate(
-                    $target,
-                    fn () => $this->pipelines->run(AnswerHookPipeline::class, $call, DriverReply::class),
-                ),
-            );
-        } catch (ReplayFound $replay) {
-            return $replay->reply;
-        }
+                fn () => $this->pipelines->run(AnswerHookPipeline::class, $call, DriverReply::class),
+            ),
+        );
     }
 }

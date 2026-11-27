@@ -143,7 +143,7 @@ final class ProgramIdentityTest extends TestCase
     private function parser(): TreeParser
     {
         $container = new Container();
-        $container->bind(PipelineRunnerContract::class, PipelineRunner::class);
+        $container->instance(PipelineRunnerContract::class, new PipelineRunner(new CatalogueReflectorFactory(), []));
         $container->bind(ReflectorFactory::class, CatalogueReflectorFactory::class);
         $container->instance(ContainerContract::class, $container);
 

@@ -22,14 +22,19 @@ final readonly class RepeatedStep extends Step
         $round = $sequence($this->steps);
         $while = $this->while;
 
-        return function (object $input) use ($round, $while): object {
-            $stepInput = $input;
+        return function (object $carried, Closure $next) use ($round, $while): object {
+            $value = $carried;
 
-            while ($while($stepInput)) {
-                $stepInput = $round($stepInput);
+            while ($while($value)) {
+                $value = $round($value, fn (object $roundEnd): object => $roundEnd);
             }
 
-            return $stepInput;
+            return $next($value);
         };
+    }
+
+    public function carriesOn(array $carried, Closure $follow): array
+    {
+        return array_values(array_unique([...$carried, ...$follow($this->steps, $carried)]));
     }
 }

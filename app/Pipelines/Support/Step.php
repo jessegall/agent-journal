@@ -51,10 +51,21 @@ abstract readonly class Step implements Pipable
     }
 
     /**
-     * The step as the runner runs it, given the way the runner turns a list of steps into one run.
+     * The step as the runner runs it, given the way the runner turns a list of steps into one run: it takes the
+     * carried value and the rest of the pipeline, and returns what the rest returns.
      *
-     * @param  Closure(list<class-string<Pipable>|Step>): (Closure(object): object)  $sequence
-     * @return Closure(object): object
+     * @param  Closure(list<class-string<Pipable>|Step>): (Closure(object, Closure(object): object): object)  $sequence
+     * @return Closure(object, Closure(object): object): object
      */
     abstract public function run(Closure $sequence): Closure;
+
+    /**
+     * The types the step carries on, read without running it, given the types carried to it and the way the validator
+     * follows a list of steps; mixed stands for a type only a run can tell.
+     *
+     * @param  list<string>  $carried
+     * @param  Closure(list<class-string<Pipable>|Step>, list<string>): list<string>  $follow
+     * @return list<string>
+     */
+    abstract public function carriesOn(array $carried, Closure $follow): array;
 }

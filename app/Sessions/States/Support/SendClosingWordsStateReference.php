@@ -13,7 +13,7 @@ use App\Values\StackTarget;
 /**
  * Builds the closing-words state of one session's stack.
  */
-final class ClosingWordsStateReference extends StateReferenceFactory implements BaseStateReference
+final class SendClosingWordsStateReference extends StateReferenceFactory implements BaseStateReference
 {
     public static function key(): string
     {

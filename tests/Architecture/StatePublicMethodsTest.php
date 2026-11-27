@@ -11,10 +11,8 @@ use App\Support\Reflector;
 use Tests\Fixtures\StatePublicMethods\DataLeakingState;
 
 /**
- * A state hands out none of its data: its public methods are only what the stack calls, its hooks, event listeners and
- * lifecycle (every on* method, which the state's own checks hold to those) and the methods AgentState or a contract it
- * implements declares. Any other public method, and any static one, is refused; a state reaches out with what it
- * publishes instead. Tests read a state as they like.
+ * A state hands out none of its data: its public methods are only its on* hooks, listeners and lifecycle and the
+ * methods AgentState or a contract it implements declares; any other public or static method is refused (user 29111).
  */
 final class StatePublicMethodsTest extends TestCase
 {
