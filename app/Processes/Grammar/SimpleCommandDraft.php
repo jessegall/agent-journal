@@ -53,6 +53,6 @@ final readonly class SimpleCommandDraft
 
     public function asArrayAssignment(): self
     {
-        return new self($this->toParse, $this->parts, true);
+        return clone ($this, ['isArrayAssignment' => true]);
     }
 }

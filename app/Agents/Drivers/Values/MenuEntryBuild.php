@@ -37,6 +37,6 @@ final class MenuEntryBuild extends Data
      */
     public function markedStale(string $reason, array $screen): self
     {
-        return new self($this->build, true, $reason, $screen, $this->provenAt);
+        return clone ($this, ['isStale' => true, 'staleReason' => $reason, 'staleScreen' => $screen]);
     }
 }

@@ -29,12 +29,12 @@ final readonly class StepOutcome
      */
     public function negated(): self
     {
-        return new self($this->status->negated(), $this->context, $this->output);
+        return clone ($this, ['status' => $this->status->negated()]);
     }
 
     public function withContext(ExecutionContext $context): self
     {
-        return new self($this->status, $context, $this->output);
+        return clone ($this, ['context' => $context]);
     }
 
     /**

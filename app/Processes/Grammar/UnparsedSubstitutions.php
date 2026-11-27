@@ -27,7 +27,7 @@ final readonly class UnparsedSubstitutions
      */
     public function inside(Word $word): self
     {
-        return new self($this->context, $word, $this->owner, $this->depth + 1);
+        return clone ($this, ['word' => $word, 'depth' => $this->depth + 1]);
     }
 
     /**

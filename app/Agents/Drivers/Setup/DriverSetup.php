@@ -113,26 +113,7 @@ final readonly class DriverSetup
      */
     public function forFamily(string $family): self
     {
-        return new self(
-            $family,
-            $this->driver,
-            $this->arguments,
-            $this->versionProbe,
-            $this->signInProbe,
-            $this->signInReader,
-            $this->layout,
-            $this->keyScripts,
-            $this->headlessTurns,
-            $this->signIn,
-            $this->accountSettings,
-            $this->skills,
-            $this->hookAdapter,
-            $this->isolation,
-            $this->refusals,
-            $this->signInRefusals,
-            $this->environment,
-            $this->plan,
-        );
+        return clone ($this, ['family' => $family]);
     }
 
     /**

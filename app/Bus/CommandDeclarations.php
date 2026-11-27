@@ -26,7 +26,7 @@ final readonly class CommandDeclarations
      */
     public function withCommands(array $commands): self
     {
-        return new self($this->owners, $commands, $this->middleware);
+        return clone ($this, ['commands' => $commands]);
     }
 
     /**
@@ -34,7 +34,7 @@ final readonly class CommandDeclarations
      */
     public function withMiddleware(array $middleware): self
     {
-        return new self($this->owners, $this->commands, $middleware);
+        return clone ($this, ['middleware' => $middleware]);
     }
 
     /**

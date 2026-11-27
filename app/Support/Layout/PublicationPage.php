@@ -44,7 +44,7 @@ final readonly class PublicationPage
      */
     public function withStanding(LayoutPartData ...$parts): self
     {
-        return new self($this->title, $this->metadata, $this->summary, $this->body, $this->tabs, array_values($parts));
+        return clone ($this, ['standing' => array_values($parts)]);
     }
 
     /**
