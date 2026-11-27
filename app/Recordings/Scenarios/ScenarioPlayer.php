@@ -44,6 +44,11 @@ final readonly class ScenarioPlayer
     private const int LOOK_NANOSECONDS = 500_000_000;
 
     /**
+     * How many looks, half a second apart, an ask-user step gives the sign-in's link to be kept.
+     */
+    private const int LINK_LOOKS = 20;
+
+    /**
      * The journal instructs a host what no session instructions, as its own host control does.
      */
     private const string TRUSTED_ENTRY = 'recorded scenarios';
