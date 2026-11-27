@@ -6,15 +6,8 @@ declare(strict_types=1);
  * What the model scripts share: the PHP files under a path, and whether a parsed class is an Eloquent model.
  */
 
+use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node\Stmt\Class_;
-
-const MODEL_PARENTS = [
-    'Model',
-    'Pivot',
-    'MorphPivot',
-    'Authenticatable',
-    'PackagePasskey',
-];
 
 /**
  * What a static model method's body does when it makes a row.
@@ -59,5 +52,7 @@ function phpFiles(string $path): array
 
 function isModel(Class_ $class): bool
 {
-    return $class->extends !== null && in_array($class->extends->getLast(), MODEL_PARENTS, true);
+    $name = $class->namespacedName?->toString();
+
+    return $name !== null && class_exists($name) && is_subclass_of($name, Model::class);
 }

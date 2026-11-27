@@ -19,6 +19,15 @@ final class ScenarioStuck extends RuntimeException
         return new self("The record script did not run \"{$line}\" within {$seconds} seconds: {$script}");
     }
 
+    public static function quiet(string $scenario, int $step, ScenarioFact $fact, int $seconds): self
+    {
+        $place = $step + 1;
+
+        $quiet = "waiting for {$fact->value}, its session showed no life for {$seconds} seconds";
+
+        return new self("The scenario {$scenario} is stuck at step {$place}: {$quiet}.");
+    }
+
     public static function at(string $scenario, int $step, ScenarioFact $fact, int $seconds): self
     {
         $place = $step + 1;

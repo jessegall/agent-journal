@@ -19,6 +19,7 @@ use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Recordings\Scenarios\Exceptions\ScenarioStuck;
 use App\Time\Contracts\Sleeper;
 use App\Values\FilePath;
+use Carbon\CarbonImmutable;
 use Closure;
 
 /**
@@ -50,6 +51,11 @@ final readonly class ScenarioPlayer
      */
     private const int MACHINE_CHANGE_SECOND_LIMIT = 1200;
 
+    /**
+     * How long a waiting play lets its session show no life before it ends the play as stuck.
+     */
+    private const int QUIET_SECOND_LIMIT = 20;
+
     public function __construct(
         private OwnerCommands $commands,
         private JournalCommands $journal,
@@ -64,15 +70,19 @@ final readonly class ScenarioPlayer
      * pause and answers the line the user typed.
      *
      * @param  Closure(ScenarioPause): string  $askUser
+     * @param  Closure(string): void  $tell  hears a line for each step as it begins and ends, for whoever watches
      *
      * @throws ScenarioStuck
      * @throws ScenarioInvalid
      */
-    public function play(ScenarioRun $run, Closure $askUser): void
+    public function play(ScenarioRun $run, Closure $askUser, Closure $tell): void
     {
-        foreach ($run->scenario->steps as $step) {
+        foreach ($run->scenario->steps as $index => $step) {
+            $began = microtime(true);
+            $tell(sprintf('step %d: %s', $index + 1, $step->summary()));
             $this->playStep($run, $step, $askUser);
             $run->stepRan();
+            $tell(sprintf('step %d done after %.1f s', $index + 1, microtime(true) - $began));
         }
     }
 
@@ -84,7 +94,8 @@ final readonly class ScenarioPlayer
     private function playStep(ScenarioRun $run, ScenarioStep $step, Closure $askUser): void
     {
         if ($step->stepType->isHostInstruction()) {
-            $this->journal->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $step->commandFor($run, $this->drivers));
+            $instruction = $step->commandFor($run, $this->drivers);
+            $this->journal->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $instruction);
 
             return;
         }
@@ -138,9 +149,20 @@ final readonly class ScenarioPlayer
     {
         $looks = intdiv($seconds * 1_000_000_000, self::LOOK_NANOSECONDS);
 
+        $began = CarbonImmutable::now();
+
         for ($look = 0; $look <= $looks; $look++) {
             if ($fact->isReached($run)) {
                 return;
+            }
+
+            // A session that shows no life for a while waits for nothing more: the play ends at once (user 28825).
+            $life = $run->lastLifeAt();
+            $quietSeconds = $life === null ? 0 : max($life, $began)->diffInSeconds(CarbonImmutable::now());
+            $isQuiet = $quietSeconds > self::QUIET_SECOND_LIMIT;
+
+            if ($isQuiet) {
+                throw ScenarioStuck::quiet($run->scenario->name, $run->stepIndex(), $fact, self::QUIET_SECOND_LIMIT);
             }
 
             $this->sleeper->sleep(self::LOOK_NANOSECONDS);

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Agents\Commands\CancelSessionStart\CancelSessionStartCommand;
 use App\Agents\Commands\CreateAgent\CreateAgentCommand;
 use App\Agents\Commands\StopAgent\StopAgentCommand;
+use App\Bus\Contracts\CommandRefusal;
 use App\Bus\Contracts\OwnerCommands;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
@@ -31,6 +33,7 @@ use App\Recordings\Scenarios\ScenarioRun;
 use App\Values\FilePath;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Config;
+use Throwable;
 
 /**
  * Plays a scenario on this journal as the owner while recording is on, and writes its recording: the scenario is
@@ -73,7 +76,11 @@ final class PlayScenarioCommand extends Command
             $run = new ScenarioRun($scenario, $owner, $this->agentsOf($scenario, $commands), $agentImage);
 
             $drafts->openRun($scenario);
-            $player->play($run, fn (ScenarioPause $pause) => $this->askUser($pause));
+            $player->play(
+                $run,
+                fn (ScenarioPause $pause) => $this->askUser($pause),
+                fn (string $line) => $this->line($line),
+            );
             $drafts->closeRun();
             $folder = $finisher->finish($drafts->run());
             $drafts->clear();
@@ -83,6 +90,11 @@ final class PlayScenarioCommand extends Command
                 $this->stopAgentsOf($run, $commands);
 
                 return self::FAILURE;
+            } catch (Throwable $failed) {
+                // Any other failure ends the play too, and still leaves no agent of it running.
+                $this->stopAgentsOf($run, $commands);
+
+                throw $failed;
             }
 
         $this->info("Recorded {$name} into {$folder->relative}.");
@@ -116,7 +128,13 @@ final class PlayScenarioCommand extends Command
     {
         foreach ($run?->runningAgents() ?? [] as $agent) {
             $session = (string) $agent->current_session_id;
-            $commands->run(new StopAgentCommand($agent->id, $session, "scenario-cleanup-{$session}"));
+
+            // A session still starting has nothing to stop yet; its start is cancelled instead.
+            try {
+                $commands->run(new StopAgentCommand($agent->id, $session, "scenario-cleanup-{$session}"));
+            } catch (CommandRefusal) {
+                $commands->run(new CancelSessionStartCommand($agent->id, $session, "scenario-cancel-{$session}"));
+            }
         }
     }
 

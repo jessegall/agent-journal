@@ -883,17 +883,6 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Only the hosts of the runtimes, as a subquery.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function hostIds(Builder $query): void
-    {
-        $query->select('host_id');
-    }
-
-    /**
      * Only the sessions of the runtimes, as a subquery.
      *
      * @param  Builder<self>  $query

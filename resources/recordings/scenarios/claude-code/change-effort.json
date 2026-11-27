@@ -10,8 +10,8 @@
         },
         {
             "do": "wait-for",
-            "fact": "answering",
-            "seconds": 120
+            "fact": "turn-ended",
+            "seconds": 180
         },
         {
             "do": "change-effort",

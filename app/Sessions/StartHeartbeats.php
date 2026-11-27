@@ -177,14 +177,14 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     }
 
     /**
-     * Ends each session silent since the cutoff whose host still beats for another session within the presence
-     * window: the host is there but no longer serves this one, so it never comes back by itself.
+     * Ends each session silent since the cutoff whose host still answers the journal within the presence window: the
+     * host is there but no longer serves this one, so it never comes back by itself, also when it is the host's only
+     * session, such as a start whose probe ended and whose container never opened.
      */
     private function endUnservedSince(CarbonImmutable $cutoff, CarbonImmutable $presenceCutoff): void
     {
-        $liveHosts = AgentRuntime::query()
-            ->ofSessions(AgentSession::query()->beatAfter($presenceCutoff)->keys())
-            ->hostIds();
+        $unreachable = Host::query()->unreachableSince($presenceCutoff)->keys();
+        $liveHosts = Host::query()->unrevoked()->excludingKeys($unreachable)->keys();
 
         AgentSession::query()
             ->withStatus(SessionStatus::Silent)

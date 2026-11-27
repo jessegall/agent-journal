@@ -15,6 +15,11 @@ use App\Terminals\Screens\ScreenReading;
 final readonly class ScreenExpectation
 {
     /**
+     * The no-break space, read as a plain space when a row is matched.
+     */
+    private const string NO_BREAK_SPACE = "\u{00A0}";
+
+    /**
      * @param  list<string>  $words
      */
     private function __construct(
@@ -83,7 +88,8 @@ final readonly class ScreenExpectation
      */
     private function holdsEveryWord(string $row, array $values): bool
     {
-        $text = mb_strtolower($row);
+        // A terminal draws some gaps as no-break spaces, such as the one after Claude Code's prompt mark.
+        $text = mb_strtolower(str_replace(self::NO_BREAK_SPACE, ' ', $row));
 
         $words = array_map(fn (string $word) => mb_strtolower(KeyStep::filled($word, $values)), $this->words);
 

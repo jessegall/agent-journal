@@ -102,6 +102,10 @@ final class ScenarioStep extends Data
             $run->holdStartRequest(strtolower((string) Str::ulid()));
         }
 
+        if ($this->stepType === ScenarioStepType::SendMessage) {
+            $run->askTurn();
+        }
+
         return match ($this->stepType) {
             ScenarioStepType::StartSession => new StartAgentCommand(new StartRequest(
                 $run->startRequest(),
@@ -192,6 +196,23 @@ final class ScenarioStep extends Data
             ScenarioStepType::UpgradeHost => new InstructHostUpgradeCommand($host),
             default => new AllowHostImagesCommand($host, array_map($run->imageNamed(...), $this->images ?? [])),
         };
+    }
+
+    /**
+     * The step in a few words, for whoever watches a play: what it does and to whom or what.
+     */
+    public function summary(): string
+    {
+        $parts = [
+            $this->stepType->value,
+            $this->agent,
+            $this->model,
+            $this->effort,
+            $this->fact?->value,
+            $this->text === null ? null : '"'.mb_strimwidth($this->text, 0, 60, '…').'"',
+        ];
+
+        return implode(' ', array_filter($parts, fn (string|null $part) => $part !== null));
     }
 
     /**

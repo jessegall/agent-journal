@@ -85,26 +85,28 @@ final class LocalHostTest extends TestCase
         $this->assertTrue($this->checkout->docker->hasBuilt('agent'));
     }
 
-    public function test_a_change_to_the_hosts_own_program_builds_the_runner_but_not_the_agent_image(): void
+    public function test_a_go_change_builds_no_image_as_the_mac_runs_the_checkouts_builds(): void
     {
-        // The agent image runs only the programs its Dockerfile builds (scripts/agent-image-programs.sh).
+        // Locally the host and the agent image's programs run from scripts/dev-watch-host.sh's builds.
         $this->setUpLocalHost();
         $this->checkout->write('programs/agent/cmd/journal-agent/main.go', "package main\n\nfunc main() {}\n");
-
-        $this->setUpLocalHost();
-
-        $this->assertTrue($this->checkout->docker->hasBuilt('runner'));
-        $this->assertFalse($this->checkout->docker->hasBuilt('agent'));
-    }
-
-    public function test_a_change_to_a_program_the_agent_image_runs_builds_it_again(): void
-    {
-        $this->setUpLocalHost();
         $this->checkout->write('programs/agent/cmd/journal-init/main.go', "package main\n\nfunc main() {}\n");
 
         $this->setUpLocalHost();
 
-        $this->assertTrue($this->checkout->docker->hasBuilt('agent'));
+        $this->assertFalse($this->checkout->docker->hasBuilt('runner'));
+        $this->assertFalse($this->checkout->docker->hasBuilt('agent'));
+    }
+
+    public function test_a_change_to_the_apps_php_builds_no_image_as_the_mac_mounts_it(): void
+    {
+        $this->setUpLocalHost();
+        $this->checkout->write('app/Example.php', "<?php\n");
+
+        $this->setUpLocalHost();
+
+        $this->assertFalse($this->checkout->docker->hasBuilt('runner'));
+        $this->assertFalse($this->checkout->docker->hasBuilt('agent'));
     }
 
     public function test_fresh_removes_the_containers_and_the_enrolment_first(): void

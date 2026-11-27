@@ -125,6 +125,17 @@ final class MarkSilentSessionsTest extends TestCase
         );
     }
 
+    public function test_a_session_long_silent_alone_on_a_host_that_still_answers_is_ended_as_unserved(): void
+    {
+        // Such as a start whose probe ended while the journal restarted, so its container never opened.
+        [, $alone] = $this->openRuntime();
+        $this->silenceSince($alone, CarbonImmutable::now()->subMinutes(11));
+
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+
+        $this->assertFalse(AgentSession::query()->findOrFail($alone->sessionId)->isActive());
+    }
+
     private function start(): StartedAgent
     {
         $name = 'Test agent '.++$this->startCount;

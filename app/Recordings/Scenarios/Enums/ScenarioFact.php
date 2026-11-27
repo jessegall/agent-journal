@@ -8,7 +8,6 @@ use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Accounts\SignInAttempt;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Drivers\DriverTurn;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionRequest;
@@ -45,7 +44,9 @@ enum ScenarioFact: string
                 DriverOperation::Wake,
             ),
             self::StartRefused => SessionRequest::findUnderRequest($run->startRequest())?->isRefused() === true,
-            self::TurnEnded => DriverTurn::hasLastEndedOf((string) $run->lastAgent()->current_session_id),
+            // A turn ends when its wake or message is applied: the driver reports it so once the turn is done.
+            self::TurnEnded => DriverRequest::countTurnsEndedOf((string) $run->lastAgent()->current_session_id)
+                >= $run->turnsAsked(),
             self::Interrupted => DriverRequest::hasAppliedOf(
                 (string) $run->lastAgent()->current_session_id,
                 DriverOperation::Interrupt,

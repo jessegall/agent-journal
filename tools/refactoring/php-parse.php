@@ -8,6 +8,8 @@ declare(strict_types=1);
  */
 
 use PhpParser\Node;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser;
 
 /**
@@ -22,6 +24,8 @@ function parsedOnce(Parser $parser, string $file, string $code): array
     }
 
     $parsed[$file] = true;
+    // Each declaration learns its full name, and no name in the tree is changed.
+    $traverser = new NodeTraverser(new NameResolver(null, ['replaceNodes' => false]));
 
-    return $parser->parse($code) ?? [];
+    return $traverser->traverse($parser->parse($code) ?? []);
 }

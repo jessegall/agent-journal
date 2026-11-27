@@ -46,24 +46,23 @@ build_changed_images() {
     done
 }
 
-# The agent image follows what it runs besides the drivers, as scripts/agent-image-programs.sh lists it.
+# Locally the Go programs and the app's PHP come from the checkout (compose.override.yaml), so an image follows only
+# what the checkout cannot replace: its Dockerfile, its packages and the drivers' pins.
 read_source_state() {
     case "$1" in
-        agent) sh scripts/agent-image-programs.sh ;;
-        runner) read_checkout_tree ;;
+        agent) read_image_inputs .docker/helper ;;
+        runner) read_image_inputs .docker/app composer.json composer.lock ;;
     esac
 }
 
-# The tree git would commit from the checkout as it is now, less the image record each build writes into it.
-read_checkout_tree() {
-    local index tree
+# The paths named, as git would commit them now.
+read_image_inputs() {
+    local index
     index=$(mktemp)
     cp "$(git rev-parse --git-path index)" "$index"
-    env GIT_INDEX_FILE="$index" git add -A
-    env GIT_INDEX_FILE="$index" git rm -q --cached --ignore-unmatch docs/accounts/docker-images.json
-    tree=$(env GIT_INDEX_FILE="$index" git write-tree)
+    env GIT_INDEX_FILE="$index" git add -A -- "$@"
+    env GIT_INDEX_FILE="$index" git ls-files -s -- "$@" | shasum -a 256
     rm -f "$index"
-    echo "$tree"
 }
 
 write_contained_settings() {

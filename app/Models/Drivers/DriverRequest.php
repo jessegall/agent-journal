@@ -708,6 +708,31 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     // ----------[ Queries ]----------
 
     /**
+     * When a request of the session's runtime last moved on, none before its first.
+     */
+    public static function resolveLastMovedAtOf(string $sessionId): CarbonImmutable|null
+    {
+        $runtime = AgentRuntime::findForSession($sessionId);
+        $moved = $runtime === null ? null : self::query()->ofRuntime($runtime)->max('updated_at');
+
+        return $moved === null ? null : CarbonImmutable::parse((string) $moved);
+    }
+
+    /**
+     * How many turns of the session's runtime ended: each wake and message whose turn the driver reported done.
+     */
+    public static function countTurnsEndedOf(string $sessionId): int
+    {
+        $runtime = AgentRuntime::findForSession($sessionId);
+
+        return $runtime === null ? 0 : self::query()
+            ->ofRuntime($runtime)
+            ->whereIn('operation', [DriverOperation::Wake, DriverOperation::Deliver])
+            ->where('progress', RequestProgress::Applied)
+            ->count();
+    }
+
+    /**
      * Whether a request of the operation was carried out on the session's runtime.
      */
     public static function hasAppliedOf(string $sessionId, DriverOperation $operation): bool

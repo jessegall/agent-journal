@@ -80,6 +80,18 @@ final class HookCall extends JournalModel implements EventSource, ReadableModel
         return $this->event_id === $hook->hookId && hash_equals($this->input_digest, $hook->inputDigest);
     }
 
+    // ----------[ Queries ]----------
+
+    /**
+     * When the session's driver last called a hook, none before its first.
+     */
+    public static function resolveLastAtOf(string $sessionId): CarbonImmutable|null
+    {
+        $last = self::query()->acrossEveryAgent()->forSession($sessionId)->max('created_at');
+
+        return $last === null ? null : CarbonImmutable::parse((string) $last);
+    }
+
     // ----------[ Scopes ]----------
 
     /**
@@ -100,6 +112,17 @@ final class HookCall extends JournalModel implements EventSource, ReadableModel
     protected function acrossEveryAgent(Builder $query): void
     {
         $query->withoutGlobalScope(AgentSessionScope::class);
+    }
+
+    /**
+     * The calls of one session.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forSession(Builder $query, string $sessionId): void
+    {
+        $query->where('session_id', $sessionId);
     }
 
     /**
@@ -129,7 +152,7 @@ final class HookCall extends JournalModel implements EventSource, ReadableModel
     #[Scope]
     protected function authorizedFor(Builder $query, StackTarget $target): void
     {
-        $query->withoutGlobalScope(AgentSessionScope::class)
+        $query->acrossEveryAgent()
             ->where('agent_id', $target->agentId)
             ->where('session_id', $target->sessionId);
     }

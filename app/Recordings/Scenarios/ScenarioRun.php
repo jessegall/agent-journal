@@ -7,6 +7,8 @@ namespace App\Recordings\Scenarios;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\HookCall;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
@@ -28,6 +30,8 @@ final class ScenarioRun
     private string|null $signInCode = null;
 
     private int $stepsRun = 0;
+
+    private int $turnsAsked = 0;
 
     private string|null $lastAgent = null;
 
@@ -139,6 +143,42 @@ final class ScenarioRun
     public function holdStartRequest(string $requestId): void
     {
         $this->startRequest = $requestId;
+        $this->turnsAsked = 1;
+    }
+
+    /**
+     * A message was sent, which asks the session for one more turn.
+     */
+    public function askTurn(): void
+    {
+        $this->turnsAsked++;
+    }
+
+    /**
+     * When the session of the agent the steps named last last showed life: a request of it moved on or its driver
+     * called a hook; none while no step named an agent.
+     */
+    public function lastLifeAt(): CarbonImmutable|null
+    {
+        if ($this->lastAgent === null) {
+            return null;
+        }
+
+        $session = (string) $this->lastAgent()->current_session_id;
+        $moments = array_filter([
+            DriverRequest::resolveLastMovedAtOf($session),
+            HookCall::resolveLastAtOf($session),
+        ]);
+
+        return $moments === [] ? null : max($moments);
+    }
+
+    /**
+     * How many turns the play asked of its session: the start's wake and each message sent since.
+     */
+    public function turnsAsked(): int
+    {
+        return $this->turnsAsked;
     }
 
     /**
