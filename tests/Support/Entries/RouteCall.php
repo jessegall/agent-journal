@@ -52,6 +52,13 @@ final class RouteCall
     public private(set) string|null $hiddenFrom = null;
 
     /**
+     * The JSON fields the answer must hold, as the caller on the other side of the wire reads them.
+     *
+     * @var array<string, mixed>
+     */
+    public private(set) array $answer = [];
+
+    /**
      * The address a recorded page request was sent to, in place of the one built from the route's name.
      */
     public private(set) string|null $recordedAddress = null;
@@ -153,6 +160,18 @@ final class RouteCall
     public function reply(string $command, mixed $reply): self
     {
         $this->replies[$command] = $reply;
+
+        return $this;
+    }
+
+    /**
+     * The fields the answer holds, so a key the other side reads cannot drift from the one the route writes.
+     *
+     * @param  array<string, mixed>  $answer
+     */
+    public function answers(array $answer): self
+    {
+        $this->answer = $answer;
 
         return $this;
     }

@@ -26,6 +26,7 @@ final class AccountHostFoldersAnswerPostTest extends GuardedRouteEntryTestCase
         return RouteCall::as(Caller::SharedHost, $host)
             ->parameters(['instruction' => 'instruction-1'])
             ->reply(ReadHostFolderAnswerCommand::class, new HostFolderAnswer(HostInstructionStatus::Done, '', false))
+            ->answers(['status' => 'done', 'reason' => '', 'is_bound' => false])
             ->expects(ReadHostFolderAnswerCommand::class, ['hostId' => $host->hostId, 'instructionId' => 'instruction-1']);
     }
 }
