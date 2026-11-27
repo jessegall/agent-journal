@@ -624,6 +624,14 @@
             "claude_code": "2.1.323",
             "codex": "0.165.0",
             "built_at": "2026-11-27T20:35:43+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:4d0d5dc2e016890e78176696d0750373c2df23a530bb6ec29c26bc22f9c2638d",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-27T20:43:51+00:00"
         }
     ]
 }
