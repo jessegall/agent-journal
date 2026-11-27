@@ -2409,8 +2409,8 @@ const projChip=id=>id==='global'?`<span class="chip">Global</span>`:`<span class
 const selName=()=>SELPROJ==='all'?'All projects':projLabel(projById(SELPROJ));
 const baseTopbarHtml=topbarHtml;
 topbarHtml=function(){return baseTopbarHtml().replace('</nav>',`</nav><button class="pill" data-projmenu data-fk="projmenu" aria-haspopup="menu" aria-label="Project: ${esc(selName())}" title="Choose the project you see">${I('docs','s14')}${esc(selName())}${I('caret','s14')}</button>`)};
-const basePageHtml=pageHtml;
-pageHtml=function(){const h=basePageHtml();if(!['tasks','plans','docs'].includes(page)||showEmpty)return h;let shown=0;
+const emptyListPageHtml=pageHtml;
+pageHtml=function(){const h=emptyListPageHtml();if(!['tasks','plans','docs'].includes(page)||showEmpty)return h;let shown=0;
   const out=h.replace(/<button class="lrow" data-item="((?:ptask|pplan|pdoc):\d+)"([^>]*)>([\s\S]*?)<\/button>/g,(all,ref,attrs,inner)=>{const p=PROJ_OF(ref);
     if(SELPROJ!=='all'&&p!==SELPROJ&&p!=='global')return '';shown++;
     const label=SELPROJ==='all'||p==='global'?projChip(p):'';
