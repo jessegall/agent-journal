@@ -11,10 +11,11 @@ const text = computed(() => (props.count > props.max ? `${props.max}+` : String(
 </script>
 
 <template>
-    <span
-        v-if="count > 0"
-        aria-hidden="true"
-        class="absolute -top-0.5 -right-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-brand px-[3px] text-meta font-semibold text-on-brand"
-        >{{ text }}</span
-    >
+    <template v-if="count > 0">
+        <span
+            aria-hidden="true"
+            class="absolute -top-0.5 -right-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-brand px-[3px] text-meta font-semibold text-on-brand"
+            >{{ text }}</span
+        >
+    </template>
 </template>

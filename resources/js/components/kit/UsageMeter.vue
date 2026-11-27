@@ -27,25 +27,33 @@ const period = defineModel<string>('period', { default: '' });
 <template>
     <SwitchCase :value="variant">
         <template #row>
-            <span v-if="amountLeft" class="text-small text-text-2 tabular-nums">{{ amountLeft }}</span>
-            <span v-else-if="value === undefined" class="text-small text-text-3">Usage unavailable</span>
-            <Tooltip v-else :text="tip ?? ''">
-                <template #default="{ describedBy }">
-                    <Meter :aria-describedby="describedBy" size="md" :width="84" :value="value" :label="`${value}% used`" />
-                </template>
-            </Tooltip>
+            <template v-if="amountLeft">
+                <span class="text-small text-text-2 tabular-nums">{{ amountLeft }}</span>
+            </template>
+            <template v-else-if="value === undefined">
+                <span class="text-small text-text-3">Usage unavailable</span>
+            </template>
+            <template v-else>
+                <Tooltip :text="tip ?? ''">
+                    <template #default="{ describedBy }">
+                        <Meter :aria-describedby="describedBy" size="md" :width="84" :value="value" :label="`${value}% used`" />
+                    </template>
+                </Tooltip>
+            </template>
         </template>
         <template #group>
-            <SettingRow v-for="window in windows" :key="window.title" :title="window.title" :hint="`Resets ${window.resets}`">
-                <span class="flex items-center gap-2.5">
-                    <Meter size="lg" fluid :value="window.value" :label="`${window.value}% used`" />
-                    <span
-                        class="text-small tabular-nums"
-                        :class="window.value >= 90 ? 'font-medium text-text' : 'text-text-3'"
-                        >{{ window.value }}% used</span
-                    >
-                </span>
-            </SettingRow>
+            <template v-for="window in windows" :key="window.title">
+                <SettingRow :title="window.title" :hint="`Resets ${window.resets}`">
+                    <span class="flex items-center gap-2.5">
+                        <Meter size="lg" fluid :value="window.value" :label="`${window.value}% used`" />
+                        <span
+                            class="text-small tabular-nums"
+                            :class="window.value >= 90 ? 'font-medium text-text' : 'text-text-3'"
+                            >{{ window.value }}% used</span
+                        >
+                    </span>
+                </SettingRow>
+            </template>
         </template>
         <template #spend>
             <SettingRow title="Left to spend">

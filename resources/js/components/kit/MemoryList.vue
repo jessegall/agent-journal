@@ -38,22 +38,26 @@ function onKey(event: KeyboardEvent): void {
 </script>
 
 <template>
-    <EmptyState v-if="memories.length === 0" title="No memories yet" />
-    <div v-else>
-        <p class="px-3.5 py-2 text-badge text-text-3">
-            {{ counted(memories.length, 'memory', 'memories') }} · the number is its weight, heaviest first
-        </p>
-        <ul ref="list" class="m-0 list-none p-0" @keydown="onKey">
-            <MemoryRow
-                v-for="memory in heaviestFirst"
-                :key="memory.id"
-                :weight="memory.weight"
-                :text="memory.text"
-                :detail="memory.detail"
-                :expandable="expandable"
-                :expanded="expandedRows.get(memory.id) === true"
-                @update:expanded="expandedRows.set(memory.id, $event)"
-            />
-        </ul>
-    </div>
+    <template v-if="memories.length === 0">
+        <EmptyState title="No memories yet" />
+    </template>
+    <template v-else>
+        <div>
+            <p class="px-3.5 py-2 text-badge text-text-3">
+                {{ counted(memories.length, 'memory', 'memories') }} · the number is its weight, heaviest first
+            </p>
+            <ul ref="list" class="m-0 list-none p-0" @keydown="onKey">
+                <template v-for="memory in heaviestFirst" :key="memory.id">
+                    <MemoryRow
+                        :weight="memory.weight"
+                        :text="memory.text"
+                        :detail="memory.detail"
+                        :expandable="expandable"
+                        :expanded="expandedRows.get(memory.id) === true"
+                        @update:expanded="expandedRows.set(memory.id, $event)"
+                    />
+                </template>
+            </ul>
+        </div>
+    </template>
 </template>

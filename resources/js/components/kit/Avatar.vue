@@ -32,13 +32,18 @@ const frame = computed(() => {
         class="inline-flex shrink-0 items-center justify-center border"
         :class="[size === 'sm' ? 'size-4' : 'size-6.5', frame]"
     >
-        <DriverMark v-if="participant.kind === 'agent'" :driver="participant.driver ?? ''" :size="size === 'sm' ? 11 : 16" />
-        <span v-else-if="participant.kind === 'journal'" class="text-meta font-semibold text-text">J</span>
-        <span
-            v-else
-            class="font-semibold text-text-2"
-            :class="size === 'sm' ? 'text-meta' : 'text-badge'"
-            >{{ initials }}</span
-        >
+        <template v-if="participant.kind === 'agent'">
+            <DriverMark :driver="participant.driver ?? ''" :size="size === 'sm' ? 11 : 16" />
+        </template>
+        <template v-else-if="participant.kind === 'journal'">
+            <span class="text-meta font-semibold text-text">J</span>
+        </template>
+        <template v-else>
+            <span
+                class="font-semibold text-text-2"
+                :class="size === 'sm' ? 'text-meta' : 'text-badge'"
+                >{{ initials }}</span
+            >
+        </template>
     </span>
 </template>

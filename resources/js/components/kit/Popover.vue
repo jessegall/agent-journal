@@ -97,16 +97,17 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', pressOutside, tr
 </script>
 
 <template>
-    <div
-        v-if="open"
-        ref="panel"
-        role="dialog"
-        tabindex="-1"
-        :aria-label="label"
-        class="absolute z-(--z-menu) overflow-hidden rounded-menu border border-border-2 bg-raised shadow-pop outline-none"
-        :style="{ left: `${place.left}px`, top: `${place.top}px`, width: width ? `${width}px` : undefined }"
-        @keydown="escape"
-    >
-        <slot />
-    </div>
+    <template v-if="open">
+        <div
+            ref="panel"
+            role="dialog"
+            tabindex="-1"
+            :aria-label="label"
+            class="absolute z-(--z-menu) overflow-hidden rounded-menu border border-border-2 bg-raised shadow-pop outline-none"
+            :style="{ left: `${place.left}px`, top: `${place.top}px`, width: width ? `${width}px` : undefined }"
+            @keydown="escape"
+        >
+            <slot />
+        </div>
+    </template>
 </template>

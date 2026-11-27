@@ -36,16 +36,17 @@ watch(
 </script>
 
 <template>
-    <div
-        v-if="isShown"
-        :id="id"
-        ref="box"
-        role="log"
-        aria-label="Command output"
-        :tabindex="expanded ? 0 : undefined"
-        class="overflow-y-auto bg-term px-3 py-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
-        :class="heightLimit"
-    >
-        <pre class="m-0 font-mono text-badge leading-[17px] whitespace-pre-wrap text-term-out">{{ shownLines.join('\n') }}</pre>
-    </div>
+    <template v-if="isShown">
+        <div
+            :id="id"
+            ref="box"
+            role="log"
+            aria-label="Command output"
+            :tabindex="expanded ? 0 : undefined"
+            class="overflow-y-auto bg-term px-3 py-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+            :class="heightLimit"
+        >
+            <pre class="m-0 font-mono text-badge leading-[17px] whitespace-pre-wrap text-term-out">{{ shownLines.join('\n') }}</pre>
+        </div>
+    </template>
 </template>

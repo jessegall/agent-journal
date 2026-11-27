@@ -19,7 +19,9 @@ const hintId = useId();
     >
         <div class="min-w-0">
             <p :id="titleId" class="text-body text-text">{{ title }}</p>
-            <p v-if="hint" :id="hintId" class="text-small text-text-3">{{ hint }}</p>
+            <template v-if="hint">
+                <p :id="hintId" class="text-small text-text-3">{{ hint }}</p>
+            </template>
         </div>
         <div :class="block ? '' : 'flex shrink-0 items-center justify-end text-right'">
             <slot :title-id="titleId" :hint-id="hint ? hintId : undefined" />

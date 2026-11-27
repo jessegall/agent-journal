@@ -31,7 +31,9 @@ defineEmits<{ stop: []; toggle: [] }>();
         </Tooltip>
         <Status :state="state" live />
         <span class="shrink-0 text-small text-text-3 tabular-nums">{{ clock(durationSeconds) }}</span>
-        <Button v-if="state === 'running'" variant="bordered" size="sm" @click="$emit('stop')">Stop</Button>
+        <template v-if="state === 'running'">
+            <Button variant="bordered" size="sm" @click="$emit('stop')">Stop</Button>
+        </template>
         <Button
             variant="bordered"
             size="sm"

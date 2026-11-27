@@ -10,8 +10,10 @@ defineProps<{ label: string }>();
 <template>
     <div role="toolbar" :aria-label="label" class="flex h-8 shrink-0 items-center gap-2 border-b border-line pr-2.5 pl-3">
         <slot />
-        <div v-if="$slots.actions" class="ml-auto flex items-center gap-1.5">
-            <slot name="actions" />
-        </div>
+        <template v-if="$slots.actions">
+            <div class="ml-auto flex items-center gap-1.5">
+                <slot name="actions" />
+            </div>
+        </template>
     </div>
 </template>
