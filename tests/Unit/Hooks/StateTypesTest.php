@@ -122,9 +122,11 @@ final class StateTypesTest extends TestCase
         $ready = RegisteredStateType::of(ReadyState::class);
 
         $this->app->bind(OperationPolicy::class, $policyOf('first'));
-        $this->app->make(StateBuilder::class)->build($ready, []);
+        $values = ['agentId' => 'agent', 'sessionId' => 'session'];
+
+        $this->app->make(StateBuilder::class)->build($ready, $values);
         $this->app->bind(OperationPolicy::class, $policyOf('second'));
-        $this->app->make(StateBuilder::class)->build($ready, []);
+        $this->app->make(StateBuilder::class)->build($ready, $values);
 
         $this->assertSame(['first', 'second'], $asked);
     }

@@ -17,6 +17,14 @@ enum HostProcessPurpose: string
     case SignInProbe = 'sign_in_probe';
 
     /**
+     * Whether the process only probes the start, its build or its sign-in, and is never the agent itself.
+     */
+    public function isProbe(): bool
+    {
+        return in_array($this, [self::Probe, self::BuildProbe, self::SignInProbe], true);
+    }
+
+    /**
      * Whether the process is its runtime's own: it takes the runtime's work and its end is the runtime's end. A turn
      * or a probe the journal opened for a runtime takes only stops and interrupts, and ends alone.
      */

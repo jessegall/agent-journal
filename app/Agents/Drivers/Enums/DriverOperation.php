@@ -33,6 +33,14 @@ enum DriverOperation: string
     case ResendReadiness = 'resend_readiness';
 
     /**
+     * Whether the operation changes the model or the effort the driver runs at.
+     */
+    public function changesASetting(): bool
+    {
+        return $this === self::ChangeModel || $this === self::ChangeEffort;
+    }
+
+    /**
      * The operations that act on the runtime itself rather than its turns; a host takes them before any other work.
      *
      * @return list<self>

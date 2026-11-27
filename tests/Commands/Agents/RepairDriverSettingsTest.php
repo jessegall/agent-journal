@@ -67,6 +67,16 @@ final class RepairDriverSettingsTest extends TestCase
         $request->refresh();
         $this->assertSame([RequestProgress::Accepted, 'low'], [$request->progress, $request->effort]);
         $this->assertSame([$sequence, $attempt + 1], [$request->sequence, $request->attempt_version]);
+
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $request->id,
+            $attempt + 1,
+            RequestProgress::Applied,
+            null,
+            null,
+        ));
         $this->assertSame('low', AgentRuntime::query()->findOrFail($opened->runtimeId)->requested_effort);
     }
 }

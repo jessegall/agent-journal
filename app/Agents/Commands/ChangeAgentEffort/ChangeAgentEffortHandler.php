@@ -14,11 +14,6 @@ final readonly class ChangeAgentEffortHandler implements CommandHandler
 
     public function handle(ChangeAgentEffortCommand $command): DriverReceipt
     {
-        return $this->settings->accept(
-            $command->target(),
-            $command->idempotencyKey,
-            null,
-            $command->effort,
-        )[0]->receipt;
+        return $this->settings->acceptEffort($command->target(), $command->idempotencyKey, $command->effort)->receipt;
     }
 }

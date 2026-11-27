@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
-use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Drivers\Enums\HoldReason;
@@ -17,11 +16,12 @@ use App\Contracts\Events\EventSource;
 use App\Events\Sessions\AgentRuntimeClosed;
 use App\Events\Sessions\AgentRuntimeConfirmedAlive;
 use App\Events\Sessions\AgentRuntimeConversationChosen;
+use App\Events\Sessions\AgentRuntimeEffortApplied;
 use App\Events\Sessions\AgentRuntimeHeld;
 use App\Events\Sessions\AgentRuntimeHostChanged;
+use App\Events\Sessions\AgentRuntimeModelApplied;
 use App\Events\Sessions\AgentRuntimeObserved;
 use App\Events\Sessions\AgentRuntimeProcessGenerationAdvanced;
-use App\Events\Sessions\AgentRuntimeRequestedSettingsRecomputed;
 use App\Events\Sessions\AgentRuntimeSettingsObserved;
 use App\Events\Sessions\AgentRuntimeStarted;
 use App\Events\Sessions\AgentRuntimeStartGrantClaimed;
@@ -377,27 +377,23 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The requested model and effort again, from the newest setting request of each that is still open, after one
-     * was cancelled; none open leaves nothing requested.
+     * The driver applied a model change: every later start of the runtime runs at the model.
      */
-    public function recomputeRequestedSettings(): void
+    public function recordAppliedModel(string $model): void
     {
-        $open = $this->requests()
-            ->open()
-            ->changingSettings()
-            ->inSequenceOrder()
-            ->readAll('the open setting requests of one runtime decide what it has requested')
-            ->get();
-
-        $lastOfEachOperation = $open->keyBy(fn (DriverRequest $request) => $request->operation->value);
-
-        $modelChange = $lastOfEachOperation->get(DriverOperation::ChangeModel->value);
-        $effortChange = $lastOfEachOperation->get(DriverOperation::ChangeEffort->value);
-
-        $this->requested_model = $modelChange?->model;
-        $this->requested_effort = $effortChange?->effort;
+        $this->requested_model = $model;
         $this->saveAndAssert();
-        $this->raise(new AgentRuntimeRequestedSettingsRecomputed($this->id));
+        $this->raise(new AgentRuntimeModelApplied($this->id));
+    }
+
+    /**
+     * The driver applied an effort change: every later start of the runtime runs at the effort.
+     */
+    public function recordAppliedEffort(string $effort): void
+    {
+        $this->requested_effort = $effort;
+        $this->saveAndAssert();
+        $this->raise(new AgentRuntimeEffortApplied($this->id));
     }
 
     /**
@@ -731,6 +727,14 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
             ->all();
 
         return array_values(array_filter($ids, fn (string $id) => in_array($id, $sessionsWithRunningHelpers, true)));
+    }
+
+    /**
+     * The runtime of the session, locked for the change at hand.
+     */
+    public static function findLockedForSession(string $sessionId): self
+    {
+        return self::query()->ofAgentSession($sessionId)->lockForUpdate()->sole();
     }
 
     /**

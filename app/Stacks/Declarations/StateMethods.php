@@ -17,10 +17,10 @@ use App\Stacks\References\StateReference;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
+use Generator;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
-use Generator;
 
 /**
  * Checks and caches effective hook and event declarations by state class.

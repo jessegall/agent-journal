@@ -7,9 +7,9 @@ namespace App\Events\Sessions;
 use App\Sessions\Contracts\AgentRuntimeEvent;
 
 /**
- * A runtime's requested model and effort were worked out again from its open setting requests.
+ * A runtime's driver applied a effort, which every later start of the runtime runs at.
  */
-final readonly class AgentRuntimeRequestedSettingsRecomputed implements AgentRuntimeEvent, SessionEvent
+final readonly class AgentRuntimeEffortApplied implements AgentRuntimeEvent, SessionEvent
 {
     public function __construct(
         public string $runtimeId,

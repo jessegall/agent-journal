@@ -16,12 +16,13 @@ use App\Events\Sessions\AgentRuntimeAdopted;
 use App\Events\Sessions\AgentRuntimeClosed;
 use App\Events\Sessions\AgentRuntimeConfirmedAlive;
 use App\Events\Sessions\AgentRuntimeConversationChosen;
+use App\Events\Sessions\AgentRuntimeEffortApplied;
 use App\Events\Sessions\AgentRuntimeHeld;
 use App\Events\Sessions\AgentRuntimeHostChanged;
+use App\Events\Sessions\AgentRuntimeModelApplied;
 use App\Events\Sessions\AgentRuntimeObserved;
 use App\Events\Sessions\AgentRuntimeProcessGenerationAdvanced;
 use App\Events\Sessions\AgentRuntimeReassigned;
-use App\Events\Sessions\AgentRuntimeRequestedSettingsRecomputed;
 use App\Events\Sessions\AgentRuntimeSettingsObserved;
 use App\Events\Sessions\AgentRuntimesFenced;
 use App\Events\Sessions\AgentRuntimeStarted;
@@ -51,6 +52,7 @@ use App\Events\Sessions\DriverRequestMarkedUncertain;
 use App\Events\Sessions\DriverRequestPayloadForgotten;
 use App\Events\Sessions\DriverRequestRecovered;
 use App\Events\Sessions\DriverRequestRefusalRecorded;
+use App\Events\Sessions\DriverRequestRepaired;
 use App\Events\Sessions\DriverRequestResolvedAsNotApplied;
 use App\Events\Sessions\DriverRequestRetried;
 use App\Events\Sessions\DriverRequestScriptProgressed;
@@ -452,12 +454,19 @@ return [
         'producers' => [],
         'sample' => fn () => new AgentRuntimeStartGrantClaimed('runtime'),
     ],
-    AgentRuntimeRequestedSettingsRecomputed::class => [
+    AgentRuntimeModelApplied::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'AgentRuntime::recomputeRequestedSettings',
+        'owner' => 'AgentRuntime::recordAppliedModel',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AgentRuntimeRequestedSettingsRecomputed('runtime'),
+        'sample' => fn () => new AgentRuntimeModelApplied('runtime'),
+    ],
+    AgentRuntimeEffortApplied::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::recordAppliedEffort',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeEffortApplied('runtime'),
     ],
     AgentRuntimeHostChanged::class => [
         'role' => EventRole::RowFact,
@@ -836,6 +845,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DriverRequestResolvedAsNotApplied('request'),
+    ],
+    DriverRequestRepaired::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::repairWith',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestRepaired('request', 'high'),
     ],
     DriverRequestSuperseded::class => [
         'role' => EventRole::RowFact,

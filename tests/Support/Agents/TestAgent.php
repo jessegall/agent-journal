@@ -14,6 +14,7 @@ use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Protocol\HostProcessReportType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Hosts\HostProcess;
@@ -134,8 +135,7 @@ final class TestAgent
     public function passBuildProbe(string $name): self
     {
         $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
-        $this->nameProcess("{$name}-probe", HostProcessPurpose::BuildProbe);
-        $probe = $this->journal->hostProcessCalled("{$name}-probe");
+        $probe = $this->exitedBuildProbe("{$name}-probe");
         $this->journal->asSystem(new CheckDriverBuildCommand($probe->id, "{$build} (Claude Code)\n"));
 
         return $this->nameProcess("{$name}-sign-in", HostProcessPurpose::SignInProbe);
@@ -148,8 +148,7 @@ final class TestAgent
     public function passCodexProbes(string $name): self
     {
         $build = $this->journal->driverProfile(DefaultDrivers::CODEX)->build();
-        $this->nameProcess("{$name}-probe", HostProcessPurpose::BuildProbe);
-        $probe = $this->journal->hostProcessCalled("{$name}-probe");
+        $probe = $this->exitedBuildProbe("{$name}-probe");
         $this->journal->asSystem(new CheckDriverBuildCommand($probe->id, "codex-cli {$build}\n"));
         $this->nameProcess("{$name}-sign-in", HostProcessPurpose::SignInProbe);
         $signIn = $this->journal->hostProcessCalled("{$name}-sign-in");
@@ -239,5 +238,19 @@ final class TestAgent
             ->where('agent_id', $this->journal->agentCalled($this->name)->id)
             ->latest('id')
             ->firstOrFail();
+    }
+
+    /**
+     * The runtime's build probe, named for the test, run and exited well, as a build is checked only once its probe
+     * ended.
+     */
+    private function exitedBuildProbe(string $name): HostProcess
+    {
+        $this->nameProcess($name, HostProcessPurpose::BuildProbe);
+        $this->journal->hostProcess($name, fn (TestHostProcess $probe) => $probe
+            ->report(HostProcessReportType::Running)
+            ->report(HostProcessReportType::Exited, 0));
+
+        return $this->journal->hostProcessCalled($name);
     }
 }

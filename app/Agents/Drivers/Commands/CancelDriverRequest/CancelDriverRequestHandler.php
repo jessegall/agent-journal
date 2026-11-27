@@ -9,7 +9,6 @@ use App\Agents\DriverRequestRecovery;
 use App\Agents\Drivers\Enums\RecoveryAction;
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\DriverRequestRefused;
-use App\Models\Agents\AgentRuntime;
 
 final readonly class CancelDriverRequestHandler implements CommandHandler
 {
@@ -24,12 +23,6 @@ final readonly class CancelDriverRequestHandler implements CommandHandler
         }
 
         $this->endings->cancel($request);
-
-        if ($request->changesASetting()) {
-            AgentRuntime::query()->lockForUpdate()->findOrFail(
-                $request->agent_runtime_id,
-            )->recomputeRequestedSettings();
-        }
 
         return $this->recovery->record($request, RecoveryAction::Cancelled, $command->reason);
     }

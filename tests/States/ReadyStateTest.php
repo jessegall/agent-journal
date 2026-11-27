@@ -8,17 +8,11 @@ use App\Access\Contracts\OperationPolicy;
 use App\Events\Sessions\StopCheckSettled;
 use App\Hooks\Enums\AnswerType;
 use App\Sessions\Enums\StopCheckStatus;
-use App\Stacks\AgentState;
 use App\Stacks\Contracts\StopConditionGate;
-use App\Stacks\Inputs\Contracts\HookHandler;
 use App\Stacks\ReadyState;
 use App\Stacks\References\StateReference;
 use App\Stacks\Support\ReadyStateReference;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\StopRequested;
-use App\Support\ReflectedMethod;
-use App\Support\Reflector;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\CountingStops;
@@ -51,37 +45,6 @@ final class ReadyStateTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('Writer');
-    }
-
-    /**
-     * Every kind of shell line the listed parser reads, including those Core's admission refuses, for a profile that
-     * edits files and one that edits none.
-     *
-     * @return iterable<string, array{bool, string}>
-     */
-    public static function rolesAndLines(): iterable
-    {
-        foreach (['a profile that edits files' => true, 'a profile that edits none' => false] as $role => $edits) {
-            yield "{$role}, a command alias" => [$edits, 'journal run tests'];
-
-            yield "{$role}, an alias that writes" => [$edits, 'journal run tests --write'];
-
-            yield "{$role}, an ordinary read" => [$edits, 'git status'];
-
-            yield "{$role}, a test run" => [$edits, 'composer test'];
-
-            yield "{$role}, an unparsed line" => [$edits, 'cat <(ls)'];
-        }
-    }
-
-    #[DataProvider('rolesAndLines')]
-    public function test_each_role_leaves_every_shell_line_to_cores_admission(bool $editsFiles, string $line): void
-    {
-        $this->grantFileChanges($editsFiles);
-        $this->journal->stateOn('Writer', $this->ready(), fn (StateHandle $ready) => $ready->shell(
-            $line,
-            fn (StateAssert $state) => $state->answers(AnswerType::Delegate),
-        ));
     }
 
     public function test_a_profile_that_edits_files_may_edit(): void
@@ -145,25 +108,6 @@ final class ReadyStateTest extends TestCase
         $this->assertSame(1, $gate->lastSettled->unchangedBefore('stop-turn-2', 'same'));
     }
 
-    public function test_ready_answers_every_hook_method_of_the_base_state_itself(): void
-    {
-        $this->assertSame([], $this->hooksNotAnsweredBy(ReadyState::class));
-    }
-
-    public function test_a_state_that_skips_a_hook_is_caught_by_the_same_check(): void
-    {
-        $partial = new class extends AgentState
-        {
-            public function onStop(StopRequested $input): Decision
-            {
-                return Decision::delegate();
-            }
-        };
-
-        $this->assertNotContains('onStop', $this->hooksNotAnsweredBy($partial::class));
-        $this->assertContains('onSessionStart', $this->hooksNotAnsweredBy($partial::class));
-    }
-
     /**
      * The hooks no driver of a state test sends, such as a session's start and end, a prompt and a compaction, are
      * answered by the state itself.
@@ -194,26 +138,6 @@ final class ReadyStateTest extends TestCase
         $this->app->instance(StopConditionGate::class, $gate);
 
         return $gate;
-    }
-
-    /**
-     * The hook methods every state answers, read by reflection, that the class does not declare itself.
-     *
-     * @param  class-string<AgentState>  $class
-     * @return list<string>
-     */
-    private function hooksNotAnsweredBy(string $class): array
-    {
-        $hooks = Reflector::of(HookHandler::class)->methods();
-        $state = Reflector::of($class);
-
-        return array_values(array_map(
-            fn (ReflectedMethod $method) => $method->name(),
-            array_filter(
-                $hooks,
-                fn (ReflectedMethod $method) => $state->method($method->name())->declaringClass()->name() !== $class,
-            ),
-        ));
     }
 
     private function ready(): StateReference

@@ -24,7 +24,7 @@ final readonly class StateReturnScan implements FileScan
 
     public function key(): string
     {
-        return 'state-returns-5';
+        return 'state-returns-6';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -78,6 +78,10 @@ final readonly class StateReturnScan implements FileScan
             }
         }
 
+        if (self::onlyDelegates($method)) {
+            $faults[] = "{$method->getStartLine()} {$name} only delegates, as every state does: remove it";
+        }
+
         if (self::yieldsOnceAlways($method)) {
             $faults[] = "{$method->getStartLine()} {$name} always yields its one answer: return it";
         }
@@ -117,6 +121,21 @@ final readonly class StateReturnScan implements FileScan
             $type instanceof Node\NullableType => self::namesBuiltin($type->type, $builtin),
             default => false,
         };
+    }
+
+    /**
+     * Whether the method's whole body returns Decision::delegate(), the answer AgentState gives every hook already.
+     */
+    private static function onlyDelegates(Stmt\ClassMethod $method): bool
+    {
+        $statements = $method->stmts ?? [];
+        $answer = count($statements) === 1 && $statements[0] instanceof Stmt\Return_ ? $statements[0]->expr : null;
+
+        return $answer instanceof Expr\StaticCall
+            && $answer->class instanceof Node\Name
+            && $answer->class->getLast() === 'Decision'
+            && $answer->name instanceof Node\Identifier
+            && $answer->name->toString() === 'delegate';
     }
 
     /**

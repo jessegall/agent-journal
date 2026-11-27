@@ -23,7 +23,8 @@ final readonly class RunStartWithItsProcess implements Listener
         $process = HostProcess::query()->with('sessionProcess')->whereKey($fact->processId)->sole();
         $start = $process->sessionProcess;
 
-        if ($start !== null) {
+        // A probe runs before the start's agent does: only the agent's own process moves the start to running.
+        if ($start !== null && ! $process->purpose->isProbe()) {
             $this->commands->run(new NotifyRunningCommand($process->host_id, $start->start_key, $fact->identity));
         }
     }

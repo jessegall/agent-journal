@@ -9,6 +9,7 @@ use App\Support\Decisions\Decision;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\SessionEnded;
 use App\Support\Inputs\SessionStarted;
+use App\Support\Inputs\ToolFinished;
 use Generator;
 
 /**
@@ -41,6 +42,11 @@ final class ArrayAnswerState extends AgentState
     public function onSessionEnd(SessionEnded $input): Generator
     {
         yield from $this->answers();
+    }
+
+    public function onToolFinished(ToolFinished $input): Decision
+    {
+        return Decision::delegate();
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Commands\OpenHeadlessTurn;
 
 use App\Accounts\Enums\CommandEntry;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Work\DriverRequestClaims;
 use App\Agents\Drivers\Work\HeadlessStarts;
@@ -13,6 +14,7 @@ use App\Bus\Contracts\JournalCommands;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionProcess;
 use App\Values\HostInstructionSource;
 
@@ -21,6 +23,8 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
     private const string TRUSTED_ENTRY = 'headless starts';
 
     private const string OPEN_STEP = 'open';
+
+    private const string APPLIED_AT_NEXT_START = 'next_start';
 
     public function __construct(
         private DriverRequestClaims $claims,
@@ -49,6 +53,17 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
         }
 
         $work = $this->claims->claimWorkFor(collect([$runtime->id => $runtime]), 1)->requests;
+        $model = null;
+        $effort = null;
+
+        // A headless runtime runs nothing for a model or effort change: it holds for every start that follows, this
+        // turn's first, so the change is applied as it is claimed and the next work is claimed after it.
+        while ($work !== [] && DriverOperation::from($work[0]->operation)->changesASetting()) {
+            $model = $work[0]->model ?? $model;
+            $effort = $work[0]->effort ?? $effort;
+            DriverRequest::findLockedById($work[0]->requestId)->markApplied(self::APPLIED_AT_NEXT_START);
+            $work = $this->claims->claimWorkFor(collect([$runtime->id => $runtime]), 1)->requests;
+        }
 
         if ($work === []) {
             return null;
@@ -56,7 +71,13 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
 
         $request = $work[0];
         $prompt = $request->prompt();
-        $driverStart = $this->headless->startOf($runtime, $start, $prompt, $request->model, $request->effort);
+        $driverStart = $this->headless->startOf(
+            $runtime,
+            $start,
+            $prompt,
+            $request->model ?? $model,
+            $request->effort ?? $effort,
+        );
 
         $profile = $this->profiles->of($runtime);
         $environment = $this->headless->clientSettingsOf($runtime)->environment();

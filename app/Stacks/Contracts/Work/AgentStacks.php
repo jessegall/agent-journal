@@ -58,6 +58,11 @@ interface AgentStacks
     public function pushFor(ActorReference $actor, StateReference $state): void;
 
     /**
+     * Pushes onto the stack of one running session of another actor, such as the session a model change is for.
+     */
+    public function pushForSession(StackTarget $target, StateReference $state): void;
+
+    /**
      * Pushes onto one stack of another actor, and only while every stack it works in rests on its bottom state: work
      * offered to an actor that is busy is left for later.
      */

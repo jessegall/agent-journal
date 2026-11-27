@@ -77,6 +77,11 @@ final readonly class AgentStacks implements AgentStacksContract
         }
     }
 
+    public function pushForSession(StackTarget $target, StateReference $state): void
+    {
+        $this->addressed->push($target, $state);
+    }
+
     public function offerFor(ActorReference $actor, StateReference $state): void
     {
         $this->addressed->offer($this->targets->lockedRowsOf($actor), $state);

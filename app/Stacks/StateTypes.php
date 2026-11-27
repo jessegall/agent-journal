@@ -28,6 +28,8 @@ final class StateTypes implements StateTypesContract
         ReadMessageState::class,
         AnswerMessageState::class,
         ReadSkillState::class,
+        ChangeEffortState::class,
+        ChangeModelState::class,
     ];
 
     private StateRegistration|null $registry = null;

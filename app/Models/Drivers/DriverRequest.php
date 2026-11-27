@@ -28,6 +28,7 @@ use App\Events\Sessions\DriverRequestMarkedUnavailable;
 use App\Events\Sessions\DriverRequestMarkedUncertain;
 use App\Events\Sessions\DriverRequestPayloadForgotten;
 use App\Events\Sessions\DriverRequestRefusalRecorded;
+use App\Events\Sessions\DriverRequestRepaired;
 use App\Events\Sessions\DriverRequestResolvedAsNotApplied;
 use App\Events\Sessions\DriverRequestRetried;
 use App\Events\Sessions\DriverRequestScriptProgressed;
@@ -363,6 +364,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->carry($envelope);
         $this->payload_digest = $envelope->digestFor($this->operation->value);
         $this->retry();
+        $this->raise(new DriverRequestRepaired($this->id, (string) ($this->model ?? $this->effort)));
     }
 
     /**
@@ -523,7 +525,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
      */
     public function changesASetting(): bool
     {
-        return in_array($this->operation, [DriverOperation::ChangeModel, DriverOperation::ChangeEffort], true);
+        return $this->operation->changesASetting();
     }
 
     /**
@@ -840,28 +842,6 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     protected function open(Builder $query): void
     {
         $query->whereIn('progress', RequestProgress::open());
-    }
-
-    /**
-     * The requests that change the model or the effort.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function changingSettings(Builder $query): void
-    {
-        $query->whereIn('operation', [DriverOperation::ChangeModel, DriverOperation::ChangeEffort]);
-    }
-
-    /**
-     * The requests in the order they were made.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function inSequenceOrder(Builder $query): void
-    {
-        $query->orderBy('sequence');
     }
 
     /**

@@ -55,7 +55,7 @@ final class HookRewriteTest extends TestCase
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame(self::ALIAS, $answer->decision->replacementLine());
         $this->assertSame(
-            ['rewriter rewrite', 'ready delegate', 'rewriter delegate', 'ready delegate'],
+            ['rewriter rewrite', 'rewriter delegate'],
             $this->stepsOf($answer),
         );
         $this->assertSame(2, $rewriter->askedCount);
@@ -69,7 +69,7 @@ final class HookRewriteTest extends TestCase
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertSame(self::REFUSAL, TestText::words($answer->decision->refusalReason()));
-        $steps = ['rewriter rewrite', 'guard rewrite', 'ready delegate', 'rewriter delegate', 'guard deny'];
+        $steps = ['rewriter rewrite', 'guard rewrite', 'rewriter delegate', 'guard deny'];
         $this->assertSame($steps, $this->stepsOf($answer));
         $this->assertSame([self::ORIGINAL, self::REFUSAL_CONTEXT], $answer->context);
         $this->assertSame([self::ORIGINAL, self::REFUSAL_CONTEXT], $answer->messages);

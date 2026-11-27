@@ -24,6 +24,7 @@ use App\Stacks\ReadyState;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
 use App\Support\Decisions\Decision;
+use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use App\Support\Storage\WalkStep;
 use App\Values\AccessDecision;
@@ -36,6 +37,7 @@ use Domain\Sequences\Support\States\FollowSequenceState;
 use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use ReflectionMethod;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\AnswerStates;
@@ -132,7 +134,10 @@ final class AgentStackTest extends TestCase
 
         $answer = $stack->answer($input, TestText::renderer());
 
-        $this->assertSame(['top delegate', 'middle delegate', 'ready delegate'], $this->stepsOf($answer));
+        $this->assertSame(
+            ['top delegate', 'middle delegate', ...$this->readyStepsOf($input, 'ready delegate')],
+            $this->stepsOf($answer),
+        );
         $this->assertTrue($answer->isAllowed());
         $this->assertSame([1, 1], [$top->askedCount, $middle->askedCount]);
         $this->assertSame($input->methodName(), $answer->steps[0]->hookMethod);
@@ -261,7 +266,7 @@ final class AgentStackTest extends TestCase
         $answer = $stack->answer(HookInputs::of('shell command'), TestText::renderer());
 
         $this->assertSame($highest, $answer->decision);
-        $this->assertSame(['top rewrite', 'lower rewrite', 'ready delegate'], $this->stepsOf($answer));
+        $this->assertSame(['top rewrite', 'lower rewrite'], $this->stepsOf($answer));
     }
 
     public function test_commands_and_events_are_gathered_in_order_from_the_states_asked(): void
@@ -475,7 +480,7 @@ final class AgentStackTest extends TestCase
         $stack = $this->exampleStack(isTaskStarted: false, doesMessageWait: false);
 
         $this->assertSame(
-            ['ready'],
+            $this->readyStepsOf($input, 'ready'),
             array_map(fn (WalkStep $step) => $step->frameId, $stack->answer($input, TestText::renderer())->steps),
         );
     }
@@ -649,5 +654,17 @@ final class AgentStackTest extends TestCase
             $doesMessageWait ? AnswerStates::holding('95') : AnswerStates::answered(),
             CarbonImmutable::now(),
         );
+    }
+
+    /**
+     * The step ready takes on the hook: none when ReadyState leaves the hook to AgentState, which passes it.
+     *
+     * @return list<string>
+     */
+    private function readyStepsOf(HookInput $input, string $step): array
+    {
+        $declaring = new ReflectionMethod(ReadyState::class, $input->methodName())->getDeclaringClass()->getName();
+
+        return $declaring === ReadyState::class ? [$step] : [];
     }
 }

@@ -26,9 +26,9 @@ use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Support\RecordIdentity;
 use App\Values\AgentText;
+use Generator;
 use PhpOption\Option;
 use PhpOption\Some;
-use Generator;
 
 /**
  * An agent attached to an inbox with messages there it has not read. It keeps the unread messages and its tool uses;

@@ -20,14 +20,8 @@ use App\Stacks\Decisions\MessageLine;
 use App\Stacks\Support\ReadyStateReference;
 use App\Stacks\Values\SettledStopChecks;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\FileEditRequested;
-use App\Support\Inputs\PromptSubmitted;
-use App\Support\Inputs\SessionEnded;
-use App\Support\Inputs\SessionStarted;
-use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
-use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Values\AgentText;
 use App\Values\Operation;
@@ -80,21 +74,6 @@ class ReadyState extends AgentState implements UniqueState
 
     // ----------[ Hooks ]----------
 
-    public function onSessionStart(SessionStarted $input): Decision
-    {
-        return Decision::delegate();
-    }
-
-    public function onPrompt(PromptSubmitted $input): Decision
-    {
-        return Decision::delegate();
-    }
-
-    public function onShellCommand(ShellCommandRequested $input): Decision
-    {
-        return Decision::delegate();
-    }
-
     public function onToolRequested(ToolRequested $input): Decision
     {
         return $this->decide([$input->operation]);
@@ -111,21 +90,6 @@ class ReadyState extends AgentState implements UniqueState
         $answer->attemptId->forAll($this->keepOpenedAttempt(...));
 
         return $answer->reply;
-    }
-
-    public function onCompaction(ContextCompacted $input): Decision
-    {
-        return Decision::delegate();
-    }
-
-    public function onToolFinished(ToolFinished $input): Decision
-    {
-        return Decision::delegate();
-    }
-
-    public function onSessionEnd(SessionEnded $input): Decision
-    {
-        return Decision::delegate();
     }
 
     // ----------[ Events ]----------

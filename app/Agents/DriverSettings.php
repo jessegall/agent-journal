@@ -7,12 +7,15 @@ namespace App\Agents;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Drivers\DriverRequest;
+use App\Stacks\Contracts\Work\AgentStacks;
+use App\Stacks\Support\ChangeEffortStateReference;
+use App\Stacks\Support\ChangeModelStateReference;
 use App\Values\DriverRequestPayload;
 use App\Values\StackTarget;
 
 /**
- * Accepts a model and an effort as one settings change: the pair is validated before either is accepted, and each
- * supersedes the earlier unrun request of its own field.
+ * Accepts a change of a session's model or effort: the request supersedes the earlier unrun request of its own
+ * setting, and a state on the session's stack owns the change until the driver applied it.
  */
 final readonly class DriverSettings
 {
@@ -29,45 +32,47 @@ final readonly class DriverSettings
         'max',
     ];
 
-    public function __construct(private DriverRequests $requests) {}
+    public function __construct(private DriverRequests $requests, private AgentStacks $stacks) {}
 
-    /**
-     * @return list<DriverRequest>
-     */
-    public function accept(StackTarget $target, string $idempotencyKey, string|null $model, string|null $effort): array
+    public function acceptModel(StackTarget $target, string $idempotencyKey, string $model): DriverRequest
     {
-        if ($model !== null && trim($model) === '') {
+        if (trim($model) === '') {
             throw DriverRequestRefused::emptyModel();
         }
 
-        if ($effort !== null && ! in_array($effort, self::EFFORTS, true)) {
+        $request = $this->requests->append(
+            $target,
+            DriverOperation::ChangeModel,
+            $idempotencyKey,
+            DriverRequestPayload::model($model),
+        );
+
+        if ($request->wasRecentlyCreated) {
+            $this->requests->supersedeEarlier($request);
+            $this->stacks->pushForSession($target, ChangeModelStateReference::forRequest($request, $target));
+        }
+
+        return $request;
+    }
+
+    public function acceptEffort(StackTarget $target, string $idempotencyKey, string $effort): DriverRequest
+    {
+        if (! in_array($effort, self::EFFORTS, true)) {
             throw DriverRequestRefused::unsupportedEffort($effort, self::EFFORTS);
         }
 
-        $accepted = [];
+        $request = $this->requests->append(
+            $target,
+            DriverOperation::ChangeEffort,
+            $idempotencyKey,
+            DriverRequestPayload::effort($effort),
+        );
 
-        if ($model !== null) {
-            $accepted[] = $this->requests->append(
-                $target,
-                DriverOperation::ChangeModel,
-                $idempotencyKey.':model',
-                DriverRequestPayload::model($model),
-            );
-        }
-
-        if ($effort !== null) {
-            $accepted[] = $this->requests->append(
-                $target,
-                DriverOperation::ChangeEffort,
-                $idempotencyKey.':effort',
-                DriverRequestPayload::effort($effort),
-            );
-        }
-
-        foreach ($accepted as $request) {
+        if ($request->wasRecentlyCreated) {
             $this->requests->supersedeEarlier($request);
+            $this->stacks->pushForSession($target, ChangeEffortStateReference::forRequest($request, $target));
         }
 
-        return $accepted;
+        return $request;
     }
 }

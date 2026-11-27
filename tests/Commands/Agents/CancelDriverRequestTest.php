@@ -48,11 +48,12 @@ final class CancelDriverRequestTest extends TestCase
         'links',
     ];
 
-    public function test_cancelling_a_setting_puts_the_requested_settings_back_and_is_recorded(): void
+    public function test_cancelling_a_setting_change_records_nothing_on_the_runtime_and_is_recorded(): void
     {
         Event::fake([DriverRequestRecovered::class]);
         [, $opened] = $this->openRuntime();
         $agentId = $this->agentIdOf($opened);
+        $before = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $this->asOwner(new ChangeAgentModelCommand($agentId, $opened->sessionId, 'model-1', 'claude-sonnet-5-5'));
         $effort = $this->asOwner(new ChangeAgentEffortCommand($agentId, $opened->sessionId, 'effort-1', 'high'));
         $request = DriverRequest::query()->findOrFail($effort->requestId);
@@ -61,7 +62,10 @@ final class CancelDriverRequestTest extends TestCase
 
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $this->assertSame(RequestProgress::Cancelled, $request->fresh()?->progress);
-        $this->assertSame(['claude-sonnet-5-5', null], [$runtime->requested_model, $runtime->requested_effort]);
+        $this->assertSame(
+            [$before->requested_model, $before->requested_effort],
+            [$runtime->requested_model, $runtime->requested_effort],
+        );
         Event::assertDispatched(
             DriverRequestRecovered::class,
             fn (DriverRequestRecovered $event) => $event->requestId === $request->id

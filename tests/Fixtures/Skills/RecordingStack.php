@@ -54,6 +54,11 @@ final class RecordingStack implements AgentStacks
         $this->pushed[] = $state;
     }
 
+    public function pushForSession(StackTarget $target, StateReference $state): void
+    {
+        $this->pushed[] = $state;
+    }
+
     public function offerFor(ActorReference $actor, StateReference $state): void
     {
         $this->pushed[] = $state;

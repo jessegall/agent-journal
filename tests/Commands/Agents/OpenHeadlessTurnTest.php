@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Commands\ChangeAgentModel\ChangeAgentModelCommand;
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
@@ -15,6 +16,7 @@ use App\Messages\Data\MessageTextData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostProcess;
+use App\Sessions\OpenedRuntime;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -67,17 +69,7 @@ final class OpenHeadlessTurnTest extends TestCase
         ));
         $this->journal->assertResult(1, $this->turnCount($opened->runtimeId));
 
-        $this->journal->hostProcess('first', fn (TestHostProcess $first) => $first
-            ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0));
-        $first = DriverRequest::query()->findOrFail($this->journal->hostInstructionsOf('first')[0]->driver_request_id);
-        $this->journal->asSystem(new NotifyRequestProgressCommand(
-            $this->journal->hostCalled('Mac')->hostId,
-            $first->id,
-            $first->attempt_version,
-            RequestProgress::Applied,
-            AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->conversation_id,
-            null,
-        ));
+        $this->endFirstTurn($opened);
         $this->journal->asSystem(new OpenHeadlessTurnCommand($opened->runtimeId));
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
             ->nameProcess('second', HostProcessPurpose::AgentTurn));
@@ -92,6 +84,81 @@ final class OpenHeadlessTurnTest extends TestCase
                 DriverRequest::query()->whereKey($second->requestId)->sole()->progress,
             ],
         );
+    }
+
+    /**
+     * A model change runs nothing on a headless runtime: the next turn's start applies it and runs at the model, and
+     * the runtime keeps the model for the starts after it.
+     */
+    public function test_a_model_change_is_applied_by_the_next_turn_start(): void
+    {
+        $opened = $this->runtimeOnItsFirstTurn();
+        $agentId = $this->journal->agentCalled('Driven')->id;
+        $change = $this->journal->asOwner(
+            new ChangeAgentModelCommand($agentId, $opened->sessionId, 'model-1', 'claude-haiku-5-5'),
+        );
+        $this->journal->asOwner(
+            new DeliverAgentCommand($agentId, $opened->sessionId, 'second', [new MessageTextData('And then: pwd.')]),
+        );
+
+        $this->endFirstTurn($opened);
+        $this->journal->asSystem(new OpenHeadlessTurnCommand($opened->runtimeId));
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('second', HostProcessPurpose::AgentTurn));
+
+        $argv = $this->argvOf('second');
+        $this->journal->assertResult(
+            [RequestProgress::Applied, 'claude-haiku-5-5', 'claude-haiku-5-5', 'And then: pwd.'],
+            [
+                DriverRequest::query()->whereKey($change->requestId)->sole()->progress,
+                $argv[array_search('--model', $argv, true) + 1],
+                AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->requested_model,
+                $this->promptOf('second'),
+            ],
+        );
+    }
+
+    /**
+     * The driven agent's runtime with its build and sign-in proven and its first turn, named first, running.
+     */
+    private function runtimeOnItsFirstTurn(): OpenedRuntime
+    {
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->idleAgent('Driven')
+            ->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), firstMessage: 'Run: ls.')
+            ->passBuildProbe('driven'));
+        $opened = $this->journal->openedRuntimeOf('Driven');
+        $folder = $this->journal->startOfSession($opened->sessionId)->directory;
+        $status = json_encode(['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => $folder]);
+        $signIn = $this->journal->hostProcessCalled('driven-sign-in')->id;
+        $this->journal->asSystem(new CheckSignInCommand($signIn, (string) $status));
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('first', HostProcessPurpose::AgentTurn));
+
+        return $opened;
+    }
+
+    /**
+     * The first turn's process exits and its driver reports the turn's request applied.
+     */
+    private function endFirstTurn(OpenedRuntime $opened): void
+    {
+        $this->journal->hostProcess('first', fn (TestHostProcess $first) => $first
+            ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0));
+        $first = DriverRequest::query()->findOrFail($this->journal->hostInstructionsOf('first')[0]->driver_request_id);
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $this->journal->hostCalled('Mac')->hostId,
+            $first->id,
+            $first->attempt_version,
+            RequestProgress::Applied,
+            AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->conversation_id,
+            null,
+        ));
     }
 
     private function turnCount(string $runtimeId): int
