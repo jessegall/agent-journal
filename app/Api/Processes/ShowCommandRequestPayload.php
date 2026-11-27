@@ -21,6 +21,6 @@ final class ShowCommandRequestPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[InPath, FromRouteParameter('commandRequest')]
-        public string $commandRequest,
+        public readonly string $commandRequest,
     ) {}
 }

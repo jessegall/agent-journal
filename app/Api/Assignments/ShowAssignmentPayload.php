@@ -28,8 +28,8 @@ final class ShowAssignmentPayload extends Data implements ApiPayload
 
     public function __construct(
         #[Max(100)]
-        public string $recordType,
+        public readonly string $recordType,
         #[Ulid]
-        public string $recordId,
+        public readonly string $recordId,
     ) {}
 }

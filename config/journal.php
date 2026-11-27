@@ -651,7 +651,11 @@ return [
         |
         */
 
-        'middleware' => [],
+        'middleware' => [
+            // AnswerHookPipeline::class => [
+            //     TimeAnswers::class,
+            // ],
+        ],
     ],
 
     'processes' => [

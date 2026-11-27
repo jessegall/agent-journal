@@ -14,8 +14,8 @@ final class RuleApproved extends Data
 {
     public function __construct(
         #[MapName('rule_id')]
-        public string $ruleId,
-        public int $revision,
-        public string $digest,
+        public readonly string $ruleId,
+        public readonly int $revision,
+        public readonly string $digest,
     ) {}
 }

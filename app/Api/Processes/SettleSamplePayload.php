@@ -35,9 +35,9 @@ final class SettleSamplePayload extends Data implements ApiPayload
 {
     public function __construct(
         #[InPath, FromRouteParameter('commandRequest')]
-        public string $commandRequest,
+        public readonly string $commandRequest,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

@@ -17,15 +17,15 @@ final class AdmissionRefusalDetails extends Data
 {
     public function __construct(
         #[MapName('reason_code')]
-        public string $reasonCode,
-        public int $node,
-        public string $excerpt,
-        public string $reason,
-        public string $correction,
+        public readonly string $reasonCode,
+        public readonly int $node,
+        public readonly string $excerpt,
+        public readonly string $reason,
+        public readonly string $correction,
         #[MapName('request_id')]
-        public string $requestId,
-        public string $next,
-        public string $notice,
+        public readonly string $requestId,
+        public readonly string $next,
+        public readonly string $notice,
     ) {}
 
     public static function of(AdmissionRefusal $refusal, AgentTexts $texts): self

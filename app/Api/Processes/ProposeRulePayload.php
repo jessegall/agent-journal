@@ -38,10 +38,10 @@ final class ProposeRulePayload extends Data implements ApiPayload
      */
     public function __construct(
         #[InPath, FromRouteParameter('commandRequest')]
-        public string $commandRequest,
-        public array $declaration,
+        public readonly string $commandRequest,
+        public readonly array $declaration,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

@@ -17,15 +17,15 @@ final class PartSummary extends Data
      * @param  array{type: string, outcome: string, receipt_id: string, problems: list<string>}  $partSummary
      */
     public function __construct(
-        public int $node,
-        public int $attempt,
-        public string $operation,
-        public string $lifecycle,
-        public string $end,
-        public int|null $code,
-        public string $capture,
-        public array $bytes,
+        public readonly int $node,
+        public readonly int $attempt,
+        public readonly string $operation,
+        public readonly string $lifecycle,
+        public readonly string $end,
+        public readonly int|null $code,
+        public readonly string $capture,
+        public readonly array $bytes,
         #[MapName('result')]
-        public array $partSummary,
+        public readonly array $partSummary,
     ) {}
 }

@@ -18,6 +18,6 @@ final class UnreadMessages extends Data
      */
     public function __construct(
         #[DataCollectionOf(MessageView::class)]
-        public array $messages,
+        public readonly array $messages,
     ) {}
 }

@@ -21,8 +21,8 @@ final class ReadTextVersionPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(64)]
-        public string $target,
+        public readonly string $target,
         #[Max(64)]
-        public string|null $version = null,
+        public readonly string|null $version = null,
     ) {}
 }

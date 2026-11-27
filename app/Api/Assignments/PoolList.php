@@ -18,6 +18,6 @@ final class PoolList extends Data
      */
     public function __construct(
         #[DataCollectionOf(PoolDefinitionData::class)]
-        public array $pools,
+        public readonly array $pools,
     ) {}
 }

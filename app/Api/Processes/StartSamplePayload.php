@@ -36,11 +36,11 @@ final class StartSamplePayload extends Data implements ApiPayload
 {
     public function __construct(
         #[InPath, FromRouteParameter('commandRequest')]
-        public string $commandRequest,
+        public readonly string $commandRequest,
         #[Max(64)]
-        public string $permit,
+        public readonly string $permit,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

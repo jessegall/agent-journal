@@ -16,9 +16,9 @@ final class OutputCleaned extends Data
      * @param  list<string>  $parts
      */
     public function __construct(
-        public array $runs,
-        public array $parts,
-        public int $bytes,
-        public bool $isRemoved,
+        public readonly array $runs,
+        public readonly array $parts,
+        public readonly int $bytes,
+        public readonly bool $isRemoved,
     ) {}
 }

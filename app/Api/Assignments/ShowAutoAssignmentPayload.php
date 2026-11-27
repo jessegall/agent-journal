@@ -27,10 +27,10 @@ final class ShowAutoAssignmentPayload extends Data implements ApiPayload
     use NamesAutoAssignment;
 
     public function __construct(
-        public string $actorType,
+        public readonly string $actorType,
         #[Ulid]
-        public string $actorId,
+        public readonly string $actorId,
         #[Max(100)]
-        public string $assignableType,
+        public readonly string $assignableType,
     ) {}
 }

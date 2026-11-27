@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 final class LinkChanged extends Data
 {
     public function __construct(
-        public string $source,
-        public string $target,
+        public readonly string $source,
+        public readonly string $target,
     ) {}
 }

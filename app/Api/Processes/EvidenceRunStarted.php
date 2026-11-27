@@ -14,6 +14,6 @@ final class EvidenceRunStarted extends Data
 {
     public function __construct(
         #[MapName('run_id')]
-        public string $runId,
+        public readonly string $runId,
     ) {}
 }

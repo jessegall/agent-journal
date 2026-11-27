@@ -14,7 +14,7 @@ final class RuleRetired extends Data
 {
     public function __construct(
         #[MapName('rule_id')]
-        public string $ruleId,
-        public string $state,
+        public readonly string $ruleId,
+        public readonly string $state,
     ) {}
 }

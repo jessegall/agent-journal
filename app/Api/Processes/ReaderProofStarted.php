@@ -14,7 +14,7 @@ final class ReaderProofStarted extends Data
 {
     public function __construct(
         #[MapName('proof_id')]
-        public string $proofId,
-        public string $state,
+        public readonly string $proofId,
+        public readonly string $state,
     ) {}
 }

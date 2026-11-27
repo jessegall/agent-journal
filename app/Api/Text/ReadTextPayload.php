@@ -26,15 +26,15 @@ final class ReadTextPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(64)]
-        public string $target,
+        public readonly string $target,
         #[Max(64)]
-        public string $version,
+        public readonly string $version,
         #[Max(200), Prohibits('first_line', 'last_line')]
-        public string|null $section = null,
+        public readonly string|null $section = null,
         #[MapName('first_line'), Min(1)]
-        public int|null $firstLine = null,
+        public readonly int|null $firstLine = null,
         #[MapName('last_line'), Min(1), GreaterThanOrEqualTo('first_line')]
-        public int|null $lastLine = null,
+        public readonly int|null $lastLine = null,
     ) {}
 
     public function selection(): TextSelection

@@ -37,14 +37,14 @@ final class AssignRecordPayload extends Data implements ApiPayload
 
     public function __construct(
         #[Max(100)]
-        public string $recordType,
+        public readonly string $recordType,
         #[Ulid]
-        public string $recordId,
-        public string $recipientType,
+        public readonly string $recordId,
+        public readonly string $recipientType,
         #[Ulid]
-        public string $recipientId,
+        public readonly string $recipientId,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

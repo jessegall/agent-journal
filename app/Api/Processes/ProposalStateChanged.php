@@ -14,7 +14,7 @@ final class ProposalStateChanged extends Data
 {
     public function __construct(
         #[MapName('proposal_id')]
-        public string $proposalId,
-        public string $state,
+        public readonly string $proposalId,
+        public readonly string $state,
     ) {}
 }

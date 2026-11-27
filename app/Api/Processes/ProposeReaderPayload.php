@@ -24,9 +24,9 @@ final class ProposeReaderPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[InPath, FromRouteParameter('commandRequest')]
-        public string $commandRequest,
+        public readonly string $commandRequest,
         #[MapName('declaration_revision'), Min(1)]
-        public int $declarationRevision,
-        public ReaderDefinition $definition,
+        public readonly int $declarationRevision,
+        public readonly ReaderDefinition $definition,
     ) {}
 }

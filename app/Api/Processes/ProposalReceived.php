@@ -17,10 +17,10 @@ final class ProposalReceived extends Data
      */
     public function __construct(
         #[MapName('proposal_id')]
-        public string $proposalId,
-        public int $revision,
-        public string $state,
+        public readonly string $proposalId,
+        public readonly int $revision,
+        public readonly string $state,
         #[MapName('missing_fields')]
-        public array $missingFields,
+        public readonly array $missingFields,
     ) {}
 }

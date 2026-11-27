@@ -23,10 +23,10 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class ListAutoAssignmentsPayload extends Data implements ApiPayload
 {
     public function __construct(
-        public string $actorType,
+        public readonly string $actorType,
         #[Ulid]
-        public string $actorId,
+        public readonly string $actorId,
         #[Ulid]
-        public string|null $after = null,
+        public readonly string|null $after = null,
     ) {}
 }

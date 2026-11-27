@@ -22,8 +22,8 @@ final class CheckRunStalenessPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[InPath, FromRouteParameterProperty('processRun', 'id')]
-        public string $processRun,
+        public readonly string $processRun,
         #[MapName('key')]
-        public string $eventKey,
+        public readonly string $eventKey,
     ) {}
 }

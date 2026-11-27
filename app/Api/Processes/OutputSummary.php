@@ -16,10 +16,10 @@ final class OutputSummary extends Data
      * @param  list<PartSummary>  $parts
      */
     public function __construct(
-        public string $label,
-        public string $mode,
-        public string $lifecycle,
+        public readonly string $label,
+        public readonly string $mode,
+        public readonly string $lifecycle,
         #[DataCollectionOf(PartSummary::class)]
-        public array $parts,
+        public readonly array $parts,
     ) {}
 }

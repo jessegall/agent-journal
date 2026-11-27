@@ -14,7 +14,7 @@ final class CapturedPart extends Data
 {
     public function __construct(
         #[MapName('part_id')]
-        public string $partId,
-        public string $state,
+        public readonly string $partId,
+        public readonly string $state,
     ) {}
 }

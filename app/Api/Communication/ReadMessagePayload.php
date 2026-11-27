@@ -31,9 +31,9 @@ final class ReadMessagePayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Size(26)]
-        public string $messageId,
+        public readonly string $messageId,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

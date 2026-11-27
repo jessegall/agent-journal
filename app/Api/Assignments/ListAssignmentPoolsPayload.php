@@ -23,6 +23,6 @@ final class ListAssignmentPoolsPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(100)]
-        public string $assignableType,
+        public readonly string $assignableType,
     ) {}
 }

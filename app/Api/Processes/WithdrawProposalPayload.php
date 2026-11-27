@@ -35,9 +35,9 @@ final class WithdrawProposalPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[InPath, FromRouteParameter('proposal')]
-        public string $proposal,
+        public readonly string $proposal,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

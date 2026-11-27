@@ -17,6 +17,6 @@ final class ProposalsImported extends Data
      */
     public function __construct(
         #[DataCollectionOf(ProposalReceived::class)]
-        public array $proposals,
+        public readonly array $proposals,
     ) {}
 }

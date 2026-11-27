@@ -23,12 +23,12 @@ final class ListTextSectionsPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(64)]
-        public string $target,
+        public readonly string $target,
         #[Max(64)]
-        public string $version,
+        public readonly string $version,
         #[MapName('after_section'), Min(0)]
-        public int $afterSection = 0,
+        public readonly int $afterSection = 0,
         #[MapName('per_page'), Min(1)]
-        public int|null $perPage = null,
+        public readonly int|null $perPage = null,
     ) {}
 }

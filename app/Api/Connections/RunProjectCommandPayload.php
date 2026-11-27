@@ -43,16 +43,16 @@ final class RunProjectCommandPayload extends Data implements ApiPayload
      */
     public function __construct(
         #[Ulid, MapName('binding')]
-        public string $bindingId,
+        public readonly string $bindingId,
         #[Min(2), Max(200)]
-        public array $argv,
+        public readonly array $argv,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
         // What was piped into the verb: an empty pipe arrives as an empty string or none, which Laravel's rules
         // cannot tell apart, so pipedInput answers both as nothing piped.
         #[Max(1_048_576)]
-        public string|null $stdin = null,
+        public readonly string|null $stdin = null,
     ) {}
 
     /**

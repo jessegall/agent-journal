@@ -14,6 +14,6 @@ final class SampleApproved extends Data
 {
     public function __construct(
         #[MapName('permit_id')]
-        public string $permitId,
+        public readonly string $permitId,
     ) {}
 }

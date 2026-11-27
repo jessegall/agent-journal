@@ -35,9 +35,9 @@ final class StartEvidenceRunPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[InPath, FromRouteParameterProperty('evidencePermit', 'id')]
-        public string $evidencePermit,
+        public readonly string $evidencePermit,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

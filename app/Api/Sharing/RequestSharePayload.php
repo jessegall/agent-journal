@@ -29,11 +29,11 @@ final class RequestSharePayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Regex('/^[a-z][a-z-]*$/')]
-        public string $alias,
+        public readonly string $alias,
         #[Regex('/^[1-9][0-9]{0,18}$/')]
-        public string $number,
+        public readonly string $number,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

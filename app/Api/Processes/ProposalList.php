@@ -22,6 +22,6 @@ final class ProposalList extends Data
      * }>  $proposals
      */
     public function __construct(
-        public array $proposals,
+        public readonly array $proposals,
     ) {}
 }

@@ -18,6 +18,6 @@ final class ShareProposals extends Data
      */
     public function __construct(
         #[DataCollectionOf(ShareProposalStatusData::class)]
-        public array $proposals,
+        public readonly array $proposals,
     ) {}
 }

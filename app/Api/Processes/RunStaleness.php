@@ -14,6 +14,6 @@ final class RunStaleness extends Data
 {
     public function __construct(
         #[MapName('stale_reason')]
-        public string $staleReason,
+        public readonly string $staleReason,
     ) {}
 }

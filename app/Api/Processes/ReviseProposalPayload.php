@@ -39,12 +39,12 @@ final class ReviseProposalPayload extends Data implements ApiPayload
      */
     public function __construct(
         #[InPath, FromRouteParameter('proposal')]
-        public string $proposal,
-        public array $declaration,
+        public readonly string $proposal,
+        public readonly array $declaration,
         #[MapName('expected_revision'), Min(1)]
-        public int|null $expectedRevision,
+        public readonly int|null $expectedRevision,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

@@ -38,12 +38,12 @@ final class AdmitLinePayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(100_000)]
-        public string $line,
-        public ShellDialect $dialect,
+        public readonly string $line,
+        public readonly ShellDialect $dialect,
         #[MapName('working_folder'), Max(4096)]
-        public string $workingFolder,
+        public readonly string $workingFolder,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

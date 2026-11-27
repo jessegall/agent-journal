@@ -14,7 +14,7 @@ final class ReaderProposed extends Data
 {
     public function __construct(
         #[MapName('reader_revision_id')]
-        public string $readerRevisionId,
-        public string $state,
+        public readonly string $readerRevisionId,
+        public readonly string $state,
     ) {}
 }

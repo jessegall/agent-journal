@@ -22,7 +22,7 @@ final class ExplainCommandPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(100_000)]
-        public string $line,
-        public ShellDialect $dialect = ShellDialect::Bash,
+        public readonly string $line,
+        public readonly ShellDialect $dialect = ShellDialect::Bash,
     ) {}
 }

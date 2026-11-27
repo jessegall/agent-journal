@@ -19,13 +19,13 @@ final class CommandRequestShown extends Data
      */
     public function __construct(
         #[MapName('request_id')]
-        public string $requestId,
-        public string $operation,
-        public string $line,
-        public string $state,
-        public array $steps,
-        public string $next,
-        public array $proposals,
-        public array $readers,
+        public readonly string $requestId,
+        public readonly string $operation,
+        public readonly string $line,
+        public readonly string $state,
+        public readonly array $steps,
+        public readonly string $next,
+        public readonly array $proposals,
+        public readonly array $readers,
     ) {}
 }

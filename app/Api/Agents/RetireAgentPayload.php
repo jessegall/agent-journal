@@ -29,9 +29,9 @@ final class RetireAgentPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Ulid]
-        public string $agentId,
+        public readonly string $agentId,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

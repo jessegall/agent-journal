@@ -34,9 +34,9 @@ final class ImportProposalsPayload extends Data implements ApiPayload
 {
     public function __construct(
         #[Max(1_000_000)]
-        public string $declarations,
+        public readonly string $declarations,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

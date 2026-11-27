@@ -23,6 +23,6 @@ final class ListProposalsPayload extends Data implements ApiPayload
      */
     public function __construct(
         #[SentField]
-        public array $states = [],
+        public readonly array $states = [],
     ) {}
 }

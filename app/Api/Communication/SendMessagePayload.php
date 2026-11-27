@@ -28,9 +28,9 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 final class SendMessagePayload extends Data implements ApiPayload
 {
     public function __construct(
-        public NewMessage $message,
+        public readonly NewMessage $message,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

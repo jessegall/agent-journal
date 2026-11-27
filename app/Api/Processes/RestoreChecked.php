@@ -17,6 +17,6 @@ final class RestoreChecked extends Data
      */
     public function __construct(
         #[DataCollectionOf(CapturedPart::class)]
-        public array $capture,
+        public readonly array $capture,
     ) {}
 }

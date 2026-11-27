@@ -47,22 +47,22 @@ final class ConfigureAutoAssignmentPayload extends Data implements ApiPayload
      * @param  list<string>  $records
      */
     public function __construct(
-        public string $actorType,
+        public readonly string $actorType,
         #[Ulid]
-        public string $actorId,
+        public readonly string $actorId,
         #[Max(100)]
-        public string $assignableType,
+        public readonly string $assignableType,
         #[Max(100)]
-        public string $pool,
+        public readonly string $pool,
         #[SentField, Max(1000)]
-        public array $records,
-        public int $size,
+        public readonly array $records,
+        public readonly int $size,
         #[Min(0)]
-        public int $expectedRevision,
+        public readonly int $expectedRevision,
         #[Max(64)]
-        public string|null $target,
+        public readonly string|null $target,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }

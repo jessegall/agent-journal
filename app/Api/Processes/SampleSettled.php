@@ -16,10 +16,10 @@ final class SampleSettled extends Data
      * @param  list<int>  $unsampledStatuses
      */
     public function __construct(
-        public string $state,
+        public readonly string $state,
         #[MapName('run_id')]
-        public string $runId,
+        public readonly string $runId,
         #[MapName('unsampled_statuses')]
-        public array $unsampledStatuses,
+        public readonly array $unsampledStatuses,
     ) {}
 }

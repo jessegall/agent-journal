@@ -40,13 +40,13 @@ final class ProveReaderPayload extends Data implements ApiPayload
      */
     public function __construct(
         #[InPath, FromRouteParameter('commandRequest')]
-        public string $commandRequest,
+        public readonly string $commandRequest,
         #[MapName('reader_revision'), Max(64)]
-        public string $readerRevision,
+        public readonly string $readerRevision,
         #[Min(1), Max(20)]
-        public array $runs,
+        public readonly array $runs,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
     ) {}
 }
