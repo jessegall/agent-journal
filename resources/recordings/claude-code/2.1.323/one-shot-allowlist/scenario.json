@@ -1,0 +1,21 @@
+{
+    "format": 2,
+    "protocol": 1,
+    "scenario_hash": "228190b303dd66ef2c766bc44b9b0e223aae317cfc1480623775e2ef679105b0",
+    "driver": "claude-code",
+    "build": "2.1.323",
+    "image_programs": "4b219f760f30faba61c4f0f2f1ae025a753659795ffe23f0a71a9a973fa85330",
+    "recorded_at": "2026-11-27T14:32:11+00:00",
+    "exchanges": [
+        "01-host-caller-915b0be9afb2601e",
+        "02-hooks-caller-117072c984c7ba26",
+        "03-hooks-caller-2a967d5b17572714",
+        "04-agent-caller-117072c984c7ba26",
+        "05-agent-caller-2a967d5b17572714",
+        "06-docker-daemon",
+        "07-driver-01m8eppvgk8skzac95hapqp299",
+        "08-driver-01m8eppw5ys6gy7xhzsvbt34px",
+        "09-driver-01m8eppxnrqyptawzxa8yzrk79",
+        "10-driver-01m8epq80df145x6fh9qwwey9h"
+    ]
+}
