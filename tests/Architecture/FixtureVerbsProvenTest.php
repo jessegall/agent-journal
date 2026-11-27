@@ -81,20 +81,20 @@ final class FixtureVerbsProvenTest extends TestCase
 
         foreach (self::SUBJECTS as $subject) {
             $type = Reflector::of($subject);
-            $verbs = array_filter(
+            $verbs = array_values(array_filter(
                 $type->methods(),
                 fn (ReflectedMethod $method) => $method->isPublic()
                     && ! $method->isStatic()
                     && self::returnsItsSubject($method)
                     && ! in_array($method->name(), $called, true),
-            );
+            ));
             $unproven = [...$unproven, ...array_map(
                 fn (ReflectedMethod $method) => $type->shortName().'::'.$method->name(),
                 $verbs,
             )];
         }
 
-        $this->assertSame([], array_values($unproven), self::HOW_TO_FIX);
+        $this->assertSame([], $unproven, self::HOW_TO_FIX);
     }
 
     /**

@@ -14,6 +14,9 @@ final class PageActions
      */
     private array $routes = [];
 
+    /**
+     * @param  class-string  $controller
+     */
     public function get(string $path, string $controller, string $name): self
     {
         $this->routes[] = ActionRoute::get($path, $controller, $name);
@@ -21,6 +24,9 @@ final class PageActions
         return $this;
     }
 
+    /**
+     * @param  class-string  $controller
+     */
     public function post(string $path, string $controller, string $name): self
     {
         $this->routes[] = ActionRoute::post($path, $controller, $name);
@@ -28,6 +34,9 @@ final class PageActions
         return $this;
     }
 
+    /**
+     * @param  class-string  $controller
+     */
     public function patch(string $path, string $controller, string $name): self
     {
         $this->routes[] = ActionRoute::patch($path, $controller, $name);
@@ -35,6 +44,9 @@ final class PageActions
         return $this;
     }
 
+    /**
+     * @param  class-string  $controller
+     */
     public function delete(string $path, string $controller, string $name): self
     {
         $this->routes[] = ActionRoute::delete($path, $controller, $name);
