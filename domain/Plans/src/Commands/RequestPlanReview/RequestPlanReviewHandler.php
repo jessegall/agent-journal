@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Commands\RequestPlanReview;
 
 use Domain\Plans\Commands\Support\PlanCommandHandler;
-use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Models\PlanReviewEdition;
 
 final readonly class RequestPlanReviewHandler extends PlanCommandHandler
 {
@@ -21,13 +19,6 @@ final readonly class RequestPlanReviewHandler extends PlanCommandHandler
     {
         $plan = Plan::findLockedStructure($command->planId);
 
-        if ($plan->status !== PlanStatus::Planned) {
-            throw PlanReviewRefused::notPlanned($plan->number, $plan->status->value);
-        }
-
-        $review = PlanReviewEdition::create($plan, $command->dispatchedBy());
-        $plan->requestReview($review, $command->reviewers);
-
-        return $review->getKey();
+        return $plan->openReview($command->dispatchedBy(), $command->reviewers)->getKey();
     }
 }

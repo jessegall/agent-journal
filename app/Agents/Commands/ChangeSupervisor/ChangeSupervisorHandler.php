@@ -14,6 +14,6 @@ final readonly class ChangeSupervisorHandler implements CommandHandler
 
     public function handle(ChangeSupervisorCommand $command): SupervisorChangeReceipt
     {
-        return $this->routes->change($command, $command->dispatchedBy());
+        return $this->routes->change($command);
     }
 }

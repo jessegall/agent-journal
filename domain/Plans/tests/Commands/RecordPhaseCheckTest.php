@@ -9,7 +9,6 @@ use Domain\Plans\Commands\RecordPhaseCheck\RecordPhaseCheckCommand;
 use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
-use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\Fixtures\TestPhase;
 use Domain\Plans\Tests\Fixtures\TestPlan;
@@ -119,10 +118,5 @@ final class RecordPhaseCheckTest extends TestCase
             $this->start,
             new AssessPartOutputCommand($this->normalRun($status, $output)->id),
         );
-    }
-
-    private function planStructure(): PlanStructure
-    {
-        return $this->app->make(PlanStructure::class);
     }
 }

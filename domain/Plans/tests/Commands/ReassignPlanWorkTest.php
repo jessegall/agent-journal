@@ -13,13 +13,10 @@ use App\Support\RecordIdentity;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
 use Domain\Plans\Commands\ReassignPlanWork\ReassignPlanWorkCommand;
 use Domain\Plans\Models\Phase;
-use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\Fixtures\TestPhase;
 use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
@@ -51,15 +48,7 @@ final class ReassignPlanWorkTest extends TestCase
 
     private AssigneeIdentity $builder;
 
-    private Plan $plan;
-
     private Phase $working;
-
-    private Phase $over;
-
-    private Phase $empty;
-
-    private Task $open;
 
     protected function setUp(): void
     {
@@ -85,14 +74,7 @@ final class ReassignPlanWorkTest extends TestCase
                 ))
             ->withPlan('Release', fn (TestPlan $plan) => $plan->addPhase('Empty'));
 
-        $this->plan = $plans->planCalled('Release');
-        $this->open = $tasks->taskCalled('Open');
-
-        [$this->working, $this->over, $this->empty] = [
-            $plans->phaseCalled('Working'),
-            $plans->phaseCalled('Over'),
-            $plans->phaseCalled('Empty'),
-        ];
+        $this->working = $plans->phaseCalled('Working');
     }
 
     public function test_a_phase_cascade_moves_to_the_new_holder_with_its_tasks(): void
@@ -112,23 +94,11 @@ final class ReassignPlanWorkTest extends TestCase
         $this->assertSame([$reviewer->id, $reviewer->id], AssignmentRecord::query()->pluck('holder_id')->all());
     }
 
-    /**
-     * @return list<string>
-     */
-    private function heldTypes(): array
-    {
-        return array_values(AssignmentRecord::query()->pluck('record_type')->all());
-    }
 
     private function assignWork(RecordIdentity $root, AssigneeIdentity $recipient): AssignmentResult
     {
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run(new AssignPlanWorkCommand($root, $recipient));
-    }
-
-    private function planStructure(): PlanStructure
-    {
-        return $this->app->make(PlanStructure::class);
     }
 }

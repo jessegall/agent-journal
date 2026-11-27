@@ -347,17 +347,6 @@ final class DockSourceTest extends TestCase
         }
     }
 
-    private function startInConversation(string $profile): TestStart
-    {
-        $start = $this->journal->signedStart("Started {$profile}", $profile);
-
-        $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorReference::of($this->owner),
-            ActorReference::of($start->agent),
-        );
-
-        return $start;
-    }
 
     /**
      * @return list<string>

@@ -48,8 +48,9 @@ final readonly class SupervisorDefinitions implements SupervisorDefinitionsContr
         return $coverage;
     }
 
-    public function change(ChangeSupervisorCommand $command, ActorReference $author): SupervisorChangeReceipt
+    public function change(ChangeSupervisorCommand $command): SupervisorChangeReceipt
     {
+        $author = $command->dispatchedBy();
         $this->lock->acquire();
         $actor = $this->workingActor($command->actor);
         $profile = $this->profiles->snapshotFor(ProfileKey::from($actor->profile_key));

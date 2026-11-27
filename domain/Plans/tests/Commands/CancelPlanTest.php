@@ -19,7 +19,6 @@ use Domain\Plans\Events\PlanFinished;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\Fixtures\TestPhase;
 use Domain\Plans\Tests\Fixtures\TestPlan;
@@ -135,7 +134,7 @@ final class CancelPlanTest extends TestCase
 
         match ($status) {
             TaskStatus::Started => $task->start(ActorReference::system()),
-            TaskStatus::Blocked => $task->block('Waits.'),
+            TaskStatus::Blocked => self::block($task),
             TaskStatus::Finished => $task->finish('Done.'),
             TaskStatus::Cancelled => $task->cancel('Not needed.'),
             TaskStatus::Open => null,
@@ -149,8 +148,12 @@ final class CancelPlanTest extends TestCase
         return $this->app->make(CommandBus::class);
     }
 
-    private function planStructure(): PlanStructure
+    /**
+     * Blocks the task as an agent does: it is started first, as only a started task blocks.
+     */
+    private static function block(Task $task): void
     {
-        return $this->app->make(PlanStructure::class);
+        $task->start(ActorReference::system());
+        $task->block('Waits.');
     }
 }
