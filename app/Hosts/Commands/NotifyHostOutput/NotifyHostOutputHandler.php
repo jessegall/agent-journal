@@ -29,7 +29,7 @@ final readonly class NotifyHostOutputHandler implements CommandHandler
 
     public function handle(NotifyHostOutputCommand $command): void
     {
-        if (strlen($command->body) > HostOutputData::MAXIMUM_BYTES) {
+        if (strlen($command->body) > HostOutputData::BYTE_LIMIT) {
             $this->logOnce($command->hostId, 'A host sent process output over the post limit.');
 
             throw HostProtocolRefused::outputTooLarge($command->processId, strlen($command->body));

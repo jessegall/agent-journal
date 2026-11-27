@@ -15,7 +15,7 @@ final class HostOutputData extends Data
     /**
      * The most a host sends in one post.
      */
-    public const int MAXIMUM_BYTES = 256 * 1024;
+    public const int BYTE_LIMIT = 256 * 1024;
 
     /**
      * @param  list<HostFrameData>  $frames

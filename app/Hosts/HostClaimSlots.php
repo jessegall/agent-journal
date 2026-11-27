@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 final readonly class HostClaimSlots
 {
     /**
-     * How long a slot outlives a claim that never gave it back, longer than the longest wait.
+     * How long a slot outlives a claim that never gave it back; it outlasts every wait of a claim.
      */
     public const int SLOT_SECONDS = 40;
 

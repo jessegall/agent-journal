@@ -31,15 +31,15 @@ final class LoaderInputTest extends TestCase
             'input' => ['noun' => 'plan', 'answers' => [$answer, $answer, $answer]],
         ]);
 
-        $this->assertLessThanOrEqual(LoaderInput::MOST_BYTES, strlen($header));
+        $this->assertLessThanOrEqual(LoaderInput::BYTE_LIMIT, strlen($header));
         $this->assertSame($answer, LoaderInput::fromHeader($header)->input['answers'][2]);
     }
 
     public function test_a_header_past_the_bound_is_refused(): void
     {
-        $this->expectExceptionObject(LoaderInputUnreadable::tooLarge(LoaderInput::MOST_BYTES));
+        $this->expectExceptionObject(LoaderInputUnreadable::tooLarge(LoaderInput::BYTE_LIMIT));
 
-        LoaderInput::fromHeader(str_repeat('a', LoaderInput::MOST_BYTES + 1));
+        LoaderInput::fromHeader(str_repeat('a', LoaderInput::BYTE_LIMIT + 1));
     }
 
     /**

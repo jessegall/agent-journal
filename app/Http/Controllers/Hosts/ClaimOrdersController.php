@@ -22,7 +22,7 @@ final readonly class ClaimOrdersController
     /**
      * The longest a host's claim waits for an order.
      */
-    public const int WAIT_LIMIT_SECONDS = 25;
+    public const int WAIT_SECONDS_LIMIT = 25;
 
     /**
      * The most orders one claim takes.
@@ -39,7 +39,7 @@ final readonly class ClaimOrdersController
     ): JsonResponse {
         $request->validate([
             'limit' => ['sometimes', 'integer', 'min:1', 'max:'.self::CLAIM_LIMIT],
-            'wait' => ['sometimes', 'integer', 'min:0', 'max:'.self::WAIT_LIMIT_SECONDS],
+            'wait' => ['sometimes', 'integer', 'min:0', 'max:'.self::WAIT_SECONDS_LIMIT],
         ]);
 
         $deposesAnother = $slots->isTaken($host->hostId);
