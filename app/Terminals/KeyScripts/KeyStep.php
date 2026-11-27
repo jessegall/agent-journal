@@ -60,6 +60,15 @@ final readonly class KeyStep
     }
 
     /**
+     * Keys for a screen the driver shows only at times, such as a question it asks only once a conversation began:
+     * sent when the words show, passed over once the next step is met without them.
+     */
+    public static function pressIfShown(string $name, string $words, string $keys): self
+    {
+        return new self($name, ScreenExpectation::shows($words), KeyAction::PressIfShown, $keys);
+    }
+
+    /**
      * A step of a navigation round: the main agent's entry chosen by its label on whatever still screen is drawn.
      */
     public static function chooseOnScreen(string $label): self

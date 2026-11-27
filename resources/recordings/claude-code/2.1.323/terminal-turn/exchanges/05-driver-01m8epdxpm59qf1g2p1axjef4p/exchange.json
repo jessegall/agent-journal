@@ -1,0 +1,31 @@
+{
+    "opening": {
+        "wire": "driver",
+        "exchange": "01m8epdxpm59qf1g2p1axjef4p",
+        "mode": "process",
+        "argv": [
+            "claude",
+            "--version"
+        ],
+        "environment": {},
+        "inherited": [],
+        "folder": "/workspace",
+        "columns": 0,
+        "rows": 0,
+        "image": "sha256:b9e657f52de91aa6aacb17668a1784ef04033386169ad13bb094221e1ba6f257",
+        "openedAt": 1795789616891177
+    },
+    "events": [
+        {
+            "type": "printed",
+            "at": 1795789617060614,
+            "bytes": "Mi4xLjMyMyAoQ2xhdWRlIENvZGUpCg==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        }
+    ],
+    "exit_code": 0
+}

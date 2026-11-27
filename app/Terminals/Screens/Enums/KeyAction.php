@@ -11,6 +11,8 @@ enum KeyAction: string
 {
     // Sends the step's keys, such as a typed command or one key.
     case PressKeys = 'press_keys';
+    // Sends the step's keys only if its screen comes; once the step after it is met first, it is passed over.
+    case PressIfShown = 'press_if_shown';
     // Sends nothing and only waits for its screen, as a script's last step waits for the driver's own proof.
     case WaitForScreen = 'wait_for_screen';
     // Moves the menu's highlight onto the entry its label names, one arrow at a time; a label not shown sends nothing.

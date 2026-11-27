@@ -3,6 +3,9 @@
 # Usage: sh scripts/record-scenarios.sh --owner=<email> [--dry-run] [<driver>/<scenario> ...]   (every one when none)
 set -eu
 
+# A play's finisher holds the whole run with its faked copies, more than PHP's default allows for a long one.
+PLAY_MEMORY=512M
+
 main() {
     local owner dry_run scenarios scenario
     cd "$(dirname "$0")/.."
@@ -55,7 +58,7 @@ print_plan() {
     local scenario
     echo "set_setting AGENTS_RECORDING true; sh scripts/local-host.sh"
     for scenario in $2; do
-        echo "docker compose exec app php artisan recordings:play $scenario --owner=$1"
+        echo "docker compose exec app php -d memory_limit=$PLAY_MEMORY artisan recordings:play $scenario --owner=$1"
     done
     echo "set_setting AGENTS_RECORDING false; sh scripts/local-host.sh"
 }
@@ -76,7 +79,8 @@ play_scenario() {
     local watcher status=0
     run_machine_changes &
     watcher=$!
-    docker compose exec $(read_terminal_flag) app php artisan recordings:play "$2" --owner="$1" || status=$?
+    docker compose exec $(read_terminal_flag) app php -d memory_limit="$PLAY_MEMORY" artisan recordings:play "$2" \
+        --owner="$1" || status=$?
     kill "$watcher" 2>/dev/null || true
     return "$status"
 }

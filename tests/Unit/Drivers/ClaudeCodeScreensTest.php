@@ -7,6 +7,10 @@ namespace Tests\Unit\Drivers;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Hosts\Protocol\Payloads\HostFramePayload;
+use App\Terminals\KeyScripts\KeyScriptCatalogue;
+use App\Terminals\KeyScripts\KeyScriptRun;
+use App\Terminals\KeyScripts\KeyScriptRunner;
+use App\Terminals\Screens\Enums\KeyMoveType;
 use App\Terminals\Screens\Enums\ScreenType;
 use App\Terminals\Screens\ScreenClassifier;
 use App\Terminals\Screens\ScreenHolds;
@@ -63,6 +67,27 @@ final class ClaudeCodeScreensTest extends TestCase
         $this->journal->assertResult(
             [null, false, true],
             [$echo->menu?->name, $echo->hasOptions, $switch->hasOptions],
+        );
+    }
+
+    /**
+     * Claude Code asks before it switches the model of a conversation that began, and not of a fresh one: the model
+     * script presses Enter on the asked question, and without it passes the step over to the proof that it applied.
+     */
+    public function test_the_model_switch_is_confirmed_when_asked_and_passed_over_when_not(): void
+    {
+        $profile = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE);
+        $runner = $this->journal->service(KeyScriptRunner::class);
+        $script = new KeyScriptCatalogue($profile->keyScripts())
+            ->scriptFor(DefaultDrivers::CLAUDE_CODE, '2.1.323', 'ChangeModel');
+        $atTheQuestion = new KeyScriptRun($script, ['model' => 'claude-sonnet-5-5'], step: 2);
+
+        $asked = $runner->moveOn($profile->layout(), $atTheQuestion, $this->lastFrameOf('model-switch'));
+        $notAsked = $runner->moveOn($profile->layout(), $atTheQuestion, $this->lastFrameOf('model-applied'));
+
+        $this->journal->assertResult(
+            [KeyMoveType::Send, "\r", KeyMoveType::Finished],
+            [$asked->type, $asked->keys, $notAsked->type],
         );
     }
 

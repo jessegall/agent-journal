@@ -61,12 +61,12 @@ final readonly class KeyScriptRunner
             : $this->fingerprints->of($layout, $run->script->driver, $frame, $reading->menu?->name);
 
         if (! $step->expectation->isMetBy($reading, $frame, $run->values, $fingerprint)) {
-            return self::unmet($run, $reading, $frame);
+            return $this->passedOver($layout, $run, $reading, $frame) ?? self::unmet($run, $reading, $frame);
         }
 
         return match ($step->action) {
             KeyAction::WaitForScreen => $this->moveOn($layout, $run->advanced($frame->captured), $frame),
-            KeyAction::PressKeys => KeyMove::send(
+            KeyAction::PressKeys, KeyAction::PressIfShown => KeyMove::send(
                 $run->advanced($frame->captured),
                 KeyStep::filled($step->keys, $run->values),
                 self::guardedRows($layout, $reading, $frame),
@@ -91,6 +91,29 @@ final readonly class KeyScriptRunner
         $guard = $move->guardOn($frame);
 
         return $this->host->keys($processId, $move->keys, $guard, $inputGeneration, $source);
+    }
+
+    /**
+     * The run past a step pressed only if shown whose screen has not come while the step after it is already met:
+     * the driver did not ask, so the run goes on. Any other step waits for its screen.
+     */
+    private function passedOver(
+        ScreenLayout $layout,
+        KeyScriptRun $run,
+        ScreenReading $reading,
+        HostFramePayload $frame,
+    ): KeyMove|null {
+        $next = $run->advanced($frame->captured);
+
+        if ($run->currentStep()->action !== KeyAction::PressIfShown || $next->isFinished()) {
+            return null;
+        }
+
+        if (! $next->currentStep()->expectation->isMetBy($reading, $frame, $next->values, null)) {
+            return null;
+        }
+
+        return $this->moveOn($layout, $next, $frame);
     }
 
     /**

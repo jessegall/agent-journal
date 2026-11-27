@@ -78,8 +78,12 @@ final readonly class RecordingFinisher
         $recording = ScenarioRecording::ofExchanges($manifest, $exchanges);
 
         $this->protocol->assertKept($recording);
-        $text = implode("\n", array_map(fn (CutExchange $exchange) => $exchange->text(), $exchanges));
-        $fakes->assertNoLeak($text, [...$run->knownValues(), ...$personal]);
+        $known = [...$run->knownValues(), ...$personal];
+
+        // Each exchange is checked on its own, so a long recording never sits in memory as one text.
+        foreach ($exchanges as $exchange) {
+            $fakes->assertNoLeak($exchange->text(), $known);
+        }
 
         return $this->written($run, $manifest, $recording, $fakes);
     }
