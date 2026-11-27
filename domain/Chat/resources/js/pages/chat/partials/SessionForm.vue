@@ -273,8 +273,8 @@ const chatProp = ownPage ? "page" : "window_chat_conversation";
 // The drivers this agent may start on, read where the form opens, so every page that shows the form has them.
 const driverChoices = ref<DriverChoiceData[]>([]);
 
-function readDrivers(): void {
-  load(chatStartDrivers, { agent: props.agent.id }).then(
+function readDrivers(): Promise<void> {
+  return load(chatStartDrivers, { agent: props.agent.id }).then(
     (answer) => {
       if (answer.status === "ok") {
         driverChoices.value = answer.value.drivers;
@@ -417,7 +417,12 @@ function readAccounts(chosen: string): void {
       isAccountReadFailed.value = true;
       refusal.value = Object.values(answer.errors ?? {})[0] ?? "The accounts could not be read.";
     },
-    () => {
+    (failure: Error) => {
+      // A read cut short by a newer one is not a failure: the newer read answers.
+      if (failure instanceof LoaderCancelled) {
+        return;
+      }
+
       isAccountReadFailed.value = true;
       refusal.value = "The accounts could not be read.";
     },
@@ -474,7 +479,12 @@ function showAccounts(read: EligibleAccountsData): void {
     model.value !== null && modelChoices.value.includes(model.value)
       ? model.value
       : read.defaultModel;
-  refusal.value = null;
+
+  // A read that answers clears only its own earlier failure, never a start's refusal.
+  if (isAccountReadFailed.value) {
+    refusal.value = null;
+  }
+
   isAccountReadFailed.value = false;
   const kept = accounts.value.find((choice) => choice.id === accountId.value);
 
@@ -527,13 +537,12 @@ watch(
 // The drivers and accounts follow each new read of the agent, so a driver or account that can no longer start shows it.
 watch(
   () => props.agent,
-  () => {
-    readDrivers();
-
-    if (driver.value !== "") {
-      readAccounts(driver.value);
-    }
-  },
+  () =>
+    readDrivers().then(() => {
+      if (driver.value !== "") {
+        readAccounts(driver.value);
+      }
+    }),
 );
 
 function sessionChoice(): SessionChoice {

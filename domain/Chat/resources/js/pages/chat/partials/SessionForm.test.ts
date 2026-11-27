@@ -85,6 +85,8 @@ const drivers = [
 
 // How many of the next account reads fail, as when the journal cannot be reached.
 const readFailures = { count: 0 };
+// How many coming account reads a newer read cuts short.
+const cancelledReads = { count: 0 };
 
 vi.mock("@inertiajs/vue3", () => ({
   Link: { template: "<a><slot /></a>" },
@@ -121,6 +123,12 @@ vi.mock("@kit/loaders", async (importOriginal) => {
       }
 
       if (loader.key === "accounts.start-accounts") {
+        if (cancelledReads.count > 0) {
+          cancelledReads.count--;
+
+          return Promise.reject(new original.LoaderCancelled());
+        }
+
         if (readFailures.count > 0) {
           readFailures.count--;
 
@@ -363,6 +371,17 @@ describe("SessionForm", () => {
     await flushPromises();
 
     expect(optionsOf(form, "account")).toHaveLength(2);
+    form.unmount();
+  });
+
+  it("does not call an account read a newer read cut short a failure", async () => {
+    cancelledReads.count = 1;
+    const form = mount(SessionForm, {
+      props: { agent: idle, mode: "start" },
+    });
+    await flushPromises();
+
+    expect(form.text()).not.toContain("The accounts could not be read.");
     form.unmount();
   });
 
