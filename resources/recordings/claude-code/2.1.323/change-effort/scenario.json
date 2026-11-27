@@ -5,14 +5,14 @@
     "driver": "claude-code",
     "build": "2.1.323",
     "image_programs": "4b219f760f30faba61c4f0f2f1ae025a753659795ffe23f0a71a9a973fa85330",
-    "recorded_at": "2026-11-27T11:59:27+00:00",
+    "recorded_at": "2026-11-27T14:09:01+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",
-        "02-hooks-caller-8a14514012c212df",
-        "03-agent-caller-8a14514012c212df",
+        "02-hooks-caller-49d9336cfb243010",
+        "03-agent-caller-49d9336cfb243010",
         "04-docker-daemon",
-        "05-driver-01m8edzj9mg8z9bxq0pe587dmm",
-        "06-driver-01m8edzjtgm34d1qrf67awj59y",
-        "07-driver-01m8edzkxxd9m5d8jfhg968ymn"
+        "05-driver-01m8encj3qk9me7jazmeargq19",
+        "06-driver-01m8encjpahmbkf95xjn7nd21z",
+        "07-driver-01m8enckz9dnffhnmmz0jk1q51"
     ]
 }

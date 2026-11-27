@@ -7,7 +7,7 @@
         "columns": 0,
         "rows": 0
     },
-    "recorded_at": "2026-11-27T11:59:17.842497+00:00",
+    "recorded_at": "2026-11-27T14:08:43.679616+00:00",
     "initial_state": {
         "working_folder": "/workspace",
         "arguments": [
@@ -18,7 +18,7 @@
     },
     "output": [
         {
-            "offset": 408616000,
+            "offset": 228150000,
             "stream": "stdout",
             "bytes": "Mi4xLjMyMyAoQ2xhdWRlIENvZGUpCg=="
         }

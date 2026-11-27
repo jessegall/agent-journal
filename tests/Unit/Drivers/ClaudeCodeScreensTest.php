@@ -51,6 +51,21 @@ final class ClaudeCodeScreensTest extends TestCase
         $this->journal->assertResult([ScreenType::PromptReady, true], [$reading->type, $reading->isStill]);
     }
 
+    /**
+     * Right after Enter on /model the echoed line shows with no composer and no options to choose, so a script waits
+     * for the switch dialog; the dialog then offers its options, among them the one the script chooses.
+     */
+    public function test_the_model_echo_offers_nothing_to_choose_and_the_switch_dialog_does(): void
+    {
+        $echo = $this->readingOf($this->lastFrameOf('model-echo'));
+        $switch = $this->readingOf($this->lastFrameOf('model-switch'));
+
+        $this->journal->assertResult(
+            [null, false, true],
+            [$echo->menu?->name, $echo->hasOptions, $switch->hasOptions],
+        );
+    }
+
     public function test_a_reworded_menu_still_reads_as_its_family_and_holds_for_it(): void
     {
         $frame = $this->frame(['SECURITY first: do you Trust what is here?', '', ' ❯ No, exit', '   Yes, go on'], 400);

@@ -191,6 +191,11 @@ final readonly class KeyScriptRunner
     {
         $region = $reading->menu?->options;
 
+        // Without a known menu, options count only where no composer is drawn: above one they are conversation.
+        if (! $region instanceof MenuRegion && ! $reading->hasOptions) {
+            return null;
+        }
+
         if (! $region instanceof MenuRegion) {
             $region = $layout->optionList();
         }
