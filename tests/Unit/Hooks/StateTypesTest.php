@@ -6,7 +6,6 @@ namespace Tests\Unit\Hooks;
 
 use App\Access\Contracts\OperationPolicy;
 use App\Events\Hooks\StateTypesRequested;
-use App\Stacks\Contracts\StopConditionGate;
 use App\Stacks\Decisions\StateReferenceKeys;
 use App\Stacks\Exceptions\StateTypeRepeated;
 use App\Stacks\Exceptions\StateTypesFrozen;
@@ -25,7 +24,6 @@ use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Events\Dispatcher;
-use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
@@ -111,7 +109,6 @@ final class StateTypesTest extends TestCase
     public function test_the_ready_state_of_each_request_is_made_by_that_requests_container(): void
     {
         $asked = [];
-        $this->app->instance(StopConditionGate::class, new AllowedStops());
         $policyOf = function (string $request) use (&$asked): Closure {
             return function () use (&$asked, $request): OperationPolicy {
                 $asked[] = $request;

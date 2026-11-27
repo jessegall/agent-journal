@@ -13,7 +13,6 @@ use App\Events\Sessions\DriverRequestRepaired;
 use App\Events\Sessions\DriverRequestResolvedAsNotApplied;
 use App\Events\Sessions\DriverRequestSuperseded;
 use App\Stacks\Attributes\StateType;
-use App\Stacks\Contracts\Work\DurableState;
 use App\Stacks\Support\ChangeModelStateReference;
 
 /**
@@ -22,15 +21,20 @@ use App\Stacks\Support\ChangeModelStateReference;
  * request cancelled, superseded or resolved as not applied ends it with nothing recorded.
  */
 #[StateType(ChangeModelStateReference::class, schemaVersion: 1)]
-final class ChangeModelState extends AgentState implements DurableState
+final class ChangeModelState extends AgentState
 {
     private bool $isSettled = false;
+
+    /**
+     * The model a repair of the request put in place of the one asked, which the driver applies instead.
+     */
+    private string|null $repairedModel = null;
 
     public function __construct(
         private readonly string $agentId,
         private readonly string $sessionId,
         private readonly string $requestId,
-        private string $model,
+        private readonly string $model,
     ) {}
 
     public function isFinished(): bool
@@ -49,7 +53,7 @@ final class ChangeModelState extends AgentState implements DurableState
     {
         $this->isSettled = true;
 
-        return new RecordAgentModelCommand($this->agentId, $this->sessionId, $this->model);
+        return new RecordAgentModelCommand($this->agentId, $this->sessionId, $this->repairedModel ?? $this->model);
     }
 
     /**
@@ -57,7 +61,7 @@ final class ChangeModelState extends AgentState implements DurableState
      */
     public function onDriverRequestRepaired(DriverRequestRepaired $event): void
     {
-        $this->model = $event->setting;
+        $this->repairedModel = $event->setting;
     }
 
     public function onDriverRequestCancelled(DriverRequestCancelled $event): void

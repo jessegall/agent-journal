@@ -22,7 +22,6 @@ use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Storage\WalkStep;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ListedCommandParser;
@@ -135,7 +134,7 @@ final class HookRewriteTest extends TestCase
 
     private function stack(AgentState $rewriter, ShellAnswerState ...$guards): AgentStack
     {
-        $ready = new ReadyState(new FixedOperationPolicy(), new AllowedStops(), 'agent', 'session');
+        $ready = new ReadyState(new FixedOperationPolicy(), 'agent', 'session');
 
         return new AgentStack([
             $this->frame('ready', $ready, isBottom: true),

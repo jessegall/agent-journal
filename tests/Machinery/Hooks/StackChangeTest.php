@@ -16,8 +16,8 @@ use App\Stacks\EngineStacks;
 use App\Stacks\Exceptions\StackTooDeep;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
+use App\Stacks\SessionStateLifecycle;
 use App\Stacks\StackRestorer;
-use App\Stacks\StartStacks;
 use App\Stacks\StateLoading\RegisteredStateType;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
@@ -45,6 +45,11 @@ use Tests\TestCase;
 #[TestsMachinery(AgentStacks::class)]
 final class StackChangeTest extends TestCase
 {
+    /**
+     * The frames every stack opens with: the ready bottom and the profile state.
+     */
+    private const int BASE_FRAMES = 2;
+
     use CommitsHookRows;
 
     private const array TABLES = ['agent_stacks'];
@@ -86,7 +91,7 @@ final class StackChangeTest extends TestCase
             $event->registry->register(RegisteredStateType::named('test.tasks', FinishableState::class));
             $event->registry->register(RegisteredStateType::named('test.plans', FinishableState::class));
         });
-        $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->open($this->target));
+        $this->transaction()->run(fn () => $this->app->make(SessionStateLifecycle::class)->open($this->target));
     }
 
     public function test_a_frame_keeps_its_entry_time_through_a_repeated_push_a_cover_a_resume_and_a_restore(): void
@@ -102,7 +107,7 @@ final class StackChangeTest extends TestCase
         $this->assertEquals(['A' => $entered['A']], $this->storedEntryTimes());
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
         $restored = $this->app->make(StackRestorer::class)->restore($row->frames, $row->target)->frames();
-        $this->assertEquals($entered['A'], $restored[1]->enteredAt);
+        $this->assertEquals($entered['A'], $restored[self::BASE_FRAMES]->enteredAt);
         $this->assertEquals($row->frames->all()[0]->enteredAt, $restored[0]->enteredAt);
     }
 
@@ -180,7 +185,7 @@ final class StackChangeTest extends TestCase
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
         $restorer = $this->app->make(StackRestorer::class);
 
-        $this->assertCount(2, $restorer->restore($row->frames, $row->target)->frames());
+        $this->assertCount(self::BASE_FRAMES + 1, $restorer->restore($row->frames, $row->target)->frames());
 
         $records = $row->frames->all();
         $tooMany = new FrameRecords(
@@ -242,7 +247,7 @@ final class StackChangeTest extends TestCase
     }
 
     /**
-     * The subject each frame above the bottom was pushed for, by the name the test gave it.
+     * The subject each frame above the base was pushed for, by the name the test gave it.
      *
      * @return list<string>
      */
@@ -253,7 +258,7 @@ final class StackChangeTest extends TestCase
         return array_values(
             array_map(
                 fn (FrameRecord $frame) => $this->nameOf($frame->reference),
-                array_slice($frames, 1),
+                array_slice($frames, self::BASE_FRAMES),
             ),
         );
     }
@@ -272,7 +277,8 @@ final class StackChangeTest extends TestCase
      */
     private function storedEntryTimes(): array
     {
-        $frames = array_slice(AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(), 1);
+        $stored = AgentStackRow::query()->forTarget($this->target)->sole()->frames->all();
+        $frames = array_slice($stored, self::BASE_FRAMES);
 
         return array_combine(
             array_map(

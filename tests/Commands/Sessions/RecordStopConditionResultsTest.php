@@ -16,7 +16,7 @@ use App\Values\AgentText;
 use App\Values\StopCondition;
 use App\Values\StopConditionResultReport;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\AsksTheStopGate;
+use Tests\Support\AsksTheProfileState;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
@@ -32,7 +32,7 @@ use Tests\TestCase;
 #[TestsCommand(RecordStopConditionResultsCommand::class)]
 final class RecordStopConditionResultsTest extends TestCase
 {
-    use AsksTheStopGate;
+    use AsksTheProfileState;
     use RefreshHookDatabase;
 
     private const string DIRTY_WORKTREE = 'clean-worktree (failed): NOTE is not committed';

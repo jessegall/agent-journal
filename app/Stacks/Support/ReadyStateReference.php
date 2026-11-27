@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Stacks\Support;
 
 use App\Engine\Enums\NoSubject;
+use App\Stacks\Contracts\BaseStateReference;
 use App\Stacks\Decisions\StateReferenceFactory;
 use App\Stacks\References\StateReference;
 use App\Values\StackTarget;
@@ -12,7 +13,7 @@ use App\Values\StackTarget;
 /**
  * The stack reference of the permanent bottom of every stack.
  */
-final class ReadyStateReference extends StateReferenceFactory
+final class ReadyStateReference extends StateReferenceFactory implements BaseStateReference
 {
     public static function key(): string
     {
@@ -20,20 +21,10 @@ final class ReadyStateReference extends StateReferenceFactory
     }
 
     /**
-     * The bottom of the session's stack.
+     * The bottom of the session's stack, built with its agent and its session.
      */
-    public static function bottomOf(StackTarget $target): StateReference
+    public static function forSession(StackTarget $target): StateReference
     {
-        return self::about(NoSubject::None, self::valuesOf($target));
-    }
-
-    /**
-     * The values the bottom state of the stack is built with: its agent and its session.
-     *
-     * @return array{agentId: string, sessionId: string}
-     */
-    public static function valuesOf(StackTarget $target): array
-    {
-        return ['agentId' => $target->agentId, 'sessionId' => $target->sessionId];
+        return self::about(NoSubject::None, ['agentId' => $target->agentId, 'sessionId' => $target->sessionId]);
     }
 }

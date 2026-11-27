@@ -13,7 +13,6 @@ use App\Events\Sessions\DriverRequestRepaired;
 use App\Events\Sessions\DriverRequestResolvedAsNotApplied;
 use App\Events\Sessions\DriverRequestSuperseded;
 use App\Stacks\Attributes\StateType;
-use App\Stacks\Contracts\Work\DurableState;
 use App\Stacks\Support\ChangeEffortStateReference;
 
 /**
@@ -22,15 +21,20 @@ use App\Stacks\Support\ChangeEffortStateReference;
  * request cancelled, superseded or resolved as not applied ends it with nothing recorded.
  */
 #[StateType(ChangeEffortStateReference::class, schemaVersion: 1)]
-final class ChangeEffortState extends AgentState implements DurableState
+final class ChangeEffortState extends AgentState
 {
     private bool $isSettled = false;
+
+    /**
+     * The effort a repair of the request put in place of the one asked, which the driver applies instead.
+     */
+    private string|null $repairedEffort = null;
 
     public function __construct(
         private readonly string $agentId,
         private readonly string $sessionId,
         private readonly string $requestId,
-        private string $effort,
+        private readonly string $effort,
     ) {}
 
     public function isFinished(): bool
@@ -49,7 +53,7 @@ final class ChangeEffortState extends AgentState implements DurableState
     {
         $this->isSettled = true;
 
-        return new RecordAgentEffortCommand($this->agentId, $this->sessionId, $this->effort);
+        return new RecordAgentEffortCommand($this->agentId, $this->sessionId, $this->repairedEffort ?? $this->effort);
     }
 
     /**
@@ -57,7 +61,7 @@ final class ChangeEffortState extends AgentState implements DurableState
      */
     public function onDriverRequestRepaired(DriverRequestRepaired $event): void
     {
-        $this->effort = $event->setting;
+        $this->repairedEffort = $event->setting;
     }
 
     public function onDriverRequestCancelled(DriverRequestCancelled $event): void

@@ -44,7 +44,7 @@ final readonly class AddressedStackPush
         );
 
         foreach ($restored as $stack) {
-            if (! $stack->top()->isBottom()) {
+            if (! $stack->isResting()) {
                 return;
             }
         }

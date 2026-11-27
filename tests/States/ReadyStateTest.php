@@ -5,23 +5,17 @@ declare(strict_types=1);
 namespace Tests\States;
 
 use App\Access\Contracts\OperationPolicy;
-use App\Events\Sessions\StopCheckSettled;
 use App\Hooks\Enums\AnswerType;
-use App\Sessions\Enums\StopCheckStatus;
-use App\Stacks\Contracts\StopConditionGate;
 use App\Stacks\ReadyState;
 use App\Stacks\References\StateReference;
 use App\Stacks\Support\ReadyStateReference;
 use App\Support\Decisions\Decision;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
-use Tests\Fixtures\Hooks\AllowedStops;
-use Tests\Fixtures\Hooks\CountingStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
-use Tests\Support\Seeding\SessionHook;
 use Tests\Support\Seeding\StateHandle;
 use Tests\TestCase;
 
@@ -74,40 +68,6 @@ final class ReadyStateTest extends TestCase
             ->tick(fn (StateAssert $state) => $state->isLive()));
     }
 
-    public function test_unchanged_failures_are_counted_in_the_order_the_attempts_were_opened(): void
-    {
-        $gate = $this->countingStops();
-
-        $this->grantFileChanges(true);
-        $this->journal->stateOn('Writer', $this->ready(), fn (StateHandle $ready) => $ready->steps([
-            SessionHook::stop('turn-1'),
-            SessionHook::stop('turn-2'),
-            SessionHook::stop('turn-3'),
-            new StopCheckSettled('stop-turn-3', $this->writerSession(), StopCheckStatus::Failed, 'same'),
-            new StopCheckSettled('stop-turn-1', $this->writerSession(), StopCheckStatus::Failed, 'other'),
-            new StopCheckSettled('stop-turn-2', $this->writerSession(), StopCheckStatus::Failed, 'same'),
-            SessionHook::stop('turn-4'),
-        ], fn (StateAssert $state) => $state->isLive()));
-
-        $this->assertSame(2, $gate->lastSettled->unchangedBefore('stop-turn-4', 'same'));
-        $this->assertSame(0, $gate->lastSettled->unchangedBefore('stop-turn-4', 'other'));
-    }
-
-    public function test_an_attempt_the_stack_did_not_open_is_not_kept(): void
-    {
-        $gate = $this->countingStops();
-
-        $this->grantFileChanges(true);
-        $this->journal->stateOn('Writer', $this->ready(), fn (StateHandle $ready) => $ready->steps([
-            SessionHook::stop('turn-1'),
-            new StopCheckSettled('elsewhere', $this->writerSession(), StopCheckStatus::Failed, 'same'),
-            new StopCheckSettled('stop-turn-1', $this->writerSession(), StopCheckStatus::Failed, 'same'),
-            SessionHook::stop('turn-2'),
-        ], fn (StateAssert $state) => $state->isLive()));
-
-        $this->assertSame(1, $gate->lastSettled->unchangedBefore('stop-turn-2', 'same'));
-    }
-
     /**
      * The hooks no driver of a state test sends, such as a session's start and end, a prompt and a compaction, are
      * answered by the state itself.
@@ -116,7 +76,7 @@ final class ReadyStateTest extends TestCase
     public function test_ready_passes_each_hook_its_policy_grants(string $hook): void
     {
         $input = HookInputs::of($hook);
-        $answer = $input->answerBy(new ReadyState(new FixedOperationPolicy(), new AllowedStops(), 'agent', 'session'));
+        $answer = $input->answerBy(new ReadyState(new FixedOperationPolicy(), 'agent', 'session'));
 
         $this->assertEquals(Decision::delegate(), $answer);
     }
@@ -129,24 +89,8 @@ final class ReadyStateTest extends TestCase
         $this->app->instance(OperationPolicy::class, new FixedOperationPolicy($editsFiles));
     }
 
-    /**
-     * A stop gate that opens an attempt named after each stop callback and keeps what it was last asked with.
-     */
-    private function countingStops(): CountingStops
-    {
-        $gate = new CountingStops();
-        $this->app->instance(StopConditionGate::class, $gate);
-
-        return $gate;
-    }
-
     private function ready(): StateReference
     {
-        return ReadyStateReference::bottomOf($this->journal->sessionOf('Writer')->target);
-    }
-
-    private function writerSession(): string
-    {
-        return $this->journal->sessionOf('Writer')->id;
+        return ReadyStateReference::forSession($this->journal->sessionOf('Writer')->target);
     }
 }

@@ -39,7 +39,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use ReflectionMethod;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
-use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\AnswerStates;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
@@ -85,7 +84,7 @@ final class AgentStackTest extends TestCase
         $answer = $done->answer($stop, TestText::renderer());
 
         $this->assertTrue($answer->isAllowed());
-        $this->assertSame(['ready delegate'], $this->stepsOf($answer));
+        $this->assertSame([], $this->stepsOf($answer));
     }
 
     public function test_a_shell_write_is_refused_by_the_message_and_the_task_is_not_asked(): void
@@ -164,7 +163,7 @@ final class AgentStackTest extends TestCase
         $ready = new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState($policy, new AllowedStops(), 'agent', 'session'),
+            new ReadyState($policy, 'agent', 'session'),
             CarbonImmutable::now(),
             isBottom: true,
         );
@@ -221,7 +220,7 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame([TestText::words($top->text), TestText::words($middle->text)], $answer->context);
         $this->assertSame([TestText::words($top->text)], $answer->messages);
-        $this->assertSame([1, 1, 0], array_column($answer->steps, 'contextCount'));
+        $this->assertSame([1, 1], array_column($answer->steps, 'contextCount'));
     }
 
     public function test_the_first_denial_answers_with_the_lines_yielded_above_and_before_it(): void
@@ -598,7 +597,7 @@ final class AgentStackTest extends TestCase
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedOperationPolicy($changesFiles), new AllowedStops(), 'agent', 'session'),
+            new ReadyState(new FixedOperationPolicy($changesFiles), 'agent', 'session'),
             CarbonImmutable::now(),
             isBottom: true,
         );

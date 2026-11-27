@@ -25,7 +25,7 @@ use App\Processes\Enums\ShellDialect;
 use App\Sessions\AgentRuntimes;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
-use App\Stacks\StartStacks;
+use App\Stacks\SessionStateLifecycle;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\Inputs\ShellCommandRequested;
@@ -80,7 +80,7 @@ trait CommittedHookStack
         $this->registerTestState('test.rewriting', RewriteState::class);
         $this->journal->actAsAgentOf($this->target);
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(StartStacks::class)->open($this->target),
+            fn () => $this->app->make(SessionStateLifecycle::class)->open($this->target),
         );
         $this->journal->installProfiles();
     }

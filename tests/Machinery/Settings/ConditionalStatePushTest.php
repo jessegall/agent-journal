@@ -20,7 +20,7 @@ use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Stacks\AgentStacks;
 use App\Stacks\Decisions\StateReferenceKeys;
-use App\Stacks\StartStacks;
+use App\Stacks\SessionStateLifecycle;
 use App\Stacks\StateLoading\RegisteredStateType;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
@@ -92,14 +92,17 @@ final class ConditionalStatePushTest extends TestCase
             ),
         );
 
-        $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->open($this->target));
+        $this->transaction()->run(fn () => $this->app->make(SessionStateLifecycle::class)->open($this->target));
     }
 
     public function test_while_the_group_is_on_a_push_adds_the_review_frame(): void
     {
         $this->pushReview();
 
-        $this->assertSame(['core.ready', StateReferenceKeys::of(ReviewStateReference::class)], $this->storedTypeKeys());
+        $this->assertSame(
+            ['core.ready', 'core.profile', StateReferenceKeys::of(ReviewStateReference::class)],
+            $this->storedTypeKeys(),
+        );
     }
 
     public function test_while_the_group_is_off_a_push_is_declined_and_a_stored_frame_is_removed_for_good(): void
@@ -108,12 +111,12 @@ final class ConditionalStatePushTest extends TestCase
         $this->switchReview(isOff: true, expectedRevision: 0);
 
         $this->pushReview();
-        $this->assertSame(['core.ready'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'core.profile'], $this->storedTypeKeys());
 
         $this->switchReview(isOff: false, expectedRevision: 1);
 
         $this->assertSame(
-            ['core.ready'],
+            ['core.ready', 'core.profile'],
             $this->storedTypeKeys(),
             self::NO_RESTORED_FRAME,
         );

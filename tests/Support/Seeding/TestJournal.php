@@ -254,7 +254,7 @@ final class TestJournal
 
     /**
      * The session's agent stopped under the stop id, opening its attempt under the session's frozen stop conditions,
-     * as the stop gate opens one.
+     * as the profile state's open command does.
      */
     public function openStopAttempt(string $sessionId, string $stopId = 'stop-1'): StopCheck
     {
@@ -266,12 +266,7 @@ final class TestJournal
         return $this->app->make(EventUnitLifecycle::class)->run(
             DB::connection(),
             'a stop attempt of the test',
-            fn () => StopCheck::create(
-                $stop,
-                $policy->digest(),
-                StopCheck::FIRST_GENERATION,
-                $policy->stopConditions->definitionHashes(),
-            ),
+            fn () => StopCheck::open($stop, $policy),
             fn () => null,
             fn () => null,
         );

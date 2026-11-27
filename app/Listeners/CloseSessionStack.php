@@ -7,17 +7,17 @@ namespace App\Listeners;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\SessionClosed;
-use App\Stacks\StartStacks;
+use App\Stacks\SessionStateLifecycle;
 use App\Values\StackTarget;
 
 /**
- * Closes a start's stack when the start ends. The closed stack is kept, frames and all, so the ended start's
+ * Closes a session's stack when the session ends. The closed stack is kept, frames and all, so the ended session's
  * obligations stay visible; no subject is finished.
  */
 #[InCommandTransaction]
-final readonly class CloseStartStack implements Listener
+final readonly class CloseSessionStack implements Listener
 {
-    public function __construct(private StartStacks $stacks) {}
+    public function __construct(private SessionStateLifecycle $stacks) {}
 
     public function handle(SessionClosed $event): void
     {

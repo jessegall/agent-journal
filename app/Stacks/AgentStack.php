@@ -9,6 +9,7 @@ use App\Bus\Contracts\Command;
 use App\Contracts\Events\Event;
 use App\Hooks\Enums\AnswerType;
 use App\Stacks\Contracts\StateFactory;
+use App\Stacks\Contracts\Work\BaseState;
 use App\Stacks\Decisions\MessageLine;
 use App\Stacks\Declarations\StateMethods;
 use App\Stacks\Exceptions\BottomStateCannotFinish;
@@ -113,6 +114,16 @@ final readonly class AgentStack
             ...$effects,
             ...$stack->lifecycleEffectsSince($before),
         ]);
+    }
+
+    /**
+     * Whether the agent rests: nothing above its base, the ready state and the base states every session holds.
+     */
+    public function isResting(): bool
+    {
+        $top = $this->top();
+
+        return $top->isBottom() || $top->state instanceof BaseState;
     }
 
     /**

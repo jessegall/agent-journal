@@ -21,6 +21,7 @@ use App\Models\Support\JournalModel;
 use App\Reads\Values\RelationRead;
 use App\Records\Contracts\ReadableModel;
 use App\Sessions\Enums\StopCheckStatus;
+use App\Sessions\Values\StartPolicy;
 use App\Support\ActorReference;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Values\StopCheckReference;
@@ -30,6 +31,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use PhpOption\Option;
 
 /**
  * @property string $id
@@ -79,6 +81,19 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     }
 
     // ----------[ Constructors ]----------
+
+    /**
+     * The attempt of the stop under the session's policy, opened once: a retried stop finds the one it opened.
+     */
+    public static function open(HookIdentity $stop, StartPolicy $policy): self
+    {
+        return self::create(
+            $stop,
+            $policy->digest(),
+            self::FIRST_GENERATION,
+            $policy->stopConditions->definitionHashes(),
+        );
+    }
 
     /**
      * The pending attempt of this stop callback, opened once: a retried callback finds the attempt it opened.
@@ -282,6 +297,16 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
             ->readExactly($count)
             ->get()
             ->all());
+    }
+
+    /**
+     * The check of this stop once it was opened, whichever session's.
+     *
+     * @return Option<self>
+     */
+    public static function findOpenedFor(HookIdentity $stop): Option
+    {
+        return Option::fromValue(self::query()->withoutGlobalScope(AgentSessionScope::class)->ofStop($stop)->first());
     }
 
     /**

@@ -26,7 +26,6 @@ use App\Values\ShellCommand;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\TasksDomain;
-use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\AnswerStates;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
@@ -201,7 +200,7 @@ final class TransparentFramesTest extends TestCase
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedOperationPolicy(), new AllowedStops(), 'agent', 'session'),
+            new ReadyState(new FixedOperationPolicy(), 'agent', 'session'),
             CarbonImmutable::now(),
             isBottom: true,
         );

@@ -23,8 +23,8 @@ use App\Stacks\AgentStacks;
 use App\Stacks\Exceptions\StateTypeUnknown;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
+use App\Stacks\SessionStateLifecycle;
 use App\Stacks\StackRestorer;
-use App\Stacks\StartStacks;
 use App\Stacks\StateLoading\RegisteredStateType;
 use App\Stacks\StateTypes;
 use App\Support\AgentContext;
@@ -119,23 +119,26 @@ final class AgentStacksTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_creating_a_stack_gives_it_the_one_ready_bottom(): void
+    public function test_creating_a_stack_gives_it_its_base_on_the_one_ready_bottom(): void
     {
-        $this->transaction()->run(fn () => $this->startStacks()->open($this->target));
+        $this->transaction()->run(fn () => $this->stateLifecycle()->open($this->target));
 
         $frames = $this->storedFrames();
 
-        $this->assertCount(1, $frames);
-        $this->assertTrue($frames[0]->isBottom);
-        $this->assertSame('core.ready', $frames[0]->reference->typeKey);
+        $this->assertCount(2, $frames);
+        $this->assertSame([true, false], [$frames[0]->isBottom, $frames[1]->isBottom]);
+        $this->assertSame(
+            ['core.ready', 'core.profile'],
+            [$frames[0]->reference->typeKey, $frames[1]->reference->typeKey],
+        );
     }
 
     public function test_creating_the_same_stack_again_leaves_the_first_one(): void
     {
-        $this->transaction()->run(fn () => $this->startStacks()->open($this->target));
+        $this->transaction()->run(fn () => $this->stateLifecycle()->open($this->target));
         $firstFrameId = $this->storedFrames()[0]->id;
 
-        $this->transaction()->run(fn () => $this->startStacks()->open($this->target));
+        $this->transaction()->run(fn () => $this->stateLifecycle()->open($this->target));
 
         $this->assertSame(1, AgentStackRow::query()->acrossEveryAgent()->count());
         $this->assertSame($firstFrameId, $this->storedFrames()[0]->id);
@@ -146,7 +149,7 @@ final class AgentStacksTest extends TestCase
         $this->insertStackThrough($this->otherConnection(), 'racer-ready', 'core.ready');
 
         $this->transaction()->run(function (): void {
-            $this->startStacks()->open($this->target);
+            $this->stateLifecycle()->open($this->target);
             DomainWrite::query()->insert(['name' => 'after the race']);
         });
 
@@ -160,14 +163,14 @@ final class AgentStacksTest extends TestCase
 
         $this->expectException(InvalidBottomState::class);
 
-        $this->transaction()->run(fn () => $this->startStacks()->open($this->target));
+        $this->transaction()->run(fn () => $this->stateLifecycle()->open($this->target));
     }
 
     public function test_a_stack_changes_only_inside_a_transaction(): void
     {
         $this->expectException(StackTransactionRequired::class);
 
-        $this->startStacks()->open($this->target);
+        $this->stateLifecycle()->open($this->target);
     }
 
     public function test_a_push_commits_together_with_the_domain_write(): void
@@ -180,7 +183,7 @@ final class AgentStacksTest extends TestCase
         });
 
         $this->assertSame(
-            ['core.ready', 'test.tasks'],
+            ['core.ready', 'core.profile', 'test.tasks'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
         $this->assertSame(['task 42 started'], DomainWrite::names());
@@ -201,9 +204,17 @@ final class AgentStacksTest extends TestCase
                 ->saveFrames($stack->records(), $this->app->make(StateTypes::class)->ticking());
         });
 
-        $this->assertSame(['values' => ['count' => 2]], $this->storedFrames()[1]->values);
+        $this->assertSame(['values' => ['count' => 2]], $this->storedFrames()[2]->values);
         $this->assertSame(2, $this->countingStateOf($this->reloadedStack())->counted());
-        $this->assertSame(['openAttempts' => [], 'settledAttempts' => []], $this->storedFrames()[0]->values);
+        $this->assertSame(
+            [
+                'agentId' => $this->target->agentId,
+                'sessionId' => $this->target->sessionId,
+                'isStopAsked' => false,
+                'liveProcesses' => [],
+            ],
+            $this->storedFrames()[0]->values,
+        );
     }
 
     public function test_a_failed_push_rolls_the_domain_write_back(): void
@@ -218,7 +229,7 @@ final class AgentStacksTest extends TestCase
             $this->fail('The push of an unknown state type went through.');
         } catch (StateTypeUnknown) {
             $this->assertSame([], DomainWrite::names());
-            $this->assertCount(1, $this->storedFrames());
+            $this->assertCount(2, $this->storedFrames());
         }
     }
 
@@ -231,7 +242,7 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $counting));
 
         $this->assertSame(
-            ['core.ready', 'test.counting', 'test.counting'],
+            ['core.ready', 'core.profile', 'test.counting', 'test.counting'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -251,7 +262,7 @@ final class AgentStacksTest extends TestCase
             ),
         );
         $this->assertSame(
-            ['core.ready'],
+            ['core.ready', 'core.profile'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
 
@@ -262,7 +273,7 @@ final class AgentStacksTest extends TestCase
             ),
         );
         $this->assertSame(
-            ['core.ready', 'test.switched_on'],
+            ['core.ready', 'core.profile', 'test.switched_on'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -291,7 +302,7 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
 
         $this->assertSame(
-            ['core.ready', 'test.tasks'],
+            ['core.ready', 'core.profile', 'test.tasks'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -311,7 +322,7 @@ final class AgentStacksTest extends TestCase
         );
 
         $this->assertSame(
-            ['core.ready'],
+            ['core.ready', 'core.profile'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -359,7 +370,7 @@ final class AgentStacksTest extends TestCase
         }
 
         $this->assertSame([], DomainWrite::names());
-        $this->assertCount(1, $this->storedFrames());
+        $this->assertCount(2, $this->storedFrames());
     }
 
     public function test_the_limits_are_set_before_the_work_and_kept_by_a_nested_operation(): void
@@ -384,9 +395,9 @@ final class AgentStacksTest extends TestCase
         $this->journal->assertResult(true, $limit !== '0');
     }
 
-    private function startStacks(): StartStacks
+    private function stateLifecycle(): SessionStateLifecycle
     {
-        return $this->app->make(StartStacks::class);
+        return $this->app->make(SessionStateLifecycle::class);
     }
 
     private function stacks(): AgentStacks
@@ -401,7 +412,7 @@ final class AgentStacksTest extends TestCase
 
     private function createStack(): void
     {
-        $this->transaction()->run(fn () => $this->startStacks()->open($this->target));
+        $this->transaction()->run(fn () => $this->stateLifecycle()->open($this->target));
     }
 
     private function task(int $number): StateReference

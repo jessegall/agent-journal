@@ -37,7 +37,7 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\OpensLedgerRuntimes;
-use Tests\Support\AsksTheStopGate;
+use Tests\Support\AsksTheProfileState;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -52,7 +52,7 @@ use Tests\TestCase;
 #[TestsMachinery(AgentStateMachine::class)]
 final class HelperCompletionTest extends TestCase
 {
-    use AsksTheStopGate;
+    use AsksTheProfileState;
     use OpensLedgerRuntimes;
     use RefreshHookDatabase;
 

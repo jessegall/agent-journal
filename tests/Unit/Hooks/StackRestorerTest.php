@@ -9,7 +9,6 @@ use App\Engine\Enums\NoSubject;
 use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\InvalidBottomState;
 use App\Stacks\AgentStack;
-use App\Stacks\Contracts\StopConditionGate;
 use App\Stacks\Exceptions\StateSchemaUnknown;
 use App\Stacks\Exceptions\StateTypeUnknown;
 use App\Stacks\Exceptions\StateValuesRefused;
@@ -24,7 +23,6 @@ use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Contracts\Events\Dispatcher;
-use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryTasks;
@@ -60,7 +58,6 @@ final class StackRestorerTest extends TestCase
         $this->tasks = new InMemoryTasks([42, 43]);
         $this->app->instance(InMemoryTasks::class, $this->tasks);
         $this->app->instance(OperationPolicy::class, new FixedOperationPolicy());
-        $this->app->instance(StopConditionGate::class, new AllowedStops());
         $this->registerTestState('test.tasks', InMemoryTaskState::class);
     }
 
@@ -208,7 +205,7 @@ final class StackRestorerTest extends TestCase
 
     private function bottom(string $id = 'ready'): FrameRecord
     {
-        $reference = ReadyStateReference::bottomOf(new StackTarget('agent-1', 'session-1'));
+        $reference = ReadyStateReference::forSession(new StackTarget('agent-1', 'session-1'));
 
         return new FrameRecord($id, $reference, true, 1, CarbonImmutable::now(), ['agentId' => 'agent-1', 'sessionId' => 'session-1']);
     }

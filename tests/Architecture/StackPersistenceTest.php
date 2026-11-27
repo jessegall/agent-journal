@@ -23,7 +23,7 @@ final class StackPersistenceTest extends TestCase
         'app/Stacks/Mutations/StatePush.php',
         'app/Stacks/EngineStacks.php',
         'app/Hooks/Pipes/Answer/SaveCall.php',
-        'app/Stacks/StartStacks.php',
+        'app/Stacks/SessionStateLifecycle.php',
         'app/Hooks/PruneHookHistory.php',
         'app/Models/Agents/AgentStackRow.php',
     ];

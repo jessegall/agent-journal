@@ -19,8 +19,8 @@ use App\Stacks\AgentStacks;
 use App\Stacks\HookAnswer;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
+use App\Stacks\SessionStateLifecycle;
 use App\Stacks\StackRestorer;
-use App\Stacks\StartStacks;
 use App\Stacks\StateTypes;
 use App\Support\ActorReference;
 use App\Support\Delivery\StateEventBridge;
@@ -155,7 +155,7 @@ final class StateEventDeliveryTest extends TestCase
     {
         $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(StartStacks::class)->close($this->target),
+            fn () => $this->app->make(SessionStateLifecycle::class)->close($this->target),
         );
 
         $this->dispatch(new NoteWritten(marked: [new RecordNoteEffectCommand('closed')]));

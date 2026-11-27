@@ -70,7 +70,7 @@ final class OfferNextAskTest extends TestCase
         new AgentStackRow()->startFor(
             new StackTarget($recipient->agent->id, $recipient->session->id),
             new FrameRecords([
-                new FrameRecord('ready', ReadyStateReference::bottomOf(new StackTarget('agent', 'session')), true, 1, $now, ['agentId' => 'agent', 'sessionId' => 'session']),
+                new FrameRecord('ready', ReadyStateReference::forSession(new StackTarget('agent', 'session')), true, 1, $now, ['agentId' => 'agent', 'sessionId' => 'session']),
             ]),
             new TickingTypes([]),
         );

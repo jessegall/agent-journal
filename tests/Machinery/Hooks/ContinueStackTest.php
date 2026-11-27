@@ -17,7 +17,7 @@ use App\Sessions\Values\StartPolicy;
 use App\Stacks\Exceptions\StateTransferUnknown;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
-use App\Stacks\StartStacks;
+use App\Stacks\SessionStateLifecycle;
 use App\Stacks\StateTypes;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
@@ -64,7 +64,7 @@ final class ContinueStackTest extends TestCase
 
         $continued = $this->nextSession($old, ConversationModeType::Resume);
 
-        $this->assertSame(['core.ready', 'tasks.work'], $this->typeKeysOf($continued));
+        $this->assertSame(['core.ready', 'core.profile', 'tasks.work'], $this->typeKeysOf($continued));
     }
 
     public function test_a_new_conversation_starts_with_the_bottom_alone(): void
@@ -73,7 +73,7 @@ final class ContinueStackTest extends TestCase
 
         $fresh = $this->nextSession($old, ConversationModeType::New);
 
-        $this->assertSame(['core.ready'], $this->typeKeysOf($fresh));
+        $this->assertSame(['core.ready', 'core.profile'], $this->typeKeysOf($fresh));
     }
 
     public function test_a_frame_nothing_registers_refuses_the_start(): void
@@ -144,7 +144,7 @@ final class ContinueStackTest extends TestCase
         $target = new StackTarget($old->agent->id, $session->id);
         $this->app->make(StartTransaction::class)->runForSession(
             $session->id,
-            fn () => $this->app->make(StartStacks::class)->open($target),
+            fn () => $this->app->make(SessionStateLifecycle::class)->open($target),
         );
 
         return $session;

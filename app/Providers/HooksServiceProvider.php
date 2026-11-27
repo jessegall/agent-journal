@@ -43,8 +43,10 @@ use App\Sessions\Contracts\StartTransaction;
 use App\Stacks\ActorStackSessionProvider;
 use App\Stacks\AgentFocuses;
 use App\Stacks\AgentStacks;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\BaseStateReference;
 use App\Stacks\Contracts\StateFactory as StateFactoryContract;
-use App\Stacks\Contracts\StopConditionGate as StopConditionGateContract;
 use App\Stacks\Contracts\Work\AgentFocuses as AgentFocusesContract;
 use App\Stacks\Contracts\Work\AgentStacks as AgentStacksContract;
 use App\Stacks\Contracts\Work\CurrentState as CurrentStateContract;
@@ -52,11 +54,14 @@ use App\Stacks\Contracts\Work\IncomingWorkRegistration as IncomingWorkRegistrati
 use App\Stacks\Contracts\Work\UserStack as UserStackContract;
 use App\Stacks\CurrentState;
 use App\Stacks\Declarations\StateMethods;
+use App\Stacks\Exceptions\InvalidBaseState;
 use App\Stacks\IncomingWorkRegistration;
 use App\Stacks\PendingAgentMessages;
 use App\Stacks\PendingWorkSources;
+use App\Stacks\SessionStateLifecycle;
 use App\Stacks\StateFactory;
 use App\Stacks\StateTypes;
+use App\Stacks\Support\ReadyStateReference;
 use App\Stacks\UserStack;
 use App\Support\AgentContext;
 use App\Support\Compatibility\PinnedBuilds;
@@ -65,9 +70,9 @@ use App\Support\Delivery\StateEventDispatcher;
 use App\Support\Inspection\Contracts\StackInspectionQuery as StackInspectionQueryContract;
 use App\Support\Inspection\Queries\StackInspectionQuery;
 use App\Support\OperationDeadline;
+use App\Support\Reflector;
 use App\Support\StackTransaction;
 use App\Support\StateCatalog\Contracts\StateTypes as StateTypesContract;
-use App\Support\StopConditionGate;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
@@ -110,6 +115,11 @@ final class HooksServiceProvider extends ServiceProvider
 
         $this->app->singleton(StateTypes::class);
         $this->app->singleton(StateMethods::class);
+
+        $this->app->when(SessionStateLifecycle::class)
+            ->needs('$baseStates')
+            ->give(self::baseStatesOf($this->app->make(Repository::class)->array('journal.sessions.base_states')));
+
         $this->app->bind(StartTransaction::class, StackTransaction::class);
         $this->app->bind(FactStaging::class, StateBridgeFactStaging::class);
         $this->app->bind(WorkProgressContract::class, WorkProgress::class);
@@ -122,7 +132,6 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bind(DriverAdaptersContract::class, DriverAdapters::class);
         $this->app->scoped(StackAdmissionContract::class, StackAdmission::class);
         $this->app->scoped(StopEvidenceContract::class, StopEvidence::class);
-        $this->app->scoped(StopConditionGateContract::class, StopConditionGate::class);
         $this->app->bindIf(StopPreparer::class, NoStopPreparation::class);
         $this->app->bind(ActorGuidanceContract::class, ActorGuidance::class);
         $this->app->bind(PinnedBuildsContract::class, PinnedBuilds::class);
@@ -181,5 +190,49 @@ final class HooksServiceProvider extends ServiceProvider
         ] as $model) {
             $events->listen("eloquent.booted: {$model}", fn () => $model::addGlobalScope($scope));
         }
+    }
+
+    /**
+     * The references of the base states config/journal.php lists, read once at boot, each state class taken as the
+     * reference its #[StateType] names; a list that does not start with the ready state, or names a class that builds
+     * no base state, fails the boot.
+     *
+     * @param  array<array-key, mixed>  $entries
+     * @return list<class-string<BaseStateReference>>
+     *
+     * @throws InvalidBaseState
+     */
+    private static function baseStatesOf(array $entries): array
+    {
+        $references = array_values(array_map(self::baseStateOf(...), $entries));
+
+        if (($references[0] ?? null) !== ReadyStateReference::class) {
+            throw InvalidBaseState::notReadyFirst();
+        }
+
+        return $references;
+    }
+
+    /**
+     * @return class-string<BaseStateReference>
+     *
+     * @throws InvalidBaseState
+     */
+    private static function baseStateOf(mixed $entry): string
+    {
+        if (! is_string($entry) || ! Reflector::exists($entry)) {
+            throw InvalidBaseState::for(is_string($entry) ? $entry : get_debug_type($entry));
+        }
+
+        $named = Reflector::of($entry);
+        $reference = $named->isSubclassOf(AgentState::class)
+            ? Reflector::of($named->attribute(StateType::class)->reference)
+            : $named;
+
+        if (! $reference->is(BaseStateReference::class)) {
+            throw InvalidBaseState::for($entry);
+        }
+
+        return $reference->name();
     }
 }

@@ -23,7 +23,6 @@ use App\Values\AccessPolicy;
 use App\Values\Operation;
 use App\Values\ProfileBase;
 use App\Values\ResourceRequest;
-use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
@@ -104,7 +103,7 @@ final class OperationPolicyTest extends TestCase
             {
                 return $this->access->decide($operation);
             }
-        }, new AllowedStops(), 'agent', 'session');
+        }, 'agent', 'session');
     }
 
     private function hook(): HookIdentity

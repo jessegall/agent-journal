@@ -51,7 +51,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/StopConditionGate.php',
+            'app/Stacks/ProfileState.php',
         ],
     ],
     StateCommandAnswered::class => [

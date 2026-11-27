@@ -10,47 +10,26 @@ use App\Events\Connections\HostProcessExited;
 use App\Events\Connections\HostProcessLost;
 use App\Events\Connections\HostProcessOpened;
 use App\Events\Sessions\AgentRuntimeStopRequested;
-use App\Events\Sessions\StopCheckSettled;
 use App\Sessions\Commands\EndStoppedSession\EndStoppedSessionCommand;
 use App\Sessions\Contracts\SessionFact;
 use App\Stacks\Attributes\StateType;
-use App\Stacks\Contracts\StopConditionGate;
 use App\Stacks\Contracts\Work\UniqueState;
-use App\Stacks\Decisions\MessageLine;
 use App\Stacks\Support\ReadyStateReference;
-use App\Stacks\Values\SettledStopChecks;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
-use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolRequested;
 use App\Values\AgentText;
 use App\Values\Operation;
 use Generator;
 
 /**
- * The bottom of every stack, which answers every hook: a file change or tool call passes only when the agent's policy
- * grants it, a shell line is left to Core's admission, and a stop waits on the session's stop conditions. It keeps the
- * outcomes of the attempts it opened, so unchanged failures are counted from its own record. It also owns whether the
- * session runs: it keeps its runtime's live processes and whether a stop was asked, and ends a stopped session once no
- * process of it runs, as a headless one has none between its turns.
+ * The bottom of every stack: a file change or tool call passes only when the agent's policy grants it. It owns whether
+ * the session runs: it keeps its runtime's live processes and whether a stop was asked, and ends a stopped session
+ * once no process of it runs, as a headless one has none between its turns.
  */
 #[StateType(ReadyStateReference::class, schemaVersion: 1)]
 class ReadyState extends AgentState implements UniqueState
 {
-    /**
-     * The stop attempts this stack opened whose results have not come back.
-     *
-     * @var list<string>
-     */
-    private array $openAttempts = [];
-
-    /**
-     * The newest attempts of this stack that settled, attempt id => the outcome it settled with.
-     *
-     * @var array<string, string>
-     */
-    private array $settledAttempts = [];
-
     /**
      * The processes of the session's runtime the host was told to open and that have not ended.
      *
@@ -62,7 +41,6 @@ class ReadyState extends AgentState implements UniqueState
 
     public function __construct(
         private readonly OperationPolicy $policy,
-        private readonly StopConditionGate $stops,
         private readonly string $agentId,
         private readonly string $sessionId,
     ) {}
@@ -84,36 +62,7 @@ class ReadyState extends AgentState implements UniqueState
         return $this->decide($input->changes->operations());
     }
 
-    public function onStop(StopRequested $input): Decision|MessageLine
-    {
-        $answer = $this->stops->answer($input->hook, new SettledStopChecks($this->settledAttempts));
-        $answer->attemptId->forAll($this->keepOpenedAttempt(...));
-
-        return $answer->reply;
-    }
-
     // ----------[ Events ]----------
-
-    /**
-     * Keeps the outcome of an attempt this stack opened, in the order the attempts were opened.
-     */
-    public function onStopCheckSettled(StopCheckSettled $event): void
-    {
-        if (! in_array($event->attemptId, $this->openAttempts, true)) {
-            return;
-        }
-
-        $this->openAttempts = array_values(array_diff($this->openAttempts, [$event->attemptId]));
-        $this->settledAttempts[$event->attemptId] = $event->outcome;
-        ksort($this->settledAttempts, SORT_STRING);
-
-        // One more than the run that holds the work, so a failure past it is never counted as the run's last.
-        $this->settledAttempts = array_slice(
-            $this->settledAttempts,
-            -(StopConditionGate::UNCHANGED_FAILURE_LIMIT + 1),
-            preserve_keys: true,
-        );
-    }
 
     /**
      * A stop was asked of the session: it ends now when nothing of it runs, else once its last process ends.
@@ -166,21 +115,6 @@ class ReadyState extends AgentState implements UniqueState
     private function isStoppedAndIdle(): bool
     {
         return $this->isStopAsked && $this->liveProcesses === [];
-    }
-
-    /**
-     * Notes an attempt the gate opened for a stop, once; a retried stop callback finds the attempt it opened.
-     */
-    private function keepOpenedAttempt(string $attemptId): void
-    {
-        if (in_array($attemptId, $this->openAttempts, true) || isset($this->settledAttempts[$attemptId])) {
-            return;
-        }
-
-        $this->openAttempts = array_slice(
-            [...$this->openAttempts, $attemptId],
-            -StopConditionGate::UNCHANGED_FAILURE_LIMIT,
-        );
     }
 
     /**

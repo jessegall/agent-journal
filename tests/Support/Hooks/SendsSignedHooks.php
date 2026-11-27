@@ -6,7 +6,7 @@ namespace Tests\Support\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Api\SignedCall;
-use App\Stacks\StartStacks;
+use App\Stacks\SessionStateLifecycle;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\StackTransaction;
@@ -35,7 +35,7 @@ trait SendsSignedHooks
         $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->start->openRuntime($this->app, $this->journal->enrolledHost()->hostId);
         $this->asStartedAgent(fn () => $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(StartStacks::class)->open($this->target()),
+            fn () => $this->app->make(SessionStateLifecycle::class)->open($this->target()),
         ));
     }
 

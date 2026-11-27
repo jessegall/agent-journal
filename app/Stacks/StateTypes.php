@@ -24,6 +24,7 @@ final class StateTypes implements StateTypesContract
      */
     private const array CORE_STATES = [
         ReadyState::class,
+        ProfileState::class,
         AnswerAskState::class,
         ReadMessageState::class,
         AnswerMessageState::class,
