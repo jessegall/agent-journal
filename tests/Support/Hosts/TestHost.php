@@ -311,13 +311,8 @@ final class TestHost
     ): self {
         $manifest = ContainerManifest::make(
             self::IMAGE,
-            '10001:10001',
-            true,
-            [],
-            false,
             "journal-net-{$name}",
-            [MountRules::local()->workspaceMount($this->folder, WorkspaceUse::Shared)],
-            [],
+            [MountRules::local()->workspaceMount($this->folder, WorkspaceUse::Shared, $name)],
             ExecutionBudgets::defaults(),
             MountRules::local(),
             SecurityOptions::none(),
@@ -797,7 +792,7 @@ final class TestHost
         ];
 
         if ($this->arrangement->isContained()) {
-            $command = [...$command, '--installation-name', self::INSTALLATION_NAME, '--agent-image', self::IMAGE];
+            $command = [...$command, '--installation-name', self::INSTALLATION_NAME, '--data-folder', MountRules::DATA_FOLDER];
         }
 
         // The installation's programs come first on the host's path, so a program started by name runs its mock.

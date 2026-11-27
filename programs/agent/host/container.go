@@ -5,12 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"journal-agent/shellwords"
 	"os"
 	"path"
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/moby/moby/api/types/container"
@@ -18,180 +16,127 @@ import (
 	"github.com/moby/moby/client"
 )
 
-// daemonBindRoot is the one folder of the agent daemon a daemon-bind mount may come from.
-const daemonBindRoot = "/srv/journal/"
-
-// containedTargets are the folders a contained container may have mounted, each at most once, besides the targets
-// of its plan's files.
-var containedTargets = []string{"/workspace", "/home/journal/.account", "/home/journal/.account/projects"}
-
-// mostContainedMounts is the most mounts a contained container may have: its folders and two its driver adds.
-const mostContainedMounts = 5
-
-// PlanFileFolder is the one folder outside /etc a plan's files may be mounted at, which holds them all.
-const PlanFileFolder = "/tmp/journal-session"
-
-const (
-	StartStandard         = "standard"
-	StartProtectedAccount = "protected-account"
-	// protectedInit is the init a protected-account container starts with, never taken from a manifest.
-	protectedInit = "/opt/journal/bin/journal-init"
-	// executorFolder is the private folder of the executor's socket in a protected-account container, kept in
-	// memory with executorFolderOptions.
-	executorFolder        = "/run/journal-exec"
-	executorFolderOptions = "uid=10002,gid=10001,mode=0750,size=1m"
-	protectedUser         = "0:0"
-)
-
-// protectedCapabilities are exactly the capabilities a protected-account init needs to drop to its users.
-var protectedCapabilities = []string{"SETUID", "SETGID", "SETPCAP"}
-
-// IsProtected is whether the manifest starts with the protected-account profile.
-func (manifest ContainerManifest) IsProtected() bool {
-	return manifest.StartProfile == StartProtectedAccount
-}
-
-// hasKnownProfile is whether the manifest names a start profile the host knows.
-func (manifest ContainerManifest) hasKnownProfile() bool {
-	return manifest.StartProfile == "" || manifest.StartProfile == StartStandard || manifest.IsProtected()
-}
-
-// startsAsProfile is whether the user and capabilities are exactly the ones its start profile allows: a named user
-// and none for standard; root with the three protected capabilities, a read-only root, no new privileges and an
-// account mount for protected-account.
-func (manifest ContainerManifest) startsAsProfile() bool {
-	if !manifest.IsProtected() {
-		return len(manifest.Capabilities) == 0 && manifest.User != ""
-	}
-
-	return manifest.User == protectedUser && slices.Equal(manifest.Capabilities, protectedCapabilities) &&
-		manifest.IsReadOnlyRoot && manifest.BlocksNewPrivileges && manifest.AccountFolder() != ""
-}
-
-// imageIDPattern is an image named by its id, the config digest a loaded image keeps.
-var imageIDPattern = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
-
-// IsPinnedReference is whether an image reference names exactly one image: by its id, or by name and digest.
-func IsPinnedReference(reference string) bool {
-	return imageIDPattern.MatchString(reference) || strings.Contains(reference, "@sha256:")
-}
-
-// ContainerRules are what decides what a manifest may ask for: the host's arrangement and, when contained, the
-// installation name every volume of its containers opens with, the images the journal allowed its containers to run,
-// and the agent image the host's own throwaway containers run.
+// ContainerRules are the host's own settings that bound what a manifest may ask for: where its containers run, the name
+// every volume of its containers opens with, the images the journal allowed, and the daemon folder a daemon bind may
+// come from. None of them comes from the journal.
 type ContainerRules struct {
 	Arrangement      Arrangement
 	InstallationName InstallationName
 	Allowed          *AllowedImages
-	AgentImage       string
-	// DevelopmentPrograms is a daemon folder of the journal's own programs built from the checkout, mounted over the
-	// image's copies in local development only, so a change to them needs no image build; empty everywhere else.
-	DevelopmentPrograms string
+	// DataFolder is the Docker daemon's folder every daemon bind comes from, set when the host is installed.
+	DataFolder string
+	// SecretsFolder is where the host finds the secrets a container run may take as its input, such as deploy keys.
+	SecretsFolder string
 }
 
-// developmentPrograms are the programs of the agent image a local development host replaces with the checkout's
-// builds, each by the path it has in the image.
-var developmentPrograms = map[string]string{
-	"journal-init":  "/opt/journal/bin/journal-init",
-	"journal-exec":  "/opt/journal/bin/journal-exec",
-	"journal-shell": "/opt/journal/bin/journal-shell",
-	"journal-hook":  "/opt/journal/bin/journal-hook",
-	"journal-mcp":   "/opt/journal/bin/journal-mcp",
-	"journal-check": "/opt/journal/bin/journal-check",
-}
+// addableCapabilities are the only capabilities a container may get back after every one is dropped.
+var addableCapabilities = []string{"CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETPCAP", "SETUID"}
 
-// developmentShellBridge is where the image keeps the shell bridge under the name its driver calls.
-const developmentShellBridge = "/opt/journal/shell/bash"
-
-// developmentMounts are the read-only binds that put the checkout's builds over the image's programs, none outside
-// local development.
-func (rules ContainerRules) developmentMounts() []mount.Mount {
-	if rules.DevelopmentPrograms == "" {
-		return nil
-	}
-	mounts := []mount.Mount{bindMount(rules.DevelopmentPrograms+"/journal-shell", developmentShellBridge, false)}
-	for program, target := range developmentPrograms {
-		mounts = append(mounts, bindMount(rules.DevelopmentPrograms+"/"+program, target, false))
-	}
-
-	return mounts
-}
-
-// The tmpfs folders a helper writes to, and the sizes they keep when the budgets name none, mirroring
-// ContainerManifest::TMPFS.
-const (
-	defaultTmpBytes  = 256 << 20
-	runJournalBytes  = 16 << 20
-	defaultHomeBytes = 64 << 20
-)
+// restartPolicies are the restart policies a manifest may name.
+var restartPolicies = []string{"", "no", "on-failure", "unless-stopped"}
 
 var (
-	// ErrManifestUnsafe refuses a manifest that asks for what a helper may never have; the journal refuses it first,
-	// so this only catches a manifest that changed on its way.
-	ErrManifestUnsafe = errors.New("the container manifest asks for more than a helper may have")
+	// ErrManifestUnsafe refuses a manifest that asks Docker for what no container of the journal may have.
+	ErrManifestUnsafe = errors.New("the container manifest asks for more than a container may have")
+	// ErrPreparationFailed refuses a container whose preparation ended with an exit code other than 0.
+	ErrPreparationFailed = errors.New("a preparation of the container failed")
+	// ErrVolumeMissing refuses a container whose volume must already exist and does not.
+	ErrVolumeMissing = errors.New("a volume the container needs is gone")
+	// ErrSecretMissing refuses a run whose input secret the host does not hold.
+	ErrSecretMissing = errors.New("the host holds no secret of that name")
 )
 
-// accountsRoot is where the agent daemon holds every account's own sign-in folder, and accountTarget where a
-// container finds its session's own one.
-const (
-	accountsRoot  = "/srv/journal/accounts"
-	accountTarget = "/home/journal/.account"
-)
+// plainName is a name Docker takes as one value: letters, digits, dots, dashes and underscores.
+var plainName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]*$`)
 
-// plainAccountID is an account folder's name as the journal makes it: lowercase letters and digits, nothing else.
-var plainAccountID = regexp.MustCompile(`^[a-z0-9]+$`)
-
-// bindsOnlyAccount is whether the manifest's one account mount is the account's own folder, read-write, at the
-// account home, named by a plain id; with no account named, whether it binds no account at all. A contained session
-// binding its own account reverses the standing "no credential in a container" decision, as the user as the owner
-// decided; no other account's folder and nothing else under the root is bound.
-func (manifest ContainerManifest) bindsOnlyAccount(accountID string) bool {
-	var accountMounts []ContainerMount
-	for _, mount := range manifest.Mounts {
-		if mount.Target == accountTarget || strings.HasPrefix(mount.Source, accountsRoot) {
-			accountMounts = append(accountMounts, mount)
-		}
-	}
-
-	if len(accountMounts) == 0 {
-		return accountID == ""
-	}
-
-	mount := accountMounts[0]
-
-	return len(accountMounts) == 1 && plainAccountID.MatchString(accountID) && mount.Type == MountDaemonBind &&
-		mount.Target == accountTarget && mount.IsWritable && mount.Source == accountsRoot+"/"+accountID
-}
-
-// AccountFolder is the plain id of the account folder the manifest binds at the account home, which the container's
-// account label names; empty when it binds none.
-func (manifest ContainerManifest) AccountFolder() string {
-	for _, mount := range manifest.Mounts {
-		if mount.Target == accountTarget && strings.HasPrefix(mount.Source, accountsRoot+"/") {
-			return strings.TrimPrefix(mount.Source, accountsRoot+"/")
-		}
-	}
-
-	return ""
-}
-
-// IsSafe is whether the manifest may start a container: unprivileged, with no published ports or entrypoint, the
-// user and capabilities its start profile allows, an exact image digest, security profiles that are one value each,
-// and only the mounts the rules allow.
+// IsSafe is whether the manifest stays inside the floor every container keeps: an allowed image pinned by digest,
+// no capability outside the short list, a known restart policy, plain security options and names, and mounts and
+// memory folders the host's own rules allow; each preparation keeps it too.
 func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
-	isConfined := !manifest.IsPrivileged && len(manifest.PublishedPorts) == 0 && manifest.Entrypoint == "" &&
-		manifest.hasKnownProfile() && manifest.startsAsProfile()
-	isPinned := IsPinnedReference(manifest.Image)
+	isNamed := manifest.Name == "" || plainName.MatchString(manifest.Name)
+	isConfined := isNamed && IsPinnedReference(manifest.Image) && rules.permitsImage(manifest.Image) &&
+		manifest.SecurityOptions.isPlain() && slices.Contains(restartPolicies, manifest.Restart) &&
+		!slices.ContainsFunc(manifest.Capabilities, func(added string) bool { return !slices.Contains(addableCapabilities, added) })
 
-	return isConfined && isPinned && rules.permitsImage(manifest.Image) && manifest.SecurityOptions.isPlain() &&
-		rules.permit(manifest.Mounts)
+	return isConfined && rules.permit(manifest.Mounts, manifest.Tmpfs) && rules.permitsVolumes(manifest.Volumes) &&
+		!slices.ContainsFunc(manifest.Preparations, func(run ContainerRun) bool { return !run.Manifest.IsSafe(rules) })
 }
 
-// CreateOptions are what the daemon creates the container from: its exact image digest, the unprivileged user, a
-// read-only root, no capabilities, its mounts, its security profiles, the bounded resources and the labels that let
-// reconciliation find it again.
-func (manifest ContainerManifest) CreateOptions(name string, labels StartLabels, rules ContainerRules) (client.ContainerCreateOptions, error) {
-	if !manifest.IsSafe(rules) || !manifest.bindsOnlyAccount(labels.Account) {
+// permitsImage is whether the image is one a container may run here: on a contained host only an image the journal
+// allowed.
+func (rules ContainerRules) permitsImage(image string) bool {
+	return !rules.Arrangement.IsContained() || rules.Allowed.Permits(image)
+}
+
+// permit is whether every mount and memory folder has a clean target of its own, and each mount a source the
+// arrangement allows.
+func (rules ContainerRules) permit(mounts []ContainerMount, folders []ContainerTmpfs) bool {
+	seen := map[string]bool{}
+	for _, mounted := range mounts {
+		if seen[mounted.Target] || !isCleanTarget(mounted.Target) || !rules.permitsSource(mounted) {
+			return false
+		}
+		seen[mounted.Target] = true
+	}
+
+	for _, folder := range folders {
+		if seen[folder.Target] || !isCleanTarget(folder.Target) || strings.ContainsAny(folder.Options, "\n") {
+			return false
+		}
+		seen[folder.Target] = true
+	}
+
+	return true
+}
+
+// permitsSource is whether a mount comes from where it may: on a contained host a volume of this installation, a
+// clean folder under the host's data folder, or memory; on a local host a folder of this machine.
+func (rules ContainerRules) permitsSource(mounted ContainerMount) bool {
+	if !rules.Arrangement.IsContained() {
+		return mounted.Type == MountBind && isCleanTarget(mounted.Source)
+	}
+
+	switch mounted.Type {
+	case MountVolume:
+		return rules.ownsVolume(mounted.Source)
+	case MountDaemonBind:
+		folder := path.Clean(rules.DataFolder)
+		return rules.DataFolder != "" && isCleanTarget(mounted.Source) &&
+			(mounted.Source == folder || strings.HasPrefix(mounted.Source, folder+"/"))
+	case MountScratch:
+		return mounted.Source == "" && mounted.IsWritable
+	}
+
+	return false
+}
+
+// permitsVolumes is whether every volume the manifest has made is one of this installation's.
+func (rules ContainerRules) permitsVolumes(volumes []ContainerVolume) bool {
+	return !slices.ContainsFunc(volumes, func(volume ContainerVolume) bool { return !rules.ownsVolume(volume.Name) })
+}
+
+// ownsVolume is whether the volume name opens with this installation's name.
+func (rules ContainerRules) ownsVolume(name string) bool {
+	return rules.InstallationName != "" && strings.HasPrefix(name, string(rules.InstallationName)+"-") &&
+		plainName.MatchString(name)
+}
+
+// isCleanTarget is whether the path is clean and absolute and the daemon takes it as one argument.
+func isCleanTarget(target string) bool {
+	return path.IsAbs(target) && path.Clean(target) == target && !strings.ContainsAny(target, ",\n")
+}
+
+// ContainerProcess is what the container runs after the image's entrypoint: its command and the environment it is
+// given.
+type ContainerProcess struct {
+	Command     []string
+	Environment []string
+}
+
+// CreateOptions are the manifest as the daemon creates the container from it, nothing added but every capability
+// dropped first, no-new-privileges when it asks for it, and the host's own label that finds it again after a restart.
+func (manifest ContainerManifest) CreateOptions(rules ContainerRules, process ContainerProcess) (client.ContainerCreateOptions, error) {
+	if !manifest.IsSafe(rules) {
 		return client.ContainerCreateOptions{}, ErrManifestUnsafe
 	}
 
@@ -200,170 +145,97 @@ func (manifest ContainerManifest) CreateOptions(name string, labels StartLabels,
 		return client.ContainerCreateOptions{}, err
 	}
 
+	if manifest.BlocksNewPrivileges {
+		security = append([]string{"no-new-privileges"}, security...)
+	}
+
 	processes := int64(manifest.Budgets.Processes)
 	openFiles := int64(manifest.Budgets.OpenFiles)
 	config := &container.Config{
 		User:       manifest.User,
 		WorkingDir: manifest.Workdir,
 		Image:      manifest.Image,
-		Labels:     labels.asMap(),
+		Entrypoint: manifest.Entrypoint,
+		Cmd:        process.Command,
+		Env:        process.Environment,
+		Labels:     rules.labelsOf(manifest.Labels),
 	}
 	hostConfig := &container.HostConfig{
 		CapDrop:        []string{"ALL"},
-		NetworkMode:    container.NetworkMode(manifest.Network),
+		CapAdd:         manifest.Capabilities,
+		NetworkMode:    container.NetworkMode(cmp.Or(manifest.Network, "none")),
 		ReadonlyRootfs: manifest.IsReadOnlyRoot,
 		SecurityOpt:    security,
-		Tmpfs:          manifest.Budgets.tmpfs(),
+		Tmpfs:          tmpfsOf(manifest.Tmpfs),
+		RestartPolicy:  container.RestartPolicy{Name: container.RestartPolicyMode(cmp.Or(manifest.Restart, "no"))},
 		Resources: container.Resources{
 			NanoCPUs:   int64(manifest.Budgets.CPUCores) * nanoCPUsInACore,
 			Memory:     int64(manifest.Budgets.MemoryBytes),
 			MemorySwap: int64(manifest.Budgets.MemorySwapBytes),
 			PidsLimit:  &processes,
-			Ulimits:    []*container.Ulimit{{Name: "nofile", Soft: openFiles, Hard: openFiles}},
 		},
 	}
-	if manifest.IsProtected() {
-		hostConfig.CapAdd = protectedCapabilities
-		config.Entrypoint = []string{protectedInit}
-		hostConfig.Tmpfs[executorFolder] = executorFolderOptions
-	}
-
-	if manifest.BlocksNewPrivileges {
-		hostConfig.SecurityOpt = append([]string{"no-new-privileges"}, hostConfig.SecurityOpt...)
+	if openFiles > 0 {
+		hostConfig.Ulimits = []*container.Ulimit{{Name: "nofile", Soft: openFiles, Hard: openFiles}}
 	}
 
 	if manifest.IsAttachable {
 		config.Tty, config.OpenStdin = true, true
 		config.AttachStdin, config.AttachStdout, config.AttachStderr = true, true, true
-		hostConfig.RestartPolicy = container.RestartPolicy{Name: container.RestartPolicyUnlessStopped}
 	}
 
 	for _, mounted := range manifest.Mounts {
 		hostConfig.Mounts = append(hostConfig.Mounts, mounted.daemonMount())
 	}
-	hostConfig.Mounts = append(hostConfig.Mounts, rules.developmentMounts()...)
 
-	return client.ContainerCreateOptions{Name: name, Config: config, HostConfig: hostConfig}, nil
+	return client.ContainerCreateOptions{Name: manifest.Name, Config: config, HostConfig: hostConfig}, nil
 }
 
 // nanoCPUsInACore is one CPU core in the unit the daemon counts CPU budgets in.
 const nanoCPUsInACore = 1_000_000_000
 
-// permitsImage is whether the image is one a container may run here: on a contained host only an image the journal
-// allowed.
-func (rules ContainerRules) permitsImage(image string) bool {
-	return !rules.Arrangement.IsContained() || rules.Allowed.Permits(image)
-}
+// runnerLabel is the one label the host adds to everything it makes, naming its installation, so it finds its own
+// containers, networks and volumes again after a restart.
+const runnerLabel = "journal.installation"
 
-// permit is whether the mounts fit the arrangement: a local helper has exactly one folder of this machine; a
-// contained one has at most four mounts of the agent daemon, each on its own allowed folder.
-func (rules ContainerRules) permit(mounts []ContainerMount) bool {
-	if !rules.Arrangement.IsContained() {
-		return len(mounts) == 1 && mounts[0].Type == MountBind
+// labelsOf are the journal's labels as the daemon takes them, with the host's own.
+func (rules ContainerRules) labelsOf(labels []ContainerLabel) map[string]string {
+	named := map[string]string{runnerLabel: string(rules.InstallationName)}
+	for _, label := range labels {
+		named[label.Name] = label.Value
 	}
 
-	// A probe of the image mounts nothing; a session mounts each contained target and each plan file at most once.
-	if len(mounts) > mostContainedMounts {
-		return false
-	}
-
-	seen := map[string]bool{}
-	for _, mount := range mounts {
-		isPlanFile := IsPlanFileTarget(mount.Target)
-		isScratch := mount.Type == MountScratch && isCleanTarget(mount.Target)
-		isTarget := slices.Contains(containedTargets, mount.Target) || isPlanFile && !mount.IsWritable || isScratch
-		if seen[mount.Target] || !isTarget || !rules.permitsSource(mount) {
-			return false
-		}
-
-		seen[mount.Target] = true
-	}
-
-	return true
+	return named
 }
 
-// permitsSource is whether a contained mount comes from where it may: a volume of this installation, or a clean
-// folder under /srv/journal/ on the agent daemon; never a folder of the server itself.
-func (rules ContainerRules) permitsSource(mount ContainerMount) bool {
-	switch mount.Type {
-	case MountVolume:
-		return rules.InstallationName != "" && strings.HasPrefix(mount.Source, string(rules.InstallationName)+"-") &&
-			!strings.ContainsAny(mount.Source, "/,\n")
-	case MountDaemonBind:
-		return path.Clean(mount.Source) == mount.Source && strings.HasPrefix(mount.Source, daemonBindRoot) &&
-			!strings.Contains(mount.Source, "..") && !strings.ContainsAny(mount.Source, ",\n")
-	case MountPlanFile:
-		return !mount.IsWritable && (mount.Source == "" || isPlainFileName(mount.Source))
-	case MountScratch:
-		return mount.Source == "" && mount.IsWritable
+// tmpfsOf are the memory folders as the daemon takes them, each target with its options.
+func tmpfsOf(folders []ContainerTmpfs) map[string]string {
+	named := map[string]string{}
+	for _, folder := range folders {
+		named[folder.Target] = folder.Options
 	}
 
-	return false
-}
-
-// IsPlanFileTarget is whether a container may see a plan file at the target: the plan files' own folder, or one
-// clean absolute path under /etc, where a program reads the settings its installation imposes.
-func IsPlanFileTarget(target string) bool {
-	return target == PlanFileFolder || strings.HasPrefix(target, "/etc/") && path.Clean(target) == target &&
-		!strings.Contains(target, "..") && !strings.ContainsAny(target, ",\n")
-}
-
-// isCleanTarget is whether the target is a clean absolute path the daemon takes as one argument.
-func isCleanTarget(target string) bool {
-	return path.IsAbs(target) && path.Clean(target) == target && !strings.ContainsAny(target, ",\n")
-}
-
-// AccountMountPoints are the folders right inside the account mount that the manifest mounts something else over,
-// which must exist as the program's user's before the daemon mounts there.
-func (manifest ContainerManifest) AccountMountPoints() []string {
-	account, bound := manifest.accountMount()
-	if !bound {
-		return nil
-	}
-
-	var folders []string
-	for _, mount := range manifest.Mounts {
-		if path.Dir(mount.Target) == account.Target && isPlainFileName(path.Base(mount.Target)) {
-			folders = append(folders, path.Base(mount.Target))
-		}
-	}
-
-	return folders
-}
-
-// accountMount is the mount that binds an account's own folder, when the manifest has one.
-func (manifest ContainerManifest) accountMount() (ContainerMount, bool) {
-	for _, mount := range manifest.Mounts {
-		if mount.Type == MountDaemonBind && strings.HasPrefix(mount.Source, accountsRoot+"/") {
-			return mount, true
-		}
-	}
-
-	return ContainerMount{}, false
-}
-
-// isPlainFileName is whether a name is one plain file name, not hidden and with no folder.
-func isPlainFileName(name string) bool {
-	return name != "" && path.Base(name) == name && !strings.HasPrefix(name, ".") && !strings.ContainsAny(name, ",\n")
+	return named
 }
 
 // daemonMount is the mount as the daemon takes it, read-only unless it is writable.
 func (mounted ContainerMount) daemonMount() mount.Mount {
-	if mounted.Type == MountVolume {
+	switch mounted.Type {
+	case MountVolume:
 		return volumeMount(mounted.Source, mounted.Target, mounted.IsWritable)
-	}
-
-	if mounted.Type == MountScratch {
+	case MountScratch:
 		return scratchMount(mounted.Target)
 	}
 
 	return bindMount(mounted.Source, mounted.Target, mounted.IsWritable)
 }
 
-// readOnlyAt is the mount as the daemon takes it read-only at another target, as a check or a clone reads the
-// workspace.
-func (mounted ContainerMount) readOnlyAt(target string) mount.Mount {
-	return ContainerMount{Type: mounted.Type, Source: mounted.Source, Target: target}.daemonMount()
+// imageIDPattern is an image named by its id, the config digest a loaded image keeps.
+var imageIDPattern = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
+
+// IsPinnedReference is whether an image reference names exactly one image: by its id, or by name and digest.
+func IsPinnedReference(reference string) bool {
+	return imageIDPattern.MatchString(reference) || strings.Contains(reference, "@sha256:")
 }
 
 // isPlain is whether each profile is one value, since a comma or a newline would smuggle in another option.
@@ -409,36 +281,26 @@ func seccompProfile(profile string) (string, error) {
 	return string(content), nil
 }
 
-// tmpfs are the folders a container writes to in memory, sized from the budgets, or from the old sizes when the
-// budgets name none.
-func (budgets ContainerBudgets) tmpfs() map[string]string {
-	return map[string]string{
-		"/tmp":          "size=" + strconv.Itoa(cmp.Or(budgets.TmpBytes, defaultTmpBytes)),
-		"/run/journal":  "size=" + strconv.Itoa(runJournalBytes),
-		"/home/journal": "size=" + strconv.Itoa(cmp.Or(budgets.HomeBytes, defaultHomeBytes)),
-	}
-}
-
 // Containers are the containers of one Docker daemon, reached through Docker's own client, under the container rules
-// of the host; on a contained host the daemon is the agent daemon.
+// of the host; on a contained host the daemon is the Docker daemon.
 type Containers struct {
 	Daemon *client.Client
 	Rules  ContainerRules
 }
 
-// ErrContainerNotCreated is returned when the agent daemon refuses to create a container; the error carries the
+// ErrContainerNotCreated is returned when the Docker daemon refuses to create a container; the error carries the
 // daemon's own first line, which says why.
-var ErrContainerNotCreated = errors.New("the agent daemon did not create the container")
+var ErrContainerNotCreated = errors.New("the Docker daemon did not create the container")
 
-// ErrAgentDaemonUnreachable is returned when a call cannot reach the agent daemon at all, which says nothing about
+// ErrDaemonUnreachable is returned when a call cannot reach the Docker daemon at all, which says nothing about
 // the images it holds.
-var ErrAgentDaemonUnreachable = errors.New("the agent container runtime cannot be reached")
+var ErrDaemonUnreachable = errors.New("the Docker daemon cannot be reached")
 
-// ErrBudgetsUnenforced is returned when the agent daemon has no cgroup driver, so the CPU, memory and process budgets
-// every agent container is created with would be accepted and discarded.
-var ErrBudgetsUnenforced = errors.New("the agent daemon cannot hold container budgets: it has no cgroup driver")
+// ErrBudgetsUnenforced is returned when the Docker daemon has no cgroup driver, so the CPU, memory and process budgets
+// every container is created with would be accepted and discarded.
+var ErrBudgetsUnenforced = errors.New("the Docker daemon cannot hold container budgets: it has no cgroup driver")
 
-// AssertBudgetsEnforced refuses an agent daemon whose cgroup driver is none; a daemon it cannot reach is named as that.
+// AssertBudgetsEnforced refuses an Docker daemon whose cgroup driver is none; a daemon it cannot reach is named as that.
 func (containers Containers) AssertBudgetsEnforced(ctx context.Context) error {
 	answered, err := containers.Daemon.Info(ctx, client.InfoOptions{})
 	if err != nil {
@@ -452,12 +314,12 @@ func (containers Containers) AssertBudgetsEnforced(ctx context.Context) error {
 	return nil
 }
 
-// AssertImagePinned refuses an image the agent daemon lacks or holds under another digest than the reference names;
+// AssertImagePinned refuses an image the Docker daemon lacks or holds under another digest than the reference names;
 // a reference matches the image's id or one of its repository digests. A daemon it cannot reach is named as that.
 func (containers Containers) AssertImagePinned(ctx context.Context, reference string) error {
 	image, err := containers.Daemon.ImageInspect(ctx, reference)
 	if isAbsent(err) {
-		return fmt.Errorf("%w: the image %s is not loaded into the agent daemon", ErrInstallationChanged, reference)
+		return fmt.Errorf("%w: the image %s is not loaded into the Docker daemon", ErrInstallationChanged, reference)
 	}
 
 	if err != nil {
@@ -469,97 +331,42 @@ func (containers Containers) AssertImagePinned(ctx context.Context, reference st
 		return nil
 	}
 
-	return fmt.Errorf("%w: %s names %s, but the agent daemon holds %s", ErrInstallationChanged, reference,
+	return fmt.Errorf("%w: %s names %s, but the Docker daemon holds %s", ErrInstallationChanged, reference,
 		cmp.Or(wanted, reference), image.ID)
 }
 
-// ContainerProcess is the program a container runs as its own process, after the image's entrypoint: its command and
-// the environment it is given, with no path of the host in it. A helper without its own program has none.
-type ContainerProcess struct {
-	Command     []string
-	Environment []string
-	// Restart is the command the container runs instead when it comes back after a restart of the agent daemon or the
-	// server, such as the program resuming its conversation. It runs once a file matching RestartWhen exists.
-	Restart []string
-	// RestartWhen is the file whose presence makes a restarted container run Restart.
-	RestartWhen RestartFile
-	// IsHealedByHost leaves restarting a crashed container to the host's own supervision, which reports each restart,
-	// instead of the daemon's restart policy.
-	IsHealedByHost bool
-}
-
-// into puts the process into what the daemon creates the container from: its environment, and its command after
-// the image's entrypoint, behind `--` when the protected-account init runs it.
-func (process ContainerProcess) into(options client.ContainerCreateOptions, underInit bool) client.ContainerCreateOptions {
-	options.Config.Env = append(options.Config.Env, process.Environment...)
-	options.Config.Cmd = process.command()
-	if process.IsHealedByHost {
-		options.HostConfig.RestartPolicy = container.RestartPolicy{Name: container.RestartPolicyDisabled}
-	}
-	if underInit {
-		options.Config.Cmd = append([]string{"--"}, options.Config.Cmd...)
-	}
-
-	return options
-}
-
-// command is the process's own command, or, with a restart command, a shell that runs the restart command once its
-// file exists and the first command otherwise, so a container brought back by its restart policy resumes its program
-// instead of starting it a second time.
-func (process ContainerProcess) command() []string {
-	if len(process.Restart) == 0 {
-		return process.Command
-	}
-
-	script := `if find "$1" -name "$2" -print -quit 2>/dev/null | grep -q .; then exec ` +
-		shellwords.Quoted(process.Restart...) + `; fi; exec ` + shellwords.Quoted(process.Command...)
-
-	return []string{"/bin/sh", "-c", script, "journal-session", process.RestartWhen.Folder, process.RestartWhen.Glob}
-}
-
-// Create creates the container from the manifest, running the process, and answers its id; a daemon that would
-// discard the manifest's budgets is refused before anything is created, and the workspace is filled or checked and a
-// writer's checkout made before its container.
-func (containers Containers) Create(
-	ctx context.Context,
-	manifest ContainerManifest,
-	name string,
-	labels StartLabels,
-	process ContainerProcess,
-) (string, error) {
-	if _, err := manifest.CreateOptions(name, labels, containers.Rules); err != nil {
+// Create makes the container the manifest describes: its preparations run first, in order, then its network and
+// volumes are made when the daemon lacks them, and the container is created running the process. It answers the
+// container's id.
+func (containers Containers) Create(ctx context.Context, manifest ContainerManifest, process ContainerProcess) (string, error) {
+	options, err := manifest.CreateOptions(containers.Rules, process)
+	if err != nil {
 		return "", err
-	}
-
-	if manifest.IsProtected() {
-		if err := containers.CheckAccountFolder(ctx, manifest.AccountFolder(), manifest.AccountMountPoints()); err != nil {
-			return "", err
-		}
 	}
 
 	if err := containers.AssertBudgetsEnforced(ctx); err != nil {
 		return "", err
 	}
 
-	if err := containers.PrepareWorkspace(ctx, manifest.WorkspacePreparation); err != nil {
+	for _, preparation := range manifest.Preparations {
+		result, err := containers.RunToEnd(ctx, preparation)
+		if err != nil {
+			return "", err
+		}
+		if result.ExitCode != 0 {
+			return "", fmt.Errorf("%w: exit %d: %s", ErrPreparationFailed, result.ExitCode, result.Output)
+		}
+	}
+
+	if err := containers.EnsureNetwork(ctx, manifest.Network, manifest.NetworkLabels); err != nil {
 		return "", err
 	}
 
-	manifest, err := containers.withCheckout(ctx, manifest, labels.Session)
-	if err != nil {
+	if err := containers.EnsureVolumes(ctx, manifest.Volumes); err != nil {
 		return "", err
 	}
 
-	options, err := manifest.CreateOptions(name, labels, containers.Rules)
-	if err != nil {
-		return "", err
-	}
-
-	if err := containers.EnsureVolumes(ctx, manifest, labels); err != nil {
-		return "", err
-	}
-
-	created, err := containers.Daemon.ContainerCreate(ctx, process.into(options, manifest.IsProtected()))
+	created, err := containers.Daemon.ContainerCreate(ctx, options)
 	if err != nil {
 		return "", fmt.Errorf("%w: %s", ErrContainerNotCreated, failureLine(err.Error(), err))
 	}
@@ -567,16 +374,18 @@ func (containers Containers) Create(
 	return created.ID, nil
 }
 
-// EnsureNetwork makes the session's own network when the agent daemon lacks it, labelled with the installation and
-// the session, so a container of the session shares no network with another.
-func (containers Containers) EnsureNetwork(ctx context.Context, name string, labels StartLabels) error {
+// EnsureNetwork makes the named network when the Docker daemon lacks it, with the journal's labels; the daemon's own
+// networks, such as none, are never made.
+func (containers Containers) EnsureNetwork(ctx context.Context, name string, labels []ContainerLabel) error {
+	if name == "" || name == "none" || name == "host" || name == "bridge" {
+		return nil
+	}
+
 	if _, err := containers.Daemon.NetworkInspect(ctx, name, client.NetworkInspectOptions{}); err == nil {
 		return nil
 	}
 
-	_, err := containers.Daemon.NetworkCreate(ctx, name, client.NetworkCreateOptions{
-		Labels: map[string]string{installationLabel: labels.Installation, sessionLabel: labels.Session},
-	})
+	_, err := containers.Daemon.NetworkCreate(ctx, name, client.NetworkCreateOptions{Labels: containers.Rules.labelsOf(labels)})
 	if err != nil {
 		return fmt.Errorf("creating the network %s failed: %w", name, err)
 	}
@@ -584,57 +393,45 @@ func (containers Containers) EnsureNetwork(ctx context.Context, name string, lab
 	return nil
 }
 
-// agentUser is the unprivileged user agent containers run as, mirroring ContainerManifest::USER.
-const agentUser = "10001:10001"
-
-// agentUID is the agent's user id, the owner every folder it works in must have.
-const agentUID = 10001
-
-// runCheck runs a check in a throwaway container of the agent image, as the agent's user, with what the throwaway adds, such as a read-only
-// mount.
-func (containers Containers) runCheck(ctx context.Context, check throwaway) (string, error) {
-	check.User = agentUser
-
-	return containers.runToEnd(ctx, check)
-}
-
-// runScript runs a shell script as a check does, with the mounts it reads.
-func (containers Containers) runScript(ctx context.Context, script string, mounts ...mount.Mount) (string, error) {
-	return containers.runCheck(ctx, throwaway{Program: "sh", Arguments: []string{"-c", script}, Mounts: mounts})
-}
-
-// ErrHistoryMissing refuses a resume whose history volume is gone, so it never starts with an empty history.
-var ErrHistoryMissing = errors.New("the history of the resumed conversation is gone")
-
-// hasVolume is whether the agent daemon holds the named volume.
+// hasVolume is whether the Docker daemon holds the named volume.
 func (containers Containers) hasVolume(ctx context.Context, name string) bool {
 	_, err := containers.Daemon.VolumeInspect(ctx, name, client.VolumeInspectOptions{})
 
 	return err == nil
 }
 
-// EnsureVolumes makes each named volume of the manifest that the agent daemon lacks, labelled with the installation
-// and the session but no start, so a start's cleanup keeps it; a volume that must exist and does not refuses.
-func (containers Containers) EnsureVolumes(ctx context.Context, manifest ContainerManifest, labels StartLabels) error {
-	for _, mounted := range manifest.Mounts {
-		if mounted.Type != MountVolume || containers.hasVolume(ctx, mounted.Source) {
+// EnsureVolumes makes each volume the daemon lacks, with its labels and its size when it has one; a volume that must
+// exist and does not refuses the container.
+func (containers Containers) EnsureVolumes(ctx context.Context, volumes []ContainerVolume) error {
+	for _, volume := range volumes {
+		if containers.hasVolume(ctx, volume.Name) {
 			continue
 		}
 
-		if mounted.MustExist {
-			return fmt.Errorf("%w: %s", ErrHistoryMissing, mounted.Source)
+		if volume.IsAlreadyMade {
+			return fmt.Errorf("%w: %s", ErrVolumeMissing, volume.Name)
 		}
 
-		_, err := containers.Daemon.VolumeCreate(ctx, client.VolumeCreateOptions{
-			Name:   mounted.Source,
-			Labels: map[string]string{installationLabel: labels.Installation, sessionLabel: labels.Session},
-		})
-		if err != nil {
-			return fmt.Errorf("creating the volume %s failed: %w", mounted.Source, err)
+		if err := containers.createVolume(ctx, volume); err != nil {
+			return err
 		}
 	}
 
 	return nil
+}
+
+// ReadSecret reads a secret the host holds, by its plain name, for a run's input.
+func (rules ContainerRules) ReadSecret(name string) ([]byte, error) {
+	if rules.SecretsFolder == "" || !plainName.MatchString(name) {
+		return nil, fmt.Errorf("%w: %q", ErrSecretMissing, name)
+	}
+
+	secret, err := os.ReadFile(path.Join(rules.SecretsFolder, name))
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrSecretMissing, name)
+	}
+
+	return secret, nil
 }
 
 // Start starts a created container.

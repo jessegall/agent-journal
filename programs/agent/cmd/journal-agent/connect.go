@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"journal-agent/client"
+	"journal-agent/device"
 	"journal-agent/host"
 	"journal-agent/project"
 	"journal-agent/upgrade"
@@ -33,7 +34,7 @@ func connect(arguments []string) error {
 	resume := flags.Bool("resume", false, "finish this folder's staged install, without its ticket")
 	abandon := flags.Bool("abandon", false, "remove this folder's staged install the journal never committed")
 	origin := flags.String("origin", "", "the journal's canonical https origin")
-	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", device.DefaultStateFolder(), "the host's private state folder")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -47,7 +48,7 @@ func connect(arguments []string) error {
 	}
 	root := target.root
 	connection := projectConnection{
-		state:     host.ConnectionState{Folder: *stateFolder, CanonicalRoot: root},
+		state:     device.ConnectionState{Folder: *stateFolder, CanonicalRoot: root},
 		origin:    *origin,
 		transport: &http.Client{Timeout: 30 * time.Second},
 	}
@@ -59,7 +60,7 @@ func connect(arguments []string) error {
 		return err
 	}
 
-	var binding host.Binding
+	var binding device.Binding
 	if *resume {
 		binding, err = connection.resume(context.Background())
 	} else {
@@ -80,7 +81,7 @@ func connect(arguments []string) error {
 		return err
 	}
 	relay := upgrade.Binding{State: connection.state}.RelayProgram(program)
-	if err := host.StartRelay(relay, *stateFolder, binding.BindingID); err != nil {
+	if err := device.StartRelay(relay, *stateFolder, binding.BindingID); err != nil {
 		return err
 	}
 	dispatcher := filepath.Join(installation.Folder, "bin", "journal")
@@ -91,26 +92,26 @@ func connect(arguments []string) error {
 	}
 
 	fmt.Printf("Ready: %s answered this folder's relay.\n  project: %s\n  binding: %s\n  machine: %s\n",
-		binding.JournalURL, binding.ProjectLabel, binding.BindingID, host.MachineLabel())
+		binding.JournalURL, binding.ProjectLabel, binding.BindingID, device.MachineLabel())
 
 	return nil
 }
 
 // redeemConfirmed checks and confirms the folder, so a refusal leaves the line unspent, prints the ticket-free command
 // that finishes the install if this run is cut short, and redeems the line read from standard input.
-func (connection projectConnection) redeemConfirmed(target targetFolder, installation host.Installation) (host.Binding, error) {
+func (connection projectConnection) redeemConfirmed(target targetFolder, installation host.Installation) (device.Binding, error) {
 	ticket, err := readTicket(os.Stdin)
 	if err != nil {
-		return host.Binding{}, err
+		return device.Binding{}, err
 	}
 	if err := target.assertNotConnected(connection.state, os.Stdout); err != nil {
-		return host.Binding{}, err
+		return device.Binding{}, err
 	}
 	if err := target.checkIdentity(connection.state, os.Stdout); err != nil {
-		return host.Binding{}, err
+		return device.Binding{}, err
 	}
 	if err := target.confirm(connection.origin, os.Stdout); err != nil {
-		return host.Binding{}, err
+		return device.Binding{}, err
 	}
 	fmt.Printf("journal: if this stops before it ends, finish it in %s with: %q connect --resume\n",
 		target.root, filepath.Join(installation.Folder, "bin", "journal-agent"))
@@ -135,17 +136,17 @@ func (failure exitCodeError) Error() string { return failure.message }
 
 // projectConnection redeems one folder's install line against one journal.
 type projectConnection struct {
-	state     host.ConnectionState
+	state     device.ConnectionState
 	origin    string
 	transport *http.Client
 }
 
 // redeem stages the folder's credential and nonce, redeems the ticket and keeps the binding. A reply that was lost,
 // in this run or an earlier one, is recovered with the staged credential instead of redeeming again.
-func (connection projectConnection) redeem(ctx context.Context, ticket string) (host.Binding, error) {
+func (connection projectConnection) redeem(ctx context.Context, ticket string) (device.Binding, error) {
 	unlock, err := connection.state.Lock()
 	if err != nil {
-		return host.Binding{}, err
+		return device.Binding{}, err
 	}
 	defer unlock()
 
@@ -153,13 +154,13 @@ func (connection projectConnection) redeem(ctx context.Context, ticket string) (
 	if err == nil {
 		return binding, nil
 	}
-	if !errors.Is(err, host.ErrNotConnected) {
-		return host.Binding{}, err
+	if !errors.Is(err, device.ErrNotConnected) {
+		return device.Binding{}, err
 	}
 
 	pending, err := connection.state.Pending(connection.origin)
 	if err != nil {
-		return host.Binding{}, err
+		return device.Binding{}, err
 	}
 
 	redemption, err := client.Redeem(ctx, connection.transport, pending.Origin, redeemRequest(ticket, pending))
@@ -167,20 +168,20 @@ func (connection projectConnection) redeem(ctx context.Context, ticket string) (
 		redemption, err = connection.recover(ctx, pending, err)
 	}
 	if err != nil {
-		return host.Binding{}, err
+		return device.Binding{}, err
 	}
 
 	return connection.keep(redemption, pending)
 }
 
 // keep saves the binding a redemption, or its recovery, made from the staged connection, which it drops.
-func (connection projectConnection) keep(redemption client.Redemption, pending host.PendingConnection) (host.Binding, error) {
-	enrollment := host.Enrollment{
+func (connection projectConnection) keep(redemption client.Redemption, pending device.PendingConnection) (device.Binding, error) {
+	enrollment := device.Enrollment{
 		JournalURL: originOf(redemption, pending),
 		HostID:     redemption.HostID,
 		Secret:     pending.HostCredential,
 	}
-	binding := host.Binding{
+	binding := device.Binding{
 		Enrollment:    enrollment,
 		ProjectID:     redemption.ProjectID,
 		ProjectLabel:  redemption.ProjectLabel,
@@ -195,7 +196,7 @@ func (connection projectConnection) keep(redemption client.Redemption, pending h
 
 // setUp writes the folder's .journal setup for the binding under the root's lock; a rerun finishes what an
 // interrupted one left.
-func (connection projectConnection) setUp(binding host.Binding) error {
+func (connection projectConnection) setUp(binding device.Binding) error {
 	unlock, err := connection.state.Lock()
 	if err != nil {
 		return err
@@ -225,7 +226,7 @@ func ownInstallation() (host.Installation, error) {
 // earlier run of this folder already spent. When nothing is recovered, the redemption's own refusal stands.
 func (connection projectConnection) recover(
 	ctx context.Context,
-	pending host.PendingConnection,
+	pending device.PendingConnection,
 	redeemFailure error,
 ) (client.Redemption, error) {
 	redemption, err := connection.committedRedemption(ctx, pending)
@@ -239,7 +240,7 @@ func (connection projectConnection) recover(
 	return client.Redemption{}, fmt.Errorf("%w (%w)", errLineUnusable, redeemFailure)
 }
 
-func redeemRequest(ticket string, pending host.PendingConnection) client.RedeemRequest {
+func redeemRequest(ticket string, pending device.PendingConnection) client.RedeemRequest {
 	return client.RedeemRequest{
 		Ticket:            ticket,
 		InstallationNonce: pending.InstallationNonce,
@@ -247,12 +248,12 @@ func redeemRequest(ticket string, pending host.PendingConnection) client.RedeemR
 		RootID:            pending.RootID,
 		CanonicalRoot:     pending.CanonicalRoot,
 		ProjectLabel:      filepath.Base(pending.CanonicalRoot),
-		MachineLabel:      host.MachineLabel(),
+		MachineLabel:      device.MachineLabel(),
 	}
 }
 
 // originOf is the canonical origin the journal answered, or the one the relay was given when it answered none.
-func originOf(redemption client.Redemption, pending host.PendingConnection) string {
+func originOf(redemption client.Redemption, pending device.PendingConnection) string {
 	if redemption.CanonicalOrigin == "" {
 		return pending.Origin
 	}

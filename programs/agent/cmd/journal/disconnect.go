@@ -8,7 +8,7 @@ import (
 	"slices"
 	"time"
 
-	"journal-agent/host"
+	"journal-agent/device"
 	"journal-agent/hostapi"
 	"journal-agent/localsession"
 	"journal-agent/project"
@@ -45,8 +45,8 @@ func disconnectRequestOf(flags []string) disconnectRequest {
 func (commands dispatcher) disconnect(flags []string, folder string, stdout, stderr io.Writer) int {
 	request := disconnectRequestOf(flags)
 	if request.resume != "" {
-		record, err := host.DisconnectOf(commands.stateFolder, request.resume)
-		if errors.Is(err, host.ErrNoDisconnect) {
+		record, err := device.DisconnectOf(commands.stateFolder, request.resume)
+		if errors.Is(err, device.ErrNoDisconnect) {
 			fmt.Fprintln(stdout, "No disconnect of "+request.resume+" is left to finish.")
 			return 1
 		}
@@ -67,11 +67,11 @@ func (commands dispatcher) disconnect(flags []string, folder string, stdout, std
 		fmt.Fprintln(stderr, "journal:", err)
 		return 1
 	}
-	record, err := host.DisconnectOf(commands.stateFolder, binding.BindingID)
+	record, err := device.DisconnectOf(commands.stateFolder, binding.BindingID)
 	if err == nil {
 		return commands.finishDisconnect(record, request, stdout, stderr)
 	}
-	if !errors.Is(err, host.ErrNoDisconnect) {
+	if !errors.Is(err, device.ErrNoDisconnect) {
 		fmt.Fprintln(stderr, "journal:", err)
 		return 1
 	}
@@ -81,9 +81,9 @@ func (commands dispatcher) disconnect(flags []string, folder string, stdout, std
 		return 1
 	}
 
-	record = host.DisconnectRecord{
+	record = device.DisconnectRecord{
 		BindingID: binding.BindingID, RootID: binding.RootID, CanonicalRoot: found.Root, JournalURL: binding.JournalURL,
-		Service: userservice.Service{BindingID: binding.BindingID}.Label(), Done: []host.DisconnectStep{},
+		Service: userservice.Service{BindingID: binding.BindingID}.Label(), Done: []device.DisconnectStep{},
 	}
 	if err := record.Save(commands.stateFolder); err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
@@ -96,7 +96,7 @@ func (commands dispatcher) disconnect(flags []string, folder string, stdout, std
 // finishDisconnect runs the record's remaining steps in order, saving the record after each, and finishes the record
 // last. Every run prints the step it stopped at and whether the server was contacted.
 func (commands dispatcher) finishDisconnect(
-	record host.DisconnectRecord,
+	record device.DisconnectRecord,
 	request disconnectRequest,
 	stdout, stderr io.Writer,
 ) int {
@@ -124,11 +124,11 @@ func (commands dispatcher) finishDisconnect(
 
 	fmt.Fprintln(stdout, "Disconnected "+record.CanonicalRoot+".")
 	printRevocation(contacted, stdout)
-	if host.RemainingBindings(commands.stateFolder) > 0 {
+	if device.RemainingBindings(commands.stateFolder) > 0 {
 		return 0
 	}
 
-	undo, err := host.MachineChanges{StateFolder: commands.stateFolder}.Undo()
+	undo, err := device.MachineChanges{StateFolder: commands.stateFolder}.Undo()
 	if err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
 		return 1
@@ -140,21 +140,21 @@ func (commands dispatcher) finishDisconnect(
 
 // disconnectStep runs one step of the disconnect.
 func (commands dispatcher) disconnectStep(
-	step host.DisconnectStep,
-	record host.DisconnectRecord,
+	step device.DisconnectStep,
+	record device.DisconnectRecord,
 	request disconnectRequest,
 	contacted *bool,
 	stdout io.Writer,
 ) error {
 	state := record.Connection(commands.stateFolder)
 	switch step {
-	case host.StepFence:
+	case device.StepFence:
 		return state.Fence()
-	case host.StepService:
+	case device.StepService:
 		return commands.disableOwnedService(record)
-	case host.StepRelay:
+	case device.StepRelay:
 		return commands.awaitQuiet(record)
-	case host.StepSignIns:
+	case device.StepSignIns:
 		kept := localsession.KeptFiles{StateFolder: commands.stateFolder, BindingID: record.BindingID}
 
 		return errors.Join(kept.Forget(), state.RemoveSignIns())
@@ -163,14 +163,14 @@ func (commands dispatcher) disconnectStep(
 			commands.forgetIgnoreRule(record, stdout),
 			project.Folder{Root: record.CanonicalRoot}.Disconnect(),
 			state.Remove(),
-			os.RemoveAll(host.RelayFolder(commands.stateFolder, record.BindingID)),
+			os.RemoveAll(device.RelayFolder(commands.stateFolder, record.BindingID)),
 		)
 	}
 }
 
 // forgetIgnoreRule takes out the .journal/ line setup added to .gitignore and says so, unless it changed since setup
 // added it.
-func (commands dispatcher) forgetIgnoreRule(record host.DisconnectRecord, stdout io.Writer) error {
+func (commands dispatcher) forgetIgnoreRule(record device.DisconnectRecord, stdout io.Writer) error {
 	removed, err := project.Folder{Root: record.CanonicalRoot}.ForgetIgnoreRule()
 	if err != nil || !removed {
 		return err
@@ -181,7 +181,7 @@ func (commands dispatcher) forgetIgnoreRule(record host.DisconnectRecord, stdout
 }
 
 // disableOwnedService disables the service the record owns; a machine with no service manager has none to disable.
-func (commands dispatcher) disableOwnedService(record host.DisconnectRecord) error {
+func (commands dispatcher) disableOwnedService(record device.DisconnectRecord) error {
 	err := commands.disableService(record.BindingID)
 	if err == nil || errors.Is(err, userservice.ErrNoServiceManager) {
 		return nil
@@ -192,7 +192,7 @@ func (commands dispatcher) disableOwnedService(record host.DisconnectRecord) err
 
 // awaitQuiet waits for the fenced relay to let go of its lock, which it does only once serving ended, and then proves
 // that no child it started still runs; a relay or child that does not stop keeps everything as it is.
-func (commands dispatcher) awaitQuiet(record host.DisconnectRecord) error {
+func (commands dispatcher) awaitQuiet(record device.DisconnectRecord) error {
 	state := record.Connection(commands.stateFolder)
 	deadline := time.Now().Add(commands.relayStopWait)
 	for state.RelayIsRunning() {
@@ -201,7 +201,7 @@ func (commands dispatcher) awaitQuiet(record host.DisconnectRecord) error {
 		}
 		time.Sleep(relayStopCheck)
 	}
-	live, err := hostapi.LiveKeptProcesses(host.RelayFolder(commands.stateFolder, record.BindingID))
+	live, err := hostapi.LiveKeptProcesses(device.RelayFolder(commands.stateFolder, record.BindingID))
 	if err != nil {
 		return fmt.Errorf("%w: the status of its processes is unknown: %v", errNotQuiet, err)
 	}
@@ -215,7 +215,7 @@ func (commands dispatcher) awaitQuiet(record host.DisconnectRecord) error {
 
 // printMachineUndo names what the last removal did with the setup every connected folder shared: the releases, the
 // PATH lines and the journal link it removed, and those it kept because they changed since.
-func printMachineUndo(undo host.MachineUndo, stdout io.Writer) {
+func printMachineUndo(undo device.MachineUndo, stdout io.Writer) {
 	fmt.Fprintln(stdout, "No connected project is left on this machine, so the setup they shared is removed:")
 	fmt.Fprintln(stdout, "  Removed the shared journal releases at "+undo.Releases)
 	for _, change := range undo.Removed {
@@ -227,8 +227,8 @@ func printMachineUndo(undo host.MachineUndo, stdout io.Writer) {
 	}
 }
 
-func machineChangeText(change host.MachineChange) string {
-	if change.Kind == host.ChangeLink {
+func machineChangeText(change device.MachineChange) string {
+	if change.Kind == device.ChangeLink {
 		return "the journal command link " + change.Path
 	}
 

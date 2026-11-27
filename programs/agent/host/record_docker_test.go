@@ -55,12 +55,13 @@ func recordedCalls(t *testing.T, drafts recording.Drafts) []string {
 func TestEveryCallToTheDaemonIsKeptWhileRecordingAndAnAttachOnlyAsUpgraded(t *testing.T) {
 	daemon := dockermock.Start(t, recordedImage)
 	drafts := recordedRun(t, true)
-	containers, err := containersRecordedInto(daemon.Host(), ContainerRules{Arrangement: Local, AgentImage: recordedImage}, drafts)
+	containers, err := containersRecordedInto(daemon.Host(), ContainerRules{Arrangement: Local}, drafts)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if _, err := containers.runScript(context.Background(), "true"); err != nil {
+	run := ContainerRun{Manifest: ContainerManifest{Image: recordedImage, Restart: "no"}, Command: []string{"true"}}
+	if _, err := containers.RunToEnd(context.Background(), run); err != nil {
 		t.Fatal(err)
 	}
 
@@ -77,12 +78,13 @@ func TestEveryCallToTheDaemonIsKeptWhileRecordingAndAnAttachOnlyAsUpgraded(t *te
 func TestOutsideAnOpenRunTheDaemonsCallsAreNotKept(t *testing.T) {
 	daemon := dockermock.Start(t, recordedImage)
 	drafts := recordedRun(t, false)
-	containers, err := containersRecordedInto(daemon.Host(), ContainerRules{Arrangement: Local, AgentImage: recordedImage}, drafts)
+	containers, err := containersRecordedInto(daemon.Host(), ContainerRules{Arrangement: Local}, drafts)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if _, err := containers.runScript(context.Background(), "true"); err != nil {
+	run := ContainerRun{Manifest: ContainerManifest{Image: recordedImage, Restart: "no"}, Command: []string{"true"}}
+	if _, err := containers.RunToEnd(context.Background(), run); err != nil {
 		t.Fatal(err)
 	}
 

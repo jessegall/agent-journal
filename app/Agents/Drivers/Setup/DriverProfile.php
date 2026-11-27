@@ -107,7 +107,6 @@ final readonly class DriverProfile
                 ? []
                 : $this->placed($arguments->build($start->resumed()), $start->executablePlace),
             restartWhenFile: $plan->restartWhenFile,
-            labels: $start->container?->labels,
             keptFiles: $plan->keptFiles,
         );
     }
@@ -145,7 +144,6 @@ final readonly class DriverProfile
             folders: $environment->folders,
             inherit: $this->inheritedOn($environment->inherited, $start->executablePlace),
             readFiles: $environment->readFiles,
-            labels: $start->container?->labels,
         );
     }
 
@@ -192,7 +190,6 @@ final readonly class DriverProfile
             folders: $environment->folders,
             inherit: $this->inheritedOn($environment->inherited, $start->executablePlace),
             readFiles: $environment->readFiles,
-            labels: $start->container?->labels,
         );
     }
 

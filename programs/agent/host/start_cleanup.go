@@ -9,36 +9,6 @@ import (
 	"github.com/moby/moby/client"
 )
 
-// StartLabels name a container start's resources, so reconciliation finds exactly those of this installation and
-// leaves every other container alone: the labels the journal's plan gives, its account the plain id of the account
-// folder the container binds (empty for one that binds none), and the host's own id of the start.
-type StartLabels struct {
-	ContainerLabels
-	// Start is the host's own id of the process; empty on a network or a volume, which outlive one start.
-	Start string
-}
-
-const (
-	installationLabel = "journal.installation"
-	startLabel        = "journal.start"
-	sessionLabel      = "journal.session"
-	accountLabel      = "journal.account"
-)
-
-// asMap are the labels as the daemon takes them; the account's only when the container binds one.
-func (labels StartLabels) asMap() map[string]string {
-	named := map[string]string{
-		installationLabel: labels.Installation,
-		startLabel:        labels.Start,
-		sessionLabel:      labels.Session,
-	}
-	if labels.Account != "" {
-		named[accountLabel] = labels.Account
-	}
-
-	return named
-}
-
 // Remove stops the container within the bound and removes it with its anonymous volumes, which Docker refuses while
 // it still runs, so a removal confirms its processes exited; a container already gone counts as removed.
 func (containers Containers) Remove(ctx context.Context, name string, stopSeconds int) error {
@@ -80,17 +50,17 @@ func (containers Containers) RemoveNetwork(ctx context.Context, name string) err
 	return absentIsDone(err)
 }
 
-// LabelledContainer is a container of this installation found by its labels: its id, the session it runs and whether
-// it still runs.
+// LabelledContainer is a container the host made, found by its own label: its id, its labels and whether it still
+// runs.
 type LabelledContainer struct {
 	ID      string
-	Session string
+	Labels  map[string]string
 	Running bool
 }
 
-// Labelled lists every container, running or not, that carries this installation's label.
-func (containers Containers) Labelled(ctx context.Context, installation string) ([]LabelledContainer, error) {
-	listed, err := containers.withLabel(ctx, installationLabel, installation)
+// Labelled lists every container, running or not, that the host of this installation made.
+func (containers Containers) Labelled(ctx context.Context) ([]LabelledContainer, error) {
+	listed, err := containers.withLabel(ctx, runnerLabel, string(containers.Rules.InstallationName))
 	if err != nil {
 		return nil, err
 	}
@@ -99,12 +69,30 @@ func (containers Containers) Labelled(ctx context.Context, installation string) 
 	for _, listedContainer := range listed {
 		found = append(found, LabelledContainer{
 			ID:      listedContainer.ID,
-			Session: listedContainer.Labels[sessionLabel],
+			Labels:  listedContainer.Labels,
 			Running: listedContainer.State == container.StateRunning,
 		})
 	}
 
 	return found, nil
+}
+
+// NamesWithLabel are the names of every container on the daemon, running or not yet removed, that carries the label
+// with that value.
+func (containers Containers) NamesWithLabel(ctx context.Context, label ContainerLabel) ([]string, error) {
+	listed, err := containers.withLabel(ctx, label.Name, label.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	names := []string{}
+	for _, listedContainer := range listed {
+		for _, name := range listedContainer.Names {
+			names = append(names, strings.TrimPrefix(name, "/"))
+		}
+	}
+
+	return names, nil
 }
 
 // withLabel lists every container, running or not, that carries the label with that value.
@@ -118,15 +106,4 @@ func (containers Containers) withLabel(ctx context.Context, label, value string)
 	}
 
 	return listed.Items, nil
-}
-
-// BindsAccount is whether any container on the daemon, running or not yet removed, carries the label of the account
-// folder with that plain id.
-func (containers Containers) BindsAccount(ctx context.Context, folder string) (bool, error) {
-	listed, err := containers.withLabel(ctx, accountLabel, folder)
-	if err != nil {
-		return true, err
-	}
-
-	return len(listed) > 0, nil
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Enums;
 
+use App\Hosts\Protocol\Payloads\HostContainerTmpfsPayload;
+
 /**
  * How a helper container is started: the standard way, as one unprivileged user, or protected, where a root-owned
  * init starts the driver and the shell executor as two users and then drops its rights.
@@ -51,6 +53,50 @@ enum StartProfileType: string
         return match ($this) {
             self::Standard => IsolationPlatform::Container,
             self::ProtectedAccount => IsolationPlatform::ProtectedContainer,
+        };
+    }
+
+    /**
+     * The program the container starts before its command: none for a standard start, the init that drops to its users
+     * for a protected one, which takes the command after a --.
+     *
+     * @return list<string>
+     */
+    public function entrypoint(): array
+    {
+        return match ($this) {
+            self::Standard => [],
+            self::ProtectedAccount => ['/opt/journal/bin/journal-init'],
+        };
+    }
+
+    /**
+     * The command as the container runs it after its entrypoint.
+     *
+     * @param  list<string>  $command
+     * @return list<string>
+     */
+    public function commandOf(array $command): array
+    {
+        return match ($this) {
+            self::Standard => $command,
+            self::ProtectedAccount => ['--', ...$command],
+        };
+    }
+
+    /**
+     * The memory folders the profile adds: for a protected start the executor's private socket folder.
+     *
+     * @return list<HostContainerTmpfsPayload>
+     */
+    public function tmpfs(): array
+    {
+        return match ($this) {
+            self::Standard => [],
+            self::ProtectedAccount => [HostContainerTmpfsPayload::from([
+                'target' => '/run/journal-exec',
+                'options' => 'uid=10002,gid=10001,mode=0750,size=1m',
+            ])],
         };
     }
 

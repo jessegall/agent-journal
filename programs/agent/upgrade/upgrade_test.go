@@ -7,14 +7,14 @@ import (
 	"testing"
 	"time"
 
-	"journal-agent/host"
+	"journal-agent/device"
 )
 
 func binding(t *testing.T) Binding {
 	t.Helper()
 	root := t.TempDir()
-	state := host.ConnectionState{Folder: t.TempDir(), CanonicalRoot: root}
-	if err := state.SaveBinding(host.Binding{BindingID: "binding-1", CanonicalRoot: root}); err != nil {
+	state := device.ConnectionState{Folder: t.TempDir(), CanonicalRoot: root}
+	if err := state.SaveBinding(device.Binding{BindingID: "binding-1", CanonicalRoot: root}); err != nil {
 		t.Fatal(err)
 	}
 	return Binding{State: state}
@@ -62,7 +62,7 @@ func TestAReleaseThatNeverReportsReadyIsSwitchedBack(t *testing.T) {
 }
 
 func TestARelayStartsFromTheInstallationItRunsFromWhenNoVerifiedReleaseIsSwitchedTo(t *testing.T) {
-	state := host.ConnectionState{Folder: t.TempDir(), CanonicalRoot: t.TempDir()}
+	state := device.ConnectionState{Folder: t.TempDir(), CanonicalRoot: t.TempDir()}
 	binding := Binding{State: state}
 	fallback := "/installed/bin/journal-agent"
 

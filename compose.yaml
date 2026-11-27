@@ -361,8 +361,9 @@ services:
             - --state=/var/lib/journal-host
             - --docker=unix:///run/agent-docker/docker.sock
             - --installation-name=${AGENTS_INSTALLATION_NAME:-journal}
-            - --agent-image=${AGENT_IMAGE:-}
-            - --runner-image=${RUNNER_IMAGE:-}
+            - --pinned-images=${AGENT_IMAGE:-},${RUNNER_IMAGE:-}
+            - --data-folder=/srv/journal
+            - --secrets-folder=/run/secrets
         # Each environment's deploy key, for its workspace clone (secrets below); only agent-host mounts them.
         # secrets:
         #     - deploy_key_main

@@ -12,8 +12,8 @@ use App\Values\FilePath;
 use Illuminate\Console\Command;
 
 /**
- * Writes the Go and PHP code of host protocol 1 from protocol/host.json; with --check it changes nothing and fails on
- * the first generated file that differs from what it would write. --into writes and checks under a folder of the
+ * Writes the Go and PHP code of host protocol 1 from protocol/host.json and removes the generated files it no longer
+ * makes; with --check it changes nothing and fails on the first generated file that differs, is missing or is left over. --into writes and checks under a folder of the
  * temporary place instead of the project, so a test can change a generated file without touching the project's.
  */
 final class GenerateHostProtocolCommand extends Command
@@ -41,6 +41,11 @@ final class GenerateHostProtocolCommand extends Command
             }
 
             return self::SUCCESS;
+        }
+
+        // Every file the generator made before goes first, so a file the protocol no longer makes cannot linger.
+        foreach ($check->generatedFiles($place, $folder) as $generated) {
+            $files->delete(FilePath::in($place, ltrim("{$folder}/{$generated}", '/')));
         }
 
         $targets = [];

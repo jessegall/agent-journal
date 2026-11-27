@@ -12,7 +12,7 @@ use App\Hosts\Exceptions\InstallationNameMissing;
 use App\Hosts\Exceptions\RunnerArrangementRefused;
 use App\Hosts\Exceptions\WorkspaceSourceMissing;
 use App\Hosts\Exceptions\WorkspaceSourcesInvalid;
-use App\Hosts\Protocol\Payloads\HostContainerLabelsPayload;
+use App\Hosts\Protocol\Payloads\HostContainerLabelPayload;
 use App\Models\Projects\Host;
 use App\Projects\Enums\ArrangementType;
 use App\Projects\Exceptions\HostArrangementRefused;
@@ -89,15 +89,16 @@ final readonly class ArrangementSetting
     }
 
     /**
-     * The labels of a contained session's container: this installation, the session and its account's folder.
+     * The labels of a contained session's container: the session and its account's folder; the host adds its own.
+     *
+     * @return list<HostContainerLabelPayload>
      */
-    public function labelsFor(string $sessionId, SelectedAccount $account): HostContainerLabelsPayload
+    public function labelsFor(string $sessionId, SelectedAccount $account): array
     {
-        return HostContainerLabelsPayload::from([
-            'installation' => $this->installationName,
-            'session' => $sessionId,
-            'account' => $account->folder(),
-        ]);
+        return [
+            HostContainerLabelPayload::from(['name' => ContainerLabels::SESSION, 'value' => $sessionId]),
+            HostContainerLabelPayload::from(['name' => ContainerLabels::ACCOUNT, 'value' => $account->folder()]),
+        ];
     }
 
     /**

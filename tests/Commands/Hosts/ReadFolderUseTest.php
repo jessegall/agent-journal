@@ -30,10 +30,7 @@ final class ReadFolderUseTest extends TestCase
 
         $instruction = $this->journal->hostInstructionsOn('Box')[0];
         $this->journal->assertResult(
-            [$first, false, HostInstructionType::FolderUse, [
-                'folder' => 'a7',
-                'operation' => 'operation-1',
-            ], 2],
+            [$first, false, HostInstructionType::ListContainers, ['name' => 'journal.account', 'value' => 'a7'], 2],
             [
                 $again,
                 $first === $other,

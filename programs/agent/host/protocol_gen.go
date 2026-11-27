@@ -3,7 +3,6 @@
 package host
 
 import (
-	"fmt"
 	"slices"
 )
 
@@ -14,13 +13,12 @@ const (
 	MountBind       MountType = "bind"
 	MountVolume     MountType = "volume"
 	MountDaemonBind MountType = "daemon-bind"
-	MountPlanFile   MountType = "plan-file"
 	MountScratch    MountType = "scratch"
 )
 
 // IsKnown answers whether the value is one of the protocol's.
 func (value MountType) IsKnown() bool {
-	return slices.Contains([]MountType{MountBind, MountVolume, MountDaemonBind, MountPlanFile, MountScratch}, value)
+	return slices.Contains([]MountType{MountBind, MountVolume, MountDaemonBind, MountScratch}, value)
 }
 
 // RestartFile is the restart_file of host protocol 1.
@@ -29,62 +27,27 @@ type RestartFile struct {
 	Glob   string `json:"glob"`
 }
 
-// Validate answers which value of the RestartFile the protocol does not know, by its field.
-func (value RestartFile) Validate() error {
-	return nil
-}
-
-// ContainerLabels is the container_labels of host protocol 1.
-type ContainerLabels struct {
-	Installation string `json:"installation"`
-	Session      string `json:"session"`
-	Account      string `json:"account"`
-}
-
-// Validate answers which value of the ContainerLabels the protocol does not know, by its field.
-func (value ContainerLabels) Validate() error {
-	return nil
-}
-
 // ContainerManifest is the container_manifest of host protocol 1.
 type ContainerManifest struct {
-	Image                string                `json:"image"`
-	User                 string                `json:"user"`
-	Workdir              string                `json:"workdir"`
-	IsReadOnlyRoot       bool                  `json:"isReadOnlyRoot"`
-	Capabilities         []string              `json:"capabilities"`
-	BlocksNewPrivileges  bool                  `json:"blocksNewPrivileges"`
-	IsPrivileged         bool                  `json:"isPrivileged"`
-	Network              string                `json:"network"`
-	Mounts               []ContainerMount      `json:"mounts"`
-	PublishedPorts       []int                 `json:"publishedPorts"`
-	Budgets              ContainerBudgets      `json:"budgets"`
-	SecurityOptions      SecurityOptions       `json:"securityOptions"`
-	IsAttachable         bool                  `json:"isAttachable"`
-	WorkspacePreparation *WorkspacePreparation `json:"workspacePreparation"`
-	StartProfile         string                `json:"startProfile"`
-	Entrypoint           string                `json:"entrypoint,omitempty"`
-}
-
-// Validate answers which value of the ContainerManifest the protocol does not know, by its field.
-func (value ContainerManifest) Validate() error {
-	for index, item := range value.Mounts {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("mounts[%d].%w", index, err)
-		}
-	}
-	if err := value.Budgets.Validate(); err != nil {
-		return fmt.Errorf("budgets.%w", err)
-	}
-	if err := value.SecurityOptions.Validate(); err != nil {
-		return fmt.Errorf("securityOptions.%w", err)
-	}
-	if value.WorkspacePreparation != nil {
-		if err := value.WorkspacePreparation.Validate(); err != nil {
-			return fmt.Errorf("workspacePreparation.%w", err)
-		}
-	}
-	return nil
+	Name                string            `json:"name"`
+	Image               string            `json:"image"`
+	User                string            `json:"user"`
+	Workdir             string            `json:"workdir"`
+	Entrypoint          []string          `json:"entrypoint"`
+	IsReadOnlyRoot      bool              `json:"isReadOnlyRoot"`
+	Capabilities        []string          `json:"capabilities"`
+	BlocksNewPrivileges bool              `json:"blocksNewPrivileges"`
+	Network             string            `json:"network"`
+	NetworkLabels       []ContainerLabel  `json:"networkLabels"`
+	Mounts              []ContainerMount  `json:"mounts"`
+	Tmpfs               []ContainerTmpfs  `json:"tmpfs"`
+	Volumes             []ContainerVolume `json:"volumes"`
+	Labels              []ContainerLabel  `json:"labels"`
+	Budgets             ContainerBudgets  `json:"budgets"`
+	SecurityOptions     SecurityOptions   `json:"securityOptions"`
+	IsAttachable        bool              `json:"isAttachable"`
+	Restart             string            `json:"restart"`
+	Preparations        []ContainerRun    `json:"preparations"`
 }
 
 // ContainerMount is the container_mount of host protocol 1.
@@ -93,16 +56,6 @@ type ContainerMount struct {
 	Source     string    `json:"source,omitempty"`
 	Target     string    `json:"target"`
 	IsWritable bool      `json:"isWritable"`
-	MustExist  bool      `json:"mustExist"`
-	IsCheckout bool      `json:"isCheckout"`
-}
-
-// Validate answers which value of the ContainerMount the protocol does not know, by its field.
-func (value ContainerMount) Validate() error {
-	if !value.Type.IsKnown() {
-		return fmt.Errorf("type holds %q, which host protocol 1 does not know", value.Type)
-	}
-	return nil
 }
 
 // ContainerBudgets is the container_budgets of host protocol 1.
@@ -112,14 +65,6 @@ type ContainerBudgets struct {
 	MemorySwapBytes int `json:"memorySwapBytes"`
 	Processes       int `json:"processes"`
 	OpenFiles       int `json:"openFiles"`
-	TmpBytes        int `json:"tmpBytes"`
-	HomeBytes       int `json:"homeBytes"`
-	WorkspaceBytes  int `json:"workspaceBytes"`
-}
-
-// Validate answers which value of the ContainerBudgets the protocol does not know, by its field.
-func (value ContainerBudgets) Validate() error {
-	return nil
 }
 
 // SecurityOptions is the security_options of host protocol 1.
@@ -128,36 +73,39 @@ type SecurityOptions struct {
 	AppArmor string `json:"apparmor"`
 }
 
-// Validate answers which value of the SecurityOptions the protocol does not know, by its field.
-func (value SecurityOptions) Validate() error {
-	return nil
+// ContainerTmpfs is the container_tmpfs of host protocol 1.
+type ContainerTmpfs struct {
+	Target  string `json:"target"`
+	Options string `json:"options"`
 }
 
-// WorkspacePreparation is the workspace_preparation of host protocol 1.
-type WorkspacePreparation struct {
-	Clone  *WorkspaceClone `json:"clone"`
-	Folder string          `json:"folder,omitempty"`
+// ContainerVolume is the container_volume of host protocol 1.
+type ContainerVolume struct {
+	Name          string           `json:"name"`
+	Labels        []ContainerLabel `json:"labels"`
+	SizeBytes     int64            `json:"sizeBytes"`
+	IsAlreadyMade bool             `json:"isAlreadyMade"`
 }
 
-// Validate answers which value of the WorkspacePreparation the protocol does not know, by its field.
-func (value WorkspacePreparation) Validate() error {
-	if value.Clone != nil {
-		if err := value.Clone.Validate(); err != nil {
-			return fmt.Errorf("clone.%w", err)
-		}
-	}
-	return nil
+// ContainerLabel is the container_label of host protocol 1.
+type ContainerLabel struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
-// WorkspaceClone is the workspace_clone of host protocol 1.
-type WorkspaceClone struct {
-	Volume          string `json:"volume"`
-	Repository      string `json:"repository"`
-	Revision        string `json:"revision"`
-	DeployKeySecret string `json:"deployKeySecret"`
+// ContainerRun is the container_run of host protocol 1.
+type ContainerRun struct {
+	Manifest    ContainerManifest `json:"manifest"`
+	Command     []string          `json:"command"`
+	Environment []string          `json:"environment"`
+	Input       []byte            `json:"input,omitempty"`
+	InputSecret string            `json:"inputSecret,omitempty"`
+	OutputLimit int               `json:"outputLimit"`
 }
 
-// Validate answers which value of the WorkspaceClone the protocol does not know, by its field.
-func (value WorkspaceClone) Validate() error {
-	return nil
+// ContainerRunResult is the container_run_result of host protocol 1.
+type ContainerRunResult struct {
+	ExitCode    int    `json:"exitCode"`
+	Output      string `json:"output"`
+	IsTruncated bool   `json:"isTruncated"`
 }

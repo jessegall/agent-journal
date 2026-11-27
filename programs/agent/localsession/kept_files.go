@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"journal-agent/host"
+	"journal-agent/device"
 )
 
 // KeptFiles are the files a binding's sessions keep between them, such as the program's sign-in, held in the host's
@@ -48,7 +48,7 @@ func (kept KeptFiles) Provide(paths []string) error {
 		if err != nil {
 			return err
 		}
-		if err := host.WritePrivateFile(path, content); err != nil {
+		if err := device.WritePrivateFile(path, content); err != nil {
 			return err
 		}
 	}
@@ -66,7 +66,7 @@ func (kept KeptFiles) Keep(paths []string) error {
 		if err != nil {
 			return err
 		}
-		if err := host.WritePrivateFile(kept.storedPath(path), content); err != nil {
+		if err := device.WritePrivateFile(kept.storedPath(path), content); err != nil {
 			return err
 		}
 	}
@@ -78,7 +78,7 @@ func (kept KeptFiles) Logout() error {
 	if err := os.RemoveAll(kept.generationFolder()); err != nil {
 		return err
 	}
-	return host.WritePrivateFile(kept.generationFile(), []byte(strconv.Itoa(kept.Generation()+1)+"\n"))
+	return device.WritePrivateFile(kept.generationFile(), []byte(strconv.Itoa(kept.Generation()+1)+"\n"))
 }
 
 // Forget removes every generation of the binding's kept files, when its folder is disconnected.

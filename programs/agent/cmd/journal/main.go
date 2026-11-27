@@ -20,9 +20,9 @@ import (
 	"time"
 
 	"journal-agent/client"
+	"journal-agent/device"
 	"journal-agent/diagnostics"
 	"journal-agent/hookadapter"
-	"journal-agent/host"
 	"journal-agent/hostapi"
 	"journal-agent/lease"
 	"journal-agent/localsession"
@@ -67,15 +67,15 @@ func main() {
 		os.Exit(1)
 	}
 	commands := dispatcher{
-		stateFolder: host.DefaultStateFolder(),
+		stateFolder: device.DefaultStateFolder(),
 		wake:        wakeRelay,
-		grant:       func(host.Binding) (client.StartGrant, bool) { return client.StartGrantFrom(os.LookupEnv) },
+		grant:       func(device.Binding) (client.StartGrant, bool) { return client.StartGrantFrom(os.LookupEnv) },
 		transport:   &http.Client{},
 		approval:    deviceApproval,
-		terminal:    os.Getenv(host.TerminalSelectorVariable),
+		terminal:    os.Getenv(device.TerminalSelectorVariable),
 		disableService: func(bindingID string) error {
 			home, _ := os.UserHomeDir()
-			return userservice.Service{Home: home, BindingID: bindingID, StateFolder: host.DefaultStateFolder()}.Disable()
+			return userservice.Service{Home: home, BindingID: bindingID, StateFolder: device.DefaultStateFolder()}.Disable()
 		},
 		commandPath:   ownCommandPath(),
 		relayStopWait: relayStopWait,
@@ -87,10 +87,10 @@ func main() {
 // connected folder of the machine.
 type dispatcher struct {
 	stateFolder string
-	wake        func(state host.ConnectionState, bindingID string) error
-	grant       func(binding host.Binding) (client.StartGrant, bool)
+	wake        func(state device.ConnectionState, bindingID string) error
+	grant       func(binding device.Binding) (client.StartGrant, bool)
 	transport   *http.Client
-	approval    func(binding host.Binding, state host.ConnectionState, selector string, stderr io.Writer) (host.TerminalSignIn, error)
+	approval    func(binding device.Binding, state device.ConnectionState, selector string, stderr io.Writer) (device.TerminalSignIn, error)
 	// terminal is the selector of this shell's sign-in, from journal terminal open; none outside such a shell.
 	terminal string
 	// disableService stops the user service that keeps the binding's relay running.
@@ -126,19 +126,19 @@ func (commands dispatcher) run(arguments []string, folder string, stdin []byte, 
 
 // resolve finds the connected folder at or above the folder, its binding on this machine and its private state, and
 // wakes the binding's relay when none runs; a folder a disconnect fenced runs nothing more.
-func (commands dispatcher) resolve(folder string) (project.Folder, host.Binding, host.ConnectionState, error) {
+func (commands dispatcher) resolve(folder string) (project.Folder, device.Binding, device.ConnectionState, error) {
 	found, binding, state, err := commands.connected(folder)
 	if err != nil {
-		return project.Folder{}, host.Binding{}, host.ConnectionState{}, err
+		return project.Folder{}, device.Binding{}, device.ConnectionState{}, err
 	}
 	if state.IsFenced() {
-		return project.Folder{}, host.Binding{}, host.ConnectionState{}, fmt.Errorf(
+		return project.Folder{}, device.Binding{}, device.ConnectionState{}, fmt.Errorf(
 			"%w: finish it with journal disconnect --resume %s", errBeingDisconnected, binding.BindingID)
 	}
 
 	if !state.RelayIsRunning() {
 		if err := commands.wake(state, binding.BindingID); err != nil {
-			return project.Folder{}, host.Binding{}, host.ConnectionState{}, err
+			return project.Folder{}, device.Binding{}, device.ConnectionState{}, err
 		}
 	}
 
@@ -147,21 +147,21 @@ func (commands dispatcher) resolve(folder string) (project.Folder, host.Binding,
 
 // connected finds the connected folder at or above the folder, its binding on this machine and its private state,
 // without waking anything.
-func (commands dispatcher) connected(folder string) (project.Folder, host.Binding, host.ConnectionState, error) {
+func (commands dispatcher) connected(folder string) (project.Folder, device.Binding, device.ConnectionState, error) {
 	found, connection, err := project.Find(folder)
 	if err != nil {
-		return project.Folder{}, host.Binding{}, host.ConnectionState{}, err
+		return project.Folder{}, device.Binding{}, device.ConnectionState{}, err
 	}
 
-	state, binding, err := host.ConnectionOfBinding(commands.stateFolder, connection.BindingID)
-	if errors.Is(err, host.ErrNotConnected) || binding.RootID != connection.RootID {
-		return project.Folder{}, host.Binding{}, host.ConnectionState{}, project.ErrNotConnected
+	state, binding, err := device.ConnectionOfBinding(commands.stateFolder, connection.BindingID)
+	if errors.Is(err, device.ErrNotConnected) || binding.RootID != connection.RootID {
+		return project.Folder{}, device.Binding{}, device.ConnectionState{}, project.ErrNotConnected
 	}
 	if err != nil {
-		return project.Folder{}, host.Binding{}, host.ConnectionState{}, err
+		return project.Folder{}, device.Binding{}, device.ConnectionState{}, err
 	}
 	if binding.CanonicalRoot != found.Root {
-		return project.Folder{}, host.Binding{}, host.ConnectionState{}, fmt.Errorf(
+		return project.Folder{}, device.Binding{}, device.ConnectionState{}, fmt.Errorf(
 			"%w: it was connected at %s and is now at %s; connect this folder with a new install line",
 			project.ErrRootMoved, binding.CanonicalRoot, found.Root)
 	}
@@ -172,8 +172,8 @@ func (commands dispatcher) connected(folder string) (project.Folder, host.Bindin
 // local answers a verb this machine handles itself.
 func (commands dispatcher) local(
 	arguments []string,
-	binding host.Binding,
-	state host.ConnectionState,
+	binding device.Binding,
+	state device.ConnectionState,
 	folder project.Folder,
 	stdout, stderr io.Writer,
 ) int {
@@ -206,7 +206,7 @@ func (commands dispatcher) local(
 
 // start opens the binding's main runtime of the driver on the journal and starts its isolated session on this
 // terminal, from the sealed installation beside this command, as the plan the journal answers says.
-func (commands dispatcher) start(arguments []string, binding host.Binding, folder project.Folder, stderr io.Writer) int {
+func (commands dispatcher) start(arguments []string, binding device.Binding, folder project.Folder, stderr io.Writer) int {
 	if len(arguments) == 0 {
 		fmt.Fprintln(stderr, "journal:", errStartUsage)
 		return 2
@@ -222,7 +222,7 @@ func (commands dispatcher) start(arguments []string, binding host.Binding, folde
 		return 1
 	}
 	journal := client.ForRemoteProject(binding.Enrollment, &http.Client{Timeout: 30 * time.Second})
-	state := host.ConnectionState{Folder: commands.stateFolder, CanonicalRoot: folder.Root}
+	state := device.ConnectionState{Folder: commands.stateFolder, CanonicalRoot: folder.Root}
 	opened, err := openMainRuntime(journal, state, client.BindingRuntimeRequest{
 		RootID: binding.RootID, Folder: folder.Root, AgentID: binding.MainAgentID,
 		Driver: arguments[0], Profile: "main-agent", Model: "default",
@@ -295,17 +295,17 @@ func (commands dispatcher) start(arguments []string, binding host.Binding, folde
 // journal answers with the runtime it opened, never a second one.
 func openMainRuntime(
 	journal *client.Client,
-	state host.ConnectionState,
+	state device.ConnectionState,
 	request client.BindingRuntimeRequest,
 	bindingID string,
 ) (client.OpenedBindingRuntime, error) {
 	start, err := state.PendingMainStart()
-	if errors.Is(err, host.ErrNotConnected) {
+	if errors.Is(err, device.ErrNotConnected) {
 		startID, keyErr := newRequestKey()
 		if keyErr != nil {
 			return client.OpenedBindingRuntime{}, keyErr
 		}
-		start, err = host.MainStart{StartID: startID}, state.SaveMainStart(host.MainStart{StartID: startID})
+		start, err = device.MainStart{StartID: startID}, state.SaveMainStart(device.MainStart{StartID: startID})
 	}
 	if err != nil {
 		return client.OpenedBindingRuntime{}, err
@@ -326,7 +326,7 @@ func openMainRuntime(
 
 // confirmStop keeps the ended session's stop receipt and sends it; a journal out of reach gets it from the relay
 // once the device is back, so the session reads stopped there once.
-func confirmStop(journal *client.Client, state host.ConnectionState, bindingID, runtimeID string, stderr io.Writer) {
+func confirmStop(journal *client.Client, state device.ConnectionState, bindingID, runtimeID string, stderr io.Writer) {
 	if err := state.QueueStopReceipt(runtimeID); err != nil {
 		fmt.Fprintln(stderr, "journal: the session's stop could not be kept for the journal:", err)
 		return
@@ -370,7 +370,7 @@ func superviseSession(
 }
 
 // service enables or disables the user service that keeps the binding's relay running.
-func (commands dispatcher) service(binding host.Binding, stdout, stderr io.Writer) int {
+func (commands dispatcher) service(binding device.Binding, stdout, stderr io.Writer) int {
 	installation, err := ownInstallation()
 	if err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
@@ -408,7 +408,7 @@ func (commands dispatcher) service(binding host.Binding, stdout, stderr io.Write
 }
 
 // logout ends the binding's sign-in generation; the next session starts signed out.
-func (commands dispatcher) logout(binding host.Binding, stdout, stderr io.Writer) int {
+func (commands dispatcher) logout(binding device.Binding, stdout, stderr io.Writer) int {
 	kept := localsession.KeptFiles{StateFolder: commands.stateFolder, BindingID: binding.BindingID}
 	if err := kept.Logout(); err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
@@ -446,8 +446,8 @@ func ownInstallation() (string, error) {
 // fails with the request id, so the run can be reconciled; nothing is queued.
 func (commands dispatcher) forward(
 	arguments []string,
-	binding host.Binding,
-	state host.ConnectionState,
+	binding device.Binding,
+	state device.ConnectionState,
 	stdin []byte,
 	stdout, stderr io.Writer,
 ) int {
@@ -489,7 +489,7 @@ var errCommandStatusOutsideSession = errors.New(
 // commandStatus answers journal command status <request-id>: what became of a command whose answer was lost, read
 // from the journal under the session's own grant and binding, never run again. A settled run prints its frames as
 // they were written and exits with its code; a running one says to wait; an interrupted or unknown one says so.
-func (commands dispatcher) commandStatus(arguments []string, binding host.Binding, stdout, stderr io.Writer) int {
+func (commands dispatcher) commandStatus(arguments []string, binding device.Binding, stdout, stderr io.Writer) int {
 	if len(arguments) != 2 || arguments[0] != "status" {
 		fmt.Fprintln(stderr, "journal:", errCommandStatusUsage)
 		return 2
@@ -549,8 +549,8 @@ var errNoTerminalSignIn = errors.New("this shell is no terminal sign-in: run jou
 // grant the journal refuses is forgotten for its generation alone and approved again; a journal that could not be
 // reached keeps the sign-in and says so.
 func (commands dispatcher) asShellUser(
-	binding host.Binding,
-	state host.ConnectionState,
+	binding device.Binding,
+	state device.ConnectionState,
 	command client.ProjectCommand,
 	write func(client.CommandFrame) error,
 	stderr io.Writer,
@@ -621,13 +621,13 @@ func showOverview(
 }
 
 // signedIn is this terminal's kept sign-in with its bearer, approved now when it has none yet.
-func (commands dispatcher) signedIn(binding host.Binding, state host.ConnectionState, stderr io.Writer) (host.TerminalSignIn, error) {
+func (commands dispatcher) signedIn(binding device.Binding, state device.ConnectionState, stderr io.Writer) (device.TerminalSignIn, error) {
 	signIn, err := state.SignIn(commands.terminal)
 	if err == nil && signIn.Grant != "" {
 		return signIn, nil
 	}
-	if err != nil && !errors.Is(err, host.ErrNoSignIn) {
-		return host.TerminalSignIn{}, err
+	if err != nil && !errors.Is(err, device.ErrNoSignIn) {
+		return device.TerminalSignIn{}, err
 	}
 
 	return commands.approval(binding, state, commands.terminal, stderr)
@@ -635,14 +635,14 @@ func (commands dispatcher) signedIn(binding host.Binding, state host.ConnectionS
 
 // openTerminal starts a shell whose journal commands run under a terminal sign-in of their own: a fresh one, or with
 // --resume the kept sign-in of that reference. The selector in the shell is only a lookup key, never a bearer.
-func openTerminal(arguments []string, state host.ConnectionState, stdout, stderr io.Writer) int {
+func openTerminal(arguments []string, state device.ConnectionState, stdout, stderr io.Writer) int {
 	if len(arguments) == 0 || arguments[0] != "open" {
 		fmt.Fprintln(stderr, "usage: journal terminal open [--resume <reference>]")
 		return 2
 	}
-	selector, err := host.NewTerminalSelector()
+	selector, err := device.NewTerminalSelector()
 	if len(arguments) == 3 && arguments[1] == "--resume" {
-		var signIn host.TerminalSignIn
+		var signIn device.TerminalSignIn
 		signIn, err = state.SignInOf(arguments[2])
 		selector = signIn.Selector
 	}
@@ -657,7 +657,7 @@ func openTerminal(arguments []string, state host.ConnectionState, stdout, stderr
 	}
 	fmt.Fprintln(stdout, "journal: this shell keeps its own terminal sign-in; exit it to leave.")
 	command := exec.Command(shell)
-	command.Env = append(os.Environ(), host.TerminalSelectorVariable+"="+selector)
+	command.Env = append(os.Environ(), device.TerminalSelectorVariable+"="+selector)
 	command.Stdin, command.Stdout, command.Stderr = os.Stdin, os.Stdout, os.Stderr
 	if err := command.Run(); err != nil {
 		var exited *exec.ExitError
@@ -673,13 +673,13 @@ func openTerminal(arguments []string, state host.ConnectionState, stdout, stderr
 
 // deviceApproval asks the journal for a device code, shows its approval URL and code, polls until the owner
 // approved it or it expired, and keeps the grant.
-func deviceApproval(binding host.Binding, state host.ConnectionState, selector string, stderr io.Writer) (host.TerminalSignIn, error) {
+func deviceApproval(binding device.Binding, state device.ConnectionState, selector string, stderr io.Writer) (device.TerminalSignIn, error) {
 	transport := &http.Client{Timeout: 30 * time.Second}
 	journal := client.ForRemoteProject(binding.Enrollment, transport)
 	ctx := context.Background()
 	startKey, err := newRequestKey()
 	if err != nil {
-		return host.TerminalSignIn{}, err
+		return device.TerminalSignIn{}, err
 	}
 	start, err := journal.StartDeviceGrant(ctx, binding.BindingID, startKey)
 	if errors.Is(err, client.ErrUncertain) {
@@ -687,12 +687,12 @@ func deviceApproval(binding host.Binding, state host.ConnectionState, selector s
 		start, err = journal.StartDeviceGrant(ctx, binding.BindingID, startKey)
 	}
 	if err != nil {
-		return host.TerminalSignIn{}, err
+		return device.TerminalSignIn{}, err
 	}
 	// The reference and the selector are kept before the first poll, so a lost reply still names the sign-in.
-	signIn := host.TerminalSignIn{Selector: selector, Reference: start.Reference, Generation: start.Generation}
+	signIn := device.TerminalSignIn{Selector: selector, Reference: start.Reference, Generation: start.Generation}
 	if err := state.SaveSignIn(signIn); err != nil {
-		return host.TerminalSignIn{}, err
+		return device.TerminalSignIn{}, err
 	}
 	fmt.Fprintf(stderr, "journal: to sign in this terminal on %s, open %s and approve the code %s.\n",
 		binding.JournalURL, start.ApprovalURL, start.UserCode)
@@ -704,7 +704,7 @@ func deviceApproval(binding host.Binding, state host.ConnectionState, selector s
 		time.Sleep(time.Duration(interval) * time.Second)
 		poll, err := journal.PollDeviceGrant(ctx, start.DeviceCode)
 		if err != nil {
-			return host.TerminalSignIn{}, err
+			return device.TerminalSignIn{}, err
 		}
 		switch poll.Outcome {
 		case client.PollPending:
@@ -716,22 +716,22 @@ func deviceApproval(binding host.Binding, state host.ConnectionState, selector s
 			signIn.Grant = poll.Grant
 			return signIn, state.SaveSignIn(signIn)
 		case client.PollAlreadyIssued:
-			return host.TerminalSignIn{}, endedApproval(state, signIn, fmt.Errorf(
+			return device.TerminalSignIn{}, endedApproval(state, signIn, fmt.Errorf(
 				"sign-in %s was handed out once and its answer was lost: withdraw it in Settings, then run the command again for a fresh one", poll.Reference))
 		case client.PollExpired:
-			return host.TerminalSignIn{}, endedApproval(state, signIn, errors.New(
+			return device.TerminalSignIn{}, endedApproval(state, signIn, errors.New(
 				"the code expired before it was approved: run the command again for a new one"))
 		case client.PollRevoked:
-			return host.TerminalSignIn{}, endedApproval(state, signIn, fmt.Errorf(
+			return device.TerminalSignIn{}, endedApproval(state, signIn, fmt.Errorf(
 				"sign-in %s was revoked: run the command again to approve a new one", poll.Reference))
 		}
 
-		return host.TerminalSignIn{}, fmt.Errorf("the journal answered the poll with %q, which this journal command does not know", poll.Outcome)
+		return device.TerminalSignIn{}, fmt.Errorf("the journal answered the poll with %q, which this journal command does not know", poll.Outcome)
 	}
 }
 
 // endedApproval forgets the sign-in an approval kept before it polled, once its request ended without a bearer.
-func endedApproval(state host.ConnectionState, signIn host.TerminalSignIn, ended error) error {
+func endedApproval(state device.ConnectionState, signIn device.TerminalSignIn, ended error) error {
 	if err := state.ClearSignIn(signIn.Selector, signIn.Generation); err != nil {
 		return errors.Join(ended, err)
 	}
@@ -778,8 +778,8 @@ const statusRefreshWait = 3 * time.Second
 // read fails it shows what the last acknowledged report kept, says Refresh failed with the reason and exits 1. Local
 // files stay as they are, and no credential is printed.
 func (commands dispatcher) status(
-	binding host.Binding,
-	state host.ConnectionState,
+	binding device.Binding,
+	state device.ConnectionState,
 	folder project.Folder,
 	stdout io.Writer,
 ) int {
@@ -796,7 +796,7 @@ func (commands dispatcher) status(
 
 	fmt.Fprintln(stdout, "Enrolled with "+binding.JournalURL)
 	fmt.Fprintln(stdout, "Project "+binding.ProjectLabel+" ("+binding.ProjectID+") · binding "+binding.BindingID)
-	fmt.Fprintln(stdout, "Folder "+filepath.Base(folder.Root)+" on "+host.MachineLabel())
+	fmt.Fprintln(stdout, "Folder "+filepath.Base(folder.Root)+" on "+device.MachineLabel())
 	fmt.Fprintln(stdout, "Last confirmed contact "+contactText(contact))
 	fmt.Fprintln(stdout, "Readiness "+readinessText(readiness))
 	printProvidersOff(stdout)
@@ -851,7 +851,7 @@ func withoutSecret(text string, secret string) string {
 }
 
 // diagnose writes the binding's diagnostics bundle into the project folder and names it.
-func diagnose(binding host.Binding, state host.ConnectionState, folder project.Folder, stdout, stderr io.Writer) int {
+func diagnose(binding device.Binding, state device.ConnectionState, folder project.Folder, stdout, stderr io.Writer) int {
 	release := "unknown"
 	if installation, err := ownInstallation(); err == nil {
 		release = filepath.Base(installation)
@@ -883,7 +883,7 @@ func standardInput() []byte {
 
 // wakeRelay starts the binding's relay from the release the binding switched to, or else from the journal-agent
 // installed beside this command.
-func wakeRelay(state host.ConnectionState, bindingID string) error {
+func wakeRelay(state device.ConnectionState, bindingID string) error {
 	program, err := os.Executable()
 	if err != nil {
 		return err
@@ -894,7 +894,7 @@ func wakeRelay(state host.ConnectionState, bindingID string) error {
 	}
 	beside := filepath.Join(filepath.Dir(program), "journal-agent")
 
-	return host.StartRelay(upgrade.Binding{State: state}.RelayProgram(beside), state.Folder, bindingID)
+	return device.StartRelay(upgrade.Binding{State: state}.RelayProgram(beside), state.Folder, bindingID)
 }
 
 func newRequestKey() (string, error) {

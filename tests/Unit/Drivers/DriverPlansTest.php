@@ -23,7 +23,6 @@ use App\Hosts\ProgramLines;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostMountType;
 use App\Hosts\Protocol\HostProcessType;
-use App\Hosts\Protocol\Payloads\HostContainerLabelsPayload;
 use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\Values\SessionContainer;
 use App\Support\MountRules;
@@ -150,7 +149,6 @@ final class DriverPlansTest extends TestCase
     public function test_a_contained_start_opens_in_its_container_with_nothing_of_the_host(): void
     {
         $manifest = ContainerManifest::probe('registry.example/agent@sha256:'.str_repeat('a', 64), SecurityOptions::none());
-        $labels = HostContainerLabelsPayload::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']);
         $server = new JournalServer('/opt/journal/bin/journal-mcp');
         $account = new DriverAccount($this->recipe(DefaultDrivers::CLAUDE_CODE, TransportProfileType::Mcp), 'start-1', $server);
         $start = new DriverStart(
@@ -160,19 +158,17 @@ final class DriverPlansTest extends TestCase
             hookCommand: '/opt/journal/bin/journal-hook',
             account: $account,
             executablePlace: ExecutablePlace::Image,
-            container: new SessionContainer($manifest, $labels),
+            container: new SessionContainer($manifest),
             model: self::MODEL,
             effort: self::EFFORT,
         );
 
         $plan = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->startPlan($start);
-        $payload = json_decode((string) json_encode($plan->payload()), true);
 
         $this->journal->assertResult(
-            [HostInstructionType::OpenContainer, ['installation' => 'acme', 'session' => 's1', 'account' => '01a1'], [], true, []],
+            [HostInstructionType::OpenContainer, [], true, []],
             [
                 $plan->instructionType(),
-                $payload['labels'],
                 $plan->inherit,
                 in_array(ClaudeCodeManagedSettings::FILE, array_map(fn (PlanFile $file) => $file->name, $plan->files), true),
                 array_values(array_filter(
@@ -192,7 +188,7 @@ final class DriverPlansTest extends TestCase
 
         $this->journal->assertResult(
             [
-                [[HostMountType::PlanFile, ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET, false]],
+                [[HostMountType::DaemonBind, ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET, false]],
                 [[HostMountType::Scratch, null, MountRules::ACCOUNT_TARGET.'/tmp', true]],
             ],
             [$mounts(DefaultDrivers::CLAUDE_CODE), $mounts(DefaultDrivers::CODEX)],
@@ -202,7 +198,6 @@ final class DriverPlansTest extends TestCase
     public function test_a_contained_codex_start_reads_its_sign_in_from_the_mounted_account_as_claude_code_does(): void
     {
         $manifest = ContainerManifest::probe('registry.example/agent@sha256:'.str_repeat('a', 64), SecurityOptions::none());
-        $labels = HostContainerLabelsPayload::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']);
         $recipe = new AccountStartRecipe(
             environment: [new StartSetting('CODEX_HOME', MountRules::ACCOUNT_TARGET)],
             emptyFolderVariables: [],
@@ -223,7 +218,7 @@ final class DriverPlansTest extends TestCase
             hookCommand: '/opt/journal/bin/journal-hook',
             account: new DriverAccount($recipe, 'start-1', new JournalServer('/opt/journal/bin/journal-mcp')),
             executablePlace: ExecutablePlace::Image,
-            container: new SessionContainer($manifest, $labels),
+            container: new SessionContainer($manifest),
             model: self::MODEL,
             effort: self::EFFORT,
         );
@@ -250,13 +245,8 @@ final class DriverPlansTest extends TestCase
         $budgets = ExecutionBudgets::defaults();
         $manifest = ContainerManifest::make(
             $image,
-            '10001:10001',
-            true,
-            [],
-            false,
             'journal-net-s1',
-            [MountRules::local()->workspaceMount('/srv/work', WorkspaceUse::Shared)],
-            [],
+            [MountRules::local()->workspaceMount('/srv/work', WorkspaceUse::Shared, 's1')],
             $budgets,
             MountRules::local(),
             SecurityOptions::none(),
@@ -271,10 +261,7 @@ final class DriverPlansTest extends TestCase
             hookCommand: '/opt/journal/bin/journal-hook',
             account: $account,
             executablePlace: ExecutablePlace::Image,
-            container: new SessionContainer(
-                $manifest,
-                HostContainerLabelsPayload::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']),
-            ),
+            container: new SessionContainer($manifest),
             model: self::MODEL,
             effort: self::EFFORT,
         );

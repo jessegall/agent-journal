@@ -7,12 +7,11 @@ namespace App\Hosts;
 use App\Agents\ContainerManifest;
 use App\Files\Contracts\WorkspaceSource;
 use App\Files\ManifestMount;
-use App\Files\Values\WorkspacePreparation;
 use Spatie\LaravelData\Data;
 
 /**
- * A workspace the operator keeps as a server folder under /srv/journal/workspaces, bound in place after the host's
- * daemon-side check.
+ * A workspace the operator keeps as a server folder under /srv/journal/workspaces, bound in place after a helper
+ * run checks it.
  */
 final class FolderWorkspace extends Data implements WorkspaceSource
 {
@@ -25,8 +24,8 @@ final class FolderWorkspace extends Data implements WorkspaceSource
         return ManifestMount::daemonBind(self::ROOT.'/'.$this->folder, ContainerManifest::WORKDIR, $isWritable);
     }
 
-    public function preparation(): WorkspacePreparation
+    public function preparations(HelperRuns $runs): array
     {
-        return WorkspacePreparation::ofFolder($this->folder);
+        return [$runs->workspaceFolderCheck(self::ROOT.'/'.$this->folder)];
     }
 }

@@ -37,7 +37,7 @@ final class HostClaimSlotsTest extends TestCase
                 $held,
                 $stillTaken,
                 $slots->isTaken($host),
-                (int) config('database.redis.default.read_timeout') > HostCalls::CLAIM_INSTRUCTIONS_WAIT_LIMIT,
+                (int) config('database.redis.default.read_timeout') > HostCalls::CLAIM_INSTRUCTION_WAIT_LIMIT,
             ],
         );
     }

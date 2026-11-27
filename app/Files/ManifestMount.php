@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Files;
 
+use App\Agents\Exceptions\ManifestRefused;
 use App\Hosts\Protocol\HostMountType;
 use App\Hosts\Protocol\Payloads\HostContainerMountPayload;
 
 /**
- * One folder a helper container sees: what it comes from (nothing for the whole plan-file folder), where it appears
- * and whether it may be written.
+ * One folder a container sees: what it comes from, where it appears and whether it may be written. A plan file mount
+ * names a file of the start's plan, or the whole folder of them, until the start is placed on its host and it becomes
+ * a bind of the folder the plan files are written to.
  */
 final readonly class ManifestMount
 {
@@ -18,15 +20,26 @@ final readonly class ManifestMount
         public string|null $source,
         public string $target,
         public bool $isWritable,
-        // A volume the host must find, never make: the history of a conversation being resumed.
-        public bool $mustExist = false,
-        // A writer's own clone: the host clones the source into the session's checkout volume and mounts that.
-        public bool $isCheckout = false,
+        public bool $isPlanFile = false,
     ) {}
 
+    /**
+     * The mount as the host reads it; a plan file mount is placed first.
+     *
+     * @throws ManifestRefused
+     */
     public function protocolData(): HostContainerMountPayload
     {
-        return HostContainerMountPayload::from(get_object_vars($this));
+        if ($this->isPlanFile) {
+            throw ManifestRefused::because("the plan file mount at {$this->target} was never placed on its host");
+        }
+
+        return HostContainerMountPayload::from([
+            'type' => $this->type,
+            'source' => $this->source,
+            'target' => $this->target,
+            'isWritable' => $this->isWritable,
+        ]);
     }
 
     /**
@@ -46,24 +59,7 @@ final readonly class ManifestMount
     }
 
     /**
-     * A named volume that must already exist on the agent daemon, such as a resumed conversation's history.
-     */
-    public static function existingVolume(string $name, string $target, bool $isWritable): self
-    {
-        return new self(HostMountType::Volume, $name, $target, $isWritable, true);
-    }
-
-    /**
-     * A writer's own clone of the workspace mount, read-write: the host clones the workspace into the session's
-     * checkout volume (<installation>-checkout-<session>) before the container and mounts that at the same target.
-     */
-    public static function checkoutOf(self $workspace): self
-    {
-        return new self($workspace->type, $workspace->source, $workspace->target, true, false, true);
-    }
-
-    /**
-     * A folder under /srv/journal/ on the agent daemon.
+     * A folder under the agent daemon's data folder.
      */
     public static function daemonBind(string $source, string $target, bool $isWritable): self
     {
@@ -71,11 +67,11 @@ final readonly class ManifestMount
     }
 
     /**
-     * One file of the start's plan, read-only, which the host writes beside the session's other plan files.
+     * One file of the start's plan, read-only, at the target.
      */
     public static function planFile(string $name, string $target): self
     {
-        return new self(HostMountType::PlanFile, $name, $target, false);
+        return new self(HostMountType::DaemonBind, $name, $target, false, true);
     }
 
     /**
@@ -83,7 +79,7 @@ final readonly class ManifestMount
      */
     public static function planFiles(string $target): self
     {
-        return new self(HostMountType::PlanFile, null, $target, false);
+        return new self(HostMountType::DaemonBind, null, $target, false, true);
     }
 
     /**
@@ -92,5 +88,27 @@ final readonly class ManifestMount
     public static function scratch(string $target): self
     {
         return new self(HostMountType::Scratch, null, $target, true);
+    }
+
+    /**
+     * The same source seen read-only at another target, as a helper reads a workspace it checks or clones from.
+     */
+    public function readOnlyAt(string $target): self
+    {
+        return new self($this->type, $this->source, $target, false, $this->isPlanFile);
+    }
+
+    /**
+     * The plan file mount as a read-only bind of the folder its process's plan files are written to.
+     */
+    public function placedIn(string $filesFolder): self
+    {
+        if (! $this->isPlanFile) {
+            return $this;
+        }
+
+        $source = $this->source === null ? $filesFolder : "{$filesFolder}/{$this->source}";
+
+        return self::daemonBind($source, $this->target, false);
     }
 }

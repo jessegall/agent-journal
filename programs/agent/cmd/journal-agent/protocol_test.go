@@ -5,7 +5,6 @@ import (
 	"slices"
 	"testing"
 
-	"journal-agent/client"
 	"journal-agent/hostapi"
 )
 
@@ -18,16 +17,5 @@ func TestTheHostCarriesOutEveryInstructionOfTheProtocol(t *testing.T) {
 	named := slices.Sorted(maps.Keys(hostapi.InstructionTypes))
 	if !slices.Equal(carried, named) {
 		t.Fatalf("the host carries out %v, the protocol names %v", carried, named)
-	}
-}
-
-// The host fills exactly the {host:NAME} names protocol/host.json names, so a plan the journal writes finds each.
-func TestTheHostFillsTheProtocolsHostNames(t *testing.T) {
-	names := hostNamesOf(client.New(client.Enrollment{JournalURL: "http://journal.test"}), "/installation", "/installation/bin/journal-hook")
-
-	filled := slices.Sorted(maps.Keys(names))
-	named := slices.Sorted(slices.Values(hostapi.HostNames))
-	if !slices.Equal(filled, named) {
-		t.Fatalf("the host fills %v, the protocol names %v", filled, named)
 	}
 }

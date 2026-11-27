@@ -29,11 +29,10 @@ enum HostInstructionType: string
     case Snapshot = 'snapshot';
     case RunFenced = 'run_fenced';
     case AllowImages = 'allow_images';
-    case MakeFolder = 'make_folder';
-    case RemoveFolder = 'remove_folder';
-    case FolderUse = 'folder_use';
+    case RunContainers = 'run_containers';
+    case ListContainers = 'list_containers';
+    case RemoveNetwork = 'remove_network';
     case Remove = 'remove';
-    case RemoveSession = 'remove_session';
     case ReadProject = 'read_project';
     case Upgrade = 'upgrade';
 
@@ -125,9 +124,10 @@ enum HostInstructionType: string
             self::Stream => Payloads\HostStreamPlanPayload::class,
             self::RunFenced => Payloads\HostFencedPlanPayload::class,
             self::AllowImages => Payloads\HostImagesPlanPayload::class,
-            self::MakeFolder, self::RemoveFolder, self::FolderUse => Payloads\HostFolderPlanPayload::class,
+            self::RunContainers => Payloads\HostContainerRunsPayload::class,
+            self::ListContainers => Payloads\HostContainerLabelPayload::class,
+            self::RemoveNetwork => Payloads\HostNetworkRemovalPayload::class,
             self::Remove => Payloads\HostRemovePlanPayload::class,
-            self::RemoveSession => Payloads\HostSessionRemovalPayload::class,
             self::ReadProject => Payloads\HostProjectReadPayload::class,
             self::Upgrade => Payloads\HostUpgradePlanPayload::class,
         };
@@ -153,14 +153,13 @@ enum HostInstructionType: string
             self::Stop,
             self::Stream,
             self::Snapshot,
-            self::MakeFolder,
-            self::RemoveFolder,
+            self::RemoveNetwork,
             self::Remove,
-            self::RemoveSession,
             self::ReadProject => Payloads\HostEmptyPayload::class,
             self::RunFenced => Payloads\HostFencedResultsPayload::class,
             self::AllowImages => Payloads\HostImagesAllowedPayload::class,
-            self::FolderUse => Payloads\HostFolderUseReplyPayload::class,
+            self::RunContainers => Payloads\HostContainerRunResultsPayload::class,
+            self::ListContainers => Payloads\HostContainerNamesPayload::class,
             self::Upgrade => Payloads\HostUpgradeStartedPayload::class,
         };
     }

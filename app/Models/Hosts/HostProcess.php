@@ -418,7 +418,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
      * The session the process runs for, through its runtime; none for a process of no runtime, such as a probe the
      * host itself runs.
      */
-    private function sessionId(): string|null
+    public function sessionId(): string|null
     {
         return $this->agent_runtime_id === null
             ? null

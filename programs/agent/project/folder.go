@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"journal-agent/host"
+	"journal-agent/device"
 )
 
 const (
@@ -38,7 +38,7 @@ type Connection struct {
 }
 
 // ConnectionOf is the connection a redeemed binding writes into its folder.
-func ConnectionOf(binding host.Binding) Connection {
+func ConnectionOf(binding device.Binding) Connection {
 	return Connection{
 		BindingID: binding.BindingID,
 		ProjectID: binding.ProjectID,
@@ -147,13 +147,13 @@ func (folder Folder) SetupGeneration() int {
 
 // Connected is the folder's connection when the private state of this machine holds the same binding for this very
 // root; a connection.json copied elsewhere, or one the state does not know, is not connected.
-func (folder Folder) Connected(state host.ConnectionState) (Connection, error) {
+func (folder Folder) Connected(state device.ConnectionState) (Connection, error) {
 	connection, err := folder.Marker()
 	if err != nil {
 		return Connection{}, err
 	}
 
-	binding, err := host.ConnectionState{Folder: state.Folder, CanonicalRoot: folder.Root}.Binding()
+	binding, err := device.ConnectionState{Folder: state.Folder, CanonicalRoot: folder.Root}.Binding()
 	if err != nil || binding.BindingID != connection.BindingID || binding.RootID != connection.RootID {
 		return Connection{}, ErrNotConnected
 	}
@@ -263,7 +263,7 @@ func writeJSON(path string, value any) error {
 		return err
 	}
 
-	return host.WritePrivateFile(path, content)
+	return device.WritePrivateFile(path, content)
 }
 
 // Disconnect removes what setup owns in the folder: connection.json, the hook entry points, the session state and
@@ -293,7 +293,7 @@ const (
 )
 
 // IdentityAgainst compares the folder's marker and setup record with the binding this machine keeps for its root.
-func (folder Folder) IdentityAgainst(state host.ConnectionState) Identity {
+func (folder Folder) IdentityAgainst(state device.ConnectionState) Identity {
 	if _, err := folder.Connected(state); err == nil {
 		return IdentityOwn
 	}

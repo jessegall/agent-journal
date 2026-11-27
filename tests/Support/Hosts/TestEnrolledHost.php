@@ -61,13 +61,8 @@ final readonly class TestEnrolledHost
     {
         $manifest = ContainerManifest::make(
             TestHost::IMAGE,
-            '10001:10001',
-            true,
-            [],
-            false,
             "journal-net-{$name}",
-            [MountRules::local()->workspaceMount(base_path('storage/framework'), WorkspaceUse::Shared)],
-            [],
+            [MountRules::local()->workspaceMount(base_path('storage/framework'), WorkspaceUse::Shared, $name)],
             ExecutionBudgets::defaults(),
             MountRules::local(),
             SecurityOptions::none(),

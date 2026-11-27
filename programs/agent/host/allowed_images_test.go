@@ -39,11 +39,14 @@ func TestALocalHostRunsAnyImageAndAContainedOneWithNoSetNone(t *testing.T) {
 	}
 }
 
-func TestAContainedHostAllowsAProbeThatMountsNothingButNotMoreMountsThanItsTargets(t *testing.T) {
+func TestAContainedHostAllowsAProbeThatMountsNothingButNotOneTargetTwice(t *testing.T) {
 	rules := ContainerRules{Arrangement: Contained, InstallationName: "journal"}
-	tooMany := make([]ContainerMount, mostContainedMounts+1)
+	twice := []ContainerMount{
+		{Type: MountScratch, Target: "/scratch", IsWritable: true},
+		{Type: MountScratch, Target: "/scratch", IsWritable: true},
+	}
 
-	if !rules.permit(nil) || rules.permit(tooMany) {
-		t.Fatalf("a probe with no mount was refused (%v) or more mounts than targets allowed", rules.permit(nil))
+	if !rules.permit(nil, nil) || rules.permit(twice, nil) {
+		t.Fatal("a probe with no mount was refused, or one target mounted twice was allowed")
 	}
 }

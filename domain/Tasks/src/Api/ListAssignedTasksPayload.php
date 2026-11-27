@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Tasks\Api;
 
 use App\Attributes\Api\Endpoint;
-use App\Attributes\Validation\SentField;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
 use App\Support\NumberedPage;
@@ -13,6 +12,7 @@ use Domain\Tasks\Data\AssignedTaskListData;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
+use Spatie\LaravelData\Attributes\Validation\Present;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
@@ -31,7 +31,7 @@ final class ListAssignedTasksPayload extends Data implements ApiPayload
     public function __construct(
         #[Max(200)]
         public readonly string|null $search = null,
-        #[SentField]
+        #[Present]
         public readonly array $states = [],
         #[Min(1)]
         public readonly int $page = 1,

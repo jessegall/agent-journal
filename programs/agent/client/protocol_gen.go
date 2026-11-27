@@ -3,7 +3,6 @@
 package client
 
 import (
-	"fmt"
 	"slices"
 )
 
@@ -35,29 +34,11 @@ type ProjectReadReport struct {
 	Failure   ProjectReadFailure `json:"failure,omitempty"`
 }
 
-// Validate answers which value of the ProjectReadReport the protocol does not know, by its field.
-func (value ProjectReadReport) Validate() error {
-	for index, item := range value.Entries {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("entries[%d].%w", index, err)
-		}
-	}
-	if value.Failure != "" && !value.Failure.IsKnown() {
-		return fmt.Errorf("failure holds %q, which host protocol 1 does not know", value.Failure)
-	}
-	return nil
-}
-
 // ProjectEntry is the project_entry of host protocol 1.
 type ProjectEntry struct {
 	Name     string `json:"name"`
 	IsFolder bool   `json:"is_folder"`
 	Size     int64  `json:"size"`
-}
-
-// Validate answers which value of the ProjectEntry the protocol does not know, by its field.
-func (value ProjectEntry) Validate() error {
-	return nil
 }
 
 // ProjectRead is the project_read of host protocol 1.
@@ -68,9 +49,4 @@ type ProjectRead struct {
 	Path         string `json:"path"`
 	EntriesLimit int    `json:"entries_limit"`
 	TextLimit    int    `json:"text_limit"`
-}
-
-// Validate answers which value of the ProjectRead the protocol does not know, by its field.
-func (value ProjectRead) Validate() error {
-	return nil
 }

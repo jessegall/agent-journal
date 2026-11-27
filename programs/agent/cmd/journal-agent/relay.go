@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"journal-agent/client"
+	"journal-agent/device"
 	"journal-agent/host"
 	"journal-agent/hostapi"
 	"journal-agent/project"
@@ -35,11 +36,11 @@ const (
 func relay(arguments []string) error {
 	flags := flag.NewFlagSet("relay", flag.ContinueOnError)
 	bindingID := flags.String("binding", "", "the binding to keep online")
-	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", device.DefaultStateFolder(), "the host's private state folder")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
-	state, binding, err := host.ConnectionOfBinding(*stateFolder, *bindingID)
+	state, binding, err := device.ConnectionOfBinding(*stateFolder, *bindingID)
 	if err != nil {
 		return err
 	}
@@ -63,7 +64,7 @@ func relay(arguments []string) error {
 		idle:         &hostapi.IdleWindow{},
 	}
 	err = binder.run(ctx)
-	if errors.Is(err, host.ErrRelayRunning) {
+	if errors.Is(err, device.ErrRelayRunning) {
 		log.Printf("a relay already keeps binding %s online", binding.BindingID)
 		return nil
 	}
@@ -73,8 +74,8 @@ func relay(arguments []string) error {
 
 // bindingRelay is the relay of one binding.
 type bindingRelay struct {
-	state        host.ConnectionState
-	binding      host.Binding
+	state        device.ConnectionState
+	binding      device.Binding
 	installation host.Installation
 	release      string
 	transport    *http.Client
@@ -137,7 +138,7 @@ func (binder bindingRelay) run(parent context.Context) error {
 func (binder bindingRelay) serveInstructions(
 	ctx context.Context, journal *client.Client, stop func(),
 ) (*hostapi.ProcessTable, error) {
-	folder := host.RelayFolder(binder.state.Folder, binder.binding.BindingID)
+	folder := device.RelayFolder(binder.state.Folder, binder.binding.BindingID)
 	if err := os.MkdirAll(folder, 0o700); err != nil {
 		return nil, err
 	}
@@ -226,7 +227,7 @@ func (binder bindingRelay) nextReport(receipt client.PresenceReceipt, failure er
 		log.Printf("the presence report of binding %s failed: %v", binder.binding.BindingID, failure)
 		return relayRetry
 	}
-	report := host.RelayReport{
+	report := device.RelayReport{
 		BindingID: receipt.BindingID, BootID: bootID, Generation: receipt.Generation,
 		SetupGeneration: receipt.SetupGeneration, ReportedAt: time.Now(), AcknowledgedAt: receipt.ServerTime,
 		ExpiresAt: receipt.ExpiresAt, Readiness: receipt.Readiness,
@@ -287,7 +288,7 @@ func (reconciliation *bootReconciliation) reported() <-chan struct{} {
 
 // awaitReady waits, at most the given time, for the journal's acknowledgement of this binding's setup generation,
 // reported after this run began; a report saved before it, as after a restart, does not count.
-func awaitReady(state host.ConnectionState, bindingID string, setupGeneration int, since time.Time, within time.Duration) bool {
+func awaitReady(state device.ConnectionState, bindingID string, setupGeneration int, since time.Time, within time.Duration) bool {
 	deadline := time.Now().Add(within)
 	for time.Now().Before(deadline) {
 		report, err := state.RelayReport()

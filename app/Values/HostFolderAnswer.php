@@ -6,7 +6,9 @@ namespace App\Values;
 
 use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Protocol\HostInstructionType;
-use App\Hosts\Protocol\Payloads\HostFolderUseReplyPayload;
+use App\Hosts\Protocol\Payloads\HostContainerNamesPayload;
+use App\Hosts\Protocol\Payloads\HostContainerRunResultPayload;
+use App\Hosts\Protocol\Payloads\HostContainerRunResultsPayload;
 use App\Models\Hosts\HostInstruction;
 
 /**
@@ -19,18 +21,20 @@ final readonly class HostFolderAnswer
 
     public static function of(HostInstruction $instruction): self
     {
-        // Only a folder use answers whether the folder is bound; a made or removed folder answers that it is done.
-        $isAnsweredFolderUse = $instruction->status === HostInstructionStatus::Done
-            && $instruction->type === HostInstructionType::FolderUse;
+        if ($instruction->status === HostInstructionStatus::Done && $instruction->type === HostInstructionType::ListContainers) {
+            $listed = HostContainerNamesPayload::from($instruction->answer->facts ?? []);
 
-        if ($isAnsweredFolderUse) {
-            $reply = HostFolderUseReplyPayload::from($instruction->answer->facts ?? []);
-
-            return new self($instruction->status, $reply->reason ?? '', $reply->isBound);
+            return new self($instruction->status, '', $listed->names !== []);
         }
 
+        // A made or removed folder is done once its run ended well; a run that failed answers why, as a refusal.
         if ($instruction->status === HostInstructionStatus::Done) {
-            return new self($instruction->status, '', false);
+            $results = HostContainerRunResultsPayload::from($instruction->answer->facts ?? []);
+            $failed = array_filter($results->results, fn (HostContainerRunResultPayload $result) => $result->exitCode !== 0);
+
+            return $failed === []
+                ? new self($instruction->status, '', false)
+                : new self(HostInstructionStatus::Refused, array_values($failed)[0]->output, false);
         }
 
         $reason = $instruction->answer->reason ?? $instruction->refusal->value ?? '';

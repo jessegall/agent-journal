@@ -37,6 +37,7 @@ final readonly class HostInstructionPlacement
         private ServerClock $clock,
         private HostCallReader $reader,
         private ContainedPlanRules $containedRules,
+        private ContainedPlans $containedPlans,
     ) {}
 
     /**
@@ -83,7 +84,7 @@ final readonly class HostInstructionPlacement
         HostInstructionSource $source,
     ): HostInstruction {
         $host = $this->orderingHost($process->host_id);
-        $payload = $plan->payload();
+        $payload = $this->containedPlans->placed($plan, $process)->payload();
         $this->reader->assertValid($payload, 'open plan');
         $this->containedRules->assertKept($payload);
         $body = HostInstructionBody::from($plan->instructionType(), $payload->toArray(), $source);

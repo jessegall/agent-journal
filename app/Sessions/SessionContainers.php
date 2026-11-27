@@ -6,16 +6,20 @@ namespace App\Sessions;
 
 use App\Agents\ContainerManifest;
 use App\Agents\Drivers\Setup\DriverProfiles;
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\SecurityOptions;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Exceptions\AccountFolderInvalid;
 use App\Hosts\Exceptions\WorkspaceSourceMissing;
+use App\Hosts\HelperRuns;
+use App\Hosts\Protocol\Payloads\HostContainerRunPayload;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Profiles\StartProfiles;
 use App\Sessions\Contracts\SessionPolicyReader;
 use App\Sessions\Values\SessionContainer;
+use App\Support\MountRules;
 use App\Values\SelectedAccount;
 use Illuminate\Container\Attributes\Config;
 
@@ -31,6 +35,9 @@ final readonly class SessionContainers
         private ArrangementSetting $arrangement,
         private StartProfiles $startProfiles,
         private DriverProfiles $drivers,
+        private HelperRuns $runs,
+        #[Config('journal.agents.development_programs')]
+        private string $developmentPrograms,
         #[Config('journal.agents.security_profiles')]
         private string $securityProfiles,
     ) {}
@@ -62,22 +69,55 @@ final readonly class SessionContainers
             $start->account_generation,
         );
 
+        $use = $runtime->loadMissing('session')->session->workspaceUse($policy->access);
+        $rules = $this->arrangement->mountRules(
+            $account,
+            ArrangementSetting::ENVIRONMENT,
+            $this->drivers->ofFamily($runtime->family)->containerMounts(),
+        );
+        $startProfile = $this->startProfiles->for($runtime->family, $account);
+
         $manifest = ContainerManifest::compile(
             $sessionId,
             $runtime->canonical_folder,
-            $runtime->loadMissing('session')->session->workspaceUse($policy->access),
+            $use,
             $policy->execution->forDriverScreen($runtime->has_screen),
             $this->arrangement->sessionContainerName($sessionId),
-            $this->arrangement->mountRules(
-                $account,
-                ArrangementSetting::ENVIRONMENT,
-                $this->drivers->ofFamily($runtime->family)->containerMounts(),
-            ),
+            $rules,
             null,
             SecurityOptions::agent($this->securityProfiles),
-            $this->startProfiles->for($runtime->family, $account),
+            $startProfile,
+            $this->arrangement->labelsFor($sessionId, $account),
         );
 
-        return new SessionContainer($manifest, $this->arrangement->labelsFor($sessionId, $account));
+        return new SessionContainer($manifest->withDevelopmentPrograms($this->developmentPrograms)->preparedBy([
+            ...$this->workspacePreparations($rules, $use, $sessionId),
+            ...($startProfile->isForAnAccount()
+                ? $this->runs->accountFolderChecks($account->folder(), $manifest->accountMountPoints())
+                : []),
+        ]));
+    }
+
+    /**
+     * The runs that make the workspace ready before the container mounts it: the source checked or filled, and a
+     * writer's own checkout cloned from it and checked.
+     *
+     * @return list<HostContainerRunPayload>
+     */
+    private function workspacePreparations(MountRules $rules, WorkspaceUse $use, string $sessionId): array
+    {
+        $source = $rules->workspaceSource;
+
+        if ($source === null) {
+            return [];
+        }
+
+        $prepared = $source->preparations($this->runs);
+
+        if (! $use->isOwnCheckout()) {
+            return $prepared;
+        }
+
+        return [...$prepared, ...$this->runs->writerCheckout($source->mount(false), $rules->checkoutVolume($sessionId))];
     }
 }

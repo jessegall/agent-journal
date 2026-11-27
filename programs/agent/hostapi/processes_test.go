@@ -112,7 +112,9 @@ func openInstruction(t *testing.T, processID, restart, image string) Instruction
 		Restart: restart,
 		Argv:    []string{"mock-program"},
 		Container: &host.ContainerManifest{
+			Name:           "journal-process-" + processID,
 			Image:          image,
+			Labels:         []host.ContainerLabel{{Name: "journal.session", Value: processID}},
 			User:           "10001:10001",
 			Workdir:        "/workspace",
 			IsReadOnlyRoot: true,
@@ -121,8 +123,7 @@ func openInstruction(t *testing.T, processID, restart, image string) Instruction
 			Budgets:        host.ContainerBudgets{CPUCores: 1, MemoryBytes: 1 << 30, Processes: 64, OpenFiles: 256},
 			Mounts:         []host.ContainerMount{{Type: host.MountBind, Source: t.TempDir(), Target: "/workspace"}},
 		},
-		Labels: &host.ContainerLabels{Installation: "test", Session: processID},
-		Size:   TerminalSize{Columns: 80, Rows: 24},
+		Size: TerminalSize{Columns: 80, Rows: 24},
 	}
 	payload, err := json.Marshal(plan)
 	if err != nil {

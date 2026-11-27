@@ -33,7 +33,7 @@ final class ReadHostFolderAnswerTest extends TestCase
         [$first, $second] = $this->journal->hostInstructionsOn('Box');
 
         $this->journal->hostInstruction($first, fn (TestHostInstruction $instruction) => $instruction
-            ->answerWith(['is_bound' => true]))->hostInstruction($second, fn (TestHostInstruction $instruction) => $instruction
+            ->answerWith(['names' => ['local-process-p1']]))->hostInstruction($second, fn (TestHostInstruction $instruction) => $instruction
             ->refuse(HostRefusal::Unsafe));
         $done = $this->journal->asSystem(new ReadHostFolderAnswerCommand($hostId, $made));
         $refused = $this->journal->asSystem(new ReadHostFolderAnswerCommand($hostId, $used));

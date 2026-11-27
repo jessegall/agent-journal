@@ -21,7 +21,7 @@ import (
 	"journal-agent/recording"
 )
 
-// ContainersOn are the containers of the agent daemon that listens at the socket, under the rules given, reached
+// ContainersOn are the containers of the Docker daemon that listens at the socket, under the rules given, reached
 // through Docker's own client. With no socket named, the daemon is the one this machine's environment names.
 func ContainersOn(socket string, rules ContainerRules) (Containers, error) {
 	return containersRecordedInto(socket, rules, recording.JournalDrafts())
@@ -36,19 +36,19 @@ func containersRecordedInto(socket string, rules ContainerRules, drafts recordin
 
 	recorded, err := recordedDaemon(where, drafts)
 	if err != nil {
-		return Containers{}, fmt.Errorf("%w: %v", ErrAgentDaemonUnreachable, err)
+		return Containers{}, fmt.Errorf("%w: %v", ErrDaemonUnreachable, err)
 	}
 	options := append([]client.Opt{where}, recorded...)
 
 	daemon, err := client.New(options...)
 	if err != nil {
-		return Containers{}, fmt.Errorf("%w: %v", ErrAgentDaemonUnreachable, err)
+		return Containers{}, fmt.Errorf("%w: %v", ErrDaemonUnreachable, err)
 	}
 
 	return Containers{Daemon: daemon, Rules: rules}, nil
 }
 
-// recordedDaemonExchange is the exchange of the recording run that holds the agent daemon's calls.
+// recordedDaemonExchange is the exchange of the recording run that holds the Docker daemon's calls.
 const recordedDaemonExchange = "daemon"
 
 // recordedDaemon are the client options that send every call to the daemon through the recording run's Docker tap:
@@ -87,82 +87,47 @@ func (code ExitedWith) Error() string {
 // lastLines is how many lines of what a program printed are kept as the reason it ended.
 const lastLines = 20
 
-// throwaway is a container that runs one program of the agent image to its end and is then removed: what it runs,
-// as whom, and what it may reach. It has no network unless one is named.
-type throwaway struct {
-	User            string
-	Program         string
-	Arguments       []string
-	Environment     []string
-	Mounts          []mount.Mount
-	Tmpfs           map[string]string
-	ReadOnlyRoot    bool
-	Capabilities    []string
-	SecurityOptions []string
-	// HasNetwork leaves the container on the daemon's default network, as a clone from a remote needs.
-	HasNetwork bool
-	// Input is what the program reads on its standard input, such as a deploy key; nil gives it none.
-	Input []byte
-}
-
-// createOptions are the throwaway as the daemon creates it: every capability dropped but the ones named, no new
-// privileges, and the installation's label.
-func (run throwaway) createOptions(rules ContainerRules) client.ContainerCreateOptions {
-	network := container.NetworkMode("none")
-	if run.HasNetwork {
-		network = ""
-	}
-
-	return client.ContainerCreateOptions{
-		Config: &container.Config{
-			User:         run.User,
-			Image:        rules.AgentImage,
-			Entrypoint:   []string{run.Program},
-			Cmd:          run.Arguments,
-			Env:          run.Environment,
-			Labels:       map[string]string{installationLabel: string(rules.InstallationName)},
-			AttachStdout: true,
-			AttachStderr: true,
-			AttachStdin:  run.Input != nil,
-			OpenStdin:    run.Input != nil,
-			StdinOnce:    run.Input != nil,
-		},
-		HostConfig: &container.HostConfig{
-			NetworkMode:    network,
-			CapDrop:        []string{"ALL"},
-			CapAdd:         run.Capabilities,
-			SecurityOpt:    append([]string{"no-new-privileges"}, run.SecurityOptions...),
-			ReadonlyRootfs: run.ReadOnlyRoot,
-			Tmpfs:          run.Tmpfs,
-			Mounts:         run.Mounts,
-		},
-	}
-}
-
-// runToEnd runs the throwaway container and answers what its program printed, with ExitedWith when it ended with
-// another exit code than 0. The container and its anonymous volumes are removed whatever happened.
-func (containers Containers) runToEnd(ctx context.Context, run throwaway) (string, error) {
-	created, err := containers.Daemon.ContainerCreate(ctx, run.createOptions(containers.Rules))
+// RunToEnd runs a container the journal describes to its end and answers its exit code and what it printed, cut
+// to the run's output limit. Its input, or the host secret it names, is written to its standard input and closed.
+// The container and its anonymous volumes are removed whatever happened.
+func (containers Containers) RunToEnd(ctx context.Context, run ContainerRun) (ContainerRunResult, error) {
+	input, err := containers.inputOf(run)
 	if err != nil {
-		return "", err
+		return ContainerRunResult{}, err
+	}
+
+	options, err := run.Manifest.CreateOptions(containers.Rules, ContainerProcess{Command: run.Command, Environment: run.Environment})
+	if err != nil {
+		return ContainerRunResult{}, err
+	}
+	options.Config.AttachStdout, options.Config.AttachStderr = true, true
+	options.Config.AttachStdin, options.Config.OpenStdin, options.Config.StdinOnce = input != nil, input != nil, input != nil
+
+	if err := containers.EnsureVolumes(ctx, run.Manifest.Volumes); err != nil {
+		return ContainerRunResult{}, err
+	}
+
+	created, err := containers.Daemon.ContainerCreate(ctx, options)
+	if err != nil {
+		return ContainerRunResult{}, fmt.Errorf("%w: %s", ErrContainerNotCreated, failureLine(err.Error(), err))
 	}
 	defer containers.discard(created.ID)
 
 	attached, err := containers.Daemon.ContainerAttach(ctx, created.ID, client.ContainerAttachOptions{
-		Stream: true, Stdin: run.Input != nil, Stdout: true, Stderr: true,
+		Stream: true, Stdin: input != nil, Stdout: true, Stderr: true,
 	})
 	if err != nil {
-		return "", err
+		return ContainerRunResult{}, err
 	}
 	defer attached.Close()
 
 	if _, err := containers.Daemon.ContainerStart(ctx, created.ID, client.ContainerStartOptions{}); err != nil {
-		return "", err
+		return ContainerRunResult{}, err
 	}
 
-	if run.Input != nil {
+	if input != nil {
 		go func() {
-			_, _ = attached.Conn.Write(run.Input)
+			_, _ = attached.Conn.Write(input)
 			_ = attached.CloseWrite()
 		}()
 	}
@@ -170,11 +135,26 @@ func (containers Containers) runToEnd(ctx context.Context, run throwaway) (strin
 	var printed bytes.Buffer
 	_, _ = stdcopy.StdCopy(&printed, &printed, attached.Reader)
 	code, err := containers.exitCodeOf(ctx, created.ID)
-	if err == nil && code != 0 {
-		err = ExitedWith(code)
+	if err != nil {
+		return ContainerRunResult{}, err
 	}
 
-	return strings.TrimSpace(printed.String()), err
+	output := strings.TrimSpace(printed.String())
+	isTruncated := run.OutputLimit > 0 && len(output) > run.OutputLimit
+	if isTruncated {
+		output = output[len(output)-run.OutputLimit:]
+	}
+
+	return ContainerRunResult{ExitCode: code, Output: output, IsTruncated: isTruncated}, nil
+}
+
+// inputOf is what the run reads on its standard input: its own input, or the host secret it names; nil for none.
+func (containers Containers) inputOf(run ContainerRun) ([]byte, error) {
+	if run.InputSecret != "" {
+		return containers.Rules.ReadSecret(run.InputSecret)
+	}
+
+	return run.Input, nil
 }
 
 // discard removes a container the host is done with, running or not, with its anonymous volumes. It has its own
@@ -230,21 +210,27 @@ func (containers Containers) lastPrinted(ctx context.Context, name string, hasTe
 	return strings.TrimSpace(printed.String())
 }
 
-// createBoundedVolume makes a named volume that holds at most the bytes given. A daemon that cannot bound a volume's
-// size answers ErrWorkspaceQuotaUnavailable and has made nothing.
-func (containers Containers) createBoundedVolume(ctx context.Context, name string, labels map[string]string, bytes int) error {
-	_, err := containers.Daemon.VolumeCreate(ctx, client.VolumeCreateOptions{
-		Name: name, Labels: labels, DriverOpts: map[string]string{"size": strconv.Itoa(bytes)},
-	})
+// ErrWorkspaceQuotaUnavailable refuses a volume of bounded size on a daemon that cannot bound one.
+var ErrWorkspaceQuotaUnavailable = errors.New("workspace-quota-unavailable: this host has no bounded workspace volume")
+
+// createVolume makes the volume with the journal's labels and, when it names one, the most bytes it holds. A daemon
+// that cannot bound a volume's size answers ErrWorkspaceQuotaUnavailable and has made nothing.
+func (containers Containers) createVolume(ctx context.Context, volume ContainerVolume) error {
+	options := client.VolumeCreateOptions{Name: volume.Name, Labels: containers.Rules.labelsOf(volume.Labels)}
+	if volume.SizeBytes > 0 {
+		options.DriverOpts = map[string]string{"size": strconv.FormatInt(volume.SizeBytes, 10)}
+	}
+
+	_, err := containers.Daemon.VolumeCreate(ctx, options)
 	if err == nil {
 		return nil
 	}
 
 	if strings.Contains(strings.ToLower(err.Error()), "quota") {
-		return fmt.Errorf("%w (asked for %d bytes)", ErrWorkspaceQuotaUnavailable, bytes)
+		return fmt.Errorf("%w (asked for %d bytes)", ErrWorkspaceQuotaUnavailable, volume.SizeBytes)
 	}
 
-	return fmt.Errorf("creating the volume %s failed: %w", name, err)
+	return fmt.Errorf("creating the volume %s failed: %w", volume.Name, err)
 }
 
 // removeVolume removes a named volume; forced, also one the daemon still counts as in use.
@@ -270,7 +256,7 @@ func absentIsDone(err error) error {
 
 // unreachable names a failed call as the daemon not being reached, with what the client said.
 func unreachable(err error) error {
-	return fmt.Errorf("%w: %s", ErrAgentDaemonUnreachable, failureLine(err.Error(), err))
+	return fmt.Errorf("%w: %s", ErrDaemonUnreachable, failureLine(err.Error(), err))
 }
 
 // bindMount is a folder of the daemon's machine at the target, private to the container, read-only unless writable.

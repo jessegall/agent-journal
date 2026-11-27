@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"journal-agent/device"
 	"journal-agent/host"
 	"journal-agent/hostapi"
 )
@@ -37,5 +38,5 @@ func WriteAllowList(stateFolder, installation string, programs []Program) error 
 		return err
 	}
 
-	return host.WritePrivateFile(path, content)
+	return device.WritePrivateFile(path, content)
 }

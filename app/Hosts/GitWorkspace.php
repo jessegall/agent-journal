@@ -7,14 +7,12 @@ namespace App\Hosts;
 use App\Agents\ContainerManifest;
 use App\Files\Contracts\WorkspaceSource;
 use App\Files\ManifestMount;
-use App\Files\Values\WorkspaceClone;
-use App\Files\Values\WorkspacePreparation;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 
 /**
- * A workspace cloned from Git into the environment's own volume (<installation>-workspace-<environment>) by the
- * host's clone container, with the deploy key of the named compose secret.
+ * A workspace cloned from Git into the environment's own volume (<installation>-workspace-<environment>) by a
+ * helper run, with the deploy key of the named host secret.
  */
 final class GitWorkspace extends Data implements WorkspaceSource
 {
@@ -32,10 +30,8 @@ final class GitWorkspace extends Data implements WorkspaceSource
         return ManifestMount::volume($this->volume, ContainerManifest::WORKDIR, $isWritable);
     }
 
-    public function preparation(): WorkspacePreparation
+    public function preparations(HelperRuns $runs): array
     {
-        return WorkspacePreparation::ofClone(
-            new WorkspaceClone($this->volume, $this->repository, $this->revision, $this->deployKeySecret),
-        );
+        return [$runs->workspaceClone($this->volume, $this->repository, $this->revision, $this->deployKeySecret)];
     }
 }

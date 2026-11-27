@@ -11,7 +11,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * The host is ordered to make an account folder once for each operation: the same operation asked again finds the
+ * The host is ordered to run the making of an account folder once for each operation: the same operation asked again finds the
  * instruction already made.
  */
 #[TestsCommand(MakeHostFolderCommand::class)]
@@ -30,15 +30,12 @@ final class MakeHostFolderTest extends TestCase
 
         $instruction = $this->journal->hostInstructionsOn('Box')[0];
         $this->journal->assertResult(
-            [$first, false, HostInstructionType::MakeFolder, [
-                'folder' => 'a7',
-                'operation' => 'operation-1',
-            ], 2],
+            [$first, false, HostInstructionType::RunContainers, ['account-folder-make', '/accounts', 'a7', 'operation-1'], 2],
             [
                 $again,
                 $first === $other,
                 $instruction->type,
-                $this->journal->payloadOf($instruction),
+                array_slice($this->journal->payloadOf($instruction)['runs'][0]['command'], 3, 4),
                 count($this->journal->hostInstructionsOn('Box')),
             ],
         );
