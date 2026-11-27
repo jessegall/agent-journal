@@ -20,8 +20,8 @@ final class PlanWorkRecipientData extends Data
         public readonly string $name,
     ) {}
 
-    public static function ofName(AssigneeName $name): self
+    public static function fromAssigneeName(AssigneeName $name): self
     {
-        return new self($name->assignee->type, $name->assignee->id, $name->name);
+        return self::from(['type' => $name->assignee->type, 'id' => $name->assignee->id, 'name' => $name->name]);
     }
 }

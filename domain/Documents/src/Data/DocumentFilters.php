@@ -27,7 +27,7 @@ final class DocumentFilters extends Data
         #[Max(200)]
         public readonly string $query = '',
         public readonly bool $revisions = false,
-        public readonly string $after = '',
+        public readonly string|null $after = null,
     ) {}
 
     public function searches(): bool

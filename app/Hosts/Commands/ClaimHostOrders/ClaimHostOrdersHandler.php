@@ -17,7 +17,7 @@ use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Host;
 use App\Support\AgentImage;
 use App\Time\Contracts\ServerClock;
-use Illuminate\Contracts\Config\Repository;
+use Illuminate\Container\Attributes\Config;
 
 /**
  * Marks the host's claimable orders claimed and hands each over signed; a host that speaks another protocol is told
@@ -30,7 +30,8 @@ final readonly class ClaimHostOrdersHandler implements CommandHandler
     public function __construct(
         private HostOrderPlacement $placement,
         private ServerClock $clock,
-        private Repository $config,
+        #[Config('agents.idle_window_seconds')]
+        private int $idleWindowSeconds,
         private AgentImage $agentImage,
         private JournalCommands $commands,
     ) {}
@@ -55,9 +56,12 @@ final readonly class ClaimHostOrdersHandler implements CommandHandler
 
         $retakeable = HostOrder::secondsUntilRetakeable($host, $now);
 
-        $idleWindow = $this->config->integer('agents.idle_window_seconds');
-
-        return new HostOrderClaim($claimed, $now->utc()->format('Y-m-d\\TH:i:s.v\\Z'), $retakeable, $idleWindow);
+        return new HostOrderClaim(
+            $claimed,
+            $now->utc()->format('Y-m-d\\TH:i:s.v\\Z'),
+            $retakeable,
+            $this->idleWindowSeconds,
+        );
     }
 
     /**

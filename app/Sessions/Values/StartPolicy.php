@@ -30,7 +30,7 @@ final readonly class StartPolicy
     public static function withoutProfile(ExecutionPolicy $execution): self
     {
         return new self(
-            new AccessPolicy([], [], ProcessGrants::everything()),
+            AccessPolicy::from(['paths' => [], 'destinations' => [], 'processes' => ProcessGrants::everything()]),
             new StopConditions([]),
             $execution,
             null,
@@ -46,7 +46,7 @@ final readonly class StartPolicy
     public static function mainOnHost(string $worktree): self
     {
         return self::withoutProfile(
-            new ExecutionPolicy(ExecutionModeType::ProtectedHost, null, $worktree, ExecutionBudgets::defaults(), []),
+            ExecutionPolicy::from(['mode' => ExecutionModeType::ProtectedHost, 'image_reference' => null, 'worktree' => $worktree, 'budgets' => ExecutionBudgets::defaults(), 'network_capabilities' => []]),
         );
     }
 

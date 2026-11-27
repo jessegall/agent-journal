@@ -19,6 +19,6 @@ trait NamesAssignmentPool
         $ids = array_map(fn (string $name) => $records->identify(RecordReference::parse($name))->id, $this->records);
         $target = $this->target === null ? null : $records->identify(RecordReference::parse($this->target));
 
-        return new AutoAssignmentInput($this->key(), new PoolReference($this->pool, $target, $ids), $this->size);
+        return new AutoAssignmentInput($this->key(), PoolReference::from(['type' => $this->pool, 'target' => $target, 'recordIds' => $ids]), $this->size);
     }
 }

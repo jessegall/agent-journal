@@ -52,7 +52,7 @@ final readonly class CheckRules
             $this->check('core.php.artisan-test', $php, ['artisan', 'test'], $this->testRunner(), $read),
             $this->check(
                 'core.phpunit',
-                new ProgramSpellings('phpunit', ['phpunit.phar']),
+                ProgramSpellings::from(['family' => 'phpunit', 'spellings' => ['phpunit.phar']]),
                 [],
                 $this->testRunner(),
                 $read,
@@ -60,14 +60,14 @@ final readonly class CheckRules
             $this->check('core.pest', new ProgramSpellings('pest'), [], $this->testRunner(), $read),
             $this->check(
                 'core.phpstan.analyse',
-                new ProgramSpellings('phpstan', ['phpstan.phar']),
+                ProgramSpellings::from(['family' => 'phpstan', 'spellings' => ['phpstan.phar']]),
                 ['analyse'],
                 $this->phpstan(),
                 $read,
             ),
             $this->check(
                 'core.phpstan.analyze',
-                new ProgramSpellings('phpstan', ['phpstan.phar']),
+                ProgramSpellings::from(['family' => 'phpstan', 'spellings' => ['phpstan.phar']]),
                 ['analyze'],
                 $this->phpstan(),
                 $read,
@@ -94,10 +94,10 @@ final readonly class CheckRules
                 $this->phpCsFixer(),
                 $fix,
             ),
-            $this->check('core.commandments.judge', new ProgramSpellings(
-                'commandments',
-                ['commandments-release', 'commandments-go'],
-            ), ['judge'], $pathOperands->withOptions(
+            $this->check('core.commandments.judge', ProgramSpellings::from([
+                'family' => 'commandments',
+                'spellings' => ['commandments-release', 'commandments-go'],
+            ]), ['judge'], $pathOperands->withOptions(
                 OptionGrammar::flag('--changes'),
                 OptionGrammar::flag('--changed-files'),
                 OptionGrammar::valued(

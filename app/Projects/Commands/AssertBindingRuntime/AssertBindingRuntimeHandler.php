@@ -45,10 +45,10 @@ final readonly class AssertBindingRuntimeHandler implements CommandHandler
             throw BindingRuntimeRefused::notTheMainAgent($binding->id);
         }
 
-        $eligibility = $binding->eligibilityOf($this->drivers->family($command->driver));
+        $reason = $binding->eligibilityOf($this->drivers->family($command->driver))->unavailableReason;
 
-        if (! $eligibility->isEligible()) {
-            throw BindingRuntimeRefused::providerUnavailable($binding->id, $eligibility->unavailableReason);
+        if ($reason !== null) {
+            throw BindingRuntimeRefused::providerUnavailable($binding->id, $reason);
         }
     }
 }

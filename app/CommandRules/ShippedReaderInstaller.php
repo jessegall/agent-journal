@@ -127,7 +127,7 @@ final readonly class ShippedReaderInstaller
 
         $readerId = $this->commands->run(new ProposeReaderCommand($requestId, 1, $reader->reader));
         $proofId = $this->commands->run(new ProveReaderCommand($requestId, $readerId, $runs));
-        $approval = new OwnerApproval(1, 0, [new ReaderApproval($readerId, $proofId)], 'Core ships this reader.');
+        $approval = new OwnerApproval(1, 0, [ReaderApproval::from(['reader_revision_id' => $readerId, 'proof_id' => $proofId])], 'Core ships this reader.');
         $proposal = RuleProposal::query()->ofCommandRequest($requestId)->sole();
         $this->commands->run(new ApproveRuleProposalCommand($proposal->id, $approval));
     }
@@ -157,10 +157,9 @@ final readonly class ShippedReaderInstaller
             ReaderReference::required(),
         );
 
-        $rule = CommandRule::from([...$core->toArray(), 'contracts' => [$contract->toArray()]]);
-
-        return $rule->ownedBy(RuleScope::project(), 1)
-            ->replacing(new RuleReference(RuleScope::core(), $core->id, $core->revision));
+        return $core->verifiedBy($contract)
+            ->ownedBy(RuleScope::project(), 1)
+            ->replacing(RuleReference::from(['scope' => RuleScope::core(), 'id' => $core->id, 'revision' => $core->revision]));
     }
 
     /**

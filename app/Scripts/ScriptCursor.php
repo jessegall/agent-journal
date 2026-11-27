@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Scripts;
 
 use App\Profiles\Enums\DiagnosticCode;
+use App\Scripts\Exceptions\ScriptCursorPastEnd;
 use App\Scripts\Exceptions\ScriptSyntaxError;
 use App\Scripts\Values\ScriptLine;
 use App\Scripts\Values\ScriptRange;
@@ -22,9 +23,17 @@ final class ScriptCursor
      */
     public function __construct(private readonly array $lines) {}
 
-    public function current(): ScriptLine|null
+    public function isAtEnd(): bool
     {
-        return $this->lines[$this->position] ?? null;
+        return ! isset($this->lines[$this->position]);
+    }
+
+    /**
+     * @throws ScriptCursorPastEnd
+     */
+    public function current(): ScriptLine
+    {
+        return $this->lines[$this->position] ?? throw ScriptCursorPastEnd::at($this->position);
     }
 
     public function advance(): void

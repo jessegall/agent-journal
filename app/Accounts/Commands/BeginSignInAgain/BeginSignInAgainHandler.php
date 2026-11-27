@@ -12,8 +12,8 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use Carbon\CarbonImmutable;
+use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Bus\Dispatcher as JobDispatcher;
-use Illuminate\Contracts\Config\Repository;
 
 /**
  * Starts or rejoins a sign-in again under the driver's selection lock, then the account's: the account is held so no
@@ -23,7 +23,10 @@ use Illuminate\Contracts\Config\Repository;
 final readonly class BeginSignInAgainHandler implements CommandHandler
 {
     public function __construct(
-        private Repository $config,
+        #[Config('accounts.sign_in_minutes')]
+        private int $signInMinutes,
+        #[Config('accounts.root')]
+        private string $accountsRoot,
         private JobDispatcher $jobs,
         private AccountUses $uses,
     ) {}
@@ -40,8 +43,8 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
         }
 
         $account->holdForMaintenance();
-        $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
-        $directory = SignInAttempt::resolveNewFolderIn($this->config->string('accounts.root'));
+        $expiresAt = CarbonImmutable::now()->addMinutes($this->signInMinutes);
+        $directory = SignInAttempt::resolveNewFolderIn($this->accountsRoot);
 
         $attempt = SignInAttempt::create(
             $command->dispatchedBy(),

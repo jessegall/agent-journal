@@ -37,16 +37,16 @@ final class ProposedStopConditionData extends Data
 
     public function toStopCondition(): StopCondition
     {
-        return new StopCondition(
-            $this->key,
-            $this->label ?? $this->key,
-            $this->executable,
-            $this->arguments,
-            array_map(AccessType::from(...), $this->access),
-            $this->directory,
-            $this->timeoutSeconds,
-            $this->outputBytes,
-            $this->guidance,
-        );
+        return StopCondition::from([
+            'key' => $this->key,
+            'label' => $this->label ?? $this->key,
+            'executable' => $this->executable,
+            'arguments' => $this->arguments,
+            'access_types' => array_map(AccessType::from(...), $this->access),
+            'directory' => $this->directory,
+            'timeout_seconds' => $this->timeoutSeconds,
+            'output_bytes' => $this->outputBytes,
+            'guidance' => $this->guidance,
+        ]);
     }
 }

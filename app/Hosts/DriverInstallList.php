@@ -27,7 +27,7 @@ final readonly class DriverInstallList
 
     public function drivers(): DriverInstallListData
     {
-        return new DriverInstallListData(array_map($this->driverOf(...), DefaultDrivers::families()));
+        return DriverInstallListData::from(['drivers' => array_map($this->driverOf(...), DefaultDrivers::families())]);
     }
 
     private function driverOf(DriverFamily $family): InstallDriverData

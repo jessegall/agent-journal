@@ -60,7 +60,6 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Laravel\Octane\Events\RequestReceived;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\TestFailure;
@@ -365,8 +364,7 @@ final class ClaudeCodeHooksTest extends TestCase
         $limitBefore = (int) ini_get('max_execution_time');
         set_time_limit(7);
 
-        $this->app->make(GiveRequestItsTimeLimit::class)
-            ->handle(new RequestReceived($this->app, $this->app, $this->app->make('request')));
+        $this->app->make(GiveRequestItsTimeLimit::class)->handle();
 
         $limit = (int) ini_get('max_execution_time');
         set_time_limit($limitBefore);

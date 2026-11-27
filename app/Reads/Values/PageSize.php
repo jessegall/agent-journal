@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reads\Values;
 
+use App\Reads\ReadSettings;
 use Illuminate\Container\Container;
 use Illuminate\Validation\ValidationException;
 
@@ -19,9 +20,9 @@ final readonly class PageSize
      */
     public static function from(int|null $rows): self
     {
-        $config = Container::getInstance()->make('config');
-        $requested = $rows ?? $config->integer('reads.default_limit');
-        $maximum = $config->integer('reads.page_max');
+        $settings = Container::getInstance()->make(ReadSettings::class);
+        $requested = $rows ?? $settings->defaultLimit;
+        $maximum = $settings->pageMax;
 
         if ($requested < 1 || $requested > $maximum) {
             throw ValidationException::withMessages(

@@ -41,7 +41,7 @@ final class ProjectCommandRequest extends FormRequest
      */
     public function argv(): array
     {
-        return array_values(array_map(strval(...), (array) $this->input('argv')));
+        return array_values(array_map(strval(...), $this->array('argv')));
     }
 
     public function stdin(): string

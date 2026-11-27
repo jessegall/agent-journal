@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts;
 
 /**
- * How many frames a second a terminal process streams, worked out in this one place from who reads them: a worker
- * driving it needs at least four, a viewer the rate its view asks, and with neither nothing leaves the machine.
+ * How many frames a second a terminal process a worker drives streams: at least four, or the faster rate a viewer
+ * asks.
  */
 final readonly class StreamRate
 {
@@ -15,12 +15,11 @@ final readonly class StreamRate
      */
     public const int WORKER_MINIMUM = 4;
 
-    public static function of(bool $hasWorker, int $viewerRate): int
+    /**
+     * The rate of a terminal a worker drives, with the rate a viewer asks beside it.
+     */
+    public static function withWorker(int $viewerRate): int
     {
-        if ($hasWorker) {
-            return max(self::WORKER_MINIMUM, $viewerRate);
-        }
-
-        return max(0, $viewerRate);
+        return max(self::WORKER_MINIMUM, $viewerRate);
     }
 }

@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Accounts\Data\LoginInput;
 use App\Pages\LoginPage;
-use Illuminate\Contracts\Config\Repository;
+use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Foundation\Application;
 use Inertia\Response;
 use Inertia\ResponseFactory;
@@ -20,7 +20,10 @@ final readonly class LoginController
     public function __construct(
         private ResponseFactory $inertia,
         private Application $app,
-        private Repository $config,
+        #[Config('web.local_sign_in.email')]
+        private string $localEmail,
+        #[Config('web.local_sign_in.password')]
+        private string $localPassword,
     ) {}
 
     public function __invoke(): Response
@@ -41,8 +44,8 @@ final readonly class LoginController
         }
 
         return LoginInput::filledWith(
-            $this->config->string('web.local_sign_in.email'),
-            $this->config->string('web.local_sign_in.password'),
+            $this->localEmail,
+            $this->localPassword,
         );
     }
 }

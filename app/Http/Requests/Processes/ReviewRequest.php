@@ -33,7 +33,7 @@ final class ReviewRequest extends FormRequest
     public function approval(): OwnerApproval
     {
         $readers = $this->filled('proof')
-            ? [new ReaderApproval($this->string('reader_revision')->toString(), $this->string('proof')->toString())]
+            ? [ReaderApproval::from(['reader_revision_id' => $this->string('reader_revision')->toString(), 'proof_id' => $this->string('proof')->toString()])]
             : [];
 
         return new OwnerApproval(

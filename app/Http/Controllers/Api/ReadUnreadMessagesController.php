@@ -21,6 +21,6 @@ final readonly class ReadUnreadMessagesController
     {
         $shown = $commands->run(new ReadUnreadMessagesCommand());
 
-        return new UnreadMessages(array_map(MessageView::of(...), $shown->messages));
+        return UnreadMessages::from(['messages' => array_map(MessageView::of(...), $shown->messages)]);
     }
 }

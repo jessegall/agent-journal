@@ -34,7 +34,8 @@ final readonly class ScriptParser
         $cursor = new ScriptCursor($lines);
         $handlers = [];
 
-        while (($line = $cursor->current()) !== null) {
+        while (! $cursor->isAtEnd()) {
+            $line = $cursor->current();
             $handler = $this->handler($cursor, $line);
 
             if (isset($handlers[$handler->trigger->token])) {
@@ -93,7 +94,8 @@ final readonly class ScriptParser
     {
         $statements = [];
 
-        while (($line = $cursor->current()) !== null) {
+        while (! $cursor->isAtEnd()) {
+            $line = $cursor->current();
             $keyword = $this->keyword($line);
 
             if ($keyword->form->isStatementBoundary()) {
@@ -129,11 +131,10 @@ final readonly class ScriptParser
 
         $condition = $this->expression($line);
         $whenTrue = $this->body($cursor, $depth);
-        $elseLine = $cursor->current();
         $whenFalse = [];
 
-        if ($elseLine !== null && $this->keyword($elseLine)->form === SyntaxForm::ElseBlock) {
-            self::assertNoOperand($elseLine);
+        if (! $cursor->isAtEnd() && $this->keyword($cursor->current())->form === SyntaxForm::ElseBlock) {
+            self::assertNoOperand($cursor->current());
             $cursor->advance();
             $whenFalse = $this->body($cursor, $depth);
         }
@@ -145,11 +146,11 @@ final readonly class ScriptParser
 
     private function end(ScriptCursor $cursor, ScriptLine $opening): void
     {
-        $line = $cursor->current();
-
-        if ($line === null) {
+        if ($cursor->isAtEnd()) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnclosedBlock, $opening->source, 'Expected END.', 'END');
         }
+
+        $line = $cursor->current();
 
         if ($this->keyword($line)->form !== SyntaxForm::EndBlock) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnexpectedEnd, $line->source, 'Expected END.', 'END');

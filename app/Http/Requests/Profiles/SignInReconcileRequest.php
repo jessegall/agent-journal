@@ -27,6 +27,6 @@ final class SignInReconcileRequest extends FormRequest
      */
     public function runningAttemptIds(): array
     {
-        return array_values(array_map(strval(...), (array) $this->input('running', [])));
+        return array_values(array_map(strval(...), $this->array('running')));
     }
 }

@@ -60,13 +60,13 @@ final readonly class ShippedReaders
             '2.3.6',
             'composer.lock: phpstan/phpstan',
             'vendor/bin/phpstan analyse --error-format=json --no-progress',
-            new ReaderDefinition(
-                [RecordRule::of(
+            ReaderDefinition::from([
+                'rules' => [RecordRule::of(
                     RecordRole::Summary,
                     '{"totals":{"errors":{errors:int},"file_errors":{file_errors:int}}{rest:rest}',
                 )],
-                failureField: 'file_errors',
-            ),
+                'failure_field' => 'file_errors',
+            ]),
             self::contract(),
             ExitPolicy::of(self::passed(0), self::findings(1)),
         );
@@ -80,7 +80,7 @@ final readonly class ShippedReaders
             '1.32.3',
             'composer.lock: laravel/pint',
             'vendor/bin/pint --test --format=junit',
-            new ReaderDefinition(self::junitRules(), failureField: 'failures'),
+            ReaderDefinition::from(['rules' => self::junitRules(), 'failure_field' => 'failures']),
             self::contract(),
             ExitPolicy::of(self::passed(0), self::findings(1)),
         );
@@ -94,7 +94,7 @@ final readonly class ShippedReaders
             '1.32.3',
             'composer.lock: laravel/pint',
             'vendor/bin/pint --format=junit',
-            new ReaderDefinition(self::junitRules(), failureField: 'errors'),
+            ReaderDefinition::from(['rules' => self::junitRules(), 'failure_field' => 'errors']),
             self::contract(),
             ExitPolicy::of(self::passed(0)),
         );
@@ -108,27 +108,30 @@ final readonly class ShippedReaders
             '13.4.8',
             'composer.lock: phpunit/phpunit',
             'vendor/bin/phpunit --teamcity',
-            new ReaderDefinition([
-                RecordRule::of(
-                    RecordRole::AllowedNoise,
-                    'PHPUnit {version:word} by Sebastian Bergmann and contributors.',
-                ),
-                RecordRule::of(RecordRole::AllowedNoise, 'Runtime:       PHP {php:word}'),
-                RecordRule::of(RecordRole::Diagnostic, '##teamcity[testFailed {details:rest}'),
-                RecordRule::of(RecordRole::AllowedNoise, '##teamcity[{event:rest}'),
-                RecordRule::of(RecordRole::AllowedNoise, 'Time: {time:rest}'),
-                RecordRule::of(RecordRole::Diagnostic, 'There was {count:int} failure:'),
-                RecordRule::of(RecordRole::Diagnostic, 'There were {count:int} failures:'),
-                RecordRule::of(RecordRole::Diagnostic, '{number:int}) {test:rest}'),
-                RecordRule::of(RecordRole::Diagnostic, 'Failed asserting {message:rest}'),
-                RecordRule::of(RecordRole::Diagnostic, '/{location:rest}'),
-                RecordRule::of(RecordRole::Outcome, 'FAILURES{failed:rest}'),
-                RecordRule::of(RecordRole::Outcome, 'OK{passed:rest}'),
-                RecordRule::of(
-                    RecordRole::Summary,
-                    'Tests: {tests:int}, Assertions: {assertions:int}, Failures: {failures:int}.',
-                ),
-            ], failureField: 'failures'),
+            ReaderDefinition::from([
+                'rules' => [
+                    RecordRule::of(
+                        RecordRole::AllowedNoise,
+                        'PHPUnit {version:word} by Sebastian Bergmann and contributors.',
+                    ),
+                    RecordRule::of(RecordRole::AllowedNoise, 'Runtime:       PHP {php:word}'),
+                    RecordRule::of(RecordRole::Diagnostic, '##teamcity[testFailed {details:rest}'),
+                    RecordRule::of(RecordRole::AllowedNoise, '##teamcity[{event:rest}'),
+                    RecordRule::of(RecordRole::AllowedNoise, 'Time: {time:rest}'),
+                    RecordRule::of(RecordRole::Diagnostic, 'There was {count:int} failure:'),
+                    RecordRule::of(RecordRole::Diagnostic, 'There were {count:int} failures:'),
+                    RecordRule::of(RecordRole::Diagnostic, '{number:int}) {test:rest}'),
+                    RecordRule::of(RecordRole::Diagnostic, 'Failed asserting {message:rest}'),
+                    RecordRule::of(RecordRole::Diagnostic, '/{location:rest}'),
+                    RecordRule::of(RecordRole::Outcome, 'FAILURES{failed:rest}'),
+                    RecordRule::of(RecordRole::Outcome, 'OK{passed:rest}'),
+                    RecordRule::of(
+                        RecordRole::Summary,
+                        'Tests: {tests:int}, Assertions: {assertions:int}, Failures: {failures:int}.',
+                    ),
+                ],
+                'failure_field' => 'failures',
+            ]),
             self::contract(),
             ExitPolicy::of(self::passed(0), self::findings(1)),
         );
@@ -142,17 +145,20 @@ final readonly class ShippedReaders
             '7.18.152',
             'the code-commandments plugin binary',
             'COMMANDMENTS_PLAIN_PROGRESS=1 commandments-release judge',
-            new ReaderDefinition([
-                RecordRule::of(RecordRole::AllowedNoise, '{phase:word} {done:int}/{total:int}'),
-                RecordRule::of(RecordRole::Summary, '· read {files:int} file{read:text}: {sins:int} sin{plural:rest}'),
-                RecordRule::of(RecordRole::Diagnostic, '{file:text}, line {line:int}: {message:text} [{rule:text}]'),
-                RecordRule::of(
-                    RecordRole::AllowedNoise,
-                    '{sins:int} sin{plural:text} in {files:int} file{files_plural:rest}',
-                ),
-                RecordRule::of(RecordRole::AllowedNoise, '↳ checklist written to {path:rest}'),
-                RecordRule::of(RecordRole::Outcome, '✓ No sins found in {passed:rest}'),
-            ], failureField: 'sins'),
+            ReaderDefinition::from([
+                'rules' => [
+                    RecordRule::of(RecordRole::AllowedNoise, '{phase:word} {done:int}/{total:int}'),
+                    RecordRule::of(RecordRole::Summary, '· read {files:int} file{read:text}: {sins:int} sin{plural:rest}'),
+                    RecordRule::of(RecordRole::Diagnostic, '{file:text}, line {line:int}: {message:text} [{rule:text}]'),
+                    RecordRule::of(
+                        RecordRole::AllowedNoise,
+                        '{sins:int} sin{plural:text} in {files:int} file{files_plural:rest}',
+                    ),
+                    RecordRule::of(RecordRole::AllowedNoise, '↳ checklist written to {path:rest}'),
+                    RecordRule::of(RecordRole::Outcome, '✓ No sins found in {passed:rest}'),
+                ],
+                'failure_field' => 'sins',
+            ]),
             self::contract(),
             ExitPolicy::of(self::passed(0), self::findings(1)),
         );
@@ -166,11 +172,13 @@ final readonly class ShippedReaders
             '3.3.14',
             'package-lock.json: vue-tsc',
             'vue-tsc --noEmit',
-            new ReaderDefinition([
-                RecordRule::of(
-                    RecordRole::Outcome,
-                    '{file:text}({line:int},{column:int}): {failed:word} TS{code:int}: {message:rest}',
-                ),
+            ReaderDefinition::from([
+                'rules' => [
+                    RecordRule::of(
+                        RecordRole::Outcome,
+                        '{file:text}({line:int},{column:int}): {failed:word} TS{code:int}: {message:rest}',
+                    ),
+                ],
             ]),
             self::contract(EmptyRunPolicy::allowedSuccess('no type errors')),
             ExitPolicy::of(self::passed(0), self::findings(2)),
@@ -185,11 +193,13 @@ final readonly class ShippedReaders
             '1.4.0',
             'package-lock.json: vite-plus',
             'vp check',
-            new ReaderDefinition([
-                RecordRule::of(RecordRole::Outcome, 'pass: {passed:rest}'),
-                RecordRule::of(RecordRole::Outcome, 'error: {failed:text} issues found'),
-                RecordRule::of(RecordRole::Diagnostic, '{file:word} ({milliseconds:int}ms)'),
-                RecordRule::of(RecordRole::AllowedNoise, 'Found formatting issues in {rest:rest}'),
+            ReaderDefinition::from([
+                'rules' => [
+                    RecordRule::of(RecordRole::Outcome, 'pass: {passed:rest}'),
+                    RecordRule::of(RecordRole::Outcome, 'error: {failed:text} issues found'),
+                    RecordRule::of(RecordRole::Diagnostic, '{file:word} ({milliseconds:int}ms)'),
+                    RecordRule::of(RecordRole::AllowedNoise, 'Found formatting issues in {rest:rest}'),
+                ],
             ]),
             self::contract(),
             ExitPolicy::of(self::passed(0), self::findings(1)),
@@ -204,14 +214,16 @@ final readonly class ShippedReaders
             '1.4.0',
             'package-lock.json: vite-plus',
             'vp build',
-            new ReaderDefinition([
-                RecordRule::of(RecordRole::AllowedNoise, 'note: {note:rest}'),
-                RecordRule::of(RecordRole::AllowedNoise, 'transforming...'),
-                RecordRule::of(RecordRole::AllowedNoise, 'rendering chunks...'),
-                RecordRule::of(RecordRole::AllowedNoise, 'computing gzip size...'),
-                RecordRule::of(RecordRole::AllowedNoise, '✓ {modules:int} modules transformed.'),
-                RecordRule::of(RecordRole::Outcome, '✓ built in {passed:rest}'),
-                RecordRule::of(RecordRole::Diagnostic, '{file:word} {size:rest}'),
+            ReaderDefinition::from([
+                'rules' => [
+                    RecordRule::of(RecordRole::AllowedNoise, 'note: {note:rest}'),
+                    RecordRule::of(RecordRole::AllowedNoise, 'transforming...'),
+                    RecordRule::of(RecordRole::AllowedNoise, 'rendering chunks...'),
+                    RecordRule::of(RecordRole::AllowedNoise, 'computing gzip size...'),
+                    RecordRule::of(RecordRole::AllowedNoise, '✓ {modules:int} modules transformed.'),
+                    RecordRule::of(RecordRole::Outcome, '✓ built in {passed:rest}'),
+                    RecordRule::of(RecordRole::Diagnostic, '{file:word} {size:rest}'),
+                ],
             ]),
             self::contract(),
             ExitPolicy::of(self::passed(0)),
@@ -247,15 +259,15 @@ final readonly class ShippedReaders
 
     private static function contract(EmptyRunPolicy|null $empty = null): OutputContract
     {
-        return new OutputContract(
-            OutputEncoding::Utf8,
-            FramingType::Lines,
-            '*',
-            StreamUse::MergeAllowed,
-            SummaryRule::NotRequired,
-            $empty ?? EmptyRunPolicy::invalid(),
-            EmptySelection::ConfigurationProblem,
-        );
+        return OutputContract::from([
+            'encoding' => OutputEncoding::Utf8,
+            'framing' => FramingType::Lines,
+            'schema_versions' => '*',
+            'streams' => StreamUse::MergeAllowed,
+            'summary' => SummaryRule::NotRequired,
+            'empty' => $empty ?? EmptyRunPolicy::invalid(),
+            'empty_selection' => EmptySelection::ConfigurationProblem,
+        ]);
     }
 
     private static function passed(int $status): ExitBranch

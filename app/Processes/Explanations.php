@@ -127,15 +127,15 @@ final readonly class Explanations
             $node->isRoot ? null : $node->parent,
             $snippet,
             array_map(fn (Redirect $redirect) => $this->redirectOf($tree, $redirect), $node->redirects),
-            $program === null ? '' : $program->family,
-            $program === null ? '' : self::safe($program->original),
+            $program?->family,
+            $program === null ? null : self::safe($program->original),
             array_values(array_unique(array_map(fn (ClassFact $fact) => $fact->class->value, $facts))),
             array_map(fn (ClassFact $fact) => $fact->class->value.' from '.$fact->origin->reference(), $facts),
             array_map(
                 fn (UnresolvedFact $fact) => "{$fact->type->value}: {$this->texts->render($fact->reason)}",
                 $unresolved,
             ),
-            $parts === [] ? '' : $parts[0]->purpose->label(),
+            $parts === [] ? null : $parts[0]->purpose->label(),
             array_merge(...array_map(
                 fn (VerificationContract $contract) => $contract->description(),
                 $contracts,

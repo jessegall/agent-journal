@@ -105,10 +105,8 @@ export function usePhasePages(
         const isFresh = page.isRevisionChanged || page.after === '0';
         pages.firstNewRow = isFresh ? 0 : pages.rows.length;
         pages.rows = isFresh ? [...page.rows] : [...pages.rows, ...page.rows];
-        pages.pageStarts = [
-            ...(isFresh ? [] : pages.pageStarts),
-            { after: page.after, count: page.rows.length },
-        ];
+        const start = { after: page.after, count: page.rows.length };
+        pages.pageStarts = isFresh ? [start] : [...pages.pageStarts, start];
         pages.nextAfter = page.nextAfter;
         pages.revision = page.revision;
         pages.status = 'shown';

@@ -53,12 +53,12 @@ final class ProfileStartPolicy extends Data
         return new self(
             $preferredDriver,
             $type->defaultAccess(),
-            new StopConditions($type->defaultStopConditions()),
+            StopConditions::from(['conditions' => $type->defaultStopConditions()]),
             self::defaultExecution($type),
-            new ProfileProvenance(
-                $configurationHash,
-                array_map(fn (string $field) => new FieldOrigin($field, PolicyOriginType::GlobalDefault), self::FIELDS),
-            ),
+            ProfileProvenance::from([
+                'configuration_hash' => $configurationHash,
+                'origins' => array_map(fn (string $field) => FieldOrigin::from(['field' => $field, 'origin' => PolicyOriginType::GlobalDefault]), self::FIELDS),
+            ]),
         );
     }
 

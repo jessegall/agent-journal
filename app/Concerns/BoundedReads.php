@@ -7,6 +7,7 @@ namespace App\Concerns;
 use App\Exceptions\LazyLoadRefused;
 use App\Exceptions\ModelReadAllRefused;
 use App\Reads\ReadMeter;
+use App\Reads\ReadSettings;
 use App\Records\Values\ReadOrder;
 use App\Support\ReadBuilder;
 use Illuminate\Container\Container;
@@ -31,7 +32,7 @@ trait BoundedReads
 
     public function defaultReadLimit(): int
     {
-        return Container::getInstance()->make('config')->integer('reads.default_limit');
+        return Container::getInstance()->make(ReadSettings::class)->defaultLimit;
     }
 
     public function defaultReadOrder(): ReadOrder

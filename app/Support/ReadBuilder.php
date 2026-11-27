@@ -12,6 +12,7 @@ use App\Exceptions\ReadReasonMissing;
 use App\Exceptions\ReadShapeUnsupported;
 use App\Exceptions\RelationReadUndeclared;
 use App\Reads\ChunkedRead;
+use App\Reads\ReadSettings;
 use App\Reads\Values\PageSize;
 use App\Records\Contracts\ReadableModel;
 use Closure;
@@ -72,7 +73,7 @@ class ReadBuilder extends Builder
      */
     public function readLimit(int $rows): static
     {
-        $pageMax = Container::getInstance()->make('config')->integer('reads.page_max');
+        $pageMax = Container::getInstance()->make(ReadSettings::class)->pageMax;
 
         if ($rows <= $pageMax) {
             throw ReadLimitInvalid::withinPage($rows, $pageMax);
@@ -86,7 +87,7 @@ class ReadBuilder extends Builder
      */
     public function readUpTo(int $rows): static
     {
-        $pageMax = Container::getInstance()->make('config')->integer('reads.page_max');
+        $pageMax = Container::getInstance()->make(ReadSettings::class)->pageMax;
 
         if ($rows <= $pageMax) {
             return $this->limit($rows);
@@ -321,7 +322,7 @@ class ReadBuilder extends Builder
     private function applyReadPolicy(): void
     {
         $query = $this->getQuery();
-        $pageMax = Container::getInstance()->make('config')->integer('reads.page_max');
+        $pageMax = Container::getInstance()->make(ReadSettings::class)->pageMax;
 
         $query->limit = match ($this->mode) {
             ReadMode::Limited => $query->limit === null ? $this->namedLimit : min(
@@ -395,6 +396,6 @@ class ReadBuilder extends Builder
             return $this->model->defaultReadLimit();
         }
 
-        return Container::getInstance()->make('config')->integer('reads.default_limit');
+        return Container::getInstance()->make(ReadSettings::class)->defaultLimit;
     }
 }

@@ -24,7 +24,7 @@ final readonly class HandedSkillsReport implements JsonSerializable
 
     public static function of(AgentSession $session): self
     {
-        return new self($session->id, $session->skill_generation_id, $session->skill_keys ?? []);
+        return new self($session->id, $session->skill_generation_id, $session->handedSkillKeys);
     }
 
     /**

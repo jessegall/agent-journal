@@ -12,8 +12,8 @@ use App\Jobs\SignInDeadline;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use Carbon\CarbonImmutable;
+use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Bus\Dispatcher as JobDispatcher;
-use Illuminate\Contracts\Config\Repository;
 
 /**
  * Starts or rejoins a new account's sign-in under the driver's selection lock: one attempt at a time writes a new
@@ -23,7 +23,10 @@ final readonly class BeginSignInHandler implements CommandHandler
 {
     public function __construct(
         private SignInProtocols $protocols,
-        private Repository $config,
+        #[Config('accounts.sign_in_minutes')]
+        private int $signInMinutes,
+        #[Config('accounts.root')]
+        private string $accountsRoot,
         private JobDispatcher $jobs,
     ) {}
 
@@ -42,8 +45,8 @@ final readonly class BeginSignInHandler implements CommandHandler
             return new SignInStarted($running->id, true);
         }
 
-        $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
-        $directory = SignInAttempt::resolveNewFolderIn($this->config->string('accounts.root'));
+        $expiresAt = CarbonImmutable::now()->addMinutes($this->signInMinutes);
+        $directory = SignInAttempt::resolveNewFolderIn($this->accountsRoot);
 
         $attempt = SignInAttempt::create(
             $command->dispatchedBy(),

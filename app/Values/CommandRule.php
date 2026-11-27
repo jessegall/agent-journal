@@ -188,6 +188,14 @@ final class CommandRule extends Data
     }
 
     /**
+     * This rule with this one contract in place of its own, and everything else the same.
+     */
+    public function verifiedBy(VerificationContract $contract): self
+    {
+        return clone ($this, ['contracts' => [$contract]]);
+    }
+
+    /**
      * This rule with another owner, binding, revision or replacement, and everything else the same.
      *
      * @param  list<RuleReference>  $replaces

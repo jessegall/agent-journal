@@ -35,7 +35,7 @@ final readonly class ReportResolver implements ReportResolverContract
         $reports = Report::query()->sharedPublished()->inAttention($filters->attention->state())
             ->when($filters->searches(), fn (Builder $query) => $query->matchingText($filters->query))
             ->when(
-                $filters->after !== '',
+                $filters->after !== null,
                 fn (Builder $query) => $query->where('id', '<', $filters->after),
                 fn (Builder $query) => $query->offset(($filters->page - 1) * $size),
             )

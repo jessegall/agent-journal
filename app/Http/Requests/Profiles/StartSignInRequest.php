@@ -41,7 +41,7 @@ final class StartSignInRequest extends FormRequest
     public function after(SignInProtocols $protocols): array
     {
         return [function (Validator $validator) use ($protocols): void {
-            $method = SignInMethod::tryFrom((string) $this->input('method'));
+            $method = $this->enum('method', SignInMethod::class);
 
             if ($validator->errors()->hasAny(['driver', 'method']) || $method === null) {
                 return;

@@ -15,18 +15,8 @@ const props = defineProps<{
 }>();
 
 const list = useTemplateRef<HTMLElement>('list');
-const opened = reactive(new Set<number>());
+const expandedRows = reactive(new Map<number, boolean>());
 const heaviestFirst = computed(() => [...props.memories].sort((a, b) => b.weight - a.weight));
-
-function toggle(id: number, isOpen: boolean): void {
-    if (isOpen) {
-        opened.add(id);
-
-        return;
-    }
-
-    opened.delete(id);
-}
 
 function onKey(event: KeyboardEvent): void {
     const step = { ArrowDown: 1, ArrowUp: -1 }[event.key];
@@ -61,8 +51,8 @@ function onKey(event: KeyboardEvent): void {
                 :text="memory.text"
                 :detail="memory.detail"
                 :expandable="expandable"
-                :expanded="opened.has(memory.id)"
-                @update:expanded="toggle(memory.id, $event)"
+                :expanded="expandedRows.get(memory.id) === true"
+                @update:expanded="expandedRows.set(memory.id, $event)"
             />
         </ul>
     </div>

@@ -126,13 +126,13 @@ final class PlanBuilder
         $argv = array_map(fn (Word $word) => $this->planWord($word, $node, $substitutions), $node->words);
 
         $redirects = array_map(
-            fn ($redirect) => new PlanRedirect(
-                $redirect->descriptor,
-                $redirect->type,
-                $redirect->target instanceof HereDocument ? new PlanWord(
+            fn ($redirect) => PlanRedirect::from([
+                'descriptor' => $redirect->descriptor,
+                'type' => $redirect->type,
+                'target' => $redirect->target instanceof HereDocument ? new PlanWord(
                     [$this->hereDocumentText($redirect->target)],
                 ) : $this->planWord($redirect->target, $node, $substitutions),
-            ),
+            ]),
             $node->redirects,
         );
 

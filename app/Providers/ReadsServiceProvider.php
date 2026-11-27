@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Concerns\Linkable;
-use App\Exceptions\ReadLimitInvalid;
 use App\Exceptions\ReadPolicyMissing;
 use App\Reads\Contracts\ReadLog as ReadLogContract;
 use App\Reads\Contracts\ReadMeter as ReadMeterContract;
 use App\Reads\ReadLog;
 use App\Reads\ReadMeter;
+use App\Reads\ReadSettings;
 use App\Reads\SelfMeasuredCommands;
 use App\Records\Contracts\ReadableModel;
 use App\Support\Reflector;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
@@ -55,15 +54,10 @@ final class ReadsServiceProvider extends ServiceProvider
     public function boot(
         DatabaseManager $databases,
         Dispatcher $events,
-        Repository $config,
+        ReadSettings $settings,
         SelfMeasuredCommands $selfMeasured,
     ): void {
-        $defaultLimit = $config->integer('reads.default_limit');
-        $pageMax = $config->integer('reads.page_max');
-
-        if ($defaultLimit < 1 || $defaultLimit > $pageMax) {
-            throw ReadLimitInvalid::configured($defaultLimit, $pageMax);
-        }
+        $settings->assertValid();
 
         $this->app->booted(static function (): void {
             foreach (Relation::morphMap() as $linkType => $model) {

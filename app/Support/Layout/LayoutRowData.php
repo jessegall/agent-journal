@@ -47,9 +47,16 @@ final class LayoutRowData extends Data
      */
     public function parts(): array
     {
-        return [
-            ...($this->leading instanceof Optional ? [] : $this->leading),
-            ...($this->trailing instanceof Optional ? [] : $this->trailing),
-        ];
+        $parts = [];
+
+        if (! $this->leading instanceof Optional) {
+            $parts = $this->leading;
+        }
+
+        if (! $this->trailing instanceof Optional) {
+            $parts = [...$parts, ...$this->trailing];
+        }
+
+        return $parts;
     }
 }

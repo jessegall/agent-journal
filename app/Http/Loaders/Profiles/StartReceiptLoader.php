@@ -13,7 +13,6 @@ use App\Sessions\Exceptions\SessionRequestMissing;
 use App\Sessions\SessionRequestDetails;
 use App\Sessions\StartRefusalCodes;
 use App\Sessions\StartRemedyWords;
-use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -66,11 +65,6 @@ final readonly class StartReceiptLoader
         return StartReceiptData::from([
             'requestId' => $requestId,
             'state' => $state,
-            'sessionId' => new Optional(),
-            'generation' => new Optional(),
-            'reasonCode' => new Optional(),
-            'explanation' => new Optional(),
-            'remedy' => new Optional(),
             ...$fields,
         ]);
     }

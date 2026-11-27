@@ -87,7 +87,9 @@ function openRow(event: MouseEvent): void {
         return;
     }
 
-    if ((window.getSelection()?.toString() ?? '') !== '') {
+    const selection = window.getSelection();
+
+    if (selection !== null && selection.toString() !== '') {
         return;
     }
 

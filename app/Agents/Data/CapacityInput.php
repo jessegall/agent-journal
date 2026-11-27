@@ -58,16 +58,16 @@ final class CapacityInput extends Data
         $defaults = ExecutionBudgets::defaults();
         $memory = $this->memoryBytes ?? $defaults->memoryBytes;
 
-        return new ExecutionBudgets(
-            $this->cpuCores ?? $defaults->cpuCores,
-            $memory,
-            $memory,
-            $defaults->processes,
-            $defaults->openFiles,
-            $defaults->tmpBytes,
-            $defaults->homeBytes,
-            $this->diskBytes ?? $defaults->workspaceBytes,
-            $defaults->wallSeconds,
-        );
+        return ExecutionBudgets::from([
+            'cpu_cores' => $this->cpuCores ?? $defaults->cpuCores,
+            'memory_bytes' => $memory,
+            'memory_swap_bytes' => $memory,
+            'processes' => $defaults->processes,
+            'open_files' => $defaults->openFiles,
+            'tmp_bytes' => $defaults->tmpBytes,
+            'home_bytes' => $defaults->homeBytes,
+            'workspace_bytes' => $this->diskBytes ?? $defaults->workspaceBytes,
+            'wall_seconds' => $defaults->wallSeconds,
+        ]);
     }
 }

@@ -61,6 +61,6 @@ final class DraftRequest extends FormRequest
 
     public function text(string $field): string
     {
-        return (string) $this->input($field, '');
+        return $this->string($field)->toString();
     }
 }

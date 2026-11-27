@@ -420,7 +420,7 @@ final readonly class ReadingRules
 
     private function reader(string $program, ArgumentGrammar $arguments, CommandClassSet $classes): CommandRule
     {
-        return CommandRule::forProgram("core.{$program}", new ProgramSpellings($program), [], $arguments, $classes);
+        return CommandRule::forProgram("core.{$program}", ProgramSpellings::from(['family' => $program]), [], $arguments, $classes);
     }
 
     private function paths(): ArgumentGrammar

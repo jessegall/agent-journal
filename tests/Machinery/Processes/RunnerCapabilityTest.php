@@ -69,9 +69,9 @@ final class RunnerCapabilityTest extends TestCase
         $admission = $this->admit($line);
         $this->assertTrue($admission->isAllowed());
 
-        $this->artisan('process:run', ['--admission' => $admission->runId])->assertExitCode(0);
+        $this->artisan('process:run', ['--admission' => $admission->runId()])->assertExitCode(0);
 
-        $this->assertSame($parts, PartRun::query()->where('process_run_id', $admission->runId)->count());
+        $this->assertSame($parts, PartRun::query()->where('process_run_id', $admission->runId())->count());
     }
 
     private function admit(string $line): Admission

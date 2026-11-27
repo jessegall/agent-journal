@@ -7,7 +7,7 @@ namespace App\Processes;
 use App\Exceptions\PlaceUnavailable;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
-use Illuminate\Contracts\Config\Repository;
+use Illuminate\Container\Attributes\Config;
 
 /**
  * Whether the output disk has room for a new run's full capture; while it does not, admission starts nothing, and the
@@ -15,7 +15,11 @@ use Illuminate\Contracts\Config\Repository;
  */
 final readonly class OutputDiskCapacity
 {
-    public function __construct(private Files $files, private Repository $config) {}
+    public function __construct(
+        private Files $files,
+        #[Config('processes.minimum_free_bytes')]
+        private int $minimumFreeBytes,
+    ) {}
 
     /**
      * Whether the disk of the process-output place has the room the settings ask for; a disk whose room cannot be
@@ -29,6 +33,6 @@ final readonly class OutputDiskCapacity
             return true;
         }
 
-        return $free >= (int) $this->config->get('processes.minimum_free_bytes');
+        return $free >= $this->minimumFreeBytes;
     }
 }

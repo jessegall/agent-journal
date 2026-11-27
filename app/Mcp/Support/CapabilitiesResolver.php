@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Agents\Drivers\Contracts\InstalledVersion;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Servers\JournalServer;
-use Illuminate\Config\Repository;
 use Illuminate\Http\Request;
 
 /**
@@ -20,7 +20,7 @@ final readonly class CapabilitiesResolver
     public function __construct(
         private McpCatalogue $catalogue,
         private JobPermissionReader $permissions,
-        private Repository $config,
+        private InstalledVersion $version,
         private Request $request,
     ) {}
 
@@ -28,7 +28,7 @@ final readonly class CapabilitiesResolver
     {
         return ToolResult::ok([
             'contract_version' => JournalServer::contractVersion(),
-            'server_build' => $this->config->string('app.version', 'unknown'),
+            'server_build' => $this->version->label(),
             'protocol_version' => $this->request->header(self::PROTOCOL_HEADER),
             'job_profile' => $this->permissions->profileKey(),
             'tools' => $this->catalogue->toolNamesFor($this->permissions),

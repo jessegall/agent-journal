@@ -77,7 +77,7 @@ final readonly class PackageScripts
 
         return [
             new ScriptBody(
-                new ScriptBinding($file, $name, hash('sha256', json_encode($lines, JSON_THROW_ON_ERROR))),
+                ScriptBinding::from(['package_file' => $file, 'script' => $name, 'digest' => hash('sha256', json_encode($lines, JSON_THROW_ON_ERROR))]),
                 $lines,
             ),
         ];

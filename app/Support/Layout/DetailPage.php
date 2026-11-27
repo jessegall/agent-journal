@@ -131,10 +131,18 @@ final readonly class DetailPage
      */
     private function body(string $chosen): array
     {
-        return [
-            ...($this->facts === [] ? [] : [LayoutPartData::collection('facts', 'facts', $this->facts)]),
-            ...$this->standing,
-            ...($this->tabs === [] ? [] : [PublicationTab::setOf($this->tabs, $chosen)]),
-        ];
+        $parts = [];
+
+        if ($this->facts !== []) {
+            $parts[] = LayoutPartData::collection('facts', 'facts', $this->facts);
+        }
+
+        $parts = [...$parts, ...$this->standing];
+
+        if ($this->tabs !== []) {
+            $parts[] = PublicationTab::setOf($this->tabs, $chosen);
+        }
+
+        return $parts;
     }
 }

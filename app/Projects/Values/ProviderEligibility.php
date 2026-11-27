@@ -11,20 +11,15 @@ use App\Values\DriverFamily;
  */
 final readonly class ProviderEligibility
 {
-    private function __construct(public DriverFamily $family, public string $unavailableReason) {}
+    private function __construct(public DriverFamily $family, public string|null $unavailableReason) {}
 
     public static function eligible(DriverFamily $family): self
     {
-        return new self($family, '');
+        return new self($family, null);
     }
 
     public static function unavailable(DriverFamily $family, string $reason): self
     {
         return new self($family, $reason);
-    }
-
-    public function isEligible(): bool
-    {
-        return $this->unavailableReason === '';
     }
 }

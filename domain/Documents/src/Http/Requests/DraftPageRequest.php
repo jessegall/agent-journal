@@ -62,6 +62,6 @@ final class DraftPageRequest extends FormRequest
 
     public function body(): string
     {
-        return (string) $this->input('body', '');
+        return $this->string('body')->toString();
     }
 }

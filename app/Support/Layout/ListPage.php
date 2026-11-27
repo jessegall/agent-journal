@@ -201,10 +201,13 @@ final readonly class ListPage
             return $this->empty->parts();
         }
 
-        return [
-            LayoutPartData::collection('rows', 'list', $this->rows),
-            ...($this->paging instanceof ListPaging ? $this->paging->parts() : []),
-        ];
+        $parts = [LayoutPartData::collection('rows', 'list', $this->rows)];
+
+        if ($this->paging instanceof ListPaging) {
+            $parts = [...$parts, ...$this->paging->parts()];
+        }
+
+        return $parts;
     }
 
     /**

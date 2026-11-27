@@ -46,8 +46,8 @@ final readonly class SearchLoader
 
     public function __invoke(SearchInput $input): PaletteSearchData
     {
-        if ($input->continuation === null && mb_strlen(trim((string) $input->query)) < SearchWords::CHARACTER_MINIMUM) {
-            return $this->tooShort((string) $input->query);
+        if ($input->continuation === null && mb_strlen(trim($input->query)) < SearchWords::CHARACTER_MINIMUM) {
+            return $this->tooShort($input->query);
         }
 
         $answer = $this->coordinator->search($this->owner(), $this->reader(), SearchRequest::parse(

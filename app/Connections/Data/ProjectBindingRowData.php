@@ -85,29 +85,29 @@ final class ProjectBindingRowData extends Data
      * environment; otherwise the row shows its status alone, with the reason for each driver.
      *
      * @param  list<DriverFamily>  $families
-     * @return list<array<string, bool|string>>
+     * @return list<array<string, bool|string|null>>
      */
     private static function providersOf(ProjectBinding $binding, BindingReadiness $state, array $families): array
     {
         return array_map(function (DriverFamily $family) use ($binding, $state): array {
             $reason = $binding->eligibilityOf($family)->unavailableReason;
 
-            if ($reason === '' && $state !== BindingReadiness::Ready) {
+            if ($reason === null && $state !== BindingReadiness::Ready) {
                 $reason = 'Start waits until the folder is ready.';
             }
 
-            if ($reason === '' && ! $binding->isReconciled()) {
+            if ($reason === null && ! $binding->isReconciled()) {
                 $reason = "Start waits until the folder's relay has reported what became of its earlier sessions.";
             }
 
-            if ($reason === '' && $binding->isEnvironmentUnassigned()) {
+            if ($reason === null && $binding->isEnvironmentUnassigned()) {
                 $reason = 'Start waits until the folder works in an environment.';
             }
 
             return [
                 'driver' => $family->key,
                 'label' => $family->label,
-                'canStart' => $reason === '',
+                'canStart' => $reason === null,
                 'startCommand' => 'journal '.$family->hostName,
                 'unavailableReason' => $reason,
             ];

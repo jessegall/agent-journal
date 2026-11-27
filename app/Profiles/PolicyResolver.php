@@ -57,15 +57,24 @@ final readonly class PolicyResolver
             $this->access($profile, $project),
             $this->stopConditions($profile),
             $this->execution($profile),
-            new ProfileProvenance($configurationHash, [
-                new FieldOrigin('preferredDriver', PolicyOriginType::Profile),
-                new FieldOrigin('access', self::originOf($project, $profile->override)),
-                new FieldOrigin('stopConditions', $profile->stopConditions === []
-                    ? PolicyOriginType::GlobalDefault
-                    : PolicyOriginType::Profile),
-                new FieldOrigin('execution', $profile->container === null
-                    ? PolicyOriginType::GlobalDefault
-                    : PolicyOriginType::Profile),
+            ProfileProvenance::from([
+                'configuration_hash' => $configurationHash,
+                'origins' => [
+                    FieldOrigin::from(['field' => 'preferredDriver', 'origin' => PolicyOriginType::Profile]),
+                    FieldOrigin::from(['field' => 'access', 'origin' => self::originOf($project, $profile->override)]),
+                    FieldOrigin::from([
+                        'field' => 'stopConditions',
+                        'origin' => $profile->stopConditions === []
+                        ? PolicyOriginType::GlobalDefault
+                        : PolicyOriginType::Profile,
+                    ]),
+                    FieldOrigin::from([
+                        'field' => 'execution',
+                        'origin' => $profile->container === null
+                        ? PolicyOriginType::GlobalDefault
+                        : PolicyOriginType::Profile,
+                    ]),
+                ],
             ]),
         );
 
@@ -157,7 +166,7 @@ final readonly class PolicyResolver
             }
         }
 
-        return new StopConditions($conditions);
+        return StopConditions::from(['conditions' => $conditions]);
     }
 
     /**
@@ -186,13 +195,13 @@ final readonly class PolicyResolver
 
         $image = $mode === ExecutionModeType::RequiredContainer ? $this->image->reference : null;
 
-        return new ExecutionPolicy(
-            $mode,
-            $image,
-            ProfileStartPolicy::WORKSPACE,
-            ExecutionBudgets::defaults(),
-            [],
-        );
+        return ExecutionPolicy::from([
+            'mode' => $mode,
+            'image_reference' => $image,
+            'worktree' => ProfileStartPolicy::WORKSPACE,
+            'budgets' => ExecutionBudgets::defaults(),
+            'network_capabilities' => [],
+        ]);
     }
 
     /**

@@ -189,7 +189,7 @@ final readonly class ProfileBase
     {
         $processes = $this->mayChangeWorkspaceFiles() ? ProcessGrants::everything() : ProcessGrants::readingOnly();
 
-        return new AccessPolicy($this->paths, [], $processes);
+        return AccessPolicy::from(['paths' => $this->paths, 'destinations' => [], 'processes' => $processes]);
     }
 
     /**

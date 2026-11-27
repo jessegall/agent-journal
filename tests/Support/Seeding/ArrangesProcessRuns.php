@@ -35,7 +35,7 @@ trait ArrangesProcessRuns
         config(['processes.runner' => true]);
         $admission = $this->app->make(ShellAdmission::class)
             ->admit($line, ShellDialect::Bash, ExecutionContext::inFolder(base_path()), "process-{$name}");
-        $this->processRunIds[$name] = $admission->runId;
+        $this->processRunIds[$name] = $admission->runId();
         $this->processRunCalled($name)->consumeFor("consume-{$name}", (string) config('app.key'));
 
         return $this;

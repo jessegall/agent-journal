@@ -103,7 +103,7 @@ final readonly class DriverWorkers
 
             $this->perform($work, DriverActions::of(
                 new TakeHostProcessSnapshotCommand($process->id, $source),
-                new StreamHostProcessCommand($process->id, StreamRate::of(true, 0), false, $source),
+                new StreamHostProcessCommand($process->id, StreamRate::withWorker(0), false, $source),
             ));
         }
 

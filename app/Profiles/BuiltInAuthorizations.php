@@ -37,12 +37,12 @@ final class BuiltInAuthorizations
             $granted = $definition->grantsForAgents($type->isCoordinator(), $type->isReadOnly());
 
             foreach (array_filter($granted, $type->allows(...)) as $access) {
-                $grants[] = new PolicyGrant($definition->policy, $access);
+                $grants[] = PolicyGrant::from(['policy' => $definition->policy, 'access' => $access]);
             }
         }
 
-        $orientation = array_map(fn (string $read) => new ScopedRead($read), self::ORIENTATION_READS);
+        $orientation = array_map(fn (string $read) => ScopedRead::from(['name' => $read]), self::ORIENTATION_READS);
 
-        return new ProfileAuthorization(AuthorizationType::Policies, $grants, [], $orientation);
+        return ProfileAuthorization::from(['type' => AuthorizationType::Policies, 'grants' => $grants, 'denied_commands' => [], 'reads' => $orientation]);
     }
 }

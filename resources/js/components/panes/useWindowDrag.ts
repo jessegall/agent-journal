@@ -96,7 +96,7 @@ export function useWindowDrag(): {
             const pane = panesIn(store.layout.value).find(
                 (each) => each.id === paneId,
             );
-            const zone = zoneAt(box, x, y, (pane?.windows.length ?? 0) > 0);
+            const zone = zoneAt(box, x, y, pane !== undefined && pane.windows.length > 0);
 
             if (
                 paneId === fromPaneId &&

@@ -72,7 +72,7 @@ final class DocumentCommentsPartData extends Data
                 ),
             )),
             $recipients,
-            $feedbackAddress ?? new Optional(),
+            $feedbackAddress ?? Optional::create(),
         );
     }
 }

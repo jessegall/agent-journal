@@ -39,11 +39,6 @@ final readonly class TaskDetailsFactory
      */
     public static function text(Task $task): TaskText
     {
-        return TaskText::from([
-            'brief' => $task->brief,
-            'resultNote' => $task->result_note,
-            'blockReason' => $task->block_reason,
-            'cancelReason' => $task->cancel_reason,
-        ]);
+        return TaskText::from($task->only(['brief', 'result_note', 'block_reason', 'cancel_reason']));
     }
 }

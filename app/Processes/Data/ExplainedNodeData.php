@@ -26,12 +26,12 @@ final class ExplainedNodeData extends Data
         public readonly int|null $parent,
         public readonly string $snippet,
         public readonly array $redirects,
-        public readonly string $program = '',
-        public readonly string $original = '',
+        public readonly string|null $program = null,
+        public readonly string|null $original = null,
         public readonly array $classes = [],
         public readonly array $provenance = [],
         public readonly array $unresolved = [],
-        public readonly string $purpose = '',
+        public readonly string|null $purpose = null,
         public readonly array $contract = [],
     ) {}
 }

@@ -8,16 +8,12 @@ use App\Hosts\StreamRate;
 use PHPUnit\Framework\TestCase;
 
 /**
- * A worker driving a terminal reads at least four frames a second, a viewer what it asks, and with neither nothing
- * streams.
+ * A worker driving a terminal reads at least four frames a second, or the faster rate a viewer asks.
  */
 final class StreamRateTest extends TestCase
 {
-    public function test_the_rate_follows_who_reads_the_frames(): void
+    public function test_a_worker_reads_at_least_its_minimum_and_a_faster_viewer_keeps_its_rate(): void
     {
-        $this->assertSame(
-            [4, 10, 2, 0],
-            [StreamRate::of(true, 0), StreamRate::of(true, 10), StreamRate::of(false, 2), StreamRate::of(false, 0)],
-        );
+        $this->assertSame([4, 10], [StreamRate::withWorker(0), StreamRate::withWorker(10)]);
     }
 }

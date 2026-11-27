@@ -50,7 +50,7 @@ final class HookRequest extends FormRequest
      */
     public function processGeneration(): int|null
     {
-        if ($this->query('generation') === null) {
+        if (! $this->has('generation')) {
             return null;
         }
 

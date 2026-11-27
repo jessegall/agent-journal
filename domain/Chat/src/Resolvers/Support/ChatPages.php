@@ -150,7 +150,7 @@ final readonly class ChatPages
         ) use ($names, $events, $viewer, $readIds, $questions): ChatEntryData {
             $author = $row->author;
 
-            return ChatEntryData::from([
+            $fields = [
                 'id' => $row->id,
                 'type' => $row->type,
                 'groupNumber' => $row->group_number,
@@ -158,10 +158,13 @@ final readonly class ChatPages
                 'authorLabel' => $names->nameOf($author),
                 'createdAt' => $row->created_at->toIso8601String(),
                 ...$this->sourceFieldsOf($row, $viewer, $readIds, $questions),
-                ...($row->type === ChatMessageType::Event && isset($events[$row->id]) ? [
-                    'event' => $events[$row->id],
-                ] : []),
-            ]);
+            ];
+
+            if ($row->type === ChatMessageType::Event && isset($events[$row->id])) {
+                $fields['event'] = $events[$row->id];
+            }
+
+            return ChatEntryData::from($fields);
         })->all());
     }
 

@@ -376,7 +376,7 @@ describe('ConnectProjectWindow', () => {
                                         label: 'Claude Code',
                                         canStart: true,
                                         startCommand: 'journal claude',
-                                        unavailableReason: '',
+                                        unavailableReason: null,
                                     },
                                     {
                                         driver: 'codex',
