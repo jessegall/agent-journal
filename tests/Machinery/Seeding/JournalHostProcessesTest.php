@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
+use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverType;
@@ -80,8 +81,8 @@ final class JournalHostProcessesTest extends TestCase
         $claude = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE);
 
         $this->journal->assertResult(
-            ['example', $claude->hookAdapter()::class, $claude->signInMethods()],
-            [$added->family(), $added->hookAdapter()::class, $added->signInMethods()],
+            ['example', $claude->hookAdapter()::class, $claude->signInProtocolBy(SignInMethod::OAuth)],
+            [$added->family(), $added->hookAdapter()::class, $added->signInProtocolBy(SignInMethod::OAuth)],
         );
     }
 

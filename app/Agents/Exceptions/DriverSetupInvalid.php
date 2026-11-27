@@ -11,6 +11,11 @@ use LogicException;
  */
 final class DriverSetupInvalid extends LogicException
 {
+    public static function missingPart(string $family, string $part): self
+    {
+        return new self("The driver family {$family} is declared without its {$part}, which every driver needs.");
+    }
+
     public static function twice(string $family): self
     {
         return new self("The driver family {$family} is set up twice.");

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Accounts\Contracts;
 
+use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\SignInDriver;
 use App\Support\PrivateAccountProcess;
 use App\Values\SignInCard;
@@ -17,6 +18,11 @@ use App\Values\SignInVerification;
  */
 interface SignInProtocol
 {
+    /**
+     * The sign-in method this protocol signs in by, so a driver lists its protocols and a method finds its own.
+     */
+    public static function method(): SignInMethod;
+
     /**
      * What the method's card says about this sign-in, in the driver's own words.
      */

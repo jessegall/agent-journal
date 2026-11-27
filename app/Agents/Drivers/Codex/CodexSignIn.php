@@ -248,6 +248,11 @@ final readonly class CodexSignIn implements SignInProtocol
         return (string) json_encode($fields, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     }
 
+    public static function method(): SignInMethod
+    {
+        return SignInMethod::OAuth;
+    }
+
     public function card(): SignInCard
     {
         return new SignInCard(

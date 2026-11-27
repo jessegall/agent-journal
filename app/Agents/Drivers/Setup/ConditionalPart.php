@@ -8,9 +8,11 @@ use App\Agents\Drivers\Contracts\AccountEnvironmentPart;
 use App\Agents\Drivers\Contracts\AccountPlanPart;
 use App\Agents\Drivers\Contracts\EnvironmentPart;
 use App\Agents\Drivers\Contracts\PlanPart;
+use App\Agents\Drivers\StartConditions\OutsideContainer;
 use App\Agents\Exceptions\DriverSetupInvalid;
 use App\Processes\Contracts\Condition;
 use App\Processes\Negation;
+use App\Support\Reflector;
 use App\Values\DriverStart;
 use App\Values\EnvironmentAddition;
 use App\Values\PlanAddition;
@@ -53,6 +55,24 @@ final readonly class ConditionalPart
     public static function forAccount(Condition $condition, string $part): self
     {
         return new self($condition, $part, true);
+    }
+
+    /**
+     * The same part for local starts only, as a driver declares the parts only a start outside a container takes.
+     */
+    public function outsideContainers(): self
+    {
+        return clone ($this, ['condition' => new OutsideContainer($this->condition)]);
+    }
+
+    /**
+     * Whether the part adds to a start's environment, else to its plan, so a declaration lists both kinds together.
+     */
+    public function addsToEnvironment(): bool
+    {
+        $part = Reflector::of($this->part);
+
+        return $part->is(EnvironmentPart::class) || $part->is(AccountEnvironmentPart::class);
     }
 
     public function appliesTo(DriverStart $start): bool

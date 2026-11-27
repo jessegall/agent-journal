@@ -93,6 +93,11 @@ final readonly class CodexKeySignIn implements SignInProtocol
         $driver->signOut($directory);
     }
 
+    public static function method(): SignInMethod
+    {
+        return SignInMethod::ApiKey;
+    }
+
     public function card(): SignInCard
     {
         return new SignInCard(

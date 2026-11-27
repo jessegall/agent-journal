@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\ClaudeCode;
 
 use App\Accounts\Contracts\SignInProtocol;
-use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\SignInDriver;
 use App\Agents\Exceptions\FileExists;
 use App\Agents\Exceptions\FileUnwritable;
@@ -103,7 +102,7 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
         }
 
         $status = $driver->status($directory, $this->handover($directory));
-        $isSignedIn = $status->isSignedInBy($this->method());
+        $isSignedIn = $status->isSignedInBy(static::method());
         $identity = $isSignedIn ? new SignInIdentity(null, null, null, $status->expiresAt) : SignInIdentity::unproved();
 
         return new SignInVerification($isSignedIn, $identity, $status->isReadable);
@@ -136,11 +135,6 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
     {
         return $this->files->pathIn(Place::Accounts, $this->secretFile($directory));
     }
-
-    /**
-     * The sign-in method this value signs in by.
-     */
-    abstract protected function method(): SignInMethod;
 
     /**
      * Lets the driver find the value at start, beside its file.

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Accounts\Enums\SignInMethod;
 use App\Agents\DriverCatalogue;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountSettings;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAccountHome;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeChangeEffort;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeChangeModel;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeIsolation;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeJournalServer;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeKeptSignIn;
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeKeyScripts;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeLayout;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeManagedSettings;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeMcpTimeouts;
@@ -33,12 +33,13 @@ use App\Agents\Drivers\ClaudeCode\TurnResults;
 use App\Agents\Drivers\Codex\CodexAccountSettings;
 use App\Agents\Drivers\Codex\CodexAdapter;
 use App\Agents\Drivers\Codex\CodexArguments;
+use App\Agents\Drivers\Codex\CodexChangeEffort;
+use App\Agents\Drivers\Codex\CodexChangeModel;
 use App\Agents\Drivers\Codex\CodexFileCredentialStore;
 use App\Agents\Drivers\Codex\CodexHome;
 use App\Agents\Drivers\Codex\CodexHomeFiles;
 use App\Agents\Drivers\Codex\CodexIsolation;
 use App\Agents\Drivers\Codex\CodexJournalServer;
-use App\Agents\Drivers\Codex\CodexKeyScripts;
 use App\Agents\Drivers\Codex\CodexKeySignIn;
 use App\Agents\Drivers\Codex\CodexLayout;
 use App\Agents\Drivers\Codex\CodexManagedHooks;
@@ -51,11 +52,11 @@ use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\HookReplies;
-use App\Agents\Drivers\Parts\ContainerAccountHome;
 use App\Agents\Drivers\Parts\HostHomeAndPath;
-use App\Agents\Drivers\Parts\StartReference;
 use App\Agents\Drivers\Parts\StatusLineSocket;
 use App\Agents\Drivers\Setup\ConditionalPart;
+use App\Agents\Drivers\Setup\DefaultDriverSetup;
+use App\Agents\Drivers\Setup\DriverImage;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
 use App\Agents\Drivers\Setup\HeadlessTurns;
@@ -75,7 +76,7 @@ use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\SignInEgress;
 use App\Files\Contracts\Files;
 use App\Processes\AnyContext;
-use App\Processes\Negation;
+use App\Support\Compatibility\DriverCompatibility;
 use App\Support\PrivateAccountProcess;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -123,22 +124,22 @@ final class DriversServiceProvider extends ServiceProvider
     private static function codex(string $signInExecutable): DriverSetup
     {
         $driver = CodexArguments::EXECUTABLE;
+        $version = DriverCompatibility::pinned(DefaultDrivers::CODEX)->version;
 
-        return self::shared(DriverSetup::of(
-            family: DefaultDrivers::CODEX,
-            driver: $driver,
-            arguments: CodexArguments::class,
-            versionProbe: new VersionProbe(
+        return DefaultDriverSetup::for(DefaultDrivers::CODEX)
+            ->driver($driver)
+            ->image(DriverImage::at('.docker/drivers/codex', $version))
+            ->arguments(CodexArguments::class)
+            ->version(new VersionProbe(
                 argv: [$driver, '--version'],
                 inherited: HostHomeAndPath::NAMES,
                 line: VersionLine::exactly("{$driver}-cli {build}"),
-            ),
-            signInProbe: [$driver, 'login', 'status'],
-            signInReader: CodexSignInReader::class,
-            layout: CodexLayout::class,
-            keyScripts: CodexKeyScripts::class,
-            headlessTurns: HeadlessTurns::onAccountOwner([$driver, 'app-server']),
-            signIn: new SignInSetup(
+            ))
+            ->signInProbe([$driver, 'login', 'status'], CodexSignInReader::class)
+            ->layout(CodexLayout::class)
+            ->keyScripts([CodexChangeModel::class, CodexChangeEffort::class])
+            ->headlessTurns(HeadlessTurns::onAccountOwner([$driver, 'app-server']))
+            ->signIn(new SignInSetup(
                 executable: $signInExecutable,
                 environment: CodexSignInEnvironment::class,
                 modelCheck: new ModelCheck(
@@ -147,50 +148,38 @@ final class DriversServiceProvider extends ServiceProvider
                     self::CODEX_MODEL_CHECK_SECONDS,
                 ),
                 signOut: ['logout'],
-                methods: [
-                    SignInMethod::OAuth->value => CodexSignIn::class,
-                    SignInMethod::ApiKey->value => CodexKeySignIn::class,
-                ],
+                methods: [CodexSignIn::class, CodexKeySignIn::class],
                 preparations: [CodexFileCredentialStore::class],
                 credentialFiles: ['auth.json'],
-            ),
-            accountSettings: CodexAccountSettings::class,
-            skills: CodexSkills::class,
-            hookAdapter: CodexAdapter::class,
-            isolation: CodexIsolation::class,
-            journalServer: ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class),
-            hookRelay: ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class),
-        ))
+            ))
+            ->accountSettings(CodexAccountSettings::class)
+            ->skills(CodexSkills::class)
+            ->hookAdapter(CodexAdapter::class)
+            ->isolation(CodexIsolation::class)
+            ->journalServer(ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class))
+            ->hookRelay(ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class))
+            ->local(
+                ConditionalPart::for(new AnyContext(), CodexHome::class),
+                ConditionalPart::for(new AnyContext(), HostHomeAndPath::class),
+            )
+            ->perStart(ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class))
             ->refusedWhen(new OwnTerminalStart(), fn () => ProfileRefused::ownTerminalWithheld($driver))
             // Codex reads its sign-in only from its home, so it has none to check without an account folder.
             ->signInRefusedWhen(
                 new AccountWithoutFolder(),
                 fn () => ProfileRefused::unresolvedSetting('no account to check the sign-in of'),
             )
-            ->environment(
-                ConditionalPart::for(new Negation(new ContainedStart()), CodexHome::class),
-                ConditionalPart::for(new Negation(new ContainedStart()), HostHomeAndPath::class),
-            )
-            ->startPlan(
-                ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class),
-            )
             ->mountsPlanFile(CodexManagedHooks::FILE, CodexManagedHooks::TARGET)
             ->mountsPlanFile(CodexJournalServer::FILE, CodexJournalServer::TARGET)
             // Codex links its own executable under tmp/arg0 each run; those links never belong in the account folder.
-            ->keepsScratchIn('tmp');
+            ->keepsScratchIn('tmp')
+            ->build();
     }
 
     /**
      * What every driver's setup holds before its own differences: the account's folder where a contained start finds
      * it, and the reference an account start reaches the journal by. A fix here lands for every driver.
      */
-    private static function shared(DriverSetup $setup): DriverSetup
-    {
-        return $setup->environment(
-            ConditionalPart::forAccount(new ContainedStart(), ContainerAccountHome::class),
-            ConditionalPart::forAccount(new AccountStart(), StartReference::class),
-        );
-    }
 
     /**
      * How the journal starts each driver family it ships.
@@ -208,67 +197,66 @@ final class DriversServiceProvider extends ServiceProvider
     private static function claudeCode(string $signInExecutable): DriverSetup
     {
         $installed = ClaudeCodeArguments::INSTALLED_EXECUTABLE;
+        $version = DriverCompatibility::pinned(DefaultDrivers::CLAUDE_CODE)->version;
 
-        return self::shared(DriverSetup::of(
-            family: DefaultDrivers::CLAUDE_CODE,
-            driver: ClaudeCodeArguments::EXECUTABLE,
-            arguments: ClaudeCodeArguments::class,
-            versionProbe: new VersionProbe(
+        return DefaultDriverSetup::for(DefaultDrivers::CLAUDE_CODE)
+            ->driver(ClaudeCodeArguments::EXECUTABLE)
+            ->image(DriverImage::at('.docker/drivers/claude-code', $version))
+            ->arguments(ClaudeCodeArguments::class)
+            ->version(new VersionProbe(
                 argv: [$installed, '--version'],
                 inherited: [...ClaudeCodePlatform::NAMES, ...HostHomeAndPath::NAMES],
                 line: VersionLine::startingWith('{build} '),
-            ),
-            signInProbe: [$installed, 'auth', 'status', '--json'],
-            signInReader: ClaudeCodeSignInReader::class,
-            layout: ClaudeCodeLayout::class,
-            keyScripts: ClaudeCodeKeyScripts::class,
-            headlessTurns: HeadlessTurns::eachInAProcess(TurnResults::class),
-            signIn: new SignInSetup(
-                executable: $signInExecutable,
-                environment: ClaudeCodeSignInEnvironment::class,
-                modelCheck: new ModelCheck(
-                    [
-                        '-p',
-                        'Reply with OK.',
-                        '--output-format',
-                        'json',
-                        '--max-turns',
-                        '1',
-                        '--tools',
-                        '',
-                        '--no-session-persistence',
-                    ],
-                    ClaudeCodeModelAnswer::class,
-                    PrivateAccountProcess::CHECK_SECONDS_LIMIT,
-                ),
-                signOut: ['auth', 'logout'],
-                methods: [
-                    SignInMethod::OAuth->value => ClaudeSignIn::class,
-                    SignInMethod::ProviderToken->value => ClaudeTokenSignIn::class,
-                    SignInMethod::ApiKey->value => ClaudeKeySignIn::class,
-                ],
-                firstRuns: [ClaudeFirstRun::class],
-            ),
-            accountSettings: ClaudeAccountSettings::class,
-            skills: ClaudeCodeSkills::class,
-            hookAdapter: ClaudeCodeAdapter::class,
-            isolation: ClaudeCodeIsolation::class,
-            journalServer: ConditionalPart::forAccount(new JournalServerAccount(), ClaudeCodeJournalServer::class),
-            hookRelay: ConditionalPart::for(new ContainedStart(), ClaudeCodeManagedSettings::class),
-        ))
-            ->environment(
-                ConditionalPart::forAccount(new Negation(new ContainedStart()), ClaudeCodeAccountHome::class),
+            ))
+            ->signInProbe([$installed, 'auth', 'status', '--json'], ClaudeCodeSignInReader::class)
+            ->layout(ClaudeCodeLayout::class)
+            ->keyScripts([ClaudeCodeChangeModel::class, ClaudeCodeChangeEffort::class])
+            ->headlessTurns(HeadlessTurns::eachInAProcess(TurnResults::class))
+            ->signIn(self::claudeSignIn($signInExecutable))
+            ->accountSettings(ClaudeAccountSettings::class)
+            ->skills(ClaudeCodeSkills::class)
+            ->hookAdapter(ClaudeCodeAdapter::class)
+            ->isolation(ClaudeCodeIsolation::class)
+            ->journalServer(ConditionalPart::forAccount(new JournalServerAccount(), ClaudeCodeJournalServer::class))
+            ->hookRelay(ConditionalPart::for(new ContainedStart(), ClaudeCodeManagedSettings::class))
+            ->local(ConditionalPart::forAccount(new AnyContext(), ClaudeCodeAccountHome::class))
+            ->perStart(
                 ConditionalPart::for(new AnyContext(), ClaudeCodePlatform::class),
                 ConditionalPart::for(new HostHomeStart(), HostHomeAndPath::class),
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeOwnTerminalHome::class),
                 ConditionalPart::for(new JournalServerAccount(), ClaudeCodeMcpTimeouts::class),
-            )
-            ->startPlan(
                 ConditionalPart::for(new AnyContext(), ClaudeCodeSettingsFile::class),
                 ConditionalPart::for(new HostAccountTerminal(), StatusLineSocket::class),
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeKeptSignIn::class),
                 ConditionalPart::forAccount(new AccountTerminal(), ClaudeCodeTranscriptRestart::class),
             )
-            ->mountsPlanFile(ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET);
+            ->mountsPlanFile(ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET)
+            ->build();
+    }
+
+    private static function claudeSignIn(string $signInExecutable): SignInSetup
+    {
+        return new SignInSetup(
+            executable: $signInExecutable,
+            environment: ClaudeCodeSignInEnvironment::class,
+            modelCheck: new ModelCheck(
+                [
+                    '-p',
+                    'Reply with OK.',
+                    '--output-format',
+                    'json',
+                    '--max-turns',
+                    '1',
+                    '--tools',
+                    '',
+                    '--no-session-persistence',
+                ],
+                ClaudeCodeModelAnswer::class,
+                PrivateAccountProcess::CHECK_SECONDS_LIMIT,
+            ),
+            signOut: ['auth', 'logout'],
+            methods: [ClaudeSignIn::class, ClaudeTokenSignIn::class, ClaudeKeySignIn::class],
+            firstRuns: [ClaudeFirstRun::class],
+        );
     }
 }

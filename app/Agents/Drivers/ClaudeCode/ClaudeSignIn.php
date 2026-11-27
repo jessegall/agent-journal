@@ -117,6 +117,11 @@ final readonly class ClaudeSignIn implements SignInProtocol
         $process->send(SignInCode::from($code)->code);
     }
 
+    public static function method(): SignInMethod
+    {
+        return SignInMethod::OAuth;
+    }
+
     public function card(): SignInCard
     {
         return new SignInCard(

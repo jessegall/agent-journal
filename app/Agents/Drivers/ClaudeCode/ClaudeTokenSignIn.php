@@ -31,11 +31,6 @@ final readonly class ClaudeTokenSignIn extends ClaudeSecretSignIn
         return self::tokenFileIn($directory);
     }
 
-    protected function method(): SignInMethod
-    {
-        return SignInMethod::ProviderToken;
-    }
-
     protected function install(string $directory): void {}
 
     protected function uninstall(string $directory): void {}
@@ -48,6 +43,11 @@ final readonly class ClaudeTokenSignIn extends ClaudeSecretSignIn
     protected function readFiles(string $directory): array
     {
         return [self::TOKEN_DESCRIPTOR => $this->secretFile($directory)];
+    }
+
+    public static function method(): SignInMethod
+    {
+        return SignInMethod::ProviderToken;
     }
 
     public function card(): SignInCard

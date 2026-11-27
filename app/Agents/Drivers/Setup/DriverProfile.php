@@ -6,6 +6,7 @@ namespace App\Agents\Drivers\Setup;
 
 use App\Accounts\Contracts\AccountSettingsFiller;
 use App\Accounts\Contracts\SignInProtocol;
+use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Contracts\DriverAdapter;
 use App\Agents\Drivers\Contracts\DriverIsolation;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
@@ -274,13 +275,13 @@ final readonly class DriverProfile
     }
 
     /**
-     * The sign-in methods this driver offers, OAuth first, each with the protocol that signs in by it.
+     * The protocol of this driver that signs in by the method; none when the driver offers no such sign-in.
      *
-     * @return array<string, class-string<SignInProtocol>>
+     * @return class-string<SignInProtocol>|null
      */
-    public function signInMethods(): array
+    public function signInProtocolBy(SignInMethod $method): string|null
     {
-        return $this->setup->signIn->methods;
+        return array_find($this->setup->signIn->methods, fn (string $protocol) => $protocol::method() === $method);
     }
 
     /**
@@ -301,7 +302,7 @@ final readonly class DriverProfile
      */
     public function keyScripts(): array
     {
-        return $this->container->make($this->setup->keyScripts)();
+        return array_map(fn (string $script) => $this->container->make($script)(), $this->setup->keyScripts);
     }
 
     public function turnResult(string $processId): TurnResult

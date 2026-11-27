@@ -22,11 +22,6 @@ final readonly class ClaudeKeySignIn extends ClaudeSecretSignIn
         return $directory.'/api-key';
     }
 
-    protected function method(): SignInMethod
-    {
-        return SignInMethod::ApiKey;
-    }
-
     protected function install(string $directory): void
     {
         $settings = $this->settingsOf($directory);
@@ -78,6 +73,11 @@ final readonly class ClaudeKeySignIn extends ClaudeSecretSignIn
     private function settingsFile(string $directory): FilePath
     {
         return $this->files->pathIn(Place::Accounts, $directory)->child('settings.json');
+    }
+
+    public static function method(): SignInMethod
+    {
+        return SignInMethod::ApiKey;
     }
 
     public function card(): SignInCard

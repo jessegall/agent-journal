@@ -7,9 +7,10 @@ namespace Tests\Unit\Drivers;
 use App\Agents\Drivers\Codex\CodexAccountSettings;
 use App\Agents\Drivers\Codex\CodexAdapter;
 use App\Agents\Drivers\Codex\CodexArguments;
+use App\Agents\Drivers\Codex\CodexChangeEffort;
+use App\Agents\Drivers\Codex\CodexChangeModel;
 use App\Agents\Drivers\Codex\CodexIsolation;
 use App\Agents\Drivers\Codex\CodexJournalServer;
-use App\Agents\Drivers\Codex\CodexKeyScripts;
 use App\Agents\Drivers\Codex\CodexLayout;
 use App\Agents\Drivers\Codex\CodexManagedHooks;
 use App\Agents\Drivers\Codex\CodexModelAnswer;
@@ -21,6 +22,8 @@ use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Drivers\Setup\ConditionalPart;
+use App\Agents\Drivers\Setup\DefaultDriverSetup;
+use App\Agents\Drivers\Setup\DriverImage;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
 use App\Agents\Drivers\Setup\HeadlessTurns;
@@ -82,6 +85,49 @@ final class DriverSetupTest extends TestCase
     /**
      * @param  list<DriverSetup>  $setups
      */
+    public function test_a_declaration_that_misses_a_part_every_driver_needs_is_refused_naming_it(): void
+    {
+        $withoutServer = $this->partlyDeclared()
+            ->hookRelay(ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class));
+        $withoutRelay = $this->partlyDeclared()
+            ->journalServer(ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class));
+        $naming = fn (string $part) => fn (DriverSetupInvalid $refusal) => $this->assertStringContainsString(
+            "declared without its {$part}",
+            $refusal->getMessage(),
+        );
+
+        $this->journal
+            ->assertRefused(DriverSetupInvalid::class, fn () => $withoutServer->build(), $naming('journalServer'))
+            ->assertRefused(DriverSetupInvalid::class, fn () => $withoutRelay->build(), $naming('hookRelay'));
+    }
+
+    /**
+     * Codex declared with every part but its journal server and hook relay.
+     */
+    private function partlyDeclared(): DefaultDriverSetup
+    {
+        return DefaultDriverSetup::for('example')
+            ->driver(CodexArguments::EXECUTABLE)
+            ->image(DriverImage::at('.docker/drivers/codex', '0.165.0'))
+            ->arguments(CodexArguments::class)
+            ->version(new VersionProbe(['codex', '--version'], [], VersionLine::exactly('codex-cli {build}')))
+            ->signInProbe(['codex', 'login', 'status'], CodexSignInReader::class)
+            ->layout(CodexLayout::class)
+            ->keyScripts([CodexChangeModel::class, CodexChangeEffort::class])
+            ->headlessTurns(HeadlessTurns::onAccountOwner(['codex', 'app-server']))
+            ->signIn(new SignInSetup(
+                executable: 'codex',
+                environment: CodexSignInEnvironment::class,
+                modelCheck: new ModelCheck(['exec', 'Reply with OK.'], CodexModelAnswer::class, 1),
+                signOut: ['logout'],
+                methods: [],
+            ))
+            ->accountSettings(CodexAccountSettings::class)
+            ->skills(CodexSkills::class)
+            ->hookAdapter(CodexAdapter::class)
+            ->isolation(CodexIsolation::class);
+    }
+
     private function profiles(array $setups): DriverProfiles
     {
         return new DriverProfiles(
@@ -95,31 +141,15 @@ final class DriverSetupTest extends TestCase
         );
     }
 
+    /**
+     * Codex declared whole, every part it needs given, for a family of the test's own.
+     */
     private function codex(string $family): DriverSetup
     {
-        return DriverSetup::of(
-            family: $family,
-            driver: CodexArguments::EXECUTABLE,
-            arguments: CodexArguments::class,
-            versionProbe: new VersionProbe(['codex', '--version'], [], VersionLine::exactly('codex-cli {build}')),
-            signInProbe: ['codex', 'login', 'status'],
-            signInReader: CodexSignInReader::class,
-            layout: CodexLayout::class,
-            keyScripts: CodexKeyScripts::class,
-            headlessTurns: HeadlessTurns::onAccountOwner(['codex', 'app-server']),
-            signIn: new SignInSetup(
-                executable: 'codex',
-                environment: CodexSignInEnvironment::class,
-                modelCheck: new ModelCheck(['exec', 'Reply with OK.'], CodexModelAnswer::class, 1),
-                signOut: ['logout'],
-                methods: [],
-            ),
-            accountSettings: CodexAccountSettings::class,
-            skills: CodexSkills::class,
-            hookAdapter: CodexAdapter::class,
-            isolation: CodexIsolation::class,
-            journalServer: ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class),
-            hookRelay: ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class),
-        );
+        return $this->partlyDeclared()
+            ->journalServer(ConditionalPart::forAccount(new JournalServerAccount(), CodexJournalServer::class))
+            ->hookRelay(ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class))
+            ->build()
+            ->forFamily($family);
     }
 }

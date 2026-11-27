@@ -36,7 +36,7 @@ final readonly class SignInProtocols
      */
     public function supports(string $driver, SignInMethod $method = SignInMethod::OAuth): bool
     {
-        return array_key_exists($method->value, $this->profiles->ofFamily($driver)->signInMethods());
+        return $this->profiles->ofFamily($driver)->signInProtocolBy($method) !== null;
     }
 
     /**
@@ -46,7 +46,7 @@ final readonly class SignInProtocols
      */
     public function for(string $driver, SignInMethod $method = SignInMethod::OAuth): SignInProtocol
     {
-        $protocol = $this->profiles->ofFamily($driver)->signInMethods()[$method->value]
+        $protocol = $this->profiles->ofFamily($driver)->signInProtocolBy($method)
             ?? throw SignInMethodMissing::forKey("{$driver}:{$method->value}");
 
         return $this->container->make($protocol);

@@ -18,7 +18,7 @@ final readonly class SignInSetup
     /**
      * @param  class-string<SignInEnvironment>  $environment
      * @param  non-empty-list<string>  $signOut
-     * @param  array<string, class-string<SignInProtocol>>  $methods  by sign-in method value
+     * @param  list<class-string<SignInProtocol>>  $methods  each protocol names its own method, OAuth first
      * @param  list<class-string<SignInPreparation>>  $preparations
      * @param  list<string>  $credentialFiles  the folder's own sign-in files, removed at sign-out
      * @param  list<class-string<AccountFirstRun>>  $firstRuns
