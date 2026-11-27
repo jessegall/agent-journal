@@ -1,0 +1,10 @@
+/usr/local/bin/claude
+/usr/local/bin/codex
+/usr/local/bin/codex-code-mode-host
+/opt/journal/bin/journal-hook
+/opt/journal/bin/journal-mcp
+/opt/journal/bin/journal-check
+/opt/journal/bin/journal-init
+/opt/journal/bin/journal-exec
+/opt/journal/bin/journal-shell
+/opt/journal/shell/bash

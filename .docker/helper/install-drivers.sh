@@ -1,5 +1,6 @@
 #!/bin/sh
-# Downloads Claude Code and Codex as their native release builds into a folder, each checked against its pinned digest.
+# Downloads Claude Code and Codex, with the code-mode host Codex runs its tools through, as their native release builds
+# into a folder, each checked against its pinned digest.
 # Usage: sh install-drivers.sh <architecture: arm64 or amd64> <claude-code version> <codex version> <folder>
 set -eu
 
@@ -13,8 +14,9 @@ main() {
     local folder="$4"
     mkdir -p "$folder"
     fetch_claude_code "$architecture" "$claude_code" "$folder/claude"
-    fetch_codex "$architecture" "$codex" "$folder/codex"
-    chmod 0555 "$folder/claude" "$folder/codex"
+    fetch_codex codex "$architecture" "$codex" "$folder"
+    fetch_codex codex-code-mode-host "$architecture" "$codex" "$folder"
+    chmod 0555 "$folder/claude" "$folder/codex" "$folder/codex-code-mode-host"
 }
 
 fetch_claude_code() {
@@ -27,17 +29,19 @@ fetch_claude_code() {
     check_digest claude-code "$version" "$architecture" "$target"
 }
 
+# One program of a Codex release, from its own archive, into the folder under its plain name.
 fetch_codex() {
-    local architecture="$1"
-    local version="$2"
-    local target="$3"
+    local program="$1"
+    local architecture="$2"
+    local version="$3"
+    local folder="$4"
     local triple
     triple="$(codex_machine "$architecture")-unknown-linux-musl"
-    curl -fsSL -o "$target.tar.gz" "$CODEX_RELEASES/rust-v$version/codex-$triple.tar.gz"
-    check_digest codex "$version" "$architecture" "$target.tar.gz"
-    tar -xzf "$target.tar.gz" -C "$(dirname "$target")"
-    mv "$(dirname "$target")/codex-$triple" "$target"
-    rm "$target.tar.gz"
+    curl -fsSL -o "$folder/$program.tar.gz" "$CODEX_RELEASES/rust-v$version/$program-$triple.tar.gz"
+    check_digest "$program" "$version" "$architecture" "$folder/$program.tar.gz"
+    tar -xzf "$folder/$program.tar.gz" -C "$folder"
+    mv "$folder/$program-$triple" "$folder/$program"
+    rm "$folder/$program.tar.gz"
 }
 
 claude_platform() {

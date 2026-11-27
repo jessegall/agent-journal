@@ -78,6 +78,7 @@ check_no_node() {
 check_agent_image() {
     check_no_node
     check_users
+    check_agent_programs
     check_protected_files
     check_folders
     check_hook_refusal
@@ -88,6 +89,17 @@ check_agent_image() {
 check_users() {
     run_in_image id -u | grep -qx 10001
     run_in_image id journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
+}
+
+# Each program Claude Code and Codex run, their own and the journal's, is there and runnable by the program's user.
+check_agent_programs() {
+    local program
+    while read -r program; do
+        if ! run_in_image test -x "$program"; then
+            echo "The agent image lacks $program, or its user cannot run it: it is refused." >&2
+            exit 1
+        fi
+    done < .docker/helper/checks/agent-programs.txt
 }
 
 # Root owns what a session must not change: the start programs, the relays and the shell bridge.

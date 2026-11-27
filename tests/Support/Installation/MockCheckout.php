@@ -22,7 +22,7 @@ final readonly class MockCheckout
         'scripts/prepare-hook-test-database.sh',
     ];
 
-    private const array FOLDERS = ['scripts/lib', 'scripts/local-host', '.docker/helper'];
+    private const array FOLDERS = ['scripts/lib', 'scripts/local-host', '.docker/helper', '.docker/app'];
 
     // What the scripts write into the checkout and git does not hold, as in the project's own .gitignore.
     private const string IGNORED = ".env*\n/images\n/.build\n/secrets\n";
@@ -57,6 +57,8 @@ final readonly class MockCheckout
 
         $checkout->write('programs/runner/cmd/journal-runner/main.go', "package main\n");
         $checkout->write('docs/accounts/docker-images.json', "{\"images\": []}\n");
+        $checkout->write('composer.json', "{}\n");
+        $checkout->write('composer.lock', "{}\n");
         $checkout->write('.gitignore', self::IGNORED);
         $checkout->write('.env', "APP_PORT=54700\n");
         $checkout->git('init', '--quiet');

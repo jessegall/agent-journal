@@ -39,7 +39,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,t
     && apt-get install -y --no-install-recommends git ca-certificates bash \
         ${TOOLCHAIN_PACKAGES}
 
-COPY --from=drivers --chown=root:root /out/claude /out/codex /usr/local/bin/
+COPY --from=drivers --chown=root:root /out/claude /out/codex /out/codex-code-mode-host /usr/local/bin/
 
 # The relays and the protected stop checks. Both relays are standalone programs that ask the journal themselves with
 # the start's grant; the image holds no application console.
