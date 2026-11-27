@@ -11,7 +11,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Connections\ProjectReadAnsweredWithEntries;
 use App\Events\Connections\ProjectReadAnsweredWithText;
-use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
 use App\Hosts\Protocol\HostProjectReadFailure;
 use App\Hosts\Protocol\Payloads\HostProjectEntryPayload;
@@ -46,7 +45,6 @@ use Spatie\LaravelData\DataCollection;
  * @property string|null $digest
  * @property int|null $size
  * @property bool $is_truncated
- * @property CarbonImmutable|null $claimed_at
  * @property CarbonImmutable|null $answered_at
  * @property CarbonImmutable $expires_at
  * @property CarbonImmutable|null $created_at
@@ -100,7 +98,6 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
             'entries' => DataCollection::class.':'.HostProjectEntryPayload::class,
             'size' => 'integer',
             'is_truncated' => 'boolean',
-            'claimed_at' => 'immutable_datetime',
             'answered_at' => 'immutable_datetime',
             'expires_at' => 'immutable_datetime',
         ];
@@ -132,16 +129,6 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     }
 
     // ----------[ Mutations ]----------
-
-    /**
-     * Marks the read handed out to its host, so a second poll does not hand it out again.
-     */
-    public function markClaimed(CarbonImmutable $now): void
-    {
-        $this->claimed_at = $now;
-        $this->saveAndAssert();
-        $this->raise(new ProjectReadClaimed($this->id));
-    }
 
     /**
      * Answers a folder read with its entries, cut to the entry limit and marked cut when the host or the limit cut it.
@@ -235,25 +222,6 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     // ----------[ Queries ]----------
 
     /**
-     * The reads of this host's bindings no poll handed out yet and still in time, oldest first, locked so a poll beside
-     * this one skips them.
-     *
-     * @return list<self>
-     */
-    public static function findClaimableFor(string $hostId, int $limit, CarbonImmutable $now): array
-    {
-        $pending = self::query()
-            ->claimableAt($now)
-            ->ofBindingsOnHost($hostId)
-            ->oldestFirst()
-            ->lock('for update skip locked')
-            ->readExactly($limit)
-            ->get();
-
-        return array_values($pending->all());
-    }
-
-    /**
      * The same question this requester asked of the binding a moment ago, still waiting or answered within its keep
      * time, so asking again reuses it; a read that failed is reused only briefly, so a window shows the failure and a
      * later Retry asks the host again.
@@ -290,30 +258,6 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * The pending reads no host claimed that have not expired then.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function claimableAt(Builder $query, CarbonImmutable $now): void
-    {
-        $query->where('status', ProjectReadStatus::Pending->value)
-            ->whereNull('claimed_at')
-            ->where('expires_at', '>', $now);
-    }
-
-    /**
-     * The reads of the bindings on the host.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofBindingsOnHost(Builder $query, string $hostId): void
-    {
-        $query->whereIn('binding_id', ProjectBinding::query()->onHost($hostId)->keys());
-    }
 
     /**
      * The reads of that type of the binding's path.

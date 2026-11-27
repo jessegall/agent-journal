@@ -24,8 +24,8 @@ final class LocalProjectSeeder extends Seeder
             'projects local-provision',
             new ProvisionLocalProjectCommand(
                 $owner->id,
-                $config->string('processes.project_key'),
-                $config->string('processes.project_label'),
+                $config->string('journal.processes.project_key'),
+                $config->string('journal.processes.project_label'),
             ),
         );
     }

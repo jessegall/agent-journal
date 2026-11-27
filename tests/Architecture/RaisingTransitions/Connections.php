@@ -34,7 +34,6 @@ return [
     'ProjectCommandRun::requestCancellation',
     'ProjectCommandRun::cancel',
     'ProjectCommandRun::reconcile',
-    'ProjectRead::markClaimed',
     'ProjectRead::answerWithEntries',
     'ProjectRead::answerWithText',
     'ProjectRead::fail',

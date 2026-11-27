@@ -26,6 +26,9 @@ final readonly class NotifyHostHeartbeatHandler implements CommandHandler
         foreach (HostProcess::findLiveOn($host) as $process) {
             if (in_array($process->id, $command->liveProcesses, true)) {
                 $process->seeInHeartbeat();
+                // A runtime whose process the host still runs reports nothing between two turns: what it last
+                // reported still holds.
+                $process->runtime?->confirmAlive($now);
 
                 continue;
             }

@@ -24,7 +24,6 @@ return new class extends Migration
             $table->string('digest', 64)->nullable();
             $table->unsignedBigInteger('size')->nullable();
             $table->boolean('is_truncated')->default(false);
-            $table->timestampTz('claimed_at')->nullable();
             $table->timestampTz('answered_at')->nullable();
             $table->timestampTz('expires_at');
             $table->timestampsTz();

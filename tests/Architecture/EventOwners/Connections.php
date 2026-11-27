@@ -56,7 +56,6 @@ use App\Events\Connections\ProjectInvitationRevoked;
 use App\Events\Connections\ProjectInvitationSpent;
 use App\Events\Connections\ProjectReadAnsweredWithEntries;
 use App\Events\Connections\ProjectReadAnsweredWithText;
-use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
 use App\Events\Connections\WorkspaceReadAnswered;
 use App\Hosts\Protocol\HostInstructionType;
@@ -286,13 +285,6 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ProjectCommandReconciled('run', CommandRunStatus::Cancelled),
-    ],
-    ProjectReadClaimed::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'ProjectRead::markClaimed',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new ProjectReadClaimed('read'),
     ],
     ProjectReadAnsweredWithEntries::class => [
         'role' => EventRole::RowFact,

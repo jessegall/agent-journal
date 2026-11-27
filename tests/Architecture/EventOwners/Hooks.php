@@ -51,7 +51,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Sessions/States/ProfileState.php',
+            'app/Sessions/Commands/HoldStopCheck/HoldStopCheckHandler.php',
         ],
     ],
     StateCommandAnswered::class => [

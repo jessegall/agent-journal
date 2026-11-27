@@ -422,7 +422,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
      */
     public static function findLiveOn(Host $host): array
     {
-        return array_values(self::query()->onHost($host)->live()->lockForUpdate()->get()->all());
+        return array_values(self::query()->with('runtime')->onHost($host)->live()->lockForUpdate()->get()->all());
     }
 
     /**
