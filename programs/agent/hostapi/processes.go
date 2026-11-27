@@ -212,9 +212,8 @@ func (table *ProcessTable) OpenContainer(ctx context.Context, instruction Instru
 	if !host.IsPinnedReference(plan.Container.Image) {
 		return Opened{}, RefusalError{Refusal: Unsafe, Reason: "the image " + plan.Container.Image + " is not pinned by digest"}
 	}
-	plan, err := table.placeContainerFiles(ctx, instruction.ProcessID, plan)
-	if err != nil {
-		return Opened{}, err
+	if plan.Container.Name == "" {
+		return Opened{}, RefusalError{Refusal: Unsafe, Reason: "open_container names no container name"}
 	}
 	if err := table.requireListed(plan); err != nil {
 		return Opened{}, err
@@ -239,17 +238,8 @@ func (table *ProcessTable) OpenContainer(ctx context.Context, instruction Instru
 
 func (table *ProcessTable) startContainer(ctx context.Context, held *heldProcess) error {
 	plan := held.plan
-	if err := table.containers.EnsureNetwork(ctx, plan.Container.Network, plan.startLabels("")); err != nil {
-		return err
-	}
-	process := host.ContainerProcess{
-		Command:        plan.Argv,
-		Environment:    plan.Environment,
-		Restart:        plan.RestartArgv,
-		RestartWhen:    plan.restartFile(),
-		IsHealedByHost: true,
-	}
-	if _, err := table.containers.Create(ctx, *plan.Container, held.containerName(), plan.startLabels(held.id), process); err != nil {
+	process := host.ContainerProcess{Command: plan.Argv, Environment: plan.Environment}
+	if _, err := table.containers.Create(ctx, *plan.Container, process); err != nil {
 		return err
 	}
 	if err := table.containers.Start(ctx, held.containerName()); err != nil {
@@ -543,17 +533,9 @@ func (table *ProcessTable) Stop(ctx context.Context, instruction Instruction, pl
 	}
 }
 
-// Remove removes an ended process's container from the agent daemon.
+// Remove removes an ended process's container from the Docker daemon.
 func (table *ProcessTable) Remove(ctx context.Context, _ Instruction, plan RemovePlan) (Empty, error) {
 	return Empty{}, table.containers.Remove(ctx, plan.Container, 10)
-}
-
-// RemoveSession removes an ended session's network and the plan files its containers read.
-func (table *ProcessTable) RemoveSession(ctx context.Context, _ Instruction, removal SessionRemoval) (Empty, error) {
-	if err := table.containers.RemoveNetwork(ctx, removal.Network); err != nil {
-		return Empty{}, err
-	}
-	return Empty{}, table.containers.RemoveSessionFiles(ctx, removal.Session)
 }
 
 func (table *ProcessTable) keep(held *heldProcess) {
@@ -688,10 +670,9 @@ func (held *heldProcess) nextGeneration() {
 	held.generation++
 }
 
-// containerName is the name the host gives the container of a process: fixed by the process id, so a host that
-// restarted finds the container again.
+// containerName is the name the journal gave the container of a process.
 func (held *heldProcess) containerName() string {
-	return "journal-process-" + held.id
+	return held.plan.Container.Name
 }
 
 func (held *heldProcess) markStopping() {
@@ -725,14 +706,4 @@ func (plan OpenPlan) restartFile() host.RestartFile {
 		return host.RestartFile{}
 	}
 	return *plan.RestartWhenFile
-}
-
-// startLabels are the labels of the plan's container start: the journal's, none for a plan without, and the start's
-// own id, empty for a network or a volume.
-func (plan OpenPlan) startLabels(start string) host.StartLabels {
-	labels := host.StartLabels{Start: start}
-	if plan.Labels != nil {
-		labels.ContainerLabels = *plan.Labels
-	}
-	return labels
 }

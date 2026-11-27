@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"journal-agent/host"
+	"journal-agent/device"
 	"journal-agent/project"
 )
 
@@ -62,9 +62,9 @@ func resolveTarget() (targetFolder, error) {
 
 // assertNotConnected refuses a folder whose private state already holds a finished connection, naming that
 // connection, so a fresh line is never spent on it; a connection whose setup was interrupted is resumed instead.
-func (target targetFolder) assertNotConnected(state host.ConnectionState, out io.Writer) error {
+func (target targetFolder) assertNotConnected(state device.ConnectionState, out io.Writer) error {
 	binding, err := state.Binding()
-	if errors.Is(err, host.ErrNotConnected) {
+	if errors.Is(err, device.ErrNotConnected) {
 		return nil
 	}
 	if err != nil {
@@ -96,7 +96,7 @@ func (target targetFolder) confirm(origin string, out io.Writer) error {
 // disconnect cut short is finished first; a moved or copied folder shows the mismatch and, once a fresh enrollment
 // is confirmed, loses only the journal setup it carried, keeping user files, worktrees and receipts; worktrees a
 // disconnect kept are named and kept.
-func (target targetFolder) checkIdentity(state host.ConnectionState, out io.Writer) error {
+func (target targetFolder) checkIdentity(state device.ConnectionState, out io.Writer) error {
 	folder := project.Folder{Root: target.root}
 	if err := assertNoUnfinishedDisconnect(folder, state, out); err != nil {
 		return err
@@ -120,7 +120,7 @@ func (target targetFolder) checkIdentity(state host.ConnectionState, out io.Writ
 
 // assertNoUnfinishedDisconnect refuses a folder whose disconnect, by its marker's binding or this root's own, was cut
 // short, naming the command that finishes it.
-func assertNoUnfinishedDisconnect(folder project.Folder, state host.ConnectionState, out io.Writer) error {
+func assertNoUnfinishedDisconnect(folder project.Folder, state device.ConnectionState, out io.Writer) error {
 	bindings := []string{}
 	if marker, err := folder.Marker(); err == nil {
 		bindings = append(bindings, marker.BindingID)
@@ -129,7 +129,7 @@ func assertNoUnfinishedDisconnect(folder project.Folder, state host.ConnectionSt
 		bindings = append(bindings, binding.BindingID)
 	}
 	for _, bindingID := range bindings {
-		if _, err := host.DisconnectOf(state.Folder, bindingID); err == nil {
+		if _, err := device.DisconnectOf(state.Folder, bindingID); err == nil {
 			fmt.Fprintln(out, "journal: finish this folder's disconnect first with: journal disconnect --resume "+bindingID)
 			return errDisconnectUnfinished
 		}

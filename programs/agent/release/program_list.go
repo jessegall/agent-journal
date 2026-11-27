@@ -59,6 +59,9 @@ func ParseProgramList(content []byte) ([]Program, error) {
 	return list.Programs, nil
 }
 
+// reservedHostNames are the names the host fills in a plan with its own values, which no program may take.
+var reservedHostNames = []string{"JOURNAL_URL", "INSTALLATION", "HOOK_COMMAND", "JOURNAL_AGENT"}
+
 func checkProgram(program Program) error {
 	switch {
 	case !programName.MatchString(program.Name):

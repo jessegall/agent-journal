@@ -8,7 +8,7 @@ use App\Api\Assignments\Concerns\NamesAssignmentPool;
 use App\Api\Assignments\Concerns\NamesAutoAssignment;
 use App\Assignments\Data\AutoAssignmentChangeData;
 use App\Attributes\Api\Endpoint;
-use App\Attributes\Validation\SentField;
+use Spatie\LaravelData\Attributes\Validation\Present;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
@@ -54,7 +54,7 @@ final class ConfigureAutoAssignmentPayload extends Data implements ApiPayload
         public readonly string $assignableType,
         #[Max(100)]
         public readonly string $pool,
-        #[SentField, Max(1000)]
+        #[Present, Max(1000)]
         public readonly array $records,
         public readonly int $size,
         #[Min(0)]

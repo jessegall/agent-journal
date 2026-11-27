@@ -148,7 +148,6 @@ services:
         image: journal-runner:build
         environment:
             PATH: *development-path
-            JOURNAL_DEVELOPMENT_PROGRAMS: /srv/journal/development
         volumes:
             - *development-binaries
             # The recording run's drafts, where the host adds the Docker daemon's calls while recording is on.

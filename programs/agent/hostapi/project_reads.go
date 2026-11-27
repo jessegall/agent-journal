@@ -8,7 +8,7 @@ import (
 )
 
 // ProjectReads carries out read_project instructions on a connected project's folder: the read is answered on its own
-// report, which the journal keeps for the agent that asked.
+// report, which the journal keeps for whoever asked.
 type ProjectReads struct {
 	Reader  host.ProjectReader
 	Journal Journal

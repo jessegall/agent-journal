@@ -97,7 +97,9 @@ final class ExecutionBudgets extends Data
     {
         $byPropertyName = TransformationContextFactory::create()->withoutPropertyNameMapping();
 
-        return HostContainerBudgetsPayload::from($this->except('wallSeconds')->transform($byPropertyName));
+        $sent = $this->except('wallSeconds', 'tmpBytes', 'homeBytes', 'workspaceBytes')->transform($byPropertyName);
+
+        return HostContainerBudgetsPayload::from($sent);
     }
 
     /**

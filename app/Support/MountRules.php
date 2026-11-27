@@ -9,8 +9,10 @@ use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Files\Contracts\WorkspaceSource;
 use App\Files\ManifestMount;
-use App\Files\Values\WorkspacePreparation;
+use App\Hosts\ContainerLabels;
 use App\Hosts\Protocol\HostMountType;
+use App\Hosts\Protocol\Payloads\HostContainerLabelPayload;
+use App\Hosts\Protocol\Payloads\HostContainerVolumePayload;
 
 /**
  * Which mounts a helper container may have: in the local arrangement exactly one folder of this machine at
@@ -19,13 +21,18 @@ use App\Hosts\Protocol\HostMountType;
  */
 final readonly class MountRules
 {
-    private const string DAEMON_ROOT = '/srv/journal/';
+    /**
+     * The agent daemon's folder every daemon bind comes from, the one the host is installed with.
+     */
+    public const string DATA_FOLDER = '/srv/journal';
 
-    private const string ACCOUNTS_ROOT = '/srv/journal/accounts';
+    public const string ACCOUNTS_ROOT = self::DATA_FOLDER.'/accounts';
 
     /**
-     * The plan file that holds the managed settings a contained Claude Code reads.
+     * Where each process's plan files are written on the agent daemon, one folder to a session.
      */
+    public const string SESSIONS_ROOT = self::DATA_FOLDER.'/sessions';
+
     private const int MOST_CONTAINED_MOUNTS = 5;
 
     /**
@@ -37,7 +44,7 @@ final readonly class MountRules
 
     /**
      * Where a contained session finds its plan's files, such as its skills, read-only; under /tmp, the one folder
-     * outside the workspace its driver's file tools may read. The host's own name is PlanFileFolder.
+     * outside the workspace its driver's file tools may read.
      */
     public const string SESSION_TARGET = '/tmp/journal-session';
 
@@ -98,26 +105,17 @@ final readonly class MountRules
      * contained, its environment's volume or server folder, which the host fills or checks before the container, or
      * for a writing helper its own clone of it.
      */
-    public function workspaceMount(string $localFolder, WorkspaceUse $use): ManifestMount
+    public function workspaceMount(string $localFolder, WorkspaceUse $use, string $sessionId): ManifestMount
     {
         if ($this->workspaceSource === null) {
             return ManifestMount::bind($localFolder, ContainerManifest::WORKDIR, $use->isWritable());
         }
 
         if ($use->isOwnCheckout()) {
-            return ManifestMount::checkoutOf($this->workspaceSource->mount(false));
+            return ManifestMount::volume($this->checkoutVolume($sessionId), ContainerManifest::WORKDIR, true);
         }
 
         return $this->workspaceSource->mount($use->isWritable());
-    }
-
-    /**
-     * What the host makes ready before a contained container mounts the workspace; none locally, where the start's
-     * own folder is bound as it is.
-     */
-    public function workspacePreparation(): WorkspacePreparation|null
-    {
-        return $this->workspaceSource?->preparation();
     }
 
     /**
@@ -166,25 +164,64 @@ final readonly class MountRules
             return [];
         }
 
-        $files = ManifestMount::planFiles(self::SESSION_TARGET);
-
-        if ($resumedSessionId !== null) {
-            $history = "{$this->installationName}-history-{$resumedSessionId}";
-
-            return [
-                ManifestMount::existingVolume($history, self::PROJECTS_TARGET, true),
-                $files,
-                ...$this->driverMounts,
-            ];
-        }
-
-        $history = ManifestMount::volume("{$this->installationName}-history-{$sessionId}", self::PROJECTS_TARGET, true);
-
         return [
-            $history,
-            $files,
+            ManifestMount::volume($this->historyVolume($sessionId, $resumedSessionId), self::PROJECTS_TARGET, true),
+            ManifestMount::planFiles(self::SESSION_TARGET),
             ...$this->driverMounts,
         ];
+    }
+
+    /**
+     * The volumes a contained session's container needs made first: its history, which a resumed conversation takes
+     * from the session that held it and must find, and a writer's own checkout, bounded in size. None locally.
+     *
+     * @return list<HostContainerVolumePayload>
+     */
+    public function sessionVolumes(
+        string $sessionId,
+        string|null $resumedSessionId,
+        WorkspaceUse $use,
+        int $workspaceBytes,
+    ): array {
+        if ($this->installationName === null) {
+            return [];
+        }
+
+        $labels = [HostContainerLabelPayload::from(['name' => ContainerLabels::SESSION, 'value' => $sessionId])];
+        $volumes = [HostContainerVolumePayload::from([
+            'name' => $this->historyVolume($sessionId, $resumedSessionId),
+            'labels' => $labels,
+            'sizeBytes' => 0,
+            'mustExist' => $resumedSessionId !== null,
+        ])];
+
+        if ($use->isOwnCheckout()) {
+            $volumes[] = HostContainerVolumePayload::from([
+                'name' => $this->checkoutVolume($sessionId),
+                'labels' => $labels,
+                'sizeBytes' => $workspaceBytes,
+                'mustExist' => false,
+            ]);
+        }
+
+        return $volumes;
+    }
+
+    /**
+     * The history volume a session's container mounts: its own, or the one of the session whose conversation it
+     * resumes.
+     */
+    private function historyVolume(string $sessionId, string|null $resumedSessionId): string
+    {
+        return "{$this->installationName}-history-".($resumedSessionId ?? $sessionId);
+    }
+
+    /**
+     * A writer session's own checkout volume, which its container mounts as its workspace.
+     */
+    public function checkoutVolume(string $sessionId): string
+    {
+        return "{$this->installationName}-checkout-{$sessionId}";
     }
 
     /**
@@ -254,9 +291,9 @@ final readonly class MountRules
         $isAllowed = match ($mount->type) {
             HostMountType::Volume => str_starts_with($mount->source, $this->installationName.'-')
                 && strpbrk($mount->source, "/,\n") === false,
-            HostMountType::DaemonBind => $this->isDaemonFolder($mount->source),
-            HostMountType::PlanFile => ! $mount->isWritable
-                && ($mount->source === null || $this->isPlainFileName($mount->source)),
+            HostMountType::DaemonBind => $mount->isPlanFile
+                ? ! $mount->isWritable && ($mount->source === null || $this->isPlainFileName($mount->source))
+                : $this->isDaemonFolder($mount->source),
             HostMountType::Scratch => $mount->source === null && $mount->isWritable,
             HostMountType::Bind => false,
         };
@@ -271,7 +308,7 @@ final readonly class MountRules
      */
     private function isDaemonFolder(string $source): bool
     {
-        $isClean = str_starts_with($source, self::DAEMON_ROOT)
+        $isClean = str_starts_with($source, self::DATA_FOLDER.'/')
             && ! in_array('..', explode('/', $source), true)
             && strpbrk($source, ",\n") === false;
 

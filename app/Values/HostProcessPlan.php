@@ -10,7 +10,6 @@ use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessType;
-use App\Hosts\Protocol\Payloads\HostContainerLabelsPayload;
 use App\Hosts\Protocol\Payloads\HostOpenPlanPayload;
 use App\Hosts\Protocol\Payloads\HostRestartFilePayload;
 use App\Terminals\Screens\ShieldRule;
@@ -67,10 +66,6 @@ final readonly class HostProcessPlan
          */
         public string|null $fence = null,
         /**
-         * The labels the container carries on the agent daemon, so the host finds it again; none outside a container.
-         */
-        public HostContainerLabelsPayload|null $labels = null,
-        /**
          * The files a device keeps for its binding between two sessions, such as the driver's sign-in, each named
          * as the process sees it.
          */
@@ -115,6 +110,26 @@ final readonly class HostProcessPlan
         return new self(...[...get_object_vars($this), 'environment' => [...$this->environment, ...$environment]]);
     }
 
+    /**
+     * The same plan as its host runs it in its container: the container made whole, its command and environment as
+     * the container takes them, with no restart command and no files of its own left for the host.
+     *
+     * @param  list<string>  $command
+     * @param  list<string>  $environment
+     */
+    public function asContained(ContainerManifest $container, array $command, array $environment): self
+    {
+        return new self(...[
+            ...get_object_vars($this),
+            'container' => $container,
+            'argv' => $command,
+            'environment' => $environment,
+            'files' => [],
+            'restartArgv' => [],
+            'restartWhenFile' => null,
+        ]);
+    }
+
     public function instructionType(): HostInstructionType
     {
         if ($this->container === null) {
@@ -138,7 +153,6 @@ final readonly class HostProcessPlan
             'environment' => $this->environment,
             'folder' => $this->folder,
             'container' => $this->container?->protocolData(),
-            'labels' => $this->labels,
             'size' => ['columns' => $this->columns, 'rows' => $this->rows],
             'files' => array_map(fn (PlanFile $file) => $file->protocolData(), $this->files),
             'folders' => $this->folders,

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"journal-agent/client"
+	"journal-agent/device"
 	"journal-agent/host"
 	"journal-agent/hostapi"
 )
@@ -23,13 +24,13 @@ var developmentCommands = map[string]func([]string) error{}
 // protocolOnly runs host protocol 1 alone, without the serving loop; the suite's real-host harness starts it.
 func protocolOnly(arguments []string) error {
 	flags := flag.NewFlagSet("protocol", flag.ContinueOnError)
-	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", device.DefaultStateFolder(), "the host's private state folder")
 	dockerSocket := flags.String("docker", "", "the agent daemon's socket the host opens containers through")
 	installation := flags.String("installation", "", "the protected installation saved-account starts run from")
 	hookCommand := flags.String("hook-command", "", "the hook relay command the drivers call")
 	arrangementFlag := flags.String("arrangement", string(host.Local), "where agents run: local or contained")
 	installationName := flags.String("installation-name", "", "the prefix of a contained host's containers")
-	agentImage := flags.String("agent-image", "", "the agent image a contained host runs")
+	dataFolder := flags.String("data-folder", "", "the agent daemon's folder every daemon bind of a contained host comes from")
 	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends, as when the process that started it died")
 	if err := flags.Parse(arguments); err != nil {
 		return err
@@ -42,7 +43,7 @@ func protocolOnly(arguments []string) error {
 	if err != nil {
 		return err
 	}
-	enrollment, err := (host.State{Folder: *stateFolder}).Load()
+	enrollment, err := (device.State{Folder: *stateFolder}).Load()
 	if err != nil {
 		return err
 	}
@@ -53,8 +54,8 @@ func protocolOnly(arguments []string) error {
 	}
 	containers := host.Containers{}
 	if *dockerSocket != "" {
-		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installationPrefix, AgentImage: *agentImage,
-			Allowed: host.NewAllowedImages()}
+		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installationPrefix,
+			Allowed: host.NewAllowedImages(), DataFolder: *dataFolder}
 		containers, err = host.ContainersOn(*dockerSocket, rules)
 		if err != nil {
 			return err
@@ -133,7 +134,7 @@ func (instructions hostInstructions) executors() map[string]hostapi.Executor {
 // poll and carried out, the inventory sent once and a heartbeat every 30 s; idle keeps the idle window the claim
 // answers name, for a host that leaves when idle. It answers the table of the processes it runs.
 
-func startHostProtocol(ctx context.Context, journal *client.Client, enrollment host.Enrollment, stateFolder string,
+func startHostProtocol(ctx context.Context, journal *client.Client, enrollment device.Enrollment, stateFolder string,
 	names map[string]string, containers host.Containers, release string, options hostProtocolOptions,
 ) (*hostapi.ProcessTable, error) {
 	calls := hostapi.Journal{Client: journal}

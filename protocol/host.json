@@ -30,11 +30,10 @@
         "snapshot": { "scope": "process", "process_type": "terminal", "is_repeatable": true, "payload": null, "reply": "empty" },
         "run_fenced": { "scope": "host", "process_type": "any", "payload": "fenced_plan", "reply": "fenced_results" },
         "allow_images": { "scope": "host", "process_type": "any", "offered_again_after_restart": false, "payload": "images_plan", "reply": "images_allowed" },
-        "make_folder": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "folder_plan", "reply": "empty" },
-        "remove_folder": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "folder_plan", "reply": "empty" },
-        "folder_use": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "folder_plan", "reply": "folder_use_reply" },
+        "run_containers": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "container_runs", "reply": "container_run_results" },
+        "list_containers": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "container_label", "reply": "container_names" },
+        "remove_network": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "network_removal", "reply": "empty" },
         "remove": { "scope": "host", "process_type": "any", "ends_process": true, "is_repeatable": true, "payload": "remove_plan", "reply": "empty" },
-        "remove_session": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "session_removal", "reply": "empty" },
         "read_project": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "project_read", "reply": "empty" },
         "upgrade": { "scope": "host", "process_type": "any", "payload": "upgrade_plan", "reply": "upgrade_started" }
     },
@@ -42,7 +41,10 @@
         "folder",
         "host"
     ],
-    "refused_answer_names": ["refusal", "reason"],
+    "refused_answer_names": [
+        "refusal",
+        "reason"
+    ],
     "host_names": [
         "JOURNAL_URL",
         "INSTALLATION",
@@ -67,13 +69,13 @@
     },
     "enums": {
         "process_type": ["terminal", "pipe"],
-        "mount_type": ["bind", "volume", "daemon-bind", "plan-file", "scratch"],
+        "mount_type": ["bind", "volume", "daemon-bind", "scratch"],
         "process_report_type": ["running", "restarted", "exited", "lost"],
         "argument_values": ["none", "one", "list"],
         "project_read_failure": ["missing", "not_a_directory", "not_a_file", "binary", "too_large", "unreadable", "outside"]
     },
     "go_packages": {
-        "host": ["mount_type", "restart_file", "container_labels", "container_manifest", "container_mount", "container_budgets", "security_options", "workspace_preparation", "workspace_clone"],
+        "host": ["mount_type", "restart_file", "container_manifest", "container_mount", "container_budgets", "security_options", "container_tmpfs", "container_volume", "container_label", "container_run", "container_run_result"],
         "client": ["project_read", "project_read_report", "project_entry", "project_read_failure"]
     },
     "programs": {
@@ -97,9 +99,9 @@
                     "arrangement",
                     "docker",
                     "installation-name",
-                    "agent-image",
-                    "runner-image",
-                    "development-programs"
+                    "pinned-images",
+                    "data-folder",
+                    "secrets-folder"
                 ]
             }
         },
@@ -180,18 +182,15 @@
         "private_value": { "value": "string" },
         "project_read_report": { "entries": "list<project_entry>?", "text": "string|null?", "digest": "string?", "size": "int64|null?", "truncated": "bool", "failure": "project_read_failure?" },
         "project_entry": { "name": "string", "is_folder": "bool", "size": "int64" },
-        "open_plan": { "type": "process_type", "restart": "string", "argv": "list<string>", "restart_argv": "list<string>", "restart_when_file": "restart_file|null", "environment": "list<string>", "folder": "string", "container": "container_manifest|null", "labels": "container_labels|null", "size": "terminal_size", "files": "list<plan_file>", "folders": "list<string>", "inherit": "list<string>", "side_sockets": "list<string>", "read_files": "list<string>?", "shield_rules": "list<shield_rule>?", "fence": "string?", "kept_files": "list<string>?", "raw_bytes": "bool?" },
+        "open_plan": { "type": "process_type", "restart": "string", "argv": "list<string>", "restart_argv": "list<string>", "restart_when_file": "restart_file|null", "environment": "list<string>", "folder": "string", "container": "container_manifest|null", "size": "terminal_size", "files": "list<plan_file>", "folders": "list<string>", "inherit": "list<string>", "side_sockets": "list<string>", "read_files": "list<string>?", "shield_rules": "list<shield_rule>?", "fence": "string?", "kept_files": "list<string>?", "raw_bytes": "bool?" },
         "terminal_size": { "columns": "uint16", "rows": "uint16" },
         "restart_file": { "folder": "string", "glob": "string" },
-        "container_labels": { "installation": "string", "session": "string", "account": "string" },
         "plan_file": { "name": "string", "content": "string", "template": "bool" },
         "shield_rule": { "keywords": "list<string>", "min_keywords": "int" },
-        "container_manifest": { "image": "string", "user": "string", "workdir": "string", "isReadOnlyRoot": "bool", "capabilities": "list<string>", "blocksNewPrivileges": "bool", "isPrivileged": "bool", "network": "string", "mounts": "list<container_mount>", "publishedPorts": "list<int>", "budgets": "container_budgets", "securityOptions": "security_options", "isAttachable": "bool", "workspacePreparation": "workspace_preparation|null", "startProfile": "string", "entrypoint": "string?" },
-        "container_mount": { "type": "mount_type", "source": "string?", "target": "string", "isWritable": "bool", "mustExist": "bool", "isCheckout": "bool" },
-        "container_budgets": { "cpuCores": "int", "memoryBytes": "int", "memorySwapBytes": "int", "processes": "int", "openFiles": "int", "tmpBytes": "int", "homeBytes": "int", "workspaceBytes": "int" },
+        "container_manifest": { "name": "string", "image": "string", "user": "string", "workdir": "string", "entrypoint": "list<string>", "isReadOnlyRoot": "bool", "capabilities": "list<string>", "blocksNewPrivileges": "bool", "network": "string", "networkLabels": "list<container_label>", "mounts": "list<container_mount>", "tmpfs": "list<container_tmpfs>", "volumes": "list<container_volume>", "labels": "list<container_label>", "budgets": "container_budgets", "securityOptions": "security_options", "isAttachable": "bool", "restart": "string", "preparations": "list<container_run>" },
+        "container_mount": { "type": "mount_type", "source": "string?", "target": "string", "isWritable": "bool" },
+        "container_budgets": { "cpuCores": "int", "memoryBytes": "int", "memorySwapBytes": "int", "processes": "int", "openFiles": "int" },
         "security_options": { "seccomp": "string", "apparmor": "string" },
-        "workspace_preparation": { "clone": "workspace_clone|null", "folder": "string?" },
-        "workspace_clone": { "volume": "string", "repository": "string", "revision": "string", "deployKeySecret": "string" },
         "key_write": { "bytes": "bytes", "if_rows": "row_guard|null", "if_input_generation": "uint64|null", "as_user": "bool" },
         "row_guard": { "from": "int", "to": "int", "hash": "string" },
         "stdin_write": { "bytes": "bytes" },
@@ -205,16 +204,22 @@
         "fenced_results": { "results": "list<fenced_result>" },
         "fenced_result": { "status": "string", "started_at": "string", "ended_at": "string|null", "exit_code": "int|null", "signal": "string|null", "summary": "string", "output": "string|null", "truncated": "bool" },
         "images_allowed": { "allowed": "int" },
-        "folder_use_reply": { "is_bound": "bool", "reason": "string?" },
         "upgrade_started": { "release": "string" },
         "remove_plan": { "container": "string" },
-        "session_removal": { "network": "string", "session": "string" },
         "fenced_plan": { "fence": "string", "waiting": "list<string>", "budget_ms": "int", "runs": "list<fenced_run>" },
         "fenced_run": { "argv": "list<string>", "folder": "string", "deadline_ms": "int", "output_limit": "int" },
         "images_plan": { "images": "list<string>" },
-        "folder_plan": { "folder": "string", "operation": "string" },
         "project_read": { "id": "string", "binding_id": "string", "type": "string", "path": "string", "entries_limit": "int", "text_limit": "int" },
-        "upgrade_plan": { "version": "string", "manifest": "string", "signature": "string", "drivers": "string" }
+        "upgrade_plan": { "version": "string", "manifest": "string", "signature": "string", "drivers": "string" },
+        "container_tmpfs": { "target": "string", "options": "string" },
+        "container_volume": { "name": "string", "labels": "list<container_label>", "sizeBytes": "int64", "mustExist": "bool" },
+        "container_label": { "name": "string", "value": "string" },
+        "container_run": { "manifest": "container_manifest", "command": "list<string>", "environment": "list<string>", "input": "bytes?", "inputSecret": "string?", "outputLimit": "int" },
+        "container_runs": { "runs": "list<container_run>" },
+        "container_run_result": { "exitCode": "int", "output": "string", "isTruncated": "bool" },
+        "container_run_results": { "results": "list<container_run_result>" },
+        "container_names": { "names": "list<string>" },
+        "network_removal": { "network": "string" }
     },
     "calls": {
         "claim_instruction": { "route": "instructions.claim", "path": "/host/instructions/claim", "query": { "limit": "int", "wait": "int" }, "query_bounds": { "limit": [1, 50], "wait": [0, 25] }, "body": null, "reply": "claimed_instructions" },

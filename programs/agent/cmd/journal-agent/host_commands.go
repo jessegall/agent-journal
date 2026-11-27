@@ -14,6 +14,7 @@ import (
 	"syscall"
 
 	"journal-agent/client"
+	"journal-agent/device"
 	"journal-agent/host"
 	"journal-agent/hostapi"
 )
@@ -26,24 +27,21 @@ func enroll(arguments []string) error {
 	flags := flag.NewFlagSet("enroll", flag.ContinueOnError)
 	journalURL := flags.String("journal", "", "the journal's URL")
 	hostID := flags.String("host", "", "the host id agents:host-enroll printed")
-	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", device.DefaultStateFolder(), "the host's private state folder")
 	secretFile := flags.String("secret-file", "", "a file holding the secret, instead of standard input")
-	if err := assertDeclaredFlags(flags); err != nil {
-		return err
-	}
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
 	if *journalURL == "" || *hostID == "" {
 		return errors.New("enroll needs --journal and --host, and the secret on standard input or in --secret-file")
 	}
-	state := host.State{Folder: *stateFolder}
+	state := device.State{Folder: *stateFolder}
 	trimmedURL := strings.TrimRight(*journalURL, "/")
 	secret, err := readSecret(*secretFile)
 	if err != nil {
 		return err
 	}
-	enrollment := host.Enrollment{JournalURL: trimmedURL, HostID: *hostID, Secret: secret}
+	enrollment := device.Enrollment{JournalURL: trimmedURL, HostID: *hostID, Secret: secret}
 	if state.HoldsEnrollment(enrollment) {
 		log.Printf("host %s is already enrolled with %s; nothing changed", *hostID, trimmedURL)
 		return nil
@@ -92,19 +90,15 @@ func verifyArrangement(arrangement host.Arrangement, pinned host.PinnedImages, d
 // answers the sign-in service's account-folder calls.
 func serve(arguments []string) error {
 	flags := flag.NewFlagSet("serve", flag.ContinueOnError)
-	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", device.DefaultStateFolder(), "the host's private state folder")
 	hookCommand := flags.String("hook-command", "", "the hook relay command the programs call")
 	installationFolder := flags.String("installation", "", "the protected installation saved-account starts run from")
 	arrangementFlag := flags.String("arrangement", string(host.Local), "where agents run: local or contained")
 	dockerSocket := flags.String("docker", "", "the agent daemon's socket a contained host starts containers through")
 	installationName := flags.String("installation-name", "", "the prefix of a contained host's containers")
-	agentImage := flags.String("agent-image", "", "the agent image a contained host runs, by digest")
-	runnerImage := flags.String("runner-image", "", "the sign-in runner image of a contained host, by digest")
-	developmentPrograms := flags.String("development-programs", os.Getenv("JOURNAL_DEVELOPMENT_PROGRAMS"),
-		"local development only: a daemon folder of the checkout's builds of the image's programs, mounted over them")
-	if err := assertDeclaredFlags(flags); err != nil {
-		return err
-	}
+	pinnedImages := flags.String("pinned-images", "", "the images a contained host was installed with, by digest, split by commas")
+	dataFolder := flags.String("data-folder", "", "the agent daemon's folder every daemon bind of a contained host comes from")
+	secretsFolder := flags.String("secrets-folder", "", "where a contained host finds the secrets a container run takes as input")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -119,11 +113,11 @@ func serve(arguments []string) error {
 	if err := arrangement.AssertServable(*dockerSocket, installation); err != nil {
 		return err
 	}
-	pinned := host.PinnedImages{Agent: *agentImage, Runner: *runnerImage}
+	pinned := host.PinnedImages(splitList(*pinnedImages))
 	if err := verifyArrangement(arrangement, pinned, *dockerSocket, *installationFolder); err != nil {
 		return err
 	}
-	enrollment, err := (host.State{Folder: *stateFolder}).Load()
+	enrollment, err := (device.State{Folder: *stateFolder}).Load()
 	if err != nil {
 		return err
 	}
@@ -132,8 +126,8 @@ func serve(arguments []string) error {
 	journal := client.New(enrollment).WithArrangement(string(arrangement))
 	containers := host.Containers{}
 	if arrangement.IsContained() {
-		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage,
-			Allowed: host.NewAllowedImages(), DevelopmentPrograms: *developmentPrograms}
+		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation,
+			Allowed: host.NewAllowedImages(), DataFolder: *dataFolder, SecretsFolder: *secretsFolder}
 		containers, err = host.ContainersOn(*dockerSocket, rules)
 		if err != nil {
 			return err

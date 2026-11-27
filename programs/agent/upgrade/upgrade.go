@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"journal-agent/device"
 	"journal-agent/host"
 )
 
@@ -19,7 +20,7 @@ var ErrNotReady = errors.New("the new release did not become ready, so the bindi
 
 // Binding is the release state of one binding: which installation its relay runs from, and whether it drains.
 type Binding struct {
-	State host.ConnectionState
+	State device.ConnectionState
 }
 
 // Release is the installation folder the binding's relay runs from; empty before any upgrade.
@@ -70,7 +71,7 @@ func (binding Binding) Upgrade(newRelease string, steps Steps) error {
 	if err := steps.Install(newRelease); err != nil {
 		return err
 	}
-	if err := host.WritePrivateFile(binding.drainMark(), []byte("draining\n")); err != nil {
+	if err := device.WritePrivateFile(binding.drainMark(), []byte("draining\n")); err != nil {
 		return err
 	}
 	defer os.Remove(binding.drainMark())
@@ -84,7 +85,7 @@ func (binding Binding) Upgrade(newRelease string, steps Steps) error {
 		return err
 	}
 	old := binding.Release()
-	if err := host.WritePrivateFile(binding.pointer(), []byte(newRelease+"\n")); err != nil {
+	if err := device.WritePrivateFile(binding.pointer(), []byte(newRelease+"\n")); err != nil {
 		unlock()
 		return err
 	}
@@ -99,7 +100,7 @@ func (binding Binding) Upgrade(newRelease string, steps Steps) error {
 		return err
 	}
 	defer unlock()
-	if err := host.WritePrivateFile(binding.pointer(), []byte(old+"\n")); err != nil {
+	if err := device.WritePrivateFile(binding.pointer(), []byte(old+"\n")); err != nil {
 		return err
 	}
 
@@ -108,13 +109,13 @@ func (binding Binding) Upgrade(newRelease string, steps Steps) error {
 
 // waitForRelayLock takes the binding's relay lock once the running relay let it go, so no two relays take claims
 // during a handoff.
-func waitForRelayLock(state host.ConnectionState, interval time.Duration) (func(), error) {
+func waitForRelayLock(state device.ConnectionState, interval time.Duration) (func(), error) {
 	for {
 		unlock, err := state.LockRelay()
 		if err == nil {
 			return unlock, nil
 		}
-		if !errors.Is(err, host.ErrRelayRunning) {
+		if !errors.Is(err, device.ErrRelayRunning) {
 			return nil, err
 		}
 		time.Sleep(interval)

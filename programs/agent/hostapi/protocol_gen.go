@@ -3,25 +3,14 @@
 package hostapi
 
 import (
-	"context"
-	"fmt"
-	"net/url"
 	"slices"
-	"strconv"
 	"time"
 
-	"journal-agent/client"
 	"journal-agent/host"
 )
 
 // ProtocolVersion is the version of the host protocol this binary speaks.
 const ProtocolVersion = 1
-
-// ClaimInstructionLimit is the most limit a claim_instruction call takes.
-const ClaimInstructionLimit = 50
-
-// ClaimInstructionWaitLimit is the most wait a claim_instruction call takes.
-const ClaimInstructionWaitLimit = 25
 
 // Status is one of the values host protocol 1 gives it.
 type Status string
@@ -63,45 +52,28 @@ type InstructionTraits struct {
 
 // InstructionTypes are every instruction type of the protocol with its traits.
 var InstructionTypes = map[string]InstructionTraits{
-	"open_container": {HostWide: false, Repeatable: false},
-	"open_process":   {HostWide: false, Repeatable: false},
-	"write_keys":     {HostWide: false, Repeatable: false},
-	"write_stdin":    {HostWide: false, Repeatable: false},
-	"close_stdin":    {HostWide: false, Repeatable: true},
-	"open_private":   {HostWide: false, Repeatable: false},
-	"write_private":  {HostWide: false, Repeatable: false},
-	"close_private":  {HostWide: false, Repeatable: false},
-	"resize":         {HostWide: false, Repeatable: true},
-	"signal":         {HostWide: false, Repeatable: false},
-	"stop":           {HostWide: false, Repeatable: true},
-	"stream":         {HostWide: false, Repeatable: true},
-	"snapshot":       {HostWide: false, Repeatable: true},
-	"run_fenced":     {HostWide: true, Repeatable: false},
-	"allow_images":   {HostWide: true, Repeatable: false},
-	"make_folder":    {HostWide: true, Repeatable: true},
-	"remove_folder":  {HostWide: true, Repeatable: true},
-	"folder_use":     {HostWide: true, Repeatable: true},
-	"remove":         {HostWide: true, Repeatable: true},
-	"remove_session": {HostWide: true, Repeatable: true},
-	"read_project":   {HostWide: true, Repeatable: true},
-	"upgrade":        {HostWide: true, Repeatable: false},
+	"open_container":  {HostWide: false, Repeatable: false},
+	"open_process":    {HostWide: false, Repeatable: false},
+	"write_keys":      {HostWide: false, Repeatable: false},
+	"write_stdin":     {HostWide: false, Repeatable: false},
+	"close_stdin":     {HostWide: false, Repeatable: true},
+	"open_private":    {HostWide: false, Repeatable: false},
+	"write_private":   {HostWide: false, Repeatable: false},
+	"close_private":   {HostWide: false, Repeatable: false},
+	"resize":          {HostWide: false, Repeatable: true},
+	"signal":          {HostWide: false, Repeatable: false},
+	"stop":            {HostWide: false, Repeatable: true},
+	"stream":          {HostWide: false, Repeatable: true},
+	"snapshot":        {HostWide: false, Repeatable: true},
+	"run_fenced":      {HostWide: true, Repeatable: false},
+	"allow_images":    {HostWide: true, Repeatable: false},
+	"run_containers":  {HostWide: true, Repeatable: true},
+	"list_containers": {HostWide: true, Repeatable: true},
+	"remove_network":  {HostWide: true, Repeatable: true},
+	"remove":          {HostWide: true, Repeatable: true},
+	"read_project":    {HostWide: true, Repeatable: true},
+	"upgrade":         {HostWide: true, Repeatable: false},
 }
-
-// HostNames are the names the host itself fills as {host:NAME} in a plan.
-var HostNames = []string{"JOURNAL_URL", "INSTALLATION", "HOOK_COMMAND", "JOURNAL_AGENT"}
-
-// ContainedRefusedFields are the plan fields a contained plan may not name.
-var ContainedRefusedFields = []string{"folders", "side_sockets", "read_files", "inherit"}
-
-// HostCommandFlags are the flags of each command an installation runs the host program with.
-var HostCommandFlags = map[string][]string{
-	"enroll": {"journal", "host", "state", "secret-file"},
-	"serve":  {"state", "hook-command", "installation", "arrangement", "docker", "installation-name", "agent-image", "runner-image", "development-programs"},
-}
-
-// ContainedStartGrantEnvironment are the variables of a contained program's start grant, which a contained
-// plan carries whole or not at all.
-var ContainedStartGrantEnvironment = []string{"JOURNAL_URL", "JOURNAL_START_TOKEN", "JOURNAL_PROFILE", "JOURNAL_PROFILE_REVISION"}
 
 // ProcessType is one of the values host protocol 1 gives it.
 type ProcessType string
@@ -156,26 +128,11 @@ type Instruction struct {
 	Signature string    `json:"signature"`
 }
 
-// Validate answers which value of the Instruction the protocol does not know, by its field.
-func (value Instruction) Validate() error {
-	return nil
-}
-
 // ClaimedInstructions is the claimed_instructions of host protocol 1.
 type ClaimedInstructions struct {
 	Instructions      []Instruction `json:"instructions"`
 	IdleWindowSeconds int           `json:"idle_window_seconds"`
 	Now               time.Time     `json:"now"`
-}
-
-// Validate answers which value of the ClaimedInstructions the protocol does not know, by its field.
-func (value ClaimedInstructions) Validate() error {
-	for index, item := range value.Instructions {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("instructions[%d].%w", index, err)
-		}
-	}
-	return nil
 }
 
 // Answer is the answer of host protocol 1.
@@ -185,17 +142,6 @@ type Answer struct {
 	Refusal       Refusal        `json:"refusal,omitempty"`
 	Reason        string         `json:"reason,omitempty"`
 	Facts         map[string]any `json:"facts,omitempty"`
-}
-
-// Validate answers which value of the Answer the protocol does not know, by its field.
-func (value Answer) Validate() error {
-	if !value.Status.IsKnown() {
-		return fmt.Errorf("status holds %q, which host protocol 1 does not know", value.Status)
-	}
-	if value.Refusal != "" && !value.Refusal.IsKnown() {
-		return fmt.Errorf("refusal holds %q, which host protocol 1 does not know", value.Refusal)
-	}
-	return nil
 }
 
 // ProcessReport is the process_report of host protocol 1.
@@ -209,33 +155,10 @@ type ProcessReport struct {
 	Evidence   string            `json:"evidence,omitempty"`
 }
 
-// Validate answers which value of the ProcessReport the protocol does not know, by its field.
-func (value ProcessReport) Validate() error {
-	if !value.Report.IsKnown() {
-		return fmt.Errorf("report holds %q, which host protocol 1 does not know", value.Report)
-	}
-	return nil
-}
-
 // Output is the output of host protocol 1.
 type Output struct {
 	Frames []Frame `json:"frames"`
 	Chunks []Chunk `json:"chunks"`
-}
-
-// Validate answers which value of the Output the protocol does not know, by its field.
-func (value Output) Validate() error {
-	for index, item := range value.Frames {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("frames[%d].%w", index, err)
-		}
-	}
-	for index, item := range value.Chunks {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("chunks[%d].%w", index, err)
-		}
-	}
-	return nil
 }
 
 // Frame is the frame of host protocol 1.
@@ -251,21 +174,11 @@ type Frame struct {
 	IsShielded   bool     `json:"is_shielded,omitempty"`
 }
 
-// Validate answers which value of the Frame the protocol does not know, by its field.
-func (value Frame) Validate() error {
-	return nil
-}
-
 // Chunk is the chunk of host protocol 1.
 type Chunk struct {
 	Stream string `json:"stream"`
 	Offset int64  `json:"offset"`
 	Bytes  string `json:"bytes"`
-}
-
-// Validate answers which value of the Chunk the protocol does not know, by its field.
-func (value Chunk) Validate() error {
-	return nil
 }
 
 // Inventory is the inventory of host protocol 1.
@@ -275,16 +188,6 @@ type Inventory struct {
 	AnsweredThrough string             `json:"answered_through,omitempty"`
 	Capabilities    []string           `json:"capabilities"`
 	Processes       []InventoryProcess `json:"processes"`
-}
-
-// Validate answers which value of the Inventory the protocol does not know, by its field.
-func (value Inventory) Validate() error {
-	for index, item := range value.Processes {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("processes[%d].%w", index, err)
-		}
-	}
-	return nil
 }
 
 // InventoryProcess is the inventory_process of host protocol 1.
@@ -297,30 +200,15 @@ type InventoryProcess struct {
 	SpoolOffset    int64  `json:"spool_offset"`
 }
 
-// Validate answers which value of the InventoryProcess the protocol does not know, by its field.
-func (value InventoryProcess) Validate() error {
-	return nil
-}
-
 // HostHeartbeat is the host_heartbeat of host protocol 1.
 type HostHeartbeat struct {
 	LiveProcesses   []string `json:"live_processes"`
 	AnsweredThrough string   `json:"answered_through,omitempty"`
 }
 
-// Validate answers which value of the HostHeartbeat the protocol does not know, by its field.
-func (value HostHeartbeat) Validate() error {
-	return nil
-}
-
 // PrivateValue is the private_value of host protocol 1.
 type PrivateValue struct {
 	Value string `json:"value"`
-}
-
-// Validate answers which value of the PrivateValue the protocol does not know, by its field.
-func (value PrivateValue) Validate() error {
-	return nil
 }
 
 // OpenPlan is the open_plan of host protocol 1.
@@ -333,7 +221,6 @@ type OpenPlan struct {
 	Environment     []string                `json:"environment"`
 	Folder          string                  `json:"folder"`
 	Container       *host.ContainerManifest `json:"container"`
-	Labels          *host.ContainerLabels   `json:"labels"`
 	Size            TerminalSize            `json:"size"`
 	Files           []PlanFile              `json:"files"`
 	Folders         []string                `json:"folders"`
@@ -346,51 +233,10 @@ type OpenPlan struct {
 	RawBytes        bool                    `json:"raw_bytes,omitempty"`
 }
 
-// Validate answers which value of the OpenPlan the protocol does not know, by its field.
-func (value OpenPlan) Validate() error {
-	if !value.Type.IsKnown() {
-		return fmt.Errorf("type holds %q, which host protocol 1 does not know", value.Type)
-	}
-	if value.RestartWhenFile != nil {
-		if err := value.RestartWhenFile.Validate(); err != nil {
-			return fmt.Errorf("restart_when_file.%w", err)
-		}
-	}
-	if value.Container != nil {
-		if err := value.Container.Validate(); err != nil {
-			return fmt.Errorf("container.%w", err)
-		}
-	}
-	if value.Labels != nil {
-		if err := value.Labels.Validate(); err != nil {
-			return fmt.Errorf("labels.%w", err)
-		}
-	}
-	if err := value.Size.Validate(); err != nil {
-		return fmt.Errorf("size.%w", err)
-	}
-	for index, item := range value.Files {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("files[%d].%w", index, err)
-		}
-	}
-	for index, item := range value.ShieldRules {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("shield_rules[%d].%w", index, err)
-		}
-	}
-	return nil
-}
-
 // TerminalSize is the terminal_size of host protocol 1.
 type TerminalSize struct {
 	Columns uint16 `json:"columns"`
 	Rows    uint16 `json:"rows"`
-}
-
-// Validate answers which value of the TerminalSize the protocol does not know, by its field.
-func (value TerminalSize) Validate() error {
-	return nil
 }
 
 // PlanFile is the plan_file of host protocol 1.
@@ -400,20 +246,10 @@ type PlanFile struct {
 	Template bool   `json:"template"`
 }
 
-// Validate answers which value of the PlanFile the protocol does not know, by its field.
-func (value PlanFile) Validate() error {
-	return nil
-}
-
 // ShieldRule is the shield_rule of host protocol 1.
 type ShieldRule struct {
 	Keywords    []string `json:"keywords"`
 	MinKeywords int      `json:"min_keywords"`
-}
-
-// Validate answers which value of the ShieldRule the protocol does not know, by its field.
-func (value ShieldRule) Validate() error {
-	return nil
 }
 
 // KeyWrite is the key_write of host protocol 1.
@@ -424,16 +260,6 @@ type KeyWrite struct {
 	AsUser            bool      `json:"as_user"`
 }
 
-// Validate answers which value of the KeyWrite the protocol does not know, by its field.
-func (value KeyWrite) Validate() error {
-	if value.IfRows != nil {
-		if err := value.IfRows.Validate(); err != nil {
-			return fmt.Errorf("if_rows.%w", err)
-		}
-	}
-	return nil
-}
-
 // RowGuard is the row_guard of host protocol 1.
 type RowGuard struct {
 	From int    `json:"from"`
@@ -441,29 +267,14 @@ type RowGuard struct {
 	Hash string `json:"hash"`
 }
 
-// Validate answers which value of the RowGuard the protocol does not know, by its field.
-func (value RowGuard) Validate() error {
-	return nil
-}
-
 // StdinWrite is the stdin_write of host protocol 1.
 type StdinWrite struct {
 	Bytes []byte `json:"bytes"`
 }
 
-// Validate answers which value of the StdinWrite the protocol does not know, by its field.
-func (value StdinWrite) Validate() error {
-	return nil
-}
-
 // PrivateWrite is the private_write of host protocol 1.
 type PrivateWrite struct {
 	Submission string `json:"submission"`
-}
-
-// Validate answers which value of the PrivateWrite the protocol does not know, by its field.
-func (value PrivateWrite) Validate() error {
-	return nil
 }
 
 // StreamPlan is the stream_plan of host protocol 1.
@@ -472,19 +283,9 @@ type StreamPlan struct {
 	Raw             bool `json:"raw"`
 }
 
-// Validate answers which value of the StreamPlan the protocol does not know, by its field.
-func (value StreamPlan) Validate() error {
-	return nil
-}
-
 // SignalPlan is the signal_plan of host protocol 1.
 type SignalPlan struct {
 	Signal string `json:"signal"`
-}
-
-// Validate answers which value of the SignalPlan the protocol does not know, by its field.
-func (value SignalPlan) Validate() error {
-	return nil
 }
 
 // StopPlan is the stop_plan of host protocol 1.
@@ -493,28 +294,13 @@ type StopPlan struct {
 	ForceMs int `json:"force_ms"`
 }
 
-// Validate answers which value of the StopPlan the protocol does not know, by its field.
-func (value StopPlan) Validate() error {
-	return nil
-}
-
 // Empty is the empty of host protocol 1.
 type Empty struct{}
-
-// Validate answers which value of the Empty the protocol does not know, by its field.
-func (value Empty) Validate() error {
-	return nil
-}
 
 // Opened is the opened of host protocol 1.
 type Opened struct {
 	Identity   string `json:"identity"`
 	Generation int    `json:"generation"`
-}
-
-// Validate answers which value of the Opened the protocol does not know, by its field.
-func (value Opened) Validate() error {
-	return nil
 }
 
 // KeysWritten is the keys_written of host protocol 1.
@@ -523,24 +309,9 @@ type KeysWritten struct {
 	RowHash         string `json:"row_hash,omitempty"`
 }
 
-// Validate answers which value of the KeysWritten the protocol does not know, by its field.
-func (value KeysWritten) Validate() error {
-	return nil
-}
-
 // FencedResults is the fenced_results of host protocol 1.
 type FencedResults struct {
 	Results []FencedResult `json:"results"`
-}
-
-// Validate answers which value of the FencedResults the protocol does not know, by its field.
-func (value FencedResults) Validate() error {
-	for index, item := range value.Results {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("results[%d].%w", index, err)
-		}
-	}
-	return nil
 }
 
 // FencedResult is the fenced_result of host protocol 1.
@@ -555,30 +326,9 @@ type FencedResult struct {
 	Truncated bool    `json:"truncated"`
 }
 
-// Validate answers which value of the FencedResult the protocol does not know, by its field.
-func (value FencedResult) Validate() error {
-	return nil
-}
-
 // ImagesAllowed is the images_allowed of host protocol 1.
 type ImagesAllowed struct {
 	Allowed int `json:"allowed"`
-}
-
-// Validate answers which value of the ImagesAllowed the protocol does not know, by its field.
-func (value ImagesAllowed) Validate() error {
-	return nil
-}
-
-// FolderUseReply is the folder_use_reply of host protocol 1.
-type FolderUseReply struct {
-	IsBound bool   `json:"is_bound"`
-	Reason  string `json:"reason,omitempty"`
-}
-
-// Validate answers which value of the FolderUseReply the protocol does not know, by its field.
-func (value FolderUseReply) Validate() error {
-	return nil
 }
 
 // UpgradeStarted is the upgrade_started of host protocol 1.
@@ -586,30 +336,9 @@ type UpgradeStarted struct {
 	Release string `json:"release"`
 }
 
-// Validate answers which value of the UpgradeStarted the protocol does not know, by its field.
-func (value UpgradeStarted) Validate() error {
-	return nil
-}
-
 // RemovePlan is the remove_plan of host protocol 1.
 type RemovePlan struct {
 	Container string `json:"container"`
-}
-
-// Validate answers which value of the RemovePlan the protocol does not know, by its field.
-func (value RemovePlan) Validate() error {
-	return nil
-}
-
-// SessionRemoval is the session_removal of host protocol 1.
-type SessionRemoval struct {
-	Network string `json:"network"`
-	Session string `json:"session"`
-}
-
-// Validate answers which value of the SessionRemoval the protocol does not know, by its field.
-func (value SessionRemoval) Validate() error {
-	return nil
 }
 
 // FencedPlan is the fenced_plan of host protocol 1.
@@ -620,16 +349,6 @@ type FencedPlan struct {
 	Runs     []FencedRun `json:"runs"`
 }
 
-// Validate answers which value of the FencedPlan the protocol does not know, by its field.
-func (value FencedPlan) Validate() error {
-	for index, item := range value.Runs {
-		if err := item.Validate(); err != nil {
-			return fmt.Errorf("runs[%d].%w", index, err)
-		}
-	}
-	return nil
-}
-
 // FencedRun is the fenced_run of host protocol 1.
 type FencedRun struct {
 	Argv        []string `json:"argv"`
@@ -638,30 +357,9 @@ type FencedRun struct {
 	OutputLimit int      `json:"output_limit"`
 }
 
-// Validate answers which value of the FencedRun the protocol does not know, by its field.
-func (value FencedRun) Validate() error {
-	return nil
-}
-
 // ImagesPlan is the images_plan of host protocol 1.
 type ImagesPlan struct {
 	Images []string `json:"images"`
-}
-
-// Validate answers which value of the ImagesPlan the protocol does not know, by its field.
-func (value ImagesPlan) Validate() error {
-	return nil
-}
-
-// FolderPlan is the folder_plan of host protocol 1.
-type FolderPlan struct {
-	Folder    string `json:"folder"`
-	Operation string `json:"operation"`
-}
-
-// Validate answers which value of the FolderPlan the protocol does not know, by its field.
-func (value FolderPlan) Validate() error {
-	return nil
 }
 
 // UpgradePlan is the upgrade_plan of host protocol 1.
@@ -672,110 +370,22 @@ type UpgradePlan struct {
 	Drivers   string `json:"drivers"`
 }
 
-// Validate answers which value of the UpgradePlan the protocol does not know, by its field.
-func (value UpgradePlan) Validate() error {
-	return nil
+// ContainerRuns is the container_runs of host protocol 1.
+type ContainerRuns struct {
+	Runs []host.ContainerRun `json:"runs"`
 }
 
-// InstructionHandlers carry out every instruction of host protocol 1, a method to each instruction type, given the instruction and
-// its payload read strictly and validated, and answer the instruction's reply.
-type InstructionHandlers interface {
-	OpenContainer(ctx context.Context, instruction Instruction, payload OpenPlan) (Opened, error)
-	OpenProcess(ctx context.Context, instruction Instruction, payload OpenPlan) (Opened, error)
-	WriteKeys(ctx context.Context, instruction Instruction, payload KeyWrite) (KeysWritten, error)
-	WriteStdin(ctx context.Context, instruction Instruction, payload StdinWrite) (Empty, error)
-	CloseStdin(ctx context.Context, instruction Instruction) (Empty, error)
-	OpenPrivate(ctx context.Context, instruction Instruction) (Empty, error)
-	WritePrivate(ctx context.Context, instruction Instruction, payload PrivateWrite) (Empty, error)
-	ClosePrivate(ctx context.Context, instruction Instruction) (Empty, error)
-	Resize(ctx context.Context, instruction Instruction, payload TerminalSize) (Empty, error)
-	Signal(ctx context.Context, instruction Instruction, payload SignalPlan) (Empty, error)
-	Stop(ctx context.Context, instruction Instruction, payload StopPlan) (Empty, error)
-	Stream(ctx context.Context, instruction Instruction, payload StreamPlan) (Empty, error)
-	Snapshot(ctx context.Context, instruction Instruction) (Empty, error)
-	RunFenced(ctx context.Context, instruction Instruction, payload FencedPlan) (FencedResults, error)
-	AllowImages(ctx context.Context, instruction Instruction, payload ImagesPlan) (ImagesAllowed, error)
-	MakeFolder(ctx context.Context, instruction Instruction, payload FolderPlan) (Empty, error)
-	RemoveFolder(ctx context.Context, instruction Instruction, payload FolderPlan) (Empty, error)
-	FolderUse(ctx context.Context, instruction Instruction, payload FolderPlan) (FolderUseReply, error)
-	Remove(ctx context.Context, instruction Instruction, payload RemovePlan) (Empty, error)
-	RemoveSession(ctx context.Context, instruction Instruction, payload SessionRemoval) (Empty, error)
-	ReadProject(ctx context.Context, instruction Instruction, payload client.ProjectRead) (Empty, error)
-	Upgrade(ctx context.Context, instruction Instruction, payload UpgradePlan) (UpgradeStarted, error)
+// ContainerRunResults is the container_run_results of host protocol 1.
+type ContainerRunResults struct {
+	Results []host.ContainerRunResult `json:"results"`
 }
 
-// Executors carry out each instruction of host protocol 1 through its handler, its payload read strictly into its
-// type and validated first.
-func Executors(handlers InstructionHandlers) map[string]Executor {
-	executors := map[string]Executor{}
-	executors["open_container"] = carrying(handlers.OpenContainer)
-	executors["open_process"] = carrying(handlers.OpenProcess)
-	executors["write_keys"] = carrying(handlers.WriteKeys)
-	executors["write_stdin"] = carrying(handlers.WriteStdin)
-	executors["close_stdin"] = carryingNothing(handlers.CloseStdin)
-	executors["open_private"] = carryingNothing(handlers.OpenPrivate)
-	executors["write_private"] = carrying(handlers.WritePrivate)
-	executors["close_private"] = carryingNothing(handlers.ClosePrivate)
-	executors["resize"] = carrying(handlers.Resize)
-	executors["signal"] = carrying(handlers.Signal)
-	executors["stop"] = carrying(handlers.Stop)
-	executors["stream"] = carrying(handlers.Stream)
-	executors["snapshot"] = carryingNothing(handlers.Snapshot)
-	executors["run_fenced"] = carrying(handlers.RunFenced)
-	executors["allow_images"] = carrying(handlers.AllowImages)
-	executors["make_folder"] = carrying(handlers.MakeFolder)
-	executors["remove_folder"] = carrying(handlers.RemoveFolder)
-	executors["folder_use"] = carrying(handlers.FolderUse)
-	executors["remove"] = carrying(handlers.Remove)
-	executors["remove_session"] = carrying(handlers.RemoveSession)
-	executors["read_project"] = carrying(handlers.ReadProject)
-	executors["upgrade"] = carrying(handlers.Upgrade)
-	return executors
+// ContainerNames is the container_names of host protocol 1.
+type ContainerNames struct {
+	Names []string `json:"names"`
 }
 
-// Journal makes the calls of host protocol 1 to the journal over the host's signed client.
-type Journal struct {
-	Client *client.Client
-}
-
-// ClaimInstruction makes the claim_instruction call to /host/instructions/claim and answers the journal's reply.
-func (journal Journal) ClaimInstruction(ctx context.Context, limit int, wait int) (ClaimedInstructions, error) {
-	var reply ClaimedInstructions
-	return reply, journal.Client.Call(ctx, "/host/instructions/claim"+"?limit="+strconv.Itoa(limit)+"&wait="+strconv.Itoa(wait), nil, &reply)
-}
-
-// AnswerInstruction makes the answer_instruction call to /host/instructions/{instruction}.
-func (journal Journal) AnswerInstruction(ctx context.Context, instruction string, body Answer) error {
-	return journal.Client.Call(ctx, "/host/instructions/"+url.PathEscape(instruction), body, nil)
-}
-
-// PullPrivateValue makes the pull_private_value call to /host/private-values/{submission} and answers the journal's reply.
-func (journal Journal) PullPrivateValue(ctx context.Context, submission string) (PrivateValue, error) {
-	var reply PrivateValue
-	return reply, journal.Client.Call(ctx, "/host/private-values/"+url.PathEscape(submission), nil, &reply)
-}
-
-// NotifyProcessOutput makes the notify_process_output call to /host/processes/{process}/output.
-func (journal Journal) NotifyProcessOutput(ctx context.Context, process string, body Output) error {
-	return journal.Client.Call(ctx, "/host/processes/"+url.PathEscape(process)+"/output", body, nil)
-}
-
-// NotifyProcessReport makes the notify_process_report call to /host/processes/{process}.
-func (journal Journal) NotifyProcessReport(ctx context.Context, process string, body ProcessReport) error {
-	return journal.Client.Call(ctx, "/host/processes/"+url.PathEscape(process), body, nil)
-}
-
-// NotifyInventory makes the notify_inventory call to /host/inventory.
-func (journal Journal) NotifyInventory(ctx context.Context, body Inventory) error {
-	return journal.Client.Call(ctx, "/host/inventory", body, nil)
-}
-
-// NotifyHeartbeat makes the notify_heartbeat call to /host/heartbeat.
-func (journal Journal) NotifyHeartbeat(ctx context.Context, body HostHeartbeat) error {
-	return journal.Client.Call(ctx, "/host/heartbeat", body, nil)
-}
-
-// NotifyProjectRead makes the notify_project_read call to /host/reports/project-reads/{read}.
-func (journal Journal) NotifyProjectRead(ctx context.Context, read string, body client.ProjectReadReport) error {
-	return journal.Client.Call(ctx, "/host/reports/project-reads/"+url.PathEscape(read), body, nil)
+// NetworkRemoval is the network_removal of host protocol 1.
+type NetworkRemoval struct {
+	Network string `json:"network"`
 }

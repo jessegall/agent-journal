@@ -7,16 +7,16 @@ import (
 	"strings"
 )
 
-// Arrangement is where this host runs agents: on the machine itself, or each in a container of the agent daemon
+// Arrangement is where this host runs its processes: on the machine itself, or each in a container of its Docker daemon
 // . The journal refuses a claim from a host whose arrangement is not the one it enrolled with.
 type Arrangement string
 
 const (
-	// Local runs every agent on this machine, the default.
+	// Local runs every process on this machine, the default.
 	Local Arrangement = "local"
-	// Contained runs every agent in a container of the agent daemon, as the agent-host service does.
+	// Contained runs every process in a container of the Docker daemon.
 	Contained Arrangement = "contained"
-	// LocalProject runs the agents of a project connected to a server journal on the owner's own machine, each
+	// LocalProject runs the processes of a project connected to a server journal on the owner's own machine, each
 	// confined by the platform's native mechanism to its assigned folder.
 	LocalProject Arrangement = "local-project"
 )
@@ -24,8 +24,8 @@ const (
 // ErrUnknownArrangement is returned for an --arrangement that is not local, contained or local-project.
 var ErrUnknownArrangement = errors.New("the arrangement is not local, contained or local-project")
 
-// ErrContainedNeedsDocker is returned when a contained host has no agent daemon socket to start containers through.
-var ErrContainedNeedsDocker = errors.New("a contained host needs --docker, the agent daemon's socket")
+// ErrContainedNeedsDocker is returned when a contained host has no Docker socket to start containers through.
+var ErrContainedNeedsDocker = errors.New("a contained host needs --docker, the Docker daemon's socket")
 
 // ErrContainedNeedsInstallationName is returned when a contained host has no name to prefix its containers with.
 var ErrContainedNeedsInstallationName = errors.New("a contained host needs --installation-name, the prefix of its containers")
@@ -40,12 +40,12 @@ func ParseArrangement(value string) (Arrangement, error) {
 	return "", fmt.Errorf("%w: %q", ErrUnknownArrangement, value)
 }
 
-// IsContained is whether agents run in containers of the agent daemon.
+// IsContained is whether processes run in containers of the Docker daemon.
 func (arrangement Arrangement) IsContained() bool {
 	return arrangement == Contained
 }
 
-// AssertServable refuses a contained host that lacks the agent daemon's socket or its installation name; a local host
+// AssertServable refuses a contained host that lacks the Docker daemon's socket or its installation name; a local host
 // needs neither.
 func (arrangement Arrangement) AssertServable(dockerSocket string, installationName InstallationName) error {
 	if !arrangement.IsContained() {
@@ -63,20 +63,20 @@ func (arrangement Arrangement) AssertServable(dockerSocket string, installationN
 	return nil
 }
 
-// ErrContainedNeedsImages is returned when a contained host is not told which agent and runner images to run.
-var ErrContainedNeedsImages = errors.New("a contained host needs --agent-image and --runner-image, each by id or digest")
+// ErrContainedNeedsImages is returned when a contained host is not told which images it was installed with.
+var ErrContainedNeedsImages = errors.New("a contained host needs --pinned-images, each by id or digest")
 
-// PinnedImages are the agent and sign-in runner images a contained host runs, each named by its digest: the sealed
-// installation of the contained arrangement.
-type PinnedImages struct {
-	Agent  string
-	Runner string
-}
+// PinnedImages are the images a contained host was installed with, each named by its digest, which the daemon must
+// hold as named when the host starts.
+type PinnedImages []string
 
-// AssertLoaded refuses images that are not named by digest, or that the agent daemon lacks or holds under another
+// AssertLoaded refuses images that are not named by digest, or that the Docker daemon lacks or holds under another
 // digest.
 func (images PinnedImages) AssertLoaded(ctx context.Context, containers Containers) error {
-	for _, reference := range []string{images.Agent, images.Runner} {
+	if len(images) == 0 {
+		return ErrContainedNeedsImages
+	}
+	for _, reference := range images {
 		if !IsPinnedReference(reference) {
 			return ErrContainedNeedsImages
 		}
@@ -89,9 +89,12 @@ func (images PinnedImages) AssertLoaded(ctx context.Context, containers Containe
 	return nil
 }
 
-// Lines are the arrangement and both images, one to a line, for an operator to compare with
+// Lines are the arrangement and each pinned image, one to a line, for an operator to compare with
 // docs/accounts/docker-images.json.
 func (images PinnedImages) Lines(arrangement Arrangement) string {
-	return strings.Join([]string{"arrangement " + string(arrangement), "agent-image " + images.Agent,
-		"runner-image " + images.Runner}, "\n")
+	lines := []string{"arrangement " + string(arrangement)}
+	for _, reference := range images {
+		lines = append(lines, "pinned-image "+reference)
+	}
+	return strings.Join(lines, "\n")
 }

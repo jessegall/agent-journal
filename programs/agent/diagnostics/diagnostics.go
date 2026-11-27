@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"journal-agent/host"
+	"journal-agent/device"
 )
 
 // Side says where a failure happened: on this machine or on the journal's server.
@@ -48,7 +48,7 @@ func (event Event) IsFailure() bool {
 
 // Log is the binding's event log in its private state folder.
 type Log struct {
-	State host.ConnectionState
+	State device.ConnectionState
 }
 
 // Record appends the event and keeps only the newest KeptEvents.
@@ -71,7 +71,7 @@ func (log Log) Record(event Event) error {
 		lines.WriteByte('\n')
 	}
 
-	return host.WritePrivateFile(log.path(), []byte(lines.String()))
+	return device.WritePrivateFile(log.path(), []byte(lines.String()))
 }
 
 // Events are the kept events, oldest first.
@@ -119,14 +119,14 @@ type Bundle struct {
 	Release      string    `json:"release"`
 	RelayRunning bool      `json:"relay_running"`
 	// LastReport is the relay's last presence report the journal acknowledged; zero when there was none.
-	LastReport   host.RelayReport `json:"last_report"`
-	RecentEvents []Event          `json:"recent_events"`
-	LastFailures []Event          `json:"last_failures"`
+	LastReport   device.RelayReport `json:"last_report"`
+	RecentEvents []Event            `json:"recent_events"`
+	LastFailures []Event            `json:"last_failures"`
 }
 
 // Write builds the bundle of the binding and writes it, private, into the folder; every secret the binding holds is
 // struck from it, so a failure text that quoted one carries it no further.
-func Write(binding host.Binding, state host.ConnectionState, install Install, folder string) (string, error) {
+func Write(binding device.Binding, state device.ConnectionState, install Install, folder string) (string, error) {
 	events, err := Log{State: state}.Events()
 	if err != nil {
 		return "", err
@@ -151,7 +151,7 @@ func Write(binding host.Binding, state host.ConnectionState, install Install, fo
 	}
 	path := filepath.Join(folder, "journal-diagnostics-"+bundle.WrittenAt.Format("20060102-150405")+".json")
 
-	return path, host.WritePrivateFile(path, strikeSecrets(content, secretsOf(binding, state)))
+	return path, device.WritePrivateFile(path, strikeSecrets(content, secretsOf(binding, state)))
 }
 
 func lastFailures(events []Event) []Event {
@@ -167,7 +167,7 @@ func lastFailures(events []Event) []Event {
 
 // secretsOf are the values the binding's state holds that no bundle may show: the host secret, each terminal
 // sign-in's bearer, and the staged install record's credential and nonce.
-func secretsOf(binding host.Binding, state host.ConnectionState) []string {
+func secretsOf(binding device.Binding, state device.ConnectionState) []string {
 	secrets := []string{binding.Secret}
 	signIns, _ := state.SignIns()
 	for _, signIn := range signIns {

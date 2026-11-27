@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"time"
 
-	"journal-agent/host"
+	"journal-agent/device"
 	"journal-agent/release"
 )
 
@@ -24,7 +24,7 @@ func installRelease(arguments []string) error {
 	folder := flags.String("into", "", "the absolute installation folder")
 	root := flags.String("into-root", "", "the folder whose releases/<version>-<list digest> folder the release is sealed in")
 	version := flags.String("version", "", "the release's version, naming its folder under --into-root")
-	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder the allow list is written to")
+	stateFolder := flags.String("state", device.DefaultStateFolder(), "the host's private state folder the allow list is written to")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}

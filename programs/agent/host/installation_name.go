@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-// InstallationName is the prefix of every container, network and volume of one journal on an agent daemon, so two
+// InstallationName is the prefix of every container, network and volume of one journal on an Docker daemon, so two
 // journals on one daemon never find each other's: lowercase letters, digits and dashes, 1 to 40 characters, never
 // opening with a dash. A local host has none.
 type InstallationName string

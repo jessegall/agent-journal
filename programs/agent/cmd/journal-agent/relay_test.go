@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"journal-agent/device"
 	"journal-agent/host"
 	"journal-agent/hostapi"
 )
@@ -99,9 +100,9 @@ func openInstruction(t *testing.T, folder string, seconds string) hostapi.Instru
 // connectedRelay is the relay of a binding redeemed for a folder of its own, signing with the mock's secret.
 func connectedRelay(t *testing.T, journalURL string) bindingRelay {
 	root := t.TempDir()
-	state := host.ConnectionState{Folder: t.TempDir(), CanonicalRoot: root}
-	binding := host.Binding{
-		Enrollment:    host.Enrollment{JournalURL: journalURL, HostID: "01jhost000000000000000000001", Secret: relayTestSecret},
+	state := device.ConnectionState{Folder: t.TempDir(), CanonicalRoot: root}
+	binding := device.Binding{
+		Enrollment:    device.Enrollment{JournalURL: journalURL, HostID: "01jhost000000000000000000001", Secret: relayTestSecret},
 		BindingID:     relayTestBinding,
 		CanonicalRoot: root,
 	}

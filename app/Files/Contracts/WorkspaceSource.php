@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Files\Contracts;
 
 use App\Files\ManifestMount;
-use App\Files\Values\WorkspacePreparation;
+use App\Hosts\HelperRuns;
+use App\Hosts\Protocol\Payloads\HostContainerRunPayload;
 
 /**
  * Where a contained environment's workspace comes from, and the mount that puts it at /workspace.
@@ -18,7 +19,9 @@ interface WorkspaceSource
     public function mount(bool $isWritable): ManifestMount;
 
     /**
-     * What the host makes ready before a container mounts it.
+     * The helper runs that make it ready before a container mounts it.
+     *
+     * @return list<HostContainerRunPayload>
      */
-    public function preparation(): WorkspacePreparation;
+    public function preparations(HelperRuns $runs): array;
 }

@@ -10,21 +10,13 @@ import (
 	"strings"
 )
 
-// validated is a payload the generated protocol checks once it is read: each enum holds one of its values.
-type validated interface {
-	Validate() error
-}
-
-// carrying is the executor of an instruction with a payload: it reads the payload strictly into its type, validates it and
-// hands it to the handler, refusing as unsafe what fails either.
-func carrying[T validated, R any](handler func(context.Context, Instruction, T) (R, error)) Executor {
+// carrying is the executor of an instruction with a payload: it reads the payload strictly into its type and hands it
+// to the handler, refusing as unsafe what does not read.
+func carrying[T any, R any](handler func(context.Context, Instruction, T) (R, error)) Executor {
 	return func(ctx context.Context, instruction Instruction) (map[string]any, error) {
 		payload, err := DecodePayload[T](instruction)
 		if err != nil {
 			return nil, err
-		}
-		if err := payload.Validate(); err != nil {
-			return nil, RefusalError{Refusal: Unsafe, Reason: "the payload of " + instruction.Type + " " + err.Error()}
 		}
 		return factsOf(handler(ctx, instruction, payload))
 	}

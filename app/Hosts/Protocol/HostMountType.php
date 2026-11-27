@@ -16,6 +16,5 @@ enum HostMountType: string
     case Bind = 'bind';
     case Volume = 'volume';
     case DaemonBind = 'daemon-bind';
-    case PlanFile = 'plan-file';
     case Scratch = 'scratch';
 }

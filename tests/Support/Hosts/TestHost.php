@@ -797,7 +797,7 @@ final class TestHost
         ];
 
         if ($this->arrangement->isContained()) {
-            $command = [...$command, '--installation-name', self::INSTALLATION_NAME, '--agent-image', self::IMAGE];
+            $command = [...$command, '--installation-name', self::INSTALLATION_NAME, '--data-folder', MountRules::DATA_FOLDER];
         }
 
         // The installation's programs come first on the host's path, so a program started by name runs its mock.

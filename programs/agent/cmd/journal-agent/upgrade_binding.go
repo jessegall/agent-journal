@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"journal-agent/host"
+	"journal-agent/device"
 	"journal-agent/hostapi"
 	"journal-agent/release"
 	"journal-agent/upgrade"
@@ -118,14 +118,14 @@ func (binder bindingRelay) startUpgradeStep(folder string) error {
 // release's relay starts again.
 func upgradeBinding(arguments []string) error {
 	flags := flag.NewFlagSet("upgrade-binding", flag.ContinueOnError)
-	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", device.DefaultStateFolder(), "the host's private state folder")
 	bindingID := flags.String("binding", "", "the binding to switch")
 	newRelease := flags.String("release", "", "the installed release folder to switch to")
 	previous := flags.String("previous", "", "the release folder the binding runs from now")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
-	state, _, err := host.ConnectionOfBinding(*stateFolder, *bindingID)
+	state, _, err := device.ConnectionOfBinding(*stateFolder, *bindingID)
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func upgradeBinding(arguments []string) error {
 		Install:      func(string) error { return nil },
 		LiveRuntimes: func() int { return 0 },
 		StartRelay: func(installation string) error {
-			return host.StartRelay(filepath.Join(installation, "bin", "journal-agent"), *stateFolder, *bindingID)
+			return device.StartRelay(filepath.Join(installation, "bin", "journal-agent"), *stateFolder, *bindingID)
 		},
 		AwaitReady:   func(within time.Duration) bool { return awaitReadyRelay(state, switched, within) },
 		ReadyWithin:  upgradeReadyWithin,
@@ -167,7 +167,7 @@ func repointService(stateFolder, bindingID, newRelease, previous string) error {
 }
 
 // awaitReadyRelay waits for a ready presence report the relay acknowledged after the switch.
-func awaitReadyRelay(state host.ConnectionState, since time.Time, within time.Duration) bool {
+func awaitReadyRelay(state device.ConnectionState, since time.Time, within time.Duration) bool {
 	deadline := time.Now().Add(within)
 	for time.Now().Before(deadline) {
 		report, err := state.RelayReport()
@@ -185,7 +185,7 @@ func restartPrevious(previous, stateFolder, bindingID string, cause error) error
 	if previous == "" {
 		return cause
 	}
-	if err := host.StartRelay(filepath.Join(previous, "bin", "journal-agent"), stateFolder, bindingID); err != nil {
+	if err := device.StartRelay(filepath.Join(previous, "bin", "journal-agent"), stateFolder, bindingID); err != nil {
 		return fmt.Errorf("%w; the previous relay did not start again: %v", cause, err)
 	}
 
