@@ -18,7 +18,7 @@ final readonly class PlanFilters
      * @param  list<PlanStatus>  $states  only plans in these states, or every plan when empty
      */
     public function __construct(
-        public string $search = '',
+        public string|null $search = null,
         public int $page = 1,
         public string|null $selectedPlanId = null,
         public array $states = [],

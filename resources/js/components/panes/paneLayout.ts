@@ -364,10 +364,6 @@ export function addPaneAtRight(
     };
 }
 
-/**
- * A drop on the tab strip or an empty pane aims at the centre. Elsewhere, it aims at the nearest edge within a
- * quarter of the pane's size, or the centre outside that range.
- */
 /** Whether the point lies inside the box, its edges included. */
 export function contains(
     box: { left: number; right: number; top: number; bottom: number },
@@ -377,6 +373,10 @@ export function contains(
     return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
 }
 
+/**
+ * A drop on the tab strip or an empty pane aims at the centre. Elsewhere, it aims at the nearest edge within a
+ * quarter of the pane's size, or the centre outside that range.
+ */
 export function zoneAt(
     box: { left: number; top: number; width: number; height: number },
     x: number,

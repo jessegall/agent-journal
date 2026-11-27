@@ -248,7 +248,7 @@ class ReadBuilder extends Builder
      */
     public function chunk($count, callable $callback): bool
     {
-        throw ReadShapeUnsupported::method('chunk', 'readInChunks($size, $each)');
+        throw ReadShapeUnsupported::method('chunk');
     }
 
     /**
@@ -256,7 +256,7 @@ class ReadBuilder extends Builder
      */
     public function each(callable $callback, $count = 1000): bool
     {
-        throw ReadShapeUnsupported::method('each', 'readInChunks($size, $each)');
+        throw ReadShapeUnsupported::method('each');
     }
 
     /**
@@ -266,7 +266,7 @@ class ReadBuilder extends Builder
      */
     public function chunkById($count, callable $callback, $column = null, $alias = null): bool
     {
-        throw ReadShapeUnsupported::method('chunkById', 'readInChunks($size, $each)');
+        throw ReadShapeUnsupported::method('chunkById');
     }
 
     /**
@@ -274,7 +274,7 @@ class ReadBuilder extends Builder
      */
     public function lazy($chunkSize = 1000): never
     {
-        throw ReadShapeUnsupported::method('lazy', 'readInChunks($size, $each)');
+        throw ReadShapeUnsupported::method('lazy');
     }
 
     /**
@@ -284,7 +284,7 @@ class ReadBuilder extends Builder
      */
     public function lazyById($chunkSize = 1000, $column = null, $alias = null): never
     {
-        throw ReadShapeUnsupported::method('lazyById', 'readInChunks($size, $each)');
+        throw ReadShapeUnsupported::method('lazyById');
     }
 
     /**

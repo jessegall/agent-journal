@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Sessions;
 
 use App\Models\Agents\Agent;
-use App\Sessions\Contracts\StartReservations as StartReservationsContract;
 use App\Sessions\Exceptions\AgentNotAvailable;
 use App\Support\ActorReference;
 
@@ -13,7 +12,7 @@ use App\Support\ActorReference;
  * Takes the same lifecycle lock and start reservation every start takes, so an owner can recheck its work facts
  * under it before it runs the start.
  */
-final readonly class StartReservations implements StartReservationsContract
+final readonly class StartReservations
 {
     public function __construct(private AgentSessions $sessions) {}
 

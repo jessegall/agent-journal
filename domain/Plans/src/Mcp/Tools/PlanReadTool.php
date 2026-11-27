@@ -31,7 +31,7 @@ final class PlanReadTool extends JournalReadTool
         ];
     }
 
-    public function readRequest(ToolArguments|null $arguments = null): ReadRequest
+    public function readRequest(ToolArguments $arguments): ReadRequest
     {
         return $this->recordReadRequest($arguments, PlanReadResult::ID_ARGUMENT);
     }

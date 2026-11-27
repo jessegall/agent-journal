@@ -7,6 +7,7 @@ namespace App\Processes;
 use App\Actors\Contracts\AliasResolver as AliasResolverContract;
 use App\Models\CommandRules\CommandAlias;
 use App\Values\AliasLookup;
+use PhpOption\Option;
 
 /**
  * The named read of the command aliases Processes keeps.
@@ -18,14 +19,12 @@ final readonly class AliasResolver implements AliasResolverContract
         return CommandAlias::query()->withName($name)->exists();
     }
 
-    public function find(string $name): AliasLookup
+    /**
+     * @return Option<AliasLookup>
+     */
+    public function find(string $name): Option
     {
-        $alias = CommandAlias::query()->withName($name)->first();
-
-        if ($alias === null) {
-            return AliasLookup::missing($name);
-        }
-
-        return $alias->lookup;
+        return Option::fromValue(CommandAlias::query()->withName($name)->first())
+            ->map(fn (CommandAlias $alias) => $alias->lookup);
     }
 }

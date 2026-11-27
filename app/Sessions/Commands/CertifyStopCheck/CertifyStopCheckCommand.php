@@ -8,8 +8,8 @@ use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Bus\Contracts\AgentStackCommand;
 use App\Policies\AgentPolicy;
+use App\Sessions\Values\StopIdentity;
 use App\Support\Command;
-use App\Support\Inputs\Values\HookIdentity;
 use App\Values\StackTarget;
 
 /**
@@ -31,8 +31,8 @@ final readonly class CertifyStopCheckCommand extends Command implements AgentSta
         return new StackTarget($this->agentId, $this->sessionId);
     }
 
-    public function stop(): HookIdentity
+    public function stop(): StopIdentity
     {
-        return new HookIdentity($this->agentId, $this->sessionId, $this->stopId, '');
+        return new StopIdentity($this->agentId, $this->sessionId, $this->stopId);
     }
 }

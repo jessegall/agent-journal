@@ -112,18 +112,6 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The ids of the claims a lost assignment proved, whoever holds them.
-     *
-     * @return list<string>
-     */
-    public static function resolveClaimIdsProvedBy(AssignmentReference $source): array
-    {
-        $claims = self::query()->claimsProvedBy($source)->readAll('every claim a lost assignment proved ends with it');
-
-        return array_values(array_map('strval', $claims->pluck('id')->all()));
-    }
-
-    /**
      * The current holder of each of these exact assignments that still exists, keyed by assignment id.
      *
      * @param  list<string>  $ids
@@ -387,16 +375,5 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     protected function recordIds(Builder $query): void
     {
         $query->select('record_id');
-    }
-
-    /**
-     * The claims a lost assignment proved, whoever holds them, for their release.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function claimsProvedBy(Builder $query, AssignmentReference $source): void
-    {
-        $query->withoutGlobalScope(SignedInScope::class)->provedBy($source);
     }
 }

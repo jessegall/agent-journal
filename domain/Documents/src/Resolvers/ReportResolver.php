@@ -31,9 +31,10 @@ final readonly class ReportResolver implements ReportResolverContract
     public function list(DocumentFilters $filters): PublicationList
     {
         $size = $filters->pageSize()->rows;
+        $words = $filters->searchWords();
 
         $reports = Report::query()->sharedPublished()->inAttention($filters->attention->state())
-            ->when($filters->searches(), fn (Builder $query) => $query->matchingText($filters->query))
+            ->when($filters->searches(), fn (Builder $query) => $query->matchingText($words->get()))
             ->when(
                 $filters->after !== null,
                 fn (Builder $query) => $query->where('id', '<', $filters->after),
@@ -48,9 +49,7 @@ final readonly class ReportResolver implements ReportResolverContract
         return PublicationList::from([
             'rows' => array_values(
                 $page->map(
-                    fn (Report $report) => $filters->searches() ? $report->searchResult(
-                        $filters->query,
-                    ) : $report->card,
+                    fn (Report $report) => $filters->searches() ? $report->searchResult($words->get()) : $report->card,
                 )->all(),
             ),
             'page' => $filters->page,

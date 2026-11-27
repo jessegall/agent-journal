@@ -72,7 +72,7 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
             return new UnrestrictedAuthorizer();
         }
 
-        if ($this->inboxes->isAdmitted(ActorReference::of($target), null)) {
+        if ($this->inboxes->isAdmitted(ActorReference::of($target))) {
             return new InboxMemberAuthorizer($this->memberPolicies);
         }
 

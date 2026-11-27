@@ -76,6 +76,6 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
 
     private function allowsRead(JournalReadTool $tool): bool
     {
-        return $this->reads->allows($tool->readRequest());
+        return $this->reads->allows($tool->discoveryRequest());
     }
 }

@@ -26,7 +26,7 @@ final class EditMemoryTool extends MemoryWriteTool
             'memory_id' => $this->recordIdArgument($schema),
             'expected_revision' => $schema->integer()->min(1)->required(),
             'text' => $schema->string(),
-            'weight' => $this->wholeNumberArgument($schema, 1, 10),
+            'weight' => $this->wholeNumberArgument($schema, 10),
         ];
     }
 

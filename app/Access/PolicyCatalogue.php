@@ -50,16 +50,16 @@ final class PolicyCatalogue implements PolicyCatalogueContract
             throw PolicyDefinitionConflict::forModel($model, $modelOwner, $owner);
         }
 
-        if ($this->byPolicy->has($definition->policy)) {
-            [$policyOwner] = $this->byPolicy->get($definition->policy);
+        $registered = $this->byPolicy->find($definition->policy);
 
-            throw PolicyDefinitionConflict::forPolicy($definition->policy, $policyOwner, $owner);
+        if ($registered->isDefined()) {
+            throw PolicyDefinitionConflict::forPolicy($definition->policy, $registered->get()[0], $owner);
         }
 
-        if ($definition->isRecord() && $this->recordPolicies->has($model)) {
-            $recordPolicy = $this->recordPolicies->get($model);
+        $recordPolicy = $this->recordPolicies->find($model);
 
-            throw PolicyDefinitionConflict::forRecordPolicy($model, $recordPolicy, $definition->policy);
+        if ($definition->isRecord() && $recordPolicy->isDefined()) {
+            throw PolicyDefinitionConflict::forRecordPolicy($model, $recordPolicy->get(), $definition->policy);
         }
 
         $this->modelOwners->put($model, $owner);

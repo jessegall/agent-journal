@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Narrows a query to rows whose column holds the search words, without regard to case; an empty search keeps every
- * row. The words are matched literally, so % and _ in them are no wildcards.
+ * Narrows a query to rows whose column holds the search words, without regard to case; no search or an empty one
+ * keeps every row. The words are matched literally, so % and _ in them are no wildcards.
  */
 final class TextSearch
 {
@@ -18,9 +18,9 @@ final class TextSearch
      *
      * @param  Builder<TModel>  $query
      */
-    public static function narrow(Builder $query, string $column, string $search): void
+    public static function narrow(Builder $query, string $column, string|null $search): void
     {
-        if (trim($search) === '') {
+        if ($search === null || trim($search) === '') {
             return;
         }
 

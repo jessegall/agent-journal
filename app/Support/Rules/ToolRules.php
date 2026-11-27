@@ -227,10 +227,10 @@ final readonly class ToolRules
         $jsonFlag = OptionGrammar::flag('-json');
 
         $sqlite = new ProgramSpellings('sqlite3');
-        $query = ArgumentGrammar::operands(OperandType::Path, OperandType::Text)->requiringOperands(1);
+        $query = ArgumentGrammar::operands(OperandType::Path, OperandType::Text)->requiringAnOperand();
         $readOnly = $query->withOptions(OptionGrammar::flag('-readonly')->required(), $jsonFlag);
 
-        $login = ArgumentGrammar::operands(OperandType::Name)->requiringOperands(1)->withOptions(
+        $login = ArgumentGrammar::operands(OperandType::Name)->requiringAnOperand()->withOptions(
             OptionGrammar::valued(OperandType::Count, '-p'),
             OptionGrammar::valued(OperandType::Path, '-i'),
         );

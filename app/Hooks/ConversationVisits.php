@@ -86,10 +86,6 @@ final readonly class ConversationVisits implements ConversationVisitsContract
     }
 
     /**
-     * Records whether the session went on in the conversation its start chose: a session that entered another one,
-     * or a fresh one, never counts as resumed.
-     */
-    /**
      * The conversation the driver's hook entered proves which conversation the session's start runs, for a driver whose
      * wake reports none, such as a terminal: the start becomes ready and its held messages go out, and a start bound
      * to another conversation is refused.

@@ -25,7 +25,6 @@ final readonly class ProfileSelections implements ProfileSelectionsContract
         ProfileKey $profile,
         ModelSelection $requested,
         string|null $driverKey,
-        string|null $parentDriver,
     ): ProfileSelection {
         $snapshot = $this->profiles->snapshotFor($profile);
         $start = $snapshot->start;
@@ -39,7 +38,7 @@ final readonly class ProfileSelections implements ProfileSelectionsContract
         );
 
         return new ProfileSelection(
-            SelectedDriver::resolve($driverKey, $requested, null, $defaults, $parentDriver, $this->drivers),
+            SelectedDriver::resolve($driverKey, $requested, null, $defaults, null, $this->drivers),
             $snapshot->base,
             $snapshot->revision,
             $start,

@@ -7,9 +7,7 @@ namespace Domain\Chat\Support;
 use Domain\Chat\Support\Cards\ComposedCard;
 use Domain\Chat\Support\Cards\DockCard;
 use Domain\Chat\Support\Cards\DockIdentity;
-use PhpOption\None;
 use PhpOption\Option;
-use PhpOption\Some;
 
 /**
  * The cards the owners composed for one page of the dock, by the source each one shows.
@@ -31,13 +29,7 @@ final class DockCards
      */
     public function find(DockIdentity $identity): Option
     {
-        $key = self::keyOf($identity);
-
-        if (isset($this->cards[$key])) {
-            return Some::create($this->cards[$key]);
-        }
-
-        return None::create();
+        return Option::fromArraysValue($this->cards, self::keyOf($identity));
     }
 
     private static function keyOf(DockIdentity $identity): string

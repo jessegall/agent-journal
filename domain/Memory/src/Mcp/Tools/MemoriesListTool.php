@@ -11,7 +11,6 @@ use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
-use App\Values\ReadRequest;
 use Domain\Memory\Contracts\MemoryResolver;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -32,15 +31,6 @@ final class MemoriesListTool extends JournalReadTool
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
         ];
-    }
-
-    public function readRequest(ToolArguments|null $arguments = null): ReadRequest
-    {
-        if ($arguments === null) {
-            return ReadRequest::forDiscovery($this->name());
-        }
-
-        return new ReadRequest($this->name());
     }
 
     protected function read(ToolArguments $arguments): ToolResult

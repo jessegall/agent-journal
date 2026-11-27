@@ -4,13 +4,13 @@ import { xsrfToken } from "@/echo";
 // through Inertia (page actions and partial reloads), never through this.
 
 /**
- * Why a JSON request failed: the server refused it with a code and message, or no answer came, so nothing is known.
+ * Why a JSON request failed: the server refused it with a code and message, or no answer came, so no code is known.
  */
 export class JsonRequestFailed extends Error {
   constructor(
     readonly kind: "refused" | "lost",
     readonly status: number,
-    readonly code: string,
+    readonly code: string | null,
     message: string,
     options?: ErrorOptions,
   ) {
@@ -21,21 +21,21 @@ export class JsonRequestFailed extends Error {
    * The request never reached the journal, or its answer never came back.
    */
   static unanswered(cause: unknown): JsonRequestFailed {
-    return new JsonRequestFailed("lost", 0, "", "No answer came from the journal.", { cause });
+    return new JsonRequestFailed("lost", 0, null, "No answer came from the journal.", { cause });
   }
 
   /**
    * The journal took the request and failed on its side.
    */
   static failedOnServer(status: number): JsonRequestFailed {
-    return new JsonRequestFailed("lost", status, "", "The journal could not answer.");
+    return new JsonRequestFailed("lost", status, null, "The journal could not answer.");
   }
 
   /**
    * The journal refused the request, with its own code and reason when it gave them.
    */
   static refused(status: number, code: string | undefined, reason: string | undefined): JsonRequestFailed {
-    return new JsonRequestFailed("refused", status, code ?? "", reason ?? "The journal refused the request.");
+    return new JsonRequestFailed("refused", status, code ?? null, reason ?? "The journal refused the request.");
   }
 }
 

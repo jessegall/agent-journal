@@ -46,15 +46,18 @@ final readonly class TaskExecutions
 
         $labels = $this->labels->labelsFor([...array_values($runners), ...array_values($focusers)]);
 
-        return $tasks->mapWithKeys(fn (Task $task) => [
-            $task->id => isset($runners[$task->id])
-                ? $task->executionBy(
-                    $runners[$task->id],
-                    $labels,
-                    isset($holders[$runs[$task->id]->id]),
-                    Option::fromArraysValue($focusers, $task->focusIdentity()->reference()),
-                )
-                : null,
-        ])->all();
+        $executions = [];
+
+        foreach ($tasks as $task) {
+            $runner = $runners[$task->id] ?? null;
+            $executions[$task->id] = $runner === null ? null : $task->executionBy(
+                $runner,
+                $labels,
+                isset($holders[$runs[$task->id]->id]),
+                Option::fromArraysValue($focusers, $task->focusIdentity()->reference()),
+            );
+        }
+
+        return $executions;
     }
 }

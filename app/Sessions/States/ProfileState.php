@@ -21,6 +21,7 @@ use App\Sessions\Enums\StopCheckStatus;
 use App\Sessions\States\Support\ProfileStateReference;
 use App\Sessions\States\Values\UnchangedFailures;
 use App\Sessions\Values\StartPolicy;
+use App\Sessions\Values\StopIdentity;
 use App\Stacks\AgentState;
 use App\Stacks\Attributes\StateType;
 use App\Stacks\Contracts\Work\BaseState;
@@ -144,7 +145,7 @@ final class ProfileState extends AgentState implements BaseState
             return [$open];
         }
 
-        return StopCheck::findOpenedFor($stop)
+        return StopCheck::findOpenedFor(StopIdentity::ofHook($stop))
             ->map(fn (StopCheck $attempt) => $this->checkedAnswers($attempt, $stop))
             ->getOrElse([$open, new MessageLine(AgentText::of('core.stop.checks_running'))]);
     }

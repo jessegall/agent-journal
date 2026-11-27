@@ -27,8 +27,8 @@ final class SearchValueInvalid extends LogicException
             ."most 64 bytes of text; {$name} is not one.");
     }
 
-    public static function outOfRange(string $field, int $minimum, int $limit): self
+    public static function outOfRange(string $field, int $limit): self
     {
-        return new self("A search {$field} lies between {$minimum} and {$limit}.");
+        return new self("A search {$field} lies between 1 and {$limit}.");
     }
 }

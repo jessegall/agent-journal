@@ -160,8 +160,10 @@ final readonly class ChatPages
                 ...$this->sourceFieldsOf($row, $viewer, $readIds, $questions),
             ];
 
-            if ($row->type === ChatMessageType::Event && isset($events[$row->id])) {
-                $fields['event'] = $events[$row->id];
+            $event = $events[$row->id] ?? null;
+
+            if ($row->type === ChatMessageType::Event && $event !== null) {
+                $fields['event'] = $event;
             }
 
             return ChatEntryData::from($fields);
@@ -261,7 +263,7 @@ final readonly class ChatPages
     private function capabilitiesOf(ActorReference $viewer, Inbox $inbox, int $memberCount): ChatCapabilitiesData
     {
         $isGroup = $inbox->provider_key === PairChats::GROUP_PROVIDER;
-        $manages = $isGroup && $this->eligibility->holds($viewer, InboxPermission::ManageMembers, null);
+        $manages = $isGroup && $this->eligibility->holds($viewer, InboxPermission::ManageMembers);
 
         return ChatCapabilitiesData::from([
             'canAdd' => $manages,

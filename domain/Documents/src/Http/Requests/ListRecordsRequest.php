@@ -35,10 +35,22 @@ final class ListRecordsRequest extends FormRequest
         return new DocumentFilters(
             attention: $this->enum('attention', AttentionFilter::class) ?? AttentionFilter::Active,
             page: $this->integer('page', 1),
-            query: $this->string('query')->toString(),
+            query: $this->optionalText('query'),
             revisions: $this->boolean('revisions'),
-            after: $this->string('after')->toString(),
+            after: $this->optionalText('after'),
         );
+    }
+
+    /**
+     * The text given for the key, none when it was left out or empty.
+     */
+    private function optionalText(string $key): string|null
+    {
+        if (! $this->filled($key)) {
+            return null;
+        }
+
+        return $this->string($key)->toString();
     }
 
     /**

@@ -254,8 +254,10 @@ final readonly class CommandRuleRegistry
         $byId = [];
 
         foreach ($rules as $rule) {
-            if (isset($byId[$rule->id])) {
-                throw CommandRuleConflict::sameId($byId[$rule->id], $rule);
+            $sameId = $byId[$rule->id] ?? null;
+
+            if ($sameId !== null) {
+                throw CommandRuleConflict::sameId($sameId, $rule);
             }
 
             $byId[$rule->id] = $rule;

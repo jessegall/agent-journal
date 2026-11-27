@@ -23,7 +23,7 @@ final class TaskFiltersData extends Data
 {
     public function __construct(
         #[MapName('q')]
-        public readonly string $search = '',
+        public readonly string|null $search = null,
         public readonly int $page = 1,
         public readonly TaskStateGroup|Optional $state = new Optional(),
         public readonly TaskHolderFilter $holder = TaskHolderFilter::Any,

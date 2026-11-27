@@ -20,6 +20,8 @@ final readonly class ToolArguments
     /**
      * The first-page arguments a continuation replaces; it carries their values itself.
      */
+    private const string STATES = 'states';
+
     private const array FIRST_PAGE_FILTERS = [
         'page',
         'per_page',
@@ -267,20 +269,6 @@ final readonly class ToolArguments
     }
 
     /**
-     * The text the caller sent, or the tool's default when it sent none.
-     *
-     * @throws ToolArgumentInvalid
-     */
-    public function textOr(string $name, string $default): string
-    {
-        if (array_key_exists($name, $this->arguments)) {
-            return $this->text($name);
-        }
-
-        return $default;
-    }
-
-    /**
      * @throws ToolArgumentInvalid
      */
     public function text(string $name): string
@@ -331,13 +319,13 @@ final readonly class ToolArguments
     }
 
     /**
-     * The text of an argument the caller may leave out, or null when it did.
+     * The text of an argument the caller may leave out, or null when it did or sent null.
      *
      * @throws ToolArgumentInvalid
      */
     public function optionalText(string $name): string|null
     {
-        if (! array_key_exists($name, $this->arguments)) {
+        if (($this->arguments[$name] ?? null) === null) {
             return null;
         }
 
@@ -364,7 +352,7 @@ final readonly class ToolArguments
     }
 
     /**
-     * The values of a list of an enum's cases; a list the caller left out is empty.
+     * The values of the states argument, each a case of the enum; a list the caller left out is empty.
      *
      * @template T of BackedEnum
      *
@@ -373,17 +361,17 @@ final readonly class ToolArguments
      *
      * @throws ToolArgumentInvalid
      */
-    public function enumValues(string $name, string $type): array
+    public function stateValues(string $type): array
     {
-        if (! array_key_exists($name, $this->arguments)) {
+        if (! array_key_exists(self::STATES, $this->arguments)) {
             return [];
         }
 
-        $caseNames = $this->list($name);
+        $caseNames = $this->list(self::STATES);
 
         foreach ($caseNames as $argument) {
             if ($type::tryFrom($argument) === null) {
-                throw ToolArgumentInvalid::for($name, 'a list of '.self::valuesOf($type));
+                throw ToolArgumentInvalid::for(self::STATES, 'a list of '.self::valuesOf($type));
             }
         }
 

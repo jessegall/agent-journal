@@ -33,12 +33,13 @@ final class TaskLogReadTool extends JournalReadTool
     /**
      * A line is read under the read of its task: the same targeted tasks_read search asked before it showed it.
      */
-    public function readRequest(ToolArguments|null $arguments = null): ReadRequest
+    public function discoveryRequest(): ReadRequest
     {
-        if ($arguments === null) {
-            return ReadRequest::forDiscovery(TaskReadResult::TOOL);
-        }
+        return ReadRequest::forDiscovery(TaskReadResult::TOOL);
+    }
 
+    public function readRequest(ToolArguments $arguments): ReadRequest
+    {
         return TaskReadResult::requestFor($arguments->ulid(TaskReadResult::ID_ARGUMENT));
     }
 

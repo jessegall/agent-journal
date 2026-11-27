@@ -26,7 +26,9 @@ use App\Agents\Drivers\Setup\SignInSetup;
 use App\Agents\Drivers\Setup\VersionLine;
 use App\Agents\Drivers\Setup\VersionProbe;
 use App\Agents\Exceptions\DriverSetupInvalid;
+use App\Agents\SignInEgress;
 use App\Exceptions\PlanAdditionClash;
+use App\Files\Contracts\Files;
 use App\Hosts\Protocol\Payloads\HostRestartFilePayload;
 use App\Values\PlanAddition;
 use Tests\TestCase;
@@ -82,6 +84,8 @@ final class DriverSetupTest extends TestCase
             $this->journal->service(DriverCatalogue::class),
             $this->journal->service(PinnedBuilds::class),
             $this->journal->service(HookReplies::class),
+            $this->journal->service(Files::class),
+            $this->journal->service(SignInEgress::class),
             $setups,
         );
     }

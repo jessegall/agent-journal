@@ -17,6 +17,7 @@ use App\Records\Contracts\ReadableModel;
 use App\Skills\Exceptions\SkillOwnerRequired;
 use App\Skills\Exceptions\SkillRetired;
 use App\Skills\Exceptions\SkillRevisionConflict;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Support\ActorReference;
 use App\Values\SkillKey;
 use Carbon\CarbonImmutable;
@@ -154,11 +155,15 @@ final class Skill extends JournalModel implements EventSource, Numbered, Readabl
     // ----------[ Queries ]----------
 
     /**
-     * The visible skill with this id, locked until the transaction ends.
+     * The skill with this id visible in the skills' own environment, locked until the transaction ends.
      */
-    public static function findLockedVisible(string $skillId, string $environment): self
+    public static function findLockedVisible(string $skillId): self
     {
-        return self::query()->visibleIn($environment)->whereKey($skillId)->lockForUpdate()->firstOrFail();
+        return self::query()
+            ->visibleIn(SkillContextResolver::ENVIRONMENT)
+            ->whereKey($skillId)
+            ->lockForUpdate()
+            ->firstOrFail();
     }
 
     public static function isKeyTaken(SkillKey $key): bool

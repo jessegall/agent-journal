@@ -32,7 +32,7 @@ final class DockListTool extends JournalReadTool
     {
         return [
             'chat' => $this->optionalRecordIdArgument($schema),
-            'limit' => $this->wholeNumberArgument($schema, 1, DockProjection::LARGEST_CARD_LIMIT),
+            'limit' => $this->wholeNumberArgument($schema, DockProjection::LARGEST_CARD_LIMIT),
         ];
     }
 

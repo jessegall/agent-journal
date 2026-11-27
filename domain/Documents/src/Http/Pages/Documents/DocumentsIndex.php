@@ -66,7 +66,11 @@ final readonly class DocumentsIndex extends DocumentsPage
         return ListPage::make('Documents', $rows, $this->emptyFor($filters))
             ->searching(
                 'Search documents',
-                LayoutFieldData::from(['name' => 'query', 'value' => $filters->query, 'clears' => ['after', 'page']]),
+                LayoutFieldData::from([
+                    'name' => 'query',
+                    'value' => $filters->searchWords()->getOrElse(''),
+                    'clears' => ['after', 'page'],
+                ]),
             )
             ->creatingWith($this->creation('doc', 'New document'), $this->creation('report', 'New report'))
             ->paged(ListPaging::cursor($type === LibraryTypeFilter::All ? null : $this->nextOf($documents ?? $reports)))
@@ -105,7 +109,8 @@ final readonly class DocumentsIndex extends DocumentsPage
     {
         if ($filters->searches() || $filters->attention !== AttentionFilter::Active) {
             return $this->nothingMatches(
-                $filters->searches() ? "Nothing matches \"{$filters->query}\"." : 'Nothing matches this filter.',
+                $filters->searchWords()->map(fn (string $words) => "Nothing matches \"{$words}\".")
+                    ->getOrElse('Nothing matches this filter.'),
                 'Clear search',
                 ['query' => '', 'attention' => AttentionFilter::Active->value, 'after' => ''],
             );

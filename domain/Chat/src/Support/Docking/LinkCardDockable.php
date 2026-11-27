@@ -33,8 +33,8 @@ final readonly class LinkCardDockable implements Dockable
         $title = new Title('title', $this->record->title);
 
         $root = $this->record->abstract === null
-            ? Stack::of('root', $title)
-            : Stack::of('root', $title, new Subtitle('abstract', $this->record->abstract));
+            ? Stack::root($title)
+            : Stack::root($title, new Subtitle('abstract', $this->record->abstract));
 
         $open = $this->page === null ? null : $context->permittedDestination($this->page)->getOrElse(null);
 

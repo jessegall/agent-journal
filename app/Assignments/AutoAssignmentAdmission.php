@@ -14,7 +14,7 @@ use App\Exceptions\AssigneeUnavailable;
 use App\Exceptions\AssignmentDenied;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\CrossProjectEdge;
-use App\Projects\ProjectEdges;
+use App\Projects\Contracts\ProjectEdges;
 use App\Records\Contracts\RecordResolver;
 use App\Support\AssigneeIdentity;
 use App\Support\AutoAssignmentInput;

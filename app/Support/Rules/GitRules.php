@@ -195,7 +195,7 @@ final readonly class GitRules
                 ArgumentGrammar::operands(
                     OperandType::Branch,
                     OperandType::Revision,
-                )->requiringOperands(1)->withOptions(
+                )->requiringAnOperand()->withOptions(
                     ...$this->flags('-t', '--track', '--no-track', '-f', '--force'),
                 ),
                 $write,
@@ -227,7 +227,7 @@ final readonly class GitRules
             $this->namedRule(
                 'tag-create',
                 ['tag'],
-                ArgumentGrammar::operands(OperandType::Name, OperandType::Revision)->requiringOperands(1)->withOptions(
+                ArgumentGrammar::operands(OperandType::Name, OperandType::Revision)->requiringAnOperand()->withOptions(
                     ...$this->valued('-m', '--message'),
                     ...$this->flags('-a', '--annotate', '-f'),
                 ),

@@ -50,7 +50,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
                 $broken->getMessage(),
             );
 
-            return new RefreshResult($failed->id, false, true, $broken->getMessage());
+            return new RefreshResult($failed->id, false, $broken->getMessage());
         }
 
         $skillEntries = $catalogue->all();
@@ -68,7 +68,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
                 null,
             );
 
-        return new RefreshResult($generation->id, $reused, false, '');
+        return new RefreshResult($generation->id, $reused, null);
     }
 
     /**

@@ -50,15 +50,13 @@ final readonly class DockedOutput implements Dockable
         $label = "Part {$this->part} · {$this->stream->value}{$attempt}";
 
         if ($this->lines === []) {
-            return DockCard::named($label, Stack::of(
-                'root',
+            return DockCard::named($label, Stack::root(
                 new Title('title', $label),
                 new StateLabel('state', 'Waiting for output', Tone::Muted),
             ));
         }
 
-        return DockCard::named($label, Stack::of(
-            'root',
+        return DockCard::named($label, Stack::root(
             new Title('title', $label),
             new ConsoleOutput('output', ConsoleStream::of($this->stream), $this->lines, $this->isTruncated),
         ));

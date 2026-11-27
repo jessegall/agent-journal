@@ -32,10 +32,10 @@ final readonly class JournalRoutes
                 continue;
             }
 
-            $declaration = Reflector::of($command);
+            $route = Reflector::of($command)->attributes(JournalRoute::class)->first();
 
-            if ($declaration->hasAttribute(JournalRoute::class)) {
-                $routes[$name] = $declaration->attribute(JournalRoute::class);
+            if ($route->isDefined()) {
+                $routes[$name] = $route->get();
             }
         }
 
@@ -51,11 +51,13 @@ final readonly class JournalRoutes
      */
     public function routeOf(string $name): array
     {
-        if (isset($this->routes[$name])) {
-            return [$this->routes[$name]];
+        $route = $this->routes[$name] ?? null;
+
+        if ($route === null) {
+            return [];
         }
 
-        return [];
+        return [$route];
     }
 
     /**

@@ -22,6 +22,7 @@ use App\Values\DriverKey;
 use App\Values\DriverRegistration;
 use App\Values\PinnedDriver;
 use Illuminate\Contracts\Container\Container;
+use PhpOption\Option;
 
 /**
  * The drivers this journal can start, each under its opaque key: a lookup by key is the only way a driver is selected.
@@ -147,6 +148,14 @@ final class DriverCatalogue implements DriverCatalogueContract
     public function family(string $key): DriverFamily
     {
         return $this->families->get($key);
+    }
+
+    /**
+     * @return Option<DriverFamily>
+     */
+    public function findFamily(string $key): Option
+    {
+        return $this->families->find($key);
     }
 
     /**

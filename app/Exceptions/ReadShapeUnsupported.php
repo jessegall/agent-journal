@@ -11,8 +11,8 @@ use RuntimeException;
  */
 final class ReadShapeUnsupported extends RuntimeException
 {
-    public static function method(string $method, string $instead): self
+    public static function method(string $method): self
     {
-        return new self("{$method}() is not a bounded read; use {$instead} instead.");
+        return new self($method.'() is not a bounded read; use readInChunks($size, $each) instead.');
     }
 }

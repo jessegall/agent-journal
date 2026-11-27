@@ -8,7 +8,9 @@ use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Exceptions\DriverSetupInvalid;
+use App\Agents\SignInEgress;
 use App\Exceptions\DriverFamilyUnknown;
+use App\Files\Contracts\Files;
 use App\Models\Agents\AgentRuntime;
 use App\Values\DriverKey;
 use Illuminate\Contracts\Container\Container;
@@ -33,6 +35,8 @@ final readonly class DriverProfiles
         private DriverCatalogue $drivers,
         PinnedBuilds $builds,
         HookReplies $replies,
+        Files $files,
+        SignInEgress $egress,
         array $setups,
     ) {
         $profiles = [];
@@ -42,7 +46,7 @@ final readonly class DriverProfiles
                 throw DriverSetupInvalid::twice($setup->family);
             }
 
-            $profiles[$setup->family] = new DriverProfile($setup, $container, $builds, $replies);
+            $profiles[$setup->family] = new DriverProfile($setup, $container, $builds, $replies, $files, $egress);
         }
 
         foreach ($drivers->familyKeys() as $family) {

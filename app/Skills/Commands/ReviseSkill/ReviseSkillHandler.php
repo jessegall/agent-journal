@@ -6,7 +6,6 @@ namespace App\Skills\Commands\ReviseSkill;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Models\Skills\Skill;
-use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\StoredSkillWrites;
 use App\Skills\Values\SkillRevisionResult;
 
@@ -22,7 +21,7 @@ final readonly class ReviseSkillHandler implements CommandHandler
             'sha256',
             "{$skillId}|{$command->expectedRevision}|".$command->draft->digest(),
         ), function () use ($command, $skillId) {
-            $skill = Skill::findLockedVisible($skillId, SkillContextResolver::ENVIRONMENT);
+            $skill = Skill::findLockedVisible($skillId);
             $skill->assertWritableAt($command->expectedRevision);
             $draft = $command->draft;
 

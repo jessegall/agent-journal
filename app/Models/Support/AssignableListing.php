@@ -34,12 +34,13 @@ trait AssignableListing
     }
 
     /**
-     * Records whose title holds the search words, without regard to case; an empty search matches every record.
+     * Records whose title holds the search words, without regard to case; no search or an empty one matches every
+     * record.
      *
      * @param  Builder<static>  $query
      */
     #[Scope]
-    protected function matching(Builder $query, string $search): void
+    protected function matching(Builder $query, string|null $search): void
     {
         TextSearch::narrow($query, 'title', $search);
     }

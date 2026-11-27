@@ -61,13 +61,10 @@ final readonly class ReadCommandHandlers implements Pipe
                 $operationName = CommandName::of($command);
                 $operation = $owner->name.':'.strtolower($operationName);
 
-                if (isset($operations[$operation])) {
-                    throw CommandOperationListedTwice::for(
-                        $owner->name,
-                        $operationName,
-                        $operations[$operation],
-                        $command,
-                    );
+                $listedFirst = $operations[$operation] ?? null;
+
+                if ($listedFirst !== null) {
+                    throw CommandOperationListedTwice::for($owner->name, $operationName, $listedFirst, $command);
                 }
 
                 $operations[$operation] = $command;

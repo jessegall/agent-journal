@@ -18,7 +18,7 @@ final readonly class TaskFilters
      * @param  list<string>  $environmentIds  the environments of the bindings tasks were made through; none for all
      */
     public function __construct(
-        public string $search = '',
+        public string|null $search = null,
         public array $states = [],
         public NumberedPage $page = new NumberedPage(),
         public array $environmentIds = [],

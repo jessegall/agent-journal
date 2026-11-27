@@ -7,7 +7,6 @@ namespace App\Skills\Commands\RestoreSkill;
 use App\Bus\Contracts\CommandHandler;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
-use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\StoredSkillWrites;
 use App\Skills\Values\SkillRevisionResult;
 
@@ -23,7 +22,7 @@ final readonly class RestoreSkillHandler implements CommandHandler
             'sha256',
             "{$skillId}|{$command->revision}|{$command->expectedRevision}",
         ), function () use ($command, $skillId) {
-            $skill = Skill::findLockedVisible($skillId, SkillContextResolver::ENVIRONMENT);
+            $skill = Skill::findLockedVisible($skillId);
             $skill->assertWritableAt($command->expectedRevision);
             $earlier = SkillRevision::findNumbered($skill, $command->revision);
 

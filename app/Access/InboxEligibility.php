@@ -28,17 +28,17 @@ final readonly class InboxEligibility implements InboxEligibilityContract
         EnvironmentUserGrant::query()->activeFor($user->id, $environmentId)->lockForUpdate()->first();
     }
 
-    public function isAdmitted(ActorReference $user, string|null $environmentId): bool
+    public function isAdmitted(ActorReference $user): bool
     {
         if (! $this->isActiveUser($user)) {
             return false;
         }
 
         return $this->isOwner($user)
-            || EnvironmentUserGrant::query()->activeFor($user->id, $environmentId)->exists();
+            || EnvironmentUserGrant::query()->activeFor($user->id, null)->exists();
     }
 
-    public function holds(ActorReference $user, InboxPermission $permission, string|null $environmentId): bool
+    public function holds(ActorReference $user, InboxPermission $permission): bool
     {
         if (! $this->isActiveUser($user)) {
             return false;
@@ -48,7 +48,7 @@ final readonly class InboxEligibility implements InboxEligibilityContract
             return true;
         }
 
-        $grant = EnvironmentUserGrant::query()->activeFor($user->id, $environmentId)->first();
+        $grant = EnvironmentUserGrant::query()->activeFor($user->id, null)->first();
 
         return $grant !== null && $grant->allows($permission);
     }

@@ -29,7 +29,7 @@ final readonly class SourcePosition
     public static function of(array $fields): self
     {
         if (count($fields) > self::FIELD_LIMIT) {
-            throw SearchValueInvalid::outOfRange('position field count', 1, self::FIELD_LIMIT);
+            throw SearchValueInvalid::outOfRange('position field count', self::FIELD_LIMIT);
         }
 
         foreach ($fields as $name => $value) {

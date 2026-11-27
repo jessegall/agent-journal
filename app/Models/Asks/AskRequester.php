@@ -68,6 +68,6 @@ final class AskRequester extends JournalModel implements ReadableModel
     #[Scope]
     protected function ofActor(Builder $query, ActorReference $actor): void
     {
-        $query->where($actor->asColumns('actor'));
+        $query->where($actor->asActorColumns());
     }
 }

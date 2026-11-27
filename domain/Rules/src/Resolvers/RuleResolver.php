@@ -12,6 +12,8 @@ use Domain\Rules\Values\RuleFilters;
 use Domain\Rules\Values\RuleList;
 use Domain\Rules\Values\RuleView;
 use Illuminate\Container\Attributes\Scoped;
+use PhpOption\None;
+use PhpOption\Option;
 
 /**
  * The named reads of rules, newest first, for whoever acts in this request; every agent and the user read every rule.
@@ -46,16 +48,30 @@ final readonly class RuleResolver implements RuleResolverContract
         $lastPage = max(1, (int) ceil($total / $size));
         $page = min(max(1, $filters->page), $lastPage);
         $rules = $matching->orderByDesc('id')->forPage($page, $size)->get();
-        $selected = $filters->selectedRuleId === null ? null : Rule::query()->find($filters->selectedRuleId);
+        $selected = self::selectedOf($filters);
 
         return new RuleList(
             array_values($rules->map(self::viewOf(...))->all()),
             $page,
             $lastPage,
             $total,
-            $selected === null ? null : self::viewOf($selected),
-            $filters->selectedRuleId !== null && $selected === null,
+            $selected->map(self::viewOf(...))->getOrElse(null),
+            $filters->selectedRuleId !== null && $selected->isEmpty(),
         );
+    }
+
+    /**
+     * The rule the filters select, none when they select none or it is gone.
+     *
+     * @return Option<Rule>
+     */
+    private static function selectedOf(RuleFilters $filters): Option
+    {
+        if ($filters->selectedRuleId === null) {
+            return None::create();
+        }
+
+        return Option::fromValue(Rule::query()->find($filters->selectedRuleId));
     }
 
     private static function viewOf(Rule $rule): RuleView

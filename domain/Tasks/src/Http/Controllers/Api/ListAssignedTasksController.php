@@ -19,7 +19,7 @@ final readonly class ListAssignedTasksController
     public function __invoke(ListAssignedTasksPayload $call, AssignedTaskResolver $tasks): AssignedTaskListData
     {
         $filters = new TaskFilters(
-            search: (string) $call->search,
+            search: $call->search,
             states: array_map(TaskStatus::from(...), $call->states),
             page: new NumberedPage($call->page, $call->perPage),
         );

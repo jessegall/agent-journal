@@ -132,7 +132,7 @@ final readonly class TasksIndex extends TasksPage
 
     private function emptyFor(TaskFiltersData $filters): ListEmpty
     {
-        if ($filters->state instanceof TaskStateGroup || $filters->search !== '') {
+        if ($filters->state instanceof TaskStateGroup || $filters->search !== null) {
             return $this->nothingMatches(
                 'No task matches these filters.',
                 'Show all tasks',
@@ -193,7 +193,7 @@ final readonly class TasksIndex extends TasksPage
     {
         return array_filter([
             'state' => $filters->state instanceof TaskStateGroup ? $filters->state->value : null,
-            'q' => $filters->search === '' ? null : $filters->search,
+            'q' => $filters->search,
             'page' => $filters->page > 1 ? $filters->page : null,
             'holder' => $filters->holder === TaskHolderFilter::Any ? null : $filters->holder->value,
         ], fn (mixed $value) => $value !== null);

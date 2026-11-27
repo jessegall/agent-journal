@@ -23,8 +23,8 @@ final class AdmissionRefusalDetails extends Data
         public readonly string $reason,
         public readonly string $correction,
         #[MapName('request_id')]
-        public readonly string $requestId,
-        public readonly string $next,
+        public readonly string|null $requestId,
+        public readonly string|null $next,
         public readonly string $notice,
     ) {}
 

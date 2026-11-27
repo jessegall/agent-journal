@@ -39,7 +39,7 @@ final readonly class PlanDraftProducer implements DraftProducer
 
     public function draft(array $answers): DraftedRecordData
     {
-        $draft = DraftAnswers::of($answers, 3);
+        $draft = DraftAnswers::of($answers);
 
         return DraftedRecordData::from([
             'fields' => [

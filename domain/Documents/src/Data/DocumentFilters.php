@@ -6,6 +6,7 @@ namespace Domain\Documents\Data;
 
 use App\Reads\Values\PageSize;
 use Domain\Documents\Enums\AttentionFilter;
+use PhpOption\Option;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Data;
@@ -25,14 +26,24 @@ final class DocumentFilters extends Data
         #[Min(1), Max(100)]
         public readonly int $perPage = 50,
         #[Max(200)]
-        public readonly string $query = '',
+        public readonly string|null $query = null,
         public readonly bool $revisions = false,
         public readonly string|null $after = null,
     ) {}
 
     public function searches(): bool
     {
-        return trim($this->query) !== '';
+        return $this->searchWords()->isDefined();
+    }
+
+    /**
+     * The words searched for; none when no words were given.
+     *
+     * @return Option<string>
+     */
+    public function searchWords(): Option
+    {
+        return Option::fromValue($this->query)->filter(fn (string $words) => trim($words) !== '');
     }
 
     public function pageSize(): PageSize

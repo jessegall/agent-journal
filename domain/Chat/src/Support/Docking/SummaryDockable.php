@@ -67,7 +67,7 @@ final readonly class SummaryDockable implements Dockable
             $parts[] = new Button('open', 'Open', Emphasis::Primary, $permitted);
         }
 
-        return DockCard::named($this->summary->title, Stack::of('root', ...$parts));
+        return DockCard::named($this->summary->title, Stack::root(...$parts));
     }
 
     /**

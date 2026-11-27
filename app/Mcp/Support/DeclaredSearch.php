@@ -55,11 +55,11 @@ final readonly class DeclaredSearch
             limit: $arguments->optionalPositiveInteger('limit'),
             continuation: $continuation,
             shouldDiscover: $arguments->flag('discover'),
-            prefix: $arguments->textOr('prefix', ''),
+            prefix: $arguments->optionalText('prefix'),
         );
 
         if ($request->isDiscovery()) {
-            return $this->discover($request->prefix, $request->limit, null);
+            return $this->discover($request->discoveryPrefix(), $request->limit, null);
         }
 
         return $this->answer($this->coordinator->search($this->owner(), $this->reader(), $request));

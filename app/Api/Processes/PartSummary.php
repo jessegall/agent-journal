@@ -14,7 +14,7 @@ final class PartSummary extends Data
 {
     /**
      * @param  array<string, int>  $bytes
-     * @param  array{type: string, outcome: string, receipt_id: string, problems: list<string>}  $partSummary
+     * @param  array{type: string, outcome: string|null, receipt_id: string|null, problems: list<string>}  $partSummary
      */
     public function __construct(
         public readonly int $node,

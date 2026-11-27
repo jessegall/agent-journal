@@ -32,12 +32,8 @@ final class TaskReadTool extends JournalReadTool
         ];
     }
 
-    public function readRequest(ToolArguments|null $arguments = null): ReadRequest
+    public function readRequest(ToolArguments $arguments): ReadRequest
     {
-        if ($arguments === null) {
-            return parent::readRequest();
-        }
-
         return TaskReadResult::requestFor($arguments->ulid(TaskReadResult::ID_ARGUMENT));
     }
 

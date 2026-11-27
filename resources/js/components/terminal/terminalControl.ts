@@ -80,7 +80,7 @@ export type ControlView = {
 /**
  * How a failed call reads: refused with its code and words, or lost.
  */
-export type ControlFailure = { kind: 'refused' | 'lost'; code: string; message: string };
+export type ControlFailure = { kind: 'refused' | 'lost'; code: string | null; message: string };
 
 /**
  * How often a held grant is renewed and a pending take or input is asked about.

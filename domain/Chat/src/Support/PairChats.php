@@ -95,11 +95,9 @@ final readonly class PairChats implements PairChatsContract
         $inbox = $this->attached($inboxId);
         $viewer = $this->actors->actor();
 
-        if ($inbox->provider_key !== self::GROUP_PROVIDER || ! $this->eligibility->holds(
-            $viewer,
-            InboxPermission::ManageMembers,
-            null,
-        )) {
+        $managesMembers = $this->eligibility->holds($viewer, InboxPermission::ManageMembers);
+
+        if ($inbox->provider_key !== self::GROUP_PROVIDER || ! $managesMembers) {
             throw ChatUnavailable::notAttached($inboxId);
         }
     }
@@ -113,7 +111,7 @@ final readonly class PairChats implements PairChatsContract
     {
         $viewer = $this->actors->actor();
 
-        if (! $this->eligibility->holds($viewer, InboxPermission::OpenInboxes, null)) {
+        if (! $this->eligibility->holds($viewer, InboxPermission::OpenInboxes)) {
             throw ChatUnavailable::none();
         }
     }
@@ -123,7 +121,7 @@ final readonly class PairChats implements PairChatsContract
      */
     public function mayCreate(): bool
     {
-        return $this->eligibility->holds($this->actors->actor(), InboxPermission::OpenInboxes, null);
+        return $this->eligibility->holds($this->actors->actor(), InboxPermission::OpenInboxes);
     }
 
     /**

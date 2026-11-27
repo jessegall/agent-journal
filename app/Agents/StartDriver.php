@@ -7,6 +7,7 @@ namespace App\Agents;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Values\ProviderKey;
 use App\Text\StableKey;
+use App\Values\DriverFamily;
 use App\Values\DriverKey;
 
 /**
@@ -31,6 +32,8 @@ final readonly class StartDriver
 
         $key = DriverKey::from($driver);
 
-        return new self($key, $drivers->hasFamily($driver) ? $drivers->family($driver)->provider : null);
+        $provider = $drivers->findFamily($driver)->map(fn (DriverFamily $family) => $family->provider)->getOrElse(null);
+
+        return new self($key, $provider);
     }
 }

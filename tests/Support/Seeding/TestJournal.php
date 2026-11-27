@@ -27,10 +27,10 @@ use App\Projects\CurrentProject;
 use App\Sessions\Contracts\SessionPolicyReader;
 use App\Sessions\StartedAgent;
 use App\Sessions\StartSessions;
+use App\Sessions\Values\StopIdentity;
 use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\DomainRegistry;
-use App\Support\Inputs\Values\HookIdentity;
 use App\Time\Contracts\ServerClock;
 use App\Values\ProjectSelection;
 use App\Values\SelectedDriver;
@@ -260,7 +260,7 @@ final class TestJournal
     {
         $session = AgentSession::query()->findOrFail($sessionId);
         $policy = $this->app->make(SessionPolicyReader::class)->policyFor($sessionId);
-        $stop = new HookIdentity($session->agent_id, $sessionId, $stopId, 'digest');
+        $stop = new StopIdentity($session->agent_id, $sessionId, $stopId);
 
         // Opened in its own unit, as the stop hook opens it, so its opening is heard.
         return $this->app->make(EventUnitLifecycle::class)->run(

@@ -371,6 +371,7 @@ final readonly class RuleDeclarations
             "{$binding}.locations.*" => ['string'],
             "{$binding}.content_digest" => [
                 'present',
+                'nullable',
                 'string',
             ],
             "{$binding}.configuration_revision" => [

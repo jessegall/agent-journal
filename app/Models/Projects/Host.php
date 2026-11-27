@@ -170,11 +170,9 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * The host's protocol 1 heartbeat arrived.
-     */
-    /**
      * The installation enrolled this host again: it takes the new secret and roots and starts with no failure, no
-     * answer and no allowed image, as nothing answers for what the host was before; its processes and instructions stay its.
+     * answer and no allowed image, as nothing answers for what the host was before; its processes and instructions
+     * stay its.
      *
      * @param  list<string>  $startRoots
      */

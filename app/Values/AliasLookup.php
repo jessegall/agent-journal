@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 /**
- * The answer to looking an alias up: found, with its body, revision, digest and declared positional arguments, or
- * missing. A missing alias is never a fabricated empty one.
+ * A saved alias as a lookup finds it: its body, revision, digest and declared positional arguments.
  */
 final readonly class AliasLookup
 {
@@ -14,7 +13,6 @@ final readonly class AliasLookup
      * @param  list<string>  $arguments  the names of the positional arguments the body takes
      */
     private function __construct(
-        public bool $isFound,
         public string $name,
         public string $id,
         public string $body,
@@ -34,12 +32,7 @@ final readonly class AliasLookup
         string $digest,
         array $arguments,
     ): self {
-        return new self(true, $name, $id, $body, $revision, $digest, $arguments);
-    }
-
-    public static function missing(string $name): self
-    {
-        return new self(false, $name, '', '', 0, '', []);
+        return new self($name, $id, $body, $revision, $digest, $arguments);
     }
 
     public function reference(): string
