@@ -500,6 +500,109 @@ func (value StopPlan) Validate() error {
 	return nil
 }
 
+// Nothing is the nothing of host protocol 1.
+type Nothing struct{}
+
+// Validate answers which value of the Nothing the protocol does not know, by its field.
+func (value Nothing) Validate() error {
+	return nil
+}
+
+// Opened is the opened of host protocol 1.
+type Opened struct {
+	Identity   string `json:"identity"`
+	Generation int    `json:"generation"`
+}
+
+// Validate answers which value of the Opened the protocol does not know, by its field.
+func (value Opened) Validate() error {
+	return nil
+}
+
+// KeysWritten is the keys_written of host protocol 1.
+type KeysWritten struct {
+	InputGeneration uint64 `json:"input_generation"`
+	RowHash         string `json:"row_hash,omitempty"`
+}
+
+// Validate answers which value of the KeysWritten the protocol does not know, by its field.
+func (value KeysWritten) Validate() error {
+	return nil
+}
+
+// FencedResults is the fenced_results of host protocol 1.
+type FencedResults struct {
+	Results []FencedResult `json:"results"`
+}
+
+// Validate answers which value of the FencedResults the protocol does not know, by its field.
+func (value FencedResults) Validate() error {
+	for index, item := range value.Results {
+		if err := item.Validate(); err != nil {
+			return fmt.Errorf("results[%d].%w", index, err)
+		}
+	}
+	return nil
+}
+
+// FencedResult is the fenced_result of host protocol 1.
+type FencedResult struct {
+	Status    string  `json:"status"`
+	StartedAt string  `json:"started_at"`
+	EndedAt   *string `json:"ended_at"`
+	ExitCode  *int    `json:"exit_code"`
+	Signal    *string `json:"signal"`
+	Summary   string  `json:"summary"`
+	Output    *string `json:"output"`
+	Truncated bool    `json:"truncated"`
+}
+
+// Validate answers which value of the FencedResult the protocol does not know, by its field.
+func (value FencedResult) Validate() error {
+	return nil
+}
+
+// ImagesAllowed is the images_allowed of host protocol 1.
+type ImagesAllowed struct {
+	Allowed int `json:"allowed"`
+}
+
+// Validate answers which value of the ImagesAllowed the protocol does not know, by its field.
+func (value ImagesAllowed) Validate() error {
+	return nil
+}
+
+// FolderUseReply is the folder_use_reply of host protocol 1.
+type FolderUseReply struct {
+	IsBound bool   `json:"is_bound"`
+	Reason  string `json:"reason,omitempty"`
+}
+
+// Validate answers which value of the FolderUseReply the protocol does not know, by its field.
+func (value FolderUseReply) Validate() error {
+	return nil
+}
+
+// RecordingStopped is the recording_stopped of host protocol 1.
+type RecordingStopped struct {
+	Folder string `json:"folder"`
+}
+
+// Validate answers which value of the RecordingStopped the protocol does not know, by its field.
+func (value RecordingStopped) Validate() error {
+	return nil
+}
+
+// UpgradeStarted is the upgrade_started of host protocol 1.
+type UpgradeStarted struct {
+	Release string `json:"release"`
+}
+
+// Validate answers which value of the UpgradeStarted the protocol does not know, by its field.
+func (value UpgradeStarted) Validate() error {
+	return nil
+}
+
 // RemovePlan is the remove_plan of host protocol 1.
 type RemovePlan struct {
 	Container string `json:"container"`
@@ -587,32 +690,32 @@ func (value UpgradePlan) Validate() error {
 }
 
 // OrderHandlers carry out every order of host protocol 1, a method to each order type, given the order and
-// its payload read strictly and validated.
+// its payload read strictly and validated, and answer the order's reply.
 type OrderHandlers interface {
-	OpenContainer(ctx context.Context, order Order, payload OpenPlan) (map[string]any, error)
-	OpenProcess(ctx context.Context, order Order, payload OpenPlan) (map[string]any, error)
-	WriteKeys(ctx context.Context, order Order, payload KeyWrite) (map[string]any, error)
-	WriteStdin(ctx context.Context, order Order, payload StdinWrite) (map[string]any, error)
-	CloseStdin(ctx context.Context, order Order) (map[string]any, error)
-	OpenPrivate(ctx context.Context, order Order) (map[string]any, error)
-	WritePrivate(ctx context.Context, order Order, payload PrivateWrite) (map[string]any, error)
-	ClosePrivate(ctx context.Context, order Order) (map[string]any, error)
-	Resize(ctx context.Context, order Order, payload TerminalSize) (map[string]any, error)
-	Signal(ctx context.Context, order Order, payload SignalPlan) (map[string]any, error)
-	Stop(ctx context.Context, order Order, payload StopPlan) (map[string]any, error)
-	Stream(ctx context.Context, order Order, payload StreamPlan) (map[string]any, error)
-	Snapshot(ctx context.Context, order Order) (map[string]any, error)
-	RunFenced(ctx context.Context, order Order, payload FencedPlan) (map[string]any, error)
-	AllowImages(ctx context.Context, order Order, payload ImagesPlan) (map[string]any, error)
-	MakeFolder(ctx context.Context, order Order, payload FolderPlan) (map[string]any, error)
-	RemoveFolder(ctx context.Context, order Order, payload FolderPlan) (map[string]any, error)
-	FolderUse(ctx context.Context, order Order, payload FolderPlan) (map[string]any, error)
-	Remove(ctx context.Context, order Order, payload RemovePlan) (map[string]any, error)
-	RemoveSession(ctx context.Context, order Order, payload SessionRemoval) (map[string]any, error)
-	ReadProject(ctx context.Context, order Order, payload client.ProjectRead) (map[string]any, error)
-	Record(ctx context.Context, order Order) (map[string]any, error)
-	StopRecording(ctx context.Context, order Order) (map[string]any, error)
-	Upgrade(ctx context.Context, order Order, payload UpgradePlan) (map[string]any, error)
+	OpenContainer(ctx context.Context, order Order, payload OpenPlan) (Opened, error)
+	OpenProcess(ctx context.Context, order Order, payload OpenPlan) (Opened, error)
+	WriteKeys(ctx context.Context, order Order, payload KeyWrite) (KeysWritten, error)
+	WriteStdin(ctx context.Context, order Order, payload StdinWrite) (Nothing, error)
+	CloseStdin(ctx context.Context, order Order) (Nothing, error)
+	OpenPrivate(ctx context.Context, order Order) (Nothing, error)
+	WritePrivate(ctx context.Context, order Order, payload PrivateWrite) (Nothing, error)
+	ClosePrivate(ctx context.Context, order Order) (Nothing, error)
+	Resize(ctx context.Context, order Order, payload TerminalSize) (Nothing, error)
+	Signal(ctx context.Context, order Order, payload SignalPlan) (Nothing, error)
+	Stop(ctx context.Context, order Order, payload StopPlan) (Nothing, error)
+	Stream(ctx context.Context, order Order, payload StreamPlan) (Nothing, error)
+	Snapshot(ctx context.Context, order Order) (Nothing, error)
+	RunFenced(ctx context.Context, order Order, payload FencedPlan) (FencedResults, error)
+	AllowImages(ctx context.Context, order Order, payload ImagesPlan) (ImagesAllowed, error)
+	MakeFolder(ctx context.Context, order Order, payload FolderPlan) (Nothing, error)
+	RemoveFolder(ctx context.Context, order Order, payload FolderPlan) (Nothing, error)
+	FolderUse(ctx context.Context, order Order, payload FolderPlan) (FolderUseReply, error)
+	Remove(ctx context.Context, order Order, payload RemovePlan) (Nothing, error)
+	RemoveSession(ctx context.Context, order Order, payload SessionRemoval) (Nothing, error)
+	ReadProject(ctx context.Context, order Order, payload client.ProjectRead) (Nothing, error)
+	Record(ctx context.Context, order Order) (Nothing, error)
+	StopRecording(ctx context.Context, order Order) (RecordingStopped, error)
+	Upgrade(ctx context.Context, order Order, payload UpgradePlan) (UpgradeStarted, error)
 }
 
 // Executors carry out each order of host protocol 1 through its handler, its payload read strictly into its

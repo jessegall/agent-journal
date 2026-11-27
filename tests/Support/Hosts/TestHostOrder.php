@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support\Hosts;
 
 use App\Hosts\Commands\NotifyHostOrder\NotifyHostOrderCommand;
+use App\Hosts\Protocol\Data\HostKeysWrittenData;
+use App\Hosts\Protocol\Data\HostOpenedData;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostOrder;
 use Tests\Support\Seeding\TestJournal;
@@ -18,17 +20,16 @@ final readonly class TestHostOrder
     public function __construct(private TestJournal $journal, private HostOrder $order) {}
 
     /**
-     * The host answers the order as carried out.
+     * The host answers the order as carried out, with the reply its type declares: an opening names the process's
+     * identity, a key write the input generation it raised, and every other order nothing.
      */
     public function answer(): self
     {
-        $this->journal->asSystem(new NotifyHostOrderCommand(
-            $this->order->host_id,
-            $this->order->id,
-            json_encode(['order_id' => $this->order->id, 'status' => 'done'], JSON_THROW_ON_ERROR),
-        ));
-
-        return $this;
+        return $this->answerWith(match ($this->order->type->replyData()) {
+            HostOpenedData::class => ['identity' => "pid:{$this->order->host_process_id}", 'generation' => 0],
+            HostKeysWrittenData::class => ['input_generation' => 1],
+            default => [],
+        });
     }
 
     /**

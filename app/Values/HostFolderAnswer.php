@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Protocol\Data\HostFolderUseReplyData;
+use App\Hosts\Protocol\HostOrderType;
 use App\Models\Hosts\HostOrder;
 
 /**
@@ -17,10 +19,18 @@ final readonly class HostFolderAnswer
 
     public static function of(HostOrder $order): self
     {
-        $facts = $order->answer->facts ?? [];
-        $reason = $order->answer->reason ?? $facts['reason'] ?? $order->refusal->value ?? '';
+        // Only a folder use answers whether the folder is bound; a made or removed folder answers that it is done.
+        if ($order->status === HostOrderStatus::Done && $order->type === HostOrderType::FolderUse) {
+            $reply = HostFolderUseReplyData::from($order->answer->facts ?? []);
 
-        return new self($order->status, is_string($reason) ? $reason : '', ($facts['is_bound'] ?? false) === true);
+            return new self($order->status, $reply->reason ?? '', $reply->isBound);
+        }
+
+        if ($order->status === HostOrderStatus::Done) {
+            return new self($order->status, '', false);
+        }
+
+        return new self($order->status, $order->answer->reason ?? $order->refusal->value ?? '', false);
     }
 
     public function isPending(): bool

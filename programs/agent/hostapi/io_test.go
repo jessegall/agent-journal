@@ -105,7 +105,7 @@ func TestAGuardedWriteIsRefusedOnceItsRowsOrTheInputMovedAndTheUsersWriteRaisesT
 		t.Fatalf("a write whose guards hold is refused: %v", err)
 	}
 	facts, err := carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("x"), AsUser: true}))
-	if err != nil || facts["input_generation"] != uint64(1) {
+	if err != nil || facts["input_generation"] != float64(1) {
 		t.Fatalf("the user's write did not raise the input generation: %v, %v", facts, err)
 	}
 	_, err = carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation}))

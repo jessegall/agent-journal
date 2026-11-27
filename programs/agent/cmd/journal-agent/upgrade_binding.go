@@ -41,16 +41,16 @@ type bindingUpgrade struct {
 }
 
 // Upgrade installs the release the plan names and hands the binding to it once the answer went out.
-func (upgrade bindingUpgrade) Upgrade(ctx context.Context, _ hostapi.Order, plan hostapi.UpgradePlan) (map[string]any, error) {
+func (upgrade bindingUpgrade) Upgrade(ctx context.Context, _ hostapi.Order, plan hostapi.UpgradePlan) (hostapi.UpgradeStarted, error) {
 	if running := upgrade.live(); len(running) > 0 {
-		return nil, hostapi.RefusalError{Refusal: hostapi.Fenced, Reason: "a process still runs on this host"}
+		return hostapi.UpgradeStarted{}, hostapi.RefusalError{Refusal: hostapi.Fenced, Reason: "a process still runs on this host"}
 	}
 	if plan.Version == "" {
-		return nil, hostapi.RefusalError{Refusal: hostapi.Unsafe, Reason: "the upgrade order names no release"}
+		return hostapi.UpgradeStarted{}, hostapi.RefusalError{Refusal: hostapi.Unsafe, Reason: "the upgrade order names no release"}
 	}
 	folder, err := upgrade.binder.installUpgrade(ctx, plan)
 	if err != nil {
-		return nil, err
+		return hostapi.UpgradeStarted{}, err
 	}
 	time.AfterFunc(upgradeAnswerGrace, func() {
 		if err := upgrade.binder.startUpgradeStep(folder); err != nil {
@@ -60,7 +60,7 @@ func (upgrade bindingUpgrade) Upgrade(ctx context.Context, _ hostapi.Order, plan
 		upgrade.stop()
 	})
 
-	return map[string]any{"release": plan.Version}, nil
+	return hostapi.UpgradeStarted{Release: plan.Version}, nil
 }
 
 // installUpgrade verifies the release with the pinned key and installs it beside the running installation.

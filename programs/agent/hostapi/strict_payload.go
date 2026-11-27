@@ -17,7 +17,7 @@ type validated interface {
 
 // carrying is the executor of an order with a payload: it reads the payload strictly into its type, validates it and
 // hands it to the handler, refusing as unsafe what fails either.
-func carrying[T validated](handler func(context.Context, Order, T) (map[string]any, error)) Executor {
+func carrying[T validated, R any](handler func(context.Context, Order, T) (R, error)) Executor {
 	return func(ctx context.Context, order Order) (map[string]any, error) {
 		payload, err := DecodePayload[T](order)
 		if err != nil {
@@ -26,18 +26,32 @@ func carrying[T validated](handler func(context.Context, Order, T) (map[string]a
 		if err := payload.Validate(); err != nil {
 			return nil, RefusalError{Refusal: Unsafe, Reason: "the payload of " + order.Type + " " + err.Error()}
 		}
-		return handler(ctx, order, payload)
+		return factsOf(handler(ctx, order, payload))
 	}
 }
 
 // carryingNothing is the executor of an order without a payload: one whose payload holds any field is refused.
-func carryingNothing(handler func(context.Context, Order) (map[string]any, error)) Executor {
+func carryingNothing[R any](handler func(context.Context, Order) (R, error)) Executor {
 	return func(ctx context.Context, order Order) (map[string]any, error) {
 		if _, err := DecodePayload[struct{}](order); err != nil {
 			return nil, err
 		}
-		return handler(ctx, order)
+		return factsOf(handler(ctx, order))
 	}
+}
+
+// factsOf is an order's typed reply as the facts its answer carries, by the reply's JSON names, beside the handler's
+// refusal: a refused order answers what the host saw, such as the rows a key write was guarded by.
+func factsOf[R any](reply R, refusal error) (map[string]any, error) {
+	encoded, err := json.Marshal(reply)
+	if err != nil {
+		return nil, err
+	}
+	facts := map[string]any{}
+	if err := json.Unmarshal(encoded, &facts); err != nil {
+		return nil, err
+	}
+	return facts, refusal
 }
 
 // DecodePayload reads an order's payload into its shape, strictly: a field the shape does not have, a field it needs

@@ -356,10 +356,15 @@ final readonly class GoProtocolSources
     private function struct(string $type, array $fields, string $package): string
     {
         $name = $this->goName($type);
+
+        if ($fields === []) {
+            return "// {$name} is the {$type} of host protocol 1.\ntype {$name} struct{}";
+        }
+
         $names = array_map($this->goName(...), array_keys($fields));
         $types = array_map(fn (string $field) => $this->goType(HostFieldType::parse($field), $package), $fields);
-        $nameWidth = max(0, ...array_map(strlen(...), $names));
-        $typeWidth = max(0, ...array_values(array_map(strlen(...), $types)));
+        $nameWidth = max([0, ...array_map(strlen(...), $names)]);
+        $typeWidth = max([0, ...array_values(array_map(strlen(...), $types))]);
 
         $lines = implode("\n", array_map(
             fn (string $field, string $wireName, string $goType) => sprintf(
@@ -480,15 +485,16 @@ final readonly class GoProtocolSources
     private function handlers(): string
     {
         $methods = implode("\n", array_map(function (string $type) {
-            $payload = $this->protocol->orders[$type]->payload;
-            $parameter = $payload === null ? '' : ', payload '.$this->goName($payload, 'hostapi');
+            $traits = $this->protocol->orders[$type];
+            $parameter = $traits->payload === null ? '' : ', payload '.$this->goName($traits->payload, 'hostapi');
+            $reply = $this->goName($traits->reply, 'hostapi');
 
-            return "\t".Str::studly($type)."(ctx context.Context, order Order{$parameter}) (map[string]any, error)";
+            return "\t".Str::studly($type)."(ctx context.Context, order Order{$parameter}) ({$reply}, error)";
         }, $this->protocol->orderTypes()));
 
         return <<<GO
             // OrderHandlers carry out every order of host protocol 1, a method to each order type, given the order and
-            // its payload read strictly and validated.
+            // its payload read strictly and validated, and answer the order's reply.
             type OrderHandlers interface {
             {$methods}
             }

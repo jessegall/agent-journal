@@ -15,12 +15,12 @@ type ProjectReads struct {
 }
 
 // ReadProject answers the project read on its own report, and the order with no facts.
-func (reads ProjectReads) ReadProject(ctx context.Context, order Order, read client.ProjectRead) (map[string]any, error) {
+func (reads ProjectReads) ReadProject(ctx context.Context, order Order, read client.ProjectRead) (Nothing, error) {
 	if read.ID == "" {
-		return nil, RefusalError{Refusal: Unsafe, Reason: "the read_project order names no project read"}
+		return Nothing{}, RefusalError{Refusal: Unsafe, Reason: "the read_project order names no project read"}
 	}
 	if err := reads.Journal.NotifyProjectRead(ctx, read.ID, reads.Reader.Answer(read)); err != nil {
-		return nil, err
+		return Nothing{}, err
 	}
-	return map[string]any{}, nil
+	return Nothing{}, nil
 }

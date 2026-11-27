@@ -20,6 +20,7 @@ final class HostOrderTraitsData extends Data
         public readonly string $scope,
         public readonly string $processType,
         public readonly string|null $payload,
+        public readonly string $reply,
         public readonly bool $opens = false,
         public readonly bool $isInput = false,
         public readonly bool $endsProcess = false,

@@ -202,39 +202,39 @@ func (table *ProcessTable) CloseInput(processID string) error {
 	return held.input.Close()
 }
 
-func (table *ProcessTable) OpenContainer(ctx context.Context, order Order, plan OpenPlan) (map[string]any, error) {
+func (table *ProcessTable) OpenContainer(ctx context.Context, order Order, plan OpenPlan) (Opened, error) {
 	if plan.Container == nil {
-		return nil, RefusalError{Refusal: Unsafe, Reason: "open_container names no container"}
+		return Opened{}, RefusalError{Refusal: Unsafe, Reason: "open_container names no container"}
 	}
 	if err := table.admit(plan); err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	if !host.IsPinnedReference(plan.Container.Image) {
-		return nil, RefusalError{Refusal: Unsafe, Reason: "the image " + plan.Container.Image + " is not pinned by digest"}
+		return Opened{}, RefusalError{Refusal: Unsafe, Reason: "the image " + plan.Container.Image + " is not pinned by digest"}
 	}
 	plan, err := table.placeContainerFiles(ctx, order.ProcessID, plan)
 	if err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	if err := table.requireListed(plan); err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	held := &heldProcess{id: order.ProcessID, plan: plan, exited: make(chan struct{})}
 	if err := table.outputs.Open(held.id, plan); err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	closeSides, err := table.listenSideSockets(held)
 	if err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	if err := table.startContainer(ctx, held); err != nil {
 		closeSides()
-		return nil, err
+		return Opened{}, err
 	}
 	table.keep(held)
 	go table.watchContainer(held)
 	identity, generation := held.state()
-	return map[string]any{"identity": identity, "generation": generation}, nil
+	return Opened{Identity: identity, Generation: generation}, nil
 }
 
 func (table *ProcessTable) startContainer(ctx context.Context, held *heldProcess) error {
@@ -355,34 +355,34 @@ func (table *ProcessTable) watchContainer(held *heldProcess) {
 }
 
 // OpenProcess opens a native process of the plan on this host.
-func (table *ProcessTable) OpenProcess(_ context.Context, order Order, plan OpenPlan) (map[string]any, error) {
+func (table *ProcessTable) OpenProcess(_ context.Context, order Order, plan OpenPlan) (Opened, error) {
 	if err := table.admit(plan); err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	plan, err := writePlanFiles(table.stateFolder, order.ProcessID, plan, table.hostNames)
 	if err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	if err := table.requireListed(plan); err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	held := &heldProcess{id: order.ProcessID, plan: plan, exited: make(chan struct{})}
 	if err := table.outputs.Open(held.id, plan); err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	closeSides, err := table.listenSideSockets(held)
 	if err != nil {
-		return nil, err
+		return Opened{}, err
 	}
 	// A process opened again for a conversation that already went on, as after a restart of the host, resumes it.
 	if err := table.startNative(held, plan.restartArgv()); err != nil {
 		closeSides()
-		return nil, err
+		return Opened{}, err
 	}
 	table.keep(held)
 	go table.watchNative(held)
 	identity, generation := held.state()
-	return map[string]any{"identity": identity, "generation": generation}, nil
+	return Opened{Identity: identity, Generation: generation}, nil
 }
 
 // startNative starts the process as a child of the host in its own process group, behind a terminal or pipes.
@@ -494,37 +494,37 @@ func hasFileNamed(folder, glob string) bool {
 	return errors.Is(err, found)
 }
 
-func (table *ProcessTable) Resize(_ context.Context, order Order, size TerminalSize) (map[string]any, error) {
+func (table *ProcessTable) Resize(_ context.Context, order Order, size TerminalSize) (Nothing, error) {
 	held, err := table.held(order.ProcessID)
 	if err != nil {
-		return nil, err
+		return Nothing{}, err
 	}
 	if held.terminal == nil {
-		return nil, RefusalError{Refusal: NotRunning, Reason: "the process has no terminal"}
+		return Nothing{}, RefusalError{Refusal: NotRunning, Reason: "the process has no terminal"}
 	}
-	return nil, held.terminal.Resize(size.Rows, size.Columns)
+	return Nothing{}, held.terminal.Resize(size.Rows, size.Columns)
 }
 
-func (table *ProcessTable) Signal(ctx context.Context, order Order, plan SignalPlan) (map[string]any, error) {
+func (table *ProcessTable) Signal(ctx context.Context, order Order, plan SignalPlan) (Nothing, error) {
 	held, err := table.held(order.ProcessID)
 	if err != nil {
-		return nil, err
+		return Nothing{}, err
 	}
 	if held.pid != 0 {
 		number, known := signalNumbers[plan.Signal]
 		if !known {
-			return nil, RefusalError{Refusal: Unsafe, Reason: "unknown signal " + plan.Signal}
+			return Nothing{}, RefusalError{Refusal: Unsafe, Reason: "unknown signal " + plan.Signal}
 		}
-		return nil, host.OwnedGroupOf(held.pid).Signal(number)
+		return Nothing{}, host.OwnedGroupOf(held.pid).Signal(number)
 	}
-	return nil, table.containers.Kill(ctx, held.containerName(), plan.Signal)
+	return Nothing{}, table.containers.Kill(ctx, held.containerName(), plan.Signal)
 }
 
 // Stop ends the process within its grace and force times; its one exit report comes from its watch.
-func (table *ProcessTable) Stop(ctx context.Context, order Order, plan StopPlan) (map[string]any, error) {
+func (table *ProcessTable) Stop(ctx context.Context, order Order, plan StopPlan) (Nothing, error) {
 	held, err := table.held(order.ProcessID)
 	if err != nil {
-		return nil, err
+		return Nothing{}, err
 	}
 	held.markStopping()
 	grace := time.Duration(plan.GraceMs) * time.Millisecond
@@ -537,23 +537,23 @@ func (table *ProcessTable) Stop(ctx context.Context, order Order, plan StopPlan)
 	}
 	select {
 	case <-held.exited:
-		return nil, nil
+		return Nothing{}, nil
 	case <-time.After(grace + force + 5*time.Second):
-		return nil, RefusalError{Refusal: Unsafe, Reason: "the process did not end within its grace and force times"}
+		return Nothing{}, RefusalError{Refusal: Unsafe, Reason: "the process did not end within its grace and force times"}
 	}
 }
 
 // Remove removes an ended process's container from the agent daemon.
-func (table *ProcessTable) Remove(ctx context.Context, _ Order, plan RemovePlan) (map[string]any, error) {
-	return nil, table.containers.Remove(ctx, plan.Container, 10)
+func (table *ProcessTable) Remove(ctx context.Context, _ Order, plan RemovePlan) (Nothing, error) {
+	return Nothing{}, table.containers.Remove(ctx, plan.Container, 10)
 }
 
 // RemoveSession removes an ended session's network and the plan files its containers read.
-func (table *ProcessTable) RemoveSession(ctx context.Context, _ Order, removal SessionRemoval) (map[string]any, error) {
+func (table *ProcessTable) RemoveSession(ctx context.Context, _ Order, removal SessionRemoval) (Nothing, error) {
 	if err := table.containers.RemoveNetwork(ctx, removal.Network); err != nil {
-		return nil, err
+		return Nothing{}, err
 	}
-	return nil, table.containers.RemoveSessionFiles(ctx, removal.Session)
+	return Nothing{}, table.containers.RemoveSessionFiles(ctx, removal.Session)
 }
 
 func (table *ProcessTable) keep(held *heldProcess) {

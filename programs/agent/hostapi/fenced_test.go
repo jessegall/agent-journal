@@ -31,11 +31,15 @@ func openFencedProcess(t *testing.T, table *ProcessTable, processID, fence strin
 
 func resultsOf(t *testing.T, facts map[string]any) []FencedResult {
 	t.Helper()
-	results, found := facts["results"].([]FencedResult)
-	if !found {
+	encoded, err := json.Marshal(facts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var reply FencedResults
+	if err := json.Unmarshal(encoded, &reply); err != nil || len(reply.Results) == 0 {
 		t.Fatalf("the answer holds no results: %v", facts)
 	}
-	return results
+	return reply.Results
 }
 
 func TestEachFencedRunEndsWithItsStatusAndOutputInOrder(t *testing.T) {

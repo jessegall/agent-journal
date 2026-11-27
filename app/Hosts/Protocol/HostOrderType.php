@@ -92,4 +92,38 @@ enum HostOrderType: string
             default => true,
         };
     }
+
+    /**
+     * The Data a done answer of this order carries as its facts.
+     *
+     * @return class-string<\Spatie\LaravelData\Data>
+     */
+    public function replyData(): string
+    {
+        return match ($this) {
+            self::OpenContainer, self::OpenProcess => Data\HostOpenedData::class,
+            self::WriteKeys => Data\HostKeysWrittenData::class,
+            self::WriteStdin,
+            self::CloseStdin,
+            self::OpenPrivate,
+            self::WritePrivate,
+            self::ClosePrivate,
+            self::Resize,
+            self::Signal,
+            self::Stop,
+            self::Stream,
+            self::Snapshot,
+            self::MakeFolder,
+            self::RemoveFolder,
+            self::Remove,
+            self::RemoveSession,
+            self::ReadProject,
+            self::Record => Data\HostNothingData::class,
+            self::RunFenced => Data\HostFencedResultsData::class,
+            self::AllowImages => Data\HostImagesAllowedData::class,
+            self::FolderUse => Data\HostFolderUseReplyData::class,
+            self::StopRecording => Data\HostRecordingStoppedData::class,
+            self::Upgrade => Data\HostUpgradeStartedData::class,
+        };
+    }
 }

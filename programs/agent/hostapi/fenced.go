@@ -39,30 +39,18 @@ var fencedStages = host.StopStages{Grace: 2 * time.Second, Force: 2 * time.Secon
 // fencedEnvironment carries no variable of the host's own: no credential, token or account folder reaches a run.
 var fencedEnvironment = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "LANG=C.UTF-8", "TZ=UTC"}
 
-// FencedResult is how one run ended, with the end of its output.
-type FencedResult struct {
-	Status    string  `json:"status"`
-	StartedAt string  `json:"started_at"`
-	EndedAt   *string `json:"ended_at"`
-	ExitCode  *int    `json:"exit_code"`
-	Signal    *string `json:"signal"`
-	Summary   string  `json:"summary"`
-	Output    *string `json:"output"`
-	Truncated bool    `json:"truncated"`
-}
-
 // RunFenced closes admission for the fence's processes, refuses while one of them other than those waiting still runs,
 // then runs each program in turn within its deadline and the budget; the fence opens again when the runs end, or at
 // the budget's end if the host never got there.
-func (table *ProcessTable) RunFenced(ctx context.Context, order Order, plan FencedPlan) (map[string]any, error) {
+func (table *ProcessTable) RunFenced(ctx context.Context, order Order, plan FencedPlan) (FencedResults, error) {
 	if plan.Fence == "" {
-		return nil, RefusalError{Refusal: Unsafe, Reason: "run_fenced names no fence"}
+		return FencedResults{}, RefusalError{Refusal: Unsafe, Reason: "run_fenced names no fence"}
 	}
 	budget := time.Duration(plan.BudgetMs) * time.Millisecond
 	table.closeFence(plan.Fence, time.Now().Add(budget+fencedStages.Grace+fencedStages.Force))
 	defer table.openFence(plan.Fence)
 	if running := table.liveOfFence(plan.Fence, plan.Waiting); len(running) > 0 {
-		return nil, RefusalError{Refusal: Fenced, Reason: "a process of the fence still runs: " + strings.Join(running, ", ")}
+		return FencedResults{}, RefusalError{Refusal: Fenced, Reason: "a process of the fence still runs: " + strings.Join(running, ", ")}
 	}
 	budgetEnds := time.Now().Add(budget)
 	results := make([]FencedResult, 0, len(plan.Runs))
@@ -75,7 +63,7 @@ func (table *ProcessTable) RunFenced(ctx context.Context, order Order, plan Fenc
 		results = append(results, runOne(ctx, run, remaining))
 	}
 
-	return map[string]any{"results": results}, nil
+	return FencedResults{Results: results}, nil
 }
 
 // admit refuses a process whose fence a run_fenced order holds closed.

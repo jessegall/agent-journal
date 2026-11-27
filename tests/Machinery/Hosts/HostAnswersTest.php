@@ -48,7 +48,7 @@ final class HostAnswersTest extends TestCase
         $this->journal->asSystem(new NotifyHostOrderCommand(
             $hostId,
             $answered,
-            json_encode(['order_id' => $answered, 'status' => 'done', 'facts' => ['stopped' => true]], JSON_THROW_ON_ERROR),
+            json_encode(['order_id' => $answered, 'status' => 'done'], JSON_THROW_ON_ERROR),
         ));
 
         $unanswered = $this->stop();
@@ -56,7 +56,7 @@ final class HostAnswersTest extends TestCase
         $this->journal->assertResult(
             [[
                 HostOrderStatus::Done,
-                ['stopped' => true],
+                [],
             ], HostOrderStatus::Pending],
             [
                 [

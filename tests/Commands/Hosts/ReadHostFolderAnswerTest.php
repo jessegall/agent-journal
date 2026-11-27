@@ -6,6 +6,7 @@ namespace Tests\Commands\Hosts;
 
 use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Commands\MakeHostFolder\MakeHostFolderCommand;
+use App\Hosts\Commands\ReadFolderUse\ReadFolderUseCommand;
 use App\Hosts\Commands\ReadHostFolderAnswer\ReadHostFolderAnswerCommand;
 use App\Hosts\Protocol\HostRefusal;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -26,7 +27,7 @@ final class ReadHostFolderAnswerTest extends TestCase
     {
         $this->journal->enrollContainedHost('Box', [base_path()])->enrollContainedHost('Other', [base_path()]);
         $hostId = $this->journal->hostCalled('Box')->hostId;
-        $made = $this->journal->asSystem(new MakeHostFolderCommand($hostId, 'a7', 'operation-1'));
+        $made = $this->journal->asSystem(new ReadFolderUseCommand($hostId, 'a7', 'operation-1'));
         $used = $this->journal->asSystem(new MakeHostFolderCommand($hostId, 'a8', 'operation-2'));
         $waiting = $this->journal->asSystem(new ReadHostFolderAnswerCommand($hostId, $made));
         [$first, $second] = $this->journal->hostOrdersOn('Box');

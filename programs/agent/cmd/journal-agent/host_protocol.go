@@ -101,17 +101,17 @@ type hostOrders struct {
 }
 
 // ReadProject answers a project read on a connected host; another host does not carry the order.
-func (orders hostOrders) ReadProject(ctx context.Context, order hostapi.Order, read client.ProjectRead) (map[string]any, error) {
+func (orders hostOrders) ReadProject(ctx context.Context, order hostapi.Order, read client.ProjectRead) (hostapi.Nothing, error) {
 	if orders.reads == nil {
-		return nil, hostapi.RefusalError{Refusal: hostapi.UnknownOrder, Reason: "this host holds no project"}
+		return hostapi.Nothing{}, hostapi.RefusalError{Refusal: hostapi.UnknownOrder, Reason: "this host holds no project"}
 	}
 	return orders.reads.ReadProject(ctx, order, read)
 }
 
 // Upgrade moves a connected host to a new release; another host does not carry the order.
-func (orders hostOrders) Upgrade(ctx context.Context, order hostapi.Order, plan hostapi.UpgradePlan) (map[string]any, error) {
+func (orders hostOrders) Upgrade(ctx context.Context, order hostapi.Order, plan hostapi.UpgradePlan) (hostapi.UpgradeStarted, error) {
 	if orders.upgrade == nil {
-		return nil, hostapi.RefusalError{Refusal: hostapi.UnknownOrder, Reason: "the journal does not upgrade this host"}
+		return hostapi.UpgradeStarted{}, hostapi.RefusalError{Refusal: hostapi.UnknownOrder, Reason: "the journal does not upgrade this host"}
 	}
 	return orders.upgrade.Upgrade(ctx, order, plan)
 }

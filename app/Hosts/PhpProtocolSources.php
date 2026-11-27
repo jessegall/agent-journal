@@ -158,6 +158,7 @@ final readonly class PhpProtocolSources
         }
 
         $properties = implode("\n", [...$required, ...$optional]);
+        $constructor = $properties === '' ? '    public function __construct() {}' : "    public function __construct(\n{$properties}\n    ) {}";
         $docblock = $documented === [] ? '' : "    /**\n".implode("\n", $documented)."\n     */\n";
         $name = $this->dataName($type);
         $namespace = self::NAMESPACE;
@@ -191,9 +192,7 @@ final readonly class PhpProtocolSources
             #[ValidationOnRead]
             final class {$name} extends Data
             {
-            {$docblock}    public function __construct(
-            {$properties}
-                ) {}
+            {$docblock}{$constructor}
             }
 
             PHP;
@@ -751,7 +750,7 @@ final readonly class PhpProtocolSources
     /**
      * The Data class of a type of the file, named with Host once.
      */
-    private function dataName(string $type): string
+    public function dataName(string $type): string
     {
         if (! array_key_exists($type, $this->protocol->types)) {
             throw HostFieldTypeUnknown::of($type);

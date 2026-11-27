@@ -54,6 +54,7 @@ final readonly class HostProtocolSources
         $opening = $this->caseList(fn (HostOrderTraitsData $order) => $order->opens, 8);
         $terminal = $this->caseList(fn (HostOrderTraitsData $order) => $order->processType === 'terminal', 12);
         $pipe = $this->caseList(fn (HostOrderTraitsData $order) => $order->processType === 'pipe', 12);
+        $replies = $this->replyArms();
         $generated = self::GENERATED;
         $source = self::PROTOCOL_FILE;
 
@@ -116,6 +117,18 @@ final readonly class HostProtocolSources
                         in_array(\$this, [{$terminal}], true) => \$type === HostProcessType::Terminal,
                         in_array(\$this, [{$pipe}], true) => \$type === HostProcessType::Pipe,
                         default => true,
+                    };
+                }
+
+                /**
+                 * The Data a done answer of this order carries as its facts.
+                 *
+                 * @return class-string<\\Spatie\\LaravelData\\Data>
+                 */
+                public function replyData(): string
+                {
+                    return match (\$this) {
+            {$replies}
                     };
                 }
             }
@@ -209,6 +222,41 @@ final readonly class HostProtocolSources
             }
 
             PHP;
+    }
+
+    /**
+     * The arms of HostOrderType::replyData: the cases of each reply type on one arm, under the match.
+     */
+    private function replyArms(): string
+    {
+        $php = new PhpProtocolSources($this->protocol);
+        $cases = [];
+
+        foreach ($this->protocol->orders as $type => $traits) {
+            $cases[$traits->reply][] = 'self::'.Str::studly($type);
+        }
+
+        return implode("\n", array_map(
+            fn (string $reply, array $orders) => $this->replyArm($orders, "Data\\{$php->dataName($reply)}::class"),
+            array_keys($cases),
+            $cases,
+        ));
+    }
+
+    /**
+     * One arm of a match: its cases on one line, or one to a line when they do not fit in 120 characters.
+     *
+     * @param  list<string>  $cases
+     */
+    private function replyArm(array $cases, string $answer): string
+    {
+        $arm = '            '.implode(', ', $cases)." => {$answer},";
+
+        if (strlen($arm) <= 120) {
+            return $arm;
+        }
+
+        return implode(",\n", array_map(fn (string $case) => "            {$case}", $cases))." => {$answer},";
     }
 
     private function releaseGo(): string
