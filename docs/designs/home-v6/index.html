@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Home, version 6 · round 5</title>
+<title>Home, version 6 · round 6</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 /* Self-contained: no external fonts or scripts. Inside .app every colour, radius, font, size and motion value is a
@@ -723,7 +723,7 @@ a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color
 </defs></svg>
 
 <div class="top"><div class="in">
-  <h1>Home, version 6 · round 5</h1>
+  <h1>Home, version 6 · round 6</h1>
   <span class="lbl">Grows</span><div class="seg2" id="steps"></div>
   <span class="lbl">Window</span><div class="seg2" id="widths"></div>
   <button class="tbtn" id="simHelper" title="The main agent dispatches a helper">Agent starts a helper</button>
@@ -2546,7 +2546,7 @@ function fitWindow(){frameW=innerWidth+2;render()}
   app.insertAdjacentHTML('beforeend',`<div class="dtools" data-dtools>
     <button class="tbtnmain" data-fk="dtools" aria-expanded="false" aria-controls="dpanel" title="Design toolbox" aria-label="Design toolbox">${I('wand','s14')}</button>
     <div class="panel" id="dpanel" role="dialog" aria-label="Design toolbox" hidden>
-      <div class="phd"><b>Home, version 6 · round 5</b><button class="ib" data-dclose aria-label="Close the toolbox" title="Close">${I('close','s14')}</button></div>
+      <div class="phd"><b>Home, version 6 · round 6</b><button class="ib" data-dclose aria-label="Close the toolbox" title="Close">${I('close','s14')}</button></div>
       <div class="sec">Grows</div><div data-slot="steps"></div><div data-slot="sline"></div>
       <div class="sec">List pages</div><div class="seg2" id="rowsSeg" role="group" aria-label="List pages"><button data-rows="1" aria-pressed="true">With rows</button><button data-rows="0" aria-pressed="false">Empty</button></div>
       <div class="sec">Theme</div><div data-slot="mode"></div>
@@ -2565,6 +2565,285 @@ function fitWindow(){frameW=innerWidth+2;render()}
   $$('#rowsSeg button').forEach(b=>b.onclick=()=>setRowsMode(b.dataset.rows==='0'));
   addEventListener('resize',()=>{clearTimeout(fitWindow.t);fitWindow.t=setTimeout(fitWindow,80)});
   noteRowsBefore();fitWindow()})();
+</script>
+<style>
+/* Round 6: No account connected, and where the waiting states of a start sit. Every value is a token of the app. */
+.na-empty{margin:auto;max-width:420px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;padding:48px 0 24px}
+.na-empty .mk{display:flex;gap:8px;color:var(--text-3);margin-bottom:6px}
+.na-empty h3{margin:0;font-size:var(--text-card);font-weight:600;color:var(--text)}
+.na-empty p{margin:0;color:var(--text-2);font-size:var(--text-field)}
+.na-empty p.q{color:var(--text-3);font-size:var(--text-small)}
+.na-empty .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:center}
+.na-empty small{color:var(--text-3);font-size:var(--text-small);margin-top:10px}
+.na-card{margin:0 0 8px;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--raised);padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.na-card h4{margin:0;font-size:var(--text-small);font-weight:500;color:var(--text)}
+.na-card p{margin:0;font-size:var(--text-small);color:var(--text-2)}
+.na-card p.q{color:var(--text-3)}
+.na-card .acts{display:flex;gap:6px;margin-top:6px}
+.na-card.row{flex-direction:row;align-items:center;gap:10px}
+.na-card.row .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.st.na{min-width:0;flex:0 1 auto;overflow:hidden}
+.st.na b{font-weight:500;color:var(--text)}
+.st.na.bad,.st.na.bad b{color:var(--danger)}
+.st.na .why{color:var(--text-3);min-width:0;overflow:hidden;text-overflow:ellipsis}
+.na-dlg{width:500px}
+.na-dlg header .steps{display:flex;gap:4px;margin-right:4px}
+.na-dlg header .steps i{width:18px;height:3px;border-radius:2px;background:var(--border-2)}
+.na-dlg header .steps i.on{background:var(--brand)}
+.na-dlg .lead2{margin:0 0 12px;color:var(--text-2);font-size:var(--text-small)}
+.na-cards{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.na-opt{display:flex;flex-direction:column;gap:3px;text-align:left;border:1px solid var(--border-2);border-radius:var(--radius-card);background:var(--bg);padding:10px 12px;font:inherit;color:var(--text);cursor:pointer;width:100%}
+.na-opt:hover{background:var(--hover)}
+.na-opt[aria-checked=true]{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.na-opt:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.na-opt[aria-disabled=true]{opacity:.55;cursor:default}
+.na-opt[aria-disabled=true]:hover{background:var(--bg)}
+.na-opt .r1{display:flex;align-items:center;gap:8px}
+.na-opt .r1 b{font-weight:500;flex:1}
+.na-opt .r1 span{color:var(--text-3);font-size:var(--text-badge)}
+.na-opt .d{color:var(--text-2);font-size:var(--text-small)}
+.na-grp{font-size:var(--text-badge);color:var(--text-3);display:flex;align-items:center;gap:6px;margin:10px 0 -2px}
+.na-sel{width:100%;height:30px;border:1px solid var(--border-2);border-radius:var(--radius-field);background:var(--bg);color:var(--text);font:inherit;font-size:var(--text-field);padding:0 8px}
+.na-sel:focus{outline:2px solid var(--focus);outline-offset:1px}
+.na-note{font-size:var(--text-small);color:var(--text-3);margin:-6px 0 12px}
+.na-lk{border:0;background:none;padding:0;font:inherit;color:var(--text);text-decoration:underline;cursor:pointer}
+.na-lk:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.na-center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:20px 0 10px}
+.na-center h4{margin:0;font-size:var(--text-card);font-weight:600;color:var(--text)}
+.na-center p{margin:0;color:var(--text-2);max-width:360px}
+.na-center .ok{color:var(--brand)}
+.na-center .no{color:var(--danger)}
+.na-chosen{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-card);margin-bottom:14px;font-size:var(--text-small);color:var(--text-2)}
+.na-chosen b{color:var(--text);font-weight:500}
+.na-code{font-family:var(--font-mono);font-size:20px;letter-spacing:.14em;padding:8px 16px;border:1px dashed var(--border-3);border-radius:var(--radius-field);color:var(--text)}
+.na-steps{margin:0 0 12px;padding-left:18px;color:var(--text-2);font-size:var(--text-small)}
+.na-steps li{margin:0 0 8px}
+.spin.lg{width:22px;height:22px;border-width:2px;color:var(--brand)}
+.na-review{font-size:var(--text-small);color:var(--text-2);margin:4px 0 0}
+.na-tools{display:inline-flex;gap:6px;flex-wrap:wrap;margin-left:6px;vertical-align:middle}
+</style>
+<script>
+/* =====================================================================================================================
+   Round 6. Step 15, No account connected: Home offers adding or attaching an account inline, in a dialog opened from
+   Home (the Accounts page's add-account wizard: the driver, then the sign-in method), and the Start session dialog
+   shows a driver no account can run as unavailable. The waiting states of a start: the agent bar shows "Verifying
+   session" with its spinner and nothing red; the card above the composer shows only while the session is verified,
+   and goes when the start ends, fails or is cancelled.
+   ===================================================================================================================== */
+(function(){
+const ACC0=ACCOUNTS.map(r=>r.slice());
+const DRV={
+  claude:{t:'Claude Code',mk:CLAUDE,model:'Opus',models:['Opus','Sonnet','Haiku'],methods:[
+    ['oauth','Sign in with Claude','Subscription','Sign in on Claude\'s site, then paste the code it gives you.','Claude (subscription)'],
+    ['token','Setup token','Subscription','Paste a token from <code>claude setup-token</code>. Good for servers; it lasts a long time.','Claude setup token'],
+    ['key','API key','Pay per use','Paste a key from the Anthropic Console. You pay for what agents use.','Anthropic API key']]},
+  codex:{t:'Codex',mk:CODEX,model:'GPT-5',models:['GPT-5','GPT-5 mini'],methods:[
+    ['device','Sign in with ChatGPT','Subscription','Enter a short code on OpenAI\'s site. The rest happens by itself.','ChatGPT (subscription)'],
+    ['key','API key','Pay per use','Paste a key from the OpenAI platform. You pay for what agents use.','OpenAI API key']]}};
+const LABEL={none:'No account connected',ready:'Not started',starting:'Starting session…',verifying:'Verifying session',cancelled:'Start cancelled',failed:'Start failed'};
+const reEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const drvOf=row=>row[0];
+let NA={on:false,variant:'none',failNext:false};
+const T=[];const later=(f,ms)=>T.push(setTimeout(f,ms));const clearT=()=>{T.forEach(clearTimeout);T.length=0};
+function reset(){clearT();NA={on:true,variant:NA.variant,failNext:NA.failNext,conn:{claude:null,codex:null},phase:'none',dlg:null,waiting:null,why:'',checking:false,checked:false,ret:null,back:null,useDrv:null}}
+function setPhase(p){NA.phase=p;STATE.main=p==='running'?'Idle · waits for you':LABEL[p]}
+const anyConn=()=>!!(NA.conn.claude||NA.conn.codex);
+const mainDrv=()=>NA.useDrv&&NA.conn[NA.useDrv]?NA.useDrv:NA.conn.claude?'claude':NA.conn.codex?'codex':'claude';
+const btn=(t,act,fk,cls='')=>`<button class="btn sm ${cls}" data-na="${act}" data-fk="${fk}">${t}</button>`;
+const accRow=n=>ACCOUNTS.find(a=>a[1]===n);
+
+STEPS.noacct=['15 · No account connected','Nothing can run Agent 1 yet. The chat says so and offers to connect the first account right here: Add an account opens the Accounts page\'s wizard (the driver, then the sign-in method) as a dialog over Home; Attach an account picks one already added. Then Start session: a driver with no account shows as unavailable. Starting shows “Verifying session” in the bar with its spinner and nothing red; the card above the composer shows only while it verifies, and goes when the start ends or is cancelled.',''];
+const toolsHtml=()=>`<span class="na-tools"><span class="seg2" role="group" aria-label="Accounts"><button data-navar="none" aria-pressed="${NA.variant==='none'}">No accounts yet</button><button data-navar="unattached" aria-pressed="${NA.variant==='unattached'}">Added, none connected</button></span><button class="tbtn" data-nafail aria-pressed="${NA.failNext}">The next start fails</button></span>`;
+Object.defineProperty(STEPS.noacct,2,{get:toolsHtml});
+
+LOADERS.push(()=>{if(step!=='noacct'){if(NA.on){NA.on=false;clearT();ACCOUNTS.splice(0,ACCOUNTS.length,...ACC0.map(r=>r.slice()))}return}
+  reset();ACCOUNTS.splice(0,ACCOUNTS.length,...(NA.variant==='none'?[]:ACC0.map(r=>{const x=r.slice();x[5]=false;return x})));
+  CONV.main.msgs=[];setPhase('none')});
+
+/* The agent bar: the state in words on its one line, and the one action that helps. */
+function barStatus(){const p=NA.phase;
+  if(p==='none')return `<span class="st na" style="margin-left:4px" role="status"><span class="dot hollow"></span><b>No account connected</b></span>${btn('Connect account','connect','na:bar','bordered stact')}`;
+  if(p==='starting'||p==='verifying')return `<span class="st na" style="margin-left:4px" role="status"><span class="spin" aria-hidden="true"></span><b>${LABEL[p]}</b></span>`;
+  if(p==='failed')return `<span class="st na bad" style="margin-left:4px" role="status" title="${esc(NA.why)}">${I('alert','s14')}<b>Start failed</b><span class="why">· ${esc(NA.why)}</span></span>${btn('Start again','start','na:bar','bordered stact')}`;
+  return `<span class="st na" style="margin-left:4px" role="status"><span class="dot hollow"></span><b>${LABEL[p]}</b></span>${btn('Start session','start','na:bar','bordered stact')}`}
+const baseBar=abarHtml;
+abarHtml=function(){let h=baseBar();if(!NA.on||A.mainConv!=='main')return h;const d=mainDrv();
+  h=h.replace('Claude Code · Opus · Work (Max)',`${DRV[d].t} · ${DRV[d].model} · ${NA.conn[d]?esc(NA.conn[d]):'no account'}`);
+  if(NA.phase==='running')return h;
+  h=h.replace(new RegExp(`<span class="st" style="margin-left:4px;color:var\\(--text-2\\)">(<span class="spin"></span>|<span class="dot hollow"></span>)${reEsc(LABEL[NA.phase])}</span>`),barStatus());
+  return h.replace('data-stop data-fk="stop" >','data-stop data-fk="stop" disabled title="Agent 1 is not running">')};
+
+/* The chat: an empty chat says what is missing and offers it inline. */
+function emptyNone(){const has=ACCOUNTS.length>0,w=NA.waiting;
+  return `<div class="na-empty" role="region" aria-label="No account connected"><div class="mk">${CLAUDE('s18')}${CODEX('s18')}</div>
+    <h3>No account connected</h3><p>Connect your first account so Agent 1 can start. It runs on a Claude Code or Codex account.</p>
+    ${w?`<p class="q">A ${DRV[w.driver].t} sign-in is waiting for you.</p>`:''}
+    <div class="acts">${w?btn('Resume sign-in','resume','na:resume','primary'):btn(I('plus','s14')+'Add an account','add','na:add','primary')}${has?btn('Attach an account','attach','na:attach','bordered'):''}</div>
+    <small>${has?`${ACCOUNTS.length} accounts are added, but none is connected yet.`:'You can write to Agent 1 now: your message waits and goes out once it runs.'}</small></div>`}
+function emptyReady(){const d=mainDrv(),failed=NA.phase==='failed';
+  return `<div class="na-empty" role="region" aria-label="Agent 1 is ready"><div class="mk">${DRV[d].mk('s18')}</div>
+    <h3>${failed?'The start did not finish':NA.phase==='cancelled'?'Start cancelled':'Agent 1 is ready'}</h3>
+    <p>${failed?esc(NA.why)+' Nothing was lost; start again when you are ready.':`${esc(NA.conn[d])} is connected to ${DRV[d].t}. Start a session, or send a message: it waits and goes out once Agent 1 runs.`}</p>
+    <div class="acts">${btn(failed?'Start again':'Start session','start','na:startc','primary')}</div></div>`}
+const baseChat=chatHtml;
+chatHtml=function(c){const h=baseChat(c);if(!NA.on||c!=='main'||CONV.main.msgs.length)return h;
+  if(NA.phase==='none')return emptyNone();
+  if(['ready','cancelled','failed'].includes(NA.phase))return emptyReady();
+  return h};
+
+/* Above the composer: the verifying card, only while the session is verified; and, once you have written, the
+   empty state's offer as one compact row. */
+ABOVE_COMPOSER.push(c=>{if(!NA.on||c!=='main')return '';const p=NA.phase;
+  if(p==='verifying'){const d=mainDrv();
+    return `<div class="na-card" role="status" aria-live="polite" data-verifying-session><h4>Verifying session</h4>
+      <p>${DRV[d].t} started on ${esc(NA.conn[d])}. The journal is checking which conversation it runs.${NA.checked?' Checked just now: still verifying.':''}</p>
+      <p class="q">Messages you send now wait and go out once the session is verified.</p>
+      <div class="acts"><button class="btn sm bordered" data-na="check" data-fk="na:check" ${NA.checking?'disabled':''}>${NA.checking?'<span class="spin"></span>Checking…':'Check status'}</button>${btn('Cancel start','cancel','na:cancel')}</div></div>`}
+  if(!CONV.main.msgs.length)return '';
+  if(p==='none')return `<div class="na-card row" role="status"><div class="t"><h4>No account connected</h4><p class="q">Your message waits until Agent 1 runs. Connect your first account.</p></div>
+      ${NA.waiting?btn('Resume sign-in','resume','na:resume','primary'):btn('Add an account','add','na:add','primary')}${ACCOUNTS.length?btn('Attach an account','attach','na:attach','bordered'):''}</div>`;
+  if(p==='ready'||p==='cancelled')return `<div class="na-card row" role="status"><div class="t"><h4>${p==='ready'?'Agent 1 is not started':'Start cancelled'}</h4><p class="q">Your message waits and goes out once Agent 1 runs.</p></div>${btn('Start session','startc','na:startc','primary')}</div>`;
+  return ''});
+
+/* A message written before Agent 1 runs waits, and says so under the bubble. */
+const baseSend=sendMessage;
+sendMessage=function(c,t,extra){if(!NA.on||c!=='main'||NA.phase==='running')return baseSend(c,t,extra);if(!t||!t.trim())return;
+  CONV.main.msgs.push(['me',esc(t),undefined,Object.assign({},extra,{dl:{s:'sent',to:[['a1','waiting']]}})]);render()};
+
+/* Starting: Starting session…, then Verifying session, then running, failed or cancelled. */
+function start(){const d=NA.dlg&&NA.dlg.kind==='start'?NA.dlg:null;if(d){NA.conn[d.driver]=d.account;NA.useDrv=d.driver}
+  NA.dlg=null;clearT();NA.checked=false;NA.checking=false;setPhase('starting');render();focusFk('compose:main');
+  later(()=>{setPhase('verifying');render()},1300);
+  later(()=>{if(NA.failNext){NA.failNext=false;NA.why=`${DRV[mainDrv()].t} ended before the session was verified.`;setPhase('failed');render();focusFk('na:bar');return}
+    setPhase('running');let waited=false;
+    CONV.main.msgs.forEach(m=>{const dl=m[3]&&m[3].dl;if(dl&&dl.to&&dl.to.some(x=>x[1]==='waiting')){dl.to=dl.to.map(x=>[x[0],'delivered']);waited=true}});
+    if(waited)later(()=>{CONV.main.msgs.push(['ag','now','Running now. I have your message and I\'m on it.']);render()},700);
+    render()},6300)}
+function cancel(){clearT();setPhase('cancelled');render();toast('Start cancelled');focusFk('na:bar')}
+function check(){NA.checking=true;render();focusFk('na:check');setTimeout(()=>{NA.checking=false;NA.checked=true;if(NA.phase==='verifying'){render();focusFk('na:check')}},900)}
+
+/* The dialogs. One at a time, over Home; Esc or × closes; focus comes back to what opened it. */
+function open(dlg,ret){NA.dlg=dlg;NA.ret=ret||NA.ret||'na:bar';render();focusFk('na:first')}
+function close(){const r=NA.ret;NA.dlg=null;render();focusFk(r||'na:bar')}
+function openAdd(driver,ret){open({kind:'add',step:1,driver:driver||'claude',method:null,secret:'',status:null,name:'',asking:false},ret)}
+function connectOrAdd(ret){ACCOUNTS.some(a=>a[3]==='Signed in')?open({kind:'attach',sel:null},ret):openAdd('claude',ret)}
+function openStart(ret){const d=mainDrv();open({kind:'start',driver:d,model:DRV[d].model,account:NA.conn[d]},ret)}
+const steps=n=>`<span class="steps" role="img" aria-label="Step ${n} of 3">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
+const head=(t,extra='')=>`<header><b>${t}</b>${extra}<button class="ib" data-na="x" data-fk="na:x" aria-label="Close">${I('close','s14')}</button></header>`;
+const meth=d=>DRV[d.driver].methods.find(m=>m[0]===d.method);
+function addHtml(d){const D=DRV[d.driver],m=meth(d);
+  if(d.asking)return head('Add an account',steps(2))+`<div class="cbody"><div class="na-center"><h4>Finish later?</h4><p>The ${D.t} sign-in keeps waiting on the host. Resume it from Home or from Accounts; closing loses nothing.</p></div></div>
+    <footer><button class="btn sm" data-na="stay">← Stay</button><span class="gap"></span><button class="btn sm bordered" data-na="cancelsignin">Cancel sign-in</button><button class="btn sm primary" data-na="keep" data-fk="na:first">Keep waiting</button></footer>`;
+  if(d.step===1)return head('Add an account',steps(1))+`<div class="cbody"><p class="lead2">Agent 1 runs on this account. Choose its driver, then how to sign in.</p>
+    <div class="segc" role="group" aria-label="Driver">${Object.entries(DRV).map(([k,x],i)=>`<button aria-pressed="${d.driver===k}" data-nadrv="${k}" ${i===0?'data-fk="na:first"':`data-fk="na:d:${k}"`}>${x.mk('s13')} ${x.t}</button>`).join('')}</div>
+    <div class="na-cards" role="radiogroup" aria-label="How to sign in">${D.methods.map(([k,t,bill,desc])=>`<button class="na-opt" role="radio" aria-checked="${d.method===k}" data-nameth="${k}" data-fk="na:m:${k}"><span class="r1">${D.mk('s16')}<b>${t}</b><span>${bill}</span></span><span class="d">${desc}</span></button>`).join('')}</div>
+    ${d.method?'':'<p class="na-note" style="margin:10px 0 0">Pick one to continue.</p>'}</div>
+    <footer><span class="gap"></span><button class="btn sm" data-na="x">Cancel</button><button class="btn sm primary" data-na="next" data-fk="na:next" ${d.method?'':'disabled'}>Continue</button></footer>`;
+  const chosen=`<div class="na-chosen">${D.mk('s14')}<span><b>${m[1]}</b> · ${D.t} · ${m[2]}</span></div>`;
+  if(d.step===2){const secret=d.method!=='device';
+    const task=d.method==='oauth'?`<ol class="na-steps"><li>Open Claude's sign-in page and sign in. <button class="btn sm bordered" data-na="ext" data-fk="na:first">Open sign-in page ↗</button></li><li>Paste the code it shows you.</li></ol>`
+      :d.method==='device'?`<div class="na-center"><p>Enter this code on OpenAI's page. The rest happens by itself.</p><span class="na-code" aria-label="Code K Q 7 M, 4 X P 2">KQ7M-4XP2</span><button class="btn sm bordered" data-na="ext" data-fk="na:first">Open OpenAI's page ↗</button><span class="st" role="status"><span class="spin"></span>Waiting for you to enter it…</span></div>`
+      :`<p class="lead2">${d.method==='token'?'Run <code>claude setup-token</code> on any computer, then paste the token it prints.':d.driver==='claude'?'Make a key in the Anthropic Console, then paste it.':'Make a key on the OpenAI platform, then paste it.'}</p>`;
+    const field=secret?`<label class="fld"><span>${d.method==='oauth'?'Code':d.method==='token'?'Token':'Key'}</span><input data-nasecret data-fk="${d.method==='oauth'?'na:secret':'na:first'}" value="${esc(d.secret)}" autocomplete="off" spellcheck="false" placeholder="${d.method==='oauth'?'Paste the code':'Paste it here'}"></label><p class="na-note">Design only: type “wrong” to see a sign-in that does not finish.</p>`:'';
+    return head('Add an account',steps(2))+`<div class="cbody">${chosen}${task}${field}</div>
+      <footer><button class="btn sm" data-na="back">← Back</button><span class="gap"></span>${secret?`<button class="btn sm primary" data-na="submit" data-fk="na:submit" ${d.secret.trim()?'':'disabled'}>${d.method==='oauth'?'Check code':'Add '+(d.method==='token'?'token':'key')}</button>`:'<span class="st" style="padding-right:6px">Continues on its own</span>'}</footer>`}
+  if(d.status==='checking')return head('Add an account',steps(3))+`<div class="cbody">${chosen}<div class="na-center" role="status"><span class="spin lg"></span><h4>Checking the sign-in with ${D.t}…</h4><p>This takes a few seconds. You can close this; the check goes on.</p></div></div><footer><span class="gap"></span><button class="btn sm" data-na="x" data-fk="na:first">Close</button></footer>`;
+  if(d.status==='failed')return head('Add an account',steps(3))+`<div class="cbody">${chosen}<div class="na-center" role="alert"><span class="no">${I('alert','s18')}</span><h4>Sign-in didn't finish</h4><p>${d.driver==='claude'?'Claude':'OpenAI'} did not accept that ${d.method==='oauth'?'code. It may have expired: get a new one and try again.':'value. Check that it was copied whole, then try again.'}</p></div></div>
+    <footer><span class="gap"></span><button class="btn sm" data-na="x">Cancel</button><button class="btn sm primary" data-na="retry" data-fk="na:first">Try again</button></footer>`;
+  return head('Add an account',steps(3))+`<div class="cbody">${chosen}<div class="na-center" role="status"><span class="ok">${I('tick','s18')}</span><h4>Account added</h4><p>${d.wasFirst?`It is connected to ${D.t}: Agent 1 runs on it from now on.`:`${D.t} keeps ${esc(NA.conn[d.driver])}; this one is on the Accounts page.`}</p></div>
+    <label class="fld"><span>Name</span><input data-naname data-fk="na:first" value="${esc(d.name)}"></label></div>
+    <footer><button class="btn sm" data-na="another">Add another</button><span class="gap"></span><button class="btn sm primary" data-na="done" data-fk="na:done">Done</button></footer>`}
+function attachHtml(d){const groups=Object.entries(DRV).map(([k,x])=>{const rows=ACCOUNTS.filter(a=>drvOf(a)===k);if(!rows.length)return '';
+    return `<div class="na-grp">${x.mk('s12')}${x.t}</div>`+rows.map(a=>{const ok=a[3]==='Signed in';
+      return `<button class="na-opt" role="radio" aria-checked="${d.sel===a[1]}" ${ok?'':'aria-disabled="true"'} data-naacc="${esc(a[1])}" data-fk="na:a:${esc(a[1])}"><span class="r1">${x.mk('s16')}<b>${esc(a[1])}</b><span>${esc(a[2])}</span></span><span class="d">${ok?(a[4]?esc(a[4]):'Signed in'):'Needs sign-in. Sign it in again on Accounts, or add a new account.'}</span></button>`}).join('')}).join('');
+  return head('Attach an account')+`<div class="cbody"><p class="lead2">Choose an account you already added. Its driver runs Agent 1 on it.</p><div class="na-cards" role="radiogroup" aria-label="Accounts" style="margin-top:0">${groups}</div></div>
+    <footer><button class="btn sm" data-na="toadd">${I('plus','s14')}Add a new account</button><span class="gap"></span><button class="btn sm" data-na="x">Cancel</button><button class="btn sm primary" data-na="doattach" data-fk="na:doattach" ${d.sel?'':'disabled'}>Attach</button></footer>`}
+function startHtml(d){const D=DRV[d.driver],accs=ACCOUNTS.filter(a=>drvOf(a)===d.driver);
+  const off=Object.entries(DRV).filter(([k])=>!NA.conn[k]);
+  return head('Start session')+`<div class="cbody">
+    <label class="fld"><span>Driver</span><select class="na-sel" data-nastartdrv data-fk="na:first">${Object.entries(DRV).map(([k,x])=>`<option value="${k}" ${d.driver===k?'selected':''} ${NA.conn[k]?'':'disabled'}>${x.t}${NA.conn[k]?'':' · unavailable: no account connected'}</option>`).join('')}</select></label>
+    ${off.length?`<p class="na-note">${off.map(([k,x])=>{const spare=ACCOUNTS.find(a=>drvOf(a)===k&&a[3]==='Signed in');
+      return spare?`${x.t} is unavailable: no account is connected to it. <button class="na-lk" data-naattfor="${esc(spare[1])}" data-fk="na:attfor:${k}">Attach ${esc(spare[1])}</button>`
+        :`${x.t} is unavailable: no account can run it. <button class="na-lk" data-naaddfor="${k}" data-fk="na:addfor:${k}">Add a ${x.t} account</button>`}).join(' ')}</p>`:''}
+    <label class="fld"><span>Model</span><select class="na-sel" data-nastartmodel>${D.models.map(m=>`<option ${m===d.model?'selected':''}>${m}${m===D.model?' (default)':''}</option>`).join('')}</select></label>
+    <label class="fld"><span>Account</span><select class="na-sel" data-nastartacc>${accs.map(a=>`<option value="${esc(a[1])}" ${a[1]===d.account?'selected':''} ${a[3]==='Signed in'?'':'disabled'}>${esc(a[1])}${a[3]==='Signed in'?'':': needs sign-in'}</option>`).join('')}</select></label>
+    <p class="na-review">Starts ${D.t}, on ${esc(d.account)}.</p></div>
+    <footer><span class="gap"></span><button class="btn sm" data-na="x">Close</button><button class="btn sm primary" data-na="go" data-fk="na:go">Start session</button></footer>`}
+
+/* Finishing a sign-in: the account is added, and connected to its driver when that driver has none. */
+function signInDone(d){const D=DRV[d.driver],m=meth(d),nm=m[4];d.wasFirst=!NA.conn[d.driver];
+  ACCOUNTS.push([d.driver,nm,`${D.t} ${m[2]==='Pay per use'?'API key':'subscription'}`,'Signed in','',d.wasFirst]);
+  if(d.wasFirst)NA.conn[d.driver]=nm;NA.waiting=null;if(NA.phase==='none')setPhase('ready');d.row=ACCOUNTS[ACCOUNTS.length-1]}
+function submit(){const d=NA.dlg;d.step=3;d.status='checking';d.name=meth(d)[4];const bad=/wrong/i.test(d.secret);render();focusFk('na:first');
+  later(()=>{d.status=bad?'failed':'done';if(!bad)signInDone(d);
+    if(NA.dlg!==d){render();if(!bad)toast(`Added ${d.row[1]}`);return}render();focusFk(bad?'na:first':'na:done')},1800)}
+function rename(d){const i=$('[data-naname]'),want=((i?i.value:d.name)||'').trim(),row=d.row;if(!row||!want||want===row[1])return;
+  Object.keys(NA.conn).forEach(k=>{if(NA.conn[k]===row[1])NA.conn[k]=want});row[1]=want}
+
+AFTER_RENDER.push(()=>{
+  const sl=$('#sLine');$$('[data-navar]',sl).forEach(b=>b.onclick=()=>{NA.variant=b.dataset.navar;step='noacct';page='home';load()});
+  const fb=$('[data-nafail]',sl);if(fb)fb.onclick=()=>{NA.failNext=!NA.failNext;render()};
+  if(!NA.on)return;
+  if(NA.dlg&&page!=='home')NA.dlg=null;
+  if(NA.dlg){const d=NA.dlg,label={add:'Add an account',attach:'Attach an account',start:'Start session'}[d.kind];
+    $('#main').insertAdjacentHTML('beforeend',`<div class="scrim" data-na="x"></div><div class="cdlg na-dlg" id="nadlg" role="dialog" aria-modal="true" aria-label="${label}">${d.kind==='add'?addHtml(d):d.kind==='attach'?attachHtml(d):startHtml(d)}</div>`);
+    const g=$('#nadlg');
+    $$('[data-nadrv]',g).forEach(b=>b.onclick=()=>{d.driver=b.dataset.nadrv;d.method=null;render();focusFk(b.dataset.fk)});
+    $$('[data-nameth]',g).forEach(b=>{b.onclick=()=>{d.method=b.dataset.nameth;render();focusFk('na:m:'+d.method)};b.ondblclick=()=>{d.method=b.dataset.nameth;d.step=2;d.secret='';render();focusFk('na:first')}});
+    $$('[data-naacc]',g).forEach(b=>b.onclick=()=>{if(b.getAttribute('aria-disabled'))return;d.sel=b.dataset.naacc;render();focusFk('na:a:'+d.sel)});
+    const s=$('[data-nasecret]',g);
+    if(s){s.oninput=()=>{d.secret=s.value;const go=$('[data-na="submit"]',g);if(go)go.disabled=!s.value.trim()};
+      s.onkeydown=e=>{if(e.key==='Enter'&&s.value.trim()){e.preventDefault();submit()}}}
+    const n=$('[data-naname]',g);if(n)n.oninput=()=>{d.name=n.value};
+    const sd=$('[data-nastartdrv]',g);if(sd)sd.onchange=()=>{d.driver=sd.value;d.model=DRV[d.driver].model;d.account=NA.conn[d.driver];render();focusFk('na:first')};
+    const sm=$('[data-nastartmodel]',g);if(sm)sm.onchange=()=>{d.model=DRV[d.driver].models[sm.selectedIndex]};
+    const sa=$('[data-nastartacc]',g);if(sa)sa.onchange=()=>{d.account=sa.value;render()};
+    $$('[data-naaddfor]',g).forEach(b=>b.onclick=()=>{NA.back='start';openAdd(b.dataset.naaddfor,NA.ret)});
+    $$('[data-naattfor]',g).forEach(b=>b.onclick=()=>{const row=accRow(b.dataset.naattfor),k=drvOf(row);row[5]=true;NA.conn[k]=row[1];render();focusFk('na:first');toast(`Connected ${row[1]} to ${DRV[k].t}`)});
+    if(d.kind==='add'&&d.step===2&&d.method==='device'&&!d.auto){d.auto=true;later(()=>{if(NA.dlg===d&&d.step===2&&!d.asking)submit()},3500)}}
+  $$('#main [data-na]').forEach(b=>b.onclick=()=>act(b.dataset.na))});
+
+function act(a){const d=NA.dlg;
+  if(a==='connect')return connectOrAdd('na:bar');
+  if(a==='add')return openAdd('claude','na:add');
+  if(a==='attach')return open({kind:'attach',sel:null},'na:attach');
+  if(a==='resume'){const w=NA.waiting;return open({kind:'add',step:2,driver:w.driver,method:w.method,secret:'',status:null,name:'',asking:false},'na:resume')}
+  if(a==='start')return openStart('na:bar');
+  if(a==='startc')return openStart('na:startc');
+  if(a==='check')return check();
+  if(a==='cancel')return cancel();
+  if(!d)return;
+  if(a==='x'){if(d.kind==='add'&&d.step===2&&!d.asking){d.asking=true;render();focusFk('na:first');return}if(d.kind==='add'&&d.status==='done')rename(d);NA.back=null;return close()}
+  if(a==='stay'){d.asking=false;render();focusFk('na:first');return}
+  if(a==='keep'){NA.waiting={driver:d.driver,method:d.method};NA.back=null;close();toast(`The ${DRV[d.driver].t} sign-in keeps waiting`);return}
+  if(a==='cancelsignin'){NA.waiting=null;NA.back=null;close();toast('Sign-in cancelled');return}
+  if(a==='next'){d.step=2;d.secret='';render();focusFk('na:first');return}
+  if(a==='back'){d.step=1;render();focusFk('na:m:'+d.method);return}
+  if(a==='ext'){toast(d.driver==='claude'?'Claude\'s sign-in page opens in a new tab':'OpenAI\'s page opens in a new tab');return}
+  if(a==='submit')return submit();
+  if(a==='retry'){d.step=2;d.status=null;d.secret='';render();focusFk(d.method==='oauth'?'na:secret':'na:first');return}
+  if(a==='another'){rename(d);openAdd(d.driver,NA.ret);return}
+  if(a==='done'){rename(d);const nm=d.row[1],first=d.wasFirst;if(NA.back==='start'){NA.back=null;return openStart(NA.ret)}close();toast(first?`Added ${nm} and connected it to ${DRV[d.driver].t}`:`Added ${nm}`);return}
+  if(a==='toadd')return openAdd('claude',NA.ret);
+  if(a==='doattach'){const row=accRow(d.sel),k=drvOf(row),before=NA.conn[k],was=NA.phase;row[5]=true;NA.conn[k]=row[1];if(NA.phase==='none')setPhase('ready');close();
+    toast(`Connected ${row[1]} to ${DRV[k].t}`,()=>{row[5]=false;NA.conn[k]=before;if(!anyConn())setPhase(was);render()});return}
+  if(a==='go')return start()}
+
+/* Esc closes the dialog, or at the sign-in's own step first asks whether to keep it waiting. */
+addEventListener('keydown',e=>{if(e.key!=='Escape'||!NA.on||!NA.dlg)return;e.preventDefault();e.stopImmediatePropagation();act('x')},true);
+
+/* The Accounts page with no account shows its empty state. */
+const basePage=pageHtml;
+pageHtml=function(){if(NA.on&&page==='accounts'&&!ACCOUNTS.length)return emptyHeadHtml('accounts')+emptyFullHtml('accounts');return basePage()};
+
+/* The step joins the selector, and its notes join the toolbox. */
+const sb=document.createElement('button');sb.dataset.k='noacct';sb.textContent=STEPS.noacct[0];sb.onclick=()=>{step='noacct';page='home';load()};$('#steps').append(sb);
+const NEW_NOTES=[['No account connected','With no account connected, the chat says “No account connected” and “Connect your first account”, and offers Add an account and, when accounts are added but none is connected, Attach an account. Both open as a dialog over Home: the Accounts page\'s wizard (driver, then sign-in method, then the check), never a trip to Accounts. The agent bar reads “No account connected” with Connect account beside it; Stop is off. A message written now waits under its bubble: “Waiting for Agent 1 to start”.'],
+  ['A driver no account can run','In Start session, a driver with no account connected stays in the list but cannot be chosen: “Codex · unavailable: no account connected”, and under the field one line names it with “Add a Codex account”, which opens the same wizard and comes back to Start session when it is done.'],
+  ['The waiting states of a start','“Starting session…” then “Verifying session”, each with the bar\'s spinner on its one line and nothing red: no sentence under the agent selector while a start is on its way. Red is kept for an end that failed (“Start failed”, its reason in --text-3, then Start again). The card above the composer shows only while the session is verified, with Check status and Cancel start; it goes when the start ends, fails or is cancelled.']];
+NOTE_CARDS.push(...NEW_NOTES);
+const dn=$('[data-slot="notes"]');if(dn)dn.insertAdjacentHTML('beforeend',NEW_NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join(''));
+})();
 </script>
 </body>
 </html>
