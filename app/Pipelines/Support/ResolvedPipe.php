@@ -38,7 +38,7 @@ final readonly class ResolvedPipe
         $parameters = Reflector::of($pipe)->method('handle')->parameters();
 
         $type = $parameters === [] ? None::create() : $parameters[0]->type()
-            ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin());
+            ->filter(fn (DeclaredType $declared) => $declared->namesClass());
 
         if ($type->isEmpty()) {
             return new self($pipe, null);

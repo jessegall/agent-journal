@@ -65,7 +65,7 @@ final readonly class AccountsIndex extends AccountsPage
                 LayoutPartData::action('add', 'Add account', $adding, 'primary'),
             ),
         )
-            ->counting(count($accounts->rows))
+            ->countingRows()
             ->creating('Add account', $adding)
             ->withReader(new LayoutBackData(route('accounts.accounts', [], false), 'Accounts'), ...$reader)
             ->layout();

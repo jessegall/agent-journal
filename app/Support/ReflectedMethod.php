@@ -103,7 +103,7 @@ final class ReflectedMethod
         $parameters = $this->parameters();
 
         return ($parameters === [] ? None::create() : $parameters[0]->type())
-            ->filter(fn (DeclaredType $type) => $type->isNamed() && ! $type->isBuiltin())
+            ->filter(fn (DeclaredType $type) => $type->namesClass())
             ->map(fn (DeclaredType $type) => $type->name());
     }
 
@@ -125,7 +125,11 @@ final class ReflectedMethod
 
         $type = $this->method->getReturnType();
 
-        return $this->returnType = $type === null ? None::create() : new Some(new DeclaredType($type));
+        if ($this->returnType = $type === null) {
+            return None::create();
+        }
+
+        return new Some(new DeclaredType($type));
     }
 
     /**

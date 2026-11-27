@@ -20,7 +20,7 @@ use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\StartRefused;
 use App\Profiles\Enums\InstancePolicy;
-use App\Projects\ProjectEdges;
+use App\Projects\Contracts\ProjectEdges;
 use App\Records\Contracts\RecordResolver;
 use App\Sessions\Contracts\ProfileSelections;
 use App\Sessions\Contracts\StartReservations;

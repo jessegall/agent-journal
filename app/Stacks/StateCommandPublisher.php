@@ -40,7 +40,7 @@ final readonly class StateCommandPublisher
      */
     public function publishMoments(StackTarget $target, StackSnapshot $before, AgentStack $after): void
     {
-        $effects = $this->projects->forTarget($target, fn (): array => $after->lifecycleEffectsSince($before));
+        $effects = $this->projects->forTarget($target, fn () => $after->lifecycleEffectsSince($before));
 
         foreach ($effects as $effect) {
             if ($effect instanceof Event) {

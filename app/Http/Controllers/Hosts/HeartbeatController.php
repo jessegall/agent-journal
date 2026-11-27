@@ -25,7 +25,9 @@ final readonly class HeartbeatController
             'answered_through' => ['sometimes', 'nullable', 'string'],
         ]);
 
-        /** @var list<string> $live */
+        /**
+         * @var list<string> $live
+         */
         $live = array_values($request->array('live_processes'));
         $answeredThrough = $request->filled('answered_through') ? $request->string('answered_through')->value() : null;
         $commands->run(new NotifyHostHeartbeatCommand($host->hostId, $live, $answeredThrough));

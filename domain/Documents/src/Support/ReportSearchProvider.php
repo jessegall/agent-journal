@@ -102,7 +102,7 @@ final readonly class ReportSearchProvider implements SearchProvider
         HitIdentity $held,
         SearchWords $words,
     ): SearchResult|null {
-        if ($held->locationId === null || ! PublicationPassage::isId($held->locationId)) {
+        if (! PublicationPassage::isId($held->locationId)) {
             return null;
         }
 

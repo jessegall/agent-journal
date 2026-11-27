@@ -38,7 +38,7 @@ final readonly class FileEditRequested implements HookInput
 
     public function accepts(AnswerType $type): bool
     {
-        return $type->fitsAnAction();
+        return $type->fitsWithoutRewrite();
     }
 
     /**

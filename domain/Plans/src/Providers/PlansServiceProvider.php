@@ -19,7 +19,6 @@ use Domain\Plans\Resolvers\PlanDetailsResolver;
 use Domain\Plans\Resolvers\PlanResolver;
 use Domain\Plans\Support\PhaseTiming;
 use Domain\Plans\Support\PlanSummaries;
-use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Routing\Redirector;
@@ -64,7 +63,7 @@ final class PlansServiceProvider extends ServiceProvider
         }
 
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
+        $this->commands(FolderClasses::consoleCommandsIn(dirname(__DIR__)));
 
     }
 }

@@ -6,8 +6,8 @@ namespace Domain\Chat\Support\Docking;
 
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Contracts\StoredOutput;
 use App\Processes\Enums\OutputStream;
-use App\Processes\StoredOutput;
 use App\Values\ProjectOwner;
 use Domain\Chat\Contracts\Docking\CardContext;
 use Domain\Chat\Contracts\Docking\Dockable;
@@ -77,7 +77,7 @@ final readonly class OutputDocking implements DockableProvider
         $runs = ProcessRun::query()
             ->withAllParts()
             ->whereKey($runIds)
-            ->readExactly(count($runIds))
+            ->readExactlyOf($runIds)
             ->get()
             ->keyBy('id');
 

@@ -119,9 +119,6 @@ final class ReflectedProperty
     }
 
     /**
-     * Whether the property is declared in the constructor's parameters.
-     */
-    /**
      * Marks the property of a lazy object as set, so reading it leaves the object uninitialized.
      */
     public function skipLazyInitialization(object $object): void
@@ -129,6 +126,9 @@ final class ReflectedProperty
         $this->property->skipLazyInitialization($object);
     }
 
+    /**
+     * Whether the property is declared in the constructor's parameters.
+     */
     public function isPromoted(): bool
     {
         return $this->property->isPromoted();

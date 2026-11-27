@@ -27,7 +27,7 @@ final readonly class HelperJobAssignments implements AssignableProvider
     {
         $visibleJobIds = HelperJob::query()
             ->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))
-            ->readExactly(count($records))
+            ->readExactlyOf($records)
             ->pluck('id')
             ->all();
 

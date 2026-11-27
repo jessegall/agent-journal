@@ -12,6 +12,7 @@ use App\Mcp\Support\ToolArguments;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskTextLimit;
+use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -37,7 +38,7 @@ final class FinishTaskTool extends TaskWriteTool
     protected function command(ToolArguments $arguments): FinishTaskCommand
     {
         return new FinishTaskCommand(
-            $arguments->ulid('task_id'),
+            $arguments->ulid(TaskReadResult::ID_ARGUMENT),
             $arguments->positiveInteger('run_number'),
             $arguments->text('note'),
         );

@@ -26,9 +26,9 @@ enum AnswerType: string
     }
 
     /**
-     * Whether a hook about to act, a prompt or a file edit, can take this answer.
+     * Whether a hook that cannot rewrite what it is about, a prompt, a file edit or a stop, can take this answer.
      */
-    public function fitsAnAction(): bool
+    public function fitsWithoutRewrite(): bool
     {
         return match ($this) {
             self::Delegate, self::Allow, self::Deny => true,
@@ -40,14 +40,6 @@ enum AnswerType: string
     {
         return match ($this) {
             self::Delegate, self::Allow, self::Deny, self::Rewrite => true,
-        };
-    }
-
-    public function fitsAStop(): bool
-    {
-        return match ($this) {
-            self::Delegate, self::Allow, self::Deny => true,
-            self::Rewrite => false,
         };
     }
 

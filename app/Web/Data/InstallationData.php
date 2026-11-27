@@ -17,7 +17,9 @@ final class InstallationData extends Data
     public function __construct(
         public readonly string $name,
         public readonly string $version,
-        /** @var list<string> */
+        /**
+         * @var list<string>
+         */
         public readonly array $faults,
     ) {}
 }

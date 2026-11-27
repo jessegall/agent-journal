@@ -17,13 +17,13 @@ use App\Support\Inputs\SessionStarted;
  */
 final readonly class ComposeForeground implements Pipe
 {
-    public function __construct(private AgentTexts $texts) {}
-
     private const array FRESH_INPUTS = [
         SessionStarted::class,
         PromptSubmitted::class,
         ContextCompacted::class,
     ];
+
+    public function __construct(private AgentTexts $texts) {}
 
     public function handle(SettledCall $settled): SettledCall
     {

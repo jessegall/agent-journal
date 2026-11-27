@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support\Docking;
 
-use App\Support\ClientDeclarations;
+use App\Navigation\Contracts\DeclaredPages;
 use Domain\Chat\Support\Cards\DestinationArgument;
 use Domain\Chat\Support\Cards\DockDestination;
 use Illuminate\Http\Request;
@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  */
 final readonly class DeclaredPageRoutes
 {
-    public function __construct(private Router $router, private ClientDeclarations $declarations) {}
+    public function __construct(private Router $router, private DeclaredPages $declarations) {}
 
     /**
      * @return Option<DockDestination>

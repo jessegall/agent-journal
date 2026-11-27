@@ -65,6 +65,7 @@ const ALLOWED_READS = [
     'readLimit',
     'readUpTo',
     'readExactly',
+    'readExactlyOf',
     'readAll',
     'readInChunks',
     'readRelationCompletely',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Casts;
 
+use Domain\Comments\Contracts\CommentView;
 use Domain\Comments\Data\RecordCommentView;
 use Domain\Comments\Data\TextCommentView;
 use Domain\Comments\Enums\CommentType;
@@ -38,9 +39,10 @@ final class CommentViewsCast implements Cast
      */
     private static function typeOf(mixed $view): CommentType
     {
-        return match (true) {
-            $view instanceof RecordCommentView, $view instanceof TextCommentView => $view->type,
-            default => CommentType::from(data_get($view, 'type')),
-        };
+        if ($view instanceof CommentView) {
+            return $view->type;
+        }
+
+        return CommentType::from(data_get($view, 'type'));
     }
 }

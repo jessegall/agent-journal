@@ -70,7 +70,7 @@ final class SearchProgress
      */
     public function isFinished(): bool
     {
-        return array_all($this->sources, fn (SourceProgress $source): bool => $source->isDone());
+        return array_all($this->sources, fn (SourceProgress $source) => $source->isDone());
     }
 
     /**
@@ -78,7 +78,7 @@ final class SearchProgress
      */
     public function hasSourceToRefill(): bool
     {
-        return array_any($this->sources, fn (SourceProgress $source): bool => $source->awaitsRefill());
+        return array_any($this->sources, fn (SourceProgress $source) => $source->awaitsRefill());
     }
 
     /**
@@ -88,7 +88,7 @@ final class SearchProgress
      */
     public function failedSourceKeys(): array
     {
-        return array_keys(array_filter($this->sources, fn (SourceProgress $source): bool => $source->hasFailed));
+        return array_keys(array_filter($this->sources, fn (SourceProgress $source) => $source->hasFailed));
     }
 
     /**

@@ -62,7 +62,7 @@ trait SharesPublishedRecords
         $cards = [];
 
         foreach ($page->comments as $comment) {
-            $budget->chargeMetadata(strlen($comment->excerpt));
+            $budget->chargeMetadata($comment->excerpt);
 
             $cards[] = new ShareRecordCard(
                 $comment->comment,
@@ -94,7 +94,7 @@ trait SharesPublishedRecords
         $cards = $ids === [] ? [] : $this->cardsOf($ids);
 
         foreach ($cards as $card) {
-            $budget->chargeMetadata(strlen($card->title));
+            $budget->chargeMetadata($card->title);
         }
 
         return $cards;

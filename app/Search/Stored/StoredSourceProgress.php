@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Search\Stored;
 
 use App\Search\SourceProgress;
-use App\Search\Values\BufferedHit;
 use App\Values\SourcePosition;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -47,7 +46,7 @@ final class StoredSourceProgress extends Data
             $this->source,
             $this->position === null ? null : SourcePosition::of($this->position),
             $this->isExhausted,
-            array_map(fn (StoredSearchHit $hit): BufferedHit => $hit->toBufferedHit(), $this->buffer),
+            array_map(fn (StoredSearchHit $hit) => $hit->toBufferedHit(), $this->buffer),
             $this->stalls,
             $this->hasFailed,
         );

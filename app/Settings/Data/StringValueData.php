@@ -22,4 +22,9 @@ final class StringValueData extends Data implements CatalogueValue
         #[LiteralTypeScriptType("'string'")]
         public readonly string $type = 'string',
     ) {}
+
+    public function formText(): string
+    {
+        return $this->settingText;
+    }
 }

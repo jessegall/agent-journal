@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { isPlainKey } from '@/kit/keyboard';
+
 /**
  * One line of a read-only file: a gutter with its number and the code in the slot, the theme's selection fill when
  * selected, and a dot for a comment or a hollow one for a draft. The gutter is a button that picks and moves the line
@@ -18,7 +20,7 @@ function onKey(event: KeyboardEvent): void {
         return;
     }
 
-    if (event.key.toLowerCase() === 'c' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    if (isPlainKey(event, 'c')) {
         event.preventDefault();
         emit('comment');
     }

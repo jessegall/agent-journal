@@ -59,7 +59,7 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
 
     public function withinFrameGrant(FrameGrant $grant, Closure $work): mixed
     {
-        return $this->withinGrant($grant, fn (): mixed => $this->projects->forTarget($grant->target, $work));
+        return $this->withinGrant($grant, fn () => $this->projects->forTarget($grant->target, $work));
     }
 
     /**

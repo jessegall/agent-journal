@@ -84,7 +84,7 @@ export function providePaneLayout(
     const knownWindows = computed(() =>
         windowList.value.map((each) => each.key),
     );
-    const firstArrangement = (): Arrangement =>
+    const firstArrangement = () =>
         firstWindowOnly(knownWindows.value[0]);
     const arrangement = ref<Arrangement>(firstArrangement());
     const screen = (): Screen => ({

@@ -22,4 +22,9 @@ final class DecimalValueData extends Data implements CatalogueValue
         #[LiteralTypeScriptType("'decimal'")]
         public readonly string $type = 'decimal',
     ) {}
+
+    public function formText(): string|null
+    {
+        return null;
+    }
 }

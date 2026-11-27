@@ -24,9 +24,9 @@ final readonly class OfferClosingWords implements Pipe
      */
     public static function isNeeded(RestoredCall $restored): bool
     {
-        $input = $restored->call->input;
+        $input = $restored->call->stopWithClosingWords();
 
-        if (! $input instanceof StopRequested || ! $input->stop->hasClosingWords()) {
+        if ($input === null) {
             return false;
         }
 

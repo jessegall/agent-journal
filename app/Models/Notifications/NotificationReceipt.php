@@ -225,7 +225,7 @@ final class NotificationReceipt extends JournalModel implements EventSource, Rea
             return [];
         }
 
-        return self::query()->whereKey($ids)->with('occurrence')->readExactly(count($ids))->get()->keyBy('id')->all();
+        return self::query()->whereKey($ids)->with('occurrence')->readExactlyOf($ids)->get()->keyBy('id')->all();
     }
 
     /**

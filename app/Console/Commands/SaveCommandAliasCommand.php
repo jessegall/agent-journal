@@ -7,8 +7,8 @@ namespace App\Console\Commands;
 use App\Bus\ConsoleOwner;
 use App\Bus\Contracts\CommandBus;
 use App\CommandRules\Commands\SaveCommandAlias\SaveCommandAliasCommand as SaveCommandAlias;
+use App\Console\Concerns\ReadsProjectOption;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Models\Projects\Project;
 use Illuminate\Console\Command;
 
 /**
@@ -16,6 +16,8 @@ use Illuminate\Console\Command;
  */
 final class SaveCommandAliasCommand extends Command
 {
+    use ReadsProjectOption;
+
     protected $signature = 'processes:alias-save {name : The alias} {line : The command line it runs}'
         .' {--project= : The key of the project, the local project when none is given}'
         .' {--argument=* : The name of each positional argument the line takes}';
@@ -44,16 +46,5 @@ final class SaveCommandAliasCommand extends Command
         $this->line("Saved. The alias is at revision {$revision}.");
 
         return self::SUCCESS;
-    }
-
-    private function project(): Project
-    {
-        $key = $this->option('project');
-
-        if (! is_string($key)) {
-            return Project::findLocal();
-        }
-
-        return Project::findForKey($key);
     }
 }

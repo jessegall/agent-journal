@@ -10,10 +10,6 @@ import type { ComputedRef, Ref } from 'vue';
 export const LEASE_MILLISECONDS = 30_000;
 
 /**
- * The target key of a question notification, as app/Communication/Resolvers/QuestionNotificationTarget.php names it.
- */
-
-/**
  * The pending key of a Mark all under way.
  */
 export const MARK_ALL = 'all';

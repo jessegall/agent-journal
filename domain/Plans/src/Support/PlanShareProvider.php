@@ -64,7 +64,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         );
 
         $cards = array_values(
-            Plan::query()->whereKey($ids)->readExactly(count($ids))->get(self::SUMMARY_COLUMNS)->map(
+            Plan::query()->whereKey($ids)->readExactlyOf($ids)->get(self::SUMMARY_COLUMNS)->map(
                 fn (Plan $plan) => $plan->share_card,
             )->all(),
         );
@@ -72,7 +72,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         $publishedPlanIds = array_map(fn (ShareRecordCard $card) => $card->record->id, $cards);
 
         foreach ($cards as $card) {
-            $budget->chargeMetadata(strlen($card->title));
+            $budget->chargeMetadata($card->title);
         }
 
         return new ShareRecords(
@@ -114,7 +114,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         }
 
         $plan = Plan::query()->whereKey($record->id)->firstOr(RecordUnavailable::throwing()->forActor($record));
-        $budget->chargeMetadata(strlen($plan->title));
+        $budget->chargeMetadata($plan->title);
 
         return $plan;
     }

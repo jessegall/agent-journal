@@ -14,6 +14,7 @@ use App\Agents\Drivers\Enums\RequestProgress;
 use App\Agents\Drivers\Values\ScriptGoal;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersByCreation;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Sessions\DriverRequestAccepted;
@@ -107,6 +108,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
 {
     use BoundedReads;
     use Linkable;
+    use OrdersByCreation;
     use RaisesEvents;
 
     /**
@@ -923,17 +925,6 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     protected function bySequenceDescending(Builder $query): void
     {
         $query->orderByDesc('sequence');
-    }
-
-    /**
-     * The rows by created at.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function byCreatedAt(Builder $query): void
-    {
-        $query->orderBy('created_at');
     }
 
     /**

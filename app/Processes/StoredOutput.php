@@ -6,6 +6,7 @@ namespace App\Processes;
 
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
+use App\Processes\Contracts\StoredOutput as StoredOutputContract;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Values\OutputFrame;
 use Illuminate\Contracts\Filesystem\Factory;
@@ -16,7 +17,7 @@ use Illuminate\Support\Collection;
  * the raw bytes of a stream, its last lines, the offsets of a search, and a bounded preview that escapes control and
  * invalid bytes.
  */
-final readonly class StoredOutput
+final readonly class StoredOutput implements StoredOutputContract
 {
     public const int PREVIEW_CHARACTER_LIMIT = 4_000;
 

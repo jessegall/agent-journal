@@ -23,21 +23,16 @@ use App\Values\ShellTree;
  */
 final readonly class OutputPolicy
 {
-    private const array HIDING_REDIRECTS = [
-        RedirectType::Output,
-        RedirectType::Append,
-        RedirectType::Clobber,
-        RedirectType::ReadWrite,
-        RedirectType::Close,
-    ];
-
     public function check(Classification $classification): OutputVerdict
     {
         $hidden = [];
 
         foreach ($classification->parts as $part) {
             if ($part->purpose->outputRequirement() === OutputRequirement::Full) {
-                $hidden = [...$hidden, ...$this->hiddenAround($classification->tree, $part)];
+                $hidden = [
+                    ...$hidden,
+                    ...$this->hiddenAround($classification->tree, $part),
+                ];
             }
         }
 
@@ -93,7 +88,7 @@ final readonly class OutputPolicy
 
         $stream = $redirect->descriptor === 1 ? 'standard output' : 'standard error';
 
-        if (in_array($redirect->type, self::HIDING_REDIRECTS, true)) {
+        if ($redirect->type->hidesOutput()) {
             return [$stream];
         }
 

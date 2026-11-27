@@ -179,7 +179,7 @@ final class ProfileRevision extends JournalModel implements ReadableModel
 
         return self::query()->currentOfProfiles($keys)
             ->select(['profiles.key as profile_key', 'profile_revisions.script_source'])
-            ->readExactly(count($keys))
+            ->readExactlyOf($keys)
             ->get()
             ->mapWithKeys(fn (self $revision) => [
                 (string) $revision->getAttribute('profile_key') => $revision->script_source,

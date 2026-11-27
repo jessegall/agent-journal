@@ -22,4 +22,13 @@ final class BooleanValueData extends Data implements CatalogueValue
         #[LiteralTypeScriptType("'boolean'")]
         public readonly string $type = 'boolean',
     ) {}
+
+    public function formText(): string
+    {
+        if ($this->isEnabled) {
+            return '1';
+        }
+
+        return '0';
+    }
 }

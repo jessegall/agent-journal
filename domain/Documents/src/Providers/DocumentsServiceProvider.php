@@ -38,7 +38,6 @@ use Domain\Documents\Support\DocumentSummaries;
 use Domain\Documents\Support\ReportSummaries;
 use Domain\Documents\Support\SealedAttachments;
 use Domain\Documents\Support\UploadStore;
-use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\ServiceProvider;
@@ -85,7 +84,7 @@ final class DocumentsServiceProvider extends ServiceProvider
         );
 
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
+        $this->commands(FolderClasses::consoleCommandsIn(dirname(__DIR__)));
     }
 
     /**

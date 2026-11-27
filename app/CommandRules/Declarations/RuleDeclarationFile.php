@@ -27,7 +27,7 @@ final class RuleDeclarationFile extends Data
     public function toProposals(): array
     {
         return array_map(
-            fn (RuleDeclaration $declaration): DeclaredProposal => $declaration->toProposal(),
+            fn (RuleDeclaration $declaration) => $declaration->toProposal(),
             $this->declarations,
         );
     }

@@ -204,7 +204,7 @@ final class ShareGatewayConfiguration extends JournalModel implements EventSourc
             ->whereKey($ids)
             ->oldestFirst()
             ->lockForUpdate()
-            ->readExactly(count($ids))
+            ->readExactlyOf($ids)
             ->get()
             ->all());
     }

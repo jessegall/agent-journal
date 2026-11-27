@@ -31,7 +31,7 @@ final readonly class NoteSummaries implements SummaryProvider
 
     public function visibleSummaries(array $ids): array
     {
-        $notes = Note::query()->whereKey($ids)->readExactly(count($ids))->get();
+        $notes = Note::query()->whereKey($ids)->readExactlyOf($ids)->get();
 
         return array_values($notes->map(self::summary(...))->all());
     }

@@ -20,4 +20,9 @@ final class InvalidValueData extends Data implements CatalogueValue
         #[LiteralTypeScriptType("'invalid'")]
         public readonly string $type = 'invalid',
     ) {}
+
+    public function formText(): string|null
+    {
+        return null;
+    }
 }

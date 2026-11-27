@@ -16,7 +16,6 @@ use App\Support\Layout\LayoutDialogData;
 use App\Support\Layout\LayoutFactValueData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
-use App\Support\Layout\LayoutLimits;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Terminals\Enums\LayoutTag;
@@ -177,16 +176,16 @@ final class DeclaredLayoutTest extends TestCase
     {
         $part = LayoutPartData::text('leaf', 'deep');
 
-        foreach (range(0, LayoutLimits::DEPTH_LIMIT) as $level) {
+        foreach (range(0, LayoutPartData::DEPTH_LIMIT) as $level) {
             $part = LayoutPartData::box("level-{$level}", 'stack', $part);
         }
 
-        $levels = array_map(fn (int $level) => "level-{$level}", range(LayoutLimits::DEPTH_LIMIT - 1, 0));
+        $levels = array_map(fn (int $level) => "level-{$level}", range(LayoutPartData::DEPTH_LIMIT - 1, 0));
 
         $this->expectException(LayoutRefused::class);
 
         $this->expectExceptionMessage(
-            LayoutRefused::tooDeep('root.'.implode('.', $levels).'.leaf', LayoutLimits::DEPTH_LIMIT)->getMessage(),
+            LayoutRefused::tooDeep('root.'.implode('.', $levels).'.leaf', LayoutPartData::DEPTH_LIMIT)->getMessage(),
         );
 
         DeclaredLayoutData::of($part);
@@ -196,13 +195,13 @@ final class DeclaredLayoutTest extends TestCase
     {
         $rows = array_map(
             fn (int $row) => new LayoutRowData("row-{$row}", "Row {$row}", ''),
-            range(0, LayoutLimits::ROW_LIMIT),
+            range(0, LayoutPartData::ROW_LIMIT),
         );
 
         $this->expectException(LayoutRefused::class);
 
         $this->expectExceptionMessage(
-            LayoutRefused::tooManyRows('root', count($rows), LayoutLimits::ROW_LIMIT)->getMessage(),
+            LayoutRefused::tooManyRows('root', count($rows), LayoutPartData::ROW_LIMIT)->getMessage(),
         );
 
         DeclaredLayoutData::of(LayoutPartData::collection('rows', 'list', $rows));

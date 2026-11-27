@@ -25,7 +25,7 @@ final class TaskReadTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'task_id' => $this->recordIdArgument($schema),
+            TaskReadResult::ID_ARGUMENT => $this->recordIdArgument($schema),
             'view' => $this->caseArgument($schema, ReadView::class),
             'continuation' => $schema->string(),
             'passage' => $schema->string()->max(64),
@@ -38,11 +38,11 @@ final class TaskReadTool extends JournalReadTool
             return parent::readRequest();
         }
 
-        return TaskReadResult::requestFor($arguments->ulid('task_id'));
+        return TaskReadResult::requestFor($arguments->ulid(TaskReadResult::ID_ARGUMENT));
     }
 
     protected function read(ToolArguments $arguments): ToolResult
     {
-        return $this->tasks->read($arguments->ulid('task_id'), $arguments);
+        return $this->tasks->read($arguments->ulid(TaskReadResult::ID_ARGUMENT), $arguments);
     }
 }

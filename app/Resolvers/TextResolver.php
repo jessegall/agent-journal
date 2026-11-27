@@ -61,7 +61,7 @@ final readonly class TextResolver implements TextResolverContract
             throw TextSelectionRefused::unbounded();
         }
 
-        if ($selection->bullets || $selection->words !== null) {
+        if ($selection->isFiltered()) {
             throw TextSelectionRefused::filtered();
         }
 

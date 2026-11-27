@@ -19,6 +19,6 @@ final readonly class ImportedProposals
      */
     public function toArray(): array
     {
-        return array_map(fn (ProposalReceipt $receipt): array => $receipt->toArray(), $this->receipts);
+        return array_map(fn (ProposalReceipt $receipt) => $receipt->toArray(), $this->receipts);
     }
 }

@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Questions;
 
+use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Support\Domain;
 use App\Support\Exports;
+use App\Support\FolderClasses;
 use Domain\Questions\Commands\AnswerQuestion\AnswerQuestionCommand;
-use Domain\Questions\Commands\AskQuestion\AskQuestionCommand;
-use Domain\Questions\Commands\DeliverWaitingQuestionAnswers\DeliverWaitingQuestionAnswersCommand;
-use Domain\Questions\Commands\HideLeftInboxNotifications\HideLeftInboxNotificationsCommand;
-use Domain\Questions\Commands\ReadQuestion\ReadQuestionCommand;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Events\QuestionAnswered;
 use Domain\Questions\Events\QuestionAsked;
@@ -47,13 +45,7 @@ final class QuestionsDomain extends Domain implements CommandProvider, McpToolPr
 
     public function commands(): array
     {
-        return [
-            AskQuestionCommand::class,
-            AnswerQuestionCommand::class,
-            ReadQuestionCommand::class,
-            HideLeftInboxNotificationsCommand::class,
-            DeliverWaitingQuestionAnswersCommand::class,
-        ];
+        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function mcpResources(): array

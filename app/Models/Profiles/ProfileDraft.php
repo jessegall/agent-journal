@@ -141,7 +141,7 @@ final class ProfileDraft extends JournalModel implements ReadableModel
             ->inProfileOrder()
             ->lockForUpdate()
             ->with('currentRevision')
-            ->readExactly(count($profiles))
+            ->readExactlyOf($profiles)
             ->get()
             ->keyBy('profile_key')
             ->all();

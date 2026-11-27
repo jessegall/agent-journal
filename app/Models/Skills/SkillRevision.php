@@ -172,7 +172,7 @@ final class SkillRevision extends JournalModel implements ReadableModel
             return [];
         }
 
-        return self::query()->whereKey($ids)->readExactly(count($ids))->get()->keyBy('skill_id')->all();
+        return self::query()->whereKey($ids)->readExactlyOf($ids)->get()->keyBy('skill_id')->all();
     }
 
     public static function findNumbered(Skill $skill, int $revision): self

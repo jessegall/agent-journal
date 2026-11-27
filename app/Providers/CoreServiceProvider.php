@@ -21,7 +21,6 @@ use App\Search\SearchSources;
 use App\Search\StatementDeadlines;
 use App\Search\TieredSearch;
 use App\Support\FolderClasses;
-use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -43,7 +42,7 @@ final class CoreServiceProvider extends ServiceProvider
     public function boot(AssignmentRegistration $assignments): void
     {
         // Core's Artisan commands, app/Console/Commands, for the console and for the journal routes that list them.
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
+        $this->commands(FolderClasses::consoleCommandsIn(dirname(__DIR__)));
 
         $assignments->registerOwner('Supervision', []);
 

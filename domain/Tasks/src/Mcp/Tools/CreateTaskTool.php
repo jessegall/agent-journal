@@ -10,6 +10,7 @@ use App\Mcp\Support\ToolArguments;
 use App\Projects\Contracts\ProjectDestination;
 use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Enums\TaskTextLimit;
+use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -45,7 +46,7 @@ final class CreateTaskTool extends TaskWriteTool
 
     protected function present(mixed $taskId): ToolResult
     {
-        return ToolResult::ok(['task_id' => $taskId]);
+        return ToolResult::ok([TaskReadResult::ID_ARGUMENT => $taskId]);
     }
 
     /**

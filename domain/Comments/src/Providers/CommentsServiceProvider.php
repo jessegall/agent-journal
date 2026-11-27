@@ -13,7 +13,6 @@ use Domain\Comments\Resolvers\CommentResolver;
 use Domain\Comments\Resolvers\PublicCommentResolver;
 use Domain\Comments\Support\CommentedFileVersions;
 use Domain\Comments\Support\FileCommentThreads;
-use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -32,6 +31,6 @@ final class CommentsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/comments.php');
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
+        $this->commands(FolderClasses::consoleCommandsIn(dirname(__DIR__)));
     }
 }

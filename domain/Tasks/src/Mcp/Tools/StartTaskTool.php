@@ -8,6 +8,7 @@ use App\Bus\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
+use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -23,12 +24,12 @@ final class StartTaskTool extends TaskWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
-        return ['task_id' => $this->recordIdArgument($schema)];
+        return [TaskReadResult::ID_ARGUMENT => $this->recordIdArgument($schema)];
     }
 
     protected function command(ToolArguments $arguments): StartTaskCommand
     {
-        return new StartTaskCommand($arguments->ulid('task_id'));
+        return new StartTaskCommand($arguments->ulid(TaskReadResult::ID_ARGUMENT));
     }
 
     protected function present(mixed $runNumber): ToolResult

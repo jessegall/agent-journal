@@ -25,6 +25,14 @@ final class TextSelection extends Data
         public readonly bool $isWholeText = false,
     ) {}
 
+    /**
+     * Whether the read keeps only some lines: the bullets, or the lines holding the words.
+     */
+    public function isFiltered(): bool
+    {
+        return $this->bullets || $this->words !== null;
+    }
+
     public function isOutlineOnly(): bool
     {
         return $this->section === null

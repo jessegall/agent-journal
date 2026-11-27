@@ -13,7 +13,7 @@ watch(
     () => props.errors,
     async (errors) => {
         messages.value = Object.values(errors).filter(
-            (message): message is string => typeof message === 'string',
+            (message) => typeof message === 'string',
         );
 
         if (messages.value.length === 0) {

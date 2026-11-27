@@ -22,4 +22,9 @@ final class IntegerValueData extends Data implements CatalogueValue
         #[LiteralTypeScriptType("'integer'")]
         public readonly string $type = 'integer',
     ) {}
+
+    public function formText(): string
+    {
+        return (string) $this->settingNumber;
+    }
 }

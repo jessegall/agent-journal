@@ -21,6 +21,17 @@ enum RedirectType: string
     case HereString = 'here_string';
 
     /**
+     * Whether the redirect sends a part's output away from where a reader sees it: to a file or closed.
+     */
+    public function hidesOutput(): bool
+    {
+        return match ($this) {
+            self::Output, self::Append, self::Clobber, self::ReadWrite, self::Close => true,
+            self::Input, self::DuplicateInput, self::DuplicateOutput, self::HereDocument, self::HereString => false,
+        };
+    }
+
+    /**
      * Whether the redirect duplicates a descriptor, as <& and >& do.
      */
     public function isDuplicate(): bool

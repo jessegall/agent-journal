@@ -32,7 +32,7 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
     {
         $installed = array_values(array_filter(
             $this->rules->bundles(),
-            fn (RuleBundle $bundle): bool => $bundle->module === $command->module
+            fn (RuleBundle $bundle) => $bundle->module === $command->module
                 && $bundle->version === $command->version
                 && $bundle->digest() === $command->digest,
         ));

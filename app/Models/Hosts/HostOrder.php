@@ -201,7 +201,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
 
     public function isOpen(): bool
     {
-        return $this->status === HostOrderStatus::Pending || $this->status === HostOrderStatus::Claimed;
+        return $this->status->isOpen();
     }
 
     // ----------[ Asserts ]----------

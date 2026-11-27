@@ -24,7 +24,7 @@ final readonly class AutoAssignmentAvailability
             $this->providers->poolOwner($fact->pool->type),
         ]);
 
-        return array_all($owners, fn (string $owner): bool => $this->domains->isEnabled($owner));
+        return array_all($owners, fn (string $owner) => $this->domains->isEnabled($owner));
     }
 
     public function isActive(AutoAssignmentFact $fact): bool

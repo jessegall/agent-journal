@@ -201,10 +201,6 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     });
 
     /**
-     * Starts a new account's sign-in. A start the receipt shows never happened goes again under its own key; any other
-     * start gets a new one. A reply that never comes reconnects through the receipt.
-     */
-    /**
      * The request key a start goes under: the key of the same start the receipt shows never happened, else a new one.
      */
     function keyFor(

@@ -57,7 +57,7 @@ final readonly class ShellCommandParser implements ShellCommandParserContract
     {
         $dynamic = array_any(
             $tree->executableParts(),
-            fn (ShellNode $part): bool => array_any($part->words, fn (Word $word): bool => $word->hasExpansion()),
+            fn (ShellNode $part) => array_any($part->words, fn (Word $word) => $word->hasExpansion()),
         );
 
         if ($dynamic) {

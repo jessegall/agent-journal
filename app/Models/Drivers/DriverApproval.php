@@ -86,7 +86,7 @@ final class DriverApproval extends JournalModel implements EventSource, Readable
     {
         return self::query()
             ->ofKeys($keys)
-            ->readExactly(count($keys))
+            ->readExactlyOf($keys)
             ->get()
             ->mapWithKeys(fn (self $approval) => [$approval->driver_key => $approval->build_pins])
             ->all();

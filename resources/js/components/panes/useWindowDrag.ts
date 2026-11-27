@@ -1,7 +1,7 @@
 import { onBeforeUnmount } from 'vue';
 import { detachWindow, dropWindow } from '@/components/panes/arrangement';
 import type { DropTarget } from '@/components/panes/arrangement';
-import { panesIn, zoneAt } from '@/components/panes/paneLayout';
+import { contains, panesIn, zoneAt } from '@/components/panes/paneLayout';
 import { usePaneLayout } from './usePaneLayout';
 
 /**
@@ -34,12 +34,7 @@ export function useWindowDrag(): {
         )) {
             const box = strip.getBoundingClientRect();
 
-            if (
-                x < box.left ||
-                x > box.right ||
-                y < box.top ||
-                y > box.bottom
-            ) {
+            if (!contains(box, x, y)) {
                 continue;
             }
 
@@ -83,12 +78,7 @@ export function useWindowDrag(): {
         )) {
             const box = section.getBoundingClientRect();
 
-            if (
-                x < box.left ||
-                x > box.right ||
-                y < box.top ||
-                y > box.bottom
-            ) {
+            if (!contains(box, x, y)) {
                 continue;
             }
 

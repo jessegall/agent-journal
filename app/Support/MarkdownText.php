@@ -217,7 +217,7 @@ final readonly class MarkdownText
                 && ($selection->words === null || mb_stripos($line, $selection->words) !== false);
 
             if ($kept) {
-                $numbered[$number] = $selection->bullets || $selection->words !== null ? "{$number}: {$line}" : $line;
+                $numbered[$number] = $selection->isFiltered() ? "{$number}: {$line}" : $line;
             }
         }
 
@@ -283,7 +283,10 @@ final readonly class MarkdownText
         $newLevel = self::headingLevel($replacement[0]);
 
         if ($section->level > 0 && $newLevel === 0) {
-            $replacement = [$lines[$section->firstLine - 1], ...$replacement];
+            $replacement = [
+                $lines[$section->firstLine - 1],
+                ...$replacement,
+            ];
         }
 
         if ($section->level > 0 && $newLevel > 0 && $newLevel !== $section->level) {

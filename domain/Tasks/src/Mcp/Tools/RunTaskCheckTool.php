@@ -8,6 +8,7 @@ use App\Bus\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Tasks\Commands\RunTaskCheck\RunTaskCheckCommand;
+use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -33,7 +34,7 @@ final class RunTaskCheckTool extends TaskWriteTool
     protected function command(ToolArguments $arguments): RunTaskCheckCommand
     {
         return new RunTaskCheckCommand(
-            $arguments->ulid('task_id'),
+            $arguments->ulid(TaskReadResult::ID_ARGUMENT),
             $arguments->positiveInteger('run_number'),
             $arguments->ulid('process_run_id'),
             $arguments->text('operation'),

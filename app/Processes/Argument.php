@@ -56,7 +56,9 @@ final readonly class Argument
     public static function option(array $template, Closure $value): self
     {
         $values = function (object $context) use ($template, $value): array {
-            /** @var T $context */
+            /**
+             * @var T $context
+             */
             $text = $value($context);
 
             if ($text === null) {

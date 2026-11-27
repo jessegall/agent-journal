@@ -64,9 +64,9 @@ export function useStartRestoration(
   const key = `journal.session-dialog.${viewerId}.${agentId}.${mode}`;
 
   return {
-    read: (): StartRestoration | null => readStoredJson("session", key, parse),
-    keep: (restoration: StartRestoration): void =>
+    read: () => readStoredJson("session", key, parse),
+    keep: (restoration: StartRestoration) =>
       keepStoredJson("session", key, restoration),
-    forget: (): void => forgetStored("session", key),
+    forget: () => forgetStored("session", key),
   };
 }

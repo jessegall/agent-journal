@@ -17,11 +17,11 @@ abstract readonly class PublicationSearchAccess extends ReadToolSearchAccess
 {
     public function openAction(string $recordId, RecordLocation|null $location): OpenAction
     {
-        if ($location === null || ! PublicationPassage::isId($location->id)) {
+        $passage = self::passageAt($location);
+
+        if ($passage === null) {
             return parent::openAction($recordId, $location);
         }
-
-        $passage = PublicationPassage::fromId($location->id);
 
         return new OpenAction($this->readName(), [$this->idArgument() => $recordId, ...$passage->readArguments()]);
     }
@@ -33,16 +33,24 @@ abstract readonly class PublicationSearchAccess extends ReadToolSearchAccess
      */
     public function pageQuery(RecordLocation|null $location): array
     {
-        if ($location === null || ! PublicationPassage::isId($location->id)) {
-            return [];
-        }
-
-        $revision = PublicationPassage::fromId($location->id)->revision;
+        $revision = self::passageAt($location)?->revision;
 
         if ($revision === null) {
             return [];
         }
 
         return ['revision' => (string) $revision];
+    }
+
+    /**
+     * The passage the location names; none for no location or one that names no passage.
+     */
+    private static function passageAt(RecordLocation|null $location): PublicationPassage|null
+    {
+        if ($location === null || ! PublicationPassage::isId($location->id)) {
+            return null;
+        }
+
+        return PublicationPassage::fromId($location->id);
     }
 }

@@ -22,13 +22,13 @@ final class ShareBudgetTest extends SharingTestCase
     {
         $budget = ShareBudget::forRead($this->app->make(ReadMeterContract::class));
         $budget->chargeText(3 * 1_048_576);
-        $budget->chargeMetadata(1_048_576);
+        $budget->chargeMetadata(str_repeat('m', 1_048_576));
 
         $this->assertSame(3 * 1_048_576, $budget->textBytes());
         $this->assertSame(1_048_576, $budget->metadataBytes());
         $this->expectExceptionObject(ShareBudgetExceeded::forBytes('loaded records', 4 * 1_048_576));
 
-        $budget->chargeMetadata(1);
+        $budget->chargeMetadata('m');
     }
 
     public function test_rendered_output_records_links_and_hops_refuse_one_past_their_limit(): void

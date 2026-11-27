@@ -22,4 +22,9 @@ final class IntegerChoiceValueData extends Data implements CatalogueValue
         #[LiteralTypeScriptType("'integerChoice'")]
         public readonly string $type = 'integerChoice',
     ) {}
+
+    public function formText(): string|null
+    {
+        return null;
+    }
 }

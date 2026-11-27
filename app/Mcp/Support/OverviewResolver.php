@@ -37,7 +37,7 @@ final readonly class OverviewResolver
             'agent_id' => $this->agent->agentId,
             'session_id' => $this->agent->sessionId,
             'stack_state' => $this->states->top(new StackTarget($this->agent->agentId, $this->agent->sessionId))
-                ->map(fn (StateReference $state): string => $state->typeKey)
+                ->map(fn (StateReference $state) => $state->typeKey)
                 ->getOrElse(null),
             'sections' => (object) $sections,
         ], []);

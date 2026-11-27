@@ -38,7 +38,6 @@ use Domain\Chat\Support\Wire\DockNodeTypes;
 use Domain\Chat\Support\Wire\PartMap;
 use Domain\Chat\Values\DockedOutput;
 use Domain\Questions\Values\QuestionNotificationKeys;
-use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -80,6 +79,6 @@ final class ChatServiceProvider extends ServiceProvider
 
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
+        $this->commands(FolderClasses::consoleCommandsIn(dirname(__DIR__)));
     }
 }

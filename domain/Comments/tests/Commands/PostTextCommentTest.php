@@ -81,18 +81,6 @@ final class PostTextCommentTest extends TestCase
         'hook_calls',
     ];
 
-    /**
-     * The Notes test module this test installs needs the Rules domain booted beside Comments.
-     */
-    protected static function bootedDomains(): array
-    {
-        return DomainBoot::withRequirements(CommentsDomain::class, RulesDomain::class);
-    }
-
-    private EnrolledHost $host;
-
-    private ProjectBinding $binding;
-
     private const string PATH = 'src/main.go';
 
     private const string SOURCE = "package main\n\nfunc main() {}\n";
@@ -100,6 +88,18 @@ final class PostTextCommentTest extends TestCase
     private const string SECOND_LINE = 'Second line.';
 
     private const string LINES_QUESTION = 'Which lines?';
+
+    private EnrolledHost $host;
+
+    private ProjectBinding $binding;
+
+    /**
+     * The Notes test module this test installs needs the Rules domain booted beside Comments.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(CommentsDomain::class, RulesDomain::class);
+    }
 
     protected function setUp(): void
     {

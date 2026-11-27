@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isPlainKey } from '@/kit/keyboard';
 import { computed } from 'vue';
 
 /**
@@ -26,7 +27,7 @@ function onKey(event: KeyboardEvent): void {
         return;
     }
 
-    if (event.key.toLowerCase() === 'c' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    if (isPlainKey(event, 'c')) {
         event.preventDefault();
         emit('comment');
     }

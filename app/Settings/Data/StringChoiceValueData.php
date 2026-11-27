@@ -22,4 +22,9 @@ final class StringChoiceValueData extends Data implements CatalogueValue
         #[LiteralTypeScriptType("'stringChoice'")]
         public readonly string $type = 'stringChoice',
     ) {}
+
+    public function formText(): string
+    {
+        return $this->selectedKey;
+    }
 }

@@ -321,7 +321,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
         return self::query()->supervised()
             ->ofSessions($ids)
             ->newestOfItsSession()
-            ->readExactly(count($ids))
+            ->readExactlyOf($ids)
             ->pluck('id', 'session_id')
             ->all();
     }
@@ -338,7 +338,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
         $latest = self::query()->supervised()
             ->ofAgents($agentIds)
             ->newestOfItsAgent()
-            ->readExactly(count($agentIds))
+            ->readExactlyOf($agentIds)
             ->get();
 
         return $latest->filter(fn (self $start) => $start->refusal !== null)->mapWithKeys(

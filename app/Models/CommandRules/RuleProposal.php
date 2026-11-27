@@ -130,7 +130,7 @@ final class RuleProposal extends JournalModel implements EventSource, ProjectOwn
     public function withdraw(ActorReference $author): void
     {
         $this->assertAuthor($author);
-        $this->assertOpen();
+        $this->assertAcceptsRevision();
 
         $this->status = ProposalStatus::Withdrawn;
         $this->saveAndAssert();
@@ -242,18 +242,6 @@ final class RuleProposal extends JournalModel implements EventSource, ProjectOwn
     }
 
     /**
-     * Refuses a change to a proposal that already ended.
-     *
-     * @throws RuleProposalRefused
-     */
-    private function assertOpen(): void
-    {
-        if (! $this->status->canAcceptRevision()) {
-            throw RuleProposalRefused::ended($this->id, $this->status);
-        }
-    }
-
-    /**
      * Refuses a request key used again for another proposal.
      *
      * @throws RuleProposalRefused
@@ -282,7 +270,7 @@ final class RuleProposal extends JournalModel implements EventSource, ProjectOwn
      */
     private function end(ProposalStatus $status): void
     {
-        $this->assertOpen();
+        $this->assertAcceptsRevision();
 
         $this->status = $status;
         $this->save();

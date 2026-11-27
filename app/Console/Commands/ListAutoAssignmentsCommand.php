@@ -7,9 +7,9 @@ namespace App\Console\Commands;
 use App\Api\Assignments\ListAutoAssignmentsPayload;
 use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
+use App\Console\Concerns\ReadsActorText;
 use App\Console\Concerns\RunsApiPipelines;
 use App\Exceptions\InvalidActorText;
-use App\Support\ActorReference;
 use Illuminate\Console\Command;
 
 /**
@@ -18,6 +18,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class ListAutoAssignmentsCommand extends Command
 {
+    use ReadsActorText;
     use RunsApiPipelines;
 
     protected $signature = 'assignment:auto-list {actor : The actor as type:id}
@@ -31,7 +32,7 @@ final class ListAutoAssignmentsCommand extends Command
 
         try {
             $call = ListAutoAssignmentsPayload::from([
-                ...ActorReference::fromText((string) $this->argument('actor'))->asFields('actor'),
+                ...$this->actorArgument('actor')->asFields('actor'),
                 'after' => $after === '' ? null : $after,
             ]);
         } catch (InvalidActorText $invalid) {

@@ -6,6 +6,7 @@ namespace App\Models\Notifications;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersByCreation;
 use App\Models\Support\JournalModel;
 use App\Notifications\Enums\NotificationMutationType;
 use App\Records\Contracts\ReadableModel;
@@ -33,6 +34,7 @@ final class NotificationChange extends JournalModel implements ReadableModel
 {
     use BoundedReads;
     use Linkable;
+    use OrdersByCreation;
 
     public const ?string UPDATED_AT = null;
 
@@ -150,17 +152,6 @@ final class NotificationChange extends JournalModel implements ReadableModel
     protected function withAnyId(Builder $query, array|Builder|Closure $ids): void
     {
         $query->whereIn('id', $ids);
-    }
-
-    /**
-     * The rows by created at.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function byCreatedAt(Builder $query): void
-    {
-        $query->orderBy('created_at');
     }
 
     /**

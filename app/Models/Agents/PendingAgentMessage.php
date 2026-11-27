@@ -8,6 +8,7 @@ use App\Actors\AttentionOrigin;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersByCreation;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
@@ -35,6 +36,7 @@ final class PendingAgentMessage extends JournalModel implements ReadableModel
     use BoundedReads;
     use InsertsRowSets;
     use Linkable;
+    use OrdersByCreation;
 
     /**
      * The most deliveries one hook hands over, with all their lines.
@@ -102,17 +104,5 @@ final class PendingAgentMessage extends JournalModel implements ReadableModel
     protected function askingAttention(Builder $query): void
     {
         $query->where('requests_attention', true);
-    }
-
-    /**
-     * The rows by created at, then id.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function byCreatedAt(Builder $query): void
-    {
-        $query->orderBy('created_at');
-        $query->orderBy('id');
     }
 }

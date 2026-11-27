@@ -42,7 +42,7 @@ function markedThen(url: string, data: Record<string, string | number>): Promise
  */
 export const notificationVisits: NotificationClient = {
     page: (cursor) => answered(load(shellNotifications, { cursor })),
-    changes: (cursor): Promise<NotificationChangePage> => answered(load(shellNotificationChanges, { since: cursor })),
+    changes: (cursor) => answered(load(shellNotificationChanges, { since: cursor })),
     markRead: (receiptId) => markedThen(read.url(), { receiptId }),
     markTargetRead: (targetKey, targetId) => markedThen(readTarget.url(), { targetKey, targetId }),
     markAll: (through) => markedThen(readAll.url(), { through: Number(through) }),

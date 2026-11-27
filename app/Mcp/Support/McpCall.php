@@ -38,8 +38,8 @@ final readonly class McpCall implements McpCallContract
         return $this->answer(
             'tool',
             $tool,
-            fn (): ResponseFactory => $this->budget->fit($answer()),
-            fn (Refusal $refusal): ResponseFactory => $refusal->toolResponse(),
+            fn () => $this->budget->fit($answer()),
+            fn (Refusal $refusal) => $refusal->toolResponse(),
         );
     }
 
@@ -52,7 +52,7 @@ final readonly class McpCall implements McpCallContract
             'resource',
             $uri,
             $content,
-            fn (Refusal $refusal): Response => $refusal->resourceResponse(),
+            fn (Refusal $refusal) => $refusal->resourceResponse(),
         );
     }
 
@@ -75,7 +75,12 @@ final readonly class McpCall implements McpCallContract
             $refusal = Refusal::of($this->refusals->refusal($failure, $subject, $this->agent->call->callId));
             $response = $refused($refusal);
             $outcome = $refusal->code->value;
-            $cause = ['failure' => $failure::class, 'message' => $failure->getMessage(), 'exception' => $failure];
+
+            $cause = [
+                'failure' => $failure::class,
+                'message' => $failure->getMessage(),
+                'exception' => $failure,
+            ];
         }
 
         $this->logger->info("mcp.{$type}", [

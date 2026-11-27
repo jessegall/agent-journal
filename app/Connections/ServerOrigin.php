@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Connections;
 
 use App\Connections\Exceptions\ServerOriginInvalid;
+use Illuminate\Http\Request;
 
 /**
  * The canonical origin connected machines reach this journal at, as configured (agents.server_origin); never read
@@ -68,11 +69,11 @@ final readonly class ServerOrigin
     }
 
     /**
-     * Whether a call over plain http may be taken: only for a usable local http origin, never on a server.
+     * Whether the request may be taken: over https always, over plain http only for a usable local http origin.
      */
-    public function canTakePlainHttp(): bool
+    public function takes(Request $request): bool
     {
-        return $this->hasPlainHost() && $this->isLocalHttp();
+        return $request->isSecure() || ($this->hasPlainHost() && $this->isLocalHttp());
     }
 
     /**

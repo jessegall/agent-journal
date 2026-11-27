@@ -301,7 +301,7 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
 
         return array_values(self::query()->historyOf($actor)->ofSessions($sessions)
             ->inStatus(StackStatus::Active)
-            ->inSessionOrder()->lockForUpdate()->readExactly(count($sessions))->get()->all());
+            ->inSessionOrder()->lockForUpdate()->readExactlyOf($sessions)->get()->all());
     }
 
     // ----------[ Scopes ]----------

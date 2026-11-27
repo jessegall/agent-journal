@@ -76,17 +76,17 @@ use Illuminate\Support\Str;
  */
 final class SignInAttempt extends JournalModel implements EventSource, ReadableModel
 {
-    /**
-     * How long an attempt may wait for a sign-in service to take it up before the dialog says none has.
-     */
-    public const int UNCLAIMED_SECONDS = 20;
-
     use BoundedReads;
     use HasActorColumns;
     use KeepsCleanupTries;
     use Linkable;
     use OrdersById;
     use RaisesEvents;
+
+    /**
+     * How long an attempt may wait for a sign-in service to take it up before the dialog says none has.
+     */
+    public const int UNCLAIMED_SECONDS = 20;
 
     /**
      * @var list<string>

@@ -9,12 +9,13 @@ use App\Projects\Contracts\ProjectDestination;
 use App\Projects\Contracts\ProjectDirectory;
 use App\Projects\Data\ProjectData;
 use App\Projects\Enums\ProjectSelectionType;
+use App\Support\Layout\Contracts\ProjectField as ProjectFieldContract;
 
 /**
  * The Project field of a create dialog: under All projects a choice of every project, by label with the key beside a
  * label two projects share; within one project no field, since the record goes to that project.
  */
-final readonly class ProjectField
+final readonly class ProjectField implements ProjectFieldContract
 {
     /**
      * The name the chosen project is sent under.
@@ -64,7 +65,11 @@ final readonly class ProjectField
         }
 
         $listed = $this->directory->listed();
-        $options = [...array_map(fn (ProjectData $project): string => $project->id, $listed), ...$extraOptions];
+
+        $options = [
+            ...array_map(fn (ProjectData $project) => $project->id, $listed),
+            ...$extraOptions,
+        ];
 
         return [LayoutPartData::field(
             self::NAME,
@@ -98,6 +103,6 @@ final readonly class ProjectField
      */
     private function labelsOf(array $listed): array
     {
-        return array_map(fn (ProjectData $project): string => self::labelOf($project, $listed), $listed);
+        return array_map(fn (ProjectData $project) => self::labelOf($project, $listed), $listed);
     }
 }

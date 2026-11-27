@@ -52,7 +52,7 @@ final readonly class PhaseTiming implements VerificationTiming
             );
 
             $started = Plan::query()->amongIds($page->ids)->inStates([PlanStatus::Started])
-                ->oldestFirst()->readExactly(count($page->ids))->get();
+                ->oldestFirst()->readExactlyOf($page->ids)->get();
 
             foreach ($started as $plan) {
                 $verdict = $this->verdictOf($plan);

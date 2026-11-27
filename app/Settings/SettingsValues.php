@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace App\Settings;
 
-use App\Settings\Data\BooleanValueData;
-use App\Settings\Data\IntegerValueData;
-use App\Settings\Data\InvalidValueData;
 use App\Settings\Data\SettingData;
 use App\Settings\Data\StringChoiceValueData;
-use App\Settings\Data\StringValueData;
 use App\Settings\Enums\SettingType;
 use Spatie\LaravelData\Optional;
 
@@ -23,14 +19,7 @@ final class SettingsValues
     {
         $value = $setting->configured instanceof Optional ? $setting->default : $setting->configured;
 
-        return match (true) {
-            $value instanceof StringValueData => $value->settingText,
-            $value instanceof BooleanValueData => $value->isEnabled ? '1' : '0',
-            $value instanceof IntegerValueData => (string) $value->settingNumber,
-            $value instanceof StringChoiceValueData => $value->selectedKey,
-            $value instanceof InvalidValueData => null,
-            default => null,
-        };
+        return $value->formText();
     }
 
     /**

@@ -27,11 +27,11 @@ use PhpOption\None;
 #[Description('Give a kept helper its next job, with its memory of the last.')]
 final class SendHelperTool extends JournalWriteTool
 {
-    public const string NAME = 'helpers_send';
-
     use HelperWorkArguments {
         writeSchema as workSchema;
     }
+
+    public const string NAME = 'helpers_send';
 
     public function __construct(private readonly ProjectDestination $destination) {}
 

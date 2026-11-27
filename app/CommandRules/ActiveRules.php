@@ -35,9 +35,9 @@ final readonly class ActiveRules
 
         $approved = array_values(array_filter(
             $this->startup->bundles(),
-            fn (RuleBundle $bundle): bool => array_any(
+            fn (RuleBundle $bundle) => array_any(
                 $approvals,
-                fn (ModuleRuleBundle $row): bool => $row->approves($bundle),
+                fn (ModuleRuleBundle $row) => $row->approves($bundle),
             ),
         ));
 
@@ -59,7 +59,7 @@ final readonly class ActiveRules
     {
         return array_values(array_filter(
             $this->project->activeRevisions(),
-            fn (RuleRevision $revision): bool => $revision->payload->operation() === $operation,
+            fn (RuleRevision $revision) => $revision->payload->operation() === $operation,
         ));
     }
 
@@ -95,6 +95,6 @@ final readonly class ActiveRules
     {
         $revisions = $this->project->activeRevisions();
 
-        return array_map(fn (RuleRevision $revision): CommandRule => $revision->payload, $revisions);
+        return array_map(fn (RuleRevision $revision) => $revision->payload, $revisions);
     }
 }

@@ -352,7 +352,7 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
         return self::query()
             ->ofAgents($agentIds)
             ->newestOfItsAgent()
-            ->readExactly(count($agentIds))
+            ->readExactlyOf($agentIds)
             ->get()
             ->keyBy('agent_id');
     }

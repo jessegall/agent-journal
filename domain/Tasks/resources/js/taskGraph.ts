@@ -139,7 +139,7 @@ export function diffOf(
     now: TaskGraphEdge[],
     suggested: TaskGraphEdge[],
 ): { added: TaskGraphEdge[]; removed: TaskGraphEdge[] } {
-    const key = (edge: TaskGraphEdge): string => `${edge.prerequisiteId}>${edge.dependentId}`;
+    const key = (edge: TaskGraphEdge) => `${edge.prerequisiteId}>${edge.dependentId}`;
     const nowKeys = new Set(now.map(key));
     const suggestedKeys = new Set(suggested.map(key));
 

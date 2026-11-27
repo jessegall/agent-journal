@@ -22,9 +22,12 @@ final readonly class PublicationPassage
         public int $line,
     ) {}
 
-    public static function isId(string $text): bool
+    /**
+     * Whether the location id names a passage; no location names none.
+     */
+    public static function isId(string|null $text): bool
     {
-        return preg_match(self::ID_PATTERN, $text) === 1;
+        return $text !== null && preg_match(self::ID_PATTERN, $text) === 1;
     }
 
     /**
@@ -75,7 +78,10 @@ final readonly class PublicationPassage
      */
     public function readArguments(): array
     {
-        $arguments = ['view' => 'body', 'line_start' => $this->line];
+        $arguments = [
+            'view' => 'body',
+            'line_start' => $this->line,
+        ];
 
         if ($this->revision !== null) {
             $arguments['revision'] = $this->revision;

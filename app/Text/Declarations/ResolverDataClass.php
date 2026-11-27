@@ -21,7 +21,7 @@ final class ResolverDataClass
     public static function of(string $resolver): string|null
     {
         $type = Reflector::of($resolver)->method('read')->returnType()
-            ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin())
+            ->filter(fn (DeclaredType $declared) => $declared->namesClass())
             ->filter(fn (DeclaredType $declared) => ! $declared->allowsNull);
 
         if ($type->isEmpty()) {

@@ -38,7 +38,7 @@ final readonly class StopRequested implements HookInput
 
     public function accepts(AnswerType $type): bool
     {
-        return $type->fitsAStop();
+        return $type->fitsWithoutRewrite();
     }
 
     /**

@@ -32,18 +32,18 @@ use PhpOption\Option;
  */
 final class InboxMember extends JournalModel implements EventSource, ReadableModel
 {
+    use BoundedReads;
+    use Linkable;
+    use RaisesEvents;
+
     /**
      * The most inboxes one read lists for an actor.
      */
     public const int ATTACHED_LIMIT = 100;
 
-    use BoundedReads;
-    use Linkable;
-    use RaisesEvents;
+    public const string CREATED_AT = 'joined_at';
 
     public $timestamps = false;
-
-    public const string CREATED_AT = 'joined_at';
 
     /**
      * @return array<string, string>

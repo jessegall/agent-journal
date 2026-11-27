@@ -130,9 +130,9 @@ final class ShareBudget implements ShareBudgetContract
     /**
      * @throws ShareBudgetExceeded
      */
-    public function chargeMetadata(int $bytes): void
+    public function chargeMetadata(string $text): void
     {
-        $this->metadataBytes += $bytes;
+        $this->metadataBytes += strlen($text);
         $this->assertLoadedBytesWithinBudget();
     }
 
