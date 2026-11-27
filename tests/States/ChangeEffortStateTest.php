@@ -69,14 +69,14 @@ final class ChangeEffortStateTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $request = DriverRequest::query()->findOrFail($this->change($opened, 'high')->requestId);
         $this->journal->claimRequestsOnHost($host->hostId, 10);
-        $this->report($host, $request, RequestProgress::Failed, RequestOutcome::Refused);
+        $this->notifyProgress($host, $request, RequestProgress::Failed, RequestOutcome::Refused);
         $request->refresh();
 
         $this->asOwner(
             new RepairDriverSettingsCommand($request->id, $request->row_version, 'low', 'high is not offered'),
         );
         $this->journal->claimRequestsOnHost($host->hostId, 10);
-        $this->report($host, $request->refresh(), RequestProgress::Applied, null);
+        $this->notifyProgress($host, $request->refresh(), RequestProgress::Applied, null);
 
         $this->assertSame('low', AgentRuntime::query()->findOrFail($opened->runtimeId)->requested_effort);
         $this->assertTrue($this->changeFrameOf($opened)->values['isSettled']);
@@ -101,7 +101,7 @@ final class ChangeEffortStateTest extends TestCase
         );
     }
 
-    private function report(
+    private function notifyProgress(
         EnrolledHost $host,
         DriverRequest $request,
         RequestProgress $progress,

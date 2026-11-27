@@ -69,7 +69,7 @@ final class ChangeModelStateTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $request = DriverRequest::query()->findOrFail($this->change($opened, 'claude-opus-5-5')->requestId);
         $this->journal->claimRequestsOnHost($host->hostId, 10);
-        $this->report($host, $request, RequestProgress::Failed, RequestOutcome::Refused);
+        $this->notifyProgress($host, $request, RequestProgress::Failed, RequestOutcome::Refused);
         $request->refresh();
 
         $this->asOwner(
@@ -81,7 +81,7 @@ final class ChangeModelStateTest extends TestCase
             ),
         );
         $this->journal->claimRequestsOnHost($host->hostId, 10);
-        $this->report($host, $request->refresh(), RequestProgress::Applied, null);
+        $this->notifyProgress($host, $request->refresh(), RequestProgress::Applied, null);
 
         $this->assertSame('claude-haiku-5-5', AgentRuntime::query()->findOrFail($opened->runtimeId)->requested_model);
         $this->assertTrue($this->changeFrameOf($opened)->values['isSettled']);
@@ -106,7 +106,7 @@ final class ChangeModelStateTest extends TestCase
         );
     }
 
-    private function report(
+    private function notifyProgress(
         EnrolledHost $host,
         DriverRequest $request,
         RequestProgress $progress,

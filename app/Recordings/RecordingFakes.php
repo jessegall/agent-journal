@@ -114,7 +114,7 @@ final class RecordingFakes
     public function replaceIn(string $text): string
     {
         $faked = strtr($text, $this->environmentFolders());
-        $faked = strtr($faked, array_fill_keys($this->personalValuesToFake(), self::USER_NAME));
+        $faked = strtr($faked, array_fill_keys($this->distinctivePersonalValues(), self::USER_NAME));
 
         $faked = (string) preg_replace(
             [
@@ -219,7 +219,7 @@ final class RecordingFakes
      *
      * @return list<string>
      */
-    private function personalValuesToFake(): array
+    private function distinctivePersonalValues(): array
     {
         $values = array_values(array_filter(
             array_unique($this->personalValues),

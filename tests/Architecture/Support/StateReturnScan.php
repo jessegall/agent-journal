@@ -78,7 +78,7 @@ final readonly class StateReturnScan implements FileScan
             }
         }
 
-        if (self::onlyDelegates($method)) {
+        if (self::isOnlyDelegating($method)) {
             $faults[] = "{$method->getStartLine()} {$name} only delegates, as every state does: remove it";
         }
 
@@ -126,7 +126,7 @@ final readonly class StateReturnScan implements FileScan
     /**
      * Whether the method's whole body returns Decision::delegate(), the answer AgentState gives every hook already.
      */
-    private static function onlyDelegates(Stmt\ClassMethod $method): bool
+    private static function isOnlyDelegating(Stmt\ClassMethod $method): bool
     {
         $statements = $method->stmts ?? [];
         $answer = count($statements) === 1 && $statements[0] instanceof Stmt\Return_ ? $statements[0]->expr : null;
