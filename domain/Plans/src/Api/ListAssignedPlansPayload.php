@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Api;
 
 use App\Attributes\Api\Endpoint;
-use App\Attributes\Validation\SentField;
+use Spatie\LaravelData\Attributes\Validation\Present;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
 use App\Support\NumberedPage;
@@ -31,7 +31,7 @@ final class ListAssignedPlansPayload extends Data implements ApiPayload
     public function __construct(
         #[Max(200)]
         public readonly string|null $search = null,
-        #[SentField]
+        #[Present]
         public readonly array $states = [],
         #[Min(1)]
         public readonly int $page = 1,

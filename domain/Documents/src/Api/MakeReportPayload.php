@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Api;
 
 use App\Attributes\Api\Endpoint;
-use App\Attributes\Validation\SentField;
+use Spatie\LaravelData\Attributes\Validation\Present;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
@@ -32,7 +32,7 @@ final class MakeReportPayload extends Data implements ApiPayload
     public function __construct(
         public readonly string $title,
         public readonly string $abstract,
-        #[SentField]
+        #[Present]
         #[MapName('about')]
         public readonly array $relatedRecords,
         #[LiteralTypeScriptType('string')]
