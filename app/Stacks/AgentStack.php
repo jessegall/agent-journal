@@ -7,6 +7,7 @@ namespace App\Stacks;
 use App\Actors\Contracts\AgentTexts;
 use App\Bus\Contracts\Command;
 use App\Contracts\Events\Event;
+use App\Hooks\Contracts\HookDecider;
 use App\Hooks\Enums\AnswerType;
 use App\Stacks\Contracts\StateFactory;
 use App\Stacks\Contracts\Work\BaseState;
@@ -29,7 +30,7 @@ use PhpOption\Option;
 /**
  * The immutable frame order of an agent's stack, with hook decisions collected from its live snapshot.
  */
-final readonly class AgentStack
+final readonly class AgentStack implements HookDecider
 {
     /**
      * The most frames one stack may hold, ready included.

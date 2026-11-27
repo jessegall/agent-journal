@@ -7,6 +7,7 @@ namespace App\Hooks\Pipes\Answer;
 use App\Bus\Contracts\Pipe;
 use App\Hooks\CallStages\RestoredCall;
 use App\Hooks\CallStages\WalkedCall;
+use App\Hooks\Contracts\HookDecider;
 use App\Models\Drivers\DriverTurn;
 use App\Stacks\HookAnswer;
 use App\Support\Decisions\Decision;
@@ -17,7 +18,7 @@ use App\Values\AgentText;
  * A stop with closing words not yet offered on its turn keeps them privately and is refused once with the question
  * whether the user should see them.
  */
-final readonly class OfferClosingWords implements Pipe
+final readonly class OfferClosingWords implements HookDecider, Pipe
 {
     /**
      * Whether the call is a stop whose closing words its turn has not offered yet.

@@ -6,6 +6,7 @@ namespace App\Agents\Drivers\Capabilities;
 
 use App\Agents\Drivers\Enums\RewriteSupport;
 use App\Exceptions\UnsupportedHook;
+use App\Hooks\Contracts\HookDecider;
 use App\Stacks\AgentStack;
 use App\Stacks\HookAnswer;
 use App\Support\Decisions\Decision;
@@ -15,7 +16,7 @@ use App\Values\AgentText;
  * What the journal's contract with one driver covers: the reply schema it was written against, the hooks it maps and
  * how it takes a rewrite. The evidence that a driver version was tested is in docs/hooks/driver-capabilities.md.
  */
-final readonly class DriverCapabilities
+final readonly class DriverCapabilities implements HookDecider
 {
     /**
      * @param  list<string>  $hookMethods  the hook methods this adapter maps, such as onShellCommand and onStop
@@ -39,7 +40,7 @@ final readonly class DriverCapabilities
             return $answer;
         }
 
-        return $answer->replacedBy(Decision::deny(AgentText::of('core.drivers.rewrite_refused')), $stackBefore);
+        return $answer->replacedBy($this, Decision::deny(AgentText::of('core.drivers.rewrite_refused')), $stackBefore);
     }
 
     public function supports(string $hookMethod): bool

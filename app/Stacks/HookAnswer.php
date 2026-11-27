@@ -7,6 +7,7 @@ namespace App\Stacks;
 use App\Actors\Contracts\AgentTexts;
 use App\Bus\Contracts\Command;
 use App\Contracts\Events\Event;
+use App\Hooks\Contracts\HookDecider;
 use App\Hooks\Enums\AnswerType;
 use App\Support\Decisions\Decision;
 use App\Support\Storage\WalkStep;
@@ -36,11 +37,11 @@ final readonly class HookAnswer
 
     /**
      * The same walk answered by another decision on another stack, such as a refused rewrite on the stack from before
-     * it.
+     * it; only a decider replaces an answer.
      */
-    public function replacedBy(Decision $decision, AgentStack $stack): self
+    public function replacedBy(HookDecider $decider, Decision $decision, AgentStack $stack): self
     {
-        return clone ($this, ['decision' => $decision, 'stack' => $stack]);
+        return $this->decidedAs($decision, $stack);
     }
 
     /**
@@ -104,7 +105,7 @@ final readonly class HookAnswer
      */
     public function acceptedWith(self $replacement): self
     {
-        return $this->withFollowingWalk($replacement)->replacedBy($this->decision, $replacement->stack);
+        return $this->withFollowingWalk($replacement)->decidedAs($this->decision, $replacement->stack);
     }
 
     /**
@@ -112,7 +113,12 @@ final readonly class HookAnswer
      */
     public function refusedOn(AgentStack $stackBefore, self $rewrite): self
     {
-        return $rewrite->withFollowingWalk($this)->replacedBy($this->decision, $stackBefore);
+        return $rewrite->withFollowingWalk($this)->decidedAs($this->decision, $stackBefore);
+    }
+
+    private function decidedAs(Decision $decision, AgentStack $stack): self
+    {
+        return clone ($this, ['decision' => $decision, 'stack' => $stack]);
     }
 
     private function withFollowingWalk(self $following): self

@@ -6,6 +6,7 @@ namespace App\Stacks;
 
 use App\Bus\Contracts\Command;
 use App\Contracts\Events\Event;
+use App\Hooks\Contracts\HookDecider;
 use App\Stacks\Decisions\Contracts\AnswerPart;
 use App\Stacks\Inputs\Contracts\HookHandler;
 use App\Stacks\References\StateReference;
@@ -28,7 +29,7 @@ use PhpOption\Option;
  * overrides it, and the first deny answers the hook. A state only answers: its hook methods, its listeners and its
  * ticks never perform an external effect themselves; what they return is run by their one caller.
  */
-abstract class AgentState implements HookHandler
+abstract class AgentState implements HookDecider, HookHandler
 {
     /**
      * Whether the work this state stands for is done. A finished frame stays stored but a walk passes over it, as if it

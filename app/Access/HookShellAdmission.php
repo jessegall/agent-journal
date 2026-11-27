@@ -8,6 +8,7 @@ use App\Access\Contracts\ShellAdmission;
 use App\Agents\Drivers\Capabilities\DriverCapabilities;
 use App\CommandRules\Enums\AdmissionRefusalCode;
 use App\Exceptions\StackTargetRefused;
+use App\Hooks\Contracts\HookDecider;
 use App\Sessions\Contracts\RuntimeResolver;
 use App\Sessions\Contracts\SessionPolicyReader;
 use App\Stacks\AgentStack;
@@ -24,7 +25,7 @@ use App\Values\ExecutionContext;
  * as the supervised runner's line, and a driver that cannot take a rewrite or a session with no runtime is refused. The
  * hook id is the request key, so a repeated delivery is answered by its replay.
  */
-final readonly class HookShellAdmission
+final readonly class HookShellAdmission implements HookDecider
 {
     public function __construct(
         private ShellAdmission $admission,
@@ -48,7 +49,7 @@ final readonly class HookShellAdmission
         if (! $isContained && ! $capabilities->rewrites->canRewrite()) {
             $limit = AgentText::of('core.shell.needs_approval');
 
-            return $answer->replacedBy($this->runnerUnavailable($limit), $stackBefore);
+            return $answer->replacedBy($this, $this->runnerUnavailable($limit), $stackBefore);
         }
 
         try {
@@ -56,7 +57,7 @@ final readonly class HookShellAdmission
         } catch (StackTargetRefused) {
             $limit = AgentText::of('core.shell.no_runtime');
 
-            return $answer->replacedBy($this->runnerUnavailable($limit), $stackBefore);
+            return $answer->replacedBy($this, $this->runnerUnavailable($limit), $stackBefore);
         }
 
         if ($isContained) {
@@ -84,7 +85,7 @@ final readonly class HookShellAdmission
             return $answer;
         }
 
-        return $answer->replacedBy(Decision::deny($refusal->message()), $stackBefore);
+        return $answer->replacedBy($this, Decision::deny($refusal->message()), $stackBefore);
     }
 
     private function runsInItsOwnContainer(): bool
@@ -108,12 +109,12 @@ final readonly class HookShellAdmission
         $refusal = $admission->decision;
 
         if ($refusal instanceof AdmissionRefusal) {
-            return $answer->replacedBy(Decision::deny($refusal->message()), $stackBefore);
+            return $answer->replacedBy($this, Decision::deny($refusal->message()), $stackBefore);
         }
 
         $runnerLine = "journal process run --admission {$admission->runId()}";
 
-        return $answer->replacedBy(Decision::rewrite($runnerLine), $answer->stack);
+        return $answer->replacedBy($this, Decision::rewrite($runnerLine), $answer->stack);
     }
 
     /**

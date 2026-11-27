@@ -6,6 +6,7 @@ namespace App\Stacks;
 
 use App\Bus\Contracts\Command;
 use App\Contracts\Events\Event;
+use App\Hooks\Contracts\HookDecider;
 use App\Hooks\Enums\AnswerType;
 use App\Stacks\Decisions\ContextLine;
 use App\Stacks\Decisions\Contracts\AnswerPart;
@@ -20,7 +21,7 @@ use App\Support\Decisions\Decision;
  * What one state answered a hook: its decision, delegate unless it made one as its last part, the lines it added,
  * the commands and events it answered with and the states it asks to push onto its stack.
  */
-final readonly class StateAnswer
+final readonly class StateAnswer implements HookDecider
 {
     /**
      * @param  list<ContextLine|MessageLine>  $lines
