@@ -91,11 +91,11 @@ final class ClaudeCodeProfileTest extends TestCase
     public function test_only_the_pinned_build_is_accepted(): void
     {
         $profile = $this->profile();
-        $profile->assertPinnedBuild(sprintf(self::PRINTED_VERSION, $profile->build())."\n");
+        $profile->assertPinnedBuild(sprintf(self::PRINTED_VERSION, $profile->build())."\n", $profile->build());
 
         $this->journal->assertRefused(
             BuildNotPinned::class,
-            fn () => $profile->assertPinnedBuild(sprintf(self::PRINTED_VERSION, '2.1.400')),
+            fn () => $profile->assertPinnedBuild(sprintf(self::PRINTED_VERSION, '2.1.400'), $profile->build()),
         );
         $this->journal->assertResult(
             [[

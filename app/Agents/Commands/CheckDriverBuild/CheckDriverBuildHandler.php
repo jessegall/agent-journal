@@ -39,7 +39,7 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
                 throw ProbeFailed::of($profile->family(), $process->end_evidence);
             }
 
-            $profile->assertPinnedBuild($command->printed);
+            $profile->assertPinnedBuild($command->printed, $runtime->session()->sole()->pinnedBuildOf($profile));
             $probe = $profile->signInProbe($this->headless->startOf($runtime, $start));
             $source = HostInstructionSource::fromJournal();
             $open = new OpenHostProcessCommand($process->host_id, $runtime->id, $probe, $source, $start->id);

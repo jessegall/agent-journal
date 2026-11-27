@@ -86,9 +86,12 @@ final class CodexProfileTest extends TestCase
     {
         $profile = $this->profile();
         $printed = fn (string $build) => sprintf('%s-cli %s', CodexArguments::EXECUTABLE, $build);
-        $profile->assertPinnedBuild($printed($profile->build()).PHP_EOL);
+        $profile->assertPinnedBuild($printed($profile->build()).PHP_EOL, $profile->build());
 
-        $this->journal->assertRefused(BuildNotPinned::class, fn () => $profile->assertPinnedBuild($printed('0.170.0')));
+        $this->journal->assertRefused(
+            BuildNotPinned::class,
+            fn () => $profile->assertPinnedBuild($printed('0.170.0'), $profile->build()),
+        );
     }
 
     public function test_a_connected_machine_runs_every_plan_from_its_sealed_program(): void

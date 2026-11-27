@@ -17,7 +17,7 @@ const RecordedBuildImage = "sha256:a0d1c76feba0672e42e486ff93b3f8b72e05bdfdd72bb
 // RecordedFailingVersion is the driver version of the recorded build that failed, for want of a pinned digest.
 const RecordedFailingVersion = "0.164.0"
 
-//go:embed recordings/image_build
+//go:embed recordings
 var recordedBuilds embed.FS
 
 // BuildDaemon plays a real Docker daemon's answers to a BuildKit build of a driver's image folder on the candidate base,
@@ -63,9 +63,9 @@ func (daemon *BuildDaemon) answer(t *testing.T, writer http.ResponseWriter, requ
 		if strings.Contains(request.URL.Query().Get("buildargs"), `"`+RecordedFailingVersion+`"`) {
 			recorded = "failed.jsonl"
 		}
-		play(t, writer, recorded)
+		playRecorded(writer, recorded)
 	case strings.HasSuffix(request.URL.Path, "/images/"+RecordedBuildImage+"/history"):
-		play(t, writer, "history.json")
+		playRecorded(writer, "history.json")
 	default:
 		t.Errorf("the build asked the daemon %s %s", request.Method, request.URL.Path)
 		writer.WriteHeader(http.StatusNotFound)
@@ -80,10 +80,13 @@ func (daemon *BuildDaemon) keep(request *http.Request) {
 	daemon.context = append(daemon.context, body)
 }
 
-func play(t *testing.T, writer http.ResponseWriter, recorded string) {
+// playRecorded writes the real daemon's recorded answer of the build recordings.
+func playRecorded(writer http.ResponseWriter, recorded string) {
 	content, err := recordedBuilds.ReadFile("recordings/image_build/" + recorded)
 	if err != nil {
-		t.Fatal(err)
+		refuse(writer, http.StatusInternalServerError, "the mock daemon holds no recording "+recorded)
+
+		return
 	}
 	_, _ = writer.Write(content)
 }

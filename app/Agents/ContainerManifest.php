@@ -192,9 +192,9 @@ final readonly class ContainerManifest
     }
 
     /**
-     * The manifest of one session's start: its workspace mounted at /workspace as its arrangement places it and as the
-     * session uses it, read-only, shared or its own clone; its driver its own terminal process when the execution
-     * policy makes it attachable.
+     * The manifest of one session's start in the driver image the session froze: its workspace mounted at /workspace
+     * as its arrangement places it and as the session uses it, read-only, shared or its own clone; its driver its own
+     * terminal process when the execution policy makes it attachable.
      *
      * @param  list<HostContainerLabelPayload>  $labels
      *
@@ -202,6 +202,7 @@ final readonly class ContainerManifest
      */
     public static function compile(
         string $sessionId,
+        string $image,
         string $workspace,
         WorkspaceUse $use,
         ExecutionPolicy $policy,
@@ -219,7 +220,7 @@ final readonly class ContainerManifest
         ];
 
         return self::make(
-            (string) $policy->imageReference,
+            $image,
             $network,
             $mounts,
             $policy->budgets,

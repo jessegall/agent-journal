@@ -106,6 +106,9 @@ func mockDocker(arguments []string) error {
 		if *started != "" {
 			_ = noteContainer(*started, container)
 		}
+		if check := dockermock.RecordedImageCheck(container); check != nil {
+			return check
+		}
 		return programs(container)
 	}
 	defer daemon.Stop()

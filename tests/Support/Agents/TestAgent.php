@@ -17,10 +17,14 @@ use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
+use App\Models\Projects\HostDriverImage;
+use App\Models\Projects\HostDriverImageWait;
 use App\Sessions\OpenedRuntime;
 use Carbon\CarbonImmutable;
 use Closure;
+use PHPUnit\Framework\Assert as PHPUnit;
 use Tests\Support\Assertions\Assert;
 use Tests\Support\Hosts\AccountOwners;
 use Tests\Support\Hosts\TestHostProcess;
@@ -99,6 +103,7 @@ final class TestAgent
             ->where("{$runtime}.startProven", true)
             ->has("{$runtime}.accountOwner");
         $isOwner = $opens === HostProcessPurpose::AccountOwner;
+        $this->awaitProcess(HostProcessPurpose::BuildProbe);
         $this->nameProcess("{$this->name} probe", HostProcessPurpose::BuildProbe)
             ->process("{$this->name} probe", fn (TestHostProcess $probe) => $probe
                 ->driveUntil($ordered(HostProcessPurpose::SignInProbe)))
@@ -111,6 +116,47 @@ final class TestAgent
         }
 
         return $this->nameProcess($name, $opens);
+    }
+
+    /**
+     * Waits until the journal opened the runtime a process of the purpose: a contained start opens its build probe
+     * only once its host built, allowed and checked the driver image, as the host's answers arrive.
+     */
+    public function awaitProcess(HostProcessPurpose $purpose, int $seconds = 120): self
+    {
+        $deadline = microtime(true) + $seconds;
+        $opened = fn () => HostProcess::query()
+            ->where('agent_runtime_id', $this->runtime()->runtimeId)
+            ->where('purpose', $purpose)
+            ->exists();
+
+        while (! $opened() && microtime(true) < $deadline) {
+            usleep(200_000);
+        }
+
+        if (! $opened()) {
+            PHPUnit::fail("No {$purpose->value} was opened in {$seconds} seconds.\n".$this->imageReport());
+        }
+
+        return $this;
+    }
+
+    /**
+     * What the driver images and the host instructions stand at, for a start that never reached its probe.
+     */
+    private function imageReport(): string
+    {
+        $images = HostDriverImage::query()->orderBy('id')->get()->map(
+            fn (HostDriverImage $image) => "image {$image->status->value} failures {$image->failures}: {$image->refusal}",
+        );
+        $instructions = HostInstruction::query()->orderBy('sequence')->get()->map(
+            fn (HostInstruction $instruction) => "{$instruction->type->value} {$instruction->status->value} "
+                .($instruction->refusal?->value ?? '').' '.json_encode($instruction->answer?->reason),
+        );
+
+        $waits = 'waits '.HostDriverImageWait::query()->count();
+
+        return implode("\n", [...$images->all(), $waits, ...$instructions->all()]);
     }
 
     /**

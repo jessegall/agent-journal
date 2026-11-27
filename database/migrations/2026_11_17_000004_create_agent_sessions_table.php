@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('driver_key', 128)->nullable();
             $table->string('driver_label', 64)->nullable();
             $table->string('driver_build', 64)->nullable();
+            // The driver image a contained session froze on its first start, and the recipe it was built from.
+            $table->string('driver_image')->nullable();
+            $table->char('driver_recipe_digest', 64)->nullable();
             $table->string('model', 128);
             $table->string('effort', 32);
             $table->string('requested_model_type', 16);

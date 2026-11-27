@@ -44,6 +44,10 @@ func (daemon *Daemon) serve(writer http.ResponseWriter, request *http.Request) {
 		daemon.ping(writer)
 	case path == "/info":
 		answer(writer, http.StatusOK, map[string]any{"CgroupDriver": daemon.CgroupDriver})
+	case path == "/build":
+		daemon.buildImage(writer, request)
+	case parts[0] == "images" && strings.HasSuffix(path, "/history"):
+		playRecorded(writer, "history.json")
 	case parts[0] == "images" && strings.HasSuffix(path, "/json"):
 		daemon.inspectImage(writer, strings.TrimSuffix(strings.TrimPrefix(path, "/images/"), "/json"))
 	case path == "/containers/create":

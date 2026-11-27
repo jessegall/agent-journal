@@ -9,6 +9,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\DriverSwitch;
+use App\Models\Projects\HostDriverImageWait;
 use App\Models\Sessions\SessionProcess;
 use App\Sessions\Enums\StartDisposition;
 use App\Sessions\Enums\StartReadiness;
@@ -62,6 +63,16 @@ final readonly class AgentFacts
             $this->waitsOnHelpers,
             $canStop,
             $this->readiness,
+            $this->waitsForDriverImage(),
         );
+    }
+
+    /**
+     * Whether the current start waits for its host to build the driver image it will run.
+     */
+    private function waitsForDriverImage(): bool
+    {
+        return $this->start !== null
+            && HostDriverImageWait::query()->where('session_process_id', $this->start->id)->exists();
     }
 }

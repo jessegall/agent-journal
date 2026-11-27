@@ -9,10 +9,13 @@ use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Values\RuntimeIntent;
 use App\Hosts\Contracts\DockerImageVerifier;
+use App\Hosts\Contracts\HostDriverImages;
 use App\Hosts\EnrolledHost;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\AgentSession;
+use App\Models\Projects\Host;
+use App\Models\Projects\HostDriverImage;
 use App\Models\Sessions\SessionProcess;
 use App\Projects\Commands\EnrollHost\EnrollHostCommand;
 use App\Projects\Commands\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
@@ -88,6 +91,28 @@ trait OpensRuntimes
         $this->hosts[$name] = $this->asSystem(new EnrollHostCommand($name, $folders, ArrangementType::Contained));
         // A contained host runs the mock agent image, which this journal's image record verifies.
         $this->app->instance(DockerImageVerifier::class, new VerifiedTestHostImage());
+
+        return $this;
+    }
+
+    /**
+     * The contained host's driver images, one per deployed recipe, built, allowed and checked as its runner would
+     * leave them, so a start on it passes the image gate without a runner; a test of the build itself drives the
+     * host's answers instead.
+     */
+    public function readyDriverImagesOn(string $host): self
+    {
+        $box = Host::query()->findOrFail($this->hostCalled($host)->hostId);
+        $this->service(HostDriverImages::class)->reserveAll($box);
+
+        foreach (HostDriverImage::findPendingOn($box->id) as $number => $image) {
+            $image->startAttempt("ready-build-{$number}");
+            $image->built('sha256:'.hash('sha256', "driver image {$image->driver_image_recipe_id}"));
+            $image->orderedIn("ready-allow-{$number}");
+            $image->acknowledged();
+            $image->markChecksSent("ready-checks-{$number}");
+            $image->checked();
+        }
 
         return $this;
     }

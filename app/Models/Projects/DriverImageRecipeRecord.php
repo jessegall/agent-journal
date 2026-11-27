@@ -6,6 +6,8 @@ namespace App\Models\Projects;
 
 use App\Agents\Drivers\Setup\DriverImageRecipe;
 use App\Concerns\BoundedReads;
+use App\Models\Agents\AgentSession;
+use App\Models\Sessions\SessionProcess;
 use App\Models\Support\JournalModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -59,11 +61,40 @@ final class DriverImageRecipeRecord extends JournalModel
     }
 
     /**
-     * Whether a host still keeps an image of the recipe, so the recipe may not be pruned.
+     * The recipes that sessions started on the host froze and that have not ended, as each may resume there.
+     *
+     * @return list<self>
+     */
+    public static function findFrozenOn(string $hostId): array
+    {
+        $digests = AgentSession::query()
+            ->liveOnFrozenRecipe()
+            ->whereIn('id', SessionProcess::query()->supervised()->where('host_id', $hostId)->select('session_id'))
+            ->pluck('driver_recipe_digest')
+            ->unique();
+
+        return array_values(self::query()->whereIn('recipe_digest', $digests)->orderBy('id')->get()->all());
+    }
+
+    public static function findByDigest(string $digest): self
+    {
+        return self::query()->where('recipe_digest', $digest)->firstOrFail();
+    }
+
+    /**
+     * Whether a host still keeps an image of the recipe, or a session that has not ended froze it and may resume on
+     * it, so the recipe may not be pruned.
      */
     public function isDemanded(): bool
     {
-        return HostDriverImage::query()->where('driver_image_recipe_id', $this->id)->exists();
+        $isKept = HostDriverImage::query()->where('driver_image_recipe_id', $this->id)->exists();
+
+        $isFrozen = AgentSession::query()
+            ->liveOnFrozenRecipe()
+            ->where('driver_recipe_digest', $this->recipe_digest)
+            ->exists();
+
+        return $isKept || $isFrozen;
     }
 
     /**

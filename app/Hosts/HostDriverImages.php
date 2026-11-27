@@ -31,6 +31,10 @@ final readonly class HostDriverImages implements HostDriverImagesContract
     {
         $ids = array_map(fn (DriverProfile $driver) => $this->imageFor($host, $driver)->id, $this->profiles->all());
 
+        foreach (DriverImageRecipeRecord::findFrozenOn($host->id) as $frozen) {
+            $ids[] = HostDriverImage::reserve($host, $frozen)->id;
+        }
+
         return array_values(array_unique($ids));
     }
 

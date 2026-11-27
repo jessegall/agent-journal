@@ -100,7 +100,8 @@ final class CheckDriverBuildTest extends TestCase
             ->showDriverArrangements()
             ->arrangeContainedJournal()
             ->idleAgent('Boxed')
-            ->enrollContainedHost('Box', [base_path()]);
+            ->enrollContainedHost('Box', [base_path()])
+            ->readyDriverImagesOn('Box');
         $this->journal->withAgent('Boxed', fn (TestAgent $boxed) => $boxed->openRuntime('Box', base_path()));
         $boxed = $this->journal->openedRuntimeOf('Boxed');
         $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();

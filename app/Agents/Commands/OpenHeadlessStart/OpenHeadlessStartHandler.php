@@ -5,18 +5,14 @@ declare(strict_types=1);
 namespace App\Agents\Commands\OpenHeadlessStart;
 
 use App\Accounts\Enums\CommandEntry;
-use App\Agents\Drivers\Enums\ExecutablePlace;
-use App\Agents\Drivers\Processes\AgentImageProbes;
-use App\Agents\Drivers\Setup\DriverProfiles;
+use App\Agents\Commands\ProbeClaimedStart\ProbeClaimedStartCommand;
 use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
-use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Sessions\StartClaims;
 use App\Sessions\StartHeartbeats;
-use App\Values\HostInstructionSource;
 use Illuminate\Support\Str;
 
 final readonly class OpenHeadlessStartHandler implements CommandHandler
@@ -29,9 +25,7 @@ final readonly class OpenHeadlessStartHandler implements CommandHandler
         private HeadlessStarts $headless,
         private StartHeartbeats $heartbeats,
         private StartClaims $claims,
-        private DriverProfiles $profiles,
         private JournalCommands $commands,
-        private AgentImageProbes $probes,
     ) {}
 
     public function handle(OpenHeadlessStartCommand $command): string|null
@@ -61,16 +55,9 @@ final readonly class OpenHeadlessStartHandler implements CommandHandler
 
         // A resume continues the conversation the owner chose; any other start begins one of its own.
         $runtime->chooseConversation($claimed->conversationTarget ?? (string) Str::uuid());
-        $place = $runtime->executablePlace();
-        $probe = $this->profiles->of($runtime)->versionProbe($runtime->canonical_folder, $place);
+        $probe = new ProbeClaimedStartCommand($start->id);
+        $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $probe);
 
-        if ($place === ExecutablePlace::Image) {
-            $probe = $this->probes->inAgentImage($probe);
-        }
-
-        $source = HostInstructionSource::fromJournal();
-        $open = new OpenHostProcessCommand($runtime->host_id, $runtime->id, $probe, $source, $start->id);
-
-        return $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $open);
+        return $start->id;
     }
 }

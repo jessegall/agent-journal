@@ -17,6 +17,7 @@ use App\Connections\PublishedReleases;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Commands\PullHostPrivateValue\PullHostPrivateValueCommand;
 use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
+use App\Hosts\Enums\DriverImageStatus;
 use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
@@ -28,6 +29,7 @@ use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
+use App\Models\Projects\HostDriverImage;
 use App\Projects\Enums\ArrangementType;
 use App\Support\AgentImage;
 use App\Values\DriverFamily;
@@ -124,6 +126,14 @@ final class JournalHostProcessesTest extends TestCase
 
         $host = Host::query()->whereKey($this->journal->hostCalled('Box')->hostId)->sole();
         $this->journal->assertResult(ArrangementType::Contained, $host->arrangement);
+    }
+
+    public function test_a_contained_host_can_hold_its_driver_images_ready(): void
+    {
+        $this->journal->enrollContainedHost('Box', [base_path()])->readyDriverImagesOn('Box');
+
+        $statuses = HostDriverImage::query()->where('host_id', $this->journal->hostCalled('Box')->hostId)->pluck('status');
+        $this->journal->assertResult([DriverImageStatus::Ready, DriverImageStatus::Ready], $statuses->all());
     }
 
     public function test_a_stop_attempt_instructs_the_host_itself_which_answers_or_refuses(): void

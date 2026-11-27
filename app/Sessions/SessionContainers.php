@@ -79,6 +79,7 @@ final readonly class SessionContainers
 
         $manifest = ContainerManifest::compile(
             $sessionId,
+            $runtime->session->driverImage(),
             $runtime->canonical_folder,
             $use,
             $policy->execution->forDriverScreen($runtime->has_screen),

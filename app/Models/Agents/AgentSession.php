@@ -7,6 +7,7 @@ namespace App\Models\Agents;
 use App\Accounts\Enums\AccountProcessRole;
 use App\Actors\PresenceWindow;
 use App\Agents\Drivers\Enums\DriverSourceType;
+use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\SessionSelectionFixed;
 use App\Agents\Values\SelectionSource;
@@ -21,8 +22,12 @@ use App\Events\Sessions\AgentSessionEnded;
 use App\Events\Sessions\AgentSessionHeartbeatRecorded;
 use App\Events\Sessions\AgentSessionSelectionUsed;
 use App\Events\Sessions\AgentSessionSkillsGenerated;
+use App\Exceptions\DriverImageMismatch;
+use App\Exceptions\DriverImageUnfrozen;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
+use App\Models\Projects\DriverImageRecipeRecord;
+use App\Models\Projects\HostDriverImage;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\SessionToken;
@@ -57,6 +62,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $driver_key
  * @property string|null $driver_label
  * @property string|null $driver_build
+ * @property string|null $driver_image
+ * @property string|null $driver_recipe_digest
  * @property string $model
  * @property string $effort
  * @property ModelSelectionType $requested_model_type
@@ -232,6 +239,25 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $this->endAt($time);
     }
 
+    /**
+     * Freezes the driver image the session runs and the recipe it was built from, once: every later start and resume
+     * of the session runs this image, whatever the deploy builds after it.
+     *
+     * @throws DriverImageMismatch when the session froze another image before
+     */
+    public function freezeDriverImage(HostDriverImage $image, DriverImageRecipeRecord $recipe): void
+    {
+        $built = $image->builtImage();
+
+        if ($this->driver_image !== null && $this->driver_image !== $built) {
+            throw DriverImageMismatch::of($this->id, $this->driver_image, $built);
+        }
+
+        $this->driver_image = $built;
+        $this->driver_recipe_digest = $recipe->recipe_digest;
+        $this->saveAndAssert();
+    }
+
     // ----------[ Predicates ]----------
 
     public function hasEnded(): bool
@@ -250,6 +276,11 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     public function hasSkill(string $key): bool
     {
         return in_array($key, $this->skill_keys, true);
+    }
+
+    public function hasFrozenDriverImage(): bool
+    {
+        return $this->driver_image !== null;
     }
 
     // ----------[ Transformers ]----------
@@ -328,6 +359,29 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     protected function target(): Attribute
     {
         return Accessor::get(fn () => new StackTarget($this->agent_id, $this->id));
+    }
+
+    /**
+     * The driver image the session froze, which its starts and resumes run.
+     *
+     * @throws DriverImageUnfrozen for a session that froze no driver image
+     */
+    public function driverImage(): string
+    {
+        return $this->driver_image ?? throw DriverImageUnfrozen::of($this->id);
+    }
+
+    /**
+     * The driver build the session runs: the version of the recipe it froze, so a resume after a deploy of a new
+     * version runs the version it began on; a session that froze none runs the driver's current pin.
+     */
+    public function pinnedBuildOf(DriverProfile $driver): string
+    {
+        if ($this->driver_recipe_digest === null) {
+            return $driver->build();
+        }
+
+        return DriverImageRecipeRecord::findByDigest($this->driver_recipe_digest)->version;
     }
 
     // ----------[ Relations ]----------
@@ -545,6 +599,17 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     // ----------[ Scopes ]----------
+
+    /**
+     * The sessions that have not ended and froze a driver recipe, as each may resume on it.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function liveOnFrozenRecipe(Builder $query): void
+    {
+        $query->whereNull('ended_at')->whereNotNull('driver_recipe_digest');
+    }
 
     /**
      * The running sessions of one agent.

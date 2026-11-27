@@ -9,6 +9,7 @@ use App\Bus\Contracts\CommandHandler;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Hosts\HostProcess;
+use App\Models\Projects\HostDriverImageWait;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Sessions\StartHeartbeats;
@@ -38,6 +39,9 @@ final readonly class CancelSessionStartHandler implements CommandHandler
         foreach (SessionProcess::findLockedPendingOf($command->sessionId) as $pending) {
             $pending->cancelPending();
         }
+
+        // A start that waited for its driver image waits no more, so the image's outcome finds nothing to probe.
+        HostDriverImageWait::consumeAllOfSession($command->sessionId);
 
         if ($isRunning) {
             $this->requests->stop($command->target(), $command->idempotencyKey);

@@ -95,7 +95,6 @@ final class ProfilesServiceProvider extends ServiceProvider
         ));
 
         $this->app->bind(AgentImageProbes::class, fn () => new AgentImageProbes(
-            $this->app->make(AgentImage::class),
             $this->app->make('config')->string('journal.agents.security_profiles'),
         ));
 

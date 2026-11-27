@@ -1,0 +1,4 @@
+[
+    {"command": ["/opt/journal/bin/journal-init", "--", "/opt/journal/shell/bash", "-c", "id -u"], "printed": "10002\n", "exit_code": 0},
+    {"command": ["/opt/journal/bin/journal-init", "--", "/bin/sh", "-c", "exec \"$(getent passwd 10001 | cut -d: -f7)\" -c \"id -u\""], "printed": "10002\n", "exit_code": 0}
+]

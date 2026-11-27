@@ -15,6 +15,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
+use App\Models\Projects\HostDriverImageWait;
 use App\Models\Sessions\SessionProcess;
 use App\Sessions\Contracts\StartHeartbeats as StartHeartbeatsContract;
 use App\Sessions\Contracts\StartTransaction;
@@ -217,7 +218,8 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
                 SessionProcessStatus::Starting,
             ], true);
 
-            if (! $isUntaken) {
+            // A start that waits for its host's driver image ends only on the image's bounded outcome or a cancel.
+            if (! $isUntaken || HostDriverImageWait::query()->where('session_process_id', $start->id)->exists()) {
                 return;
             }
 

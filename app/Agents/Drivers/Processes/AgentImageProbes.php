@@ -7,7 +7,6 @@ namespace App\Agents\Drivers\Processes;
 use App\Agents\ContainerManifest;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\SecurityOptions;
-use App\Support\AgentImage;
 use App\Values\HostProcessPlan;
 
 /**
@@ -19,23 +18,15 @@ final readonly class AgentImageProbes
     /**
      * @param  string  $securityProfiles  the folder on the agent host that holds the agent containers' profiles
      */
-    public function __construct(private AgentImage $image, private string $securityProfiles) {}
+    public function __construct(private string $securityProfiles) {}
 
     /**
-     * The probe run in a throwaway container of the agent image.
+     * The probe run in a throwaway container of the driver image the start froze: networkless, with no mounts.
      *
      * @throws ManifestRefused
      */
-    public function inAgentImage(HostProcessPlan $probe): HostProcessPlan
+    public function inDriverImage(HostProcessPlan $probe, string $image): HostProcessPlan
     {
-        return $probe->inContainer($this->probeContainer());
-    }
-
-    /**
-     * @throws ManifestRefused
-     */
-    private function probeContainer(): ContainerManifest
-    {
-        return ContainerManifest::probe($this->image->reference, SecurityOptions::agent($this->securityProfiles));
+        return $probe->inContainer(ContainerManifest::probe($image, SecurityOptions::agent($this->securityProfiles)));
     }
 }

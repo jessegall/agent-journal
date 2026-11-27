@@ -56,6 +56,7 @@ final class ContainerManifestTest extends TestCase
     {
         $manifest = ContainerManifest::compile(
             self::SESSION,
+            self::IMAGE,
             self::WORKSPACE,
             WorkspaceUse::Shared,
             $this->policy(),
@@ -88,6 +89,7 @@ final class ContainerManifestTest extends TestCase
         $this->assertFalse(
             ContainerManifest::compile(
                 self::SESSION,
+                self::IMAGE,
                 self::WORKSPACE,
                 WorkspaceUse::ReadOnly,
                 $this->policy(),
@@ -111,6 +113,7 @@ final class ContainerManifestTest extends TestCase
 
         $manifest = ContainerManifest::compile(
             'helper-1',
+            self::IMAGE,
             '/ignored',
             WorkspaceUse::ReadOnly,
             $this->policy(),
@@ -138,6 +141,7 @@ final class ContainerManifestTest extends TestCase
 
         $manifest = ContainerManifest::compile(
             'writer-1',
+            self::IMAGE,
             '/ignored',
             WorkspaceUse::OwnCheckout,
             $this->policy(),
@@ -269,6 +273,7 @@ final class ContainerManifestTest extends TestCase
     {
         $manifest = ContainerManifest::compile(
             self::SESSION,
+            self::IMAGE,
             self::WORKSPACE,
             WorkspaceUse::Shared,
             $this->policy(),
@@ -322,6 +327,7 @@ final class ContainerManifestTest extends TestCase
 
         $manifestOf = fn (SelectedAccount $account) => ContainerManifest::compile(
             self::SESSION,
+            self::IMAGE,
             self::WORKSPACE,
             WorkspaceUse::Shared,
             $this->policy(),
@@ -467,6 +473,7 @@ final class ContainerManifestTest extends TestCase
         $setting = ArrangementSetting::fromConfig('contained', 'acme', self::GIT_SOURCE);
         $manifest = ContainerManifest::compile(
             's1',
+            self::IMAGE,
             '/ignored',
             WorkspaceUse::Shared,
             $this->policy(),

@@ -54,6 +54,20 @@ final class HostDriverImageWait extends JournalModel implements EventSource
         return $wait;
     }
 
+    /**
+     * Ends every wait of the session's starts, as when the session's start was cancelled.
+     */
+    public static function consumeAllOfSession(string $sessionId): void
+    {
+        $starts = SessionProcess::query()->supervised()->where('session_id', $sessionId)->select('id');
+
+        self::query()
+            ->whereIn('session_process_id', $starts)
+            ->lockForUpdate()
+            ->get()
+            ->each(fn (self $wait) => $wait->consume());
+    }
+
     // ----------[ Changes ]----------
 
     /**

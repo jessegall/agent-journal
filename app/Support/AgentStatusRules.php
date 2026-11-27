@@ -28,6 +28,8 @@ use App\Sessions\StartRemedyWords;
  */
 final class AgentStatusRules
 {
+    private const string BUILDING_IMAGE = 'Building its driver image';
+
     public static function of(AgentEvidence $evidence, StartRemedyWords $words): AgentStatus
     {
         if ($evidence->isRetired) {
@@ -341,6 +343,13 @@ final class AgentStatusRules
             $start->version(),
             1,
         );
+
+        // A start waits while its host builds the driver image it will run, and says so.
+        if ($evidence->waitsForDriverImage) {
+            $status = SessionActivityStatus::Starting;
+
+            return self::labelled($status, self::BUILDING_IMAGE, $evidence, $actions, $operation);
+        }
 
         return self::plain(SessionActivityStatus::Starting, $evidence, $actions, $operation);
     }

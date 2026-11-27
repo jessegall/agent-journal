@@ -36,6 +36,7 @@ final readonly class AgentEvidence
         public bool $canReconcile = false,
         // The readiness of the live session's latest start; none for a session that began from no start record.
         public StartReadiness|null $readiness = null,
+        public bool $waitsForDriverImage = false,
     ) {}
 
     public function hasLiveSession(): bool

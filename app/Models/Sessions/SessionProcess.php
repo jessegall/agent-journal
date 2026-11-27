@@ -258,6 +258,11 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
 
     // ----------[ Queries ]----------
 
+    public function isStarting(): bool
+    {
+        return $this->status === SessionProcessStatus::Starting;
+    }
+
     /**
      * The start by its id, locked, as a host process that runs for it names it, whoever's agent it belongs to.
      */
@@ -446,6 +451,24 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
             ->pluck('session_id');
 
         return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
+    }
+
+    /**
+     * The starts whose session froze this driver image; with none, the starts of sessions that froze none, as local
+     * ones.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSessionsInImage(Builder $query, string|null $image): void
+    {
+        $sessions = AgentSession::query()->select('id')->where('driver_image', $image);
+
+        if ($image === null) {
+            $sessions = AgentSession::query()->select('id')->whereNull('driver_image');
+        }
+
+        $query->whereIn('session_id', $sessions);
     }
 
     // ----------[ Scopes ]----------

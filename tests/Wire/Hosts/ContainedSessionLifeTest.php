@@ -9,6 +9,7 @@ use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Protocol\HostInstructionType;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostInstruction;
 use App\Values\HostInstructionSource;
 use Tests\Support\Agents\TestAgent;
@@ -96,20 +97,23 @@ final class ContainedSessionLifeTest extends TestCase
 
         $this->journal->assertJournal(fn (Assert $journal) => $journal->where(
             'testHost.containers',
-            fn (array $containers) => $this->isSessionContainer($this->containerCalled($containers, $process->container_name)),
+            fn (array $containers) => $this->isSessionContainer(
+                $this->containerCalled($containers, $process->container_name),
+                AgentRuntime::query()->findOrFail($process->agent_runtime_id)->session()->sole()->driverImage(),
+            ),
         ));
         $this->journal->assertResult(true, in_array($process->container_name, $removed, true));
     }
 
     /**
-     * The session's container runs the agent image on the installation's network, with the managed settings mounted
-     * read-only and no value left for the host to fill.
+     * The session's container runs the driver image the session froze on the installation's network, with the managed
+     * settings mounted read-only and no value left for the host to fill.
      *
      * @param  array<string, mixed>  $session
      */
-    private function isSessionContainer(array $session): bool
+    private function isSessionContainer(array $session, string $image): bool
     {
-        return $session['image'] === TestHost::IMAGE
+        return $session['image'] === $image
             && str_starts_with((string) $session['network'], TestHost::INSTALLATION_NAME.'-')
             && $this->hasMountAt($session, '/etc/claude-code/managed-settings.json')
             && array_filter($session['env'], fn (string $entry) => str_contains($entry, '{host:')) === [];

@@ -355,6 +355,34 @@ final class AgentStatusTest extends TestCase
     }
 
     /**
+     * A start that waits while its host builds the driver image it will run says so, and is not taken for running.
+     */
+    public function test_a_start_waiting_for_its_driver_image_says_it_builds_it(): void
+    {
+        $waiting = new AgentEvidence(
+            false,
+            self::SESSION,
+            SessionStatus::Active,
+            SessionProcessStatus::Starting,
+            null,
+            true,
+            null,
+            null,
+            null,
+            false,
+            true,
+            waitsForDriverImage: true,
+        );
+
+        $status = AgentStatusRules::of($waiting, self::words(false));
+
+        $this->assertSame(
+            [SessionActivityStatus::Starting, 'Building its driver image'],
+            [$status->sessionState, $status->label],
+        );
+    }
+
+    /**
      * A session nobody can vouch for can still be ended; Status unknown was a dead end.
      */
     public function test_an_unknown_state_offers_stop_beside_check_status_to_an_actor_allowed_to_stop(): void

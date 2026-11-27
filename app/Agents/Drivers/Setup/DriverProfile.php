@@ -68,12 +68,17 @@ final readonly class DriverProfile
     }
 
     /**
+     * Refuses a printed version line that does not name the build the start runs: the session's frozen version, or
+     * the driver's current pin for a session that froze none.
+     *
      * @throws BuildNotPinned
      */
-    public function assertPinnedBuild(string $printed): void
+    public function assertPinnedBuild(string $printed, string $build): void
     {
-        if (! $this->setup->versionProbe->line->accepts($printed, $this->build())) {
-            throw BuildNotPinned::of($this->setup->driver, trim($printed), $this->build());
+        $probe = $this->setup->versionProbe;
+
+        if (! $probe->accepts($printed, $build)) {
+            throw BuildNotPinned::of($this->setup->driver, trim($printed), $build);
         }
     }
 

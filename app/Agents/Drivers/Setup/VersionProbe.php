@@ -14,4 +14,12 @@ final readonly class VersionProbe
      * @param  list<string>  $inherited
      */
     public function __construct(public array $argv, public array $inherited, public VersionLine $line) {}
+
+    /**
+     * Whether the printed output names the build, as the driver's version line reads it.
+     */
+    public function accepts(string $printed, string $build): bool
+    {
+        return $this->line->accepts($printed, $build);
+    }
 }

@@ -27,6 +27,7 @@ use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Values\ProcessExit;
 use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Support\Accessor;
@@ -502,15 +503,19 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
-     * Whether a live owner on the host runs the headless turns of the start's account and sign-in generation.
+     * Whether a live owner on the host runs the headless turns of the start's account and sign-in generation in the
+     * driver image the start's session froze: an owner serves one image only.
      */
     public static function hasLiveOwnerOf(string $hostId, SessionProcess $start): bool
     {
+        $image = AgentSession::query()->whereKey($start->session_id)->value('driver_image');
+
         return self::query()
             ->onHostWithId($hostId)
             ->ofPurposes([HostProcessPurpose::AccountOwner])
             ->live()
             ->openedForAccountGenerationOf($start)
+            ->whereIn('session_process_id', SessionProcess::query()->supervised()->ofSessionsInImage($image)->ids())
             ->exists();
     }
 

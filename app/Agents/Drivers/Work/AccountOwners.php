@@ -8,6 +8,7 @@ use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
 use App\Values\DriverRegistration;
@@ -42,10 +43,12 @@ final readonly class AccountOwners
 
         $owned = $process->sessionProcess()->sole();
 
+        $image = AgentSession::query()->whereKey($owned->session_id)->value('driver_image');
         $sessions = SessionProcess::query()
             ->supervised()
             ->unresolved()
             ->onAccountGenerationOf($owned)
+            ->ofSessionsInImage($image)
             ->sessionIds();
 
         return AgentRuntime::query()

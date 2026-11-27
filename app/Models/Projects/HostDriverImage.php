@@ -220,6 +220,11 @@ final class HostDriverImage extends JournalModel implements EventSource
         return $this->status === DriverImageStatus::Ready;
     }
 
+    public function isRefused(): bool
+    {
+        return $this->status === DriverImageStatus::Refused;
+    }
+
     public function isPending(): bool
     {
         return $this->status === DriverImageStatus::Pending;
@@ -283,8 +288,8 @@ final class HostDriverImage extends JournalModel implements EventSource
         $this->status = DriverImageStatus::Ready;
         $this->failures = 0;
         $this->ready_at = CarbonImmutable::now();
-        $this->raise(new DriverImageAdmitted($this->id));
         $this->saveAndAssert();
+        $this->raise(new DriverImageAdmitted($this->id));
     }
 
     /**
@@ -322,8 +327,8 @@ final class HostDriverImage extends JournalModel implements EventSource
     {
         $this->status = DriverImageStatus::Refused;
         $this->refusal = $why;
-        $this->raise(new DriverImageRefused($this->id));
         $this->saveAndAssert();
+        $this->raise(new DriverImageRefused($this->id));
     }
 
     // ----------[ Scopes ]----------
