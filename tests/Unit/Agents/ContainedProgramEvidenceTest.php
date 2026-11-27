@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Agents;
 
 use App\Agents\Drivers\Contracts\DriverCompatibilities;
+use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Support\Compatibility\DriverCompatibility;
 use Tests\TestCase;
@@ -18,7 +19,10 @@ final class ContainedProgramEvidenceTest extends TestCase
     public function test_the_local_arrangement_answers_the_pinned_compatibility_as_before(): void
     {
         $this->assertEquals(
-            DriverCompatibility::pinned(DefaultDrivers::CLAUDE_CODE),
+            DriverCompatibility::pinned(
+                DefaultDrivers::CLAUDE_CODE,
+                $this->app->make(PinnedBuilds::class)->versionOf(DefaultDrivers::CLAUDE_CODE),
+            ),
             $this->compatibility(DefaultDrivers::CLAUDE_CODE),
         );
     }

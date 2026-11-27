@@ -9,6 +9,7 @@ use App\Models\Agents\AgentSession;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Illuminate\Support\Str;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

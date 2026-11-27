@@ -30,7 +30,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,t
 COPY .docker/helper/install-drivers.sh .docker/helper/driver-digests.txt /drivers/
 RUN sh /drivers/install-drivers.sh "$TARGETARCH" "$CLAUDE_CODE_VERSION" "$CODEX_VERSION" /out
 
-FROM ${BASE}
+# The driver-free base every driver image of .docker/drivers builds on: the journal's programs, users and folders, no
+# driver and nothing only one driver reads. Built alone with --target candidate.
+FROM ${BASE} AS candidate
 
 ARG TOOLCHAIN_PACKAGES=""
 
@@ -38,8 +40,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,t
     rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update \
     && apt-get install -y --no-install-recommends git ca-certificates bash \
         ${TOOLCHAIN_PACKAGES}
-
-COPY --from=drivers --chown=root:root /out/claude /out/codex /out/codex-code-mode-host /usr/local/bin/
 
 # The relays and the protected stop checks. Both relays are standalone programs that ask the journal themselves with
 # the start's grant; the image holds no application console.
@@ -49,7 +49,9 @@ COPY --from=protected-start --chown=root:root /out/journal-init /out/journal-exe
 COPY --from=protected-start --chown=root:root /out/journal-shell /opt/journal/shell/bash
 # Root owns the start programs and the shell bridge, and a session can only run them. Claude Code's managed policy is
 # handed with each start, never built in (docs/accounts/claude-integration.md, section Managed policy).
-RUN chmod 0555 /opt/journal/bin/* /opt/journal/shell/bash
+# The check each driver image runs on itself as its last build step (.docker/drivers/<family>/Dockerfile).
+COPY --chown=root:root .docker/helper/checks/driver-image.sh /opt/journal/checks/driver-image.sh
+RUN chmod 0555 /opt/journal/bin/* /opt/journal/shell/bash /opt/journal/checks/driver-image.sh
 
 # The program's user 10001 alone reads the sign-in; under the protected-account profile the commands the model runs go
 # through the executor's user 10002, and the init drops to 10003. The program and the executor share the workspace
@@ -69,6 +71,14 @@ RUN mkdir -p /workspace && chown 10001:10010 /workspace && chmod 2770 /workspace
 # user alone, or the program could not keep the conversation a later turn resumes.
 RUN mkdir -p /home/journal/.account/projects && chown -R 10001:10001 /home/journal \
     && chmod 0700 /home/journal/.account /home/journal/.account/projects
+USER 10001:10001
+WORKDIR /workspace
+
+# The agent image every session runs today: the candidate with both drivers, until each session runs its own driver
+# image.
+FROM candidate
+USER root
+COPY --from=drivers --chown=root:root /out/claude /out/codex /out/codex-code-mode-host /usr/local/bin/
 # Claude Code takes its shell from CLAUDE_CODE_SHELL rather than the login shell, and IS_SANDBOX lets it skip its
 # permission prompts in a container whose commands the executor already confines.
 ENV CLAUDE_CODE_SHELL=/opt/journal/shell/bash IS_SANDBOX=1

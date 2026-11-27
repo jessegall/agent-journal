@@ -7,6 +7,8 @@ namespace App\Accounts\Commands\BeginSignIn;
 use App\Accounts\Exceptions\SignInMethodMissing;
 use App\Accounts\SignInProtocols;
 use App\Accounts\Values\SignInStarted;
+use App\Agents\Drivers\Contracts\PinnedBuilds;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Bus\Contracts\CommandHandler;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\ActiveAccount;
@@ -28,6 +30,7 @@ final readonly class BeginSignInHandler implements CommandHandler
         #[Config('journal.accounts.root')]
         private string $accountsRoot,
         private JobDispatcher $jobs,
+        private PinnedBuilds $builds,
     ) {}
 
     public function handle(BeginSignInCommand $command): SignInStarted
@@ -35,7 +38,9 @@ final readonly class BeginSignInHandler implements CommandHandler
         $driver = $command->driver;
 
         if (! $this->protocols->supports($driver, $command->method)) {
-            throw SignInMethodMissing::for($driver, $command->method->value);
+            $build = in_array($driver, DefaultDrivers::familyKeys(), true) ? $this->builds->versionOf($driver) : null;
+
+            throw SignInMethodMissing::for($driver, $command->method->value, $build);
         }
 
         ActiveAccount::findLockedFor($driver);

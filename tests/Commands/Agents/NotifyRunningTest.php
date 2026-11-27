@@ -69,7 +69,7 @@ final class NotifyRunningTest extends TestCase
         {
             public function for(string $driver): DriverCompatibility
             {
-                $pinned = DriverCompatibility::pinned($driver);
+                $pinned = DriverCompatibility::pinned($driver, trim((string) file_get_contents(base_path(".docker/drivers/{$driver}/VERSION"))));
 
                 return $pinned->withEvidence(DriverEvidence::NativeShown, 'this test');
             }

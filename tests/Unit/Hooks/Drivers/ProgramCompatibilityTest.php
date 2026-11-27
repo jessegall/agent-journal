@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks\Drivers;
 
 use App\Accounts\Enums\AuthenticationArrangement;
+use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverEvidence;
 use App\Support\Compatibility\DriverCompatibility;
@@ -89,7 +90,7 @@ final class ProgramCompatibilityTest extends TestCase
 
     private function compatibilityOf(string $driver): DriverCompatibility
     {
-        return DriverCompatibility::pinned($driver);
+        return DriverCompatibility::pinned($driver, $this->app->make(PinnedBuilds::class)->versionOf($driver));
     }
 
     /**

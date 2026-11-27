@@ -9,7 +9,6 @@ use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Connections\Data\DriverInstallListData;
 use App\Connections\Data\InstallDriverData;
-use App\Support\Compatibility\DriverCompatibility;
 use App\Values\DriverFamily;
 
 /**
@@ -38,7 +37,7 @@ final readonly class DriverInstallList
         return new InstallDriverData(
             $family->key,
             basename($probe[0]),
-            DriverCompatibility::pinned($family->key)->version,
+            $profile->build(),
             array_slice($probe, 1),
             $profile->executableHostName(),
         );

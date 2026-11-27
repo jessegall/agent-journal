@@ -1,0 +1,4 @@
+# Claude Code's native release builds this image installs: program, version, architecture, sha256 of the binary
+# downloaded. install.sh refuses any other file.
+claude-code 2.1.323 arm64 452dddff140b5caf00a5410333a3d6db82c73ea2dec74b1541fae18e97d47dca
+claude-code 2.1.323 amd64 604d29a6869409106b6a1110bdadcc8b72e8654a5a865d23258f938a696e348e

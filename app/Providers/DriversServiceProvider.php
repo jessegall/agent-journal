@@ -76,7 +76,6 @@ use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\SignInEgress;
 use App\Files\Contracts\Files;
 use App\Processes\AnyContext;
-use App\Support\Compatibility\DriverCompatibility;
 use App\Support\PrivateAccountProcess;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -124,11 +123,10 @@ final class DriversServiceProvider extends ServiceProvider
     private static function codex(string $signInExecutable): DriverSetup
     {
         $driver = CodexArguments::EXECUTABLE;
-        $version = DriverCompatibility::pinned(DefaultDrivers::CODEX)->version;
 
         return DefaultDriverSetup::for(DefaultDrivers::CODEX)
             ->driver($driver)
-            ->image(DriverImage::at('.docker/drivers/codex', $version))
+            ->image(DriverImage::at('.docker/drivers/codex'))
             ->arguments(CodexArguments::class)
             ->version(new VersionProbe(
                 argv: [$driver, '--version'],
@@ -197,11 +195,10 @@ final class DriversServiceProvider extends ServiceProvider
     private static function claudeCode(string $signInExecutable): DriverSetup
     {
         $installed = ClaudeCodeArguments::INSTALLED_EXECUTABLE;
-        $version = DriverCompatibility::pinned(DefaultDrivers::CLAUDE_CODE)->version;
 
         return DefaultDriverSetup::for(DefaultDrivers::CLAUDE_CODE)
             ->driver(ClaudeCodeArguments::EXECUTABLE)
-            ->image(DriverImage::at('.docker/drivers/claude-code', $version))
+            ->image(DriverImage::at('.docker/drivers/claude-code'))
             ->arguments(ClaudeCodeArguments::class)
             ->version(new VersionProbe(
                 argv: [$installed, '--version'],

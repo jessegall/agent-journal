@@ -1,0 +1,10 @@
+{
+    "mcpServers": {
+        "journal": {
+            "type": "stdio",
+            "command": "/opt/journal/bin/journal-mcp",
+            "args": [],
+            "timeout": 30000
+        }
+    }
+}

@@ -542,7 +542,7 @@ final class TestJournal
      */
     public function showDriverArrangements(): self
     {
-        $this->app->instance(DriverCompatibilities::class, new ShownDriverArrangements());
+        $this->app->instance(DriverCompatibilities::class, $this->app->make(ShownDriverArrangements::class));
 
         return $this;
     }

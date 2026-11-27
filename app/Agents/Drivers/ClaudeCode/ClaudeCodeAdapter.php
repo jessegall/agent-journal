@@ -10,6 +10,7 @@ use App\Agents\Drivers\Capabilities\DriverCapabilities;
 use App\Agents\Drivers\ClaudeCode\Enums\ClaudeCodeTool;
 use App\Agents\Drivers\Contracts\DriverAdapter;
 use App\Agents\Drivers\Contracts\DriverCall;
+use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\RewriteSupport;
 use App\Agents\Drivers\Enums\ToolAllowance;
@@ -86,6 +87,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
     ];
 
     public function __construct(
+        private PinnedBuilds $builds,
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
         private GuardedFiles $files,
@@ -154,7 +156,9 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
     public function compatibility(): DriverCompatibility
     {
-        return DriverCompatibility::pinned(DefaultDrivers::CLAUDE_CODE);
+        $driver = DefaultDrivers::CLAUDE_CODE;
+
+        return DriverCompatibility::pinned($driver, $this->builds->versionOf($driver));
     }
 
     public function callFor(HookPayload $hookInput, HookIdentity $hook): DriverCall

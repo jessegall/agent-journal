@@ -39,14 +39,16 @@ final readonly class DriverCompatibility
     ) {}
 
     /**
+     * The checked compatibility of the driver's build, at the version its recipe folder pins (PinnedBuilds).
+     *
      * @throws DriverFamilyUnknown for a family no build is pinned for
      */
-    public static function pinned(string $driver): self
+    public static function pinned(string $driver, string $version): self
     {
         return match ($driver) {
             DefaultDrivers::CLAUDE_CODE => new self(
                 $driver,
-                '2.1.323',
+                $version,
                 '5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7',
                 ['--strict-mcp-config', '--mcp-config', '--settings', '--tools'],
                 [],
@@ -56,7 +58,7 @@ final readonly class DriverCompatibility
             ),
             DefaultDrivers::CODEX => new self(
                 $driver,
-                '0.165.0',
+                $version,
                 'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a',
                 ['app-server', '--add-dir'],
                 ['cli_auth_credentials_store' => 'file'],

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Hosts\DriverInstallList;
-use App\Support\Compatibility\DriverCompatibility;
 use Tests\TestCase;
 
 /**
@@ -22,14 +22,14 @@ final class DriverInstallListTest extends TestCase
             [
                 'name' => 'claude-code',
                 'executable' => 'claude',
-                'build' => DriverCompatibility::pinned('claude-code')->version,
+                'build' => $this->app->make(PinnedBuilds::class)->versionOf('claude-code'),
                 'check' => ['--version'],
                 'host_name' => 'CLAUDE_CODE_EXECUTABLE',
             ],
             [
                 'name' => 'codex',
                 'executable' => 'codex',
-                'build' => DriverCompatibility::pinned('codex')->version,
+                'build' => $this->app->make(PinnedBuilds::class)->versionOf('codex'),
                 'check' => ['--version'],
                 'host_name' => 'CODEX_EXECUTABLE',
             ],

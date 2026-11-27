@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Sessions\Contracts\ProfileResolver;
 use App\Sessions\Contracts\ProfileSelections as ProfileSelectionsContract;
 use App\Sessions\Values\ProfileDefaults;
@@ -19,7 +20,11 @@ use App\Values\SelectedDriver;
  */
 final readonly class ProfileSelections implements ProfileSelectionsContract
 {
-    public function __construct(private ProfileResolver $profiles, private DriverCatalogue $drivers) {}
+    public function __construct(
+        private ProfileResolver $profiles,
+        private DriverCatalogue $drivers,
+        private PinnedBuilds $builds,
+    ) {}
 
     public function select(
         ProfileKey $profile,
@@ -37,13 +42,16 @@ final readonly class ProfileSelections implements ProfileSelectionsContract
             $snapshot->base->defaultDriverType,
         );
 
+        $selected = SelectedDriver::resolve($driverKey, $requested, null, $defaults, null, $this->drivers);
+
         return new ProfileSelection(
-            SelectedDriver::resolve($driverKey, $requested, null, $defaults, null, $this->drivers),
+            $selected,
             $snapshot->base,
             $snapshot->revision,
             $start,
             $snapshot->authorization,
             $defaults,
+            $this->builds->versionOf($selected->driver),
             $snapshot->instances,
         );
     }

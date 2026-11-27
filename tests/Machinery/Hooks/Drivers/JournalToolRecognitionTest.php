@@ -111,8 +111,10 @@ final class JournalToolRecognitionTest extends TestCase
 
             $this->assertInstanceOf(JournalToolCall::class, $starting);
             $this->assertInstanceOf(JournalToolCall::class, $finished);
+            // Claude Code takes an allow decision; Codex refuses one without a rewritten input, so it is told none.
+            $allowed = $adapter === CodexAdapter::class ? '' : ',"permissionDecision":"allow"';
             $this->assertSame(
-                '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}',
+                '{"hookSpecificOutput":{"hookEventName":"PreToolUse"'.$allowed.'}}',
                 $starting->replyWith(fn () => $this->fail('A journal call walked the stack.'))->stdout,
             );
             $this->assertSame(

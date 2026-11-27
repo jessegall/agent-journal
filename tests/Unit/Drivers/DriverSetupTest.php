@@ -108,7 +108,7 @@ final class DriverSetupTest extends TestCase
     {
         return DefaultDriverSetup::for('example')
             ->driver(CodexArguments::EXECUTABLE)
-            ->image(DriverImage::at('.docker/drivers/codex', '0.165.0'))
+            ->image(DriverImage::at('.docker/drivers/codex'))
             ->arguments(CodexArguments::class)
             ->version(new VersionProbe(['codex', '--version'], [], VersionLine::exactly('codex-cli {build}')))
             ->signInProbe(['codex', 'login', 'status'], CodexSignInReader::class)

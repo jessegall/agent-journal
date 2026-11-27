@@ -7,7 +7,6 @@ namespace App\Sessions\Values;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Profiles\Data\ProfileAuthorization;
 use App\Profiles\Enums\InstancePolicy;
-use App\Support\Compatibility\DriverCompatibility;
 use App\Values\ProfileBase;
 use App\Values\ProfileStartPolicy;
 use App\Values\SelectedDriver;
@@ -25,6 +24,7 @@ final readonly class ProfileSelection
         public ProfileStartPolicy $start,
         public ProfileAuthorization $authorization,
         public ProfileDefaults $defaults,
+        public string $build,
         public InstancePolicy $instances = InstancePolicy::Reusable,
     ) {}
 
@@ -38,7 +38,7 @@ final readonly class ProfileSelection
         return new StartProposal(
             $this->defaults,
             $driver,
-            DriverCompatibility::pinned($driver)->version,
+            $this->build,
             $driverType,
             $this->startPolicy()->execution->mode,
             $model,

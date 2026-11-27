@@ -1,0 +1,118 @@
+{
+    "allowManagedPermissionRulesOnly": true,
+    "allowManagedHooksOnly": true,
+    "allowManagedMcpServersOnly": true,
+    "allowedMcpServers": [
+        {
+            "serverName": "journal"
+        }
+    ],
+    "skipDangerousModePermissionPrompt": true,
+    "permissions": {
+        "defaultMode": "bypassPermissions",
+        "allow": [
+            "Read(//workspace/**)",
+            "Edit(//workspace/**)",
+            "Read(//tmp/**)",
+            "Edit(//tmp/**)",
+            "Bash(journal:*)",
+            "Bash(ls:*)",
+            "Bash(git status:*)",
+            "Bash(git diff:*)",
+            "Bash(git log:*)",
+            "mcp__journal__*"
+        ],
+        "deny": [
+            "Read(//home/**)",
+            "Edit(//home/**)",
+            "Read(//root/**)",
+            "Edit(//root/**)",
+            "Read(//proc/**)",
+            "Edit(//proc/**)",
+            "Read(//dev/fd/**)",
+            "Edit(//dev/fd/**)",
+            "Read(//run/**)",
+            "Edit(//run/**)",
+            "Read(//sys/**)",
+            "Edit(//sys/**)",
+            "Read(//etc/claude-code/**)",
+            "Read(//tmp/journal-session/**)",
+            "Edit(//tmp/journal-session/**)",
+            "Edit(//etc/**)",
+            "Edit(//opt/**)",
+            "Agent",
+            "Task",
+            "Workflow",
+            "SendMessage",
+            "ListAgents",
+            "RemoteTrigger",
+            "Skill",
+            "Bash(claude:*)",
+            "Bash(codex:*)",
+            "Bash(*claude -p*)",
+            "Bash(*codex exec*)"
+        ]
+    },
+    "hooks": {
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/opt/journal/bin/journal-hook claude-code /tmp/journal-session/hook-replies.json"
+                    }
+                ]
+            }
+        ],
+        "UserPromptSubmit": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/opt/journal/bin/journal-hook claude-code /tmp/journal-session/hook-replies.json"
+                    }
+                ]
+            }
+        ],
+        "PreToolUse": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/opt/journal/bin/journal-hook claude-code /tmp/journal-session/hook-replies.json"
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/opt/journal/bin/journal-hook claude-code /tmp/journal-session/hook-replies.json"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/opt/journal/bin/journal-hook claude-code /tmp/journal-session/hook-replies.json"
+                    }
+                ]
+            }
+        ],
+        "SessionEnd": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/opt/journal/bin/journal-hook claude-code /tmp/journal-session/hook-replies.json"
+                    }
+                ]
+            }
+        ]
+    }
+}
