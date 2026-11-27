@@ -18,8 +18,9 @@ final readonly class RefuseAccountStartsHandler implements CommandHandler
     {
         $owner = HostProcess::findLocked($command->ownerProcessId);
         $refusal = StartRefusalReason::NotSignedIn->explanation();
+        $starts = SessionProcess::findLockedOnAccountOf($owner->sessionProcess()->sole(), $owner->host_id);
 
-        foreach (SessionProcess::findLockedOnAccountOf($owner->sessionProcess()->sole(), $owner->host_id) as $start) {
+        foreach ($starts as $start) {
             $this->heartbeats->refuseStart($start, $refusal);
         }
     }

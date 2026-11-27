@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Files\Contracts\Files as FilesContract;
+use App\Files\Files;
 use App\Support\CodeFiles;
-use App\Support\Files;
 use Illuminate\Support\ServiceProvider;
 
 /**
