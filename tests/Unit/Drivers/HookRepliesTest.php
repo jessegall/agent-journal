@@ -60,6 +60,16 @@ final class HookRepliesTest extends TestCase
         );
     }
 
+    public function test_only_the_program_may_read_the_key_and_the_reply_file_is_shared(): void
+    {
+        [$replyFile, $keyFile] = $this->app->make(HookReplies::class)->filesFor(
+            ClaudeCodeAdapter::class,
+            OfflineReplyMode::Refuse,
+        );
+
+        $this->assertSame([false, true], [$replyFile->isProgramOnly, $keyFile->isProgramOnly]);
+    }
+
     public function test_a_start_granted_the_neutral_reply_is_answered_neutrally_while_the_journal_is_away(): void
     {
         $replies = $this->app->make(HookReplies::class);

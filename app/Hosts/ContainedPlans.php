@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Hosts;
 
+use App\Agents\ContainerManifest;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Values\PlanFile;
 use App\Models\Hosts\HostProcess;
 use App\Support\MountRules;
 use App\Support\TarArchive;
+use App\Support\TarFile;
 use App\Values\HostProcessPlan;
 
 /**
@@ -42,10 +44,12 @@ final readonly class ContainedPlans
             $session = $process->sessionId() ?? throw ManifestRefused::because(
                 "the process {$process->id} mounts plan files but runs for no session",
             );
-            $archive = TarArchive::of(array_column(array_map(
-                fn (PlanFile $file) => ['name' => $file->name, 'content' => $file->content],
+            $archive = TarArchive::of(...array_map(
+                fn (PlanFile $file) => $file->isProgramOnly
+                    ? TarFile::privateTo((int) ContainerManifest::PROGRAM_USER, $file->name, $file->content)
+                    : TarFile::shared($file->name, $file->content),
                 $files,
-            ), 'content', 'name'));
+            ));
             $container = $container
                 ->withPlanFilesIn(HelperRuns::planFilesFolder($session, $process->id))
                 ->preparedBy([$this->runs->planFiles($session, $process->id, $archive)]);

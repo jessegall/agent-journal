@@ -53,7 +53,7 @@ final readonly class HookReplies
 
         return [
             new PlanFile(self::REPLY_FILE, json_encode($sealed, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)),
-            new PlanFile(self::KEY_FILE, $key),
+            PlanFile::programOnly(self::KEY_FILE, $key),
         ];
     }
 

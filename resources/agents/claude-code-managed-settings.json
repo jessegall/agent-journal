@@ -32,6 +32,8 @@
             "Read(//sys/**)",
             "Edit(//sys/**)",
             "Read(//etc/claude-code/**)",
+            "Read(//tmp/journal-session/**)",
+            "Edit(//tmp/journal-session/**)",
             "Edit(//etc/**)",
             "Edit(//opt/**)",
             "Agent",

@@ -26,8 +26,6 @@ final readonly class HelperRuns
     /**
      * The program's user, who owns every folder the program works in.
      */
-    private const string PROGRAM_USER = '10001';
-
     private const string ROOT_USER = '0';
 
     /**
@@ -75,7 +73,9 @@ final readonly class HelperRuns
 
     public function accountFolderMake(string $account, string $operation): HostContainerRunPayload
     {
-        return $this->run('account-folder-make', [self::ACCOUNTS_TARGET, $account, $operation, self::PROGRAM_USER], [
+        $arguments = [self::ACCOUNTS_TARGET, $account, $operation, ContainerManifest::PROGRAM_USER];
+
+        return $this->run('account-folder-make', $arguments, [
             'user' => self::ROOT_USER.':'.self::ROOT_USER,
             'capabilities' => self::FOLDER_CAPABILITIES,
             'mounts' => [ManifestMount::daemonBind(MountRules::ACCOUNTS_ROOT, self::ACCOUNTS_TARGET, true)],
@@ -104,7 +104,7 @@ final readonly class HelperRuns
             $this->run('account-folder-prepare', [self::ACCOUNT_TARGET, ...$mountPoints], [
                 'mounts' => [ManifestMount::daemonBind(MountRules::accountFolder($account), self::ACCOUNT_TARGET, true)],
             ]),
-            $this->run('account-folder-check', [MountRules::DATA_FOLDER, $account, self::PROGRAM_USER, self::ROOT_USER], [
+            $this->run('account-folder-check', [MountRules::DATA_FOLDER, $account, ContainerManifest::PROGRAM_USER, self::ROOT_USER], [
                 'mounts' => [ManifestMount::daemonBind(MountRules::DATA_FOLDER, MountRules::DATA_FOLDER, false)],
             ]),
         ];
@@ -112,7 +112,7 @@ final readonly class HelperRuns
 
     public function workspaceFolderCheck(string $folder): HostContainerRunPayload
     {
-        return $this->run('workspace-folder-check', [$folder, self::PROGRAM_USER], [
+        return $this->run('workspace-folder-check', [$folder, ContainerManifest::PROGRAM_USER], [
             'mounts' => [ManifestMount::daemonBind($folder, $folder, false)],
         ]);
     }
@@ -147,7 +147,7 @@ final readonly class HelperRuns
                 'tmpfs' => [['target' => '/tmp', 'options' => self::CLONE_TMPFS]],
                 'mounts' => [$sourceMount, $checkout],
             ], self::CLONE_ENVIRONMENT),
-            $this->run('workspace-folder-check', [ContainerManifest::WORKDIR, self::PROGRAM_USER], [
+            $this->run('workspace-folder-check', [ContainerManifest::WORKDIR, ContainerManifest::PROGRAM_USER], [
                 'mounts' => [$checkout->readOnlyAt(ContainerManifest::WORKDIR)],
             ]),
         ];
@@ -207,7 +207,7 @@ final readonly class HelperRuns
             'manifest' => HostContainerManifestPayload::from([
                 'name' => '',
                 'image' => $this->image,
-                'user' => $container['user'] ?? self::PROGRAM_USER.':'.self::PROGRAM_USER,
+                'user' => $container['user'] ?? ContainerManifest::USER,
                 'workdir' => '/',
                 'entrypoint' => [],
                 'isReadOnlyRoot' => true,

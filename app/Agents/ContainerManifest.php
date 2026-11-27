@@ -25,7 +25,12 @@ use App\Values\ExecutionBudgets;
  */
 final readonly class ContainerManifest
 {
-    public const string USER = '10001:10001';
+    /**
+     * The user a driver program runs as, which alone reads the sign-in and the files only the program may read.
+     */
+    public const string PROGRAM_USER = '10001';
+
+    public const string USER = self::PROGRAM_USER.':'.self::PROGRAM_USER;
 
     public const string WORKDIR = '/workspace';
 
