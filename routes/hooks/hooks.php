@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/hooks/{driver}', HookController::class)
     ->where('driver', '[a-z][a-z0-9-]*')
-    ->middleware(AuthenticateAgent::class)
+    ->middleware([AuthenticateAgent::class, 'record.calls:hooks'])
     ->name('hooks.answer');
 
 Route::middleware(['web', 'auth'])

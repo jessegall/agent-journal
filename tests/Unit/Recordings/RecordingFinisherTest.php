@@ -8,6 +8,7 @@ use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Files\Enums\Place;
 use App\Hosts\HostProtocolCheck;
 use App\Hosts\HostProtocolSources;
+use App\Recordings\AgentImagePrograms;
 use App\Recordings\CutExchange;
 use App\Recordings\Enums\Wire;
 use App\Recordings\Exceptions\HostProtocolDrifted;
@@ -25,6 +26,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Process;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -54,6 +56,9 @@ final class RecordingFinisherTest extends TestCase
         $sources = array_keys($this->app->make(HostProtocolCheck::class)->sources());
         $this->project = $this->placeInTemporaryFolder(Place::Project);
         config(['agents.agent_image' => 'journal-agent@sha256:1']);
+        // The agent image's digest is fixed for the test, so a test of another process changing the checkout meanwhile
+        // never makes the run's own recording read as stale.
+        Process::fake(['*'.AgentImagePrograms::SCRIPT.'*' => Process::result('image-programs-digest')]);
 
         foreach ([HostProtocolSources::PROTOCOL_FILE, ...$sources] as $relative) {
             File::ensureDirectoryExists(dirname("{$this->project}/{$relative}"));

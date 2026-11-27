@@ -75,7 +75,19 @@ final readonly class HostProcessPlan
          * as the process sees it.
          */
         public array $keptFiles = [],
+        /**
+         * Whether the host sends the terminal's bytes from the first one, as a recording run asks.
+         */
+        public bool $isRawBytes = false,
     ) {}
+
+    /**
+     * The same plan asking the host for the terminal's bytes from the first one, as a recording keeps them.
+     */
+    public function askingRawBytes(): self
+    {
+        return new self(...[...get_object_vars($this), 'isRawBytes' => true]);
+    }
 
     /**
      * The same plan under the fence of the session it runs for.
@@ -136,6 +148,7 @@ final readonly class HostProcessPlan
             'shield_rules' => array_map(fn (ShieldRule $rule) => $rule->protocolData(), $this->shieldRules),
             'fence' => $this->fence,
             'kept_files' => $this->keptFiles,
+            'raw_bytes' => $this->isRawBytes,
         ]);
     }
 }

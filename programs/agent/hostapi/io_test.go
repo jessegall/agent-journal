@@ -2,6 +2,7 @@ package hostapi
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"strings"
@@ -282,5 +283,30 @@ func TestAShieldedScreenWithholdsTheProcesssChunksOnEveryStream(t *testing.T) {
 	}
 	if chunks != 1 {
 		t.Fatalf("%d side socket chunks left the machine, want only the one sent after the shielded screen", chunks)
+	}
+}
+
+// A terminal asked for its raw bytes sends what it prints as chunks from the first byte; the same terminal opened
+// without them sends no chunk, only its frames.
+func TestATerminalAskedForItsRawBytesSendsThemFromTheFirstOne(t *testing.T) {
+	sent := map[bool]int{}
+	for _, isRaw := range []bool{true, false} {
+		clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
+		posted := &postedOutputs{}
+		outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
+		plan := OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}, RawBytes: isRaw}
+		if err := outputs.Open("p", plan); err != nil {
+			t.Fatal(err)
+		}
+		outputs.Printed("p", []byte("\x1b[1mhello"))
+		for _, output := range posted.outputs {
+			for _, chunk := range output.Chunks {
+				printed, _ := base64.StdEncoding.DecodeString(chunk.Bytes)
+				sent[isRaw] += len(printed)
+			}
+		}
+	}
+	if sent[true] != len("\x1b[1mhello") || sent[false] != 0 {
+		t.Fatalf("a raw terminal sent %d bytes and a plain one %d", sent[true], sent[false])
 	}
 }

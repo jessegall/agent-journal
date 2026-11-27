@@ -778,7 +778,7 @@ final readonly class PhpProtocolSources
             use Illuminate\\Support\\Facades\\Route;
 
             Route::prefix('host')
-                ->middleware('journal.host:'.HostRouteRole::Shared->value)
+                ->middleware(['journal.host:'.HostRouteRole::Shared->value, 'record.calls:host'])
                 ->name('agents.host.')
                 ->group(function (): void {
             {$lines}

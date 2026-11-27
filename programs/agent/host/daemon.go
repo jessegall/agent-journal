@@ -5,30 +5,78 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	cerrdefs "github.com/containerd/errdefs"
+	"github.com/docker/go-connections/sockets"
 	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/api/types/mount"
 	"github.com/moby/moby/client"
+
+	"journal-agent/recording"
 )
 
 // ContainersOn are the containers of the agent daemon that listens at the socket, under the rules given, reached
 // through Docker's own client. With no socket named, the daemon is the one this machine's environment names.
 func ContainersOn(socket string, rules ContainerRules) (Containers, error) {
+	return containersRecordedInto(socket, rules, recording.DraftsFromEnvironment())
+}
+
+// containersRecordedInto are the daemon's containers, each call to the daemon kept in the drafts while they are on.
+func containersRecordedInto(socket string, rules ContainerRules, drafts recording.Drafts) (Containers, error) {
 	where := client.FromEnv
 	if socket != "" {
 		where = client.WithHost(socket)
 	}
 
-	daemon, err := client.New(where)
+	options := []client.Opt{where}
+	if drafts.IsOn {
+		recorded, err := recordedDaemon(where, drafts)
+		if err != nil {
+			return Containers{}, fmt.Errorf("%w: %v", ErrAgentDaemonUnreachable, err)
+		}
+		options = append(options, recorded...)
+	}
+
+	daemon, err := client.New(options...)
 	if err != nil {
 		return Containers{}, fmt.Errorf("%w: %v", ErrAgentDaemonUnreachable, err)
 	}
 
 	return Containers{Daemon: daemon, Rules: rules}, nil
+}
+
+// recordedDaemonExchange is the exchange of the recording run that holds the agent daemon's calls.
+const recordedDaemonExchange = "daemon"
+
+// recordedDaemon are the client options that send every call to the daemon through the recording run's Docker tap:
+// the calls through a transport of the daemon's own address, an attach through the client's hooks, as the client
+// sends an attach on a connection of its own.
+func recordedDaemon(where client.Opt, drafts recording.Drafts) ([]client.Opt, error) {
+	probe, err := client.New(where)
+	if err != nil {
+		return nil, err
+	}
+	address, err := client.ParseHostURL(probe.DaemonHost())
+	_ = probe.Close()
+	if err != nil {
+		return nil, err
+	}
+	transport := &http.Transport{MaxIdleConns: 6, IdleConnTimeout: 30 * time.Second}
+	if err := sockets.ConfigureTransport(transport, address.Scheme, address.Host); err != nil {
+		return nil, err
+	}
+	tap := recording.RecordDocker{Next: transport, Recorder: recording.NewCallRecorder(recording.WireDocker, drafts),
+		Exchange: recordedDaemonExchange}
+	return []client.Opt{
+		client.WithHTTPClient(&http.Client{Transport: tap, CheckRedirect: client.CheckRedirect}),
+		client.WithHTTPRequestHook(tap.UpgradeAsked),
+		client.WithHTTPResponseHook(tap.UpgradeAnswered),
+	}, nil
 }
 
 // ExitedWith is a container's program that ended with an exit code other than 0.

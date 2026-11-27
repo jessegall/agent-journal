@@ -147,7 +147,10 @@ func (outputs *Outputs) Open(processID string, plan OpenPlan) error {
 		outputs.screens[processID] = shown
 		// A process opened again, as a healed one is, starts with no private entry of the one before it.
 		delete(outputs.private, processID)
-		return nil
+		// A terminal asked for its raw bytes, as a recording run asks, also sends what it prints as chunks.
+		if !plan.RawBytes {
+			return nil
+		}
 	}
 	spool, err := OpenSpool(filepath.Join(outputs.stateFolder, "spool", processID))
 	if err != nil {
@@ -162,7 +165,7 @@ func (outputs *Outputs) Printed(processID string, printed []byte) {
 	outputs.mutex.Lock()
 	screen, isTerminal := outputs.screens[processID]
 	spool := outputs.spools[processID]
-	entry := outputs.private[processID]
+	entry, isPrivate := outputs.private[processID]
 	outputs.mutex.Unlock()
 	if isTerminal {
 		screen.Feed(printed, outputs.monotonic())
@@ -172,8 +175,17 @@ func (outputs *Outputs) Printed(processID string, printed []byte) {
 			delete(outputs.private, processID)
 			outputs.mutex.Unlock()
 		}
-		return
+		// A shielded screen's bytes and a private entry's are sent nowhere, as their frames reach no one.
+		if screen.IsShielded() || isPrivate {
+			return
+		}
 	}
+	outputs.sendChunks(processID, spool, printed)
+}
+
+// sendChunks spools what the process printed and sends it as chunks; a process with no spool, such as a terminal
+// opened without raw bytes, sends none.
+func (outputs *Outputs) sendChunks(processID string, spool *Spool, printed []byte) {
 	if spool == nil {
 		return
 	}

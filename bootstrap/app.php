@@ -7,6 +7,7 @@ use App\Http\Middleware\Agents\AuthenticateHost;
 use App\Http\Middleware\Agents\ReadRequestKey;
 use App\Http\Middleware\AuthenticateUser;
 use App\Http\Middleware\MeasureReads;
+use App\Http\Middleware\RecordCalls;
 use App\Http\Middleware\ResolveConnectedProject;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Http\Middleware\Web\ReadIdempotencyKey;
@@ -41,10 +42,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateUser::class);
         // A browser's project choice is read once its user is known, so a guest's choice is refused.
         $middleware->appendToPriorityList(after: AuthenticateUser::class, append: SelectProject::class);
-        $middleware->alias(['journal.user' => AuthenticateUser::class, 'journal.host' => AuthenticateHost::class]);
+        $middleware->alias([
+            'journal.user' => AuthenticateUser::class,
+            'journal.host' => AuthenticateHost::class,
+            'record.calls' => RecordCalls::class,
+        ]);
         // A signed agent call is authenticated first; its body's request_key then keys the write it carries.
         // A connected project's agent serves its own project, named by its binding (ResolveConnectedProject).
-        $middleware->group('journal.agent', [AuthenticateAgent::class, ResolveConnectedProject::class, ReadRequestKey::class]);
+        $middleware->group('journal.agent', [
+            AuthenticateAgent::class,
+            'record.calls:agent',
+            ResolveConnectedProject::class,
+            ReadRequestKey::class,
+        ]);
         // A message body is kept exactly as typed, and a project file's text exactly as its host read it, its leading and
         // trailing spaces and newlines included.
         $middleware->trimStrings(except: ['body', fn (Request $request) => $request->is('host/reports/project-reads/*')]);

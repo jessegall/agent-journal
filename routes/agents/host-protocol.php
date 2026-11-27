@@ -16,7 +16,7 @@ use App\Projects\Enums\HostRouteRole;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('host')
-    ->middleware('journal.host:'.HostRouteRole::Shared->value)
+    ->middleware(['journal.host:'.HostRouteRole::Shared->value, 'record.calls:host'])
     ->name('agents.host.')
     ->group(function (): void {
         Route::post('/orders/claim', ClaimOrdersController::class)->name('orders.claim');

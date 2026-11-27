@@ -12,9 +12,11 @@ use App\Bus\CommandScope;
 use App\Bus\Contracts\Command;
 use App\Bus\MiddlewareDeclaration;
 use App\CommandMiddleware\AnnounceUnavailableStart;
+use App\CommandMiddleware\AskRawBytes;
 use App\CommandMiddleware\CommitHeldStartRefusals;
 use App\CommandMiddleware\GuardTickOrigin;
 use App\CommandMiddleware\KeepStartReceipt;
+use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 
@@ -43,6 +45,7 @@ final class CoreCommands
         return [
             MiddlewareDeclaration::around(CommitHeldStartRefusals::class, CommandScope::all()),
             MiddlewareDeclaration::around(KeepStartReceipt::class, CommandScope::command(StartAgentCommand::class)),
+            MiddlewareDeclaration::around(AskRawBytes::class, CommandScope::command(OpenHostProcessCommand::class)),
             ...self::startRefusalAnnouncements(),
             MiddlewareDeclaration::inside(GuardTickOrigin::class, CommandScope::all()),
         ];
