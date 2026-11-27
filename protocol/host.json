@@ -187,7 +187,7 @@
         "restart_file": { "folder": "string", "glob": "string" },
         "plan_file": { "name": "string", "content": "string", "template": "bool" },
         "shield_rule": { "keywords": "list<string>", "min_keywords": "int" },
-        "container_manifest": { "name": "string", "image": "string", "user": "string", "workdir": "string", "entrypoint": "list<string>", "isReadOnlyRoot": "bool", "capabilities": "list<string>", "blocksNewPrivileges": "bool", "network": "string", "networkLabels": "list<container_label>", "mounts": "list<container_mount>", "tmpfs": "list<container_tmpfs>", "volumes": "list<container_volume>", "labels": "list<container_label>", "budgets": "container_budgets", "securityOptions": "security_options", "isAttachable": "bool", "restart": "string", "preparations": "list<container_run>" },
+        "container_manifest": { "name": "string", "image": "string", "user": "string", "workdir": "string", "entrypoint": "list<string>", "isReadOnlyRoot": "bool", "capabilities": "list<string>", "blocksNewPrivileges": "bool", "network": "string", "networkLabels": "list<container_label>", "mounts": "list<container_mount>", "tmpfs": "list<container_tmpfs>", "volumes": "list<container_volume>", "labels": "list<container_label>", "budgets": "container_budgets", "securityOptions": "security_options", "isAttachable": "bool", "takesInput": "bool", "restart": "string", "preparations": "list<container_run>" },
         "container_mount": { "type": "mount_type", "source": "string?", "target": "string", "isWritable": "bool" },
         "container_budgets": { "cpuCores": "int", "memoryBytes": "int", "memorySwapBytes": "int", "processes": "int", "openFiles": "int" },
         "security_options": { "seccomp": "string", "apparmor": "string" },

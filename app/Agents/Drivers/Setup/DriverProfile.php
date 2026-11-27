@@ -140,7 +140,7 @@ final readonly class DriverProfile
             environment: $environment->variables,
             folder: $start->workFolder,
             files: $this->planOf($start)->files,
-            container: $start->container?->manifest->onPipes(),
+            container: $start->container?->manifest->onPipesTakingInput(),
             folders: $environment->folders,
             inherit: $this->inheritedOn($environment->inherited, $start->executablePlace),
             readFiles: $environment->readFiles,

@@ -46,6 +46,7 @@ type ContainerManifest struct {
 	Budgets             ContainerBudgets  `json:"budgets"`
 	SecurityOptions     SecurityOptions   `json:"securityOptions"`
 	IsAttachable        bool              `json:"isAttachable"`
+	TakesInput          bool              `json:"takesInput"`
 	Restart             string            `json:"restart"`
 	Preparations        []ContainerRun    `json:"preparations"`
 }

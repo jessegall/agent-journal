@@ -184,6 +184,9 @@ func (manifest ContainerManifest) CreateOptions(rules ContainerRules, process Co
 		config.Tty, config.OpenStdin = true, true
 		config.AttachStdin, config.AttachStdout, config.AttachStderr = true, true, true
 	}
+	if manifest.TakesInput {
+		config.OpenStdin, config.AttachStdin = true, true
+	}
 
 	for _, mounted := range manifest.Mounts {
 		hostConfig.Mounts = append(hostConfig.Mounts, mounted.daemonMount())

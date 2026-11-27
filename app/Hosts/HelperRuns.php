@@ -222,6 +222,7 @@ final readonly class HelperRuns
                 'budgets' => ['cpuCores' => 0, 'memoryBytes' => 0, 'memorySwapBytes' => 0, 'processes' => 0, 'openFiles' => 0],
                 'securityOptions' => ['seccomp' => '', 'apparmor' => ''],
                 'isAttachable' => false,
+                'takesInput' => false,
                 'restart' => 'no',
                 'preparations' => [],
             ]),

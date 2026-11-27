@@ -278,6 +278,13 @@ func (table *ProcessTable) reattach(ctx context.Context, held *heldProcess) erro
 		go table.copyOutput(held.id, terminal)
 		return nil
 	}
+	if held.plan.Container.TakesInput {
+		input, err := table.containers.AttachInput(ctx, held.containerName())
+		if err != nil {
+			return err
+		}
+		held.input = input
+	}
 	return table.followPipes(ctx, held)
 }
 

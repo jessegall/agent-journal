@@ -59,6 +59,7 @@ final readonly class ContainerManifest
         public bool $isAttachable,
         public StartProfileType $startProfile,
         public array $preparations,
+        public bool $takesInput = false,
     ) {}
 
     /**
@@ -68,6 +69,15 @@ final readonly class ContainerManifest
     public function onPipes(): self
     {
         return clone ($this, ['isAttachable' => false]);
+    }
+
+    /**
+     * The same container for a process on pipes that the journal writes to, such as an account's app server: its
+     * standard input is held open and attached, and what it prints is still read from its log.
+     */
+    public function onPipesTakingInput(): self
+    {
+        return clone ($this, ['isAttachable' => false, 'takesInput' => true]);
     }
 
     /**
@@ -170,6 +180,7 @@ final readonly class ContainerManifest
             'budgets' => $this->budgets->hostBudgets(),
             'securityOptions' => $this->securityOptions->protocolData(),
             'isAttachable' => $this->isAttachable,
+            'takesInput' => $this->takesInput,
             'restart' => 'no',
             'preparations' => $this->preparations,
         ]);

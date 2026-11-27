@@ -70,6 +70,9 @@ final class HostContainerManifestPayload extends Data
         public readonly HostSecurityOptionsPayload $securityOptions,
         #[Present]
         public readonly bool $isAttachable,
+        #[MapName('takesInput')]
+        #[Present]
+        public readonly bool $isTakesInput,
         #[Present]
         public readonly string $restart,
         #[DataCollectionOf(HostContainerRunPayload::class)]
