@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hosts;
 
 use App\Models\Sessions\SessionProcess;
+use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Redis\Connections\Connection;
 
@@ -26,7 +27,11 @@ final readonly class HostWake
 
     private const string SUPERVISOR_KEY = 'drivers:supervise:wake';
 
-    public function __construct(private RedisFactory $redis) {}
+    public function __construct(
+        private RedisFactory $redis,
+        #[Config('database.redis.default.read_timeout')]
+        private int $readTimeoutSeconds,
+    ) {}
 
     public function wakeHost(string $hostId): void
     {
@@ -76,11 +81,12 @@ final readonly class HostWake
 
     /**
      * Blocks until the supervisor is woken or the seconds pass, and answers whether it was woken; 0 waits until it is
-     * woken.
+     * woken. No wait runs past the connection's read timeout, which would fail the read: the supervisor looks again.
      */
     public function waitForSupervisor(int $seconds): bool
     {
-        $woken = $this->connection()->blpop([self::SUPERVISOR_KEY], $seconds);
+        $longest = $this->readTimeoutSeconds - 1;
+        $woken = $this->connection()->blpop([self::SUPERVISOR_KEY], $seconds > 0 ? min($seconds, $longest) : $longest);
         $this->connection()->del(self::SUPERVISOR_KEY);
 
         return $woken !== null && $woken !== [] && $woken !== false;
