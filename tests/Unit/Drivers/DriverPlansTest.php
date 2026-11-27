@@ -10,6 +10,7 @@ use App\Agents\ContainerManifest;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeManagedSettings;
+use App\Agents\Drivers\Codex\CodexManagedHooks;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Enums\WorkspaceUse;
@@ -189,7 +190,10 @@ final class DriverPlansTest extends TestCase
         $this->journal->assertResult(
             [
                 [[HostMountType::DaemonBind, ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET, false]],
-                [[HostMountType::Scratch, null, MountRules::ACCOUNT_TARGET.'/tmp', true]],
+                [
+                    [HostMountType::DaemonBind, CodexManagedHooks::FILE, CodexManagedHooks::TARGET, false],
+                    [HostMountType::Scratch, null, MountRules::ACCOUNT_TARGET.'/tmp', true],
+                ],
             ],
             [$mounts(DefaultDrivers::CLAUDE_CODE), $mounts(DefaultDrivers::CODEX)],
         );

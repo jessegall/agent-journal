@@ -41,6 +41,7 @@ use App\Agents\Drivers\Codex\CodexIsolation;
 use App\Agents\Drivers\Codex\CodexKeyScripts;
 use App\Agents\Drivers\Codex\CodexKeySignIn;
 use App\Agents\Drivers\Codex\CodexLayout;
+use App\Agents\Drivers\Codex\CodexManagedHooks;
 use App\Agents\Drivers\Codex\CodexModelAnswer;
 use App\Agents\Drivers\Codex\CodexSignIn;
 use App\Agents\Drivers\Codex\CodexSignInEnvironment;
@@ -169,7 +170,11 @@ final class DriversServiceProvider extends ServiceProvider
                 ConditionalPart::for(new Negation(new ContainedStart()), CodexHome::class),
                 ConditionalPart::for(new Negation(new ContainedStart()), HostHomeAndPath::class),
             )
-            ->startPlan(ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class))
+            ->startPlan(
+                ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class),
+                ConditionalPart::for(new ContainedStart(), CodexManagedHooks::class),
+            )
+            ->mountsPlanFile(CodexManagedHooks::FILE, CodexManagedHooks::TARGET)
             // Codex links its own executable under tmp/arg0 each run; those links never belong in the account folder.
             ->keepsScratchIn('tmp');
     }

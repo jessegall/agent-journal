@@ -70,16 +70,19 @@ final readonly class CodexHomeFiles implements PlanPart
         $hookFile = CodexHome::FILES_FOLDER.'/hooks.json';
 
         return new PlanAddition([
-            PlanFile::template('hooks.json', self::encode(['hooks' => $this->hooks($command)])),
+            PlanFile::template('hooks.json', self::encode(['hooks' => self::hooksRelaying($start->hookCommand)])),
             PlanFile::template('config.toml', $config.self::trustTables($hookFile, $command)),
         ]);
     }
 
     /**
+     * Every native hook event, each relayed through the hook command, as Codex reads them from a hooks.json.
+     *
      * @return array<string, list<array<string, mixed>>>
      */
-    private function hooks(string $command): array
+    public static function hooksRelaying(string $hookCommand): array
     {
+        $command = RelayedHookCommand::for($hookCommand, self::HOOK_NAME)->text;
         $hook = [['hooks' => [['type' => 'command', 'command' => $command]]]];
 
         return array_fill_keys(array_keys(self::HOOK_EVENTS), $hook);
