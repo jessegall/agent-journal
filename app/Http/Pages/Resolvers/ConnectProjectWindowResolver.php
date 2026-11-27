@@ -128,7 +128,9 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
             array_values(array_unique($approvers)),
         ));
 
-        $audits = ConnectionAudit::findNewestOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
+        $audits = ConnectionAudit::findNewestOfBindings(
+            array_map(fn (ProjectBinding $binding) => $binding->id, $bindings),
+        );
 
         return array_map(fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding(
             $binding,

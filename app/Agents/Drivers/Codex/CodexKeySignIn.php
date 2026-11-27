@@ -81,7 +81,11 @@ final readonly class CodexKeySignIn implements SignInProtocol
     {
         $status = $driver->status($directory, SecretHandover::none());
 
-        return new SignInVerification($status->isSignedInBy(SignInMethod::ApiKey), SignInIdentity::unproved(), $status->isReadable);
+        return new SignInVerification(
+            $status->isSignedInBy(SignInMethod::ApiKey),
+            SignInIdentity::unproved(),
+            $status->isReadable,
+        );
     }
 
     public function signOut(SignInDriver $driver, string $directory): void

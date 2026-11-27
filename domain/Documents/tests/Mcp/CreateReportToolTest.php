@@ -37,7 +37,10 @@ final class CreateReportToolTest extends McpToolEntryTestCase
                 'body' => '# Trace',
                 'request_key' => 'documents-1',
             ])
-            ->reply(CreateReportCommand::class, new CreatedRecord(strtolower((string) Str::ulid()), 3, 'documents.report'))
+            ->reply(
+                CreateReportCommand::class,
+                new CreatedRecord(strtolower((string) Str::ulid()), 3, 'documents.report'),
+            )
             ->expects(CreateReportCommand::class, [
                 'title' => 'Trace',
                 'abstract' => 'The cause.',

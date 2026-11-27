@@ -103,7 +103,9 @@ final readonly class ProfilesShow extends ProfilesPage
         }
 
         if ($routes->default->isProfile()) {
-            return [SettingsRow::value('answers-to', 'Answers to', $routes->default->profileKey()->key, self::ANSWERS_HELP)];
+            return [
+                SettingsRow::value('answers-to', 'Answers to', $routes->default->profileKey()->key, self::ANSWERS_HELP),
+            ];
         }
 
         return [];

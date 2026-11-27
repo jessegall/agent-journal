@@ -24,7 +24,10 @@ use Laravel\Mcp\Support\UriTemplate;
 #[Description('The Markdown of one published document revision.')]
 final class DocumentRevisionResource extends PublicationResource implements HasUriTemplate
 {
-    public function __construct(private readonly DocumentReaderContract $documents, private readonly ReadGrant $reads) {}
+    public function __construct(
+        private readonly DocumentReaderContract $documents,
+        private readonly ReadGrant $reads,
+    ) {}
 
     public function uriTemplate(): UriTemplate
     {

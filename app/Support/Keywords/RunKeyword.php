@@ -18,7 +18,12 @@ final readonly class RunKeyword implements ScriptStatement
 {
     public static function definition(): ScriptKeywordDefinition
     {
-        return ScriptKeywordDefinition::statement('RUN', SyntaxForm::CommandKey, self::class, 'Run one activated command.');
+        return ScriptKeywordDefinition::statement(
+            'RUN',
+            SyntaxForm::CommandKey,
+            self::class,
+            'Run one activated command.',
+        );
     }
 
     public function compile(ParsedStatement $statement, CompileContext $context): Instruction

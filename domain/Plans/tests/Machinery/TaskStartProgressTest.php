@@ -122,7 +122,10 @@ final class TaskStartProgressTest extends TestCase
 
     private function start(Task $task): void
     {
-        $this->journal->actAsAgentIds($this->session->agent_id, $this->session->id)->run(new StartTaskCommand($task->id));
+        $this->journal->actAsAgentIds(
+            $this->session->agent_id,
+            $this->session->id,
+        )->run(new StartTaskCommand($task->id));
     }
 
     /**

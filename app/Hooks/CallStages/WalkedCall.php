@@ -25,7 +25,9 @@ final readonly class WalkedCall
      */
     public function leavesMessagesWithIdleAgent(): bool
     {
-        return $this->answer->messages !== [] && $this->call->input->leavesAgentIdle($this->answer->decision->answerType());
+        return $this->answer->messages !== [] && $this->call->input->leavesAgentIdle(
+            $this->answer->decision->answerType(),
+        );
     }
 
     public function answeredBy(HookAnswer $answer): self

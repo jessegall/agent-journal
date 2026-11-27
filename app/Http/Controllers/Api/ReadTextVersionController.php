@@ -15,8 +15,11 @@ use App\Support\RecordReference;
  */
 final readonly class ReadTextVersionController
 {
-    public function __invoke(ReadTextVersionPayload $call, TextResolver $text, RecordResolver $records): TextVersionSummary
-    {
+    public function __invoke(
+        ReadTextVersionPayload $call,
+        TextResolver $text,
+        RecordResolver $records,
+    ): TextVersionSummary {
         return $text->version($records->identify(RecordReference::parse($call->target)), $call->version);
     }
 }

@@ -65,7 +65,10 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
      */
     public function __invoke(DriverStart $start): PlanAddition
     {
-        $content = json_encode($this->settings($start), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $content = json_encode(
+            $this->settings($start),
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+        );
 
         return new PlanAddition([PlanFile::template(self::NAME, $content)]);
     }
@@ -174,7 +177,11 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
         }
 
         $relayed = RelayedHookCommand::for($command, self::HOOK_NAME)->text;
-        $hook = [['hooks' => [['type' => 'command', 'command' => $relayed]]]];
+
+        $hook = [['hooks' => [[
+            'type' => 'command',
+            'command' => $relayed,
+        ]]]];
 
         return array_fill_keys(self::HOOK_EVENTS, $hook);
     }

@@ -18,6 +18,8 @@ final readonly class ClaudeCodeKeptSignIn implements PlanPart
 
     public function __invoke(DriverStart $start): PlanAddition
     {
-        return new PlanAddition(keptFiles: ['{folder:'.ClaudeCodeOwnTerminalHome::ACCOUNT_FOLDER.'}/'.self::CREDENTIAL]);
+        return new PlanAddition(
+            keptFiles: ['{folder:'.ClaudeCodeOwnTerminalHome::ACCOUNT_FOLDER.'}/'.self::CREDENTIAL],
+        );
     }
 }

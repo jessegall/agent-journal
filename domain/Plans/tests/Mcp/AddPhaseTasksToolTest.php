@@ -31,7 +31,9 @@ final class AddPhaseTasksToolTest extends McpToolEntryTestCase
     {
         $start = $journal->owner()->signedStart('Planner');
 
-        $phase = $journal->fixtures(PlanFixtures::class)->plan('Release')->withPlan('Release', fn (TestPlan $plan) => $plan
+        $phase = $journal->fixtures(
+            PlanFixtures::class,
+        )->plan('Release')->withPlan('Release', fn (TestPlan $plan) => $plan
             ->addPhase('Design'))->phaseCalled('Design');
 
         $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');

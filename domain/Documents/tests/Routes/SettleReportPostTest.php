@@ -29,7 +29,10 @@ final class SettleReportPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();
-        $report = $journal->run(new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id));
+
+        $report = $journal->run(
+            new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id),
+        );
 
         return RouteCall::as(Caller::User)
             ->parameters(['report' => $report->number])

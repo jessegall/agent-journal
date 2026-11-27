@@ -29,7 +29,11 @@ final class CloseReportToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Writer');
-        $report = $journal->runAs('Writer', new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id));
+
+        $report = $journal->runAs(
+            'Writer',
+            new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id),
+        );
 
         return ToolCall::by($start)
             ->arguments([

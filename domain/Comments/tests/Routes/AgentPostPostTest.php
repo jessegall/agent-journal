@@ -33,7 +33,12 @@ final class AgentPostPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $start = $journal->owner()->signedStart('Writer');
-        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
+
+        $document = $journal->runAs(
+            'Writer',
+            new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id),
+        );
+
         $reference = "doc {$document->number}";
         $target = $journal->service(RecordResolver::class)->identify(RecordReference::parse($reference));
         $submissionKey = (string) Str::uuid();

@@ -30,7 +30,12 @@ final readonly class StartSkillFiles
 
         $driver = $this->adapters->forSession($session);
         $folder = $driver->delivery()->folder;
-        $files = SessionSkillFiles::of($session, SkillGeneration::findById($session->skill_generation_id), $driver)->files;
+
+        $files = SessionSkillFiles::of(
+            $session,
+            SkillGeneration::findById($session->skill_generation_id),
+            $driver,
+        )->files;
 
         return array_map(
             fn (string $path) => new PlanFile("{$folder}/{$path}", $files[$path]),

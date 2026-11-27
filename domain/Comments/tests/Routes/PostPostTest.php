@@ -33,7 +33,11 @@ final class PostPostTest extends GuardedRouteEntryTestCase
     public function test_a_mixed_or_partial_place_or_an_author_field_is_refused_and_nothing_is_sent(): void
     {
         $this->journal->owner();
-        $document = $this->journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
+
+        $document = $this->journal->run(
+            new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id),
+        );
+
         $this->journal->sinkCommands();
 
         foreach ([
@@ -68,7 +72,11 @@ final class PostPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();
-        $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
+
+        $document = $journal->run(
+            new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id),
+        );
+
         $reference = "doc {$document->number}";
         $target = $journal->service(RecordResolver::class)->identify(RecordReference::parse($reference));
         $submissionKey = (string) Str::uuid();

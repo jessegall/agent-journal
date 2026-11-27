@@ -33,7 +33,11 @@ final class ApprovePatchTest extends GuardedRouteEntryTestCase
 
         $ruleId = $journal->runAsStart(
             $start,
-            new ProposeRuleCommand('No phase waits on the user.', 'Agents keep forgetting it.', TestProjects::local()->id),
+            new ProposeRuleCommand(
+                'No phase waits on the user.',
+                'Agents keep forgetting it.',
+                TestProjects::local()->id,
+            ),
         );
 
         $journal->actAs('Owner');

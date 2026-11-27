@@ -30,7 +30,12 @@ final class DockCardEncoderTest extends TestCase
     {
         $card = DockCard::named('Message 4', Stack::of('root', new Subtitle('status', 'Ready')));
 
-        $encoded = $this->app->make(CardEncoder::class)->encode($card, 'P7', new DockIdentity('message', 'M4'), 'Message 4');
+        $encoded = $this->app->make(CardEncoder::class)->encode(
+            $card,
+            'P7',
+            new DockIdentity('message', 'M4'),
+            'Message 4',
+        );
 
         $this->assertSame(self::EXAMPLE_ENVELOPE, json_encode($encoded));
     }

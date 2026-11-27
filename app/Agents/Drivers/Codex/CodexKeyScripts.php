@@ -56,8 +56,20 @@ final readonly class CodexKeyScripts implements DriverKeyScripts
         $driver = DefaultDrivers::CODEX;
 
         return [
-            new KeyScript('ChangeModel', $driver, $this->builds->versionOf(DefaultDrivers::CODEX), ['model'], $changeModel),
-            new KeyScript('ChangeEffort', $driver, $this->builds->versionOf(DefaultDrivers::CODEX), ['effort'], $changeEffort),
+            new KeyScript(
+                'ChangeModel',
+                $driver,
+                $this->builds->versionOf(DefaultDrivers::CODEX),
+                ['model'],
+                $changeModel,
+            ),
+            new KeyScript(
+                'ChangeEffort',
+                $driver,
+                $this->builds->versionOf(DefaultDrivers::CODEX),
+                ['effort'],
+                $changeEffort,
+            ),
         ];
     }
 }

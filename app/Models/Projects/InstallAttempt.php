@@ -303,7 +303,13 @@ final class InstallAttempt extends JournalModel implements EventSource, Readable
     public static function findLockedWithKey(string $userId, string $idempotencyKey): array
     {
         return array_values(
-            self::query()->ofOwner($userId)->withIdempotencyKey($idempotencyKey)->lockForUpdate()->limit(1)->get()->all(),
+            self::query()
+                ->ofOwner($userId)
+                ->withIdempotencyKey($idempotencyKey)
+                ->lockForUpdate()
+                ->limit(1)
+                ->get()
+                ->all(),
         );
     }
 

@@ -18,7 +18,12 @@ final readonly class YieldKeyword implements ScriptStatement
 {
     public static function definition(): ScriptKeywordDefinition
     {
-        return ScriptKeywordDefinition::statement('YIELD', SyntaxForm::Text, self::class, 'Return guidance to the actor.');
+        return ScriptKeywordDefinition::statement(
+            'YIELD',
+            SyntaxForm::Text,
+            self::class,
+            'Return guidance to the actor.',
+        );
     }
 
     public function compile(ParsedStatement $statement, CompileContext $context): Instruction

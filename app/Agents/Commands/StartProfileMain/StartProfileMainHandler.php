@@ -58,7 +58,12 @@ final readonly class StartProfileMainHandler implements CommandHandler
 
         $target = $command->conversationId === null
             ? null
-            : DriverConversation::resolveChosenFor($command->conversationId, $agent->id, $profile->selection->driver, null);
+            : DriverConversation::resolveChosenFor(
+                $command->conversationId,
+                $agent->id,
+                $profile->selection->driver,
+                null,
+            );
 
         return $this->commands->run(new StartAgentCommand(new StartRequest(
             $command->requestId,

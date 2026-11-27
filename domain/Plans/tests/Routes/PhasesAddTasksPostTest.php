@@ -31,7 +31,9 @@ final class PhasesAddTasksPostTest extends GuardedRouteEntryTestCase
     {
         $start = $journal->owner()->signedStart('Planner');
 
-        $plans = $journal->fixtures(PlanFixtures::class)->plan('Release')->withPlan('Release', fn (TestPlan $plan) => $plan
+        $plans = $journal->fixtures(
+            PlanFixtures::class,
+        )->plan('Release')->withPlan('Release', fn (TestPlan $plan) => $plan
             ->addPhase('Design'));
 
         $plan = $plans->planCalled('Release');

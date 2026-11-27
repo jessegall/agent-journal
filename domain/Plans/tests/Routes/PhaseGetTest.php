@@ -27,7 +27,9 @@ final class PhaseGetTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        $plans = $journal->owner()->fixtures(PlanFixtures::class)->plan('Release')->withPlan('Release', fn (TestPlan $plan) => $plan
+        $plans = $journal->owner()->fixtures(
+            PlanFixtures::class,
+        )->plan('Release')->withPlan('Release', fn (TestPlan $plan) => $plan
             ->addPhase('Design'));
 
         return RouteCall::as(Caller::User)

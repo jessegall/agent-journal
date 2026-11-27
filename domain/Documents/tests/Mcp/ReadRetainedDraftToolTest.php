@@ -51,7 +51,11 @@ final class ReadRetainedDraftToolTest extends McpToolEntryTestCase
         );
 
         $journal->actAsAgentIds($helper->id, $session->id);
-        $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
+
+        $document = $journal->run(
+            new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id),
+        );
+
         $opened = $journal->run(new OpenDocumentCommand($document->id, 1));
 
         $journal->run(new EditDocumentCommand(
@@ -61,7 +65,9 @@ final class ReadRetainedDraftToolTest extends McpToolEntryTestCase
         ));
 
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(CloseEndedSessionDraft::class)->handle(new SessionClosed($helper->id, $session->id)),
+            fn () => $this->app->make(CloseEndedSessionDraft::class)->handle(
+                new SessionClosed($helper->id, $session->id),
+            ),
         );
 
         $this->grantDraftReads($parent, $document->id);

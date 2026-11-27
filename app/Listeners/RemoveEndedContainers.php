@@ -31,6 +31,10 @@ final readonly class RemoveEndedContainers implements Listener
             return;
         }
 
-        $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new RemoveHostProcessCommand($process->id));
+        $this->commands->runAsJournal(
+            CommandEntry::HostControl,
+            self::TRUSTED_ENTRY,
+            new RemoveHostProcessCommand($process->id),
+        );
     }
 }

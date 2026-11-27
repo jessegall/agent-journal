@@ -177,7 +177,9 @@ final class TaskRun extends JournalModel implements Assignable, EventSource, Rea
      */
     public static function findNumberedOf(Task $task, int $number): self
     {
-        return self::query()->ofRun($task->id, $number)->firstOr(TaskRunMissing::throwing()->forRun($task->number, $number));
+        return self::query()->ofRun($task->id, $number)->firstOr(
+            TaskRunMissing::throwing()->forRun($task->number, $number),
+        );
     }
 
     // ----------[ Scopes ]----------

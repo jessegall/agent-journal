@@ -46,7 +46,9 @@ final readonly class RunStateCommand implements Listener
         $run = fn () => $this->actors->within($answered->actor, $answered->authority, fn () => $this->admission->admit(
             $answered->target->sessionId,
             $this->deadline,
-            fn () => $this->bus->runGuarded($command, fn () => AgentStackRow::findActiveFor($answered->target)->isDefined()
+            fn () => $this->bus->runGuarded($command, fn () => AgentStackRow::findActiveFor(
+                $answered->target,
+            )->isDefined()
                 ? CommandOriginStatus::Eligible
                 : CommandOriginStatus::TargetUnavailable),
         ));

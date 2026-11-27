@@ -31,6 +31,10 @@ final readonly class RemoveEndedSessionContainer implements Listener
             return;
         }
 
-        $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new RemoveSessionContainerCommand($runtime->host_id, $fact->sessionId));
+        $this->commands->runAsJournal(
+            CommandEntry::HostControl,
+            self::TRUSTED_ENTRY,
+            new RemoveSessionContainerCommand($runtime->host_id, $fact->sessionId),
+        );
     }
 }

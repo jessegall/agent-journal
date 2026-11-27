@@ -20,8 +20,8 @@ final readonly class ClaudeCodeAccountHome implements AccountEnvironmentPart
     /**
      * The PATH of a start from an installation: its Keychain shim, its installed executables, then the system's.
      */
-    public const string INSTALLATION_PATH = '{host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:'
-        .'/usr/bin:/bin:/usr/sbin:/sbin';
+    public const string INSTALLATION_PATH = '{host:INSTALLATION}/journal/programs/accounts/no-keychain:'
+        .'{host:INSTALLATION}/bin:/usr/bin:/bin:/usr/sbin:/sbin';
 
     /**
      * The account's variables, its home and empty folders, and its read files.

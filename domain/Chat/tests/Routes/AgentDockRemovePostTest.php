@@ -36,7 +36,11 @@ final class AgentDockRemovePostTest extends GuardedRouteEntryTestCase
         $start = $journal->owner()->signedStart('Builder');
         $journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Builder');
         $task = Task::factory()->create(['title' => 'Ship the dock']);
-        $journal->actAsAgentIds($start->agent->id, $start->session->id)->run(new DockSourceCommand(null, 'tasks.task', $task->id));
+
+        $journal->actAsAgentIds($start->agent->id, $start->session->id)->run(
+            new DockSourceCommand(null, 'tasks.task', $task->id),
+        );
+
         $placement = DockPlacement::query()->sole();
 
         return RouteCall::as(Caller::Agent, $start)

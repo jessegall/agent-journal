@@ -31,7 +31,10 @@ final readonly class DriverCompatibilities implements DriverCompatibilitiesContr
         }
 
         $platform = $this->startProfiles->forSignedIn($driver)->protectionPlatform()->value;
-        $report = Host::resolveContainedProtectionOf(ProtectionReport::unreported($driver, $pinned->version, $platform));
+
+        $report = Host::resolveContainedProtectionOf(
+            ProtectionReport::unreported($driver, $pinned->version, $platform),
+        );
 
         if ($report->isEnforcedInContainer()) {
             return $pinned->withEvidence(DriverEvidence::NativeShown, 'the agent image\'s protection report');

@@ -72,7 +72,9 @@ final class PlanFixturesTest extends TestCase
         $plans = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Release');
         $plan = $plans->planCalled('Release')->assignmentIdentity();
 
-        $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->withPlan('Release', fn (TestPlan $release) => $release
+        $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->withPlan('Release', fn (
+            TestPlan $release,
+        ) => $release
             ->addPhase('Build')
             ->withPhase('Build', fn (TestPhase $phase) => $phase->place($plan))));
 
@@ -101,7 +103,9 @@ final class PlanFixturesTest extends TestCase
 
         $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->plan('Release'));
 
-        $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->withPlan('Missing', fn (TestPlan $plan) => $plan
+        $this->journal->assertRefused(FixtureRefused::class, fn () => $plans->withPlan('Missing', fn (
+            TestPlan $plan,
+        ) => $plan
             ->addPhase('Build')));
 
         $this->assertSame(1, Plan::query()->count());
