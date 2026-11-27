@@ -4,14 +4,14 @@
     "scenario_hash": "3786e46674251b3cb089046119ac0539f16007a6f1431349a4ba0f0a152536a1",
     "driver": "claude-code",
     "build": "2.1.323",
-    "image_programs": "a3e2bf0f647bb58d5094039e1fe2649efb780fa0b250dfafb8e9f19235d043c3",
-    "recorded_at": "2026-11-27T19:30:09+00:00",
+    "image_programs": "5545e005ff6742bccd85a5c28efa113752066c191061596f694191cdf65aa5d6",
+    "recorded_at": "2026-11-27T20:37:39+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",
-        "02-hooks-caller-5f263f1ecb1876dc",
-        "03-agent-caller-5f263f1ecb1876dc",
+        "02-hooks-caller-fe716dd0f463caf2",
+        "03-agent-caller-fe716dd0f463caf2",
         "04-docker-daemon",
-        "05-driver-01m8f7rnm6td8j9fp8qb9rghv8",
-        "06-driver-01m8f7rpevantbkbyc49zwbb33"
+        "05-driver-01m8fbm7qx7dc9fd211vtk158c",
+        "06-driver-01m8fbm8xmmzc790064d8b5q3r"
     ]
 }
