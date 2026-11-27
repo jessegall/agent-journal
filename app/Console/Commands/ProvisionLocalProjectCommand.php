@@ -22,11 +22,11 @@ final class ProvisionLocalProjectCommand extends Command
     protected $description = 'Create the local project, its Main environment and the owner\'s grants on it';
 
     public function handle(
-        #[Config('processes.local_execution')]
+        #[Config('journal.processes.local_execution')]
         bool $isLocalExecution,
-        #[Config('processes.project_key')]
+        #[Config('journal.processes.project_key')]
         string $projectKey,
-        #[Config('processes.project_label')]
+        #[Config('journal.processes.project_label')]
         string $projectLabel,
         AccessSettings $access,
         JournalCommands $commands,

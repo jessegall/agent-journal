@@ -16,7 +16,7 @@ trait RunsDirectLines
     protected function setUpRunsDirectLines(): void
     {
         ProcessOutputDisk::fake();
-        config(['processes.runner' => true]);
+        config(['journal.processes.runner' => true]);
         $this->start = $this->journal->signedStart('Line runner');
     }
 }

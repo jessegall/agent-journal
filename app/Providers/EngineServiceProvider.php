@@ -36,7 +36,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * The engine's settings, read once from config/engine.php, its one lock for the life of the process, and what it may
+ * The engine's settings, read once from config/journal.php (engine), its one lock for the life of the process, and what it may
  * address in the current operation; areas add their engine listeners to EngineListenerSet, and the engine adds the
  * start silence sweep.
  */
@@ -45,12 +45,12 @@ final class EngineServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(EngineSettings::class, fn (Application $app) => new EngineSettings(
-            $app->make('config')->string('engine.connection'),
-            $app->make('config')->integer('engine.lock_key'),
-            $app->make('config')->integer('engine.pass_budget_ms'),
-            $app->make('config')->integer('engine.command_budget_ms'),
-            $app->make('config')->integer('engine.batch_size'),
-            $app->make('config')->integer('engine.watchdog_seconds'),
+            $app->make('config')->string('journal.engine.connection'),
+            $app->make('config')->integer('journal.engine.lock_key'),
+            $app->make('config')->integer('journal.engine.pass_budget_ms'),
+            $app->make('config')->integer('journal.engine.command_budget_ms'),
+            $app->make('config')->integer('journal.engine.batch_size'),
+            $app->make('config')->integer('journal.engine.watchdog_seconds'),
         ));
 
         $this->app->singleton(AdvisoryEngineLock::class);

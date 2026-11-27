@@ -22,7 +22,7 @@ final readonly class InstallBuiltInProfilesHandler implements CommandHandler
      */
     public function __construct(
         private ActivateProfilesHandler $activation,
-        #[Config('profiles')]
+        #[Config('journal.profiles')]
         private array $profiles,
     ) {}
 

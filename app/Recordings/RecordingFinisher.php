@@ -43,7 +43,7 @@ final readonly class RecordingFinisher
         private Recordings $recordings,
         private ServerClock $clock,
         private ProcessFactory $processes,
-        #[Config('agents.agent_image')]
+        #[Config('journal.agents.agent_image')]
         private string $agentImage,
     ) {}
 

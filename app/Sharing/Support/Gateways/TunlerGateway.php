@@ -35,11 +35,11 @@ final readonly class TunlerGateway implements ShareGateway
         private GatewayStarts $starts,
         private PublicOriginCheck $origins,
         private ChallengeProbe $probe,
-        #[Config('sharing.tunler.binary')]
+        #[Config('journal.sharing.tunler.binary')]
         private string $binary,
-        #[Config('sharing.tunler.config_dir')]
+        #[Config('journal.sharing.tunler.config_dir')]
         private string $configFolder,
-        #[Config('sharing.tunler.subdomain')]
+        #[Config('journal.sharing.tunler.subdomain')]
         private string|null $subdomain,
         private Files $files,
     ) {}

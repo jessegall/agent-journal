@@ -68,9 +68,9 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->bind(ActorReference::class, fn (Application $app) => $app->make(CurrentActor::class)->actor());
 
         $this->app->singleton(PresenceWindow::class, fn (Application $app) => new PresenceWindow(
-            $app->make('config')->integer('actors.presence_seconds'),
-            $app->make('config')->integer('actors.heartbeat_seconds'),
-            $app->make('config')->integer('actors.signed_call_refresh_seconds'),
+            $app->make('config')->integer('journal.actors.presence_seconds'),
+            $app->make('config')->integer('journal.actors.heartbeat_seconds'),
+            $app->make('config')->integer('journal.actors.signed_call_refresh_seconds'),
         ));
 
         $this->app->bind(ServerClockContract::class, ServerClock::class);

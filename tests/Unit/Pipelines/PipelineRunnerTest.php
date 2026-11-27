@@ -7,6 +7,7 @@ namespace Tests\Unit\Pipelines;
 use App\Pipelines\Exceptions\StepOutOfOrder;
 use App\Pipelines\Support\BuiltSteps;
 use App\Pipelines\Support\PipelineRunner;
+use App\Pipelines\Support\Step;
 use App\Reflection\CatalogueReflectorFactory;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
@@ -15,6 +16,7 @@ use Tests\Fixtures\Pipelines\CountIntoWordsPipeline;
 use Tests\Fixtures\Pipelines\CountLastWordPipeline;
 use Tests\Fixtures\Pipelines\CountWords;
 use Tests\Fixtures\Pipelines\CountWordsPipeline;
+use Tests\Fixtures\Pipelines\DropFirstWord;
 use Tests\Fixtures\Pipelines\Words;
 
 /**
@@ -86,6 +88,19 @@ final class PipelineRunnerTest extends TestCase
         $this->assertSame(3, $counted->count);
         $this->expectException(StepOutOfOrder::class);
         $pipelines->runSteps([CountWords::class], new Words('a b'), Words::class);
+    }
+
+    public function test_a_conditional_step_with_no_else_lets_the_value_go_on_when_its_condition_fails(): void
+    {
+        $pipelines = new PipelineRunner(new CatalogueReflectorFactory());
+        $dropWhenLong = [
+            Step::conditional(fn (Words $words) => str_word_count($words->text) > 2, then: DropFirstWord::class),
+        ];
+
+        $short = $pipelines->runSteps($dropWhenLong, new Words('two words'), Words::class);
+        $long = $pipelines->runSteps($dropWhenLong, new Words('three small words'), Words::class);
+
+        $this->assertSame(['two words', 'small words'], [$short->text, $long->text]);
     }
 
     public function test_a_pipe_handed_a_stage_it_does_not_take_is_named(): void

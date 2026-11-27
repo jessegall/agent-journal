@@ -41,9 +41,9 @@ final class LocalFilesTest extends TestCase
         mkdir("{$this->folder}/accounts", 0o700, true);
         mkdir("{$this->folder}/outside", 0o700, true);
         config([
-            'files.places.project' => "{$this->folder}/project",
-            'files.places.temporary' => "{$this->folder}/project",
-            'accounts.root' => "{$this->folder}/accounts",
+            'journal.files.places.project' => "{$this->folder}/project",
+            'journal.files.places.temporary' => "{$this->folder}/project",
+            'journal.accounts.root' => "{$this->folder}/accounts",
         ]);
         CarbonImmutable::setTestNow(CarbonImmutable::now()->addMinute());
         $this->files = $this->app->make(Files::class);

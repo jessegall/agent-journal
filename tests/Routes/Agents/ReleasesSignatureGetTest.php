@@ -21,7 +21,7 @@ final class ReleasesSignatureGetTest extends RouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        $folder = (string) config('files.places.releases');
+        $folder = (string) config('journal.files.places.releases');
         file_put_contents("{$folder}/1.0.0/manifest.json.sig", 'signature');
 
         return RouteCall::as(Caller::Public);

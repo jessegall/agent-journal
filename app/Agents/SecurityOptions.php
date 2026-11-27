@@ -9,7 +9,7 @@ use App\Hosts\Protocol\Payloads\HostSecurityOptionsPayload;
 
 /**
  * The seccomp and AppArmor profiles a helper container runs under, each a profile name or a path in the profiles
- * folder the journal names (agents.security_profiles), empty when not set; the host passes each as one --security-opt.
+ * folder the journal names (journal.agents.security_profiles), empty when not set; the host passes each as one --security-opt.
  */
 final readonly class SecurityOptions
 {

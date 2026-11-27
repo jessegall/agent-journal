@@ -26,7 +26,7 @@ final readonly class RunKeyScriptHandler implements CommandHandler
     public function __construct(
         private DriverRequests $requests,
         private ValidatorFactory $validators,
-        #[Config('agents.key_scripts')]
+        #[Config('journal.agents.key_scripts')]
         private array $scripts,
     ) {}
 

@@ -44,7 +44,7 @@ final class RecordCallsTest extends TestCase
 
     public function test_on_a_call_and_a_refused_one_are_kept_as_asked_and_answered_without_a_signature(): void
     {
-        config(['agents.recording' => true]);
+        config(['journal.agents.recording' => true]);
         $this->app->make(RecordingDrafts::class)->openRun(Scenario::read('claude-code/terminal-turn', '{"steps":[]}'));
 
         $this->heartbeat(['live_processes' => []]);
@@ -80,7 +80,7 @@ final class RecordCallsTest extends TestCase
         $target = route('agents.agent.heartbeat', absolute: false);
         $this->journal->agentCall($start, 'POST', $target, ['request_key' => 'heartbeat-off']);
         $isKeptOff = File::isDirectory("{$this->drafts()}/agent");
-        config(['agents.recording' => true]);
+        config(['journal.agents.recording' => true]);
         $this->app->make(RecordingDrafts::class)->openRun(Scenario::read('claude-code/terminal-turn', '{"steps":[]}'));
 
         $this->journal->agentCall($start, 'POST', $target, ['request_key' => 'heartbeat-on']);

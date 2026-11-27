@@ -153,7 +153,7 @@ it only its own maintenance scope. Its commands check that scope with `EngineAcc
 that throws is logged and the next one still runs. `App\Events\Engine\EngineTicked` (`now` and `sincePrevious`) is also
 dispatched on the event dispatcher for plain observers that run no commands. Listeners must do small, bounded reads.
 
-## Configuration: `config/engine.php`
+## Configuration: `config/journal.php (engine)`
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
@@ -167,7 +167,7 @@ The engine has its own database connection, `engine` in `config/database.php`. I
 through a session-pinned proxy, because a transaction-pooling proxy breaks the advisory lock. The connection never
 reconnects: a lost connection ends the process (`EngineConnectionLost`), and PostgreSQL releases the lock.
 
-Presence is configured in `config/actors.php`: `presence_seconds` (120) is both how long a heartbeat keeps an actor
+Presence is configured in `config/journal.php (actors)`: `presence_seconds` (120) is both how long a heartbeat keeps an actor
 present and an agent session's silence threshold; `heartbeat_seconds` (30, never more than 60) is how often senders
 beat.
 

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Exceptions\HostCredentialRejected;
 use App\Models\Projects\Host;
 use App\Projects\Commands\EnrollHost\EnrollHostCommand;
 use App\Projects\Commands\RecordHostCallFailure\RecordHostCallFailureCommand;
 use App\Projects\Enums\ArrangementType;
 use App\Projects\Exceptions\HostArrangementRefused;
-use App\Projects\Exceptions\HostCredentialRejected;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

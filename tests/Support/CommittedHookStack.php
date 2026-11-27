@@ -67,7 +67,7 @@ trait CommittedHookStack
     protected function setUpCommittedHookStack(): void
     {
         $this->emptyTables(...self::committedTables());
-        config(['processes.runner' => true]);
+        config(['journal.processes.runner' => true]);
         $this->target = $this->startedTarget();
         $this->openRuntime();
         $this->tasks = new InMemoryTasks([42, 43]);

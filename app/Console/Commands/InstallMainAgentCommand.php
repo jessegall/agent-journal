@@ -20,7 +20,7 @@ final class InstallMainAgentCommand extends Command
 
     public function handle(
         JournalCommands $dispatchers,
-        #[Config('processes.local_execution')]
+        #[Config('journal.processes.local_execution')]
         bool $isLocalExecution,
     ): int {
         if (! $isLocalExecution) {

@@ -28,7 +28,7 @@ final class AgentShowPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $start = $journal->owner()
-            ->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')))
+            ->activatedProfile(ProfileProposal::fromConfiguration((array) config('journal.profiles')))
             ->signedStart('Requester', 'journal-worker');
         $journal->idleAgent('Supervisor', 'journal-code-reviewer');
         $ask = $journal->runAs('Requester', new AskSupervisorCommand('Which input?', 'first'));

@@ -23,7 +23,7 @@ final class AskRawBytesTest extends TestCase
     {
         $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
             ->openProcess('before'));
-        config(['agents.recording' => true]);
+        config(['journal.agents.recording' => true]);
         $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
             ->openProcess('recorded')
             ->openProcess('piped', HostProcessType::Pipe));

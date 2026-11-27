@@ -31,7 +31,7 @@ trait SendsSignedHooks
      */
     private function signReadyAgent(): void
     {
-        config(['processes.runner' => true]);
+        config(['journal.processes.runner' => true]);
         $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->start->openRuntime($this->app, $this->journal->enrolledHost()->hostId);
         $this->asStartedAgent(fn () => $this->app->make(StackTransaction::class)->run(

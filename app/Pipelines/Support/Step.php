@@ -9,7 +9,7 @@ use Closure;
 
 /**
  * A step a pipeline lists inline beside its pipes and pipelines: steps repeated round after round, one of two steps
- * chosen by a condition, or a step a resolver names for each value. It only says what runs; the runner runs it.
+ * run on a condition, or a step a resolver names for each value. It only says what runs; the runner runs it.
  */
 abstract readonly class Step implements Pipable
 {
@@ -30,11 +30,11 @@ abstract readonly class Step implements Pipable
      *
      * @param  Closure  $condition  takes the value and answers yes or no
      * @param  class-string<Pipable>  $then
-     * @param  class-string<Pipable>  $else
+     * @param  class-string<Pipable>|null  $else  none lets the value go on as it came
      */
-    public static function chosen(Closure $condition, string $then, string $else): ChosenStep
+    public static function conditional(Closure $condition, string $then, string|null $else = null): ConditionalStep
     {
-        return new ChosenStep($condition, $then, $else);
+        return new ConditionalStep($condition, $then, $else);
     }
 
     /**

@@ -75033,10 +75033,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "afe284ad50cc567e32ddea2f790adbb7d8808509",
-        "old_path": "app/Pipelines/Support/ChosenStep.php",
-        "old_class": "App\\Pipelines\\Support\\ChosenStep",
-        "final_path": "app/Pipelines/Support/ChosenStep.php",
-        "final_class": "App\\Pipelines\\Support\\ChosenStep",
+        "old_path": "app/Pipelines/Support/ConditionalStep.php",
+        "old_class": "App\\Pipelines\\Support\\ConditionalStep",
+        "final_path": "app/Pipelines/Support/ConditionalStep.php",
+        "final_class": "App\\Pipelines\\Support\\ConditionalStep",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -92000,10 +92000,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "65451834f867011d62c10bea4f46df88f55b62ff",
-        "old_path": "app/Stacks/ReadyState.php",
-        "old_class": "App\\Stacks\\ReadyState",
-        "final_path": "app/Stacks/ReadyState.php",
-        "final_class": "App\\Stacks\\ReadyState",
+        "old_path": "app/Sessions/States/ReadyState.php",
+        "old_class": "App\\Sessions\\States\\ReadyState",
+        "final_path": "app/Sessions/States/ReadyState.php",
+        "final_class": "App\\Sessions\\States\\ReadyState",
         "status": "stay",
         "kind": "class",
         "generator": {

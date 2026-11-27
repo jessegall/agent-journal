@@ -91,16 +91,16 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->scoped(SignInProtocols::class);
 
         $this->app->singleton(AgentImage::class, fn () => AgentImage::fromConfig(
-            $this->app->make('config')->string('agents.agent_image'),
+            $this->app->make('config')->string('journal.agents.agent_image'),
         ));
 
         $this->app->bind(AgentImageProbes::class, fn () => new AgentImageProbes(
             $this->app->make(AgentImage::class),
-            $this->app->make('config')->string('agents.security_profiles'),
+            $this->app->make('config')->string('journal.agents.security_profiles'),
         ));
 
         $this->app->singleton(SignInEgress::class, fn () => new SignInEgress(
-            $this->app->make('config')->string('accounts.egress_proxy'),
+            $this->app->make('config')->string('journal.accounts.egress_proxy'),
         ));
 
         $this->callAfterResolving(

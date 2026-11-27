@@ -27,7 +27,7 @@ final readonly class RunAdmissionPipeline implements PipelineDefinition
     {
         return [
             FetchAdmission::class,
-            Step::chosen(
+            Step::conditional(
                 fn (FetchedAdmission $admission) => $admission->isAlreadyStarted(),
                 then: NotifyAlreadyStarted::class,
                 else: RunAdmittedLinePipeline::class,

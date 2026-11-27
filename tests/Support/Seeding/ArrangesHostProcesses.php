@@ -416,7 +416,7 @@ trait ArrangesHostProcesses
      */
     public function forgetSecurityProfiles(): self
     {
-        $this->app->make(Repository::class)->set('agents.security_profiles', '');
+        $this->app->make(Repository::class)->set('journal.agents.security_profiles', '');
 
         return $this;
     }
@@ -453,7 +453,7 @@ trait ArrangesHostProcesses
             JSON_THROW_ON_ERROR,
         ));
         file_put_contents("{$folder}/{$version}/".PublishedReleases::SIGNATURE, 'signature');
-        config(['files.places.releases' => $folder, 'agents.release' => $version]);
+        config(['journal.files.places.releases' => $folder, 'journal.agents.release' => $version]);
         $this->app->forgetInstance(PublishedReleases::class);
 
         return $this;

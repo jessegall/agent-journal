@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Engine;
 
 /**
- * The engine settings of config/engine.php, read once.
+ * The engine settings of config/journal.php (engine), read once.
  */
 final readonly class EngineSettings
 {

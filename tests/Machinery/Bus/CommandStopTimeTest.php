@@ -43,7 +43,7 @@ final class CommandStopTimeTest extends TestCase
             'max_slice_ms' => 100,
             'slice_share' => 0.2,
             'ordered_ids_max' => 1000,
-        ], $this->app->make('config')->get('engine.auto_assignments'));
+        ], $this->app->make('config')->get('journal.engine.auto_assignments'));
     }
 
     public function test_a_retry_gets_the_time_left_until_the_stop_not_a_fresh_budget(): void

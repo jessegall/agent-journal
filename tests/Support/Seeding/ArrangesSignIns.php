@@ -38,7 +38,7 @@ trait ArrangesSignIns
      */
     public function shareSignIns(string $accountsFolder): self
     {
-        $this->app->make(Repository::class)->set(['cache.default' => 'file', 'accounts.root' => $accountsFolder]);
+        $this->app->make(Repository::class)->set(['cache.default' => 'file', 'journal.accounts.root' => $accountsFolder]);
         $this->app->forgetInstance('cache');
         $this->app->forgetInstance('cache.store');
         Facade::clearResolvedInstance('cache');

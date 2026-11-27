@@ -22,7 +22,7 @@ final class AgentAdmitPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         config([
-            'processes.runner' => true,
+            'journal.processes.runner' => true,
         ]);
         $journal->owner();
         $this->openAcmeRequest();

@@ -240,7 +240,7 @@ final class ActivateProfilesTest extends TestCase
 
     public function test_shipped_routes_are_stored_and_their_supervisors_admit_every_required_command(): void
     {
-        $activation = $this->activateConfiguration((array) config('profiles'));
+        $activation = $this->activateConfiguration((array) config('journal.profiles'));
         $profiles = $this->app->make(ProfileResolver::class);
         $reviewer = $profiles->snapshotFor(ProfileKey::from('journal-code-reviewer'));
         $worker = $profiles->snapshotFor(ProfileKey::from('journal-worker'));
@@ -427,7 +427,7 @@ final class ActivateProfilesTest extends TestCase
         $before = $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
 
         $proposal = ['profiles' => ['journal-reviewer' => ['base' => 'writing-helper']]];
-        $this->app->make('config')->set('profiles', $proposal);
+        $this->app->make('config')->set('journal.profiles', $proposal);
 
         $after = $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
 

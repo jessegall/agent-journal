@@ -22,7 +22,7 @@ cookie, sign-in, Inertia or CSRF on this listener. Every answer carries `Cache-C
 the cause, even with `APP_DEBUG` on.
 
 The process runs the share listener when it starts with `JOURNAL_LISTENER=sharing`; no request header can switch to
-it. Its address comes from `config/sharing.php`: `listener.host` is always `127.0.0.1`, and `listener.port` comes from
+it. Its address comes from `config/journal.php (sharing)`: `listener.host` is always `127.0.0.1`, and `listener.port` comes from
 `SHARING_LISTENER_PORT`. Run it with static file serving off, so `public/` is reached only through these routes. The
 public reader's stylesheet is built apart from the main application with `npm run build:sharing`.
 

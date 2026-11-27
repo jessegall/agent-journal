@@ -19,7 +19,7 @@ A user who selects an agent stays the actor; the agent is the target. Nothing fo
 
 ## Access: users and the owner (task 117)
 
-`domain/Access` owns the User model (with its factory beside it), the users, password reset, sessions, passkeys and two-factor migrations, the Fortify actions and wiring (`AccessServiceProvider`), and `JournalAccess`, the one policy for who may use the journal: only the user whose email is `JOURNAL_OWNER_EMAIL` (config/access.php). Unset means nobody; the first account or a registration grants nothing. The `journal.user` middleware (`AuthenticateUser`) runs after session authentication and before route binding: it makes the owner the user actor and refuses everyone else with 403. Locally, `php artisan db:seed` creates owner@journal.local (password `password`); set `JOURNAL_OWNER_EMAIL` to that email.
+`domain/Access` owns the User model (with its factory beside it), the users, password reset, sessions, passkeys and two-factor migrations, the Fortify actions and wiring (`AccessServiceProvider`), and `JournalAccess`, the one policy for who may use the journal: only the user whose email is `JOURNAL_OWNER_EMAIL` (config/journal.php (access)). Unset means nobody; the first account or a registration grants nothing. The `journal.user` middleware (`AuthenticateUser`) runs after session authentication and before route binding: it makes the owner the user actor and refuses everyone else with 403. Locally, `php artisan db:seed` creates owner@journal.local (password `password`); set `JOURNAL_OWNER_EMAIL` to that email.
 
 ## Web and signing in (task 99)
 

@@ -22,7 +22,7 @@ use TypeError;
 use ValueError;
 
 /**
- * The validated, typed form of a proposed profile configuration such as config/profiles.php: its revision, the
+ * The validated, typed form of a proposed profile configuration such as config/journal.php (profiles): its revision, the
  * project's overrides per built-in base, and each profile. It is not live authority until an owner activates it, and no
  * untyped value passes beyond it.
  */

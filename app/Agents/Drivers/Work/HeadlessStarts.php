@@ -70,7 +70,7 @@ final readonly class HeadlessStarts
         private SessionOfflineReplies $offlineReplies,
         private StartSkillFiles $skills,
         private SessionContainers $containers,
-        #[Config('agents.session_journal_url')]
+        #[Config('journal.agents.session_journal_url')]
         private string $sessionJournalUrl,
     ) {}
 

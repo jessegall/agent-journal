@@ -38,9 +38,9 @@ trait ConnectsProjects
         mkdir("{$folder}/1.0.0", 0755, true);
         file_put_contents("{$folder}/1.0.0/manifest.json", (string) json_encode(PublicRelease::manifest('1.0.0')));
         config([
-            'files.places.releases' => $folder,
-            'agents.release' => '1.0.0',
-            'agents.server_origin' => 'https://journal.example.com',
+            'journal.files.places.releases' => $folder,
+            'journal.agents.release' => '1.0.0',
+            'journal.agents.server_origin' => 'https://journal.example.com',
         ]);
         $this->journal->asOwner(
             new SetBooleanSettingCommand(new SettingReference('Core', 'remote_projects'), true, 0),

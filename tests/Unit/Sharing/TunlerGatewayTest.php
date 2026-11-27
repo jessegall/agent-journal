@@ -41,11 +41,11 @@ final class TunlerGatewayTest extends SharingTestCase
         chmod($this->folder.'/tunler', 0755);
 
         config([
-            'sharing.tunler.binary' => $this->folder.'/tunler',
-            'sharing.tunler.config_dir' => $this->folder.'/config',
-            'sharing.tunnels_dir' => $this->folder,
-            'sharing.tunler.subdomain' => 'docs',
-            'sharing.rate_limit_store' => 'array',
+            'journal.sharing.tunler.binary' => $this->folder.'/tunler',
+            'journal.sharing.tunler.config_dir' => $this->folder.'/config',
+            'journal.sharing.tunnels_dir' => $this->folder,
+            'journal.sharing.tunler.subdomain' => 'docs',
+            'journal.sharing.rate_limit_store' => 'array',
         ]);
 
         $this->processes = new Processes();
@@ -77,7 +77,7 @@ final class TunlerGatewayTest extends SharingTestCase
             ['*version*' => 'tunler 1.3.9', '*status*' => '{"logged_in": false, "host": "other.test"}'],
         );
 
-        config(['sharing.tunler.subdomain' => null]);
+        config(['journal.sharing.tunler.subdomain' => null]);
 
         $this->assertSame([
             'No subdomain is set for Tunler (journal.tunnels.tunler.subdomain).',
@@ -86,7 +86,7 @@ final class TunlerGatewayTest extends SharingTestCase
             'Tunler is logged in to another host than example.test.',
         ], $this->gateway()->setupCheck($this->configuration())->problems);
 
-        config(['sharing.tunler.binary' => $this->folder.'/missing']);
+        config(['journal.sharing.tunler.binary' => $this->folder.'/missing']);
 
         $this->assertSame(
             ['The tunler program is not installed at its pinned path.'],

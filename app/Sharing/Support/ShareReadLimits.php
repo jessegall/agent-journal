@@ -26,7 +26,7 @@ final readonly class ShareReadLimits
 
     private RateLimiter $limiter;
 
-    public function __construct(CacheManager $caches, #[Config('sharing.rate_limit_store')] string $store)
+    public function __construct(CacheManager $caches, #[Config('journal.sharing.rate_limit_store')] string $store)
     {
         $this->limiter = new RateLimiter($caches->store($store));
     }

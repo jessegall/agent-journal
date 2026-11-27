@@ -43,7 +43,7 @@ final class CallRecorderTest extends TestCase
 
     public function test_on_keeps_each_callers_calls_asked_then_answered_in_their_own_draft(): void
     {
-        config(['agents.recording' => true]);
+        config(['journal.agents.recording' => true]);
         $this->app->make(RecordingDrafts::class)->openRun(Scenario::read('claude-code/terminal-turn', '{"steps":[]}'));
 
         $this->recordCall('first', 10);
@@ -68,7 +68,7 @@ final class CallRecorderTest extends TestCase
 
     public function test_a_new_run_removes_the_drafts_an_earlier_one_left(): void
     {
-        config(['agents.recording' => true]);
+        config(['journal.agents.recording' => true]);
         $drafts = $this->app->make(RecordingDrafts::class);
         $drafts->openRun(Scenario::read('claude-code/terminal-turn', '{"steps":[]}'));
         $this->recordCall('first', 10);

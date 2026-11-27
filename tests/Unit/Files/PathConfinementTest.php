@@ -37,9 +37,9 @@ final class PathConfinementTest extends TestCase
         file_put_contents("{$this->folder}/project/storage/app/public/a.txt", 'public');
 
         config([
-            'files.places.project' => "{$this->folder}/project",
-            'files.places.temporary' => "{$this->folder}/project/storage",
-            'accounts.root' => "{$this->folder}/project/storage/app/private/accounts",
+            'journal.files.places.project' => "{$this->folder}/project",
+            'journal.files.places.temporary' => "{$this->folder}/project/storage",
+            'journal.accounts.root' => "{$this->folder}/project/storage/app/private/accounts",
         ]);
     }
 
@@ -111,7 +111,7 @@ final class PathConfinementTest extends TestCase
     public function test_a_private_root_is_closed_from_every_other_place_wherever_it_lies(): void
     {
         mkdir("{$this->folder}/project/storage/accounts");
-        config(['accounts.root' => "{$this->folder}/project/storage/accounts"]);
+        config(['journal.accounts.root' => "{$this->folder}/project/storage/accounts"]);
 
         $this->expectExceptionObject(FolderClosed::at('accounts'));
 

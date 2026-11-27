@@ -26,7 +26,7 @@ final class AgentListPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        $journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')));
+        $journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('journal.profiles')));
 
         return RouteCall::as(Caller::Agent, $journal->signedStart('Requester', 'journal-worker'));
     }

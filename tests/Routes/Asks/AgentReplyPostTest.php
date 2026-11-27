@@ -30,7 +30,7 @@ final class AgentReplyPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner()
-            ->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')))
+            ->activatedProfile(ProfileProposal::fromConfiguration((array) config('journal.profiles')))
             ->agent('Requester', 'journal-worker');
         $start = $journal->signedStart('Supervisor', 'journal-code-reviewer');
         $ask = $journal->runAs('Requester', new AskSupervisorCommand('Which input?', 'first'));

@@ -31,8 +31,8 @@ final class EnsureOwnerCommandTest extends TestCase
     public function test_it_makes_the_owner_with_its_inbox_once(): void
     {
         config([
-            'access.owner_email' => 'owner@journal.test',
-            'access.owner_password' => 'first-secret',
+            'journal.access.owner_email' => 'owner@journal.test',
+            'journal.access.owner_password' => 'first-secret',
         ]);
 
         $this->artisan('access:owner-ensure')->assertSuccessful();
@@ -48,12 +48,12 @@ final class EnsureOwnerCommandTest extends TestCase
     public function test_a_changed_password_setting_resets_the_owner_password(): void
     {
         config([
-            'access.owner_email' => 'owner@journal.test',
-            'access.owner_password' => 'first-secret',
+            'journal.access.owner_email' => 'owner@journal.test',
+            'journal.access.owner_password' => 'first-secret',
         ]);
         $this->artisan('access:owner-ensure')->assertSuccessful();
 
-        config(['access.owner_password' => 'second-secret']);
+        config(['journal.access.owner_password' => 'second-secret']);
         $this->artisan('access:owner-ensure')->assertSuccessful();
 
         $owner = User::query()->where('email', 'owner@journal.test')->sole();
@@ -63,8 +63,8 @@ final class EnsureOwnerCommandTest extends TestCase
     public function test_without_a_password_setting_no_account_is_made(): void
     {
         config([
-            'access.owner_email' => 'owner@journal.test',
-            'access.owner_password' => null,
+            'journal.access.owner_email' => 'owner@journal.test',
+            'journal.access.owner_password' => null,
         ]);
 
         $this->artisan('access:owner-ensure')->assertSuccessful();

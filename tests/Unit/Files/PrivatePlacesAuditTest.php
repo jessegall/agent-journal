@@ -37,7 +37,7 @@ final class PrivatePlacesAuditTest extends TestCase
         mkdir("{$this->accounts}/a", 0o700, true);
         file_put_contents("{$this->accounts}/a/.credentials.json", '{"secret": true}');
         file_put_contents("{$this->project}/storage/app/kept.txt", 'x');
-        config(['accounts.root' => $this->accounts]);
+        config(['journal.accounts.root' => $this->accounts]);
     }
 
     public function test_a_project_listing_never_names_an_account_file(): void

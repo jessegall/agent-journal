@@ -16,7 +16,7 @@ trait UsesSecretsFolder
     protected function setUpUsesSecretsFolder(): void
     {
         $this->secretsFolder = sys_get_temp_dir().'/sharing-secrets-'.Str::lower((string) Str::ulid());
-        config(['sharing.secrets_dir' => $this->secretsFolder]);
+        config(['journal.sharing.secrets_dir' => $this->secretsFolder]);
     }
 
     protected function tearDownUsesSecretsFolder(): void

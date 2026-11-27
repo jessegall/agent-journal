@@ -15,6 +15,6 @@ final readonly class RunnerCapability
 
     public function isOn(): bool
     {
-        return $this->config->get('processes.runner') === true;
+        return $this->config->get('journal.processes.runner') === true;
     }
 }

@@ -18,7 +18,7 @@ final readonly class ProbeChallenges
 
     private Repository $cache;
 
-    public function __construct(CacheManager $caches, #[Config('sharing.rate_limit_store')] string $store)
+    public function __construct(CacheManager $caches, #[Config('journal.sharing.rate_limit_store')] string $store)
     {
         $this->cache = $caches->store($store);
     }

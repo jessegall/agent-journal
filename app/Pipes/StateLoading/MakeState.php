@@ -7,7 +7,7 @@ namespace App\Pipes\StateLoading;
 use App\Bus\Contracts\Pipe;
 use App\Stacks\AgentState;
 use App\Stacks\Exceptions\StateValuesRefused;
-use App\Support\StateLoading\DraftState;
+use App\Stacks\StateLoading\StateValues;
 use App\Support\StateLoading\StateArguments;
 use Illuminate\Container\Container;
 use TypeError;
@@ -19,11 +19,29 @@ use TypeError;
 final readonly class MakeState implements Pipe
 {
     /**
-     * @throws StateValuesRefused when a constructor value is not of its parameter's type
+     * Makes the state with its collaborators and constructor values, then writes its own saved values into it.
+     *
+     * @throws StateValuesRefused when a constructor value or an own value is not of its declared type
      */
-    public function handle(StateArguments $arguments): DraftState
+    public function handle(StateArguments $arguments): AgentState
     {
-        return new DraftState($arguments->type, $this->make($arguments), $arguments->propertyValues);
+        $state = $this->make($arguments);
+
+        foreach (StateValues::dataProperties($arguments->type->stateClass) as $property) {
+            if (! array_key_exists($property->name(), $arguments->propertyValues)) {
+                continue;
+            }
+
+            try {
+                $property->writeTo($state, $arguments->propertyValues[$property->name()]);
+            } catch (TypeError $reason) {
+                $type = $arguments->type;
+
+                throw StateValuesRefused::mistyped($type->key, $type->schemaVersion, $property->name(), $reason);
+            }
+        }
+
+        return $state;
     }
 
     private function make(StateArguments $arguments): AgentState

@@ -32,7 +32,7 @@ final class RetireCommandRuleTest extends TestCase
 
     public function test_retiring_a_rule_marks_a_queued_admission_stale(): void
     {
-        config(['processes.runner' => true]);
+        config(['journal.processes.runner' => true]);
         $start = $this->journal->owner()->signedStart('Test agent');
         $queued = $this->admit(ActorReference::ofClass(Agent::class, $start->agent->id), 'printf queued');
         $this->journal->asOwner(

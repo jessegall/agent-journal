@@ -20,9 +20,9 @@ final readonly class LoginController
     public function __construct(
         private ResponseFactory $inertia,
         private Application $app,
-        #[Config('web.local_sign_in.email')]
+        #[Config('journal.web.local_sign_in.email')]
         private string $localEmail,
-        #[Config('web.local_sign_in.password')]
+        #[Config('journal.web.local_sign_in.password')]
         private string $localPassword,
     ) {}
 

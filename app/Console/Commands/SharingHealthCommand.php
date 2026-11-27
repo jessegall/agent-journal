@@ -21,10 +21,10 @@ final class SharingHealthCommand extends Command
     protected $description = 'Say whether the share-only listener answers and the sharing supervisor holds the gateways';
 
     public function handle(
-        #[Config('sharing.listener.host'),
+        #[Config('journal.sharing.listener.host'),
         ]
         string $host,
-        #[Config('sharing.listener.port')]
+        #[Config('journal.sharing.listener.port')]
         int $port
     ): int {
         $listener = @fsockopen($host, $port, $errorCode, $errorText, self::CONNECT_SECONDS);

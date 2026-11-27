@@ -36,7 +36,7 @@ final class EvidencePermitTest extends TestCase
         parent::setUp();
 
         ProcessOutputDisk::fake();
-        config(['processes.runner' => true]);
+        config(['journal.processes.runner' => true]);
         $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->relayAgentCommands($this->start);
         $this->folder = sys_get_temp_dir().'/evidence-'.bin2hex(random_bytes(4));

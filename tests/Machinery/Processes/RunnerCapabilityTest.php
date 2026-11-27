@@ -65,7 +65,7 @@ final class RunnerCapabilityTest extends TestCase
     #[DataProvider('demonstrations')]
     public function test_each_demonstration_records_its_parts(string $line, int $parts): void
     {
-        config(['processes.runner' => true]);
+        config(['journal.processes.runner' => true]);
         $admission = $this->admit($line);
         $this->assertTrue($admission->isAllowed());
 

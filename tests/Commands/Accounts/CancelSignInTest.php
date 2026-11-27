@@ -94,7 +94,7 @@ final class CancelSignInTest extends TestCase
         $this->cancel($attemptId);
 
         $this->assertNotSame($saved, $staging);
-        $this->assertStringStartsWith(config('accounts.root').'/', $staging);
+        $this->assertStringStartsWith(config('journal.accounts.root').'/', $staging);
         $this->assertSame($saved, $this->account->refresh()->directory);
         $pending = array_map(fn (SignInAttempt $attempt) => $attempt->id, SignInAttempt::findPendingCleanups());
         $this->assertSame([$attemptId], $pending);

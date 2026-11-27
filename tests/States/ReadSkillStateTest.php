@@ -11,6 +11,7 @@ use App\Models\Agents\AgentSession;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Skills\Enums\ReadEvidence;
 use App\Stacks\ReadSkillState;
+use App\Stacks\References\StateReference;
 use App\Stacks\Support\ReadSkillStateReference;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Support\Assertions\StateAssert;
@@ -37,7 +38,7 @@ final class ReadSkillStateTest extends TestCase
 
     private AgentSession $session;
 
-    private ReadSkillStateReference $reading;
+    private StateReference $reading;
 
     protected function setUp(): void
     {

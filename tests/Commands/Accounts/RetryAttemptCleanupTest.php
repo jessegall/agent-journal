@@ -58,7 +58,7 @@ final class RetryAttemptCleanupTest extends TestCase
         parent::setUp();
 
         // The account folders of this test lie in the system's temporary folder, so the accounts root is that folder.
-        config(['accounts.root' => sys_get_temp_dir()]);
+        config(['journal.accounts.root' => sys_get_temp_dir()]);
 
         Bus::fake([SignInDeadline::class]);
         $this->account = $this->chooseActiveAccounts()['codex'];

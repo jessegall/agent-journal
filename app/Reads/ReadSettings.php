@@ -13,9 +13,9 @@ use Illuminate\Container\Attributes\Config;
 final readonly class ReadSettings
 {
     public function __construct(
-        #[Config('reads.default_limit')]
+        #[Config('journal.reads.default_limit')]
         public int $defaultLimit,
-        #[Config('reads.page_max')]
+        #[Config('journal.reads.page_max')]
         public int $pageMax,
     ) {}
 

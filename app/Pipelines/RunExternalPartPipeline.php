@@ -31,10 +31,10 @@ final readonly class RunExternalPartPipeline implements PipelineDefinition
         return [
             QueuePart::class,
             SpawnPart::class,
-            Step::chosen(
+            Step::conditional(
                 fn (SpawnedPart|SpawnRefused $attempt) => $attempt instanceof SpawnedPart,
-                FinishSpawnedPartPipeline::class,
-                NotifySpawnRefused::class,
+                then: FinishSpawnedPartPipeline::class,
+                else: NotifySpawnRefused::class,
             ),
         ];
     }

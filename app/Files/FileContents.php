@@ -39,9 +39,9 @@ final class FileContents
     private array $digests = [];
 
     public function __construct(
-        #[Config('files.cached_bytes')]
+        #[Config('journal.files.cached_bytes')]
         private readonly int $byteLimit,
-        #[Config('files.largest_cached_file')]
+        #[Config('journal.files.largest_cached_file')]
         private readonly int $fileByteLimit,
     ) {}
 

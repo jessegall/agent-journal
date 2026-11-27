@@ -27,10 +27,10 @@ final readonly class RunBuiltinPipeline implements PipelineDefinition
     {
         return [
             QueuePart::class,
-            Step::chosen(
+            Step::conditional(
                 fn (QueuedPart $queued) => $queued->isStale(),
-                SkipStalePart::class,
-                RunAdmittedBuiltinPipeline::class,
+                then: SkipStalePart::class,
+                else: RunAdmittedBuiltinPipeline::class,
             ),
         ];
     }

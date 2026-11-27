@@ -19,7 +19,7 @@ use Illuminate\Container\Attributes\Config;
 final readonly class OpenNavigationRequest implements Pipe
 {
     public function __construct(
-        #[Config('agents.navigation.expire_minutes')]
+        #[Config('journal.agents.navigation.expire_minutes')]
         private int $expireMinutes,
     ) {}
 

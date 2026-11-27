@@ -58,7 +58,7 @@ final class PlayScenarioCommandTest extends TestCase
 
     public function test_an_invalid_scenario_is_refused_before_any_step_runs(): void
     {
-        config(['agents.recording' => true]);
+        config(['journal.agents.recording' => true]);
         $this->writeScenario('claude-code/dance', '{"steps":[{"do":"stop-daemon"},{"do":"dance"}]}');
 
         $this->play('claude-code/dance')->expectsOutputToContain('step 2')->assertFailed();
@@ -67,7 +67,7 @@ final class PlayScenarioCommandTest extends TestCase
 
     public function test_a_scenario_stuck_at_a_fact_keeps_its_drafts(): void
     {
-        config(['agents.recording' => true]);
+        config(['journal.agents.recording' => true]);
         $this->writeScenario('claude-code/stuck', '{"steps":[{"do":"wait-for","fact":"challenge-shown","seconds":0}]}');
 
         $this->play('claude-code/stuck')->expectsOutputToContain('stuck at step 1')->assertFailed();
@@ -76,7 +76,7 @@ final class PlayScenarioCommandTest extends TestCase
 
     public function test_a_scenario_played_to_its_end_writes_its_recording(): void
     {
-        config(['agents.recording' => true]);
+        config(['journal.agents.recording' => true]);
         $this->writeScenario('claude-code/empty', '{"steps":[]}');
         $build = $this->app->make(PinnedBuilds::class)->versionOf('claude-code');
 

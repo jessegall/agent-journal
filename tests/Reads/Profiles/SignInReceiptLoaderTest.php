@@ -48,7 +48,7 @@ final class SignInReceiptLoaderTest extends TestCase
 
         $this->journal->owner();
         Bus::fake([SignInDeadline::class]);
-        config(['accounts.root' => sys_get_temp_dir().'/sign-in-receipt-read-'.bin2hex(random_bytes(4))]);
+        config(['journal.accounts.root' => sys_get_temp_dir().'/sign-in-receipt-read-'.bin2hex(random_bytes(4))]);
     }
 
     public function test_the_owners_started_sign_in_is_named_by_its_key(): void

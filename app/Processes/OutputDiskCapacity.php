@@ -17,7 +17,7 @@ final readonly class OutputDiskCapacity
 {
     public function __construct(
         private Files $files,
-        #[Config('processes.minimum_free_bytes')]
+        #[Config('journal.processes.minimum_free_bytes')]
         private int $minimumFreeBytes,
     ) {}
 

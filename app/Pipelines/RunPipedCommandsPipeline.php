@@ -30,10 +30,10 @@ final readonly class RunPipedCommandsPipeline implements PipelineDefinition
         return [
             QueuePipedCommands::class,
             Step::repeated(SpawnPart::class, while: fn (PipedCommands $commands) => $commands->hasWaiting()),
-            Step::chosen(
+            Step::conditional(
                 fn (PipedCommands $commands) => $commands->isRefused,
-                NotifyPipedCommandsRefused::class,
-                FinishStartedCommandsPipeline::class,
+                then: NotifyPipedCommandsRefused::class,
+                else: FinishStartedCommandsPipeline::class,
             ),
         ];
     }

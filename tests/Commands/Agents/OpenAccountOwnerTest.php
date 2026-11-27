@@ -25,7 +25,7 @@ final class OpenAccountOwnerTest extends TestCase
     {
         $this->journal
             ->owner()
-            ->chooseActiveAccounts(config('accounts.root'))
+            ->chooseActiveAccounts(config('journal.accounts.root'))
             ->showDriverArrangements()
             ->idleAgent('Coder')
             ->enrollHost('Mac', [base_path()]);

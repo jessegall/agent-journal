@@ -68,11 +68,11 @@ enum Place: string
     public function rootSetting(): string
     {
         return match ($this) {
-            self::Accounts => 'accounts.root',
-            self::SharingSecrets => 'sharing.secrets_dir',
-            self::SharingTunnels => 'sharing.tunnels_dir',
+            self::Accounts => 'journal.accounts.root',
+            self::SharingSecrets => 'journal.sharing.secrets_dir',
+            self::SharingTunnels => 'journal.sharing.tunnels_dir',
             self::ProcessOutput => 'filesystems.disks.process-output.root',
-            self::Project, self::Temporary, self::HookRuntime, self::Releases => "files.places.{$this->value}",
+            self::Project, self::Temporary, self::HookRuntime, self::Releases => "journal.files.places.{$this->value}",
         };
     }
 }

@@ -10,6 +10,7 @@ use App\Hooks\Enums\AnswerType;
 use App\Models\Messages\Message;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Stacks\AnswerMessageState;
+use App\Stacks\References\StateReference;
 use App\Stacks\Support\AnswerMessageStateReference;
 use App\Stacks\Values\AnswerBudget;
 use App\Support\ActorReference;
@@ -142,7 +143,7 @@ final class AnswerMessageStateTest extends TestCase
     /**
      * The state of a message held in memory only: it keeps what it needs of the message in its own values.
      */
-    private function answering(): AnswerMessageStateReference
+    private function answering(): StateReference
     {
         $message = new Message();
         $message->id = self::MESSAGE;

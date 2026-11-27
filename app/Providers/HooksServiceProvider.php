@@ -125,7 +125,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bind(WorkProgressContract::class, WorkProgress::class);
 
         $this->app->singleton(ProtectedAccounts::class, fn ($app) => new ProtectedAccounts([
-            $app->make(Repository::class)->string('accounts.root'),
+            $app->make(Repository::class)->string('journal.accounts.root'),
         ]));
 
         $this->app->bind(DriverCompatibilitiesContract::class, DriverCompatibilities::class);
@@ -137,8 +137,8 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bind(PinnedBuildsContract::class, PinnedBuilds::class);
 
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
-            $this->app->make('config')->integer('hooks.hook_call_days'),
-            $this->app->make('config')->integer('hooks.closed_stack_days'),
+            $this->app->make('config')->integer('journal.hooks.hook_call_days'),
+            $this->app->make('config')->integer('journal.hooks.closed_stack_days'),
         ));
 
         $this->app->scoped(StateFactoryContract::class, StateFactory::class);
@@ -146,18 +146,18 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(
             OperationDeadline::class,
             fn () => new OperationDeadline(
-                $this->app->make('config')->integer('hooks.operation_deadline_milliseconds'),
+                $this->app->make('config')->integer('journal.hooks.operation_deadline_milliseconds'),
             ),
         );
 
         $this->app->singleton(
             ContextBudget::class,
-            fn () => new ContextBudget($this->app->make('config')->integer('hooks.context_budget_characters')),
+            fn () => new ContextBudget($this->app->make('config')->integer('journal.hooks.context_budget_characters')),
         );
 
         $this->app->singleton(
             HookRetryWindow::class,
-            fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')),
+            fn () => new HookRetryWindow($this->app->make('config')->integer('journal.hooks.retry_seconds')),
         );
     }
 

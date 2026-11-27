@@ -29,7 +29,7 @@ final readonly class SessionContainers
         private SessionPolicyReader $policies,
         private ArrangementSetting $arrangement,
         private StartProfiles $startProfiles,
-        #[Config('agents.security_profiles')]
+        #[Config('journal.agents.security_profiles')]
         private string $securityProfiles,
     ) {}
 

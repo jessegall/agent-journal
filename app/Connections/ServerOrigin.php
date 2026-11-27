@@ -8,7 +8,7 @@ use App\Connections\Exceptions\ServerOriginInvalid;
 use Illuminate\Http\Request;
 
 /**
- * The canonical origin connected machines reach this journal at, as configured (agents.server_origin); never read
+ * The canonical origin connected machines reach this journal at, as configured (journal.agents.server_origin); never read
  * from a request's Host header. It is an https origin, or, only while the app runs locally, a plain http origin on
  * this machine or a private network address, so a folder on the same Mac or network can connect for a test.
  */

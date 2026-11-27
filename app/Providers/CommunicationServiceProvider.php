@@ -88,7 +88,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->bind(NotificationsContract::class, Notifications::class);
 
         $this->app->singleton(AnswerBudget::class, fn () => new AnswerBudget(
-            $this->app->make('config')->integer('hooks.answer_budget'),
+            $this->app->make('config')->integer('journal.hooks.answer_budget'),
         ));
     }
 

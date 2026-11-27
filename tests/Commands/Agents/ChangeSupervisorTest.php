@@ -26,7 +26,7 @@ final class ChangeSupervisorTest extends TestCase
 
     public function test_changing_a_route_keeps_other_versions_and_records_the_author(): void
     {
-        $this->activate((array) config('profiles'));
+        $this->activate((array) config('journal.profiles'));
         $agent = $this->journal->idleAgent('Worker', 'journal-worker')->agentCalled('Worker');
         $actor = ActorReference::forAgent($agent->id);
         $question = AskTypeKey::of('question');

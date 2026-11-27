@@ -62,7 +62,7 @@ final class TakeSignInCodeTest extends TestCase
 
         Bus::fake([SignInDeadline::class]);
         $this->root = sys_get_temp_dir().'/sign-in-host-'.bin2hex(random_bytes(4));
-        config(['accounts.root' => $this->root]);
+        config(['journal.accounts.root' => $this->root]);
     }
 
     public function test_a_code_with_a_control_character_and_a_cancelled_sign_in_give_the_host_nothing(): void

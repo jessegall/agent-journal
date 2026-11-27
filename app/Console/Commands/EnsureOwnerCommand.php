@@ -24,9 +24,9 @@ final class EnsureOwnerCommand extends Command
     protected $description = 'Create the owner account from JOURNAL_OWNER_EMAIL and JOURNAL_OWNER_PASSWORD, or reset its password';
 
     public function handle(
-        #[Config('access.owner_email')]
+        #[Config('journal.access.owner_email')]
         string|null $email,
-        #[Config('access.owner_password')]
+        #[Config('journal.access.owner_password')]
         string|null $password,
         Hasher $hasher,
         JournalCommands $commands,

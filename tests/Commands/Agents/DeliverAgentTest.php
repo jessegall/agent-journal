@@ -134,7 +134,7 @@ final class DeliverAgentTest extends TestCase
 
     public function test_a_message_over_the_delivery_limit_is_refused_before_it_is_accepted(): void
     {
-        config(['agents.driver_budgets.deliver_max_bytes' => 10]);
+        config(['journal.agents.driver_budgets.deliver_max_bytes' => 10]);
         $this->app->forgetInstance(DriverBudgets::class);
         [, $opened] = $this->openRuntime();
 

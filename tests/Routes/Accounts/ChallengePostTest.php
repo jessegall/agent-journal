@@ -26,7 +26,7 @@ final class ChallengePostTest extends GuardedRouteEntryTestCase
 {
     public function test_the_owner_reads_a_live_sign_ins_challenge_and_no_cache_keeps_it(): void
     {
-        config(['accounts.root' => sys_get_temp_dir().'/sign-in-challenge-'.bin2hex(random_bytes(4))]);
+        config(['journal.accounts.root' => sys_get_temp_dir().'/sign-in-challenge-'.bin2hex(random_bytes(4))]);
         Bus::fake([SignInDeadline::class]);
         $this->journal->owner();
         $host = $this->journal->asSystem(new EnrollHostCommand('test host', ['/work']));

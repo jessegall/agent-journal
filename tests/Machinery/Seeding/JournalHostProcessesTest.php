@@ -99,7 +99,7 @@ final class JournalHostProcessesTest extends TestCase
     {
         $this->journal->arrangeContainedJournal()->forgetSecurityProfiles();
 
-        $this->journal->assertResult('', $this->app->make(Repository::class)->get('agents.security_profiles'));
+        $this->journal->assertResult('', $this->app->make(Repository::class)->get('journal.agents.security_profiles'));
     }
 
     public function test_a_contained_journal_freezes_its_sessions_into_the_agent_image(): void
@@ -377,7 +377,7 @@ final class JournalHostProcessesTest extends TestCase
     {
         $this->journal
             ->owner()
-            ->chooseActiveAccounts(config('accounts.root'))
+            ->chooseActiveAccounts(config('journal.accounts.root'))
             ->showDriverArrangements()
             ->idleAgent('Driven')
             ->enrollHost('Mac', [base_path()]);

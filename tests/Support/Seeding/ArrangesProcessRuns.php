@@ -32,7 +32,7 @@ trait ArrangesProcessRuns
             throw FixtureRefused::occupiedAlias($name, ProcessRun::class);
         }
 
-        config(['processes.runner' => true]);
+        config(['journal.processes.runner' => true]);
         $admission = $this->app->make(ShellAdmission::class)
             ->admit($line, ShellDialect::Bash, ExecutionContext::inFolder(base_path()), "process-{$name}");
         $this->processRunIds[$name] = $admission->runId();

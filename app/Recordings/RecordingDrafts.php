@@ -29,7 +29,7 @@ final readonly class RecordingDrafts
 
     private FilePath $drafts;
 
-    public function __construct(private Files $files, #[Config('agents.recording')]
+    public function __construct(private Files $files, #[Config('journal.agents.recording')]
         private bool $isOn)
     {
         $this->drafts = FilePath::in(Place::Project, self::DRAFTS);

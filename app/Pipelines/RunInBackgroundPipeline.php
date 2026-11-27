@@ -33,10 +33,10 @@ final readonly class RunInBackgroundPipeline implements PipelineDefinition
             TakeBackgroundCommand::class,
             QueuePart::class,
             SpawnPart::class,
-            Step::chosen(
+            Step::conditional(
                 fn (SpawnedPart|SpawnRefused $attempt) => $attempt instanceof SpawnedPart,
-                TrackBackgroundPart::class,
-                LeaveRefusedBackground::class,
+                then: TrackBackgroundPart::class,
+                else: LeaveRefusedBackground::class,
             ),
         ];
     }

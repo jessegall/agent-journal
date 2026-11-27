@@ -45,15 +45,15 @@ final readonly class AnswerHookPipeline implements PipelineDefinition
             PrepareCall::class,
             RestoreStack::class,
             KeepRepeatedClosingWordsPrivate::class,
-            Step::chosen(
+            Step::conditional(
                 fn (RestoredCall $restored) => OfferClosingWords::isNeeded($restored),
-                OfferClosingWords::class,
-                WalkStack::class,
+                then: OfferClosingWords::class,
+                else: WalkStack::class,
             ),
-            Step::chosen(
+            Step::conditional(
                 fn (WalkedCall $walked) => $walked->leavesMessagesWithIdleAgent(),
-                KeepMessagesAndWake::class,
-                HandOverWaitingMessages::class,
+                then: KeepMessagesAndWake::class,
+                else: HandOverWaitingMessages::class,
             ),
             PublishHookEffects::class,
             ComposeForeground::class,

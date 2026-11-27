@@ -19,7 +19,7 @@ final class SupplyAccountSettings implements Listener
 {
     public function __construct(
         private DriverCompatibilities $compatibilities,
-        #[Config('accounts.root')]
+        #[Config('journal.accounts.root')]
         private string $accountsRoot,
         private DriverProfiles $profiles,
         private DriverCatalogue $drivers,

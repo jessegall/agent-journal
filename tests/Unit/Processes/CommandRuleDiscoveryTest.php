@@ -8,6 +8,7 @@ use App\CommandRules\CommandRuleRegistry;
 use App\CommandRules\Enums\ScopeType;
 use App\Support\DomainEntry;
 use App\Values\CommandRule;
+use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\TestCase;
 
@@ -17,6 +18,12 @@ use Tests\TestCase;
  */
 final class CommandRuleDiscoveryTest extends TestCase
 {
+    protected static function bootedDomains(): array
+    {
+        // The notes module requires the rules domain, which its entry checks as it is read.
+        return [RulesDomain::class];
+    }
+
     public function test_a_test_module_declares_its_own_program_and_it_waits_for_review(): void
     {
         $held = CommandRuleRegistry::from(DomainEntry::fromClass(NotesDomain::class)->commandRules())->awaitingReview();

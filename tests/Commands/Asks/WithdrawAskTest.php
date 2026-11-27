@@ -84,7 +84,7 @@ final class WithdrawAskTest extends TestCase
     {
         $this->journal->actAsUserId(TestIds::of(1));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
-            (array) config('profiles'),
+            (array) config('journal.profiles'),
         )));
     }
 }

@@ -37,7 +37,7 @@ final class FolderWalkerTest extends TestCase
             file_put_contents("{$this->folder}/{$path}", 'x');
         }
 
-        config(['files.places.project' => $this->folder]);
+        config(['journal.files.places.project' => $this->folder]);
     }
 
     protected function tearDown(): void

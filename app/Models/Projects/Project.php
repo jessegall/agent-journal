@@ -102,7 +102,7 @@ final class Project extends JournalModel implements EventSource, ReadableModel
 
     private static function localKey(): string
     {
-        return Container::getInstance()->make('config')->string('processes.project_key');
+        return Container::getInstance()->make('config')->string('journal.processes.project_key');
     }
 
     // ----------[ Scopes ]----------

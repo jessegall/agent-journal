@@ -34,7 +34,7 @@ final class CodexAppDriverTest extends TestCase
 
         $this->journal
             ->owner()
-            ->chooseActiveAccounts(config('accounts.root'))
+            ->chooseActiveAccounts(config('journal.accounts.root'))
             ->showDriverArrangements()
             ->idleAgent('Coder')
             ->idleAgent('Tester')

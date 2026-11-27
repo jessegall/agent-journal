@@ -37,7 +37,7 @@ final class LocalFilesListTest extends TestCase
         file_put_contents("{$this->folder}/app/Tasks/Console/Close.php", 'x');
         file_put_contents("{$this->folder}/app/Tasks/Task.php", 'x');
         file_put_contents("{$this->folder}/app/readme.md", 'x');
-        config(['files.places.project' => $this->folder, 'files.places.releases' => null]);
+        config(['journal.files.places.project' => $this->folder, 'journal.files.places.releases' => null]);
         $this->files = $this->app->make(Files::class);
     }
 

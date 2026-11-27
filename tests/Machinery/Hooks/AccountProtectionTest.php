@@ -42,7 +42,7 @@ final class AccountProtectionTest extends TestCase
     {
         parent::setUp();
 
-        config(['accounts.root' => '/journal/accounts']);
+        config(['journal.accounts.root' => '/journal/accounts']);
         $this->app->instance(SessionOutputAccess::class, new class implements SessionOutputAccess
         {
             public function grantedTo(string $sessionId): array

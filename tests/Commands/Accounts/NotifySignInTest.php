@@ -59,7 +59,7 @@ final class NotifySignInTest extends TestCase
 
         Bus::fake([SignInDeadline::class]);
         $this->root = sys_get_temp_dir().'/sign-in-host-'.bin2hex(random_bytes(4));
-        config(['accounts.root' => $this->root]);
+        config(['journal.accounts.root' => $this->root]);
     }
 
     public function test_a_refused_report_keeps_the_providers_reason_for_the_form(): void

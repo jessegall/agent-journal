@@ -29,8 +29,8 @@ final class ReadNamedTest extends TestCase
         file_put_contents("{$this->project}/storage/app/private/accounts/a/.credentials.json", '{"secret": true}');
         file_put_contents("{$this->project}/notes.md", 'notes');
         config([
-            'accounts.root' => "{$this->project}/storage/app/private/accounts",
-            'files.places.temporary' => "{$this->project}/storage",
+            'journal.accounts.root' => "{$this->project}/storage/app/private/accounts",
+            'journal.files.places.temporary' => "{$this->project}/storage",
         ]);
     }
 

@@ -100,7 +100,7 @@ final class ClaimHostInstructionsTest extends TestCase
 
     public function test_the_answer_names_the_configured_idle_window(): void
     {
-        config(['agents.idle_window_seconds' => 42]);
+        config(['journal.agents.idle_window_seconds' => 42]);
         $this->journal->enrollHost('Mac', [base_path()]);
 
         $claim = $this->journal->asSystem(new ClaimHostInstructionsCommand($this->journal->hostCalled('Mac')->hostId, 10));

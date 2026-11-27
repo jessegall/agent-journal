@@ -218,20 +218,20 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(CallingDriverContract::class, CallingDriver::class);
 
         $this->app->singleton(DriverBudgets::class, fn () => new DriverBudgets(
-            $this->app->make('config')->integer('agents.driver_budgets.claim_batch_max'),
-            $this->app->make('config')->integer('agents.driver_budgets.long_poll_max_seconds'),
-            $this->app->make('config')->integer('agents.driver_budgets.deliver_max_bytes'),
+            $this->app->make('config')->integer('journal.agents.driver_budgets.claim_batch_max'),
+            $this->app->make('config')->integer('journal.agents.driver_budgets.long_poll_max_seconds'),
+            $this->app->make('config')->integer('journal.agents.driver_budgets.deliver_max_bytes'),
         ));
 
         $this->app->singleton(ArrangementSetting::class, fn () => ArrangementSetting::fromConfig(
-            $this->app->make('config')->string('agents.arrangement'),
-            $this->app->make('config')->string('agents.installation_name'),
-            $this->app->make('config')->string('agents.workspaces'),
+            $this->app->make('config')->string('journal.agents.arrangement'),
+            $this->app->make('config')->string('journal.agents.installation_name'),
+            $this->app->make('config')->string('journal.agents.workspaces'),
         ));
 
         $this->app->singleton(PublishedReleases::class, fn () => new PublishedReleases(
             $this->app->make(Files::class),
-            $this->app->make('config')->string('agents.release'),
+            $this->app->make('config')->string('journal.agents.release'),
         ));
 
         $this->app->bind(InstallLineAvailability::class, fn () => new InstallLineAvailability(
@@ -244,21 +244,21 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(SignedHostCallsContract::class, SignedHostCalls::class);
 
         $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
-            $this->app->make('config')->string('agents.server_origin'),
+            $this->app->make('config')->string('journal.agents.server_origin'),
             $this->app->isLocal(),
         ));
 
         $this->app->bind(StartProfiles::class, fn () => new StartProfiles(
             $this->app->make(ArrangementSetting::class),
             $this->app->make(HostCapabilitiesContract::class),
-            StartProfiles::trialOf($this->app->make('config')->string('agents.protected_account_trial')),
+            StartProfiles::trialOf($this->app->make('config')->string('journal.agents.protected_account_trial')),
         ));
 
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
-            $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),
-            $this->app->make('config')->integer('agents.host_capacity.memory_bytes'),
-            $this->app->make('config')->integer('agents.host_capacity.disk_bytes'),
-            $this->app->make('config')->boolean('agents.host_capacity.guarded'),
+            $this->app->make('config')->integer('journal.agents.host_capacity.cpu_cores'),
+            $this->app->make('config')->integer('journal.agents.host_capacity.memory_bytes'),
+            $this->app->make('config')->integer('journal.agents.host_capacity.disk_bytes'),
+            $this->app->make('config')->boolean('journal.agents.host_capacity.guarded'),
         ));
 
         $this->app->scoped(PendingStartSecrets::class);

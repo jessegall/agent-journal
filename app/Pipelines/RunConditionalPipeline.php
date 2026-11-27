@@ -31,10 +31,10 @@ final readonly class RunConditionalPipeline implements PipelineDefinition
         return [
             RunFirstConditional::class,
             Step::repeated(
-                Step::chosen(
+                Step::conditional(
                     fn (ConditionalSteps $steps) => $steps->doesNextStepRun(),
-                    RunNextConditional::class,
-                    SkipNextConditional::class,
+                    then: RunNextConditional::class,
+                    else: SkipNextConditional::class,
                 ),
                 while: fn (ConditionalSteps $steps) => $steps->hasNext(),
             ),

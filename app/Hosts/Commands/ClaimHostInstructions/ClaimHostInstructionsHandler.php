@@ -29,7 +29,7 @@ final readonly class ClaimHostInstructionsHandler implements CommandHandler
     public function __construct(
         private HostInstructionPlacement $placement,
         private ServerClock $clock,
-        #[Config('agents.idle_window_seconds')]
+        #[Config('journal.agents.idle_window_seconds')]
         private int $idleWindowSeconds,
         private AgentImage $agentImage,
         private JournalCommands $commands,

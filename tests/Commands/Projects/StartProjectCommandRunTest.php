@@ -66,7 +66,7 @@ final class StartProjectCommandRunTest extends TestCase
         $frames = $reply->json('frames');
         $this->assertSame("Tasks\n", $frames[0]['text']);
         $this->assertSame(
-            ['sequence' => 2, 'stream' => 'exit', 'text' => '', 'isBase64' => false, 'exitCode' => 3],
+            ['sequence' => 2, 'stream' => 'exit', 'text' => null, 'isBase64' => false, 'exitCode' => 3],
             $frames[1],
         );
         $this->assertSame(1, ProjectCommandRun::query()->count());

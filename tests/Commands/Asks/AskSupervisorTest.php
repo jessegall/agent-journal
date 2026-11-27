@@ -52,7 +52,7 @@ final class AskSupervisorTest extends TestCase
 
     public function test_a_user_supervisor_has_a_card_without_a_runtime_wake(): void
     {
-        $this->journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')));
+        $this->journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('journal.profiles')));
         $owner = $this->journal->ownerUser();
         $this->mock(ActorAttention::class)->shouldNotReceive('request');
         $requester = $this->journal->idleAgent('Requester', 'journal-main')->agentCalled('Requester');
@@ -68,7 +68,7 @@ final class AskSupervisorTest extends TestCase
 
     public function test_a_reviewers_question_is_held_by_its_supervisor(): void
     {
-        $this->journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')));
+        $this->journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('journal.profiles')));
         $start = TestStart::start('journal-code-reviewer');
         $recipient = TestStart::start('journal-main');
 

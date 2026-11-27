@@ -62,7 +62,7 @@ final class AdvanceAskTest extends TestCase
         $this->journal->owner();
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
-            (array) config('profiles'),
+            (array) config('journal.profiles'),
         )));
         $this->requester = $this->journal->idleAgent('Requester', 'journal-worker')->agentCalled('Requester');
         $this->holder = $this->journal->idleAgent('Reviewer', 'journal-code-reviewer')->agentCalled('Reviewer');

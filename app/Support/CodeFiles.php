@@ -86,7 +86,7 @@ final class CodeFiles
      */
     public static function over(string $projectRoot): self
     {
-        $roots = new PlaceRoots(new Repository(['files' => ['places' => ['project' => $projectRoot]]]));
+        $roots = new PlaceRoots(new Repository(['journal' => ['files' => ['places' => ['project' => $projectRoot]]]]));
         $closed = new ClosedFolders($roots);
         $confinement = new PathConfinement($roots, $closed);
 

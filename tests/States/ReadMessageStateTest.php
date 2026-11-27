@@ -111,7 +111,7 @@ final class ReadMessageStateTest extends TestCase
                 ->event(
                     new MessageRead($this->first->id, $this->inbox->id, $this->journal->actorCalled('Other')),
                     fn (StateAssert $state) => $state->stackIs(
-                        ['core.ready', StateReferenceKeys::of(ReadMessageStateReference::class)],
+                        ['core.ready', 'core.profile', StateReferenceKeys::of(ReadMessageStateReference::class)],
                     ),
                 )
                 ->event(new MessageRead(

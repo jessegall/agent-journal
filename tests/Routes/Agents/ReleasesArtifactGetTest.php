@@ -21,7 +21,7 @@ final class ReleasesArtifactGetTest extends RouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        $folder = (string) config('files.places.releases');
+        $folder = (string) config('journal.files.places.releases');
         mkdir("{$folder}/1.0.0/darwin-arm64/bin", 0755, true);
         file_put_contents("{$folder}/1.0.0/darwin-arm64/bin/journal-agent", 'binary');
 

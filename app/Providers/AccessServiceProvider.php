@@ -67,7 +67,7 @@ class AccessServiceProvider extends ServiceProvider
             ->newLazyGhost(function (
                 AccessSettings $settings,
             ): void {
-                $ownerEmail = $this->app->make('config')->get('access.owner_email');
+                $ownerEmail = $this->app->make('config')->get('journal.access.owner_email');
                 $settings->__construct(is_string($ownerEmail) ? User::resolveOwnerIdFor($ownerEmail) : null);
             }));
 

@@ -8,7 +8,7 @@ use App\Access\Contracts\OperationNames as OperationNamesContract;
 use Illuminate\Container\Attributes\Config;
 
 /**
- * The operation names the installation declares in its trusted config/operations.php, outside any proposal.
+ * The operation names the installation declares in its trusted config/journal.php (operations), outside any proposal.
  */
 final readonly class OperationNames implements OperationNamesContract
 {
@@ -16,7 +16,7 @@ final readonly class OperationNames implements OperationNamesContract
      * @param  list<string>  $operations
      */
     public function __construct(
-        #[Config('operations.names', [])]
+        #[Config('journal.operations.names', [])]
         private array $operations,
     ) {}
 

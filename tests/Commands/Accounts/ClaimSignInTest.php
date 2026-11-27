@@ -57,7 +57,7 @@ final class ClaimSignInTest extends TestCase
 
         Bus::fake([SignInDeadline::class]);
         $this->root = sys_get_temp_dir().'/sign-in-host-'.bin2hex(random_bytes(4));
-        config(['accounts.root' => $this->root]);
+        config(['journal.accounts.root' => $this->root]);
     }
 
     public function test_the_host_claims_once_and_its_verified_report_saves_the_account(): void

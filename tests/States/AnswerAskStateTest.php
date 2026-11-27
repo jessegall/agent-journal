@@ -9,6 +9,7 @@ use App\Events\Asks\AskClosed;
 use App\Events\Asks\AskHopAssigned;
 use App\Models\Asks\AskHop;
 use App\Stacks\AnswerAskState;
+use App\Stacks\References\StateReference;
 use App\Stacks\Support\AnswerAskStateReference;
 use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
@@ -70,7 +71,7 @@ final class AnswerAskStateTest extends TestCase
     /**
      * The state of a hop held in memory only: it keeps what it needs of the hop in its own values.
      */
-    private function answering(): AnswerAskStateReference
+    private function answering(): StateReference
     {
         $hop = new AskHop();
         $hop->id = self::HOP;

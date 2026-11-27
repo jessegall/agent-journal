@@ -2,7 +2,7 @@
 
 The `share` build target of `.docker/app/Dockerfile` adds two programs to the application image, both pinned at
 build time and never downloaded at runtime. They are installed at `/opt/sharing/bin/tunler` and
-`/opt/sharing/bin/ngrok`, the paths `config/sharing.php` reads.
+`/opt/sharing/bin/ngrok`, the paths `config/journal.php (sharing)` reads.
 
 ## Tunler
 

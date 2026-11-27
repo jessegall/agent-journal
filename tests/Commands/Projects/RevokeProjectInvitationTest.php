@@ -52,7 +52,7 @@ final class RevokeProjectInvitationTest extends TestCase
 
         $this->journal->owner();
         $this->publishRelease();
-        config(['agents.server_origin' => 'https://journal.example.com']);
+        config(['journal.agents.server_origin' => 'https://journal.example.com']);
         Event::listen(MessageLogged::class, function (MessageLogged $logged): void {
             $this->logLines[] = $logged->message.' '.json_encode($logged->context);
         });
@@ -111,6 +111,6 @@ final class RevokeProjectInvitationTest extends TestCase
                 'artifacts' => [$relay('linux-amd64')],
             ]],
         ]));
-        config(['files.places.releases' => $folder, 'agents.release' => self::VERSION]);
+        config(['journal.files.places.releases' => $folder, 'journal.agents.release' => self::VERSION]);
     }
 }

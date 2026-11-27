@@ -16,7 +16,7 @@ use Illuminate\Container\Attributes\Config;
 final readonly class WaitForOpenNavigation implements Pipe
 {
     public function __construct(
-        #[Config('agents.navigation.retry_after_seconds')]
+        #[Config('journal.agents.navigation.retry_after_seconds')]
         private int $retryAfterSeconds,
     ) {}
 

@@ -78,7 +78,7 @@ final class BeginSignInTest extends TestCase
 
     public function test_a_start_carries_its_method_and_an_undeclared_method_starts_nothing(): void
     {
-        config(['accounts.root' => sys_get_temp_dir().'/sign-in-host-'.bin2hex(random_bytes(4))]);
+        config(['journal.accounts.root' => sys_get_temp_dir().'/sign-in-host-'.bin2hex(random_bytes(4))]);
 
         $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::ApiKey), 'request-1');
 
@@ -92,7 +92,7 @@ final class BeginSignInTest extends TestCase
 
     public function test_a_key_used_for_another_start_is_refused(): void
     {
-        config(['accounts.root' => sys_get_temp_dir().'/sign-in-receipt-'.bin2hex(random_bytes(4))]);
+        config(['journal.accounts.root' => sys_get_temp_dir().'/sign-in-receipt-'.bin2hex(random_bytes(4))]);
         $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::OAuth), 'tab-1');
 
         $this->journal->assertRefused(

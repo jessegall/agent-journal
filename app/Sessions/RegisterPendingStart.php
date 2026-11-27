@@ -21,7 +21,7 @@ final readonly class RegisterPendingStart
 {
     public function __construct(
         private IdentityLinks $links,
-        #[Config('agents.transport_profile')]
+        #[Config('journal.agents.transport_profile')]
         private string $transportProfile,
         private CommandFacts $facts,
     ) {}

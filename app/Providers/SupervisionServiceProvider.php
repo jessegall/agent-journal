@@ -68,7 +68,7 @@ final class SupervisionServiceProvider extends ServiceProvider
 
         $types->register($this->app->make(QuestionAskType::class));
         $types->register($this->app->make(StuckType::class));
-        $this->requireKnownAskTypes($types, $config->array('profiles.profiles'));
+        $this->requireKnownAskTypes($types, $config->array('journal.profiles.profiles'));
 
     }
 

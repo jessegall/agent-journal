@@ -59,7 +59,7 @@ final class PlayScenarioCommand extends Command
         RecordingFinisher $finisher,
         Files $files,
         OwnerCommands $commands,
-        #[Config('agents.agent_image')]
+        #[Config('journal.agents.agent_image')]
         string $agentImage,
     ): int {
         $name = (string) $this->argument('scenario');

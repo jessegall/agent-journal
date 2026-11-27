@@ -47,7 +47,7 @@ final class FilesServiceTest extends TestCase
         }
 
         $this->assertSame(3, $this->app->make(FilesContract::class)->readCount($file));
-        $this->assertSame((string) realpath(config('sharing.secrets_dir')), $folder);
+        $this->assertSame((string) realpath(config('journal.sharing.secrets_dir')), $folder);
     }
 
     public function test_a_place_without_a_root_fails_only_when_used_while_others_work(): void
@@ -55,7 +55,7 @@ final class FilesServiceTest extends TestCase
         $folder = $this->placeInTemporaryFolder(Place::Temporary);
         file_put_contents("{$folder}/a.txt", 'a');
         file_put_contents("{$folder}/blocker", '');
-        config(['files.places.releases' => "{$folder}/blocker/skills"]);
+        config(['journal.files.places.releases' => "{$folder}/blocker/skills"]);
         $files = $this->app->make(FilesContract::class);
 
         $this->assertSame('a', $files->read(FilePath::in(Place::Temporary, 'a.txt')));

@@ -15,7 +15,7 @@ use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Config;
 
 /**
- * The local owner activates the proposal in config/profiles.php: it is checked whole, and each profile gets its next
+ * The local owner activates the proposal in config/journal.php (profiles): it is checked whole, and each profile gets its next
  * revision only when every one passes.
  */
 final class ProfileActivateCommand extends Command
@@ -29,7 +29,7 @@ final class ProfileActivateCommand extends Command
 
     protected $signature = 'profile:activate {--draft=* : Expected revisions as profile=revision}';
 
-    protected $description = 'Activate the built-in profiles and the profile proposal in config/profiles.php';
+    protected $description = 'Activate the built-in profiles and the profile proposal in config/journal.php (profiles)';
 
     /**
      * @param  array<string, mixed>  $profiles
@@ -37,7 +37,7 @@ final class ProfileActivateCommand extends Command
     public function handle(
         ConsoleOwner $owner,
         CommandBus $commands,
-        #[Config('profiles')]
+        #[Config('journal.profiles')]
         array $profiles,
     ): int {
         try {

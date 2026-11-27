@@ -196,7 +196,7 @@ final class ClaudeCodeHooksTest extends TestCase
 
     public function test_a_stack_another_connection_holds_past_the_deadline_is_unavailable(): void
     {
-        config(['hooks.operation_deadline_milliseconds' => 300]);
+        config(['journal.hooks.operation_deadline_milliseconds' => 300]);
         $this->app->forgetInstance(OperationDeadline::class);
         config(['database.connections.lock_holder' => config('database.connections.'.config('database.default'))]);
         $holder = $this->app->make(DatabaseManager::class)->connection('lock_holder');

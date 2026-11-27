@@ -57,7 +57,7 @@ final class PlaceRootsTest extends TestCase
 
     public function test_a_missing_root_is_made_with_the_place_mode(): void
     {
-        config(['accounts.root' => "{$this->folder}/made/accounts"]);
+        config(['journal.accounts.root' => "{$this->folder}/made/accounts"]);
 
         $root = $this->roots()->root(Place::Accounts);
 
@@ -71,7 +71,7 @@ final class PlaceRootsTest extends TestCase
     public function test_a_place_whose_root_cannot_be_made_fails_only_when_it_is_used(): void
     {
         touch("{$this->folder}/blocker");
-        config(['accounts.root' => "{$this->folder}/blocker/accounts", 'files.places.releases' => null]);
+        config(['journal.accounts.root' => "{$this->folder}/blocker/accounts", 'journal.files.places.releases' => null]);
 
         $roots = $this->roots();
 
@@ -84,7 +84,7 @@ final class PlaceRootsTest extends TestCase
 
     public function test_a_place_with_no_root_configured_is_unavailable(): void
     {
-        config(['files.places.releases' => null]);
+        config(['journal.files.places.releases' => null]);
 
         $this->expectExceptionObject(PlaceUnavailable::for(Place::Releases));
 
@@ -112,7 +112,7 @@ final class PlaceRootsTest extends TestCase
 
     public function test_an_absolute_path_inside_a_private_place_is_refused_as_closed(): void
     {
-        config(['accounts.root' => "{$this->folder}/accounts"]);
+        config(['journal.accounts.root' => "{$this->folder}/accounts"]);
 
         $this->expectExceptionObject(FolderClosed::privatePlace(Place::Accounts));
 

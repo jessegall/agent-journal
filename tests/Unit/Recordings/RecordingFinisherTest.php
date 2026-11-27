@@ -55,7 +55,7 @@ final class RecordingFinisherTest extends TestCase
 
         $sources = array_keys($this->app->make(HostProtocolCheck::class)->sources());
         $this->project = $this->placeInTemporaryFolder(Place::Project);
-        config(['agents.agent_image' => 'journal-agent@sha256:1']);
+        config(['journal.agents.agent_image' => 'journal-agent@sha256:1']);
         // The agent image's digest is fixed for the test, so a test of another process changing the checkout meanwhile
         // never makes the run's own recording read as stale.
         Process::fake(['*'.AgentImagePrograms::SCRIPT.'*' => Process::result('image-programs-digest')]);

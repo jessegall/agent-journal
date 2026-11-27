@@ -44,12 +44,12 @@ final class NgrokGatewayTest extends SharingTestCase
         file_put_contents($this->folder.'/secrets/ngrok-authtoken', "fixture-token\n");
 
         config([
-            'sharing.ngrok.binary' => $this->folder.'/ngrok',
-            'sharing.ngrok.config_dir' => $this->folder.'/config',
-            'sharing.tunnels_dir' => $this->folder,
-            'sharing.ngrok.control_port' => 4041,
-            'sharing.secrets_dir' => $this->folder.'/secrets',
-            'sharing.rate_limit_store' => 'array',
+            'journal.sharing.ngrok.binary' => $this->folder.'/ngrok',
+            'journal.sharing.ngrok.config_dir' => $this->folder.'/config',
+            'journal.sharing.tunnels_dir' => $this->folder,
+            'journal.sharing.ngrok.control_port' => 4041,
+            'journal.sharing.secrets_dir' => $this->folder.'/secrets',
+            'journal.sharing.rate_limit_store' => 'array',
         ]);
 
         $this->processes = new Processes();

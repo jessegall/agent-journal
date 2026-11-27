@@ -57,7 +57,7 @@ final class PublishSignInChallengeTest extends TestCase
 
         Bus::fake([SignInDeadline::class]);
         $this->root = sys_get_temp_dir().'/sign-in-host-'.bin2hex(random_bytes(4));
-        config(['accounts.root' => $this->root]);
+        config(['journal.accounts.root' => $this->root]);
     }
 
     public function test_the_challenge_is_held_for_the_owner_and_a_typed_code_reaches_the_host_once(): void

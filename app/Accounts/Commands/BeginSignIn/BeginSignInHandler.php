@@ -23,9 +23,9 @@ final readonly class BeginSignInHandler implements CommandHandler
 {
     public function __construct(
         private SignInProtocols $protocols,
-        #[Config('accounts.sign_in_minutes')]
+        #[Config('journal.accounts.sign_in_minutes')]
         private int $signInMinutes,
-        #[Config('accounts.root')]
+        #[Config('journal.accounts.root')]
         private string $accountsRoot,
         private JobDispatcher $jobs,
     ) {}

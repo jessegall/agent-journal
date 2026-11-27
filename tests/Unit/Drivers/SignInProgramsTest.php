@@ -41,14 +41,14 @@ final class SignInProgramsTest extends TestCase
     {
         parent::setUp();
 
-        config(['accounts.root' => sys_get_temp_dir()]);
+        config(['journal.accounts.root' => sys_get_temp_dir()]);
         $this->folder = sys_get_temp_dir().'/sign-in-programs-'.uniqid();
         mkdir($this->folder, 0o700);
         file_put_contents($this->folder.'/program', self::PROGRAM);
         chmod($this->folder.'/program', 0o700);
         config([
-            'accounts.claude_program' => $this->folder.'/program',
-            'accounts.codex_program' => $this->folder.'/program',
+            'journal.accounts.claude_program' => $this->folder.'/program',
+            'journal.accounts.codex_program' => $this->folder.'/program',
         ]);
     }
 
