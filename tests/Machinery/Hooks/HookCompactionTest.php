@@ -105,7 +105,7 @@ final class HookCompactionTest extends TestCase
 
         $this->assertSame(TaskStatus::Started, $this->task->fresh()?->status);
         $this->assertSame(1, $this->run->fresh()?->current_step);
-        $this->assertSame(['core.ready', 'tasks.work', 'sequences.follow'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'core.profile', 'core.closing_words', 'tasks.work', 'sequences.follow'], $this->storedTypeKeys());
     }
 
     /**

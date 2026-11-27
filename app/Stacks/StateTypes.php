@@ -7,6 +7,7 @@ namespace App\Stacks;
 use App\Events\Hooks\StateTypesRequested;
 use App\Sessions\States\ChangeEffortState;
 use App\Sessions\States\ChangeModelState;
+use App\Sessions\States\ClosingWordsState;
 use App\Sessions\States\ProfileState;
 use App\Sessions\States\ReadyState;
 use App\Stacks\Contracts\Work\WorkOccurrenceGuard;
@@ -29,6 +30,7 @@ final class StateTypes implements StateTypesContract
     private const array CORE_STATES = [
         ReadyState::class,
         ProfileState::class,
+        ClosingWordsState::class,
         AnswerAskState::class,
         ReadMessageState::class,
         AnswerMessageState::class,

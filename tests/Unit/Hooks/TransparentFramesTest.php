@@ -59,7 +59,7 @@ final class TransparentFramesTest extends TestCase
 
         $answer = $stack->answer($this->input('stop'), TestText::renderer());
 
-        $this->assertSame(['ready'], $this->visited($answer->steps));
+        $this->assertSame([], $this->visited($answer->steps));
         $this->assertSame('plan', $stack->top()->id);
         $this->assertSame(['ready', 'plan', 'task'], $answer->stack->frameIds());
     }
@@ -89,7 +89,7 @@ final class TransparentFramesTest extends TestCase
         $this->assertSame(['ready', 'plan', 'message', 'task'], $edit->stack->frameIds());
     }
 
-    public function test_when_all_work_ended_ready_alone_answers_and_is_the_top(): void
+    public function test_when_all_work_ended_no_state_answers_the_stop_and_ready_is_the_top(): void
     {
         $stack = $this->stack(
             $this->ready(),
@@ -98,7 +98,7 @@ final class TransparentFramesTest extends TestCase
             $this->message(isAnswered: true),
         );
 
-        $this->assertSame(['ready'], $this->visited($stack->answer($this->input('stop'), TestText::renderer())->steps));
+        $this->assertSame([], $this->visited($stack->answer($this->input('stop'), TestText::renderer())->steps));
         $this->assertSame('ready', $stack->top()->id);
     }
 

@@ -107,8 +107,8 @@ final class HookStartTest extends TestCase
             $second->session->id,
             $this->app->make(CredentialLookup::class)->sessionFor($second->token)->id,
         );
-        $this->assertSame(['core.ready'], $this->bottomOf($first));
-        $this->assertSame(['core.ready'], $this->bottomOf($second));
+        $this->assertSame(['core.ready', 'core.profile', 'core.closing_words'], $this->bottomOf($first));
+        $this->assertSame(['core.ready', 'core.profile', 'core.closing_words'], $this->bottomOf($second));
     }
 
     public function test_an_unknown_profile_refuses_the_start_and_keeps_nothing(): void

@@ -100,7 +100,7 @@ final class ConditionalStatePushTest extends TestCase
         $this->pushReview();
 
         $this->assertSame(
-            ['core.ready', 'core.profile', StateReferenceKeys::of(ReviewStateReference::class)],
+            ['core.ready', 'core.profile', 'core.closing_words', StateReferenceKeys::of(ReviewStateReference::class)],
             $this->storedTypeKeys(),
         );
     }
@@ -111,12 +111,12 @@ final class ConditionalStatePushTest extends TestCase
         $this->switchReview(isOff: true, expectedRevision: 0);
 
         $this->pushReview();
-        $this->assertSame(['core.ready', 'core.profile'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'core.profile', 'core.closing_words'], $this->storedTypeKeys());
 
         $this->switchReview(isOff: false, expectedRevision: 1);
 
         $this->assertSame(
-            ['core.ready', 'core.profile'],
+            ['core.ready', 'core.profile', 'core.closing_words'],
             $this->storedTypeKeys(),
             self::NO_RESTORED_FRAME,
         );

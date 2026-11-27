@@ -7,6 +7,7 @@ namespace Tests\Machinery\Hooks;
 use App\Engine\Enums\NoSubject;
 use App\Stacks\References\StateReference;
 use App\Support\DomainEntry;
+use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -20,6 +21,12 @@ use Tests\TestCase;
 #[TestsMachinery(DomainEntry::class)]
 final class OutsideModuleStatesTest extends TestCase
 {
+    protected static function bootedDomains(): array
+    {
+        // The notes module requires the rules domain, which its entry checks as it is read.
+        return [RulesDomain::class];
+    }
+
     use CommittedHookStack;
 
     private const string NOTE_REASON = 'Finish the note first.';
@@ -28,7 +35,7 @@ final class OutsideModuleStatesTest extends TestCase
     {
         $this->journal->pushState($this->target, new StateReference('notes.writing', NoSubject::None));
 
-        $this->assertSame(['core.ready', 'notes.writing'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'core.profile', 'core.closing_words', 'notes.writing'], $this->storedTypeKeys());
         $this->assertSame(
             json_encode(['decision' => 'block', 'reason' => self::NOTE_REASON]),
             $this->answerStop(),

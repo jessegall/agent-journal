@@ -69,12 +69,12 @@ final readonly class SessionHook
     /**
      * The stop at the end of the turn, a callback of its own for each turn.
      */
-    public static function stop(string $turn = 'turn-1'): self
+    public static function stop(string $turn = 'turn-1', string $closingWords = ''): self
     {
         return new self(
             'stop',
             "stop-{$turn}",
-            fn (HookIdentity $identity) => new StopRequested($identity, new StopDetails($turn, false, '')),
+            fn (HookIdentity $identity) => new StopRequested($identity, new StopDetails($turn, false, $closingWords)),
         );
     }
 

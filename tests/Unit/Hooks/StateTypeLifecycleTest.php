@@ -90,6 +90,7 @@ final class StateTypeLifecycleTest extends TestCase
                 true,
                 1,
                 CarbonImmutable::now(),
+                ['agentId' => 'agent', 'sessionId' => 'session'],
             ),
             new FrameRecord(
                 'note-1',

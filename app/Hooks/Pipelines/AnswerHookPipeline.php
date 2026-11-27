@@ -7,15 +7,12 @@ namespace App\Hooks\Pipelines;
 use App\Agents\Drivers\Hooks\DriverReply;
 use App\Bus\Contracts\PipelineDefinition;
 use App\Hooks\CallStages\HookCallStage;
-use App\Hooks\CallStages\RestoredCall;
 use App\Hooks\CallStages\WalkedCall;
 use App\Hooks\Pipes\Answer\ComposeForeground;
 use App\Hooks\Pipes\Answer\FindReplay;
 use App\Hooks\Pipes\Answer\HandOverWaitingMessages;
 use App\Hooks\Pipes\Answer\KeepMessagesAndWake;
-use App\Hooks\Pipes\Answer\KeepRepeatedClosingWordsPrivate;
 use App\Hooks\Pipes\Answer\LockStack;
-use App\Hooks\Pipes\Answer\OfferClosingWords;
 use App\Hooks\Pipes\Answer\PrepareCall;
 use App\Hooks\Pipes\Answer\PublishHookEffects;
 use App\Hooks\Pipes\Answer\RenderReply;
@@ -44,12 +41,7 @@ final readonly class AnswerHookPipeline implements PipelineDefinition
             FindReplay::class,
             PrepareCall::class,
             RestoreStack::class,
-            KeepRepeatedClosingWordsPrivate::class,
-            Step::conditional(
-                fn (RestoredCall $restored) => OfferClosingWords::isNeeded($restored),
-                then: OfferClosingWords::class,
-                else: WalkStack::class,
-            ),
+            WalkStack::class,
             Step::conditional(
                 fn (WalkedCall $walked) => $walked->leavesMessagesWithIdleAgent(),
                 then: KeepMessagesAndWake::class,

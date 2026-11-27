@@ -38,12 +38,16 @@ final class StackInspectionTest extends TestCase
             [TestIds::of(1), TestIds::of(10), 'active'],
             [$inspection['agentId'], $inspection['sessionId'], $inspection['status']],
         );
-        $this->assertSame(['core.ready', 'test.tasks', 'guide'], array_column($inspection['frames'], 'typeKey'));
         $this->assertSame(
-            [null, ['id' => '42', 'runNumber' => 1], null],
+            ['core.ready', 'core.profile', 'core.closing_words', 'test.tasks', 'guide'],
+            array_column($inspection['frames'], 'typeKey'),
+        );
+        $session = ['id' => TestIds::of(10), 'runNumber' => 0];
+        $this->assertSame(
+            [null, $session, $session, ['id' => '42', 'runNumber' => 1], null],
             array_column($inspection['frames'], 'subject'),
         );
-        $this->assertSame([true, false, false], array_column($inspection['frames'], 'isBottom'));
+        $this->assertSame([true, false, false, false, false], array_column($inspection['frames'], 'isBottom'));
         $this->assertSame('hook-call-2', $inspection['lastCall']['hookId']);
         $this->assertSame('deny', $inspection['lastCall']['answer']);
         $this->assertSame($stdout, $inspection['lastCall']['stdout']);

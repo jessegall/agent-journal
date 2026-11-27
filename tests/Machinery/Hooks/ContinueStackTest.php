@@ -64,7 +64,7 @@ final class ContinueStackTest extends TestCase
 
         $continued = $this->nextSession($old, ConversationModeType::Resume);
 
-        $this->assertSame(['core.ready', 'core.profile', 'tasks.work'], $this->typeKeysOf($continued));
+        $this->assertSame(['core.ready', 'core.profile', 'core.closing_words', 'tasks.work'], $this->typeKeysOf($continued));
     }
 
     public function test_a_new_conversation_starts_with_the_bottom_alone(): void
@@ -73,7 +73,7 @@ final class ContinueStackTest extends TestCase
 
         $fresh = $this->nextSession($old, ConversationModeType::New);
 
-        $this->assertSame(['core.ready', 'core.profile'], $this->typeKeysOf($fresh));
+        $this->assertSame(['core.ready', 'core.profile', 'core.closing_words'], $this->typeKeysOf($fresh));
     }
 
     public function test_a_frame_nothing_registers_refuses_the_start(): void

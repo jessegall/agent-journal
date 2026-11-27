@@ -100,7 +100,7 @@ final class MandatoryAdmissionTest extends TestCase
 
         $this->assertSame(['acme publish --docs'], $this->admissions->lines);
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
-        $this->assertSame(['core.ready', 'test.rewriting'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'core.profile', 'core.closing_words', 'test.rewriting'], $this->storedTypeKeys());
     }
 
     public function test_a_repeated_delivery_replays_the_recorded_answer_without_a_second_admission(): void

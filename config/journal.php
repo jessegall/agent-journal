@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Sessions\States\ClosingWordsState;
 use App\Sessions\States\ProfileState;
 use App\Sessions\States\ReadyState;
 
@@ -25,6 +26,7 @@ return [
         'base_states' => [
             ReadyState::class,
             ProfileState::class,
+            ClosingWordsState::class,
         ],
 
     ],

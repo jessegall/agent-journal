@@ -7,17 +7,16 @@ namespace Tests\Unit\Hooks;
 use App\Agents\Inputs\Values\StopDetails;
 use App\Stacks\AgentState;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\TestActors;
+use Tests\TestCase;
 
 final class HookInputTest extends TestCase
 {
     /**
-     * @return iterable<string, array{HookInput, string}>
+     * @return iterable<string, array{string, string}>
      */
     public static function inputs(): iterable
     {
@@ -33,14 +32,15 @@ final class HookInputTest extends TestCase
             'session end' => 'onSessionEnd',
         ];
 
-        foreach (HookInputs::all() as $name => $input) {
-            yield $name => [$input, $methods[$name]];
+        foreach ($methods as $hook => $method) {
+            yield $hook => [$hook, $method];
         }
     }
 
     #[DataProvider('inputs')]
-    public function test_each_input_asks_the_state_for_its_own_hook_method(HookInput $input, string $method): void
+    public function test_each_input_asks_the_state_for_its_own_hook_method(string $hook, string $method): void
     {
+        $input = HookInputs::of($hook);
         $recording = new RecordState();
         $plainState = new class extends AgentState {};
 

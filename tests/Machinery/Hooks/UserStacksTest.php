@@ -19,6 +19,7 @@ use App\Support\DomainEntry;
 use App\Support\StackTransaction;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
+use Domain\Rules\RulesDomain;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\SwitchableState;
@@ -34,6 +35,12 @@ use Tests\TestCase;
 #[TestsMachinery(StackTransaction::class)]
 final class UserStacksTest extends TestCase
 {
+    protected static function bootedDomains(): array
+    {
+        // The notes module requires the rules domain, which its entry checks as it is read.
+        return [RulesDomain::class];
+    }
+
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -69,7 +76,7 @@ final class UserStacksTest extends TestCase
 
         $this->pushInTransaction($this->target);
 
-        $this->assertSame(['core.ready', 'notes.writing'], $this->storedTypeKeys());
+        $this->assertSame(['core.ready', 'core.profile', 'core.closing_words', 'notes.writing'], $this->storedTypeKeys());
     }
 
     public function test_an_agent_without_the_steer_ability_cannot_push_onto_a_stack(): void

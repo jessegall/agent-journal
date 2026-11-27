@@ -46,9 +46,9 @@ use Tests\TestCase;
 final class StackChangeTest extends TestCase
 {
     /**
-     * The frames every stack opens with: the ready bottom and the profile state.
+     * The frames every stack opens with: the ready bottom, the profile state and the closing-words state.
      */
-    private const int BASE_FRAMES = 2;
+    private const int BASE_FRAMES = 3;
 
     use CommitsHookRows;
 

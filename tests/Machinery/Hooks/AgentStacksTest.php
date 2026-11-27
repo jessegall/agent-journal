@@ -125,11 +125,11 @@ final class AgentStacksTest extends TestCase
 
         $frames = $this->storedFrames();
 
-        $this->assertCount(2, $frames);
-        $this->assertSame([true, false], [$frames[0]->isBottom, $frames[1]->isBottom]);
+        $this->assertCount(3, $frames);
+        $this->assertSame([true, false, false], [$frames[0]->isBottom, $frames[1]->isBottom, $frames[2]->isBottom]);
         $this->assertSame(
-            ['core.ready', 'core.profile'],
-            [$frames[0]->reference->typeKey, $frames[1]->reference->typeKey],
+            ['core.ready', 'core.profile', 'core.closing_words'],
+            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $frames),
         );
     }
 
@@ -183,7 +183,7 @@ final class AgentStacksTest extends TestCase
         });
 
         $this->assertSame(
-            ['core.ready', 'core.profile', 'test.tasks'],
+            ['core.ready', 'core.profile', 'core.closing_words', 'test.tasks'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
         $this->assertSame(['task 42 started'], DomainWrite::names());
@@ -204,7 +204,7 @@ final class AgentStacksTest extends TestCase
                 ->saveFrames($stack->records(), $this->app->make(StateTypes::class)->ticking());
         });
 
-        $this->assertSame(['values' => ['count' => 2]], $this->storedFrames()[2]->values);
+        $this->assertSame(['values' => ['count' => 2]], $this->storedFrames()[3]->values);
         $this->assertSame(2, $this->countingStateOf($this->reloadedStack())->counted());
         $this->assertSame(
             [
@@ -228,7 +228,7 @@ final class AgentStacksTest extends TestCase
             $this->fail('The push of an unknown state type went through.');
         } catch (StateTypeUnknown) {
             $this->assertSame([], DomainWrite::names());
-            $this->assertCount(2, $this->storedFrames());
+            $this->assertCount(3, $this->storedFrames());
         }
     }
 
@@ -241,7 +241,7 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $counting));
 
         $this->assertSame(
-            ['core.ready', 'core.profile', 'test.counting', 'test.counting'],
+            ['core.ready', 'core.profile', 'core.closing_words', 'test.counting', 'test.counting'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -261,7 +261,7 @@ final class AgentStacksTest extends TestCase
             ),
         );
         $this->assertSame(
-            ['core.ready', 'core.profile'],
+            ['core.ready', 'core.profile', 'core.closing_words'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
 
@@ -272,7 +272,7 @@ final class AgentStacksTest extends TestCase
             ),
         );
         $this->assertSame(
-            ['core.ready', 'core.profile', 'test.switched_on'],
+            ['core.ready', 'core.profile', 'core.closing_words', 'test.switched_on'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -301,7 +301,7 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
 
         $this->assertSame(
-            ['core.ready', 'core.profile', 'test.tasks'],
+            ['core.ready', 'core.profile', 'core.closing_words', 'test.tasks'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -321,7 +321,7 @@ final class AgentStacksTest extends TestCase
         );
 
         $this->assertSame(
-            ['core.ready', 'core.profile'],
+            ['core.ready', 'core.profile', 'core.closing_words'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
     }
@@ -369,7 +369,7 @@ final class AgentStacksTest extends TestCase
         }
 
         $this->assertSame([], DomainWrite::names());
-        $this->assertCount(2, $this->storedFrames());
+        $this->assertCount(3, $this->storedFrames());
     }
 
     public function test_the_limits_are_set_before_the_work_and_kept_by_a_nested_operation(): void

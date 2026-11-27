@@ -97,7 +97,7 @@ final class AgentStateMachineTest extends TestCase
             $this->fail('The adapter failure was swallowed.');
         } catch (TestFailure) {
             $this->assertSame(0, HookCall::query()->count());
-            $this->assertSame(['core.ready', 'test.tasks'], $this->storedTypeKeys());
+            $this->assertSame(['core.ready', 'core.profile', 'core.closing_words', 'test.tasks'], $this->storedTypeKeys());
         }
     }
 
