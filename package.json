@@ -46,6 +46,7 @@
         "@types/node": "^22.13.5",
         "@vitejs/plugin-vue": "^6.0.0",
         "@vue/test-utils": "^2.6.0",
+        "chokidar": "^3.6.0",
         "concurrently": "^10.0.3",
         "happy-dom": "^21.0.4",
         "pixelmatch": "^7.1.0",
