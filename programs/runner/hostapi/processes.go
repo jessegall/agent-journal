@@ -558,10 +558,8 @@ func (table *ProcessTable) held(processID string) (*heldProcess, error) {
 	return held, nil
 }
 
-// end reports the process ended once, with how far its output had come, so the journal reads the exit after it.
 func (table *ProcessTable) end(held *heldProcess, report ProcessReport) {
 	report.Identity, report.Generation = held.state()
-	report.OutputOffset = int(table.outputs.SpoolOffset(held.id))
 	table.writeKept(held)
 	_ = table.reports.Add(report)
 	close(held.exited)

@@ -380,60 +380,6 @@ func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.
 	t.Cleanup(func() { stopAndWait(daemon, table) })
 }
 
-// An exit report says how far the output had come when the process ended, so the journal reads the exit only after
-// that output: the probe's version line never goes missing behind its exit.
-func TestAPipeContainersExitReportCarriesHowFarItsOutputCame(t *testing.T) {
-	daemon := dockermock.Start(t, mockImage)
-	daemon.Programs = func(*dockermock.Container) dockermock.Program {
-		return dockermock.Printing("codex-cli 0.165.0\n", 0)
-	}
-	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
-	if err != nil {
-		t.Fatal(err)
-	}
-	state := t.TempDir()
-	reports := &sentReports{}
-	queue, err := OpenReportQueue(t.TempDir(), reports.send)
-	if err != nil {
-		t.Fatal(err)
-	}
-	runQueue(t, queue)
-	sent := &sentChunks{}
-	table := OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
-	instruction := openInstruction(t, "probe", "never", mockImage)
-	instruction.Payload = strings.Replace(instruction.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
-	instruction.Payload = strings.Replace(instruction.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
-	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), instruction); err != nil {
-		t.Fatal(err)
-	}
-
-	exited := waitForExitReport(t, reports)
-
-	if exited.OutputOffset != len("codex-cli 0.165.0\n") {
-		t.Fatalf("the exit report says the output came %d bytes far", exited.OutputOffset)
-	}
-	t.Cleanup(func() { stopAndWait(daemon, table) })
-}
-
-// waitForExitReport waits until the host sent an exit report and answers it.
-func waitForExitReport(t *testing.T, reports *sentReports) ProcessReport {
-	t.Helper()
-	deadline := time.Now().Add(5 * time.Second)
-	for time.Now().Before(deadline) {
-		reports.mutex.Lock()
-		for _, report := range reports.reports {
-			if report.Report == ProcessReportExited {
-				reports.mutex.Unlock()
-				return report
-			}
-		}
-		reports.mutex.Unlock()
-		time.Sleep(10 * time.Millisecond)
-	}
-	t.Fatal("the host sent no exit report")
-	return ProcessReport{}
-}
-
 // waitForText waits until the chunks of standard output read as the text given.
 func waitForText(t *testing.T, sent *sentChunks, text string) {
 	t.Helper()

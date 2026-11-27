@@ -155,7 +155,6 @@ type ProcessReport struct {
 	Evidence      string            `json:"evidence,omitempty"`
 	IsOutOfMemory bool              `json:"is_out_of_memory,omitempty"`
 	LastPrinted   string            `json:"last_printed,omitempty"`
-	OutputOffset  int               `json:"output_offset,omitempty"`
 }
 
 // Output is the output of host protocol 1.

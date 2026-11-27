@@ -14,7 +14,6 @@ use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Protocol\HostProcessReportType;
-use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
 use App\Models\Agents\AgentRuntime;
@@ -153,23 +152,6 @@ final class NotifyHostProcessTest extends TestCase
             [HostInstructionStatus::Refused, HostRefusal::NotRunning, HostInstructionStatus::Pending],
             [$open->status, $open->refusal, $stop->status],
         );
-    }
-
-    public function test_an_exit_is_read_only_after_the_output_printed_before_it(): void
-    {
-        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
-            ->openProcess('probe', HostProcessType::Pipe));
-        $this->journal->hostProcess('probe', fn (TestHostProcess $probe) => $probe->report(HostProcessReportType::Running));
-
-        $this->journal->assertRefused(HostProtocolRefused::class, fn () => $this->journal->hostProcess(
-            'probe',
-            fn (TestHostProcess $probe) => $probe->report(HostProcessReportType::Exited, 0, outputOffset: 18),
-        ));
-        $this->journal->hostProcess('probe', fn (TestHostProcess $probe) => $probe
-            ->printOnPipe("codex-cli 0.165.0\n")
-            ->report(HostProcessReportType::Exited, 0, outputOffset: 18));
-
-        $this->journal->assertResult(HostProcessStatus::Exited, $this->journal->hostProcessCalled('probe')->status);
     }
 
     public function test_a_report_about_another_hosts_process_is_refused(): void
