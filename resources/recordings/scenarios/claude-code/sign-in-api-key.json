@@ -13,7 +13,11 @@
         },
         {
             "do": "ask-user",
-            "text": "Paste the API key into the sign-in form; press Enter once it is accepted."
+            "text": "Send the API key to type into the sign-in."
+        },
+        {
+            "do": "submit-code",
+            "from": "challenge"
         },
         {
             "do": "wait-for",
