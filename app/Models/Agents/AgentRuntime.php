@@ -524,6 +524,14 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         return $this->process_generation === $processGeneration;
     }
 
+    /**
+     * Whether the runtime's host runs its agents in containers.
+     */
+    public function runsContained(): bool
+    {
+        return $this->loadMissing('host')->host->arrangement->isContained();
+    }
+
     // ----------[ Calculations ]----------
 
     /**

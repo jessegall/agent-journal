@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Hooks\CallStages;
 
+use App\Actors\AttentionOrigin;
 use App\Models\Agents\AgentStackRow;
 use App\Stacks\AgentStack;
 use App\Stacks\HookAnswer;
+use App\Support\ActorReference;
 
 /**
  * A hook call with its final answer and the stack it found.
@@ -28,6 +30,22 @@ final readonly class WalkedCall
         return $this->answer->messages !== [] && $this->call->input->leavesAgentIdle(
             $this->answer->decision->answerType(),
         );
+    }
+
+    /**
+     * The agent the hook was called for.
+     */
+    public function agent(): ActorReference
+    {
+        return $this->call->target->actorReference();
+    }
+
+    /**
+     * Where attention the call asks for comes from: the messages this hook call left for its agent.
+     */
+    public function messagesOrigin(): AttentionOrigin
+    {
+        return AttentionOrigin::agentMessages($this->call->input->identity()->hookId);
     }
 
     public function answeredBy(HookAnswer $answer): self

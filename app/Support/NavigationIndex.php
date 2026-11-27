@@ -34,7 +34,7 @@ final readonly class NavigationIndex
     {
         return array_values(array_filter(
             $this->entries(),
-            fn (NavigationCandidate $candidate) => $candidate->navigation->navigationItem->count !== null,
+            fn (NavigationCandidate $candidate) => $candidate->isCounted(),
         ));
     }
 
@@ -45,7 +45,7 @@ final readonly class NavigationIndex
      */
     public function groupKeys(): array
     {
-        $groups = array_map(fn (NavigationCandidate $root) => $root->navigation->navigationItem->group, $this->roots);
+        $groups = array_map(fn (NavigationCandidate $root) => $root->group(), $this->roots);
 
         return array_values(array_unique(array_filter($groups, fn (string|null $group) => $group !== null)));
     }

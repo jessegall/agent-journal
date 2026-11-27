@@ -12,4 +12,22 @@ use App\Support\Execution\StepOutcome;
 final readonly class ChannelRunEnded
 {
     public function __construct(public RunChannel $channel, public StepOutcome $outcome) {}
+
+    /**
+     * Reports the run's end over its channel and sends what is still spooled.
+     */
+    public function report(): void
+    {
+        $this->channel->finish($this->exitCode());
+    }
+
+    public function exitCode(): int
+    {
+        return $this->outcome->status->code;
+    }
+
+    public function runId(): string
+    {
+        return $this->channel->admission->runId;
+    }
 }

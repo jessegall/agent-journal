@@ -27,7 +27,7 @@ final readonly class ComposeForeground implements Pipe
 
     public function handle(SettledCall $settled): SettledCall
     {
-        if (! in_array($settled->call->input::class, self::FRESH_INPUTS, true)) {
+        if (! $settled->isFromInputAmong(self::FRESH_INPUTS)) {
             return $settled;
         }
 

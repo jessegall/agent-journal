@@ -14,7 +14,9 @@ withDefaults(defineProps<{ variant?: 'centred' | 'origin' }>(), { variant: 'cent
         class="flex items-center gap-1.75 text-badge text-text-3"
         :class="variant === 'centred' ? 'mx-auto max-w-[86%] justify-center text-center' : ''"
     >
-        <Icon v-if="variant === 'origin'" name="users" :size="14" />
+        <template v-if="variant === 'origin'">
+            <Icon name="users" :size="14" />
+        </template>
         <span class="min-w-0"><slot /></span>
     </p>
 </template>

@@ -6,6 +6,7 @@ namespace App\Processes\Execution;
 
 use App\Processes\Enums\ExitStatus;
 use App\Processes\Enums\OutputStream;
+use App\Values\ExecutionContext;
 
 /**
  * A part whose process started; ending it stops it when the run was stopped, otherwise waits for it and records its
@@ -19,6 +20,27 @@ final readonly class SpawnedPart
     private const float STOP_GRACE_SECONDS = 5.0;
 
     public function __construct(public QueuedPart $queued, public SpawnedProcess $process) {}
+
+    /**
+     * Keeps the part running in the background, to wait for at the run's end.
+     */
+    public function runInBackground(): void
+    {
+        $this->queued->state->track($this);
+    }
+
+    public function context(): ExecutionContext
+    {
+        return $this->queued->context;
+    }
+
+    /**
+     * Records bytes the part's process printed on one of its streams.
+     */
+    public function recordOutput(OutputStream $stream, string $bytes): void
+    {
+        $this->queued->state->events->output($this->queued->part, $stream, $bytes);
+    }
 
     public function end(bool $isDrained): StepStatus
     {

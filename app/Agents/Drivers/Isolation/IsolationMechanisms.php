@@ -18,6 +18,6 @@ final readonly class IsolationMechanisms
 
     public function for(IsolationPlatform $platform, string $family): BoundaryMechanisms
     {
-        return $this->profiles->ofFamily($family)->isolation()->mechanismsOn($platform);
+        return $this->profiles->ofFamily($family)->mechanismsOn($platform);
     }
 }

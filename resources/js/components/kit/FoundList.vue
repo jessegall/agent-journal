@@ -11,8 +11,10 @@ defineProps<{ lines: string[]; label: string }>();
         :aria-label="label"
         class="m-0 ml-[calc(var(--spacing)*17.25)] list-none border-l border-line py-1 pl-2.5 text-badge text-text-3"
     >
-        <li v-for="line in lines" :key="line" class="py-0.5 [overflow-wrap:anywhere]">
-            <slot :line="line">{{ line }}</slot>
-        </li>
+        <template v-for="line in lines" :key="line">
+            <li class="py-0.5 [overflow-wrap:anywhere]">
+                <slot :line="line">{{ line }}</slot>
+            </li>
+        </template>
     </ul>
 </template>

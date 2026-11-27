@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import Dot from './Dot.vue';
 import Icon from './Icon.vue';
 import Spinner from './Spinner.vue';
+import SwitchCase from './SwitchCase.vue';
 import { statusLooks } from './status';
 import type { StatusState } from './status';
 
@@ -34,10 +35,14 @@ const wordLook = computed(() => {
             look.mark === 'spinner' && 'text-text-2',
         ]"
     >
-        <Spinner v-if="look.mark === 'spinner'" />
-        <Icon v-else-if="look.mark === 'tick'" name="tick" size="md" />
-        <Icon v-else-if="look.mark === 'alert'" name="alert" size="md" />
-        <Dot v-else :tone="look.mark" />
+        <SwitchCase :value="look.mark">
+            <template #spinner><Spinner /></template>
+            <template #tick><Icon name="tick" size="md" /></template>
+            <template #alert><Icon name="alert" size="md" /></template>
+            <template #hollow><Dot tone="hollow" /></template>
+            <template #brand><Dot tone="brand" /></template>
+            <template #solid><Dot tone="solid" /></template>
+        </SwitchCase>
         {{ label ?? look.word }}
     </span>
 </template>

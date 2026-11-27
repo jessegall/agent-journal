@@ -48,11 +48,13 @@ async function moveBy(event: KeyboardEvent): Promise<void> {
         class="inline-flex gap-0.5 rounded-button border border-border-2 p-0.5"
         @keydown="moveBy"
     >
-        <SegmentedItem v-for="item in items" :key="item.value" :value="item.value">
-            <span class="inline-flex items-center gap-2">
-                <slot name="icon" :value="item.value" :is-on="chosen === item.value" />
-                {{ item.label }}
-            </span>
-        </SegmentedItem>
+        <template v-for="item in items" :key="item.value">
+            <SegmentedItem :value="item.value">
+                <span class="inline-flex items-center gap-2">
+                    <slot name="icon" :value="item.value" :is-on="chosen === item.value" />
+                    {{ item.label }}
+                </span>
+            </SegmentedItem>
+        </template>
     </div>
 </template>

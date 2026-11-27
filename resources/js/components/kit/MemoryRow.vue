@@ -11,22 +11,29 @@ const expanded = defineModel<boolean>('expanded', { default: false });
 
 <template>
     <li class="border-b border-line">
-        <button
-            v-if="expandable"
-            type="button"
-            data-memory-row
-            :aria-expanded="expanded"
-            class="grid w-full grid-cols-[calc(var(--spacing)*4.5)_1fr] gap-x-2.5 px-3.5 py-2.25 text-left text-small transition-colors duration-(--duration-hover) hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-            @click="expanded = !expanded"
-        >
-            <span class="text-text-3 tabular-nums">{{ weight }}</span>
-            <span class="min-w-0 text-text-2 [overflow-wrap:anywhere]">{{ text }}</span>
-            <span v-if="expanded && detail" class="col-start-2 mt-1 text-badge text-text-3">{{ detail }}</span>
-        </button>
-        <div v-else class="grid grid-cols-[calc(var(--spacing)*4.5)_1fr] gap-x-2.5 px-3.5 py-2.25 text-small">
-            <span class="text-text-3 tabular-nums">{{ weight }}</span>
-            <span class="min-w-0 text-text-2 [overflow-wrap:anywhere]">{{ text }}</span>
-            <span v-if="detail" class="col-start-2 mt-1 text-badge text-text-3">{{ detail }}</span>
-        </div>
+        <template v-if="expandable">
+            <button
+                type="button"
+                data-memory-row
+                :aria-expanded="expanded"
+                class="grid w-full grid-cols-[calc(var(--spacing)*4.5)_1fr] gap-x-2.5 px-3.5 py-2.25 text-left text-small transition-colors duration-(--duration-hover) hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+                @click="expanded = !expanded"
+            >
+                <span class="text-text-3 tabular-nums">{{ weight }}</span>
+                <span class="min-w-0 text-text-2 [overflow-wrap:anywhere]">{{ text }}</span>
+                <template v-if="expanded && detail">
+                    <span class="col-start-2 mt-1 text-badge text-text-3">{{ detail }}</span>
+                </template>
+            </button>
+        </template>
+        <template v-else>
+            <div class="grid grid-cols-[calc(var(--spacing)*4.5)_1fr] gap-x-2.5 px-3.5 py-2.25 text-small">
+                <span class="text-text-3 tabular-nums">{{ weight }}</span>
+                <span class="min-w-0 text-text-2 [overflow-wrap:anywhere]">{{ text }}</span>
+                <template v-if="detail">
+                    <span class="col-start-2 mt-1 text-badge text-text-3">{{ detail }}</span>
+                </template>
+            </div>
+        </template>
     </li>
 </template>

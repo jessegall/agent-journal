@@ -3,6 +3,7 @@ import { computed, useId } from 'vue';
 import Field from '@/components/kit/Field.vue';
 import FieldError from '@/components/kit/FieldError.vue';
 import Select from '@/components/kit/Select.vue';
+import SwitchCase from '@/components/kit/SwitchCase.vue';
 import Toggle from '@/components/kit/Toggle.vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import type { LayoutFieldData, LayoutPartData } from '@/generated/types/core';
@@ -36,32 +37,34 @@ const value = computed({
 </script>
 
 <template>
-    <template v-if="part.style === 'toggle'">
-        <Toggle v-model="isOn" :label="part.text ?? ''" />
-    </template>
-    <template v-else-if="part.style === 'choice'">
-        <div class="flex flex-col gap-1">
-            <span :id="choiceLabelId" class="text-field text-text">{{ part.text }}</span>
-            <Select
+    <SwitchCase :value="part.style">
+        <template #toggle>
+            <Toggle v-model="isOn" :label="part.text ?? ''" />
+        </template>
+        <template #choice>
+            <div class="flex flex-col gap-1">
+                <span :id="choiceLabelId" class="text-field text-text">{{ part.text }}</span>
+                <Select
+                    v-model="value"
+                    :aria-labelledby="choiceLabelId"
+                    :options="choices"
+                    :invalid="form.errors[props.field.name] !== undefined"
+                />
+                <template v-if="form.errors[props.field.name]">
+                    <FieldError>{{ form.errors[props.field.name] }}</FieldError>
+                </template>
+            </div>
+        </template>
+        <template #default>
+            <Field
+                :id="fieldId"
                 v-model="value"
-                :aria-labelledby="choiceLabelId"
-                :options="choices"
-                :invalid="form.errors[props.field.name] !== undefined"
+                :label="part.text ?? ''"
+                :hint="part.detail ?? undefined"
+                :secret="part.style === 'secret'"
+                :multiline="part.style === 'area'"
+                :error="form.errors[props.field.name]"
             />
-            <template v-if="form.errors[props.field.name]">
-                <FieldError>{{ form.errors[props.field.name] }}</FieldError>
-            </template>
-        </div>
-    </template>
-    <template v-else>
-        <Field
-            :id="fieldId"
-            v-model="value"
-            :label="part.text ?? ''"
-            :hint="part.detail ?? undefined"
-            :secret="part.style === 'secret'"
-            :multiline="part.style === 'area'"
-            :error="form.errors[props.field.name]"
-        />
-    </template>
+        </template>
+    </SwitchCase>
 </template>
