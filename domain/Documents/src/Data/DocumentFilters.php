@@ -43,7 +43,10 @@ final class DocumentFilters extends Data
      */
     public function searchWords(): Option
     {
-        return Option::fromValue($this->query)->filter(fn (string $words) => trim($words) !== '');
+        /** @var Option<string> $words */
+        $words = Option::fromValue($this->query);
+
+        return $words->filter(fn (string $words) => trim($words) !== '');
     }
 
     public function pageSize(): PageSize

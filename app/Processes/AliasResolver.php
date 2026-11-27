@@ -24,7 +24,7 @@ final readonly class AliasResolver implements AliasResolverContract
      */
     public function find(string $name): Option
     {
-        return Option::fromValue(CommandAlias::query()->withName($name)->first())
+        return CommandAlias::query()->withName($name)->firstOption()
             ->map(fn (CommandAlias $alias) => $alias->lookup);
     }
 }
