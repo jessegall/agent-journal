@@ -7976,8 +7976,65 @@
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on a protected account start": {
-        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
-        "message": "codex's tools would run as its own user and read its sign-in: it is not started in a container"
+        "purpose": "agent_terminal",
+        "type": "terminal",
+        "restart": "on_crash",
+        "argv": [
+            "codex",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "sonnet",
+            "-c",
+            "model_reasoning_effort=medium",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: ls."
+        ],
+        "restart_argv": [],
+        "restart_when_file": null,
+        "environment": [
+            "CODEX_HOME=/accounts/a"
+        ],
+        "folder": "/work",
+        "container": null,
+        "labels": null,
+        "size": {
+            "columns": 120,
+            "rows": 40
+        },
+        "files": [
+            {
+                "name": "hook-replies.json",
+                "content": "{\"body\":\"{\\\"driver\\\":\\\"codex\\\",\\\"events\\\":[\\\"SessionStart\\\",\\\"UserPromptSubmit\\\",\\\"PreToolUse\\\",\\\"PostToolUse\\\",\\\"Stop\\\",\\\"SessionEnd\\\"],\\\"toolEvents\\\":[\\\"PreToolUse\\\",\\\"PostToolUse\\\"],\\\"spawnTools\\\":[\\\"collaboration.spawn_agent\\\",\\\"collaboration.wait_agent\\\",\\\"collaboration.send_message\\\",\\\"collaboration.followup_task\\\",\\\"collaboration.interrupt_agent\\\",\\\"collaboration.list_agents\\\"],\\\"budgetMs\\\":5000,\\\"retries\\\":1,\\\"unknownEvent\\\":{\\\"stdout\\\":\\\"\\\",\\\"stderr\\\":\\\"The journal answers no such hook event\\\\n\\\",\\\"exitCode\\\":2},\\\"replies\\\":{\\\"away\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"unprepared\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"spawn\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}}}}\",\"seal\":\"1e4feedd86389187275f762af43f1e58e84229d2c4af417c3a45adff2e3a93f4\"}",
+                "template": false
+            },
+            {
+                "name": "hook-replies.key",
+                "content": "the-seal-key",
+                "template": false
+            }
+        ],
+        "folders": [],
+        "inherit": [
+            "HOME",
+            "PATH"
+        ],
+        "side_sockets": [],
+        "read_files": [],
+        "shield_rules": [],
+        "fence": null,
+        "kept_files": [],
+        "raw_bytes": false
     },
     "codex terminal on a protected account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8014,8 +8071,65 @@
         "raw_bytes": false
     },
     "codex terminal on a protected account with everything start": {
-        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
-        "message": "codex's tools would run as its own user and read its sign-in: it is not started in a container"
+        "purpose": "agent_terminal",
+        "type": "terminal",
+        "restart": "on_crash",
+        "argv": [
+            "codex",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "the-model",
+            "-c",
+            "model_reasoning_effort=high",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: ls."
+        ],
+        "restart_argv": [],
+        "restart_when_file": null,
+        "environment": [
+            "CODEX_HOME=/accounts/a"
+        ],
+        "folder": "/work",
+        "container": null,
+        "labels": null,
+        "size": {
+            "columns": 120,
+            "rows": 40
+        },
+        "files": [
+            {
+                "name": "hook-replies.json",
+                "content": "{\"body\":\"{\\\"driver\\\":\\\"codex\\\",\\\"events\\\":[\\\"SessionStart\\\",\\\"UserPromptSubmit\\\",\\\"PreToolUse\\\",\\\"PostToolUse\\\",\\\"Stop\\\",\\\"SessionEnd\\\"],\\\"toolEvents\\\":[\\\"PreToolUse\\\",\\\"PostToolUse\\\"],\\\"spawnTools\\\":[\\\"collaboration.spawn_agent\\\",\\\"collaboration.wait_agent\\\",\\\"collaboration.send_message\\\",\\\"collaboration.followup_task\\\",\\\"collaboration.interrupt_agent\\\",\\\"collaboration.list_agents\\\"],\\\"budgetMs\\\":5000,\\\"retries\\\":1,\\\"unknownEvent\\\":{\\\"stdout\\\":\\\"\\\",\\\"stderr\\\":\\\"The journal answers no such hook event\\\\n\\\",\\\"exitCode\\\":2},\\\"replies\\\":{\\\"away\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"unprepared\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"spawn\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}}}}\",\"seal\":\"1e4feedd86389187275f762af43f1e58e84229d2c4af417c3a45adff2e3a93f4\"}",
+                "template": false
+            },
+            {
+                "name": "hook-replies.key",
+                "content": "the-seal-key",
+                "template": false
+            }
+        ],
+        "folders": [],
+        "inherit": [
+            "HOME",
+            "PATH"
+        ],
+        "side_sockets": [],
+        "read_files": [],
+        "shield_rules": [],
+        "fence": null,
+        "kept_files": [],
+        "raw_bytes": false
     },
     "codex terminal on a protected account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8052,8 +8166,67 @@
         "raw_bytes": false
     },
     "codex terminal on a protected account resumed start": {
-        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
-        "message": "codex's tools would run as its own user and read its sign-in: it is not started in a container"
+        "purpose": "agent_terminal",
+        "type": "terminal",
+        "restart": "on_crash",
+        "argv": [
+            "codex",
+            "resume",
+            "3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "sonnet",
+            "-c",
+            "model_reasoning_effort=medium",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: ls."
+        ],
+        "restart_argv": [],
+        "restart_when_file": null,
+        "environment": [
+            "CODEX_HOME=/accounts/a"
+        ],
+        "folder": "/work",
+        "container": null,
+        "labels": null,
+        "size": {
+            "columns": 120,
+            "rows": 40
+        },
+        "files": [
+            {
+                "name": "hook-replies.json",
+                "content": "{\"body\":\"{\\\"driver\\\":\\\"codex\\\",\\\"events\\\":[\\\"SessionStart\\\",\\\"UserPromptSubmit\\\",\\\"PreToolUse\\\",\\\"PostToolUse\\\",\\\"Stop\\\",\\\"SessionEnd\\\"],\\\"toolEvents\\\":[\\\"PreToolUse\\\",\\\"PostToolUse\\\"],\\\"spawnTools\\\":[\\\"collaboration.spawn_agent\\\",\\\"collaboration.wait_agent\\\",\\\"collaboration.send_message\\\",\\\"collaboration.followup_task\\\",\\\"collaboration.interrupt_agent\\\",\\\"collaboration.list_agents\\\"],\\\"budgetMs\\\":5000,\\\"retries\\\":1,\\\"unknownEvent\\\":{\\\"stdout\\\":\\\"\\\",\\\"stderr\\\":\\\"The journal answers no such hook event\\\\n\\\",\\\"exitCode\\\":2},\\\"replies\\\":{\\\"away\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"unprepared\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"spawn\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}}}}\",\"seal\":\"1e4feedd86389187275f762af43f1e58e84229d2c4af417c3a45adff2e3a93f4\"}",
+                "template": false
+            },
+            {
+                "name": "hook-replies.key",
+                "content": "the-seal-key",
+                "template": false
+            }
+        ],
+        "folders": [],
+        "inherit": [
+            "HOME",
+            "PATH"
+        ],
+        "side_sockets": [],
+        "read_files": [],
+        "shield_rules": [],
+        "fence": null,
+        "kept_files": [],
+        "raw_bytes": false
     },
     "codex terminal on a protected account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8090,8 +8263,67 @@
         "raw_bytes": false
     },
     "codex terminal on a protected account resumed with everything start": {
-        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
-        "message": "codex's tools would run as its own user and read its sign-in: it is not started in a container"
+        "purpose": "agent_terminal",
+        "type": "terminal",
+        "restart": "on_crash",
+        "argv": [
+            "codex",
+            "resume",
+            "3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "the-model",
+            "-c",
+            "model_reasoning_effort=high",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: ls."
+        ],
+        "restart_argv": [],
+        "restart_when_file": null,
+        "environment": [
+            "CODEX_HOME=/accounts/a"
+        ],
+        "folder": "/work",
+        "container": null,
+        "labels": null,
+        "size": {
+            "columns": 120,
+            "rows": 40
+        },
+        "files": [
+            {
+                "name": "hook-replies.json",
+                "content": "{\"body\":\"{\\\"driver\\\":\\\"codex\\\",\\\"events\\\":[\\\"SessionStart\\\",\\\"UserPromptSubmit\\\",\\\"PreToolUse\\\",\\\"PostToolUse\\\",\\\"Stop\\\",\\\"SessionEnd\\\"],\\\"toolEvents\\\":[\\\"PreToolUse\\\",\\\"PostToolUse\\\"],\\\"spawnTools\\\":[\\\"collaboration.spawn_agent\\\",\\\"collaboration.wait_agent\\\",\\\"collaboration.send_message\\\",\\\"collaboration.followup_task\\\",\\\"collaboration.interrupt_agent\\\",\\\"collaboration.list_agents\\\"],\\\"budgetMs\\\":5000,\\\"retries\\\":1,\\\"unknownEvent\\\":{\\\"stdout\\\":\\\"\\\",\\\"stderr\\\":\\\"The journal answers no such hook event\\\\n\\\",\\\"exitCode\\\":2},\\\"replies\\\":{\\\"away\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"unprepared\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"spawn\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}}}}\",\"seal\":\"1e4feedd86389187275f762af43f1e58e84229d2c4af417c3a45adff2e3a93f4\"}",
+                "template": false
+            },
+            {
+                "name": "hook-replies.key",
+                "content": "the-seal-key",
+                "template": false
+            }
+        ],
+        "folders": [],
+        "inherit": [
+            "HOME",
+            "PATH"
+        ],
+        "side_sockets": [],
+        "read_files": [],
+        "shield_rules": [],
+        "fence": null,
+        "kept_files": [],
+        "raw_bytes": false
     },
     "codex terminal on a protected account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8128,8 +8360,65 @@
         "raw_bytes": false
     },
     "codex pipe on a protected account start": {
-        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
-        "message": "codex's tools would run as its own user and read its sign-in: it is not started in a container"
+        "purpose": "agent_turn",
+        "type": "pipe",
+        "restart": "never",
+        "argv": [
+            "codex",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "sonnet",
+            "-c",
+            "model_reasoning_effort=medium",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: ls."
+        ],
+        "restart_argv": [],
+        "restart_when_file": null,
+        "environment": [
+            "CODEX_HOME=/accounts/a"
+        ],
+        "folder": "/work",
+        "container": null,
+        "labels": null,
+        "size": {
+            "columns": 120,
+            "rows": 40
+        },
+        "files": [
+            {
+                "name": "hook-replies.json",
+                "content": "{\"body\":\"{\\\"driver\\\":\\\"codex\\\",\\\"events\\\":[\\\"SessionStart\\\",\\\"UserPromptSubmit\\\",\\\"PreToolUse\\\",\\\"PostToolUse\\\",\\\"Stop\\\",\\\"SessionEnd\\\"],\\\"toolEvents\\\":[\\\"PreToolUse\\\",\\\"PostToolUse\\\"],\\\"spawnTools\\\":[\\\"collaboration.spawn_agent\\\",\\\"collaboration.wait_agent\\\",\\\"collaboration.send_message\\\",\\\"collaboration.followup_task\\\",\\\"collaboration.interrupt_agent\\\",\\\"collaboration.list_agents\\\"],\\\"budgetMs\\\":5000,\\\"retries\\\":1,\\\"unknownEvent\\\":{\\\"stdout\\\":\\\"\\\",\\\"stderr\\\":\\\"The journal answers no such hook event\\\\n\\\",\\\"exitCode\\\":2},\\\"replies\\\":{\\\"away\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"unprepared\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"spawn\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}}}}\",\"seal\":\"1e4feedd86389187275f762af43f1e58e84229d2c4af417c3a45adff2e3a93f4\"}",
+                "template": false
+            },
+            {
+                "name": "hook-replies.key",
+                "content": "the-seal-key",
+                "template": false
+            }
+        ],
+        "folders": [],
+        "inherit": [
+            "HOME",
+            "PATH"
+        ],
+        "side_sockets": [],
+        "read_files": [],
+        "shield_rules": [],
+        "fence": null,
+        "kept_files": [],
+        "raw_bytes": false
     },
     "codex pipe on a protected account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8166,8 +8455,65 @@
         "raw_bytes": false
     },
     "codex pipe on a protected account with everything start": {
-        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
-        "message": "codex's tools would run as its own user and read its sign-in: it is not started in a container"
+        "purpose": "agent_turn",
+        "type": "pipe",
+        "restart": "never",
+        "argv": [
+            "codex",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "the-model",
+            "-c",
+            "model_reasoning_effort=high",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: ls."
+        ],
+        "restart_argv": [],
+        "restart_when_file": null,
+        "environment": [
+            "CODEX_HOME=/accounts/a"
+        ],
+        "folder": "/work",
+        "container": null,
+        "labels": null,
+        "size": {
+            "columns": 120,
+            "rows": 40
+        },
+        "files": [
+            {
+                "name": "hook-replies.json",
+                "content": "{\"body\":\"{\\\"driver\\\":\\\"codex\\\",\\\"events\\\":[\\\"SessionStart\\\",\\\"UserPromptSubmit\\\",\\\"PreToolUse\\\",\\\"PostToolUse\\\",\\\"Stop\\\",\\\"SessionEnd\\\"],\\\"toolEvents\\\":[\\\"PreToolUse\\\",\\\"PostToolUse\\\"],\\\"spawnTools\\\":[\\\"collaboration.spawn_agent\\\",\\\"collaboration.wait_agent\\\",\\\"collaboration.send_message\\\",\\\"collaboration.followup_task\\\",\\\"collaboration.interrupt_agent\\\",\\\"collaboration.list_agents\\\"],\\\"budgetMs\\\":5000,\\\"retries\\\":1,\\\"unknownEvent\\\":{\\\"stdout\\\":\\\"\\\",\\\"stderr\\\":\\\"The journal answers no such hook event\\\\n\\\",\\\"exitCode\\\":2},\\\"replies\\\":{\\\"away\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"unprepared\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"spawn\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}}}}\",\"seal\":\"1e4feedd86389187275f762af43f1e58e84229d2c4af417c3a45adff2e3a93f4\"}",
+                "template": false
+            },
+            {
+                "name": "hook-replies.key",
+                "content": "the-seal-key",
+                "template": false
+            }
+        ],
+        "folders": [],
+        "inherit": [
+            "HOME",
+            "PATH"
+        ],
+        "side_sockets": [],
+        "read_files": [],
+        "shield_rules": [],
+        "fence": null,
+        "kept_files": [],
+        "raw_bytes": false
     },
     "codex pipe on a protected account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8204,8 +8550,65 @@
         "raw_bytes": false
     },
     "codex pipe on a protected account resumed start": {
-        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
-        "message": "codex's tools would run as its own user and read its sign-in: it is not started in a container"
+        "purpose": "agent_turn",
+        "type": "pipe",
+        "restart": "never",
+        "argv": [
+            "codex",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "sonnet",
+            "-c",
+            "model_reasoning_effort=medium",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: ls."
+        ],
+        "restart_argv": [],
+        "restart_when_file": null,
+        "environment": [
+            "CODEX_HOME=/accounts/a"
+        ],
+        "folder": "/work",
+        "container": null,
+        "labels": null,
+        "size": {
+            "columns": 120,
+            "rows": 40
+        },
+        "files": [
+            {
+                "name": "hook-replies.json",
+                "content": "{\"body\":\"{\\\"driver\\\":\\\"codex\\\",\\\"events\\\":[\\\"SessionStart\\\",\\\"UserPromptSubmit\\\",\\\"PreToolUse\\\",\\\"PostToolUse\\\",\\\"Stop\\\",\\\"SessionEnd\\\"],\\\"toolEvents\\\":[\\\"PreToolUse\\\",\\\"PostToolUse\\\"],\\\"spawnTools\\\":[\\\"collaboration.spawn_agent\\\",\\\"collaboration.wait_agent\\\",\\\"collaboration.send_message\\\",\\\"collaboration.followup_task\\\",\\\"collaboration.interrupt_agent\\\",\\\"collaboration.list_agents\\\"],\\\"budgetMs\\\":5000,\\\"retries\\\":1,\\\"unknownEvent\\\":{\\\"stdout\\\":\\\"\\\",\\\"stderr\\\":\\\"The journal answers no such hook event\\\\n\\\",\\\"exitCode\\\":2},\\\"replies\\\":{\\\"away\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"unprepared\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"spawn\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}}}}\",\"seal\":\"1e4feedd86389187275f762af43f1e58e84229d2c4af417c3a45adff2e3a93f4\"}",
+                "template": false
+            },
+            {
+                "name": "hook-replies.key",
+                "content": "the-seal-key",
+                "template": false
+            }
+        ],
+        "folders": [],
+        "inherit": [
+            "HOME",
+            "PATH"
+        ],
+        "side_sockets": [],
+        "read_files": [],
+        "shield_rules": [],
+        "fence": null,
+        "kept_files": [],
+        "raw_bytes": false
     },
     "codex pipe on a protected account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8242,8 +8645,65 @@
         "raw_bytes": false
     },
     "codex pipe on a protected account resumed with everything start": {
-        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
-        "message": "codex's tools would run as its own user and read its sign-in: it is not started in a container"
+        "purpose": "agent_turn",
+        "type": "pipe",
+        "restart": "never",
+        "argv": [
+            "codex",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "the-model",
+            "-c",
+            "model_reasoning_effort=high",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: ls."
+        ],
+        "restart_argv": [],
+        "restart_when_file": null,
+        "environment": [
+            "CODEX_HOME=/accounts/a"
+        ],
+        "folder": "/work",
+        "container": null,
+        "labels": null,
+        "size": {
+            "columns": 120,
+            "rows": 40
+        },
+        "files": [
+            {
+                "name": "hook-replies.json",
+                "content": "{\"body\":\"{\\\"driver\\\":\\\"codex\\\",\\\"events\\\":[\\\"SessionStart\\\",\\\"UserPromptSubmit\\\",\\\"PreToolUse\\\",\\\"PostToolUse\\\",\\\"Stop\\\",\\\"SessionEnd\\\"],\\\"toolEvents\\\":[\\\"PreToolUse\\\",\\\"PostToolUse\\\"],\\\"spawnTools\\\":[\\\"collaboration.spawn_agent\\\",\\\"collaboration.wait_agent\\\",\\\"collaboration.send_message\\\",\\\"collaboration.followup_task\\\",\\\"collaboration.interrupt_agent\\\",\\\"collaboration.list_agents\\\"],\\\"budgetMs\\\":5000,\\\"retries\\\":1,\\\"unknownEvent\\\":{\\\"stdout\\\":\\\"\\\",\\\"stderr\\\":\\\"The journal answers no such hook event\\\\n\\\",\\\"exitCode\\\":2},\\\"replies\\\":{\\\"away\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"The journal is unreachable: this helper cannot act until it is back\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"unprepared\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"preparation-pending: the journal has not prepared this context yet, so tools wait until it has\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}},\\\"spawn\\\":{\\\"SessionStart\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"UserPromptSubmit\\\":{\\\"stdout\\\":\\\"{\\\\\\\"decision\\\\\\\":\\\\\\\"block\\\\\\\",\\\\\\\"reason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PreToolUse\\\":{\\\"stdout\\\":\\\"{\\\\\\\"hookSpecificOutput\\\\\\\":{\\\\\\\"hookEventName\\\\\\\":\\\\\\\"PreToolUse\\\\\\\",\\\\\\\"permissionDecision\\\\\\\":\\\\\\\"deny\\\\\\\",\\\\\\\"permissionDecisionReason\\\\\\\":\\\\\\\"Your driver's own subagents never run here (rule 36): start a helper or a worker through the journal instead\\\\\\\"}}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"PostToolUse\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"Stop\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0},\\\"SessionEnd\\\":{\\\"stdout\\\":\\\"{}\\\",\\\"stderr\\\":\\\"\\\",\\\"exitCode\\\":0}}}}\",\"seal\":\"1e4feedd86389187275f762af43f1e58e84229d2c4af417c3a45adff2e3a93f4\"}",
+                "template": false
+            },
+            {
+                "name": "hook-replies.key",
+                "content": "the-seal-key",
+                "template": false
+            }
+        ],
+        "folders": [],
+        "inherit": [
+            "HOME",
+            "PATH"
+        ],
+        "side_sockets": [],
+        "read_files": [],
+        "shield_rules": [],
+        "fence": null,
+        "kept_files": [],
+        "raw_bytes": false
     },
     "codex pipe on a protected account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",

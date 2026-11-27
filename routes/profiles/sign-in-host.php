@@ -47,5 +47,5 @@ Route::prefix('host/accounts')->middleware('journal.host')->name('profiles.accou
     Route::post('/folders/make', MakeHostFolderController::class)->name('folders.make');
     Route::post('/folders/remove', RemoveHostFolderController::class)->name('folders.remove');
     Route::post('/folders/use', ReadFolderUseController::class)->name('folders.use');
-    Route::post('/folders/{order}/answer', ReadHostFolderAnswerController::class)->name('folders.answer');
+    Route::post('/folders/{instruction}/answer', ReadHostFolderAnswerController::class)->name('folders.answer');
 });

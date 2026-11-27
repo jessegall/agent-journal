@@ -10,7 +10,6 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Agents\DriverCatalogue;
-use App\Agents\Drivers\Capabilities\CodexHeadlessCapabilities;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
 use App\Agents\Drivers\DefaultDrivers;
@@ -26,7 +25,6 @@ use App\Events\Sessions\SessionOpened;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Contracts\DockerImageVerifier;
 use App\Hosts\EnrolledHost;
-use App\Hosts\Exceptions\DriverNotContainable;
 use App\Listeners\AdmitStartSkills;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
@@ -214,21 +212,13 @@ final class OpenAgentRuntimeTest extends TestCase
         $this->openOn(ArrangementType::Contained);
     }
 
-    public function test_a_contained_codex_start_is_refused_whatever_its_sign_in_and_creates_no_start(): void
+    public function test_a_contained_codex_start_opens_a_runtime_as_claude_code_does(): void
     {
         $this->app->instance(DockerImageVerifier::class, new CountingImageVerifier());
 
         $this->useArrangement(ArrangementType::Contained);
 
-        try {
-            $this->openOn(ArrangementType::Contained, 'codex');
-            $this->fail('a contained Codex start was not refused');
-        } catch (DriverNotContainable $refusal) {
-            $this->assertSame(CodexHeadlessCapabilities::NOT_CONTAINABLE, $refusal->getMessage());
-        }
-
-        $this->assertSame(0, SessionProcess::query()->count());
-        $this->assertNotSame('', $this->openOn(ArrangementType::Contained)->runtimeId);
+        $this->assertNotSame('', $this->openOn(ArrangementType::Contained, 'codex')->runtimeId);
     }
 
     public function test_a_local_codex_start_is_not_refused_by_the_container_check(): void

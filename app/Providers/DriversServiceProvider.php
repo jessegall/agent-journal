@@ -10,7 +10,6 @@ use App\Agents\Drivers\ClaudeCode\ClaudeAccountSettings;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAccountHome;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeContainerHome;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeIsolation;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeJournalServer;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeKeptSignIn;
@@ -51,6 +50,7 @@ use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\HookReplies;
+use App\Agents\Drivers\Parts\ContainerAccountHome;
 use App\Agents\Drivers\Parts\HostHomeAndPath;
 use App\Agents\Drivers\Parts\StartReference;
 use App\Agents\Drivers\Parts\StatusLineSocket;
@@ -134,7 +134,7 @@ final class DriversServiceProvider extends ServiceProvider
             keyScripts: CodexKeyScripts::class,
             headlessTurns: HeadlessTurns::onAccountOwner([$driver, 'app-server']),
             signIn: new SignInSetup(
-                executableSetting: 'accounts.codex_program',
+                executableSetting: 'journal.accounts.codex_program',
                 environment: CodexSignInEnvironment::class,
                 modelCheck: new ModelCheck(
                     ['exec', '--json', '--skip-git-repo-check', 'Reply with OK.'],
@@ -154,16 +154,15 @@ final class DriversServiceProvider extends ServiceProvider
             hookAdapter: CodexAdapter::class,
             isolation: CodexIsolation::class,
         )
-            // Codex's tools run as its own user, so they could read the sign-in a protected container keeps.
-            ->refusedWhen(new ProtectedAccount(), fn () => ProfileRefused::notContainable($driver))
             ->refusedWhen(new OwnTerminalStart(), fn () => ProfileRefused::ownTerminalWithheld($driver))
             ->signInRefusedWhen(
                 new AccountWithoutFolder(),
                 fn () => ProfileRefused::unresolvedSetting('no account to check the sign-in of'),
             )
             ->environment(
-                ConditionalPart::for(new AnyContext(), CodexHome::class),
-                ConditionalPart::for(new AnyContext(), HostHomeAndPath::class),
+                ConditionalPart::for(new Negation(new ContainedStart()), CodexHome::class),
+                ConditionalPart::forAccount(new ContainedStart(), ContainerAccountHome::class),
+                ConditionalPart::for(new Negation(new ContainedStart()), HostHomeAndPath::class),
             )
             ->startPlan(ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class));
     }
@@ -200,7 +199,7 @@ final class DriversServiceProvider extends ServiceProvider
             keyScripts: ClaudeCodeKeyScripts::class,
             headlessTurns: HeadlessTurns::eachInAProcess(TurnResults::class),
             signIn: new SignInSetup(
-                executableSetting: 'accounts.claude_program',
+                executableSetting: 'journal.accounts.claude_program',
                 environment: ClaudeCodeSignInEnvironment::class,
                 modelCheck: new ModelCheck(
                     [
@@ -232,7 +231,7 @@ final class DriversServiceProvider extends ServiceProvider
         )
             ->environment(
                 ConditionalPart::forAccount(new Negation(new ContainedStart()), ClaudeCodeAccountHome::class),
-                ConditionalPart::forAccount(new ContainedStart(), ClaudeCodeContainerHome::class),
+                ConditionalPart::forAccount(new ContainedStart(), ContainerAccountHome::class),
                 ConditionalPart::for(new AnyContext(), ClaudeCodePlatform::class),
                 ConditionalPart::for(new HostHomeStart(), HostHomeAndPath::class),
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeOwnTerminalHome::class),

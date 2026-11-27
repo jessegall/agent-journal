@@ -21,7 +21,7 @@ main() {
     trap switch_recording_off EXIT
     switch_recording_on
     for scenario in $scenarios; do
-        play_scenario "$owner" "$scenario" || echo "The scenario $scenario was not recorded; its earlier recording stays." >&2
+        play_scenario "$owner" "$scenario" || stop_at_failure "$scenario"
     done
 }
 
@@ -56,22 +56,27 @@ list_scenarios() {
 
 print_plan() {
     local scenario
-    echo "set_setting AGENTS_RECORDING true; sh scripts/local-host.sh"
+    echo "sh scripts/local-host.sh; touch storage/recordings/.enabled"
     for scenario in $2; do
         echo "docker compose exec app php -d memory_limit=$PLAY_MEMORY artisan recordings:play $scenario --owner=$1"
     done
-    echo "set_setting AGENTS_RECORDING false; sh scripts/local-host.sh"
+    echo "rm -f storage/recordings/.enabled"
 }
 
+# A failed play stops the run at once with the one line the play wrote on why.
+stop_at_failure() {
+    echo "The scenario $1 was not recorded; its earlier recording stays: $(cat storage/recordings/last-failure.txt 2>/dev/null)" >&2
+    exit 1
+}
+
+# The running journal reads the switch file at each play, so switching restarts nothing.
 switch_recording_on() {
-    set_setting AGENTS_RECORDING true
     sh scripts/local-host.sh
+    touch storage/recordings/.enabled
 }
 
-# Off needs no build: the services that read the setting start again with it.
 switch_recording_off() {
-    set_setting AGENTS_RECORDING false
-    docker compose up -d --wait --force-recreate --no-deps app queue scheduler ticker reverb drivers agent-host
+    rm -f storage/recordings/.enabled
 }
 
 # The play runs in the journal's container, which holds no Docker, so the machine changes it asks for run here.

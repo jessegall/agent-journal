@@ -23,7 +23,7 @@ func init() {
 const recordedInstallerExchange = "installer"
 
 // recordDocker passes the installer's Docker command line through to the daemon on a socket of its own, keeping each
-// call in the recording run's drafts while AGENTS_RECORDING is on, an attach passed through and kept as upgraded.
+// call in the recording run's drafts while the journal's recording run is open, an attach passed through and kept as upgraded.
 func recordDocker(arguments []string) error {
 	flags := flag.NewFlagSet("record-docker", flag.ContinueOnError)
 	listen := flags.String("listen", "", "the socket the Docker command line is pointed at")
@@ -39,7 +39,7 @@ func recordDocker(arguments []string) error {
 		return err
 	}
 	defer func() { _ = os.Remove(*listen) }()
-	return http.Serve(listener, dockerTap(*server, recording.DraftsFromEnvironment()))
+	return http.Serve(listener, dockerTap(*server, recording.JournalDrafts()))
 }
 
 // dockerTap is the proxy to the daemon's socket whose calls go through the recording run's Docker tap.
@@ -47,11 +47,8 @@ func dockerTap(server string, drafts recording.Drafts) http.Handler {
 	daemon := &http.Transport{DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
 		return (&net.Dialer{}).DialContext(ctx, "unix", server)
 	}}
-	var next http.RoundTripper = daemon
-	if drafts.IsOn {
-		next = recording.RecordDocker{Next: daemon, Recorder: recording.NewCallRecorder(recording.WireDocker, drafts),
-			Exchange: recordedInstallerExchange}
-	}
+	next := recording.RecordDocker{Next: daemon, Recorder: recording.NewCallRecorder(recording.WireDocker, drafts),
+		Exchange: recordedInstallerExchange}
 	target := &url.URL{Scheme: "http", Host: "docker"}
 	return &httputil.ReverseProxy{
 		Rewrite: func(request *httputil.ProxyRequest) {

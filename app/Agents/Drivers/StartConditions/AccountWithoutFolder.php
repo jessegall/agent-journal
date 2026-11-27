@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\StartConditions;
 
+use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Processes\Contracts\Condition;
 use App\Values\DriverStart;
 
@@ -19,6 +20,8 @@ final readonly class AccountWithoutFolder implements Condition
      */
     public function holdsFor(object $start): bool
     {
-        return $start->account !== null && $start->account->folder === null;
+        return $start->executablePlace !== ExecutablePlace::Image
+            && $start->account !== null
+            && $start->account->folder === null;
     }
 }

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
+use App\Files\Enums\Place;
 use App\Hosts\Contracts\HostChannel;
+use App\Recordings\RecordingDrafts;
 use App\Values\HostInstructionSource;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\Support\Hosts\Exceptions\RecordingDiverged;
 use Tests\Support\Hosts\MockHost;
 use Tests\Support\Seeding\TestJournal;
@@ -19,7 +22,17 @@ use Tests\TestCase;
 #[TestsMachinery(TestJournal::class)]
 final class JournalRecordingsTest extends TestCase
 {
+    use UsesTemporaryPlaces;
+
     private const string RECORDING = 'claude-code/2.1.323/turns/terminal-turn';
+
+    public function test_switching_recording_on_lets_a_run_open(): void
+    {
+        $this->placeInTemporaryFolder(Place::Project);
+        $this->journal->switchRecordingOn();
+
+        $this->journal->assertResult(true, $this->journal->service(RecordingDrafts::class)->isOn());
+    }
 
     public function test_a_driver_typing_the_recorded_inputs_passes_every_checkpoint_in_one_or_two_writes(): void
     {

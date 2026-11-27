@@ -19,11 +19,6 @@
             "text": "/mcp"
         },
         {
-            "do": "wait-for",
-            "fact": "turn-ended",
-            "seconds": 60
-        },
-        {
             "do": "stop",
             "agent": "Coder"
         },

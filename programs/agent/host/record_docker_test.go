@@ -14,14 +14,17 @@ import (
 
 const recordedImage = "registry.example/journal-helper@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
-// recordedRun is a recording run's drafts with the run open, as the journal's openRun leaves them.
-func recordedRun(t *testing.T, isOn bool) recording.Drafts {
+// recordedRun is a recording run's drafts, with the run open as the journal's openRun leaves it or with no run.
+func recordedRun(t *testing.T, isOpen bool) recording.Drafts {
 	t.Helper()
 	folder := t.TempDir()
+	if !isOpen {
+		return recording.Drafts{Folder: folder}
+	}
 	if err := os.WriteFile(filepath.Join(folder, "run.json"), []byte(`{"scenario":"x","opened_at":1,"closed_at":null}`), 0o664); err != nil {
 		t.Fatal(err)
 	}
-	return recording.Drafts{Folder: folder, IsOn: isOn}
+	return recording.Drafts{Folder: folder}
 }
 
 // recordedCalls are the calls of the daemon's draft, each as its type, method and path, and whether it was upgraded.
@@ -71,7 +74,7 @@ func TestEveryCallToTheDaemonIsKeptWhileRecordingAndAnAttachOnlyAsUpgraded(t *te
 	}
 }
 
-func TestOffTheDaemonsCallsAreNotKept(t *testing.T) {
+func TestOutsideAnOpenRunTheDaemonsCallsAreNotKept(t *testing.T) {
 	daemon := dockermock.Start(t, recordedImage)
 	drafts := recordedRun(t, false)
 	containers, err := containersRecordedInto(daemon.Host(), ContainerRules{Arrangement: Local, AgentImage: recordedImage}, drafts)
@@ -84,6 +87,6 @@ func TestOffTheDaemonsCallsAreNotKept(t *testing.T) {
 	}
 
 	if calls := recordedCalls(t, drafts); calls != nil {
-		t.Fatalf("recording off kept %v", calls)
+		t.Fatalf("with no open run the draft kept %v", calls)
 	}
 }

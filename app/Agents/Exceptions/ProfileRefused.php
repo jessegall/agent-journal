@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Bus\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
  * A profile cannot make a start safe: an unresolved path, account settings that would undo the profile, or an
  * argument that would.
  */
-final class ProfileRefused extends RuntimeException
+final class ProfileRefused extends RuntimeException implements CommandRefusal
 {
     /**
      * A driver start with no model or no effort, which would run at the driver's own default.
@@ -42,13 +43,5 @@ final class ProfileRefused extends RuntimeException
     public static function ownTerminalWithheld(string $driver): self
     {
         return new self("{$driver} does not start on its owner's terminal yet: its pinned build gives a hook call no session of its own");
-    }
-
-    /**
-     * A driver whose tools would run as its own user, and so read its sign-in, is not started in a shared container.
-     */
-    public static function notContainable(string $driver): self
-    {
-        return new self("{$driver}'s tools would run as its own user and read its sign-in: it is not started in a container");
     }
 }

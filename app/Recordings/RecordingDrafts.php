@@ -12,7 +12,6 @@ use App\Recordings\Enums\Wire;
 use App\Recordings\Scenarios\Scenario;
 use App\Values\FilePath;
 use Carbon\CarbonImmutable;
-use Illuminate\Container\Attributes\Config;
 
 /**
  * The one store every wire's recorder writes through, switched on by agents.recording: within a recording run, each
@@ -27,10 +26,15 @@ final readonly class RecordingDrafts
      */
     public const string DRAFTS = 'storage/recordings/drafts';
 
+    /**
+     * The file whose presence switches recording on: the record script makes and removes it, and the running journal
+     * reads it at each play, so switching restarts nothing.
+     */
+    public const string SWITCH = 'storage/recordings/.enabled';
+
     private FilePath $drafts;
 
-    public function __construct(private Files $files, #[Config('journal.agents.recording')]
-        private bool $isOn)
+    public function __construct(private Files $files)
     {
         $this->drafts = FilePath::in(Place::Project, self::DRAFTS);
     }
@@ -45,7 +49,7 @@ final readonly class RecordingDrafts
 
     public function isOn(): bool
     {
-        return $this->isOn;
+        return $this->files->exists(FilePath::in(Place::Project, self::SWITCH));
     }
 
     /**
@@ -54,7 +58,7 @@ final readonly class RecordingDrafts
      */
     public function openRun(Scenario $scenario): void
     {
-        if (! $this->isOn) {
+        if (! $this->isOn()) {
             return;
         }
 
@@ -82,7 +86,7 @@ final readonly class RecordingDrafts
     {
         $run = $this->runFile();
 
-        return $this->isOn && $this->files->exists($run) && $this->files->readJson($run)['closed_at'] === null;
+        return $this->isOn() && $this->files->exists($run) && $this->files->readJson($run)['closed_at'] === null;
     }
 
     /**

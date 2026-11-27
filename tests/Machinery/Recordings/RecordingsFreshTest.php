@@ -8,6 +8,7 @@ use App\Recordings\Exceptions\RecordingMissing;
 use App\Recordings\Exceptions\RecordingStale;
 use App\Recordings\Recordings;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -15,6 +16,7 @@ use Tests\TestCase;
  * as it is: none is stale for its format, its protocol, its scenario or the agent image's programs.
  */
 #[TestsMachinery(Recordings::class)]
+#[TimeLimit(seconds: 15, reason: 'It reads every recording of the project.')]
 final class RecordingsFreshTest extends TestCase
 {
     public function test_every_scenario_is_recorded_and_fresh(): void

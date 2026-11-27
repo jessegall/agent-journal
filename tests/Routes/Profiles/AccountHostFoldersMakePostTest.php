@@ -23,7 +23,8 @@ final class AccountHostFoldersMakePostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::as(Caller::SharedHost, $host)
             ->payload(['folder' => 'a7', 'operation' => 'operation-1'])
-            ->reply(MakeHostFolderCommand::class, 'order-1')
+            ->reply(MakeHostFolderCommand::class, 'instruction-1')
+            ->answers(['instruction_id' => 'instruction-1'])
             ->expects(MakeHostFolderCommand::class, [
                 'hostId' => $host->hostId,
                 'folder' => 'a7',

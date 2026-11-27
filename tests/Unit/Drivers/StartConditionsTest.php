@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Drivers;
 
 use App\Accounts\AccountStartRecipe;
+use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Drivers\StartConditions\AccountStart;
 use App\Agents\Drivers\StartConditions\AccountTerminal;
 use App\Agents\Drivers\StartConditions\AccountWithoutFolder;
@@ -45,6 +46,13 @@ final class StartConditionsTest extends TestCase
                 HostProcessType::Terminal,
                 account: $this->account(TransportProfileType::Mcp, '/accounts/a', isProtected: true),
             ),
+            'contained terminal on an account' => new DriverStart(
+                'session-1',
+                HostProcessType::Terminal,
+                '/workspace',
+                account: $this->account(TransportProfileType::Mcp),
+                executablePlace: ExecutablePlace::Image,
+            ),
         ];
         $conditions = [
             TurnStart::class => ['resumed turn', 'turn on an account with a folder'],
@@ -55,11 +63,20 @@ final class StartConditionsTest extends TestCase
                 'resumed terminal on a CLI account',
                 'turn on an account with a folder',
                 'terminal on a protected account',
+                'contained terminal on an account',
             ],
-            AccountTerminal::class => ['resumed terminal on a CLI account', 'terminal on a protected account'],
+            AccountTerminal::class => [
+                'resumed terminal on a CLI account',
+                'terminal on a protected account',
+                'contained terminal on an account',
+            ],
             AccountWithoutFolder::class => ['resumed terminal on a CLI account'],
             ProtectedAccount::class => ['terminal on a protected account'],
-            JournalServerAccount::class => ['turn on an account with a folder', 'terminal on a protected account'],
+            JournalServerAccount::class => [
+                'turn on an account with a folder',
+                'terminal on a protected account',
+                'contained terminal on an account',
+            ],
             CliTransportAccount::class => ['resumed terminal on a CLI account'],
         ];
 

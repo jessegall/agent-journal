@@ -13,6 +13,6 @@ final class RecordingSwitchedOff extends RuntimeException
 {
     public static function forScenario(string $scenario): self
     {
-        return new self("Recording is off, so {$scenario} is not played: AGENTS_RECORDING=true turns it on.");
+        return new self("Recording is off, so {$scenario} is not played: scripts/record-scenarios.sh switches it on.");
     }
 }

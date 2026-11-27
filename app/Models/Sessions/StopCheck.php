@@ -140,11 +140,11 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     /**
      * Records the run_fenced order its conditions run under on the session's host, whose answer settles it.
      */
-    public function runUnder(string $orderId): void
+    public function runUnder(string $instructionId): void
     {
-        $this->fence_instruction_id = $orderId;
+        $this->fence_instruction_id = $instructionId;
         $this->saveAndAssert();
-        $this->raise(new StopCheckConditionsInstructed($this->id, $orderId));
+        $this->raise(new StopCheckConditionsInstructed($this->id, $instructionId));
     }
 
     /**
@@ -328,9 +328,9 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function findRunUnder(string $orderId): array
+    public static function findRunUnder(string $instructionId): array
     {
-        return array_values(self::query()->acrossSessions()->fencedByInstruction($orderId)->limit(1)->get()->all());
+        return array_values(self::query()->acrossSessions()->fencedByInstruction($instructionId)->limit(1)->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -419,8 +419,8 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function fencedByInstruction(Builder $query, string $orderId): void
+    protected function fencedByInstruction(Builder $query, string $instructionId): void
     {
-        $query->where('fence_instruction_id', $orderId);
+        $query->where('fence_instruction_id', $instructionId);
     }
 }

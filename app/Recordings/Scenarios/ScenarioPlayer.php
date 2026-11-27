@@ -10,6 +10,7 @@ use App\Accounts\Values\SignInStarted;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OwnerCommands;
+use App\Bus\RequestKey;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Recordings\RecordingDrafts;
@@ -21,6 +22,7 @@ use App\Time\Contracts\Sleeper;
 use App\Values\FilePath;
 use Carbon\CarbonImmutable;
 use Closure;
+use Illuminate\Support\Str;
 
 /**
  * Plays a scenario's steps in order as the owner: each command step through the bus, each wait until its fact is
@@ -63,6 +65,7 @@ final readonly class ScenarioPlayer
         private SignInChallenges $challenges,
         private Sleeper $sleeper,
         private Files $files,
+        private RequestKey $requestKey,
     ) {}
 
     /**
@@ -101,7 +104,11 @@ final readonly class ScenarioPlayer
         }
 
         if ($step->stepType->isCommand()) {
-            $result = $this->commands->run($step->commandFor($run, $this->drivers));
+            // A step is one request of the owner, so a command that runs only under a request key gets its own.
+            $result = $this->requestKey->independently(
+                strtolower((string) Str::ulid()),
+                fn () => $this->commands->run($step->commandFor($run, $this->drivers)),
+            );
 
             if ($result instanceof SignInStarted) {
                 $run->holdSignInAttempt($result->attemptId);

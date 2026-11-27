@@ -54,6 +54,10 @@ abstract class RouteEntryTestCase extends TestCase
         $response = $this->send($call, $call->caller);
 
         $this->assertLessThan(400, $response->getStatusCode(), (string) $response->getContent());
+
+        if ($call->answer !== []) {
+            $response->assertJson($call->answer);
+        }
         $this->journal->assertDispatchedOnlyDeclared(
             DeclaredCommands::ofRoute($this->route()),
             (string) $this->route()->getControllerClass(),
