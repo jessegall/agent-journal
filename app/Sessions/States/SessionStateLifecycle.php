@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Stacks;
+namespace App\Sessions\States;
 
 use App\Models\Agents\AgentStackRow;
 use App\Models\Sessions\SessionRequest;
@@ -10,6 +10,7 @@ use App\Stacks\Contracts\BaseStateReference;
 use App\Stacks\Exceptions\StateSchemaUnknown;
 use App\Stacks\Exceptions\StateTransferUnknown;
 use App\Stacks\References\StateReference;
+use App\Stacks\StateTypes;
 use App\Support\StackTransaction;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
@@ -117,7 +118,7 @@ final readonly class SessionStateLifecycle
             (string) Str::ulid(),
             $reference,
             $isBottom,
-            $this->types->registry()->get($reference->typeKey)->schemaVersion,
+            $this->types->schemaVersionOf($reference->typeKey),
             $this->clock->now(),
             $reference->values,
         );

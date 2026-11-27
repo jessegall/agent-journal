@@ -16,6 +16,7 @@ use App\Exceptions\StackTargetRefused;
 use App\Exceptions\StackTransactionRequired;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Records\SettingsRecord;
+use App\Sessions\States\SessionStateLifecycle;
 use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Stacks\AgentStack;
@@ -23,7 +24,6 @@ use App\Stacks\AgentStacks;
 use App\Stacks\Exceptions\StateTypeUnknown;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
-use App\Stacks\SessionStateLifecycle;
 use App\Stacks\StackRestorer;
 use App\Stacks\StateLoading\RegisteredStateType;
 use App\Stacks\StateTypes;
@@ -208,10 +208,9 @@ final class AgentStacksTest extends TestCase
         $this->assertSame(2, $this->countingStateOf($this->reloadedStack())->counted());
         $this->assertSame(
             [
+                'run' => ['isStopAsked' => false, 'liveProcesses' => []],
                 'agentId' => $this->target->agentId,
                 'sessionId' => $this->target->sessionId,
-                'isStopAsked' => false,
-                'liveProcesses' => [],
             ],
             $this->storedFrames()[0]->values,
         );

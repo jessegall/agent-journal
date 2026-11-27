@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Stacks\Support;
+namespace App\Sessions\States\Support;
 
 use App\Stacks\Contracts\BaseStateReference;
 use App\Stacks\Decisions\StateReferenceFactory;

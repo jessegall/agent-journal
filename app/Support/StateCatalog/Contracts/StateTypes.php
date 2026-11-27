@@ -19,6 +19,11 @@ interface StateTypes
     public function occurrenceGuardOf(string $typeKey): WorkOccurrenceGuard;
 
     /**
+     * The schema version a frame of the state type is saved under.
+     */
+    public function schemaVersionOf(string $typeKey): int;
+
+    /**
      * Every registered state type, by its key.
      */
     public function registry(): StateRegistration;

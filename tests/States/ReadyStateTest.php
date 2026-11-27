@@ -6,9 +6,9 @@ namespace Tests\States;
 
 use App\Access\Contracts\OperationPolicy;
 use App\Hooks\Enums\AnswerType;
-use App\Stacks\ReadyState;
+use App\Sessions\States\ReadyState;
+use App\Sessions\States\Support\ReadyStateReference;
 use App\Stacks\References\StateReference;
-use App\Stacks\Support\ReadyStateReference;
 use App\Support\Decisions\Decision;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;

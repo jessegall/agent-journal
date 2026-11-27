@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Stacks;
+namespace App\Sessions\States;
 
 use App\Access\Contracts\OperationPolicy;
 use App\Contracts\Events\Event;
-use App\Events\Connections\HostProcessExited;
-use App\Events\Connections\HostProcessLost;
 use App\Events\Connections\HostProcessOpened;
 use App\Events\Sessions\AgentRuntimeStopRequested;
+use App\Hosts\Contracts\HostProcessEndEvent;
 use App\Sessions\Commands\EndStoppedSession\EndStoppedSessionCommand;
 use App\Sessions\Contracts\SessionFact;
+use App\Sessions\States\Support\ReadyStateReference;
+use App\Sessions\States\Values\SessionRun;
+use App\Stacks\AgentState;
 use App\Stacks\Attributes\StateType;
 use App\Stacks\Contracts\Work\UniqueState;
-use App\Stacks\Support\ReadyStateReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ToolRequested;
@@ -30,20 +31,15 @@ use Generator;
 #[StateType(ReadyStateReference::class, schemaVersion: 1)]
 class ReadyState extends AgentState implements UniqueState
 {
-    /**
-     * The processes of the session's runtime the host was told to open and that have not ended.
-     *
-     * @var list<string>
-     */
-    private array $liveProcesses = [];
-
-    private bool $isStopAsked = false;
+    private SessionRun $run;
 
     public function __construct(
         private readonly OperationPolicy $policy,
         private readonly string $agentId,
         private readonly string $sessionId,
-    ) {}
+    ) {
+        $this->run = SessionRun::started();
+    }
 
     public function listensTo(Event $event): bool
     {
@@ -71,51 +67,33 @@ class ReadyState extends AgentState implements UniqueState
      */
     public function onAgentRuntimeStopRequested(AgentRuntimeStopRequested $event): Generator
     {
-        $this->isStopAsked = true;
+        $this->run = $this->run->withStopAsked();
 
-        if ($this->isStoppedAndIdle()) {
+        if ($this->run->isOver()) {
             yield new EndStoppedSessionCommand($this->agentId, $this->sessionId);
         }
     }
 
     public function onHostProcessOpened(HostProcessOpened $event): void
     {
-        $this->liveProcesses = array_values(array_unique([...$this->liveProcesses, $event->processId]));
+        $this->run = $this->run->withOpened($event->processId);
     }
 
     /**
+     * A process of the session exited or was lost: once a stop was asked and none runs, the session ends.
+     *
      * @return Generator<int, EndStoppedSessionCommand>
      */
-    public function onHostProcessExited(HostProcessExited $event): Generator
+    public function onHostProcessEndEvent(HostProcessEndEvent $event): Generator
     {
-        $this->liveProcesses = array_values(array_diff($this->liveProcesses, [$event->processId]));
+        $this->run = $this->run->withEnded($event->processId);
 
-        if ($this->isStoppedAndIdle()) {
-            yield new EndStoppedSessionCommand($this->agentId, $this->sessionId);
-        }
-    }
-
-    /**
-     * @return Generator<int, EndStoppedSessionCommand>
-     */
-    public function onHostProcessLost(HostProcessLost $event): Generator
-    {
-        $this->liveProcesses = array_values(array_diff($this->liveProcesses, [$event->processId]));
-
-        if ($this->isStoppedAndIdle()) {
+        if ($this->run->isOver()) {
             yield new EndStoppedSessionCommand($this->agentId, $this->sessionId);
         }
     }
 
     // ----------[ Internals ]----------
-
-    /**
-     * Whether a stop was asked and none of the session's processes runs: the session is over.
-     */
-    private function isStoppedAndIdle(): bool
-    {
-        return $this->isStopAsked && $this->liveProcesses === [];
-    }
 
     /**
      * Passes the call when the policy grants every operation of it, else refuses it with the first refusal's reason.

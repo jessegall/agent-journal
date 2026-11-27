@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Stacks\Support;
+namespace App\Sessions\States\Support;
 
 use App\Models\Drivers\DriverRequest;
 use App\Stacks\Decisions\StateReferenceFactory;
@@ -11,13 +11,13 @@ use App\Stacks\References\SubjectReference;
 use App\Values\StackTarget;
 
 /**
- * Builds the state that owns one model change of a session, from the driver request that carries it.
+ * Builds the state that owns one effort change of a session, from the driver request that carries it.
  */
-final class ChangeModelStateReference extends StateReferenceFactory
+final class ChangeEffortStateReference extends StateReferenceFactory
 {
     public static function key(): string
     {
-        return 'core.drivers.change_model';
+        return 'core.drivers.change_effort';
     }
 
     public static function forRequest(DriverRequest $request, StackTarget $target): StateReference
@@ -26,7 +26,7 @@ final class ChangeModelStateReference extends StateReferenceFactory
             'agentId' => $target->agentId,
             'sessionId' => $target->sessionId,
             'requestId' => $request->id,
-            'model' => (string) $request->model,
+            'effort' => (string) $request->effort,
         ]);
     }
 }

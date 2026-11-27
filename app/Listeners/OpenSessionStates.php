@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\SessionOpened;
-use App\Stacks\SessionStateLifecycle;
+use App\Sessions\States\SessionStateLifecycle;
 use App\Values\StackTarget;
 
 /**
@@ -15,7 +15,7 @@ use App\Values\StackTarget;
  * with no parser to read its shell commands is refused before the driver starts.
  */
 #[InCommandTransaction]
-final readonly class OpenSessionStack implements Listener
+final readonly class OpenSessionStates implements Listener
 {
     public function __construct(private SessionStateLifecycle $stacks) {}
 

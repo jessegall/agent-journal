@@ -51,7 +51,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Stacks/ProfileState.php',
+            'app/Sessions/States/ProfileState.php',
         ],
     ],
     StateCommandAnswered::class => [

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Stacks;
+namespace App\Sessions\States;
 
 use App\Agents\Commands\RecordAgentEffort\RecordAgentEffortCommand;
 use App\Agents\Drivers\Contracts\DriverRequestEvent;
@@ -12,8 +12,9 @@ use App\Events\Sessions\DriverRequestCancelled;
 use App\Events\Sessions\DriverRequestRepaired;
 use App\Events\Sessions\DriverRequestResolvedAsNotApplied;
 use App\Events\Sessions\DriverRequestSuperseded;
+use App\Sessions\States\Support\ChangeEffortStateReference;
+use App\Stacks\AgentState;
 use App\Stacks\Attributes\StateType;
-use App\Stacks\Support\ChangeEffortStateReference;
 
 /**
  * A session asked to run at another effort: it holds the effort and the driver request that carries it, and once the

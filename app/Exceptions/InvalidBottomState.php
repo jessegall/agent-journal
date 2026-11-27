@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Sessions\States\Support\ReadyStateReference;
 use App\Stacks\Decisions\StateReferenceKeys;
-use App\Stacks\Support\ReadyStateReference;
 use UnexpectedValueException;
 
 /**

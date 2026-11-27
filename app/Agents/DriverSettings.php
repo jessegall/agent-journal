@@ -7,9 +7,9 @@ namespace App\Agents;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Drivers\DriverRequest;
+use App\Sessions\States\Support\ChangeEffortStateReference;
+use App\Sessions\States\Support\ChangeModelStateReference;
 use App\Stacks\Contracts\Work\AgentStacks;
-use App\Stacks\Support\ChangeEffortStateReference;
-use App\Stacks\Support\ChangeModelStateReference;
 use App\Values\DriverRequestPayload;
 use App\Values\StackTarget;
 

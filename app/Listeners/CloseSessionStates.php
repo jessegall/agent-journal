@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\SessionClosed;
-use App\Stacks\SessionStateLifecycle;
+use App\Sessions\States\SessionStateLifecycle;
 use App\Values\StackTarget;
 
 /**
@@ -15,7 +15,7 @@ use App\Values\StackTarget;
  * obligations stay visible; no subject is finished.
  */
 #[InCommandTransaction]
-final readonly class CloseSessionStack implements Listener
+final readonly class CloseSessionStates implements Listener
 {
     public function __construct(private SessionStateLifecycle $stacks) {}
 

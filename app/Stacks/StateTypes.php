@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Stacks;
 
 use App\Events\Hooks\StateTypesRequested;
+use App\Sessions\States\ChangeEffortState;
+use App\Sessions\States\ChangeModelState;
+use App\Sessions\States\ProfileState;
+use App\Sessions\States\ReadyState;
 use App\Stacks\Contracts\Work\WorkOccurrenceGuard;
 use App\Stacks\StateCatalog\StateRegistration;
 use App\Stacks\StateLoading\RegisteredStateType;
@@ -48,6 +52,14 @@ final class StateTypes implements StateTypesContract
     public function registry(): StateRegistration
     {
         return $this->registry ??= $this->build();
+    }
+
+    /**
+     * The schema version a frame of the state type is saved under.
+     */
+    public function schemaVersionOf(string $typeKey): int
+    {
+        return $this->registry()->get($typeKey)->schemaVersion;
     }
 
     /**

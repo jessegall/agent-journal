@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Stacks;
+namespace App\Sessions\States;
 
 use App\Agents\Enums\StopPreparationStatus;
 use App\Contracts\Events\Event;
@@ -18,11 +18,13 @@ use App\Sessions\Commands\HoldStopCheck\HoldStopCheckCommand;
 use App\Sessions\Commands\OpenStopCheck\OpenStopCheckCommand;
 use App\Sessions\Contracts\SessionPolicyReader;
 use App\Sessions\Enums\StopCheckStatus;
+use App\Sessions\States\Support\ProfileStateReference;
+use App\Sessions\States\Values\UnchangedFailures;
 use App\Sessions\Values\StartPolicy;
+use App\Stacks\AgentState;
 use App\Stacks\Attributes\StateType;
 use App\Stacks\Contracts\Work\BaseState;
 use App\Stacks\Decisions\MessageLine;
-use App\Stacks\Support\ProfileStateReference;
 use App\Support\Command;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
@@ -50,11 +52,7 @@ final class ProfileState extends AgentState implements BaseState
      */
     private const string OWN_WORK = 'own-work';
 
-    private int $unchangedFailures = 0;
-
-    private string|null $lastFailure = null;
-
-    private string|null $lastAttemptId = null;
+    private UnchangedFailures $unchangedFailures;
 
     public function __construct(
         private readonly SessionPolicyReader $policies,
@@ -62,7 +60,9 @@ final class ProfileState extends AgentState implements BaseState
         private readonly StopPreparer $preparer,
         private readonly string $agentId,
         private readonly string $sessionId,
-    ) {}
+    ) {
+        $this->unchangedFailures = UnchangedFailures::none();
+    }
 
     // ----------[ Hooks ]----------
 
@@ -174,15 +174,14 @@ final class ProfileState extends AgentState implements BaseState
      */
     private function passed(): Decision
     {
-        $this->unchangedFailures = 0;
-        $this->lastFailure = null;
+        $this->unchangedFailures = UnchangedFailures::none();
 
         return Decision::delegate();
     }
 
     /**
      * Refuses a failed stop, or holds the work once this failure is the last of a run of unchanged failures and tells
-     * its owner the first time; a retried stop counts its attempt once.
+     * its owner the first time.
      *
      * @return list<Decision|MessageLine|Event>
      */
@@ -190,19 +189,15 @@ final class ProfileState extends AgentState implements BaseState
     {
         $failure = $attempt->outcomeOf($failureSummary);
 
-        if ($attempt->id !== $this->lastAttemptId) {
-            $this->unchangedFailures = $failure === $this->lastFailure ? $this->unchangedFailures + 1 : 1;
-            $this->lastFailure = $failure;
-            $this->lastAttemptId = $attempt->id;
-        }
+        $this->unchangedFailures = $this->unchangedFailures->after($attempt->id, $failure);
 
-        if ($this->unchangedFailures < self::UNCHANGED_FAILURE_LIMIT) {
+        if ($this->unchangedFailures->count < self::UNCHANGED_FAILURE_LIMIT) {
             return [Decision::deny(AgentText::of('core.stop.refused', ['conditions' => $failureSummary]))];
         }
 
         $held = new MessageLine(AgentText::of('core.stop.held', ['conditions' => $failureSummary]));
 
-        if ($this->unchangedFailures > self::UNCHANGED_FAILURE_LIMIT) {
+        if ($this->unchangedFailures->count > self::UNCHANGED_FAILURE_LIMIT) {
             return [$held];
         }
 

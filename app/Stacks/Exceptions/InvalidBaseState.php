@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Stacks\Exceptions;
 
+use App\Sessions\States\ReadyState;
 use App\Stacks\Contracts\BaseStateReference;
-use App\Stacks\ReadyState;
 use LogicException;
 
 final class InvalidBaseState extends LogicException

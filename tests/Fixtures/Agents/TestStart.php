@@ -15,7 +15,7 @@ use App\Sessions\AgentRuntimes;
 use App\Sessions\AgentSessions;
 use App\Sessions\Contracts\StartTransaction;
 use App\Sessions\SessionTokens;
-use App\Stacks\SessionStateLifecycle;
+use App\Sessions\States\SessionStateLifecycle;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Values\StackTarget;
