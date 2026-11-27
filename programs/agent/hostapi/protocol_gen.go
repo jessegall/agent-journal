@@ -17,11 +17,11 @@ import (
 // Protocol is the version of the host protocol this binary speaks.
 const Protocol = 1
 
-// ClaimInstructionsLimit is the most limit a claim_instructions call takes.
-const ClaimInstructionsLimit = 50
+// ClaimInstructionLimit is the most limit a claim_instruction call takes.
+const ClaimInstructionLimit = 50
 
-// ClaimInstructionsWaitLimit is the most wait a claim_instructions call takes.
-const ClaimInstructionsWaitLimit = 25
+// ClaimInstructionWaitLimit is the most wait a claim_instruction call takes.
+const ClaimInstructionWaitLimit = 25
 
 // Status is one of the values host protocol 1 gives it.
 type Status string
@@ -738,14 +738,14 @@ type Journal struct {
 	Client *client.Client
 }
 
-// ClaimInstructions makes the claim_instructions call to /host/instructions/claim and answers the journal's reply.
-func (journal Journal) ClaimInstructions(ctx context.Context, limit int, wait int) (ClaimedInstructions, error) {
+// ClaimInstruction makes the claim_instruction call to /host/instructions/claim and answers the journal's reply.
+func (journal Journal) ClaimInstruction(ctx context.Context, limit int, wait int) (ClaimedInstructions, error) {
 	var reply ClaimedInstructions
 	return reply, journal.Client.Call(ctx, "/host/instructions/claim"+"?limit="+strconv.Itoa(limit)+"&wait="+strconv.Itoa(wait), nil, &reply)
 }
 
-// AnswerInstructions makes the answer_instructions call to /host/instructions/{instruction}.
-func (journal Journal) AnswerInstructions(ctx context.Context, instruction string, body Answer) error {
+// AnswerInstruction makes the answer_instruction call to /host/instructions/{instruction}.
+func (journal Journal) AnswerInstruction(ctx context.Context, instruction string, body Answer) error {
 	return journal.Client.Call(ctx, "/host/instructions/"+url.PathEscape(instruction), body, nil)
 }
 

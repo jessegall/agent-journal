@@ -58,7 +58,7 @@ final readonly class RecordedProtocol
                 $route = $this->routeOf($call);
                 $routes[] = $route;
 
-                if ($route === HostRoute::ClaimInstructions && $call->status !== null && $call->body !== '') {
+                if ($route === HostRoute::ClaimInstruction && $call->status !== null && $call->body !== '') {
                     $instructionTypes = [
                         ...$instructionTypes,
                         ...array_map(
@@ -68,7 +68,7 @@ final readonly class RecordedProtocol
                     ];
                 }
 
-                if ($route === HostRoute::AnswerInstructions && $call->status === null && $call->body !== '') {
+                if ($route === HostRoute::AnswerInstruction && $call->status === null && $call->body !== '') {
                     $refusals[] = HostAnswerPayload::from($call->body)->refusal;
                 }
             }

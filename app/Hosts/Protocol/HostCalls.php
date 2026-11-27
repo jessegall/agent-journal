@@ -23,24 +23,24 @@ use App\Hosts\Values\HostContext;
 interface HostCalls
 {
     /**
-     * The most limit a claim_instructions call takes.
+     * The most limit a claim_instruction call takes.
      */
-    public const int CLAIM_INSTRUCTIONS_LIMIT = 50;
+    public const int CLAIM_INSTRUCTION_LIMIT = 50;
 
     /**
-     * The most wait a claim_instructions call takes.
+     * The most wait a claim_instruction call takes.
      */
-    public const int CLAIM_INSTRUCTIONS_WAIT_LIMIT = 25;
+    public const int CLAIM_INSTRUCTION_WAIT_LIMIT = 25;
 
     /**
-     * Answers the host's claim_instructions call to /host/instructions/claim.
+     * Answers the host's claim_instruction call to /host/instructions/claim.
      */
-    public function claimInstructions(HostContext $host, int $limit, int $wait): HostClaimedInstructionsPayload;
+    public function claimInstruction(HostContext $host, int $limit, int $wait): HostClaimedInstructionsPayload;
 
     /**
-     * Answers the host's answer_instructions call to /host/instructions/{instruction}.
+     * Answers the host's answer_instruction call to /host/instructions/{instruction}.
      */
-    public function answerInstructions(HostContext $host, string $instruction, HostAnswerPayload $body): void;
+    public function answerInstruction(HostContext $host, string $instruction, HostAnswerPayload $body): void;
 
     /**
      * Answers the host's pull_private_value call to /host/private-values/{submission}.

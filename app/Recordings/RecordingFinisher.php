@@ -119,7 +119,7 @@ final readonly class RecordingFinisher
     {
         $events = array_map(function (RecordedEvent $event) use ($fakes) {
             $call = $event->call;
-            $isClaim = $call !== null && HostRoute::ClaimInstructions->matchesPath($call->path) && $call->body !== '';
+            $isClaim = $call !== null && HostRoute::ClaimInstruction->matchesPath($call->path) && $call->body !== '';
 
             if (! $isClaim || $event->type !== RecordedEventType::Answered) {
                 return $event;

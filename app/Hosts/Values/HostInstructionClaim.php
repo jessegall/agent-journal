@@ -41,7 +41,7 @@ final readonly class HostInstructionClaim
     }
 
     /**
-     * The claim as the journal answers the host's claim_instructions call with it.
+     * The claim as the journal answers the host's claim_instruction call with it.
      */
     public function reply(): HostClaimedInstructionsPayload
     {

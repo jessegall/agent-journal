@@ -37,7 +37,7 @@ final readonly class JournalHostCalls implements HostCalls
      * A claim that finds nothing waits for a wake, and a newer claim of the same host takes the place of an older one.
      */
     #[Dispatches(ClaimHostInstructionsCommand::class)]
-    public function claimInstructions(HostContext $host, int $limit, int $wait): HostClaimedInstructionsPayload
+    public function claimInstruction(HostContext $host, int $limit, int $wait): HostClaimedInstructionsPayload
     {
         $deposesAnother = $this->slots->isTaken($host->hostId);
         $slot = $this->slots->take($host->hostId);
@@ -67,7 +67,7 @@ final readonly class JournalHostCalls implements HostCalls
     }
 
     #[Dispatches(NotifyHostInstructionCommand::class)]
-    public function answerInstructions(HostContext $host, string $instruction, HostAnswerPayload $body): void
+    public function answerInstruction(HostContext $host, string $instruction, HostAnswerPayload $body): void
     {
         $this->commands->run(new NotifyHostInstructionCommand($host->hostId, $instruction, $body->toJson()));
     }

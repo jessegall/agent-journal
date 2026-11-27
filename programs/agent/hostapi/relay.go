@@ -13,8 +13,8 @@ const HeartbeatInterval = 30 * time.Second
 
 // JournalCalls are the calls of host protocol 1 the relay makes to the journal.
 type JournalCalls interface {
-	ClaimInstructions(ctx context.Context, limit int, wait int) (ClaimedInstructions, error)
-	AnswerInstructions(ctx context.Context, instruction string, body Answer) error
+	ClaimInstruction(ctx context.Context, limit int, wait int) (ClaimedInstructions, error)
+	AnswerInstruction(ctx context.Context, instruction string, body Answer) error
 	NotifyInventory(ctx context.Context, body Inventory) error
 	NotifyHeartbeat(ctx context.Context, body HostHeartbeat) error
 }
@@ -38,7 +38,7 @@ type Relay struct {
 // Claim long-polls until the context ends; a journal that does not take protocol 1 stops it with that refusal.
 func (relay Relay) Claim(ctx context.Context) error {
 	for ctx.Err() == nil {
-		claimed, err := relay.Journal.ClaimInstructions(ctx, ClaimInstructionsLimit, ClaimInstructionsWaitLimit)
+		claimed, err := relay.Journal.ClaimInstruction(ctx, ClaimInstructionLimit, ClaimInstructionWaitLimit)
 		if errors.Is(err, client.ErrProtocolRefused) {
 			return err
 		}

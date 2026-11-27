@@ -60,7 +60,7 @@ final readonly class DriverExchanges
         $processId = explode('/', $call->path)[3] ?? '';
 
         return match (true) {
-            $route === HostRoute::ClaimInstructions && $event->type === RecordedEventType::Answered => $this->withInstructions(
+            $route === HostRoute::ClaimInstruction && $event->type === RecordedEventType::Answered => $this->withInstructions(
                 $exchanges,
                 HostClaimedInstructionsPayload::from($body)->instructions,
                 $event->at,

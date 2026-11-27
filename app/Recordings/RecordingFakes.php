@@ -96,6 +96,20 @@ final class RecordingFakes
      */
     public function __construct(private readonly array $environment) {}
 
+    /**
+     * Each fake a recording holds, as a pattern of its fake, with the pattern of the real value it stands for.
+     *
+     * @return array<string, string>
+     */
+    public static function fakeShapes(): array
+    {
+        return [
+            '/'.self::FAKE_UUID_PREFIX.'[0-9a-f]{12}/' => self::UUID,
+            '/'.self::FAKE_ULID_PREFIX.'[0-9a-hjkmnp-tv-z]{12}/' => self::ULID,
+            '/'.self::FAKE_DIGEST_PREFIX.'[0-9a-f]{48}/' => self::DIGEST,
+        ];
+    }
+
     public function replaceIn(string $text): string
     {
         $faked = strtr($text, $this->environmentFolders());
