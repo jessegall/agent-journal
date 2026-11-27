@@ -230,6 +230,5 @@ again twice; the program's own failure is never tried again.
 
 ## What does not run yet
 
-- Codex starts in containers are refused until the provider transport exists (task 1503); Codex accounts sign in and
-  are kept, and Claude Code agents run in containers.
+- Claude Code and Codex agents both run in containers, each with only its own account's folder mounted.
 - Starting an agent from the browser comes with Home's start actions (plan 42).

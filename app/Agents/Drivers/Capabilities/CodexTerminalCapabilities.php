@@ -12,7 +12,7 @@ use App\Values\SupportSnapshot;
 
 /**
  * The Codex terminal driver, which the journal drives from its recorded screens: it does all a driver does but share
- * its account, as it refreshes its own sign-in, or run in a container, whose sign-in its tools could read.
+ * its account, as it refreshes its own sign-in.
  */
 final readonly class CodexTerminalCapabilities implements DriverCapabilities
 {
@@ -22,7 +22,6 @@ final readonly class CodexTerminalCapabilities implements DriverCapabilities
     {
         return SupportSnapshot::allowingAllBut([
             [DriverCapability::SharedAccount, OperationSupport::unsupported(self::RUNS_ALONE)],
-            [DriverCapability::RunContained, OperationSupport::unsupported(CodexHeadlessCapabilities::NOT_CONTAINABLE)],
         ]);
     }
 }

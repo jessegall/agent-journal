@@ -180,6 +180,51 @@ final class DriverPlansTest extends TestCase
         );
     }
 
+    public function test_a_contained_codex_start_reads_its_sign_in_from_the_mounted_account_as_claude_code_does(): void
+    {
+        $manifest = ContainerManifest::probe('registry.example/agent@sha256:'.str_repeat('a', 64), SecurityOptions::none());
+        $labels = HostContainerLabelsPayload::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']);
+        $recipe = new AccountStartRecipe(
+            environment: [new StartSetting('CODEX_HOME', MountRules::ACCOUNT_TARGET)],
+            emptyFolderVariables: [],
+            removedVariables: [],
+            startFlags: [],
+            accountSettings: [],
+            driverVersion: $this->journal->driverProfile(DefaultDrivers::CODEX)->build(),
+            binaryDigest: '',
+            arrangement: 'contained',
+            protectionSettings: '',
+            transportProfile: TransportProfileType::Mcp,
+            readFiles: [],
+        );
+        $start = new DriverStart(
+            self::SESSION,
+            HostProcessType::Terminal,
+            '/workspace',
+            hookCommand: '/opt/journal/bin/journal-hook',
+            account: new DriverAccount($recipe, 'start-1', new JournalServer('/opt/journal/bin/journal-mcp')),
+            executablePlace: ExecutablePlace::Image,
+            container: new SessionContainer($manifest, $labels),
+            model: self::MODEL,
+            effort: self::EFFORT,
+        );
+
+        $plan = $this->journal->driverProfile(DefaultDrivers::CODEX)->startPlan($start);
+
+        $this->journal->assertResult(
+            [HostInstructionType::OpenContainer, true, true, []],
+            [
+                $plan->instructionType(),
+                in_array('CODEX_HOME='.MountRules::ACCOUNT_TARGET, $plan->environment, true),
+                in_array('HOME=/home/journal', $plan->environment, true),
+                array_values(array_filter(
+                    [...$plan->argv, ...$plan->environment],
+                    fn (string $text) => str_contains($text, '{host:') || str_contains($text, '{folder:'),
+                )),
+            ],
+        );
+    }
+
     public function test_the_sign_in_probe_of_a_contained_terminal_start_runs_on_pipes_without_its_terminal(): void
     {
         $image = 'registry.example/agent@sha256:'.str_repeat('a', 64);

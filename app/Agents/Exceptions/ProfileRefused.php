@@ -43,12 +43,4 @@ final class ProfileRefused extends RuntimeException
     {
         return new self("{$driver} does not start on its owner's terminal yet: its pinned build gives a hook call no session of its own");
     }
-
-    /**
-     * A driver whose tools would run as its own user, and so read its sign-in, is not started in a shared container.
-     */
-    public static function notContainable(string $driver): self
-    {
-        return new self("{$driver}'s tools would run as its own user and read its sign-in: it is not started in a container");
-    }
 }

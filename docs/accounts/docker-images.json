@@ -576,6 +576,14 @@
             "claude_code": "2.1.323",
             "codex": "0.165.0",
             "built_at": "2026-11-27T11:48:39+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:3d3ed82696e37971a96ae8bad94cd606687f54cb54d4ff70f5d3a653c097c681",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-27T16:04:21+00:00"
         }
     ]
 }

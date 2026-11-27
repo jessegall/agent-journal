@@ -16,11 +16,6 @@ use App\Values\SupportSnapshot;
  */
 final readonly class CodexHeadlessCapabilities implements DriverCapabilities
 {
-    /**
-     * Codex's tools run as its own user, so they could read its sign-in in a shared container.
-     */
-    public const string NOT_CONTAINABLE = "Codex's tools run as its own user and could read its sign-in; container starts wait for the provider transport";
-
     public const string NO_EXACT_RESUME = 'Codex headless cannot reopen an earlier thread yet; start it in a new conversation.';
 
     public function capabilities(BoundTarget $target): SupportSnapshot
@@ -28,7 +23,6 @@ final readonly class CodexHeadlessCapabilities implements DriverCapabilities
         return SupportSnapshot::allowingAllBut([
             ...HeadlessCapabilities::unsupportedWithoutTerminal(),
             [DriverCapability::ExactResume, OperationSupport::unsupported(self::NO_EXACT_RESUME)],
-            [DriverCapability::RunContained, OperationSupport::unsupported(self::NOT_CONTAINABLE)],
         ]);
     }
 }

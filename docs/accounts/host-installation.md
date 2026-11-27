@@ -78,10 +78,9 @@ the account's Codex owner and every execution on it; an account the host cannot 
   journal places for the host.
 - In place of the sealed installation folder, the two images are pinned by id (`AGENT_IMAGE`, `RUNNER_IMAGE`); the
   host checks both on the agent daemon before it serves, and the agent daemon holds no other image.
-- A Claude Code session's container gets its account's own sign-in folder, read-write, at `/home/journal/.account`,
-  and no other account. That admits Claude Code running signed in inside its container; it does not keep the
-  container's tools away from that folder, which waits on the provider transport (task 1357). Codex starts are refused
-  in this arrangement.
+- A Claude Code or Codex session's container gets its account's own sign-in folder, read-write, at
+  `/home/journal/.account` (CLAUDE_CONFIG_DIR or CODEX_HOME), and no other account. The program runs signed in inside
+  its container; the container's tools can read that one folder, as the user decided (question 69).
 
 ## The native evidence
 
