@@ -2679,7 +2679,7 @@ function emptyNone(){const has=ACCOUNTS.length>0,w=NA.waiting;
     <h3>No account connected</h3><p>Connect your first account so Agent 1 can start. It runs on a Claude Code or Codex account.</p>
     ${w?`<p class="q">A ${DRV[w.driver].t} sign-in is waiting for you.</p>`:''}
     <div class="acts">${w?btn('Resume sign-in','resume','na:resume','primary'):btn(I('plus','s14')+'Add an account','add','na:add','primary')}${has?btn('Attach an account','attach','na:attach','bordered'):''}</div>
-    <small>${has?`${ACCOUNTS.length} accounts are added, but none is connected yet.`:'You can write to Agent 1 now: your message waits and goes out once it runs.'}</small></div>`}
+    ${has?`<small>${ACCOUNTS.length} accounts are added, but none is connected yet.</small>`:''}</div>`}
 function emptyReady(){const d=mainDrv(),failed=NA.phase==='failed';
   return `<div class="na-empty" role="region" aria-label="Agent 1 is ready"><div class="mk">${DRV[d].mk('s18')}</div>
     <h3>${failed?'The start did not finish':NA.phase==='cancelled'?'Start cancelled':'Agent 1 is ready'}</h3>
@@ -2690,6 +2690,9 @@ chatHtml=function(c){const h=baseChat(c);if(!NA.on||c!=='main'||CONV.main.msgs.l
   if(NA.phase==='none')return emptyNone();
   if(['ready','cancelled','failed'].includes(NA.phase))return emptyReady();
   return h};
+/* No message box while no account is connected: there is nothing to send to yet. */
+const naComposer=composer;
+composer=function(c){if(NA.on&&c==='main'&&NA.phase==='none')return '';return naComposer(c)};
 
 /* Above the composer: the verifying card, only while the session is verified; and, once you have written, the
    empty state's offer as one compact row. */
