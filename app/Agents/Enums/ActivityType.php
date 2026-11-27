@@ -15,8 +15,6 @@ enum ActivityType: string
     case Read = 'read';
     case Ran = 'ran';
     case Edited = 'edited';
-    case HelperStarted = 'helper_started';
-    case HelperFinished = 'helper_finished';
     case Posted = 'posted';
 
     /**
@@ -28,8 +26,6 @@ enum ActivityType: string
             self::Read => 'file',
             self::Ran => 'term',
             self::Edited => 'pencil',
-            self::HelperStarted => 'agents',
-            self::HelperFinished => 'tick',
             self::Posted => 'speech',
         };
     }
@@ -43,8 +39,6 @@ enum ActivityType: string
             self::Read => 'Read',
             self::Ran => 'Ran',
             self::Edited => 'Edited',
-            self::HelperStarted => 'Started',
-            self::HelperFinished => 'Finished',
             self::Posted => 'Posted',
         };
     }
@@ -53,7 +47,7 @@ enum ActivityType: string
     {
         return match ($this) {
             self::Read => ActivityLevel::Detail,
-            self::Ran, self::Edited, self::HelperStarted, self::HelperFinished => ActivityLevel::Panel,
+            self::Ran, self::Edited => ActivityLevel::Panel,
             self::Posted => ActivityLevel::Notable,
         };
     }

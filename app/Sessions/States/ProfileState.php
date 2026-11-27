@@ -6,7 +6,7 @@ namespace App\Sessions\States;
 
 use App\Agents\Enums\StopPreparationStatus;
 use App\Contracts\Events\Event;
-use App\Events\Hooks\HelperStopHeld;
+use App\Events\Hooks\StopCheckHeld;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\StopCheck;
 use App\Processes\Contracts\StopEvidence;
@@ -204,7 +204,7 @@ final class ProfileState extends AgentState implements BaseState
         return [
             $held,
             ...SessionRequest::findOwnerStartOf($this->sessionId)
-                ->map(fn (SessionRequest $start) => [new HelperStopHeld($start->owner_work, $attempt->reference)])
+                ->map(fn (SessionRequest $start) => [new StopCheckHeld($start->owner_work, $attempt->reference)])
                 ->getOrElse([]),
         ];
     }

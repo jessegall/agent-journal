@@ -12,12 +12,10 @@ use App\Actors\ActorGuidance;
 use App\Actors\Contracts\ActorGuidance as ActorGuidanceContract;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorVisibility;
-use App\Agents\Contracts\Events\HelperRecordFacts as HelperRecordFactsContract;
 use App\Agents\Drivers\Contracts\DriverAdapters as DriverAdaptersContract;
 use App\Agents\Drivers\Contracts\DriverCompatibilities as DriverCompatibilitiesContract;
 use App\Agents\Drivers\Contracts\PinnedBuilds as PinnedBuildsContract;
 use App\Agents\Drivers\Hooks\DriverAdapters;
-use App\Agents\HelperRecordFacts;
 use App\Bus\Contracts\Events\FactStaging;
 use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\PruneHookHistoryCommand;
@@ -103,7 +101,6 @@ final class HooksServiceProvider extends ServiceProvider
 
         $this->app->bind(AgentStacksContract::class, AgentStacks::class);
         $this->app->bind(AgentFocusesContract::class, AgentFocuses::class);
-        $this->app->bind(HelperRecordFactsContract::class, HelperRecordFacts::class);
         $this->app->bind(CurrentStateContract::class, CurrentState::class);
         $this->app->bind(StackTransactionRunner::class, StackTransaction::class);
         $this->app->bind(UserStackContract::class, UserStack::class);

@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Events\Hooks;
+
+use App\Support\RecordIdentity;
+use App\Values\StopCheckReference;
+
+/**
+ * A started agent failed its final checks three times in a row with the same failures and no change in between, so
+ * its work is held for repair instead of asking it again. Raised once, with the last failed attempt.
+ */
+final readonly class StopCheckHeld implements HookEvent
+{
+    public function __construct(
+        public RecordIdentity $work,
+        public StopCheckReference $attempt,
+    ) {}
+}

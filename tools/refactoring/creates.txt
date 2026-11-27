@@ -53,10 +53,6 @@ Domain\Documents\Models\RecordSettlement record create
 Domain\Documents\Models\Report file create
 Domain\Documents\Models\RetainedDraft keep create
 Domain\Documents\Models\TextUpload begin create
-Domain\Helpers\Models\HelperIdentity declare create
-Domain\Helpers\Models\HelperJob accept create
-Domain\Helpers\Models\HelperMessage keep create
-Domain\Helpers\Models\HelperNotice leave create
 Domain\Memory\Models\Memory keep create
 Domain\Plans\Models\Plan draft create
 Domain\Sequences\Models\SequenceRun written create

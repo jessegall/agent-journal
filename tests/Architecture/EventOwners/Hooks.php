@@ -3,13 +3,10 @@
 declare(strict_types=1);
 
 use App\Events\Hooks\ContextStarted;
-use App\Events\Hooks\HelperAssigned;
-use App\Events\Hooks\HelperCompletionCertified;
-use App\Events\Hooks\HelperFinishedOnRecord;
-use App\Events\Hooks\HelperStopHeld;
 use App\Events\Hooks\HookCallRecorded;
 use App\Events\Hooks\StateCommandAnswered;
 use App\Events\Hooks\StateTypesRequested;
+use App\Events\Hooks\StopCheckHeld;
 use App\Events\Hooks\ToolCallFinished;
 use Tests\Architecture\Support\EventRole;
 
@@ -26,28 +23,7 @@ return [
             'app/Hooks/ContextCollection.php',
         ],
     ],
-    HelperCompletionCertified::class => [
-        'role' => EventRole::CommandFact,
-        'migrated' => false,
-        'producers' => [
-            'app/Sessions/StopCertification.php',
-        ],
-    ],
-    HelperAssigned::class => [
-        'role' => EventRole::CommandFact,
-        'migrated' => false,
-        'producers' => [
-            'app/Agents/HelperRecordFacts.php',
-        ],
-    ],
-    HelperFinishedOnRecord::class => [
-        'role' => EventRole::CommandFact,
-        'migrated' => false,
-        'producers' => [
-            'app/Agents/HelperRecordFacts.php',
-        ],
-    ],
-    HelperStopHeld::class => [
+    StopCheckHeld::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [

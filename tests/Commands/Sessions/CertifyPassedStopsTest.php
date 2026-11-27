@@ -14,7 +14,7 @@ use App\Bus\CommandEntrance;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\RequestKey;
 use App\Engine\EngineAccess;
-use App\Events\Hooks\HelperCompletionCertified;
+use App\Events\Sessions\StopCheckCertified;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
@@ -58,7 +58,7 @@ final class CertifyPassedStopsTest extends TestCase
 
     public function test_a_stop_that_never_comes_back_is_certified_once_by_the_engine(): void
     {
-        Event::fake([HelperCompletionCertified::class]);
+        Event::fake([StopCheckCertified::class]);
         $start = $this->helperWithConditions();
         $this->startedFor($start);
         $this->stop($start, 'stop-1');
@@ -69,7 +69,7 @@ final class CertifyPassedStopsTest extends TestCase
         $this->stop($start, 'stop-1');
 
         $this->assertNotNull(StopCheck::query()->withoutGlobalScopes()->sole()->certified_at);
-        Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
+        Event::assertDispatchedTimes(StopCheckCertified::class, 1);
     }
 
     private function helperWithConditions(): TestStart

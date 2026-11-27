@@ -23,15 +23,12 @@ use App\Events\Processes\RunOutcomeRecorded;
 use App\Events\Sessions\AgentSessionEnded;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
-use App\Events\Sessions\StartSessionOpened;
 use App\Listeners\BroadcastPageChange;
 use App\Listeners\ReleaseSignInWriter;
 use App\Providers\DomainEventServiceProvider;
 use App\Reflection\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
 use App\Support\Registration\ListenerPolicy;
-use Domain\Documents\Events\ReportFiled;
-use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Events\PlanStarted;
@@ -110,7 +107,6 @@ final class TransactionListenerLaneTest extends TestCase
                 HostProcessLost::class,
                 HostProcessRestarted::class,
                 SequenceStarted::class,
-                StartSessionOpened::class,
                 QuestionAnswered::class,
                 QuestionAsked::class,
                 LinksRemoved::class,
@@ -122,8 +118,6 @@ final class TransactionListenerLaneTest extends TestCase
                 PlanReviewRequested::class,
                 TaskDescribed::class,
                 RunOutcomeRecorded::class,
-                ReportFiled::class,
-                ReportJobLinked::class,
             ],
             array_keys($registry->byEvent(ListenerLane::InCommandTransaction)),
         );

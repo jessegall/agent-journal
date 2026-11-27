@@ -6,8 +6,8 @@ namespace App\Agents\Enums;
 
 /**
  * How a session's container has the workspace at /workspace: read-only when its access grants
- * no change of workspace files; the environment's own workspace, read-write, for the main agent; and for a helper
- * that writes, its own clone, so its commits stay there until the merger takes them.
+ * no change of workspace files; the environment's own workspace, read-write, for the main agent; and for another agent
+ * that writes, its own clone, so its commits stay there until they are merged.
  */
 enum WorkspaceUse: string
 {

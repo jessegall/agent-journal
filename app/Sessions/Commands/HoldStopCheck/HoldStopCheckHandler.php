@@ -6,7 +6,7 @@ namespace App\Sessions\Commands\HoldStopCheck;
 
 use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandHandler;
-use App\Events\Hooks\HelperStopHeld;
+use App\Events\Hooks\StopCheckHeld;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\StopCheck;
 use App\Sessions\Contracts\SessionPolicyReader;
@@ -25,7 +25,7 @@ final readonly class HoldStopCheckHandler implements CommandHandler
 
         SessionRequest::findOwnerStartOf($attempt->session_id)->forAll(
             fn (SessionRequest $start) => $this->facts->publishAfterCommit(
-                new HelperStopHeld($start->owner_work, $attempt->reference),
+                new StopCheckHeld($start->owner_work, $attempt->reference),
             ),
         );
     }

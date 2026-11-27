@@ -148,10 +148,14 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Marks this passed attempt as the certificate of the session's completion.
+     * Marks this passed attempt as the certificate of the session's completion, once.
      */
     public function certify(): void
     {
+        if ($this->isCertified()) {
+            return;
+        }
+
         $this->certified_at = CarbonImmutable::now();
         $this->saveAndAssert();
         $this->raise(new StopCheckCertified($this->id));

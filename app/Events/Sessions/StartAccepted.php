@@ -14,7 +14,7 @@ final readonly class StartAccepted implements SessionEvent
         public string $requestId,
         public string $agentId,
         public string $sessionId,
-        // The agent that started it as its helper, none for a start of its own.
+        // The agent that started it, none for a start of its own.
         public string|null $parentAgentId = null,
     ) {}
 }

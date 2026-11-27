@@ -8,7 +8,6 @@ use App\Support\Domain;
 use Domain\Chat\ChatDomain;
 use Domain\Comments\CommentsDomain;
 use Domain\Documents\DocumentsDomain;
-use Domain\Helpers\HelpersDomain;
 use Domain\Memory\MemoryDomain;
 use Domain\Plans\PlansDomain;
 use Domain\Questions\QuestionsDomain;
@@ -27,7 +26,7 @@ final class DomainClassesTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(ChatDomain::class, CommentsDomain::class, DocumentsDomain::class, HelpersDomain::class, MemoryDomain::class, PlansDomain::class, QuestionsDomain::class, RemindersDomain::class, RulesDomain::class, SequencesDomain::class, TasksDomain::class);
+        return DomainBoot::withRequirements(ChatDomain::class, CommentsDomain::class, DocumentsDomain::class, MemoryDomain::class, PlansDomain::class, QuestionsDomain::class, RemindersDomain::class, RulesDomain::class, SequencesDomain::class, TasksDomain::class);
     }
 
     public function test_documents_are_registered_and_require_chat_and_comments(): void
@@ -196,28 +195,6 @@ final class DomainClassesTest extends TestCase
 
         yield 'Reminders' => [RemindersDomain::class, [], []];
 
-        yield 'Helpers' => [HelpersDomain::class, [DocumentsDomain::class], [
-            'CancelHelperJobCommand',
-            'ContinueHelperCommand',
-            'HelperBusy',
-            'HelperJobAlreadyEnded',
-            'HelperJobUnfinished',
-            'HelperStartUncertain',
-            'HelperProfileMismatch',
-            'HelperProfileTypeConflict',
-            'HelperProfilesUnavailable',
-            'HelperReceipt',
-            'HelperRequestConflict',
-            'HelperRetired',
-            'HelperUnavailable',
-            'HelperWork',
-            'JobStatus',
-            'SessionStartDetails',
-            'SendHelperCommand',
-            'StartHelperCommand',
-            'SteerHelperCommand',
-            'SteerReceipt',
-        ]];
     }
 
     /**

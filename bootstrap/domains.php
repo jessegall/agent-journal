@@ -4,7 +4,6 @@ declare(strict_types=1);
 use Domain\Chat\ChatDomain;
 use Domain\Comments\CommentsDomain;
 use Domain\Documents\DocumentsDomain;
-use Domain\Helpers\HelpersDomain;
 use Domain\Memory\MemoryDomain;
 use Domain\Plans\PlansDomain;
 use Domain\Questions\QuestionsDomain;
@@ -24,5 +23,4 @@ return [
     SequencesDomain::class,
     QuestionsDomain::class,
     RemindersDomain::class,
-    HelpersDomain::class,
 ];

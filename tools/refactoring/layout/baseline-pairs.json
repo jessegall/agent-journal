@@ -1255,69 +1255,6 @@
       "class": "paired Core area"
     },
     {
-      "owner": "Helpers",
-      "stem": "CancelHelperJob",
-      "command": "Domain\\Helpers\\Commands\\CancelHelperJob\\CancelHelperJobCommand",
-      "handler": "Domain\\Helpers\\Commands\\CancelHelperJob\\CancelHelperJobHandler",
-      "class": "final package pair"
-    },
-    {
-      "owner": "Helpers",
-      "stem": "CancelLaunchedHelperJob",
-      "command": "Domain\\Helpers\\Commands\\CancelLaunchedHelperJob\\CancelLaunchedHelperJobCommand",
-      "handler": "Domain\\Helpers\\Commands\\CancelLaunchedHelperJob\\CancelLaunchedHelperJobHandler",
-      "class": "final package pair"
-    },
-    {
-      "owner": "Helpers",
-      "stem": "ContinueHelper",
-      "command": "Domain\\Helpers\\Commands\\ContinueHelper\\ContinueHelperCommand",
-      "handler": "Domain\\Helpers\\Commands\\ContinueHelper\\ContinueHelperHandler",
-      "class": "final package pair"
-    },
-    {
-      "owner": "Helpers",
-      "stem": "FinishHelperJob",
-      "command": "Domain\\Helpers\\Commands\\FinishHelperJob\\FinishHelperJobCommand",
-      "handler": "Domain\\Helpers\\Commands\\FinishHelperJob\\FinishHelperJobHandler",
-      "class": "final package pair"
-    },
-    {
-      "owner": "Helpers",
-      "stem": "HoldHelperJob",
-      "command": "Domain\\Helpers\\Commands\\HoldHelperJob\\HoldHelperJobCommand",
-      "handler": "Domain\\Helpers\\Commands\\HoldHelperJob\\HoldHelperJobHandler",
-      "class": "final package pair"
-    },
-    {
-      "owner": "Helpers",
-      "stem": "MarkHelperJobUnfinished",
-      "command": "Domain\\Helpers\\Commands\\MarkHelperJobUnfinished\\MarkHelperJobUnfinishedCommand",
-      "handler": "Domain\\Helpers\\Commands\\MarkHelperJobUnfinished\\MarkHelperJobUnfinishedHandler",
-      "class": "final package pair"
-    },
-    {
-      "owner": "Helpers",
-      "stem": "SendHelper",
-      "command": "Domain\\Helpers\\Commands\\SendHelper\\SendHelperCommand",
-      "handler": "Domain\\Helpers\\Commands\\SendHelper\\SendHelperHandler",
-      "class": "final package pair"
-    },
-    {
-      "owner": "Helpers",
-      "stem": "StartHelper",
-      "command": "Domain\\Helpers\\Commands\\StartHelper\\StartHelperCommand",
-      "handler": "Domain\\Helpers\\Commands\\StartHelper\\StartHelperHandler",
-      "class": "final package pair"
-    },
-    {
-      "owner": "Helpers",
-      "stem": "SteerHelper",
-      "command": "Domain\\Helpers\\Commands\\SteerHelper\\SteerHelperCommand",
-      "handler": "Domain\\Helpers\\Commands\\SteerHelper\\SteerHelperHandler",
-      "class": "final package pair"
-    },
-    {
       "owner": "Hooks",
       "stem": "CertifyPassedStops",
       "command": "App\\Hooks\\Commands\\CertifyPassedStops\\CertifyPassedStopsCommand",

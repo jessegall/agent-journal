@@ -278,7 +278,7 @@ function nameFaults(array $names, NameVocabulary $vocabulary, string $forbiddenW
                 ? null : purposeFault($declared, $verbs, $nouns),
             actionClassFault($declared, $commandVerbs, $nouns, $sharedVerbs),
             eventFault($declared),
-            stateFault($declared),
+            stateFault($declared, $happenings),
             participleOrderFault($declared, $verbs, $nouns, $happenings),
             commandMoodFault($declared, $verbs),
             questionFault($declared, $verbs),
@@ -450,13 +450,17 @@ function eventFault(DeclaredName $declared): string|null
 
 /**
  * A state says with the plain verb what the agent is to do (ReadMessageState), never with the gerund
- * (ReadMessageState).
+ * (ReadingMessageState); an -ing word is fine where it names the subject of an event (ClosingWordsOffered).
+ *
+ * @param  array<string, true>  $happenings
  */
-function stateFault(DeclaredName $declared): string|null
+function stateFault(DeclaredName $declared, array $happenings): string|null
 {
     $first = firstWordOf($declared->name);
+    $subject = implode(' ', array_slice(wordsOf($declared->name), 0, -1));
+    $namesEventSubject = array_any(array_keys($happenings), fn (string $event) => str_starts_with($event, "{$subject} "));
 
-    if ($declared->role === 'state' && str_ends_with($first, 'ing')) {
+    if ($declared->role === 'state' && str_ends_with($first, 'ing') && ! $namesEventSubject) {
         return "a state says what the agent is to do with the plain verb, not {$first}";
     }
 

@@ -10,8 +10,6 @@ use App\Mcp\Tools\CommandRequestSampleTool;
 use App\Mcp\Tools\CommandRequestShowTool;
 use App\Mcp\Tools\CommandTypeProposeTool;
 use App\Mcp\Tools\OutputsReadTool;
-use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
-use Domain\Helpers\Mcp\Tools\SendHelperTool;
 use Tests\Architecture\Support\DomainFiles;
 
 /**
@@ -57,8 +55,6 @@ final class AgentTextToolNamesTest extends TestCase
     public function test_the_tools_the_texts_name_are_in_the_catalogue(): void
     {
         $named = [
-            ContinueHelperTool::NAME,
-            SendHelperTool::NAME,
             OutputsReadTool::NAME,
             CommandTypeProposeTool::NAME,
             CommandRequestShowTool::NAME,

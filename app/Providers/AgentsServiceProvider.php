@@ -93,7 +93,6 @@ use App\Resolvers\HostCapabilities;
 use App\Resolvers\RuntimeResolver;
 use App\Resolvers\SessionRequestResolver;
 use App\Resolvers\SessionResolver;
-use App\Resolvers\SessionStartCandidates;
 use App\Resolvers\StartReceipts;
 use App\Resolvers\UnconfiguredAccounts;
 use App\Sessions\AgentClientSettings;
@@ -107,7 +106,6 @@ use App\Sessions\Contracts\SessionPolicyReader as SessionPolicyReaderContract;
 use App\Sessions\Contracts\SessionProvenance as SessionProvenanceContract;
 use App\Sessions\Contracts\SessionRequestResolver as SessionRequestResolverContract;
 use App\Sessions\Contracts\SessionResolver as SessionResolverContract;
-use App\Sessions\Contracts\SessionStartCandidates as SessionStartCandidatesContract;
 use App\Sessions\Contracts\SessionTokenSource as SessionTokenSourceContract;
 use App\Sessions\Contracts\StartHeartbeats as StartHeartbeatsContract;
 use App\Sessions\Contracts\StartPreflight as StartPreflightContract;
@@ -212,7 +210,6 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $this->app->bind(SessionPolicyReaderContract::class, SessionPolicyReader::class);
         $this->app->bind(SessionProvenanceContract::class, SessionProvenance::class);
-        $this->app->bind(SessionStartCandidatesContract::class, SessionStartCandidates::class);
         $this->app->bind(StartReservationsContract::class, StartReservations::class);
         $this->app->bind(StartReceiptsContract::class, StartReceipts::class);
         $this->app->bind(CallingDriverContract::class, CallingDriver::class);

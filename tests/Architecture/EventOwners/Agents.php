@@ -94,8 +94,6 @@ use App\Events\Sessions\SessionProcessRegistered;
 use App\Events\Sessions\SessionProcessSeenRunning;
 use App\Events\Sessions\SessionProcessStopped;
 use App\Events\Sessions\SessionRequestRefused;
-use App\Events\Sessions\SessionStartCancelled;
-use App\Events\Sessions\SessionStartEnded;
 use App\Events\Sessions\SessionStateChanged;
 use App\Events\Sessions\SessionTokenIssued;
 use App\Events\Sessions\SessionTokenRevoked;
@@ -194,26 +192,12 @@ return [
             'app/Agents/DriverRequestRecovery.php',
         ],
     ],
-    SessionStartCancelled::class => [
-        'role' => EventRole::CommandFact,
-        'migrated' => false,
-        'producers' => [
-            'app/Agents/Commands/CancelSessionStart/CancelSessionStartHandler.php',
-        ],
-    ],
     DriverSwitchStopped::class => [
         'role' => EventRole::RowFact,
         'owner' => 'DriverSwitch::markStopped',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DriverSwitchStopped('switch'),
-    ],
-    SessionStartEnded::class => [
-        'role' => EventRole::Projection,
-        'migrated' => false,
-        'producers' => [
-            'app/Listeners/AnnounceSessionStartEnded.php',
-        ],
     ],
     DriverFailed::class => [
         'role' => EventRole::CommandFact,

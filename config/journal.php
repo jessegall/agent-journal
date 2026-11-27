@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Sessions\States\ClosingWordsState;
 use App\Sessions\States\ProfileState;
 use App\Sessions\States\ReadyState;
-use App\Sessions\States\SendClosingWordsState;
 
 $tunnels = env('SHARING_TUNNELS_DIR', storage_path('sharing'));
 
@@ -26,7 +26,7 @@ return [
         'base_states' => [
             ReadyState::class,
             ProfileState::class,
-            SendClosingWordsState::class,
+            ClosingWordsState::class,
         ],
 
     ],
@@ -272,21 +272,6 @@ return [
         */
 
         'workspaces' => (string) env('AGENTS_WORKSPACES', '{}'),
-
-        /*
-        |--------------------------------------------------------------------------
-        | Merge
-        |--------------------------------------------------------------------------
-        |
-        | Where reviewed helper work is merged: the integration branch of this
-        | checkout, and the branches no merge ever writes to.
-        |
-        */
-
-        'merge' => [
-            'target_branch' => env('JOURNAL_MERGE_TARGET', 'version-6'),
-            'protected_branches' => ['main'],
-        ],
 
         /*
         |--------------------------------------------------------------------------
@@ -740,13 +725,6 @@ return [
             'journal-code-reviewer' => [
                 'description' => 'Reviews a worker\'s changes before they are merged.',
                 'base' => 'read-only-helper',
-                'tier' => 2,
-                'supervisor' => ['default' => 'profile:journal-main'],
-                'instances' => 'single',
-            ],
-            'journal-merger' => [
-                'description' => 'Checks a finished worker\'s proofs and merges its work.',
-                'base' => 'writing-helper',
                 'tier' => 2,
                 'supervisor' => ['default' => 'profile:journal-main'],
                 'instances' => 'single',

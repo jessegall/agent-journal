@@ -11,11 +11,11 @@ use App\Asks\Enums\AskOriginType;
 use App\Asks\Enums\CoreAskType;
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\Events\Listener;
-use App\Events\Hooks\HelperStopHeld;
+use App\Events\Hooks\StopCheckHeld;
 use App\Models\Sessions\StopCheck;
 
 /**
- * A helper whose stop was held after repeated unchanged failures asks its stuck route for help, once per held stop.
+ * An agent whose stop was held after repeated unchanged failures asks its stuck route for help, once per held stop.
  */
 final readonly class OpenStuckAsk implements Listener
 {
@@ -27,7 +27,7 @@ final readonly class OpenStuckAsk implements Listener
         private CommandBus $commands,
     ) {}
 
-    public function handle(HelperStopHeld $event): void
+    public function handle(StopCheckHeld $event): void
     {
         $ask = $this->opening->open(
             StopCheck::resolveAgentOf($event->attempt),

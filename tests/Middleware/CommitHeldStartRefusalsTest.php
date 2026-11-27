@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace Tests\Middleware;
 
 use App\Accounts\Exceptions\AccountUnavailable;
-use App\Agents\Commands\StartOwnedAgent\StartOwnedAgentCommand;
-use App\Agents\Drivers\Enums\DriverType;
-use App\Agents\Enums\ConversationModeType;
+use App\Agents\Commands\StartProfileMain\StartProfileMainCommand;
 use App\CommandMiddleware\CommitHeldStartRefusals;
 use App\Exceptions\StartRefusalReplayed;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionRequest;
 use App\Sessions\Enums\StartDisposition;
-use App\Sessions\OwnerStartRequest;
-use App\Sessions\Values\StartPolicy;
-use App\Support\ActorReference;
+use App\Values\ModelSelection;
+use App\Values\ProfileKey;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\StartsAgents;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
-use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -64,27 +60,20 @@ final class CommitHeldStartRefusalsTest extends TestCase
     public function test_a_start_refused_inside_another_command_keeps_its_refusal_after_the_rollback(): void
     {
         ActiveAccount::query()->withoutGlobalScopes()->where('account_protocol', 'claude-code')->sole()->clear();
-        $command = new StartOwnedAgentCommand($this->ownerRequest());
+        $main = $this->journal->installProfiles()->idleAgent('Main', 'main-agent')->agentCalled('Main');
+        $command = new StartProfileMainCommand(
+            TestSelections::requestId(),
+            $main->id,
+            ProfileKey::from('journal-main'),
+            ModelSelection::fromInput('default'),
+            'claude-code',
+        );
 
         $this->journal->assertRefused(AccountUnavailable::class, fn () => $this->journal->asOwner($command));
 
-        $record = SessionRequest::query()->where('request_id', $command->request->requestId)->sole();
+        $record = SessionRequest::query()->where('request_id', $command->requestId)->sole();
         $this->assertSame(StartDisposition::Refused, $record->disposition);
-        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->researcher->id)->count());
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $main->id)->count());
         $this->journal->assertRefused(StartRefusalReplayed::class, fn () => $this->journal->asOwner($command));
-    }
-
-    private function ownerRequest(): OwnerStartRequest
-    {
-        return new OwnerStartRequest(
-            TestSelections::requestId(),
-            ActorReference::of($this->researcher),
-            TestActors::record('binders.binder', 1),
-            'purpose-1',
-            TestSelections::of(),
-            ConversationModeType::New,
-            StartPolicy::withoutProfile(TestSelections::onHost()),
-            DriverType::Headless,
-        );
     }
 }

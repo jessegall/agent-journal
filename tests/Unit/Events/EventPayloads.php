@@ -9,9 +9,8 @@ use App\Events\Accounts\ProfileRevisionRevoked;
 use App\Events\Assignments\AssignmentsChanged;
 use App\Events\Engine\EngineTicked;
 use App\Events\Hooks\ContextStarted;
-use App\Events\Hooks\HelperCompletionCertified;
-use App\Events\Hooks\HelperStopHeld;
 use App\Events\Hooks\StateTypesRequested;
+use App\Events\Hooks\StopCheckHeld;
 use App\Events\Hooks\ToolCallFinished;
 use App\Events\Links\LinksRemoved;
 use App\Events\Messages\MessageRead;
@@ -31,8 +30,6 @@ use App\Events\Sessions\DriverFailed;
 use App\Events\Sessions\DriverRequestRecovered;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
-use App\Events\Sessions\SessionStartCancelled;
-use App\Events\Sessions\SessionStartEnded;
 use App\Events\Sessions\StartAccepted;
 use App\Events\Sessions\StartRefusedWithoutAccount;
 use App\Events\Sessions\StartSettingsRequested;
@@ -118,11 +115,6 @@ final class EventPayloads
                     'reason' => 'string',
                 ],
             ],
-            SessionStartCancelled::class => [
-                'fields' => [
-                    'work' => 'App\Support\RecordIdentity',
-                ],
-            ],
             DriverFailed::class => [
                 'fields' => [
                     'agentId' => 'string',
@@ -197,13 +189,7 @@ final class EventPayloads
                     'sincePrevious' => 'App\Engine\Ticks\ElapsedTime',
                 ],
             ],
-            HelperCompletionCertified::class => [
-                'fields' => [
-                    'work' => 'App\Support\RecordIdentity',
-                    'attempt' => 'App\Values\StopCheckReference',
-                ],
-            ],
-            HelperStopHeld::class => [
+            StopCheckHeld::class => [
                 'fields' => [
                     'work' => 'App\Support\RecordIdentity',
                     'attempt' => 'App\Values\StopCheckReference',
@@ -511,7 +497,6 @@ final class EventPayloads
         return [
             AccountSettingsRequested::class => 'request',
             AccountUseChanged::class => 'projection',
-            SessionStartEnded::class => 'projection',
             StartSettingsRequested::class => 'request',
             ContextStarted::class => 'request',
             StateTypesRequested::class => 'request',

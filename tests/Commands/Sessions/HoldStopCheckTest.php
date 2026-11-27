@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Sessions;
 
-use App\Events\Hooks\HelperStopHeld;
+use App\Events\Hooks\StopCheckHeld;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\StopCheck;
 use App\Sessions\Commands\HoldStopCheck\HoldStopCheckCommand;
@@ -28,7 +28,7 @@ final class HoldStopCheckTest extends TestCase
 
     public function test_a_held_stop_is_a_failed_attempt_and_a_session_of_its_own_tells_no_owner(): void
     {
-        Event::fake([HelperStopHeld::class]);
+        Event::fake([StopCheckHeld::class]);
         $start = $this->withConditions($this->journal->signedStart('Writer', 'writing-helper'));
 
         $this->journal->runAsStart(
@@ -37,7 +37,7 @@ final class HoldStopCheckTest extends TestCase
         );
 
         $this->assertSame(StopCheckStatus::Failed, $this->stopCheck()->status);
-        Event::assertNotDispatched(HelperStopHeld::class);
+        Event::assertNotDispatched(StopCheckHeld::class);
     }
 
     private function withConditions(TestStart $start): TestStart

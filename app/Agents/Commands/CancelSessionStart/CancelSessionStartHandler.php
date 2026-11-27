@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Commands\CancelSessionStart;
 
 use App\Agents\DriverRequests;
-use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandHandler;
-use App\Events\Sessions\SessionStartCancelled;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Hosts\HostProcess;
@@ -21,7 +19,6 @@ final readonly class CancelSessionStartHandler implements CommandHandler
 
     public function __construct(
         private DriverRequests $requests,
-        private CommandFacts $facts,
         private StartHeartbeats $heartbeats,
     ) {}
 
@@ -50,12 +47,6 @@ final readonly class CancelSessionStartHandler implements CommandHandler
         if ($hasRuntime && ! $isRunning) {
             $this->endWithoutProcess($command->sessionId);
         }
-
-        SessionRequest::findOwnerStartOf($command->sessionId)->forAll(
-            fn (SessionRequest $start) => $this->facts->publishAfterCommit(
-                new SessionStartCancelled($start->owner_work),
-            ),
-        );
 
         return $isRunning;
     }

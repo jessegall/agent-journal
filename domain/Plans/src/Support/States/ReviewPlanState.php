@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Domain\Plans\Support\States;
 
 use App\Contracts\Events\Event;
-use App\Events\Hooks\HelperAssigned;
-use App\Events\Hooks\HelperFinishedOnRecord;
 use App\Stacks\AgentState;
 use App\Stacks\Attributes\StateType;
 use App\Stacks\Contracts\Work\DurableState;
@@ -15,7 +13,6 @@ use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\RecordIdentity;
 use App\Values\AgentText;
-use Domain\Plans\Data\ReviewersOutData;
 use Domain\Plans\Events\PlanEvent;
 use Domain\Plans\Events\PlanReviewDecided;
 use Domain\Plans\Events\PlanReviewWithdrawn;
@@ -26,22 +23,17 @@ use PhpOption\Some;
 
 /**
  * An agent asked to review a plan: its instruction is the review, and it may not stop until the review is decided or
- * withdrawn, unless reviewers it sent are still out, whose reports wake it again. It keeps their ids with its frame.
- * It only nudges; the plan itself refuses changes while it is under review.
+ * withdrawn. It only nudges; the plan itself refuses changes while it is under review.
  */
 #[StateType(ReviewPlanStateReference::class, schemaVersion: 1)]
 final class ReviewPlanState extends AgentState implements DurableState, UniqueSubjectState
 {
     private bool $isReviewing = true;
 
-    private ReviewersOutData $reviewersOut;
-
     public function __construct(
         private readonly string $planId,
         private readonly int $number
-    ) {
-        $this->reviewersOut = new ReviewersOutData();
-    }
+    ) {}
 
     public function stateSubject(): RecordIdentity
     {
@@ -69,14 +61,10 @@ final class ReviewPlanState extends AgentState implements DurableState, UniqueSu
     // ----------[ Hooks ]----------
 
     /**
-     * While a reviewer it sent is out, the stop passes on to the states below; with none out the review holds it.
+     * The review holds every stop until it is decided or withdrawn.
      */
     public function onStop(StopRequested $input): Decision
     {
-        if ($this->reviewersOut->agentIds !== []) {
-            return Decision::delegate();
-        }
-
         return Decision::deny($this->reviewText());
     }
 
@@ -92,26 +80,7 @@ final class ReviewPlanState extends AgentState implements DurableState, UniqueSu
         $this->isReviewing = false;
     }
 
-    public function onHelperAssigned(HelperAssigned $event): void
-    {
-        if ($this->isAbout($event->subject)) {
-            $this->reviewersOut = $this->reviewersOut->adding($event->helperAgentId);
-        }
-    }
-
-    public function onHelperFinishedOnRecord(HelperFinishedOnRecord $event): void
-    {
-        if ($this->isAbout($event->subject)) {
-            $this->reviewersOut = $this->reviewersOut->removing($event->helperAgentId);
-        }
-    }
-
     // ----------[ Internals ]----------
-
-    private function isAbout(RecordIdentity $subject): bool
-    {
-        return $subject->type === Plan::linkType() && $subject->id === $this->planId;
-    }
 
     private function reviewText(): AgentText
     {

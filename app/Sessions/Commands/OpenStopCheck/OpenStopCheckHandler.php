@@ -8,13 +8,12 @@ use App\Bus\Contracts\CommandHandler;
 use App\Models\Sessions\StopCheck;
 use App\Sessions\Contracts\SessionPolicyReader;
 use App\Sessions\Enums\StopCheckStatus;
-use App\Sessions\StopCertification;
 
 final readonly class OpenStopCheckHandler implements CommandHandler
 {
     private const string NO_CONDITIONS_SUBMISSION = 'no-conditions';
 
-    public function __construct(private SessionPolicyReader $policies, private StopCertification $certification) {}
+    public function __construct(private SessionPolicyReader $policies) {}
 
     public function handle(OpenStopCheckCommand $command): void
     {
@@ -24,7 +23,7 @@ final readonly class OpenStopCheckHandler implements CommandHandler
         // A stop with no conditions has nothing to wait on: it passes as it opens.
         if ($policy->stopConditions->isEmpty() && ! $attempt->isSettled()) {
             $attempt->settle(StopCheckStatus::Passed, self::NO_CONDITIONS_SUBMISSION, '');
-            $this->certification->certify($attempt);
+            $attempt->certify();
         }
     }
 }
