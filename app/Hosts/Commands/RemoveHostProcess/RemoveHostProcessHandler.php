@@ -12,6 +12,11 @@ use App\Values\HostInstructionSource;
 
 final readonly class RemoveHostProcessHandler implements CommandHandler
 {
+    /**
+     * How long the container's program has to stop before Docker kills it, when its container is removed.
+     */
+    private const int STOP_SECONDS = 10;
+
     public function __construct(private HostInstructions $instructions) {}
 
     public function handle(RemoveHostProcessCommand $command): string
@@ -21,7 +26,7 @@ final readonly class RemoveHostProcessHandler implements CommandHandler
         return $this->instructions->remove(
             $process->host_id,
             HostInstructionSource::fromJournal(),
-            HostRemovePlanPayload::from(['container' => $process->container_name]),
+            HostRemovePlanPayload::from(['container' => $process->container_name, 'stop_seconds' => self::STOP_SECONDS]),
         )->getKey();
     }
 }

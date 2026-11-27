@@ -81,7 +81,7 @@ func containedManifest() host.ContainerManifest {
 func containedInstruction(t *testing.T, change func(plan *OpenPlan)) Instruction {
 	t.Helper()
 	manifest := containedManifest()
-	plan := OpenPlan{
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20,
 		Type:      "terminal",
 		Restart:   "never",
 		Argv:      []string{"program", "--settings", "/files/settings.json"},
@@ -123,7 +123,7 @@ func TestAContainedPlanOpensTheContainerItsManifestDescribes(t *testing.T) {
 
 func TestEachPreparationRunsToItsEndWithItsInputBeforeTheContainer(t *testing.T) {
 	table, daemon, written := containedTable(t, 0)
-	preparation := host.ContainerRun{Manifest: containedManifest(), Command: []string{"sh", "-c", "cat"}, Input: []byte("the files")}
+	preparation := host.ContainerRun{DeadlineMs: 30000, Manifest: containedManifest(), Command: []string{"sh", "-c", "cat"}, Input: []byte("the files")}
 	preparation.Manifest.Name, preparation.Manifest.IsAttachable = "", false
 
 	instruction := containedInstruction(t, func(plan *OpenPlan) { plan.Container.Preparations = []host.ContainerRun{preparation} })
@@ -141,7 +141,7 @@ func TestEachPreparationRunsToItsEndWithItsInputBeforeTheContainer(t *testing.T)
 
 func TestAFailedPreparationRefusesTheContainer(t *testing.T) {
 	table, daemon, _ := containedTable(t, 1)
-	preparation := host.ContainerRun{Manifest: containedManifest(), Command: []string{"sh", "-c", "exit 1"}}
+	preparation := host.ContainerRun{DeadlineMs: 30000, Manifest: containedManifest(), Command: []string{"sh", "-c", "exit 1"}}
 	preparation.Manifest.Name, preparation.Manifest.IsAttachable = "", false
 
 	instruction := containedInstruction(t, func(plan *OpenPlan) { plan.Container.Preparations = []host.ContainerRun{preparation} })
@@ -173,7 +173,7 @@ func TestAContainedPlanWithoutAContainerNameIsRefused(t *testing.T) {
 
 func TestAContainerRunAnswersItsExitCodeAndOutput(t *testing.T) {
 	table, _, _ := containedTable(t, 3)
-	run := host.ContainerRun{Manifest: containedManifest(), Command: []string{"sh", "-c", "exit 3"}, OutputLimit: 100}
+	run := host.ContainerRun{DeadlineMs: 30000, Manifest: containedManifest(), Command: []string{"sh", "-c", "exit 3"}, OutputLimit: 100}
 	run.Manifest.Name, run.Manifest.IsAttachable = "", false
 
 	results, err := table.RunContainers(context.Background(), Instruction{}, ContainerRuns{Runs: []host.ContainerRun{run}})

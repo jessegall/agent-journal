@@ -309,7 +309,7 @@ func (held *heldProcess) awaitDrained() {
 	}
 	select {
 	case <-held.drained:
-	case <-time.After(5 * time.Second):
+	case <-time.After(time.Duration(held.plan.DrainMs) * time.Millisecond):
 	}
 }
 
@@ -318,7 +318,7 @@ func (held *heldProcess) awaitDrained() {
 func (table *ProcessTable) watchContainer(held *heldProcess) {
 	ctx := context.Background()
 	for {
-		exit, err := table.containers.ExitOf(ctx, held.containerName())
+		exit, err := table.containers.ExitOf(ctx, held.containerName(), held.plan.ExitLogLines)
 		if err != nil {
 			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportLost, Evidence: err.Error()})
 			return
@@ -326,7 +326,8 @@ func (table *ProcessTable) watchContainer(held *heldProcess) {
 		if held.isStopping() || held.plan.Restart != "on_crash" || exit.Code == 0 {
 			code := exit.Code
 			held.awaitDrained()
-			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportExited, ExitCode: &code, Evidence: exit.Evidence()})
+			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportExited, ExitCode: &code,
+				IsOutOfMemory: exit.OutOfMemory, LastPrinted: exit.LastPrinted})
 			return
 		}
 		held.nextGeneration()
@@ -439,8 +440,7 @@ func (table *ProcessTable) watchNative(held *heldProcess) {
 		if held.isStopping() || held.plan.Restart != "on_crash" || (err == nil && code == 0) {
 			held.finish()
 			held.awaitDrained()
-			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportExited, ExitCode: &code, Signal: signal,
-				Evidence: fmt.Sprintf("the process exited with %d", code)})
+			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportExited, ExitCode: &code, Signal: signal})
 			return
 		}
 		held.nextGeneration()
@@ -519,20 +519,19 @@ func (table *ProcessTable) Stop(ctx context.Context, instruction Instruction, pl
 	if held.pid != 0 {
 		host.OwnedGroupOf(held.pid).Stop(host.StopStagesOf(grace, force))
 	} else {
-		seconds := max(1, int(grace/time.Second))
-		_ = table.containers.Stop(ctx, held.containerName(), seconds)
+		_ = table.containers.Stop(ctx, held.containerName(), int(grace/time.Second))
 	}
 	select {
 	case <-held.exited:
 		return Empty{}, nil
-	case <-time.After(grace + force + 5*time.Second):
+	case <-time.After(grace + force):
 		return Empty{}, RefusalError{Refusal: Unsafe, Reason: "the process did not end within its grace and force times"}
 	}
 }
 
 // Remove removes an ended process's container from the Docker daemon.
 func (table *ProcessTable) Remove(ctx context.Context, _ Instruction, plan RemovePlan) (Empty, error) {
-	return Empty{}, table.containers.Remove(ctx, plan.Container, 10)
+	return Empty{}, table.containers.Remove(ctx, plan.Container, plan.StopSeconds)
 }
 
 func (table *ProcessTable) keep(held *heldProcess) {

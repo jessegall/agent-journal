@@ -15,7 +15,7 @@ type InstructionHandlers interface {
 	WriteKeys(ctx context.Context, instruction Instruction, payload KeyWrite) (KeysWritten, error)
 	WriteStdin(ctx context.Context, instruction Instruction, payload StdinWrite) (Empty, error)
 	CloseStdin(ctx context.Context, instruction Instruction) (Empty, error)
-	OpenPrivate(ctx context.Context, instruction Instruction) (Empty, error)
+	OpenPrivate(ctx context.Context, instruction Instruction, payload PrivateEntry) (Empty, error)
 	WritePrivate(ctx context.Context, instruction Instruction, payload PrivateWrite) (Empty, error)
 	ClosePrivate(ctx context.Context, instruction Instruction) (Empty, error)
 	Resize(ctx context.Context, instruction Instruction, payload TerminalSize) (Empty, error)
@@ -41,7 +41,7 @@ func Executors(handlers InstructionHandlers) map[string]Executor {
 		"write_keys":      carrying(handlers.WriteKeys),
 		"write_stdin":     carrying(handlers.WriteStdin),
 		"close_stdin":     carryingNothing(handlers.CloseStdin),
-		"open_private":    carryingNothing(handlers.OpenPrivate),
+		"open_private":    carrying(handlers.OpenPrivate),
 		"write_private":   carrying(handlers.WritePrivate),
 		"close_private":   carryingNothing(handlers.ClosePrivate),
 		"resize":          carrying(handlers.Resize),

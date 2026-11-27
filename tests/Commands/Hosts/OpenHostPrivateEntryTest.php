@@ -20,7 +20,7 @@ final class OpenHostPrivateEntryTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    public function test_the_open_instruction_goes_to_the_processs_host_with_no_payload(): void
+    public function test_the_open_instruction_goes_to_the_processs_host_with_its_deadline(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
             ->openProcess('claude'));
@@ -30,7 +30,7 @@ final class OpenHostPrivateEntryTest extends TestCase
 
         $instruction = $this->journal->hostInstructionsOf('claude')[1];
         $this->journal->assertResult(
-            [HostInstructionType::OpenPrivate, $process->host_id, []],
+            [HostInstructionType::OpenPrivate, $process->host_id, ['deadline_ms' => 60000]],
             [$instruction->type, $instruction->host_id, $this->journal->payloadOf($instruction)],
         );
     }

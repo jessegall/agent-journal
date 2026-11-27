@@ -32,9 +32,6 @@ type ContainerRules struct {
 // addableCapabilities are the only capabilities a container may get back after every one is dropped.
 var addableCapabilities = []string{"CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETPCAP", "SETUID"}
 
-// restartPolicies are the restart policies a manifest may name.
-var restartPolicies = []string{"", "no", "on-failure", "unless-stopped"}
-
 var (
 	// ErrManifestUnsafe refuses a manifest that asks Docker for what no container of the journal may have.
 	ErrManifestUnsafe = errors.New("the container manifest asks for more than a container may have")
@@ -50,16 +47,20 @@ var (
 var plainName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]*$`)
 
 // IsSafe is whether the manifest stays inside the floor every container keeps: an allowed image pinned by digest,
-// no capability outside the short list, a known restart policy, plain security options and names, and mounts and
-// memory folders the host's own rules allow; each preparation keeps it too.
+// no capability outside the short list, plain security options, no network of the machine or of another container,
+// and mounts and memory folders the host's own rules allow; each preparation keeps it too.
 func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
-	isNamed := manifest.Name == "" || plainName.MatchString(manifest.Name)
-	isConfined := isNamed && IsPinnedReference(manifest.Image) && rules.permitsImage(manifest.Image) &&
-		manifest.SecurityOptions.isPlain() && slices.Contains(restartPolicies, manifest.Restart) &&
+	isConfined := IsPinnedReference(manifest.Image) && rules.permitsImage(manifest.Image) &&
+		manifest.SecurityOptions.isPlain() && rules.permitsNetwork(manifest.Network) &&
 		!slices.ContainsFunc(manifest.Capabilities, func(added string) bool { return !slices.Contains(addableCapabilities, added) })
 
 	return isConfined && rules.permit(manifest.Mounts, manifest.Tmpfs) && rules.permitsVolumes(manifest.Volumes) &&
 		!slices.ContainsFunc(manifest.Preparations, func(run ContainerRun) bool { return !run.Manifest.IsSafe(rules) })
+}
+
+// permitsNetwork is whether the network is one of the container's own: never the machine's or another container's.
+func (rules ContainerRules) permitsNetwork(network string) bool {
+	return network != "host" && !strings.HasPrefix(network, "container:")
 }
 
 // permitsImage is whether the image is one a container may run here: on a contained host only an image the journal
@@ -163,11 +164,11 @@ func (manifest ContainerManifest) CreateOptions(rules ContainerRules, process Co
 	hostConfig := &container.HostConfig{
 		CapDrop:        []string{"ALL"},
 		CapAdd:         manifest.Capabilities,
-		NetworkMode:    container.NetworkMode(cmp.Or(manifest.Network, "none")),
+		NetworkMode:    container.NetworkMode(manifest.Network),
 		ReadonlyRootfs: manifest.IsReadOnlyRoot,
 		SecurityOpt:    security,
 		Tmpfs:          tmpfsOf(manifest.Tmpfs),
-		RestartPolicy:  container.RestartPolicy{Name: container.RestartPolicyMode(cmp.Or(manifest.Restart, "no"))},
+		RestartPolicy:  container.RestartPolicy{Name: container.RestartPolicyMode(manifest.Restart)},
 		Resources: container.Resources{
 			NanoCPUs:   int64(manifest.Budgets.CPUCores) * nanoCPUsInACore,
 			Memory:     int64(manifest.Budgets.MemoryBytes),
@@ -198,12 +199,13 @@ const nanoCPUsInACore = 1_000_000_000
 // containers, networks and volumes again after a restart.
 const runnerLabel = "journal.installation"
 
-// labelsOf are the journal's labels as the daemon takes them, with the host's own.
+// labelsOf are the journal's labels as the daemon takes them, with the host's own, which no journal label replaces.
 func (rules ContainerRules) labelsOf(labels []ContainerLabel) map[string]string {
-	named := map[string]string{runnerLabel: string(rules.InstallationName)}
+	named := map[string]string{}
 	for _, label := range labels {
 		named[label.Name] = label.Value
 	}
+	named[runnerLabel] = string(rules.InstallationName)
 
 	return named
 }
@@ -353,8 +355,9 @@ func (containers Containers) Create(ctx context.Context, manifest ContainerManif
 		if err != nil {
 			return "", err
 		}
-		if result.ExitCode != 0 {
-			return "", fmt.Errorf("%w: exit %d: %s", ErrPreparationFailed, result.ExitCode, result.Output)
+		if result.ExitCode != 0 || result.IsTimedOut {
+			return "", fmt.Errorf("%w: exit %d, timed out %v: %s%s", ErrPreparationFailed, result.ExitCode, result.IsTimedOut,
+				result.Stdout, result.Stderr)
 		}
 	}
 
@@ -368,7 +371,7 @@ func (containers Containers) Create(ctx context.Context, manifest ContainerManif
 
 	created, err := containers.Daemon.ContainerCreate(ctx, options)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", ErrContainerNotCreated, failureLine(err.Error(), err))
+		return "", fmt.Errorf("%w: %v", ErrContainerNotCreated, err)
 	}
 
 	return created.ID, nil
@@ -469,28 +472,9 @@ func (containers Containers) Kill(ctx context.Context, id string, signal string)
 	return err
 }
 
-// Stop stops the container within the bound and answers only once the daemon shows it stopped.
+// Stop stops the container within the bound, answering what the daemon answered.
 func (containers Containers) Stop(ctx context.Context, id string, seconds int) error {
-	if _, err := containers.Daemon.ContainerStop(ctx, id, client.ContainerStopOptions{Timeout: &seconds}); err != nil {
-		return err
-	}
+	_, err := containers.Daemon.ContainerStop(ctx, id, client.ContainerStopOptions{Timeout: &seconds})
 
-	running, err := containers.IsRunning(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	if running {
-		return errors.New("the container still runs after its stop")
-	}
-
-	return nil
-}
-
-// failureLine is the first line a failed call printed, or its error when it printed nothing.
-func failureLine(output string, err error) string {
-	if line, _, _ := strings.Cut(output, "\n"); line != "" {
-		return line
-	}
-	return err.Error()
+	return err
 }

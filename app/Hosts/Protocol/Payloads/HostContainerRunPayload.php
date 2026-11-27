@@ -31,6 +31,8 @@ final class HostContainerRunPayload extends Data
         public readonly array $environment,
         #[Present]
         public readonly int $outputLimit,
+        #[Present]
+        public readonly int $deadlineMs,
         #[OptionalField]
         public readonly string|null $input = null,
         #[OptionalField]

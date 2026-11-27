@@ -146,13 +146,15 @@ type Answer struct {
 
 // ProcessReport is the process_report of host protocol 1.
 type ProcessReport struct {
-	ProcessID  string            `json:"process_id"`
-	Report     ProcessReportType `json:"report"`
-	Identity   string            `json:"identity,omitempty"`
-	Generation int               `json:"generation"`
-	ExitCode   *int              `json:"exit_code,omitempty"`
-	Signal     string            `json:"signal,omitempty"`
-	Evidence   string            `json:"evidence,omitempty"`
+	ProcessID     string            `json:"process_id"`
+	Report        ProcessReportType `json:"report"`
+	Identity      string            `json:"identity,omitempty"`
+	Generation    int               `json:"generation"`
+	ExitCode      *int              `json:"exit_code,omitempty"`
+	Signal        string            `json:"signal,omitempty"`
+	Evidence      string            `json:"evidence,omitempty"`
+	IsOutOfMemory bool              `json:"is_out_of_memory,omitempty"`
+	LastPrinted   string            `json:"last_printed,omitempty"`
 }
 
 // Output is the output of host protocol 1.
@@ -231,6 +233,9 @@ type OpenPlan struct {
 	Fence           string                  `json:"fence,omitempty"`
 	KeptFiles       []string                `json:"kept_files,omitempty"`
 	RawBytes        bool                    `json:"raw_bytes,omitempty"`
+	ExitLogLines    int                     `json:"exit_log_lines,omitempty"`
+	DrainMs         int                     `json:"drain_ms,omitempty"`
+	SpoolBytes      int                     `json:"spool_bytes,omitempty"`
 }
 
 // TerminalSize is the terminal_size of host protocol 1.
@@ -275,6 +280,11 @@ type StdinWrite struct {
 // PrivateWrite is the private_write of host protocol 1.
 type PrivateWrite struct {
 	Submission string `json:"submission"`
+}
+
+// PrivateEntry is the private_entry of host protocol 1.
+type PrivateEntry struct {
+	DeadlineMs int `json:"deadline_ms"`
 }
 
 // StreamPlan is the stream_plan of host protocol 1.
@@ -338,7 +348,8 @@ type UpgradeStarted struct {
 
 // RemovePlan is the remove_plan of host protocol 1.
 type RemovePlan struct {
-	Container string `json:"container"`
+	Container   string `json:"container"`
+	StopSeconds int    `json:"stop_seconds"`
 }
 
 // FencedPlan is the fenced_plan of host protocol 1.

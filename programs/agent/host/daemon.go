@@ -84,12 +84,9 @@ func (code ExitedWith) Error() string {
 	return "exit status " + strconv.Itoa(int(code))
 }
 
-// lastLines is how many lines of what a program printed are kept as the reason it ended.
-const lastLines = 20
-
-// RunToEnd runs a container the journal describes to its end and answers its exit code and what it printed, cut
-// to the run's output limit. Its input, or the host secret it names, is written to its standard input and closed.
-// The container and its anonymous volumes are removed whatever happened.
+// RunToEnd runs a container the journal describes to its end, or to its deadline, and answers its exit code and what
+// it printed on each stream, the first bytes of each up to the run's output limit. Its input, or the host secret it
+// names, is written to its standard input and closed. The container and its anonymous volumes are removed after.
 func (containers Containers) RunToEnd(ctx context.Context, run ContainerRun) (ContainerRunResult, error) {
 	input, err := containers.inputOf(run)
 	if err != nil {
@@ -103,13 +100,17 @@ func (containers Containers) RunToEnd(ctx context.Context, run ContainerRun) (Co
 	options.Config.AttachStdout, options.Config.AttachStderr = true, true
 	options.Config.AttachStdin, options.Config.OpenStdin, options.Config.StdinOnce = input != nil, input != nil, input != nil
 
+	if err := containers.AssertBudgetsEnforced(ctx); err != nil {
+		return ContainerRunResult{}, err
+	}
+
 	if err := containers.EnsureVolumes(ctx, run.Manifest.Volumes); err != nil {
 		return ContainerRunResult{}, err
 	}
 
 	created, err := containers.Daemon.ContainerCreate(ctx, options)
 	if err != nil {
-		return ContainerRunResult{}, fmt.Errorf("%w: %s", ErrContainerNotCreated, failureLine(err.Error(), err))
+		return ContainerRunResult{}, fmt.Errorf("%w: %v", ErrContainerNotCreated, err)
 	}
 	defer containers.discard(created.ID)
 
@@ -132,20 +133,49 @@ func (containers Containers) RunToEnd(ctx context.Context, run ContainerRun) (Co
 		}()
 	}
 
-	var printed bytes.Buffer
-	_, _ = stdcopy.StdCopy(&printed, &printed, attached.Reader)
-	code, err := containers.exitCodeOf(ctx, created.ID)
-	if err != nil {
+	var stdout, stderr boundedBuffer
+	stdout.limit, stderr.limit = run.OutputLimit, run.OutputLimit
+	waited, stop := context.WithTimeout(ctx, time.Duration(run.DeadlineMs)*time.Millisecond)
+	defer stop()
+	copied := make(chan struct{})
+	go func() {
+		_, _ = stdcopy.StdCopy(&stdout, &stderr, attached.Reader)
+		close(copied)
+	}()
+
+	code, err := containers.exitCodeOf(waited, created.ID)
+	isTimedOut := errors.Is(waited.Err(), context.DeadlineExceeded)
+	if err != nil && !isTimedOut {
 		return ContainerRunResult{}, err
 	}
-
-	output := strings.TrimSpace(printed.String())
-	isTruncated := run.OutputLimit > 0 && len(output) > run.OutputLimit
-	if isTruncated {
-		output = output[len(output)-run.OutputLimit:]
+	if !isTimedOut {
+		<-copied
 	}
 
-	return ContainerRunResult{ExitCode: code, Output: output, IsTruncated: isTruncated}, nil
+	return ContainerRunResult{
+		ExitCode:    code,
+		Stdout:      stdout.String(),
+		Stderr:      stderr.String(),
+		IsTruncated: stdout.isCut || stderr.isCut,
+		IsTimedOut:  isTimedOut,
+	}, nil
+}
+
+// boundedBuffer keeps the first bytes written to it, up to its limit, and notes whether more came.
+type boundedBuffer struct {
+	bytes.Buffer
+	limit int
+	isCut bool
+}
+
+func (buffer *boundedBuffer) Write(written []byte) (int, error) {
+	room := buffer.limit - buffer.Len()
+	if room < len(written) {
+		buffer.isCut = true
+		_, _ = buffer.Buffer.Write(written[:max(room, 0)])
+		return len(written), nil
+	}
+	return buffer.Buffer.Write(written)
 }
 
 // inputOf is what the run reads on its standard input: its own input, or the host secret it names; nil for none.
@@ -189,11 +219,11 @@ func (containers Containers) exitCodeOf(ctx context.Context, id string) (int, er
 	}
 }
 
-// lastPrinted are the last lines the container's program printed, for the reason it ended; empty when the daemon
-// kept none. A terminal's log is its bytes as they are; any other comes in frames of standard output and error.
-func (containers Containers) lastPrinted(ctx context.Context, name string, hasTerminal bool) string {
+// lastPrinted are the last lines of the container's log, as many as asked, as they were printed; empty when the
+// daemon kept none. A terminal's log is its bytes as they are; any other comes in frames of output and error.
+func (containers Containers) lastPrinted(ctx context.Context, name string, hasTerminal bool, lines int) string {
 	logs, err := containers.Daemon.ContainerLogs(ctx, name, client.ContainerLogsOptions{
-		ShowStdout: true, ShowStderr: true, Tail: strconv.Itoa(lastLines),
+		ShowStdout: true, ShowStderr: true, Tail: strconv.Itoa(lines),
 	})
 	if err != nil {
 		return ""
@@ -207,7 +237,7 @@ func (containers Containers) lastPrinted(ctx context.Context, name string, hasTe
 		_, _ = stdcopy.StdCopy(&printed, &printed, logs)
 	}
 
-	return strings.TrimSpace(printed.String())
+	return printed.String()
 }
 
 // ErrWorkspaceQuotaUnavailable refuses a volume of bounded size on a daemon that cannot bound one.
@@ -233,13 +263,6 @@ func (containers Containers) createVolume(ctx context.Context, volume ContainerV
 	return fmt.Errorf("creating the volume %s failed: %w", volume.Name, err)
 }
 
-// removeVolume removes a named volume; forced, also one the daemon still counts as in use.
-func (containers Containers) removeVolume(ctx context.Context, name string, force bool) error {
-	_, err := containers.Daemon.VolumeRemove(ctx, name, client.VolumeRemoveOptions{Force: force})
-
-	return err
-}
-
 // isAbsent is whether the daemon answered that what was asked for is not there, which for a removal is done.
 func isAbsent(err error) bool {
 	return cerrdefs.IsNotFound(err)
@@ -256,7 +279,7 @@ func absentIsDone(err error) error {
 
 // unreachable names a failed call as the daemon not being reached, with what the client said.
 func unreachable(err error) error {
-	return fmt.Errorf("%w: %s", ErrDaemonUnreachable, failureLine(err.Error(), err))
+	return fmt.Errorf("%w: %v", ErrDaemonUnreachable, err)
 }
 
 // bindMount is a folder of the daemon's machine at the target, private to the container, read-only unless writable.

@@ -37,7 +37,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on no account start": {
         "purpose": "agent_terminal",
@@ -125,7 +128,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on no account sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -217,7 +223,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on no account with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -309,7 +318,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on no account resumed sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -401,7 +413,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on no account resumed with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -488,7 +503,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on no account sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -575,7 +593,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on no account with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -662,7 +683,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on no account resumed sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -749,7 +773,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on no account resumed with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -885,7 +912,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on an MCP account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -946,7 +976,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on an MCP account with everything start": {
         "purpose": "agent_terminal",
@@ -1078,7 +1111,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on an MCP account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -1139,7 +1175,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on an MCP account resumed start": {
         "purpose": "agent_terminal",
@@ -1271,7 +1310,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on an MCP account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -1332,7 +1374,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on an MCP account resumed with everything start": {
         "purpose": "agent_terminal",
@@ -1464,7 +1509,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on an MCP account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -1525,7 +1573,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on an MCP account start": {
         "purpose": "agent_turn",
@@ -1621,7 +1672,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on an MCP account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -1682,7 +1736,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on an MCP account with everything start": {
         "purpose": "agent_turn",
@@ -1778,7 +1835,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on an MCP account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -1839,7 +1899,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on an MCP account resumed start": {
         "purpose": "agent_turn",
@@ -1935,7 +1998,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on an MCP account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -1996,7 +2062,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on an MCP account resumed with everything start": {
         "purpose": "agent_turn",
@@ -2092,7 +2161,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on an MCP account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -2153,7 +2225,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a CLI account start": {
         "purpose": "agent_terminal",
@@ -2272,7 +2347,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a CLI account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -2326,7 +2404,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a CLI account with everything start": {
         "purpose": "agent_terminal",
@@ -2445,7 +2526,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a CLI account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -2499,7 +2583,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a CLI account resumed start": {
         "purpose": "agent_terminal",
@@ -2618,7 +2705,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a CLI account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -2672,7 +2762,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a CLI account resumed with everything start": {
         "purpose": "agent_terminal",
@@ -2791,7 +2884,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a CLI account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -2845,7 +2941,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a CLI account start": {
         "purpose": "agent_turn",
@@ -2931,7 +3030,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a CLI account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -2985,7 +3087,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a CLI account with everything start": {
         "purpose": "agent_turn",
@@ -3071,7 +3176,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a CLI account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -3125,7 +3233,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a CLI account resumed start": {
         "purpose": "agent_turn",
@@ -3211,7 +3322,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a CLI account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -3265,7 +3379,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a CLI account resumed with everything start": {
         "purpose": "agent_turn",
@@ -3351,7 +3468,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a CLI account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -3405,7 +3525,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a protected account start": {
         "purpose": "agent_terminal",
@@ -3539,7 +3662,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a protected account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -3602,7 +3728,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a protected account with everything start": {
         "purpose": "agent_terminal",
@@ -3736,7 +3865,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a protected account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -3799,7 +3931,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a protected account resumed start": {
         "purpose": "agent_terminal",
@@ -3933,7 +4068,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a protected account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -3996,7 +4134,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a protected account resumed with everything start": {
         "purpose": "agent_terminal",
@@ -4130,7 +4271,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a protected account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -4193,7 +4337,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a protected account start": {
         "purpose": "agent_turn",
@@ -4291,7 +4438,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a protected account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -4354,7 +4504,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a protected account with everything start": {
         "purpose": "agent_turn",
@@ -4452,7 +4605,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a protected account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -4515,7 +4671,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a protected account resumed start": {
         "purpose": "agent_turn",
@@ -4613,7 +4772,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a protected account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -4676,7 +4838,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a protected account resumed with everything start": {
         "purpose": "agent_turn",
@@ -4774,7 +4939,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a protected account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -4837,7 +5005,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a host account with a folder start": {
         "purpose": "agent_terminal",
@@ -4969,7 +5140,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a host account with a folder sign-in probe": {
         "purpose": "sign_in_probe",
@@ -5030,7 +5204,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a host account with a folder with everything start": {
         "purpose": "agent_terminal",
@@ -5162,7 +5339,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a host account with a folder with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -5223,7 +5403,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a host account with a folder resumed start": {
         "purpose": "agent_terminal",
@@ -5355,7 +5538,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a host account with a folder resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -5416,7 +5602,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a host account with a folder resumed with everything start": {
         "purpose": "agent_terminal",
@@ -5548,7 +5737,10 @@
         ],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code terminal on a host account with a folder resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -5609,7 +5801,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a host account with a folder start": {
         "purpose": "agent_turn",
@@ -5705,7 +5900,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a host account with a folder sign-in probe": {
         "purpose": "sign_in_probe",
@@ -5766,7 +5964,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a host account with a folder with everything start": {
         "purpose": "agent_turn",
@@ -5862,7 +6063,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a host account with a folder with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -5923,7 +6127,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a host account with a folder resumed start": {
         "purpose": "agent_turn",
@@ -6019,7 +6226,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a host account with a folder resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -6080,7 +6290,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a host account with a folder resumed with everything start": {
         "purpose": "agent_turn",
@@ -6176,7 +6389,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "claude-code pipe on a host account with a folder resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -6237,7 +6453,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex version probe": {
         "purpose": "build_probe",
@@ -6267,7 +6486,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on no account start": {
         "purpose": "agent_terminal",
@@ -6332,7 +6554,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on no account sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -6406,7 +6631,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on no account with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -6477,7 +6705,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on no account resumed sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -6553,7 +6784,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on no account resumed with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -6622,7 +6856,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on no account sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -6696,7 +6933,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on no account with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -6765,7 +7005,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on no account resumed sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -6839,7 +7082,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on no account resumed with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -6903,7 +7149,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on an MCP account sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -6967,7 +7216,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on an MCP account with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7033,7 +7285,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on an MCP account resumed sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7099,7 +7354,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on an MCP account resumed with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7163,7 +7421,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on an MCP account sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7227,7 +7488,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on an MCP account with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7291,7 +7555,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on an MCP account resumed sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7355,7 +7622,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on an MCP account resumed with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7419,7 +7689,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a CLI account sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7483,7 +7756,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a CLI account with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7549,7 +7825,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a CLI account resumed sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7615,7 +7894,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a CLI account resumed with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7679,7 +7961,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a CLI account sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7743,7 +8028,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a CLI account with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7807,7 +8095,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a CLI account resumed sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7871,7 +8162,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a CLI account resumed with everything sign-in probe": {
         "refused": "App\\Agents\\Exceptions\\ProfileRefused",
@@ -7935,7 +8229,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a protected account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -7968,7 +8265,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a protected account with everything start": {
         "purpose": "agent_terminal",
@@ -8028,7 +8328,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a protected account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8061,7 +8364,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a protected account resumed start": {
         "purpose": "agent_terminal",
@@ -8123,7 +8429,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a protected account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8156,7 +8465,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a protected account resumed with everything start": {
         "purpose": "agent_terminal",
@@ -8218,7 +8530,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a protected account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8251,7 +8566,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a protected account start": {
         "purpose": "agent_turn",
@@ -8311,7 +8629,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a protected account sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8344,7 +8665,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a protected account with everything start": {
         "purpose": "agent_turn",
@@ -8404,7 +8728,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a protected account with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8437,7 +8764,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a protected account resumed start": {
         "purpose": "agent_turn",
@@ -8497,7 +8827,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a protected account resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8530,7 +8863,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a protected account resumed with everything start": {
         "purpose": "agent_turn",
@@ -8590,7 +8926,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a protected account resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8623,7 +8962,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a host account with a folder start": {
         "purpose": "agent_terminal",
@@ -8683,7 +9025,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a host account with a folder sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8716,7 +9061,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a host account with a folder with everything start": {
         "purpose": "agent_terminal",
@@ -8776,7 +9124,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a host account with a folder with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8809,7 +9160,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a host account with a folder resumed start": {
         "purpose": "agent_terminal",
@@ -8871,7 +9225,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a host account with a folder resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8904,7 +9261,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a host account with a folder resumed with everything start": {
         "purpose": "agent_terminal",
@@ -8966,7 +9326,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex terminal on a host account with a folder resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -8999,7 +9362,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a host account with a folder start": {
         "purpose": "agent_turn",
@@ -9059,7 +9425,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a host account with a folder sign-in probe": {
         "purpose": "sign_in_probe",
@@ -9092,7 +9461,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a host account with a folder with everything start": {
         "purpose": "agent_turn",
@@ -9152,7 +9524,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a host account with a folder with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -9185,7 +9560,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a host account with a folder resumed start": {
         "purpose": "agent_turn",
@@ -9245,7 +9623,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a host account with a folder resumed sign-in probe": {
         "purpose": "sign_in_probe",
@@ -9278,7 +9659,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a host account with a folder resumed with everything start": {
         "purpose": "agent_turn",
@@ -9338,7 +9722,10 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     },
     "codex pipe on a host account with a folder resumed with everything sign-in probe": {
         "purpose": "sign_in_probe",
@@ -9371,6 +9758,9 @@
         "shield_rules": [],
         "fence": null,
         "kept_files": [],
-        "raw_bytes": false
+        "raw_bytes": false,
+        "exit_log_lines": 20,
+        "drain_ms": 5000,
+        "spool_bytes": 16777216
     }
 }

@@ -77,5 +77,14 @@ final class HostOpenPlanPayload extends Data
         #[MapName('raw_bytes')]
         #[OptionalField]
         public readonly bool $isRawBytes = false,
+        #[MapName('exit_log_lines')]
+        #[OptionalField]
+        public readonly int $exitLogLines = 0,
+        #[MapName('drain_ms')]
+        #[OptionalField]
+        public readonly int $drainMs = 0,
+        #[MapName('spool_bytes')]
+        #[OptionalField]
+        public readonly int $spoolBytes = 0,
     ) {}
 }

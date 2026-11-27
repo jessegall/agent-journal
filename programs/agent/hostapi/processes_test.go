@@ -107,7 +107,7 @@ func stopAndWait(daemon *dockermock.Daemon, table *ProcessTable) {
 
 func openInstruction(t *testing.T, processID, restart, image string) Instruction {
 	t.Helper()
-	plan := OpenPlan{
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20,
 		Type:    "terminal",
 		Restart: restart,
 		Argv:    []string{"mock-program"},
@@ -211,7 +211,7 @@ func TestARunningContainerIsAdoptedAgainAfterTheHostRestarted(t *testing.T) {
 
 func TestANativeProcessThatEndsIsReportedExitedWithItsCode(t *testing.T) {
 	table, sent := mockTable(t, dockermock.Start(t, mockImage))
-	plan, err := json.Marshal(OpenPlan{Type: "pipe", Restart: "never", Argv: []string{"sh", "-c", "exit 3"}, Folder: t.TempDir()})
+	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "pipe", Restart: "never", Argv: []string{"sh", "-c", "exit 3"}, Folder: t.TempDir()})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -229,7 +229,7 @@ func TestANativeProcessReadsTheFilesItsPlanHandsItOnItsDescriptors(t *testing.T)
 	if err := os.WriteFile(token, []byte("secret\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	plan, err := json.Marshal(OpenPlan{Type: "pipe", Restart: "never", Folder: t.TempDir(), ReadFiles: []string{token},
+	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "pipe", Restart: "never", Folder: t.TempDir(), ReadFiles: []string{token},
 		Argv: []string{"sh", "-c", `read line <&3; [ "$line" = secret ] && exit 7; exit 1`}})
 	if err != nil {
 		t.Fatal(err)
@@ -410,7 +410,7 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 		return OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
 	}
 	before, after, reports := &sentChunks{}, &sentChunks{}, &sentReports{}
-	plan, err := json.Marshal(OpenPlan{Type: "pipe", Restart: "never", Folder: t.TempDir(),
+	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "pipe", Restart: "never", Folder: t.TempDir(),
 		Argv: []string{"sh", "-c", `echo first; while [ -e "$0" ]; do sleep 0.05; done; echo second`, hold}})
 	if err != nil {
 		t.Fatal(err)
@@ -446,7 +446,7 @@ func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(
 	runQueue(t, queue)
 	state, chunks := t.TempDir(), &sentChunks{}
 	table := OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
-	plan, err := json.Marshal(OpenPlan{Type: "pipe", Restart: "never", Folder: t.TempDir(),
+	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "pipe", Restart: "never", Folder: t.TempDir(),
 		Argv: []string{"sh", "-c", `echo out; echo "Logged in using ChatGPT" >&2; echo after`}})
 	if err != nil {
 		t.Fatal(err)
@@ -463,7 +463,7 @@ func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(
 
 func TestAHealedProcessRunsItsRestartArgvOnceItsFileExistsUnderItsFolder(t *testing.T) {
 	folder := t.TempDir()
-	plan := OpenPlan{Argv: []string{"program", "--session-id", "c1"}, RestartArgv: []string{"program", "--resume", "c1"},
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Argv: []string{"program", "--session-id", "c1"}, RestartArgv: []string{"program", "--resume", "c1"},
 		RestartWhenFile: &host.RestartFile{Folder: folder, Glob: "*c1.jsonl"}}
 	before := plan.restartArgv()
 	if err := os.MkdirAll(filepath.Join(folder, "-work"), 0o700); err != nil {
@@ -494,7 +494,7 @@ func TestATerminalLostWithItsHostIsReportedLostOnlyOnceItsProcessEnded(t *testin
 		runQueue(t, queue)
 		return OpenProcessTable(state, containers, queue, NewOutputs(state, (&sentChunks{}).send, time.Now))
 	}
-	plan, err := json.Marshal(OpenPlan{Type: "terminal", Restart: "never", Folder: t.TempDir(),
+	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "terminal", Restart: "never", Folder: t.TempDir(),
 		Size: TerminalSize{Columns: 40, Rows: 5},
 		Argv: []string{"sh", "-c", `trap 'touch "$0"; exit 0' HUP; while true; do sleep 0.05; done`, ended}})
 	if err != nil {

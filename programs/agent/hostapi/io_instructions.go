@@ -2,6 +2,7 @@ package hostapi
 
 import (
 	"context"
+	"time"
 )
 
 // PrivateValuePuller pulls a private submission's value from the journal, once.
@@ -21,8 +22,8 @@ func NewProcessInput(table *ProcessTable, outputs *Outputs, pull PrivateValuePul
 
 // OpenPrivate stops every frame and recording of the process from leaving until the screen redraws after
 // close_private, and answers once they are stopped.
-func (input ProcessInput) OpenPrivate(_ context.Context, instruction Instruction) (Empty, error) {
-	return Empty{}, input.outputs.OpenPrivate(instruction.ProcessID)
+func (input ProcessInput) OpenPrivate(_ context.Context, instruction Instruction, entry PrivateEntry) (Empty, error) {
+	return Empty{}, input.outputs.OpenPrivate(instruction.ProcessID, time.Duration(entry.DeadlineMs)*time.Millisecond)
 }
 
 // WritePrivate pulls the submission's value from the journal and writes it once; neither the instruction nor its answer

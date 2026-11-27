@@ -3,45 +3,23 @@ package host
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/client"
 )
 
-// Remove stops the container within the bound and removes it with its anonymous volumes, which Docker refuses while
-// it still runs, so a removal confirms its processes exited; a container already gone counts as removed.
+// Remove stops the container within the bound and removes it with its anonymous volumes; a container already gone
+// counts as removed, as removing it again leaves it as absent as the first time. A removal Docker refuses is answered
+// as it refused it, for the journal to ask again.
 func (containers Containers) Remove(ctx context.Context, name string, stopSeconds int) error {
-	_, err := containers.Daemon.ContainerStop(ctx, name, client.ContainerStopOptions{Timeout: &stopSeconds})
-	if err != nil {
+	if _, err := containers.Daemon.ContainerStop(ctx, name, client.ContainerStopOptions{Timeout: &stopSeconds}); err != nil {
 		return absentIsDone(err)
 	}
 
-	err = containers.removeStopped(ctx, name)
-	for tries := 0; err != nil && strings.Contains(err.Error(), removalUnderWay) && tries < removalTries; tries++ {
-		time.Sleep(removalPause)
-		err = containers.removeStopped(ctx, name)
-	}
+	_, err := containers.Daemon.ContainerRemove(ctx, name, client.ContainerRemoveOptions{RemoveVolumes: true})
 
 	return absentIsDone(err)
 }
-
-// removeStopped removes a container that does not run, with its anonymous volumes.
-func (containers Containers) removeStopped(ctx context.Context, name string) error {
-	_, err := containers.Daemon.ContainerRemove(ctx, name, client.ContainerRemoveOptions{RemoveVolumes: true})
-
-	return err
-}
-
-// removalUnderWay is how Docker refuses to remove a container another caller is removing at that moment, such as a
-// stop and the watch of the container's exit both cleaning up: the removal is asked for again after a pause, until
-// the container is gone, and not failed on.
-const removalUnderWay = "is already in progress"
-
-const (
-	removalPause = 250 * time.Millisecond
-	removalTries = 40
-)
 
 // RemoveNetwork removes the start network; a network already gone counts as removed.
 func (containers Containers) RemoveNetwork(ctx context.Context, name string) error {

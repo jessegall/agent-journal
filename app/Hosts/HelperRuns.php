@@ -60,6 +60,13 @@ final readonly class HelperRuns
 
     private const int OUTPUT_LIMIT = 16384;
 
+    /**
+     * How long a helper run may take before the host ends it: a clone reaches the network, the rest only the disk.
+     */
+    private const int RUN_DEADLINE_MS = 60_000;
+
+    private const int CLONE_DEADLINE_MS = 600_000;
+
     public function __construct(
         private Files $files,
         #[Config('journal.agents.agent_image')]
@@ -223,6 +230,7 @@ final readonly class HelperRuns
             'input' => $input === '' ? null : base64_encode($input),
             'inputSecret' => $inputSecret === '' ? null : $inputSecret,
             'outputLimit' => self::OUTPUT_LIMIT,
+            'deadlineMs' => ($container['network'] ?? 'none') === 'none' ? self::RUN_DEADLINE_MS : self::CLONE_DEADLINE_MS,
         ]);
     }
 }

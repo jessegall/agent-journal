@@ -37,5 +37,11 @@ final class HostProcessReportPayload extends Data
         public readonly string|null $signal = null,
         #[OptionalField]
         public readonly string|null $evidence = null,
+        #[MapName('is_out_of_memory')]
+        #[OptionalField]
+        public readonly bool $isOutOfMemory = false,
+        #[MapName('last_printed')]
+        #[OptionalField]
+        public readonly string|null $lastPrinted = null,
     ) {}
 }

@@ -21,8 +21,12 @@ final class HostContainerRunResultPayload extends Data
         #[Present]
         public readonly int $exitCode,
         #[Present]
-        public readonly string $output,
+        public readonly string $stdout,
+        #[Present]
+        public readonly string $stderr,
         #[Present]
         public readonly bool $isTruncated,
+        #[Present]
+        public readonly bool $isTimedOut,
     ) {}
 }

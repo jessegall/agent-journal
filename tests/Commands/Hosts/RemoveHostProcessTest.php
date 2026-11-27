@@ -30,7 +30,7 @@ final class RemoveHostProcessTest extends TestCase
         $removal = $instructions[array_key_last($instructions)];
 
         $this->journal->assertResult(
-            [HostInstructionType::Remove, ['container' => "journal-process-{$processId}"]],
+            [HostInstructionType::Remove, ['container' => "journal-process-{$processId}", 'stop_seconds' => 10]],
             [$removal->type, $this->journal->payloadOf($removal)],
         );
     }

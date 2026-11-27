@@ -12,7 +12,7 @@ import (
 
 func TestAPlansFilesAreWrittenPrivatelyAndItsFilesFolderIsFilledIn(t *testing.T) {
 	state := t.TempDir()
-	plan := OpenPlan{
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20,
 		Argv:        []string{"program", "--settings", "{folder:files}/settings.json"},
 		Environment: []string{"SETTINGS={folder:files}", "HOME={folder:home}", "JOURNAL_URL={host:JOURNAL_URL}"},
 		Folders:     []string{"home"},
@@ -47,7 +47,7 @@ func TestAPlansFilesAreWrittenPrivatelyAndItsFilesFolderIsFilledIn(t *testing.T)
 func TestATemplateFileHasItsPlaceholdersFilledAndAHandedFileIsWrittenAsItIs(t *testing.T) {
 	state := t.TempDir()
 	command := `{"command":"{host:HOOK_COMMAND} a-program {folder:files}/hook-replies.json"}`
-	plan := OpenPlan{Files: []PlanFile{
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Files: []PlanFile{
 		{Name: "settings.json", Content: command, Template: true},
 		{Name: "skills/one/SKILL.md", Content: "Write {folder:files} as it is."},
 	}}
@@ -84,7 +84,7 @@ func TestAPlanFileOutsideItsFolderOrAnUnknownFolderIsRefused(t *testing.T) {
 
 func TestAContainerPlansRestartFileNamingAHostPlaceholderIsRefused(t *testing.T) {
 	container := &host.ContainerManifest{}
-	inside := OpenPlan{Argv: []string{"program"}, Container: container,
+	inside := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Argv: []string{"program"}, Container: container,
 		RestartWhenFile: &host.RestartFile{Folder: "/home/journal/.account", Glob: "*.jsonl"}}
 	placed := inside
 	placed.RestartWhenFile = &host.RestartFile{Folder: "{folder:home}/.program/projects", Glob: "*.jsonl"}

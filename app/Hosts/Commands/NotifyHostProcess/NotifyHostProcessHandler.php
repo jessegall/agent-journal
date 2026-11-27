@@ -17,6 +17,11 @@ use App\Time\Contracts\ServerClock;
  */
 final readonly class NotifyHostProcessHandler implements CommandHandler
 {
+    /**
+     * How many of the last characters a program printed the evidence of its exit keeps.
+     */
+    private const int EVIDENCE_CHARACTERS = 1000;
+
     public function __construct(private ServerClock $clock) {}
 
     public function handle(NotifyHostProcessCommand $command): void
@@ -34,7 +39,7 @@ final readonly class NotifyHostProcessHandler implements CommandHandler
             HostProcessReportType::Running => $process->run($this->identityOf($report), $report->generation, $now),
             HostProcessReportType::Restarted => $process->restart($this->identityOf($report)),
             HostProcessReportType::Exited => $process->exit(
-                new ProcessExit($report->exitCode, $report->signal, $this->evidenceOf($report)),
+                new ProcessExit($report->exitCode, $report->signal, $this->exitEvidenceOf($report)),
                 $now,
             ),
             HostProcessReportType::Lost => $process->lose($this->evidenceOf($report), $now),
@@ -52,7 +57,25 @@ final readonly class NotifyHostProcessHandler implements CommandHandler
     }
 
     /**
-     * How an exited or lost process ended, which its report must say.
+     * How an exited process ended, worded from what the host reported: killed for its memory, or its exit code with
+     * the last of what it printed, its terminal's colours left out.
+     */
+    private function exitEvidenceOf(HostProcessReportPayload $report): string
+    {
+        if ($report->isOutOfMemory) {
+            return 'the container was killed for using more memory than its budget';
+        }
+
+        $evidence = $report->signal === null
+            ? "the program exited with {$report->exitCode}"
+            : "the program was ended by {$report->signal}";
+        $printed = trim((string) preg_replace('/\e\[[0-9;?]*[ -\/]*[@-~]/', '', $report->lastPrinted ?? ''));
+
+        return $printed === '' ? $evidence : $evidence.': '.mb_substr($printed, -self::EVIDENCE_CHARACTERS);
+    }
+
+    /**
+     * How a lost process ended, which its report must say.
      *
      * @throws HostProtocolRefused
      */

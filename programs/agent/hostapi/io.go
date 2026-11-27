@@ -18,9 +18,6 @@ import (
 // OutputLimit is the most bytes the host sends in one output post.
 const OutputLimit = 256 * 1024
 
-// SpoolLimit is the most bytes a pipe process's spool keeps, so a reattach after a host restart resumes from it.
-const SpoolLimit = 16 * 1024 * 1024
-
 // MarshalJSON sends a list the output has none of as an empty list, never as null, as the protocol fixes both.
 func (output Output) MarshalJSON() ([]byte, error) {
 	type wire Output
@@ -89,13 +86,10 @@ func NewOutputs(stateFolder string, post OutputPoster, clock func() time.Time) *
 	}
 }
 
-// privateDeadline is how long a private entry stays open with no close: one the journal forgot, because its worker
-// died or its instruction was lost, ends by itself and takes no value after it.
-var privateDeadline = time.Minute
-
 // OpenPrivate stops every frame and recording of the terminal process from leaving, and the frame held back, until
-// it redraws after ClosePrivate or the private deadline passed.
-func (outputs *Outputs) OpenPrivate(processID string) error {
+// it redraws after ClosePrivate or the journal's deadline for the entry passed: an entry the journal forgot, because
+// its worker died or its instruction was lost, ends by itself and takes no value after it.
+func (outputs *Outputs) OpenPrivate(processID string, deadline time.Duration) error {
 	outputs.mutex.Lock()
 	defer outputs.mutex.Unlock()
 	if _, isTerminal := outputs.screens[processID]; !isTerminal {
@@ -105,7 +99,7 @@ func (outputs *Outputs) OpenPrivate(processID string) error {
 	outputs.openings[processID]++
 	opening := outputs.openings[processID]
 	delete(outputs.held, processID)
-	time.AfterFunc(privateDeadline, func() { outputs.closeOpening(processID, opening) })
+	time.AfterFunc(deadline, func() { outputs.closeOpening(processID, opening) })
 	return nil
 }
 
@@ -152,7 +146,7 @@ func (outputs *Outputs) Open(processID string, plan OpenPlan) error {
 			return nil
 		}
 	}
-	spool, err := OpenSpool(filepath.Join(outputs.stateFolder, "spool", processID))
+	spool, err := OpenSpool(filepath.Join(outputs.stateFolder, "spool", processID), int64(plan.SpoolBytes))
 	if err != nil {
 		return err
 	}
@@ -453,19 +447,21 @@ func (screen *Screen) RaiseInputGeneration() uint64 {
 	return screen.inputGeneration
 }
 
-// Spool keeps a pipe process's output on disk up to SpoolLimit, so a reattach resumes at its offset.
+// Spool keeps a pipe process's output on disk up to the bytes the journal gave it, so a reattach resumes at its
+// offset.
 type Spool struct {
 	path   string
+	limit  int64
 	mutex  sync.Mutex
 	offset int64
 }
 
-// OpenSpool opens the spool file, going on at its end.
-func OpenSpool(path string) (*Spool, error) {
+// OpenSpool opens the spool file, going on at its end, keeping at most the limit.
+func OpenSpool(path string, limit int64) (*Spool, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return nil, err
 	}
-	spool := &Spool{path: path}
+	spool := &Spool{path: path, limit: limit}
 	if info, err := os.Stat(path); err == nil {
 		spool.offset = info.Size()
 	}
@@ -478,7 +474,7 @@ func (spool *Spool) Append(bytes []byte) (int64, error) {
 	defer spool.mutex.Unlock()
 	start := spool.offset
 	spool.offset += int64(len(bytes))
-	if start >= SpoolLimit {
+	if start >= spool.limit {
 		return start, nil
 	}
 	file, err := os.OpenFile(spool.path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
@@ -486,7 +482,7 @@ func (spool *Spool) Append(bytes []byte) (int64, error) {
 		return start, err
 	}
 	defer file.Close()
-	_, err = file.Write(bytes[:min(len(bytes), int(SpoolLimit-start))])
+	_, err = file.Write(bytes[:min(len(bytes), int(spool.limit-start))])
 	return start, err
 }
 

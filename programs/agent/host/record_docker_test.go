@@ -60,7 +60,7 @@ func TestEveryCallToTheDaemonIsKeptWhileRecordingAndAnAttachOnlyAsUpgraded(t *te
 		t.Fatal(err)
 	}
 
-	run := ContainerRun{Manifest: ContainerManifest{Image: recordedImage, Restart: "no"}, Command: []string{"true"}}
+	run := ContainerRun{DeadlineMs: 30000, Manifest: ContainerManifest{Image: recordedImage, Restart: "no"}, Command: []string{"true"}}
 	if _, err := containers.RunToEnd(context.Background(), run); err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ func TestOutsideAnOpenRunTheDaemonsCallsAreNotKept(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	run := ContainerRun{Manifest: ContainerManifest{Image: recordedImage, Restart: "no"}, Command: []string{"true"}}
+	run := ContainerRun{DeadlineMs: 30000, Manifest: ContainerManifest{Image: recordedImage, Restart: "no"}, Command: []string{"true"}}
 	if _, err := containers.RunToEnd(context.Background(), run); err != nil {
 		t.Fatal(err)
 	}

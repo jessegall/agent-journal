@@ -101,11 +101,14 @@ type ContainerRun struct {
 	Input       []byte            `json:"input,omitempty"`
 	InputSecret string            `json:"inputSecret,omitempty"`
 	OutputLimit int               `json:"outputLimit"`
+	DeadlineMs  int               `json:"deadlineMs"`
 }
 
 // ContainerRunResult is the container_run_result of host protocol 1.
 type ContainerRunResult struct {
 	ExitCode    int    `json:"exitCode"`
-	Output      string `json:"output"`
+	Stdout      string `json:"stdout"`
+	Stderr      string `json:"stderr"`
 	IsTruncated bool   `json:"isTruncated"`
+	IsTimedOut  bool   `json:"isTimedOut"`
 }

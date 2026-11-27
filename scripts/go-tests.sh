@@ -22,10 +22,7 @@ run_tests() {
 
 # The harness finds the binary by the same hash of the Go sources (tests/Support/Hosts/TestHost.php).
 build_test_host() {
-    local root="$1"
-    run_in_go "$root" 'hash=$(find . -name "*.go" -o -name go.mod -o -name go.sum | LC_ALL=C sort | xargs cat | sha256sum | cut -c1-16)
-        test -x "/out/journal-agent-$hash" || go build -tags mock -o "/out/journal-agent-$hash" ./cmd/journal-agent
-        find /out -name "journal-agent-*" ! -name "journal-agent-$hash" -delete'
+    sh "$1/scripts/go-test-host.sh"
 }
 
 run_in_go() {

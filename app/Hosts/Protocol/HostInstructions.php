@@ -14,6 +14,7 @@ use App\Hosts\Protocol\Payloads\HostFencedPlanPayload;
 use App\Hosts\Protocol\Payloads\HostImagesPlanPayload;
 use App\Hosts\Protocol\Payloads\HostKeyWritePayload;
 use App\Hosts\Protocol\Payloads\HostNetworkRemovalPayload;
+use App\Hosts\Protocol\Payloads\HostPrivateEntryPayload;
 use App\Hosts\Protocol\Payloads\HostPrivateWritePayload;
 use App\Hosts\Protocol\Payloads\HostProjectReadPayload;
 use App\Hosts\Protocol\Payloads\HostRemovePlanPayload;
@@ -106,13 +107,14 @@ final readonly class HostInstructions
     public function openPrivate(
         string $processId,
         HostInstructionSource $source,
+        HostPrivateEntryPayload $payload,
         int $expirySeconds = HostInstructionPlacement::INSTRUCTION_SECONDS,
     ): HostInstruction {
         return $this->placement->forProcess(
             $processId,
             $source,
             HostInstructionType::OpenPrivate,
-            [],
+            $payload->toArray(),
             $expirySeconds,
         );
     }

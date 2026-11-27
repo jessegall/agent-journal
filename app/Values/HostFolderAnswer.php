@@ -30,11 +30,14 @@ final readonly class HostFolderAnswer
         // A made or removed folder is done once its run ended well; a run that failed answers why, as a refusal.
         if ($instruction->status === HostInstructionStatus::Done) {
             $results = HostContainerRunResultsPayload::from($instruction->answer->facts ?? []);
-            $failed = array_filter($results->results, fn (HostContainerRunResultPayload $result) => $result->exitCode !== 0);
+            $failed = array_filter(
+                $results->results,
+                fn (HostContainerRunResultPayload $result) => $result->exitCode !== 0 || $result->isTimedOut,
+            );
 
             return $failed === []
                 ? new self($instruction->status, '', false)
-                : new self(HostInstructionStatus::Refused, array_values($failed)[0]->output, false);
+                : new self(HostInstructionStatus::Refused, array_values($failed)[0]->stderr.array_values($failed)[0]->stdout, false);
         }
 
         $reason = $instruction->answer->reason ?? $instruction->refusal->value ?? '';

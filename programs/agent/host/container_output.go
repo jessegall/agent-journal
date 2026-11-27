@@ -3,6 +3,7 @@ package host
 import (
 	"context"
 	"encoding/binary"
+	"fmt"
 	"io"
 
 	"github.com/moby/moby/api/pkg/stdcopy"
@@ -18,6 +19,9 @@ func (containers Containers) FollowOutput(ctx context.Context, name string) (io.
 	})
 }
 
+// mostFrameBytes is the most one frame of a log may claim, so a broken header cannot make the host hold gigabytes.
+const mostFrameBytes = 16 << 20
+
 // PrintedPiece is one piece of a container's log: what was printed and whether on the error stream.
 type PrintedPiece struct {
 	Bytes   []byte
@@ -31,7 +35,11 @@ func NextPrinted(log io.Reader) (PrintedPiece, error) {
 	if _, err := io.ReadFull(log, header); err != nil {
 		return PrintedPiece{}, err
 	}
-	printed := make([]byte, binary.BigEndian.Uint32(header[4:]))
+	size := binary.BigEndian.Uint32(header[4:])
+	if size > mostFrameBytes {
+		return PrintedPiece{}, fmt.Errorf("a log frame of %d bytes is larger than the %d a frame may hold", size, mostFrameBytes)
+	}
+	printed := make([]byte, size)
 	if _, err := io.ReadFull(log, printed); err != nil {
 		return PrintedPiece{}, err
 	}

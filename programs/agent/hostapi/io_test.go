@@ -53,7 +53,7 @@ func terminalOutputs(t *testing.T) (*Outputs, *fakeClock, *postedOutputs) {
 	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-	if err := outputs.Open("p", OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}}); err != nil {
+	if err := outputs.Open("p", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}}); err != nil {
 		t.Fatal(err)
 	}
 	return outputs, clock, posted
@@ -126,13 +126,13 @@ func TestAPipeReattachesAtItsSpoolOffset(t *testing.T) {
 	folder := t.TempDir()
 	posted := &postedOutputs{}
 	outputs := NewOutputs(folder, posted.post, time.Now)
-	if err := outputs.Open("pipe", OpenPlan{Type: "pipe"}); err != nil {
+	if err := outputs.Open("pipe", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "pipe"}); err != nil {
 		t.Fatal(err)
 	}
 	outputs.Printed("pipe", []byte("first "))
 	outputs.Printed("pipe", []byte("second"))
 
-	reopened, err := OpenSpool(folder + "/spool/pipe")
+	reopened, err := OpenSpool(folder+"/spool/pipe", 1<<20)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +145,7 @@ func TestAPipeReattachesAtItsSpoolOffset(t *testing.T) {
 func TestAContainersLogReachesTheJournalUnderTheNameOfEachStream(t *testing.T) {
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, time.Now)
-	if err := outputs.Open("pipe", OpenPlan{Type: "pipe"}); err != nil {
+	if err := outputs.Open("pipe", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "pipe"}); err != nil {
 		t.Fatal(err)
 	}
 	table := &ProcessTable{outputs: outputs}
@@ -198,7 +198,7 @@ func TestAShieldedScreenLeavesWithoutItsRows(t *testing.T) {
 	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-	plan := OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
 		ShieldRules: []ShieldRule{{Keywords: []string{"custom api key", "use this api key"}, MinKeywords: 2}}}
 	if err := outputs.Open("p", plan); err != nil {
 		t.Fatal(err)
@@ -216,7 +216,7 @@ func TestAShieldedScreenLeavesWithoutItsRows(t *testing.T) {
 // Nothing of a private entry leaves: no frame between open_private and the redraw after close_private.
 func TestAPrivateEntrySendsNoFrameUntilTheRedrawAfterItCloses(t *testing.T) {
 	outputs, _, posted := terminalOutputs(t)
-	if err := outputs.OpenPrivate("p"); err != nil {
+	if err := outputs.OpenPrivate("p", time.Minute); err != nil {
 		t.Fatal(err)
 	}
 	outputs.Printed("p", []byte("Key: ****"))
@@ -263,11 +263,8 @@ func TestAChangedScreenIsSentOnceItSettlesAndABurstAtMostAtTheStreamRate(t *test
 // A private entry nobody closes ends by itself at its deadline: a private value is refused after it and its output
 // leaves again once the screen redraws.
 func TestAPrivateEntryNobodyClosesEndsAtItsDeadline(t *testing.T) {
-	deadline := privateDeadline
-	privateDeadline = 20 * time.Millisecond
-	defer func() { privateDeadline = deadline }()
 	outputs, _, posted := terminalOutputs(t)
-	if err := outputs.OpenPrivate("p"); err != nil {
+	if err := outputs.OpenPrivate("p", 20*time.Millisecond); err != nil {
 		t.Fatal(err)
 	}
 	wasPrivate := outputs.IsPrivate("p")
@@ -291,7 +288,7 @@ func TestAShieldedScreenWithholdsTheProcesssChunksOnEveryStream(t *testing.T) {
 	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-	plan := OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
 		ShieldRules: []ShieldRule{{Keywords: []string{"custom api key", "use this api key"}, MinKeywords: 2}}}
 	if err := outputs.Open("p", plan); err != nil {
 		t.Fatal(err)
@@ -320,7 +317,7 @@ func TestATerminalAskedForItsRawBytesSendsThemFromTheFirstOne(t *testing.T) {
 		clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 		posted := &postedOutputs{}
 		outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-		plan := OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}, RawBytes: isRaw}
+		plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}, RawBytes: isRaw}
 		if err := outputs.Open("p", plan); err != nil {
 			t.Fatal(err)
 		}
