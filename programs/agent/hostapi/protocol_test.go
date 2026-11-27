@@ -116,3 +116,16 @@ func TestTheDispatchRefusesANestedMissingFieldAndAnUnknownValueByTheirPath(t *te
 		}
 	}
 }
+
+// The record and stop_recording orders are gone from host protocol 1: the host carries neither, so one is refused as
+// an order it does not know.
+func TestTheHostRefusesTheRemovedRecordOrdersAsUnknown(t *testing.T) {
+	executors := Executors(testOrders{})
+	for _, removed := range []string{"record", "stop_recording"} {
+		_, carried := executors[removed]
+		_, known := OrderTypes[removed]
+		if carried || known {
+			t.Errorf("the host still knows the order %s", removed)
+		}
+	}
+}

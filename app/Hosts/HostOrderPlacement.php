@@ -33,7 +33,11 @@ final readonly class HostOrderPlacement
      */
     public const int KEY_SECONDS = 5;
 
-    public function __construct(private ServerClock $clock, private HostCallReader $reader) {}
+    public function __construct(
+        private ServerClock $clock,
+        private HostCallReader $reader,
+        private ContainedPlanRules $containedRules,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $payload
@@ -78,7 +82,7 @@ final readonly class HostOrderPlacement
         $host = $this->orderingHost($process->host_id);
         $payload = $plan->payload();
         $this->reader->assertValid($payload, 'open plan');
-        $this->assertContainedRules($plan);
+        $this->containedRules->assertKept($payload);
         $order = $this->place($host, $process, HostOrderBody::from($plan->orderType(), $payload->toArray(), $source));
         $process->holdOpenOrder($order->id);
 
@@ -111,26 +115,6 @@ final readonly class HostOrderPlacement
         $this->assertOrders($host);
 
         return $host;
-    }
-
-    /**
-     * A contained plan names nothing of the host and carries its start grant whole.
-     *
-     * @throws HostProtocolRefused
-     */
-    private function assertContainedRules(HostProcessPlan $plan): void
-    {
-        if ($plan->container === null) {
-            return;
-        }
-
-        if ($plan->hostFieldsNamed() !== []) {
-            throw HostProtocolRefused::containedPlanNamesHost($plan->hostFieldsNamed());
-        }
-
-        if ($plan->missingGrantVariables() !== []) {
-            throw HostProtocolRefused::containedGrantPartial($plan->missingGrantVariables());
-        }
     }
 
     /**

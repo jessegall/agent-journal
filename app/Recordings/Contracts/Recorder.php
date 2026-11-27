@@ -4,37 +4,32 @@ declare(strict_types=1);
 
 namespace App\Recordings\Contracts;
 
+use App\Recordings\Enums\Wire;
+use App\Recordings\RecordedEvent;
 use App\Recordings\RecordingOpening;
 
 /**
- * The recorder of one wire, such as a driver's pipes and terminals, the Docker daemon or the host protocol: it records
- * each exchange on its wire, what went in and what came out with their timing, while AGENTS_RECORDING is on, into the
- * one format the Go mocks replay, with fake values in place of real ones (RecordingDrafts, RecordingFakes).
+ * Keeps what crosses one wire while recording is on, an exchange at a time; the wire's tap calls nothing else.
  */
 interface Recorder
 {
     /**
-     * Whether recording is on, as AGENTS_RECORDING says.
+     * The wire this recorder keeps the exchanges of.
      */
-    public function isOn(): bool;
+    public function wire(): Wire;
 
     /**
-     * Called when an exchange on the wire opens: starts its recording, before anything goes in or comes out.
+     * Opens the exchange's draft, before anything crosses the wire.
      */
-    public function begin(string $exchangeId, RecordingOpening $opening): void;
+    public function begin(string $exchange, RecordingOpening $opening): void;
 
     /**
-     * Called with what went into the exchange, such as a line written to a program or a request sent.
+     * Adds what crossed: typed, printed, resized, asked or answered.
      */
-    public function wentIn(string $exchangeId, string $bytes): void;
+    public function add(string $exchange, RecordedEvent $event): void;
 
     /**
-     * Called with what came out of the exchange, on the stream it came out on, such as stdout or a response.
+     * Ends the exchange with the code its program exited with.
      */
-    public function cameOut(string $exchangeId, string $stream, string $bytes): void;
-
-    /**
-     * Called when the exchange ended, with its exit code: writes its recording with fake values.
-     */
-    public function end(string $exchangeId, int $exitCode): void;
+    public function end(string $exchange, int $exitCode): void;
 }

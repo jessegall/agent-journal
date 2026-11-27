@@ -12,4 +12,6 @@ enum RecordedEventType: string
     case Typed = 'typed';
     case Printed = 'printed';
     case Resized = 'resized';
+    case Asked = 'asked';
+    case Answered = 'answered';
 }

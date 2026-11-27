@@ -4,10 +4,17 @@ declare(strict_types=1);
 
 namespace App\Recordings;
 
+use App\Hosts\OrderSignature;
+use App\Hosts\Protocol\Data\HostClaimedOrdersData;
+use App\Hosts\Protocol\Data\HostOrderData;
+use App\Recordings\Enums\Wire;
+use App\Recordings\Exceptions\RecordedEnvironmentRefused;
+use App\Recordings\Exceptions\RecordingLeaks;
+use App\Recordings\Exceptions\RecordingOutsideContainer;
+
 /**
- * Puts fakes in place of the real values of a recorded exchange on any wire, so a recording keeps nothing of its
- * machine or account: environment folders become {env:NAME}, and addresses, tokens, ids, names and uuids become fakes,
- * one uuid the same fake throughout, so a replay pairs each request with its answer.
+ * Puts fakes in place of a recorded run's real values on every wire, one fake to a value through the run and the same
+ * on a re-record, refuses what must never be recorded, and signs the faked orders anew.
  */
 final class RecordingFakes
 {
@@ -23,6 +30,13 @@ final class RecordingFakes
 
     public const string USER_FOLDER = '/home/user';
 
+    public const string SECRET = 'fake-secret';
+
+    /**
+     * The order secret the faked orders are signed with, which a Go test signs its orders with too.
+     */
+    public const string ORDER_SECRET = 'recorded-order-secret';
+
     /**
      * The shortest folder of the environment put back as {env:NAME}, so a short value such as / is never.
      */
@@ -34,6 +48,39 @@ final class RecordingFakes
     private const string FAKE_UUID_PREFIX = '00000000-0000-4000-8000-';
 
     private const string UUID = '/\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b/';
+
+    /**
+     * The journal's ids: a ulid in lower case, as the journal writes them.
+     */
+    private const string ULID = '/\b0[0-7][0-9a-hjkmnp-tv-z]{24}\b/';
+
+    /**
+     * The start of every fake ulid, which is kept as it is.
+     */
+    private const string FAKE_ULID_PREFIX = '00000000000000';
+
+    private const string DIGEST = '/\b[0-9a-f]{64}\b/';
+
+    /**
+     * The start of every fake digest, which is kept as it is.
+     */
+    private const string FAKE_DIGEST_PREFIX = '0000000000000000';
+
+    /**
+     * A variable that holds a secret, by its name, in NAME=value form.
+     */
+    private const string SECRET_VARIABLE = '/((?:TOKEN|SECRET|PASSWORD|GRANT|KEY)[A-Z_]*=)[^"\\\\\s]+/';
+
+    /**
+     * The variables of the recording user's own terminal and Claude Code session, which no recorded exchange may hold.
+     */
+    private const string REFUSED_VARIABLES = '/^(ITERM_|TERM_PROGRAM|TERM_SESSION_ID|CLAUDECODE$'
+        .'|CLAUDE_CODE_ENTRYPOINT$|CLAUDE_CODE_SSE_PORT$)/';
+
+    /**
+     * The shortest known value looked for in a faked recording, so a short value such as 1 is never taken for a leak.
+     */
+    private const int SHORTEST_KNOWN_VALUE = 6;
 
     private const string ACCOUNT_ID = '/\b(user|org|acct|account)-[A-Za-z0-9]{12,}\b/';
 
@@ -72,6 +119,7 @@ final class RecordingFakes
         );
 
         $faked = $this->replaceNamedValues($faked);
+        $faked = (string) preg_replace(self::SECRET_VARIABLE, '${1}'.self::SECRET, $faked);
 
         $faked = (string) preg_replace_callback(
             self::ACCOUNT_ID,
@@ -79,7 +127,75 @@ final class RecordingFakes
             $faked,
         );
 
-        return (string) preg_replace_callback(self::UUID, fn (array $found) => $this->fakeOf($found[0], ''), $faked);
+        $faked = (string) preg_replace_callback(self::UUID, fn (array $found) => $this->fakeOf($found[0], ''), $faked);
+        $faked = (string) preg_replace_callback(self::ULID, fn (array $found) => $this->ulidFakeOf($found[0]), $faked);
+
+        $fakeDigest = fn (array $found) => $this->digestFakeOf($found[0]);
+
+        return (string) preg_replace_callback(self::DIGEST, $fakeDigest, $faked);
+    }
+
+    /**
+     * Refuses an exchange that carries a variable of the recording user's own session, or a driver's exchange that
+     * ran anywhere but in the agent image.
+     *
+     * @throws RecordedEnvironmentRefused
+     * @throws RecordingOutsideContainer
+     */
+    public function assertClean(RecordingOpening $opening, string $agentImage): void
+    {
+        $refused = array_values(array_filter(
+            $opening->environmentNames(),
+            fn (string $name) => preg_match(self::REFUSED_VARIABLES, $name) === 1,
+        ));
+
+        if ($refused !== []) {
+            throw RecordedEnvironmentRefused::naming($refused);
+        }
+
+        if ($opening->wire === Wire::Driver && $opening->image !== $agentImage) {
+            throw RecordingOutsideContainer::of($opening->exchange, $opening->image);
+        }
+    }
+
+    /**
+     * Refuses a faked recording that still holds any of the run's real values, naming only their places.
+     *
+     * @param  list<string>  $knownValues
+     *
+     * @throws RecordingLeaks
+     */
+    public function assertNoLeak(string $encoded, array $knownValues): void
+    {
+        $leaked = array_keys(array_filter(
+            $knownValues,
+            fn (string $value) => strlen($value) >= self::SHORTEST_KNOWN_VALUE && str_contains($encoded, $value),
+        ));
+
+        if ($leaked !== []) {
+            throw RecordingLeaks::at($leaked);
+        }
+    }
+
+    /**
+     * The orders of a faked claim answer, each signed again with ORDER_SECRET, since faking changed what was signed.
+     */
+    public function resignedClaim(HostClaimedOrdersData $claim): HostClaimedOrdersData
+    {
+        $orders = array_map(fn (HostOrderData $order) => HostOrderData::from([
+            ...$order->toArray(),
+            'signature' => OrderSignature::of(
+                $order->id,
+                $order->sequence,
+                $order->type,
+                $order->processId,
+                $order->payload,
+                $order->expiresAt,
+                self::ORDER_SECRET,
+            ),
+        ]), $claim->orders);
+
+        return HostClaimedOrdersData::from([...$claim->toArray(), 'orders' => $orders]);
     }
 
     /**
@@ -134,6 +250,41 @@ final class RecordingFakes
         );
 
         return (string) preg_replace("/[^\\s\"'│]+(?:'s|’s) (Organization|Workspace)/u", 'Example\'s $1', $named);
+    }
+
+    private function ulidFakeOf(string $real): string
+    {
+        if (str_starts_with($real, self::FAKE_ULID_PREFIX)) {
+            return $real;
+        }
+
+        return $this->numberedFakeOf($real, '%026d');
+    }
+
+    private function digestFakeOf(string $real): string
+    {
+        if (str_starts_with($real, self::FAKE_DIGEST_PREFIX)) {
+            return $real;
+        }
+
+        return $this->numberedFakeOf($real, '%064d');
+    }
+
+    /**
+     * The fake a real value gets from the format, numbered in the order the values are seen, the same each time.
+     */
+    private function numberedFakeOf(string $real, string $format): string
+    {
+        $known = array_search($real, $this->fakes, true);
+
+        if (is_string($known)) {
+            return $known;
+        }
+
+        $fake = sprintf($format, count($this->fakes) + 1);
+        $this->fakes[$fake] = $real;
+
+        return $fake;
     }
 
     /**

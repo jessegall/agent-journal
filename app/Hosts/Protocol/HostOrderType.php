@@ -34,8 +34,6 @@ enum HostOrderType: string
     case Remove = 'remove';
     case RemoveSession = 'remove_session';
     case ReadProject = 'read_project';
-    case Record = 'record';
-    case StopRecording = 'stop_recording';
     case Upgrade = 'upgrade';
 
     /**
@@ -94,6 +92,33 @@ enum HostOrderType: string
     }
 
     /**
+     * The Data of the payload this order carries.
+     *
+     * @return class-string<\Spatie\LaravelData\Data>
+     */
+    public function payloadData(): string
+    {
+        return match ($this) {
+            self::OpenContainer, self::OpenProcess => Data\HostOpenPlanData::class,
+            self::WriteKeys => Data\HostKeyWriteData::class,
+            self::WriteStdin => Data\HostStdinWriteData::class,
+            self::CloseStdin, self::OpenPrivate, self::ClosePrivate, self::Snapshot => Data\HostNothingData::class,
+            self::WritePrivate => Data\HostPrivateWriteData::class,
+            self::Resize => Data\HostTerminalSizeData::class,
+            self::Signal => Data\HostSignalPlanData::class,
+            self::Stop => Data\HostStopPlanData::class,
+            self::Stream => Data\HostStreamPlanData::class,
+            self::RunFenced => Data\HostFencedPlanData::class,
+            self::AllowImages => Data\HostImagesPlanData::class,
+            self::MakeFolder, self::RemoveFolder, self::FolderUse => Data\HostFolderPlanData::class,
+            self::Remove => Data\HostRemovePlanData::class,
+            self::RemoveSession => Data\HostSessionRemovalData::class,
+            self::ReadProject => Data\HostProjectReadData::class,
+            self::Upgrade => Data\HostUpgradePlanData::class,
+        };
+    }
+
+    /**
      * The Data a done answer of this order carries as its facts.
      *
      * @return class-string<\Spatie\LaravelData\Data>
@@ -117,12 +142,10 @@ enum HostOrderType: string
             self::RemoveFolder,
             self::Remove,
             self::RemoveSession,
-            self::ReadProject,
-            self::Record => Data\HostNothingData::class,
+            self::ReadProject => Data\HostNothingData::class,
             self::RunFenced => Data\HostFencedResultsData::class,
             self::AllowImages => Data\HostImagesAllowedData::class,
             self::FolderUse => Data\HostFolderUseReplyData::class,
-            self::StopRecording => Data\HostRecordingStoppedData::class,
             self::Upgrade => Data\HostUpgradeStartedData::class,
         };
     }

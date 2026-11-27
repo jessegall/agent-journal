@@ -21,6 +21,7 @@ final class HostProtocolData extends Data
      * @param  array<string, HostOrderTraitsData>  $orders  each order type with its traits
      * @param  list<string>  $placeholderKinds  the kinds of {kind:NAME} a plan may hold
      * @param  list<string>  $hostNames  the names the host fills as {host:NAME}
+     * @param  list<string>  $refusedAnswerNames  the fields a refused answer names, so the journal can say why
      * @param  array<string, list<string>>  $enums  each enum of the file with its values
      * @param  array<string, list<string>>  $goPackages  the Go packages other than hostapi, with the types they hold
      * @param  array<string, HostProgramData>  $programs  each shipped program by its name
@@ -36,6 +37,7 @@ final class HostProtocolData extends Data
         public readonly array $orders,
         public readonly array $placeholderKinds,
         public readonly array $hostNames,
+        public readonly array $refusedAnswerNames,
         public readonly HostContainedPlanData $containedPlan,
         public readonly array $enums,
         public readonly array $goPackages,

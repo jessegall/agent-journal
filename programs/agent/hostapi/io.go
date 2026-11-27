@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"journal-agent/recording"
 	"journal-agent/screen"
 )
 
@@ -47,14 +46,13 @@ type Outputs struct {
 	clock       func() time.Time
 	started     time.Time
 
-	mutex     sync.Mutex
-	screens   map[string]*Screen
-	spools    map[string]*Spool
-	streams   map[string]frameStream
-	recorders map[string]*recording.Recorder
-	held      map[string]Frame
-	private   map[string]privateEntry
-	openings  map[string]int
+	mutex    sync.Mutex
+	screens  map[string]*Screen
+	spools   map[string]*Spool
+	streams  map[string]frameStream
+	held     map[string]Frame
+	private  map[string]privateEntry
+	openings map[string]int
 }
 
 // frameStream is a process's running stream: how to stop it, and the signal that its screen changed.
@@ -85,7 +83,6 @@ func NewOutputs(stateFolder string, post OutputPoster, clock func() time.Time) *
 		screens:     map[string]*Screen{},
 		spools:      map[string]*Spool{},
 		streams:     map[string]frameStream{},
-		recorders:   map[string]*recording.Recorder{},
 		held:        map[string]Frame{},
 		private:     map[string]privateEntry{},
 		openings:    map[string]int{},
@@ -165,12 +162,8 @@ func (outputs *Outputs) Printed(processID string, printed []byte) {
 	outputs.mutex.Lock()
 	screen, isTerminal := outputs.screens[processID]
 	spool := outputs.spools[processID]
-	recorder := outputs.recorders[processID]
-	entry, isPrivate := outputs.private[processID]
+	entry := outputs.private[processID]
 	outputs.mutex.Unlock()
-	if isPrivate {
-		recorder = nil
-	}
 	if isTerminal {
 		screen.Feed(printed, outputs.monotonic())
 		outputs.screenChanged(processID)
@@ -179,14 +172,7 @@ func (outputs *Outputs) Printed(processID string, printed []byte) {
 			delete(outputs.private, processID)
 			outputs.mutex.Unlock()
 		}
-		// A shielded screen's bytes are kept by no recording, as its frames reach no one.
-		if recorder != nil && !screen.IsShielded() {
-			recorder.Output("stdout", printed)
-		}
 		return
-	}
-	if recorder != nil {
-		recorder.Output("stdout", printed)
 	}
 	if spool == nil {
 		return
@@ -290,45 +276,6 @@ func (outputs *Outputs) screenChanged(processID string) {
 	select {
 	case stream.changed <- struct{}{}:
 	default:
-	}
-}
-
-// Record starts a raw recording of the process.
-func (outputs *Outputs) Record(processID string, plan OpenPlan) {
-	outputs.mutex.Lock()
-	defer outputs.mutex.Unlock()
-	mode := recording.ProcessMode
-	if plan.Type == "terminal" {
-		mode = recording.TerminalMode
-	}
-	fixture := recording.Fixture{
-		Mode:       mode,
-		Geometry:   recording.Geometry{Columns: plan.Size.Columns, Rows: plan.Size.Rows},
-		RecordedAt: outputs.clock(),
-	}
-	outputs.recorders[processID] = recording.NewRecorder(fixture, outputs.clock)
-}
-
-// StopRecording saves the process's recording into the state folder and answers its folder.
-func (outputs *Outputs) StopRecording(processID string) (string, error) {
-	outputs.mutex.Lock()
-	recorder, found := outputs.recorders[processID]
-	delete(outputs.recorders, processID)
-	outputs.mutex.Unlock()
-	if !found {
-		return "", RefusalError{Refusal: NotRunning, Reason: "the process is not being recorded"}
-	}
-	folder := filepath.Join(outputs.stateFolder, "recordings", processID+"-"+outputs.clock().UTC().Format("20060102T150405"))
-	return folder, recorder.Finish(0).Save(folder)
-}
-
-// Typed records what was written into the process, a secret as a secret.
-func (outputs *Outputs) Typed(processID string, bytes []byte, isSecret bool) {
-	outputs.mutex.Lock()
-	recorder := outputs.recorders[processID]
-	outputs.mutex.Unlock()
-	if recorder != nil {
-		recorder.Input(bytes, isSecret)
 	}
 }
 

@@ -46,6 +46,14 @@ final readonly class HostProtocol
     ];
 
     /**
+     * The fields a refused answer names, so the journal can say why the host refused.
+     */
+    public const array REFUSED_ANSWER_NAMES = [
+        'refusal',
+        'reason',
+    ];
+
+    /**
      * What journal-hook takes after its own name, in order.
      */
     public const array HOOK_ARGUMENTS = [

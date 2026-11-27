@@ -21,6 +21,7 @@ final readonly class RecordedEvent implements JsonSerializable
         public bool $isSecret = false,
         public int $columns = 0,
         public int $rows = 0,
+        public RecordedCall|null $call = null,
     ) {}
 
     public static function typed(int $at, string $bytes): self
@@ -43,6 +44,16 @@ final readonly class RecordedEvent implements JsonSerializable
         return new self(RecordedEventType::Resized, $at, columns: $columns, rows: $rows);
     }
 
+    public static function asked(int $at, RecordedCall $call): self
+    {
+        return new self(RecordedEventType::Asked, $at, call: $call);
+    }
+
+    public static function answered(int $at, RecordedCall $call): self
+    {
+        return new self(RecordedEventType::Answered, $at, call: $call);
+    }
+
     /**
      * @param  array<string, mixed>  $line
      */
@@ -56,7 +67,21 @@ final readonly class RecordedEvent implements JsonSerializable
             (bool) $line['secret'],
             (int) $line['columns'],
             (int) $line['rows'],
+            is_array($line['call'] ?? null) ? RecordedCall::fromLine($line['call']) : null,
         );
+    }
+
+    /**
+     * The event with every real value it carries faked: what was typed or printed, and its call.
+     */
+    public function fakedBy(RecordingFakes $fakes): self
+    {
+        return clone ($this, ['bytes' => $fakes->replaceIn($this->bytes), 'call' => $this->call?->fakedBy($fakes)]);
+    }
+
+    public function withCall(RecordedCall $call): self
+    {
+        return clone ($this, ['call' => $call]);
     }
 
     /**
@@ -89,6 +114,7 @@ final readonly class RecordedEvent implements JsonSerializable
             'secret' => $this->isSecret,
             'columns' => $this->columns,
             'rows' => $this->rows,
+            'call' => $this->call,
         ];
     }
 }

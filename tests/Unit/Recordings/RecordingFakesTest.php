@@ -4,12 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Recordings;
 
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\RestartPolicy;
+use App\Hosts\OrderSignature;
+use App\Hosts\Protocol\Data\HostClaimedOrdersData;
+use App\Hosts\Protocol\HostProcessType;
+use App\Recordings\Exceptions\RecordedEnvironmentRefused;
+use App\Recordings\Exceptions\RecordingLeaks;
+use App\Recordings\Exceptions\RecordingOutsideContainer;
 use App\Recordings\RecordingFakes;
-use PHPUnit\Framework\TestCase;
+use App\Recordings\RecordingOpening;
+use App\Values\HostProcessPlan;
+use Tests\TestCase;
 
 /**
- * A recording keeps no real value: a folder of the process's environment becomes its variable, an address, a token, an
- * account id, a name and a folder of the user become fakes, and one uuid is one fake throughout a recording.
+ * A recording keeps no real value: a folder of the process's environment becomes its variable, every other kind of
+ * real value a fake of its shape, one fake to a value through a run and the same on a re-record; the user's own session
+ * variables, a driver outside the agent image and a value left behind each refuse it; faked orders are signed anew.
  */
 final class RecordingFakesTest extends TestCase
 {
@@ -61,6 +72,104 @@ final class RecordingFakesTest extends TestCase
                 $fakes->replaceIn('00000000-0000-4000-8000-000000000042'),
                 $fakes->replaceIn('org-AbCdEfGhIjKlMnOp'),
             ],
+        );
+    }
+
+    public function test_the_users_terminal_variables_refuse_the_recording(): void
+    {
+        $plan = $this->planWith(['ITERM_SESSION_ID=w0t0p0', 'LANG=C.UTF-8'], ['CLAUDE_CODE_ENTRYPOINT']);
+        $opening = RecordingOpening::ofProcess('terminal', $plan->payload(), 0);
+
+        $refusal = RecordedEnvironmentRefused::naming(['CLAUDE_CODE_ENTRYPOINT', 'ITERM_SESSION_ID']);
+        $this->expectExceptionObject($refusal);
+
+        new RecordingFakes([])->assertClean($opening, '');
+    }
+
+    public function test_a_driver_exchange_outside_the_agent_image_is_refused(): void
+    {
+        $opening = RecordingOpening::ofProcess('terminal', $this->planWith(['LANG=C.UTF-8'])->payload(), 0);
+
+        $this->expectException(RecordingOutsideContainer::class);
+
+        new RecordingFakes([])->assertClean($opening, 'journal-agent@sha256:1');
+    }
+
+    public function test_each_value_becomes_one_fake_of_its_shape_the_same_on_a_rerecord(): void
+    {
+        $text = 'thread 01jd8x0g9m3qz6v4k2t7r5w1ca digest '.str_repeat('ab', 32)
+            .' JOURNAL_START_TOKEN=s3cr3t-grant again 01jd8x0g9m3qz6v4k2t7r5w1ca';
+
+        $first = new RecordingFakes([])->replaceIn($text);
+        $again = new RecordingFakes([])->replaceIn($text);
+
+        $this->assertSame(
+            [
+                'thread 00000000000000000000000001 digest '.str_pad('2', 64, '0', STR_PAD_LEFT)
+                    .' JOURNAL_START_TOKEN='.RecordingFakes::SECRET.' again 00000000000000000000000001',
+                true,
+            ],
+            [$first, $first === $again],
+        );
+    }
+
+    public function test_a_real_value_left_in_the_faked_recording_stops_it(): void
+    {
+        $this->expectExceptionObject(RecordingLeaks::at([1]));
+
+        new RecordingFakes([])->assertNoLeak('{"host":"acme-host-7"}', ['Example User', 'acme-host-7', '1']);
+    }
+
+    public function test_a_faked_claims_orders_are_signed_anew_with_the_recordings_order_secret(): void
+    {
+        $order = [
+            'id' => '00000000000000000000000001',
+            'sequence' => 1,
+            'type' => 'snapshot',
+            'process_id' => '00000000000000000000000002',
+            'payload' => '{}',
+            'expires_at' => '2026-11-27T08:00:00Z',
+            'signature' => 'signed-by-the-real-host-secret',
+        ];
+        $claim = HostClaimedOrdersData::from([
+            'orders' => [$order],
+            'idle_window_seconds' => 60,
+            'now' => '2026-11-27T07:59:00Z',
+        ]);
+        $signature = OrderSignature::of(
+            $order['id'],
+            1,
+            'snapshot',
+            $order['process_id'],
+            '{}',
+            $order['expires_at'],
+            RecordingFakes::ORDER_SECRET,
+        );
+
+        $resigned = new RecordingFakes([])->resignedClaim($claim);
+
+        $this->assertSame(
+            $signature,
+            $resigned->orders[0]->signature,
+        );
+    }
+
+    /**
+     * A terminal plan with the environment and the names it inherits.
+     *
+     * @param  list<string>  $environment
+     * @param  list<string>  $inherit
+     */
+    private function planWith(array $environment, array $inherit = []): HostProcessPlan
+    {
+        return new HostProcessPlan(
+            HostProcessPurpose::AgentTerminal,
+            HostProcessType::Terminal,
+            RestartPolicy::Never,
+            ['claude'],
+            $environment,
+            '/workspace',
+            inherit: $inherit,
         );
     }
 }

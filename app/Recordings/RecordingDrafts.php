@@ -6,16 +6,17 @@ namespace App\Recordings;
 
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
-use App\Recordings\Enums\RecordedEventType;
-use App\Recordings\Enums\RecordingMode;
+use App\Files\Enums\Place;
+use App\Files\Values\Depth;
+use App\Recordings\Enums\Wire;
 use App\Values\FilePath;
 use Carbon\CarbonImmutable;
+use Illuminate\Container\Attributes\Config;
 
 /**
- * The one store every wire's recorder writes through, switched on by AGENTS_RECORDING: an exchange's draft gets its
- * opening and each event as it happens, from any container of the journal, and once the exchange ends it is written,
- * with fake values in place of real ones, as the Go mocks replay it (programs/agent/recording/fixture.go), under
- * <wire>/<build>/recorded/<name> of the recordings.
+ * The one store every wire's recorder writes through, switched on by agents.recording: within a recording run, each
+ * exchange's draft gets its opening and each event as it happens, from any container of the journal, under its wire.
+ * Drafts outside a run are never kept, and a new run removes the drafts an interrupted one left.
  */
 final readonly class RecordingDrafts
 {
@@ -23,21 +24,15 @@ final readonly class RecordingDrafts
      * Where the drafts of the exchanges being recorded are kept, in the project, so every container of the journal
      * adds to the same draft.
      */
-    public const string DRAFTS = 'storage/app/recordings';
+    public const string DRAFTS = 'storage/recordings/drafts';
 
-    public const string RECORDINGS = 'resources/recordings';
+    private FilePath $drafts;
 
-    /**
-     * The most words of the exchange's arguments a recording's name takes.
-     */
-    private const int NAME_WORD_LIMIT = 2;
-
-    public function __construct(
-        private Files $files,
-        private bool $isOn,
-        private FilePath $drafts,
-        private FilePath $recordings,
-    ) {}
+    public function __construct(private Files $files, #[Config('agents.recording')]
+ private bool $isOn)
+    {
+        $this->drafts = FilePath::in(Place::Project, self::DRAFTS);
+    }
 
     /**
      * The moment an event happens, as the microseconds since the epoch every event is timed by.
@@ -53,200 +48,147 @@ final readonly class RecordingDrafts
     }
 
     /**
-     * Starts the exchange's draft with its opening, while recording is on.
+     * Opens a recording run of the scenario: the drafts an earlier run left are removed first, so an interrupted run
+     * leaves nothing half written.
      */
-    public function begin(string $exchangeId, RecordingOpening $opening): void
+    public function openRun(string $scenario): void
     {
         if (! $this->isOn) {
             return;
         }
 
+        if ($this->files->isFolder($this->drafts)) {
+            $this->files->deleteFolder($this->drafts, Depth::levels(Depth::LEVEL_LIMIT));
+        }
+
         $this->files->makeFolder($this->drafts, Permissions::Shared);
-        $this->files->write($this->draftOf($exchangeId), json_encode($opening, JSON_THROW_ON_ERROR)."\n");
+        $this->writeRun(['scenario' => $scenario, 'opened_at' => self::moment(), 'closed_at' => null]);
     }
 
     /**
-     * Adds the event to the exchange's draft; an exchange with no draft is not recorded.
+     * Closes the open run; its drafts wait for the finisher.
      */
-    public function add(string $exchangeId, RecordedEvent $event): void
+    public function closeRun(): void
     {
-        $draft = $this->draftOf($exchangeId);
-
-        if (! $this->isRecording($draft)) {
+        if (! $this->isRunOpen()) {
             return;
         }
 
-        $this->files->append($draft, json_encode($event, JSON_THROW_ON_ERROR)."\n");
+        $this->writeRun([...$this->files->readJson($this->runFile()), 'closed_at' => self::moment()]);
+    }
+
+    public function isRunOpen(): bool
+    {
+        $run = $this->runFile();
+
+        return $this->isOn && $this->files->exists($run) && $this->files->readJson($run)['closed_at'] === null;
     }
 
     /**
-     * Writes the recording of the exchange that ended, with fake values, and drops its draft.
+     * Starts the exchange's draft on the wire with its opening, while a run is open; once started it is kept.
      */
-    public function finish(string $exchangeId, int $exitCode): void
+    public function begin(Wire $wire, string $exchange, RecordingOpening $opening): void
     {
-        $draft = $this->draftOf($exchangeId);
+        $draft = $this->draftOf($wire, $exchange);
 
-        if (! $this->isRecording($draft)) {
+        if (! $this->isRunOpen() || $this->files->exists($draft)) {
             return;
         }
 
-        $lines = array_values(array_filter(explode("\n", $this->files->read($draft))));
+        $this->files->makeFolder($this->drafts->child($wire->value), Permissions::Shared);
 
-        $opening = RecordingOpening::fromLine(
-            json_decode((string) array_shift($lines), true, flags: JSON_THROW_ON_ERROR),
-        );
-
-        $events = array_map(
-            fn (string $line) => RecordedEvent::fromLine(json_decode($line, true, flags: JSON_THROW_ON_ERROR)),
-            $lines,
-        );
-
-        $folder = "{$opening->wire}/{$opening->build}/recorded/{$this->nameOf($exchangeId, $opening)}";
-
-        $encoded = json_encode(
-            $this->fixtureOf($opening, $events, $exitCode),
-            JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
-        );
-
-        $this->files->write($this->recordings->child("{$folder}/fixture.json"), $encoded."\n");
-        $this->files->delete($draft);
+        $this->files->locked($this->lockOf($draft), fn () => $this->files->write(
+            $draft,
+            json_encode($opening, JSON_THROW_ON_ERROR)."\n",
+        ));
     }
 
     /**
-     * The recording as the Go mocks read it: the opening, every chunk that came out between two inputs as one, each
-     * input and resize, with fake values in place of real ones, and offsets in nanoseconds.
-     *
-     * @param  list<RecordedEvent>  $events
-     * @return array<string, mixed>
+     * Adds the event to the exchange's draft, one line at a time under its lock; an exchange with no draft is not
+     * recorded.
      */
-    private function fixtureOf(RecordingOpening $opening, array $events, int $exitCode): array
+    public function add(Wire $wire, string $exchange, RecordedEvent $event): void
     {
-        $fakes = new RecordingFakes($opening->environment);
-        $isTerminal = $opening->mode === RecordingMode::Terminal;
-        $output = [];
-        $inputs = [];
-        $resizes = [];
+        $draft = $this->draftOf($wire, $exchange);
 
-        foreach (self::joined($events) as $event) {
-            $offset = ($event->at - $opening->openedAt) * 1000;
-
-            match ($event->type) {
-                RecordedEventType::Printed => $output[] = [
-                    'offset' => $offset,
-                    'stream' => $event->stream,
-                    'bytes' => base64_encode($fakes->replaceIn($event->bytes)),
-                ],
-                RecordedEventType::Typed => $inputs[] = self::inputOf($event, $offset, $fakes),
-                RecordedEventType::Resized => $resizes[] = [
-                    'offset' => $offset,
-                    'geometry' => [
-                        'columns' => $event->columns,
-                        'rows' => $event->rows,
-                    ],
-                ],
-            };
+        if (! $this->isRunOpen() || ! $this->files->exists($draft)) {
+            return;
         }
 
-        return [
-            'driver' => $opening->wire,
-            'driver_version' => $opening->build,
-            'profile' => '',
-            'mode' => $opening->mode->value,
-            'geometry' => [
-                'columns' => $isTerminal ? $opening->columns : 0,
-                'rows' => $isTerminal ? $opening->rows : 0,
-            ],
-            'recorded_at' => $opening->openedOn()->format('Y-m-d\TH:i:s.uP'),
-            'initial_state' => [
-                'working_folder' => $fakes->replaceIn($opening->folder),
-                'arguments' => array_map($fakes->replaceIn(...), $opening->argv),
-                'environment_names' => $opening->environmentNames(),
-            ],
-            'output' => $output,
-            'inputs' => $inputs,
-            'resizes' => $resizes,
-            'exit_code' => $exitCode,
-            'checkpoints' => [],
-            'script_parameters' => [],
-            'expected_keys' => [],
-            'expected_transitions' => [],
-        ];
+        $this->files->locked($this->lockOf($draft), fn () => $this->files->append(
+            $draft,
+            json_encode($event, JSON_THROW_ON_ERROR)."\n",
+        ));
     }
 
     /**
-     * @return array<string, mixed>
+     * The closed run as the finisher takes it: its scenario, its window, and each exchange's opening and events by its
+     * wire.
      */
-    private static function inputOf(RecordedEvent $event, int $offset, RecordingFakes $fakes): array
+    public function run(): RecordingRun
     {
-        if ($event->isSecret) {
-            return [
-                'offset' => $offset,
-                'secret' => true,
-                'length' => 0,
-            ];
-        }
+        $run = $this->files->readJson($this->runFile());
+        $exchanges = [];
 
-        $typed = $fakes->replaceIn($event->bytes);
+        foreach (Wire::cases() as $wire) {
+            $folder = $this->drafts->child($wire->value);
 
-        return [
-            'offset' => $offset,
-            'bytes' => base64_encode($typed),
-            'secret' => false,
-            'length' => strlen($typed),
-        ];
-    }
-
-    /**
-     * The events with every run of chunks that came out on one stream, with nothing between them, as one chunk, so a
-     * value sent in two parts is faked whole.
-     *
-     * @param  list<RecordedEvent>  $events
-     * @return list<RecordedEvent>
-     */
-    private static function joined(array $events): array
-    {
-        $joined = [];
-
-        foreach ($events as $event) {
-            $last = array_key_last($joined);
-
-            if ($last !== null && $joined[$last]->continues($event)) {
-                $joined[$last] = $joined[$last]->followedBy($event);
-
+            if (! $this->files->isFolder($folder)) {
                 continue;
             }
 
-            $joined[] = $event;
+            foreach ($this->files->list($folder, pattern: '*.jsonl')->paths() as $draft) {
+                $lines = array_values(array_filter(explode("\n", $this->files->read($draft))));
+                $first = (string) array_shift($lines);
+                $opening = RecordingOpening::fromLine(json_decode($first, true, flags: JSON_THROW_ON_ERROR));
+
+                $events = array_map(
+                    fn (string $line) => RecordedEvent::fromLine(json_decode($line, true, flags: JSON_THROW_ON_ERROR)),
+                    $lines,
+                );
+
+                $exchanges[] = new CutExchange($opening, $events, null);
+            }
         }
 
-        return $joined;
-    }
-
-    /**
-     * The recording's folder name: when it opened, the first words of its arguments and the exchange.
-     */
-    private function nameOf(string $exchangeId, RecordingOpening $opening): string
-    {
-        $words = array_filter(
-            array_map(fn (string $argument) => ltrim($argument, '-'), array_slice($opening->argv, 1)),
-            fn (string $word) => preg_match('/^[a-z][a-z-]*$/', $word) === 1,
+        return new RecordingRun(
+            (string) $run['scenario'],
+            (int) $run['opened_at'],
+            (int) $run['closed_at'],
+            $exchanges,
         );
-
-        $opened = $opening->openedOn()->format('Ymd-His');
-
-        return implode('-', [$opened, ...array_slice($words, 0, self::NAME_WORD_LIMIT), substr($exchangeId, 0, 8)]);
     }
 
     /**
-     * Whether recording is on and the exchange of the draft is being recorded.
+     * Removes the run's drafts once the finisher wrote its recording.
      */
-    private function isRecording(FilePath $draft): bool
+    public function clear(): void
     {
-        return $this->isOn && $this->files->exists($draft);
+        if ($this->files->isFolder($this->drafts)) {
+            $this->files->deleteFolder($this->drafts, Depth::levels(Depth::LEVEL_LIMIT));
+        }
     }
 
-    private function draftOf(string $exchangeId): FilePath
+    private function draftOf(Wire $wire, string $exchange): FilePath
     {
-        return $this->drafts->child("{$exchangeId}.jsonl");
+        return $this->drafts->child("{$wire->value}/{$exchange}.jsonl");
+    }
+
+    private function lockOf(FilePath $draft): FilePath
+    {
+        return FilePath::in($draft->place, "{$draft->relative}.lock");
+    }
+
+    private function runFile(): FilePath
+    {
+        return $this->drafts->child('run.json');
+    }
+
+    /**
+     * @param  array<string, mixed>  $run
+     */
+    private function writeRun(array $run): void
+    {
+        $this->files->write($this->runFile(), json_encode($run, JSON_THROW_ON_ERROR)."\n");
     }
 }

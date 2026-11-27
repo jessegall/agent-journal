@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Console\Support;
 
 use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
+use App\Files\Values\Depth;
 use App\Values\FilePath;
 use Illuminate\Process\Factory as ProcessFactory;
 
@@ -27,6 +30,35 @@ final readonly class PintFormatter
 
             return $this->files->read($scratch);
         }, '.php');
+    }
+
+    /**
+     * Each source as Pint formats it, by its key, all formatted in one run.
+     *
+     * @param  array<string, string>  $sources
+     * @return array<string, string>
+     */
+    public function formattedAll(array $sources): array
+    {
+        $folder = FilePath::in(Place::Temporary, 'pint-'.bin2hex(random_bytes(6)));
+        $this->files->makeFolder($folder, Permissions::Shared);
+        $files = [];
+
+        foreach (array_keys($sources) as $index => $key) {
+            $files[$key] = $folder->child("{$index}.php");
+            $this->files->write($files[$key], $sources[$key]);
+        }
+
+        try {
+            $this->processes->newPendingProcess()->path(base_path())->run([
+                'vendor/bin/pint',
+                $this->files->realPath($folder),
+            ]);
+
+            return array_map(fn (FilePath $file) => $this->files->read($file), $files);
+        } finally {
+            $this->files->deleteFolder($folder, Depth::levels(Depth::LEVEL_LIMIT));
+        }
     }
 
     /**

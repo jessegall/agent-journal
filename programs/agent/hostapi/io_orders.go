@@ -55,7 +55,6 @@ func (input ProcessInput) WriteKeys(_ context.Context, order Order, write KeyWri
 		if err := input.table.Write(order.ProcessID, write.Bytes); err != nil {
 			return KeysWritten{}, err
 		}
-		input.outputs.Typed(order.ProcessID, write.Bytes, false)
 		return KeysWritten{InputGeneration: screen.RaiseInputGeneration()}, nil
 	}
 	if write.IfRows == nil || write.IfInputGeneration == nil {
@@ -68,12 +67,10 @@ func (input ProcessInput) WriteKeys(_ context.Context, order Order, write KeyWri
 	if err := input.table.Write(order.ProcessID, write.Bytes); err != nil {
 		return KeysWritten{}, err
 	}
-	input.outputs.Typed(order.ProcessID, write.Bytes, false)
 	return seen, nil
 }
 
 func (input ProcessInput) WriteStdin(_ context.Context, order Order, write StdinWrite) (Nothing, error) {
-	input.outputs.Typed(order.ProcessID, write.Bytes, false)
 	return Nothing{}, input.table.Write(order.ProcessID, write.Bytes)
 }
 
@@ -87,21 +84,4 @@ func (input ProcessInput) Stream(_ context.Context, order Order, plan StreamPlan
 
 func (input ProcessInput) Snapshot(_ context.Context, order Order) (Nothing, error) {
 	return Nothing{}, input.outputs.Snapshot(order.ProcessID)
-}
-
-func (input ProcessInput) Record(_ context.Context, order Order) (Nothing, error) {
-	plan, err := input.table.PlanOf(order.ProcessID)
-	if err != nil {
-		return Nothing{}, err
-	}
-	input.outputs.Record(order.ProcessID, plan)
-	return Nothing{}, nil
-}
-
-func (input ProcessInput) StopRecording(_ context.Context, order Order) (RecordingStopped, error) {
-	folder, err := input.outputs.StopRecording(order.ProcessID)
-	if err != nil {
-		return RecordingStopped{}, err
-	}
-	return RecordingStopped{Folder: folder}, nil
 }

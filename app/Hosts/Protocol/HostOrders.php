@@ -342,46 +342,6 @@ final readonly class HostOrders
     }
 
     /**
-     * Places the record order on the process, to be carried out within the seconds.
-     *
-     * @throws HostProtocolRefused
-     * @throws WorkerFenced
-     */
-    public function record(
-        string $processId,
-        HostOrderSource $source,
-        int $expirySeconds = HostOrderPlacement::ORDER_SECONDS,
-    ): HostOrder {
-        return $this->placement->forProcess(
-            $processId,
-            $source,
-            HostOrderType::Record,
-            [],
-            $expirySeconds,
-        );
-    }
-
-    /**
-     * Places the stop_recording order on the process, to be carried out within the seconds.
-     *
-     * @throws HostProtocolRefused
-     * @throws WorkerFenced
-     */
-    public function stopRecording(
-        string $processId,
-        HostOrderSource $source,
-        int $expirySeconds = HostOrderPlacement::ORDER_SECONDS,
-    ): HostOrder {
-        return $this->placement->forProcess(
-            $processId,
-            $source,
-            HostOrderType::StopRecording,
-            [],
-            $expirySeconds,
-        );
-    }
-
-    /**
      * Places the upgrade order on the host.
      *
      * @throws HostProtocolRefused

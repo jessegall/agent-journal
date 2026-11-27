@@ -36,14 +36,13 @@
         "remove": { "scope": "host", "process_type": "any", "ends_process": true, "is_repeatable": true, "payload": "remove_plan", "reply": "nothing" },
         "remove_session": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "session_removal", "reply": "nothing" },
         "read_project": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "project_read", "reply": "nothing" },
-        "record": { "scope": "process", "process_type": "any", "payload": null, "reply": "nothing" },
-        "stop_recording": { "scope": "process", "process_type": "any", "is_repeatable": true, "payload": null, "reply": "recording_stopped" },
         "upgrade": { "scope": "host", "process_type": "any", "payload": "upgrade_plan", "reply": "upgrade_started" }
     },
     "placeholder_kinds": [
         "folder",
         "host"
     ],
+    "refused_answer_names": ["refusal", "reason"],
     "host_names": [
         "JOURNAL_URL",
         "INSTALLATION",
@@ -207,7 +206,6 @@
         "fenced_result": { "status": "string", "started_at": "string", "ended_at": "string|null", "exit_code": "int|null", "signal": "string|null", "summary": "string", "output": "string|null", "truncated": "bool" },
         "images_allowed": { "allowed": "int" },
         "folder_use_reply": { "is_bound": "bool", "reason": "string?" },
-        "recording_stopped": { "folder": "string" },
         "upgrade_started": { "release": "string" },
         "remove_plan": { "container": "string" },
         "session_removal": { "network": "string", "session": "string" },

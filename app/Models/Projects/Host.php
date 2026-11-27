@@ -22,6 +22,7 @@ use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
 use App\Exceptions\StartRefused;
 use App\Hosts\Data\FailedHostCallData;
+use App\Hosts\OrderSignature;
 use App\Hosts\Protocol\HostOrderType;
 use App\Models\Hosts\HostOrder;
 use App\Models\Support\Accessor;
@@ -478,16 +479,15 @@ final class Host extends JournalModel implements EventSource, ReadableModel
      */
     public function signOrder(HostOrder $order): string
     {
-        $lines = implode("\n", [
+        return OrderSignature::of(
             $order->id,
-            (string) $order->sequence,
+            $order->sequence,
             $order->type->value,
             (string) $order->host_process_id,
-            hash('sha256', $order->payload),
+            $order->payload,
             $order->expires_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
-        ]);
-
-        return hash_hmac('sha256', $lines, (string) $this->order_secret);
+            (string) $this->order_secret,
+        );
     }
 
     /**

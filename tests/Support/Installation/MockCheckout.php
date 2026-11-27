@@ -17,6 +17,7 @@ final readonly class MockCheckout
 {
     private const array SCRIPTS = [
         'scripts/local-host.sh',
+        'scripts/agent-image-programs.sh',
         'scripts/dev-watch-host.sh',
         'scripts/prepare-hook-test-database.sh',
     ];

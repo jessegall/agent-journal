@@ -8,8 +8,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"journal-agent/recording"
 )
 
 // fakeClock is a host clock a test moves by hand.
@@ -150,20 +148,6 @@ func TestAnOutputOverTheLimitIsSplitIntoPosts(t *testing.T) {
 	}
 }
 
-func TestARecordingIsSavedAsAFixture(t *testing.T) {
-	outputs, _, _ := terminalOutputs(t)
-	outputs.Record("p", OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}})
-	outputs.Printed("p", []byte("hello"))
-
-	folder, err := outputs.StopRecording("p")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := loadFixture(folder); err != nil {
-		t.Fatalf("the recording does not load as a fixture: %v", err)
-	}
-}
-
 func keysOrder(t *testing.T, write KeyWrite) Order {
 	t.Helper()
 	payload, err := json.Marshal(write)
@@ -182,12 +166,8 @@ func (discardingTerminal) Close() error                    { return nil }
 func (discardingTerminal) Resize(uint16, uint16) error     { return nil }
 func (discardingTerminal) Size() (uint16, uint16, error)   { return 40, 5, nil }
 
-func loadFixture(folder string) (recording.Fixture, error) {
-	return recording.Load(folder)
-}
-
-// A screen the journal named as secret leaves as a shielded frame with no rows, and no recording keeps its bytes.
-func TestAShieldedScreenLeavesWithoutItsRowsAndIsNotRecorded(t *testing.T) {
+// A screen the journal named as secret leaves as a shielded frame with no rows.
+func TestAShieldedScreenLeavesWithoutItsRows(t *testing.T) {
 	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
@@ -196,31 +176,19 @@ func TestAShieldedScreenLeavesWithoutItsRowsAndIsNotRecorded(t *testing.T) {
 	if err := outputs.Open("p", plan); err != nil {
 		t.Fatal(err)
 	}
-	outputs.Record("p", plan)
 	outputs.Printed("p", []byte("Use this API key?\r\nCUSTOM API KEY: sk-1"))
 	screen, _ := outputs.ScreenOf("p")
 
 	frame := screen.Frame(outputs.monotonic())
-	folder, err := outputs.StopRecording("p")
-	if err != nil {
-		t.Fatal(err)
-	}
-	fixture, err := loadFixture(folder)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	if !frame.IsShielded || len(frame.Rows) != 0 || len(fixture.Output) != 0 {
-		t.Fatalf("the secret screen left with %d rows, shielded %v, and %d recorded chunks",
-			len(frame.Rows), frame.IsShielded, len(fixture.Output))
+	if !frame.IsShielded || len(frame.Rows) != 0 {
+		t.Fatalf("the secret screen left with %d rows, shielded %v", len(frame.Rows), frame.IsShielded)
 	}
 }
 
-// Nothing of a private entry leaves: no frame between open_private and the redraw after close_private, no recorded
-// byte, and the value pulled from the journal is written without being recorded.
+// Nothing of a private entry leaves: no frame between open_private and the redraw after close_private.
 func TestAPrivateEntrySendsNoFrameUntilTheRedrawAfterItCloses(t *testing.T) {
 	outputs, _, posted := terminalOutputs(t)
-	outputs.Record("p", OpenPlan{Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}})
 	if err := outputs.OpenPrivate("p"); err != nil {
 		t.Fatal(err)
 	}
@@ -231,22 +199,9 @@ func TestAPrivateEntrySendsNoFrameUntilTheRedrawAfterItCloses(t *testing.T) {
 	sentWhilePrivate := len(posted.outputs)
 	outputs.Printed("p", []byte("\x1b[2J\x1b[Hready"))
 	_ = outputs.Snapshot("p")
-	folder, err := outputs.StopRecording("p")
-	if err != nil {
-		t.Fatal(err)
-	}
-	fixture, err := loadFixture(folder)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	recorded := ""
-	for _, chunk := range fixture.Output {
-		recorded += string(chunk.Bytes)
-	}
-	if sentWhilePrivate != 0 || len(posted.outputs) != 1 || strings.Contains(recorded, "Key") {
-		t.Fatalf("a private entry sent %d frames, %d after its redraw, and recorded %q",
-			sentWhilePrivate, len(posted.outputs), recorded)
+	if sentWhilePrivate != 0 || len(posted.outputs) != 1 {
+		t.Fatalf("a private entry sent %d frames, %d after its redraw", sentWhilePrivate, len(posted.outputs))
 	}
 }
 

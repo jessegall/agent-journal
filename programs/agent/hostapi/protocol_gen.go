@@ -84,8 +84,6 @@ var OrderTypes = map[string]OrderTraits{
 	"remove":         {HostWide: true, Repeatable: true},
 	"remove_session": {HostWide: true, Repeatable: true},
 	"read_project":   {HostWide: true, Repeatable: true},
-	"record":         {HostWide: false, Repeatable: false},
-	"stop_recording": {HostWide: false, Repeatable: true},
 	"upgrade":        {HostWide: true, Repeatable: false},
 }
 
@@ -583,16 +581,6 @@ func (value FolderUseReply) Validate() error {
 	return nil
 }
 
-// RecordingStopped is the recording_stopped of host protocol 1.
-type RecordingStopped struct {
-	Folder string `json:"folder"`
-}
-
-// Validate answers which value of the RecordingStopped the protocol does not know, by its field.
-func (value RecordingStopped) Validate() error {
-	return nil
-}
-
 // UpgradeStarted is the upgrade_started of host protocol 1.
 type UpgradeStarted struct {
 	Release string `json:"release"`
@@ -713,8 +701,6 @@ type OrderHandlers interface {
 	Remove(ctx context.Context, order Order, payload RemovePlan) (Nothing, error)
 	RemoveSession(ctx context.Context, order Order, payload SessionRemoval) (Nothing, error)
 	ReadProject(ctx context.Context, order Order, payload client.ProjectRead) (Nothing, error)
-	Record(ctx context.Context, order Order) (Nothing, error)
-	StopRecording(ctx context.Context, order Order) (RecordingStopped, error)
 	Upgrade(ctx context.Context, order Order, payload UpgradePlan) (UpgradeStarted, error)
 }
 
@@ -743,8 +729,6 @@ func Executors(handlers OrderHandlers) map[string]Executor {
 	executors["remove"] = carrying(handlers.Remove)
 	executors["remove_session"] = carrying(handlers.RemoveSession)
 	executors["read_project"] = carrying(handlers.ReadProject)
-	executors["record"] = carryingNothing(handlers.Record)
-	executors["stop_recording"] = carryingNothing(handlers.StopRecording)
 	executors["upgrade"] = carrying(handlers.Upgrade)
 	return executors
 }

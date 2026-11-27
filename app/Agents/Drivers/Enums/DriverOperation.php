@@ -19,8 +19,6 @@ enum DriverOperation: string
     case Interrupt = 'interrupt';
     case Stop = 'stop';
     case KeyScript = 'key_script';
-    case StartRecording = 'start_recording';
-    case StopRecording = 'stop_recording';
     case Navigate = 'navigate';
     case TakeControl = 'take_control';
     case CancelTake = 'cancel_take';
@@ -44,8 +42,6 @@ enum DriverOperation: string
         return [
             self::Stop,
             self::Interrupt,
-            self::StartRecording,
-            self::StopRecording,
             self::ResendReadiness,
             ...self::terminalControl(),
         ];

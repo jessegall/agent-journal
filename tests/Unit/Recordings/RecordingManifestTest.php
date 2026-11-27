@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Recordings;
+
+use App\Hosts\Protocol\HostProtocol;
+use App\Recordings\AgentImagePrograms;
+use App\Recordings\Enums\StaleReason;
+use App\Recordings\RecordingManifest;
+use Tests\TestCase;
+
+/**
+ * A recording is stale for the first of its reasons that holds: another format, an older host protocol, a changed
+ * scenario, or changed agent image programs; the digest of those programs follows the files the image runs only.
+ */
+final class RecordingManifestTest extends TestCase
+{
+    public function test_each_reason_makes_a_recording_stale_and_a_fresh_one_has_none(): void
+    {
+        $manifest = RecordingManifest::of('scenario-1', 'claude-code', '2.1.323', 'programs-1', '2026-11-27', [
+            '01-terminal',
+        ]);
+        $written = $manifest->jsonSerialize();
+        $older = RecordingManifest::fromFile([...$written, 'protocol' => HostProtocol::VERSION - 1]);
+        $otherFormat = RecordingManifest::fromFile([...$written, 'format' => RecordingManifest::FORMAT - 1]);
+
+        $this->assertSame(
+            [null, StaleReason::Scenario, StaleReason::ImagePrograms, StaleReason::Protocol, StaleReason::Format],
+            [
+                $manifest->staleReasonFor('scenario-1', 'programs-1'),
+                $manifest->staleReasonFor('scenario-2', 'programs-1'),
+                $manifest->staleReasonFor('scenario-1', 'programs-2'),
+                $older->staleReasonFor('scenario-1', 'programs-1'),
+                $otherFormat->staleReasonFor('scenario-1', 'programs-1'),
+            ],
+        );
+        $this->assertSame("the agent image's programs changed", StaleReason::ImagePrograms->value);
+    }
+
+    public function test_the_programs_digest_follows_the_init_and_not_the_hosts_own_packages(): void
+    {
+        $programs = $this->app->make(AgentImagePrograms::class);
+        $before = $programs->hash();
+
+        $init = base_path('programs/agent/bootstrap/agent_image_programs_probe.go');
+        $host = base_path('programs/agent/hostapi/agent_image_programs_probe.go');
+
+        try {
+            file_put_contents($host, "package hostapi\n");
+            $afterHost = $programs->hash();
+            file_put_contents($init, "package bootstrap\n");
+            $afterInit = $programs->hash();
+        } finally {
+            @unlink($host);
+            @unlink($init);
+        }
+
+        $this->assertSame([true, false], [$before === $afterHost, $before === $afterInit]);
+    }
+}

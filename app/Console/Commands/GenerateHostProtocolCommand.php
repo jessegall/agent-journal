@@ -7,8 +7,7 @@ namespace App\Console\Commands;
 use App\Console\Support\PintFormatter;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
-use App\Hosts\Data\HostProtocolData;
-use App\Hosts\HostProtocolSources;
+use App\Hosts\HostProtocolCheck;
 use App\Values\FilePath;
 use Illuminate\Console\Command;
 
@@ -25,58 +24,37 @@ final class GenerateHostProtocolCommand extends Command
 
     protected $description = 'Generate the Go and PHP code of the host protocol from protocol/host.json';
 
-    public function handle(PintFormatter $pint, Files $files): int
+    public function handle(PintFormatter $pint, Files $files, HostProtocolCheck $check): int
     {
-        $protocolFile = FilePath::in(Place::Project, HostProtocolSources::PROTOCOL_FILE);
-        $sources = new HostProtocolSources(HostProtocolData::from($files->readJson($protocolFile)))->sources();
-        $targets = [];
+        $sources = $check->sources();
+        $into = $this->option('into');
+        $place = is_string($into) ? Place::Temporary : Place::Project;
+        $folder = is_string($into) ? $into : '';
 
-        foreach (array_keys($sources) as $relative) {
-            $targets[$relative] = $this->target($relative);
-        }
+        if ($this->option('check')) {
+            $drifted = $check->drifted($place, $folder);
 
-        if (! $this->option('check')) {
-            foreach ($sources as $relative => $source) {
-                $files->write($targets[$relative], $source);
+            if ($drifted !== []) {
+                $this->error("The generated file {$drifted[0]} differs: run php artisan journal:host-protocol.");
+
+                return self::FAILURE;
             }
-
-            $phpTargets = array_filter(
-                $targets,
-                fn (string $relative) => str_ends_with($relative, '.php'),
-                ARRAY_FILTER_USE_KEY,
-            );
-
-            $pint->formatInPlace(array_values(array_map(
-                fn (FilePath $target) => $files->realPath($target),
-                $phpTargets,
-            )));
-
-            $this->line(count($sources).' generated files written.');
 
             return self::SUCCESS;
         }
 
+        $targets = [];
+
         foreach ($sources as $relative => $source) {
-            $expected = str_ends_with($relative, '.php') ? $pint->formatted($source) : $source;
-
-            if (! $files->exists($targets[$relative]) || $expected !== $files->read($targets[$relative])) {
-                $this->error("The generated file {$relative} differs: run php artisan journal:host-protocol.");
-
-                return self::FAILURE;
-            }
+            $targets[$relative] = FilePath::in($place, ltrim("{$folder}/{$relative}", '/'));
+            $files->write($targets[$relative], $source);
         }
+
+        $isPhp = fn (string $relative) => str_ends_with($relative, '.php');
+        $phpTargets = array_filter($targets, $isPhp, ARRAY_FILTER_USE_KEY);
+        $pint->formatInPlace(array_values(array_map(fn (FilePath $target) => $files->realPath($target), $phpTargets)));
+        $this->line(count($sources).' generated files written.');
 
         return self::SUCCESS;
-    }
-
-    private function target(string $relative): FilePath
-    {
-        $into = $this->option('into');
-
-        if (! is_string($into)) {
-            return FilePath::in(Place::Project, $relative);
-        }
-
-        return FilePath::in(Place::Temporary, "{$into}/{$relative}");
     }
 }

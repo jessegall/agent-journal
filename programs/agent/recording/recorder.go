@@ -1,97 +1,54 @@
 package recording
 
-import (
-	"regexp"
-	"sync"
-	"time"
+import "encoding/json"
+
+// Wire is a wire between the journal and the outside whose calls a recording keeps, as the PHP App\Recordings\Enums\Wire.
+type Wire string
+
+// The wires a recording keeps.
+const (
+	WireHost   Wire = "host"
+	WireHooks  Wire = "hooks"
+	WireAgent  Wire = "agent"
+	WireDocker Wire = "docker"
+	WireDriver Wire = "driver"
 )
 
-// emailAddress matches an address a program prints, such as the signed-in account on a status screen; a recording
-// keeps none (fixtures are committed evidence).
-var emailAddress = regexp.MustCompile(`[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}`)
-
-// Recorder collects the events of a running session into a fixture, safely from several goroutines.
-type Recorder struct {
-	mutex   sync.Mutex
-	started time.Time
-	now     func() time.Time
-	fixture Fixture
-	// suppressed is a recorder a capture barrier stopped: it keeps no bytes, lengths or times.
-	suppressed bool
+// Opening is how a recorded exchange opened, the first line of its draft, as the PHP RecordingOpening writes it.
+type Opening struct {
+	Wire        Wire              `json:"wire"`
+	Exchange    string            `json:"exchange"`
+	Mode        string            `json:"mode"`
+	Argv        []string          `json:"argv"`
+	Environment map[string]string `json:"environment"`
+	Inherited   []string          `json:"inherited"`
+	Folder      string            `json:"folder"`
+	Columns     int               `json:"columns"`
+	Rows        int               `json:"rows"`
+	Image       string            `json:"image"`
+	OpenedAt    int64             `json:"openedAt"`
 }
 
-// Suppress stops the recorder for private entry: nothing of what follows is kept, not even its length or time.
-func (recorder *Recorder) Suppress() bool {
-	recorder.mutex.Lock()
-	defer recorder.mutex.Unlock()
-
-	recorder.suppressed = true
-
-	return true
+// Event is one line of a draft after its opening, as the PHP RecordedEvent writes it: typed, printed, resized,
+// asked or answered, timed in microseconds since the epoch.
+type Event struct {
+	Type    string          `json:"type"`
+	At      int64           `json:"at"`
+	Bytes   string          `json:"bytes"`
+	Stream  string          `json:"stream"`
+	Secret  bool            `json:"secret"`
+	Columns int             `json:"columns"`
+	Rows    int             `json:"rows"`
+	Call    json.RawMessage `json:"call"`
 }
 
-// NewRecorder starts a recording at the clock's current time.
-func NewRecorder(fixture Fixture, now func() time.Time) *Recorder {
-	started := now()
-	fixture.RecordedAt = started
-
-	return &Recorder{started: started, now: now, fixture: fixture}
-}
-
-// Output records bytes the program wrote on a stream.
-func (recorder *Recorder) Output(stream string, bytes []byte) {
-	recorder.mutex.Lock()
-	defer recorder.mutex.Unlock()
-
-	if recorder.suppressed {
-		return
-	}
-
-	redacted := emailAddress.ReplaceAllFunc(append([]byte(nil), bytes...), func(address []byte) []byte {
-		return []byte("<redacted>")
-	})
-	recorder.fixture.Output = append(recorder.fixture.Output, OutputChunk{Offset: recorder.offset(), Stream: stream, Bytes: redacted})
-}
-
-// Input records what the user typed; secret input keeps only its length.
-func (recorder *Recorder) Input(bytes []byte, secret bool) {
-	recorder.mutex.Lock()
-	defer recorder.mutex.Unlock()
-
-	if recorder.suppressed {
-		return
-	}
-
-	event := InputEvent{Offset: recorder.offset(), Secret: secret, Length: len(bytes)}
-	if !secret {
-		event.Bytes = append([]byte(nil), bytes...)
-	}
-
-	recorder.fixture.Inputs = append(recorder.fixture.Inputs, event)
-}
-
-// Resize records a new terminal size.
-func (recorder *Recorder) Resize(geometry Geometry) {
-	recorder.mutex.Lock()
-	defer recorder.mutex.Unlock()
-
-	if recorder.suppressed {
-		return
-	}
-
-	recorder.fixture.Resizes = append(recorder.fixture.Resizes, ResizeEvent{Offset: recorder.offset(), Geometry: geometry})
-}
-
-// Finish records the exit code and gives the fixture.
-func (recorder *Recorder) Finish(exitCode int) Fixture {
-	recorder.mutex.Lock()
-	defer recorder.mutex.Unlock()
-
-	recorder.fixture.ExitCode = exitCode
-
-	return recorder.fixture
-}
-
-func (recorder *Recorder) offset() time.Duration {
-	return recorder.now().Sub(recorder.started)
+// Recorder keeps what crosses one wire while recording is on, an exchange at a time; the wire's tap calls nothing
+// else.
+type Recorder interface {
+	Wire() Wire
+	// Begin opens the exchange's draft, before anything crosses the wire.
+	Begin(exchange string, opening Opening) error
+	// Add adds what crossed: typed, printed, resized, asked or answered.
+	Add(exchange string, event Event) error
+	End(exchange string, exitCode int) error
 }

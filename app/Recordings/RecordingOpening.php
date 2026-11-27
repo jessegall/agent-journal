@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Recordings;
 
+use App\Hosts\Protocol\Data\HostOpenPlanData;
+use App\Hosts\Protocol\HostProcessType;
 use App\Recordings\Enums\RecordingMode;
+use App\Recordings\Enums\Wire;
 use Carbon\CarbonImmutable;
 use JsonSerializable;
 
 /**
- * How a recorded exchange opened: the wire and the build it ran on, such as claude-code and 2.1.323, over pipes or in
- * a terminal of a size, the argv, folder and environment it started with, and the moment, in microseconds since the
- * epoch, its events are timed from. Its recording is kept under <wire>/<build> of the recordings.
+ * How a recorded exchange opened: its wire and name, as calls, pipes or a terminal of a size, the argv, folder,
+ * environment and image a program started with, and the moment its events are timed from, in microseconds.
  */
 final readonly class RecordingOpening implements JsonSerializable
 {
@@ -21,54 +23,54 @@ final readonly class RecordingOpening implements JsonSerializable
      * @param  list<string>  $inherited  the names of the variables it inherits
      */
     private function __construct(
-        public string $wire,
-        public string $build,
+        public Wire $wire,
+        public string $exchange,
         public RecordingMode $mode,
         public array $argv,
         public array $environment,
-        public string $folder,
+        public array $inherited,
+        public string|null $folder,
         public int $columns,
         public int $rows,
-        public array $inherited,
+        public string|null $image,
         public int $openedAt,
     ) {}
 
     /**
-     * An exchange that opens now; a terminal's size is given, an exchange over pipes has none.
-     *
-     * @param  list<string>  $argv
-     * @param  list<string>  $environment  each variable as NAME=value
-     * @param  list<string>  $inherited
+     * An exchange of calls on the wire that opens now, such as the host's calls of one recording run.
      */
-    public static function now(
-        string $wire,
-        string $build,
-        RecordingMode $mode,
-        array $argv,
-        array $environment,
-        string $folder,
-        int $columns = 0,
-        int $rows = 0,
-        array $inherited = [],
-    ): self {
+    public static function ofCalls(Wire $wire, string $exchange): self
+    {
+        return new self($wire, $exchange, RecordingMode::Calls, [], [], [], null, 0, 0, null, self::moment());
+    }
+
+    /**
+     * A driver program's exchange that opens at the moment, as the plan the host was ordered starts it: in its
+     * container's image, a terminal of the plan's size or pipes.
+     */
+    public static function ofProcess(string $exchange, HostOpenPlanData $plan, int $openedAt): self
+    {
         $named = [];
 
-        foreach ($environment as $entry) {
+        foreach ($plan->environment as $entry) {
             [$name, $value] = explode('=', $entry, 2) + [1 => ''];
             $named[$name] = $value;
         }
 
+        $isTerminal = $plan->type === HostProcessType::Terminal;
+
         return new self(
-            $wire,
-            $build,
-            $mode,
-            $argv,
+            Wire::Driver,
+            $exchange,
+            $isTerminal ? RecordingMode::Terminal : RecordingMode::Process,
+            $plan->argv,
             $named,
-            $folder,
-            $columns,
-            $rows,
-            $inherited,
-            self::microsecondsOf(CarbonImmutable::now()),
+            $plan->inherit,
+            $plan->folder,
+            $isTerminal ? $plan->size->columns : 0,
+            $isTerminal ? $plan->size->rows : 0,
+            $plan->container?->image,
+            $openedAt,
         );
     }
 
@@ -78,17 +80,33 @@ final readonly class RecordingOpening implements JsonSerializable
     public static function fromLine(array $line): self
     {
         return new self(
-            (string) $line['wire'],
-            (string) $line['build'],
+            Wire::from((string) $line['wire']),
+            (string) $line['exchange'],
             RecordingMode::from((string) $line['mode']),
             array_values(array_map(strval(...), (array) $line['argv'])),
             array_map(strval(...), (array) $line['environment']),
-            (string) $line['folder'],
+            array_values(array_map(strval(...), (array) $line['inherited'])),
+            $line['folder'] === null ? null : (string) $line['folder'],
             (int) $line['columns'],
             (int) $line['rows'],
-            array_values(array_map(strval(...), (array) $line['inherited'])),
+            $line['image'] === null ? null : (string) $line['image'],
             (int) $line['openedAt'],
         );
+    }
+
+    /**
+     * The opening as a recording keeps it: its argv and folder faked, and each variable by its name only, as
+     * {env:NAME}, never its value.
+     */
+    public function fakedBy(RecordingFakes $fakes): self
+    {
+        $names = array_map(strval(...), array_keys($this->environment));
+
+        return clone ($this, [
+            'argv' => array_map($fakes->replaceIn(...), $this->argv),
+            'folder' => $this->folder === null ? null : $fakes->replaceIn($this->folder),
+            'environment' => array_combine($names, array_map(fn (string $name) => "{env:{$name}}", $names)),
+        ]);
     }
 
     /**
@@ -124,16 +142,22 @@ final readonly class RecordingOpening implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'wire' => $this->wire,
-            'build' => $this->build,
+            'wire' => $this->wire->value,
+            'exchange' => $this->exchange,
             'mode' => $this->mode->value,
             'argv' => $this->argv,
             'environment' => $this->environment,
+            'inherited' => $this->inherited,
             'folder' => $this->folder,
             'columns' => $this->columns,
             'rows' => $this->rows,
-            'inherited' => $this->inherited,
+            'image' => $this->image,
             'openedAt' => $this->openedAt,
         ];
+    }
+
+    private static function moment(): int
+    {
+        return self::microsecondsOf(CarbonImmutable::now());
     }
 }

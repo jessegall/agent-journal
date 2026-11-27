@@ -55,6 +55,7 @@ final readonly class HostProtocolSources
         $terminal = $this->caseList(fn (HostOrderTraitsData $order) => $order->processType === 'terminal', 12);
         $pipe = $this->caseList(fn (HostOrderTraitsData $order) => $order->processType === 'pipe', 12);
         $replies = $this->replyArms();
+        $payloads = $this->payloadArms();
         $generated = self::GENERATED;
         $source = self::PROTOCOL_FILE;
 
@@ -121,6 +122,18 @@ final readonly class HostProtocolSources
                 }
 
                 /**
+                 * The Data of the payload this order carries.
+                 *
+                 * @return class-string<\\Spatie\\LaravelData\\Data>
+                 */
+                public function payloadData(): string
+                {
+                    return match (\$this) {
+            {$payloads}
+                    };
+                }
+
+                /**
                  * The Data a done answer of this order carries as its facts.
                  *
                  * @return class-string<\\Spatie\\LaravelData\\Data>
@@ -170,6 +183,7 @@ final readonly class HostProtocolSources
         $version = $this->protocol->version;
         $hostNames = $this->phpList($this->protocol->hostNames);
         $refusedFields = $this->phpList($this->protocol->containedPlan->refusedFields);
+        $refusedAnswerNames = $this->phpList($this->protocol->refusedAnswerNames);
 
         $grantEnvironment = implode("\n", array_map(
             fn (string $name) => "                    '{$name}',",
@@ -216,6 +230,11 @@ final readonly class HostProtocolSources
                 ];
 
                 /**
+                 * The fields a refused answer names, so the journal can say why the host refused.
+                 */
+                public const array REFUSED_ANSWER_NAMES = [{$refusedAnswerNames}];
+
+                /**
                  * What journal-hook takes after its own name, in order.
                  */
                 public const array HOOK_ARGUMENTS = [{$hookArguments}];
@@ -238,6 +257,25 @@ final readonly class HostProtocolSources
 
         return implode("\n", array_map(
             fn (string $reply, array $orders) => $this->replyArm($orders, "Data\\{$php->dataName($reply)}::class"),
+            array_keys($cases),
+            $cases,
+        ));
+    }
+
+    /**
+     * The arms of HostOrderType::payloadData: the cases of each payload type on one arm, under the match.
+     */
+    private function payloadArms(): string
+    {
+        $php = new PhpProtocolSources($this->protocol);
+        $cases = [];
+
+        foreach ($this->protocol->orders as $type => $traits) {
+            $cases[$traits->payload ?? 'nothing'][] = 'self::'.Str::studly($type);
+        }
+
+        return implode("\n", array_map(
+            fn (string $payload, array $orders) => $this->replyArm($orders, "Data\\{$php->dataName($payload)}::class"),
             array_keys($cases),
             $cases,
         ));
