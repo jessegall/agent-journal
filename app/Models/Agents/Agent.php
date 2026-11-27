@@ -139,6 +139,9 @@ final class Agent extends JournalModel implements
         $this->raise(new AgentRuntimesFenced($this->id, $this->runtime_generation));
     }
 
+    /**
+     * The agent is retired for good at the time given; it never starts again.
+     */
     public function retireAt(CarbonInterface $retiredAt): void
     {
         $this->retired_at = CarbonImmutable::instance($retiredAt);

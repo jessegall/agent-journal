@@ -151,6 +151,9 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
         $this->raise(new HelperJobAttached($this->id, $sessionId));
     }
 
+    /**
+     * The helper's job takes the steering given beside the steering it already has.
+     */
     public function addSteering(string $steering): void
     {
         $this->moveTo($this->status);
@@ -176,6 +179,9 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
         $this->raise(new HelperJobFinished($this->id, $reference));
     }
 
+    /**
+     * The helper's job is cancelled.
+     */
     public function cancel(): void
     {
         $this->moveTo(JobStatus::Cancelled);
@@ -194,6 +200,9 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
         $this->raise(new HelperJobHeld($this->id));
     }
 
+    /**
+     * The helper stopped before its job was done, with the evidence of its stop.
+     */
     public function markUnfinished(string $stopEvidenceReference): void
     {
         $this->moveTo(JobStatus::Unfinished);
@@ -218,16 +227,25 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
         );
     }
 
+    /**
+     * Whether the job was dispatched with the payload of the digest given.
+     */
     public function wasDispatchedAs(string $payloadDigest): bool
     {
         return $this->payload_digest === $payloadDigest;
     }
 
+    /**
+     * The job as a record that work can be assigned to.
+     */
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::linkType(), $this->id);
     }
 
+    /**
+     * Whether the job reached a final state.
+     */
     public function isFinished(): bool
     {
         return $this->status->isFinal();

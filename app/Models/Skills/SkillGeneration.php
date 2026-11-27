@@ -86,6 +86,9 @@ final class SkillGeneration extends JournalModel implements EventSource, Readabl
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The generation of skills is retired; a newer one serves in its place.
+     */
     public function retire(): void
     {
         $this->status = GenerationStatus::Retired;

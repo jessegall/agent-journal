@@ -122,6 +122,9 @@ final class TextUpload extends JournalModel implements EventSource, ProjectOwned
         $this->raise(new TextUploadChunkCounted($this->id));
     }
 
+    /**
+     * The complete upload is sealed so nothing more is added; sealing it again changes nothing.
+     */
     public function seal(): void
     {
         if ($this->sealed_at !== null) {
@@ -135,6 +138,9 @@ final class TextUpload extends JournalModel implements EventSource, ProjectOwned
         $this->raise(new TextUploadSealed($this->id));
     }
 
+    /**
+     * The upload is used once as the type given, and its text is handed back.
+     */
     public function consume(UploadType $type): string
     {
         $this->assertConsumableAs($type);

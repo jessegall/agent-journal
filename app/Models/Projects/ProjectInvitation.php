@@ -88,6 +88,9 @@ final class ProjectInvitation extends JournalModel implements EventSource, Reada
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The invitation is revoked now; it can no longer be accepted.
+     */
     public function revoke(): void
     {
         $this->revoked_at = CarbonImmutable::now();

@@ -90,6 +90,9 @@ final class DockPlacement extends JournalModel implements EventSource, ProjectOw
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The placement is removed from its chat's dock.
+     */
     public function remove(): void
     {
         $this->deleteAndAssert();

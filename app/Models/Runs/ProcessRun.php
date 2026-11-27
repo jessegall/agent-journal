@@ -179,9 +179,8 @@ final class ProcessRun extends JournalModel implements EventSource, ProjectOwned
     }
 
     /**
-     * Consumes the run for the request key and answers its event key, derived from the run and the key so the same
-     * key gets the same event key again while the host has sent nothing for the run; a run consumed under another key,
-     * or one its host already reported on, answers null and starts nothing again.
+     * Consumes the run for the request key and answers its event key, the same again for the same key; another key,
+     * or a run its host already reported on, answers null.
      */
     public function consumeFor(string $requestKey, string $appKey): string|null
     {
@@ -251,6 +250,9 @@ final class ProcessRun extends JournalModel implements EventSource, ProjectOwned
         $this->raise(new ProcessRunLost($this->id));
     }
 
+    /**
+     * The run was stopped, for the reason given.
+     */
     public function markStopped(string $reason): void
     {
         $this->lifecycle = LifecycleStatus::Stopped;

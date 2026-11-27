@@ -344,6 +344,8 @@ services:
         image: ${RUNNER_IMAGE:-journal-runner:unset}
         user: '10001:10001'
         group_add: ['1000']
+        healthcheck:
+            disable: true
         command:
             - journal-agent
             - serve

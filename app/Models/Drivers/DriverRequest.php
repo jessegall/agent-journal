@@ -159,6 +159,9 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The host accepted the request, and it is held for nothing.
+     */
     public function accept(): void
     {
         $this->moveTo(RequestProgress::Accepted);
@@ -218,6 +221,9 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->raise(new DriverRequestAttemptStarted($this->id, $attempt));
     }
 
+    /**
+     * The driver applied the request with the binding given, and its outcome when it has one.
+     */
     public function markApplied(string $actualBinding, RequestOutcome|null $outcome = null): void
     {
         $this->moveTo(RequestProgress::Applied);
@@ -237,6 +243,9 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->retry();
     }
 
+    /**
+     * The request is tried again from accepted, as a new attempt with no outcome yet.
+     */
     public function retry(): void
     {
         $this->attempt_version++;
@@ -256,6 +265,9 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->raise(new DriverRequestSuspectedDuplicate($this->id, $original->id));
     }
 
+    /**
+     * The request waits for the reason given.
+     */
     public function hold(HoldReason $reason): void
     {
         $this->hold_reason = $reason;
@@ -275,6 +287,9 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->raise(new DriverRequestWakeClaimed($this->id, $requested));
     }
 
+    /**
+     * The driver saw the request's wakes up to the number given; a lower number changes nothing.
+     */
     public function acknowledgeWake(int $acknowledged): void
     {
         $this->wake_acknowledged = max($acknowledged, $this->wake_acknowledged);
@@ -348,18 +363,27 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->retry();
     }
 
+    /**
+     * A newer request took this one's place, so it ends unapplied.
+     */
     public function supersede(): void
     {
         $this->finish(RequestProgress::Superseded, null);
         $this->raise(new DriverRequestSuperseded($this->id));
     }
 
+    /**
+     * The request is cancelled before it was applied.
+     */
     public function cancel(): void
     {
         $this->finish(RequestProgress::Cancelled, null);
         $this->raise(new DriverRequestCancelled($this->id));
     }
 
+    /**
+     * The request failed with the outcome given.
+     */
     public function fail(RequestOutcome $outcome): void
     {
         $this->finish(RequestProgress::Failed, $outcome);
@@ -376,6 +400,9 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->raise(new DriverRequestMarkedUnavailable($this->id));
     }
 
+    /**
+     * The request ends without knowing whether the driver received it.
+     */
     public function markUncertain(): void
     {
         $this->finish(RequestProgress::DeliveryUncertain, null);

@@ -46,6 +46,9 @@ final class SessionToken extends JournalModel implements EventSource, ReadableMo
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The token is issued for the session given, kept only as its hash.
+     */
     public function issueFor(AgentSession $session, string $hash): void
     {
         $this->agent_session_id = $session->id;
@@ -65,6 +68,9 @@ final class SessionToken extends JournalModel implements EventSource, ReadableMo
         $this->raise(new SessionTokenRotated($this->id));
     }
 
+    /**
+     * The token is revoked at the time given; it is refused from then on.
+     */
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;

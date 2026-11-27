@@ -272,6 +272,30 @@
             "claude_code": "2.1.323",
             "codex": "0.165.0",
             "built_at": "2026-11-26T21:43:33+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:630c81589283d6569e978c5b91a1bed58d919a16e2ffc059fb049f62a425ef72",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-27T02:15:26+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:2eb8c572ae850bf9bc41f92ab059bd09334516e65685f07eb088f9b786369990",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-27T02:18:02+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:4e4a85fdc9f89dec2daaa7b5e088f04b8ff6b9c50a560fcb44fb48b6ef7fd74a",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-27T02:19:08+00:00"
         }
     ]
 }

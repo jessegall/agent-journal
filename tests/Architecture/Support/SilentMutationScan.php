@@ -23,10 +23,6 @@ use Tests\Support\ScanCache\FileScan;
  */
 final readonly class SilentMutationScan implements FileScan
 {
-    private const string MUTATIONS = 'Mutations';
-
-    private const string SECTION_MARKER = '/^[ \t]*\/\/ -+\[ (\w+) \]-+[ \t]*$/';
-
     /**
      * The model's own helpers that write its row, besides Eloquent's writes.
      */
@@ -42,13 +38,13 @@ final readonly class SilentMutationScan implements FileScan
     public function findingsIn(ParsedFile $file): array
     {
         $silent = [];
-        $markers = $this->markersOf($file->code);
+        $sections = ModelSections::of($file->code);
 
         foreach (new NodeFinder()->findInstanceOf($file->statements, Class_::class) as $class) {
             $methods = $this->methodsOf($class);
 
             foreach ($methods as $name => $method) {
-                if ($class->name === null || $this->sectionOf($markers, $method) !== self::MUTATIONS) {
+                if ($class->name === null || ! $sections->isMutation($method)) {
                     continue;
                 }
 
@@ -60,40 +56,6 @@ final readonly class SilentMutationScan implements FileScan
         }
 
         return $silent;
-    }
-
-    /**
-     * The section name each marker line opens, by line number.
-     *
-     * @return array<int, string>
-     */
-    private function markersOf(string $code): array
-    {
-        $markers = [];
-
-        foreach (explode("\n", $code) as $index => $line) {
-            if (preg_match(self::SECTION_MARKER, $line, $match) === 1) {
-                $markers[$index + 1] = $match[1];
-            }
-        }
-
-        return $markers;
-    }
-
-    /**
-     * @param  array<int, string>  $markers
-     */
-    private function sectionOf(array $markers, ClassMethod $method): string|null
-    {
-        $section = null;
-
-        foreach ($markers as $line => $name) {
-            if ($line < $method->getStartLine()) {
-                $section = $name;
-            }
-        }
-
-        return $section;
     }
 
     /**

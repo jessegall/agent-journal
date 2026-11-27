@@ -164,6 +164,8 @@ final class RuleProposal extends JournalModel implements EventSource, ProjectOwn
     }
 
     /**
+     * The proposal is rejected and never becomes a rule.
+     *
      * @throws RuleProposalRefused
      */
     public function reject(): void

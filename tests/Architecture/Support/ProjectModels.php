@@ -28,9 +28,8 @@ final class ProjectModels
     {
         $models = [];
 
-        foreach (DomainFiles::in($roots) as $file) {
-            if (! str_contains($file, '/Models/')
-                || preg_match('/^namespace ([^;]+);/m', (string) file_get_contents($file), $namespace) !== 1) {
+        foreach (self::filesIn($roots) as $file) {
+            if (preg_match('/^namespace ([^;]+);/m', (string) file_get_contents($file), $namespace) !== 1) {
                 continue;
             }
 
@@ -43,5 +42,24 @@ final class ProjectModels
         }
 
         return $models;
+    }
+
+    /**
+     * The files of every Models folder of the app and the domains.
+     *
+     * @return list<string>
+     */
+    public static function files(): array
+    {
+        return self::filesIn([app_path(), ...DomainFiles::domainCode()]);
+    }
+
+    /**
+     * @param  list<string>  $roots
+     * @return list<string>
+     */
+    private static function filesIn(array $roots): array
+    {
+        return array_values(array_filter(DomainFiles::in($roots), fn (string $path) => str_contains($path, '/Models/')));
     }
 }

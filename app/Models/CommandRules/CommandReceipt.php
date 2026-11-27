@@ -123,6 +123,9 @@ final class CommandReceipt extends JournalModel implements EventSource, Readable
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The command finished, and the receipt keeps its reply.
+     */
     public function complete(mixed $reply): void
     {
         $this->status = ReceiptStatus::Completed;

@@ -193,6 +193,9 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->raise(new HostProcessRestarted($this->id, $this->agent_runtime_id, $this->generation, $identity));
     }
 
+    /**
+     * The process exited at the time given, with its exit code, signal and evidence.
+     */
     public function exit(ProcessExit $exit, CarbonImmutable $at): void
     {
         $this->status = HostProcessStatus::Exited;
@@ -211,6 +214,9 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         ));
     }
 
+    /**
+     * The host lost the process at the time given, with the evidence of how.
+     */
     public function lose(string $evidence, CarbonImmutable $at): void
     {
         $this->status = HostProcessStatus::Lost;
@@ -285,6 +291,8 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
+     * The journal worker that drives the process renews its hold on it; a fenced worker is refused.
+     *
      * @throws WorkerFenced
      */
     public function renewWorker(int $generation, CarbonImmutable $now): void
@@ -307,6 +315,9 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         return $this->order_sequence;
     }
 
+    /**
+     * The process keeps the order that opens it.
+     */
     public function holdOpenOrder(string $orderId): void
     {
         $this->open_order_id = $orderId;

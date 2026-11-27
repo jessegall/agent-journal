@@ -204,6 +204,9 @@ final class Task extends JournalModel implements
         $this->raise(new TaskStarted($this->id, $actor, $previousState, (string) Str::ulid()));
     }
 
+    /**
+     * The task is finished, with the note given.
+     */
     public function finish(string $note): void
     {
         $previousState = $this->status;
@@ -213,6 +216,9 @@ final class Task extends JournalModel implements
         $this->raise(new TaskFinished($this->id, $previousState, (string) Str::ulid()));
     }
 
+    /**
+     * The task is blocked, for the reason given.
+     */
     public function block(string $reason): void
     {
         $previousState = $this->status;
@@ -222,6 +228,9 @@ final class Task extends JournalModel implements
         $this->raise(new TaskBlocked($this->id, $previousState, (string) Str::ulid()));
     }
 
+    /**
+     * The task is cancelled, for the reason given.
+     */
     public function cancel(string $reason): void
     {
         $previousState = $this->status;

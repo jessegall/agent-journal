@@ -243,6 +243,9 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
         $this->raise(new StartVerificationCancelled($this->id));
     }
 
+    /**
+     * The request started the session given.
+     */
     public function startedAs(AgentSession $session): void
     {
         $this->session_id = $session->id;

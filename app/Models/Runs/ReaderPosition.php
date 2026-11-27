@@ -74,6 +74,9 @@ final class ReaderPosition extends JournalModel implements EventSource, Readable
         $this->raise(new ReaderPositionRewound($this->id));
     }
 
+    /**
+     * The reader moved on to the checkpoint given.
+     */
     public function advance(ReaderCheckpoint $checkpoint): void
     {
         $this->checkpoint = $checkpoint;

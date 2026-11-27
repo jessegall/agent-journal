@@ -89,6 +89,9 @@ final class EnvironmentUserGrant extends JournalModel implements EventSource, Re
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The user's access to the environment ends at the time given.
+     */
     public function revoke(CarbonImmutable $at): void
     {
         $this->revoked_at = $at;

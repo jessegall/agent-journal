@@ -1,5 +1,5 @@
 # The agent programs the image installs, as their native release builds: program, version, architecture, sha256 of
-# the file downloaded (Claude Code's binary, Codex's archive). install-programs.sh refuses any other file.
+# the file downloaded (Claude Code's binary, Codex's archive). install-drivers.sh refuses any other file.
 claude-code 2.1.323 arm64 452dddff140b5caf00a5410333a3d6db82c73ea2dec74b1541fae18e97d47dca
 claude-code 2.1.323 amd64 604d29a6869409106b6a1110bdadcc8b72e8654a5a865d23258f938a696e348e
 codex 0.165.0 arm64 6522e056d0be7f531da915c9a81ae05bc70811b782542499cc0a9776d3abf5d3

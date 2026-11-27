@@ -114,12 +114,18 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The switch's target passed its checks before the start.
+     */
     public function markPreflighted(): void
     {
         $this->moveTo(DriverSwitchStage::Preflighted);
         $this->raise(new DriverSwitchPreflighted($this->id));
     }
 
+    /**
+     * The switch is refused for the reason given and changes nothing.
+     */
     public function refuse(string $reason): void
     {
         $this->moveTo(DriverSwitchStage::Refused, $reason);
@@ -156,18 +162,27 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
         $this->raise(new DriverSwitchStartRequested($this->id, $sessionId));
     }
 
+    /**
+     * The switch is confirmed: the session goes on with its new driver.
+     */
     public function confirm(): void
     {
         $this->moveTo(DriverSwitchStage::Confirmed);
         $this->raise(new DriverSwitchConfirmed($this->id));
     }
 
+    /**
+     * The new driver could not start, for the reason given.
+     */
     public function failStart(string $reason): void
     {
         $this->moveTo(DriverSwitchStage::StartFailed, $reason);
         $this->raise(new DriverSwitchStartFailed($this->id, $reason));
     }
 
+    /**
+     * The switch is cancelled, with its reason when one is given.
+     */
     public function cancel(string|null $reason = null): void
     {
         $this->moveTo(DriverSwitchStage::Cancelled, $reason);
@@ -184,9 +199,8 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Rechecks a stop or start with no answer yet from the process state the host last reported: without one the switch
-     * waits unconfirmed; a proven stop moves on to the replacement, an old process seen running after its stop cancels
-     * the switch, and a replacement is confirmed or failed.
+     * Rechecks a stop or start with no answer yet against the process state the host last reported, and moves the
+     * switch on, confirms, cancels or fails it from what that proves.
      */
     public function recheck(SessionProcessStatus|null $reported, AgentRuntime|null $source): void
     {

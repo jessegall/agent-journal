@@ -149,9 +149,8 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
     // ----------[ Mutations ]----------
 
     /**
-     * Records a presence report by server time. A sequence of the live boot no higher than the last changes nothing;
-     * a new boot replaces a live one only when it takes over, and every new boot raises the boot generation. A
-     * provisioned report on this journal's protocol makes the binding ready until its presence expires.
+     * Records a presence report by server time: a stale sequence changes nothing, and a new boot that takes over
+     * replaces the live one and raises the boot generation.
      *
      * @throws PresenceRefused
      */

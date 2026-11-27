@@ -68,6 +68,9 @@ final class SupervisorLink extends JournalModel implements EventSource, Readable
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The link routes by the routes given, and the version of the ask type's route goes up by one.
+     */
     public function change(SupervisorRoutes $routes, AskTypeKey|null $type): void
     {
         $key = AskTypeKey::routeOf($type);

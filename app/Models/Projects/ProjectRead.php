@@ -171,6 +171,9 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
         $this->raise(new ProjectReadAnsweredWithText($this->id));
     }
 
+    /**
+     * The read failed with the failure given.
+     */
     public function fail(ProjectReadFailure $failure): void
     {
         $this->failure = $failure;

@@ -90,6 +90,9 @@ final class ShareGatewayEndpoint extends JournalModel implements EventSource, Re
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The endpoint is in the state given.
+     */
     public function moveTo(GatewayEndpointStatus $status): void
     {
         $this->status = $status;

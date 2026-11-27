@@ -110,6 +110,9 @@ final class Rule extends JournalModel implements EventSource, Numbered, ProjectO
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The rule is removed and holds no more.
+     */
     public function remove(): void
     {
         $this->status = RuleStatus::Removed;
@@ -133,6 +136,9 @@ final class Rule extends JournalModel implements EventSource, Numbered, ProjectO
         $this->raise(new RuleApproved($this->id));
     }
 
+    /**
+     * The proposed rule is denied and never holds.
+     */
     public function deny(): void
     {
         $this->closeProposal(RuleStatus::Denied);

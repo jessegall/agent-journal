@@ -147,6 +147,9 @@ class User extends Authenticatable implements
         $this->save();
     }
 
+    /**
+     * The user may sign in again.
+     */
     public function enable(): void
     {
         $this->disabled_at = null;

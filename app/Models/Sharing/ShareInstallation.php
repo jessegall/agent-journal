@@ -69,8 +69,7 @@ final class ShareInstallation extends JournalModel implements EventSource, Reada
     // ----------[ Mutations ]----------
 
     /**
-     * Holds the gateways for the supervisor run: a run newer than the holder takes them over, the holder renews its
-     * lease, and an older run is refused. Run ids are ULIDs, so a later start sorts after an earlier one. Returns
+     * Holds the gateways for the supervisor run, a newer run taking them over and an older one refused, and answers
      * whether the run took them over just now.
      *
      * @throws GatewayRunStale

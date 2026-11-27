@@ -258,9 +258,8 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The start's credentials, for the process the journal orders opened for this runtime under host protocol 1: the
-     * token the journal minted at the start, handed over once, with the URL the process reaches the journal at and
-     * the profile the session was pinned to.
+     * Hands over the start's token once, with the address the process reaches the journal at and the profile its
+     * session was pinned to.
      *
      * @throws CredentialRejected
      */
@@ -303,6 +302,9 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $this->raise(new AgentRuntimeStartProven($this->id));
     }
 
+    /**
+     * Whether the runtime's start was proven: its program is known to run.
+     */
     public function hasProvenStart(): bool
     {
         return $this->start_proven_at !== null;
@@ -474,11 +476,17 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         return in_array($this->hold_reason, [HoldReason::Interrupted, HoldReason::NeedsAttention], true);
     }
 
+    /**
+     * Whether the runtime is held for the reason given.
+     */
     public function isHeldFor(HoldReason $reason): bool
     {
         return $this->hold_reason === $reason;
     }
 
+    /**
+     * The runtime is held for nothing any more, so its work goes on.
+     */
     public function releaseHold(): void
     {
         $this->holdFor(HoldReason::None);
@@ -493,6 +501,9 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
             || $this->activity === RuntimeActivity::HostUnavailable;
     }
 
+    /**
+     * Whether the runtime runs on the host given.
+     */
     public function isAssignedTo(string $hostId): bool
     {
         return $this->host_id === $hostId;
@@ -508,6 +519,9 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
             && ! in_array($this->activity, [RuntimeActivity::Stopping, RuntimeActivity::Stopped], true);
     }
 
+    /**
+     * Whether the runtime is at the process generation given, so a report about it still counts.
+     */
     public function isAtGeneration(int $processGeneration): bool
     {
         return $this->process_generation === $processGeneration;

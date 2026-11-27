@@ -112,6 +112,9 @@ final class AutoAssignment extends JournalModel implements EventSource, Readable
         return true;
     }
 
+    /**
+     * The assignment last served work at the time given.
+     */
     public function markServedAt(CarbonImmutable $time): void
     {
         self::query()->whereKey($this->id)->update(['last_served_at' => $time]);

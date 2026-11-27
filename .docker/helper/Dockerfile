@@ -21,14 +21,14 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-check ./cmd/journal-check
 
 # Claude Code and Codex as their native release builds, each checked against its pinned digest: no Node in the image.
-FROM --platform=$BUILDPLATFORM ${BASE} AS programs
+FROM --platform=$BUILDPLATFORM ${BASE} AS drivers
 ARG TARGETARCH
 ARG CLAUDE_CODE_VERSION=2.1.323
 ARG CODEX_VERSION=0.165.0
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-COPY .docker/helper/install-programs.sh .docker/helper/program-digests.txt /programs/
-RUN sh /programs/install-programs.sh "$TARGETARCH" "$CLAUDE_CODE_VERSION" "$CODEX_VERSION" /out
+COPY .docker/helper/install-drivers.sh .docker/helper/driver-digests.txt /drivers/
+RUN sh /drivers/install-drivers.sh "$TARGETARCH" "$CLAUDE_CODE_VERSION" "$CODEX_VERSION" /out
 
 FROM ${BASE}
 
@@ -39,7 +39,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,t
     && apt-get install -y --no-install-recommends git ca-certificates bash \
         ${TOOLCHAIN_PACKAGES}
 
-COPY --from=programs --chown=root:root /out/claude /out/codex /usr/local/bin/
+COPY --from=drivers --chown=root:root /out/claude /out/codex /usr/local/bin/
 
 # The relays and the protected stop checks. Both relays are standalone programs that ask the journal themselves with
 # the start's grant; the image holds no application console.

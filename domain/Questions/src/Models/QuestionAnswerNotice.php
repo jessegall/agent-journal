@@ -69,6 +69,9 @@ final class QuestionAnswerNotice extends JournalModel implements EventSource, Re
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The notice of the answer reached its asker at the time given.
+     */
     public function markDelivered(CarbonImmutable $at): void
     {
         $this->delivered_at = $at;

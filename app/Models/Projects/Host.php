@@ -135,6 +135,9 @@ final class Host extends JournalModel implements EventSource, ReadableModel
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The host keeps the protection report given, in place of its earlier report of the same item.
+     */
     public function recordProtection(ProtectionReport $report): void
     {
         $reports = $this->protection->items();
@@ -217,6 +220,9 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->raise(new HostCallAnswered($this->id));
     }
 
+    /**
+     * The host is revoked at the time given; its calls are refused from then on.
+     */
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;

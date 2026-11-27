@@ -123,6 +123,9 @@ final class SequenceRun extends JournalModel implements AuthoredModel, EventSour
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The sequence starts at its first step, followed by the actor given in the session given.
+     */
     public function startFor(ActorReference $follower, string $sessionId): void
     {
         $this->current_step = 1;
@@ -155,6 +158,9 @@ final class SequenceRun extends JournalModel implements AuthoredModel, EventSour
         $this->raise(new SequenceStepReached($this->id, $this->owningActor(), $this->current_step));
     }
 
+    /**
+     * The sequence run is cancelled before its last step.
+     */
     public function cancel(): void
     {
         $this->status = SequenceRunStatus::Cancelled;

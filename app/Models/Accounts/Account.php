@@ -171,9 +171,8 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * A sign-in again ended without success. A signed-in account stays held until the host checks it in its current
-     * generation, as the attempt may have changed its folder; one that needed a sign-in is simply let go. An older
-     * attempt's end changes nothing of a newer writer's hold.
+     * A sign-in again ended without success: a signed-in account stays held until the host checks it again, one
+     * that needed a sign-in is let go, and an older attempt's end changes nothing.
      */
     public function endSignInAgain(string $attemptId): void
     {
@@ -222,9 +221,8 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Applies the host's check made in the given generation, and answers whether it showed the account signed out;
-     * a check of an older generation changes nothing, only a definite sign-out needs a new sign-in, and an account
-     * held for its check after a sign-in again stays held until the answer is certain.
+     * Applies the host's check of the generation given, and answers whether it showed the account signed out; a
+     * check of an older generation changes nothing.
      */
     public function applyCheck(int $generation, AccountCheckResult $check, CarbonImmutable $now): bool
     {
@@ -264,9 +262,8 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Gives the account a new name, which no other account of its driver in use may share, ignoring case, and advances
-     * its name revision; a name saved against an older revision is refused, so a rename made meanwhile is never
-     * overwritten unseen. The same name again changes nothing.
+     * Gives the account a new name no other account of its driver shares, ignoring case; a rename against an older
+     * name revision is refused, and the same name again changes nothing.
      *
      * @throws AccountLabelTaken
      * @throws AccountNameChanged

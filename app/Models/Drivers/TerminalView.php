@@ -129,6 +129,9 @@ final class TerminalView extends JournalModel implements EventSource, ReadableMo
         $this->raise(new TerminalViewFollowed($this->id, $runtime->id));
     }
 
+    /**
+     * The terminal view is closed at the time given.
+     */
     public function close(CarbonImmutable $now): void
     {
         $this->closed_at = $now;

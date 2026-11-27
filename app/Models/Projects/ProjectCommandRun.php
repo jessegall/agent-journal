@@ -93,6 +93,9 @@ final class ProjectCommandRun extends JournalModel implements EventSource, Reada
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The run keeps the process id its command runs as.
+     */
     public function recordProcess(int $pid): void
     {
         $this->pid = $pid;
@@ -101,6 +104,8 @@ final class ProjectCommandRun extends JournalModel implements EventSource, Reada
     }
 
     /**
+     * The run finished, with the frames its command printed.
+     *
      * @param  list<ProjectCommandFrame>  $frames
      */
     public function finish(array $frames, int $exitCode): void
@@ -133,9 +138,8 @@ final class ProjectCommandRun extends JournalModel implements EventSource, Reada
     }
 
     /**
-     * Settles a run whose worker is gone from what can still be proved: one whose recorded process still runs stays
-     * as it is, one whose process ended unrecorded is interrupted, and one that never recorded its process is unknown.
-     * A run is never started again from here.
+     * Settles a run whose worker is gone from what can still be proved, as running, interrupted or unknown; it is
+     * never started again from here.
      */
     public function reconcile(CommandRunEvidence $evidence): void
     {

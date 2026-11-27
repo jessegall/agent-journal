@@ -70,6 +70,9 @@ final class Layout extends JournalModel implements EventSource, ReadableModel
         $this->raise(new LayoutSaved($this->id));
     }
 
+    /**
+     * The layout is removed.
+     */
     public function remove(): void
     {
         $this->delete();

@@ -55,6 +55,9 @@ final class HookCall extends JournalModel implements EventSource, ReadableModel
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The hook call keeps which agent's hook it answered, with its answer and the steps that made it.
+     */
     public function recordFor(HookIdentity $hook, RecordedAnswer $answer, RecordedSteps $steps): void
     {
         $this->agent_id = $hook->agentId;

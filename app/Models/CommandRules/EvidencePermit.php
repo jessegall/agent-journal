@@ -122,6 +122,9 @@ final class EvidencePermit extends JournalModel implements EventSource, ProjectO
         $this->raise(new EvidencePermitConsumed($this->id, $run->id));
     }
 
+    /**
+     * The permit expires now; it can no longer start an evidence run.
+     */
     public function expire(): void
     {
         $this->expires_at = CarbonImmutable::now();

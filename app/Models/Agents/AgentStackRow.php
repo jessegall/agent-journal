@@ -100,6 +100,9 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The stack begins for the agent's session with its first frames, at version 1.
+     */
     public function startFor(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): void
     {
         $this->agent_id = $target->agentId;
@@ -122,6 +125,9 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
         $this->raise(new AgentStackHeldForInvestigation($this->id));
     }
 
+    /**
+     * The stack keeps the frames given and counts one version more.
+     */
     public function saveFrames(FrameRecords $frames, TickingTypes $ticking): void
     {
         $this->frames = $frames;
@@ -131,6 +137,9 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
         $this->raise(new AgentStackFramesSaved($this->id));
     }
 
+    /**
+     * The stack is closed at the time given; no frame is pushed on it again.
+     */
     public function closeAt(CarbonImmutable $time): void
     {
         $this->status = StackStatus::Closed;
@@ -139,6 +148,9 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
         $this->raise(new AgentStackClosed($this->id));
     }
 
+    /**
+     * Whether the stack is still open for its session.
+     */
     public function isActive(): bool
     {
         return $this->status === StackStatus::Active;

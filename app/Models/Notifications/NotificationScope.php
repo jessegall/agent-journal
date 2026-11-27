@@ -142,6 +142,9 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
         $this->raise(new NotificationsMarkAllAdvanced($this->id, $sequence));
     }
 
+    /**
+     * Marking every notification read is done, so nothing waits to be marked.
+     */
     public function finishMarkAll(): void
     {
         $this->mark_all_through = null;

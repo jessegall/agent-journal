@@ -130,6 +130,9 @@ final class TerminalGrant extends JournalModel implements EventSource, ReadableM
         $this->raise(new TerminalGrantIssued($this->id));
     }
 
+    /**
+     * The grant is refused, so its terminal view never opens.
+     */
     public function refuse(): void
     {
         $this->status = TerminalGrantStatus::Refused;
@@ -137,6 +140,9 @@ final class TerminalGrant extends JournalModel implements EventSource, ReadableM
         $this->raise(new TerminalGrantRefused($this->id));
     }
 
+    /**
+     * The grant holds for its whole lifetime again from now.
+     */
     public function renew(CarbonImmutable $now): void
     {
         $this->expires_at = $now->addSeconds(self::LIFETIME_SECONDS);

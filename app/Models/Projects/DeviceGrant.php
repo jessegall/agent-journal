@@ -124,6 +124,9 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
         $this->raise(new DeviceGrantRestarted($this->id));
     }
 
+    /**
+     * The user given approved the device.
+     */
     public function approveBy(string $userId): void
     {
         $this->approved_by_user_id = $userId;
@@ -159,6 +162,9 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
         $this->raise(new DeviceGrantIssued($this->id));
     }
 
+    /**
+     * The device's grant is revoked; it may no longer sign in.
+     */
     public function revoke(): void
     {
         $this->status = DeviceGrantStatus::Revoked;

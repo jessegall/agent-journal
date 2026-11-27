@@ -128,6 +128,9 @@ final class ShareGatewayOperation extends JournalModel implements EventSource, R
         );
     }
 
+    /**
+     * The operation finished with the outcome given.
+     */
     public function finish(GatewayOutcome $outcome): void
     {
         $this->outcome_code = $outcome;

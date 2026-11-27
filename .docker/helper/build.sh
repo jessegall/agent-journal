@@ -68,15 +68,15 @@ run_in_image() {
 check_clients() {
     run_in_image claude --version | grep -q "$claude_code"
     run_in_image codex --version | grep -q "$codex"
-    check_no_node
 }
 
-# The agent programs are native builds, so the image holds no Node.
+# Claude Code and Codex are native builds, so the agent image holds no Node.
 check_no_node() {
     ! run_in_image sh -c 'command -v node || command -v npm' >/dev/null
 }
 
 check_agent_image() {
+    check_no_node
     check_users
     check_protected_files
     check_folders

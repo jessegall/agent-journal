@@ -62,6 +62,9 @@ final class ProfileRevisionHold extends JournalModel implements EventSource, Rea
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The profile revision's hold was reconciled at the time given.
+     */
     public function markReconciledAt(CarbonImmutable $time): void
     {
         $this->reconciled_at = $time;

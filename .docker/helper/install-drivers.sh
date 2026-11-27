@@ -1,6 +1,6 @@
 #!/bin/sh
 # Downloads Claude Code and Codex as their native release builds into a folder, each checked against its pinned digest.
-# Usage: sh install-programs.sh <architecture: arm64 or amd64> <claude-code version> <codex version> <folder>
+# Usage: sh install-drivers.sh <architecture: arm64 or amd64> <claude-code version> <codex version> <folder>
 set -eu
 
 CLAUDE_RELEASES=https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases
@@ -56,7 +56,7 @@ codex_machine() {
     esac
 }
 
-# The pinned digest of a download, from program-digests.txt beside this script.
+# The pinned digest of a download, from driver-digests.txt beside this script.
 check_digest() {
     local program="$1"
     local version="$2"
@@ -64,7 +64,7 @@ check_digest() {
     local file="$4"
     local wanted
     wanted=$(awk -v p="$program" -v v="$version" -v a="$architecture" '$1 == p && $2 == v && $3 == a { print $4 }' \
-        "$(dirname "$0")/program-digests.txt")
+        "$(dirname "$0")/driver-digests.txt")
     test -n "$wanted" || { echo "no pinned digest for $program $version $architecture" >&2; return 1; }
     echo "$wanted  $file" | sha256sum -c - >/dev/null
 }

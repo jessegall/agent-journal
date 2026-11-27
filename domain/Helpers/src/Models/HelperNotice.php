@@ -76,6 +76,9 @@ final class HelperNotice extends JournalModel implements EventSource, ReadableMo
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The notice reached its helper now.
+     */
     public function markDelivered(): void
     {
         $this->delivered_at = CarbonImmutable::now();

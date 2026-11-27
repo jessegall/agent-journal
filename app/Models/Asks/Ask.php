@@ -132,6 +132,9 @@ final class Ask extends JournalModel implements Assignable, EventSource, Readabl
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The ask's target took it up, so it waits on no target any more.
+     */
     public function accept(): void
     {
         $this->version++;
@@ -161,6 +164,9 @@ final class Ask extends JournalModel implements Assignable, EventSource, Readabl
         $this->raise(new AskAnsweredLate($this->id));
     }
 
+    /**
+     * The ask is closed and waits on no target any more.
+     */
     public function close(): void
     {
         $this->version++;
@@ -170,6 +176,9 @@ final class Ask extends JournalModel implements Assignable, EventSource, Readabl
         $this->raise(new AskClosed($this->id, $this->type_key->key));
     }
 
+    /**
+     * The ask is closed without an answer, for the reason given.
+     */
     public function closeUnanswered(UnansweredReason $reason): void
     {
         $this->outcome = $reason;

@@ -180,6 +180,9 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
         $this->raise(new PartRunCaptured($this->id));
     }
 
+    /**
+     * The part's output capture is in the state given.
+     */
     public function markCapture(CaptureStatus $status): void
     {
         $this->capture_state = $status;
@@ -212,6 +215,9 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
         $this->raise(new PartRunLost($this->id));
     }
 
+    /**
+     * The part could not be started, for the reason given.
+     */
     public function failToSpawn(string $reason): void
     {
         $this->end_type = PartEndType::Unavailable;

@@ -137,6 +137,9 @@ final class DriverTurn extends JournalModel implements EventSource, ReadableMode
         $this->raise(new ClosingWordsDelivered($messageId, $agentId));
     }
 
+    /**
+     * The turn ended with the outcome given, at the time given.
+     */
     public function finish(string $outcome, CarbonImmutable $at): void
     {
         $this->outcome = $outcome;

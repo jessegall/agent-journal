@@ -88,6 +88,8 @@ final class TaskRun extends JournalModel implements Assignable, EventSource, Rea
     // ----------[ Mutations ]----------
 
     /**
+     * The task run finished; a run already finished is refused.
+     *
      * @throws TaskRunFinished
      */
     public function finish(string $outcome): void

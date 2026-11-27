@@ -91,6 +91,9 @@ final class AskHop extends JournalModel implements EventSource, ReadableModel
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The hop's target answered, with the body and how much attention it asks.
+     */
     public function answer(string $body, string $attention): void
     {
         $this->result = $body;
@@ -99,6 +102,9 @@ final class AskHop extends JournalModel implements EventSource, ReadableModel
         $this->raise(new AskHopAnswered($this->ask_id, $this->id));
     }
 
+    /**
+     * The hop keeps how its target was woken.
+     */
     public function recordWake(string $wake): void
     {
         $this->wake = $wake;
@@ -106,6 +112,9 @@ final class AskHop extends JournalModel implements EventSource, ReadableModel
         $this->raise(new AskHopWakeRecorded($this->ask_id, $this->id, $wake));
     }
 
+    /**
+     * The hop keeps how much attention its answer asks.
+     */
     public function recordAttention(string $attention): void
     {
         $this->attention = $attention;

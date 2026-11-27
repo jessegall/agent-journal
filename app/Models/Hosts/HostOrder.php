@@ -114,6 +114,9 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The host claimed the order to carry it out, at the time given.
+     */
     public function claim(CarbonImmutable $at): void
     {
         $this->status = HostOrderStatus::Claimed;
@@ -135,6 +138,8 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
+     * The host carried the order out, and the order keeps its answer.
+     *
      * @throws HostOrderStateRefused
      */
     public function answer(HostAnswerData $answer, CarbonImmutable $at): void
@@ -155,6 +160,8 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
+     * The host refused the order, with the reason and the facts it gave.
+     *
      * @param  array<string, mixed>  $facts
      *
      * @throws HostOrderStateRefused
@@ -172,6 +179,8 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
+     * The order was not carried out in time and expires.
+     *
      * @throws HostOrderStateRefused
      */
     public function expire(CarbonImmutable $at): void

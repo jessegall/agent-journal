@@ -147,6 +147,9 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $this->raise(new AgentSessionSkillsGenerated($this->id, $generation->id, $keys));
     }
 
+    /**
+     * The session goes on in the conversation given, which its later turns continue.
+     */
     public function enterConversation(DriverConversation $conversation): void
     {
         $this->current_conversation_id = $conversation->id;
@@ -165,6 +168,9 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $this->raise(new AgentSessionDriverLabelKept($this->id, $label));
     }
 
+    /**
+     * The session ends at the time given.
+     */
     public function endAt(CarbonImmutable $time): void
     {
         $this->status = SessionStatus::Ended;
