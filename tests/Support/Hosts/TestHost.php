@@ -163,7 +163,7 @@ final class TestHost
     }
 
     /**
-     * The first sixteen hex digits of the SHA-256 of every Go source, go.mod and go.sum, in byte order of their
+     * The first sixteen hex digits of the SHA-256 of every Go source, go.mod and go.sum, in byte instruction of their
      * paths, as the build script works it out.
      */
     public static function sourceHash(): string
@@ -356,7 +356,7 @@ final class TestHost
 
     /**
      * Opens a local process of pipes on this host with the argv and the start credentials of the runtime, handed over
-     * as the journal hands them to a process it orders opened.
+     * as the journal hands them to a process it instructions opened.
      *
      * @param  list<string>  $argv
      */

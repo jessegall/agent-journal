@@ -55,11 +55,11 @@ func TestAPlanWithRawBytesIsRead(t *testing.T) {
 	payload := `{"type":"pipe","restart":"never","argv":["sh"],"restart_argv":[],"restart_when_file":null,"environment":[],` +
 		`"folder":"/w","container":null,"labels":null,"size":{"columns":80,"rows":24},"files":[],"folders":[],"inherit":[],` +
 		`"side_sockets":[],"raw_bytes":true}`
-	plan, err := DecodePayload[OpenPlan](Order{Type: "open_process", Payload: payload})
+	plan, err := DecodePayload[OpenPlan](Instruction{Type: "open_process", Payload: payload})
 	if err != nil || !plan.RawBytes {
 		t.Fatalf("a plan with raw_bytes was answered %v, %v", plan.RawBytes, err)
 	}
-	if _, err := DecodePayload[OpenPlan](Order{Type: "open_process", Payload: strings.Replace(payload, `"raw_bytes"`, `"raw_bites"`, 1)}); err == nil {
+	if _, err := DecodePayload[OpenPlan](Instruction{Type: "open_process", Payload: strings.Replace(payload, `"raw_bytes"`, `"raw_bites"`, 1)}); err == nil {
 		t.Fatal("a plan with a field the protocol does not know was read")
 	}
 }
@@ -76,27 +76,27 @@ func TestAContainedPlanFileNamingAHostNameIsRefused(t *testing.T) {
 	}
 }
 
-// An order's payload is read strictly: a field the protocol does not know, a missing field and a value of the wrong
-// type are each refused as unsafe, naming the field and the order type.
-func TestAnOrderPayloadIsReadStrictly(t *testing.T) {
+// An instruction's payload is read strictly: a field the protocol does not know, a missing field and a value of the wrong
+// type are each refused as unsafe, naming the field and the instruction type.
+func TestAnInstructionPayloadIsReadStrictly(t *testing.T) {
 	cases := map[string]string{
 		`{"columns":80,"rows":24,"colour":"red"}`: `the payload of resize holds the field "colour", which the protocol does not know`,
 		`{"columns":80}`:               `the payload of resize misses its field rows`,
 		`{"columns":"wide","rows":24}`: `the payload of resize holds columns as string, not uint16`,
 	}
 	for payload, reason := range cases {
-		_, err := DecodePayload[TerminalSize](Order{Type: "resize", Payload: payload})
+		_, err := DecodePayload[TerminalSize](Instruction{Type: "resize", Payload: payload})
 		refusal, isRefusal := err.(RefusalError)
 		if !isRefusal || refusal.Refusal != Unsafe || refusal.Reason != reason {
 			t.Errorf("the payload %s was answered %v, not %q", payload, err, reason)
 		}
 	}
-	if size, err := DecodePayload[TerminalSize](Order{Type: "resize", Payload: `{"columns":80,"rows":24}`}); err != nil || size.Rows != 24 {
+	if size, err := DecodePayload[TerminalSize](Instruction{Type: "resize", Payload: `{"columns":80,"rows":24}`}); err != nil || size.Rows != 24 {
 		t.Fatalf("a whole payload did not read: %v %v", size, err)
 	}
 }
 
-// The generated dispatch reads every order through its type and Validate: a field missing deep inside the payload and
+// The generated dispatch reads every instruction through its type and Validate: a field missing deep inside the payload and
 // an enum value the protocol does not know are refused as unsafe by their path, before the handler is called.
 func TestTheDispatchRefusesANestedMissingFieldAndAnUnknownValueByTheirPath(t *testing.T) {
 	plan := func(processType, size string) string {
@@ -109,7 +109,7 @@ func TestTheDispatchRefusesANestedMissingFieldAndAnUnknownValueByTheirPath(t *te
 		plan("window", `{"columns":80,"rows":24}`): `the payload of open_process type holds "window", which host protocol 1 does not know`,
 	}
 	for payload, reason := range cases {
-		_, err := carry(testOrders{}, "open_process")(context.Background(), Order{Type: "open_process", Payload: payload})
+		_, err := carry(testInstructions{}, "open_process")(context.Background(), Instruction{Type: "open_process", Payload: payload})
 		refusal, isRefusal := err.(RefusalError)
 		if !isRefusal || refusal.Refusal != Unsafe || refusal.Reason != reason {
 			t.Errorf("the payload %s was answered %v, not %q", payload, err, reason)
@@ -117,15 +117,15 @@ func TestTheDispatchRefusesANestedMissingFieldAndAnUnknownValueByTheirPath(t *te
 	}
 }
 
-// The record and stop_recording orders are gone from host protocol 1: the host carries neither, so one is refused as
-// an order it does not know.
-func TestTheHostRefusesTheRemovedRecordOrdersAsUnknown(t *testing.T) {
-	executors := Executors(testOrders{})
+// The record and stop_recording instructions are gone from host protocol 1: the host carries neither, so one is refused as
+// an instruction it does not know.
+func TestTheHostRefusesTheRemovedRecordInstructionsAsUnknown(t *testing.T) {
+	executors := Executors(testInstructions{})
 	for _, removed := range []string{"record", "stop_recording"} {
 		_, carried := executors[removed]
-		_, known := OrderTypes[removed]
+		_, known := InstructionTypes[removed]
 		if carried || known {
-			t.Errorf("the host still knows the order %s", removed)
+			t.Errorf("the host still knows the instruction %s", removed)
 		}
 	}
 }

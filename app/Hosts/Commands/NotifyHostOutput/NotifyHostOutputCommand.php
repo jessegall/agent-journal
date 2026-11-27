@@ -6,7 +6,7 @@ namespace App\Hosts\Commands\NotifyHostOutput;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
-use App\Hosts\Protocol\Data\HostOutputData;
+use App\Hosts\Protocol\Payloads\HostOutputPayload;
 use App\Support\Command;
 
 /**
@@ -20,6 +20,6 @@ final readonly class NotifyHostOutputCommand extends Command
     public function __construct(
         public string $hostId,
         public string $processId,
-        public HostOutputData $output,
+        public HostOutputPayload $output,
     ) {}
 }

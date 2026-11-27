@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\OpenHostProcess;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\HostOrderPlacement;
+use App\Hosts\HostInstructionPlacement;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
 
 /**
- * Makes the process and its open order on a host that speaks protocol 1 and is not revoked.
+ * Makes the process and its open instruction on a host that speaks protocol 1 and is not revoked.
  */
 final readonly class OpenHostProcessHandler implements CommandHandler
 {
-    public function __construct(private HostOrderPlacement $placement) {}
+    public function __construct(private HostInstructionPlacement $placement) {}
 
     public function handle(OpenHostProcessCommand $command): string
     {

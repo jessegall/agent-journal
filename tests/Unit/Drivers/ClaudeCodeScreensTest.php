@@ -6,7 +6,7 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\HoldReason;
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Enums\ScreenType;
 use App\Terminals\Screens\ScreenClassifier;
 use App\Terminals\Screens\ScreenHolds;
@@ -89,18 +89,18 @@ final class ClaudeCodeScreensTest extends TestCase
         );
     }
 
-    private function readingOf(HostFrameData $frame): ScreenReading
+    private function readingOf(HostFramePayload $frame): ScreenReading
     {
         $layout = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->layout();
 
         return new ScreenClassifier()->readingOf($layout, $frame);
     }
 
-    private function lastFrameOf(string $name): HostFrameData
+    private function lastFrameOf(string $name): HostFramePayload
     {
         $frames = json_decode((string) file_get_contents(self::SCREENS."/{$name}/frames.json"), true, flags: JSON_THROW_ON_ERROR);
 
-        return HostFrameData::from($frames[array_key_last($frames)]['frame']);
+        return HostFramePayload::from($frames[array_key_last($frames)]['frame']);
     }
 
     /**
@@ -112,10 +112,10 @@ final class ClaudeCodeScreensTest extends TestCase
         int $cursorRow = 0,
         int $cursorColumn = 0,
         int $captured = 1_000,
-    ): HostFrameData {
+    ): HostFramePayload {
         $rows = array_pad($drawn, self::ROWS, '');
 
-        return HostFrameData::from([
+        return HostFramePayload::from([
             'rows' => $rows,
             'cursor_row' => $cursorRow,
             'cursor_column' => $cursorColumn,

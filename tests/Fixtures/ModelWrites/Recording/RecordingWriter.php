@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ModelWrites\Recording;
 
-use App\Contracts\Events\EventSource;
 use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use Illuminate\Database\Eloquent\Model;
 
 /**

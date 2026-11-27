@@ -31,9 +31,9 @@ final class AskRawBytesTest extends TestCase
         $this->assertSame(
             [false, true, false],
             [
-                $this->journal->payloadOf($this->journal->hostOrdersOf('before')[0])['raw_bytes'],
-                $this->journal->payloadOf($this->journal->hostOrdersOf('recorded')[0])['raw_bytes'],
-                $this->journal->payloadOf($this->journal->hostOrdersOf('piped')[0])['raw_bytes'],
+                $this->journal->payloadOf($this->journal->hostInstructionsOf('before')[0])['raw_bytes'],
+                $this->journal->payloadOf($this->journal->hostInstructionsOf('recorded')[0])['raw_bytes'],
+                $this->journal->payloadOf($this->journal->hostInstructionsOf('piped')[0])['raw_bytes'],
             ],
         );
     }

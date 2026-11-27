@@ -8,10 +8,10 @@ use App\Accounts\Enums\CommandEntry;
 use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
 use App\Hooks\Data\StopConditionResultData;
-use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Protocol\Data\HostFencedResultData;
-use App\Hosts\Protocol\Data\HostFencedResultsData;
-use App\Models\Hosts\HostOrder;
+use App\Hosts\Enums\HostInstructionStatus;
+use App\Hosts\Protocol\Payloads\HostFencedResultPayload;
+use App\Hosts\Protocol\Payloads\HostFencedResultsPayload;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Sessions\StopCheck;
 use App\Sessions\Commands\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Sessions\Contracts\SessionPolicyReader;
@@ -32,25 +32,25 @@ final readonly class SettleFencedStopCheckHandler implements CommandHandler
 
     public function handle(SettleFencedStopCheckCommand $command): void
     {
-        $order = HostOrder::findLocked($command->orderId);
+        $instruction = HostInstruction::findLocked($command->instructionId);
 
-        foreach (StopCheck::findRunUnder($order->id) as $attempt) {
+        foreach (StopCheck::findRunUnder($instruction->id) as $attempt) {
             if ($attempt->status !== StopCheckStatus::Pending) {
                 return;
             }
 
-            if ($order->status === HostOrderStatus::Refused) {
-                $reason = "the host refused to run the conditions: {$order->refusal?->value}";
+            if ($instruction->status === HostInstructionStatus::Refused) {
+                $reason = "the host refused to run the conditions: {$instruction->refusal?->value}";
                 $attempt->settle(StopCheckStatus::Unresolved, self::REFUSED_SUBMISSION, $reason);
 
                 return;
             }
 
             $conditions = $this->policies->policyFor($attempt->session_id)->stopConditions->conditions;
-            $results = HostFencedResultsData::from($order->answer->facts ?? [])->results;
+            $results = HostFencedResultsPayload::from($instruction->answer->facts ?? [])->results;
 
             $rows = array_map(
-                fn (HostFencedResultData $result, int $index) => $this->rowOf($conditions[$index], $result),
+                fn (HostFencedResultPayload $result, int $index) => $this->rowOf($conditions[$index], $result),
                 $results,
                 array_keys($results),
             );
@@ -61,7 +61,7 @@ final readonly class SettleFencedStopCheckHandler implements CommandHandler
             ));
 
             $record = new RecordStopConditionResultsCommand(
-                $order->host_id,
+                $instruction->host_id,
                 $attempt->id,
                 $attempt->policy_digest,
                 $attempt->workspace_generation,
@@ -77,7 +77,7 @@ final readonly class SettleFencedStopCheckHandler implements CommandHandler
      *
      * @return array<string, mixed>
      */
-    private function rowOf(StopCondition $condition, HostFencedResultData $result): array
+    private function rowOf(StopCondition $condition, HostFencedResultPayload $result): array
     {
         return [
             ...$result->toArray(),

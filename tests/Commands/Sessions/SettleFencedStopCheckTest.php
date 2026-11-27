@@ -12,12 +12,12 @@ use App\Sessions\Commands\SettleFencedStopCheck\SettleFencedStopCheckCommand;
 use App\Sessions\Enums\StopCheckStatus;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * The host's answer to a stop's run_fenced order settles its attempt by each condition's result; a refused run leaves
+ * The host's answer to a stop's run_fenced instruction settles its attempt by each condition's result; a refused run leaves
  * it unresolved, so the agent's next stop asks again.
  */
 #[TestsCommand(SettleFencedStopCheckCommand::class)]
@@ -41,9 +41,9 @@ final class SettleFencedStopCheckTest extends TestCase
 
     public function test_the_answered_results_settle_the_attempt_by_each_condition(): void
     {
-        $order = $this->journal->hostOrdersOn('Mac')[0];
+        $instruction = $this->journal->hostInstructionsOn('Mac')[0];
 
-        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order
+        $this->journal->hostInstruction($instruction, fn (TestHostInstruction $instruction) => $instruction
             ->answerWith(['results' => [$this->conditionResult('failed', 'NOTE is not committed')]]));
 
         $result = StopConditionResult::query()->sole();
@@ -55,9 +55,9 @@ final class SettleFencedStopCheckTest extends TestCase
 
     public function test_a_passed_run_passes_the_attempt(): void
     {
-        $order = $this->journal->hostOrdersOn('Mac')[0];
+        $instruction = $this->journal->hostInstructionsOn('Mac')[0];
 
-        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order
+        $this->journal->hostInstruction($instruction, fn (TestHostInstruction $instruction) => $instruction
             ->answerWith(['results' => [$this->conditionResult('passed', 'clean')]]));
 
         $this->journal->assertResult(StopCheckStatus::Passed, $this->attempt->refresh()->status);
@@ -65,9 +65,9 @@ final class SettleFencedStopCheckTest extends TestCase
 
     public function test_a_refused_run_leaves_the_attempt_unresolved(): void
     {
-        $order = $this->journal->hostOrdersOn('Mac')[0];
+        $instruction = $this->journal->hostInstructionsOn('Mac')[0];
 
-        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order->refuse(HostRefusal::Fenced));
+        $this->journal->hostInstruction($instruction, fn (TestHostInstruction $instruction) => $instruction->refuse(HostRefusal::Fenced));
 
         $this->journal->assertResult(StopCheckStatus::Unresolved, $this->attempt->refresh()->status);
     }

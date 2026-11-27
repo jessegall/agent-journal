@@ -1,0 +1,455 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models\Hosts;
+
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
+use App\Events\Connections\HostInstructionAnswered;
+use App\Events\Connections\HostInstructionClaimed;
+use App\Events\Connections\HostInstructionMade;
+use App\Events\Connections\HostInstructionOfferedAgain;
+use App\Events\Connections\HostInstructionRefused;
+use App\Hosts\Enums\HostInstructionStatus;
+use App\Hosts\Exceptions\HostInstructionStateRefused;
+use App\Hosts\HostPayloadJson;
+use App\Hosts\Protocol\HostAnswerStatus;
+use App\Hosts\Protocol\HostInstructionType;
+use App\Hosts\Protocol\HostRefusal;
+use App\Hosts\Protocol\Payloads\HostAnswerPayload;
+use App\Hosts\Protocol\Payloads\HostInstructionPayload;
+use App\Hosts\Values\HostInstructionBody;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Projects\Host;
+use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+
+/**
+ * @property string $id
+ * @property string $host_id
+ * @property string|null $host_process_id
+ * @property string|null $driver_request_id
+ * @property string|null $step
+ * @property string $idempotency_key
+ * @property int $sequence
+ * @property HostInstructionType $type
+ * @property string $payload
+ * @property string $kept_payload
+ * @property CarbonImmutable $expires_at
+ * @property HostInstructionStatus $status
+ * @property HostRefusal|null $refusal
+ * @property HostAnswerPayload|null $answer
+ * @property CarbonImmutable|null $claimed_at
+ * @property CarbonImmutable|null $answered_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ *
+ * @mixin \Eloquent
+ */
+final class HostInstruction extends JournalModel implements EventSource, ReadableModel
+{
+    use BoundedReads;
+    use Linkable;
+    use RaisesEvents;
+
+    /**
+     * How long a claimed instruction waits for its answer before it is handed out again; the host answers one it carried out
+     * from its record and refuses one it was stopped in, so none is carried out twice.
+     */
+    public const int CLAIM_SECONDS = 10;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'type' => HostInstructionType::class,
+            'status' => HostInstructionStatus::class,
+            'refusal' => HostRefusal::class,
+            'sequence' => 'integer',
+            'payload' => 'encrypted',
+            'kept_payload' => 'encrypted',
+            'answer' => HostAnswerPayload::class,
+            'expires_at' => 'immutable_datetime',
+            'claimed_at' => 'immutable_datetime',
+            'answered_at' => 'immutable_datetime',
+        ];
+    }
+
+    // ----------[ Constructors ]----------
+
+    /**
+     * An instruction to the host, numbered after the process's last one, or the host's when it is about no process; the
+     * caller holds that row's lock.
+     */
+    public static function create(
+        Host $host,
+        HostProcess|null $process,
+        HostInstructionBody $body,
+        CarbonImmutable $expires,
+        int $sequence,
+    ): self {
+        $instruction = new self();
+        $instruction->host_id = $host->id;
+        $instruction->host_process_id = $process?->id;
+        $instruction->driver_request_id = $body->driverRequestId;
+        $instruction->step = $body->step;
+        $instruction->idempotency_key = $body->idempotencyKey;
+        $instruction->sequence = $sequence;
+        $instruction->type = $body->type;
+        $instruction->payload = HostPayloadJson::encode($body->payload);
+        $instruction->kept_payload = HostPayloadJson::encode($body->keptPayload());
+        $instruction->expires_at = $expires;
+        $instruction->status = HostInstructionStatus::Pending;
+        $instruction->saveAndAssert();
+        $instruction->raise(new HostInstructionMade($instruction->id, $process?->id, $host->id));
+
+        return $instruction;
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * The instruction as a claim hands it to the host, with the signature the host checks it by.
+     */
+    public function claimedInstruction(string $signature): HostInstructionPayload
+    {
+        return HostInstructionPayload::from([
+            'id' => $this->id,
+            'sequence' => $this->sequence,
+            'type' => $this->type->value,
+            'process_id' => (string) $this->host_process_id,
+            'payload' => $this->payload,
+            'expires_at' => $this->expires_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
+            'signature' => $signature,
+        ]);
+    }
+
+    /**
+     * The host claimed the instruction to carry it out, at the time given.
+     */
+    public function claim(CarbonImmutable $at): void
+    {
+        $this->status = HostInstructionStatus::Claimed;
+        $this->claimed_at = $at;
+        $this->saveAndAssert();
+        $this->raise(new HostInstructionClaimed($this->id, $this->host_process_id));
+    }
+
+    /**
+     * Offers the claimed instruction to the host again, as a claim of its earlier process never reached it or its answer
+     * never reached the journal.
+     */
+    public function offerAgain(): void
+    {
+        $this->status = HostInstructionStatus::Pending;
+        $this->claimed_at = null;
+        $this->saveAndAssert();
+        $this->raise(new HostInstructionOfferedAgain($this->id, $this->host_process_id));
+    }
+
+    /**
+     * The host carried the instruction out, and the instruction keeps its answer.
+     *
+     * @throws HostInstructionStateRefused
+     */
+    public function answer(HostAnswerPayload $answer, CarbonImmutable $at): void
+    {
+        if ($answer->status === HostAnswerStatus::Refused) {
+            // A refusal that names no reason is taken as unsafe, the host's own answer to an instruction it does not trust.
+            $this->refuse($answer->refusal ?? HostRefusal::Unsafe, $answer->reason, $answer->facts, $at);
+
+            return;
+        }
+
+        $this->assertOpen();
+        $this->forgetCarriedSecrets();
+        $this->status = HostInstructionStatus::Done;
+        $this->answer = $answer;
+        $this->answered_at = $at;
+        $this->saveAndAssert();
+        $this->raise(new HostInstructionAnswered($this->id, $this->host_process_id, $this->type));
+    }
+
+    /**
+     * The instruction is refused, with the refusal, the words that say why (none when the refusal says it all) and the facts.
+     *
+     * @param  array<string, mixed>  $facts
+     *
+     * @throws HostInstructionStateRefused
+     */
+    public function refuse(HostRefusal $refusal, string|null $reason, array $facts, CarbonImmutable $at): void
+    {
+        $this->assertOpen();
+        $this->forgetCarriedSecrets();
+        $this->status = HostInstructionStatus::Refused;
+        $this->refusal = $refusal;
+
+        $this->answer = HostAnswerPayload::from([
+            'instruction_id' => $this->id,
+            'status' => HostAnswerStatus::Refused,
+            'refusal' => $refusal,
+            'reason' => $reason,
+            'facts' => $facts,
+        ]);
+
+        $this->answered_at = $at;
+        $this->saveAndAssert();
+        $this->raise(new HostInstructionRefused($this->id, $this->host_process_id, $this->type, $refusal, $reason));
+    }
+
+    /**
+     * The instruction was not carried out in time and expires.
+     *
+     * @throws HostInstructionStateRefused
+     */
+    public function expire(CarbonImmutable $at): void
+    {
+        $this->refuse(HostRefusal::Expired, null, [], $at);
+    }
+
+    /**
+     * An input instruction's bytes and an open instruction's environment, which holds the start's credentials, are needed only
+     * until the host answers it: then only what the payload keeps stays, so neither is kept longer than it travels.
+     */
+    private function forgetCarriedSecrets(): void
+    {
+        $this->payload = $this->kept_payload;
+    }
+
+    // ----------[ Predicates ]----------
+
+    public function isOpen(): bool
+    {
+        return $this->status->isOpen();
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * @throws HostInstructionStateRefused
+     */
+    private function assertOpen(): void
+    {
+        if (! $this->isOpen()) {
+            throw HostInstructionStateRefused::alreadyEnded($this->id, $this->status);
+        }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * Whether every instruction placed since the moment has its answer.
+     */
+    public static function areAllAnsweredSince(CarbonImmutable $since): bool
+    {
+        return self::query()->where('created_at', '>=', $since)->whereNull('answered_at')->doesntExist();
+    }
+
+    /**
+     * The instruction, locked until the transaction ends, so one answer is stored at a time.
+     */
+    public static function findLocked(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * The open instructions whose expiry passed, locked so a claim beside this sweep skips them.
+     *
+     * @return list<self>
+     */
+    public static function findExpiredAt(CarbonImmutable $now, int $limit): array
+    {
+        $instructions = self::query()
+            ->whereIn('status', [HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
+            ->where('expires_at', '<=', $now)
+            ->lock('for update skip locked')
+            ->readExactly($limit)
+            ->get();
+
+        return array_values($instructions->all());
+    }
+
+    /**
+     * The open instructions of a process, locked.
+     *
+     * @return list<self>
+     */
+    public static function findOpenOf(string $processId): array
+    {
+        $instructions = self::query()
+            ->where('host_process_id', $processId)
+            ->whereIn('status', [HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
+            ->lockForUpdate()
+            ->get();
+
+        return array_values($instructions->all());
+    }
+
+    /**
+     * The instructions made for the process, by their number.
+     *
+     * @return list<self>
+     */
+    public static function findForProcess(string $processId): array
+    {
+        return array_values(self::query()->where('host_process_id', $processId)->orderBy('sequence')->get()->all());
+    }
+
+    /**
+     * The instructions made for the host itself, for no process of it, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function findForHostItself(string $hostId): array
+    {
+        return array_values(self::query()->where('host_id', $hostId)->whereNull('host_process_id')->orderBy('sequence')
+            ->limit(64)->get()->all());
+    }
+
+    /**
+     * The instructions a host claimed and has not answered, locked, as its start reads them.
+     *
+     * @return list<self>
+     */
+    public static function findClaimedOf(Host $host): array
+    {
+        $instructions = self::query()->forHost($host)->where('status', HostInstructionStatus::Claimed)->lockForUpdate()->get();
+
+        return array_values($instructions->all());
+    }
+
+    /**
+     * The instruction made under the key before, so a repeated step makes no second one.
+     */
+    public static function findWithKey(string $idempotencyKey): self|null
+    {
+        return self::query()->where('idempotency_key', $idempotencyKey)->first();
+    }
+
+    /**
+     * The seconds until the first instruction the host claimed and has not answered may be handed out again, at least one;
+     * null when it holds none, so a claim that waits wakes in time to hand it out.
+     */
+    public static function secondsUntilRetakeable(Host $host, CarbonImmutable $now): int|null
+    {
+        $oldest = self::query()
+            ->forHost($host)
+            ->where('status', HostInstructionStatus::Claimed)
+            ->where('expires_at', '>', $now)
+            ->min('claimed_at');
+
+        if ($oldest === null) {
+            return null;
+        }
+
+        $retakeable = CarbonImmutable::parse((string) $oldest)->addSeconds(self::CLAIM_SECONDS);
+
+        return max(1, (int) ceil($now->diffInSeconds($retakeable, false)));
+    }
+
+    /**
+     * The instructions the host may take now, by their number: those waiting and in time, and those claimed and unanswered
+     * too long, locked so a claim beside this one skips them. No container opens before the host answered its
+     * allow_images instruction, since the host runs the two side by side and the open would find the image not yet allowed.
+     *
+     * @return list<self>
+     */
+    public static function claimable(Host $host, CarbonImmutable $now, int $limit): array
+    {
+        $isAllowingImages = self::query()
+            ->forHost($host)
+            ->where('type', HostInstructionType::AllowImages)
+            ->whereIn('status', [HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
+            ->exists();
+
+        $instructions = self::query()
+            ->forHost($host)
+            ->takeableAt($now)
+            ->when($isAllowingImages, fn (Builder $query) => $query->where('type', '!=', HostInstructionType::OpenContainer))
+            ->orderBy('sequence')
+            ->lock('for update skip locked')
+            ->readExactly($limit)
+            ->get();
+
+        return array_values($instructions->all());
+    }
+
+    /**
+     * The instructions of a driver request that were made and not refused, waiting, handed out or carried out, by their
+     * number: where a new worker takes the request up without ordering a step twice.
+     *
+     * @return list<self>
+     */
+    public static function orderedFor(DriverRequest $request): array
+    {
+        $instructions = self::query()
+            ->ofDriverRequest($request)
+            ->whereIn('status', [HostInstructionStatus::Pending, HostInstructionStatus::Claimed, HostInstructionStatus::Done])
+            ->orderBy('sequence')
+            ->get();
+
+        return array_values($instructions->all());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forHost(Builder $query, Host $host): void
+    {
+        $query->where('host_id', $host->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofDriverRequest(Builder $query, DriverRequest $request): void
+    {
+        $query->where('driver_request_id', $request->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function takeableAt(Builder $query, CarbonImmutable $now): void
+    {
+        $query->where('expires_at', '>', $now)->where(
+            fn (Builder $takeable) => $takeable->where('status', HostInstructionStatus::Pending)->orWhere(
+                fn (Builder $unanswered) => $unanswered->where('status', HostInstructionStatus::Claimed)
+                    ->where('claimed_at', '<', $now->subSeconds(self::CLAIM_SECONDS)),
+            ),
+        );
+    }
+
+    /**
+     * The instructions the host answered done before the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function answeredDoneBefore(Builder $query, CarbonImmutable $before): void
+    {
+        $query->where('status', HostInstructionStatus::Done)->where('answered_at', '<', $before);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function answeredBefore(Builder $query, CarbonImmutable $before): void
+    {
+        $query->whereIn('status', [HostInstructionStatus::Done, HostInstructionStatus::Refused])
+            ->where('answered_at', '<', $before);
+    }
+}

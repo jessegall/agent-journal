@@ -14,7 +14,7 @@ use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 final readonly class OpenHeadlessTurnHandler implements CommandHandler
 {
@@ -62,7 +62,7 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
         $environment = $this->headless->clientSettingsOf($runtime)->environment();
         $turn = $profile->startPlan($driverStart)->withEnvironment($environment);
 
-        $source = HostOrderSource::forStep($request->requestId, self::OPEN_STEP, $request->attempt, 0);
+        $source = HostInstructionSource::forStep($request->requestId, self::OPEN_STEP, $request->attempt, 0);
 
         $open = new OpenHostProcessCommand($runtime->host_id, $runtime->id, $turn, $source, $start->id);
 

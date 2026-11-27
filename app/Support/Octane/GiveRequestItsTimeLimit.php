@@ -13,7 +13,7 @@ use Illuminate\Container\Attributes\Config;
 final readonly class GiveRequestItsTimeLimit
 {
     public function __construct(#[Config('octane.max_execution_time')]
-private int $seconds) {}
+        private int $seconds) {}
 
     public function handle(): void
     {

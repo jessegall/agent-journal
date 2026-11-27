@@ -53,7 +53,7 @@ final class HostProtocolCallsTest extends TestCase
 
     public function test_a_claim_that_waits_longer_than_the_protocol_takes_is_refused_by_its_field(): void
     {
-        $target = route('agents.host.orders.claim', ['limit' => 1, 'wait' => 26], false);
+        $target = route('agents.host.instructions.claim', ['limit' => 1, 'wait' => 26], false);
         $answer = $this->journal->hostCall($this->journal->hostCalled('Mac'), 'POST', $target);
 
         $this->journal->assertResult(

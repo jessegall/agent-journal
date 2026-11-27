@@ -7,16 +7,16 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\SettleHostUpgrade\SettleHostUpgradeCommand;
 use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
-use App\Hosts\Protocol\Data\HostInventoryData;
 use App\Hosts\Protocol\HostRefusal;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A refused upgrade order fails the host's upgrade with its reason; a done one waits for the new release's inventory,
+ * A refused upgrade instruction fails the host's upgrade with its reason; a done one waits for the new release's inventory,
  * which ends the upgrade.
  */
 #[TestsCommand(SettleHostUpgradeCommand::class)]
@@ -34,9 +34,9 @@ final class SettleHostUpgradeTest extends TestCase
         $this->journal->asSystem(new UpgradeHostCommand($this->journal->hostCalled('Mac')->hostId, self::RELEASE));
     }
 
-    public function test_a_refused_order_fails_the_upgrade_with_the_hosts_reason(): void
+    public function test_a_refused_instruction_fails_the_upgrade_with_the_hosts_reason(): void
     {
-        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+        $this->journal->hostInstruction($this->journal->hostInstructionsOn('Mac')[0], fn (TestHostInstruction $instruction) => $instruction
             ->refuse(HostRefusal::Fenced));
 
         $this->journal->assertResult(
@@ -45,9 +45,9 @@ final class SettleHostUpgradeTest extends TestCase
         );
     }
 
-    public function test_a_done_order_waits_until_the_inventory_names_the_new_release(): void
+    public function test_a_done_instruction_waits_until_the_inventory_names_the_new_release(): void
     {
-        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+        $this->journal->hostInstruction($this->journal->hostInstructionsOn('Mac')[0], fn (TestHostInstruction $instruction) => $instruction
             ->answerWith(['release' => self::RELEASE]));
         $waiting = $this->host()->upgrade_release;
         $this->journal->asSystem(new NotifyHostInventoryCommand($this->host()->id, $this->inventory()));
@@ -63,9 +63,9 @@ final class SettleHostUpgradeTest extends TestCase
         return Host::query()->whereKey($this->journal->hostCalled('Mac')->hostId)->sole();
     }
 
-    private function inventory(): HostInventoryData
+    private function inventory(): HostInventoryPayload
     {
-        return HostInventoryData::from([
+        return HostInventoryPayload::from([
             'protocol' => 1,
             'release' => self::RELEASE,
             'capabilities' => [],

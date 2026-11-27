@@ -8,11 +8,11 @@ use App\Accounts\Enums\CommandEntry;
 use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Hosts\Commands\SettleHostUpgrade\SettleHostUpgradeCommand;
-use App\Hosts\Contracts\HostOrderAnswerEvent;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Contracts\HostInstructionAnswerEvent;
+use App\Hosts\Protocol\HostInstructionType;
 
 /**
- * The host's answer to its upgrade order, or its refusal, settles the upgrade it waits on.
+ * The host's answer to its upgrade instruction, or its refusal, settles the upgrade it waits on.
  */
 final readonly class SettleHostUpgradeByAnswer implements Listener
 {
@@ -20,13 +20,13 @@ final readonly class SettleHostUpgradeByAnswer implements Listener
 
     public function __construct(private JournalCommands $commands) {}
 
-    public function handle(HostOrderAnswerEvent $fact): void
+    public function handle(HostInstructionAnswerEvent $fact): void
     {
-        if ($fact->type !== HostOrderType::Upgrade) {
+        if ($fact->type !== HostInstructionType::Upgrade) {
             return;
         }
 
-        $command = new SettleHostUpgradeCommand($fact->orderId);
+        $command = new SettleHostUpgradeCommand($fact->instructionId);
         $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $command);
     }
 }

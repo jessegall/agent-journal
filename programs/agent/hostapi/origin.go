@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-// ErrInsecureOrigin is a journal a remote host would reach over plain http: its orders and keys could be read and
+// ErrInsecureOrigin is a journal a remote host would reach over plain http: its instructions and keys could be read and
 // altered on the way.
 var ErrInsecureOrigin = errors.New("a remote host speaks to its journal over https only")
 

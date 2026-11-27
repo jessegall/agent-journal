@@ -16,7 +16,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Sessions\StartClaims;
 use App\Sessions\StartHeartbeats;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use Illuminate\Support\Str;
 
 final readonly class OpenHeadlessStartHandler implements CommandHandler
@@ -68,7 +68,7 @@ final readonly class OpenHeadlessStartHandler implements CommandHandler
             $probe = $this->probes->inAgentImage($probe);
         }
 
-        $source = HostOrderSource::fromJournal();
+        $source = HostInstructionSource::fromJournal();
         $open = new OpenHostProcessCommand($runtime->host_id, $runtime->id, $probe, $source, $start->id);
 
         return $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $open);

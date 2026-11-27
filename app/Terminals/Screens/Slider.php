@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Contracts\MenuRegion;
 
 /**
@@ -26,7 +26,7 @@ final readonly class Slider implements MenuRegion
         return $this->label;
     }
 
-    public function rowsOf(HostFrameData $frame): RowRange|null
+    public function rowsOf(HostFramePayload $frame): RowRange|null
     {
         $rows = array_map(fn (string $text) => new ScreenRow($text), $frame->rows);
 
@@ -43,7 +43,7 @@ final readonly class Slider implements MenuRegion
      * The labels below the bar, left to right, that start within its columns, and the one nearest the marker; a label
      * past the bar, such as a key hint, is no choice.
      */
-    public function entriesOf(HostFrameData $frame): MenuEntries|null
+    public function entriesOf(HostFramePayload $frame): MenuEntries|null
     {
         $range = $this->rowsOf($frame);
 

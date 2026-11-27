@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Hosts\Values;
 
-use App\Hosts\Protocol\Data\HostFencedRunData;
+use App\Hosts\Protocol\Payloads\HostFencedRunPayload;
 
 /**
- * One driver a run_fenced order runs: its absolute argv, run without a shell in a clean environment, in its folder,
+ * One driver a run_fenced instruction runs: its absolute argv, run without a shell in a clean environment, in its folder,
  * within its deadline and output limit.
  */
 final readonly class FencedRun
@@ -23,11 +23,11 @@ final readonly class FencedRun
     ) {}
 
     /**
-     * The run as the run_fenced order carries it.
+     * The run as the run_fenced instruction carries it.
      */
-    public function plan(): HostFencedRunData
+    public function plan(): HostFencedRunPayload
     {
-        return HostFencedRunData::from([
+        return HostFencedRunPayload::from([
             'argv' => $this->argv,
             'folder' => $this->folder,
             'deadline_ms' => $this->deadlineMs,

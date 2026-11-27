@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Terminals\Screens;
 
 use App\Agents\Drivers\Enums\HoldReason;
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Contracts\ScreenRegion;
 
 /**
@@ -65,7 +65,7 @@ final readonly class MenuFamily
     /**
      * Whether the frame shows this family: its options are drawn and enough of its keywords appear.
      */
-    public function isShownOn(HostFrameData $frame): bool
+    public function isShownOn(HostFramePayload $frame): bool
     {
         if ($this->options->rowsOf($frame) === null) {
             return false;

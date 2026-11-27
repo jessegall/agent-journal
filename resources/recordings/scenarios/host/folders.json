@@ -3,15 +3,20 @@
     "steps": [
         {
             "do": "make-folder",
-            "folder": "scenario-folder"
+            "folder": "scenariofolder"
         },
         {
             "do": "read-folder-use",
-            "folder": "scenario-folder"
+            "folder": "scenariofolder"
         },
         {
             "do": "remove-folder",
-            "folder": "scenario-folder"
+            "folder": "scenariofolder"
+        },
+        {
+            "do": "wait-for",
+            "fact": "orders-answered",
+            "seconds": 60
         }
     ]
 }

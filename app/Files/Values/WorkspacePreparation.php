@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Files\Values;
 
-use App\Hosts\Protocol\Data\HostWorkspaceCloneData;
-use App\Hosts\Protocol\Data\HostWorkspacePreparationData;
+use App\Hosts\Protocol\Payloads\HostWorkspaceClonePayload;
+use App\Hosts\Protocol\Payloads\HostWorkspacePreparationPayload;
 
 /**
  * What the host makes ready before a contained session's container mounts the workspace: a Git workspace's volume to
@@ -18,10 +18,10 @@ final readonly class WorkspacePreparation
         public string|null $folder,
     ) {}
 
-    public function protocolData(): HostWorkspacePreparationData
+    public function protocolData(): HostWorkspacePreparationPayload
     {
-        return HostWorkspacePreparationData::from([
-            'clone' => $this->clone === null ? null : HostWorkspaceCloneData::from(get_object_vars($this->clone)),
+        return HostWorkspacePreparationPayload::from([
+            'clone' => $this->clone === null ? null : HostWorkspaceClonePayload::from(get_object_vars($this->clone)),
             'folder' => $this->folder,
         ]);
     }

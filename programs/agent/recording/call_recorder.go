@@ -12,7 +12,7 @@ import (
 
 // KeptHeaders are the headers a recorded call keeps: those a client reads, never a signature, a credential or a
 // cookie; the same list as the PHP RecordedCall.
-var KeptHeaders = []string{"Content-Type", "Accept", "Content-Encoding", "Api-Version", "Docker-Experimental",
+var KeptHeaders = []string{"Content-Type", "Accept", "Content-Encoding", "Api-Version", "Docker-Experimental", "Connection", "Upgrade",
 	"Ostype", "Server"}
 
 // BodyByteLimit is the most bytes of a body a recorded call keeps, so a followed log stays small.
@@ -68,9 +68,14 @@ func (recorder CallRecorder) End(string, int) error {
 // Asked is the event of a request as the client sent it; its body is read and put back for the request to go on.
 func Asked(request *http.Request, at time.Time) Event {
 	var sent []byte
-	if request.Body != nil {
+	if request.Body != nil && request.Body != http.NoBody {
 		sent, _ = io.ReadAll(request.Body)
-		request.Body = io.NopCloser(bytes.NewReader(sent))
+		// An empty body goes back as no body: a reader of nothing would be sent chunked, and the daemon refuses a
+		// start that carries a body.
+		request.Body = http.NoBody
+		if len(sent) > 0 {
+			request.Body = io.NopCloser(bytes.NewReader(sent))
+		}
 	}
 	call := Call{Method: request.Method, Path: request.URL.Path, Query: queryOf(request), Headers: keptOf(request.Header)}
 	call.Body, call.IsCut = keptBody(sent)

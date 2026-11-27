@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Hosts\Commands\ForwardUserKeys\ForwardUserKeysCommand;
-use App\Hosts\Protocol\HostOrderType;
-use App\Values\HostOrderSource;
+use App\Hosts\Protocol\HostInstructionType;
+use App\Values\HostInstructionSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
@@ -35,23 +35,23 @@ final class ForwardUserKeysTest extends TestCase
         $id = $this->journal->asSystem(new ForwardUserKeysCommand(
             $process->id,
             "hi\r",
-            HostOrderSource::fromJournal(),
+            HostInstructionSource::fromJournal(),
         ));
-        $order = $this->journal->hostOrdersOf('shell')[1];
+        $instruction = $this->journal->hostInstructionsOf('shell')[1];
 
         $this->journal->assertResult(
             [
                 $id,
-                HostOrderType::WriteKeys,
+                HostInstructionType::WriteKeys,
                 ['bytes' => base64_encode("hi\r"), 'if_rows' => null, 'if_input_generation' => null, 'as_user' => true],
                 CarbonImmutable::parse(self::NOW)->addSeconds(5)->toIso8601String(),
                 $process->input_generation + 1,
             ],
             [
-                $order->id,
-                $order->type,
-                $this->journal->payloadOf($order),
-                $order->expires_at->toIso8601String(),
+                $instruction->id,
+                $instruction->type,
+                $this->journal->payloadOf($instruction),
+                $instruction->expires_at->toIso8601String(),
                 $this->journal->hostProcessCalled('shell')->input_generation,
             ],
         );

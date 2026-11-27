@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Hosts\Commands\ClaimHostOrders\ClaimHostOrdersCommand;
+use App\Hosts\Commands\ClaimHostInstructions\ClaimHostInstructionsCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
-use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
-use App\Hosts\Protocol\Data\HostInventoryData;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\HostRefusal;
-use App\Models\Hosts\HostOrder;
-use App\Values\HostOrderSource;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
+use App\Models\Hosts\HostInstruction;
+use App\Values\HostInstructionSource;
 use App\Values\RowGuard;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * After a host started, a process it still runs is kept, one it no longer holds is lost, one opened after its
- * inventory was built is left alone and its claimed opening offered again, and every input order it had claimed is
+ * inventory was built is left alone and its claimed opening offered again, and every input instruction it had claimed is
  * refused host_restarted.
  */
 #[TestsCommand(NotifyHostInventoryCommand::class)]
@@ -41,15 +41,15 @@ final class NotifyHostInventoryTest extends TestCase
             ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('kept')->openProcess('gone'))
             ->hostProcess('kept', fn (TestHostProcess $kept) => $kept->report(HostProcessReportType::Running))
             ->hostProcess('gone', fn (TestHostProcess $gone) => $gone->report(HostProcessReportType::Running));
-        [$goneOpen] = $this->journal->hostOrdersOf('gone');
-        $this->journal->hostOrder($goneOpen, fn (TestHostOrder $order) => $order
+        [$goneOpen] = $this->journal->hostInstructionsOf('gone');
+        $this->journal->hostInstruction($goneOpen, fn (TestHostInstruction $instruction) => $instruction
             ->answer())->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('newer'));
         $hostId = $this->journal->hostCalled('Mac')->hostId;
         $kept = $this->journal->hostProcessCalled('kept')->id;
-        $keys = new SendHostKeysCommand($kept, 'hi', new RowGuard(0, 0, 'rows'), 0, HostOrderSource::fromJournal());
+        $keys = new SendHostKeysCommand($kept, 'hi', new RowGuard(0, 0, 'rows'), 0, HostInstructionSource::fromJournal());
         $keysId = $this->journal->asSystem($keys);
-        $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 50));
-        $inventory = HostInventoryData::from([
+        $this->journal->asSystem(new ClaimHostInstructionsCommand($hostId, 50));
+        $inventory = HostInventoryPayload::from([
             'protocol' => 1,
             'release' => '6.0.0',
             'answered_through' => $goneOpen->id,
@@ -65,16 +65,16 @@ final class NotifyHostInventoryTest extends TestCase
 
         $this->journal->asSystem(new NotifyHostInventoryCommand($hostId, $inventory));
 
-        $refused = HostOrder::query()->whereKey($keysId)->sole();
-        [$newerOpen] = $this->journal->hostOrdersOf('newer');
+        $refused = HostInstruction::query()->whereKey($keysId)->sole();
+        [$newerOpen] = $this->journal->hostInstructionsOf('newer');
         $this->journal->assertResult(
             [
                 HostProcessStatus::Running,
                 HostProcessStatus::Lost,
                 HostProcessStatus::Ordered,
-                HostOrderStatus::Refused,
+                HostInstructionStatus::Refused,
                 HostRefusal::HostRestarted,
-                HostOrderStatus::Pending,
+                HostInstructionStatus::Pending,
             ],
             [
                 $this->journal->hostProcessCalled('kept')->status,
@@ -95,7 +95,7 @@ final class NotifyHostInventoryTest extends TestCase
             ->hostProcess('turn', fn (TestHostProcess $turn) => $turn
                 ->report(HostProcessReportType::Running)->printOnPipe("{\"type\":\"system\"}\n"));
         $process = $this->journal->hostProcessCalled('turn');
-        $inventory = HostInventoryData::from([
+        $inventory = HostInventoryPayload::from([
             'protocol' => 1,
             'release' => '6.0.0',
             'capabilities' => [],
@@ -119,7 +119,7 @@ final class NotifyHostInventoryTest extends TestCase
     public function test_a_host_that_names_no_protocol_is_told_to_update(): void
     {
         $this->journal->enrollHost('Mac', [base_path()]);
-        $inventory = HostInventoryData::from([
+        $inventory = HostInventoryPayload::from([
             'protocol' => 0,
             'release' => '5.9.0',
             'capabilities' => [],

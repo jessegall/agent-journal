@@ -10,7 +10,7 @@ use App\Exceptions\WorkerFenced;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Hosts\Enums\HostProcessStatus;
-use App\Hosts\Protocol\Data\HostProcessReportData;
+use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
@@ -35,7 +35,7 @@ final class FenceDriverWorkerTest extends TestCase
         $report = new NotifyHostProcessCommand(
             $process->host_id,
             $process->id,
-            HostProcessReportData::from([
+            HostProcessReportPayload::from([
                 'process_id' => $process->id,
                 'report' => 'running',
                 'identity' => 'pid:1',

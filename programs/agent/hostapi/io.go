@@ -90,7 +90,7 @@ func NewOutputs(stateFolder string, post OutputPoster, clock func() time.Time) *
 }
 
 // privateDeadline is how long a private entry stays open with no close: one the journal forgot, because its worker
-// died or its order was lost, ends by itself and takes no value after it.
+// died or its instruction was lost, ends by itself and takes no value after it.
 var privateDeadline = time.Minute
 
 // OpenPrivate stops every frame and recording of the terminal process from leaving, and the frame held back, until

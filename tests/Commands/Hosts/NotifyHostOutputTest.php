@@ -7,7 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Commands\NotifyHostOutput\NotifyHostOutputCommand;
 use App\Hosts\ProcessFeed;
-use App\Hosts\Protocol\Data\HostOutputData;
+use App\Hosts\Protocol\Payloads\HostOutputPayload;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
@@ -43,7 +43,7 @@ final class NotifyHostOutputTest extends TestCase
         $this->journal->asSystem(new NotifyHostOutputCommand(
             $this->journal->hostCalled('Mac')->hostId,
             $process,
-            HostOutputData::from(json_decode(self::FRAME, true, flags: JSON_THROW_ON_ERROR)),
+            HostOutputPayload::from(json_decode(self::FRAME, true, flags: JSON_THROW_ON_ERROR)),
         ));
 
         $this->journal->assertResult(
@@ -55,7 +55,7 @@ final class NotifyHostOutputTest extends TestCase
     public function test_output_of_another_hosts_process_is_refused_and_not_kept(): void
     {
         $process = $this->journal->hostProcessCalled('shell')->id;
-        $output = HostOutputData::from(json_decode(self::FRAME, true, flags: JSON_THROW_ON_ERROR));
+        $output = HostOutputPayload::from(json_decode(self::FRAME, true, flags: JSON_THROW_ON_ERROR));
         $foreign = new NotifyHostOutputCommand($this->journal->hostCalled('Other')->hostId, $process, $output);
 
         $this->journal

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Enums\ScreenType;
 
 /**
@@ -23,7 +23,7 @@ final readonly class ScreenReading
     /**
      * The rows of the menu's options on the frame, none when no menu shows or its options are not drawn.
      */
-    public function menuRowsOf(HostFrameData $frame): RowRange|null
+    public function menuRowsOf(HostFramePayload $frame): RowRange|null
     {
         return $this->menu?->options->rowsOf($frame);
     }

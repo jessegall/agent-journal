@@ -18,9 +18,9 @@ use App\Agents\Values\JournalServer;
 use App\Agents\Values\PlanFile;
 use App\Hosts\Exceptions\ProgramLineRefused;
 use App\Hosts\ProgramLines;
-use App\Hosts\Protocol\Data\HostContainerLabelsData;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessType;
+use App\Hosts\Protocol\Payloads\HostContainerLabelsPayload;
 use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\Values\SessionContainer;
 use App\Support\MountRules;
@@ -147,7 +147,7 @@ final class DriverPlansTest extends TestCase
     public function test_a_contained_start_opens_in_its_container_with_nothing_of_the_host(): void
     {
         $manifest = ContainerManifest::probe('registry.example/agent@sha256:'.str_repeat('a', 64), SecurityOptions::none());
-        $labels = HostContainerLabelsData::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']);
+        $labels = HostContainerLabelsPayload::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']);
         $server = new JournalServer('/opt/journal/bin/journal-mcp');
         $account = new DriverAccount($this->recipe(DefaultDrivers::CLAUDE_CODE, TransportProfileType::Mcp), 'start-1', $server);
         $start = new DriverStart(
@@ -166,9 +166,9 @@ final class DriverPlansTest extends TestCase
         $payload = json_decode((string) json_encode($plan->payload()), true);
 
         $this->journal->assertResult(
-            [HostOrderType::OpenContainer, ['installation' => 'acme', 'session' => 's1', 'account' => '01a1'], [], true, []],
+            [HostInstructionType::OpenContainer, ['installation' => 'acme', 'session' => 's1', 'account' => '01a1'], [], true, []],
             [
-                $plan->orderType(),
+                $plan->instructionType(),
                 $payload['labels'],
                 $plan->inherit,
                 in_array(MountRules::MANAGED_SETTINGS_FILE, array_map(fn (PlanFile $file) => $file->name, $plan->files), true),
@@ -209,7 +209,7 @@ final class DriverPlansTest extends TestCase
             executablePlace: ExecutablePlace::Image,
             container: new SessionContainer(
                 $manifest,
-                HostContainerLabelsData::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']),
+                HostContainerLabelsPayload::from(['installation' => 'acme', 'session' => 's1', 'account' => '01a1']),
             ),
             model: self::MODEL,
             effort: self::EFFORT,

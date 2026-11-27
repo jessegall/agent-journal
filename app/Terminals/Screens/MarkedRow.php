@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Contracts\ScreenRegion;
 
 /**
@@ -29,7 +29,7 @@ final readonly class MarkedRow implements ScreenRegion
         return $this->label;
     }
 
-    public function rowsOf(HostFrameData $frame): RowRange|null
+    public function rowsOf(HostFramePayload $frame): RowRange|null
     {
         $rows = array_map(fn (string $text) => new ScreenRow($text), $frame->rows);
         $drawn = array_keys(array_filter($rows, fn (ScreenRow $row) => ! $row->isBlank()));

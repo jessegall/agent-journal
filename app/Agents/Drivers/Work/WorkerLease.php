@@ -8,7 +8,7 @@ use Closure;
 
 /**
  * The process and generation of the driver worker whose command runs now, so every command it runs is fenced, a
- * report as much as an order.
+ * report as much as an instruction.
  */
 final class WorkerLease
 {

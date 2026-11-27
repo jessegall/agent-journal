@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\ExecutionBudgetInvalid;
-use App\Hosts\Protocol\Data\HostContainerBudgetsData;
+use App\Hosts\Protocol\Payloads\HostContainerBudgetsPayload;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -93,11 +93,11 @@ final class ExecutionBudgets extends Data
      * The budgets the host enforces; the wall time is not one of them, as the journal ends a session at its
      * deadline itself.
      */
-    public function hostBudgets(): HostContainerBudgetsData
+    public function hostBudgets(): HostContainerBudgetsPayload
     {
         $byPropertyName = TransformationContextFactory::create()->withoutPropertyNameMapping();
 
-        return HostContainerBudgetsData::from($this->except('wallSeconds')->transform($byPropertyName));
+        return HostContainerBudgetsPayload::from($this->except('wallSeconds')->transform($byPropertyName));
     }
 
     /**

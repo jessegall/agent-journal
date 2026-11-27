@@ -6,6 +6,11 @@
             "images": [
                 "agent"
             ]
+        },
+        {
+            "do": "wait-for",
+            "fact": "orders-answered",
+            "seconds": 60
         }
     ]
 }

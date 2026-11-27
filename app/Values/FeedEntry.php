@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Hosts\HostChunks;
-use App\Hosts\Protocol\Data\HostChunkData;
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostChunkPayload;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 
 /**
- * One entry a worker read: a frame or chunk of its process, an answer to one of its orders, or a wake of its
+ * One entry a worker read: a frame or chunk of its process, an answer to one of its instructions, or a wake of its
  * runtime, with the cursor after it.
  */
 final readonly class FeedEntry
@@ -17,9 +17,9 @@ final readonly class FeedEntry
     private function __construct(
         public string $stream,
         public string $cursor,
-        public HostFrameData|null $frame,
-        public HostChunkData|null $chunk,
-        public string|null $answeredOrderId,
+        public HostFramePayload|null $frame,
+        public HostChunkPayload|null $chunk,
+        public string|null $answeredInstructionId,
         public bool $hasEnded = false,
     ) {}
 
@@ -31,10 +31,10 @@ final readonly class FeedEntry
         return new self(
             $stream,
             $cursor,
-            isset($fields['frame']) ? HostFrameData::from(
+            isset($fields['frame']) ? HostFramePayload::from(
                 json_decode($fields['frame'], true, flags: JSON_THROW_ON_ERROR),
             ) : null,
-            isset($fields['chunk']) ? HostChunkData::from(
+            isset($fields['chunk']) ? HostChunkPayload::from(
                 json_decode($fields['chunk'], true, flags: JSON_THROW_ON_ERROR),
             ) : null,
             $fields['answered'] ?? null,
@@ -56,6 +56,6 @@ final readonly class FeedEntry
 
     public function isWake(): bool
     {
-        return $this->frame === null && $this->chunk === null && $this->answeredOrderId === null && ! $this->hasEnded;
+        return $this->frame === null && $this->chunk === null && $this->answeredInstructionId === null && ! $this->hasEnded;
     }
 }

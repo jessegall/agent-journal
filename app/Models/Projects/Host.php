@@ -17,14 +17,15 @@ use App\Events\Connections\HostCallFailed;
 use App\Events\Connections\HostHeartbeatRecorded;
 use App\Events\Connections\HostProtectionRecorded;
 use App\Events\Connections\HostProtectionRunsRecorded;
+use App\Events\Connections\HostReenrolled;
 use App\Events\Connections\HostRevoked;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
 use App\Exceptions\StartRefused;
 use App\Hosts\Data\FailedHostCallData;
-use App\Hosts\OrderSignature;
-use App\Hosts\Protocol\HostOrderType;
-use App\Models\Hosts\HostOrder;
+use App\Hosts\InstructionSignature;
+use App\Hosts\Protocol\HostInstructionType;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Profiles\Data\ProtectionReportData;
@@ -52,12 +53,12 @@ use Spatie\LaravelData\DataCollection;
  * @property DataCollection<int, ProtectionRunData> $protection_runs
  * @property ArrangementType $arrangement
  * @property int $protocol
- * @property string|null $order_secret
+ * @property string|null $instruction_secret
  * @property list<string> $capabilities
  * @property list<string> $allowed_images
  * @property string|null $release
  * @property string|null $upgrade_release
- * @property string|null $upgrade_order_id
+ * @property string|null $upgrade_instruction_id
  * @property string|null $upgrade_failure
  * @property CarbonImmutable|null $revoked_at
  * @property CarbonImmutable|null $last_answered_at
@@ -79,9 +80,9 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     use RaisesEvents;
 
     /**
-     * What the order secret is worked out for, on both sides.
+     * What the instruction secret is worked out for, on both sides.
      */
-    public const string ORDER_SECRET_CONTEXT = 'journal host protocol 1 orders';
+    public const string INSTRUCTION_SECRET_CONTEXT = 'journal host protocol 1 instructions';
 
     /**
      * @return array<string, string>
@@ -95,7 +96,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         return [
             'arrangement' => ArrangementType::class,
             'protocol' => 'integer',
-            'order_secret' => 'encrypted',
+            'instruction_secret' => 'encrypted',
             'capabilities' => 'array',
             'allowed_images' => 'array',
             'start_roots' => 'array',
@@ -128,7 +129,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $host->credential_hash = self::hashOf($secret);
         $host->start_roots = $startRoots;
         $host->arrangement = $arrangement;
-        $host->order_secret = self::orderSecretOf($secret);
+        $host->instruction_secret = self::instructionSecretOf($secret);
         $host->saveAndAssert();
 
         return $host;
@@ -169,6 +170,31 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     /**
      * The host's protocol 1 heartbeat arrived.
      */
+    /**
+     * The installation enrolled this host again: it takes the new secret and roots and starts with no failure, no
+     * answer and no allowed image, as nothing answers for what the host was before; its processes and instructions stay its.
+     *
+     * @param  list<string>  $startRoots
+     */
+    public function reenroll(string $secret, array $startRoots): void
+    {
+        $this->credential_hash = self::hashOf($secret);
+        $this->instruction_secret = self::instructionSecretOf($secret);
+        $this->start_roots = $startRoots;
+        $this->failing_since = null;
+        $this->failing_route = null;
+        $this->last_failure = null;
+        $this->reported_failures = null;
+        $this->last_heartbeat_at = null;
+        $this->last_answered_at = null;
+        $this->allowed_images = [];
+        $this->upgrade_release = null;
+        $this->upgrade_instruction_id = null;
+        $this->upgrade_failure = null;
+        $this->saveAndAssert();
+        $this->raise(new HostReenrolled($this->id));
+    }
+
     public function recordHeartbeat(CarbonImmutable $at): void
     {
         $this->last_heartbeat_at = $at;
@@ -250,24 +276,24 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Whether a browser may take control of this host's terminals: the host carries out the key orders the journal
+     * Whether a browser may take control of this host's terminals: the host carries out the key instructions the journal
      * types for it.
      */
     public function canCarryOutBrowserInput(): bool
     {
-        return $this->carriesOut(HostOrderType::WriteKeys);
+        return $this->carriesOut(HostInstructionType::WriteKeys);
     }
 
     /**
-     * Whether the host carries out the order this type of browser input becomes: keys for text, named keys and pastes,
+     * Whether the host carries out the instruction this type of browser input becomes: keys for text, named keys and pastes,
      * a resize, or private entry.
      */
     public function carriesOutBrowserInputOf(TerminalInputType $inputType): bool
     {
         return $this->carriesOut(match ($inputType) {
-            TerminalInputType::Resize => HostOrderType::Resize,
-            TerminalInputType::Private => HostOrderType::OpenPrivate,
-            default => HostOrderType::WriteKeys,
+            TerminalInputType::Resize => HostInstructionType::Resize,
+            TerminalInputType::Private => HostInstructionType::OpenPrivate,
+            default => HostInstructionType::WriteKeys,
         });
     }
 
@@ -328,7 +354,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Keeps the order types the host's inventory says it carries out.
+     * Keeps the instruction types the host's inventory says it carries out.
      *
      * @param  list<string>  $capabilities
      */
@@ -339,7 +365,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Keeps the images the journal ordered this host to allow its containers, after the order was made.
+     * Keeps the images the journal ordered this host to allow its containers, after the instruction was made.
      *
      * @param  list<string>  $images
      */
@@ -350,7 +376,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * A host that restarted allows no image until the journal orders it again.
+     * A host that restarted allows no image until the journal instructs it again.
      */
     public function forgetAllowedImages(): void
     {
@@ -376,7 +402,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
 
         if ($this->upgrade_release === $release) {
             $this->upgrade_release = null;
-            $this->upgrade_order_id = null;
+            $this->upgrade_instruction_id = null;
         }
 
         $this->saveAndAssert();
@@ -388,17 +414,17 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function awaitUpgrade(string $release): void
     {
         $this->upgrade_release = $release;
-        $this->upgrade_order_id = null;
+        $this->upgrade_instruction_id = null;
         $this->upgrade_failure = null;
         $this->saveAndAssert();
     }
 
     /**
-     * Keeps the upgrade order the journal made for the awaited release.
+     * Keeps the upgrade instruction the journal made for the awaited release.
      */
-    public function orderUpgrade(string $orderId): void
+    public function instructionUpgrade(string $instructionId): void
     {
-        $this->upgrade_order_id = $orderId;
+        $this->upgrade_instruction_id = $instructionId;
         $this->saveAndAssert();
     }
 
@@ -408,23 +434,23 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function failUpgrade(string $reason): void
     {
         $this->upgrade_release = null;
-        $this->upgrade_order_id = null;
+        $this->upgrade_instruction_id = null;
         $this->upgrade_failure = $reason;
         $this->saveAndAssert();
     }
 
     /**
-     * Whether an upgrade waits for the host's processes to end and has no order yet.
+     * Whether an upgrade waits for the host's processes to end and has no instruction yet.
      */
-    public function awaitsUpgradeOrder(): bool
+    public function awaitsUpgradeInstruction(): bool
     {
-        return $this->upgrade_release !== null && $this->upgrade_order_id === null;
+        return $this->upgrade_release !== null && $this->upgrade_instruction_id === null;
     }
 
     /**
-     * Whether the host carries out orders of the type: a host that sent no inventory yet is taken to carry out all.
+     * Whether the host carries out instructions of the type: a host that sent no inventory yet is taken to carry out all.
      */
-    public function carriesOut(HostOrderType $type): bool
+    public function carriesOut(HostInstructionType $type): bool
     {
         return $this->capabilities === [] || in_array($type->value, $this->capabilities, true);
     }
@@ -474,19 +500,19 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     // ----------[ Calculations ]----------
 
     /**
-     * The order's signature the host checks: HMAC-SHA256, keyed by the host's order secret, of the order's id, number,
+     * The instruction's signature the host checks: HMAC-SHA256, keyed by the host's instruction secret, of the instruction's id, number,
      * type, process, the SHA-256 of its payload and its expiry, one to a line.
      */
-    public function signOrder(HostOrder $order): string
+    public function signInstruction(HostInstruction $instruction): string
     {
-        return OrderSignature::of(
-            $order->id,
-            $order->sequence,
-            $order->type->value,
-            (string) $order->host_process_id,
-            $order->payload,
-            $order->expires_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
-            (string) $this->order_secret,
+        return InstructionSignature::of(
+            $instruction->id,
+            $instruction->sequence,
+            $instruction->type->value,
+            (string) $instruction->host_process_id,
+            $instruction->payload,
+            $instruction->expires_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
+            (string) $this->instruction_secret,
         );
     }
 
@@ -600,17 +626,26 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The secret the host's orders are signed with, worked out from its credential the way the host works it out, so
+     * The secret the host's instructions are signed with, worked out from its credential the way the host works it out, so
      * enrolment hands over nothing more.
      */
-    public static function orderSecretOf(string $credential): string
+    public static function instructionSecretOf(string $credential): string
     {
-        return hash_hmac('sha256', self::ORDER_SECRET_CONTEXT, $credential);
+        return hash_hmac('sha256', self::INSTRUCTION_SECRET_CONTEXT, $credential);
     }
 
     /**
-     * The host, locked until the transaction ends, so its host-wide orders are numbered one at a time.
+     * The host, locked until the transaction ends, so its host-wide instructions are numbered one at a time.
      */
+    /**
+     * The enrolled host of the installation name, locked, not revoked and serving no connected project; none before
+     * the name is enrolled.
+     */
+    public static function findLockedEnrolledNamed(string $name): self|null
+    {
+        return self::query()->enrolled()->unrevoked()->where('installation_name', $name)->lockForUpdate()->first();
+    }
+
     public static function findLocked(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
@@ -627,7 +662,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * The hosts, locked, whose awaited upgrade order was answered done before the moment while no inventory has named
+     * The hosts, locked, whose awaited upgrade instruction was answered done before the moment while no inventory has named
      * the release it brings.
      *
      * @return list<self>
@@ -636,7 +671,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     {
         return array_values(self::query()->unrevoked()
             ->whereNotNull('upgrade_release')
-            ->whereIn('upgrade_order_id', HostOrder::query()->answeredDoneBefore($before)->select('id'))
+            ->whereIn('upgrade_instruction_id', HostInstruction::query()->answeredDoneBefore($before)->select('id'))
             ->lockForUpdate()
             ->get()
             ->all());

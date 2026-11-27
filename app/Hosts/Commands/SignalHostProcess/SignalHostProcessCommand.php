@@ -7,10 +7,10 @@ namespace App\Hosts\Commands\SignalHostProcess;
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
 use App\Support\Command;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 /**
- * Orders the host to send a signal to a process, such as SIGINT to end a turn. Run by a driver worker (internal, not exported).
+ * Instructs the host to send a signal to a process, such as SIGINT to end a turn. Run by a driver worker (internal, not exported).
  *
  * @extends Command<string>
  */
@@ -20,6 +20,6 @@ final readonly class SignalHostProcessCommand extends Command
     public function __construct(
         public string $processId,
         public string $signal,
-        public HostOrderSource $source,
+        public HostInstructionSource $source,
     ) {}
 }

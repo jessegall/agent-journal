@@ -3,7 +3,7 @@ package host
 import "sync"
 
 // AllowedImages are the pinned images the journal last named that a contained host's containers may run: none until
-// its first allow_images order, so a host that just started runs no container of its own choice.
+// its first allow_images instruction, so a host that just started runs no container of its own choice.
 type AllowedImages struct {
 	mutex   sync.RWMutex
 	digests map[string]bool

@@ -8,7 +8,7 @@ use App\Agents\Commands\CheckDriverBuild\CheckDriverBuildCommand;
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Drivers\Contracts\ProcessDriver;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;
 use App\Values\ClaimedRequest;
@@ -44,7 +44,7 @@ final class ProbeDriver implements ProcessDriver
         return DriverActions::none();
     }
 
-    public function onAnswer(HostOrder $order): DriverActions
+    public function onAnswer(HostInstruction $instruction): DriverActions
     {
         return DriverActions::none();
     }

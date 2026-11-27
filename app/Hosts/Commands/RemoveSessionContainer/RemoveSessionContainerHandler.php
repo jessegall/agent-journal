@@ -6,20 +6,20 @@ namespace App\Hosts\Commands\RemoveSessionContainer;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Hosts\ArrangementSetting;
-use App\Hosts\Protocol\Data\HostSessionRemovalData;
-use App\Hosts\Protocol\HostOrders;
-use App\Values\HostOrderSource;
+use App\Hosts\Protocol\HostInstructions;
+use App\Hosts\Protocol\Payloads\HostSessionRemovalPayload;
+use App\Values\HostInstructionSource;
 
 final readonly class RemoveSessionContainerHandler implements CommandHandler
 {
-    public function __construct(private HostOrders $orders, private ArrangementSetting $arrangement) {}
+    public function __construct(private HostInstructions $instructions, private ArrangementSetting $arrangement) {}
 
     public function handle(RemoveSessionContainerCommand $command): string
     {
-        return $this->orders->removeSession(
+        return $this->instructions->removeSession(
             $command->hostId,
-            HostOrderSource::fromJournal(),
-            HostSessionRemovalData::from([
+            HostInstructionSource::fromJournal(),
+            HostSessionRemovalPayload::from([
                 'network' => $this->arrangement->sessionContainerName($command->sessionId),
                 'session' => $command->sessionId,
             ]),

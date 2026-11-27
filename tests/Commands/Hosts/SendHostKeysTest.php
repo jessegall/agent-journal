@@ -7,10 +7,10 @@ namespace Tests\Commands\Hosts;
 use App\Exceptions\HostProtocolRefused;
 use App\Exceptions\WorkerFenced;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostProcessType;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\RowGuard;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -46,21 +46,21 @@ final class SendHostKeysTest extends TestCase
             ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
     }
 
-    public function test_it_orders_the_host_with_its_payload_and_expiry(): void
+    public function test_it_instructs_the_host_with_its_payload_and_expiry(): void
     {
-        $id = $this->journal->asSystem($this->command(HostOrderSource::fromJournal()));
-        $order = $this->journal->hostOrdersOf('shell')[1];
+        $id = $this->journal->asSystem($this->command(HostInstructionSource::fromJournal()));
+        $instruction = $this->journal->hostInstructionsOf('shell')[1];
 
         $this->journal->assertResult(
-            [$id, HostOrderType::WriteKeys, self::PAYLOAD, CarbonImmutable::parse(self::NOW)->addSeconds(5)->toIso8601String()],
-            [$order->id, $order->type, $this->journal->payloadOf($order), $order->expires_at->toIso8601String()],
+            [$id, HostInstructionType::WriteKeys, self::PAYLOAD, CarbonImmutable::parse(self::NOW)->addSeconds(5)->toIso8601String()],
+            [$instruction->id, $instruction->type, $this->journal->payloadOf($instruction), $instruction->expires_at->toIso8601String()],
         );
     }
 
-    public function test_a_replaced_worker_is_fenced_and_a_repeated_step_makes_no_second_order(): void
+    public function test_a_replaced_worker_is_fenced_and_a_repeated_step_makes_no_second_instruction(): void
     {
-        $replaced = HostOrderSource::forStep('request-1', 'step', 0, 1);
-        $current = HostOrderSource::forStep('request-1', 'step', 0, 0);
+        $replaced = HostInstructionSource::forStep('request-1', 'step', 0, 1);
+        $current = HostInstructionSource::forStep('request-1', 'step', 0, 0);
 
         $this->journal->assertRefused(
             WorkerFenced::class,
@@ -69,22 +69,22 @@ final class SendHostKeysTest extends TestCase
         $first = $this->journal->asSystem($this->command($current));
         $again = $this->journal->asSystem($this->command($current));
 
-        $orders = $this->journal->hostOrdersOf('shell');
+        $instructions = $this->journal->hostInstructionsOf('shell');
 
         $this->journal->assertResult(
             [$first, 'request-1:step:0', 2],
-            [$again, $orders[1]->idempotency_key, count($orders)],
+            [$again, $instructions[1]->idempotency_key, count($instructions)],
         );
     }
 
-    public function test_a_process_that_exited_takes_no_order(): void
+    public function test_a_process_that_exited_takes_no_instruction(): void
     {
         $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell
             ->report(HostProcessReportType::Exited, 0));
 
         $this->journal->assertRefused(
             HostProtocolRefused::class,
-            fn () => $this->journal->asSystem($this->command(HostOrderSource::fromJournal())),
+            fn () => $this->journal->asSystem($this->command(HostInstructionSource::fromJournal())),
         );
     }
 
@@ -92,12 +92,12 @@ final class SendHostKeysTest extends TestCase
     {
         $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('pipe', HostProcessType::Pipe));
         $pipe = $this->journal->hostProcessCalled('pipe')->id;
-        $keys = new SendHostKeysCommand($pipe, 'hi', new RowGuard(0, 1, 'abc'), 3, HostOrderSource::fromJournal());
+        $keys = new SendHostKeysCommand($pipe, 'hi', new RowGuard(0, 1, 'abc'), 3, HostInstructionSource::fromJournal());
 
         $this->journal->assertRefused(HostProtocolRefused::class, fn () => $this->journal->asSystem($keys));
     }
 
-    private function command(HostOrderSource $source): SendHostKeysCommand
+    private function command(HostInstructionSource $source): SendHostKeysCommand
     {
         return new SendHostKeysCommand(
             $this->journal->hostProcessCalled('shell')->id,

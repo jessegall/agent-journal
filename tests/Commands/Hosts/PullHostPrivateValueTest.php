@@ -7,7 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\PullHostPrivateValue\PullHostPrivateValueCommand;
 use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Terminals\Exceptions\PrivateValueRefused;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHostProcess;
@@ -39,7 +39,7 @@ final class PullHostPrivateValueTest extends TestCase
         $this->journal->asSystem(new WriteHostPrivateValueCommand(
             $process,
             'submission-1',
-            HostOrderSource::fromJournal(),
+            HostInstructionSource::fromJournal(),
         ));
     }
 

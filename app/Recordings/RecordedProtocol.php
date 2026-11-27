@@ -8,22 +8,22 @@ use App\Exceptions\HostProtocolRefused;
 use App\Hosts\ContainedPlanRules;
 use App\Hosts\Exceptions\HostCallUnreadable;
 use App\Hosts\HostCallReader;
-use App\Hosts\Protocol\Data\HostAnswerData;
-use App\Hosts\Protocol\Data\HostClaimedOrdersData;
-use App\Hosts\Protocol\Data\HostOpenPlanData;
-use App\Hosts\Protocol\Data\HostOrderData;
 use App\Hosts\Protocol\HostAnswerStatus;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProtocol;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\HostRoute;
+use App\Hosts\Protocol\Payloads\HostAnswerPayload;
+use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
+use App\Hosts\Protocol\Payloads\HostInstructionPayload;
+use App\Hosts\Protocol\Payloads\HostOpenPlanPayload;
 use App\Recordings\Enums\RecordedEventType;
 use App\Recordings\Enums\Wire;
 use App\Recordings\Exceptions\RecordingBreaksProtocol;
 
 /**
  * Judges a recording by host protocol 1 as the generator wrote it, holding no rule of its own: every recorded host
- * call, claimed order, payload, plan and answer goes through the generated strict readers and the contained plan rules,
+ * call, claimed instruction, payload, plan and answer goes through the generated strict readers and the contained plan rules,
  * and the first that breaks them refuses the recording by its exchange, its event and the reader's error.
  */
 final readonly class RecordedProtocol
@@ -43,14 +43,14 @@ final readonly class RecordedProtocol
     }
 
     /**
-     * The calls, order types and refusals of the protocol none of the recordings holds.
+     * The calls, instruction types and refusals of the protocol none of the recordings holds.
      *
      * @param  list<ScenarioRecording>  $recordings
      */
     public function coverage(array $recordings): ProtocolCoverage
     {
         $routes = [];
-        $orderTypes = [];
+        $instructionTypes = [];
         $refusals = [];
 
         foreach ($recordings as $recording) {
@@ -58,18 +58,18 @@ final readonly class RecordedProtocol
                 $route = $this->routeOf($call);
                 $routes[] = $route;
 
-                if ($route === HostRoute::ClaimOrders && $call->status !== null && $call->body !== '') {
-                    $orderTypes = [
-                        ...$orderTypes,
+                if ($route === HostRoute::ClaimInstructions && $call->status !== null && $call->body !== '') {
+                    $instructionTypes = [
+                        ...$instructionTypes,
                         ...array_map(
-                            fn (HostOrderData $order) => HostOrderType::tryFrom($order->type),
-                            HostClaimedOrdersData::from($call->body)->orders,
+                            fn (HostInstructionPayload $instruction) => HostInstructionType::tryFrom($instruction->type),
+                            HostClaimedInstructionsPayload::from($call->body)->instructions,
                         ),
                     ];
                 }
 
-                if ($route === HostRoute::AnswerOrder && $call->status === null && $call->body !== '') {
-                    $refusals[] = HostAnswerData::from($call->body)->refusal;
+                if ($route === HostRoute::AnswerInstruction && $call->status === null && $call->body !== '') {
+                    $refusals[] = HostAnswerPayload::from($call->body)->refusal;
                 }
             }
         }
@@ -77,8 +77,8 @@ final readonly class RecordedProtocol
         return new ProtocolCoverage(
             array_values(array_filter(HostRoute::cases(), fn (HostRoute $route) => ! in_array($route, $routes, true))),
             array_values(array_filter(
-                HostOrderType::cases(),
-                fn (HostOrderType $type) => ! in_array($type, $orderTypes, true),
+                HostInstructionType::cases(),
+                fn (HostInstructionType $type) => ! in_array($type, $instructionTypes, true),
             )),
             array_values(array_filter(
                 HostRefusal::cases(),
@@ -121,9 +121,9 @@ final readonly class RecordedProtocol
      */
     private function assertAskedKept(HostRoute $route, RecordedCall $call): void
     {
-        $body = $this->reader->read($call->body === '' ? '{}' : $call->body, $route->bodyData(), $route->value);
+        $body = $this->reader->read($call->body === '' ? '{}' : $call->body, $route->bodyPayload(), $route->value);
 
-        if (! $body instanceof HostAnswerData || $body->status !== HostAnswerStatus::Refused) {
+        if (! $body instanceof HostAnswerPayload || $body->status !== HostAnswerStatus::Refused) {
             return;
         }
 
@@ -144,17 +144,17 @@ final readonly class RecordedProtocol
             return;
         }
 
-        $reply = $this->reader->read($call->body, $route->replyData(), "reply to {$route->value}");
+        $reply = $this->reader->read($call->body, $route->replyPayload(), "reply to {$route->value}");
 
-        if (! $reply instanceof HostClaimedOrdersData) {
+        if (! $reply instanceof HostClaimedInstructionsPayload) {
             return;
         }
 
-        foreach ($reply->orders as $order) {
-            $type = HostOrderType::from($order->type);
-            $payload = $this->reader->read($order->payload, $type->payloadData(), "payload of {$type->value}");
+        foreach ($reply->instructions as $instruction) {
+            $type = HostInstructionType::from($instruction->type);
+            $payload = $this->reader->read($instruction->payload, $type->payloadOf(), "payload of {$type->value}");
 
-            if ($payload instanceof HostOpenPlanData) {
+            if ($payload instanceof HostOpenPlanPayload) {
                 $this->containedRules->assertKept($payload);
             }
         }

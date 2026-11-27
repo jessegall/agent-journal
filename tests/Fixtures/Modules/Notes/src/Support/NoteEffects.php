@@ -25,7 +25,7 @@ final class NoteEffects
     private array $afterRecording = [];
 
     /**
-     * @param Closure(RecordNoteEffectCommand): void $callback
+     * @param  Closure(RecordNoteEffectCommand): void  $callback
      */
     public function afterRecording(Closure $callback): void
     {

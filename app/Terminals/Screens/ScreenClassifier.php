@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Enums\ScreenType;
 
 /**
@@ -14,7 +14,7 @@ use App\Terminals\Screens\Enums\ScreenType;
  */
 final readonly class ScreenClassifier
 {
-    public function readingOf(ScreenLayout $layout, HostFrameData $frame): ScreenReading
+    public function readingOf(ScreenLayout $layout, HostFramePayload $frame): ScreenReading
     {
         $hasOptions = $layout->optionsOf($frame) !== null && $layout->composer->rowsOf($frame) === null;
 
@@ -43,7 +43,7 @@ final readonly class ScreenClassifier
      * Whether the composer is on the layout's buffer with the cursor in it at the column of an empty composer:
      * nothing anybody typed is there.
      */
-    private static function holdsEmptyComposer(ScreenLayout $layout, HostFrameData $frame, RowRange $composer): bool
+    private static function holdsEmptyComposer(ScreenLayout $layout, HostFramePayload $frame, RowRange $composer): bool
     {
         return $frame->buffer === $layout->buffer
             && $composer->holds($frame->cursorRow)
@@ -54,7 +54,7 @@ final readonly class ScreenClassifier
      * Whether each row of the range has gone unchanged for at least the milliseconds; a range the frame does not
      * draw is never still.
      */
-    private static function isStill(HostFrameData $frame, RowRange|null $rows, int $milliseconds): bool
+    private static function isStill(HostFramePayload $frame, RowRange|null $rows, int $milliseconds): bool
     {
         if ($rows === null) {
             return false;

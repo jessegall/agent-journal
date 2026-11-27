@@ -14,17 +14,17 @@ use App\Events\Connections\EnvironmentOpened;
 use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
 use App\Events\Connections\HostHeartbeatRecorded;
-use App\Events\Connections\HostOrderAnswered;
-use App\Events\Connections\HostOrderClaimed;
-use App\Events\Connections\HostOrderMade;
-use App\Events\Connections\HostOrderOfferedAgain;
-use App\Events\Connections\HostOrderRefused;
+use App\Events\Connections\HostInstructionAnswered;
+use App\Events\Connections\HostInstructionClaimed;
+use App\Events\Connections\HostInstructionMade;
+use App\Events\Connections\HostInstructionOfferedAgain;
+use App\Events\Connections\HostInstructionRefused;
 use App\Events\Connections\HostProcessExited;
 use App\Events\Connections\HostProcessInputGenerationRaised;
+use App\Events\Connections\HostProcessInstructionNumbered;
 use App\Events\Connections\HostProcessLost;
 use App\Events\Connections\HostProcessOpened;
-use App\Events\Connections\HostProcessOpenOrderHeld;
-use App\Events\Connections\HostProcessOrderNumbered;
+use App\Events\Connections\HostProcessOpenInstructionHeld;
 use App\Events\Connections\HostProcessOutputRecorded;
 use App\Events\Connections\HostProcessRestarted;
 use App\Events\Connections\HostProcessSeenInHeartbeat;
@@ -33,6 +33,7 @@ use App\Events\Connections\HostProcessWorkerClaimed;
 use App\Events\Connections\HostProcessWorkerRenewed;
 use App\Events\Connections\HostProtectionRecorded;
 use App\Events\Connections\HostProtectionRunsRecorded;
+use App\Events\Connections\HostReenrolled;
 use App\Events\Connections\HostRevoked;
 use App\Events\Connections\InstallAttemptCancelled;
 use App\Events\Connections\InstallAttemptOpened;
@@ -58,7 +59,7 @@ use App\Events\Connections\ProjectReadAnsweredWithText;
 use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
 use App\Events\Connections\WorkspaceReadAnswered;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProjectReadFailure;
 use App\Hosts\Protocol\HostRefusal;
 use Tests\Architecture\Support\EventRole;
@@ -342,19 +343,19 @@ return [
         'producers' => [],
         'sample' => fn () => new HostProcessWorkerRenewed('process', 1),
     ],
-    HostProcessOrderNumbered::class => [
+    HostProcessInstructionNumbered::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'HostProcess::takeOrderNumber',
+        'owner' => 'HostProcess::takeInstructionNumber',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostProcessOrderNumbered('process', 1),
+        'sample' => fn () => new HostProcessInstructionNumbered('process', 1),
     ],
-    HostProcessOpenOrderHeld::class => [
+    HostProcessOpenInstructionHeld::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'HostProcess::holdOpenOrder',
+        'owner' => 'HostProcess::holdOpenInstruction',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostProcessOpenOrderHeld('process', 'order'),
+        'sample' => fn () => new HostProcessOpenInstructionHeld('process', 'instruction'),
     ],
     HostProcessInputGenerationRaised::class => [
         'role' => EventRole::RowFact,
@@ -363,19 +364,26 @@ return [
         'producers' => [],
         'sample' => fn () => new HostProcessInputGenerationRaised('process', 1),
     ],
-    HostOrderClaimed::class => [
+    HostInstructionClaimed::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'HostOrder::claim',
+        'owner' => 'HostInstruction::claim',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostOrderClaimed('order', 'process'),
+        'sample' => fn () => new HostInstructionClaimed('instruction', 'process'),
     ],
-    HostOrderOfferedAgain::class => [
+    HostInstructionOfferedAgain::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'HostOrder::offerAgain',
+        'owner' => 'HostInstruction::offerAgain',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostOrderOfferedAgain('order', 'process'),
+        'sample' => fn () => new HostInstructionOfferedAgain('instruction', 'process'),
+    ],
+    HostReenrolled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Host::reenroll',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostReenrolled('host'),
     ],
     HostHeartbeatRecorded::class => [
         'role' => EventRole::RowFact,
@@ -384,29 +392,29 @@ return [
         'producers' => [],
         'sample' => fn () => new HostHeartbeatRecorded('host'),
     ],
-    HostOrderMade::class => [
+    HostInstructionMade::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'HostOrder::create',
+        'owner' => 'HostInstruction::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostOrderMade('order', 'process', 'host'),
+        'sample' => fn () => new HostInstructionMade('instruction', 'process', 'host'),
     ],
-    HostOrderAnswered::class => [
+    HostInstructionAnswered::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'HostOrder::answer',
+        'owner' => 'HostInstruction::answer',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostOrderAnswered('order', 'process', HostOrderType::cases()[0]),
+        'sample' => fn () => new HostInstructionAnswered('instruction', 'process', HostInstructionType::cases()[0]),
     ],
-    HostOrderRefused::class => [
+    HostInstructionRefused::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'HostOrder::refuse',
+        'owner' => 'HostInstruction::refuse',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new HostOrderRefused(
-            'order',
+        'sample' => fn () => new HostInstructionRefused(
+            'instruction',
             'process',
-            HostOrderType::cases()[0],
+            HostInstructionType::cases()[0],
             HostRefusal::cases()[0],
             'the rows moved on',
         ),

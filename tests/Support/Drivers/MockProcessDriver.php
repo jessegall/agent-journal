@@ -7,13 +7,13 @@ namespace Tests\Support\Drivers;
 use App\Agents\Drivers\Contracts\ProcessDriver;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Commands\SignalHostProcess\SignalHostProcessCommand;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\RowGuard;
 
 /**
@@ -33,7 +33,7 @@ final readonly class MockProcessDriver implements ProcessDriver
 
     public function onOutput(FeedEntry $entry): DriverActions
     {
-        $paste = HostOrderSource::forStep(self::REQUEST, 'paste', 0, $this->generation);
+        $paste = HostInstructionSource::forStep(self::REQUEST, 'paste', 0, $this->generation);
 
         return DriverActions::of(new SendHostKeysCommand(
             $this->process->id,
@@ -49,7 +49,7 @@ final readonly class MockProcessDriver implements ProcessDriver
         return $this->signal('SIGUSR1');
     }
 
-    public function onAnswer(HostOrder $order): DriverActions
+    public function onAnswer(HostInstruction $instruction): DriverActions
     {
         return $this->signal('SIGUSR2');
     }
@@ -66,7 +66,7 @@ final readonly class MockProcessDriver implements ProcessDriver
 
     private function signal(string $signal): DriverActions
     {
-        $source = HostOrderSource::forWorker($this->generation);
+        $source = HostInstructionSource::forWorker($this->generation);
 
         return DriverActions::of(new SignalHostProcessCommand($this->process->id, $signal, $source));
     }

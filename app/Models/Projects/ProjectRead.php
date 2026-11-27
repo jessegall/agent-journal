@@ -13,8 +13,8 @@ use App\Events\Connections\ProjectReadAnsweredWithEntries;
 use App\Events\Connections\ProjectReadAnsweredWithText;
 use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
-use App\Hosts\Protocol\Data\HostProjectEntryData;
 use App\Hosts\Protocol\HostProjectReadFailure;
+use App\Hosts\Protocol\Payloads\HostProjectEntryPayload;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\JournalModel;
 use App\Projects\Enums\ProjectReadStatus;
@@ -40,7 +40,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $actor_id
  * @property ProjectReadStatus $status
  * @property HostProjectReadFailure|null $failure
- * @property DataCollection<int, HostProjectEntryData>|null $entries
+ * @property DataCollection<int, HostProjectEntryPayload>|null $entries
  * @property string|null $text
  * @property-read ProjectBinding $binding
  * @property string|null $digest
@@ -97,7 +97,7 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
             'type' => ProjectReadType::class,
             'status' => ProjectReadStatus::class,
             'failure' => HostProjectReadFailure::class,
-            'entries' => DataCollection::class.':'.HostProjectEntryData::class,
+            'entries' => DataCollection::class.':'.HostProjectEntryPayload::class,
             'size' => 'integer',
             'is_truncated' => 'boolean',
             'claimed_at' => 'immutable_datetime',
@@ -146,12 +146,12 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     /**
      * Answers a folder read with its entries, cut to the entry limit and marked cut when the host or the limit cut it.
      *
-     * @param  list<HostProjectEntryData>  $entries
+     * @param  list<HostProjectEntryPayload>  $entries
      */
     public function answerWithEntries(array $entries, bool $isTruncated): void
     {
         $kept = array_slice($entries, 0, self::DIRECTORY_ENTRY_LIMIT);
-        $this->entries = HostProjectEntryData::collect($kept, DataCollection::class);
+        $this->entries = HostProjectEntryPayload::collect($kept, DataCollection::class);
 
         $this->is_truncated = $isTruncated || count($entries) > self::DIRECTORY_ENTRY_LIMIT;
         $this->settle(ProjectReadStatus::Answered);
@@ -206,7 +206,7 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     /**
      * The folder's entries as the host listed them; none for a file or an unanswered read.
      *
-     * @return list<HostProjectEntryData>
+     * @return list<HostProjectEntryPayload>
      */
     public function listedEntries(): array
     {

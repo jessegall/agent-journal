@@ -8,13 +8,13 @@ use App\Bus\Contracts\CommandRefusal;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Engine\Enums\RefusalCode;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessType;
 use RuntimeException;
 
 /**
- * An order the journal will not make or take: its host was revoked, or its process no longer runs, takes no such
- * order or runs on another host.
+ * An instruction the journal will not make or take: its host was revoked, or its process no longer runs, takes no such
+ * instruction or runs on another host.
  */
 final class HostProtocolRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
@@ -22,7 +22,7 @@ final class HostProtocolRefused extends RuntimeException implements CodedRefusal
 
     public static function revoked(string $hostId): self
     {
-        return new self("Host {$hostId} is revoked and takes no orders.");
+        return new self("Host {$hostId} is revoked and takes no instructions.");
     }
 
     /**
@@ -60,9 +60,9 @@ final class HostProtocolRefused extends RuntimeException implements CodedRefusal
         return new self("Process {$processId} no longer runs.");
     }
 
-    public static function unsuited(string $processId, HostOrderType $order, HostProcessType $type): self
+    public static function unsuited(string $processId, HostInstructionType $instruction, HostProcessType $type): self
     {
-        return new self("Process {$processId} is a {$type->value} process, which takes no {$order->value} order.");
+        return new self("Process {$processId} is a {$type->value} process, which takes no {$instruction->value} instruction.");
     }
 
     public static function foreignProcess(string $hostId, string $processId): self
@@ -70,14 +70,14 @@ final class HostProtocolRefused extends RuntimeException implements CodedRefusal
         return new self("Process {$processId} does not run on host {$hostId}.");
     }
 
-    public static function foreignOrder(string $hostId, string $orderId): self
+    public static function foreignInstruction(string $hostId, string $instructionId): self
     {
-        return new self("Order {$orderId} is not an order of host {$hostId}.");
+        return new self("Instruction {$instructionId} is not an instruction of host {$hostId}.");
     }
 
-    public static function lacksCapability(string $hostId, HostOrderType $order): self
+    public static function lacksCapability(string $hostId, HostInstructionType $instruction): self
     {
-        return new self("Host {$hostId} does not carry out {$order->value} orders; update the host.");
+        return new self("Host {$hostId} does not carry out {$instruction->value} instructions; update the host.");
     }
 
     protected function status(): int

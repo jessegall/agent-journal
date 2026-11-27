@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\ForwardUserKeys;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\HostOrderPlacement;
-use App\Hosts\Protocol\Data\HostKeyWriteData;
-use App\Hosts\Protocol\HostOrders;
+use App\Hosts\HostInstructionPlacement;
+use App\Hosts\Protocol\HostInstructions;
+use App\Hosts\Protocol\Payloads\HostKeyWritePayload;
 use App\Models\Hosts\HostProcess;
 
 /**
@@ -16,24 +16,24 @@ use App\Models\Hosts\HostProcess;
  */
 final readonly class ForwardUserKeysHandler implements CommandHandler
 {
-    public function __construct(private HostOrders $orders) {}
+    public function __construct(private HostInstructions $instructions) {}
 
     public function handle(ForwardUserKeysCommand $command): string
     {
-        $order = $this->orders->writeKeys(
+        $instruction = $this->instructions->writeKeys(
             $command->processId,
             $command->source,
-            HostKeyWriteData::from([
+            HostKeyWritePayload::from([
                 'bytes' => base64_encode($command->bytes),
                 'if_rows' => null,
                 'if_input_generation' => null,
                 'as_user' => true,
             ]),
-            HostOrderPlacement::KEY_SECONDS,
+            HostInstructionPlacement::KEY_SECONDS,
         );
 
         HostProcess::findLocked($command->processId)->raiseInputGeneration();
 
-        return $order->getKey();
+        return $instruction->getKey();
     }
 }

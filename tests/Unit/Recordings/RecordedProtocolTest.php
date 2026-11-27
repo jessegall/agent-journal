@@ -9,7 +9,7 @@ use App\Agents\Enums\WorkspaceUse;
 use App\Agents\SecurityOptions;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Recordings\Enums\Wire;
 use App\Recordings\Exceptions\RecordingBreaksProtocol;
@@ -36,7 +36,7 @@ final class RecordedProtocolTest extends TestCase
     public function test_a_contained_plan_naming_a_host_name_refuses_the_recording(): void
     {
         $plan = $this->containedPlan(['JOURNAL_URL={host:JOURNAL_URL}']);
-        $recording = $this->recordingOf([$this->claimed([$this->order('open_container', $plan)])]);
+        $recording = $this->recordingOf([$this->claimed([$this->instruction('open_container', $plan)])]);
 
         $this->expectException(RecordingBreaksProtocol::class);
         $this->expectExceptionMessage('{host:JOURNAL_URL}');
@@ -46,7 +46,7 @@ final class RecordedProtocolTest extends TestCase
 
     public function test_a_payload_missing_a_field_refuses_the_recording(): void
     {
-        $recording = $this->recordingOf([$this->claimed([$this->order('resize', ['columns' => 80])])]);
+        $recording = $this->recordingOf([$this->claimed([$this->instruction('resize', ['columns' => 80])])]);
 
         $this->expectException(RecordingBreaksProtocol::class);
         $this->expectExceptionMessage('rows');
@@ -56,8 +56,8 @@ final class RecordedProtocolTest extends TestCase
 
     public function test_a_refused_answer_without_its_reason_refuses_the_recording(): void
     {
-        $answer = ['order_id' => 'o-1', 'status' => 'refused', 'refusal' => 'unsafe'];
-        $request = Request::create('/host/orders/o-1', 'POST', content: (string) json_encode($answer));
+        $answer = ['instruction_id' => 'o-1', 'status' => 'refused', 'refusal' => 'unsafe'];
+        $request = Request::create('/host/instructions/o-1', 'POST', content: (string) json_encode($answer));
         $recording = $this->recordingOf([RecordedEvent::asked(1, RecordedCall::askedBy($request))]);
 
         $this->expectException(RecordingBreaksProtocol::class);
@@ -66,17 +66,17 @@ final class RecordedProtocolTest extends TestCase
         $this->app->make(RecordedProtocol::class)->assertKept($recording);
     }
 
-    public function test_the_coverage_names_an_order_type_no_recording_holds(): void
+    public function test_the_coverage_names_an_instruction_type_no_recording_holds(): void
     {
-        $recording = $this->recordingOf([$this->claimed([$this->order('snapshot', [])])]);
+        $recording = $this->recordingOf([$this->claimed([$this->instruction('snapshot', [])])]);
 
         $coverage = $this->app->make(RecordedProtocol::class)->coverage([$recording]);
 
         $this->assertSame(
             [false, true],
             [
-                in_array(HostOrderType::Snapshot, $coverage->orderTypes, true),
-                in_array(HostOrderType::Resize, $coverage->orderTypes, true),
+                in_array(HostInstructionType::Snapshot, $coverage->instructionTypes, true),
+                in_array(HostInstructionType::Resize, $coverage->instructionTypes, true),
             ],
         );
     }
@@ -99,12 +99,12 @@ final class RecordedProtocolTest extends TestCase
     }
 
     /**
-     * @param  list<array<string, mixed>>  $orders
+     * @param  list<array<string, mixed>>  $instructions
      */
-    private function claimed(array $orders): RecordedEvent
+    private function claimed(array $instructions): RecordedEvent
     {
-        $claim = ['orders' => $orders, 'idle_window_seconds' => 60, 'now' => '2026-11-27T08:00:00Z'];
-        $request = Request::create('/host/orders/claim', 'POST');
+        $claim = ['instructions' => $instructions, 'idle_window_seconds' => 60, 'now' => '2026-11-27T08:00:00Z'];
+        $request = Request::create('/host/instructions/claim', 'POST');
 
         $answer = RecordedCall::answeredWith(new Response((string) json_encode($claim)), $request);
 
@@ -115,7 +115,7 @@ final class RecordedProtocolTest extends TestCase
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    private function order(string $type, array $payload): array
+    private function instruction(string $type, array $payload): array
     {
         return [
             'id' => '00000000000000000000000001',

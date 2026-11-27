@@ -6,23 +6,23 @@ namespace App\Hosts\Commands\NotifyHostInventory;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
-use App\Hosts\HostOrderPlacement;
-use App\Hosts\Protocol\Data\HostInventoryProcessData;
+use App\Hosts\HostInstructionPlacement;
 use App\Hosts\Protocol\HostProtocol;
 use App\Hosts\Protocol\HostRefusal;
-use App\Models\Hosts\HostOrder;
+use App\Hosts\Protocol\Payloads\HostInventoryProcessPayload;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Time\Contracts\ServerClock;
 
 /**
  * After a host started, keeps each process it still runs, loses each it no longer runs or no longer holds, and
- * refuses every input order it had claimed, since keys meant for the screen before the restart must not land after
+ * refuses every input instruction it had claimed, since keys meant for the screen before the restart must not land after
  * it. A process opened after the host built its inventory is left alone.
  */
 final readonly class NotifyHostInventoryHandler implements CommandHandler
 {
     public function __construct(
-        private HostOrderPlacement $placement,
+        private HostInstructionPlacement $placement,
         private ServerClock $clock,
     ) {}
 
@@ -36,7 +36,7 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
         }
 
         $reported = array_column(
-            array_map(fn (HostInventoryProcessData $process) => [
+            array_map(fn (HostInventoryProcessPayload $process) => [
                 $process->processId,
                 $process,
             ], $inventory->processes),
@@ -65,15 +65,15 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
             }
         }
 
-        // An order the new process cannot carry out again ends here; any other goes to it, answered again from its record.
-        foreach (HostOrder::findClaimedOf($host) as $order) {
-            if (! $order->type->isOfferedAgainAfterRestart()) {
-                $order->refuse(HostRefusal::HostRestarted, null, [], $now);
+        // An instruction the new process cannot carry out again ends here; any other goes to it, answered again from its record.
+        foreach (HostInstruction::findClaimedOf($host) as $instruction) {
+            if (! $instruction->type->isOfferedAgainAfterRestart()) {
+                $instruction->refuse(HostRefusal::HostRestarted, null, [], $now);
 
                 continue;
             }
 
-            $order->offerAgain();
+            $instruction->offerAgain();
         }
     }
 }

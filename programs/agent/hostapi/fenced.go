@@ -42,7 +42,7 @@ var fencedEnvironment = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "LANG=C.UT
 // RunFenced closes admission for the fence's processes, refuses while one of them other than those waiting still runs,
 // then runs each program in turn within its deadline and the budget; the fence opens again when the runs end, or at
 // the budget's end if the host never got there.
-func (table *ProcessTable) RunFenced(ctx context.Context, order Order, plan FencedPlan) (FencedResults, error) {
+func (table *ProcessTable) RunFenced(ctx context.Context, instruction Instruction, plan FencedPlan) (FencedResults, error) {
 	if plan.Fence == "" {
 		return FencedResults{}, RefusalError{Refusal: Unsafe, Reason: "run_fenced names no fence"}
 	}
@@ -66,7 +66,7 @@ func (table *ProcessTable) RunFenced(ctx context.Context, order Order, plan Fenc
 	return FencedResults{Results: results}, nil
 }
 
-// admit refuses a process whose fence a run_fenced order holds closed.
+// admit refuses a process whose fence a run_fenced instruction holds closed.
 func (table *ProcessTable) admit(plan OpenPlan) error {
 	if plan.Fence == "" {
 		return nil

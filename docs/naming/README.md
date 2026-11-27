@@ -19,9 +19,8 @@ php tools/refactoring/name-faults.php rename report notify --verb --path=app --a
 
 The grammar learns its verbs, nouns and events from the whole code. A whole scan writes what it learned to
 `storage/names/vocabulary.json`, and a scan of a path or of the staged files judges with that file, so it takes a
-moment and judges as the whole scan would. The pre-commit hook `.githooks/pre-commit` runs the staged scan and refuses a
-commit that adds a bad name; `composer install` points git at `.githooks`. The fixture of faults kept on purpose
-(`tests/Fixtures/Architecture/Names`) is left out of a staged scan.
+moment and judges as the whole scan would. The fixture of faults kept on purpose (`tests/Fixtures/Architecture/Names`)
+is left out of a staged scan.
 
 A word that should never be used again goes into `forbidden-words.txt`; a verb that has a better word goes there as
 `verb:<word>`; a bad shape of name goes into the grammar. Look over the words now and then with `name-words.php

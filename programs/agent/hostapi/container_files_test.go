@@ -59,7 +59,7 @@ func containedTable(t *testing.T) (*ProcessTable, *dockermock.Daemon, func() []b
 	}
 }
 
-func containedOrder(t *testing.T, change func(plan *OpenPlan)) Order {
+func containedInstruction(t *testing.T, change func(plan *OpenPlan)) Instruction {
 	t.Helper()
 	plan := OpenPlan{
 		Type:        "terminal",
@@ -91,13 +91,13 @@ func containedOrder(t *testing.T, change func(plan *OpenPlan)) Order {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return Order{ID: "open-p1", Type: "open_container", ProcessID: "p1", Payload: string(payload)}
+	return Instruction{ID: "open-p1", Type: "open_container", ProcessID: "p1", Payload: string(payload)}
 }
 
 func TestAContainedPlanOpensWithEachFileMountedWhereItNames(t *testing.T) {
 	table, daemon, written := containedTable(t)
 
-	if _, err := carry(testOrders{ProcessTable: table}, "open_container")(context.Background(), containedOrder(t, func(*OpenPlan) {})); err != nil {
+	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), containedInstruction(t, func(*OpenPlan) {})); err != nil {
 		t.Fatal(err)
 	}
 
@@ -138,7 +138,7 @@ func TestAContainedPlanNamingThisHostIsRefused(t *testing.T) {
 
 	for name, change := range changes {
 		table, _, _ := containedTable(t)
-		_, err := carry(testOrders{ProcessTable: table}, "open_container")(context.Background(), containedOrder(t, change))
+		_, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), containedInstruction(t, change))
 		var refusal RefusalError
 		if !errors.As(err, &refusal) || refusal.Refusal != Unsafe {
 			t.Errorf("%s: the plan was not refused as unsafe: %v", name, err)

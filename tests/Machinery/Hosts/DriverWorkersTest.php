@@ -7,19 +7,19 @@ namespace Tests\Machinery\Hosts;
 use App\Agents\Drivers\Work\DriverRestartSignal;
 use App\Agents\Drivers\Work\DriverWorkers;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Protocol\HostOrderType;
-use App\Models\Hosts\HostOrder;
+use App\Hosts\Protocol\HostInstructionType;
+use App\Models\Hosts\HostInstruction;
 use App\Time\Contracts\ServerClock;
 use Tests\Support\Drivers\MockProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\TestEnrolledHost;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A worker drives its process from what arrives on its feed: output, an answer to one of its orders and its runtime's
+ * A worker drives its process from what arrives on its feed: output, an answer to one of its instructions and its runtime's
  * requests, each without polling; a replaced worker is fenced and ends, and a restart ends a worker between steps.
  */
 #[TestsMachinery(DriverWorkers::class)]
@@ -52,16 +52,16 @@ final class DriverWorkersTest extends TestCase
 
         $this->journal->assertResult(
             [true, false, true, 1],
-            [$firstGoesOn, $replacedGoesOn, $secondGoesOn, $this->ordersOf(HostOrderType::WriteKeys)],
+            [$firstGoesOn, $replacedGoesOn, $secondGoesOn, $this->instructionsOf(HostInstructionType::WriteKeys)],
         );
     }
 
-    public function test_an_answer_to_its_order_wakes_the_worker(): void
+    public function test_an_answer_to_its_instruction_wakes_the_worker(): void
     {
         $work = $this->journal->service(DriverWorkers::class)->begin($this->journal->hostProcessCalled('shell')->id);
-        [, $snapshot, $stream] = $this->journal->hostOrdersOf('shell');
+        [, $snapshot, $stream] = $this->journal->hostInstructionsOf('shell');
 
-        $this->journal->hostOrder($snapshot, fn (TestHostOrder $order) => $order->answer());
+        $this->journal->hostInstruction($snapshot, fn (TestHostInstruction $instruction) => $instruction->answer());
         $this->journal->service(DriverWorkers::class)->step($work, self::WAIT_MS);
 
         $this->journal->assertResult(
@@ -69,7 +69,7 @@ final class DriverWorkersTest extends TestCase
                 'frames_per_second' => 4,
                 'raw' => false,
             ], ['signal' => 'SIGUSR2']],
-            [$this->journal->payloadOf($stream), $this->journal->payloadOf($this->lastOrder())],
+            [$this->journal->payloadOf($stream), $this->journal->payloadOf($this->lastInstruction())],
         );
     }
 
@@ -82,16 +82,16 @@ final class DriverWorkersTest extends TestCase
         $this->journal->assertResult(false, $this->journal->service(DriverWorkers::class)->step($work, self::WAIT_MS));
     }
 
-    private function ordersOf(HostOrderType $type): int
+    private function instructionsOf(HostInstructionType $type): int
     {
-        return count(array_filter($this->journal->hostOrdersOf('shell'), fn (HostOrder $order) => $order
+        return count(array_filter($this->journal->hostInstructionsOf('shell'), fn (HostInstruction $instruction) => $instruction
             ->type === $type));
     }
 
-    private function lastOrder(): HostOrder
+    private function lastInstruction(): HostInstruction
     {
-        $orders = $this->journal->hostOrdersOf('shell');
+        $instructions = $this->journal->hostInstructionsOf('shell');
 
-        return $orders[array_key_last($orders)];
+        return $instructions[array_key_last($instructions)];
     }
 }

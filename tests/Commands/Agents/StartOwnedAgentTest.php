@@ -99,7 +99,7 @@ final class StartOwnedAgentTest extends TestCase
      */
     private function failCallsOf(string $hostId): void
     {
-        $failure = new RecordHostCallFailureCommand($hostId, '/host/orders/claim', 500, 'Maximum execution time exceeded');
+        $failure = new RecordHostCallFailureCommand($hostId, '/host/instructions/claim', 500, 'Maximum execution time exceeded');
 
         $this->app->make(CommandEntrance::class)->through(
             CommandEntry::HostControl,

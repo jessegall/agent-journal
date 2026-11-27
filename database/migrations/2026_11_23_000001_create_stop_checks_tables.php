@@ -20,7 +20,7 @@ return new class extends Migration
             $table->json('condition_hashes');
             $table->string('status', 16);
             $table->string('submission_digest', 64)->nullable();
-            $table->ulid('fence_order_id')->nullable()->unique();
+            $table->ulid('fence_instruction_id')->nullable()->unique();
             $table->timestampTz('certified_at')->nullable();
             $table->timestampsTz();
 

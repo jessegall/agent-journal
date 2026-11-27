@@ -8,11 +8,11 @@ use App\Agents\ContainerManifest;
 use App\Agents\Values\PlanFile;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
-use App\Hosts\Protocol\Data\HostContainerLabelsData;
-use App\Hosts\Protocol\Data\HostOpenPlanData;
-use App\Hosts\Protocol\Data\HostRestartFileData;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessType;
+use App\Hosts\Protocol\Payloads\HostContainerLabelsPayload;
+use App\Hosts\Protocol\Payloads\HostOpenPlanPayload;
+use App\Hosts\Protocol\Payloads\HostRestartFilePayload;
 use App\Terminals\Screens\ShieldRule;
 
 /**
@@ -60,16 +60,16 @@ final readonly class HostProcessPlan
          * What a process the host heals after a crash runs once its restart file exists, such as a resume.
          */
         public array $restartArgv = [],
-        public HostRestartFileData|null $restartWhenFile = null,
+        public HostRestartFilePayload|null $restartWhenFile = null,
         /**
-         * The fence of the session the process runs for, which a run_fenced order of that session closes; none for a
+         * The fence of the session the process runs for, which a run_fenced instruction of that session closes; none for a
          * process of no session.
          */
         public string|null $fence = null,
         /**
          * The labels the container carries on the agent daemon, so the host finds it again; none outside a container.
          */
-        public HostContainerLabelsData|null $labels = null,
+        public HostContainerLabelsPayload|null $labels = null,
         /**
          * The files a device keeps for its binding between two sessions, such as the driver's sign-in, each named
          * as the process sees it.
@@ -115,21 +115,21 @@ final readonly class HostProcessPlan
         return new self(...[...get_object_vars($this), 'environment' => [...$this->environment, ...$environment]]);
     }
 
-    public function orderType(): HostOrderType
+    public function instructionType(): HostInstructionType
     {
         if ($this->container === null) {
-            return HostOrderType::OpenProcess;
+            return HostInstructionType::OpenProcess;
         }
 
-        return HostOrderType::OpenContainer;
+        return HostInstructionType::OpenContainer;
     }
 
     /**
-     * The order's payload as the host reads it.
+     * The instruction's payload as the host reads it.
      */
-    public function payload(): HostOpenPlanData
+    public function payload(): HostOpenPlanPayload
     {
-        return HostOpenPlanData::from([
+        return HostOpenPlanPayload::from([
             'type' => $this->type,
             'restart' => $this->restart->value,
             'argv' => $this->argv,

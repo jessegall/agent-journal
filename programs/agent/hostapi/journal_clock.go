@@ -6,7 +6,7 @@ import (
 )
 
 // JournalClock is the journal's time as the host reckons it: its own clock moved by the offset the last claim
-// answer showed, so an order's expiry holds on a host whose clock runs slow or fast.
+// answer showed, so an instruction's expiry holds on a host whose clock runs slow or fast.
 type JournalClock struct {
 	Host   func() time.Time
 	offset atomic.Int64

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Sessions;
 
 use App\Agents\Drivers\Enums\DriverType;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Agents\AgentRuntime;
@@ -14,7 +14,7 @@ use App\Values\StopCondition;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -28,7 +28,7 @@ final class RunStopConditionsTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    public function test_an_opened_attempt_orders_its_conditions_under_the_sessions_fence(): void
+    public function test_an_opened_attempt_instructs_its_conditions_under_the_sessions_fence(): void
     {
         $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Writer', 'writing-helper')
             ->enrollHost('Mac', [base_path()]);
@@ -42,13 +42,13 @@ final class RunStopConditionsTest extends TestCase
 
         $attempt = $this->journal->openStopAttempt($opened->sessionId);
 
-        $order = $this->journal->hostOrdersOn('Mac')[0];
-        $payload = $this->journal->payloadOf($order);
+        $instruction = $this->journal->hostInstructionsOn('Mac')[0];
+        $payload = $this->journal->payloadOf($instruction);
         $condition = StopCondition::cleanWorktree();
         $workspace = AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->canonical_folder;
         $this->journal->assertResult(
             [
-                HostOrderType::RunFenced,
+                HostInstructionType::RunFenced,
                 $opened->sessionId,
                 [$this->journal->hostProcessCalled('terminal')->id],
                 [
@@ -56,15 +56,15 @@ final class RunStopConditionsTest extends TestCase
                     ...$condition->arguments,
                 ],
                 $workspace,
-                $order->id,
+                $instruction->id,
             ],
             [
-                $order->type,
+                $instruction->type,
                 $payload['fence'],
                 $payload['waiting'],
                 $payload['runs'][0]['argv'],
                 $payload['runs'][0]['folder'],
-                $attempt->refresh()->fence_order_id,
+                $attempt->refresh()->fence_instruction_id,
             ],
         );
     }
@@ -77,11 +77,11 @@ final class RunStopConditionsTest extends TestCase
             ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
         $opened = $this->journal->openedRuntimeOf('Writer');
         $attempt = $this->journal->openStopAttempt($opened->sessionId);
-        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+        $this->journal->hostInstruction($this->journal->hostInstructionsOn('Mac')[0], fn (TestHostInstruction $instruction) => $instruction
             ->refuse(HostRefusal::Fenced));
 
         $this->journal->asSystem(new RunStopConditionsCommand($attempt->id));
 
-        $this->journal->assertResult(1, count($this->journal->hostOrdersOn('Mac')));
+        $this->journal->assertResult(1, count($this->journal->hostInstructionsOn('Mac')));
     }
 }

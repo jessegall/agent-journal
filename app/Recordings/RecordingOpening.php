@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Recordings;
 
-use App\Hosts\Protocol\Data\HostOpenPlanData;
 use App\Hosts\Protocol\HostProcessType;
+use App\Hosts\Protocol\Payloads\HostOpenPlanPayload;
 use App\Recordings\Enums\RecordingMode;
 use App\Recordings\Enums\Wire;
 use Carbon\CarbonImmutable;
@@ -48,7 +48,7 @@ final readonly class RecordingOpening implements JsonSerializable
      * A driver program's exchange that opens at the moment, as the plan the host was ordered starts it: in its
      * container's image, a terminal of the plan's size or pipes.
      */
-    public static function ofProcess(string $exchange, HostOpenPlanData $plan, int $openedAt): self
+    public static function ofProcess(string $exchange, HostOpenPlanPayload $plan, int $openedAt): self
     {
         $named = [];
 
@@ -146,7 +146,8 @@ final readonly class RecordingOpening implements JsonSerializable
             'exchange' => $this->exchange,
             'mode' => $this->mode->value,
             'argv' => $this->argv,
-            'environment' => $this->environment,
+            // An object even when empty, so a reader with a map type reads no variables rather than a list.
+            'environment' => (object) $this->environment,
             'inherited' => $this->inherited,
             'folder' => $this->folder,
             'columns' => $this->columns,

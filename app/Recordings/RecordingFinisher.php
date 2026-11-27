@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Recordings;
 
-use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Files\Values\Depth;
 use App\Hosts\HostProtocolCheck;
-use App\Hosts\Protocol\Data\HostClaimedOrdersData;
 use App\Hosts\Protocol\HostRoute;
+use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
 use App\Recordings\Enums\RecordedEventType;
 use App\Recordings\Enums\RecordingMode;
 use App\Recordings\Enums\Wire;
@@ -39,7 +38,7 @@ final readonly class RecordingFinisher
         private DriverExchanges $driverExchanges,
         private RecordedProtocol $protocol,
         private AgentImagePrograms $imagePrograms,
-        private PinnedBuilds $builds,
+        private Recordings $recordings,
         private ServerClock $clock,
         private ProcessFactory $processes,
         #[Config('agents.agent_image')]
@@ -67,7 +66,7 @@ final readonly class RecordingFinisher
         $manifest = RecordingManifest::of(
             $this->files->digest(FilePath::in(Place::Project, Recordings::SCENARIOS."/{$run->scenario}.json")),
             $run->driver(),
-            $this->builds->versionOf($run->driver()),
+            $this->recordings->buildOf($run->driver()),
             $this->imagePrograms->hash(),
             $this->clock->now()->toIso8601String(),
             array_keys($exchanges),
@@ -114,19 +113,19 @@ final readonly class RecordingFinisher
     }
 
     /**
-     * The exchange with each claim's orders signed again over their faked payloads.
+     * The exchange with each claim's instructions signed again over their faked payloads.
      */
     private function resigned(CutExchange $exchange, RecordingFakes $fakes): CutExchange
     {
         $events = array_map(function (RecordedEvent $event) use ($fakes) {
             $call = $event->call;
-            $isClaim = $call !== null && HostRoute::ClaimOrders->matchesPath($call->path) && $call->body !== '';
+            $isClaim = $call !== null && HostRoute::ClaimInstructions->matchesPath($call->path) && $call->body !== '';
 
             if (! $isClaim || $event->type !== RecordedEventType::Answered) {
                 return $event;
             }
 
-            $claim = $fakes->resignedClaim(HostClaimedOrdersData::from($call->body));
+            $claim = $fakes->resignedClaim(HostClaimedInstructionsPayload::from($call->body));
 
             return $event->withCall($call->withBody((string) json_encode($claim)));
         }, $exchange->events);
@@ -144,10 +143,7 @@ final readonly class RecordingFinisher
         ScenarioRecording $recording,
         RecordingFakes $fakes,
     ): FilePath {
-        $folder = FilePath::in(
-            Place::Project,
-            Recordings::FOLDER."/{$run->driver()}/{$manifest->build}/{$run->name()}",
-        );
+        $folder = $this->recordings->folderOf($run->driver(), $run->name());
 
         $next = FilePath::in(Place::Project, "{$folder->relative}.next");
         $fixture = new GoFixture();

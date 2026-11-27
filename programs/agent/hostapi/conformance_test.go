@@ -9,11 +9,11 @@ import (
 
 // conformance are the committed vectors of host protocol 1 that the Go host and the PHP journal both check.
 type conformance struct {
-	Secret string `json:"secret"`
-	Orders []struct {
-		Order   Order          `json:"order"`
-		Payload map[string]any `json:"payload"`
-	} `json:"orders"`
+	Secret       string `json:"secret"`
+	Instructions []struct {
+		Instruction Instruction    `json:"instruction"`
+		Payload     map[string]any `json:"payload"`
+	} `json:"instructions"`
 	Answers   []Answer        `json:"answers"`
 	Reports   []ProcessReport `json:"reports"`
 	Inventory Inventory       `json:"inventory"`
@@ -32,15 +32,15 @@ func loadConformance(t *testing.T) (conformance, []byte) {
 	return vectors, content
 }
 
-func TestTheCommittedOrdersAreSignedAsTheHostChecks(t *testing.T) {
+func TestTheCommittedInstructionsAreSignedAsTheHostChecks(t *testing.T) {
 	vectors, _ := loadConformance(t)
-	for _, vector := range vectors.Orders {
-		if got := Sign([]byte(vectors.Secret), vector.Order); got != vector.Order.Signature {
-			t.Errorf("order %s signs to %s, not %s", vector.Order.ID, got, vector.Order.Signature)
+	for _, vector := range vectors.Instructions {
+		if got := Sign([]byte(vectors.Secret), vector.Instruction); got != vector.Instruction.Signature {
+			t.Errorf("instruction %s signs to %s, not %s", vector.Instruction.ID, got, vector.Instruction.Signature)
 		}
 		var payload map[string]any
-		if err := json.Unmarshal([]byte(vector.Order.Payload), &payload); err != nil || !reflect.DeepEqual(payload, vector.Payload) {
-			t.Errorf("order %s carries the payload %v, not %v", vector.Order.ID, payload, vector.Payload)
+		if err := json.Unmarshal([]byte(vector.Instruction.Payload), &payload); err != nil || !reflect.DeepEqual(payload, vector.Payload) {
+			t.Errorf("instruction %s carries the payload %v, not %v", vector.Instruction.ID, payload, vector.Payload)
 		}
 	}
 }
@@ -62,21 +62,21 @@ func TestTheCommittedAnswersReportsAndInventoryAreTheBytesTheHostWrites(t *testi
 	}
 }
 
-func TestAnUnknownOrderIsRefusedByName(t *testing.T) {
+func TestAnUnknownInstructionIsRefusedByName(t *testing.T) {
 	record, err := OpenAnsweredRecord(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
 	var answer Answer
-	dispatcher := NewDispatcher(testVerifier(), record, map[string]Executor{}, func(_ Order, given Answer) { answer = given })
-	order := signedOrder("unknown", "", 1)
-	order.Type = "teleport"
-	order.Signature = Sign(testSecret, order)
+	dispatcher := NewDispatcher(testVerifier(), record, map[string]Executor{}, func(_ Instruction, given Answer) { answer = given })
+	instruction := signedInstruction("unknown", "", 1)
+	instruction.Type = "teleport"
+	instruction.Signature = Sign(testSecret, instruction)
 
-	dispatcher.Submit(t.Context(), order)
+	dispatcher.Submit(t.Context(), instruction)
 	dispatcher.Wait()
 
-	if answer.Refusal != UnknownOrder {
-		t.Fatalf("an unknown order was answered %+v", answer)
+	if answer.Refusal != UnknownInstruction {
+		t.Fatalf("an unknown instruction was answered %+v", answer)
 	}
 }

@@ -100,21 +100,21 @@ func TestAGuardedWriteIsRefusedOnceItsRowsOrTheInputMovedAndTheUsersWriteRaisesT
 	guard := RowGuard{From: 0, To: 0, Hash: screen.RowsHash(0, 0)}
 	generation := uint64(0)
 
-	if _, err := carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation})); err != nil {
+	if _, err := carry(testInstructions{ProcessInput: input}, "write_keys")(context.Background(), keysInstruction(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation})); err != nil {
 		t.Fatalf("a write whose guards hold is refused: %v", err)
 	}
-	facts, err := carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("x"), AsUser: true}))
+	facts, err := carry(testInstructions{ProcessInput: input}, "write_keys")(context.Background(), keysInstruction(t, KeyWrite{Bytes: []byte("x"), AsUser: true}))
 	if err != nil || facts["input_generation"] != float64(1) {
 		t.Fatalf("the user's write did not raise the input generation: %v, %v", facts, err)
 	}
-	_, err = carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation}))
+	_, err = carry(testInstructions{ProcessInput: input}, "write_keys")(context.Background(), keysInstruction(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation}))
 	var refusal RefusalError
 	if !errors.As(err, &refusal) || refusal.Refusal != GuardMoved {
 		t.Fatalf("a write after the user typed is not refused as guard moved: %v", err)
 	}
 	outputs.Printed("p", []byte("\x1b[1;1Hchanged"))
 	moved := uint64(1)
-	_, err = carry(testOrders{ProcessInput: input}, "write_keys")(context.Background(), keysOrder(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &moved}))
+	_, err = carry(testInstructions{ProcessInput: input}, "write_keys")(context.Background(), keysInstruction(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &moved}))
 	if !errors.As(err, &refusal) || refusal.Refusal != GuardMoved {
 		t.Fatalf("a write after its rows moved is not refused as guard moved: %v", err)
 	}
@@ -149,13 +149,13 @@ func TestAnOutputOverTheLimitIsSplitIntoPosts(t *testing.T) {
 	}
 }
 
-func keysOrder(t *testing.T, write KeyWrite) Order {
+func keysInstruction(t *testing.T, write KeyWrite) Instruction {
 	t.Helper()
 	payload, err := json.Marshal(write)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return Order{ID: "keys", Type: "write_keys", ProcessID: "p", Payload: string(payload)}
+	return Instruction{ID: "keys", Type: "write_keys", ProcessID: "p", Payload: string(payload)}
 }
 
 // discardingTerminal is a terminal that takes every write.

@@ -32,7 +32,7 @@ final readonly class RecordStopConditionResultsCommand extends Command
     ) {}
 
     /**
-     * A digest of the whole submission, the same for the same results in any order.
+     * A digest of the whole submission, the same for the same results in any instruction.
      */
     public function submissionDigest(): string
     {

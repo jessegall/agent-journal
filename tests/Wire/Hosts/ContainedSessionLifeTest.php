@@ -8,9 +8,9 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
-use App\Hosts\Protocol\HostOrderType;
-use App\Models\Hosts\HostOrder;
-use App\Values\HostOrderSource;
+use App\Hosts\Protocol\HostInstructionType;
+use App\Models\Hosts\HostInstruction;
+use App\Values\HostInstructionSource;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Assertions\Assert;
 use Tests\Support\CommitsHookRows;
@@ -36,7 +36,7 @@ final class ContainedSessionLifeTest extends TestCase
     private const array TABLES = [
         'hosts',
         'host_processes',
-        'host_orders',
+        'host_instructions',
         'agents',
         'agent_sessions',
         'session_tokens',
@@ -84,14 +84,14 @@ final class ContainedSessionLifeTest extends TestCase
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->driveUntil($answered, seconds: 20));
         $process = $this->journal->hostProcessCalled('terminal');
         $this->journal
-            ->asSystem(new StopHostProcessCommand($process->id, 1000, 1000, HostOrderSource::fromJournal()));
+            ->asSystem(new StopHostProcessCommand($process->id, 1000, 1000, HostInstructionSource::fromJournal()));
         $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
             ->waitFor(HostProcessStatus::Exited));
 
-        $removed = HostOrder::query()
-            ->where('type', HostOrderType::Remove)
+        $removed = HostInstruction::query()
+            ->where('type', HostInstructionType::Remove)
             ->get()
-            ->map(fn (HostOrder $order) => $this->journal->payloadOf($order)['container'])
+            ->map(fn (HostInstruction $instruction) => $this->journal->payloadOf($instruction)['container'])
             ->all();
 
         $this->journal->assertJournal(fn (Assert $journal) => $journal->where(

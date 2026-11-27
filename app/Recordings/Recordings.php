@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Recordings;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
@@ -24,11 +25,10 @@ final readonly class Recordings
      */
     public const string SCENARIOS = 'resources/recordings/scenarios';
 
-    public const string INSTALLATION = 'installation';
-
     public function __construct(
         private Files $files,
         private PinnedBuilds $builds,
+        private DriverCatalogue $drivers,
         private AgentImagePrograms $imagePrograms,
     ) {}
 
@@ -66,12 +66,35 @@ final readonly class Recordings
         return ScenarioRecording::of($manifest, $exchanges);
     }
 
-    private function folderOf(string $driver, string $name): FilePath
+    /**
+     * Every scenario a definition file names, as its driver (or host or installation) and name joined by a slash.
+     *
+     * @return list<string>
+     */
+    public function scenarioNames(): array
     {
-        if ($driver === self::INSTALLATION) {
-            return FilePath::in(Place::Project, self::FOLDER."/{$driver}/{$name}");
-        }
+        $definitions = $this->files->matching(FilePath::in(Place::Project, self::SCENARIOS.'/*/*.json'))->paths();
 
-        return FilePath::in(Place::Project, self::FOLDER."/{$driver}/{$this->builds->versionOf($driver)}/{$name}");
+        return array_map(
+            fn (FilePath $definition) => $definition->parent()->name().'/'.basename($definition->name(), '.json'),
+            $definitions,
+        );
+    }
+
+    /**
+     * The folder a scenario's recording is kept in: a driver's under its pinned build, the host's and the installer's
+     * under their name alone, as they have no build.
+     */
+    public function folderOf(string $driver, string $name): FilePath
+    {
+        return FilePath::in(Place::Project, self::FOLDER."/{$driver}/".ltrim("{$this->buildOf($driver)}/{$name}", '/'));
+    }
+
+    /**
+     * The build a scenario of the driver is recorded for: the driver's pinned one, none for the host or the installer.
+     */
+    public function buildOf(string $driver): string
+    {
+        return $this->drivers->hasFamily($driver) ? $this->builds->versionOf($driver) : '';
     }
 }

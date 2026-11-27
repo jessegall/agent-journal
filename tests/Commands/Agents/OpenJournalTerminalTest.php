@@ -34,7 +34,7 @@ final class OpenJournalTerminalTest extends TestCase
     use CommitsHookRows;
 
     private const array TABLES = [
-        'hosts', 'host_processes', 'host_orders', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
+        'hosts', 'host_processes', 'host_instructions', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
         'hook_calls', 'agent_runtimes', 'driver_requests', 'driver_turns', 'accounts', 'active_accounts',
         'session_processes', 'session_requests', 'inboxes', 'inbox_members', 'links', 'users',
     ];
@@ -49,7 +49,7 @@ final class OpenJournalTerminalTest extends TestCase
             ->sole();
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
             ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
-        [$open] = $this->journal->hostOrdersOf('terminal');
+        [$open] = $this->journal->hostInstructionsOf('terminal');
         $this->journal->assertResult(
             [RestartPolicy::OnCrash->value, null],
             [
@@ -86,7 +86,7 @@ final class OpenJournalTerminalTest extends TestCase
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
             ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
 
-        [$open] = $this->journal->hostOrdersOf('terminal');
+        [$open] = $this->journal->hostInstructionsOf('terminal');
         $plan = $this->journal->payloadOf($open);
         $refusedFieldsSet = array_filter(array_intersect_key($plan, array_flip(HostProtocol::CONTAINED_REFUSED_FIELDS)));
         $this->journal->assertResult([[], false], [$refusedFieldsSet, str_contains((string) json_encode($plan), '{host:')]);
@@ -112,7 +112,7 @@ final class OpenJournalTerminalTest extends TestCase
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
             ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
 
-        [$open] = $this->journal->hostOrdersOf('terminal');
+        [$open] = $this->journal->hostInstructionsOf('terminal');
         $files = array_column($this->journal->payloadOf($open)['files'], null, 'name');
         $managed = json_decode($files['managed-settings.json']['content'], true, flags: JSON_THROW_ON_ERROR);
         $settings = json_decode($files['settings.json']['content'], true, flags: JSON_THROW_ON_ERROR);

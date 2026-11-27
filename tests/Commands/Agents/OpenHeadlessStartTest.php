@@ -26,7 +26,7 @@ final class OpenHeadlessStartTest extends TestCase
     use CommitsHookRows;
 
     private const array TABLES = [
-        'hosts', 'host_processes', 'host_orders', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
+        'hosts', 'host_processes', 'host_instructions', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
         'hook_calls', 'agent_runtimes', 'driver_requests', 'driver_turns', 'accounts', 'active_accounts',
         'session_processes', 'session_requests', 'inboxes', 'inbox_members', 'links', 'users',
     ];

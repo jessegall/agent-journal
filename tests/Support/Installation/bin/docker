@@ -253,6 +253,7 @@ keep_newest_app() {
 
 # The database knows the enrolled host until the test said it was made again ($STAND_IN/host-gone).
 answer_host_known() {
+    if [ -f "$STAND_IN/host-unreadable" ]; then echo "Error: Class not found"; return 0; fi
     if [ -f "$STAND_IN/host-gone" ]; then echo gone; else echo known; fi
 }
 

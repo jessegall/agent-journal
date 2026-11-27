@@ -10,8 +10,8 @@ use App\Hosts\Values\FencedRun;
 use App\Support\Command;
 
 /**
- * Orders the host to close admission for the processes of the fence, refuse while one of them other than those
- * waiting still runs, and run each driver in turn within the budget; the order's answer carries each result. Run by
+ * Instructions the host to close admission for the processes of the fence, refuse while one of them other than those
+ * waiting still runs, and run each driver in turn within the budget; the instruction's answer carries each result. Run by
  * the journal itself (internal, not exported).
  *
  * @extends Command<string>

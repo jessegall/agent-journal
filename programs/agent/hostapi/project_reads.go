@@ -7,20 +7,20 @@ import (
 	"journal-agent/host"
 )
 
-// ProjectReads carries out read_project orders on a connected project's folder: the read is answered on its own
+// ProjectReads carries out read_project instructions on a connected project's folder: the read is answered on its own
 // report, which the journal keeps for the agent that asked.
 type ProjectReads struct {
 	Reader  host.ProjectReader
 	Journal Journal
 }
 
-// ReadProject answers the project read on its own report, and the order with no facts.
-func (reads ProjectReads) ReadProject(ctx context.Context, order Order, read client.ProjectRead) (Nothing, error) {
+// ReadProject answers the project read on its own report, and the instruction with no facts.
+func (reads ProjectReads) ReadProject(ctx context.Context, instruction Instruction, read client.ProjectRead) (Empty, error) {
 	if read.ID == "" {
-		return Nothing{}, RefusalError{Refusal: Unsafe, Reason: "the read_project order names no project read"}
+		return Empty{}, RefusalError{Refusal: Unsafe, Reason: "the read_project instruction names no project read"}
 	}
 	if err := reads.Journal.NotifyProjectRead(ctx, read.ID, reads.Reader.Answer(read)); err != nil {
-		return Nothing{}, err
+		return Empty{}, err
 	}
-	return Nothing{}, nil
+	return Empty{}, nil
 }

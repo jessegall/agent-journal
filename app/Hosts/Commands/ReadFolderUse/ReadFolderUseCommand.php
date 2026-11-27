@@ -9,8 +9,8 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * Orders the host to say whether a container still binds an account folder; the same operation asked again finds the
- * order already made. Run for the host's sign-in runner (internal, not exported).
+ * Instructions the host to say whether a container still binds an account folder; the same operation asked again finds the
+ * instruction already made. Run for the host's sign-in runner (internal, not exported).
  *
  * @extends Command<string>
  */

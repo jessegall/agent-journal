@@ -14,7 +14,7 @@ use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 final readonly class OpenJournalTerminalHandler implements CommandHandler
 {
@@ -50,7 +50,7 @@ final readonly class OpenJournalTerminalHandler implements CommandHandler
         $settings = $this->starts->clientSettingsOf($runtime);
         $profile = $this->profiles->of($runtime);
         $plan = $profile->startPlan($terminal)->withEnvironment($settings->environment());
-        $source = HostOrderSource::fromJournal();
+        $source = HostInstructionSource::fromJournal();
         $open = new OpenHostProcessCommand($runtime->host_id, $runtime->id, $plan, $source, $start->id);
 
         return $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $open);

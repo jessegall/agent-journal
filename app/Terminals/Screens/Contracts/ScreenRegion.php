@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens\Contracts;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\RowRange;
 
 /**
@@ -20,5 +20,5 @@ interface ScreenRegion
     /**
      * The rows the region takes on the frame; none while it is not drawn.
      */
-    public function rowsOf(HostFrameData $frame): RowRange|null;
+    public function rowsOf(HostFramePayload $frame): RowRange|null;
 }

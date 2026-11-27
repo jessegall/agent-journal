@@ -1,0 +1,112 @@
+{
+    "opening": {
+        "wire": "host",
+        "exchange": "caller-ba380056f4a47256",
+        "mode": "calls",
+        "argv": [],
+        "environment": {},
+        "inherited": [],
+        "folder": null,
+        "columns": 0,
+        "rows": 0,
+        "image": null,
+        "openedAt": 1795773772322908
+    },
+    "events": [
+        {
+            "type": "answered",
+            "at": 1795773772322903,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/orders/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJvcmRlcnMiOlt7ImlkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEiLCJzZXF1ZW5jZSI6MCwidHlwZSI6ImFsbG93X2ltYWdlcyIsInByb2Nlc3NfaWQiOiIiLCJwYXlsb2FkIjoie1wiaW1hZ2VzXCI6W1wic2hhMjU2OjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDJcIl19IiwiZXhwaXJlc19hdCI6IjIwMjYtMTEtMjdUMTA6MDM6MjJaIiwic2lnbmF0dXJlIjoiZmJlOWFlYTFiN2M3NjdhYzk3OTIwYmE2M2UzNTNmMThjYmQ0Y2FiN2YxZTRiYWFkNzNjNTY4OGQxM2I3MzBlYSJ9XSwiaWRsZV93aW5kb3dfc2Vjb25kcyI6NjAwLCJub3ciOiIyMDI2LTExLTI3VDEwOjAyOjUyLjMxOVoifQ==",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795773772330238,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/orders/00000000000000000000000001",
+                "query": [],
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJvcmRlcl9pZCI6IjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwic3RhdHVzIjoiZG9uZSIsImZhY3RzIjp7ImFsbG93ZWQiOjF9fQ==",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795773772331710,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/orders/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "e30=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795773772340351,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/orders/00000000000000000000000001",
+                "query": [],
+                "status": 204,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        }
+    ],
+    "exit_code": null
+}

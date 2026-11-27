@@ -75,12 +75,13 @@ func (state State) Load() (Enrollment, error) {
 	return enrollment, json.Unmarshal(content, &enrollment)
 }
 
-// HoldsEnrollment is whether the folder already holds an enrollment with this journal and host id, so enrolling again
-// changes nothing; a folder with none, or with another journal or host, does not.
-func (state State) HoldsEnrollment(journalURL, hostID string) bool {
-	enrollment, err := state.Load()
+// HoldsEnrollment is whether the folder already holds this very enrollment, so enrolling again changes nothing; a
+// folder with none, or with another journal, host or secret, does not: a host enrolled again under its own id takes
+// the new secret.
+func (state State) HoldsEnrollment(enrollment Enrollment) bool {
+	held, err := state.Load()
 
-	return err == nil && enrollment.JournalURL == journalURL && enrollment.HostID == hostID
+	return err == nil && held == enrollment
 }
 
 func (state State) enrollmentPath() string { return filepath.Join(state.Folder, enrollmentName) }

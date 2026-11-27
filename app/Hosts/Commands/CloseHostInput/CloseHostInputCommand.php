@@ -7,10 +7,10 @@ namespace App\Hosts\Commands\CloseHostInput;
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
 use App\Support\Command;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 /**
- * Orders the host to close a pipe process's standard input, so a driver that reads it to its end goes on. Run by a
+ * Instructs the host to close a pipe process's standard input, so a driver that reads it to its end goes on. Run by a
  * driver worker (internal, not exported).
  *
  * @extends Command<string>
@@ -20,6 +20,6 @@ final readonly class CloseHostInputCommand extends Command
 {
     public function __construct(
         public string $processId,
-        public HostOrderSource $source,
+        public HostInstructionSource $source,
     ) {}
 }

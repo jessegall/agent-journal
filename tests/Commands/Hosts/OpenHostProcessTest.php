@@ -10,11 +10,11 @@ use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\RestartPolicy;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessType;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\HostProcessPlan;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -23,7 +23,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Opening a process makes its row, ordered and not yet running, and the open order the host claims; a process of a
+ * Opening a process makes its row, ordered and not yet running, and the open instruction the host claims; a process of a
  * start runs under its session's fence.
  */
 #[TestsCommand(OpenHostProcessCommand::class)]
@@ -31,7 +31,7 @@ final class OpenHostProcessTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    public function test_a_native_process_is_made_with_its_open_order(): void
+    public function test_a_native_process_is_made_with_its_open_instruction(): void
     {
         $this->journal->enrollHost('Mac', [base_path()]);
         $plan = new HostProcessPlan(
@@ -47,14 +47,14 @@ final class OpenHostProcessTest extends TestCase
             $this->journal->hostCalled('Mac')->hostId,
             null,
             $plan,
-            HostOrderSource::fromJournal(),
+            HostInstructionSource::fromJournal(),
         ));
 
         $process = HostProcess::query()->whereKey($processId)->sole();
-        $order = HostOrder::query()->whereKey($process->open_order_id)->sole();
+        $instruction = HostInstruction::query()->whereKey($process->open_instruction_id)->sole();
         $this->journal->assertResult(
-            [HostProcessStatus::Ordered, RestartPolicy::OnCrash, HostOrderType::OpenProcess, $plan->payload()->toArray()],
-            [$process->status, $process->restart, $order->type, $this->journal->payloadOf($order)],
+            [HostProcessStatus::Ordered, RestartPolicy::OnCrash, HostInstructionType::OpenProcess, $plan->payload()->toArray()],
+            [$process->status, $process->restart, $instruction->type, $this->journal->payloadOf($instruction)],
         );
     }
 
@@ -69,8 +69,8 @@ final class OpenHostProcessTest extends TestCase
         $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
             ->openProcessForStart('terminal', $opened->sessionId));
 
-        $order = $this->journal->hostOrdersOf('terminal')[0];
-        $this->journal->assertResult($opened->sessionId, $this->journal->payloadOf($order)['fence']);
+        $instruction = $this->journal->hostInstructionsOf('terminal')[0];
+        $this->journal->assertResult($opened->sessionId, $this->journal->payloadOf($instruction)['fence']);
     }
 
     public function test_a_contained_plan_carrying_part_of_its_start_grant_is_refused_naming_what_it_misses(): void

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // Core test support that arranges the Library domain's shelves, which only the domain's own fixtures may do.
 use Domain\Library\Models\Shelf;
 

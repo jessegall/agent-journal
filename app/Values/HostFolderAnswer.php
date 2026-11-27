@@ -4,33 +4,33 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Protocol\Data\HostFolderUseReplyData;
-use App\Hosts\Protocol\HostOrderType;
-use App\Models\Hosts\HostOrder;
+use App\Hosts\Enums\HostInstructionStatus;
+use App\Hosts\Protocol\HostInstructionType;
+use App\Hosts\Protocol\Payloads\HostFolderUseReplyPayload;
+use App\Models\Hosts\HostInstruction;
 
 /**
- * Where a host's account folder order stands: still waiting, done, or refused with the host's reason, and for a
+ * Where a host's account folder instruction stands: still waiting, done, or refused with the host's reason, and for a
  * folder use whether a container still binds the folder.
  */
 final readonly class HostFolderAnswer
 {
-    public function __construct(public HostOrderStatus $status, public string $reason, public bool $isBound) {}
+    public function __construct(public HostInstructionStatus $status, public string $reason, public bool $isBound) {}
 
-    public static function of(HostOrder $order): self
+    public static function of(HostInstruction $instruction): self
     {
         // Only a folder use answers whether the folder is bound; a made or removed folder answers that it is done.
-        if ($order->status === HostOrderStatus::Done && $order->type === HostOrderType::FolderUse) {
-            $reply = HostFolderUseReplyData::from($order->answer->facts ?? []);
+        if ($instruction->status === HostInstructionStatus::Done && $instruction->type === HostInstructionType::FolderUse) {
+            $reply = HostFolderUseReplyPayload::from($instruction->answer->facts ?? []);
 
-            return new self($order->status, $reply->reason ?? '', $reply->isBound);
+            return new self($instruction->status, $reply->reason ?? '', $reply->isBound);
         }
 
-        if ($order->status === HostOrderStatus::Done) {
-            return new self($order->status, '', false);
+        if ($instruction->status === HostInstructionStatus::Done) {
+            return new self($instruction->status, '', false);
         }
 
-        return new self($order->status, $order->answer->reason ?? $order->refusal->value ?? '', false);
+        return new self($instruction->status, $instruction->answer->reason ?? $instruction->refusal->value ?? '', false);
     }
 
     public function isPending(): bool
@@ -40,11 +40,11 @@ final readonly class HostFolderAnswer
 
     public function isDone(): bool
     {
-        return $this->status === HostOrderStatus::Done;
+        return $this->status === HostInstructionStatus::Done;
     }
 
     public function isRefused(): bool
     {
-        return $this->status === HostOrderStatus::Refused;
+        return $this->status === HostInstructionStatus::Refused;
     }
 }

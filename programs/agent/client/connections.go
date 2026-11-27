@@ -139,7 +139,7 @@ type OpenedBindingRuntime struct {
 	SessionID           string `json:"session_id"`
 	RuntimeID           string `json:"runtime_id"`
 	AuthorityGeneration int    `json:"authority_generation"`
-	// Plan is the process the journal decided the owner's terminal runs, as an open order carries it.
+	// Plan is the process the journal decided the owner's terminal runs, as an open instruction carries it.
 	Plan json.RawMessage `json:"plan"`
 }
 

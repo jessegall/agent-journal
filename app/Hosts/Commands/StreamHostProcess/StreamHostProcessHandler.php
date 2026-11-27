@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\StreamHostProcess;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\Protocol\Data\HostStreamPlanData;
-use App\Hosts\Protocol\HostOrders;
+use App\Hosts\Protocol\HostInstructions;
+use App\Hosts\Protocol\Payloads\HostStreamPlanPayload;
 
 /**
- * Makes the stream order of a running process, refused to a replaced worker.
+ * Makes the stream instruction of a running process, refused to a replaced worker.
  */
 final readonly class StreamHostProcessHandler implements CommandHandler
 {
-    public function __construct(private HostOrders $orders) {}
+    public function __construct(private HostInstructions $instructions) {}
 
     public function handle(StreamHostProcessCommand $command): string
     {
-        return $this->orders->stream(
+        return $this->instructions->stream(
             $command->processId,
             $command->source,
-            HostStreamPlanData::from(['frames_per_second' => $command->framesPerSecond, 'raw' => $command->isRaw]),
+            HostStreamPlanPayload::from(['frames_per_second' => $command->framesPerSecond, 'raw' => $command->isRaw]),
         )->getKey();
     }
 }

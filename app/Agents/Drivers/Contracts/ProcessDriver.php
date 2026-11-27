@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Contracts;
 
 use App\Models\Drivers\DriverRequest;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Support\Command;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
@@ -13,16 +13,16 @@ use App\Values\FeedEntry;
 
 /**
  * What drives one driver's process for one worker: it reads what the process prints and the answers to its
- * orders, takes its runtime's requests, and answers each with the commands to run next.
+ * instructions, takes its runtime's requests, and answers each with the commands to run next.
  */
 interface ProcessDriver
 {
     /**
-     * Where the requests a worker before this one had taken stand, rebuilt from the orders it made that were not
+     * Where the requests a worker before this one had taken stand, rebuilt from the instructions it made that were not
      * refused, so no step is ordered twice.
      *
      * @param  list<DriverRequest>  $inFlight
-     * @param  list<HostOrder>  $ordered
+     * @param  list<HostInstruction>  $ordered
      */
     public function resume(array $inFlight, array $ordered): DriverActions;
 
@@ -37,9 +37,9 @@ interface ProcessDriver
     public function onRequest(ClaimedRequest $request): DriverActions;
 
     /**
-     * What the driver does once the host answered one of the orders it made.
+     * What the driver does once the host answered one of the instructions it made.
      */
-    public function onAnswer(HostOrder $order): DriverActions;
+    public function onAnswer(HostInstruction $instruction): DriverActions;
 
     /**
      * What the driver does with the journal's answer to a command it ordered, such as the answer to a raise of

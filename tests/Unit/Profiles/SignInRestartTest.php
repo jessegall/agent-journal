@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Profiles;
 
 use App\Accounts\AccountFolderUses;
-use App\Accounts\FolderOrderWait;
+use App\Accounts\FolderInstructionWait;
 use App\Accounts\SignInProtocols;
 use App\Files\Contracts\Files;
 use App\Jobs\SignInDeadline;
@@ -40,7 +40,7 @@ final class SignInRestartTest extends TestCase
             static fn () => null,
             $this->app->make(Files::class),
             new LocalAccountFolders($this->app->make(Files::class)),
-            new AccountFolderUses($host, new FolderOrderWait($host, static fn () => null), ArrangementType::Local),
+            new AccountFolderUses($host, new FolderInstructionWait($host, static fn () => null), ArrangementType::Local),
         )->reconcileAtStart();
 
         $this->assertSame([[]], $host->reconciled);

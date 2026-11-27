@@ -146,7 +146,7 @@ final class JournalRuntimesTest extends TestCase
 
         $this->assertFalse(
             Host::query()->findOrFail($host->hostId)->hasAnswerToRecord(
-                '/host/orders/claim',
+                '/host/instructions/claim',
                 [],
                 CarbonImmutable::now(),
             ),

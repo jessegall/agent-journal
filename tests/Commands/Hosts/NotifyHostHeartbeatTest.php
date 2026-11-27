@@ -8,7 +8,7 @@ use App\Hosts\Commands\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
 use App\Hosts\Enums\HostProcessStatus;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -25,8 +25,8 @@ final class NotifyHostHeartbeatTest extends TestCase
     {
         $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
             ->openProcess('old')->openProcess('new'));
-        [$oldOpen] = $this->journal->hostOrdersOf('old');
-        $this->journal->hostOrder($oldOpen, fn (TestHostOrder $order) => $order->answer());
+        [$oldOpen] = $this->journal->hostInstructionsOf('old');
+        $this->journal->hostInstruction($oldOpen, fn (TestHostInstruction $instruction) => $instruction->answer());
         $beat = new NotifyHostHeartbeatCommand($this->journal->hostCalled('Mac')->hostId, [], $oldOpen->id);
 
         $this->journal->asSystem($beat);

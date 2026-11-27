@@ -9,7 +9,7 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * Fails each upgrade whose order the host answered done but whose inventory has not named the new release in time.
+ * Fails each upgrade whose instruction the host answered done but whose inventory has not named the new release in time.
  *
  * @extends Command<null>
  */

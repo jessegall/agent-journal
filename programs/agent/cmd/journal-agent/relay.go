@@ -81,7 +81,7 @@ type bindingRelay struct {
 	idle         *hostapi.IdleWindow
 }
 
-// run holds the binding's relay lock for the whole run, carries out the orders the journal sends this binding's host
+// run holds the binding's relay lock for the whole run, carries out the instructions the journal sends this binding's host
 // and reports presence beside it, until the idle window passes with no live process, a disconnect fences the folder,
 // the folder's binding state is gone or ctx ends. The lock is let go only once serving ended.
 func (binder bindingRelay) run(parent context.Context) error {
@@ -101,7 +101,7 @@ func (binder bindingRelay) run(parent context.Context) error {
 	journal := client.ForRemoteProject(binder.binding.Enrollment, binder.transport)
 	serving, stopServing := context.WithCancel(ctx)
 	defer stopServing()
-	table, err := binder.serveOrders(serving, journal, stopAtFence)
+	table, err := binder.serveInstructions(serving, journal, stopAtFence)
 	if err != nil {
 		return err
 	}
@@ -131,10 +131,10 @@ func (binder bindingRelay) run(parent context.Context) error {
 	return nil
 }
 
-// serveOrders runs host protocol 1 for this binding alone, local and uncontained, from a folder of its own beside the
+// serveInstructions runs host protocol 1 for this binding alone, local and uncontained, from a folder of its own beside the
 // binding's state, so two bindings' relays never share a process table; the journal opens and drives every process
-// and reads the folder by orders.
-func (binder bindingRelay) serveOrders(
+// and reads the folder by instructions.
+func (binder bindingRelay) serveInstructions(
 	ctx context.Context, journal *client.Client, stop func(),
 ) (*hostapi.ProcessTable, error) {
 	folder := host.RelayFolder(binder.state.Folder, binder.binding.BindingID)

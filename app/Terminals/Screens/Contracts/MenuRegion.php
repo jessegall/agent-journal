@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens\Contracts;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\MenuEntries;
 
 /**
@@ -15,5 +15,5 @@ interface MenuRegion extends ScreenRegion
     /**
      * The entries the region shows and which one is highlighted; none while it is not drawn.
      */
-    public function entriesOf(HostFrameData $frame): MenuEntries|null;
+    public function entriesOf(HostFramePayload $frame): MenuEntries|null;
 }

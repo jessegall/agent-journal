@@ -10,13 +10,13 @@ import (
 	"journal-agent/dockermock"
 )
 
-func fencedOrder(t *testing.T, plan FencedPlan) Order {
+func fencedInstruction(t *testing.T, plan FencedPlan) Instruction {
 	t.Helper()
 	payload, err := json.Marshal(plan)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return Order{ID: "fenced", Type: "run_fenced", Payload: string(payload)}
+	return Instruction{ID: "fenced", Type: "run_fenced", Payload: string(payload)}
 }
 
 func openFencedProcess(t *testing.T, table *ProcessTable, processID, fence string) error {
@@ -25,7 +25,7 @@ func openFencedProcess(t *testing.T, table *ProcessTable, processID, fence strin
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = carry(testOrders{ProcessTable: table}, "open_process")(context.Background(), Order{ID: "open-" + processID, Type: "open_process", ProcessID: processID, Payload: string(plan)})
+	_, err = carry(testInstructions{ProcessTable: table}, "open_process")(context.Background(), Instruction{ID: "open-" + processID, Type: "open_process", ProcessID: processID, Payload: string(plan)})
 	return err
 }
 
@@ -53,7 +53,7 @@ func TestEachFencedRunEndsWithItsStatusAndOutputInOrder(t *testing.T) {
 		{Argv: []string{"/bin/sh", "-c", "printf 0123456789"}, Folder: folder, DeadlineMs: 5000, OutputLimit: 4},
 	}
 
-	facts, err := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 30000, Runs: runs}))
+	facts, err := carry(testInstructions{ProcessTable: table}, "run_fenced")(context.Background(), fencedInstruction(t, FencedPlan{Fence: "s1", BudgetMs: 30000, Runs: runs}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,7 +85,7 @@ func TestARunPastTheBudgetIsNotRun(t *testing.T) {
 		{Argv: []string{"/bin/sh", "-c", "true"}, Folder: folder, DeadlineMs: 5000, OutputLimit: 1024},
 	}
 
-	facts, err := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 200, Runs: runs}))
+	facts, err := carry(testInstructions{ProcessTable: table}, "run_fenced")(context.Background(), fencedInstruction(t, FencedPlan{Fence: "s1", BudgetMs: 200, Runs: runs}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,15 +105,15 @@ func TestALiveProcessOfTheFenceRefusesTheRunButOneWaitingOnItDoesNot(t *testing.
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		_, _ = carry(testOrders{ProcessTable: table}, "stop")(context.Background(), stopOrder(t, "agent"))
+		_, _ = carry(testInstructions{ProcessTable: table}, "stop")(context.Background(), stopInstruction(t, "agent"))
 	})
 	t.Cleanup(func() {
-		_, _ = carry(testOrders{ProcessTable: table}, "stop")(context.Background(), stopOrder(t, "other-session"))
+		_, _ = carry(testInstructions{ProcessTable: table}, "stop")(context.Background(), stopInstruction(t, "other-session"))
 	})
 	run := []FencedRun{{Argv: []string{"/bin/sh", "-c", "true"}, Folder: t.TempDir(), DeadlineMs: 5000, OutputLimit: 64}}
 
-	_, refused := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 5000, Runs: run}))
-	_, waited := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", Waiting: []string{"agent"}, BudgetMs: 5000, Runs: run}))
+	_, refused := carry(testInstructions{ProcessTable: table}, "run_fenced")(context.Background(), fencedInstruction(t, FencedPlan{Fence: "s1", BudgetMs: 5000, Runs: run}))
+	_, waited := carry(testInstructions{ProcessTable: table}, "run_fenced")(context.Background(), fencedInstruction(t, FencedPlan{Fence: "s1", Waiting: []string{"agent"}, BudgetMs: 5000, Runs: run}))
 
 	var refusal RefusalError
 	if !errors.As(refused, &refusal) || refusal.Refusal != Fenced {
@@ -133,7 +133,9 @@ func TestAProcessOfAClosedFenceIsRefusedUntilItsDeadlinePasses(t *testing.T) {
 	table.closeFence("s1", time.Now().Add(-time.Second))
 	afterDeadline := openFencedProcess(t, table, "after", "s1")
 	for _, id := range []string{"elsewhere", "after"} {
-		t.Cleanup(func() { _, _ = carry(testOrders{ProcessTable: table}, "stop")(context.Background(), stopOrder(t, id)) })
+		t.Cleanup(func() {
+			_, _ = carry(testInstructions{ProcessTable: table}, "stop")(context.Background(), stopInstruction(t, id))
+		})
 	}
 
 	var refusal RefusalError
@@ -149,7 +151,7 @@ func TestTheFenceOpensAgainOnceTheRunsEnd(t *testing.T) {
 	table, _ := mockTable(t, dockermock.Start(t, mockImage))
 	run := []FencedRun{{Argv: []string{"/bin/sh", "-c", "true"}, Folder: t.TempDir(), DeadlineMs: 5000, OutputLimit: 64}}
 
-	if _, err := carry(testOrders{ProcessTable: table}, "run_fenced")(context.Background(), fencedOrder(t, FencedPlan{Fence: "s1", BudgetMs: 5000, Runs: run})); err != nil {
+	if _, err := carry(testInstructions{ProcessTable: table}, "run_fenced")(context.Background(), fencedInstruction(t, FencedPlan{Fence: "s1", BudgetMs: 5000, Runs: run})); err != nil {
 		t.Fatal(err)
 	}
 
@@ -157,11 +159,11 @@ func TestTheFenceOpensAgainOnceTheRunsEnd(t *testing.T) {
 		t.Fatalf("the fence stayed closed after its runs: %v", err)
 	}
 	t.Cleanup(func() {
-		_, _ = carry(testOrders{ProcessTable: table}, "stop")(context.Background(), stopOrder(t, "next"))
+		_, _ = carry(testInstructions{ProcessTable: table}, "stop")(context.Background(), stopInstruction(t, "next"))
 	})
 }
 
-func stopOrder(t *testing.T, processID string) Order {
+func stopInstruction(t *testing.T, processID string) Instruction {
 	t.Helper()
-	return Order{ID: "stop-" + processID, Type: "stop", ProcessID: processID, Payload: `{"grace_ms":200,"force_ms":200}`}
+	return Instruction{ID: "stop-" + processID, Type: "stop", ProcessID: processID, Payload: `{"grace_ms":200,"force_ms":200}`}
 }

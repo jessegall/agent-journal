@@ -17,11 +17,11 @@ import (
 // Protocol is the version of the host protocol this binary speaks.
 const Protocol = 1
 
-// ClaimOrdersLimit is the most limit a claim_orders call takes.
-const ClaimOrdersLimit = 50
+// ClaimInstructionsLimit is the most limit a claim_instructions call takes.
+const ClaimInstructionsLimit = 50
 
-// ClaimOrdersWaitLimit is the most wait a claim_orders call takes.
-const ClaimOrdersWaitLimit = 25
+// ClaimInstructionsWaitLimit is the most wait a claim_instructions call takes.
+const ClaimInstructionsWaitLimit = 25
 
 // Status is one of the values host protocol 1 gives it.
 type Status string
@@ -40,29 +40,29 @@ func (value Status) IsKnown() bool {
 type Refusal string
 
 const (
-	GuardMoved    Refusal = "guard_moved"
-	NotRunning    Refusal = "not_running"
-	Expired       Refusal = "expired"
-	Unsafe        Refusal = "unsafe"
-	HostRestarted Refusal = "host_restarted"
-	Fenced        Refusal = "fenced"
-	UnknownOrder  Refusal = "unknown_order"
+	GuardMoved         Refusal = "guard_moved"
+	NotRunning         Refusal = "not_running"
+	Expired            Refusal = "expired"
+	Unsafe             Refusal = "unsafe"
+	HostRestarted      Refusal = "host_restarted"
+	Fenced             Refusal = "fenced"
+	UnknownInstruction Refusal = "unknown_instruction"
 )
 
 // IsKnown answers whether the value is one of the protocol's.
 func (value Refusal) IsKnown() bool {
-	return slices.Contains([]Refusal{GuardMoved, NotRunning, Expired, Unsafe, HostRestarted, Fenced, UnknownOrder}, value)
+	return slices.Contains([]Refusal{GuardMoved, NotRunning, Expired, Unsafe, HostRestarted, Fenced, UnknownInstruction}, value)
 }
 
-// OrderTraits are what the protocol says of an order type: whether it is about the host as a whole, and
+// InstructionTraits are what the protocol says of an instruction type: whether it is about the host as a whole, and
 // whether it leaves the same result when carried out twice.
-type OrderTraits struct {
+type InstructionTraits struct {
 	HostWide   bool
 	Repeatable bool
 }
 
-// OrderTypes are every order type of the protocol with its traits.
-var OrderTypes = map[string]OrderTraits{
+// InstructionTypes are every instruction type of the protocol with its traits.
+var InstructionTypes = map[string]InstructionTraits{
 	"open_container": {HostWide: false, Repeatable: false},
 	"open_process":   {HostWide: false, Repeatable: false},
 	"write_keys":     {HostWide: false, Repeatable: false},
@@ -145,8 +145,8 @@ func (value ArgumentValues) IsKnown() bool {
 	return slices.Contains([]ArgumentValues{ArgumentValuesNone, ArgumentValuesOne, ArgumentValuesList}, value)
 }
 
-// Order is the order of host protocol 1.
-type Order struct {
+// Instruction is the instruction of host protocol 1.
+type Instruction struct {
 	ID        string    `json:"id"`
 	Sequence  uint64    `json:"sequence"`
 	Type      string    `json:"type"`
@@ -156,23 +156,23 @@ type Order struct {
 	Signature string    `json:"signature"`
 }
 
-// Validate answers which value of the Order the protocol does not know, by its field.
-func (value Order) Validate() error {
+// Validate answers which value of the Instruction the protocol does not know, by its field.
+func (value Instruction) Validate() error {
 	return nil
 }
 
-// ClaimedOrders is the claimed_orders of host protocol 1.
-type ClaimedOrders struct {
-	Orders            []Order   `json:"orders"`
-	IdleWindowSeconds int       `json:"idle_window_seconds"`
-	Now               time.Time `json:"now"`
+// ClaimedInstructions is the claimed_instructions of host protocol 1.
+type ClaimedInstructions struct {
+	Instructions      []Instruction `json:"instructions"`
+	IdleWindowSeconds int           `json:"idle_window_seconds"`
+	Now               time.Time     `json:"now"`
 }
 
-// Validate answers which value of the ClaimedOrders the protocol does not know, by its field.
-func (value ClaimedOrders) Validate() error {
-	for index, item := range value.Orders {
+// Validate answers which value of the ClaimedInstructions the protocol does not know, by its field.
+func (value ClaimedInstructions) Validate() error {
+	for index, item := range value.Instructions {
 		if err := item.Validate(); err != nil {
-			return fmt.Errorf("orders[%d].%w", index, err)
+			return fmt.Errorf("instructions[%d].%w", index, err)
 		}
 	}
 	return nil
@@ -180,11 +180,11 @@ func (value ClaimedOrders) Validate() error {
 
 // Answer is the answer of host protocol 1.
 type Answer struct {
-	OrderID string         `json:"order_id"`
-	Status  Status         `json:"status"`
-	Refusal Refusal        `json:"refusal,omitempty"`
-	Reason  string         `json:"reason,omitempty"`
-	Facts   map[string]any `json:"facts,omitempty"`
+	InstructionID string         `json:"instruction_id"`
+	Status        Status         `json:"status"`
+	Refusal       Refusal        `json:"refusal,omitempty"`
+	Reason        string         `json:"reason,omitempty"`
+	Facts         map[string]any `json:"facts,omitempty"`
 }
 
 // Validate answers which value of the Answer the protocol does not know, by its field.
@@ -498,11 +498,11 @@ func (value StopPlan) Validate() error {
 	return nil
 }
 
-// Nothing is the nothing of host protocol 1.
-type Nothing struct{}
+// Empty is the empty of host protocol 1.
+type Empty struct{}
 
-// Validate answers which value of the Nothing the protocol does not know, by its field.
-func (value Nothing) Validate() error {
+// Validate answers which value of the Empty the protocol does not know, by its field.
+func (value Empty) Validate() error {
 	return nil
 }
 
@@ -677,36 +677,36 @@ func (value UpgradePlan) Validate() error {
 	return nil
 }
 
-// OrderHandlers carry out every order of host protocol 1, a method to each order type, given the order and
-// its payload read strictly and validated, and answer the order's reply.
-type OrderHandlers interface {
-	OpenContainer(ctx context.Context, order Order, payload OpenPlan) (Opened, error)
-	OpenProcess(ctx context.Context, order Order, payload OpenPlan) (Opened, error)
-	WriteKeys(ctx context.Context, order Order, payload KeyWrite) (KeysWritten, error)
-	WriteStdin(ctx context.Context, order Order, payload StdinWrite) (Nothing, error)
-	CloseStdin(ctx context.Context, order Order) (Nothing, error)
-	OpenPrivate(ctx context.Context, order Order) (Nothing, error)
-	WritePrivate(ctx context.Context, order Order, payload PrivateWrite) (Nothing, error)
-	ClosePrivate(ctx context.Context, order Order) (Nothing, error)
-	Resize(ctx context.Context, order Order, payload TerminalSize) (Nothing, error)
-	Signal(ctx context.Context, order Order, payload SignalPlan) (Nothing, error)
-	Stop(ctx context.Context, order Order, payload StopPlan) (Nothing, error)
-	Stream(ctx context.Context, order Order, payload StreamPlan) (Nothing, error)
-	Snapshot(ctx context.Context, order Order) (Nothing, error)
-	RunFenced(ctx context.Context, order Order, payload FencedPlan) (FencedResults, error)
-	AllowImages(ctx context.Context, order Order, payload ImagesPlan) (ImagesAllowed, error)
-	MakeFolder(ctx context.Context, order Order, payload FolderPlan) (Nothing, error)
-	RemoveFolder(ctx context.Context, order Order, payload FolderPlan) (Nothing, error)
-	FolderUse(ctx context.Context, order Order, payload FolderPlan) (FolderUseReply, error)
-	Remove(ctx context.Context, order Order, payload RemovePlan) (Nothing, error)
-	RemoveSession(ctx context.Context, order Order, payload SessionRemoval) (Nothing, error)
-	ReadProject(ctx context.Context, order Order, payload client.ProjectRead) (Nothing, error)
-	Upgrade(ctx context.Context, order Order, payload UpgradePlan) (UpgradeStarted, error)
+// InstructionHandlers carry out every instruction of host protocol 1, a method to each instruction type, given the instruction and
+// its payload read strictly and validated, and answer the instruction's reply.
+type InstructionHandlers interface {
+	OpenContainer(ctx context.Context, instruction Instruction, payload OpenPlan) (Opened, error)
+	OpenProcess(ctx context.Context, instruction Instruction, payload OpenPlan) (Opened, error)
+	WriteKeys(ctx context.Context, instruction Instruction, payload KeyWrite) (KeysWritten, error)
+	WriteStdin(ctx context.Context, instruction Instruction, payload StdinWrite) (Empty, error)
+	CloseStdin(ctx context.Context, instruction Instruction) (Empty, error)
+	OpenPrivate(ctx context.Context, instruction Instruction) (Empty, error)
+	WritePrivate(ctx context.Context, instruction Instruction, payload PrivateWrite) (Empty, error)
+	ClosePrivate(ctx context.Context, instruction Instruction) (Empty, error)
+	Resize(ctx context.Context, instruction Instruction, payload TerminalSize) (Empty, error)
+	Signal(ctx context.Context, instruction Instruction, payload SignalPlan) (Empty, error)
+	Stop(ctx context.Context, instruction Instruction, payload StopPlan) (Empty, error)
+	Stream(ctx context.Context, instruction Instruction, payload StreamPlan) (Empty, error)
+	Snapshot(ctx context.Context, instruction Instruction) (Empty, error)
+	RunFenced(ctx context.Context, instruction Instruction, payload FencedPlan) (FencedResults, error)
+	AllowImages(ctx context.Context, instruction Instruction, payload ImagesPlan) (ImagesAllowed, error)
+	MakeFolder(ctx context.Context, instruction Instruction, payload FolderPlan) (Empty, error)
+	RemoveFolder(ctx context.Context, instruction Instruction, payload FolderPlan) (Empty, error)
+	FolderUse(ctx context.Context, instruction Instruction, payload FolderPlan) (FolderUseReply, error)
+	Remove(ctx context.Context, instruction Instruction, payload RemovePlan) (Empty, error)
+	RemoveSession(ctx context.Context, instruction Instruction, payload SessionRemoval) (Empty, error)
+	ReadProject(ctx context.Context, instruction Instruction, payload client.ProjectRead) (Empty, error)
+	Upgrade(ctx context.Context, instruction Instruction, payload UpgradePlan) (UpgradeStarted, error)
 }
 
-// Executors carry out each order of host protocol 1 through its handler, its payload read strictly into its
+// Executors carry out each instruction of host protocol 1 through its handler, its payload read strictly into its
 // type and validated first.
-func Executors(handlers OrderHandlers) map[string]Executor {
+func Executors(handlers InstructionHandlers) map[string]Executor {
 	executors := map[string]Executor{}
 	executors["open_container"] = carrying(handlers.OpenContainer)
 	executors["open_process"] = carrying(handlers.OpenProcess)
@@ -738,15 +738,15 @@ type Journal struct {
 	Client *client.Client
 }
 
-// ClaimOrders makes the claim_orders call to /host/orders/claim and answers the journal's reply.
-func (journal Journal) ClaimOrders(ctx context.Context, limit int, wait int) (ClaimedOrders, error) {
-	var reply ClaimedOrders
-	return reply, journal.Client.Call(ctx, "/host/orders/claim"+"?limit="+strconv.Itoa(limit)+"&wait="+strconv.Itoa(wait), nil, &reply)
+// ClaimInstructions makes the claim_instructions call to /host/instructions/claim and answers the journal's reply.
+func (journal Journal) ClaimInstructions(ctx context.Context, limit int, wait int) (ClaimedInstructions, error) {
+	var reply ClaimedInstructions
+	return reply, journal.Client.Call(ctx, "/host/instructions/claim"+"?limit="+strconv.Itoa(limit)+"&wait="+strconv.Itoa(wait), nil, &reply)
 }
 
-// AnswerOrder makes the answer_order call to /host/orders/{order}.
-func (journal Journal) AnswerOrder(ctx context.Context, order string, body Answer) error {
-	return journal.Client.Call(ctx, "/host/orders/"+url.PathEscape(order), body, nil)
+// AnswerInstruction makes the answer_instruction call to /host/instructions/{instruction}.
+func (journal Journal) AnswerInstruction(ctx context.Context, instruction string, body Answer) error {
+	return journal.Client.Call(ctx, "/host/instructions/"+url.PathEscape(instruction), body, nil)
 }
 
 // PullPrivateValue makes the pull_private_value call to /host/private-values/{submission} and answers the journal's reply.

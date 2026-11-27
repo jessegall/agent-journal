@@ -9,6 +9,7 @@ use App\Models\Agents\Agent;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
+use Carbon\CarbonImmutable;
 
 /**
  * One play of a scenario: the owner it runs as, the agents it plays with by their names in it, the sign-in attempt
@@ -41,6 +42,7 @@ final class ScenarioRun
         public readonly User $owner,
         private array $agents,
         public readonly string $agentImage,
+        public readonly CarbonImmutable $startedAt = new CarbonImmutable(),
     ) {}
 
     /**
@@ -86,7 +88,7 @@ final class ScenarioRun
     }
 
     /**
-     * The host the scenario's host orders go to: this journal's first serving enrolled host.
+     * The host the scenario's host instructions go to: this journal's first serving enrolled host.
      *
      * @throws ScenarioInvalid
      */
@@ -95,7 +97,7 @@ final class ScenarioRun
         $hosts = Host::findServingEnrolled();
 
         if ($hosts === []) {
-            throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, 'orders a host, and none is enrolled');
+            throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, 'instructions a host, and none is enrolled');
         }
 
         return $hosts[0]->id;
@@ -152,11 +154,14 @@ final class ScenarioRun
     }
 
     /**
-     * The key of the step running now, the same each time the scenario is played, so a step is never carried out twice.
+     * The key of the step running now in this play: a step is carried out once in it, and a play again carries it out
+     * again rather than being answered with the earlier play's instruction.
      */
     public function stepKey(): string
     {
-        return 'scenario-'.str_replace('/', '-', $this->scenario->name).'-'.$this->stepsRun;
+        $play = $this->startedAt->format('YmdHisv');
+
+        return 'scenario-'.str_replace('/', '-', $this->scenario->name)."-{$play}-{$this->stepsRun}";
     }
 
     /**

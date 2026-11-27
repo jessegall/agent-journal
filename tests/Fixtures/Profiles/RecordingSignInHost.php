@@ -12,7 +12,7 @@ use App\Accounts\Values\ClaimedCleanup;
 use App\Accounts\Values\ClaimedSignIn;
 use App\Accounts\Values\CleanupProgress;
 use App\Accounts\Values\SignInPoll;
-use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostInstructionStatus;
 use App\Values\HostFolderAnswer;
 use App\Values\SignInChallenge;
 use App\Values\SignInIdentity;
@@ -74,44 +74,44 @@ final class RecordingSignInHost implements SignInHost
     public array $reconciled = [];
 
     /**
-     * The folder orders asked for, each as its kind and folder.
+     * The folder instructions asked for, each as its kind and folder.
      *
      * @var list<string>
      */
-    public array $folderOrders = [];
+    public array $folderInstructions = [];
 
     /**
-     * How the host answers every folder order.
+     * How the host answers every folder instruction.
      */
     public HostFolderAnswer $folderAnswer;
 
     public function __construct(private ClaimedSignIn|null $next)
     {
-        $this->folderAnswer = new HostFolderAnswer(HostOrderStatus::Done, '', false);
+        $this->folderAnswer = new HostFolderAnswer(HostInstructionStatus::Done, '', false);
     }
 
-    public function orderFolderMake(string $folder, string $operation): string
+    public function instructionFolderMake(string $folder, string $operation): string
     {
-        $this->folderOrders[] = "make {$folder}";
+        $this->folderInstructions[] = "make {$folder}";
 
-        return 'order-'.count($this->folderOrders);
+        return 'instruction-'.count($this->folderInstructions);
     }
 
-    public function orderFolderRemove(string $folder, string $operation): string
+    public function instructionFolderRemove(string $folder, string $operation): string
     {
-        $this->folderOrders[] = "remove {$folder}";
+        $this->folderInstructions[] = "remove {$folder}";
 
-        return 'order-'.count($this->folderOrders);
+        return 'instruction-'.count($this->folderInstructions);
     }
 
-    public function orderFolderUse(string $folder, string $operation): string
+    public function instructionFolderUse(string $folder, string $operation): string
     {
-        $this->folderOrders[] = "use {$folder}";
+        $this->folderInstructions[] = "use {$folder}";
 
-        return 'order-'.count($this->folderOrders);
+        return 'instruction-'.count($this->folderInstructions);
     }
 
-    public function folderAnswer(string $orderId): HostFolderAnswer
+    public function folderAnswer(string $instructionId): HostFolderAnswer
     {
         return $this->folderAnswer;
     }

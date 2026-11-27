@@ -6,7 +6,7 @@ namespace Tests\Commands\Terminals;
 
 use App\Access\Contracts\CurrentAuthorizer;
 use App\Agents\Drivers\Enums\DriverOperation;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
@@ -81,10 +81,10 @@ final class TakeTerminalControlTest extends TestCase
         $this->assertSame(0, TerminalGrant::query()->acrossActors()->count());
     }
 
-    public function test_a_host_that_does_not_carry_out_key_orders_is_watch_only(): void
+    public function test_a_host_that_does_not_carry_out_key_instructions_is_watch_only(): void
     {
         $hostId = $this->journal->enrolledHost()->hostId;
-        Host::query()->whereKey($hostId)->sole()->recordCapabilities([HostOrderType::Snapshot->value]);
+        Host::query()->whereKey($hostId)->sole()->recordCapabilities([HostInstructionType::Snapshot->value]);
         $runtime = $this->runtimeOn($hostId);
         $interest = $this->openInterest($runtime);
 

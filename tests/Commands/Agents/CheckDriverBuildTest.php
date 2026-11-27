@@ -8,10 +8,15 @@ use App\Agents\Commands\CheckDriverBuild\CheckDriverBuildCommand;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostProcess;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostInstruction;
+use Tests\Support\Hosts\TestHostProcess;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
@@ -26,7 +31,7 @@ final class CheckDriverBuildTest extends TestCase
     private const array TABLES = [
         'hosts',
         'host_processes',
-        'host_orders',
+        'host_instructions',
         'agents',
         'agent_sessions',
         'session_tokens',
@@ -59,9 +64,9 @@ final class CheckDriverBuildTest extends TestCase
         $other = $this->journal->openedRuntimeOf('Other');
         $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
 
-        $this->journal
+        $this->probeExited('Pinned', 'pinned-probe')
             ->asSystem(new CheckDriverBuildCommand($this->probeOf($pinned->sessionId), "{$build} (Claude Code)\n"));
-        $this->journal
+        $this->probeExited('Other', 'other-probe')
             ->asSystem(new CheckDriverBuildCommand($this->probeOf($other->sessionId), "9.9.9 (Claude Code)\n"));
 
         $refused = $this->journal->startOfSession($other->sessionId);
@@ -81,7 +86,7 @@ final class CheckDriverBuildTest extends TestCase
             ],
             [
                 $this->journal->startOfSession($pinned->sessionId)->status,
-                $this->journal->payloadOf($this->journal->hostOrdersOf('sign-in')[0])['argv'],
+                $this->journal->payloadOf($this->journal->hostInstructionsOf('sign-in')[0])['argv'],
                 $refused->status,
                 str_contains((string) $refused->refusal, 'is not the proven build'),
             ],
@@ -100,7 +105,7 @@ final class CheckDriverBuildTest extends TestCase
         $boxed = $this->journal->openedRuntimeOf('Boxed');
         $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
 
-        $this->journal
+        $this->probeExited('Boxed', 'boxed-probe')
             ->forgetSecurityProfiles()
             ->asSystem(new CheckDriverBuildCommand($this->probeOf($boxed->sessionId), "{$build} (Claude Code)\n"));
 
@@ -109,6 +114,45 @@ final class CheckDriverBuildTest extends TestCase
             [SessionProcessStatus::Stopped, true],
             [$refused->status, str_contains((string) $refused->refusal, 'outside the profiles folder')],
         );
+    }
+
+    public function test_a_probe_the_host_could_not_run_ends_the_start_with_the_hosts_reason(): void
+    {
+        $this->journal->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->idleAgent('Refused')
+            ->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Refused', fn (TestAgent $refused) => $refused->openRuntime('Mac', base_path()));
+        $refused = $this->journal->openedRuntimeOf('Refused');
+        $this->journal->withAgent('Refused', fn (TestAgent $agent) => $agent
+            ->nameProcess('refused-probe', HostProcessPurpose::BuildProbe));
+        [$open] = $this->journal->hostInstructionsOf('refused-probe');
+        $this->journal->hostInstruction($open, fn (TestHostInstruction $instruction) => $instruction->refuse(HostRefusal::Unsafe));
+
+        $this->journal->asSystem(new CheckDriverBuildCommand($this->probeOf($refused->sessionId), ''));
+
+        $start = $this->journal->startOfSession($refused->sessionId);
+        $this->journal->assertResult(
+            [SessionProcessStatus::Stopped, true, false],
+            [
+                $start->status,
+                str_contains((string) $start->refusal, 'build probe did not answer: it was lost'),
+                str_contains((string) $start->refusal, 'is not the proven build'),
+            ],
+        );
+    }
+
+    /**
+     * The agent's build probe ran and exited well, as a host that printed its build reports it.
+     */
+    private function probeExited(string $agent, string $probe): TestJournal
+    {
+        $this->journal->withAgent($agent, fn (TestAgent $named) => $named->nameProcess($probe, HostProcessPurpose::BuildProbe));
+
+        return $this->journal->hostProcess($probe, fn (TestHostProcess $process) => $process
+            ->report(HostProcessReportType::Running)
+            ->report(HostProcessReportType::Exited, 0));
     }
 
     private function probeOf(string $sessionId): string

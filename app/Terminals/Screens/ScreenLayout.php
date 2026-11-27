@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Contracts\ScreenRegion;
 
 /**
@@ -47,7 +47,7 @@ final readonly class ScreenLayout
      * The lowest list of options any of the layout's highlight markers draws, known menu or not; none when no such
      * list is drawn.
      */
-    public function optionsOf(HostFrameData $frame): RowRange|null
+    public function optionsOf(HostFramePayload $frame): RowRange|null
     {
         return $this->optionList()->rowsOf($frame);
     }

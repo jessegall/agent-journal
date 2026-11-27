@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Tests\Unit\Profiles;
 
 use App\Accounts\AccountFolderUses;
-use App\Accounts\FolderOrderWait;
-use App\Hosts\Enums\HostOrderStatus;
+use App\Accounts\FolderInstructionWait;
+use App\Hosts\Enums\HostInstructionStatus;
 use App\Projects\Enums\ArrangementType;
 use App\Values\HostFolderAnswer;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\TestCase;
 
 /**
- * A displaced folder is free on a local host; on a contained host only once the host's folder_use order says no
- * container binds it, and a refused order counts as bound.
+ * A displaced folder is free on a local host; on a contained host only once the host's folder_use instruction says no
+ * container binds it, and a refused instruction counts as bound.
  */
 final class AccountFolderUsesTest extends TestCase
 {
@@ -24,16 +24,16 @@ final class AccountFolderUsesTest extends TestCase
 
         $isFree = $this->uses($host, ArrangementType::Local)->isDisplacedFolderFree('/accounts/a7', 'a7');
 
-        $this->journal->assertResult([true, []], [$isFree, $host->folderOrders]);
+        $this->journal->assertResult([true, []], [$isFree, $host->folderInstructions]);
     }
 
-    public function test_a_contained_host_frees_a_folder_only_when_its_order_says_nothing_binds_it(): void
+    public function test_a_contained_host_frees_a_folder_only_when_its_instruction_says_nothing_binds_it(): void
     {
         $host = new RecordingSignInHost(null);
         $free = $this->uses($host, ArrangementType::Contained)->isDisplacedFolderFree('/accounts/a7', 'a7');
-        $host->folderAnswer = new HostFolderAnswer(HostOrderStatus::Done, '', true);
+        $host->folderAnswer = new HostFolderAnswer(HostInstructionStatus::Done, '', true);
         $bound = $this->uses($host, ArrangementType::Contained)->isDisplacedFolderFree('/accounts/a7', 'a7');
-        $host->folderAnswer = new HostFolderAnswer(HostOrderStatus::Refused, 'unsafe', false);
+        $host->folderAnswer = new HostFolderAnswer(HostInstructionStatus::Refused, 'unsafe', false);
         $refused = $this->uses($host, ArrangementType::Contained)->isDisplacedFolderFree('/accounts/a7', 'a7');
 
         $this->journal->assertResult(
@@ -42,12 +42,12 @@ final class AccountFolderUsesTest extends TestCase
                 'use a7',
                 'use a7',
             ]],
-            [$free, $bound, $refused, $host->folderOrders],
+            [$free, $bound, $refused, $host->folderInstructions],
         );
     }
 
     private function uses(RecordingSignInHost $host, ArrangementType $arrangement): AccountFolderUses
     {
-        return new AccountFolderUses($host, new FolderOrderWait($host, static fn () => null), $arrangement);
+        return new AccountFolderUses($host, new FolderInstructionWait($host, static fn () => null), $arrangement);
     }
 }

@@ -9,7 +9,7 @@ use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Redis\Connections\Connection;
 
 /**
- * The wakes a host's claim and a runtime's worker block on: a host is woken when an order for it is made, a worker when
+ * The wakes a host's claim and a runtime's worker block on: a host is woken when an instruction for it is made, a worker when
  * a driver request for its runtime is made. Nothing polls on a timer.
  */
 final readonly class HostWake
@@ -37,7 +37,7 @@ final readonly class HostWake
 
     /**
      * Blocks until the host is woken or the seconds pass, and answers whether it was woken; the wakes waiting are taken
-     * together, as one claim answers every order made before it.
+     * together, as one claim answers every instruction made before it.
      */
     public function waitForHost(string $hostId, int $seconds): bool
     {

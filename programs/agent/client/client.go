@@ -77,8 +77,8 @@ type Client struct {
 	failed *failedCalls
 }
 
-// callTimeout is the longest one call waits for its answer: well past the longest wait of an order claim, so a
-// journal slow to answer a claim never answers one the host gave up on, whose orders would then reach no host.
+// callTimeout is the longest one call waits for its answer: well past the longest wait of an instruction claim, so a
+// journal slow to answer a claim never answers one the host gave up on, whose instructions would then reach no host.
 const callTimeout = 60 * time.Second
 
 // New returns a client for the enrollment.

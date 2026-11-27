@@ -24,10 +24,10 @@ use App\Hosts\Contracts\HostChannel;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionProcess;
@@ -36,7 +36,7 @@ use App\Support\AgentImage;
 use App\Support\Compatibility\PinnedBuilds;
 use App\Values\ClaimedRequest;
 use App\Values\DriverFamily;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\HostProcessPlan;
 use Closure;
 use Illuminate\Contracts\Config\Repository;
@@ -48,12 +48,12 @@ use Tests\Support\Connections\PublicRelease;
 use Tests\Support\Hosts\MockHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
- * The processes a test's hosts run under protocol 1: opened through the real order, and moved by the reports their
+ * The processes a test's hosts run under protocol 1: opened through the real instruction, and moved by the reports their
  * host sends.
  */
 trait ArrangesHostProcesses
@@ -138,7 +138,7 @@ trait ArrangesHostProcesses
                 [],
                 base_path(),
             );
-            $source = HostOrderSource::fromJournal();
+            $source = HostInstructionSource::fromJournal();
             $process = $this->asSystem(new OpenHostProcessCommand($runtime->host_id, $runtime->id, $plan, $source));
             $this->requestWorkers[$runtime->id] = [
                 $process,
@@ -234,20 +234,20 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The order, handed to the scope to answer or refuse as its host.
+     * The instruction, handed to the scope to answer or refuse as its host.
      *
-     * @param  Closure(TestHostOrder): mixed  $scope
+     * @param  Closure(TestHostInstruction): mixed  $scope
      */
-    public function hostOrder(HostOrder $order, Closure $scope): self
+    public function hostInstruction(HostInstruction $instruction, Closure $scope): self
     {
-        $scope(new TestHostOrder($this, $order));
+        $scope(new TestHostInstruction($this, $instruction));
 
         return $this;
     }
 
     /**
      * The test calls the host process of this id by the name, a process the journal opened itself or a test's open
-     * order made.
+     * instruction made.
      */
     public function nameHostProcess(string $name, string $processId): self
     {
@@ -274,12 +274,12 @@ trait ArrangesHostProcesses
 
         return $this->nameHostProcess(
             $name,
-            $this->asSystem(new OpenHostProcessCommand($hostId, $runtimeId, $plan, HostOrderSource::fromJournal())),
+            $this->asSystem(new OpenHostProcessCommand($hostId, $runtimeId, $plan, HostInstructionSource::fromJournal())),
         );
     }
 
     /**
-     * What the named process got and showed so far, for a failure to say: each order with what it wrote, everything
+     * What the named process got and showed so far, for a failure to say: each instruction with what it wrote, everything
      * the process printed, its last screen and what the test host printed.
      */
     public function processReport(string $name): string
@@ -295,13 +295,13 @@ trait ArrangesHostProcesses
     public function pipeInputOf(string $name): array
     {
         $writes = array_filter(
-            $this->hostOrdersOf($name),
-            fn (HostOrder $order) => $order->type === HostOrderType::WriteStdin,
+            $this->hostInstructionsOf($name),
+            fn (HostInstruction $instruction) => $instruction->type === HostInstructionType::WriteStdin,
         );
 
         return array_values(array_map(
-            fn (HostOrder $order) => json_decode(
-                base64_decode($this->payloadOf($order)['bytes']),
+            fn (HostInstruction $instruction) => json_decode(
+                base64_decode($this->payloadOf($instruction)['bytes']),
                 true,
                 flags: JSON_THROW_ON_ERROR,
             ),
@@ -310,13 +310,13 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The order's payload as the host receives it, read back from its JSON.
+     * The instruction's payload as the host receives it, read back from its JSON.
      *
      * @return array<string, mixed>
      */
-    public function payloadOf(HostOrder $order): array
+    public function payloadOf(HostInstruction $instruction): array
     {
-        return json_decode($order->payload, true, flags: JSON_THROW_ON_ERROR);
+        return json_decode($instruction->payload, true, flags: JSON_THROW_ON_ERROR);
     }
 
     public function hostProcessCalled(string $name): HostProcess
@@ -327,23 +327,23 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The orders made for the named process, oldest first.
+     * The instructions made for the named process, oldest first.
      *
-     * @return list<HostOrder>
+     * @return list<HostInstruction>
      */
-    public function hostOrdersOf(string $name): array
+    public function hostInstructionsOf(string $name): array
     {
-        return HostOrder::findForProcess($this->hostProcessCalled($name)->id);
+        return HostInstruction::findForProcess($this->hostProcessCalled($name)->id);
     }
 
     /**
-     * The orders made for the named host itself, for no process of it, oldest first.
+     * The instructions made for the named host itself, for no process of it, oldest first.
      *
-     * @return list<HostOrder>
+     * @return list<HostInstruction>
      */
-    public function hostOrdersOn(string $host): array
+    public function hostInstructionsOn(string $host): array
     {
-        return HostOrder::findForHostItself($this->hostCalled($host)->hostId);
+        return HostInstruction::findForHostItself($this->hostCalled($host)->hostId);
     }
 
     /**
@@ -506,13 +506,13 @@ trait ArrangesHostProcesses
 
     /**
      * What a worker that did not get there saw, so a failure says what went in, what came out and what showed: each
-     * order with what it wrote, everything the process printed, its last screen and what the test host printed.
+     * instruction with what it wrote, everything the process printed, its last screen and what the test host printed.
      */
     private function drivenSoFar(string $name): string
     {
         $process = $this->hostProcessCalled($name);
         $frame = $this->app->make(ProcessFeed::class)->latestFrame($process->id)?->rows ?? [];
-        $orders = implode("\n", array_map($this->writtenBy(...), $this->hostOrdersOf($name)));
+        $instructions = implode("\n", array_map($this->writtenBy(...), $this->hostInstructionsOf($name)));
         $printed = $this->printedBy($process->id);
         $screen = implode("\n", $frame);
 
@@ -520,7 +520,7 @@ trait ArrangesHostProcesses
             The process {$name} did not reach what the test waits for; it is {$process->status->value}
             ({$process->exit_evidence}).
             --- what the journal ordered and wrote
-            {$orders}
+            {$instructions}
             --- what the process printed
             {$printed}
             --- its last screen
@@ -534,9 +534,9 @@ trait ArrangesHostProcesses
     private function debugAnswered(): string
     {
         $folder = $this->testHost?->installation();
-        $state = $folder === null ? '' : dirname($folder).'/state/orders/answered.json';
-        $ids = implode(',', array_map(fn (HostOrder $order) => $order
-            ->id.':'.$order->sequence, HostOrder::query()->where('status', 'claimed')->get()->all()));
+        $state = $folder === null ? '' : dirname($folder).'/state/instructions/answered.json';
+        $ids = implode(',', array_map(fn (HostInstruction $instruction) => $instruction
+            ->id.':'.$instruction->sequence, HostInstruction::query()->where('status', 'claimed')->get()->all()));
 
         return 'claimed in journal: '.$ids."\nhost answered: ".(is_file($state) ? substr(
             (string) file_get_contents($state),
@@ -545,19 +545,19 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * One order as a failure shows it: its type, how the host answered and why, and the bytes it wrote, if any.
+     * One instruction as a failure shows it: its type, how the host answered and why, and the bytes it wrote, if any.
      */
-    private function writtenBy(HostOrder $order): string
+    private function writtenBy(HostInstruction $instruction): string
     {
-        $payload = $this->payloadOf($order);
+        $payload = $this->payloadOf($instruction);
         $encoded = $payload['bytes'] ?? null;
         $written = is_string($encoded) ? json_encode(
             base64_decode($encoded, true),
             JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE,
         ) : '';
-        $reason = $order->answer?->reason ?? '';
+        $reason = $instruction->answer?->reason ?? '';
 
-        return "{$order->type->value} {$order->status->value} {$order->refusal?->value} {$reason} {$written}";
+        return "{$instruction->type->value} {$instruction->status->value} {$instruction->refusal?->value} {$reason} {$written}";
     }
 
     /**

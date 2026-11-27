@@ -9,7 +9,7 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * Settles a host's answer to its upgrade order: a refusal fails the upgrade with the host's reason, and a done answer
+ * Settles a host's answer to its upgrade instruction: a refusal fails the upgrade with the host's reason, and a done answer
  * waits for the inventory of the new release. Run by the journal itself (internal, not exported).
  *
  * @extends Command<void>
@@ -17,5 +17,5 @@ use App\Support\Command;
 #[Entry(CommandEntry::HostControl)]
 final readonly class SettleHostUpgradeCommand extends Command
 {
-    public function __construct(public string $orderId) {}
+    public function __construct(public string $instructionId) {}
 }

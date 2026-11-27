@@ -7,12 +7,13 @@ namespace App\Agents\Commands\CheckDriverBuild;
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Work\HeadlessStarts;
+use App\Agents\Exceptions\ProbeFailed;
 use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Models\Hosts\HostProcess;
 use App\Sessions\StartHeartbeats;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 final readonly class CheckDriverBuildHandler implements CommandHandler
 {
@@ -33,9 +34,14 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
 
         $this->heartbeats->continueStart($start, function () use ($command, $process, $start, $runtime): void {
             $profile = $this->profiles->of($runtime);
+
+            if (! $process->hasExitedWell()) {
+                throw ProbeFailed::of($profile->family(), $process->endEvidence());
+            }
+
             $profile->assertPinnedBuild($command->printed);
             $probe = $profile->signInProbe($this->headless->startOf($runtime, $start));
-            $source = HostOrderSource::fromJournal();
+            $source = HostInstructionSource::fromJournal();
             $open = new OpenHostProcessCommand($process->host_id, $runtime->id, $probe, $source, $start->id);
 
             $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $open);

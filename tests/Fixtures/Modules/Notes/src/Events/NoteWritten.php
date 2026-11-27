@@ -13,8 +13,8 @@ use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect\RecordNoteEffectComma
 final readonly class NoteWritten implements Event
 {
     /**
-     * @param list<RecordNoteEffectCommand> $ordinary
-     * @param list<RecordNoteEffectCommand> $marked
+     * @param  list<RecordNoteEffectCommand>  $ordinary
+     * @param  list<RecordNoteEffectCommand>  $marked
      */
     public function __construct(
         public bool $doesListenerFail = false,

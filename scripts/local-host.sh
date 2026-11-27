@@ -4,7 +4,7 @@
 set -eu
 
 main() {
-    local architecture suffix fresh=false
+    local architecture suffix images fresh=false
     cd "$(dirname "$0")/.."
     . scripts/lib/settings.sh
     . scripts/lib/templates.sh
@@ -12,6 +12,7 @@ main() {
     [ "${1:-}" = --fresh ] && fresh=true
     architecture="linux/$(docker info --format '{{.Architecture}}' | sed 's/x86_64/amd64/; s/aarch64/arm64/')"
     suffix=$(echo "$architecture" | tr / -)
+    images=$(read_image_settings)
     build_changed_images "$architecture" "$suffix"
     write_contained_settings "$suffix"
     $fresh && remove_local_installation
@@ -20,6 +21,17 @@ main() {
     forget_unknown_host
     enroll_host
     start_services
+    [ "$images" = "$(read_image_settings)" ] || recreate_app_services
+}
+
+# The images the services run, as .env names them.
+read_image_settings() {
+    grep -E '^(AGENT_IMAGE|RUNNER_IMAGE)=' .env || true
+}
+
+# A service keeps the settings it was created with, so each one that runs the application image starts again on the new.
+recreate_app_services() {
+    docker compose up -d --wait --force-recreate app queue scheduler ticker reverb drivers
 }
 
 # An image is built again only when what goes into it changed, committed or not.
@@ -94,11 +106,17 @@ start_database() {
 
 # A database made again no longer knows the enrolled host, and would refuse its secret on every call.
 forget_unknown_host() {
-    local host
+    local host answer
     host=$(read_setting AGENTS_HOST_ID)
     [ -n "$host" ] || return 0
-    docker compose exec -T app php artisan tinker --execute \
-        "$(fill_template scripts/local-host/host-known.php host="$host")" | grep -q known && return 0
+    answer=$(docker compose exec -T app php artisan tinker --execute \
+        "$(fill_template scripts/local-host/host-known.php host="$host")")
+    case "$answer" in
+        *known*) return 0 ;;
+        *gone*) ;;
+        # An answer that is neither keeps the host and its state: forgetting it on an error would destroy them.
+        *) echo "Could not tell whether the database knows host $host: $answer" >&2; exit 1 ;;
+    esac
     echo "The database no longer knows host $host: enrolling the host again."
     docker compose rm --stop --force agent-host accounts agent-host-enroll
     docker volume rm --force "$(docker compose config | sed -n 's/^name: //p')_host-state"

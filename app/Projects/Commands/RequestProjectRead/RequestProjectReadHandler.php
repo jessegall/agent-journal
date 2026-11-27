@@ -6,19 +6,19 @@ namespace App\Projects\Commands\RequestProjectRead;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\HostProtocolRefused;
-use App\Hosts\Protocol\Data\HostProjectReadData;
-use App\Hosts\Protocol\HostOrders;
+use App\Hosts\Protocol\HostInstructions;
+use App\Hosts\Protocol\Payloads\HostProjectReadPayload;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectRead;
 use App\Projects\Exceptions\ProjectReadRefused;
 use App\Time\Contracts\ServerClock;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\ProjectFileAnswer;
 use App\Values\ProjectFileAnswers;
 
 final readonly class RequestProjectReadHandler implements CommandHandler
 {
-    public function __construct(private ServerClock $clock, private HostOrders $orders) {}
+    public function __construct(private ServerClock $clock, private HostInstructions $instructions) {}
 
     /**
      * @throws ProjectReadRefused
@@ -52,13 +52,13 @@ final readonly class RequestProjectReadHandler implements CommandHandler
     }
 
     /**
-     * A new read goes to the binding's host as an order, which answers it on the project read's own report.
+     * A new read goes to the binding's host as an instruction, which answers it on the project read's own report.
      *
      * @throws HostProtocolRefused
      */
     private function ordered(ProjectBinding $binding, ProjectRead $read): ProjectRead
     {
-        $this->orders->readProject($binding->host_id, HostOrderSource::fromJournal(), HostProjectReadData::from([
+        $this->instructions->readProject($binding->host_id, HostInstructionSource::fromJournal(), HostProjectReadPayload::from([
             'id' => $read->id,
             'binding_id' => $read->binding_id,
             'type' => $read->type->value,

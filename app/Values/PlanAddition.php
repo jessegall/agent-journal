@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Agents\Values\PlanFile;
 use App\Exceptions\PlanAdditionClash;
-use App\Hosts\Protocol\Data\HostRestartFileData;
+use App\Hosts\Protocol\Payloads\HostRestartFilePayload;
 
 /**
  * What start plan parts add to a start: files, side sockets and at most one restart file.
@@ -21,7 +21,7 @@ final readonly class PlanAddition
     public function __construct(
         public array $files = [],
         public array $sideSockets = [],
-        public HostRestartFileData|null $restartWhenFile = null,
+        public HostRestartFilePayload|null $restartWhenFile = null,
         public array $keptFiles = [],
     ) {}
 

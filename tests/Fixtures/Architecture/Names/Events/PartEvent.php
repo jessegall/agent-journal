@@ -7,6 +7,4 @@ namespace Tests\Fixtures\Architecture\Names\Events;
 /**
  * The contract of the fixture's part events.
  */
-interface PartEvent
-{
-}
+interface PartEvent {}

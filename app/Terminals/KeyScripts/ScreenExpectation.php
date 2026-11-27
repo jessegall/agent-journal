@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\KeyScripts;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Enums\ScreenType;
 use App\Terminals\Screens\ScreenReading;
 
@@ -61,7 +61,7 @@ final readonly class ScreenExpectation
      * @param  array<string, string>  $values
      * @param  string|null  $fingerprint  the fingerprint of the frame, read only for an expectation that names one
      */
-    public function isMetBy(ScreenReading $reading, HostFrameData $frame, array $values, string|null $fingerprint): bool
+    public function isMetBy(ScreenReading $reading, HostFramePayload $frame, array $values, string|null $fingerprint): bool
     {
         if ($this->fingerprint !== null) {
             return $reading->isStill && $fingerprint === $this->fingerprint;

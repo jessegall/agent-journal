@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('driver_label', 64)->nullable();
             $table->string('driver_build', 64)->nullable();
             $table->string('model', 128);
+            $table->string('effort', 32);
             $table->string('requested_model_type', 16);
             $table->string('requested_model', 128)->nullable();
             $table->string('driver_source', 16);

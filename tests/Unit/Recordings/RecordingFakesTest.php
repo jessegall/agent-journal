@@ -6,9 +6,9 @@ namespace Tests\Unit\Recordings;
 
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
-use App\Hosts\OrderSignature;
-use App\Hosts\Protocol\Data\HostClaimedOrdersData;
+use App\Hosts\InstructionSignature;
 use App\Hosts\Protocol\HostProcessType;
+use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
 use App\Recordings\Exceptions\RecordedEnvironmentRefused;
 use App\Recordings\Exceptions\RecordingLeaks;
 use App\Recordings\Exceptions\RecordingOutsideContainer;
@@ -20,7 +20,7 @@ use Tests\TestCase;
 /**
  * A recording keeps no real value: a folder of the process's environment becomes its variable, every other kind of
  * real value a fake of its shape, one fake to a value through a run and the same on a re-record; the user's own session
- * variables, a driver outside the agent image and a value left behind each refuse it; faked orders are signed anew.
+ * variables, a driver outside the agent image and a value left behind each refuse it; faked instructions are signed anew.
  */
 final class RecordingFakesTest extends TestCase
 {
@@ -120,9 +120,9 @@ final class RecordingFakesTest extends TestCase
         new RecordingFakes([])->assertNoLeak('{"host":"acme-host-7"}', ['Example User', 'acme-host-7', '1']);
     }
 
-    public function test_a_faked_claims_orders_are_signed_anew_with_the_recordings_order_secret(): void
+    public function test_a_faked_claims_instructions_are_signed_anew_with_the_recordings_instruction_secret(): void
     {
-        $order = [
+        $instruction = [
             'id' => '00000000000000000000000001',
             'sequence' => 1,
             'type' => 'snapshot',
@@ -131,26 +131,26 @@ final class RecordingFakesTest extends TestCase
             'expires_at' => '2026-11-27T08:00:00Z',
             'signature' => 'signed-by-the-real-host-secret',
         ];
-        $claim = HostClaimedOrdersData::from([
-            'orders' => [$order],
+        $claim = HostClaimedInstructionsPayload::from([
+            'instructions' => [$instruction],
             'idle_window_seconds' => 60,
             'now' => '2026-11-27T07:59:00Z',
         ]);
-        $signature = OrderSignature::of(
-            $order['id'],
+        $signature = InstructionSignature::of(
+            $instruction['id'],
             1,
             'snapshot',
-            $order['process_id'],
+            $instruction['process_id'],
             '{}',
-            $order['expires_at'],
-            RecordingFakes::ORDER_SECRET,
+            $instruction['expires_at'],
+            RecordingFakes::INSTRUCTION_SECRET,
         );
 
         $resigned = new RecordingFakes([])->resignedClaim($claim);
 
         $this->assertSame(
             $signature,
-            $resigned->orders[0]->signature,
+            $resigned->instructions[0]->signature,
         );
     }
 

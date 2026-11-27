@@ -9,7 +9,7 @@ use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Files\ManifestMount;
 use App\Files\Values\WorkspacePreparation;
-use App\Hosts\Protocol\Data\HostContainerManifestData;
+use App\Hosts\Protocol\Payloads\HostContainerManifestPayload;
 use App\Sessions\Values\ExecutionPolicy;
 use App\Support\MountRules;
 use App\Values\ExecutionBudgets;
@@ -65,9 +65,9 @@ final readonly class ContainerManifest
     /**
      * The manifest as the host reads it.
      */
-    public function protocolData(): HostContainerManifestData
+    public function protocolData(): HostContainerManifestPayload
     {
-        return HostContainerManifestData::from([
+        return HostContainerManifestPayload::from([
             ...get_object_vars($this),
             'securityOptions' => $this->securityOptions->protocolData(),
             'mounts' => array_map(fn (ManifestMount $mount) => $mount->protocolData(), $this->mounts),

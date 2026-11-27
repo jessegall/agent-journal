@@ -7,68 +7,68 @@ import (
 	"sync"
 )
 
-// Executor carries out one type of order and gives the facts of its answer, or a RefusalError.
-type Executor func(ctx context.Context, order Order) (map[string]any, error)
+// Executor carries out one type of instruction and gives the facts of its answer, or a RefusalError.
+type Executor func(ctx context.Context, instruction Instruction) (map[string]any, error)
 
-// Dispatcher runs the orders the host claimed: each is checked, answered from the record when it was answered
-// before, and otherwise carried out by the executor of its type. Orders of one process run one after another in the
-// order handed out; orders of different processes run at once; host-wide orders wait for none of them.
+// Dispatcher runs the instructions the host claimed: each is checked, answered from the record when it was answered
+// before, and otherwise carried out by the executor of its type. Instructions of one process run one after another in the
+// instruction handed out; instructions of different processes run at once; host-wide instructions wait for none of them.
 type Dispatcher struct {
 	verifier  Verifier
 	record    *AnsweredRecord
 	executors map[string]Executor
-	report    func(Order, Answer)
+	report    func(Instruction, Answer)
 
 	mutex    sync.Mutex
-	lanes    map[string]chan Order
+	lanes    map[string]chan Instruction
 	inFlight map[string]bool
 	running  sync.WaitGroup
 }
 
-// NewDispatcher dispatches with these executors and hands every answer, with its order, to report once the record
+// NewDispatcher dispatches with these executors and hands every answer, with its instruction, to report once the record
 // holds it.
-func NewDispatcher(verifier Verifier, record *AnsweredRecord, executors map[string]Executor, report func(Order, Answer)) *Dispatcher {
+func NewDispatcher(verifier Verifier, record *AnsweredRecord, executors map[string]Executor, report func(Instruction, Answer)) *Dispatcher {
 	return &Dispatcher{
 		verifier:  verifier,
 		record:    record,
 		executors: executors,
 		report:    report,
-		lanes:     map[string]chan Order{},
+		lanes:     map[string]chan Instruction{},
 		inFlight:  map[string]bool{},
 	}
 }
 
-// Submit takes one claimed order; an order already running is not taken twice.
-func (dispatcher *Dispatcher) Submit(ctx context.Context, order Order) {
-	if answer, found := dispatcher.record.Find(order.ID); found {
-		dispatcher.report(order, answer)
+// Submit takes one claimed instruction; an instruction already running is not taken twice.
+func (dispatcher *Dispatcher) Submit(ctx context.Context, instruction Instruction) {
+	if answer, found := dispatcher.record.Find(instruction.ID); found {
+		dispatcher.report(instruction, answer)
 		return
 	}
 	dispatcher.mutex.Lock()
-	if dispatcher.inFlight[order.ID] {
+	if dispatcher.inFlight[instruction.ID] {
 		dispatcher.mutex.Unlock()
 		return
 	}
-	dispatcher.inFlight[order.ID] = true
+	dispatcher.inFlight[instruction.ID] = true
 	dispatcher.running.Add(1)
-	if order.IsHostWide() {
+	if instruction.IsHostWide() {
 		dispatcher.mutex.Unlock()
 		go func() {
-			dispatcher.carryOut(ctx, order)
+			dispatcher.carryOut(ctx, instruction)
 		}()
 		return
 	}
-	lane := dispatcher.laneOf(ctx, order.ProcessID)
+	lane := dispatcher.laneOf(ctx, instruction.ProcessID)
 	dispatcher.mutex.Unlock()
-	lane <- order
+	lane <- instruction
 }
 
-// Wait returns once every order submitted so far was answered.
-// Capabilities are the order types this host carries out, as its inventory lists them.
+// Wait returns once every instruction submitted so far was answered.
+// Capabilities are the instruction types this host carries out, as its inventory lists them.
 func (dispatcher *Dispatcher) Capabilities() []string {
 	capabilities := make([]string, 0, len(dispatcher.executors))
-	for orderType := range dispatcher.executors {
-		capabilities = append(capabilities, orderType)
+	for instructionType := range dispatcher.executors {
+		capabilities = append(capabilities, instructionType)
 	}
 	slices.Sort(capabilities)
 	return capabilities
@@ -78,61 +78,61 @@ func (dispatcher *Dispatcher) Wait() {
 	dispatcher.running.Wait()
 }
 
-// laneOf is the queue of one process's orders, started on its first order; the caller holds the mutex.
-func (dispatcher *Dispatcher) laneOf(ctx context.Context, processID string) chan Order {
+// laneOf is the queue of one process's instructions, started on its first instruction; the caller holds the mutex.
+func (dispatcher *Dispatcher) laneOf(ctx context.Context, processID string) chan Instruction {
 	lane, found := dispatcher.lanes[processID]
 	if found {
 		return lane
 	}
-	lane = make(chan Order, 64)
+	lane = make(chan Instruction, 64)
 	dispatcher.lanes[processID] = lane
 	go func() {
-		for order := range lane {
-			dispatcher.carryOut(ctx, order)
+		for instruction := range lane {
+			dispatcher.carryOut(ctx, instruction)
 		}
 	}()
 	return lane
 }
 
-func (dispatcher *Dispatcher) carryOut(ctx context.Context, order Order) {
+func (dispatcher *Dispatcher) carryOut(ctx context.Context, instruction Instruction) {
 	defer dispatcher.running.Done()
-	answer := dispatcher.answerOf(ctx, order)
-	if err := dispatcher.record.Keep(order, answer, dispatcher.verifier.Now()); err != nil {
-		answer = RefusedFor(order, Unsafe, "the host could not record its answer: "+err.Error(), nil)
+	answer := dispatcher.answerOf(ctx, instruction)
+	if err := dispatcher.record.Keep(instruction, answer, dispatcher.verifier.Now()); err != nil {
+		answer = RefusedFor(instruction, Unsafe, "the host could not record its answer: "+err.Error(), nil)
 	}
 	dispatcher.mutex.Lock()
-	delete(dispatcher.inFlight, order.ID)
+	delete(dispatcher.inFlight, instruction.ID)
 	dispatcher.mutex.Unlock()
-	dispatcher.report(order, answer)
+	dispatcher.report(instruction, answer)
 }
 
-func (dispatcher *Dispatcher) answerOf(ctx context.Context, order Order) Answer {
-	if err := dispatcher.verifier.Verify(order); err != nil {
-		return refusalAnswer(order, err, nil)
+func (dispatcher *Dispatcher) answerOf(ctx context.Context, instruction Instruction) Answer {
+	if err := dispatcher.verifier.Verify(instruction); err != nil {
+		return refusalAnswer(instruction, err, nil)
 	}
-	executor, found := dispatcher.executors[order.Type]
+	executor, found := dispatcher.executors[instruction.Type]
 	if !found {
-		return RefusedFor(order, UnknownOrder, "this host does not carry out "+order.Type, nil)
+		return RefusedFor(instruction, UnknownInstruction, "this host does not carry out "+instruction.Type, nil)
 	}
-	if dispatcher.record.IsInterrupted(order.ID) && !OrderTypes[order.Type].Repeatable {
-		reason := "the host stopped while it carried this order out, so it is not carried out twice"
-		return RefusedFor(order, HostRestarted, reason, nil)
+	if dispatcher.record.IsInterrupted(instruction.ID) && !InstructionTypes[instruction.Type].Repeatable {
+		reason := "the host stopped while it carried this instruction out, so it is not carried out twice"
+		return RefusedFor(instruction, HostRestarted, reason, nil)
 	}
-	if err := dispatcher.record.Start(order, dispatcher.verifier.Now()); err != nil {
-		return RefusedFor(order, Unsafe, "the host could not record the order: "+err.Error(), nil)
+	if err := dispatcher.record.Start(instruction, dispatcher.verifier.Now()); err != nil {
+		return RefusedFor(instruction, Unsafe, "the host could not record the instruction: "+err.Error(), nil)
 	}
-	facts, err := executor(ctx, order)
+	facts, err := executor(ctx, instruction)
 	if err != nil {
-		return refusalAnswer(order, err, facts)
+		return refusalAnswer(instruction, err, facts)
 	}
-	return DoneWith(order, facts)
+	return DoneWith(instruction, facts)
 }
 
-// refusalAnswer is the answer of a refused order, with the facts the host saw, such as the current row hash.
-func refusalAnswer(order Order, err error, facts map[string]any) Answer {
+// refusalAnswer is the answer of a refused instruction, with the facts the host saw, such as the current row hash.
+func refusalAnswer(instruction Instruction, err error, facts map[string]any) Answer {
 	var refusal RefusalError
 	if errors.As(err, &refusal) {
-		return RefusedFor(order, refusal.Refusal, refusal.Reason, facts)
+		return RefusedFor(instruction, refusal.Refusal, refusal.Reason, facts)
 	}
-	return RefusedFor(order, Unsafe, err.Error(), facts)
+	return RefusedFor(instruction, Unsafe, err.Error(), facts)
 }

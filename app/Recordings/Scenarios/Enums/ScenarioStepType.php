@@ -59,9 +59,9 @@ enum ScenarioStepType: string
     }
 
     /**
-     * Whether a step of this type orders this journal's host something no session orders.
+     * Whether a step of this type instructions this journal's host something no session instructions.
      */
-    public function isHostOrder(): bool
+    public function isHostInstruction(): bool
     {
         return in_array($this, [
             self::MakeFolder,

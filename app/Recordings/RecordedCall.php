@@ -29,6 +29,8 @@ final readonly class RecordedCall implements JsonSerializable
         'Content-Encoding',
         'Api-Version',
         'Docker-Experimental',
+        'Connection',
+        'Upgrade',
         'Ostype',
         'Server',
     ];

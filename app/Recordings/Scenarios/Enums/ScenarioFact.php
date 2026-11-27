@@ -9,6 +9,7 @@ use App\Models\Accounts\SignInAttempt;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\DriverTurn;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionRequest;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
@@ -27,6 +28,7 @@ enum ScenarioFact: string
     case ChallengeShown = 'challenge-shown';
     case SignedIn = 'signed-in';
     case Installed = 'installed';
+    case InstructionsAnswered = 'instructions-answered';
 
     /**
      * Whether the journal holds the fact now for the run: of its last agent's session, its start, its sign-in or its
@@ -48,6 +50,7 @@ enum ScenarioFact: string
             self::ChallengeShown => SignInAttempt::query()->find($run->signInAttempt())?->isWaiting() === true,
             self::SignedIn => SignInAttempt::query()->find($run->signInAttempt())?->isComplete() === true,
             self::Installed => $run->installerExit() === 0 && Host::query()->exists(),
+            self::InstructionsAnswered => HostInstruction::areAllAnsweredSince($run->startedAt),
         };
     }
 }

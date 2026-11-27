@@ -105,7 +105,7 @@ func stopAndWait(daemon *dockermock.Daemon, table *ProcessTable) {
 	}
 }
 
-func openOrder(t *testing.T, processID, restart, image string) Order {
+func openInstruction(t *testing.T, processID, restart, image string) Instruction {
 	t.Helper()
 	plan := OpenPlan{
 		Type:    "terminal",
@@ -128,14 +128,14 @@ func openOrder(t *testing.T, processID, restart, image string) Order {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return Order{ID: "open-" + processID, Type: "open_container", ProcessID: processID, Payload: string(payload)}
+	return Instruction{ID: "open-" + processID, Type: "open_container", ProcessID: processID, Payload: string(payload)}
 }
 
 func TestAnOpenContainerRunsAndIsReportedRunning(t *testing.T) {
 	daemon := dockermock.Start(t, mockImage)
 	table, sent := mockTable(t, daemon)
 
-	facts, err := carry(testOrders{ProcessTable: table}, "open_container")(context.Background(), openOrder(t, "p1", "never", mockImage))
+	facts, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), openInstruction(t, "p1", "never", mockImage))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -160,14 +160,14 @@ func TestACrashedContainerHealedOnACrashIsStartedAgainAndANeverContainerIsLeftDo
 	}
 	table, sent := mockTable(t, daemon)
 
-	if _, err := carry(testOrders{ProcessTable: table}, "open_container")(context.Background(), openOrder(t, "healed", "on_crash", mockImage)); err != nil {
+	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), openInstruction(t, "healed", "on_crash", mockImage)); err != nil {
 		t.Fatal(err)
 	}
 	sent.waitFor(t, "running", "restarted")
 
 	starts.Store(0)
 	neverTable, neverSent := mockTable(t, daemon)
-	if _, err := carry(testOrders{ProcessTable: neverTable}, "open_container")(context.Background(), openOrder(t, "never", "never", mockImage)); err != nil {
+	if _, err := carry(testInstructions{ProcessTable: neverTable}, "open_container")(context.Background(), openInstruction(t, "never", "never", mockImage)); err != nil {
 		t.Fatal(err)
 	}
 	neverSent.waitFor(t, "running", "exited")
@@ -191,7 +191,7 @@ func TestARunningContainerIsAdoptedAgainAfterTheHostRestarted(t *testing.T) {
 		return OpenProcessTable(state, containers, queue, outputs), sent
 	}
 	first, sent := open()
-	facts, err := carry(testOrders{ProcessTable: first}, "open_container")(context.Background(), openOrder(t, "kept", "never", mockImage))
+	facts, err := carry(testInstructions{ProcessTable: first}, "open_container")(context.Background(), openInstruction(t, "kept", "never", mockImage))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -215,7 +215,7 @@ func TestANativeProcessThatEndsIsReportedExitedWithItsCode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := carry(testOrders{ProcessTable: table}, "open_process")(context.Background(), Order{ID: "open-n", Type: "open_process", ProcessID: "n", Payload: string(plan)}); err != nil {
+	if _, err := carry(testInstructions{ProcessTable: table}, "open_process")(context.Background(), Instruction{ID: "open-n", Type: "open_process", ProcessID: "n", Payload: string(plan)}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -234,7 +234,7 @@ func TestANativeProcessReadsTheFilesItsPlanHandsItOnItsDescriptors(t *testing.T)
 		t.Fatal(err)
 	}
 
-	if _, err := carry(testOrders{ProcessTable: table}, "open_process")(context.Background(), Order{ID: "open-r", Type: "open_process", ProcessID: "r", Payload: string(plan)}); err != nil {
+	if _, err := carry(testInstructions{ProcessTable: table}, "open_process")(context.Background(), Instruction{ID: "open-r", Type: "open_process", ProcessID: "r", Payload: string(plan)}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -250,7 +250,7 @@ func TestAnUnpinnedImageIsRefused(t *testing.T) {
 	daemon := dockermock.Start(t, "registry.example/journal-helper:latest")
 	table, _ := mockTable(t, daemon)
 
-	_, err := carry(testOrders{ProcessTable: table}, "open_container")(context.Background(), openOrder(t, "p2", "never", "registry.example/journal-helper:latest"))
+	_, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), openInstruction(t, "p2", "never", "registry.example/journal-helper:latest"))
 
 	var refusal RefusalError
 	if !errors.As(err, &refusal) || refusal.Refusal != Unsafe {
@@ -261,13 +261,13 @@ func TestAnUnpinnedImageIsRefused(t *testing.T) {
 func TestAStoppedContainerEndsWithOneExitReport(t *testing.T) {
 	daemon := dockermock.Start(t, mockImage)
 	table, sent := mockTable(t, daemon)
-	if _, err := carry(testOrders{ProcessTable: table}, "open_container")(context.Background(), openOrder(t, "p3", "on_crash", mockImage)); err != nil {
+	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), openInstruction(t, "p3", "on_crash", mockImage)); err != nil {
 		t.Fatal(err)
 	}
 	sent.waitFor(t, "running")
 
-	stop := Order{ID: "stop-p3", Type: "stop", ProcessID: "p3", Payload: `{"grace_ms":1000,"force_ms":1000}`}
-	if _, err := carry(testOrders{ProcessTable: table}, "stop")(context.Background(), stop); err != nil {
+	stop := Instruction{ID: "stop-p3", Type: "stop", ProcessID: "p3", Payload: `{"grace_ms":1000,"force_ms":1000}`}
+	if _, err := carry(testInstructions{ProcessTable: table}, "stop")(context.Background(), stop); err != nil {
 		t.Fatal(err)
 	}
 
@@ -331,10 +331,10 @@ func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *t
 		return OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
 	}
 	before, after := &sentChunks{}, &sentChunks{}
-	order := openOrder(t, "turn", "never", mockImage)
-	order.Payload = strings.Replace(order.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
-	order.Payload = strings.Replace(order.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
-	if _, err := carry(testOrders{ProcessTable: open(before)}, "open_container")(context.Background(), order); err != nil {
+	instruction := openInstruction(t, "turn", "never", mockImage)
+	instruction.Payload = strings.Replace(instruction.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
+	instruction.Payload = strings.Replace(instruction.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
+	if _, err := carry(testInstructions{ProcessTable: open(before)}, "open_container")(context.Background(), instruction); err != nil {
 		t.Fatal(err)
 	}
 	waitForText(t, before, "first\n")
@@ -367,11 +367,11 @@ func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.
 	runQueue(t, queue)
 	sent := &sentChunks{}
 	table := OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
-	order := openOrder(t, "probe", "never", mockImage)
-	order.Payload = strings.Replace(order.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
-	order.Payload = strings.Replace(order.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
+	instruction := openInstruction(t, "probe", "never", mockImage)
+	instruction.Payload = strings.Replace(instruction.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
+	instruction.Payload = strings.Replace(instruction.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
 
-	if _, err := carry(testOrders{ProcessTable: table}, "open_container")(context.Background(), order); err != nil {
+	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), instruction); err != nil {
 		t.Fatal(err)
 	}
 
@@ -414,8 +414,8 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	order := Order{ID: "open-s", Type: "open_process", ProcessID: "s", Payload: string(plan)}
-	if _, err := carry(testOrders{ProcessTable: open(before, &sentReports{})}, "open_process")(context.Background(), order); err != nil {
+	instruction := Instruction{ID: "open-s", Type: "open_process", ProcessID: "s", Payload: string(plan)}
+	if _, err := carry(testInstructions{ProcessTable: open(before, &sentReports{})}, "open_process")(context.Background(), instruction); err != nil {
 		t.Fatal(err)
 	}
 	waitForText(t, before, "first\n")
@@ -450,8 +450,8 @@ func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(
 	if err != nil {
 		t.Fatal(err)
 	}
-	order := Order{ID: "open-e", Type: "open_process", ProcessID: "e", Payload: string(plan)}
-	if _, err := carry(testOrders{ProcessTable: table}, "open_process")(context.Background(), order); err != nil {
+	instruction := Instruction{ID: "open-e", Type: "open_process", ProcessID: "e", Payload: string(plan)}
+	if _, err := carry(testInstructions{ProcessTable: table}, "open_process")(context.Background(), instruction); err != nil {
 		t.Fatal(err)
 	}
 
@@ -500,7 +500,7 @@ func TestATerminalLostWithItsHostIsReportedLostOnlyOnceItsProcessEnded(t *testin
 		t.Fatal(err)
 	}
 	before := open(&sentReports{})
-	if _, err := carry(testOrders{ProcessTable: before}, "open_process")(context.Background(), Order{ID: "open-t", Type: "open_process", ProcessID: "t",
+	if _, err := carry(testInstructions{ProcessTable: before}, "open_process")(context.Background(), Instruction{ID: "open-t", Type: "open_process", ProcessID: "t",
 		Payload: string(plan)}); err != nil {
 		t.Fatal(err)
 	}

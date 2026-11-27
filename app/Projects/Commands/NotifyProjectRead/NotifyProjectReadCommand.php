@@ -6,8 +6,8 @@ namespace App\Projects\Commands\NotifyProjectRead;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
-use App\Hosts\Protocol\Data\HostProjectEntryData;
 use App\Hosts\Protocol\HostProjectReadFailure;
+use App\Hosts\Protocol\Payloads\HostProjectEntryPayload;
 use App\Projects\Values\ProjectFileText;
 use App\Support\Command;
 
@@ -22,7 +22,7 @@ use App\Support\Command;
 final readonly class NotifyProjectReadCommand extends Command
 {
     /**
-     * @param  list<HostProjectEntryData>  $entries
+     * @param  list<HostProjectEntryPayload>  $entries
      */
     public function __construct(
         public string $hostId,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\ClaudeCode;
 
 use App\Agents\Drivers\Contracts\AccountPlanPart;
-use App\Hosts\Protocol\Data\HostRestartFileData;
+use App\Hosts\Protocol\Payloads\HostRestartFilePayload;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\PlanAddition;
@@ -29,7 +29,7 @@ final readonly class ClaudeCodeTranscriptRestart implements AccountPlanPart
         return new PlanAddition(restartWhenFile: $this->transcriptOf($start, $account));
     }
 
-    private function transcriptOf(DriverStart $start, DriverAccount $account): HostRestartFileData
+    private function transcriptOf(DriverStart $start, DriverAccount $account): HostRestartFilePayload
     {
         $configuration = '{folder:'.ClaudeCodeAccountHome::HOME_FOLDER.'}/.claude';
 
@@ -39,7 +39,7 @@ final readonly class ClaudeCodeTranscriptRestart implements AccountPlanPart
             }
         }
 
-        return HostRestartFileData::from([
+        return HostRestartFilePayload::from([
             'folder' => "{$configuration}/projects",
             'glob' => "*{$start->sessionId}.jsonl",
         ]);

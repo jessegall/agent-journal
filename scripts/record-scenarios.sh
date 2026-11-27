@@ -65,9 +65,10 @@ switch_recording_on() {
     sh scripts/local-host.sh
 }
 
+# Off needs no build: the services that read the setting start again with it.
 switch_recording_off() {
     set_setting AGENTS_RECORDING false
-    sh scripts/local-host.sh
+    docker compose up -d --wait --force-recreate --no-deps app queue scheduler ticker reverb drivers agent-host
 }
 
 # The play runs in the journal's container, which holds no Docker, so the machine changes it asks for run here.
@@ -75,9 +76,14 @@ play_scenario() {
     local watcher status=0
     run_machine_changes &
     watcher=$!
-    docker compose exec app php artisan recordings:play "$2" --owner="$1" || status=$?
+    docker compose exec $(read_terminal_flag) app php artisan recordings:play "$2" --owner="$1" || status=$?
     kill "$watcher" 2>/dev/null || true
     return "$status"
+}
+
+# An ask-user step reads your terminal when there is one; without one the play's lines still reach the log.
+read_terminal_flag() {
+    [ -t 0 ] || echo -T
 }
 
 run_machine_changes() {

@@ -9,10 +9,10 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Hosts\Contracts\ProjectFiles;
 use App\Hosts\EnrolledHost;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
 use App\Models\Projects\Project;
@@ -106,11 +106,11 @@ final class RequestProjectReadTest extends TestCase
         $read = $files->file($this->binding, 'src/main.go');
         $files->file($this->binding, 'src/main.go');
 
-        $order = HostOrder::query()->where('type', HostOrderType::ReadProject->value)->sole();
-        $payload = $this->journal->payloadOf($order);
+        $instruction = HostInstruction::query()->where('type', HostInstructionType::ReadProject->value)->sole();
+        $payload = $this->journal->payloadOf($instruction);
         $this->assertSame(
             [$this->host->hostId, null, $read->readId, 'src/main.go'],
-            [$order->host_id, $order->host_process_id, $payload['id'], $payload['path']],
+            [$instruction->host_id, $instruction->host_process_id, $payload['id'], $payload['path']],
         );
     }
 

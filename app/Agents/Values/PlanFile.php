@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use App\Hosts\Protocol\Data\HostPlanFileData;
+use App\Hosts\Protocol\Payloads\HostPlanFilePayload;
 
 /**
  * One file a process plan hands its process, such as a driver's settings: a plain name in the process's own files
@@ -31,9 +31,9 @@ final readonly class PlanFile
     /**
      * The file as a plan carries it.
      */
-    public function protocolData(): HostPlanFileData
+    public function protocolData(): HostPlanFilePayload
     {
-        return HostPlanFileData::from([
+        return HostPlanFilePayload::from([
             'name' => $this->name,
             'content' => $this->content,
             'template' => $this->isTemplate,

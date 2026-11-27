@@ -14,7 +14,7 @@ func TestAContainedHostRunsOnlyTheImagesTheJournalAllowed(t *testing.T) {
 	rules.Allowed.Replace([]string{allowedDigest})
 
 	if before || !rules.permitsImage(allowedDigest) || rules.permitsImage(otherDigest) {
-		t.Fatalf("permitted before any order: %v, the allowed digest: %v, another: %v",
+		t.Fatalf("permitted before any instruction: %v, the allowed digest: %v, another: %v",
 			before, rules.permitsImage(allowedDigest), rules.permitsImage(otherDigest))
 	}
 }

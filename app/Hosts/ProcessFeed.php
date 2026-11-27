@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Hosts;
 
-use App\Hosts\Protocol\Data\HostFrameData;
-use App\Hosts\Protocol\Data\HostOutputData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
+use App\Hosts\Protocol\Payloads\HostOutputPayload;
 use App\Values\FeedEntry;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Redis\Connections\Connection;
 
 /**
  * What each process on a host printed lately, kept in Redis for an hour: its latest frame, and its last frames and
- * chunks in a stream a worker reads after its cursor. It is a cache: a worker that finds no frame orders a snapshot.
+ * chunks in a stream a worker reads after its cursor. It is a cache: a worker that finds no frame instructions a snapshot.
  */
 final readonly class ProcessFeed
 {
@@ -40,7 +40,7 @@ final readonly class ProcessFeed
 
     public function __construct(private RedisFactory $redis) {}
 
-    public function push(string $processId, HostOutputData $output): void
+    public function push(string $processId, HostOutputPayload $output): void
     {
         $key = self::streamKey($processId);
 
@@ -59,12 +59,12 @@ final readonly class ProcessFeed
     }
 
     /**
-     * Tells the process's worker that one of its orders was answered.
+     * Tells the process's worker that one of its instructions was answered.
      */
-    public function markOrder(string $processId, string $orderId): void
+    public function markInstruction(string $processId, string $instructionId): void
     {
         $key = self::streamKey($processId);
-        $this->connection()->xadd($key, '*', ['answered' => $orderId], self::ENTRY_LIMIT, true);
+        $this->connection()->xadd($key, '*', ['answered' => $instructionId], self::ENTRY_LIMIT, true);
         $this->connection()->expire($key, self::TTL_SECONDS);
     }
 
@@ -78,7 +78,7 @@ final readonly class ProcessFeed
         $this->connection()->expire($key, self::TTL_SECONDS);
     }
 
-    public function latestFrame(string $processId): HostFrameData|null
+    public function latestFrame(string $processId): HostFramePayload|null
     {
         $encoded = $this->connection()->get(self::latestKey($processId));
 
@@ -86,7 +86,7 @@ final readonly class ProcessFeed
             return null;
         }
 
-        return HostFrameData::from(json_decode($encoded, true, flags: JSON_THROW_ON_ERROR));
+        return HostFramePayload::from(json_decode($encoded, true, flags: JSON_THROW_ON_ERROR));
     }
 
     /**

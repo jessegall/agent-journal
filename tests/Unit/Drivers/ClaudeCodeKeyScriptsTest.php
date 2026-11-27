@@ -12,7 +12,7 @@ use App\Terminals\KeyScripts\KeyScriptCatalogue;
 use App\Terminals\KeyScripts\KeyScriptRun;
 use App\Terminals\KeyScripts\KeyScriptRunner;
 use App\Terminals\Screens\Enums\KeyMoveType;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use Tests\Support\Hosts\MockHost;
 use Tests\TestCase;
 
@@ -90,7 +90,7 @@ final class ClaudeCodeKeyScriptsTest extends TestCase
             $move = $runner->moveOn($layout, $move->run, $frame);
 
             if ($move->type === KeyMoveType::Send) {
-                $runner->send($move, $frame, 'process', 0, HostOrderSource::fromJournal());
+                $runner->send($move, $frame, 'process', 0, HostInstructionSource::fromJournal());
                 $this->sends++;
             }
 

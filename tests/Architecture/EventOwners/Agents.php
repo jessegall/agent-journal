@@ -109,7 +109,7 @@ use App\Events\Sessions\StartSessionOpened;
 use App\Events\Sessions\StartSettingsRequested;
 use App\Events\Sessions\StartVerificationCancelled;
 use App\Events\Sessions\StopCheckCertified;
-use App\Events\Sessions\StopCheckConditionsOrdered;
+use App\Events\Sessions\StopCheckConditionsInstructed;
 use App\Events\Sessions\StopCheckOpened;
 use App\Events\Sessions\StopCheckSettled;
 use App\Events\Sessions\TerminalGrantGivenBack;
@@ -704,12 +704,12 @@ return [
         'producers' => [],
         'sample' => fn () => new StopCheckOpened('attempt', 'session'),
     ],
-    StopCheckConditionsOrdered::class => [
+    StopCheckConditionsInstructed::class => [
         'role' => EventRole::RowFact,
         'owner' => 'StopCheck::runUnder',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StopCheckConditionsOrdered('attempt', 'order'),
+        'sample' => fn () => new StopCheckConditionsInstructed('attempt', 'order'),
     ],
     StopCheckCertified::class => [
         'role' => EventRole::RowFact,

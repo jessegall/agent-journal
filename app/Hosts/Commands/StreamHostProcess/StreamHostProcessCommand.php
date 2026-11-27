@@ -7,10 +7,10 @@ namespace App\Hosts\Commands\StreamHostProcess;
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
 use App\Support\Command;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 /**
- * Orders the host to send a process's screen so many times a second, changed or not; 0 ends the stream. Run by a driver worker (internal, not exported).
+ * Instructs the host to send a process's screen so many times a second, changed or not; 0 ends the stream. Run by a driver worker (internal, not exported).
  *
  * @extends Command<string>
  */
@@ -21,6 +21,6 @@ final readonly class StreamHostProcessCommand extends Command
         public string $processId,
         public int $framesPerSecond,
         public bool $isRaw,
-        public HostOrderSource $source,
+        public HostInstructionSource $source,
     ) {}
 }

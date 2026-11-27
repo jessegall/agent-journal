@@ -7,10 +7,10 @@ namespace Tests\Commands\Hosts;
 use App\Exceptions\HostProtocolRefused;
 use App\Exceptions\WorkerFenced;
 use App\Hosts\Commands\CloseHostInput\CloseHostInputCommand;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostProcessType;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHostProcess;
@@ -18,7 +18,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Closing a pipe process's input is one order with no payload; a replaced worker, an ended process and a terminal
+ * Closing a pipe process's input is one instruction with no payload; a replaced worker, an ended process and a terminal
  * process are refused.
  */
 #[TestsCommand(CloseHostInputCommand::class)]
@@ -36,14 +36,14 @@ final class CloseHostInputTest extends TestCase
                 ->openProcess('shell')->openProcess('pipe', HostProcessType::Pipe));
     }
 
-    public function test_it_orders_the_host_to_close_the_input(): void
+    public function test_it_instructs_the_host_to_close_the_input(): void
     {
-        $id = $this->journal->asSystem($this->command('pipe', HostOrderSource::fromJournal()));
-        $order = $this->journal->hostOrdersOf('pipe')[1];
+        $id = $this->journal->asSystem($this->command('pipe', HostInstructionSource::fromJournal()));
+        $instruction = $this->journal->hostInstructionsOf('pipe')[1];
 
         $this->journal->assertResult(
-            [$id, HostOrderType::CloseStdin, []],
-            [$order->id, $order->type, $this->journal->payloadOf($order)],
+            [$id, HostInstructionType::CloseStdin, []],
+            [$instruction->id, $instruction->type, $this->journal->payloadOf($instruction)],
         );
     }
 
@@ -53,7 +53,7 @@ final class CloseHostInputTest extends TestCase
             WorkerFenced::class,
             fn () => $this->journal->asSystem($this->command(
                 'pipe',
-                HostOrderSource::forStep('request-1', 'close', 0, 1),
+                HostInstructionSource::forStep('request-1', 'close', 0, 1),
             )),
         );
     }
@@ -66,12 +66,12 @@ final class CloseHostInputTest extends TestCase
         foreach (['pipe', 'shell'] as $name) {
             $this->journal->assertRefused(
                 HostProtocolRefused::class,
-                fn () => $this->journal->asSystem($this->command($name, HostOrderSource::fromJournal())),
+                fn () => $this->journal->asSystem($this->command($name, HostInstructionSource::fromJournal())),
             );
         }
     }
 
-    private function command(string $name, HostOrderSource $source): CloseHostInputCommand
+    private function command(string $name, HostInstructionSource $source): CloseHostInputCommand
     {
         return new CloseHostInputCommand($this->journal->hostProcessCalled($name)->id, $source);
     }

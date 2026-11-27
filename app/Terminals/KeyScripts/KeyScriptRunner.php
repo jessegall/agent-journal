@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Terminals\KeyScripts;
 
 use App\Hosts\Contracts\HostChannel;
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Navigation\Enums\NavigationKey;
 use App\Navigation\Enums\NavigationReason;
 use App\Terminals\Screens\Contracts\MenuRegion;
@@ -17,7 +17,7 @@ use App\Terminals\Screens\ScreenClassifier;
 use App\Terminals\Screens\ScreenFingerprint;
 use App\Terminals\Screens\ScreenLayout;
 use App\Terminals\Screens\ScreenReading;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 /**
  * Drives a driver's menus with a key script, one frame at a time: a key goes only after the screen its step expects
@@ -35,7 +35,7 @@ final readonly class KeyScriptRunner
     /**
      * What the run does on the frame, with the run as it stands after it. A shielded frame is never acted on.
      */
-    public function moveOn(ScreenLayout $layout, KeyScriptRun $run, HostFrameData $frame): KeyMove
+    public function moveOn(ScreenLayout $layout, KeyScriptRun $run, HostFramePayload $frame): KeyMove
     {
         if ($run->isFinished()) {
             return KeyMove::finished($run);
@@ -47,7 +47,7 @@ final readonly class KeyScriptRunner
     /**
      * The move of a run whose step has started.
      */
-    private function onStep(ScreenLayout $layout, KeyScriptRun $run, HostFrameData $frame): KeyMove
+    private function onStep(ScreenLayout $layout, KeyScriptRun $run, HostFramePayload $frame): KeyMove
     {
         if ($frame->isShielded) {
             return KeyMove::failed($run);
@@ -83,10 +83,10 @@ final readonly class KeyScriptRunner
      */
     public function send(
         KeyMove $move,
-        HostFrameData $frame,
+        HostFramePayload $frame,
         string $processId,
         int $inputGeneration,
-        HostOrderSource $source,
+        HostInstructionSource $source,
     ): string {
         $guard = $move->guardOn($frame);
 
@@ -97,7 +97,7 @@ final readonly class KeyScriptRunner
      * A step whose screen has not come: it waits until its deadline, then a still menu, known or not, leaves the run
      * for the main agent to navigate, and any other screen fails it.
      */
-    private static function unmet(KeyScriptRun $run, ScreenReading $reading, HostFrameData $frame): KeyMove
+    private static function unmet(KeyScriptRun $run, ScreenReading $reading, HostFramePayload $frame): KeyMove
     {
         if (! $run->isOverdue($frame->captured)) {
             return KeyMove::wait($run);
@@ -120,7 +120,7 @@ final readonly class KeyScriptRunner
         ScreenLayout $layout,
         KeyScriptRun $run,
         ScreenReading $reading,
-        HostFrameData $frame,
+        HostFramePayload $frame,
     ): KeyMove {
         $menu = self::menuOf($layout, $reading, $frame);
         $waiting = KeyMove::wait($run);
@@ -147,7 +147,7 @@ final readonly class KeyScriptRunner
         KeyScriptRun $run,
         MenuEntries $entries,
         RowRange $rows,
-        HostFrameData $frame,
+        HostFramePayload $frame,
     ): KeyMove {
         $step = $run->currentStep();
         $targets = $step->targetsIn($entries, $run->values);
@@ -187,7 +187,7 @@ final readonly class KeyScriptRunner
      *
      * @return array{MenuEntries, RowRange}|null
      */
-    private static function menuOf(ScreenLayout $layout, ScreenReading $reading, HostFrameData $frame): array|null
+    private static function menuOf(ScreenLayout $layout, ScreenReading $reading, HostFramePayload $frame): array|null
     {
         $region = $reading->menu?->options;
 
@@ -228,7 +228,7 @@ final readonly class KeyScriptRunner
     /**
      * The rows a key is read on: the menu's options, or the composer, or else the whole screen.
      */
-    private static function guardedRows(ScreenLayout $layout, ScreenReading $reading, HostFrameData $frame): RowRange
+    private static function guardedRows(ScreenLayout $layout, ScreenReading $reading, HostFramePayload $frame): RowRange
     {
         return $reading->menuRowsOf($frame)
             ?? $layout->composer->rowsOf($frame)

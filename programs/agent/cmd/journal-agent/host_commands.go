@@ -39,15 +39,15 @@ func enroll(arguments []string) error {
 	}
 	state := host.State{Folder: *stateFolder}
 	trimmedURL := strings.TrimRight(*journalURL, "/")
-	if state.HoldsEnrollment(trimmedURL, *hostID) {
-		log.Printf("host %s is already enrolled with %s; nothing changed", *hostID, trimmedURL)
-		return nil
-	}
 	secret, err := readSecret(*secretFile)
 	if err != nil {
 		return err
 	}
 	enrollment := host.Enrollment{JournalURL: trimmedURL, HostID: *hostID, Secret: secret}
+	if state.HoldsEnrollment(enrollment) {
+		log.Printf("host %s is already enrolled with %s; nothing changed", *hostID, trimmedURL)
+		return nil
+	}
 	if err := state.Save(enrollment); err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func verifyArrangement(arrangement host.Arrangement, pinned host.PinnedImages, d
 	return pinned.AssertLoaded(context.Background(), containers)
 }
 
-// serve carries out the orders the journal sends this host until it is stopped: host protocol 1 opens, feeds and
+// serve carries out the instructions the journal sends this host until it is stopped: host protocol 1 opens, feeds and
 // ends every process the journal decides on, locally or in a container of the agent daemon, and the start socket
 // answers the sign-in service's account-folder calls.
 func serve(arguments []string) error {

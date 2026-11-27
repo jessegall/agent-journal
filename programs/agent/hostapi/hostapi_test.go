@@ -10,12 +10,12 @@ import (
 )
 
 var (
-	testSecret = []byte("the-order-secret")
+	testSecret = []byte("the-instruction-secret")
 	testNow    = time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)
 )
 
-func signedOrder(id, processID string, sequence uint64) Order {
-	order := Order{
+func signedInstruction(id, processID string, sequence uint64) Instruction {
+	instruction := Instruction{
 		ID:        id,
 		Sequence:  sequence,
 		Type:      "write_keys",
@@ -23,16 +23,16 @@ func signedOrder(id, processID string, sequence uint64) Order {
 		Payload:   `{"bytes":"aGk=","as_user":true}`,
 		ExpiresAt: testNow.Add(5 * time.Second),
 	}
-	order.Signature = Sign(testSecret, order)
-	return order
+	instruction.Signature = Sign(testSecret, instruction)
+	return instruction
 }
 
 func testVerifier() Verifier {
 	return Verifier{Secret: testSecret, Now: func() time.Time { return testNow }}
 }
 
-func TestTheJournalsSignatureOfAFixedOrderIsAccepted(t *testing.T) {
-	order := Order{
+func TestTheJournalsSignatureOfAFixedInstructionIsAccepted(t *testing.T) {
+	instruction := Instruction{
 		ID:        "01jorder0000000000000000001",
 		Sequence:  7,
 		Type:      "write_keys",
@@ -40,48 +40,48 @@ func TestTheJournalsSignatureOfAFixedOrderIsAccepted(t *testing.T) {
 		Payload:   `{"bytes":"aGk=","as_user":true}`,
 		ExpiresAt: time.Date(2026, 11, 26, 10, 0, 5, 0, time.UTC),
 	}
-	if got := Sign(testSecret, order); got != "cc55054280b01d6115d7cf90a9f2ff3e9be711a0787a7d5cbbeb90683ace968d" {
+	if got := Sign(testSecret, instruction); got != "cc55054280b01d6115d7cf90a9f2ff3e9be711a0787a7d5cbbeb90683ace968d" {
 		t.Fatalf("the signature is %s, not the one the journal makes", got)
 	}
-	if err := testVerifier().Verify(signedOrder("a", "p", 1)); err != nil {
-		t.Fatalf("a signed order in time is refused: %v", err)
+	if err := testVerifier().Verify(signedInstruction("a", "p", 1)); err != nil {
+		t.Fatalf("a signed instruction in time is refused: %v", err)
 	}
 }
 
-func TestAnUnsignedAlteredOrExpiredOrderIsRefused(t *testing.T) {
-	unsigned := signedOrder("a", "p", 1)
+func TestAnUnsignedAlteredOrExpiredInstructionIsRefused(t *testing.T) {
+	unsigned := signedInstruction("a", "p", 1)
 	unsigned.Signature = ""
-	altered := signedOrder("a", "p", 1)
+	altered := signedInstruction("a", "p", 1)
 	altered.Payload = `{"bytes":"cm0gLXJm","as_user":true}`
-	expired := signedOrder("a", "p", 1)
+	expired := signedInstruction("a", "p", 1)
 	expired.ExpiresAt = testNow
 	expired.Signature = Sign(testSecret, expired)
 
 	for name, test := range map[string]struct {
-		order   Order
-		refusal Refusal
+		instruction Instruction
+		refusal     Refusal
 	}{
 		"unsigned": {unsigned, Unsafe},
 		"altered":  {altered, Unsafe},
 		"expired":  {expired, Expired},
 	} {
 		var refusal RefusalError
-		if err := testVerifier().Verify(test.order); !errors.As(err, &refusal) || refusal.Refusal != test.refusal {
-			t.Errorf("the %s order is not refused as %s: %v", name, test.refusal, err)
+		if err := testVerifier().Verify(test.instruction); !errors.As(err, &refusal) || refusal.Refusal != test.refusal {
+			t.Errorf("the %s instruction is not refused as %s: %v", name, test.refusal, err)
 		}
 	}
 }
 
-func TestAnOrderHandedOutAgainIsAnsweredFromTheRecordAcrossARestart(t *testing.T) {
+func TestAnInstructionHandedOutAgainIsAnsweredFromTheRecordAcrossARestart(t *testing.T) {
 	state := t.TempDir()
 	var runs atomic.Int32
-	executors := map[string]Executor{"write_keys": func(context.Context, Order) (map[string]any, error) {
+	executors := map[string]Executor{"write_keys": func(context.Context, Instruction) (map[string]any, error) {
 		runs.Add(1)
 		return map[string]any{"written": 3}, nil
 	}}
 	var answers []Answer
 	var mutex sync.Mutex
-	report := func(_ Order, answer Answer) {
+	report := func(_ Instruction, answer Answer) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		answers = append(answers, answer)
@@ -92,27 +92,27 @@ func TestAnOrderHandedOutAgainIsAnsweredFromTheRecordAcrossARestart(t *testing.T
 		t.Fatal(err)
 	}
 	dispatcher := NewDispatcher(testVerifier(), first, executors, report)
-	dispatcher.Submit(context.Background(), signedOrder("a", "p", 1))
+	dispatcher.Submit(context.Background(), signedInstruction("a", "p", 1))
 	dispatcher.Wait()
 
 	restarted, err := OpenAnsweredRecord(state)
 	if err != nil {
 		t.Fatal(err)
 	}
-	NewDispatcher(testVerifier(), restarted, executors, report).Submit(context.Background(), signedOrder("a", "p", 1))
+	NewDispatcher(testVerifier(), restarted, executors, report).Submit(context.Background(), signedInstruction("a", "p", 1))
 
 	if runs.Load() != 1 {
-		t.Fatalf("the order ran %d times", runs.Load())
+		t.Fatalf("the instruction ran %d times", runs.Load())
 	}
 	if len(answers) != 2 || answers[1].Status != Done || answers[1].Facts["written"] != float64(3) {
-		t.Fatalf("the repeated order was not answered from the record: %+v", answers)
+		t.Fatalf("the repeated instruction was not answered from the record: %+v", answers)
 	}
 }
 
-func TestAnOrderTheHostStoppedInIsRefusedUnlessItCanRunTwice(t *testing.T) {
+func TestAnInstructionTheHostStoppedInIsRefusedUnlessItCanRunTwice(t *testing.T) {
 	state := t.TempDir()
 	var runs atomic.Int32
-	run := func(context.Context, Order) (map[string]any, error) {
+	run := func(context.Context, Instruction) (map[string]any, error) {
 		runs.Add(1)
 		return nil, nil
 	}
@@ -121,12 +121,12 @@ func TestAnOrderTheHostStoppedInIsRefusedUnlessItCanRunTwice(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	keys := signedOrder("keys", "p", 1)
-	snapshot := signedOrder("shot", "p", 2)
+	keys := signedInstruction("keys", "p", 1)
+	snapshot := signedInstruction("shot", "p", 2)
 	snapshot.Type = "snapshot"
 	snapshot.Signature = Sign(testSecret, snapshot)
-	for _, order := range []Order{keys, snapshot} {
-		if err := crashed.Start(order, testVerifier().Now()); err != nil {
+	for _, instruction := range []Instruction{keys, snapshot} {
+		if err := crashed.Start(instruction, testVerifier().Now()); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -137,10 +137,10 @@ func TestAnOrderTheHostStoppedInIsRefusedUnlessItCanRunTwice(t *testing.T) {
 	}
 	answers := map[string]Answer{}
 	var mutex sync.Mutex
-	dispatcher := NewDispatcher(testVerifier(), restarted, executors, func(_ Order, answer Answer) {
+	dispatcher := NewDispatcher(testVerifier(), restarted, executors, func(_ Instruction, answer Answer) {
 		mutex.Lock()
 		defer mutex.Unlock()
-		answers[answer.OrderID] = answer
+		answers[answer.InstructionID] = answer
 	})
 	dispatcher.Submit(context.Background(), keys)
 	dispatcher.Submit(context.Background(), snapshot)
@@ -151,18 +151,18 @@ func TestAnOrderTheHostStoppedInIsRefusedUnlessItCanRunTwice(t *testing.T) {
 	}
 }
 
-func TestOneProcesssOrdersRunInSequenceAndTwoProcessesAtOnce(t *testing.T) {
+func TestOneProcesssInstructionsRunInSequenceAndTwoProcessesAtOnce(t *testing.T) {
 	release := make(chan struct{})
 	started := make(chan string, 8)
-	var order []string
+	var instruction []string
 	var mutex sync.Mutex
-	executors := map[string]Executor{"write_keys": func(_ context.Context, current Order) (map[string]any, error) {
+	executors := map[string]Executor{"write_keys": func(_ context.Context, current Instruction) (map[string]any, error) {
 		started <- current.ID
 		if current.ID == "first-of-p" {
 			<-release
 		}
 		mutex.Lock()
-		order = append(order, current.ID)
+		instruction = append(instruction, current.ID)
 		mutex.Unlock()
 		return nil, nil
 	}}
@@ -170,11 +170,11 @@ func TestOneProcesssOrdersRunInSequenceAndTwoProcessesAtOnce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dispatcher := NewDispatcher(testVerifier(), record, executors, func(Order, Answer) {})
+	dispatcher := NewDispatcher(testVerifier(), record, executors, func(Instruction, Answer) {})
 
-	dispatcher.Submit(context.Background(), signedOrder("first-of-p", "p", 1))
-	dispatcher.Submit(context.Background(), signedOrder("second-of-p", "p", 2))
-	dispatcher.Submit(context.Background(), signedOrder("first-of-q", "q", 1))
+	dispatcher.Submit(context.Background(), signedInstruction("first-of-p", "p", 1))
+	dispatcher.Submit(context.Background(), signedInstruction("second-of-p", "p", 2))
+	dispatcher.Submit(context.Background(), signedInstruction("first-of-q", "q", 1))
 
 	seen := map[string]bool{<-started: true, <-started: true}
 	if !seen["first-of-p"] || !seen["first-of-q"] {
@@ -183,8 +183,8 @@ func TestOneProcesssOrdersRunInSequenceAndTwoProcessesAtOnce(t *testing.T) {
 	close(release)
 	dispatcher.Wait()
 
-	if position(order, "first-of-p") > position(order, "second-of-p") {
-		t.Fatalf("one process's orders ran out of sequence: %v", order)
+	if position(instruction, "first-of-p") > position(instruction, "second-of-p") {
+		t.Fatalf("one process's instructions ran out of sequence: %v", instruction)
 	}
 }
 

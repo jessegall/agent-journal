@@ -7,7 +7,7 @@ namespace App\Values;
 use App\Support\Command;
 
 /**
- * The commands a process driver asks to run next, in order: the orders to its host and the reports on its requests.
+ * The commands a process driver asks to run next, in order: the instructions to its host and the reports on its requests.
  */
 final readonly class DriverActions
 {

@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Sessions\StopCheckCertified;
-use App\Events\Sessions\StopCheckConditionsOrdered;
+use App\Events\Sessions\StopCheckConditionsInstructed;
 use App\Events\Sessions\StopCheckOpened;
 use App\Events\Sessions\StopCheckSettled;
 use App\Models\Agents\Agent;
@@ -41,7 +41,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array<string,string> $condition_hashes
  * @property StopCheckStatus $status
  * @property string|null $submission_digest
- * @property string|null $fence_order_id
+ * @property string|null $fence_instruction_id
  * @property CarbonImmutable|null $certified_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -127,9 +127,9 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      */
     public function runUnder(string $orderId): void
     {
-        $this->fence_order_id = $orderId;
+        $this->fence_instruction_id = $orderId;
         $this->saveAndAssert();
-        $this->raise(new StopCheckConditionsOrdered($this->id, $orderId));
+        $this->raise(new StopCheckConditionsInstructed($this->id, $orderId));
     }
 
     /**
@@ -299,7 +299,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      */
     public static function findRunUnder(string $orderId): array
     {
-        return array_values(self::query()->acrossSessions()->where('fence_order_id', $orderId)->limit(1)->get()->all());
+        return array_values(self::query()->acrossSessions()->where('fence_instruction_id', $orderId)->limit(1)->get()->all());
     }
 
     // ----------[ Scopes ]----------

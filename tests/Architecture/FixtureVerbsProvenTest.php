@@ -17,7 +17,7 @@ use Tests\Support\Assertions\Assert;
 use Tests\Support\Assertions\StateAssert;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Mocks\Answer;
 use Tests\Support\Mocks\ClaudeMock;
@@ -48,7 +48,7 @@ final class FixtureVerbsProvenTest extends TestCase
         StateHandle::class,
         TestHost::class,
         TestHostProcess::class,
-        TestHostOrder::class,
+        TestHostInstruction::class,
         TestEnrolledHost::class,
         TestAgent::class,
         TestSession::class,

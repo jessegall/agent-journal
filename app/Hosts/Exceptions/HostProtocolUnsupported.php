@@ -11,7 +11,7 @@ use App\Engine\Enums\RefusalCode;
 use RuntimeException;
 
 /**
- * A host that speaks another host protocol than the journal orders in: it is told to update, with Upgrade Required.
+ * A host that speaks another host protocol than the journal instructs in: it is told to update, with Upgrade Required.
  */
 final class HostProtocolUnsupported extends RuntimeException implements CodedRefusal, CommandRefusal
 {

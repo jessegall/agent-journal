@@ -7,10 +7,10 @@ namespace App\Hosts\Commands\OpenHostPrivateEntry;
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
 use App\Support\Command;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 /**
- * Orders the host to stop every frame and recording of a terminal process from leaving, so a private
+ * Instructs the host to stop every frame and recording of a terminal process from leaving, so a private
  * value can be typed into it. Run by a driver worker (internal, not exported).
  *
  * @extends Command<string>
@@ -20,6 +20,6 @@ final readonly class OpenHostPrivateEntryCommand extends Command
 {
     public function __construct(
         public string $processId,
-        public HostOrderSource $source,
+        public HostInstructionSource $source,
     ) {}
 }

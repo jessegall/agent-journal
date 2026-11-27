@@ -10,7 +10,7 @@ use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
- * A host's claim blocks until an order wakes it, and takes the wakes waiting together.
+ * A host's claim blocks until an instruction wakes it, and takes the wakes waiting together.
  */
 #[TestsMachinery(HostWake::class)]
 final class HostWakeTest extends TestCase

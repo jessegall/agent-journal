@@ -56,4 +56,6 @@ return new Config()
     ])->exclude([
         'resources',
         'node_modules',
+        // The host protocol's code is the generator's output, formatted by it, never by hand or by these fixers.
+        'Hosts/Protocol',
     ]));

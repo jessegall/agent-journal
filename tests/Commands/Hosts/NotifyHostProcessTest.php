@@ -10,15 +10,15 @@ use App\Events\Connections\HostProcessStarted;
 use App\Exceptions\HostProtocolRefused;
 use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
-use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
-use App\Hosts\Protocol\Data\HostProcessReportData;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostRefusal;
+use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -40,7 +40,7 @@ final class NotifyHostProcessTest extends TestCase
     private const array TABLES = [
         'hosts',
         'host_processes',
-        'host_orders',
+        'host_instructions',
         'agents',
         'agent_sessions',
         'session_tokens',
@@ -137,19 +137,19 @@ final class NotifyHostProcessTest extends TestCase
         );
     }
 
-    public function test_an_exited_process_refuses_its_open_orders_but_its_stop(): void
+    public function test_an_exited_process_refuses_its_open_instructions_but_its_stop(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
             ->openProcess('shell'));
         $process = $this->journal->hostProcessCalled('shell')->id;
-        $this->journal->asSystem(new StopHostProcessCommand($process, 1000, 1000, HostOrderSource::fromJournal()));
+        $this->journal->asSystem(new StopHostProcessCommand($process, 1000, 1000, HostInstructionSource::fromJournal()));
 
         $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell
             ->report(HostProcessReportType::Exited, 0));
 
-        [$open, $stop] = $this->journal->hostOrdersOf('shell');
+        [$open, $stop] = $this->journal->hostInstructionsOf('shell');
         $this->journal->assertResult(
-            [HostOrderStatus::Refused, HostRefusal::NotRunning, HostOrderStatus::Pending],
+            [HostInstructionStatus::Refused, HostRefusal::NotRunning, HostInstructionStatus::Pending],
             [$open->status, $open->refusal, $stop->status],
         );
     }
@@ -164,7 +164,7 @@ final class NotifyHostProcessTest extends TestCase
         $report = new NotifyHostProcessCommand(
             $this->journal->hostCalled('Other')->hostId,
             $this->journal->hostProcessCalled('shell')->id,
-            HostProcessReportData::from([
+            HostProcessReportPayload::from([
                 'process_id' => $this->journal->hostProcessCalled('shell')->id,
                 'report' => 'running',
                 'identity' => 'pid:1',

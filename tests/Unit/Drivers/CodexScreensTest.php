@@ -6,7 +6,7 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\HoldReason;
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Enums\ScreenType;
 use App\Terminals\Screens\ScreenClassifier;
 use App\Terminals\Screens\ScreenHolds;
@@ -82,7 +82,7 @@ final class CodexScreensTest extends TestCase
         );
     }
 
-    private function readingOf(HostFrameData $frame): ScreenReading
+    private function readingOf(HostFramePayload $frame): ScreenReading
     {
         $layout = $this->journal->driverProfile(DefaultDrivers::CODEX)->layout();
 
@@ -90,7 +90,7 @@ final class CodexScreensTest extends TestCase
     }
 
     /**
-     * @return list<HostFrameData>
+     * @return list<HostFramePayload>
      */
     private function framesOf(string $recording): array
     {
@@ -100,17 +100,17 @@ final class CodexScreensTest extends TestCase
             flags: JSON_THROW_ON_ERROR,
         );
 
-        return array_map(fn (array $frame) => HostFrameData::from($frame['frame']), $frames);
+        return array_map(fn (array $frame) => HostFramePayload::from($frame['frame']), $frames);
     }
 
     /**
      * @param  list<string>  $drawn
      */
-    private function frame(array $drawn, int $unchangedMs, int $cursorRow = 0, int $cursorColumn = 0): HostFrameData
+    private function frame(array $drawn, int $unchangedMs, int $cursorRow = 0, int $cursorColumn = 0): HostFramePayload
     {
         $rows = array_pad($drawn, self::ROWS, '');
 
-        return HostFrameData::from([
+        return HostFramePayload::from([
             'rows' => $rows,
             'cursor_row' => $cursorRow,
             'cursor_column' => $cursorColumn,

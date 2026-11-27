@@ -90,6 +90,14 @@ final readonly class MockCheckout
     }
 
     /**
+     * Makes the database's answer about the host an error, as a broken check of it prints.
+     */
+    public function breakHostCheck(): void
+    {
+        File::put("{$this->docker->folder}/host-unreadable", '');
+    }
+
+    /**
      * Makes the database forget every host, as a database made again does.
      */
     public function forgetHosts(): void

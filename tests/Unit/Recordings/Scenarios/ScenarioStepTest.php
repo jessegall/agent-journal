@@ -59,7 +59,7 @@ final class ScenarioStepTest extends TestCase
         $this->assertSame(
             [
                 ['claude-code', 'claude-haiku-5-5', 'low', DriverType::Headless, $coder->id],
-                'scenario-claude-code-turn-1',
+                'scenario-claude-code-turn-'.$run->startedAt->format('YmdHisv').'-1',
                 [InterruptAgentCommand::class, StopAgentCommand::class],
             ],
             [

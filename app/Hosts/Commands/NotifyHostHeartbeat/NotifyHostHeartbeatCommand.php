@@ -9,7 +9,7 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * A host says it is alive, with the processes it still runs and the newest order it answered. Run by the journal itself (internal, not exported).
+ * A host says it is alive, with the processes it still runs and the newest instruction it answered. Run by the journal itself (internal, not exported).
  *
  * @extends Command<null>
  */

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hosts;
 
 use App\Exceptions\HostProtocolRefused;
-use App\Hosts\Protocol\Data\HostOpenPlanData;
 use App\Hosts\Protocol\HostProtocol;
+use App\Hosts\Protocol\Payloads\HostOpenPlanPayload;
 
 /**
  * Host protocol 1's rules for a contained plan, as it crosses the wire: it names nothing of the host it runs on, no
@@ -17,7 +17,7 @@ final readonly class ContainedPlanRules
     /**
      * @throws HostProtocolRefused
      */
-    public function assertKept(HostOpenPlanData $plan): void
+    public function assertKept(HostOpenPlanPayload $plan): void
     {
         if ($plan->container === null) {
             return;

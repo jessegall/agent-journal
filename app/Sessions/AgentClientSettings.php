@@ -32,7 +32,7 @@ final readonly class AgentClientSettings
     ) {}
 
     /**
-     * The credentials as the environment of a process the journal orders opened, each variable as NAME=value.
+     * The credentials as the environment of a process the journal instructs the host to open, each variable as NAME=value.
      *
      * @return list<string>
      */

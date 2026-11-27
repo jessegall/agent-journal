@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\KeyScripts;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Navigation\Enums\NavigationReason;
 use App\Terminals\Screens\Enums\KeyMoveType;
 use App\Terminals\Screens\RowRange;
@@ -52,7 +52,7 @@ final readonly class KeyMove
     /**
      * The guard the move's keys carry: the rows they were read on, or the whole screen.
      */
-    public function guardOn(HostFrameData $frame): RowGuard
+    public function guardOn(HostFramePayload $frame): RowGuard
     {
         return ($this->guarded ?? new RowRange(0, count($frame->rows)))->guardOn($frame);
     }

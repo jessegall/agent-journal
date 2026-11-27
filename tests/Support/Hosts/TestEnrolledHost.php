@@ -15,14 +15,14 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Support\MountRules;
 use App\Values\ExecutionBudgets;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\HostProcessPlan;
 use Closure;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * A host the test enrolled that runs no binary: the journal orders it to open processes, which the test then reports
+ * A host the test enrolled that runs no binary: the journal instructs it to open processes, which the test then reports
  * on as the host would.
  */
 final readonly class TestEnrolledHost
@@ -109,7 +109,7 @@ final readonly class TestEnrolledHost
             base_path(),
         );
         $runtimeId = AgentRuntime::findForSession($sessionId)?->id;
-        $command = new OpenHostProcessCommand($hostId, $runtimeId, $plan, HostOrderSource::fromJournal(), $start->id);
+        $command = new OpenHostProcessCommand($hostId, $runtimeId, $plan, HostInstructionSource::fromJournal(), $start->id);
         $this->journal->nameHostProcess($name, $this->journal->asSystem($command));
 
         return $this;

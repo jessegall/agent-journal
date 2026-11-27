@@ -18,7 +18,7 @@ final class HostProtocolData extends Data
     /**
      * @param  array<string, string>  $statuses  each answer status with what it means
      * @param  array<string, string>  $refusals  each refusal with what it means
-     * @param  array<string, HostOrderTraitsData>  $orders  each order type with its traits
+     * @param  array<string, HostInstructionTraitsData>  $instructions  each instruction type with its traits
      * @param  list<string>  $placeholderKinds  the kinds of {kind:NAME} a plan may hold
      * @param  list<string>  $hostNames  the names the host fills as {host:NAME}
      * @param  list<string>  $refusedAnswerNames  the fields a refused answer names, so the journal can say why
@@ -33,8 +33,8 @@ final class HostProtocolData extends Data
         public readonly int $version,
         public readonly array $statuses,
         public readonly array $refusals,
-        #[DataCollectionOf(HostOrderTraitsData::class)]
-        public readonly array $orders,
+        #[DataCollectionOf(HostInstructionTraitsData::class)]
+        public readonly array $instructions,
         public readonly array $placeholderKinds,
         public readonly array $hostNames,
         public readonly array $refusedAnswerNames,
@@ -51,9 +51,9 @@ final class HostProtocolData extends Data
     /**
      * @return list<string>
      */
-    public function orderTypes(): array
+    public function instructionTypes(): array
     {
-        return array_map(strval(...), array_keys($this->orders));
+        return array_map(strval(...), array_keys($this->instructions));
     }
 
     /**

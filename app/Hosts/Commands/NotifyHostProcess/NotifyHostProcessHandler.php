@@ -6,8 +6,8 @@ namespace App\Hosts\Commands\NotifyHostProcess;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\HostProtocolRefused;
-use App\Hosts\Protocol\Data\HostProcessReportData;
 use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
 use App\Hosts\Values\ProcessExit;
 use App\Models\Hosts\HostProcess;
 use App\Time\Contracts\ServerClock;
@@ -46,7 +46,7 @@ final readonly class NotifyHostProcessHandler implements CommandHandler
      *
      * @throws HostProtocolRefused
      */
-    private function identityOf(HostProcessReportData $report): string
+    private function identityOf(HostProcessReportPayload $report): string
     {
         return $report->identity ?? throw HostProtocolRefused::reportWithoutIdentity($report->processId);
     }
@@ -56,7 +56,7 @@ final readonly class NotifyHostProcessHandler implements CommandHandler
      *
      * @throws HostProtocolRefused
      */
-    private function evidenceOf(HostProcessReportData $report): string
+    private function evidenceOf(HostProcessReportPayload $report): string
     {
         return $report->evidence ?? throw HostProtocolRefused::reportWithoutEvidence($report->processId);
     }

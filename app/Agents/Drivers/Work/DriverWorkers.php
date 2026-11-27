@@ -18,7 +18,7 @@ use App\Hosts\ProcessFeed;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\StreamRate;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;
 use App\Support\CommandRegistry;
@@ -26,11 +26,11 @@ use App\Time\Contracts\MonotonicClock;
 use App\Time\Contracts\ServerClock;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 /**
  * Runs the worker of one process: it takes the process over, goes on where the worker before it stopped, and then
- * hands its process driver each output, request and order answer as it arrives, until it is fenced, asked to
+ * hands its process driver each output, request and instruction answer as it arrives, until it is fenced, asked to
  * restart or the process ends. Nothing polls: a step waits on the process's feed and its runtime's wakes.
  */
 final readonly class DriverWorkers
@@ -99,7 +99,7 @@ final readonly class DriverWorkers
         $this->perform($work, $this->resumed($work, $process)->then($this->requestsOf($work)));
 
         if ($process->type === HostProcessType::Terminal) {
-            $source = HostOrderSource::forWorker($generation);
+            $source = HostInstructionSource::forWorker($generation);
 
             $this->perform($work, DriverActions::of(
                 new TakeHostProcessSnapshotCommand($process->id, $source),
@@ -153,8 +153,8 @@ final readonly class DriverWorkers
 
     private function handOver(DriverWork $work, FeedEntry $entry): DriverActions
     {
-        if ($entry->answeredOrderId !== null) {
-            $answered = HostOrder::query()->whereKey($entry->answeredOrderId)->sole();
+        if ($entry->answeredInstructionId !== null) {
+            $answered = HostInstruction::query()->whereKey($entry->answeredInstructionId)->sole();
 
             return $work->driver->onAnswer($answered);
         }
@@ -170,7 +170,7 @@ final readonly class DriverWorkers
     {
         $runtimes = $this->owners->runtimesOf($process)->get();
         $inFlight = array_values(DriverRequest::query()->inFlightForAny($runtimes)->get()->all());
-        $ordered = array_merge(...array_map(fn (DriverRequest $request) => HostOrder::orderedFor($request), $inFlight));
+        $ordered = array_merge(...array_map(fn (DriverRequest $request) => HostInstruction::orderedFor($request), $inFlight));
 
         return $work->driver->resume($inFlight, $ordered);
     }

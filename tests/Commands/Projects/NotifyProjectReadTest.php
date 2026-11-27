@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Hosts\EnrolledHost;
-use App\Hosts\Protocol\Data\HostProjectEntryData;
 use App\Hosts\Protocol\HostProjectReadFailure;
+use App\Hosts\Protocol\Payloads\HostProjectEntryPayload;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
@@ -61,8 +61,8 @@ final class NotifyProjectReadTest extends TestCase
         $read = $this->read(ProjectReadType::Directory, '');
 
         $this->notify($read, entries: [
-            new HostProjectEntryData('src', true, 0),
-            new HostProjectEntryData('README.md', false, 6),
+            new HostProjectEntryPayload('src', true, 0),
+            new HostProjectEntryPayload('README.md', false, 6),
         ]);
 
         $entries = ProjectRead::query()->findOrFail($read->id)->listedEntries();
@@ -82,7 +82,7 @@ final class NotifyProjectReadTest extends TestCase
             ProjectReadRefused::class,
         );
         $this->assertThrows(
-            fn () => $this->notify($folder, entries: [new HostProjectEntryData('../x', false, 1)]),
+            fn () => $this->notify($folder, entries: [new HostProjectEntryPayload('../x', false, 1)]),
             ProjectReadRefused::class,
         );
         $this->assertThrows(
@@ -140,7 +140,7 @@ final class NotifyProjectReadTest extends TestCase
     /**
      * The host's answer to the read, as the journal settles it.
      *
-     * @param  list<HostProjectEntryData>  $entries
+     * @param  list<HostProjectEntryPayload>  $entries
      */
     private function notify(
         ProjectRead $read,

@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Accounts\AccountFolderUses;
 use App\Accounts\Exceptions\SignInRunnerRefused;
-use App\Accounts\FolderOrderWait;
+use App\Accounts\FolderInstructionWait;
 use App\Accounts\SignInHost;
 use App\Accounts\SignInProtocols;
 use App\Files\Contracts\Files;
@@ -41,7 +41,7 @@ final class RunSignInsCommand extends Command
         ), $arrangement->arrangement);
 
         $pause = static fn () => usleep(500_000);
-        $wait = new FolderOrderWait($host, $pause);
+        $wait = new FolderInstructionWait($host, $pause);
 
         $runner = new PrivateSignInProcesses(
             $host,

@@ -28,7 +28,7 @@ type ReportQueue struct {
 // OpenReportQueue reads the reports the host had not sent yet from its state folder.
 func OpenReportQueue(stateFolder string, send func(ProcessReport) error) (*ReportQueue, error) {
 	queue := &ReportQueue{
-		path:  filepath.Join(stateFolder, "orders", "reports.json"),
+		path:  filepath.Join(stateFolder, "instructions", "reports.json"),
 		send:  send,
 		wake:  make(chan struct{}, 1),
 		first: time.Second,

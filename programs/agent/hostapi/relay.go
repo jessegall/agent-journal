@@ -13,13 +13,13 @@ const HeartbeatInterval = 30 * time.Second
 
 // JournalCalls are the calls of host protocol 1 the relay makes to the journal.
 type JournalCalls interface {
-	ClaimOrders(ctx context.Context, limit int, wait int) (ClaimedOrders, error)
-	AnswerOrder(ctx context.Context, order string, body Answer) error
+	ClaimInstructions(ctx context.Context, limit int, wait int) (ClaimedInstructions, error)
+	AnswerInstruction(ctx context.Context, instruction string, body Answer) error
 	NotifyInventory(ctx context.Context, body Inventory) error
 	NotifyHeartbeat(ctx context.Context, body HostHeartbeat) error
 }
 
-// Relay carries host protocol 1 between the journal and the host: it claims orders through the long poll and hands
+// Relay carries host protocol 1 between the journal and the host: it claims instructions through the long poll and hands
 // them to the dispatcher, sends the inventory once after the host starts and a heartbeat at every interval.
 type Relay struct {
 	Journal    JournalCalls
@@ -38,7 +38,7 @@ type Relay struct {
 // Claim long-polls until the context ends; a journal that does not take protocol 1 stops it with that refusal.
 func (relay Relay) Claim(ctx context.Context) error {
 	for ctx.Err() == nil {
-		claimed, err := relay.Journal.ClaimOrders(ctx, ClaimOrdersLimit, ClaimOrdersWaitLimit)
+		claimed, err := relay.Journal.ClaimInstructions(ctx, ClaimInstructionsLimit, ClaimInstructionsWaitLimit)
 		if errors.Is(err, client.ErrProtocolRefused) {
 			return err
 		}
@@ -48,14 +48,14 @@ func (relay Relay) Claim(ctx context.Context) error {
 		}
 		relay.Clock.Observe(claimed.Now)
 		relay.Idle.Observe(claimed.IdleWindowSeconds)
-		for _, order := range claimed.Orders {
-			relay.Dispatcher.Submit(ctx, order)
+		for _, instruction := range claimed.Instructions {
+			relay.Dispatcher.Submit(ctx, instruction)
 		}
 	}
 	return ctx.Err()
 }
 
-// SendInventory tells the journal what the host holds now and the newest order it answered.
+// SendInventory tells the journal what the host holds now and the newest instruction it answered.
 func (relay Relay) SendInventory(ctx context.Context) error {
 	return relay.Journal.NotifyInventory(ctx, Inventory{
 		Protocol:        Protocol,

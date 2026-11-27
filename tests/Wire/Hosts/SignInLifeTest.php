@@ -40,7 +40,7 @@ final class SignInLifeTest extends TestCase
     private const array TABLES = [
         'hosts',
         'host_processes',
-        'host_orders',
+        'host_instructions',
         'agents',
         'agent_sessions',
         'session_tokens',

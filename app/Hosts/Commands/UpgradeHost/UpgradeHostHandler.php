@@ -8,16 +8,16 @@ use App\Accounts\Enums\CommandEntry;
 use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
 use App\Connections\PublishedReleases;
-use App\Hosts\Commands\OrderHostUpgrade\OrderHostUpgradeCommand;
+use App\Hosts\Commands\InstructHostUpgrade\InstructHostUpgradeCommand;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
 use App\Hosts\Exceptions\HostUpgradeRefused;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 /**
- * Keeps the release the host waits on, stops each of its live processes, and orders the upgrade at once when none runs.
+ * Keeps the release the host waits on, stops each of its live processes, and instructs the upgrade at once when none runs.
  */
 final readonly class UpgradeHostHandler implements CommandHandler
 {
@@ -37,7 +37,7 @@ final readonly class UpgradeHostHandler implements CommandHandler
         $host = Host::findLocked($command->hostId);
         $published = $this->releases->current()->version;
 
-        if (! $host->carriesOut(HostOrderType::Upgrade)) {
+        if (! $host->carriesOut(HostInstructionType::Upgrade)) {
             throw HostUpgradeRefused::forNoUpgrade($host->id);
         }
 
@@ -53,15 +53,15 @@ final readonly class UpgradeHostHandler implements CommandHandler
                 $process->id,
                 self::STOP_GRACE_MS,
                 self::STOP_FORCE_MS,
-                HostOrderSource::fromJournal(),
+                HostInstructionSource::fromJournal(),
             );
 
             $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $stop);
         }
 
         if ($live === []) {
-            $order = new OrderHostUpgradeCommand($host->id);
-            $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $order);
+            $instruction = new InstructHostUpgradeCommand($host->id);
+            $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $instruction);
         }
     }
 }

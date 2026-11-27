@@ -9,16 +9,16 @@ import (
 	"journal-agent/host"
 )
 
-func folderOrder(orderType string) Order {
-	return Order{ID: orderType, Type: orderType, Payload: `{"folder":"a7","operation":"operation-1"}`}
+func folderInstruction(instructionType string) Instruction {
+	return Instruction{ID: instructionType, Type: instructionType, Payload: `{"folder":"a7","operation":"operation-1"}`}
 }
 
-func TestAHostWithNoDaemonRefusesFolderOrdersAndBindsNone(t *testing.T) {
+func TestAHostWithNoDaemonRefusesFolderInstructionsAndBindsNone(t *testing.T) {
 	table := OpenProcessTable(t.TempDir(), host.Containers{}, nil, nil)
 
-	_, made := carry(testOrders{ProcessTable: table}, "make_folder")(context.Background(), folderOrder("make_folder"))
-	_, removed := carry(testOrders{ProcessTable: table}, "remove_folder")(context.Background(), folderOrder("remove_folder"))
-	use, err := carry(testOrders{ProcessTable: table}, "folder_use")(context.Background(), folderOrder("folder_use"))
+	_, made := carry(testInstructions{ProcessTable: table}, "make_folder")(context.Background(), folderInstruction("make_folder"))
+	_, removed := carry(testInstructions{ProcessTable: table}, "remove_folder")(context.Background(), folderInstruction("remove_folder"))
+	use, err := carry(testInstructions{ProcessTable: table}, "folder_use")(context.Background(), folderInstruction("folder_use"))
 
 	var refusal RefusalError
 	if !errors.As(made, &refusal) || !errors.As(removed, &refusal) || refusal.Refusal != Unsafe {
@@ -32,17 +32,17 @@ func TestAHostWithNoDaemonRefusesFolderOrdersAndBindsNone(t *testing.T) {
 func TestAFolderNoContainerBindsIsFree(t *testing.T) {
 	table, _ := mockTable(t, dockermock.Start(t, mockImage))
 
-	use, err := carry(testOrders{ProcessTable: table}, "folder_use")(context.Background(), folderOrder("folder_use"))
+	use, err := carry(testInstructions{ProcessTable: table}, "folder_use")(context.Background(), folderInstruction("folder_use"))
 
 	if err != nil || use["is_bound"] != false {
 		t.Fatalf("a folder no container binds answered %v, %v", use, err)
 	}
 }
 
-func TestFolderOrdersRunAgainAfterARestart(t *testing.T) {
-	for _, orderType := range []string{"make_folder", "remove_folder", "folder_use"} {
-		if !OrderTypes[orderType].Repeatable {
-			t.Fatalf("%s is not run again after a restart", orderType)
+func TestFolderInstructionsRunAgainAfterARestart(t *testing.T) {
+	for _, instructionType := range []string{"make_folder", "remove_folder", "folder_use"} {
+		if !InstructionTypes[instructionType].Repeatable {
+			t.Fatalf("%s is not run again after a restart", instructionType)
 		}
 	}
 }

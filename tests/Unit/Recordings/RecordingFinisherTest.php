@@ -97,7 +97,7 @@ final class RecordingFinisherTest extends TestCase
     public function test_a_call_breaking_the_protocol_refuses_the_run(): void
     {
         $this->assertRefusedKeepingTheEarlierFolder(RecordingBreaksProtocol::class, fn () => $this->runOf([
-            $this->hostExchange([$this->claimed([$this->order('resize', 'p-1', ['columns' => 80])])]),
+            $this->hostExchange([$this->claimed([$this->instruction('resize', 'p-1', ['columns' => 80])])]),
         ]));
     }
 
@@ -136,7 +136,7 @@ final class RecordingFinisherTest extends TestCase
             'inherit' => [], 'side_sockets' => []];
 
         $this->assertRefusedKeepingTheEarlierFolder(RecordingOutsideContainer::class, fn () => $this->runOf([
-            $this->hostExchange([$this->claimed([$this->order('open_process', 'p-1', $plan)])]),
+            $this->hostExchange([$this->claimed([$this->instruction('open_process', 'p-1', $plan)])]),
         ]));
     }
 
@@ -186,12 +186,12 @@ final class RecordingFinisherTest extends TestCase
     }
 
     /**
-     * @param  list<array<string, mixed>>  $orders
+     * @param  list<array<string, mixed>>  $instructions
      */
-    private function claimed(array $orders): RecordedEvent
+    private function claimed(array $instructions): RecordedEvent
     {
-        $claim = ['orders' => $orders, 'idle_window_seconds' => 60, 'now' => '2026-11-27T08:00:00Z'];
-        $request = Request::create('/host/orders/claim', 'POST');
+        $claim = ['instructions' => $instructions, 'idle_window_seconds' => 60, 'now' => '2026-11-27T08:00:00Z'];
+        $request = Request::create('/host/instructions/claim', 'POST');
 
         $answer = RecordedCall::answeredWith(new Response((string) json_encode($claim)), $request);
 
@@ -202,7 +202,7 @@ final class RecordingFinisherTest extends TestCase
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    private function order(string $type, string $processId, array $payload): array
+    private function instruction(string $type, string $processId, array $payload): array
     {
         return [
             'id' => '00000000000000000000000001',

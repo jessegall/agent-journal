@@ -7,8 +7,8 @@ import (
 )
 
 // AllowImages makes the pinned images the journal names the only ones a container of this host may run; an image
-// that is no exact digest, or a host that holds no allowed set, refuses the order.
-func (table *ProcessTable) AllowImages(_ context.Context, order Order, plan ImagesPlan) (ImagesAllowed, error) {
+// that is no exact digest, or a host that holds no allowed set, refuses the instruction.
+func (table *ProcessTable) AllowImages(_ context.Context, instruction Instruction, plan ImagesPlan) (ImagesAllowed, error) {
 	if table.containers.Rules.Allowed == nil {
 		return ImagesAllowed{}, RefusalError{Refusal: Unsafe, Reason: "this host runs no containers of allowed images"}
 	}

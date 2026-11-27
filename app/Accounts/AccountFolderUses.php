@@ -11,7 +11,7 @@ use App\Projects\Enums\ArrangementType;
 use Illuminate\Support\Str;
 
 /**
- * Asks the contained host, through a folder_use order the journal places, whether a container still binds an
+ * Asks the contained host, through a folder_use instruction the journal places, whether a container still binds an
  * account's displaced folder; a host that cannot answer counts as binding it. The journal itself stops every process
  * of an account before it hands out its sign-in, so nothing else is asked of the host.
  */
@@ -19,7 +19,7 @@ final readonly class AccountFolderUses implements AccountFolderUsesContract
 {
     public function __construct(
         private SignInHost $host,
-        private FolderOrderWait $wait,
+        private FolderInstructionWait $wait,
         private ArrangementType $arrangement,
     ) {}
 
@@ -34,7 +34,7 @@ final readonly class AccountFolderUses implements AccountFolderUsesContract
         }
 
         try {
-            $answer = $this->wait->answerOf($this->host->orderFolderUse(basename($directory), (string) Str::uuid()));
+            $answer = $this->wait->answerOf($this->host->instructionFolderUse(basename($directory), (string) Str::uuid()));
         } catch (AccountFolderRefused) {
             return false;
         }

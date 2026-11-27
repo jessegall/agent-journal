@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Recordings;
 
-use App\Hosts\OrderSignature;
-use App\Hosts\Protocol\Data\HostClaimedOrdersData;
-use App\Hosts\Protocol\Data\HostOrderData;
+use App\Hosts\InstructionSignature;
+use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
+use App\Hosts\Protocol\Payloads\HostInstructionPayload;
 use App\Recordings\Enums\Wire;
 use App\Recordings\Exceptions\RecordedEnvironmentRefused;
 use App\Recordings\Exceptions\RecordingLeaks;
@@ -14,7 +14,7 @@ use App\Recordings\Exceptions\RecordingOutsideContainer;
 
 /**
  * Puts fakes in place of a recorded run's real values on every wire, one fake to a value through the run and the same
- * on a re-record, refuses what must never be recorded, and signs the faked orders anew.
+ * on a re-record, refuses what must never be recorded, and signs the faked instructions anew.
  */
 final class RecordingFakes
 {
@@ -33,9 +33,9 @@ final class RecordingFakes
     public const string SECRET = 'fake-secret';
 
     /**
-     * The order secret the faked orders are signed with, which a Go test signs its orders with too.
+     * The instruction secret the faked instructions are signed with, which a Go test signs its instructions with too.
      */
-    public const string ORDER_SECRET = 'recorded-order-secret';
+    public const string INSTRUCTION_SECRET = 'recorded-instruction-secret';
 
     /**
      * The shortest folder of the environment put back as {env:NAME}, so a short value such as / is never.
@@ -178,24 +178,24 @@ final class RecordingFakes
     }
 
     /**
-     * The orders of a faked claim answer, each signed again with ORDER_SECRET, since faking changed what was signed.
+     * The instructions of a faked claim answer, each signed again with INSTRUCTION_SECRET, since faking changed what was signed.
      */
-    public function resignedClaim(HostClaimedOrdersData $claim): HostClaimedOrdersData
+    public function resignedClaim(HostClaimedInstructionsPayload $claim): HostClaimedInstructionsPayload
     {
-        $orders = array_map(fn (HostOrderData $order) => HostOrderData::from([
-            ...$order->toArray(),
-            'signature' => OrderSignature::of(
-                $order->id,
-                $order->sequence,
-                $order->type,
-                $order->processId,
-                $order->payload,
-                $order->expiresAt,
-                self::ORDER_SECRET,
+        $instructions = array_map(fn (HostInstructionPayload $instruction) => HostInstructionPayload::from([
+            ...$instruction->toArray(),
+            'signature' => InstructionSignature::of(
+                $instruction->id,
+                $instruction->sequence,
+                $instruction->type,
+                $instruction->processId,
+                $instruction->payload,
+                $instruction->expiresAt,
+                self::INSTRUCTION_SECRET,
             ),
-        ]), $claim->orders);
+        ]), $claim->instructions);
 
-        return HostClaimedOrdersData::from([...$claim->toArray(), 'orders' => $orders]);
+        return HostClaimedInstructionsPayload::from([...$claim->toArray(), 'instructions' => $instructions]);
     }
 
     /**

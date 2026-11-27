@@ -24,14 +24,14 @@ use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
 use App\Hosts\Commands\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
 use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
-use App\Hosts\Enums\HostOrderStatus;
-use App\Hosts\Protocol\Data\HostFrameData;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Enums\HostInstructionStatus;
+use App\Hosts\Protocol\HostInstructionType;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Messages\Data\DraftChoiceMessageData;
 use App\Messages\Data\PrivateInputMessageData;
 use App\Messages\Data\TerminalInputMessageData;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Navigation\Commands\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
 use App\Navigation\Commands\RaiseNavigation\RaiseNavigationCommand;
@@ -61,7 +61,7 @@ use App\Terminals\Screens\ScreenReading;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\LibraryEntryAnswer;
 use App\Values\NavigationRound;
 use App\Values\NavigationRoundReport;
@@ -112,7 +112,7 @@ final class TerminalDriver implements ProcessDriver
 
     private readonly KeyScriptCatalogue $catalogue;
 
-    private HostFrameData|null $frame = null;
+    private HostFramePayload|null $frame = null;
 
     private int|null $firstCaptured = null;
 
@@ -146,7 +146,7 @@ final class TerminalDriver implements ProcessDriver
 
     private int $enters = 0;
 
-    private int $keyOrders = 0;
+    private int $keyInstructions = 0;
 
     private ClaimedRequest|null $turn = null;
 
@@ -209,7 +209,7 @@ final class TerminalDriver implements ProcessDriver
     }
 
     /**
-     * A worker that takes over reads the screen afresh: it orders a snapshot, and the requests in flight are claimed
+     * A worker that takes over reads the screen afresh: it instructs a snapshot, and the requests in flight are claimed
      * again by their own attempts.
      */
     public function resume(array $flight, array $ordered): DriverActions
@@ -267,17 +267,17 @@ final class TerminalDriver implements ProcessDriver
      * A key the host refused because the rows it was read on moved goes again from a fresh snapshot: the stage it
      * was for is read anew on the next frame.
      */
-    public function onAnswer(HostOrder $order): DriverActions
+    public function onAnswer(HostInstruction $instruction): DriverActions
     {
-        if ($order->type !== HostOrderType::WriteKeys || $order->status !== HostOrderStatus::Refused) {
+        if ($instruction->type !== HostInstructionType::WriteKeys || $instruction->status !== HostInstructionStatus::Refused) {
             return DriverActions::none();
         }
 
-        if ($order->driver_request_id !== null && isset($this->interrupts[$order->driver_request_id])) {
-            $this->escapesRefused[$order->driver_request_id] = true;
+        if ($instruction->driver_request_id !== null && isset($this->interrupts[$instruction->driver_request_id])) {
+            $this->escapesRefused[$instruction->driver_request_id] = true;
         }
 
-        if ($this->delivery !== null && $order->driver_request_id === $this->delivery->requestId) {
+        if ($this->delivery !== null && $instruction->driver_request_id === $this->delivery->requestId) {
             $this->waiting = [
                 $this->delivery,
                 ...$this->waiting,
@@ -345,7 +345,7 @@ final class TerminalDriver implements ProcessDriver
         return DriverActions::of(...array_values($reports));
     }
 
-    private function onFrame(HostFrameData $frame): DriverActions
+    private function onFrame(HostFramePayload $frame): DriverActions
     {
         if ($frame->isShielded) {
             return DriverActions::none();
@@ -364,7 +364,7 @@ final class TerminalDriver implements ProcessDriver
     /**
      * Presses Escape again for each interrupt whose last one the host refused, while its turn still runs.
      */
-    private function escapesAgain(HostFrameData $frame): DriverActions
+    private function escapesAgain(HostFramePayload $frame): DriverActions
     {
         $refused = $this->turn === null ? [] : array_keys($this->escapesRefused);
         $this->escapesRefused = [];
@@ -381,13 +381,13 @@ final class TerminalDriver implements ProcessDriver
      * Escape for the interrupt, guarded on the composer, which holds still while the turn above it moves, or on the
      * whole screen; each press is its own step, so one the host refused is not answered again in its place.
      */
-    private function escape(string $requestId, int $attempt, HostFrameData $frame): SendHostKeysCommand
+    private function escape(string $requestId, int $attempt, HostFramePayload $frame): SendHostKeysCommand
     {
         $pressed = ($this->escapesPressed[$requestId] ?? 0) + 1;
         $this->escapesPressed[$requestId] = $pressed;
         $guarded = $this->layout->composer->rowsOf($frame) ?? new RowRange(0, count($frame->rows));
         $step = $pressed === 1 ? 'interrupt' : "interrupt-{$pressed}";
-        $source = HostOrderSource::forStep($requestId, $step, $attempt, $this->generation);
+        $source = HostInstructionSource::forStep($requestId, $step, $attempt, $this->generation);
 
         return $this->keys(NavigationKey::Esc->bytes(), $guarded, $frame, $source);
     }
@@ -511,7 +511,7 @@ final class TerminalDriver implements ProcessDriver
      * An idle screen: a ready composer takes the next waiting request; a still menu is answered with its recorded
      * keys or holds the runtime for its reason; a start that is not ready within its wait ends.
      */
-    private function idle(ScreenReading $reading, HostFrameData $frame): DriverActions
+    private function idle(ScreenReading $reading, HostFramePayload $frame): DriverActions
     {
         $waited = $frame->captured - (int) $this->firstCaptured;
         $isOverdue = ! $this->hasBeenReady && $waited > $this->limits->readyWaitMs;
@@ -532,7 +532,7 @@ final class TerminalDriver implements ProcessDriver
         $menu = $reading->menuRowsOf($frame);
 
         if ($hold->answer !== null && $menu !== null) {
-            $source = HostOrderSource::forWorker($this->generation);
+            $source = HostInstructionSource::forWorker($this->generation);
 
             return DriverActions::of($this->keys($hold->answer, $menu, $frame, $source));
         }
@@ -562,7 +562,7 @@ final class TerminalDriver implements ProcessDriver
                 $this->process->id,
                 $this->limits->stopGraceMs,
                 $this->limits->stopForceMs,
-                HostOrderSource::forWorker($this->generation),
+                HostInstructionSource::forWorker($this->generation),
             ),
         );
     }
@@ -570,7 +570,7 @@ final class TerminalDriver implements ProcessDriver
     /**
      * The composer is ready: the runtime is idle with nothing held, and the oldest waiting request goes in.
      */
-    private function ready(HostFrameData $frame): DriverActions
+    private function ready(HostFramePayload $frame): DriverActions
     {
         $actions = DriverActions::none();
 
@@ -601,7 +601,7 @@ final class TerminalDriver implements ProcessDriver
         return $actions->then($this->paste($request, $frame));
     }
 
-    private function paste(ClaimedRequest $request, HostFrameData $frame): DriverActions
+    private function paste(ClaimedRequest $request, HostFramePayload $frame): DriverActions
     {
         $composer = $this->layout->composer->rowsOf($frame);
         $text = (string) preg_replace(self::CONTROL_CHARACTERS, '', (string) $request->prompt());
@@ -632,7 +632,7 @@ final class TerminalDriver implements ProcessDriver
      * A pasted prompt gets Enter once its echo held still, then again while the composer keeps the line, at most the
      * limit's times; a lost echo or a line never taken leaves the delivery uncertain.
      */
-    private function delivered(ClaimedRequest $request, HostFrameData $frame): DriverActions
+    private function delivered(ClaimedRequest $request, HostFramePayload $frame): DriverActions
     {
         $composer = $this->layout->composer->rowsOf($frame);
         $rows = $composer?->guardOn($frame)->hash;
@@ -668,9 +668,9 @@ final class TerminalDriver implements ProcessDriver
     }
 
     /**
-     * Enter for the pasted prompt, counted, so its order is the delivery's next.
+     * Enter for the pasted prompt, counted, so its instruction is the delivery's next.
      */
-    private function pressEnter(ClaimedRequest $request, RowRange $composer, HostFrameData $frame): DriverActions
+    private function pressEnter(ClaimedRequest $request, RowRange $composer, HostFramePayload $frame): DriverActions
     {
         $this->enters++;
         $this->onStage(DeliveryStage::Entered, $composer, $frame);
@@ -679,7 +679,7 @@ final class TerminalDriver implements ProcessDriver
         return DriverActions::of($this->keys(NavigationKey::Enter->bytes(), $composer, $frame, $source));
     }
 
-    private function startTurn(ClaimedRequest $request, HostFrameData $frame): DriverActions
+    private function startTurn(ClaimedRequest $request, HostFramePayload $frame): DriverActions
     {
         $this->delivery = null;
         $this->turn = $request;
@@ -695,7 +695,7 @@ final class TerminalDriver implements ProcessDriver
     /**
      * A turn ends once the composer left and came back ready and still, or stayed ready past the turn's start window.
      */
-    private function turnEnded(ClaimedRequest $request, ScreenReading $reading, HostFrameData $frame): DriverActions
+    private function turnEnded(ClaimedRequest $request, ScreenReading $reading, HostFramePayload $frame): DriverActions
     {
         if ($reading->type !== ScreenType::PromptReady || ! $reading->isStill) {
             $this->hasComposerLeft = true;
@@ -724,7 +724,7 @@ final class TerminalDriver implements ProcessDriver
     private function startScript(
         ClaimedRequest $request,
         DriverOperation $operation,
-        HostFrameData $frame,
+        HostFramePayload $frame,
     ): DriverActions {
         [$name, $values] = match ($operation) {
             DriverOperation::ChangeModel => [
@@ -751,7 +751,7 @@ final class TerminalDriver implements ProcessDriver
     /**
      * One frame of a running key script: its key goes, or it finishes, or it ends without a key.
      */
-    private function scripted(KeyScriptRun $run, HostFrameData $frame): DriverActions
+    private function scripted(KeyScriptRun $run, HostFramePayload $frame): DriverActions
     {
         $request = $this->scriptRequest;
         $move = $this->scripts->moveOn($this->layout, $run, $frame);
@@ -780,16 +780,16 @@ final class TerminalDriver implements ProcessDriver
         };
     }
 
-    private function scriptKeys(KeyMove $move, HostFrameData $frame, ClaimedRequest $request): SendHostKeysCommand
+    private function scriptKeys(KeyMove $move, HostFramePayload $frame, ClaimedRequest $request): SendHostKeysCommand
     {
-        $this->keyOrders++;
+        $this->keyInstructions++;
 
         return new SendHostKeysCommand(
             $this->process->id,
             $move->keys,
             $move->guardOn($frame),
             $this->process->refresh()->input_generation,
-            $this->sourceOf($request, "key-{$this->keyOrders}"),
+            $this->sourceOf($request, "key-{$this->keyInstructions}"),
         );
     }
 
@@ -797,7 +797,7 @@ final class TerminalDriver implements ProcessDriver
      * A script that cannot be certain of its next key ends without one: an entry the menu does not show is
      * unavailable, any other doubt leaves the change uncertain.
      */
-    private function scriptUncertain(ClaimedRequest $request, KeyMove $move, HostFrameData $frame): DriverActions
+    private function scriptUncertain(ClaimedRequest $request, KeyMove $move, HostFramePayload $frame): DriverActions
     {
         if ($this->isRound($request)) {
             return $this->roundEnded($request, $frame, $move->reason->value ?? self::ROUND_FAILED);
@@ -824,7 +824,7 @@ final class TerminalDriver implements ProcessDriver
         ClaimedRequest $request,
         KeyMove $move,
         NavigationReason $reason,
-        HostFrameData $frame,
+        HostFramePayload $frame,
         string|null $staleEntryId = null,
     ): DriverActions {
         $this->script = null;
@@ -868,7 +868,7 @@ final class TerminalDriver implements ProcessDriver
         LibraryEntryAnswer $entry,
         ClaimedRequest $request,
         KeyMove $move,
-        HostFrameData $frame,
+        HostFramePayload $frame,
     ): DriverActions {
         $this->replaying = null;
         $this->script = null;
@@ -992,7 +992,7 @@ final class TerminalDriver implements ProcessDriver
      * A round ended: the journal is told the screen it left, its rows redacted, whether its proof showed, and the
      * refusal that stopped it.
      */
-    private function roundEnded(ClaimedRequest $request, HostFrameData $frame, string|null $refusal): DriverActions
+    private function roundEnded(ClaimedRequest $request, HostFramePayload $frame, string|null $refusal): DriverActions
     {
         $this->script = null;
         $this->scriptRequest = null;
@@ -1022,7 +1022,7 @@ final class TerminalDriver implements ProcessDriver
      * The generation of the screen drawn: when it last changed by the host's clock, the same on every frame of an
      * unchanged screen, so a round refuses a screen that changed since the main agent saw it.
      */
-    private static function generationOf(HostFrameData $frame): int
+    private static function generationOf(HostFramePayload $frame): int
     {
         if ($frame->unchangedMs === []) {
             return $frame->captured;
@@ -1056,7 +1056,7 @@ final class TerminalDriver implements ProcessDriver
         return DriverActions::of($this->progress($request, RequestProgress::DeliveryUncertain));
     }
 
-    private function onStage(DeliveryStage $stage, RowRange $composer, HostFrameData $frame): void
+    private function onStage(DeliveryStage $stage, RowRange $composer, HostFramePayload $frame): void
     {
         $this->stage = $stage;
         $this->stageRows = $composer->guardOn($frame)->hash;
@@ -1066,7 +1066,7 @@ final class TerminalDriver implements ProcessDriver
     /**
      * Whether each of the composer's rows held still long enough that an Enter never lands in the paste's read.
      */
-    private static function isQuiet(RowRange $composer, HostFrameData $frame): bool
+    private static function isQuiet(RowRange $composer, HostFramePayload $frame): bool
     {
         return array_all($composer->rows(), fn (int $row) => ($frame->unchangedMs[$row] ?? 0) >= self::ECHO_QUIET_MS);
     }
@@ -1077,8 +1077,8 @@ final class TerminalDriver implements ProcessDriver
     private function keys(
         string $bytes,
         RowRange $rows,
-        HostFrameData $frame,
-        HostOrderSource $source,
+        HostFramePayload $frame,
+        HostInstructionSource $source,
     ): SendHostKeysCommand {
         return new SendHostKeysCommand(
             $this->process->id,
@@ -1089,9 +1089,9 @@ final class TerminalDriver implements ProcessDriver
         );
     }
 
-    private function sourceOf(ClaimedRequest $request, string $step): HostOrderSource
+    private function sourceOf(ClaimedRequest $request, string $step): HostInstructionSource
     {
-        return HostOrderSource::forStep($request->requestId, $step, $request->attempt, $this->generation);
+        return HostInstructionSource::forStep($request->requestId, $step, $request->attempt, $this->generation);
     }
 
     private function progress(ClaimedRequest $request, RequestProgress $progress): NotifyRequestProgressCommand
@@ -1138,6 +1138,6 @@ final class TerminalDriver implements ProcessDriver
 
     private function snapshot(): TakeHostProcessSnapshotCommand
     {
-        return new TakeHostProcessSnapshotCommand($this->process->id, HostOrderSource::forWorker($this->generation));
+        return new TakeHostProcessSnapshotCommand($this->process->id, HostInstructionSource::forWorker($this->generation));
     }
 }

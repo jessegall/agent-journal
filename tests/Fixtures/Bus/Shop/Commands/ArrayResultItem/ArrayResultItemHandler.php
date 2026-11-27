@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands\ArrayResultItem;
 
-use Tests\Fixtures\Bus\Shop\Commands\ArrayResultItem\ArrayResultItemCommand;
-
 final class ArrayResultItemHandler
 {
     /**

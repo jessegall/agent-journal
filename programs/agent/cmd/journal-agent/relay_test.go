@@ -22,20 +22,20 @@ const (
 	relayTestProcess = "01jprocess00000000000000001"
 )
 
-// mockJournal answers a relay as the journal does: the first claim hands it one order, every later claim none, each
+// mockJournal answers a relay as the journal does: the first claim hands it one instruction, every later claim none, each
 // naming the idle window, a presence report is acknowledged for a moment, and each process report is kept.
 type mockJournal struct {
-	order   hostapi.Order
-	idle    int
-	mutex   sync.Mutex
-	claims  int
-	reports []hostapi.ProcessReport
+	instruction hostapi.Instruction
+	idle        int
+	mutex       sync.Mutex
+	claims      int
+	reports     []hostapi.ProcessReport
 }
 
 func (journal *mockJournal) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	now := time.Now()
 	switch {
-	case strings.HasPrefix(request.URL.Path, "/host/orders/claim"):
+	case strings.HasPrefix(request.URL.Path, "/host/instructions/claim"):
 		journal.answerClaim(writer, now)
 	case strings.HasSuffix(request.URL.Path, "/presence"):
 		writeJSON(writer, map[string]any{"bindingId": relayTestBinding, "generation": 1, "serverTime": now,
@@ -57,13 +57,13 @@ func (journal *mockJournal) answerClaim(writer http.ResponseWriter, now time.Tim
 	journal.claims++
 	isFirst := journal.claims == 1
 	journal.mutex.Unlock()
-	orders := []hostapi.Order{}
+	instructions := []hostapi.Instruction{}
 	if isFirst {
-		orders = append(orders, journal.order)
+		instructions = append(instructions, journal.instruction)
 	} else {
 		time.Sleep(50 * time.Millisecond)
 	}
-	writeJSON(writer, map[string]any{"orders": orders, "now": now, "idle_window_seconds": journal.idle})
+	writeJSON(writer, map[string]any{"instructions": instructions, "now": now, "idle_window_seconds": journal.idle})
 }
 
 func (journal *mockJournal) reportsOf(kind hostapi.ProcessReportType) int {
@@ -83,17 +83,17 @@ func writeJSON(writer http.ResponseWriter, value any) {
 	_ = json.NewEncoder(writer).Encode(value)
 }
 
-// openOrder is the journal's signed order to open a pipe process that lives for the given seconds.
-func openOrder(t *testing.T, folder string, seconds string) hostapi.Order {
+// openInstruction is the journal's signed instruction to open a pipe process that lives for the given seconds.
+func openInstruction(t *testing.T, folder string, seconds string) hostapi.Instruction {
 	plan, err := json.Marshal(hostapi.OpenPlan{Type: "pipe", Restart: "never",
 		Argv: []string{"sleep", seconds}, Folder: folder, Inherit: []string{"PATH"}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	order := hostapi.Order{ID: "01jorder0000000000000000001", Sequence: 1, Type: "open_process",
+	instruction := hostapi.Instruction{ID: "01jorder0000000000000000001", Sequence: 1, Type: "open_process",
 		ProcessID: relayTestProcess, Payload: string(plan), ExpiresAt: time.Now().Add(30 * time.Second)}
-	order.Signature = hostapi.Sign(hostapi.OrderSecretOf(relayTestSecret), order)
-	return order
+	instruction.Signature = hostapi.Sign(hostapi.InstructionSecretOf(relayTestSecret), instruction)
+	return instruction
 }
 
 // connectedRelay is the relay of a binding redeemed for a folder of its own, signing with the mock's secret.
@@ -123,7 +123,7 @@ func connectedRelay(t *testing.T, journalURL string) bindingRelay {
 }
 
 func TestARelayStaysOnlineWhileItsProcessLivesAndLeavesOnceItEndedAndTheIdleWindowPassed(t *testing.T) {
-	journal := &mockJournal{order: openOrder(t, t.TempDir(), "2"), idle: 1}
+	journal := &mockJournal{instruction: openInstruction(t, t.TempDir(), "2"), idle: 1}
 	server := httptest.NewServer(journal)
 	defer server.Close()
 	relay := connectedRelay(t, server.URL)
@@ -149,7 +149,7 @@ func TestARelayStaysOnlineWhileItsProcessLivesAndLeavesOnceItEndedAndTheIdleWind
 }
 
 func TestARelayWithNoProcessLeavesOnceItsIdleWindowPassed(t *testing.T) {
-	journal := &mockJournal{order: openOrder(t, t.TempDir(), "1"), idle: 1}
+	journal := &mockJournal{instruction: openInstruction(t, t.TempDir(), "1"), idle: 1}
 	journal.claims = 1
 	server := httptest.NewServer(journal)
 	defer server.Close()

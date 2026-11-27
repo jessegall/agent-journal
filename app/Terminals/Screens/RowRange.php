@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Values\RowGuard;
 
 /**
@@ -25,7 +25,7 @@ final readonly class RowRange
     /**
      * The guard a key read on these rows carries: the host refuses it once the rows drawn there changed.
      */
-    public function guardOn(HostFrameData $frame): RowGuard
+    public function guardOn(HostFramePayload $frame): RowGuard
     {
         $rows = array_slice($frame->rows, $this->first, $this->last - $this->first);
 

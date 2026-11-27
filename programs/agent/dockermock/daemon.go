@@ -156,7 +156,7 @@ func (daemon *Daemon) WasAsked(method, part string) bool {
 }
 
 // Capabilities are the capabilities as a daemon is sent them by Docker's client: each under its full name, in the
-// order of their names.
+// instruction of their names.
 func Capabilities(names ...string) []string {
 	sent := make([]string, 0, len(names))
 	for _, name := range names {

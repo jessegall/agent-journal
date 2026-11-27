@@ -12,8 +12,8 @@ use RuntimeException;
  */
 final class HostAnswerAwaitedInTransaction extends RuntimeException
 {
-    public static function atLevel(string $orderId, int $level): self
+    public static function atLevel(string $instructionId, int $level): self
     {
-        return new self("The answer to order {$orderId} is awaited outside every transaction, but {$level} were open.");
+        return new self("The answer to instruction {$instructionId} is awaited outside every transaction, but {$level} were open.");
     }
 }

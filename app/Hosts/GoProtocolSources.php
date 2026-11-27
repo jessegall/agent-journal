@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 /**
  * The Go source of host protocol 1 in each package that holds part of it, laid out as gofmt lays it out: a struct with
- * a Validate for every type and the enums of the package, and in hostapi the protocol's constants, the OrderHandlers
+ * a Validate for every type and the enums of the package, and in hostapi the protocol's constants, the InstructionHandlers
  * interface, the strict dispatch Executors and the typed Journal client.
  */
 final readonly class GoProtocolSources
@@ -159,14 +159,14 @@ final readonly class GoProtocolSources
         $version = $this->protocol->version;
         $statuses = $this->enum('Status', '', array_map(strval(...), array_keys($this->protocol->statuses)));
         $refusals = $this->enum('Refusal', '', array_map(strval(...), array_keys($this->protocol->refusals)));
-        $keyWidth = max(0, ...array_map(fn (string $type) => strlen($type) + 3, $this->protocol->orderTypes()));
+        $keyWidth = max(0, ...array_map(fn (string $type) => strlen($type) + 3, $this->protocol->instructionTypes()));
 
         $traits = implode("\n", array_map(fn (string $type) => sprintf(
             "\t%s {HostWide: %s, Repeatable: %s},",
             str_pad("\"{$type}\":", $keyWidth),
-            $this->goBool($this->protocol->orders[$type]->isHostWide()),
-            $this->goBool($this->protocol->orders[$type]->isRepeatable),
-        ), $this->protocol->orderTypes()));
+            $this->goBool($this->protocol->instructions[$type]->isHostWide()),
+            $this->goBool($this->protocol->instructions[$type]->isRepeatable),
+        ), $this->protocol->instructionTypes()));
 
         $bounds = $this->boundConstants();
         $hostFlags = $this->hostFlags();
@@ -183,15 +183,15 @@ final readonly class GoProtocolSources
 
             {$refusals}
 
-            // OrderTraits are what the protocol says of an order type: whether it is about the host as a whole, and
+            // InstructionTraits are what the protocol says of an instruction type: whether it is about the host as a whole, and
             // whether it leaves the same result when carried out twice.
-            type OrderTraits struct {
+            type InstructionTraits struct {
             	HostWide   bool
             	Repeatable bool
             }
 
-            // OrderTypes are every order type of the protocol with its traits.
-            var OrderTypes = map[string]OrderTraits{
+            // InstructionTypes are every instruction type of the protocol with its traits.
+            var InstructionTypes = map[string]InstructionTraits{
             {$traits}
             }
 
@@ -485,17 +485,17 @@ final readonly class GoProtocolSources
     private function handlers(): string
     {
         $methods = implode("\n", array_map(function (string $type) {
-            $traits = $this->protocol->orders[$type];
+            $traits = $this->protocol->instructions[$type];
             $parameter = $traits->payload === null ? '' : ', payload '.$this->goName($traits->payload, 'hostapi');
             $reply = $this->goName($traits->reply, 'hostapi');
 
-            return "\t".Str::studly($type)."(ctx context.Context, order Order{$parameter}) ({$reply}, error)";
-        }, $this->protocol->orderTypes()));
+            return "\t".Str::studly($type)."(ctx context.Context, instruction Instruction{$parameter}) ({$reply}, error)";
+        }, $this->protocol->instructionTypes()));
 
         return <<<GO
-            // OrderHandlers carry out every order of host protocol 1, a method to each order type, given the order and
-            // its payload read strictly and validated, and answer the order's reply.
-            type OrderHandlers interface {
+            // InstructionHandlers carry out every instruction of host protocol 1, a method to each instruction type, given the instruction and
+            // its payload read strictly and validated, and answer the instruction's reply.
+            type InstructionHandlers interface {
             {$methods}
             }
             GO;
@@ -504,15 +504,15 @@ final readonly class GoProtocolSources
     private function executors(): string
     {
         $lines = implode("\n", array_map(function (string $type) {
-            $carrying = $this->protocol->orders[$type]->payload === null ? 'carryingNothing' : 'carrying';
+            $carrying = $this->protocol->instructions[$type]->payload === null ? 'carryingNothing' : 'carrying';
 
             return "\texecutors[\"{$type}\"] = {$carrying}(handlers.".Str::studly($type).')';
-        }, $this->protocol->orderTypes()));
+        }, $this->protocol->instructionTypes()));
 
         return <<<GO
-            // Executors carry out each order of host protocol 1 through its handler, its payload read strictly into its
+            // Executors carry out each instruction of host protocol 1 through its handler, its payload read strictly into its
             // type and validated first.
-            func Executors(handlers OrderHandlers) map[string]Executor {
+            func Executors(handlers InstructionHandlers) map[string]Executor {
             	executors := map[string]Executor{}
             {$lines}
             	return executors

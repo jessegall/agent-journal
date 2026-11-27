@@ -7,10 +7,10 @@ namespace App\Hosts\Commands\StopHostProcess;
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
 use App\Support\Command;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 
 /**
- * Orders the host to stop a process: it gets the grace time to end, then the force time before it is killed. Run by a driver worker (internal, not exported).
+ * Instructs the host to stop a process: it gets the grace time to end, then the force time before it is killed. Run by a driver worker (internal, not exported).
  *
  * @extends Command<string>
  */
@@ -21,6 +21,6 @@ final readonly class StopHostProcessCommand extends Command
         public string $processId,
         public int $graceMs,
         public int $forceMs,
-        public HostOrderSource $source,
+        public HostInstructionSource $source,
     ) {}
 }

@@ -17,17 +17,17 @@ use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Hosts\Commands\CloseHostInput\CloseHostInputCommand;
 use App\Hosts\Commands\SignalHostProcess\SignalHostProcessCommand;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;
 use App\Time\Contracts\ServerClock;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\ReportedStart;
 use App\Values\ThreadTokens;
 use App\Values\TurnEnd;
@@ -73,8 +73,8 @@ final class HeadlessDriver implements ProcessDriver
 
     public function resume(array $inFlight, array $ordered): DriverActions
     {
-        foreach ($ordered as $order) {
-            $this->isInputClosed = $this->isInputClosed || $order->type === HostOrderType::CloseStdin;
+        foreach ($ordered as $instruction) {
+            $this->isInputClosed = $this->isInputClosed || $instruction->type === HostInstructionType::CloseStdin;
         }
 
         return $this->closeInput();
@@ -93,7 +93,7 @@ final class HeadlessDriver implements ProcessDriver
 
     public function onRequest(ClaimedRequest $request): DriverActions
     {
-        $source = HostOrderSource::forStep(
+        $source = HostInstructionSource::forStep(
             $request->requestId,
             $request->operation,
             $request->attempt,
@@ -109,7 +109,7 @@ final class HeadlessDriver implements ProcessDriver
         };
     }
 
-    public function onAnswer(HostOrder $order): DriverActions
+    public function onAnswer(HostInstruction $instruction): DriverActions
     {
         return DriverActions::none();
     }
@@ -152,7 +152,7 @@ final class HeadlessDriver implements ProcessDriver
         }
 
         $this->isInputClosed = true;
-        $source = HostOrderSource::forStep($turn->id, self::CLOSE_INPUT, $turn->attempt_version, $this->generation);
+        $source = HostInstructionSource::forStep($turn->id, self::CLOSE_INPUT, $turn->attempt_version, $this->generation);
 
         return DriverActions::of(
             new CloseHostInputCommand($this->process->id, $source),
@@ -167,7 +167,7 @@ final class HeadlessDriver implements ProcessDriver
         );
     }
 
-    private function interrupt(ClaimedRequest $request, HostOrderSource $source): DriverActions
+    private function interrupt(ClaimedRequest $request, HostInstructionSource $source): DriverActions
     {
         $this->interrupts[$request->requestId] = $request->attempt;
 
@@ -201,11 +201,11 @@ final class HeadlessDriver implements ProcessDriver
     }
 
     /**
-     * The request the turn was opened for: the one its open order was made for.
+     * The request the turn was opened for: the one its open instruction was made for.
      */
     private function turnRequest(): DriverRequest|null
     {
-        $requestId = HostOrder::query()->whereKey($this->process->open_order_id)->value('driver_request_id');
+        $requestId = HostInstruction::query()->whereKey($this->process->open_instruction_id)->value('driver_request_id');
 
         if ($requestId === null) {
             return null;

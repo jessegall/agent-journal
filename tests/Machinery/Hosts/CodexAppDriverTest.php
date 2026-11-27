@@ -6,10 +6,10 @@ namespace Tests\Machinery\Hosts;
 
 use App\Agents\Drivers\Codex\CodexAppDriver;
 use App\Agents\Drivers\Enums\RequestProgress;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\TestHostProcess;
@@ -114,12 +114,12 @@ final class CodexAppDriverTest extends TestCase
         $this->journal->assertResult(
             [
                 'The account is not signed in by a method the journal accepts, so no turn was started.',
-                HostOrderType::Stop,
+                HostInstructionType::Stop,
                 [],
             ],
             [
                 $this->journal->startOfSession($opened->sessionId)->refusal,
-                $this->lastOrder()->type,
+                $this->lastInstruction()->type,
                 $this->writtenWith('thread/start'),
             ],
         );
@@ -171,10 +171,10 @@ final class CodexAppDriverTest extends TestCase
         return AgentRuntime::query()->whereKey($runtimeId)->sole()->conversation_id;
     }
 
-    private function lastOrder(): HostOrder
+    private function lastInstruction(): HostInstruction
     {
-        $orders = $this->journal->hostOrdersOf('owner');
+        $instructions = $this->journal->hostInstructionsOf('owner');
 
-        return $orders[array_key_last($orders)];
+        return $instructions[array_key_last($instructions)];
     }
 }

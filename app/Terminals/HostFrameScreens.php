@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Terminals;
 
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Protocol\Data\HostFrameData;
-use App\Hosts\Protocol\Data\HostOutputData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
+use App\Hosts\Protocol\Payloads\HostOutputPayload;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Terminals\Data\ScreenFrameData;
@@ -20,7 +20,7 @@ final readonly class HostFrameScreens
 {
     public function __construct(private RuntimeScreen $screens) {}
 
-    public function show(HostProcess $process, HostOutputData $output, CarbonImmutable $now): void
+    public function show(HostProcess $process, HostOutputPayload $output, CarbonImmutable $now): void
     {
         $frame = $output->frames[array_key_last($output->frames) ?? 0] ?? null;
 
@@ -32,7 +32,7 @@ final readonly class HostFrameScreens
         $this->screens->admit(ScreenRegistration::of($runtime), self::screenOf($process, $frame, $now), $now);
     }
 
-    private static function screenOf(HostProcess $process, HostFrameData $frame, CarbonImmutable $now): ScreenFrameData
+    private static function screenOf(HostProcess $process, HostFramePayload $frame, CarbonImmutable $now): ScreenFrameData
     {
         return ScreenFrameData::from([
             'epoch' => "{$process->id}:{$process->generation}",

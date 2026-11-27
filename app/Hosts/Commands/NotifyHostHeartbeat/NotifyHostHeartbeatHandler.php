@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\NotifyHostHeartbeat;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\HostOrderPlacement;
+use App\Hosts\HostInstructionPlacement;
 use App\Models\Hosts\HostProcess;
 use App\Time\Contracts\ServerClock;
 
 /**
- * Records the host's heartbeat; a live process it leaves out after its open order was answered is missed, and lost
+ * Records the host's heartbeat; a live process it leaves out after its open instruction was answered is missed, and lost
  * the second heartbeat in a row.
  */
 final readonly class NotifyHostHeartbeatHandler implements CommandHandler
 {
-    public function __construct(private HostOrderPlacement $placement, private ServerClock $clock) {}
+    public function __construct(private HostInstructionPlacement $placement, private ServerClock $clock) {}
 
     public function handle(NotifyHostHeartbeatCommand $command): void
     {

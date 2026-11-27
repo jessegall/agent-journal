@@ -14,7 +14,7 @@ use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
 use App\Support\RecordIdentity;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use Carbon\CarbonImmutable;
 
 final readonly class CancelAccountUsesHandler implements CommandHandler
@@ -57,7 +57,7 @@ final readonly class CancelAccountUsesHandler implements CommandHandler
                 $process->id,
                 self::STOP_GRACE_MS,
                 self::STOP_FORCE_MS,
-                HostOrderSource::fromJournal(),
+                HostInstructionSource::fromJournal(),
             );
 
             $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $stop);

@@ -25,16 +25,16 @@ return new class extends Migration
             // Raised by every key the user types, so a guarded write made before it is refused.
             $table->unsignedBigInteger('input_generation')->default(0);
             $table->unsignedBigInteger('output_offset')->default(0);
-            // The number of the process's last order: its orders are numbered under this row's lock.
-            $table->unsignedBigInteger('order_sequence')->default(0);
+            // The number of the process's last instruction: its instructions are numbered under this row's lock.
+            $table->unsignedBigInteger('instruction_sequence')->default(0);
             $table->integer('exit_code')->nullable();
             $table->string('exit_signal', 32)->nullable();
             $table->text('exit_evidence')->nullable();
             // Raised by each worker that takes the process over; a worker whose number moved is refused.
             $table->unsignedBigInteger('worker_generation')->default(0);
             $table->timestampTz('worker_until')->nullable();
-            $table->ulid('open_order_id')->nullable();
-            // How many heartbeats in a row left the process out after its open order was answered.
+            $table->ulid('open_instruction_id')->nullable();
+            // How many heartbeats in a row left the process out after its open instruction was answered.
             $table->unsignedSmallInteger('missed_heartbeats')->default(0);
             $table->timestampTz('started_at')->nullable();
             $table->timestampTz('ended_at')->nullable();

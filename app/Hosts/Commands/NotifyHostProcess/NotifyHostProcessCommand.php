@@ -6,7 +6,7 @@ namespace App\Hosts\Commands\NotifyHostProcess;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
-use App\Hosts\Protocol\Data\HostProcessReportData;
+use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
 use App\Support\Command;
 
 /**
@@ -21,6 +21,6 @@ final readonly class NotifyHostProcessCommand extends Command
     public function __construct(
         public string $hostId,
         public string $processId,
-        public HostProcessReportData $report,
+        public HostProcessReportPayload $report,
     ) {}
 }

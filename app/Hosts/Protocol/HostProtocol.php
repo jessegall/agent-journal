@@ -18,22 +18,12 @@ final readonly class HostProtocol
     /**
      * The names the host itself fills as {host:NAME} in a plan.
      */
-    public const array HOST_NAMES = [
-        'JOURNAL_URL',
-        'INSTALLATION',
-        'HOOK_COMMAND',
-        'JOURNAL_AGENT',
-    ];
+    public const array HOST_NAMES = ['JOURNAL_URL', 'INSTALLATION', 'HOOK_COMMAND', 'JOURNAL_AGENT'];
 
     /**
      * The plan fields a contained plan may not name, as it names nothing of the host it runs on.
      */
-    public const array CONTAINED_REFUSED_FIELDS = [
-        'folders',
-        'side_sockets',
-        'read_files',
-        'inherit',
-    ];
+    public const array CONTAINED_REFUSED_FIELDS = ['folders', 'side_sockets', 'read_files', 'inherit'];
 
     /**
      * The variables of a contained program's start grant: a contained plan carries all of them or none.
@@ -48,16 +38,10 @@ final readonly class HostProtocol
     /**
      * The fields a refused answer names, so the journal can say why the host refused.
      */
-    public const array REFUSED_ANSWER_NAMES = [
-        'refusal',
-        'reason',
-    ];
+    public const array REFUSED_ANSWER_NAMES = ['refusal', 'reason'];
 
     /**
      * What journal-hook takes after its own name, in order.
      */
-    public const array HOOK_ARGUMENTS = [
-        'driver',
-        'reply file',
-    ];
+    public const array HOOK_ARGUMENTS = ['driver', 'reply file'];
 }

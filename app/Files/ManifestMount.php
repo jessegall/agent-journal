@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Files;
 
-use App\Hosts\Protocol\Data\HostContainerMountData;
 use App\Hosts\Protocol\HostMountType;
+use App\Hosts\Protocol\Payloads\HostContainerMountPayload;
 
 /**
  * One folder a helper container sees: what it comes from (nothing for the whole plan-file folder), where it appears
@@ -24,9 +24,9 @@ final readonly class ManifestMount
         public bool $isCheckout = false,
     ) {}
 
-    public function protocolData(): HostContainerMountData
+    public function protocolData(): HostContainerMountPayload
     {
-        return HostContainerMountData::from(get_object_vars($this));
+        return HostContainerMountPayload::from(get_object_vars($this));
     }
 
     /**

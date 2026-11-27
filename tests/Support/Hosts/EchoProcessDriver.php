@@ -7,15 +7,15 @@ namespace Tests\Support\Hosts;
 use App\Agents\Drivers\Contracts\MessagePart;
 use App\Agents\Drivers\Contracts\ProcessDriver;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
-use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostInstructionStatus;
 use App\Messages\Data\MessageTextData;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\RowGuard;
 
 /**
@@ -32,7 +32,7 @@ final class EchoProcessDriver implements ProcessDriver
     /**
      * The message waiting for the prompt, keyed by the paste step it is ordered as.
      *
-     * @var array{HostOrderSource, string}|null
+     * @var array{HostInstructionSource, string}|null
      */
     private array|null $pending = null;
 
@@ -52,9 +52,9 @@ final class EchoProcessDriver implements ProcessDriver
 
     public function resume(array $inFlight, array $ordered): DriverActions
     {
-        $pasted = array_map(fn (HostOrder $order) => $order->driver_request_id, array_filter(
+        $pasted = array_map(fn (HostInstruction $instruction) => $instruction->driver_request_id, array_filter(
             $ordered,
-            fn (HostOrder $order) => str_starts_with((string) $order->step, self::PASTE),
+            fn (HostInstruction $instruction) => str_starts_with((string) $instruction->step, self::PASTE),
         ));
 
         foreach ($inFlight as $request) {
@@ -95,16 +95,16 @@ final class EchoProcessDriver implements ProcessDriver
         return DriverActions::none();
     }
 
-    public function onAnswer(HostOrder $order): DriverActions
+    public function onAnswer(HostInstruction $instruction): DriverActions
     {
-        if ($order->status !== HostOrderStatus::Refused || $this->pasted === null) {
+        if ($instruction->status !== HostInstructionStatus::Refused || $this->pasted === null) {
             return DriverActions::none();
         }
 
         [$requestId, $attempt, $text] = $this->pasted;
         $this->refusedPastes++;
         $step = self::PASTE.'-'.$this->refusedPastes;
-        $this->pending = [HostOrderSource::forStep($requestId, $step, $attempt, $this->generation), $text];
+        $this->pending = [HostInstructionSource::forStep($requestId, $step, $attempt, $this->generation), $text];
 
         return DriverActions::none();
     }
@@ -134,9 +134,9 @@ final class EchoProcessDriver implements ProcessDriver
         return $message ?? implode('', $texts);
     }
 
-    private function pasteOf(string $requestId, int $attempt): HostOrderSource
+    private function pasteOf(string $requestId, int $attempt): HostInstructionSource
     {
-        return HostOrderSource::forStep($requestId, self::PASTE, $attempt, $this->generation);
+        return HostInstructionSource::forStep($requestId, self::PASTE, $attempt, $this->generation);
     }
 
     /**

@@ -19,7 +19,7 @@ use App\Bus\JournalRoutes;
 use App\Concerns\LoadsCoreRoutes;
 use App\Hosts\Commands\MarkFailedUpgrades\MarkFailedUpgradesCommand;
 use App\Hosts\Commands\MarkSilentHosts\MarkSilentHostsCommand;
-use App\Hosts\Commands\SweepHostOrders\SweepHostOrdersCommand;
+use App\Hosts\Commands\SweepHostInstructions\SweepHostInstructionsCommand;
 use App\Hosts\Contracts\HostChannel as HostChannelContract;
 use App\Hosts\Contracts\HostOperatorAccess as HostOperatorAccessContract;
 use App\Hosts\Contracts\LocalProjectHosts as LocalProjectHostsContract;
@@ -135,8 +135,8 @@ final class ConnectionsServiceProvider extends ServiceProvider
             $schedule
                 ->call(fn (JournalCommands $commands) => $commands->runAsJournal(
                     CommandEntry::HostControl,
-                    'host order sweep',
-                    new SweepHostOrdersCommand(),
+                    'host instruction sweep',
+                    new SweepHostInstructionsCommand(),
                 ))
                 ->everyThirtySeconds();
         });

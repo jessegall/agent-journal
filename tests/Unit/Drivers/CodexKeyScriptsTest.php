@@ -6,7 +6,7 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Setup\DriverProfile;
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\KeyScripts\KeyMove;
 use App\Terminals\KeyScripts\KeyScriptCatalogue;
 use App\Terminals\KeyScripts\KeyScriptRun;
@@ -15,7 +15,7 @@ use App\Terminals\Screens\Enums\KeyMoveType;
 use App\Terminals\Screens\ScreenClassifier;
 use App\Terminals\Screens\ScreenHolds;
 use App\Terminals\Screens\ScreenLayout;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use Tests\Support\Hosts\MockHost;
 use Tests\TestCase;
 
@@ -77,7 +77,7 @@ final class CodexKeyScriptsTest extends TestCase
 
             // A screen the layout answers is passed with its recorded answer, as the terminal driver passes it.
             if ($answer !== null) {
-                $host->write('process', $answer, HostOrderSource::fromJournal());
+                $host->write('process', $answer, HostInstructionSource::fromJournal());
 
                 continue;
             }
@@ -85,7 +85,7 @@ final class CodexKeyScriptsTest extends TestCase
             $move = $runner->moveOn($layout, $move->run, $frame);
 
             if ($move->type === KeyMoveType::Send) {
-                $runner->send($move, $frame, 'process', 0, HostOrderSource::fromJournal());
+                $runner->send($move, $frame, 'process', 0, HostInstructionSource::fromJournal());
                 $this->sends++;
             }
 
@@ -97,7 +97,7 @@ final class CodexKeyScriptsTest extends TestCase
         return $move;
     }
 
-    private function answerOf(ScreenLayout $layout, HostFrameData $frame): string|null
+    private function answerOf(ScreenLayout $layout, HostFramePayload $frame): string|null
     {
         $reading = new ScreenClassifier()->readingOf($layout, $frame);
 

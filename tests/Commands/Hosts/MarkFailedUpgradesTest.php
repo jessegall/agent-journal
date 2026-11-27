@@ -7,11 +7,11 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\MarkFailedUpgrades\MarkFailedUpgradesCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
-use App\Hosts\Protocol\Data\HostInventoryData;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -45,7 +45,7 @@ final class MarkFailedUpgradesTest extends TestCase
     public function test_an_upgrade_whose_inventory_named_the_release_stays_settled(): void
     {
         $this->upgradeAnsweredAt(CarbonImmutable::parse('2026-11-26 10:00:00'));
-        $inventory = HostInventoryData::from([
+        $inventory = HostInventoryPayload::from([
             'protocol' => 1,
             'release' => self::RELEASE,
             'capabilities' => [],
@@ -68,7 +68,7 @@ final class MarkFailedUpgradesTest extends TestCase
             ->publishRelease(self::RELEASE)
             ->enrollHost('Mac', [base_path()]);
         $this->journal->asSystem(new UpgradeHostCommand($this->journal->hostCalled('Mac')->hostId, self::RELEASE));
-        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+        $this->journal->hostInstruction($this->journal->hostInstructionsOn('Mac')[0], fn (TestHostInstruction $instruction) => $instruction
             ->answerWith(['release' => self::RELEASE]));
     }
 

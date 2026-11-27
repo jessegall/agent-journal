@@ -7,7 +7,7 @@ namespace App\Hosts\Commands\OpenHostProcess;
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
 use App\Support\Command;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\HostProcessPlan;
 
 /**
@@ -23,7 +23,7 @@ final readonly class OpenHostProcessCommand extends Command
         public string $hostId,
         public string|null $runtimeId,
         public HostProcessPlan $plan,
-        public HostOrderSource $source,
+        public HostInstructionSource $source,
         /**
          * The journal's start record the process runs for; none for a process no start made
          */

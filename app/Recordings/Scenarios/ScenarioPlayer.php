@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Recordings\Scenarios;
 
+use App\Accounts\Enums\CommandEntry;
 use App\Accounts\SignInChallenges;
 use App\Accounts\Values\SignInStarted;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OwnerCommands;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
@@ -39,12 +41,18 @@ final readonly class ScenarioPlayer
     private const int LOOK_NANOSECONDS = 500_000_000;
 
     /**
+     * The journal instructs a host what no session instructions, as its own host control does.
+     */
+    private const string TRUSTED_ENTRY = 'recorded scenarios';
+
+    /**
      * The most seconds a machine change runs, an installation the longest of them.
      */
     private const int MACHINE_CHANGE_SECOND_LIMIT = 1200;
 
     public function __construct(
         private OwnerCommands $commands,
+        private JournalCommands $journal,
         private DriverCatalogue $drivers,
         private SignInChallenges $challenges,
         private Sleeper $sleeper,
@@ -75,6 +83,12 @@ final readonly class ScenarioPlayer
      */
     private function playStep(ScenarioRun $run, ScenarioStep $step, Closure $askUser): void
     {
+        if ($step->stepType->isHostInstruction()) {
+            $this->journal->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $step->commandFor($run, $this->drivers));
+
+            return;
+        }
+
         if ($step->stepType->isCommand()) {
             $result = $this->commands->run($step->commandFor($run, $this->drivers));
 

@@ -9,19 +9,19 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
-use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
-use App\Hosts\Protocol\HostOrderType;
-use App\Models\Hosts\HostOrder;
+use App\Hosts\Protocol\HostInstructionType;
+use App\Models\Hosts\HostInstruction;
 use App\Processes\Enums\RuntimeActivity;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use Closure;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Assertions\Assert;
-use Tests\Support\Assertions\Facts\HostOrderFacts;
+use Tests\Support\Assertions\Facts\HostInstructionFacts;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\OverTheWire;
 use Tests\Support\Hosts\EchoProcessDriver;
@@ -62,7 +62,7 @@ final class SessionLifeTest extends TestCase
     private const array TABLES = [
         'hosts',
         'host_processes',
-        'host_orders',
+        'host_instructions',
         'agents',
         'agent_sessions',
         'session_tokens',
@@ -88,13 +88,13 @@ final class SessionLifeTest extends TestCase
             ->testHost(fn (TestHost $mac) => $mac->restartHost())
             ->hostProcess('echo', fn (TestHostProcess $echo) => $echo
                 ->beginWorker()
-                ->driveUntil($this->ordered('echo', HostOrderType::Snapshot, 2)))
+                ->driveUntil($this->ordered('echo', HostInstructionType::Snapshot, 2)))
             ->asSystem($this->stopOf('echo'));
 
         $this->journal
             ->hostProcess('echo', fn (TestHostProcess $echo) => $echo->waitFor(HostProcessStatus::Exited))
             ->assertJournal(fn (Assert $journal) => $journal->has('hostProcesses.echo', fn (Assert $echo) => $echo
-                ->where('orderCounts.'.HostOrderType::WriteKeys->value, 1)
+                ->where('instructionCounts.'.HostInstructionType::WriteKeys->value, 1)
                 ->where('workerGeneration', fn (int $generation) => $generation >= 1)
                 ->etc()));
     }
@@ -103,11 +103,11 @@ final class SessionLifeTest extends TestCase
     {
         $this->startEchoSession()
             ->hostProcess('echo', fn (TestHostProcess $echo) => $echo
-                ->driveUntil($this->ordered('echo', HostOrderType::WriteKeys, 1))
+                ->driveUntil($this->ordered('echo', HostInstructionType::WriteKeys, 1))
                 ->beginWorker()
                 ->driveUntil($this->echoed('hello')))
             ->assertJournal(fn (Assert $journal) => $journal->has('hostProcesses.echo', fn (Assert $echo) => $echo
-                ->where('orderCounts.'.HostOrderType::WriteKeys->value, 1)
+                ->where('instructionCounts.'.HostInstructionType::WriteKeys->value, 1)
                 ->where('workerGeneration', 2)
                 ->etc()));
     }
@@ -116,10 +116,10 @@ final class SessionLifeTest extends TestCase
     {
         $this->startEchoSession()
             ->hostProcess('echo', fn (TestHostProcess $echo) => $echo
-                ->driveUntil($this->ordered('echo', HostOrderType::WriteKeys, 1)))
+                ->driveUntil($this->ordered('echo', HostInstructionType::WriteKeys, 1)))
             ->testHost(fn (TestHost $mac) => $mac->restartJournal())
             ->hostProcess('echo', fn (TestHostProcess $echo) => $echo
-                ->driveUntil($this->echoed('hello'), HostOrder::CLAIM_SECONDS * 2))
+                ->driveUntil($this->echoed('hello'), HostInstruction::CLAIM_SECONDS * 2))
             ->assertJournal(fn (Assert $journal) => $journal->where(
                 'hostProcesses.echo.rows',
                 fn (array $rows) => count(array_keys($rows, 'echo: hello', true)) === 1,
@@ -421,11 +421,11 @@ final class SessionLifeTest extends TestCase
     private function interruptRunningTurn(string $agent, string $name): self
     {
         $escaped = fn (Assert $journal) => $journal
-            ->where("hostProcesses.{$name}.orders", fn (array $orders) => array_any(
-                $orders,
-                fn (HostOrderFacts $order) => $order->facts()['type'] === HostOrderType::WriteKeys
-                && $order->facts()['status'] === HostOrderStatus::Done
-                && in_array($order->facts()['request'], $journal->value("agents.{$agent}.runtime.interrupts"), true),
+            ->where("hostProcesses.{$name}.instructions", fn (array $instructions) => array_any(
+                $instructions,
+                fn (HostInstructionFacts $instruction) => $instruction->facts()['type'] === HostInstructionType::WriteKeys
+                && $instruction->facts()['status'] === HostInstructionStatus::Done
+                && in_array($instruction->facts()['request'], $journal->value("agents.{$agent}.runtime.interrupts"), true),
             ));
 
         $this->journal->hostProcess($name, fn (TestHostProcess $terminal) => $terminal->driveUntil(
@@ -450,13 +450,13 @@ final class SessionLifeTest extends TestCase
     private function typeTaken(string $keys, Closure $isDone): void
     {
         foreach (range(1, self::TYPING_TRIES) as $try) {
-            $isTaken = fn (Assert $journal) => $this->lastKeysStatus($this->keysOrders()) === HostOrderStatus::Done
+            $isTaken = fn (Assert $journal) => $this->lastKeysStatus($this->keysInstructions()) === HostInstructionStatus::Done
                 || $isDone($journal);
             $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
                 ->type($keys)->driveUntil(
                     fn (Assert $journal) => $journal->where(
-                        'hostProcesses.terminal.orders',
-                        fn (array $orders) => $this->lastKeysStatus($orders) === HostOrderStatus::Refused || $isTaken($journal),
+                        'hostProcesses.terminal.instructions',
+                        fn (array $instructions) => $this->lastKeysStatus($instructions) === HostInstructionStatus::Refused || $isTaken($journal),
                     ),
                 ));
             $taken = false;
@@ -483,24 +483,24 @@ final class SessionLifeTest extends TestCase
     }
 
     /**
-     * The status of the newest keys order among the orders.
+     * The status of the newest keys instruction among the instructions.
      *
-     * @param  list<HostOrderFacts>  $orders
+     * @param  list<HostInstructionFacts>  $instructions
      */
-    private function lastKeysStatus(array $orders): HostOrderStatus
+    private function lastKeysStatus(array $instructions): HostInstructionStatus
     {
-        $keys = array_values(array_filter($orders, fn (HostOrderFacts $order) => $order
-            ->facts()['type'] === HostOrderType::WriteKeys));
+        $keys = array_values(array_filter($instructions, fn (HostInstructionFacts $instruction) => $instruction
+            ->facts()['type'] === HostInstructionType::WriteKeys));
 
         return $keys[array_key_last($keys)]->facts()['status'];
     }
 
     /**
-     * @return list<HostOrderFacts>
+     * @return list<HostInstructionFacts>
      */
-    private function keysOrders(): array
+    private function keysInstructions(): array
     {
-        return array_map(fn (HostOrder $order) => new HostOrderFacts($order), $this->journal->hostOrdersOf('terminal'));
+        return array_map(fn (HostInstruction $instruction) => new HostInstructionFacts($instruction), $this->journal->hostInstructionsOf('terminal'));
     }
 
     /**
@@ -544,12 +544,12 @@ final class SessionLifeTest extends TestCase
     }
 
     /**
-     * The journal ordered the named process at least the number of orders of the type.
+     * The journal ordered the named process at least the number of instructions of the type.
      */
-    private function ordered(string $name, HostOrderType $type, int $count): Closure
+    private function ordered(string $name, HostInstructionType $type, int $count): Closure
     {
         return fn (Assert $journal) => $journal
-            ->where("hostProcesses.{$name}.orderCounts", fn (array $counts) => ($counts[$type->value] ?? 0) >= $count);
+            ->where("hostProcesses.{$name}.instructionCounts", fn (array $counts) => ($counts[$type->value] ?? 0) >= $count);
     }
 
     /**
@@ -572,7 +572,7 @@ final class SessionLifeTest extends TestCase
             $this->journal->hostProcessCalled($name)->id,
             1000,
             1000,
-            HostOrderSource::fromJournal(),
+            HostInstructionSource::fromJournal(),
         );
     }
 

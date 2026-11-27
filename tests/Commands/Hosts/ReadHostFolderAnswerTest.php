@@ -10,30 +10,30 @@ use App\Hosts\Commands\ReadFolderUse\ReadFolderUseCommand;
 use App\Hosts\Commands\ReadHostFolderAnswer\ReadHostFolderAnswerCommand;
 use App\Hosts\Protocol\HostRefusal;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * The runner reads its own host's folder order: waiting, done with what the host found, or refused with the host's
- * reason; another host's order is refused.
+ * The runner reads its own host's folder instruction: waiting, done with what the host found, or refused with the host's
+ * reason; another host's instruction is refused.
  */
 #[TestsCommand(ReadHostFolderAnswerCommand::class)]
 final class ReadHostFolderAnswerTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    public function test_it_answers_where_the_hosts_own_order_stands(): void
+    public function test_it_answers_where_the_hosts_own_instruction_stands(): void
     {
         $this->journal->enrollContainedHost('Box', [base_path()])->enrollContainedHost('Other', [base_path()]);
         $hostId = $this->journal->hostCalled('Box')->hostId;
         $made = $this->journal->asSystem(new ReadFolderUseCommand($hostId, 'a7', 'operation-1'));
         $used = $this->journal->asSystem(new MakeHostFolderCommand($hostId, 'a8', 'operation-2'));
         $waiting = $this->journal->asSystem(new ReadHostFolderAnswerCommand($hostId, $made));
-        [$first, $second] = $this->journal->hostOrdersOn('Box');
+        [$first, $second] = $this->journal->hostInstructionsOn('Box');
 
-        $this->journal->hostOrder($first, fn (TestHostOrder $order) => $order
-            ->answerWith(['is_bound' => true]))->hostOrder($second, fn (TestHostOrder $order) => $order
+        $this->journal->hostInstruction($first, fn (TestHostInstruction $instruction) => $instruction
+            ->answerWith(['is_bound' => true]))->hostInstruction($second, fn (TestHostInstruction $instruction) => $instruction
             ->refuse(HostRefusal::Unsafe));
         $done = $this->journal->asSystem(new ReadHostFolderAnswerCommand($hostId, $made));
         $refused = $this->journal->asSystem(new ReadHostFolderAnswerCommand($hostId, $used));

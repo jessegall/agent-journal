@@ -17,8 +17,8 @@ use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Enums\ConversationModeType;
 use App\Hosts\Commands\AllowHostImages\AllowHostImagesCommand;
+use App\Hosts\Commands\InstructHostUpgrade\InstructHostUpgradeCommand;
 use App\Hosts\Commands\MakeHostFolder\MakeHostFolderCommand;
-use App\Hosts\Commands\OrderHostUpgrade\OrderHostUpgradeCommand;
 use App\Hosts\Commands\ReadFolderUse\ReadFolderUseCommand;
 use App\Hosts\Commands\RemoveHostFolder\RemoveHostFolderCommand;
 use App\Hosts\Commands\RequestHostProtection\RequestHostProtectionCommand;
@@ -86,8 +86,8 @@ final class ScenarioStep extends Data
             return new BeginSignInCommand((string) $this->driver, SignInMethod::from((string) $this->method));
         }
 
-        if ($this->stepType->isHostOrder()) {
-            return $this->hostOrderFor($run, $key);
+        if ($this->stepType->isHostInstruction()) {
+            return $this->hostInstructionFor($run, $key);
         }
 
         if ($this->stepType === ScenarioStepType::SubmitCode) {
@@ -167,14 +167,14 @@ final class ScenarioStep extends Data
     }
 
     /**
-     * The command of a step that orders this journal's host something no session orders: a folder made, read for its
+     * The command of a step that instructs this journal's host something no session instructions: a folder made, read for its
      * use or removed, a protected start, a project read, an upgrade or images allowed.
      *
      * @return Command<mixed>
      *
      * @throws ScenarioInvalid
      */
-    private function hostOrderFor(ScenarioRun $run, string $key): Command
+    private function hostInstructionFor(ScenarioRun $run, string $key): Command
     {
         $host = $run->hostId();
 
@@ -188,7 +188,7 @@ final class ScenarioStep extends Data
                 ProjectReadType::Directory,
                 [(string) $this->path],
             ),
-            ScenarioStepType::UpgradeHost => new OrderHostUpgradeCommand($host),
+            ScenarioStepType::UpgradeHost => new InstructHostUpgradeCommand($host),
             default => new AllowHostImagesCommand($host, array_map($run->imageNamed(...), $this->images ?? [])),
         };
     }

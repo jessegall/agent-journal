@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Listeners\RemoveEndedContainers;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -33,15 +33,15 @@ final class RemoveEndedContainersTest extends TestCase
             ->hostProcess('native', fn (TestHostProcess $native) => $native
                 ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0));
         $removalsOn = fn (string $host) => array_values(array_filter(
-            $this->journal->hostOrdersOn($host),
-            fn ($order) => $order->type === HostOrderType::Remove,
+            $this->journal->hostInstructionsOn($host),
+            fn ($instruction) => $instruction->type === HostInstructionType::Remove,
         ));
         $contained = $this->journal->hostProcessCalled('contained')->containerName();
 
         $this->journal->assertResult(
             [[$contained], []],
             [
-                array_map(fn ($order) => $this->journal->payloadOf($order)['container'], $removalsOn('Box')),
+                array_map(fn ($instruction) => $this->journal->payloadOf($instruction)['container'], $removalsOn('Box')),
                 $removalsOn('Mac'),
             ],
         );

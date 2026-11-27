@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace App\Recordings;
 
 use App\Hosts\HostChunks;
-use App\Hosts\Protocol\Data\HostClaimedOrdersData;
-use App\Hosts\Protocol\Data\HostKeyWriteData;
-use App\Hosts\Protocol\Data\HostOpenPlanData;
-use App\Hosts\Protocol\Data\HostOrderData;
-use App\Hosts\Protocol\Data\HostOutputData;
-use App\Hosts\Protocol\Data\HostProcessReportData;
-use App\Hosts\Protocol\Data\HostStdinWriteData;
-use App\Hosts\Protocol\Data\HostTerminalSizeData;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostRoute;
+use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
+use App\Hosts\Protocol\Payloads\HostInstructionPayload;
+use App\Hosts\Protocol\Payloads\HostKeyWritePayload;
+use App\Hosts\Protocol\Payloads\HostOpenPlanPayload;
+use App\Hosts\Protocol\Payloads\HostOutputPayload;
+use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
+use App\Hosts\Protocol\Payloads\HostStdinWritePayload;
+use App\Hosts\Protocol\Payloads\HostTerminalSizePayload;
 use App\Recordings\Enums\RecordedEventType;
 
 /**
- * Cuts each driver program's exchange out of a run's host exchange: an opening order opens it, the orders to it are
+ * Cuts each driver program's exchange out of a run's host exchange: an opening instruction opens it, the instructions to it are
  * what was typed (a private value only as typed) or resized, its relayed output what it printed, its report its end.
  */
 final readonly class DriverExchanges
@@ -42,7 +42,7 @@ final readonly class DriverExchanges
     }
 
     /**
-     * The exchanges after one host call: a claim's orders, a process's output, or its report.
+     * The exchanges after one host call: a claim's instructions, a process's output, or its report.
      *
      * @param  array<string, CutExchange>  $exchanges
      * @return array<string, CutExchange>
@@ -60,22 +60,22 @@ final readonly class DriverExchanges
         $processId = explode('/', $call->path)[3] ?? '';
 
         return match (true) {
-            $route === HostRoute::ClaimOrders && $event->type === RecordedEventType::Answered => $this->withOrders(
+            $route === HostRoute::ClaimInstructions && $event->type === RecordedEventType::Answered => $this->withInstructions(
                 $exchanges,
-                HostClaimedOrdersData::from($body)->orders,
+                HostClaimedInstructionsPayload::from($body)->instructions,
                 $event->at,
                 $fakes,
             ),
             $route === HostRoute::NotifyProcessOutput && $event->type === RecordedEventType::Asked => $this->withOutput(
                 $exchanges,
                 $processId,
-                HostOutputData::from($body),
+                HostOutputPayload::from($body),
                 $event->at,
                 $fakes,
             ),
             $route === HostRoute::NotifyProcessReport && $event->type === RecordedEventType::Asked => $this->withReport(
                 $exchanges,
-                HostProcessReportData::from($body),
+                HostProcessReportPayload::from($body),
             ),
             default => $exchanges,
         };
@@ -83,15 +83,15 @@ final readonly class DriverExchanges
 
     /**
      * @param  array<string, CutExchange>  $exchanges
-     * @param  list<HostOrderData>  $orders
+     * @param  list<HostInstructionPayload>  $instructions
      * @return array<string, CutExchange>
      */
-    private function withOrders(array $exchanges, array $orders, int $at, RecordingFakes $fakes): array
+    private function withInstructions(array $exchanges, array $instructions, int $at, RecordingFakes $fakes): array
     {
         $after = $exchanges;
 
-        foreach ($orders as $order) {
-            $after = $this->withOrder($after, $order, $at, $fakes);
+        foreach ($instructions as $instruction) {
+            $after = $this->withInstruction($after, $instruction, $at, $fakes);
         }
 
         return $after;
@@ -101,35 +101,35 @@ final readonly class DriverExchanges
      * @param  array<string, CutExchange>  $exchanges
      * @return array<string, CutExchange>
      */
-    private function withOrder(array $exchanges, HostOrderData $order, int $at, RecordingFakes $fakes): array
+    private function withInstruction(array $exchanges, HostInstructionPayload $instruction, int $at, RecordingFakes $fakes): array
     {
-        $type = HostOrderType::from($order->type);
-        $payload = $order->payload;
+        $type = HostInstructionType::from($instruction->type);
+        $payload = $instruction->payload;
 
         if ($type->isOpening()) {
-            $opening = RecordingOpening::ofProcess($order->processId, HostOpenPlanData::from($payload), $at);
+            $opening = RecordingOpening::ofProcess($instruction->processId, HostOpenPlanPayload::from($payload), $at);
 
             return [
                 ...$exchanges,
-                $order->processId => new CutExchange($opening, [], null),
+                $instruction->processId => new CutExchange($opening, [], null),
             ];
         }
 
-        if (! array_key_exists($order->processId, $exchanges)) {
+        if (! array_key_exists($instruction->processId, $exchanges)) {
             return $exchanges;
         }
 
         $event = match ($type) {
-            HostOrderType::WriteKeys => RecordedEvent::typed(
+            HostInstructionType::WriteKeys => RecordedEvent::typed(
                 $at,
-                $fakes->replaceIn((string) base64_decode(HostKeyWriteData::from($payload)->bytes, true)),
+                $fakes->replaceIn((string) base64_decode(HostKeyWritePayload::from($payload)->bytes, true)),
             ),
-            HostOrderType::WriteStdin => RecordedEvent::typed(
+            HostInstructionType::WriteStdin => RecordedEvent::typed(
                 $at,
-                $fakes->replaceIn((string) base64_decode(HostStdinWriteData::from($payload)->bytes, true)),
+                $fakes->replaceIn((string) base64_decode(HostStdinWritePayload::from($payload)->bytes, true)),
             ),
-            HostOrderType::WritePrivate => RecordedEvent::typedSecret($at),
-            HostOrderType::Resize => $this->resizeOf(HostTerminalSizeData::from($payload), $at),
+            HostInstructionType::WritePrivate => RecordedEvent::typedSecret($at),
+            HostInstructionType::Resize => $this->resizeOf(HostTerminalSizePayload::from($payload), $at),
             default => null,
         };
 
@@ -139,7 +139,7 @@ final readonly class DriverExchanges
 
         return [
             ...$exchanges,
-            $order->processId => $exchanges[$order->processId]->withEvent($event),
+            $instruction->processId => $exchanges[$instruction->processId]->withEvent($event),
         ];
     }
 
@@ -150,7 +150,7 @@ final readonly class DriverExchanges
     private function withOutput(
         array $exchanges,
         string $processId,
-        HostOutputData $output,
+        HostOutputPayload $output,
         int $at,
         RecordingFakes $fakes,
     ): array {
@@ -175,7 +175,7 @@ final readonly class DriverExchanges
      * @param  array<string, CutExchange>  $exchanges
      * @return array<string, CutExchange>
      */
-    private function withReport(array $exchanges, HostProcessReportData $report): array
+    private function withReport(array $exchanges, HostProcessReportPayload $report): array
     {
         if (! array_key_exists($report->processId, $exchanges)) {
             return $exchanges;
@@ -193,7 +193,7 @@ final readonly class DriverExchanges
         ];
     }
 
-    private function resizeOf(HostTerminalSizeData $size, int $at): RecordedEvent
+    private function resizeOf(HostTerminalSizePayload $size, int $at): RecordedEvent
     {
         return RecordedEvent::resized($at, $size->columns, $size->rows);
     }

@@ -7,14 +7,14 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
 use App\Hosts\Exceptions\HostUpgradeRefused;
-use App\Hosts\Protocol\Data\HostInventoryData;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostRefusal;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -41,17 +41,17 @@ final class UpgradeHostTest extends TestCase
     {
         $this->journal->asSystem(new UpgradeHostCommand($this->hostId(), self::RELEASE));
 
-        $order = $this->journal->hostOrdersOn('Mac')[0];
-        $payload = $this->journal->payloadOf($order);
+        $instruction = $this->journal->hostInstructionsOn('Mac')[0];
+        $payload = $this->journal->payloadOf($instruction);
         $this->journal->assertResult(
-            [HostOrderType::Upgrade, self::RELEASE, self::RELEASE, base64_encode('signature'), 'claude', $order->id],
+            [HostInstructionType::Upgrade, self::RELEASE, self::RELEASE, base64_encode('signature'), 'claude', $instruction->id],
             [
-                $order->type,
+                $instruction->type,
                 $payload['version'],
                 json_decode($payload['manifest'], true, flags: JSON_THROW_ON_ERROR)['version'],
                 $payload['signature'],
                 json_decode($payload['drivers'], true, flags: JSON_THROW_ON_ERROR)['drivers'][0]['executable'],
-                $this->host()->upgrade_order_id,
+                $this->host()->upgrade_instruction_id,
             ],
         );
     }
@@ -61,17 +61,17 @@ final class UpgradeHostTest extends TestCase
         $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
 
         $this->journal->asSystem(new UpgradeHostCommand($this->hostId(), self::RELEASE));
-        $stops = $this->journal->hostOrdersOf('shell');
-        $beforeEnd = $this->journal->hostOrdersOn('Mac');
+        $stops = $this->journal->hostInstructionsOf('shell');
+        $beforeEnd = $this->journal->hostInstructionsOn('Mac');
         $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell
             ->report(HostProcessReportType::Exited, 0));
 
         $this->journal->assertResult(
-            [HostOrderType::Stop, [], [HostOrderType::Upgrade]],
+            [HostInstructionType::Stop, [], [HostInstructionType::Upgrade]],
             [
                 end($stops)->type,
                 $beforeEnd,
-                array_map(fn ($order) => $order->type, $this->journal->hostOrdersOn('Mac')),
+                array_map(fn ($instruction) => $instruction->type, $this->journal->hostInstructionsOn('Mac')),
             ],
         );
     }
@@ -86,7 +86,7 @@ final class UpgradeHostTest extends TestCase
 
     public function test_a_host_whose_inventory_names_no_upgrade_is_refused(): void
     {
-        $body = HostInventoryData::from([
+        $body = HostInventoryPayload::from([
             'protocol' => 1,
             'release' => '6.0.0',
             'capabilities' => ['stop'],
@@ -103,7 +103,7 @@ final class UpgradeHostTest extends TestCase
     public function test_a_new_upgrade_clears_the_failure_of_the_last(): void
     {
         $this->journal->asSystem(new UpgradeHostCommand($this->hostId(), self::RELEASE));
-        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+        $this->journal->hostInstruction($this->journal->hostInstructionsOn('Mac')[0], fn (TestHostInstruction $instruction) => $instruction
             ->refuse(HostRefusal::Fenced));
 
         $this->journal->asSystem(new UpgradeHostCommand($this->hostId(), self::RELEASE));

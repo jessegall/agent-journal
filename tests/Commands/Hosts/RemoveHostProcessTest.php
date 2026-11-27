@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Hosts\Commands\RemoveHostProcess\RemoveHostProcessCommand;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
@@ -26,11 +26,11 @@ final class RemoveHostProcessTest extends TestCase
         $processId = $this->journal->hostProcessCalled('probe')->id;
 
         $this->journal->asSystem(new RemoveHostProcessCommand($processId));
-        $orders = $this->journal->hostOrdersOn('Mac');
-        $removal = $orders[array_key_last($orders)];
+        $instructions = $this->journal->hostInstructionsOn('Mac');
+        $removal = $instructions[array_key_last($instructions)];
 
         $this->journal->assertResult(
-            [HostOrderType::Remove, ['container' => "journal-process-{$processId}"]],
+            [HostInstructionType::Remove, ['container' => "journal-process-{$processId}"]],
             [$removal->type, $this->journal->payloadOf($removal)],
         );
     }

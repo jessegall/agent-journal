@@ -25,7 +25,7 @@ func TestAnAnswerTheJournalMayNotHaveReceivedIsSentAgainUntilItIsTaken(t *testin
 	defer journal.Close()
 	answers := Journal{Client: client.New(client.Enrollment{JournalURL: journal.URL, HostID: "h", Secret: "s"})}
 
-	err := answers.AnswerUntilTaken(context.Background(), Answer{OrderID: "o", Status: Done}, 10*time.Millisecond, time.Now().Add(time.Minute))
+	err := answers.AnswerUntilTaken(context.Background(), Answer{InstructionID: "o", Status: Done}, 10*time.Millisecond, time.Now().Add(time.Minute))
 
 	if err != nil || calls.Load() != 2 {
 		t.Fatalf("the answer was not sent again once the journal dropped it: %v after %d calls", err, calls.Load())

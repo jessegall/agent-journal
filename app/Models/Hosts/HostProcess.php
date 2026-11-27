@@ -10,10 +10,10 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Connections\HostProcessExited;
 use App\Events\Connections\HostProcessInputGenerationRaised;
+use App\Events\Connections\HostProcessInstructionNumbered;
 use App\Events\Connections\HostProcessLost;
 use App\Events\Connections\HostProcessOpened;
-use App\Events\Connections\HostProcessOpenOrderHeld;
-use App\Events\Connections\HostProcessOrderNumbered;
+use App\Events\Connections\HostProcessOpenInstructionHeld;
 use App\Events\Connections\HostProcessOutputRecorded;
 use App\Events\Connections\HostProcessRestarted;
 use App\Events\Connections\HostProcessSeenInHeartbeat;
@@ -51,13 +51,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $execution_identity
  * @property int $input_generation
  * @property int $output_offset
- * @property int $order_sequence
+ * @property int $instruction_sequence
  * @property int|null $exit_code
  * @property string|null $exit_signal
  * @property string|null $exit_evidence
  * @property int $worker_generation
  * @property CarbonImmutable|null $worker_until
- * @property string|null $open_order_id
+ * @property string|null $open_instruction_id
  * @property int $missed_heartbeats
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $ended_at
@@ -103,7 +103,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
             'generation' => 'integer',
             'input_generation' => 'integer',
             'output_offset' => 'integer',
-            'order_sequence' => 'integer',
+            'instruction_sequence' => 'integer',
             'exit_code' => 'integer',
             'worker_generation' => 'integer',
             'worker_until' => 'immutable_datetime',
@@ -115,7 +115,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     // ----------[ Constructors ]----------
 
     /**
-     * A process the journal orders the host to open, for the runtime it runs and the start it runs for, when it has
+     * A process the journal instructs the host to open, for the runtime it runs and the start it runs for, when it has
      * them.
      */
     public static function create(
@@ -265,7 +265,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
-     * A heartbeat built after its open order was answered left the process out; the second in a row loses it.
+     * A heartbeat built after its open instruction was answered left the process out; the second in a row loses it.
      */
     public function missInHeartbeat(CarbonImmutable $at): void
     {
@@ -304,25 +304,25 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
-     * The next number of the process's orders; the caller holds the row's lock.
+     * The next number of the process's instructions; the caller holds the row's lock.
      */
-    public function takeOrderNumber(): int
+    public function takeInstructionNumber(): int
     {
-        $this->order_sequence++;
+        $this->instruction_sequence++;
         $this->saveAndAssert();
-        $this->raise(new HostProcessOrderNumbered($this->id, $this->order_sequence));
+        $this->raise(new HostProcessInstructionNumbered($this->id, $this->instruction_sequence));
 
-        return $this->order_sequence;
+        return $this->instruction_sequence;
     }
 
     /**
      * The process keeps the order that opens it.
      */
-    public function holdOpenOrder(string $orderId): void
+    public function holdOpenInstruction(string $instructionId): void
     {
-        $this->open_order_id = $orderId;
+        $this->open_instruction_id = $instructionId;
         $this->saveAndAssert();
-        $this->raise(new HostProcessOpenOrderHeld($this->id, $orderId));
+        $this->raise(new HostProcessOpenInstructionHeld($this->id, $instructionId));
     }
 
     /**
@@ -348,12 +348,12 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     // ----------[ Predicates ]----------
 
     /**
-     * Whether the host had answered the order that opened the process when it built a report through that order: a
+     * Whether the host had answered the order that opened the process when it built a report through that instruction: a
      * process opened after it is not missing from the report, only newer than it.
      */
     public function isOpenedBy(string|null $answeredThrough): bool
     {
-        return $this->open_order_id !== null && $answeredThrough !== null && $this->open_order_id <= $answeredThrough;
+        return $this->open_instruction_id !== null && $answeredThrough !== null && $this->open_instruction_id <= $answeredThrough;
     }
 
     public function isLive(): bool
@@ -364,6 +364,24 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     /**
      * Whether the host was asked to open the process and has not reported it running yet.
      */
+    /**
+     * Whether the process ran to its end and exited with 0, as a probe that answered does.
+     */
+    public function hasExitedWell(): bool
+    {
+        return $this->status === HostProcessStatus::Exited && $this->exit_code === 0;
+    }
+
+    /**
+     * How the host reported the process ended: its exit code, or its loss with the host's reason.
+     */
+    public function endEvidence(): string
+    {
+        $ended = $this->status === HostProcessStatus::Lost ? 'was lost' : "exited with {$this->exit_code}";
+
+        return $this->exit_evidence === null ? $ended : "{$ended}: {$this->exit_evidence}";
+    }
+
     public function isOrdered(): bool
     {
         return $this->status === HostProcessStatus::Ordered;
@@ -410,7 +428,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
-     * The process with its host, locked until the transaction ends, so its orders are numbered and its worker checked
+     * The process with its host, locked until the transaction ends, so its instructions are numbered and its worker checked
      * one at a time.
      */
     public static function findLocked(string $id): self

@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -93,5 +94,18 @@ func TestACallIsKeptAskedThenAnsweredWithItsBodyCutAndUnpackedAndNoCredential(t 
 	_, hasCredential := asked.Headers["Authorization"]
 	if len(sent) != BodyByteLimit || !asked.IsCut || hasCredential || string(got) != `{"Id":"c1"}` || *answered.Status != 201 {
 		t.Fatalf("kept %d bytes cut %v credential %v, answered %q status %d", len(sent), asked.IsCut, hasCredential, got, *answered.Status)
+	}
+}
+
+// A request with no body goes on with no body after it is kept, so the daemon is never sent an empty chunked one.
+func TestARequestWithNoBodyGoesOnWithNoBody(t *testing.T) {
+	drafts := openRun(t)
+	request, _ := http.NewRequest("POST", "http://docker/containers/c1/start", nil)
+	request.Body = io.NopCloser(strings.NewReader(""))
+
+	_ = NewCallRecorder(WireDocker, drafts).Add("run", Asked(request, time.Now()))
+
+	if request.Body != http.NoBody {
+		t.Fatalf("the request goes on with a body %T", request.Body)
 	}
 }

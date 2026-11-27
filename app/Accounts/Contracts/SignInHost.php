@@ -73,22 +73,22 @@ interface SignInHost
     public function poll(ClaimedSignIn $claimed): SignInPoll;
 
     /**
-     * Asks the journal to order this host to make an account folder for the operation, and answers the order's id.
+     * Asks the journal to instruction this host to make an account folder for the operation, and answers the instruction's id.
      */
-    public function orderFolderMake(string $folder, string $operation): string;
+    public function instructionFolderMake(string $folder, string $operation): string;
 
     /**
-     * Asks the journal to order this host to remove an account folder, and answers the order's id.
+     * Asks the journal to instruction this host to remove an account folder, and answers the instruction's id.
      */
-    public function orderFolderRemove(string $folder, string $operation): string;
+    public function instructionFolderRemove(string $folder, string $operation): string;
 
     /**
-     * Asks the journal to order this host to say whether a container still binds an account folder.
+     * Asks the journal to instruction this host to say whether a container still binds an account folder.
      */
-    public function orderFolderUse(string $folder, string $operation): string;
+    public function instructionFolderUse(string $folder, string $operation): string;
 
     /**
-     * Where this host's folder order stands.
+     * Where this host's folder instruction stands.
      */
-    public function folderAnswer(string $orderId): HostFolderAnswer;
+    public function folderAnswer(string $instructionId): HostFolderAnswer;
 }

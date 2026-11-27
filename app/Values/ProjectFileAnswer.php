@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Hosts\Protocol\Data\HostProjectEntryData;
 use App\Hosts\Protocol\HostProjectReadFailure;
+use App\Hosts\Protocol\Payloads\HostProjectEntryPayload;
 use App\Models\Projects\ProjectRead;
 use App\Projects\Enums\ProjectReadStatus;
 
@@ -16,7 +16,7 @@ use App\Projects\Enums\ProjectReadStatus;
 final readonly class ProjectFileAnswer
 {
     /**
-     * @param  list<HostProjectEntryData>  $entries
+     * @param  list<HostProjectEntryPayload>  $entries
      */
     public function __construct(
         public string $readId,

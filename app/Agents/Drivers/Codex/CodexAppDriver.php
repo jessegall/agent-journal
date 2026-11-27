@@ -22,7 +22,7 @@ use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
 use App\Hosts\Commands\WriteHostInput\WriteHostInputCommand;
 use App\Models\Accounts\Account;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
 use App\Support\Command;
@@ -30,7 +30,7 @@ use App\Time\Contracts\ServerClock;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\ReportedStart;
 use App\Values\ThreadTokens;
 use App\Values\TurnEnd;
@@ -180,7 +180,7 @@ final class CodexAppDriver implements ProcessDriver
         };
     }
 
-    public function onAnswer(HostOrder $order): DriverActions
+    public function onAnswer(HostInstruction $instruction): DriverActions
     {
         return DriverActions::none();
     }
@@ -279,7 +279,7 @@ final class CodexAppDriver implements ProcessDriver
                     $this->process->id,
                     self::STOP_GRACE_MS,
                     self::STOP_FORCE_MS,
-                    HostOrderSource::forWorker($this->generation),
+                    HostInstructionSource::forWorker($this->generation),
                 ),
             );
         }
@@ -590,21 +590,21 @@ final class CodexAppDriver implements ProcessDriver
         string $id,
         string $method,
         array $params,
-        HostOrderSource|null $source = null,
+        HostInstructionSource|null $source = null,
     ): DriverActions {
         $line = json_encode(['id' => $id, 'method' => $method, 'params' => (object) $params], JSON_THROW_ON_ERROR);
 
         return DriverActions::of(new WriteHostInputCommand(
             $this->process->id,
             "{$line}\n",
-            $source ?? HostOrderSource::forWorker($this->generation),
+            $source ?? HostInstructionSource::forWorker($this->generation),
         ));
     }
 
     private function notify(string $method): DriverActions
     {
         $line = json_encode(['method' => $method], JSON_THROW_ON_ERROR);
-        $source = HostOrderSource::forWorker($this->generation);
+        $source = HostInstructionSource::forWorker($this->generation);
 
         return DriverActions::of(new WriteHostInputCommand($this->process->id, "{$line}\n", $source));
     }
@@ -628,9 +628,9 @@ final class CodexAppDriver implements ProcessDriver
         ];
     }
 
-    private function sourceOf(ClaimedRequest $request, string $step): HostOrderSource
+    private function sourceOf(ClaimedRequest $request, string $step): HostInstructionSource
     {
-        return HostOrderSource::forStep($request->requestId, $step, $request->attempt, $this->generation);
+        return HostInstructionSource::forStep($request->requestId, $step, $request->attempt, $this->generation);
     }
 
     private function reportedStart(): ReportedStart

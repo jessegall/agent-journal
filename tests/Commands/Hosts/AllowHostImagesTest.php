@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Hosts\Commands\AllowHostImages\AllowHostImagesCommand;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
@@ -21,20 +21,20 @@ final class AllowHostImagesTest extends TestCase
 
     private const string IMAGE = 'registry.example/agent@sha256:aaaa';
 
-    public function test_it_orders_the_host_to_run_only_these_images_and_keeps_them(): void
+    public function test_it_instructs_the_host_to_run_only_these_images_and_keeps_them(): void
     {
         $this->journal->enrollContainedHost('Box', [base_path()]);
         $hostId = $this->journal->hostCalled('Box')->hostId;
 
-        $orderId = $this->journal->asSystem(new AllowHostImagesCommand($hostId, [self::IMAGE]));
+        $instructionId = $this->journal->asSystem(new AllowHostImagesCommand($hostId, [self::IMAGE]));
 
-        $order = $this->journal->hostOrdersOn('Box')[0];
+        $instruction = $this->journal->hostInstructionsOn('Box')[0];
         $this->journal->assertResult(
-            [$orderId, HostOrderType::AllowImages, ['images' => [self::IMAGE]], [self::IMAGE]],
+            [$instructionId, HostInstructionType::AllowImages, ['images' => [self::IMAGE]], [self::IMAGE]],
             [
-                $order->id,
-                $order->type,
-                $this->journal->payloadOf($order),
+                $instruction->id,
+                $instruction->type,
+                $this->journal->payloadOf($instruction),
                 Host::query()->whereKey($hostId)->sole()->allowed_images,
             ],
         );

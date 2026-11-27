@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Hosts\Commands\ReadFolderUse\ReadFolderUseCommand;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * The host is ordered to use an account folder once for each operation: the same operation asked again finds the
- * order already made.
+ * instruction already made.
  */
 #[TestsCommand(ReadFolderUseCommand::class)]
 final class ReadFolderUseTest extends TestCase
@@ -28,18 +28,18 @@ final class ReadFolderUseTest extends TestCase
         $again = $this->journal->asSystem(new ReadFolderUseCommand($hostId, 'a7', 'operation-1'));
         $other = $this->journal->asSystem(new ReadFolderUseCommand($hostId, 'a7', 'operation-2'));
 
-        $order = $this->journal->hostOrdersOn('Box')[0];
+        $instruction = $this->journal->hostInstructionsOn('Box')[0];
         $this->journal->assertResult(
-            [$first, false, HostOrderType::FolderUse, [
+            [$first, false, HostInstructionType::FolderUse, [
                 'folder' => 'a7',
                 'operation' => 'operation-1',
             ], 2],
             [
                 $again,
                 $first === $other,
-                $order->type,
-                $this->journal->payloadOf($order),
-                count($this->journal->hostOrdersOn('Box')),
+                $instruction->type,
+                $this->journal->payloadOf($instruction),
+                count($this->journal->hostInstructionsOn('Box')),
             ],
         );
     }

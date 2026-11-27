@@ -91,45 +91,45 @@ type hostProtocolOptions struct {
 	Allowed *hostapi.AllowedPrograms
 }
 
-// hostOrders carry out every order of host protocol 1 on this host: the process table's, the processes' input and
+// hostInstructions carry out every instruction of host protocol 1 on this host: the process table's, the processes' input and
 // output, and the project reads and the upgrade of a connected host, which another host does not carry.
-type hostOrders struct {
+type hostInstructions struct {
 	*hostapi.ProcessTable
 	hostapi.ProcessInput
 	reads   *hostapi.ProjectReads
 	upgrade *bindingUpgrade
 }
 
-// ReadProject answers a project read on a connected host; another host does not carry the order.
-func (orders hostOrders) ReadProject(ctx context.Context, order hostapi.Order, read client.ProjectRead) (hostapi.Nothing, error) {
-	if orders.reads == nil {
-		return hostapi.Nothing{}, hostapi.RefusalError{Refusal: hostapi.UnknownOrder, Reason: "this host holds no project"}
+// ReadProject answers a project read on a connected host; another host does not carry the instruction.
+func (instructions hostInstructions) ReadProject(ctx context.Context, instruction hostapi.Instruction, read client.ProjectRead) (hostapi.Empty, error) {
+	if instructions.reads == nil {
+		return hostapi.Empty{}, hostapi.RefusalError{Refusal: hostapi.UnknownInstruction, Reason: "this host holds no project"}
 	}
-	return orders.reads.ReadProject(ctx, order, read)
+	return instructions.reads.ReadProject(ctx, instruction, read)
 }
 
-// Upgrade moves a connected host to a new release; another host does not carry the order.
-func (orders hostOrders) Upgrade(ctx context.Context, order hostapi.Order, plan hostapi.UpgradePlan) (hostapi.UpgradeStarted, error) {
-	if orders.upgrade == nil {
-		return hostapi.UpgradeStarted{}, hostapi.RefusalError{Refusal: hostapi.UnknownOrder, Reason: "the journal does not upgrade this host"}
+// Upgrade moves a connected host to a new release; another host does not carry the instruction.
+func (instructions hostInstructions) Upgrade(ctx context.Context, instruction hostapi.Instruction, plan hostapi.UpgradePlan) (hostapi.UpgradeStarted, error) {
+	if instructions.upgrade == nil {
+		return hostapi.UpgradeStarted{}, hostapi.RefusalError{Refusal: hostapi.UnknownInstruction, Reason: "the journal does not upgrade this host"}
 	}
-	return orders.upgrade.Upgrade(ctx, order, plan)
+	return instructions.upgrade.Upgrade(ctx, instruction, plan)
 }
 
-// executors are the orders this host carries out, as its inventory lists them: every order of the protocol but those
+// executors are the instructions this host carries out, as its inventory lists them: every instruction of the protocol but those
 // of a part it lacks.
-func (orders hostOrders) executors() map[string]hostapi.Executor {
-	executors := hostapi.Executors(orders)
-	if orders.reads == nil {
+func (instructions hostInstructions) executors() map[string]hostapi.Executor {
+	executors := hostapi.Executors(instructions)
+	if instructions.reads == nil {
 		delete(executors, "read_project")
 	}
-	if orders.upgrade == nil {
+	if instructions.upgrade == nil {
 		delete(executors, "upgrade")
 	}
 	return executors
 }
 
-// startHostProtocol runs host protocol 1: process reports and output kept and sent, orders claimed through the long
+// startHostProtocol runs host protocol 1: process reports and output kept and sent, instructions claimed through the long
 // poll and carried out, the inventory sent once and a heartbeat every 30 s; idle keeps the idle window the claim
 // answers name, for a host that leaves when idle. It answers the table of the processes it runs.
 
@@ -158,19 +158,19 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 	if err := table.Adopt(ctx); err != nil {
 		return nil, err
 	}
-	orders := hostOrders{
+	instructions := hostInstructions{
 		ProcessTable: table,
 		ProcessInput: hostapi.NewProcessInput(table, outputs, calls.PullPrivateValue),
 		reads:        options.Reads,
 		upgrade:      options.Upgrade,
 	}
-	executors := orders.executors()
+	executors := instructions.executors()
 	clock := &hostapi.JournalClock{Host: time.Now}
-	verifier := hostapi.Verifier{Secret: hostapi.OrderSecretOf(enrollment.Secret), Now: clock.Now}
-	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(order hostapi.Order, answer hostapi.Answer) {
+	verifier := hostapi.Verifier{Secret: hostapi.InstructionSecretOf(enrollment.Secret), Now: clock.Now}
+	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(instruction hostapi.Instruction, answer hostapi.Answer) {
 		go func() {
-			if err := calls.AnswerUntilTaken(ctx, answer, time.Second, order.ExpiresAt); err != nil {
-				log.Printf("the answer to order %s was not sent: %v", answer.OrderID, err)
+			if err := calls.AnswerUntilTaken(ctx, answer, time.Second, instruction.ExpiresAt); err != nil {
+				log.Printf("the answer to instruction %s was not sent: %v", answer.InstructionID, err)
 			}
 		}()
 	})

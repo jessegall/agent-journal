@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Support\Assertions\Facts;
 
 use App\Hosts\EnrolledHost;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use Tests\Support\Assertions\Contracts\Facts;
 
 /**
- * A host the test enrolled: its id and the orders the journal made for the host itself, for no process of it.
+ * A host the test enrolled: its id and the instructions the journal made for the host itself, for no process of it.
  */
 final readonly class HostFacts implements Facts
 {
@@ -19,9 +19,9 @@ final readonly class HostFacts implements Facts
     {
         return [
             'id' => $this->host->hostId,
-            'orders' => fn () => array_map(
-                fn (HostOrder $order) => new HostOrderFacts($order),
-                HostOrder::findForHostItself($this->host->hostId),
+            'instructions' => fn () => array_map(
+                fn (HostInstruction $instruction) => new HostInstructionFacts($instruction),
+                HostInstruction::findForHostItself($this->host->hostId),
             ),
         ];
     }

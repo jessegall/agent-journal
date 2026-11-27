@@ -12,11 +12,11 @@ use App\Actors\Contracts\IdentityLinks;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
 use App\Events\Sessions\AccountUseChanged;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Sessions\SessionProcess;
 use App\Sessions\RegisterPendingStart;
 use App\Sessions\StartSessions;
@@ -37,7 +37,7 @@ use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
- * Maintenance cancels the starts of an account that no host claimed yet, so they never make a process, orders every live
+ * Maintenance cancels the starts of an account that no host claimed yet, so they never make a process, instructions every live
  * process of its other starts to stop, so they end with it, and says the account's use changed only when it cancelled
  * one.
  */
@@ -57,7 +57,7 @@ final class CancelAccountUsesTest extends TestCase
         'command_receipts',
         'hosts',
         'host_processes',
-        'host_orders',
+        'host_instructions',
     ];
 
     /**
@@ -111,8 +111,8 @@ final class CancelAccountUsesTest extends TestCase
         $this->bus()->run(new CancelAccountUsesCommand($account));
 
         $this->journal->assertResult(
-            [HostOrderType::OpenProcess, HostOrderType::Stop],
-            array_map(fn (HostOrder $order) => $order->type, $this->journal->hostOrdersOf('terminal')),
+            [HostInstructionType::OpenProcess, HostInstructionType::Stop],
+            array_map(fn (HostInstruction $instruction) => $instruction->type, $this->journal->hostInstructionsOf('terminal')),
         );
     }
 

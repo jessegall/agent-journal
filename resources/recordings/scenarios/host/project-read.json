@@ -4,6 +4,11 @@
         {
             "do": "read-project",
             "path": "."
+        },
+        {
+            "do": "wait-for",
+            "fact": "orders-answered",
+            "seconds": 60
         }
     ]
 }

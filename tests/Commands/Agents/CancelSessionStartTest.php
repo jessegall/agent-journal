@@ -59,7 +59,7 @@ final class CancelSessionStartTest extends TestCase
         'session_processes',
         'links',
         'host_processes',
-        'host_orders',
+        'host_instructions',
         'inboxes',
         'inbox_members',
         'users',

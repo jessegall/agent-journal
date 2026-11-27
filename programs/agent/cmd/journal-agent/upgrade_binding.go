@@ -31,7 +31,7 @@ const (
 	upgradePoll = 250 * time.Millisecond
 )
 
-// bindingUpgrade carries out the journal's upgrade order for this binding: refused while a process lives, the release
+// bindingUpgrade carries out the journal's upgrade instruction for this binding: refused while a process lives, the release
 // verified and installed beside the running one, answered, and then handed to a detached upgrade step once the relay
 // let go of its lock. live answers the live processes; stop ends the relay's run.
 type bindingUpgrade struct {
@@ -41,12 +41,12 @@ type bindingUpgrade struct {
 }
 
 // Upgrade installs the release the plan names and hands the binding to it once the answer went out.
-func (upgrade bindingUpgrade) Upgrade(ctx context.Context, _ hostapi.Order, plan hostapi.UpgradePlan) (hostapi.UpgradeStarted, error) {
+func (upgrade bindingUpgrade) Upgrade(ctx context.Context, _ hostapi.Instruction, plan hostapi.UpgradePlan) (hostapi.UpgradeStarted, error) {
 	if running := upgrade.live(); len(running) > 0 {
 		return hostapi.UpgradeStarted{}, hostapi.RefusalError{Refusal: hostapi.Fenced, Reason: "a process still runs on this host"}
 	}
 	if plan.Version == "" {
-		return hostapi.UpgradeStarted{}, hostapi.RefusalError{Refusal: hostapi.Unsafe, Reason: "the upgrade order names no release"}
+		return hostapi.UpgradeStarted{}, hostapi.RefusalError{Refusal: hostapi.Unsafe, Reason: "the upgrade instruction names no release"}
 	}
 	folder, err := upgrade.binder.installUpgrade(ctx, plan)
 	if err != nil {

@@ -20,16 +20,16 @@ return new class extends Migration
             // The recorded runs that showed each boundary item hold, as the operator recorded them.
             $table->jsonb('protection_runs')->default('[]');
             $table->string('arrangement')->default('local');
-            // The host protocol the host speaks, and the secret every order to it is signed with.
+            // The host protocol the host speaks, and the secret every instruction to it is signed with.
             $table->unsignedSmallInteger('protocol')->default(1);
-            $table->text('order_secret')->nullable();
-            // The order types the host's last inventory names as carried out; empty until its first inventory.
+            $table->text('instruction_secret')->nullable();
+            // The instruction types the host's last inventory names as carried out; empty until its first inventory.
             $table->jsonb('capabilities')->default('[]');
             $table->jsonb('allowed_images')->default('[]');
-            // The release the host's last inventory named, the release an upgrade waits on, its order and why one failed.
+            // The release the host's last inventory named, the release an upgrade waits on, its instruction and why one failed.
             $table->string('release')->nullable();
             $table->string('upgrade_release')->nullable();
-            $table->ulid('upgrade_order_id')->nullable();
+            $table->ulid('upgrade_instruction_id')->nullable();
             $table->text('upgrade_failure')->nullable();
             // The combinations the host reported it can run, and whether its last claim offers browser control of its
             // terminals.

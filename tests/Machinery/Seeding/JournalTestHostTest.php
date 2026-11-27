@@ -38,7 +38,7 @@ final class JournalTestHostTest extends TestCase
     private const array TABLES = [
         'hosts',
         'host_processes',
-        'host_orders',
+        'host_instructions',
         'agents',
         'agent_sessions',
         'session_tokens',
@@ -81,7 +81,7 @@ final class JournalTestHostTest extends TestCase
             ->stopRunningHost();
     }
 
-    public function test_a_real_host_opens_the_echo_program_the_journal_orders(): void
+    public function test_a_real_host_opens_the_echo_program_the_journal_instructions(): void
     {
         $this->journal
             ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)

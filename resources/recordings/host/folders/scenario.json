@@ -1,0 +1,13 @@
+{
+    "format": 2,
+    "protocol": 1,
+    "scenario_hash": "76946f5ead4c06c983c0bde17e6ebf73fb5f60546fe23a314a1699a884d4c279",
+    "driver": "host",
+    "build": "",
+    "image_programs": "d2a213073988cb074bde530c0559702a9fae0f4800032d3408df8cbd61244f72",
+    "recorded_at": "2026-11-27T10:02:51+00:00",
+    "exchanges": [
+        "01-host-caller-ba380056f4a47256",
+        "02-docker-daemon"
+    ]
+}

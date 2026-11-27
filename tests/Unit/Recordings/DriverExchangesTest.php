@@ -28,17 +28,17 @@ final class DriverExchangesTest extends TestCase
     {
         $events = [
             $this->claimed(1, [
-                $this->order('open-1', 'open_process', 'terminal', $this->plan(['claude'])),
-                $this->order('open-2', 'open_process', 'probe', $this->plan(['claude', '--version'])),
+                $this->instruction('open-1', 'open_process', 'terminal', $this->plan(['claude'])),
+                $this->instruction('open-2', 'open_process', 'probe', $this->plan(['claude', '--version'])),
             ]),
             $this->claimed(2, [
-                $this->order('keys-1', 'write_keys', 'terminal', [
+                $this->instruction('keys-1', 'write_keys', 'terminal', [
                     'bytes' => base64_encode("Run: ls.\r"),
                     'if_rows' => null,
                     'if_input_generation' => null,
                     'as_user' => false,
                 ]),
-                $this->order('private-1', 'write_private', 'terminal', ['submission' => 's-1']),
+                $this->instruction('private-1', 'write_private', 'terminal', ['submission' => 's-1']),
             ]),
             $this->asked(3, '/host/processes/terminal/output', [
                 'frames' => [],
@@ -73,14 +73,14 @@ final class DriverExchangesTest extends TestCase
     }
 
     /**
-     * The host's claim at the moment, answered with the orders.
+     * The host's claim at the moment, answered with the instructions.
      *
-     * @param  list<array<string, mixed>>  $orders
+     * @param  list<array<string, mixed>>  $instructions
      */
-    private function claimed(int $at, array $orders): RecordedEvent
+    private function claimed(int $at, array $instructions): RecordedEvent
     {
-        $request = Request::create('/host/orders/claim', 'POST');
-        $claim = ['orders' => $orders, 'idle_window_seconds' => 60, 'now' => '2026-11-27T08:00:00Z'];
+        $request = Request::create('/host/instructions/claim', 'POST');
+        $claim = ['instructions' => $instructions, 'idle_window_seconds' => 60, 'now' => '2026-11-27T08:00:00Z'];
         $body = (string) json_encode($claim);
 
         return RecordedEvent::answered($at, RecordedCall::answeredWith(new Response($body), $request));
@@ -102,7 +102,7 @@ final class DriverExchangesTest extends TestCase
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    private function order(string $id, string $type, string $processId, array $payload): array
+    private function instruction(string $id, string $type, string $processId, array $payload): array
     {
         return [
             'id' => $id,

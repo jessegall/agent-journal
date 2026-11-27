@@ -6,22 +6,22 @@ namespace App\Hosts;
 
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
-use App\Hosts\Commands\ClaimHostOrders\ClaimHostOrdersCommand;
+use App\Hosts\Commands\ClaimHostInstructions\ClaimHostInstructionsCommand;
 use App\Hosts\Commands\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
+use App\Hosts\Commands\NotifyHostInstruction\NotifyHostInstructionCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
-use App\Hosts\Commands\NotifyHostOrder\NotifyHostOrderCommand;
 use App\Hosts\Commands\NotifyHostOutput\NotifyHostOutputCommand;
 use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Hosts\Commands\PullHostPrivateValue\PullHostPrivateValueCommand;
-use App\Hosts\Protocol\Data\HostAnswerData;
-use App\Hosts\Protocol\Data\HostClaimedOrdersData;
-use App\Hosts\Protocol\Data\HostHeartbeatData;
-use App\Hosts\Protocol\Data\HostInventoryData;
-use App\Hosts\Protocol\Data\HostOutputData;
-use App\Hosts\Protocol\Data\HostPrivateValueData;
-use App\Hosts\Protocol\Data\HostProcessReportData;
-use App\Hosts\Protocol\Data\HostProjectReadReportData;
 use App\Hosts\Protocol\HostCalls;
+use App\Hosts\Protocol\Payloads\HostAnswerPayload;
+use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
+use App\Hosts\Protocol\Payloads\HostHeartbeatPayload;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
+use App\Hosts\Protocol\Payloads\HostOutputPayload;
+use App\Hosts\Protocol\Payloads\HostPrivateValuePayload;
+use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
+use App\Hosts\Protocol\Payloads\HostProjectReadReportPayload;
 use App\Hosts\Values\HostContext;
 use App\Projects\Commands\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Projects\Values\ProjectFileText;
@@ -36,8 +36,8 @@ final readonly class JournalHostCalls implements HostCalls
     /**
      * A claim that finds nothing waits for a wake, and a newer claim of the same host takes the place of an older one.
      */
-    #[Dispatches(ClaimHostOrdersCommand::class)]
-    public function claimOrders(HostContext $host, int $limit, int $wait): HostClaimedOrdersData
+    #[Dispatches(ClaimHostInstructionsCommand::class)]
+    public function claimInstructions(HostContext $host, int $limit, int $wait): HostClaimedInstructionsPayload
     {
         $deposesAnother = $this->slots->isTaken($host->hostId);
         $slot = $this->slots->take($host->hostId);
@@ -47,7 +47,7 @@ final readonly class JournalHostCalls implements HostCalls
         }
 
         try {
-            $claim = new ClaimHostOrdersCommand($host->hostId, $limit);
+            $claim = new ClaimHostInstructionsCommand($host->hostId, $limit);
             $claimed = $this->commands->run($claim);
             $waitSeconds = $claimed->waitSeconds($wait);
 
@@ -66,28 +66,28 @@ final readonly class JournalHostCalls implements HostCalls
         }
     }
 
-    #[Dispatches(NotifyHostOrderCommand::class)]
-    public function answerOrder(HostContext $host, string $order, HostAnswerData $body): void
+    #[Dispatches(NotifyHostInstructionCommand::class)]
+    public function answerInstruction(HostContext $host, string $instruction, HostAnswerPayload $body): void
     {
-        $this->commands->run(new NotifyHostOrderCommand($host->hostId, $order, $body->toJson()));
+        $this->commands->run(new NotifyHostInstructionCommand($host->hostId, $instruction, $body->toJson()));
     }
 
     #[Dispatches(PullHostPrivateValueCommand::class)]
-    public function pullPrivateValue(HostContext $host, string $submission): HostPrivateValueData
+    public function pullPrivateValue(HostContext $host, string $submission): HostPrivateValuePayload
     {
         $value = $this->commands->run(new PullHostPrivateValueCommand($host->hostId, $submission));
 
-        return HostPrivateValueData::from(['value' => $value]);
+        return HostPrivateValuePayload::from(['value' => $value]);
     }
 
     #[Dispatches(NotifyHostOutputCommand::class)]
-    public function notifyProcessOutput(HostContext $host, string $process, HostOutputData $body): void
+    public function notifyProcessOutput(HostContext $host, string $process, HostOutputPayload $body): void
     {
         $this->commands->run(new NotifyHostOutputCommand($host->hostId, $process, $body));
     }
 
     #[Dispatches(NotifyHostProcessCommand::class)]
-    public function notifyProcessReport(HostContext $host, string $process, HostProcessReportData $body): void
+    public function notifyProcessReport(HostContext $host, string $process, HostProcessReportPayload $body): void
     {
         $this->commands->run(new NotifyHostProcessCommand($host->hostId, $process, $body));
     }
@@ -96,21 +96,21 @@ final readonly class JournalHostCalls implements HostCalls
      * A host sends its inventory as it starts, so a claim still open from before is of a process that is gone.
      */
     #[Dispatches(NotifyHostInventoryCommand::class)]
-    public function notifyInventory(HostContext $host, HostInventoryData $body): void
+    public function notifyInventory(HostContext $host, HostInventoryPayload $body): void
     {
         $this->slots->endEarlierClaims($host->hostId);
         $this->commands->run(new NotifyHostInventoryCommand($host->hostId, $body));
     }
 
     #[Dispatches(NotifyHostHeartbeatCommand::class)]
-    public function notifyHeartbeat(HostContext $host, HostHeartbeatData $body): void
+    public function notifyHeartbeat(HostContext $host, HostHeartbeatPayload $body): void
     {
         $heartbeat = new NotifyHostHeartbeatCommand($host->hostId, $body->liveProcesses, $body->answeredThrough);
         $this->commands->run($heartbeat);
     }
 
     #[Dispatches(NotifyProjectReadCommand::class)]
-    public function notifyProjectRead(HostContext $host, string $read, HostProjectReadReportData $body): void
+    public function notifyProjectRead(HostContext $host, string $read, HostProjectReadReportPayload $body): void
     {
         $this->commands->run(new NotifyProjectReadCommand(
             $host->hostId,
@@ -125,7 +125,7 @@ final readonly class JournalHostCalls implements HostCalls
     /**
      * The file's text with its digest and size, or null when the answer holds no text; an empty file's text is ''.
      */
-    private function fileText(HostProjectReadReportData $body): ProjectFileText|null
+    private function fileText(HostProjectReadReportPayload $body): ProjectFileText|null
     {
         if ($body->text === null || $body->digest === null || $body->size === null) {
             return null;

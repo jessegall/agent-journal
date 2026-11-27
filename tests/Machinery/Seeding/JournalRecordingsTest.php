@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Machinery\Seeding;
 
 use App\Hosts\Contracts\HostChannel;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\Exceptions\RecordingDiverged;
 use Tests\Support\Hosts\MockHost;
@@ -55,7 +55,7 @@ final class JournalRecordingsTest extends TestCase
             $host->advanceToInput($number);
 
             foreach ($split($input) as $write) {
-                $channel->keys('process', $write, $host->guardFor(0, 1), 0, HostOrderSource::fromJournal());
+                $channel->keys('process', $write, $host->guardFor(0, 1), 0, HostInstructionSource::fromJournal());
             }
 
             $host->assertTypedThrough($number);

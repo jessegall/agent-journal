@@ -55,6 +55,24 @@ final class LocalHostTest extends TestCase
         $this->assertFalse($this->checkout->docker->hasBuilt('agent'));
         $this->assertFalse($this->checkout->docker->hasBuilt('runner'));
         $this->assertFalse($this->checkout->docker->wasAsked('agents:host-enroll'));
+        $this->assertFalse($this->checkout->docker->wasAsked('--force-recreate'));
+    }
+
+    public function test_a_rebuilt_image_starts_every_service_of_the_application_image_again_on_it(): void
+    {
+        $this->setUpLocalHost();
+        $this->checkout->write('.docker/helper/Dockerfile', "FROM scratch\n");
+
+        $this->setUpLocalHost();
+
+        $this->assertTrue($this->checkout->docker->wasAsked(
+            'up -d --wait --force-recreate',
+            'app',
+            'queue',
+            'scheduler',
+            'ticker',
+            'reverb',
+        ));
     }
 
     public function test_a_change_to_the_agent_image_folder_builds_the_agent_image_again(): void
@@ -111,6 +129,24 @@ final class LocalHostTest extends TestCase
         $this->assertTrue($this->checkout->docker->wasAsked('compose rm --stop --force agent-host'));
         $this->assertTrue($this->checkout->docker->wasAsked('agents:host-enroll'));
         $this->assertSame('01mockhost', $this->checkout->setting('AGENTS_HOST_ID'));
+    }
+
+    public function test_an_unreadable_answer_about_the_host_stops_the_script_and_keeps_the_hosts_state(): void
+    {
+        $this->setUpLocalHost();
+        $this->checkout->breakHostCheck();
+        $this->checkout->docker->forgetCalls();
+
+        $run = $this->checkout->runLocalHost();
+
+        $this->assertSame(
+            [1, false, false],
+            [
+                $run->getExitCode(),
+                $this->checkout->docker->wasAsked('volume rm'),
+                $this->checkout->docker->wasAsked('agents:host-enroll'),
+            ],
+        );
     }
 
     /**

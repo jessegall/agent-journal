@@ -40,7 +40,7 @@ func TestAPlansFilesAreWrittenPrivatelyAndItsFilesFolderIsFilledIn(t *testing.T)
 	}
 	if filled.Argv[2] != folder+"/settings.json" ||
 		filled.Container.Mounts[0].Source != folder || plan.Container.Mounts[0].Source != "{folder:files}" {
-		t.Fatalf("the files folder was not filled in, or the order's own plan changed: %+v", filled)
+		t.Fatalf("the files folder was not filled in, or the instruction's own plan changed: %+v", filled)
 	}
 }
 

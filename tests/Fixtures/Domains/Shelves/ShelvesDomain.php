@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Shelves;
 
-use Domain\Comments\CommentsDomain;
 use App\Support\Domain;
 use App\Support\Exports;
+use Domain\Comments\CommentsDomain;
 
 final class ShelvesDomain extends Domain
 {

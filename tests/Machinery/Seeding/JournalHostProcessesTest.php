@@ -16,12 +16,12 @@ use App\Connections\PublishedReleases;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Commands\PullHostPrivateValue\PullHostPrivateValueCommand;
 use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
-use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\HostRefusal;
@@ -30,7 +30,7 @@ use App\Models\Projects\Host;
 use App\Projects\Enums\ArrangementType;
 use App\Support\AgentImage;
 use App\Values\DriverFamily;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\HostProcessPlan;
 use Illuminate\Contracts\Config\Repository;
 use Tests\Support\Agents\TestAgent;
@@ -40,7 +40,7 @@ use Tests\Support\Drivers\MockProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
-use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
@@ -49,7 +49,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * The test journal opens a host's processes through their real open order and moves them by their host's reports.
+ * The test journal opens a host's processes through their real open instruction and moves them by their host's reports.
  */
 #[TestsMachinery(TestJournal::class)]
 final class JournalHostProcessesTest extends TestCase
@@ -125,7 +125,7 @@ final class JournalHostProcessesTest extends TestCase
         $this->journal->assertResult(ArrangementType::Contained, $host->arrangement);
     }
 
-    public function test_a_stop_attempt_orders_the_host_itself_which_answers_or_refuses(): void
+    public function test_a_stop_attempt_instructs_the_host_itself_which_answers_or_refuses(): void
     {
         $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Writer', 'writing-helper')
             ->enrollHost('Mac', [base_path()]);
@@ -134,7 +134,7 @@ final class JournalHostProcessesTest extends TestCase
         $opened = $this->journal->openedRuntimeOf('Writer');
         $first = $this->journal->openStopAttempt($opened->sessionId, 'stop-1');
         $second = $this->journal->openStopAttempt($opened->sessionId, 'stop-2');
-        [$answered, $refused] = $this->journal->hostOrdersOn('Mac');
+        [$answered, $refused] = $this->journal->hostInstructionsOn('Mac');
 
         $passed = [
             'status' => 'passed',
@@ -147,17 +147,17 @@ final class JournalHostProcessesTest extends TestCase
             'truncated' => false,
         ];
 
-        $this->journal->hostOrder($answered, fn (TestHostOrder $order) => $order->answerWith(['results' => [$passed]]))
-            ->hostOrder($refused, fn (TestHostOrder $order) => $order->refuse(HostRefusal::Fenced));
+        $this->journal->hostInstruction($answered, fn (TestHostInstruction $instruction) => $instruction->answerWith(['results' => [$passed]]))
+            ->hostInstruction($refused, fn (TestHostInstruction $instruction) => $instruction->refuse(HostRefusal::Fenced));
 
         $this->journal->assertResult(
             [
                 [
-                    $first->refresh()->fence_order_id,
-                    $second->refresh()->fence_order_id,
+                    $first->refresh()->fence_instruction_id,
+                    $second->refresh()->fence_instruction_id,
                 ],
-                HostOrderStatus::Done,
-                HostOrderStatus::Refused,
+                HostInstructionStatus::Done,
+                HostInstructionStatus::Refused,
             ],
             [[
                 $answered->id,
@@ -166,7 +166,7 @@ final class JournalHostProcessesTest extends TestCase
         );
     }
 
-    public function test_a_planned_process_is_opened_by_its_order_and_a_process_is_named_by_its_id_once(): void
+    public function test_a_planned_process_is_opened_by_its_instruction_and_a_process_is_named_by_its_id_once(): void
     {
         $plan = new HostProcessPlan(
             HostProcessPurpose::Probe,
@@ -204,31 +204,31 @@ final class JournalHostProcessesTest extends TestCase
             );
     }
 
-    public function test_a_process_answers_its_oldest_open_order_in_its_own_scope(): void
+    public function test_a_process_answers_its_oldest_open_instruction_in_its_own_scope(): void
     {
         $this->journal
             ->enrollHost('Mac', [base_path()])
             ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell')->markAnswered())
             ->hostProcess('shell', fn (TestHostProcess $shell) => $shell
-                ->order(fn (TestHostOrder $open) => $open->answer()))
+                ->instruction(fn (TestHostInstruction $open) => $open->answer()))
             ->assertJournal(fn (Assert $journal) => $journal->count(
-                'hostProcesses.shell.orders',
+                'hostProcesses.shell.instructions',
                 1,
-                fn (Assert $open) => $open->where('status', HostOrderStatus::Done)->etc(),
+                fn (Assert $open) => $open->where('status', HostInstructionStatus::Done)->etc(),
             ));
     }
 
-    public function test_a_process_is_opened_by_its_order_and_moved_by_its_hosts_report(): void
+    public function test_a_process_is_opened_by_its_instruction_and_moved_by_its_hosts_report(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
             ->openProcess('pipe', HostProcessType::Pipe));
-        [$open] = $this->journal->hostOrdersOf('pipe');
+        [$open] = $this->journal->hostInstructionsOf('pipe');
 
         $this->journal->hostProcess('pipe', fn (TestHostProcess $pipe) => $pipe
             ->report(HostProcessReportType::Running));
 
         $this->journal->assertResult(
-            [HostOrderType::OpenProcess, HostProcessType::Pipe, HostProcessStatus::Running, 'pid:pipe'],
+            [HostInstructionType::OpenProcess, HostProcessType::Pipe, HostProcessStatus::Running, 'pid:pipe'],
             [
                 $open->type,
                 $this->journal->hostProcessCalled('pipe')->type,
@@ -238,7 +238,7 @@ final class JournalHostProcessesTest extends TestCase
         );
     }
 
-    public function test_a_driven_process_prints_has_its_order_answered_and_its_worker_started(): void
+    public function test_a_driven_process_prints_has_its_instruction_answered_and_its_worker_started(): void
     {
         $this->journal
             ->fakeStartedPrograms()
@@ -246,16 +246,16 @@ final class JournalHostProcessesTest extends TestCase
             ->enrollHost('Mac', [base_path()])
             ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'))
             ->hostProcess('shell', fn (TestHostProcess $shell) => $shell->print('ready'));
-        [$open] = $this->journal->hostOrdersOf('shell');
+        [$open] = $this->journal->hostInstructionsOf('shell');
         $process = $this->journal->hostProcessCalled('shell')->id;
 
-        $this->journal->hostOrder($open, fn (TestHostOrder $order) => $order->answer());
+        $this->journal->hostInstruction($open, fn (TestHostInstruction $instruction) => $instruction->answer());
         $this->journal->service(DriverSupervisor::class)->startNeeded();
 
         $this->journal
             ->assertProgramStarted(['php', 'artisan', 'drivers:work', $process])
             ->assertResult(
-                [HostOrderStatus::Done, 'ready'],
+                [HostInstructionStatus::Done, 'ready'],
                 [
                     $open->refresh()->status,
                     $this->journal->service(ProcessFeed::class)->latestFrame($process)?->rows[0],
@@ -311,7 +311,7 @@ final class JournalHostProcessesTest extends TestCase
             ->hostProcess('shell', fn (TestHostProcess $shell) => $shell->submitPrivateValue('s-1', 'sk-1'));
         $process = $this->journal->hostProcessCalled('shell');
 
-        $this->journal->asSystem(new WriteHostPrivateValueCommand($process->id, 's-1', HostOrderSource::fromJournal()));
+        $this->journal->asSystem(new WriteHostPrivateValueCommand($process->id, 's-1', HostInstructionSource::fromJournal()));
 
         $this->journal->assertResult(
             'sk-1',
@@ -355,7 +355,7 @@ final class JournalHostProcessesTest extends TestCase
         );
     }
 
-    public function test_a_passed_build_probe_orders_the_sign_in_probe(): void
+    public function test_a_passed_build_probe_instructs_the_sign_in_probe(): void
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
@@ -394,7 +394,7 @@ final class JournalHostProcessesTest extends TestCase
             [
                 AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->hasProvenStart(),
                 $this->journal->hostProcessCalled('owner')->purpose,
-                array_slice($this->journal->payloadOf($this->journal->hostOrdersOf('owner')[0])['argv'], -2),
+                array_slice($this->journal->payloadOf($this->journal->hostInstructionsOf('owner')[0])['argv'], -2),
                 array_column($this->journal->pipeInputOf('owner'), 'method'),
             ],
         );
@@ -437,12 +437,12 @@ final class JournalHostProcessesTest extends TestCase
         $this->journal->assertResult('6.1.0', $this->journal->service(PublishedReleases::class)->current()->version);
     }
 
-    public function test_an_orders_payload_reads_back_as_the_host_receives_it(): void
+    public function test_an_instructions_payload_reads_back_as_the_host_receives_it(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
             ->openProcess('pipe', HostProcessType::Pipe));
 
-        $payload = $this->journal->payloadOf($this->journal->hostOrdersOf('pipe')[0]);
+        $payload = $this->journal->payloadOf($this->journal->hostInstructionsOf('pipe')[0]);
 
         $this->journal->assertResult(['pipe', [
             'sh',

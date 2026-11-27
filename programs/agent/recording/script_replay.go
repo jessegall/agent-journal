@@ -18,9 +18,6 @@ import (
 // recording keeps no value of the machine it was made on.
 var environmentValue = regexp.MustCompile(`\{env:([A-Z_][A-Z0-9_]*)\}`)
 
-// recordedIdentifier finds the identifiers a program makes up, such as a thread's or a turn's, in what it printed.
-var recordedIdentifier = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
-
 // minimumReplacedLength is the shortest recorded value the written one takes the place of in an answer.
 const minimumReplacedLength = 4
 
@@ -438,7 +435,7 @@ func pairValues(was any, is any, live map[string]string) {
 // renewIdentifiers gives the identifiers an answer makes up new values for its nth play, so two threads started
 // alike are two threads; one the written line names is kept.
 func renewIdentifiers(answer string, written string, play int, values map[string]string) {
-	for _, identifier := range recordedIdentifier.FindAllString(answer, -1) {
+	for _, identifier := range uuidShape.FindAllString(answer, -1) {
 		if strings.Contains(written, identifier) {
 			continue
 		}

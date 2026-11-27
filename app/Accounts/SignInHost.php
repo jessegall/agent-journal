@@ -16,7 +16,7 @@ use App\Accounts\Values\ClaimedSignIn;
 use App\Accounts\Values\CleanupProgress;
 use App\Accounts\Values\SignInPoll;
 use App\Api\SignedCall;
-use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostInstructionStatus;
 use App\Projects\Enums\ArrangementType;
 use App\Values\HostFolderAnswer;
 use App\Values\SignInChallenge;
@@ -168,27 +168,27 @@ final readonly class SignInHost implements SignInHostContract
         $this->send($route, $parameters, $body);
     }
 
-    public function orderFolderMake(string $folder, string $operation): string
+    public function instructionFolderMake(string $folder, string $operation): string
     {
-        return $this->orderFolder('profiles.account-host.folders.make', $folder, $operation);
+        return $this->instructionFolder('profiles.account-host.folders.make', $folder, $operation);
     }
 
-    public function orderFolderRemove(string $folder, string $operation): string
+    public function instructionFolderRemove(string $folder, string $operation): string
     {
-        return $this->orderFolder('profiles.account-host.folders.remove', $folder, $operation);
+        return $this->instructionFolder('profiles.account-host.folders.remove', $folder, $operation);
     }
 
-    public function orderFolderUse(string $folder, string $operation): string
+    public function instructionFolderUse(string $folder, string $operation): string
     {
-        return $this->orderFolder('profiles.account-host.folders.use', $folder, $operation);
+        return $this->instructionFolder('profiles.account-host.folders.use', $folder, $operation);
     }
 
-    public function folderAnswer(string $orderId): HostFolderAnswer
+    public function folderAnswer(string $instructionId): HostFolderAnswer
     {
-        $response = $this->send('profiles.account-host.folders.answer', ['order' => $orderId], '');
+        $response = $this->send('profiles.account-host.folders.answer', ['instruction' => $instructionId], '');
 
         return new HostFolderAnswer(
-            HostOrderStatus::from((string) $response->json('status')),
+            HostInstructionStatus::from((string) $response->json('status')),
             (string) $response->json('reason'),
             $response->json('is_bound') === true,
         );
@@ -197,11 +197,11 @@ final readonly class SignInHost implements SignInHostContract
     /**
      * @throws SignInRunnerRefused
      */
-    private function orderFolder(string $route, string $folder, string $operation): string
+    private function instructionFolder(string $route, string $folder, string $operation): string
     {
         $body = (string) json_encode(['folder' => $folder, 'operation' => $operation]);
 
-        return (string) $this->send($route, [], $body)->json('order_id');
+        return (string) $this->send($route, [], $body)->json('instruction_id');
     }
 
     /**

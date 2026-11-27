@@ -32,7 +32,7 @@ final class OpenHeadlessTurnTest extends TestCase
     use CommitsHookRows;
 
     private const array TABLES = [
-        'hosts', 'host_processes', 'host_orders', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
+        'hosts', 'host_processes', 'host_instructions', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
         'hook_calls', 'agent_runtimes', 'driver_requests', 'driver_turns', 'accounts', 'active_accounts',
         'session_processes', 'session_requests', 'inboxes', 'inbox_members', 'links', 'users',
     ];
@@ -69,7 +69,7 @@ final class OpenHeadlessTurnTest extends TestCase
 
         $this->journal->hostProcess('first', fn (TestHostProcess $first) => $first
             ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0));
-        $first = DriverRequest::query()->findOrFail($this->journal->hostOrdersOf('first')[0]->driver_request_id);
+        $first = DriverRequest::query()->findOrFail($this->journal->hostInstructionsOf('first')[0]->driver_request_id);
         $this->journal->asSystem(new NotifyRequestProgressCommand(
             $this->journal->hostCalled('Mac')->hostId,
             $first->id,
@@ -107,7 +107,7 @@ final class OpenHeadlessTurnTest extends TestCase
      */
     private function argvOf(string $name): array
     {
-        return $this->journal->payloadOf($this->journal->hostOrdersOf($name)[0])['argv'];
+        return $this->journal->payloadOf($this->journal->hostInstructionsOf($name)[0])['argv'];
     }
 
     private function promptOf(string $name): string

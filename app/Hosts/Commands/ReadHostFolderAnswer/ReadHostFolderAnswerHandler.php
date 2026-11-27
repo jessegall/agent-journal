@@ -6,22 +6,22 @@ namespace App\Hosts\Commands\ReadHostFolderAnswer;
 
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\HostProtocolRefused;
-use App\Models\Hosts\HostOrder;
+use App\Models\Hosts\HostInstruction;
 use App\Values\HostFolderAnswer;
 
 /**
- * Answers the state of the host's own folder order; an order of another host is refused.
+ * Answers the state of the host's own folder instruction; an instruction of another host is refused.
  */
 final readonly class ReadHostFolderAnswerHandler implements CommandHandler
 {
     public function handle(ReadHostFolderAnswerCommand $command): HostFolderAnswer
     {
-        $order = HostOrder::query()->whereKey($command->orderId)->firstOrFail();
+        $instruction = HostInstruction::query()->whereKey($command->instructionId)->firstOrFail();
 
-        if ($order->host_id !== $command->hostId) {
-            throw HostProtocolRefused::foreignOrder($command->hostId, $command->orderId);
+        if ($instruction->host_id !== $command->hostId) {
+            throw HostProtocolRefused::foreignInstruction($command->hostId, $command->instructionId);
         }
 
-        return HostFolderAnswer::of($order);
+        return HostFolderAnswer::of($instruction);
     }
 }

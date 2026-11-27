@@ -11,7 +11,7 @@ use App\Hosts\CapacityRelease;
 use App\Models\Agents\AgentSession;
 
 /**
- * An ended session gives its host capacity back at once; its container is removed by the host order the session's
+ * An ended session gives its host capacity back at once; its container is removed by the host instruction the session's
  * end raises (RemoveEndedSessionContainer).
  */
 #[InCommandTransaction]

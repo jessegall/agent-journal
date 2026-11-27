@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-// AnsweredRecord keeps the answer of every order the host answered until the order expires, in
-// <state>/orders/answered.json, so an order handed out again is answered from it and never carried out twice, across
-// a restart of the host too. An order is marked started on disk before it is carried out, so one the host stopped in
+// AnsweredRecord keeps the answer of every instruction the host answered until the instruction expires, in
+// <state>/instructions/answered.json, so an instruction handed out again is answered from it and never carried out twice, across
+// a restart of the host too. An instruction is marked started on disk before it is carried out, so one the host stopped in
 // the middle of is known after a restart. Expiry is read on the journal's clock, so a skewed host clock keeps no entry
-// too short; the record is keyed by order alone, so replacing the host's credential keeps it.
+// too short; the record is keyed by instruction alone, so replacing the host's credential keeps it.
 type AnsweredRecord struct {
 	path    string
 	mutex   sync.Mutex
@@ -24,14 +24,14 @@ type AnsweredRecord struct {
 type answeredEntry struct {
 	Answer    Answer    `json:"answer"`
 	ExpiresAt time.Time `json:"expires_at"`
-	// IsStarted is an order the host started to carry out and has not answered yet.
+	// IsStarted is an instruction the host started to carry out and has not answered yet.
 	IsStarted bool `json:"is_started,omitempty"`
 }
 
 // OpenAnsweredRecord reads the record the host kept in its state folder, or starts an empty one.
 func OpenAnsweredRecord(stateFolder string) (*AnsweredRecord, error) {
 	record := &AnsweredRecord{
-		path:    filepath.Join(stateFolder, "orders", "answered.json"),
+		path:    filepath.Join(stateFolder, "instructions", "answered.json"),
 		entries: map[string]answeredEntry{},
 	}
 	content, err := os.ReadFile(record.path)
@@ -47,40 +47,40 @@ func OpenAnsweredRecord(stateFolder string) (*AnsweredRecord, error) {
 	return record, nil
 }
 
-// Find gives the answer the host recorded for the order, if it answered it.
-func (record *AnsweredRecord) Find(orderID string) (Answer, bool) {
+// Find gives the answer the host recorded for the instruction, if it answered it.
+func (record *AnsweredRecord) Find(instructionID string) (Answer, bool) {
 	record.mutex.Lock()
 	defer record.mutex.Unlock()
-	entry, found := record.entries[orderID]
+	entry, found := record.entries[instructionID]
 	return entry.Answer, found && !entry.IsStarted
 }
 
-// IsInterrupted is whether the host started the order and stopped before it answered it.
-func (record *AnsweredRecord) IsInterrupted(orderID string) bool {
+// IsInterrupted is whether the host started the instruction and stopped before it answered it.
+func (record *AnsweredRecord) IsInterrupted(instructionID string) bool {
 	record.mutex.Lock()
 	defer record.mutex.Unlock()
-	return record.entries[orderID].IsStarted
+	return record.entries[instructionID].IsStarted
 }
 
-// Start writes to disk that the order is being carried out, before its executor runs.
-func (record *AnsweredRecord) Start(order Order, now time.Time) error {
-	return record.write(order, answeredEntry{ExpiresAt: order.ExpiresAt, IsStarted: true}, now)
+// Start writes to disk that the instruction is being carried out, before its executor runs.
+func (record *AnsweredRecord) Start(instruction Instruction, now time.Time) error {
+	return record.write(instruction, answeredEntry{ExpiresAt: instruction.ExpiresAt, IsStarted: true}, now)
 }
 
-// Keep writes the order's answer to disk before the host reports it, and drops the answers of orders that expired.
-func (record *AnsweredRecord) Keep(order Order, answer Answer, now time.Time) error {
-	return record.write(order, answeredEntry{Answer: answer, ExpiresAt: order.ExpiresAt}, now)
+// Keep writes the instruction's answer to disk before the host reports it, and drops the answers of instructions that expired.
+func (record *AnsweredRecord) Keep(instruction Instruction, answer Answer, now time.Time) error {
+	return record.write(instruction, answeredEntry{Answer: answer, ExpiresAt: instruction.ExpiresAt}, now)
 }
 
-func (record *AnsweredRecord) write(order Order, entry answeredEntry, now time.Time) error {
+func (record *AnsweredRecord) write(instruction Instruction, entry answeredEntry, now time.Time) error {
 	record.mutex.Lock()
 	defer record.mutex.Unlock()
-	for orderID, kept := range record.entries {
+	for instructionID, kept := range record.entries {
 		if !now.Before(kept.ExpiresAt) {
-			delete(record.entries, orderID)
+			delete(record.entries, instructionID)
 		}
 	}
-	record.entries[order.ID] = entry
+	record.entries[instruction.ID] = entry
 	return record.save()
 }
 
@@ -106,14 +106,14 @@ func (record *AnsweredRecord) save() error {
 	return os.Rename(temporary, record.path)
 }
 
-// AnsweredThrough is the newest order the record holds an answer of; order ids sort by when they were made.
+// AnsweredThrough is the newest instruction the record holds an answer of; instruction ids sort by when they were made.
 func (record *AnsweredRecord) AnsweredThrough() string {
 	record.mutex.Lock()
 	defer record.mutex.Unlock()
 	newest := ""
-	for orderID, entry := range record.entries {
+	for instructionID, entry := range record.entries {
 		if !entry.IsStarted {
-			newest = max(newest, orderID)
+			newest = max(newest, instructionID)
 		}
 	}
 	return newest

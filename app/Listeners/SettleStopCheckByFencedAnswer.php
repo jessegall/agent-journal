@@ -7,12 +7,12 @@ namespace App\Listeners;
 use App\Accounts\Enums\CommandEntry;
 use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Hosts\Contracts\HostOrderAnswerEvent;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Contracts\HostInstructionAnswerEvent;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Sessions\Commands\SettleFencedStopCheck\SettleFencedStopCheckCommand;
 
 /**
- * The host's answer to a run_fenced order, or its refusal, settles the stop attempt whose conditions it ran.
+ * The host's answer to a run_fenced instruction, or its refusal, settles the stop attempt whose conditions it ran.
  */
 final readonly class SettleStopCheckByFencedAnswer implements Listener
 {
@@ -20,13 +20,13 @@ final readonly class SettleStopCheckByFencedAnswer implements Listener
 
     public function __construct(private JournalCommands $commands) {}
 
-    public function handle(HostOrderAnswerEvent $fact): void
+    public function handle(HostInstructionAnswerEvent $fact): void
     {
-        if ($fact->type !== HostOrderType::RunFenced) {
+        if ($fact->type !== HostInstructionType::RunFenced) {
             return;
         }
 
-        $command = new SettleFencedStopCheckCommand($fact->orderId);
+        $command = new SettleFencedStopCheckCommand($fact->instructionId);
         $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $command);
     }
 }

@@ -20,10 +20,10 @@ use App\Agents\Drivers\Values\ScriptGoal;
 use App\Hosts\Commands\ForwardUserKeys\ForwardUserKeysCommand;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
-use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Protocol\HostOrderType;
-use App\Models\Hosts\HostOrder;
+use App\Hosts\Protocol\HostInstructionType;
+use App\Models\Hosts\HostInstruction;
 use App\Navigation\Commands\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
 use App\Navigation\Commands\RaiseNavigation\RaiseNavigationCommand;
 use App\Navigation\Enums\NavigationKey;
@@ -33,7 +33,7 @@ use App\Support\Reflector;
 use App\Values\ClaimedRequest;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\LibraryEntryAnswer;
 use App\Values\NavigationRound;
 use App\Values\ScriptParameter;
@@ -130,9 +130,9 @@ final class TerminalDriverTest extends TestCase
                 $this->isHeldFor(HoldReason::TrustRequired),
                 $this->pastes,
                 [
-                    $this->keyOrdersOf('deliver-1'),
-                    $this->keyOrdersOf('interrupt-1'),
-                    $this->keyOrdersOf('deliver-2'),
+                    $this->keyInstructionsOf('deliver-1'),
+                    $this->keyInstructionsOf('interrupt-1'),
+                    $this->keyInstructionsOf('deliver-2'),
                 ],
                 // Escape is guarded on the composer, which holds still while the turn above it moves.
                 $this->firstGuardedRowOf('interrupt-1') > 0,
@@ -163,9 +163,9 @@ final class TerminalDriverTest extends TestCase
             }
 
             $presses = 2;
-            $refused = new HostOrder()->forceFill([
-                'type' => HostOrderType::WriteKeys,
-                'status' => HostOrderStatus::Refused,
+            $refused = new HostInstruction()->forceFill([
+                'type' => HostInstructionType::WriteKeys,
+                'status' => HostInstructionStatus::Refused,
                 'driver_request_id' => 'interrupt-1',
             ]);
 
@@ -177,7 +177,7 @@ final class TerminalDriverTest extends TestCase
         $this->journal->assertResult(
             [2, ['interrupt', 'interrupt-2']],
             [
-                $this->keyOrdersOf('interrupt-1'),
+                $this->keyInstructionsOf('interrupt-1'),
                 array_map(fn (SendHostKeysCommand $keys) => $keys->source->step, $this->keysOf('interrupt-1')),
             ],
         );
@@ -219,9 +219,9 @@ final class TerminalDriverTest extends TestCase
                 $this->hasOrdered(StopHostProcessCommand::class),
                 $this->pastes,
                 [
-                    $this->keyOrdersOf('deliver-1'),
-                    $this->keyOrdersOf('interrupt-1'),
-                    $this->keyOrdersOf('deliver-2'),
+                    $this->keyInstructionsOf('deliver-1'),
+                    $this->keyInstructionsOf('interrupt-1'),
+                    $this->keyInstructionsOf('deliver-2'),
                 ],
             ],
         );
@@ -568,7 +568,7 @@ final class TerminalDriverTest extends TestCase
         $host = $this->journal->service(MockHost::class);
         $host->advanceToInput($input);
         $guard = $host->guardFor(0, count($host->rows()) - 1);
-        $host->keys('agent', $host->recordedInputs()[$input], $guard, 0, HostOrderSource::fromJournal());
+        $host->keys('agent', $host->recordedInputs()[$input], $guard, 0, HostInstructionSource::fromJournal());
 
         return null;
     }
@@ -636,9 +636,9 @@ final class TerminalDriverTest extends TestCase
     }
 
     /**
-     * How many key orders the driver made for the request: a delivery takes its paste and one Enter.
+     * How many key instructions the driver made for the request: a delivery takes its paste and one Enter.
      */
-    private function keyOrdersOf(string $requestId): int
+    private function keyInstructionsOf(string $requestId): int
     {
         return count($this->keysOf($requestId));
     }

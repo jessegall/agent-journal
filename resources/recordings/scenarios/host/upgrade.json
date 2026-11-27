@@ -3,6 +3,11 @@
     "steps": [
         {
             "do": "upgrade-host"
+        },
+        {
+            "do": "wait-for",
+            "fact": "orders-answered",
+            "seconds": 60
         }
     ]
 }

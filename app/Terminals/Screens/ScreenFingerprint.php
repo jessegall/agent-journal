@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens;
 
-use App\Hosts\Protocol\Data\HostFrameData;
+use App\Hosts\Protocol\Payloads\HostFramePayload;
 
 /**
  * The fingerprint of a still screen: what stays the same each time the same menu is drawn, with the composer, the
@@ -34,7 +34,7 @@ final readonly class ScreenFingerprint
      */
     private const int TOKEN_LENGTH = 20;
 
-    public function of(ScreenLayout $layout, string $driver, HostFrameData $frame, string|null $menu): string
+    public function of(ScreenLayout $layout, string $driver, HostFramePayload $frame, string|null $menu): string
     {
         $left = array_filter([
             $layout->composer->rowsOf($frame),

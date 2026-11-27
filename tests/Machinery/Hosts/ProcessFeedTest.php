@@ -6,7 +6,7 @@ namespace Tests\Machinery\Hosts;
 
 use App\Hosts\HostWake;
 use App\Hosts\ProcessFeed;
-use App\Hosts\Protocol\Data\HostOutputData;
+use App\Hosts\Protocol\Payloads\HostOutputPayload;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -63,9 +63,9 @@ final class ProcessFeedTest extends TestCase
         );
     }
 
-    private function screenShowing(string $firstRow): HostOutputData
+    private function screenShowing(string $firstRow): HostOutputPayload
     {
-        return HostOutputData::from(['frames' => [[
+        return HostOutputPayload::from(['frames' => [[
             'rows' => [$firstRow],
             'cursor_row' => 0,
             'cursor_column' => 0,

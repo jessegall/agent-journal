@@ -11,12 +11,12 @@ use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\ProcessFeed;
-use App\Hosts\Protocol\Data\HostOutputData;
-use App\Hosts\Protocol\Data\HostProcessReportData;
 use App\Hosts\Protocol\HostProcessReportType;
-use App\Models\Hosts\HostOrder;
+use App\Hosts\Protocol\Payloads\HostOutputPayload;
+use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
+use App\Models\Hosts\HostInstruction;
 use App\Terminals\PrivateValues;
-use App\Values\HostOrderSource;
+use App\Values\HostInstructionSource;
 use App\Values\RowGuard;
 use Closure;
 use PHPUnit\Framework\Assert as PHPUnit;
@@ -44,7 +44,7 @@ final class TestHostProcess
         $this->journal->asSystem(new NotifyHostProcessCommand(
             $process->host_id,
             $process->id,
-            HostProcessReportData::from([
+            HostProcessReportPayload::from([
                 'process_id' => $process->id,
                 'report' => $report,
                 'identity' => "pid:{$this->name}",
@@ -77,7 +77,7 @@ final class TestHostProcess
         $process = $this->journal->hostProcessCalled($this->name);
         $frame = ['rows' => [$firstRow], 'cursor_row' => 0, 'cursor_column' => 0, 'columns' => 80, 'buffer' => 'normal',
             'captured' => 1];
-        $body = HostOutputData::from(['frames' => [[...$frame, 'unchanged_ms' => [0]]], 'chunks' => []]);
+        $body = HostOutputPayload::from(['frames' => [[...$frame, 'unchanged_ms' => [0]]], 'chunks' => []]);
         $this->journal->asSystem(new NotifyHostOutputCommand($process->host_id, $process->id, $body));
 
         return $this;
@@ -90,7 +90,7 @@ final class TestHostProcess
     {
         $process = $this->journal->hostProcessCalled($this->name);
         $chunk = ['stream' => 'stdout', 'offset' => $process->output_offset, 'bytes' => base64_encode($printed)];
-        $body = HostOutputData::from(['frames' => [], 'chunks' => [$chunk]]);
+        $body = HostOutputPayload::from(['frames' => [], 'chunks' => [$chunk]]);
         $this->journal->asSystem(new NotifyHostOutputCommand($process->host_id, $process->id, $body));
 
         return $this;
@@ -110,7 +110,7 @@ final class TestHostProcess
             $keys,
             $guard,
             0,
-            HostOrderSource::fromJournal(),
+            HostInstructionSource::fromJournal(),
         ));
 
         return $this;
@@ -194,19 +194,19 @@ final class TestHostProcess
     }
 
     /**
-     * The process's oldest open order, handed to the scope to answer or refuse as its host.
+     * The process's oldest open instruction, handed to the scope to answer or refuse as its host.
      *
-     * @param  Closure(TestHostOrder): mixed  $scope
+     * @param  Closure(TestHostInstruction): mixed  $scope
      */
-    public function order(Closure $scope): self
+    public function instruction(Closure $scope): self
     {
-        $open = HostOrder::findOpenOf($this->journal->hostProcessCalled($this->name)->id);
-        $order = $open[0] ?? throw FixtureRefused::missingAlias(
-            'open order of host process',
+        $open = HostInstruction::findOpenOf($this->journal->hostProcessCalled($this->name)->id);
+        $instruction = $open[0] ?? throw FixtureRefused::missingAlias(
+            'open instruction of host process',
             $this->name,
             'The journal',
         );
-        $this->journal->hostOrder($order, $scope);
+        $this->journal->hostInstruction($instruction, $scope);
 
         return $this;
     }

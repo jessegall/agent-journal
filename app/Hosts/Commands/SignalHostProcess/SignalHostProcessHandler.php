@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace App\Hosts\Commands\SignalHostProcess;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\Protocol\Data\HostSignalPlanData;
-use App\Hosts\Protocol\HostOrders;
+use App\Hosts\Protocol\HostInstructions;
+use App\Hosts\Protocol\Payloads\HostSignalPlanPayload;
 
 /**
- * Makes the signal order of a running process, refused to a replaced worker.
+ * Makes the signal instruction of a running process, refused to a replaced worker.
  */
 final readonly class SignalHostProcessHandler implements CommandHandler
 {
-    public function __construct(private HostOrders $orders) {}
+    public function __construct(private HostInstructions $instructions) {}
 
     public function handle(SignalHostProcessCommand $command): string
     {
-        return $this->orders->signal(
+        return $this->instructions->signal(
             $command->processId,
             $command->source,
-            HostSignalPlanData::from(['signal' => $command->signal]),
+            HostSignalPlanPayload::from(['signal' => $command->signal]),
         )->getKey();
     }
 }

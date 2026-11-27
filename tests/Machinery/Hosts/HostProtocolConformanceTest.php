@@ -6,13 +6,13 @@ namespace Tests\Machinery\Hosts;
 
 use App\Hosts\Exceptions\HostCallUnreadable;
 use App\Hosts\HostCallReader;
-use App\Hosts\HostOrderPayload;
-use App\Hosts\Protocol\Data\HostAnswerData;
-use App\Hosts\Protocol\Data\HostInventoryData;
-use App\Hosts\Protocol\Data\HostProcessReportData;
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\HostPayloadJson;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostRefusal;
-use App\Models\Hosts\HostOrder;
+use App\Hosts\Protocol\Payloads\HostAnswerPayload;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
+use App\Hosts\Protocol\Payloads\HostProcessReportPayload;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -20,32 +20,32 @@ use Tests\TestCase;
 
 /**
  * The committed vectors of host protocol 1, which the Go host checks too (programs/agent/hostapi/
- * conformance_test.go): the journal signs each order to the committed signature over the committed payload text, and
+ * conformance_test.go): the journal signs each instruction to the committed signature over the committed payload text, and
  * reads each committed answer, report and inventory.
  */
-#[TestsMachinery(HostOrderPayload::class)]
+#[TestsMachinery(HostPayloadJson::class)]
 #[TestsMachinery(HostCallReader::class)]
 final class HostProtocolConformanceTest extends TestCase
 {
     private const string VECTORS = __DIR__.'/../../../programs/agent/hostapi/testdata/conformance.json';
 
-    public function test_the_journal_signs_each_committed_order_to_its_signature(): void
+    public function test_the_journal_signs_each_committed_instruction_to_its_signature(): void
     {
         $vectors = $this->vectors();
         $host = new Host();
-        $host->order_secret = $vectors['secret'];
+        $host->instruction_secret = $vectors['secret'];
 
-        foreach ($vectors['orders'] as $vector) {
-            $order = new HostOrder();
-            $order->id = $vector['order']['id'];
-            $order->sequence = $vector['order']['sequence'];
-            $order->type = HostOrderType::from($vector['order']['type']);
-            $order->host_process_id = $vector['order']['process_id'];
-            $order->payload = HostOrderPayload::encode($vector['payload']);
-            $order->expires_at = CarbonImmutable::parse($vector['order']['expires_at']);
+        foreach ($vectors['instructions'] as $vector) {
+            $instruction = new HostInstruction();
+            $instruction->id = $vector['instruction']['id'];
+            $instruction->sequence = $vector['instruction']['sequence'];
+            $instruction->type = HostInstructionType::from($vector['instruction']['type']);
+            $instruction->host_process_id = $vector['instruction']['process_id'];
+            $instruction->payload = HostPayloadJson::encode($vector['payload']);
+            $instruction->expires_at = CarbonImmutable::parse($vector['instruction']['expires_at']);
 
-            $this->assertSame($vector['order']['payload'], $order->payload);
-            $this->assertSame($vector['order']['signature'], $host->signOrder($order));
+            $this->assertSame($vector['instruction']['payload'], $instruction->payload);
+            $this->assertSame($vector['instruction']['signature'], $host->signInstruction($instruction));
         }
     }
 
@@ -55,14 +55,14 @@ final class HostProtocolConformanceTest extends TestCase
 
         $reader = $this->app->make(HostCallReader::class);
         $answers = array_map(
-            fn (array $answer) => $reader->read($this->encoded($answer), HostAnswerData::class, 'answer'),
+            fn (array $answer) => $reader->read($this->encoded($answer), HostAnswerPayload::class, 'answer'),
             $vectors['answers'],
         );
-        $report = $reader->read($this->encoded($vectors['reports'][0]), HostProcessReportData::class, 'report');
-        $inventory = $reader->read($this->encoded($vectors['inventory']), HostInventoryData::class, 'inventory');
+        $report = $reader->read($this->encoded($vectors['reports'][0]), HostProcessReportPayload::class, 'report');
+        $inventory = $reader->read($this->encoded($vectors['inventory']), HostInventoryPayload::class, 'inventory');
 
-        $this->assertSame([HostRefusal::GuardMoved, HostRefusal::UnknownOrder], array_map(
-            fn (HostAnswerData $answer) => $answer->refusal,
+        $this->assertSame([HostRefusal::GuardMoved, HostRefusal::UnknownInstruction], array_map(
+            fn (HostAnswerPayload $answer) => $answer->refusal,
             $answers,
         ));
         $this->assertSame([3, 'pid:42'], [$report->exitCode, $report->identity]);
@@ -82,7 +82,7 @@ final class HostProtocolConformanceTest extends TestCase
 
         $this->expectExceptionObject(HostCallUnreadable::unknownField('inventory', 'processes.0.colour'));
 
-        $this->app->make(HostCallReader::class)->read($this->encoded($inventory), HostInventoryData::class, 'inventory');
+        $this->app->make(HostCallReader::class)->read($this->encoded($inventory), HostInventoryPayload::class, 'inventory');
     }
 
     public function test_a_host_call_missing_a_field_it_needs_is_refused_by_its_name(): void
@@ -92,7 +92,7 @@ final class HostProtocolConformanceTest extends TestCase
 
         $this->expectExceptionObject(HostCallUnreadable::missingField('answer', 'status'));
 
-        $this->app->make(HostCallReader::class)->read($this->encoded($answer), HostAnswerData::class, 'answer');
+        $this->app->make(HostCallReader::class)->read($this->encoded($answer), HostAnswerPayload::class, 'answer');
     }
 
     /**

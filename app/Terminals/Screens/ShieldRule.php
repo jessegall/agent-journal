@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Screens;
 
-use App\Hosts\Protocol\Data\HostShieldRuleData;
+use App\Hosts\Protocol\Payloads\HostShieldRulePayload;
 
 /**
  * A screen the host must never send: one that asks for a secret, known by enough of its keywords appearing on it in
@@ -20,8 +20,8 @@ final readonly class ShieldRule
     /**
      * The rule as a plan carries it.
      */
-    public function protocolData(): HostShieldRuleData
+    public function protocolData(): HostShieldRulePayload
     {
-        return HostShieldRuleData::from(['keywords' => $this->keywords, 'min_keywords' => $this->fewestKeywords]);
+        return HostShieldRulePayload::from(['keywords' => $this->keywords, 'min_keywords' => $this->fewestKeywords]);
     }
 }
