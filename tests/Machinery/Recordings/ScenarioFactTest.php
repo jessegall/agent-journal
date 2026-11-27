@@ -7,6 +7,7 @@ namespace Tests\Machinery\Recordings;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Scenario;
 use App\Recordings\Scenarios\ScenarioRun;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,7 @@ use Tests\TestCase;
  * Each fact answers only yes or no for the run as the journal holds it now: an installer that exited 0 with a host
  * enrolled is installed, a sign-in just started shows no challenge yet, and a session still running is not stopped.
  */
+#[TestsMachinery(ScenarioFact::class)]
 final class ScenarioFactTest extends TestCase
 {
     use RefreshHookDatabase;

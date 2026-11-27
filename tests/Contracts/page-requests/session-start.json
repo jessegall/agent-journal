@@ -3,7 +3,7 @@
     "url": "/profiles/journal-main/start-main",
     "body": {
         "requestId": "recorded-session-start",
-        "agentId": "main",
+        "agentId": "01JPAGEREQUESTAGENT0000000",
         "model": "opus",
         "driver": "claude-code",
         "driverType": null,

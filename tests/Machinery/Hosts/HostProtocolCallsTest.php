@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
+use App\Hosts\PhpProtocolSources;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -11,6 +13,7 @@ use Tests\TestCase;
  * The generated controllers of host protocol 1 read a host's call strictly: a field the protocol does not know, a
  * value it does not take, a query past its bounds and a body over its limit are each refused with a 422 naming them.
  */
+#[TestsMachinery(PhpProtocolSources::class)]
 final class HostProtocolCallsTest extends TestCase
 {
     use RefreshHookDatabase;

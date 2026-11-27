@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tests\Console;
+namespace Tests\Machinery\Recordings;
 
 use App\Agents\Drivers\Contracts\PinnedBuilds;
+use App\Console\Commands\PlayScenarioCommand;
 use App\Files\Enums\Place;
 use App\Hosts\HostProtocolCheck;
 use App\Hosts\HostProtocolSources;
@@ -14,6 +15,7 @@ use App\Recordings\Recordings;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Testing\PendingCommand;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -24,6 +26,7 @@ use Tests\TestCase;
  * of a scenario stuck at a fact, and writes the recording of a scenario played to its end.
  */
 #[TimeLimit(10, 'A played scenario is finished, which checks the generated protocol with Pint once.')]
+#[TestsMachinery(PlayScenarioCommand::class)]
 final class PlayScenarioCommandTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Machinery\Installation;
+namespace Tests\Wire\Installation;
 
 use App\Projects\Commands\EnrollHost\EnrollHostCommand;
 use App\Projects\Enums\ArrangementType;
 use Illuminate\Support\Facades\Artisan;
+use Tests\Support\Entries\Attributes\OverTheWire;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,7 @@ use Tests\TestCase;
  * The local host script's check of the enrolled host, run as the script runs it through tinker: known for a host the
  * database holds, gone for one it does not.
  */
+#[OverTheWire]
 final class HostKnownScriptTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -45,8 +45,7 @@ enum ScenarioFact: string
             ),
             self::StartRefused => SessionRequest::findUnderRequest($run->startRequest())?->isRefused() === true,
             // A turn ends when its wake or message is applied: the driver reports it so once the turn is done.
-            self::TurnEnded => DriverRequest::countTurnsEndedOf((string) $run->lastAgent()->current_session_id)
-                >= $run->turnsAsked(),
+            self::TurnEnded => $run->turnsAsked() > 0 && $this->turnsEndedOf($run) >= $run->turnsAsked(),
             self::Interrupted => DriverRequest::hasAppliedOf(
                 (string) $run->lastAgent()->current_session_id,
                 DriverOperation::Interrupt,
@@ -57,5 +56,13 @@ enum ScenarioFact: string
             self::Installed => $run->installerExit() === 0 && Host::query()->exists(),
             self::InstructionsAnswered => HostInstruction::areAllAnsweredSince($run->startedAt),
         };
+    }
+
+    /**
+     * How many turns of the run's last agent's session ended.
+     */
+    private function turnsEndedOf(ScenarioRun $run): int
+    {
+        return DriverRequest::countTurnsEndedOf((string) $run->lastAgent()->current_session_id);
     }
 }

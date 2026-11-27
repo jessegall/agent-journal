@@ -7,12 +7,14 @@ namespace Tests\Machinery\Recordings;
 use App\Recordings\Exceptions\RecordingMissing;
 use App\Recordings\Exceptions\RecordingStale;
 use App\Recordings\Recordings;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
  * Every scenario a definition file names is recorded under resources/recordings, and its recording stands for the code
  * as it is: none is stale for its format, its protocol, its scenario or the agent image's programs.
  */
+#[TestsMachinery(Recordings::class)]
 final class RecordingsFreshTest extends TestCase
 {
     public function test_every_scenario_is_recorded_and_fresh(): void

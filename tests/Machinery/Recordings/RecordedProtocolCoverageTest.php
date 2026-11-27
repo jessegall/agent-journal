@@ -9,12 +9,14 @@ use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\HostRoute;
 use App\Recordings\RecordedProtocol;
 use App\Recordings\Recordings;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
  * The recordings hold all of host protocol 1: every call, every order type and every refusal of protocol/host.json is
  * in one of them, and every recorded host exchange is one the generated readers accept.
  */
+#[TestsMachinery(RecordedProtocol::class)]
 final class RecordedProtocolCoverageTest extends TestCase
 {
     public function test_every_call_order_and_refusal_is_recorded_and_every_recording_keeps_the_protocol(): void

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Tests\Machinery\Recordings;
 
 use App\Files\Enums\Place;
+use App\Http\Middleware\RecordCalls;
 use App\Recordings\RecordingDrafts;
 use App\Recordings\Scenarios\Scenario;
 use Illuminate\Support\Facades\File;
 use Illuminate\Testing\TestResponse;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -17,6 +19,7 @@ use Tests\TestCase;
  * The tap on the host's calls: while recording is off a call passes untouched and nothing is written; within a run
  * each call is kept as asked and as answered, a refused one too, with no signature or credential header.
  */
+#[TestsMachinery(RecordCalls::class)]
 final class RecordCallsTest extends TestCase
 {
     use RefreshHookDatabase;
