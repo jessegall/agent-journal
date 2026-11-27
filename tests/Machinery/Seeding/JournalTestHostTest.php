@@ -161,7 +161,7 @@ final class JournalTestHostTest extends TestCase
         $started = $this->journal->asOwner(new BeginSignInCommand('codex', SignInMethod::OAuth));
 
         $challenge = $this->journal->runSignInsOnTestHost()->signInChallengeOf($started->attemptId);
-        $this->journal->waitForSignInsOnTestHost();
+        $this->journal->completeBrowserSignInOnTestHost()->waitForSignInsOnTestHost();
 
         $this->journal->assertResult('STAND-IN', $challenge->code);
         $this->journal->stopTestHost();

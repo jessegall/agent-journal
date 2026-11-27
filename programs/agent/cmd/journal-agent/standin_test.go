@@ -8,15 +8,18 @@ import (
 	"testing"
 
 	"journal-agent/dockerstandin"
+	"journal-agent/recording"
 )
 
-// A container that names its program in its entrypoint and its arguments in its command is answered as the program.
+// A container that names its program in its entrypoint and its arguments in its command is answered as the program
+// was recorded, with the container's environment.
 func TestAContainerWhoseEntrypointNamesTheProgramPrintsItsSignIn(t *testing.T) {
 	container := &dockerstandin.Container{}
 	container.Config.Entrypoint = []string{"/usr/local/bin/claude"}
 	container.Config.Cmd = []string{"auth", "status", "--json"}
 	container.Config.Env = []string{"CLAUDE_CONFIG_DIR=/home/agent/.claude"}
-	programs := programInContainer(standinProgram{"claude", "2.1.323 (Claude Code)", `{"configDirectory":"$CLAUDE_CONFIG_DIR"}`}, nil)
+	signIn := recording.Fixture{Output: []recording.OutputChunk{{Stream: "stdout", Bytes: []byte(`{"configDirectory":"{env:CLAUDE_CONFIG_DIR}"}` + "\n")}}}
+	programs := programInContainer(standinProgram{"claude", recording.Fixture{}, signIn}, nil)
 
 	program := programs(container)
 	if program == nil {

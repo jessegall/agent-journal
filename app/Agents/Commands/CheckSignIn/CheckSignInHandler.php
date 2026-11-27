@@ -27,7 +27,9 @@ final readonly class CheckSignInHandler implements CommandHandler
         $start = $process->sessionProcess()->lockForUpdate()->sole();
         $runtime = $process->runtime;
 
-        if (! $this->profiles->of($runtime)->hasAcceptedSignIn($command->printed, $start->directory)) {
+        $folder = $this->headless->accountFolderSeenBy($runtime, $start);
+
+        if (! $this->profiles->of($runtime)->hasAcceptedSignIn($command->printed, $folder)) {
             $this->heartbeats->refuseStart($start, StartRefusalReason::NotSignedIn->explanation());
 
             return;

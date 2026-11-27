@@ -159,6 +159,15 @@ final readonly class HeadlessStarts
         return $this->registrationOf($runtime)->opensTerminal();
     }
 
+    /**
+     * The account folder as the runtime's program sees it: the account home its container mounts, or the account's
+     * own folder on the host, so what the program reports as its folder is checked against the right one.
+     */
+    public function accountFolderSeenBy(AgentRuntime $runtime, SessionProcess $start): string
+    {
+        return $runtime->executablePlace() === ExecutablePlace::Image ? MountRules::ACCOUNT_TARGET : $start->directory;
+    }
+
     public function startOf(
         AgentRuntime $runtime,
         SessionProcess $start,
@@ -202,7 +211,7 @@ final readonly class HeadlessStarts
         string|null $model,
         string|null $effort,
     ): DriverStart {
-        $recipe = $this->starts->containedRecipeOf($start, MountRules::ACCOUNT_TARGET);
+        $recipe = $this->starts->containedRecipeOf($start, $this->accountFolderSeenBy($runtime, $start));
         $account = new DriverAccount($recipe, $runtime->id, new JournalServer(self::IMAGE_MCP_RELAY));
 
         return new DriverStart(

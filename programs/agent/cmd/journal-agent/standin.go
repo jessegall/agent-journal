@@ -70,8 +70,8 @@ func standinDocker(arguments []string) error {
 	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends")
 	sessionRecording := flags.String("recording", "", "the terminal recording a session's container plays; echo without one")
 	program := flags.String("executable", "", "the executable a session's container runs, by its name")
-	versionLine := flags.String("version-line", "", "what the program prints for --version")
-	signInLine := flags.String("sign-in-line", "", "what the program prints for auth, its $VARIABLES from the container's environment")
+	versionRecording := flags.String("version-recording", "", "the exchange recording of what the program prints for --version")
+	signInRecording := flags.String("sign-in-recording", "", "the exchange recording of what the program prints for auth")
 	started := flags.String("containers", "", "the file each started container's shape is added to, one JSON object a line")
 	if err := flags.Parse(arguments); err != nil {
 		return err
@@ -86,7 +86,15 @@ func standinDocker(arguments []string) error {
 		if err != nil {
 			return err
 		}
-		programs = programInContainer(standinProgram{*program, *versionLine, *signInLine}, replayProgram(fixture))
+		version, err := recording.Load(*versionRecording)
+		if err != nil {
+			return err
+		}
+		signIn, err := recording.Load(*signInRecording)
+		if err != nil {
+			return err
+		}
+		programs = programInContainer(standinProgram{*program, version, signIn}, replayProgram(fixture))
 	}
 	daemon := dockerstandin.Serve(listener, *image)
 	daemon.Programs = func(container *dockerstandin.Container) dockerstandin.Program {
@@ -259,11 +267,12 @@ func standinKeys(arguments []string) error {
 // standinProgram is what a session's container runs in place of its program: its name, what it prints for its
 // version and for its sign-in.
 type standinProgram struct {
-	name, versionLine, signInLine string
+	name            string
+	version, signIn recording.Fixture
 }
 
-// programInContainer answers a container as the program would in it: its version, its sign-in, and on a terminal
-// the session's recording; a container that does not run it, such as a throwaway, ends at once.
+// programInContainer answers a container as the program would in it: its version and its sign-in as recorded, with
+// the container's own environment, and on a terminal the session's recording; a container that does not run it, such as a throwaway, ends at once.
 func programInContainer(program standinProgram, session dockerstandin.Program) func(*dockerstandin.Container) dockerstandin.Program {
 	return func(container *dockerstandin.Container) dockerstandin.Program {
 		// A container runs its entrypoint with its command as arguments, so the program may be named in either.
@@ -272,9 +281,9 @@ func programInContainer(program standinProgram, session dockerstandin.Program) f
 		case !found:
 			return nil
 		case slices.Contains(arguments, "--version"):
-			return dockerstandin.Printing(program.versionLine+"\n", 0)
+			return dockerstandin.Printing(program.version.Printed(variablesOf(container.Config.Env)), program.version.ExitCode)
 		case len(arguments) > 0 && arguments[0] == "auth":
-			return dockerstandin.Printing(os.Expand(program.signInLine, variablesOf(container.Config.Env))+"\n", 0)
+			return dockerstandin.Printing(program.signIn.Printed(variablesOf(container.Config.Env)), program.signIn.ExitCode)
 		case container.Config.Tty:
 			return session
 		}

@@ -145,6 +145,20 @@ yours to resolve at its source.
 - A test never binds a stand-in into the container, sets an actor by hand or keeps a private helper where a journal
   verb fits. A missing verb is added to the test journal and proven by a test of the fixture (FixtureVerbsProvenTest).
 
+## A fluent chain keeps one subject (rule 115; user message 27561)
+
+- Every call in a fluent chain returns that same subject. Work on an inner object (the test host, a mock, an agent, a
+  host process) goes in a closure that receives it: `->runTestHost('Mac', fn (TestHost $host) => $host->chooseActiveAccounts())`.
+- Never a verb that carries the inner subject in its name (`chooseActiveAccountsOnTestHost`), and never a call that
+  switches what the chain returns. The test journal follows Inertia's scoped assertions (doc 140).
+
+## No hand-rolled mock data (rule 116; user message 27628)
+
+- Every answer a mock gives in a test is played from a real recording with only fake values in it: the Docker mock's
+  containers, the Claude Code and Codex mocks, and everything that passes between the Go host and the PHP journal.
+- No test writes a program's output, a container's answer, or a host or journal message by hand. A missing answer is
+  recorded from the real program (Haiku on Claude Code, Luna on Codex), sanitized to fake values, and played.
+
 ## Names are checked by a scan, never approved by list (rule 99; user messages 21092 to 21121)
 
 - No name is written down as approved. `php tools/refactoring/name-faults.php` reads every name of the project fresh

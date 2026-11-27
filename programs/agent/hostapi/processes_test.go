@@ -349,6 +349,36 @@ func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *t
 	t.Cleanup(func() { stopAndWait(daemon, restarted) })
 }
 
+// A pipe container whose program prints and exits at once, as a sign-in probe does, has all it printed read.
+func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.T) {
+	daemon := dockerstandin.Start(t, standinImage)
+	daemon.Programs = func(*dockerstandin.Container) dockerstandin.Program {
+		return dockerstandin.Printing("{\"loggedIn\":true}\n", 0)
+	}
+	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := t.TempDir()
+	queue, err := OpenReportQueue(t.TempDir(), (&sentReports{}).send)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runQueue(t, queue)
+	sent := &sentChunks{}
+	table := OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
+	order := openOrder(t, "probe", "never", standinImage)
+	order.Payload = strings.Replace(order.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
+	order.Payload = strings.Replace(order.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
+
+	if _, err := table.openContainer(context.Background(), order); err != nil {
+		t.Fatal(err)
+	}
+
+	waitForText(t, sent, "{\"loggedIn\":true}\n")
+	t.Cleanup(func() { stopAndWait(daemon, table) })
+}
+
 // waitForText waits until the chunks of standard output read as the text given.
 func waitForText(t *testing.T, sent *sentChunks, text string) {
 	t.Helper()

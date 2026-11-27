@@ -37,15 +37,18 @@ final class TestHost
     private const string TERMINAL_TURN = 'resources/recordings/claude-code/2.1.323/turns/terminal-turn/fixture.json';
 
     /**
-     * The terminal recording the Codex stand-in plays by what is typed, and the exec turn whose events it prints.
+     * The terminal recording the Codex stand-in plays by what is typed.
      */
     private const string CODEX_TERMINAL_TURN = 'resources/recordings/codex/0.165.0/turns/terminal-turn/fixture.json';
 
     private const string CLAUDE_BUILD = '2.1.323';
 
-    private const string CODEX_BUILD = '0.165.0';
+    /**
+     * The recorded exchanges of the Claude Code build, which a contained host's session containers answer with.
+     */
+    private const string CLAUDE_EXCHANGES = 'resources/recordings/claude-code/'.self::CLAUDE_BUILD.'/exchanges';
 
-    private const string CODEX_EXEC_TURN = 'resources/recordings/codex/0.165.0/turns/process-turn/fixture.json';
+    private const string CODEX_BUILD = '0.165.0';
 
     /**
      * @var list<InvokedProcess>
@@ -419,8 +422,6 @@ final class TestHost
         copy(base_path(self::CODEX_TERMINAL_TURN), "{$this->installation()}/codex-terminal-turn/fixture.json");
         $this->installExchanges('claude-code', self::CLAUDE_BUILD);
         $this->installExchanges('codex', self::CODEX_BUILD);
-
-        file_put_contents("{$this->installation()}/codex-turn.jsonl", $this->standardOutputOf(self::CODEX_EXEC_TURN));
     }
 
     /**
@@ -433,17 +434,6 @@ final class TestHost
             mkdir($folder, 0o700, true);
             copy($fixture, "{$folder}/fixture.json");
         }
-    }
-
-    /**
-     * What a recorded program printed on its standard output, its chunks joined in order.
-     */
-    private function standardOutputOf(string $recording): string
-    {
-        $fixture = json_decode((string) file_get_contents(base_path($recording)), true, flags: JSON_THROW_ON_ERROR);
-        $chunks = array_filter($fixture['output'], fn (array $chunk) => $chunk['stream'] === 'stdout');
-
-        return implode('', array_map(fn (array $chunk) => (string) base64_decode($chunk['bytes'], true), $chunks));
     }
 
     /**
@@ -522,8 +512,8 @@ final class TestHost
             ...$command,
             '--recording', dirname(base_path(self::TERMINAL_TURN)),
             '--executable', 'claude',
-            '--version-line', basename(dirname(self::TERMINAL_TURN, 3)).' (Claude Code)',
-            '--sign-in-line', '{"loggedIn":true,"authMethod":"claude.ai","configDirectory":"$CLAUDE_CONFIG_DIR"}',
+            '--version-recording', base_path(self::CLAUDE_EXCHANGES.'/version'),
+            '--sign-in-recording', base_path(self::CLAUDE_EXCHANGES.'/auth-status'),
         ];
     }
 

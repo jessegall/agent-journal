@@ -143,6 +143,18 @@ func answerOf(step exchangeStep, written string, play int) []string {
 	return lines
 }
 
+// Printed is everything the recorded program printed on its output stream, with each value the recording names by
+// its environment variable taken from the environment given, as a program that only prints and exits answers.
+func (fixture Fixture) Printed(environment func(string) string) string {
+	var printed strings.Builder
+	for _, chunk := range fixture.Output {
+		if chunk.Stream == "stdout" {
+			printed.Write(chunk.Bytes)
+		}
+	}
+	return withEnvironment(printed.String(), environment)
+}
+
 func withEnvironment(line string, environment func(string) string) string {
 	return environmentValue.ReplaceAllStringFunc(line, func(named string) string {
 		return environment(environmentValue.FindStringSubmatch(named)[1])

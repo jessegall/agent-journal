@@ -54,6 +54,15 @@ final readonly class ContainerManifest implements JsonSerializable
     ) {}
 
     /**
+     * The same container for a process on pipes, such as a start's sign-in probe: no terminal is attached to it, so
+     * what it prints is read from its log from its first byte on.
+     */
+    public function onPipes(): self
+    {
+        return clone ($this, ['isAttachable' => false]);
+    }
+
+    /**
      * The manifest as the host reads it, with the budgets under their property names.
      *
      * @return array<string, mixed>

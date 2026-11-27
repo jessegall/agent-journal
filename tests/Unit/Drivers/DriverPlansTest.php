@@ -11,6 +11,7 @@ use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\SecurityOptions;
 use App\Agents\Values\JournalServer;
 use App\Agents\Values\PlanFile;
@@ -22,6 +23,7 @@ use App\Sessions\Values\SessionContainer;
 use App\Support\MountRules;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
+use App\Values\ExecutionBudgets;
 use App\Values\HostProcessPlan;
 use Closure;
 use Tests\TestCase;
@@ -109,6 +111,46 @@ final class DriverPlansTest extends TestCase
                     [...$plan->argv, ...$plan->environment, ...array_map(fn (PlanFile $file) => $file->content, $plan->files)],
                     fn (string $text) => str_contains($text, '{host:') || str_contains($text, 'sockets'),
                 )),
+            ],
+        );
+    }
+
+    public function test_the_sign_in_probe_of_a_contained_terminal_start_runs_on_pipes_without_its_terminal(): void
+    {
+        $image = 'registry.example/agent@sha256:'.str_repeat('a', 64);
+        $budgets = ExecutionBudgets::defaults();
+        $manifest = ContainerManifest::make(
+            $image,
+            '10001:10001',
+            true,
+            [],
+            false,
+            'journal-net-s1',
+            [MountRules::local()->workspaceMount('/srv/work', WorkspaceUse::Shared)],
+            [],
+            $budgets,
+            MountRules::local(),
+            SecurityOptions::none(),
+            true,
+        );
+        $server = new JournalServer('/opt/journal/bin/journal-mcp');
+        $account = new DriverAccount($this->recipe(DefaultDrivers::CLAUDE_CODE, TransportProfileType::Mcp), 'start-1', $server);
+        $start = new DriverStart(
+            self::SESSION,
+            HostProcessType::Terminal,
+            '/workspace',
+            hookCommand: '/opt/journal/bin/journal-hook',
+            account: $account,
+            executablePlace: ExecutablePlace::Image,
+            container: new SessionContainer($manifest, new ContainerLabels('acme', 's1', '01a1')),
+        );
+        $profile = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE);
+
+        $this->journal->assertResult(
+            [true, false],
+            [
+                $profile->startPlan($start)->container?->isAttachable,
+                $profile->signInProbe($start)->container?->isAttachable,
             ],
         );
     }

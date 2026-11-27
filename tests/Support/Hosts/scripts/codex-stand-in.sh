@@ -9,7 +9,6 @@ main() {
     case "${1:-}" in
         --version) play "$installation" version ;;
         login) play "$installation" login-status ;;
-        exec) print_turn "$installation" ;;
         app-server) serve_app_server "$installation" ;;
         *) play_terminal "$installation" "$@" ;;
     esac
@@ -40,11 +39,6 @@ serve_app_server() {
         --recording "$installation/exchanges/codex/device-login" \
         --recording "$installation/exchanges/codex/resume-and-interrupt" --hold "$installation/hold" --hold-before turn/completed \
         --release-before "account/login/completed=$installation/browser-signed-in" --heard "$installation/codex-heard.jsonl"
-}
-
-print_turn() {
-    local installation="$1"
-    cat "$installation/codex-turn.jsonl"
 }
 
 main "$@"
