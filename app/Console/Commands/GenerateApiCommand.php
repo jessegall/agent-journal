@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Api\ApiGroups;
+use App\Console\Support\PintFormatter;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Values\FilePath;
 use Illuminate\Console\Command;
-use Illuminate\Process\Factory as ProcessFactory;
 
 /**
  * Writes the API group of every Api folder of Core and the domains, and the JournalClient root over Core's groups;
@@ -21,7 +21,7 @@ final class GenerateApiCommand extends Command
 
     protected $description = 'Generate the typed groups of the journal API and the JournalClient';
 
-    public function handle(ProcessFactory $processes, Files $files): int
+    public function handle(PintFormatter $pint, Files $files): int
     {
         $generated = self::generated($files);
 
@@ -34,7 +34,7 @@ final class GenerateApiCommand extends Command
                 continue;
             }
 
-            if (! $files->exists($file) || $this->formatted($source, $processes, $files) !== $files->read($file)) {
+            if (! $files->exists($file) || $pint->formatted($source) !== $files->read($file)) {
                 $this->error("The generated file {$relative} differs: run php artisan journal:api.");
 
                 return self::FAILURE;
@@ -42,7 +42,7 @@ final class GenerateApiCommand extends Command
         }
 
         if (! $this->option('check')) {
-            $processes->newPendingProcess()->path(base_path())->run(['vendor/bin/pint', ...array_keys($generated)]);
+            $pint->formatInPlace(array_keys($generated));
 
             $this->line(count($generated).' generated files written.');
         }
@@ -104,19 +104,5 @@ final class GenerateApiCommand extends Command
         }
 
         return $folders;
-    }
-
-    /**
-     * The source as Pint writes it, so a check compares what the generator would leave on disk.
-     */
-    private function formatted(string $source, ProcessFactory $processes, Files $files): string
-    {
-        return $files->scratch(function (FilePath $scratch) use ($source, $processes, $files) {
-            $files->write($scratch, $source);
-
-            $processes->newPendingProcess()->path(base_path())->run(['vendor/bin/pint', $files->realPath($scratch)]);
-
-            return $files->read($scratch);
-        }, '.php');
     }
 }

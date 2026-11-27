@@ -15,11 +15,11 @@ import (
 // was recorded, with the container's environment.
 func TestAContainerWhoseEntrypointNamesTheProgramPrintsItsSignIn(t *testing.T) {
 	container := &dockermock.Container{}
-	container.Config.Entrypoint = []string{"/usr/local/bin/claude"}
+	container.Config.Entrypoint = []string{"/usr/local/bin/agent-program"}
 	container.Config.Cmd = []string{"auth", "status", "--json"}
-	container.Config.Env = []string{"CLAUDE_CONFIG_DIR=/home/agent/.claude"}
-	signIn := recording.Fixture{Output: []recording.OutputChunk{{Stream: "stdout", Bytes: []byte(`{"configDirectory":"{env:CLAUDE_CONFIG_DIR}"}` + "\n")}}}
-	programs := programInContainer(mockProgram{"claude", recording.Fixture{}, signIn}, nil)
+	container.Config.Env = []string{"PROGRAM_CONFIG_DIR=/home/agent/.program"}
+	signIn := recording.Fixture{Output: []recording.OutputChunk{{Stream: "stdout", Bytes: []byte(`{"configDirectory":"{env:PROGRAM_CONFIG_DIR}"}` + "\n")}}}
+	programs := programInContainer(mockProgram{"agent-program", recording.Fixture{}, signIn}, nil)
 
 	program := programs(container)
 	if program == nil {
@@ -28,7 +28,7 @@ func TestAContainerWhoseEntrypointNamesTheProgramPrintsItsSignIn(t *testing.T) {
 	var printed bytes.Buffer
 	program(context.Background(), container, bytes.NewReader(nil), &printed)
 
-	if printed.String() != "{\"configDirectory\":\"/home/agent/.claude\"}\n" {
+	if printed.String() != "{\"configDirectory\":\"/home/agent/.program\"}\n" {
 		t.Fatalf("printed %q", printed.String())
 	}
 }

@@ -23,11 +23,6 @@ use App\Values\HostProcessPlan;
 final readonly class HostOrderPlacement
 {
     /**
-     * The protocol the journal orders hosts in.
-     */
-    public const int PROTOCOL = 1;
-
-    /**
      * How long an order other than a key write may wait for its host.
      */
     public const int ORDER_SECONDS = 30;
@@ -123,7 +118,7 @@ final readonly class HostOrderPlacement
             throw HostProtocolRefused::revoked($host->id);
         }
 
-        if (! $host->acceptsProtocol(self::PROTOCOL)) {
+        if (! $host->acceptsProtocol(HostProtocol::VERSION)) {
             throw HostProtocolUnsupported::forHost($host->id, $host->protocol);
         }
     }

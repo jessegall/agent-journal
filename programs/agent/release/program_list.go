@@ -25,9 +25,6 @@ type ProgramList struct {
 	Programs []Program `json:"drivers"`
 }
 
-// reservedHostNames are the names the host itself fills in a plan, which no program may take.
-var reservedHostNames = []string{"JOURNAL_URL", "INSTALLATION", "HOOK_COMMAND", "JOURNAL_AGENT"}
-
 var (
 	programName       = regexp.MustCompile(`^[a-z0-9-]{1,32}$`)
 	programExecutable = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)

@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// environmentValue finds a value a recording names by its environment variable, such as {env:CODEX_HOME}, as a
+// environmentValue finds a value a recording names by its environment variable, such as {env:PROGRAM_HOME}, as a
 // recording keeps no value of the machine it was made on.
 var environmentValue = regexp.MustCompile(`\{env:([A-Z_][A-Z0-9_]*)\}`)
 
@@ -40,7 +40,7 @@ type exchangeStep struct {
 // Script is what a mock program answers, step by step: each step is the method of the next line the program must
 // hear and what it does on hearing it. A test writes it from recordings by their names; anything else heard fails.
 type Script struct {
-	// Program names the mock in a failure, such as "codex app-server".
+	// Program names the mock in a failure, such as "agent-program serve".
 	Program string `json:"program"`
 	// Opening is the recording whose lines printed before any input open the answer; none when empty.
 	Opening string `json:"opening"`

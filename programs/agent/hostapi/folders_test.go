@@ -3,7 +3,6 @@ package hostapi
 import (
 	"context"
 	"errors"
-	"slices"
 	"testing"
 
 	"journal-agent/dockermock"
@@ -42,7 +41,7 @@ func TestAFolderNoContainerBindsIsFree(t *testing.T) {
 
 func TestFolderOrdersRunAgainAfterARestart(t *testing.T) {
 	for _, orderType := range []string{"make_folder", "remove_folder", "folder_use"} {
-		if !slices.Contains(repeatableOrders, orderType) {
+		if !OrderTypes[orderType].Repeatable {
 			t.Fatalf("%s is not run again after a restart", orderType)
 		}
 	}

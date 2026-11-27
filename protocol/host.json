@@ -1,0 +1,70 @@
+{
+    "about": "Host protocol 1 between the Go host and the PHP journal, written once. php artisan journal:host-protocol generates the Go and PHP code from this file; never edit the generated files.",
+    "version": 1,
+    "statuses": {
+        "done": "the host carried the order out",
+        "refused": "the host did not carry the order out, for the refusal it names"
+    },
+    "refusals": {
+        "guard_moved": "the screen rows or input generation the order was guarded by have moved on",
+        "not_running": "the process the order is for is not running",
+        "expired": "the order arrived past its expiry",
+        "unsafe": "the order is unsigned, altered, or names something the host may not do",
+        "host_restarted": "the host restarted while carrying the order out, and the order may not run twice",
+        "fenced": "a newer generation of the process fences the order out",
+        "unknown_order": "this host does not carry out the order's type"
+    },
+    "orders": {
+        "open_container": { "scope": "process", "process_type": "any", "opens": true },
+        "open_process": { "scope": "process", "process_type": "any", "opens": true },
+        "write_keys": { "scope": "process", "process_type": "terminal", "is_input": true },
+        "write_stdin": { "scope": "process", "process_type": "pipe", "is_input": true },
+        "close_stdin": { "scope": "process", "process_type": "pipe", "is_input": true, "is_repeatable": true },
+        "open_private": { "scope": "process", "process_type": "any" },
+        "write_private": { "scope": "process", "process_type": "any", "is_input": true },
+        "close_private": { "scope": "process", "process_type": "any" },
+        "resize": { "scope": "process", "process_type": "terminal", "is_repeatable": true },
+        "signal": { "scope": "process", "process_type": "any" },
+        "stop": { "scope": "process", "process_type": "any", "ends_process": true, "is_repeatable": true },
+        "stream": { "scope": "process", "process_type": "terminal", "is_repeatable": true },
+        "snapshot": { "scope": "process", "process_type": "terminal", "is_repeatable": true },
+        "run_fenced": { "scope": "process", "process_type": "any" },
+        "allow_images": { "scope": "host", "process_type": "any", "offered_again_after_restart": false },
+        "make_folder": { "scope": "host", "process_type": "any", "is_repeatable": true },
+        "remove_folder": { "scope": "host", "process_type": "any", "is_repeatable": true },
+        "folder_use": { "scope": "host", "process_type": "any", "is_repeatable": true },
+        "remove": { "scope": "host", "process_type": "any", "ends_process": true, "is_repeatable": true },
+        "read_project": { "scope": "process", "process_type": "any", "is_repeatable": true },
+        "record": { "scope": "process", "process_type": "any" },
+        "stop_recording": { "scope": "process", "process_type": "any", "is_repeatable": true },
+        "upgrade": { "scope": "host", "process_type": "any" }
+    },
+    "placeholder_kinds": [
+        "folder",
+        "host"
+    ],
+    "host_names": [
+        "JOURNAL_URL",
+        "INSTALLATION",
+        "HOOK_COMMAND",
+        "JOURNAL_AGENT"
+    ],
+    "contained_plan": {
+        "about": "A contained plan names nothing of the host it runs on: no host placeholder and none of these fields.",
+        "refused_fields": [
+            "folders",
+            "side_sockets",
+            "read_files",
+            "inherit"
+        ]
+    },
+    "programs": {
+        "journal-hook": {
+            "about": "The native hook adapter a driver runs on every hook event.",
+            "arguments": [
+                "driver",
+                "reply file"
+            ]
+        }
+    }
+}

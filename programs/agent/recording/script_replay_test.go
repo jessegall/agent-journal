@@ -46,7 +46,9 @@ func (place *testPlace) HasRun(step string) bool {
 
 func (place *testPlace) Story() string { return "StartsSignIn" }
 
-func (place *testPlace) Failed(failure ScriptFailure) { place.failures = append(place.failures, failure) }
+func (place *testPlace) Failed(failure ScriptFailure) {
+	place.failures = append(place.failures, failure)
+}
 
 func (place *testPlace) run(step string) {
 	place.mutex.Lock()
@@ -71,7 +73,7 @@ func scriptOf(t *testing.T, steps ...ScriptStep) Script {
 			}
 		}
 	}
-	return Script{Program: "codex app-server", Opening: folder, Steps: steps}
+	return Script{Program: "agent-program serve", Opening: folder, Steps: steps}
 }
 
 func played(t *testing.T, script Script, place ScriptPlace, written ...string) ([]map[string]any, error) {

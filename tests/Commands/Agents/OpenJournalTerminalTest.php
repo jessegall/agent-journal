@@ -10,6 +10,7 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
+use App\Hosts\HostProtocol;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
@@ -72,7 +73,7 @@ final class OpenJournalTerminalTest extends TestCase
         $this->journal->assertResult('❯ ready', $screen?->frame->rows[0]->runs[0]->text);
     }
 
-    public function test_a_contained_terminal_reaches_the_journal_at_the_session_address(): void
+    public function test_a_contained_terminal_names_nothing_of_the_host_and_reaches_the_journal_at_the_session_address(): void
     {
         $this->journal
             ->owner()
@@ -86,6 +87,9 @@ final class OpenJournalTerminalTest extends TestCase
             ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
 
         [$open] = $this->journal->hostOrdersOf('terminal');
+        $plan = $this->journal->payloadOf($open);
+        $refusedFieldsSet = array_filter(array_intersect_key($plan, array_flip(HostProtocol::CONTAINED_REFUSED_FIELDS)));
+        $this->journal->assertResult([[], false], [$refusedFieldsSet, str_contains((string) json_encode($plan), '{host:')]);
         $this->journal->assertResult(
             ['JOURNAL_URL='.TestHost::SESSION_JOURNAL_URL],
             array_values(array_filter(

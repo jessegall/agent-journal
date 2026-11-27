@@ -4,9 +4,6 @@ package hostapi
 
 import "time"
 
-// Protocol is the version of the host protocol this binary speaks.
-const Protocol = 1
-
 // Order is one signed instruction of the journal: the host's whole vocabulary arrives as these.
 type Order struct {
 	ID        string `json:"id"`
@@ -35,27 +32,6 @@ type RowGuard struct {
 	Hash string `json:"hash"` // sha256 of the rows' text joined by newlines
 }
 
-// Status is how an order ended on the host.
-type Status string
-
-const (
-	Done    Status = "done"
-	Refused Status = "refused"
-)
-
-// Refusal is why the host did not carry out an order.
-type Refusal string
-
-const (
-	GuardMoved    Refusal = "guard_moved"
-	NotRunning    Refusal = "not_running"
-	Expired       Refusal = "expired"
-	Unsafe        Refusal = "unsafe"
-	HostRestarted Refusal = "host_restarted"
-	Fenced        Refusal = "fenced"
-	UnknownOrder  Refusal = "unknown_order"
-)
-
 // Answer is what the host tells the journal of one order.
 type Answer struct {
 	OrderID string         `json:"order_id"`
@@ -76,9 +52,5 @@ func RefusedFor(order Order, refusal Refusal, facts map[string]any) Answer {
 
 // IsHostWide says whether the order is about the host as a whole, so it waits for no process's orders.
 func (order Order) IsHostWide() bool {
-	switch order.Type {
-	case "upgrade", "remove", "allow_images", "make_folder", "remove_folder", "folder_use":
-		return true
-	}
-	return order.ProcessID == ""
+	return OrderTypes[order.Type].HostWide || order.ProcessID == ""
 }

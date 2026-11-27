@@ -9,14 +9,15 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"journal-agent/client"
 	"journal-agent/hookadapter"
 )
 
 func main() {
-	if len(os.Args) != 3 {
-		fmt.Fprintln(os.Stderr, "usage: journal-hook <driver> <reply file>")
+	if len(os.Args) != 1+len(hookadapter.Arguments) {
+		fmt.Fprintln(os.Stderr, "usage: journal-hook <"+strings.Join(hookadapter.Arguments, "> <")+">")
 		os.Exit(2)
 	}
 	native, err := io.ReadAll(os.Stdin)

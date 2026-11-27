@@ -2,6 +2,9 @@ package hostapi
 
 import (
 	"context"
+	"reflect"
+	"slices"
+	"strings"
 
 	"journal-agent/host"
 )
@@ -11,8 +14,8 @@ import (
 // contained plan names no host placeholder and nothing of this machine: no folders, side sockets, read files or
 // inherited variables.
 func (table *ProcessTable) placeContainerFiles(ctx context.Context, processID string, plan OpenPlan) (OpenPlan, error) {
-	if len(plan.Folders) > 0 || len(plan.SideSockets) > 0 || len(plan.ReadFiles) > 0 || len(plan.Inherit) > 0 {
-		return plan, RefusalError{Refusal: Unsafe, Reason: "a contained plan names nothing of the host it runs on"}
+	if named := hostThingsNamed(plan); len(named) > 0 {
+		return plan, RefusalError{Refusal: Unsafe, Reason: "a contained plan names nothing of the host it runs on, but names " + strings.Join(named, ", ")}
 	}
 
 	placeholders := Placeholders{Folders: map[string]string{filesFolderName: host.PlanFileFolder}}
@@ -67,4 +70,17 @@ func containerPlanFiles(planFiles []PlanFile, placeholders Placeholders) ([]host
 	}
 
 	return files, names, nil
+}
+
+// hostThingsNamed are the fields of the protocol's ContainedRefusedFields the plan sets, by their JSON names.
+func hostThingsNamed(plan OpenPlan) []string {
+	named := []string{}
+	value := reflect.ValueOf(plan)
+	for index := range value.NumField() {
+		name := strings.Split(value.Type().Field(index).Tag.Get("json"), ",")[0]
+		if slices.Contains(ContainedRefusedFields, name) && !value.Field(index).IsZero() && value.Field(index).Len() > 0 {
+			named = append(named, name)
+		}
+	}
+	return named
 }
