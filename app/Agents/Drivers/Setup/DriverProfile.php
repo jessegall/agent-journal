@@ -18,6 +18,7 @@ use App\Agents\SignInEgress;
 use App\Agents\Values\SignInFolder;
 use App\Agents\Values\SignInReport;
 use App\Files\Contracts\Files;
+use App\Files\ManifestMount;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
@@ -219,6 +220,16 @@ final readonly class DriverProfile
             $this->container->make(Files::class),
             $this->container->make(SignInEgress::class),
         );
+    }
+
+    /**
+     * The plan files this driver reads at places of its own, mounted there in its contained session.
+     *
+     * @return list<ManifestMount>
+     */
+    public function planFileMounts(): array
+    {
+        return $this->setup->planFileMounts;
     }
 
     /**

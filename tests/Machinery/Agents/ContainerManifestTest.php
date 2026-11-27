@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Machinery\Agents;
 
 use App\Agents\ContainerManifest;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeManagedSettings;
 use App\Agents\Drivers\Enums\StartProfileType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\WorkspaceUse;
@@ -111,7 +112,7 @@ final class ContainerManifestTest extends TestCase
             WorkspaceUse::ReadOnly,
             $this->policy(),
             'acme-helper-1',
-            $setting->mountRules($account, 'main'),
+            $setting->mountRules($account, 'main', self::claudeMounts()),
             null,
             SecurityOptions::none(),
         );
@@ -138,7 +139,7 @@ final class ContainerManifestTest extends TestCase
             WorkspaceUse::OwnCheckout,
             $this->policy(),
             'acme-writer-1',
-            $setting->mountRules(null, 'main'),
+            $setting->mountRules(null, 'main', self::claudeMounts()),
             null,
             SecurityOptions::none(),
         );
@@ -363,7 +364,7 @@ final class ContainerManifestTest extends TestCase
             $this->containedMounts(),
             [],
             ExecutionBudgets::defaults(),
-            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main')),
+            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), self::claudeMounts()),
             SecurityOptions::none(),
         );
 
@@ -392,7 +393,7 @@ final class ContainerManifestTest extends TestCase
             WorkspaceUse::Shared,
             $this->policy(),
             'acme-s1',
-            $setting->mountRules($account, 'main'),
+            $setting->mountRules($account, 'main', self::claudeMounts()),
             null,
             SecurityOptions::none(),
         );
@@ -418,7 +419,7 @@ final class ContainerManifestTest extends TestCase
             [ManifestMount::daemonBind('/srv/journal/accounts/01b2', '/home/journal/.account', true)],
             [],
             ExecutionBudgets::defaults(),
-            $setting->mountRules($accountA, 'main'),
+            $setting->mountRules($accountA, 'main', self::claudeMounts()),
             SecurityOptions::none(),
         ));
     }
@@ -434,7 +435,7 @@ final class ContainerManifestTest extends TestCase
                 $directory,
                 1,
             );
-            $this->assertThrows(fn () => $setting->mountRules($account, 'main'), AccountFolderInvalid::class);
+            $this->assertThrows(fn () => $setting->mountRules($account, 'main', self::claudeMounts()), AccountFolderInvalid::class);
         }
 
         $this->assertEquals(MountRules::local(), ArrangementSetting::fromConfig('local', '', '{}')->mountRules(
@@ -445,12 +446,13 @@ final class ContainerManifestTest extends TestCase
                 1,
             ),
             'main',
+            self::claudeMounts(),
         ));
     }
 
     public function test_a_contained_session_gets_its_own_history_and_a_resume_the_history_it_resumes(): void
     {
-        $contained = MountRules::contained('acme', null, new FolderWorkspace('main'));
+        $contained = MountRules::contained('acme', null, new FolderWorkspace('main'), self::claudeMounts());
 
         $this->assertSame([], MountRules::local()->sessionMounts('s1', null));
         $this->assertEquals(
@@ -545,7 +547,7 @@ final class ContainerManifestTest extends TestCase
             $mounts,
             [],
             ExecutionBudgets::defaults(),
-            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main')),
+            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), self::claudeMounts()),
             SecurityOptions::none(),
             false,
             StartProfileType::ProtectedAccount,
@@ -579,7 +581,7 @@ final class ContainerManifestTest extends TestCase
             $mounts,
             [],
             ExecutionBudgets::defaults(),
-            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main')),
+            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), self::claudeMounts()),
             $securityOptions,
         );
     }
@@ -598,5 +600,28 @@ final class ContainerManifestTest extends TestCase
             ExecutionBudgets::defaults(),
             [],
         );
+    }
+
+    public function test_a_contained_codex_session_mounts_no_plan_file_of_another_driver(): void
+    {
+        $codex = MountRules::contained('acme', null, new FolderWorkspace('main'), []);
+
+        $this->assertSame(
+            [],
+            array_values(array_filter(
+                $codex->sessionMounts('s1', null),
+                fn (ManifestMount $mount) => $mount->target === ClaudeCodeManagedSettings::TARGET,
+            )),
+        );
+    }
+
+    /**
+     * The plan files Claude Code's setup mounts in its contained session.
+     *
+     * @return list<ManifestMount>
+     */
+    private static function claudeMounts(): array
+    {
+        return [ManifestMount::planFile(ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET)];
     }
 }

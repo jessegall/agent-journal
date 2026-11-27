@@ -81,8 +81,7 @@ final readonly class HostInstructionPlacement
         HostProcess $process,
         HostProcessPlan $plan,
         HostInstructionSource $source,
-    ): HostInstruction
-    {
+    ): HostInstruction {
         $host = $this->orderingHost($process->host_id);
         $payload = $plan->payload();
         $this->reader->assertValid($payload, 'open plan');
@@ -106,8 +105,7 @@ final readonly class HostInstructionPlacement
         HostInstructionSource $source,
         HostInstructionType $type,
         array $payload,
-    ): HostInstruction
-    {
+    ): HostInstruction {
         $host = $this->orderingHost($hostId);
 
         return $this->place($host, null, HostInstructionBody::from($type, $payload, $source));

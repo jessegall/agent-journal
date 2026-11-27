@@ -26,8 +26,6 @@ final readonly class MountRules
     /**
      * The plan file that holds the managed settings a contained Claude Code reads.
      */
-    public const string MANAGED_SETTINGS_FILE = 'managed-settings.json';
-
     private const int MOST_CONTAINED_MOUNTS = 5;
 
     /**
@@ -43,17 +41,11 @@ final readonly class MountRules
      */
     public const string SESSION_TARGET = '/tmp/journal-session';
 
-    /**
-     * Where Claude Code reads the managed settings no session may change.
-     */
-    private const string MANAGED_SETTINGS_TARGET = '/etc/claude-code/managed-settings.json';
-
     private const array CONTAINED_TARGETS = [
         '/workspace',
         self::ACCOUNT_TARGET,
         self::PROJECTS_TARGET,
         self::SESSION_TARGET,
-        self::MANAGED_SETTINGS_TARGET,
     ];
 
     /**
@@ -70,27 +62,35 @@ final readonly class MountRules
         '/etc',
     ];
 
+    /**
+     * @param  list<ManifestMount>  $driverMounts  the plan files the session's driver reads where it looks for them
+     */
     private function __construct(
         public string|null $installationName,
         public string|null $accountSource,
         public WorkspaceSource|null $workspaceSource,
+        private array $driverMounts,
     ) {}
 
     public static function local(): self
     {
-        return new self(null, null, null);
+        return new self(null, null, null, []);
     }
 
     /**
      * The rules of a contained session: its volumes open with the installation name, its workspace comes from its
      * environment's declared source, and the one account folder it may mount, when it has an account, is its own.
      */
+    /**
+     * @param  list<ManifestMount>  $driverMounts
+     */
     public static function contained(
         string $installationName,
         string|null $accountSource,
         WorkspaceSource $workspaceSource,
+        array $driverMounts,
     ): self {
-        return new self($installationName, $accountSource, $workspaceSource);
+        return new self($installationName, $accountSource, $workspaceSource, $driverMounts);
     }
 
     /**
@@ -156,7 +156,7 @@ final readonly class MountRules
     /**
      * The mounts a contained session has beside its workspace: its own history volume over the account's projects
      * folder, which a resumed conversation takes from the session that held it, and its plan's files read-only, with
-     * the managed settings where Claude Code reads them. A local session has none.
+     * the plan files its driver reads where the driver looks for them. A local session has none.
      *
      * @return list<ManifestMount>
      */
@@ -167,7 +167,6 @@ final readonly class MountRules
         }
 
         $files = ManifestMount::planFiles(self::SESSION_TARGET);
-        $settings = ManifestMount::planFile(self::MANAGED_SETTINGS_FILE, self::MANAGED_SETTINGS_TARGET);
 
         if ($resumedSessionId !== null) {
             $history = "{$this->installationName}-history-{$resumedSessionId}";
@@ -175,7 +174,7 @@ final readonly class MountRules
             return [
                 ManifestMount::existingVolume($history, self::PROJECTS_TARGET, true),
                 $files,
-                $settings,
+                ...$this->driverMounts,
             ];
         }
 
@@ -184,7 +183,7 @@ final readonly class MountRules
         return [
             $history,
             $files,
-            $settings,
+            ...$this->driverMounts,
         ];
     }
 
@@ -207,7 +206,10 @@ final readonly class MountRules
 
         $targets = array_map(static fn (ManifestMount $mount) => $mount->target, $mounts);
 
-        if (array_diff($targets, self::CONTAINED_TARGETS) !== [] || count(array_unique($targets)) !== count($targets)) {
+        $driverTargets = array_map(fn (ManifestMount $mount) => $mount->target, $this->driverMounts);
+        $allowed = [...self::CONTAINED_TARGETS, ...$driverTargets];
+
+        if (array_diff($targets, $allowed) !== [] || count(array_unique($targets)) !== count($targets)) {
             throw ManifestRefused::because(
                 'a contained helper mounts only its workspace, account, projects and session files, once each',
             );

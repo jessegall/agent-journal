@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hosts;
 
+use App\Files\ManifestMount;
 use App\Hosts\Exceptions\AccountFolderInvalid;
 use App\Hosts\Exceptions\ArrangementUnknown;
 use App\Hosts\Exceptions\DriverNotContainable;
@@ -58,10 +59,13 @@ final readonly class ArrangementSetting
      * the one account folder it may mount is the session's own, when it has an account. A contained start for an
      * environment without a source is refused before any container exists.
      *
+     *
+     * @param  list<ManifestMount>  $driverMounts  the plan files the session's driver mounts where it reads them
+     *
      * @throws WorkspaceSourceMissing
      * @throws AccountFolderInvalid
      */
-    public function mountRules(SelectedAccount|null $account, string $environment): MountRules
+    public function mountRules(SelectedAccount|null $account, string $environment, array $driverMounts): MountRules
     {
         if (! $this->arrangement->isContained()) {
             return MountRules::local();
@@ -71,6 +75,7 @@ final readonly class ArrangementSetting
             $this->installationName,
             $account === null ? null : MountRules::accountFolder($account->folder()),
             $this->workspaceSources->for($environment),
+            $driverMounts,
         );
     }
 

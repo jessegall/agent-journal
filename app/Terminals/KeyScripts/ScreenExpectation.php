@@ -71,8 +71,7 @@ final readonly class ScreenExpectation
         HostFramePayload $frame,
         array $values,
         string|null $fingerprint,
-    ): bool
-    {
+    ): bool {
         if ($this->fingerprint !== null) {
             return $reading->isStill && $fingerprint === $this->fingerprint;
         }

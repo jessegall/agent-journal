@@ -36,8 +36,7 @@ final readonly class HostFrameScreens
         HostProcess $process,
         HostFramePayload $frame,
         CarbonImmutable $now,
-    ): ScreenFrameData
-    {
+    ): ScreenFrameData {
         return ScreenFrameData::from([
             'epoch' => "{$process->id}:{$process->generation}",
             'sequence' => $frame->captured,

@@ -247,6 +247,7 @@ final class DriversServiceProvider extends ServiceProvider
                 ConditionalPart::for(new ContainedStart(), ClaudeCodeManagedSettings::class),
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeKeptSignIn::class),
                 ConditionalPart::forAccount(new AccountTerminal(), ClaudeCodeTranscriptRestart::class),
-            );
+            )
+            ->mountsPlanFile(ClaudeCodeManagedSettings::FILE, ClaudeCodeManagedSettings::TARGET);
     }
 }

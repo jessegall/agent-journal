@@ -11,6 +11,7 @@ use App\Agents\Drivers\Contracts\DriverKeyScripts;
 use App\Agents\Drivers\Contracts\DriverLayout;
 use App\Agents\Drivers\Setup\Contracts\SignInReader;
 use App\Agents\Exceptions\ProfileRefused;
+use App\Files\ManifestMount;
 use App\Processes\ArgumentBuilder;
 use App\Processes\Contracts\Condition;
 use App\Skills\Contracts\DriverSkills;
@@ -37,6 +38,7 @@ final readonly class DriverSetup
      * @param  list<StartRefusal>  $signInRefusals
      * @param  list<ConditionalPart>  $environment
      * @param  list<ConditionalPart>  $plan
+     * @param  list<ManifestMount>  $planFileMounts
      */
     private function __construct(
         public string $family,
@@ -57,6 +59,7 @@ final readonly class DriverSetup
         public array $signInRefusals = [],
         public array $environment = [],
         public array $plan = [],
+        public array $planFileMounts = [],
     ) {}
 
     /**
@@ -167,5 +170,13 @@ final readonly class DriverSetup
     public function startPlan(ConditionalPart ...$parts): self
     {
         return clone ($this, ['plan' => [...$this->plan, ...array_values($parts)]]);
+    }
+
+    /**
+     * A plan file the driver reads at a place of its own, mounted there read-only in its contained session.
+     */
+    public function mountsPlanFile(string $file, string $target): self
+    {
+        return clone ($this, ['planFileMounts' => [...$this->planFileMounts, ManifestMount::planFile($file, $target)]]);
     }
 }

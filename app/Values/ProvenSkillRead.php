@@ -44,6 +44,7 @@ final readonly class ProvenSkillRead
     private static function skillTool(ToolResult $call): self|null
     {
         $prefix = ClaudeCodeSkills::PLUGIN_NAME.':';
+
         if ($call->toolName !== 'Skill') {
             return null;
         }

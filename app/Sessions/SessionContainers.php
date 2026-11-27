@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sessions;
 
 use App\Agents\ContainerManifest;
+use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\SecurityOptions;
 use App\Hosts\ArrangementSetting;
@@ -29,6 +30,7 @@ final readonly class SessionContainers
         private SessionPolicyReader $policies,
         private ArrangementSetting $arrangement,
         private StartProfiles $startProfiles,
+        private DriverProfiles $drivers,
         #[Config('journal.agents.security_profiles')]
         private string $securityProfiles,
     ) {}
@@ -66,7 +68,11 @@ final readonly class SessionContainers
             $runtime->loadMissing('session')->session->workspaceUse($policy->access),
             $policy->execution->forDriverScreen($runtime->has_screen),
             $this->arrangement->sessionContainerName($sessionId),
-            $this->arrangement->mountRules($account, ArrangementSetting::ENVIRONMENT),
+            $this->arrangement->mountRules(
+                $account,
+                ArrangementSetting::ENVIRONMENT,
+                $this->drivers->ofFamily($runtime->family)->planFileMounts(),
+            ),
             null,
             SecurityOptions::agent($this->securityProfiles),
             $this->startProfiles->for($runtime->family, $account),

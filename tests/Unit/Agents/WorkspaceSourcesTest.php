@@ -21,7 +21,7 @@ final class WorkspaceSourcesTest extends TestCase
 
     public function test_a_contained_start_with_a_git_source_mounts_its_environments_volume(): void
     {
-        $rules = ArrangementSetting::fromConfig('contained', 'acme', self::SOURCES)->mountRules(null, 'main');
+        $rules = ArrangementSetting::fromConfig('contained', 'acme', self::SOURCES)->mountRules(null, 'main', []);
 
         $this->assertEquals(
             ManifestMount::volume('acme-workspace-main', '/workspace', true),
@@ -33,7 +33,7 @@ final class WorkspaceSourcesTest extends TestCase
     public function test_a_contained_start_with_a_folder_source_binds_its_server_folder(): void
     {
         $mount = ArrangementSetting::fromConfig('contained', 'acme', self::SOURCES)
-            ->mountRules(null, 'staging')
+            ->mountRules(null, 'staging', [])
             ->workspaceMount('/ignored', WorkspaceUse::Shared);
 
         $this->assertSame(HostMountType::DaemonBind, $mount->type);
@@ -48,12 +48,12 @@ final class WorkspaceSourcesTest extends TestCase
         $this->expectException(WorkspaceSourceMissing::class);
         $this->expectExceptionMessage(WorkspaceSourceMissing::for('review')->getMessage());
 
-        $setting->mountRules(null, 'review');
+        $setting->mountRules(null, 'review', []);
     }
 
     public function test_the_local_arrangement_ignores_the_sources_and_binds_the_starts_own_folder(): void
     {
-        $rules = ArrangementSetting::fromConfig('local', '', '{}')->mountRules(null, 'review');
+        $rules = ArrangementSetting::fromConfig('local', '', '{}')->mountRules(null, 'review', []);
 
         $this->assertEquals(MountRules::local(), $rules);
         $this->assertEquals(

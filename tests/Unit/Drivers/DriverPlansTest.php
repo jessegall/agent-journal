@@ -9,6 +9,7 @@ use App\Accounts\StartSetting;
 use App\Agents\ContainerManifest;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeManagedSettings;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Enums\WorkspaceUse;
@@ -171,7 +172,7 @@ final class DriverPlansTest extends TestCase
                 $plan->instructionType(),
                 $payload['labels'],
                 $plan->inherit,
-                in_array(MountRules::MANAGED_SETTINGS_FILE, array_map(fn (PlanFile $file) => $file->name, $plan->files), true),
+                in_array(ClaudeCodeManagedSettings::FILE, array_map(fn (PlanFile $file) => $file->name, $plan->files), true),
                 array_values(array_filter(
                     [...$plan->argv, ...$plan->environment, ...array_map(fn (PlanFile $file) => $file->content, $plan->files)],
                     fn (string $text) => str_contains($text, '{host:') || str_contains($text, 'sockets'),

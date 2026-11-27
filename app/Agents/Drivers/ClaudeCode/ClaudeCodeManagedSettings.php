@@ -8,7 +8,6 @@ use App\Agents\Drivers\Contracts\PlanPart;
 use App\Agents\Values\PlanFile;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
-use App\Support\MountRules;
 use App\Values\DriverStart;
 use App\Values\FilePath;
 use App\Values\PlanAddition;
@@ -19,6 +18,13 @@ use App\Values\PlanAddition;
  */
 final readonly class ClaudeCodeManagedSettings implements PlanPart
 {
+    /**
+     * The plan file of the managed settings, and where Claude Code reads it in its container.
+     */
+    public const string FILE = 'managed-settings.json';
+
+    public const string TARGET = '/etc/claude-code/managed-settings.json';
+
     private const string TEMPLATE = 'resources/agents/claude-code-managed-settings.json';
 
     public function __construct(private Files $files) {}
@@ -33,6 +39,6 @@ final readonly class ClaudeCodeManagedSettings implements PlanPart
 
         $text = json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
-        return new PlanAddition(files: [PlanFile::template(MountRules::MANAGED_SETTINGS_FILE, $text)]);
+        return new PlanAddition(files: [PlanFile::template(self::FILE, $text)]);
     }
 }
