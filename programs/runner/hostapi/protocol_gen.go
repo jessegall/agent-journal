@@ -234,6 +234,7 @@ type OpenPlan struct {
 	KeptFiles       []string                `json:"kept_files,omitempty"`
 	RawBytes        bool                    `json:"raw_bytes,omitempty"`
 	ExitLogLines    int                     `json:"exit_log_lines,omitempty"`
+	ExitLogBytes    int                     `json:"exit_log_bytes,omitempty"`
 	DrainMs         int                     `json:"drain_ms,omitempty"`
 	SpoolBytes      int                     `json:"spool_bytes,omitempty"`
 }

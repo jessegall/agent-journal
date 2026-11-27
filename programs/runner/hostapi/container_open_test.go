@@ -81,7 +81,7 @@ func containedManifest() host.ContainerManifest {
 func containedInstruction(t *testing.T, change func(plan *OpenPlan)) Instruction {
 	t.Helper()
 	manifest := containedManifest()
-	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20,
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096,
 		Type:      "terminal",
 		Restart:   "never",
 		Argv:      []string{"program", "--settings", "/files/settings.json"},

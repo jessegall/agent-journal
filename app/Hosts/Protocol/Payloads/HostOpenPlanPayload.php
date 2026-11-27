@@ -80,6 +80,9 @@ final class HostOpenPlanPayload extends Data
         #[MapName('exit_log_lines')]
         #[OptionalField]
         public readonly int $exitLogLines = 0,
+        #[MapName('exit_log_bytes')]
+        #[OptionalField]
+        public readonly int $exitLogBytes = 0,
         #[MapName('drain_ms')]
         #[OptionalField]
         public readonly int $drainMs = 0,

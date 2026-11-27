@@ -14,9 +14,9 @@ func TestAConnectedHostOpensOnlyItsSealedPrograms(t *testing.T) {
 	table := OpenProcessTable(t.TempDir(), host.Containers{}, nil, nil)
 	table.AllowOnly(&AllowedPrograms{Programs: map[string]string{"AGENT_EXECUTABLE": "/sealed/bin/agent"}})
 
-	listed := table.requireListed(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Argv: []string{"/sealed/bin/agent", "--print"}})
-	unlisted := table.requireListed(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Argv: []string{"/bin/sh", "-c", "id"}})
-	healed := table.requireListed(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Argv: []string{"/sealed/bin/agent"}, RestartArgv: []string{"/usr/bin/env"}})
+	listed := table.requireListed(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Argv: []string{"/sealed/bin/agent", "--print"}})
+	unlisted := table.requireListed(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Argv: []string{"/bin/sh", "-c", "id"}})
+	healed := table.requireListed(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Argv: []string{"/sealed/bin/agent"}, RestartArgv: []string{"/usr/bin/env"}})
 
 	var refusal RefusalError
 	if listed != nil {
@@ -30,7 +30,7 @@ func TestAConnectedHostOpensOnlyItsSealedPrograms(t *testing.T) {
 func TestACoLocatedHostOpensAnyProgram(t *testing.T) {
 	table := OpenProcessTable(t.TempDir(), host.Containers{}, nil, nil)
 
-	if err := table.requireListed(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Argv: []string{"/bin/sh"}}); err != nil {
+	if err := table.requireListed(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Argv: []string{"/bin/sh"}}); err != nil {
 		t.Fatalf("a co-located host refused a program: %v", err)
 	}
 }

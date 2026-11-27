@@ -21,7 +21,7 @@ func fencedInstruction(t *testing.T, plan FencedPlan) Instruction {
 
 func openFencedProcess(t *testing.T, table *ProcessTable, processID, fence string) error {
 	t.Helper()
-	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "pipe", Restart: "never", Argv: []string{"sleep", "30"}, Folder: t.TempDir(), Fence: fence})
+	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "pipe", Restart: "never", Argv: []string{"sleep", "30"}, Folder: t.TempDir(), Fence: fence})
 	if err != nil {
 		t.Fatal(err)
 	}

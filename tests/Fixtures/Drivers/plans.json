@@ -39,6 +39,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -130,6 +131,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -225,6 +227,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -320,6 +323,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -415,6 +419,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -505,6 +510,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -595,6 +601,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -685,6 +692,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -775,6 +783,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -914,6 +923,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -978,6 +988,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1113,6 +1124,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1177,6 +1189,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1312,6 +1325,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1376,6 +1390,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1511,6 +1526,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1575,6 +1591,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1674,6 +1691,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1738,6 +1756,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1837,6 +1856,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -1901,6 +1921,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2000,6 +2021,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2064,6 +2086,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2163,6 +2186,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2227,6 +2251,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2349,6 +2374,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2406,6 +2432,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2528,6 +2555,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2585,6 +2613,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2707,6 +2736,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2764,6 +2794,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2886,6 +2917,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -2943,6 +2975,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3032,6 +3065,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3089,6 +3123,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3178,6 +3213,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3235,6 +3271,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3324,6 +3361,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3381,6 +3419,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3470,6 +3509,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3527,6 +3567,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3664,6 +3705,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3730,6 +3772,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3867,6 +3910,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -3933,6 +3977,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4070,6 +4115,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4136,6 +4182,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4273,6 +4320,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4339,6 +4387,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4440,6 +4489,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4506,6 +4556,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4607,6 +4658,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4673,6 +4725,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4774,6 +4827,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4840,6 +4894,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -4941,6 +4996,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5007,6 +5063,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5142,6 +5199,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5206,6 +5264,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5341,6 +5400,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5405,6 +5465,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5540,6 +5601,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5604,6 +5666,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5739,6 +5802,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5803,6 +5867,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5902,6 +5967,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -5966,6 +6032,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6065,6 +6132,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6129,6 +6197,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6228,6 +6297,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6292,6 +6362,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6391,6 +6462,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6455,6 +6527,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6488,6 +6561,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6556,6 +6630,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6633,6 +6708,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6707,6 +6783,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6786,6 +6863,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6858,6 +6936,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -6935,6 +7014,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7007,6 +7087,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7084,6 +7165,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7157,6 +7239,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7230,6 +7313,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7305,6 +7389,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7380,6 +7465,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7453,6 +7539,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7526,6 +7613,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7599,6 +7687,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7672,6 +7761,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7740,6 +7830,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7808,6 +7899,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7878,6 +7970,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -7948,6 +8041,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8016,6 +8110,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8084,6 +8179,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8152,6 +8248,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8220,6 +8317,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8293,6 +8391,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8336,6 +8435,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8405,6 +8505,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8448,6 +8549,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8519,6 +8621,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8562,6 +8665,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8633,6 +8737,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8676,6 +8781,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8745,6 +8851,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8788,6 +8895,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8857,6 +8965,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8900,6 +9009,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -8969,6 +9079,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9012,6 +9123,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9081,6 +9193,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9124,6 +9237,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9193,6 +9307,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9236,6 +9351,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9305,6 +9421,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9348,6 +9465,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9419,6 +9537,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9462,6 +9581,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9533,6 +9653,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9576,6 +9697,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9645,6 +9767,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9688,6 +9811,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9757,6 +9881,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9800,6 +9925,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9869,6 +9995,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9912,6 +10039,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -9981,6 +10109,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     },
@@ -10024,6 +10153,7 @@
         "kept_files": [],
         "raw_bytes": false,
         "exit_log_lines": 20,
+        "exit_log_bytes": 4096,
         "drain_ms": 5000,
         "spool_bytes": 16777216
     }

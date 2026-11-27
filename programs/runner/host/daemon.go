@@ -219,9 +219,9 @@ func (containers Containers) exitCodeOf(ctx context.Context, id string) (int, er
 	}
 }
 
-// lastPrinted are the last lines of the container's log, as many as asked, as they were printed; empty when the
-// daemon kept none. A terminal's log is its bytes as they are; any other comes in frames of output and error.
-func (containers Containers) lastPrinted(ctx context.Context, name string, hasTerminal bool, lines int) string {
+// lastPrinted are the last lines of the container's log, as many as asked and at most their last bytes asked for, as
+// they were printed; empty when the daemon kept none. A terminal's log is its bytes as they are; any other comes in frames of output and error.
+func (containers Containers) lastPrinted(ctx context.Context, name string, hasTerminal bool, lines int, most int) string {
 	logs, err := containers.Daemon.ContainerLogs(ctx, name, client.ContainerLogsOptions{
 		ShowStdout: true, ShowStderr: true, Tail: strconv.Itoa(lines),
 	})
@@ -237,7 +237,12 @@ func (containers Containers) lastPrinted(ctx context.Context, name string, hasTe
 		_, _ = stdcopy.StdCopy(&printed, &printed, logs)
 	}
 
-	return printed.String()
+	kept := printed.Bytes()
+	if len(kept) > most {
+		kept = kept[len(kept)-most:]
+	}
+
+	return string(kept)
 }
 
 // ErrWorkspaceQuotaUnavailable refuses a volume of bounded size on a daemon that cannot bound one.

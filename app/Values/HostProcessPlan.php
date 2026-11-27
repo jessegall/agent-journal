@@ -22,10 +22,13 @@ use App\Terminals\Screens\ShieldRule;
 final readonly class HostProcessPlan
 {
     /**
-     * How many of its last log lines a container's exit carries, how long the host waits for a pipe's output to be
-     * read to its end before it reports the exit, and the most bytes a pipe's spool keeps for a reattach.
+     * How many of its last log lines a container's exit carries and the most bytes of them, as a terminal's lines can
+     * be a whole screen each, how long the host waits for a pipe's output to be read to its end before it reports the
+     * exit, and the most bytes a pipe's spool keeps for a reattach.
      */
     private const int EXIT_LOG_LINES = 20;
+
+    private const int EXIT_LOG_BYTES = 4096;
 
     private const int DRAIN_MS = 5_000;
 
@@ -174,6 +177,7 @@ final readonly class HostProcessPlan
             'kept_files' => $this->keptFiles,
             'raw_bytes' => $this->isRawBytes,
             'exit_log_lines' => self::EXIT_LOG_LINES,
+            'exit_log_bytes' => self::EXIT_LOG_BYTES,
             'drain_ms' => self::DRAIN_MS,
             'spool_bytes' => self::SPOOL_BYTES,
         ]);

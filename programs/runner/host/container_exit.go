@@ -7,8 +7,9 @@ import (
 )
 
 // ExitOf waits until the container's program ends and answers how, as Docker tells it: its exit code, whether the
-// kernel killed it for its memory, and the last lines of its log, as many as asked, as they were printed.
-func (containers Containers) ExitOf(ctx context.Context, name string, lines int) (ContainerExit, error) {
+// kernel killed it for its memory, and the last lines of its log, as many lines and at most as many of their last
+// bytes as asked, as they were printed.
+func (containers Containers) ExitOf(ctx context.Context, name string, lines int, most int) (ContainerExit, error) {
 	code, err := containers.exitCodeOf(ctx, name)
 	if err != nil {
 		return ContainerExit{}, err
@@ -25,7 +26,7 @@ func (containers Containers) ExitOf(ctx context.Context, name string, lines int)
 	return ContainerExit{
 		Code:        code,
 		OutOfMemory: described.State != nil && described.State.OOMKilled,
-		LastPrinted: containers.lastPrinted(ctx, name, hasTerminal, lines),
+		LastPrinted: containers.lastPrinted(ctx, name, hasTerminal, lines, most),
 	}, nil
 }
 

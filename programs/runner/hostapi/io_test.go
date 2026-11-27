@@ -53,7 +53,7 @@ func terminalOutputs(t *testing.T) (*Outputs, *fakeClock, *postedOutputs) {
 	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-	if err := outputs.Open("p", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}}); err != nil {
+	if err := outputs.Open("p", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}}); err != nil {
 		t.Fatal(err)
 	}
 	return outputs, clock, posted
@@ -126,7 +126,7 @@ func TestAPipeReattachesAtItsSpoolOffset(t *testing.T) {
 	folder := t.TempDir()
 	posted := &postedOutputs{}
 	outputs := NewOutputs(folder, posted.post, time.Now)
-	if err := outputs.Open("pipe", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "pipe"}); err != nil {
+	if err := outputs.Open("pipe", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "pipe"}); err != nil {
 		t.Fatal(err)
 	}
 	outputs.Printed("pipe", []byte("first "))
@@ -145,7 +145,7 @@ func TestAPipeReattachesAtItsSpoolOffset(t *testing.T) {
 func TestAContainersLogReachesTheJournalUnderTheNameOfEachStream(t *testing.T) {
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, time.Now)
-	if err := outputs.Open("pipe", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "pipe"}); err != nil {
+	if err := outputs.Open("pipe", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "pipe"}); err != nil {
 		t.Fatal(err)
 	}
 	table := &ProcessTable{outputs: outputs}
@@ -198,7 +198,7 @@ func TestAShieldedScreenLeavesWithoutItsRows(t *testing.T) {
 	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
 		ShieldRules: []ShieldRule{{Keywords: []string{"custom api key", "use this api key"}, MinKeywords: 2}}}
 	if err := outputs.Open("p", plan); err != nil {
 		t.Fatal(err)
@@ -288,7 +288,7 @@ func TestAShieldedScreenWithholdsTheProcesssChunksOnEveryStream(t *testing.T) {
 	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5},
 		ShieldRules: []ShieldRule{{Keywords: []string{"custom api key", "use this api key"}, MinKeywords: 2}}}
 	if err := outputs.Open("p", plan); err != nil {
 		t.Fatal(err)
@@ -317,7 +317,7 @@ func TestATerminalAskedForItsRawBytesSendsThemFromTheFirstOne(t *testing.T) {
 		clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 		posted := &postedOutputs{}
 		outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-		plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}, RawBytes: isRaw}
+		plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}, RawBytes: isRaw}
 		if err := outputs.Open("p", plan); err != nil {
 			t.Fatal(err)
 		}

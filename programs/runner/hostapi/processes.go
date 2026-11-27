@@ -325,7 +325,7 @@ func (held *heldProcess) awaitDrained() {
 func (table *ProcessTable) watchContainer(held *heldProcess) {
 	ctx := context.Background()
 	for {
-		exit, err := table.containers.ExitOf(ctx, held.containerName(), held.plan.ExitLogLines)
+		exit, err := table.containers.ExitOf(ctx, held.containerName(), held.plan.ExitLogLines, held.plan.ExitLogBytes)
 		if err != nil {
 			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportLost, Evidence: err.Error()})
 			return
