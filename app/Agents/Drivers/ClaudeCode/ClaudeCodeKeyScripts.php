@@ -35,8 +35,9 @@ final readonly class ClaudeCodeKeyScripts implements DriverKeyScripts
             KeyStep::evidence('see the model applied', 'set model to'),
         ];
 
+        // Claude Code draws an argument hint after the command, so the echo is its words, not the line as typed.
         $changeEffort = [
-            ...KeyScript::command('/effort {effort}', '❯ /effort {effort}'),
+            ...KeyScript::command('/effort {effort}', '❯ /effort', '{effort}'),
             KeyStep::evidence('see the effort applied', 'set effort level to {effort}'),
         ];
 

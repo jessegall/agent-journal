@@ -16,17 +16,16 @@ final readonly class ScreenClassifier
 {
     public function readingOf(ScreenLayout $layout, HostFramePayload $frame): ScreenReading
     {
-        $hasOptions = $layout->optionsOf($frame) !== null && $layout->composer->rowsOf($frame) === null;
+        $composer = $layout->composer->rowsOf($frame);
+        $hasOptions = $layout->optionsOf($frame) !== null && $composer === null;
 
         foreach ($layout->menus as $family) {
-            if ($family->isShownOn($frame)) {
+            if ($family->isShownOn($frame) && ! self::isScrolledPast($family->options->rowsOf($frame), $composer)) {
                 $isStill = self::isStill($frame, $family->options->rowsOf($frame), $family->stillMs);
 
                 return new ScreenReading(ScreenType::Menu, $family, $isStill, $hasOptions);
             }
         }
-
-        $composer = $layout->composer->rowsOf($frame);
 
         $isReady = $composer !== null
             && self::holdsEmptyComposer($layout, $frame, $composer)
@@ -52,6 +51,15 @@ final readonly class ScreenClassifier
         return $frame->buffer === $layout->buffer
             && $composer->holds($frame->cursorRow)
             && $frame->cursorColumn === $layout->emptyCursorColumn;
+    }
+
+    /**
+     * Whether the options sit above a drawn composer: lines of the conversation that read like a menu, such as an
+     * echoed command and its answer, never an open menu, which takes the composer's place or sits below it.
+     */
+    private static function isScrolledPast(RowRange|null $options, RowRange|null $composer): bool
+    {
+        return $options !== null && $composer !== null && $options->last <= $composer->first;
     }
 
     /**

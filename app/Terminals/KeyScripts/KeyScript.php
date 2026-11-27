@@ -51,11 +51,11 @@ final readonly class KeyScript
      *
      * @return list<KeyStep>
      */
-    public static function command(string $command, string $echo): array
+    public static function command(string $command, string ...$echo): array
     {
         return [
             KeyStep::press("type {$command}", ScreenExpectation::ready(), $command),
-            KeyStep::press("run {$command}", ScreenExpectation::shows($echo), NavigationKey::Enter->bytes()),
+            KeyStep::press("run {$command}", ScreenExpectation::shows(...$echo), NavigationKey::Enter->bytes()),
         ];
     }
 }

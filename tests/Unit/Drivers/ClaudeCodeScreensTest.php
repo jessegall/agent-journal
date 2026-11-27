@@ -40,6 +40,17 @@ final class ClaudeCodeScreensTest extends TestCase
         $this->journal->assertResult(array_values($recorded), $read);
     }
 
+    /**
+     * An applied effort change leaves its echoed command and its answer above a ready composer, which read like a
+     * menu's options and its words; a menu is never open above a drawn composer, so the screen takes the next prompt.
+     */
+    public function test_a_menu_above_a_drawn_composer_is_conversation_and_the_composer_is_ready(): void
+    {
+        $reading = $this->readingOf($this->lastFrameOf('effort-applied'));
+
+        $this->journal->assertResult([ScreenType::PromptReady, true], [$reading->type, $reading->isStill]);
+    }
+
     public function test_a_reworded_menu_still_reads_as_its_family_and_holds_for_it(): void
     {
         $frame = $this->frame(['SECURITY first: do you Trust what is here?', '', ' ❯ No, exit', '   Yes, go on'], 400);
