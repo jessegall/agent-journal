@@ -29,7 +29,6 @@ return [
     'SessionToken::issueFor',
     'SessionToken::rotateTo',
     'SessionToken::revokeAt',
-    'SessionCleanup::recordPass',
     'ProfileRevisionHold::markReconciledAt',
     'DriverApproval::approveBuilds',
     'MenuEntry::used',

@@ -26,7 +26,6 @@ use App\Support\ActorReference;
 use App\Values\ClaimedRequest;
 use App\Values\StackTarget;
 use App\Values\StartRequest;
-use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\Agents\TestAgent;
@@ -84,9 +83,6 @@ final class CancelSessionStartTest extends TestCase
         $this->journal->assertResult([false, SessionStatus::Ended], [$isStopAsked, $session->refresh()->status]);
     }
 
-    /**
-     * @return array{EnrolledHost, OpenedRuntime, DriverRequest, SessionRequest}
-     */
     public function test_a_ready_report_after_the_start_was_cancelled_changes_nothing(): void
     {
         [$host, $opened, $wake, $record] = $this->startWithMessage();
@@ -103,6 +99,9 @@ final class CancelSessionStartTest extends TestCase
         $this->assertNotContains($opened->firstRequestId, $this->claimedIds($host));
     }
 
+    /**
+     * @return array{EnrolledHost, OpenedRuntime, DriverRequest, SessionRequest}
+     */
     private function startWithMessage(): array
     {
         [$host, $opened] = $this->openRuntime(firstMessage: 'Start with the plan.');
@@ -123,7 +122,6 @@ final class CancelSessionStartTest extends TestCase
             $request,
             TestSelections::pinOf($request),
             ActorReference::system(),
-            None::create(),
         );
         $record->startedAs($session);
         $receipt = $this->app->make(AgentWakes::class)->wake(

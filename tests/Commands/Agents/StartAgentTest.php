@@ -56,6 +56,7 @@ use App\Sessions\Enums\StartOriginType;
 use App\Sessions\Enums\StartUnavailableReason;
 use App\Sessions\Exceptions\CapacityUnavailable;
 use App\Sessions\Exceptions\SessionPolicyFrozen;
+use App\Sessions\StartHeartbeats as SessionEndings;
 use App\Sessions\StartReceipt;
 use App\Sessions\Values\HostCapacity;
 use App\Sessions\Values\StartPolicy;
@@ -375,6 +376,32 @@ final class StartAgentTest extends TestCase
 
     public function test_capacity_beyond_the_host_refuses(): void
     {
+        $this->arrangeRoomForOneContainer();
+
+        $this->start($this->newAgentContainerRequest());
+
+        $this->assertThrows(fn () => $this->start($this->newAgentContainerRequest()), CapacityUnavailable::class);
+        $this->assertSame(1, CapacityReservation::query()->count());
+        $this->assertSame(1, AgentSession::query()->count());
+    }
+
+    public function test_an_ended_session_gives_its_capacity_back_for_the_next_start(): void
+    {
+        $this->arrangeRoomForOneContainer();
+        $this->start($this->newAgentContainerRequest());
+        $first = AgentSession::query()->sole();
+
+        $this->journal->service(SessionEndings::class)->markExited($first, 'exit code 0');
+        $this->start($this->newAgentContainerRequest());
+
+        $this->assertSame(2, AgentSession::query()->count());
+    }
+
+    /**
+     * A signed-in owner on a host with room for one agent container, whose capabilities and image are proven.
+     */
+    private function arrangeRoomForOneContainer(): void
+    {
         $this->signIn();
         $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
         {
@@ -396,12 +423,6 @@ final class StartAgentTest extends TestCase
             }
         });
         $this->app->instance(HostCapacity::class, new HostCapacity(3, 16 * 1024 ** 3, 50 * 1024 ** 3));
-
-        $this->start($this->newAgentContainerRequest());
-
-        $this->assertThrows(fn () => $this->start($this->newAgentContainerRequest()), CapacityUnavailable::class);
-        $this->assertSame(1, CapacityReservation::query()->count());
-        $this->assertSame(1, AgentSession::query()->count());
     }
 
     /**

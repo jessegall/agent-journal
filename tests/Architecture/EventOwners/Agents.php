@@ -35,7 +35,6 @@ use App\Events\Sessions\AgentSessionEnded;
 use App\Events\Sessions\AgentSessionHeartbeatRecorded;
 use App\Events\Sessions\AgentSessionSelectionUsed;
 use App\Events\Sessions\AgentSessionSkillsGenerated;
-use App\Events\Sessions\CleanupPassRecorded;
 use App\Events\Sessions\ClosingWordsKeptPrivate;
 use App\Events\Sessions\ClosingWordsOffered;
 use App\Events\Sessions\DriverBuildsApproved;
@@ -124,7 +123,6 @@ use App\Events\Sessions\TerminalTakeSent;
 use App\Events\Sessions\TerminalViewClosed;
 use App\Events\Sessions\TerminalViewFollowed;
 use App\Processes\Enums\RuntimeActivity;
-use App\Sessions\Enums\CleanupStatus;
 use App\Sessions\Enums\StopCheckStatus;
 use App\Support\RecordIdentity;
 use Illuminate\Support\Str;
@@ -488,13 +486,6 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SessionTokenRevoked('token'),
-    ],
-    CleanupPassRecorded::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'SessionCleanup::recordPass',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new CleanupPassRecorded('cleanup', CleanupStatus::Pending),
     ],
     ProfileRevisionHoldReconciled::class => [
         'role' => EventRole::RowFact,

@@ -34,7 +34,7 @@ final class ComposeEnvironmentTest extends TestCase
      */
     private function servicesWithoutTheEnvironment(string $composeFile): array
     {
-        /** @var array{services: array<string, array<string, mixed>>} $compose */
+        /** @var array{services: array<string, array<string, mixed>>, x-journal-environment?: array<string, string>} $compose */
         $compose = Yaml::parse(File::get($composeFile));
         $shared = $compose[self::SHARED_ENVIRONMENT] ?? null;
         $faults = [];
