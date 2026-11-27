@@ -177,14 +177,18 @@ export function useChatTimeline(
   }, RUNNING_CARD_READ_MS);
   onBeforeUnmount(() => clearInterval(runningRead));
 
+  const isFromAnother = (entry: ChatEntryData): boolean =>
+    entry.author !== conversation.value?.viewer;
   const unreadShown = computed(() =>
-    entries.value.flatMap((entry) =>
-      entry.message !== undefined &&
-      entry.author !== conversation.value?.viewer &&
-      !entry.message.isReadByViewer
-        ? [entry.message.id]
-        : [],
-    ),
+    entries.value.flatMap((entry) => {
+      const message = entry.message;
+
+      if (message === undefined || !isFromAnother(entry) || message.isReadByViewer) {
+        return [];
+      }
+
+      return [message.id];
+    }),
   );
 
   // The live notice that this tab lost a chat ends the view of it at once, before the page is read again.

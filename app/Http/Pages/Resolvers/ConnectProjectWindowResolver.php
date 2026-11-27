@@ -59,7 +59,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
             'canIssue' => $this->availability->canIssue(),
             'holdReasons' => array_map(fn (InstallLineHold $hold) => $hold->sentence(), $this->availability->holds()),
             'release' => ReleaseOfferData::ofPublished($this->releases->currentRelease()),
-            'attempts' => InstallAttemptListData::fromPage($this->attempts->page($this->attemptsCursor())),
+            'attempts' => InstallAttemptListData::fromPage($this->attempts->page($this->cursorOf('attempts'))),
             'projects' => array_map(
                 fn (Project $project) => JoinTargetData::fromProject($project, $environments),
                 $projects,
@@ -74,7 +74,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
      */
     private function bindingList(CarbonImmutable $now): BindingListData
     {
-        $page = ProjectBinding::findPageAfter($this->bindingsCursor());
+        $page = ProjectBinding::findPageAfter($this->cursorOf('bindings'));
         $bindings = array_values($page->items());
 
         $expiries = array_values(array_filter(array_map(
@@ -96,11 +96,11 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
     }
 
     /**
-     * The cursor of the connected folders page the window asked for, none for the first.
+     * The cursor of the page of that list the window asked for, such as its connected folders; none for the first.
      */
-    private function bindingsCursor(): string|null
+    private function cursorOf(string $list): string|null
     {
-        $cursor = $this->request->string('bindings')->toString();
+        $cursor = $this->request->string($list)->toString();
 
         if ($cursor === '') {
             return null;
@@ -170,17 +170,4 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         return $name ?? 'An account that is gone';
     }
 
-    /**
-     * The cursor of the install attempts page the window asked for, none for the first.
-     */
-    private function attemptsCursor(): string|null
-    {
-        $cursor = $this->request->string('attempts')->toString();
-
-        if ($cursor === '') {
-            return null;
-        }
-
-        return $cursor;
-    }
 }

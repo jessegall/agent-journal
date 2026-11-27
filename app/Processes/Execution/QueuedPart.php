@@ -76,6 +76,22 @@ final readonly class QueuedPart implements SpawnablePart
     }
 
     /**
+     * Records that the part is skipped, as its admission went stale.
+     */
+    public function skipAsStale(): void
+    {
+        $this->state->events->skipped($this->part, $this->staleReason());
+    }
+
+    /**
+     * Records that the part started inside the supervisor itself, on this host.
+     */
+    public function startInside(string $host): void
+    {
+        $this->state->events->startedInside($this->part, $host);
+    }
+
+    /**
      * @return list<string>
      */
     public function argv(): array

@@ -111,4 +111,12 @@ final readonly class NavigationCandidate
             ...array_merge([], ...array_map(fn (self $child) => $child->withDescendants(), $this->children)),
         ];
     }
+
+    /**
+     * Whether the navigation item shows a count.
+     */
+    public function isCounted(): bool
+    {
+        return $this->navigation->navigationItem->count !== null;
+    }
 }

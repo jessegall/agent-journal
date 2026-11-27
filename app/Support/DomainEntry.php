@@ -19,6 +19,7 @@ use App\Bootstrap\Exceptions\TraitInterfaceMissing;
 use App\Bootstrap\ExportValidator as ExportsCheck;
 use App\Bootstrap\TraitRequirements;
 use App\Bus\CommandOwner;
+use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandMiddlewareProvider;
 use App\Bus\Contracts\CommandProvider;
 use App\Bus\Contracts\CommandRuleProvider;
@@ -217,11 +218,7 @@ final readonly class DomainEntry
      */
     public function scriptFolder(): string
     {
-        if ($this->isPackage()) {
-            return dirname($this->folder).'/resources/js';
-        }
-
-        return $this->folder.'/Resources/js';
+        return $this->laidOutFolder('resources/js', 'Resources/js');
     }
 
     /**
@@ -230,6 +227,19 @@ final readonly class DomainEntry
     private function isPackage(): bool
     {
         return basename($this->folder) === 'src';
+    }
+
+    /**
+     * A folder of the domain's own layout: the package path beside src in a package, or the module path in the class
+     * folder of a flat test module.
+     */
+    private function laidOutFolder(string $packagePath, string $modulePath): string
+    {
+        if ($this->isPackage()) {
+            return dirname($this->folder).'/'.$packagePath;
+        }
+
+        return $this->folder.'/'.$modulePath;
     }
 
     /**
@@ -247,17 +257,13 @@ final readonly class DomainEntry
         return $this->folder.'/Listeners';
     }
 
+    /**
+     * Where the domain's migrations sit: Laravel's database/migrations beside src in a package, or Database/Migrations
+     * in a flat test module's folder.
+     */
     public function migrationFolder(): string
     {
-        // A domain package keeps Laravel's own layout beside its src (domain/<Name>/database/migrations); a flat test
-        // module keeps them in its class folder.
-        if ($this->isPackage()) {
-            return dirname(
-                $this->folder,
-            ).'/database/migrations';
-        }
-
-        return $this->folder.'/Database/Migrations';
+        return $this->laidOutFolder('database/migrations', 'Database/Migrations');
     }
 
     /**
@@ -653,13 +659,17 @@ final readonly class DomainEntry
     }
 
     /**
+     * The commands the domain keeps in its Commands folder, with any it provides from elsewhere.
+     *
      * @return list<class-string>
      */
     private function commands(): array
     {
-        return $this->provided(CommandProvider::class)
+        $provided = $this->provided(CommandProvider::class)
             ->map(fn (CommandProvider $domain) => $domain->commands())
             ->getOrElse([]);
+
+        return array_values(array_unique([...Codebase::in($this->folder.'/Commands/*', Command::class), ...$provided]));
     }
 
     /**

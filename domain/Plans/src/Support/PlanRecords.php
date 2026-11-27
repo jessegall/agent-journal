@@ -45,15 +45,7 @@ final readonly class PlanRecords implements RecordProvider
 
     protected function cardOf(Model $record): RecordCard
     {
-        return RecordCard::from([
-            'type' => Plan::linkType(),
-            'id' => $record->id,
-            'number' => (string) $record->number,
-            'label' => "plan {$record->number}",
-            'title' => $record->title,
-            'abstract' => null,
-            'route' => "/plans/{$record->number}",
-        ]);
+        return $this->numberedCard($record, "plan {$record->number}", $record->title, "/plans/{$record->number}");
     }
 
     protected function mayChange(Model $record): bool

@@ -27,7 +27,7 @@ final readonly class RemoveEndedSessionContainer implements Listener
     {
         $runtime = AgentRuntime::findForSession($fact->sessionId);
 
-        if ($runtime === null || ! $runtime->loadMissing('host')->host->arrangement->isContained()) {
+        if ($runtime === null || ! $runtime->runsContained()) {
             return;
         }
 

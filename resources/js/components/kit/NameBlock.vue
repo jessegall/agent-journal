@@ -12,8 +12,10 @@ withDefaults(defineProps<{ dim?: boolean }>(), { dim: false });
         <span class="truncate" :class="dim ? 'text-text-3' : 'text-text'">
             <slot name="title" />
         </span>
-        <span v-if="$slots.subline" class="truncate text-small text-text-3">
-            <slot name="subline" />
-        </span>
+        <template v-if="$slots.subline">
+            <span class="truncate text-small text-text-3">
+                <slot name="subline" />
+            </span>
+        </template>
     </span>
 </template>

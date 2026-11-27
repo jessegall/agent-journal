@@ -90,12 +90,15 @@ final class WorkAllowance implements WorkAllowanceContract
     /**
      * @throws WorkBudgetSpent
      */
-    public function chargePolicyChecks(int $count): void
+    /**
+     * @param  list<string>  $recordIds
+     */
+    public function chargePolicyChecks(array $recordIds): void
     {
         $this->spentPolicyChecks = self::charged(
             'policy checks',
             $this->spentPolicyChecks,
-            $count,
+            count($recordIds),
             $this->policyChecks,
         );
     }

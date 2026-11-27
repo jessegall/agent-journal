@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TextLink from '@kit/TextLink';
 import { router, usePage } from '@inertiajs/vue3';
-import { nextTick, onBeforeUnmount, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
 import Button from '@kit/Button';
 import Icon from '@/components/kit/Icon.vue';
 import { flashedNoticeToast } from '@/composables/flashedNotice';
@@ -21,6 +21,7 @@ const toasts = useToasts();
 const bell = useBellPanel();
 const { toasts: shown, summary, announcement, isQuiet } = toasts;
 const region = ref<HTMLElement | null>(null);
+const hasOutcomesToShow = computed(() => !isQuiet.value && (shown.value.length > 0 || summary.value.length > 0));
 const page = usePage();
 const { viewer } = useAppContext();
 
@@ -98,7 +99,7 @@ function quiet(event: Event): void {
 <template>
     <div>
         <p role="status" aria-live="polite" class="sr-only">{{ announcement }}</p>
-        <template v-if="!isQuiet && (shown.length > 0 || summary.length > 0)">
+        <template v-if="hasOutcomesToShow">
             <section
                 ref="region"
                 aria-label="Outcomes"

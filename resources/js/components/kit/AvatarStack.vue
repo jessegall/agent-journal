@@ -19,13 +19,15 @@ const hidden = computed(() => props.members.length - shown.value.length);
 
 <template>
     <span role="group" :aria-label="label ?? `${members.length} members`" class="inline-flex items-center">
-        <Avatar
-            v-for="(member, at) in shown"
-            :key="at"
-            :participant="member"
-            size="lg"
-            class="ring-2 ring-bg not-first:-ml-1.75"
-        />
-        <Chip v-if="hidden > 0" class="-ml-1.75 ring-2 ring-bg">+{{ hidden }}</Chip>
+        <template v-for="(member, at) in shown" :key="at">
+            <Avatar
+                :participant="member"
+                size="lg"
+                class="ring-2 ring-bg not-first:-ml-1.75"
+            />
+        </template>
+        <template v-if="hidden > 0">
+            <Chip class="-ml-1.75 ring-2 ring-bg">+{{ hidden }}</Chip>
+        </template>
     </span>
 </template>

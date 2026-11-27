@@ -33,6 +33,14 @@ enum TaskStatus: string
     }
 
     /**
+     * The word a task's short card names the state by.
+     */
+    public function standingWord(): string
+    {
+        return $this->standing()->word;
+    }
+
+    /**
      * The word and tone a declared layout badge shows for this state.
      *
      * @return array{string, string}

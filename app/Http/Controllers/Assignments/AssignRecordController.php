@@ -26,7 +26,7 @@ final readonly class AssignRecordController
         $assignmentChange = $commands->run(new AssignRecordCommand($request->record(), $request->recipient()));
 
         return new JsonResponse(
-            AssignmentResultData::of($assignmentChange, $assignees->holdersOf($assignmentChange->currentAssignments())),
+            AssignmentResultData::withHolders($assignmentChange, $assignees),
         );
     }
 }

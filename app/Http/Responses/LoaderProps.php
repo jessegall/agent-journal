@@ -13,7 +13,6 @@ use App\Notifications\Contracts\Refusals\FieldRefusal;
 use App\Support\ClientDeclarations;
 use App\Values\InboxMemberAuthority;
 use App\Web\Data\LoaderReplyData;
-use App\Web\Enums\LoaderStatus;
 use App\Web\Exceptions\LoaderInputUnreadable;
 use App\Web\PageVisibility;
 use App\Web\Values\LoaderInput;
@@ -22,7 +21,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -71,7 +69,7 @@ final readonly class LoaderProps
             ->filter($this->isOpen(...));
 
         if ($loader->isEmpty()) {
-            return [self::FAILURE => self::unavailable($call)];
+            return [self::FAILURE => LoaderReplyData::unavailable($call->token)];
         }
 
         return $this->answer($loader->get(), $call);
@@ -104,50 +102,24 @@ final readonly class LoaderProps
         } catch (ValidationException $invalid) {
             $errors = array_map(fn (array $messages) => (string) reset($messages), $invalid->errors());
 
-            return [self::FAILURE => self::invalid($call, $errors)];
+            return [self::FAILURE => LoaderReplyData::invalid($call->token, $errors)];
         }
 
         try {
             $value = $this->read($loader, $input);
         } catch (FieldRefusal $refusal) {
-            return [self::FAILURE => self::invalid($call, [$refusal->field() => $refusal->fieldError()])];
+            $errors = [$refusal->field() => $refusal->fieldError()];
+
+            return [self::FAILURE => LoaderReplyData::invalid($call->token, $errors)];
         } catch (CommandRefusal|ModelNotFoundException|NotFoundHttpException) {
-            return [self::FAILURE => self::unavailable($call)];
+            return [self::FAILURE => LoaderReplyData::unavailable($call->token)];
         }
 
-        return [$loader->prop => LoaderReplyData::from([
-            'token' => $call->token,
-            'status' => LoaderStatus::Ok,
-            'value' => $value,
-            'errors' => Optional::create(),
-        ])];
+        return [$loader->prop => LoaderReplyData::ok($call->token, $value)];
     }
 
     private function read(RegisteredLoader $loader, Data $input): Data
     {
         return $this->container->make($loader->reader)($input);
-    }
-
-    /**
-     * @param  array<string, string>  $errors  the message of each invalid field, by its name
-     */
-    private static function invalid(LoaderInput $call, array $errors): LoaderReplyData
-    {
-        return LoaderReplyData::from([
-            'token' => $call->token,
-            'status' => LoaderStatus::Invalid,
-            'value' => Optional::create(),
-            'errors' => $errors,
-        ]);
-    }
-
-    private static function unavailable(LoaderInput $call): LoaderReplyData
-    {
-        return LoaderReplyData::from([
-            'token' => $call->token,
-            'status' => LoaderStatus::Unavailable,
-            'value' => Optional::create(),
-            'errors' => Optional::create(),
-        ]);
     }
 }

@@ -27,6 +27,9 @@ const typed = ref('');
 const line = ref<InstanceType<typeof Input> | null>(null);
 const controlsButton = ref<HTMLElement | null>(null);
 const view = computed(() => props.control.view.value);
+const mayTakeControl = computed(
+    () => view.value.state === 'watching' && !props.otherViewControls && props.control.mayTake(),
+);
 
 const ownerLabel = computed(() => {
     if (view.value.state === 'controlling' || view.value.state === 'choosing' || view.value.state === 'uncertain') {
@@ -272,7 +275,7 @@ async function copy(text: string): Promise<void> {
     <div class="flex flex-col gap-1.5" aria-label="Terminal controls" role="group">
         <div class="flex flex-wrap items-center gap-1.5">
             <span ref="controlsButton" tabindex="-1" class="text-small text-text-2">{{ ownerLabel }}</span>
-            <template v-if="view.state === 'watching' && !otherViewControls && control.mayTake()">
+            <template v-if="mayTakeControl">
                 <template v-if="view.unsentLine === ''">
                     <Button variant="primary" size="sm" @click="control.take()">Take control</Button>
                 </template>

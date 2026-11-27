@@ -100,7 +100,9 @@ final readonly class ConditionalPart
         $part = $container->make($this->part);
 
         if ($part instanceof AccountEnvironmentPart || $part instanceof AccountPlanPart) {
-            return $part($start, $start->account ?? throw DriverSetupInvalid::accountPartWithoutAccount($this->part));
+            $account = $start->account ?? throw DriverSetupInvalid::accountPartWithoutAccount($this->part);
+
+            return $part($start, $account);
         }
 
         return $part($start);

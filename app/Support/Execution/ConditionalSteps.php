@@ -40,17 +40,15 @@ final readonly class ConditionalSteps
 
     public function after(StepOutcome $next): self
     {
-        return new self(
-            array_slice($this->remaining, 1),
-            $this->outcome->then($next),
-            $this->runsOnSuccess,
-            $this->state,
-        );
+        return clone ($this, [
+            'remaining' => array_slice($this->remaining, 1),
+            'outcome' => $this->outcome->then($next),
+        ]);
     }
 
     public function skippingNext(): self
     {
-        return new self(array_slice($this->remaining, 1), $this->outcome, $this->runsOnSuccess, $this->state);
+        return clone ($this, ['remaining' => array_slice($this->remaining, 1)]);
     }
 
     /**

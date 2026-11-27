@@ -11,10 +11,12 @@ use App\Agents\Drivers\Contracts\DriverIsolation;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\Contracts\TurnResult;
 use App\Agents\Drivers\Enums\ExecutablePlace;
+use App\Agents\Drivers\Enums\IsolationPlatform;
 use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Exceptions\BuildNotPinned;
 use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\SignInEgress;
+use App\Agents\Values\BoundaryMechanisms;
 use App\Agents\Values\SignInFolder;
 use App\Agents\Values\SignInReport;
 use App\Files\Contracts\Files;
@@ -253,6 +255,14 @@ final readonly class DriverProfile
     public function isolation(): DriverIsolation
     {
         return $this->container->make($this->setup->isolation);
+    }
+
+    /**
+     * How this driver keeps its tools from each boundary item on the platform.
+     */
+    public function mechanismsOn(IsolationPlatform $platform): BoundaryMechanisms
+    {
+        return $this->isolation()->mechanismsOn($platform);
     }
 
     /**

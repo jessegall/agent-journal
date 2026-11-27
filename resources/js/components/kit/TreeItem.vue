@@ -86,16 +86,19 @@ function keyAction(key: string, row: HTMLElement): boolean {
         @keydown="onKey"
         @click="emit('open')"
     >
-        <span
-            v-if="folder"
-            aria-hidden="true"
-            class="inline-flex size-3 shrink-0 transition-transform duration-(--duration-hover) motion-reduce:transition-none"
-            :class="{ 'rotate-90': expanded }"
-            @click.stop="expanded = !expanded"
-        >
-            <Icon name="chevron" :size="12" />
-        </span>
-        <span v-else aria-hidden="true" class="size-3 shrink-0" />
+        <template v-if="folder">
+            <span
+                aria-hidden="true"
+                class="inline-flex size-3 shrink-0 transition-transform duration-(--duration-hover) motion-reduce:transition-none"
+                :class="{ 'rotate-90': expanded }"
+                @click.stop="expanded = !expanded"
+            >
+                <Icon name="chevron" :size="12" />
+            </span>
+        </template>
+        <template v-else>
+            <span aria-hidden="true" class="size-3 shrink-0" />
+        </template>
         <Icon :name="icon" :size="14" class="shrink-0" />
         <span class="min-w-0 truncate">{{ label }}</span>
     </div>

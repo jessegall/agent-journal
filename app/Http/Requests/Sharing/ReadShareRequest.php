@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Sharing;
 
+use App\Http\Requests\Concerns\ReadsOptionalText;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -11,6 +12,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class ReadShareRequest extends FormRequest
 {
+    use ReadsOptionalText;
+
     /**
      * @return array<string, list<string>>
      */
@@ -33,11 +36,7 @@ final class ReadShareRequest extends FormRequest
 
     public function cursor(): string|null
     {
-        if ($this->filled('cursor')) {
-            return $this->string('cursor')->toString();
-        }
-
-        return null;
+        return $this->optionalText('cursor');
     }
 
     public function wantsHeadOnly(): bool

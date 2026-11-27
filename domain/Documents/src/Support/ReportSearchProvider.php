@@ -63,13 +63,7 @@ final readonly class ReportSearchProvider implements SearchProvider
      */
     private static function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
-        $query = Report::query();
-
-        if ($constraints->recordIds->isRestricted()) {
-            $query->whereKey($constraints->recordIds->names());
-        }
-
-        return $query;
+        return $constraints->narrow(Report::query());
     }
 
     private static function hitOf(Report $report, ScoreTier $tier): SearchResult

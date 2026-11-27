@@ -43,13 +43,14 @@ onBeforeUnmount(() => clearTimeout(timer));
         @keydown.esc="hide"
     >
         <slot :described-by="id" />
-        <span
-            v-if="shown"
-            :id="id"
-            role="tooltip"
-            class="pointer-events-none absolute z-(--z-menu) rounded-control border border-border-2 bg-raised px-2 py-[3px] text-small whitespace-nowrap text-text shadow-pop"
-            :class="side === 'right' ? 'top-1/2 left-full ml-2 -translate-y-1/2' : 'bottom-full left-1/2 mb-1 -translate-x-1/2'"
-            >{{ text }}</span
-        >
+        <template v-if="shown">
+            <span
+                :id="id"
+                role="tooltip"
+                class="pointer-events-none absolute z-(--z-menu) rounded-control border border-border-2 bg-raised px-2 py-[3px] text-small whitespace-nowrap text-text shadow-pop"
+                :class="side === 'right' ? 'top-1/2 left-full ml-2 -translate-y-1/2' : 'bottom-full left-1/2 mb-1 -translate-x-1/2'"
+                >{{ text }}</span
+            >
+        </template>
     </span>
 </template>

@@ -22,12 +22,28 @@ trait PublicationArguments
     }
 
     /**
+     * The arguments of a new publication: its title, abstract, text or sealed upload, and the records it draws on.
+     *
+     * @return array<string, Type>
+     */
+    protected function newPublicationSchema(JsonSchema $schema): array
+    {
+        return [
+            'title' => $schema->string()->max(240)->required(),
+            'abstract' => $schema->string()->max(1000)->required(),
+            'body' => $schema->string(),
+            'upload_id' => $this->optionalRecordIdArgument($schema),
+            'source_references' => $schema->array()->items($schema->string()->max(128))->max(50),
+        ];
+    }
+
+    /**
      * The draft the document and edit arguments name, at the expected revision when one is given.
      */
     protected function target(ToolArguments $arguments, int|null $expectedRevision = null): DraftTarget
     {
         return new DraftTarget(
-            (string) $arguments->recordReference('doc_id'),
+            $arguments->recordReferenceText('doc_id'),
             $arguments->text('edit_id'),
             $expectedRevision,
         );

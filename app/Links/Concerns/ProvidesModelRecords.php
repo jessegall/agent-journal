@@ -35,6 +35,29 @@ trait ProvidesModelRecords
 
     abstract protected function linkType(): string;
 
+    /**
+     * The card of a numbered record of this provider, under its label such as task 12.
+     *
+     * @param  TRecord  $record
+     */
+    protected function numberedCard(
+        Model $record,
+        string $label,
+        string $title,
+        string|null $route,
+        string|null $abstract = null,
+    ): RecordCard {
+        return RecordCard::from([
+            'type' => $this->linkType(),
+            'id' => $record->getKey(),
+            'number' => (string) $record->getAttribute('number'),
+            'label' => $label,
+            'title' => $title,
+            'abstract' => $abstract,
+            'route' => $route,
+        ]);
+    }
+
     public function identityOf(int $number): RecordIdentity
     {
         $record = $this->readableRecords()->where(

@@ -16,6 +16,13 @@ const props = defineProps<{
 const box = ref<HTMLElement>();
 
 const collapsedLineCount = computed(() => ({ running: 3, passed: 2 })[props.state as 'running' | 'passed'] ?? 0);
+const heightLimit = computed(() => {
+    if (props.expanded) {
+        return 'max-h-60';
+    }
+
+    return collapsedLineCount.value === 3 ? 'max-h-[67px]' : 'max-h-[50px]';
+});
 const shownLines = computed(() => (props.expanded ? props.lines : props.lines.slice(-collapsedLineCount.value)));
 const isShown = computed(() => props.expanded || (collapsedLineCount.value > 0 && props.lines.length > 0));
 
@@ -29,16 +36,17 @@ watch(
 </script>
 
 <template>
-    <div
-        v-if="isShown"
-        :id="id"
-        ref="box"
-        role="log"
-        aria-label="Command output"
-        :tabindex="expanded ? 0 : undefined"
-        class="overflow-y-auto bg-term px-3 py-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
-        :class="expanded ? 'max-h-60' : collapsedLineCount === 3 ? 'max-h-[67px]' : 'max-h-[50px]'"
-    >
-        <pre class="m-0 font-mono text-badge leading-[17px] whitespace-pre-wrap text-term-out">{{ shownLines.join('\n') }}</pre>
-    </div>
+    <template v-if="isShown">
+        <div
+            :id="id"
+            ref="box"
+            role="log"
+            aria-label="Command output"
+            :tabindex="expanded ? 0 : undefined"
+            class="overflow-y-auto bg-term px-3 py-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+            :class="heightLimit"
+        >
+            <pre class="m-0 font-mono text-badge leading-[17px] whitespace-pre-wrap text-term-out">{{ shownLines.join('\n') }}</pre>
+        </div>
+    </template>
 </template>

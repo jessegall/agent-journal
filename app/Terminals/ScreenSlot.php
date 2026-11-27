@@ -83,7 +83,7 @@ final readonly class ScreenSlot
      */
     public function screenFor(ScreenRegistration $expected): ReceivedScreen|null
     {
-        if (! $this->screen->identity->registration->isSameAs($expected)) {
+        if (! $this->screen->isFor($expected)) {
             return null;
         }
 

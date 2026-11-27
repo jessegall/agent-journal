@@ -16,7 +16,7 @@ final readonly class SkipStoppedStep implements Pipe
 {
     public function handle(PendingStep $run): StepOutcome
     {
-        $run->state->skipEveryPart($run->step, 'the run was stopped: '.$run->state->stop->reason());
+        $run->state->skipEveryPart($run->step, 'the run was stopped: '.$run->state->stopReason());
 
         return new StepOutcome(ExitStatus::Interrupted->status(), $run->context);
     }

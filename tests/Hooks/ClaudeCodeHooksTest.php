@@ -388,7 +388,7 @@ final class ClaudeCodeHooksTest extends TestCase
         );
         $this->assertSame(StackStatus::Active, $this->stackOf($started)->status);
         $this->assertSame(
-            ['core.ready', 'tasks.work'],
+            ['core.ready', 'core.profile', 'core.closing_words', 'tasks.work'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($started)->frames->all()),
         );
         $this->assertSame(TaskStatus::Started, $task->fresh()?->status);
@@ -435,7 +435,7 @@ final class ClaudeCodeHooksTest extends TestCase
 
         $this->assertNotSame($exited->session->id, $replacement->session->id);
         $this->assertSame(
-            ['core.ready'],
+            ['core.ready', 'core.profile', 'core.closing_words'],
             array_map(
                 fn (FrameRecord $frame) => $frame->reference->typeKey,
                 $this->stackOf($replacement)->frames->all(),

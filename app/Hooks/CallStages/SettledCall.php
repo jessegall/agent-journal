@@ -22,6 +22,16 @@ final readonly class SettledCall
     /**
      * The call with the reply the driver adapter renders from its answer.
      */
+    /**
+     * Whether the call came from one of these kinds of hook input.
+     *
+     * @param  list<class-string>  $inputs
+     */
+    public function isFromInputAmong(array $inputs): bool
+    {
+        return in_array($this->call->input::class, $inputs, true);
+    }
+
     public function withAnswer(HookAnswer $answer): self
     {
         return clone ($this, ['answer' => $answer]);

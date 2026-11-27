@@ -16,6 +16,7 @@ use App\Records\Values\ReadOrder;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Events\TaskLogged;
+use Domain\Tasks\Models\Concerns\TaskSequence;
 use Domain\Tasks\Values\TaskLogLine;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -42,6 +43,7 @@ final class TaskLogEntry extends JournalModel implements EventSource, ReadableMo
     use Linkable;
     use OrdersById;
     use RaisesEvents;
+    use TaskSequence;
 
     public const null UPDATED_AT = null;
 
@@ -169,17 +171,6 @@ final class TaskLogEntry extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The task's log.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofTask(Builder $query, string $taskId): void
-    {
-        $query->where('task_id', $taskId);
-    }
-
-    /**
      * The entries after that sequence number.
      *
      * @param  Builder<self>  $query
@@ -191,17 +182,6 @@ final class TaskLogEntry extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The entries before that sequence number; all of them with none.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function before(Builder $query, int|null $sequence): void
-    {
-        $query->when($sequence !== null, fn (Builder $earlier) => $earlier->where('sequence', '<', $sequence));
-    }
-
-    /**
      * The entries in the order of their sequence number.
      *
      * @param  Builder<self>  $query
@@ -210,16 +190,5 @@ final class TaskLogEntry extends JournalModel implements EventSource, ReadableMo
     protected function inSequenceOrder(Builder $query): void
     {
         $query->orderBy('sequence');
-    }
-
-    /**
-     * The entries newest sequence number first.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function newestSequenceFirst(Builder $query): void
-    {
-        $query->orderByDesc('sequence');
     }
 }

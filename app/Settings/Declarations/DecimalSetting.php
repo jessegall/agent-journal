@@ -12,7 +12,9 @@ use App\Settings\Data\DecimalValueData;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\DecimalInvalid;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\SettingCodec;
 use App\Settings\SettingKey;
+use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\Decimal;
 use BackedEnum;
 use Spatie\LaravelData\Optional;
@@ -130,6 +132,11 @@ final readonly class DecimalSetting implements Setting
     public function isEnabledByDefault(): Decimal
     {
         return $this->defaultValue;
+    }
+
+    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): Decimal
+    {
+        return $codec->decodeDecimal($owner, $this, $input);
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

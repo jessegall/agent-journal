@@ -77,18 +77,26 @@ function clickLinkOnSpace(event: KeyboardEvent): void {
         :class="{ 'bg-sel text-text ring-2 ring-inset ring-focus': isActive }"
         @keydown="clickLinkOnSpace"
     >
-        <span v-if="$slots.leading" class="flex shrink-0 items-center">
-            <slot name="leading" />
-        </span>
+        <template v-if="$slots.leading">
+            <span class="flex shrink-0 items-center">
+                <slot name="leading" />
+            </span>
+        </template>
         <span class="flex min-w-0 flex-1 flex-col">
             <slot />
         </span>
-        <span v-if="checked" class="flex shrink-0 items-center">
-            <Icon name="tick" :size="14" />
-        </span>
-        <Spinner v-if="pending" />
-        <span v-if="$slots.trailing" class="flex shrink-0 items-center">
-            <slot name="trailing" />
-        </span>
+        <template v-if="checked">
+            <span class="flex shrink-0 items-center">
+                <Icon name="tick" :size="14" />
+            </span>
+        </template>
+        <template v-if="pending">
+            <Spinner />
+        </template>
+        <template v-if="$slots.trailing">
+            <span class="flex shrink-0 items-center">
+                <slot name="trailing" />
+            </span>
+        </template>
     </component>
 </template>

@@ -61,23 +61,23 @@ function isTabStop(value: TValue, index: number): boolean {
         class="flex flex-col gap-2"
         @keydown="moveBy"
     >
-        <OptionCard
-            v-for="(option, index) in options"
-            :key="option.value"
-            :title="option.title"
-            :aside="option.aside"
-            :description="option.description"
-            :is-chosen="chosen === option.value"
-            :is-tab-stop="isTabStop(option.value, index)"
-            @choose="chosen = option.value"
-            @confirm="
-                chosen = option.value;
-                emit('confirm', option.value);
-            "
-        >
-            <template #icon>
-                <slot name="icon" :value="option.value" />
-            </template>
-        </OptionCard>
+        <template v-for="(option, index) in options" :key="option.value">
+            <OptionCard
+                :title="option.title"
+                :aside="option.aside"
+                :description="option.description"
+                :is-chosen="chosen === option.value"
+                :is-tab-stop="isTabStop(option.value, index)"
+                @choose="chosen = option.value"
+                @confirm="
+                    chosen = option.value;
+                    emit('confirm', option.value);
+                "
+            >
+                <template #icon>
+                    <slot name="icon" :value="option.value" />
+                </template>
+            </OptionCard>
+        </template>
     </div>
 </template>

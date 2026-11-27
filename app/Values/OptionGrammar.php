@@ -38,7 +38,7 @@ final class OptionGrammar extends Data
 
     public function required(): self
     {
-        return new self($this->names, $this->operandTypes, true);
+        return clone ($this, ['isRequired' => true]);
     }
 
     public function takesValue(): bool

@@ -21,7 +21,9 @@ const titleId = inject(panelTitleIdKey, undefined);
     <div class="flex h-11 shrink-0 items-center gap-2 border-b border-line pr-1.5 pl-3">
         <slot name="leading" />
         <h2 :id="titleId" class="m-0 min-w-0 flex-1 truncate text-body font-semibold text-text">{{ title }}</h2>
-        <span v-if="count !== undefined" class="text-small text-text-3">{{ count }}</span>
+        <template v-if="count !== undefined">
+            <span class="text-small text-text-3">{{ count }}</span>
+        </template>
         <IconButton icon="close" :label="closeLabel" data-panel-close @click="emit('close')" />
     </div>
 </template>

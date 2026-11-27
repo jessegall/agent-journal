@@ -235,11 +235,13 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         }
 
         foreach ($reported as $call) {
-            if ($call->route !== $route) {
-                $this->failing_since ??= CarbonImmutable::parse($call->since);
-                $this->failing_route ??= $call->route;
-                $this->last_failure = "{$call->route} answered {$call->status}: {$call->reason}";
+            if ($call->route === $route) {
+                continue;
             }
+
+            $this->failing_since ??= CarbonImmutable::parse($call->since);
+            $this->failing_route ??= $call->route;
+            $this->last_failure = "{$call->route} answered {$call->status}: {$call->reason}";
         }
 
         if ($reported !== []) {

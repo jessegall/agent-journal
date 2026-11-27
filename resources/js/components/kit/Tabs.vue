@@ -82,15 +82,15 @@ const tabGap = computed(() => (props.variant === 'toolbar' ? 'gap-3.5' : 'gap-4'
             @keydown="move"
         >
             <slot name="tabs">
-                <Tab
-                    v-for="tab in tabs"
-                    :key="tab.key"
-                    :value="tab.key"
-                    :label="tab.label"
-                    :icon="tab.icon"
-                    :count="tab.count"
-                    :closable="tab.closable"
-                />
+                <template v-for="tab in tabs" :key="tab.key">
+                    <Tab
+                        :value="tab.key"
+                        :label="tab.label"
+                        :icon="tab.icon"
+                        :count="tab.count"
+                        :closable="tab.closable"
+                    />
+                </template>
             </slot>
         </div>
         <template v-for="tab in tabs" :key="tab.key">

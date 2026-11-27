@@ -29,7 +29,7 @@ final readonly class ReadOutputBytesController
     ): OutputBytes {
         $part = PartRun::findLatestAttemptAt($processRun, $call->part);
         $bytes = $output->bytes($part, $call->stream);
-        $range = EvidenceRange::bytes($part->id, EvidenceSource::of($call->stream), 0, strlen($bytes));
+        $range = EvidenceRange::whole($part->id, EvidenceSource::of($call->stream), $bytes);
         $commands->run(new RecordEvidenceReadsCommand($processRun->id, [$range]));
 
         return new OutputBytes('diagnostic output', $call->stream->value, base64_encode($bytes), strlen($bytes));

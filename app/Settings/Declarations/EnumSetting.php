@@ -11,7 +11,9 @@ use App\Settings\Contracts\CatalogueValue;
 use App\Settings\Contracts\OptionSetting;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\SettingCodec;
 use App\Settings\SettingKey;
+use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
 use App\Support\Reflector;
@@ -147,6 +149,11 @@ final readonly class EnumSetting implements OptionSetting
     public function isEnabledByDefault(): BackedEnum
     {
         return $this->defaultValue;
+    }
+
+    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): BackedEnum
+    {
+        return $codec->decodeEnum($owner, $this, $input);
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

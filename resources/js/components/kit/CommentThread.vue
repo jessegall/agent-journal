@@ -39,14 +39,24 @@ const statusLabel = computed(() => (props.isSent ? `Read by ${props.name}` : 'Se
             </template>
         </div>
         <p class="mt-1.5 text-field text-text [overflow-wrap:anywhere]">{{ text }}</p>
-        <ul v-if="replies.length > 0" class="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
-            <li v-for="reply in replies" :key="reply.id" class="text-small text-text-2 [overflow-wrap:anywhere]">
-                <b class="font-medium text-text">{{ reply.author }}</b> {{ reply.text }}
-            </li>
-        </ul>
-        <div v-if="canReply || canOpenChat" class="mt-2 flex items-center gap-2">
-            <Button v-if="canReply" size="sm" @click="$emit('reply')">Reply</Button>
-            <Button v-if="canOpenChat" size="sm" @click="$emit('openChat')">{{ name }}'s chat</Button>
-        </div>
+        <template v-if="replies.length > 0">
+            <ul class="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
+                <template v-for="reply in replies" :key="reply.id">
+                    <li class="text-small text-text-2 [overflow-wrap:anywhere]">
+                        <b class="font-medium text-text">{{ reply.author }}</b> {{ reply.text }}
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <template v-if="canReply || canOpenChat">
+            <div class="mt-2 flex items-center gap-2">
+                <template v-if="canReply">
+                    <Button size="sm" @click="$emit('reply')">Reply</Button>
+                </template>
+                <template v-if="canOpenChat">
+                    <Button size="sm" @click="$emit('openChat')">{{ name }}'s chat</Button>
+                </template>
+            </div>
+        </template>
     </Card>
 </template>

@@ -10,7 +10,9 @@ use App\Settings\Contracts\Setting;
 use App\Settings\Data\BooleanValueData;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\SettingCodec;
 use App\Settings\SettingKey;
+use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\Decimal;
 use BackedEnum;
 use Spatie\LaravelData\Optional;
@@ -63,6 +65,11 @@ final readonly class BooleanSetting implements Setting
     public function isEnabledByDefault(): bool
     {
         return $this->isDefault;
+    }
+
+    public function decodedBy(SettingCodec $codec, string $owner, EncodedValue $input): bool
+    {
+        return $codec->decodeBoolean($owner, $this, $input);
     }
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue

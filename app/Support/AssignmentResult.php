@@ -31,7 +31,7 @@ final readonly class AssignmentResult
      */
     public function forRequest(AssignmentRequest $request): self
     {
-        return new self($this->outcomes, $this->changes, [...$this->requests, $request]);
+        return clone ($this, ['requests' => [...$this->requests, $request]]);
     }
 
     public function count(AssignmentOutcomeType $type): int

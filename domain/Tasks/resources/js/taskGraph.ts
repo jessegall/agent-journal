@@ -102,10 +102,12 @@ function reachedFrom(id: string, edges: TaskGraphEdge[], from: 'prerequisiteId' 
         const current = pending.pop() as string;
 
         for (const edge of edges) {
-            if (edge[from] === current && !reached.has(edge[to]) && edge[to] !== id) {
-                reached.add(edge[to]);
-                pending.push(edge[to]);
+            if (edge[from] !== current || reached.has(edge[to]) || edge[to] === id) {
+                continue;
             }
+
+            reached.add(edge[to]);
+            pending.push(edge[to]);
         }
     }
 

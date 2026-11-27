@@ -44,13 +44,13 @@ final readonly class PendingPart
 
     public function withSubstitutionOutput(StepOutcome $outcome): self
     {
-        return new self(
-            $this->step,
-            $this->context,
-            $this->state,
-            array_slice($this->substitutions, 1),
-            [...$this->substitutionOutputs, $this->substitutions[0]->node => rtrim($outcome->output, "\n")],
-        );
+        $node = $this->substitutions[0]->node;
+        $output = rtrim($outcome->output, "\n");
+
+        return clone ($this, [
+            'substitutions' => array_slice($this->substitutions, 1),
+            'substitutionOutputs' => [...$this->substitutionOutputs, $node => $output],
+        ]);
     }
 
     /**

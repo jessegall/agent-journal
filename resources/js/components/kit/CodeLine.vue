@@ -33,16 +33,17 @@ function onKey(event: KeyboardEvent): void {
         class="relative flex font-mono text-small leading-5"
         :class="selected && 'bg-[var(--code-selection,color-mix(in_srgb,var(--brand)_10%,transparent))]'"
     >
-        <span
-            v-if="marker"
-            aria-hidden="true"
-            class="absolute top-1.75 left-2.5 size-1.5 rounded-full"
-            :class="
-                marker === 'comment'
-                    ? 'bg-[var(--code-marker,var(--brand))]'
-                    : 'border border-[var(--code-marker,var(--brand))]'
-            "
-        />
+        <template v-if="marker">
+            <span
+                aria-hidden="true"
+                class="absolute top-1.75 left-2.5 size-1.5 rounded-full"
+                :class="
+                    marker === 'comment'
+                        ? 'bg-[var(--code-marker,var(--brand))]'
+                        : 'border border-[var(--code-marker,var(--brand))]'
+                "
+            />
+        </template>
         <button
             type="button"
             :aria-label="`Line ${line}`"

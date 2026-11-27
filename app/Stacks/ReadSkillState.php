@@ -9,14 +9,13 @@ use App\Events\Skills\SkillRead;
 use App\Events\Skills\SkillReadAsked;
 use App\Skills\Contracts\SkillSessionEvent;
 use App\Stacks\Attributes\StateType;
+use App\Stacks\Concerns\ToolBudgetDecisions;
 use App\Stacks\Contracts\Work\UniqueState;
 use App\Stacks\Support\ReadSkillStateReference;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
-use App\Support\Inputs\ToolRequested;
 use App\Values\AgentText;
 use App\Values\ProvenSkillRead;
 use PhpOption\None;
@@ -30,6 +29,8 @@ use PhpOption\Some;
 #[StateType(ReadSkillStateReference::class, schemaVersion: 1)]
 final class ReadSkillState extends AgentState implements UniqueState
 {
+    use ToolBudgetDecisions;
+
     private const int MOST_TOOL_USES = 5;
 
     /**
@@ -62,7 +63,7 @@ final class ReadSkillState extends AgentState implements UniqueState
             return None::create();
         }
 
-        return new Some($this->mustReadNow() ? $this->readNowText() : $this->readText());
+        return new Some($this->mustActNow() ? $this->actNowText() : $this->readText());
     }
 
     public function listensTo(Event $event): bool
@@ -81,27 +82,13 @@ final class ReadSkillState extends AgentState implements UniqueState
         return $this->decide();
     }
 
-    public function onToolRequested(ToolRequested $input): Decision
-    {
-        if ($input->isReadOnly()) {
-            return Decision::delegate();
-        }
-
-        return $this->decide();
-    }
-
-    public function onFileEdit(FileEditRequested $input): Decision
-    {
-        return $this->decide();
-    }
-
     public function onStop(StopRequested $input): Decision
     {
         if (! $this->isWaiting() || $input->stop->isAfterRefusedStop) {
             return Decision::delegate();
         }
 
-        return Decision::deny($this->readNowText());
+        return Decision::deny($this->actNowText());
     }
 
     public function onToolFinished(ToolFinished $input): Decision
@@ -157,16 +144,7 @@ final class ReadSkillState extends AgentState implements UniqueState
         return $this->skillKeys !== [];
     }
 
-    private function decide(): Decision
-    {
-        if ($this->mustReadNow()) {
-            return Decision::deny($this->readNowText());
-        }
-
-        return Decision::delegate();
-    }
-
-    private function mustReadNow(): bool
+    private function mustActNow(): bool
     {
         return $this->isWaiting() && $this->toolUses >= self::MOST_TOOL_USES;
     }
@@ -179,7 +157,7 @@ final class ReadSkillState extends AgentState implements UniqueState
         ]);
     }
 
-    private function readNowText(): AgentText
+    private function actNowText(): AgentText
     {
         return AgentText::of('core.skills.read_now', ['skills' => implode(', ', $this->skillKeys)]);
     }

@@ -56,7 +56,7 @@ return [
     ],
     PlanReviewRequested::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Plan::requestReview',
+        'owner' => 'Plan::openReview',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new PlanReviewRequested('plan', 'edition', [ActorReference::system()], 7),

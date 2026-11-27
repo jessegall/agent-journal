@@ -25,7 +25,7 @@ final readonly class ReadIdempotencyKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $this->key->set($request->headers->get(self::HEADER) ?? (string) Str::ulid());
+        $this->key->set((string) $request->headers->get(self::HEADER, (string) Str::ulid()));
 
         try {
             return $next($request);

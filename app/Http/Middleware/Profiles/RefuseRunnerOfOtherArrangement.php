@@ -25,7 +25,7 @@ final readonly class RefuseRunnerOfOtherArrangement
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $runner = $request->enum('arrangement', ArrangementType::class) ?? ArrangementType::Local;
+        $runner = $request->enum('arrangement', ArrangementType::class, ArrangementType::Local);
         $this->setting->assertRunnerFits($runner);
 
         return $next($request);

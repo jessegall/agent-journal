@@ -39,4 +39,20 @@ final readonly class ReceivedScreen
 
         return max(0, (int) $now->diffInMilliseconds(CarbonImmutable::parse($this->frame->expiresAt), false));
     }
+
+    /**
+     * Whether the screen was read for this registration.
+     */
+    public function isFor(ScreenRegistration $expected): bool
+    {
+        return $this->identity->registration->isSameAs($expected);
+    }
+
+    /**
+     * The process generation the screen was read under.
+     */
+    public function processGeneration(): int
+    {
+        return $this->identity->registration->processGeneration;
+    }
 }

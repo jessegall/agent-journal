@@ -21,11 +21,10 @@ final readonly class PumpPipedCommands implements Pipe
     public function handle(PipedCommands $commands): PumpedCommands
     {
         $started = $commands->started;
-        $events = $commands->toRun->state->events;
         $stdout = '';
 
-        $pump = function (int $index, OutputStream $stream, string $bytes) use ($started, $events, &$stdout): void {
-            $events->output($started[$index]->queued->part, $stream, $bytes);
+        $pump = function (int $index, OutputStream $stream, string $bytes) use ($started, &$stdout): void {
+            $started[$index]->recordOutput($stream, $bytes);
 
             $kept = $index === array_key_last($started)
                 && $stream === OutputStream::Stdout
@@ -35,7 +34,7 @@ final readonly class PumpPipedCommands implements Pipe
         };
 
         $processes = array_map(fn (SpawnedPart $part) => $part->process, $started);
-        new PipelinePump()->run($processes, $pump, $commands->toRun->state->stop);
+        new PipelinePump()->run($processes, $pump, $commands->stopSignal());
 
         return new PumpedCommands($commands, $stdout);
     }

@@ -7,6 +7,7 @@ namespace App\Support\Execution;
 use App\Processes\Contracts\SpawnablePart;
 use App\Processes\Execution\QueuedPart;
 use App\Processes\Execution\SpawnedPart;
+use App\Processes\Contracts\StopSignal;
 
 /**
  * The commands of a shell pipeline, started one after another with each reading the one before it: those still to
@@ -43,5 +44,13 @@ final readonly class PipedCommands implements SpawnablePart
     public function refused(string $reason): self
     {
         return new self($this->toRun, array_slice($this->waiting, 1), $this->started, true);
+    }
+
+    /**
+     * The signal that asks the run, and so these commands, to stop.
+     */
+    public function stopSignal(): StopSignal
+    {
+        return $this->toRun->state->stop;
     }
 }

@@ -76,7 +76,7 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
     {
         $cards = [];
 
-        foreach ($this->byType($records) as $type => $ofType) {
+        foreach (RecordIdentity::groupedByType($records) as $type => $ofType) {
             $cards = [...$cards, ...$this->providerOf($type)->visibleCards($ofType)];
         }
 
@@ -115,20 +115,5 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
     private function providerOf(string $type): RecordProvider
     {
         return Container::getInstance()->make($this->providerOfType->get($type));
-    }
-
-    /**
-     * @param  list<RecordIdentity>  $records
-     * @return array<string, list<RecordIdentity>>
-     */
-    private function byType(array $records): array
-    {
-        $grouped = [];
-
-        foreach ($records as $record) {
-            $grouped[$record->type][] = $record;
-        }
-
-        return $grouped;
     }
 }

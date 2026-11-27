@@ -24,4 +24,13 @@ final readonly class RunChannel
     {
         return new ChannelRunEnded($this, $outcome);
     }
+
+    /**
+     * Reports the run finished with its exit code and sends every spooled event.
+     */
+    public function finish(int $exitCode): void
+    {
+        $this->events->runFinished($exitCode);
+        $this->events->flush();
+    }
 }

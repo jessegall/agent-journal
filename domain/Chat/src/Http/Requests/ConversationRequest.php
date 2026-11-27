@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Requests;
 
+use App\Http\Requests\Concerns\ReadsOptionalText;
 use Illuminate\Foundation\Http\FormRequest;
 use PhpOption\None;
 use PhpOption\Option;
@@ -15,6 +16,8 @@ use PhpOption\Some;
  */
 final class ConversationRequest extends FormRequest
 {
+    use ReadsOptionalText;
+
     /**
      * @return array<string, list<string>>
      */
@@ -66,11 +69,9 @@ final class ConversationRequest extends FormRequest
      */
     public function chosenInbox(): Option
     {
-        if ($this->filled('inbox')) {
-            return Some::create($this->string('inbox')->lower()->toString());
-        }
+        $chosen = $this->optionalText('inbox');
 
-        return None::create();
+        return $chosen === null ? None::create() : new Some(strtolower($chosen));
     }
 
     /**
@@ -78,11 +79,7 @@ final class ConversationRequest extends FormRequest
      */
     public function dockToken(): string|null
     {
-        if ($this->filled('dock')) {
-            return $this->string('dock')->toString();
-        }
-
-        return null;
+        return $this->optionalText('dock');
     }
 
     /**
@@ -90,10 +87,8 @@ final class ConversationRequest extends FormRequest
      */
     public function chosenAgent(): Option
     {
-        if ($this->filled('agent')) {
-            return Some::create($this->string('agent')->lower()->toString());
-        }
+        $chosen = $this->optionalText('agent');
 
-        return None::create();
+        return $chosen === null ? None::create() : new Some(strtolower($chosen));
     }
 }

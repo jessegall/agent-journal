@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Connections;
 
+use App\Http\Requests\Concerns\ReadsOptionalText;
 use App\Projects\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
 use App\Projects\Values\InstallTicket;
 use Illuminate\Foundation\Http\FormRequest;
@@ -15,6 +16,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class IssueProjectInvitationRequest extends FormRequest
 {
+    use ReadsOptionalText;
+
     /**
      * @return array<string, list<string>>
      */
@@ -51,20 +54,12 @@ final class IssueProjectInvitationRequest extends FormRequest
 
     public function environmentId(): string|null
     {
-        if ($this->filled('environmentId')) {
-            return $this->string('environmentId')->toString();
-        }
-
-        return null;
+        return $this->optionalText('environmentId');
     }
 
     public function attemptReference(): string|null
     {
-        if ($this->filled('attemptReference')) {
-            return $this->string('attemptReference')->toString();
-        }
-
-        return null;
+        return $this->optionalText('attemptReference');
     }
 
     public function seenVersion(): int|null
@@ -78,10 +73,6 @@ final class IssueProjectInvitationRequest extends FormRequest
 
     public function projectId(): string|null
     {
-        if ($this->filled('projectId')) {
-            return $this->string('projectId')->toString();
-        }
-
-        return null;
+        return $this->optionalText('projectId');
     }
 }

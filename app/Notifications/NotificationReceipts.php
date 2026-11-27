@@ -73,10 +73,12 @@ final readonly class NotificationReceipts
         );
 
         foreach ($batch as $receipt) {
-            if ($receipt->markRead($at)) {
-                $scope->removeUnread();
-                NotificationChange::create($scope, $receipt, NotificationMutationType::Update);
+            if (! $receipt->markRead($at)) {
+                continue;
             }
+
+            $scope->removeUnread();
+            NotificationChange::create($scope, $receipt, NotificationMutationType::Update);
         }
 
         if (count($batch) < self::MARK_ALL_BATCH) {

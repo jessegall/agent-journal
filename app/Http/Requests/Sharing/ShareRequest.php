@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Sharing;
 
+use App\Http\Requests\Concerns\ReadsOptionalText;
 use App\Http\Requests\Sharing\Concerns\ReadsShareId;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,6 +13,7 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class ShareRequest extends FormRequest
 {
+    use ReadsOptionalText;
     use ReadsShareId;
 
     /**
@@ -38,10 +40,6 @@ final class ShareRequest extends FormRequest
      */
     public function auditAfter(): string|null
     {
-        if ($this->filled('auditAfter')) {
-            return $this->string('auditAfter')->toString();
-        }
-
-        return null;
+        return $this->optionalText('auditAfter');
     }
 }

@@ -11,8 +11,6 @@ use App\Agents\Enums\AccessType;
 use App\Assignments\Contracts\AssignableContributor;
 use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\PoolDefinition;
-use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasAssignables;
 use App\Concerns\HasLinkRecords;
 use App\Concerns\HasStates;
@@ -32,7 +30,6 @@ use App\Records\Contracts\ShareRecordContributor;
 use App\Records\Contracts\StateProvider;
 use App\Records\Values\ShareRecordDefinition;
 use App\Skills\Contracts\SkillProvider;
-use App\Support\Codebase;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\Searchable;
@@ -109,7 +106,6 @@ use Domain\Tasks\TasksDomain;
 final class PlansDomain extends Domain implements
     AssignableContributor,
     AutoAssignmentProvider,
-    CommandProvider,
     DraftProducerProvider,
     LinkRecordProvider,
     McpToolProvider,
@@ -236,14 +232,6 @@ final class PlansDomain extends Domain implements
                 [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Admin],
             ),
         ];
-    }
-
-    /**
-     * @return list<class-string>
-     */
-    public function commands(): array
-    {
-        return Codebase::in(__DIR__.'/Commands/*', Command::class);
     }
 
     public function skills(): array

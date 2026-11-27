@@ -11,6 +11,7 @@ use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Stacks\Attributes\StateType;
+use App\Stacks\Concerns\ToolBudgetDecisions;
 use App\Stacks\Contracts\Work\DurableState;
 use App\Stacks\Contracts\Work\UniqueSubjectState;
 use App\Stacks\References\StateReference;
@@ -19,11 +20,8 @@ use App\Stacks\Support\ReadMessageStateReference;
 use App\Stacks\Values\AnswerBudget;
 use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\FileEditRequested;
-use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
-use App\Support\Inputs\ToolRequested;
 use App\Support\RecordIdentity;
 use App\Values\AgentText;
 use Generator;
@@ -38,6 +36,8 @@ use PhpOption\Some;
 #[StateType(ReadMessageStateReference::class, schemaVersion: 1)]
 final class ReadMessageState extends AgentState implements DurableState, UniqueSubjectState
 {
+    use ToolBudgetDecisions;
+
     /**
      * The messages of this inbox the agent has not read, oldest first.
      *
@@ -73,7 +73,7 @@ final class ReadMessageState extends AgentState implements DurableState, UniqueS
      */
     public function instruction(): Option
     {
-        return new Some($this->mustReadNow() ? $this->readNowText() : $this->unreadText());
+        return new Some($this->mustActNow() ? $this->actNowText() : $this->unreadText());
     }
 
     // ----------[ Lifecycle ]----------
@@ -93,36 +93,13 @@ final class ReadMessageState extends AgentState implements DurableState, UniqueS
 
     // ----------[ Hooks ]----------
 
-    public function onShellCommand(ShellCommandRequested $input): Decision
-    {
-        if ($input->isReadOnly()) {
-            return Decision::delegate();
-        }
-
-        return $this->decide();
-    }
-
-    public function onToolRequested(ToolRequested $input): Decision
-    {
-        if ($input->isReadOnly()) {
-            return Decision::delegate();
-        }
-
-        return $this->decide();
-    }
-
-    public function onFileEdit(FileEditRequested $input): Decision
-    {
-        return $this->decide();
-    }
-
     public function onStop(StopRequested $input): Decision
     {
         if ($this->isFinished() || $input->stop->isAfterRefusedStop) {
             return Decision::delegate();
         }
 
-        return Decision::deny($this->readNowText());
+        return Decision::deny($this->actNowText());
     }
 
     public function onToolFinished(ToolFinished $input): Decision
@@ -180,16 +157,7 @@ final class ReadMessageState extends AgentState implements DurableState, UniqueS
         return $actor->isAgent() && $actor->id === $this->agentId;
     }
 
-    private function decide(): Decision
-    {
-        if ($this->mustReadNow()) {
-            return Decision::deny($this->readNowText());
-        }
-
-        return Decision::delegate();
-    }
-
-    private function mustReadNow(): bool
+    private function mustActNow(): bool
     {
         return ! $this->isFinished() && $this->budget->leftAfter($this->toolUses) === 0;
     }
@@ -202,7 +170,7 @@ final class ReadMessageState extends AgentState implements DurableState, UniqueS
         ]);
     }
 
-    private function readNowText(): AgentText
+    private function actNowText(): AgentText
     {
         return AgentText::of('core.messages.read_now', ['count' => count($this->unreadIds)]);
     }
