@@ -8,8 +8,8 @@ use App\Recordings\RecordingFakes;
 use Tests\Support\Recordings\Exceptions\LiveValueRefused;
 
 /**
- * Binds each fake of a recording to the live value first heard in its place, and puts the live values in place of the
- * fakes in what the recording answers, as the Go recording.Values does. It is given nothing but what it hears.
+ * Binds each fake of a recording to the live value first sent in its place, and puts the live values in place of the
+ * fakes in what the recording answers, as the Go recording.Values does. It binds nothing but what the live side sends.
  */
 final class RecordingValues
 {

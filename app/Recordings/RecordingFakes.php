@@ -93,8 +93,9 @@ final class RecordingFakes
 
     /**
      * @param  array<string, string>  $environment  the recorded process's variables, by name
+     * @param  list<string>  $personalValues  the names, emails and account details of this journal's people
      */
-    public function __construct(private readonly array $environment) {}
+    public function __construct(private readonly array $environment, private readonly array $personalValues) {}
 
     /**
      * Each fake a recording holds, as a pattern of its fake, with the pattern of the real value it stands for.
@@ -113,6 +114,7 @@ final class RecordingFakes
     public function replaceIn(string $text): string
     {
         $faked = strtr($text, $this->environmentFolders());
+        $faked = strtr($faked, array_fill_keys($this->personalValuesToFake(), self::USER_NAME));
 
         $faked = (string) preg_replace(
             [
@@ -210,6 +212,22 @@ final class RecordingFakes
         ]), $claim->instructions);
 
         return HostClaimedInstructionsPayload::from([...$claim->toArray(), 'instructions' => $instructions]);
+    }
+
+    /**
+     * The personal values long enough to stand for themselves, longest first so a longer one is faked whole.
+     *
+     * @return list<string>
+     */
+    private function personalValuesToFake(): array
+    {
+        $values = array_values(array_filter(
+            array_unique($this->personalValues),
+            fn (string $value) => strlen($value) >= self::SHORTEST_KNOWN_VALUE,
+        ));
+        usort($values, fn (string $left, string $right) => strlen($right) <=> strlen($left));
+
+        return $values;
     }
 
     /**

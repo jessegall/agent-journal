@@ -7,10 +7,8 @@ namespace App\Agents\Drivers\Codex;
 use App\Agents\Drivers\Contracts\DriverKeyScripts;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Navigation\Enums\NavigationKey;
 use App\Terminals\KeyScripts\KeyScript;
 use App\Terminals\KeyScripts\KeyStep;
-use App\Terminals\KeyScripts\ScreenExpectation;
 
 /**
  * The key scripts recorded for Codex: each goes through the /model picker and ends on Codex's own line saying the
@@ -27,29 +25,14 @@ final readonly class CodexKeyScripts implements DriverKeyScripts
      */
     public function __invoke(): array
     {
-        $enterIn = fn (string $name, string $family) => KeyStep::press(
-            $name,
-            ScreenExpectation::menu($family),
-            NavigationKey::Enter->bytes(),
-        );
-
-        $openModelPicker = KeyScript::command('/model', '› /model');
-
+        // The model and the reasoning are named on the command line, so no picker is walked (user 28775, 28786).
         $changeModel = [
-            ...$openModelPicker,
-            KeyStep::find('find the model', 'model-picker', 'model'),
-            $enterIn('choose the model', 'model-picker'),
-            KeyStep::findMarked('find the default reasoning', 'reasoning-picker', '(default)'),
-            $enterIn('keep the default reasoning', 'reasoning-picker'),
+            ...KeyScript::command('/model {model}', '› /model {model}'),
             KeyStep::evidence('see the model applied', 'model changed to {model}'),
         ];
 
         $changeEffort = [
-            ...$openModelPicker,
-            KeyStep::findMarked('find the current model', 'model-picker', '(current)'),
-            $enterIn('keep the current model', 'model-picker'),
-            KeyStep::find('find the reasoning level', 'reasoning-picker', 'effort'),
-            $enterIn('choose the reasoning level', 'reasoning-picker'),
+            ...KeyScript::command('/model --reasoning={effort}', '› /model --reasoning={effort}'),
             KeyStep::evidence('see the reasoning applied', 'model changed to', ' {effort}'),
         ];
 

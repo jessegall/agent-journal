@@ -7,6 +7,7 @@ namespace App\Sessions\Values;
 use App\Agents\Enums\ExecutionModeType;
 use App\Values\AccessPolicy;
 use App\Values\ExecutionBudgets;
+use App\Values\ProfileStartPolicy;
 
 /**
  * The policy a start runs under, frozen with the session it starts: what the agent may reach, when it may stop, how
@@ -54,6 +55,22 @@ final readonly class StartPolicy
                 'network_capabilities' => [],
             ]),
         );
+    }
+
+    /**
+     * A user's main agent started with an explicit driver and model and no profile in an installation that runs its
+     * agents contained: in a container of the agent image, attachable, in the workspace, with the default budgets.
+     */
+    public static function mainInContainer(string $imageReference): self
+    {
+        return self::withoutProfile(new ExecutionPolicy(
+            ExecutionModeType::RequiredContainer,
+            $imageReference,
+            ProfileStartPolicy::WORKSPACE,
+            ExecutionBudgets::defaults(),
+            [],
+            true,
+        ));
     }
 
     /**

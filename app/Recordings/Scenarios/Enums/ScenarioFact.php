@@ -39,7 +39,11 @@ enum ScenarioFact: string
     public function isReached(ScenarioRun $run): bool
     {
         return match ($this) {
-            self::Answering => SessionRequest::findUnderRequest($run->startRequest())?->isReady() === true,
+            // The session answered its first wake, as the page shows it: a terminal start proves no conversation id.
+            self::Answering => DriverRequest::hasAppliedOf(
+                (string) $run->lastAgent()->current_session_id,
+                DriverOperation::Wake,
+            ),
             self::StartRefused => SessionRequest::findUnderRequest($run->startRequest())?->isRefused() === true,
             self::TurnEnded => DriverTurn::hasLastEndedOf((string) $run->lastAgent()->current_session_id),
             self::Interrupted => DriverRequest::hasAppliedOf(

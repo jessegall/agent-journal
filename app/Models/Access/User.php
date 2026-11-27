@@ -216,6 +216,18 @@ class User extends Authenticatable implements
     /**
      * The user with this email; a missing one fails the read.
      */
+    /**
+     * Every user's name and email: the personal values a recording made on this journal must never hold.
+     *
+     * @return list<string>
+     */
+    public static function resolvePersonalValues(): array
+    {
+        $users = self::query()->readAll('an installation holds a handful of users')->get(['name', 'email']);
+
+        return array_merge(...$users->map(fn (self $user) => [$user->name, $user->email])->all());
+    }
+
     public static function findWithEmail(string $email): self
     {
         return self::query()->withEmail($email)->sole();

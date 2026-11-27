@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Agents\Commands\CreateAgent\CreateAgentCommand;
+use App\Agents\Commands\StopAgent\StopAgentCommand;
+use App\Bus\Contracts\OwnerCommands;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Models\Projects\Project;
 use App\Recordings\Exceptions\HostProtocolDrifted;
 use App\Recordings\Exceptions\RecordedEnvironmentRefused;
 use App\Recordings\Exceptions\RecordingBreaksProtocol;
@@ -41,15 +45,22 @@ final class PlayScenarioCommand extends Command
 
     protected $description = 'Play a scenario on this journal and write its recording';
 
+    /**
+     * The profile an agent the scenario makes works under: a worker, as the scenarios' agents write code.
+     */
+    private const string AGENT_PROFILE = 'journal-worker';
+
     public function handle(
         RecordingDrafts $drafts,
         ScenarioPlayer $player,
         RecordingFinisher $finisher,
         Files $files,
+        OwnerCommands $commands,
         #[Config('agents.agent_image')]
         string $agentImage,
     ): int {
         $name = (string) $this->argument('scenario');
+        $run = null;
 
         try {
             if (! $drafts->isOn()) {
@@ -59,7 +70,7 @@ final class PlayScenarioCommand extends Command
             $file = $files->read(FilePath::in(Place::Project, Recordings::SCENARIOS."/{$name}.json"));
             $scenario = Scenario::read($name, $file);
             $owner = User::findWithEmail((string) $this->option('owner'));
-            $run = new ScenarioRun($scenario, $owner, $this->agentsOf($scenario), $agentImage);
+            $run = new ScenarioRun($scenario, $owner, $this->agentsOf($scenario, $commands), $agentImage);
 
             $drafts->openRun($scenario);
             $player->play($run, fn (ScenarioPause $pause) => $this->askUser($pause));
@@ -69,6 +80,7 @@ final class PlayScenarioCommand extends Command
         } catch (RecordingSwitchedOff|ScenarioInvalid|ScenarioStuck|RecordingUnfinished|RecordedEnvironmentRefused
             |RecordingOutsideContainer|RecordingBreaksProtocol|RecordingLeaks|HostProtocolDrifted $refused) {
                 $this->error($refused->getMessage());
+                $this->stopAgentsOf($run, $commands);
 
                 return self::FAILURE;
             }
@@ -83,11 +95,29 @@ final class PlayScenarioCommand extends Command
      *
      * @return array<string, string>
      */
-    private function agentsOf(Scenario $scenario): array
+    private function agentsOf(Scenario $scenario, OwnerCommands $commands): array
     {
         $names = array_values(array_unique(array_filter(array_map(fn ($step) => $step->agent, $scenario->steps))));
+        $agents = Agent::query()->unretired()->whereIn('name', $names)->pluck('id', 'name')->all();
 
-        return Agent::query()->unretired()->whereIn('name', $names)->pluck('id', 'name')->all();
+        // An agent the scenario names that this journal does not have yet is made, as its owner would make it.
+        foreach (array_diff($names, array_keys($agents)) as $name) {
+            $made = $commands->run(new CreateAgentCommand($name, self::AGENT_PROFILE, Project::findLocal()->id));
+            $agents[$name] = $made->id;
+        }
+
+        return $agents;
+    }
+
+    /**
+     * Stops every session the failed play left running, so the next play starts its agents free.
+     */
+    private function stopAgentsOf(ScenarioRun|null $run, OwnerCommands $commands): void
+    {
+        foreach ($run?->runningAgents() ?? [] as $agent) {
+            $session = (string) $agent->current_session_id;
+            $commands->run(new StopAgentCommand($agent->id, $session, "scenario-cleanup-{$session}"));
+        }
     }
 
     private function askUser(ScenarioPause $pause): string

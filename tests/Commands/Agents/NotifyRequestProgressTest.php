@@ -20,6 +20,7 @@ use App\Agents\Drivers\Enums\RequestProgress;
 use App\Agents\Drivers\Values\RequestReportBinding;
 use App\Agents\Enums\ConversationModeType;
 use App\Exceptions\HostReportRefused;
+use App\Hooks\ConversationVisits;
 use App\Hosts\EnrolledHost;
 use App\Models\Accounts\Account;
 use App\Models\Agents\AgentRuntime;
@@ -47,6 +48,8 @@ use App\Values\DriverReceipt;
 use App\Values\ScriptProgress;
 use App\Values\StackTarget;
 use App\Values\StartRequest;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -238,6 +241,27 @@ final class NotifyRequestProgressTest extends TestCase
         );
     }
 
+    public function test_a_start_whose_wake_proves_no_conversation_is_proved_by_the_conversation_its_hook_entered(): void
+    {
+        [$host, $opened, $wake, $record] = $this->startWithMessage();
+        $this->assertSame([$wake->id], $this->claimedIds($host));
+
+        // A terminal driver applies its wake without naming the conversation; the message stays held.
+        $this->notifyApplied($host, $wake, null);
+        $this->assertSame([], $this->claimedIds($host));
+
+        DB::transaction(fn () => $this->app->make(ConversationVisits::class)->entered(
+            $opened->sessionId,
+            self::CONVERSATION,
+            null,
+            'session-start-1',
+            CarbonImmutable::now(),
+        ));
+
+        $this->assertSame([$opened->firstRequestId], $this->claimedIds($host));
+        $this->assertSame(StartReadiness::Ready, $record->refresh()->readiness);
+    }
+
     public function test_only_the_initial_wake_of_a_preparing_start_is_claimed_as_its_bootstrap(): void
     {
         [$host, $opened, $wake] = $this->startWithMessage();
@@ -427,7 +451,7 @@ final class NotifyRequestProgressTest extends TestCase
         return array_map(fn (ClaimedRequest $request) => $request->requestId, $this->claimed($host));
     }
 
-    private function notifyApplied(EnrolledHost $host, DriverRequest $wake, string $conversation): void
+    private function notifyApplied(EnrolledHost $host, DriverRequest $wake, string|null $conversation): void
     {
         $wake->refresh();
         $this->journal->asSystem(new NotifyRequestProgressCommand(

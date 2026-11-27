@@ -68,7 +68,7 @@ final readonly class KeyScriptRunner
             KeyAction::WaitForScreen => $this->moveOn($layout, $run->advanced($frame->captured), $frame),
             KeyAction::PressKeys => KeyMove::send(
                 $run->advanced($frame->captured),
-                $step->keys,
+                KeyStep::filled($step->keys, $run->values),
                 self::guardedRows($layout, $reading, $frame),
             ),
             KeyAction::SelectEntry,

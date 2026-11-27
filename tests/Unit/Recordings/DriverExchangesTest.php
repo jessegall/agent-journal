@@ -52,7 +52,7 @@ final class DriverExchangesTest extends TestCase
             $this->asked(6, '/host/processes/terminal', $this->report('terminal', 'exited', 3)),
         ];
 
-        $exchanges = new DriverExchanges()->cutFrom($events, new RecordingFakes([]));
+        $exchanges = new DriverExchanges()->cutFrom($events, new RecordingFakes([], []));
         $kept = array_map(fn ($exchange) => [
             $exchange->opening->argv,
             array_map(fn (RecordedEvent $event) => [$event->type, $event->bytes, $event->isSecret], $exchange->events),

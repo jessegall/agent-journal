@@ -735,6 +735,22 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
+     * Every saved account's label, identity, subject and workspace: the personal values a recording made on this
+     * journal must never hold.
+     *
+     * @return list<string>
+     */
+    public static function resolvePersonalValues(): array
+    {
+        $values = array_map(
+            fn (self $account) => [$account->label, $account->identity, $account->subject, $account->workspace],
+            self::findListed(),
+        );
+
+        return array_values(array_filter(array_merge([], ...$values), fn (string|null $value) => $value !== null));
+    }
+
+    /**
      * The owner's accounts that are not removed, by driver and name.
      *
      * @return list<self>

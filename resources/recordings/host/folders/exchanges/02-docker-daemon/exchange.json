@@ -10,12 +10,12 @@
         "columns": 0,
         "rows": 0,
         "image": "",
-        "openedAt": 1795773769983394
+        "openedAt": 1795777481401277
     },
     "events": [
         {
             "type": "asked",
-            "at": 1795773769983394,
+            "at": 1795777481401277,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -35,7 +35,7 @@
         },
         {
             "type": "answered",
-            "at": 1795773769984189,
+            "at": 1795777481402745,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -61,7 +61,7 @@
         },
         {
             "type": "asked",
-            "at": 1795773769984338,
+            "at": 1795777481403022,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -75,7 +75,7 @@
                 "headers": {
                     "Content-Type": "application/json"
                 },
-                "body": "eyJIb3N0bmFtZSI6IiIsIkRvbWFpbm5hbWUiOiIiLCJVc2VyIjoiMDowIiwiQXR0YWNoU3RkaW4iOmZhbHNlLCJBdHRhY2hTdGRvdXQiOnRydWUsIkF0dGFjaFN0ZGVyciI6dHJ1ZSwiVHR5IjpmYWxzZSwiT3BlblN0ZGluIjpmYWxzZSwiU3RkaW5PbmNlIjpmYWxzZSwiRW52IjpudWxsLCJDbWQiOlsiLWMiLCJzZXQgLWVcbmNob3duIDA6MCAvYWNjb3VudHMgXHUwMDI2XHUwMDI2IGNobW9kIDA3NTUgL2FjY291bnRzXG5mb2xkZXI9L2FjY291bnRzL3NjZW5hcmlvZm9sZGVyXG5tYXJrPVwiJGZvbGRlci8uam91cm5hbC1mb2xkZXItb3BlcmF0aW9uXCJcblsgLUwgXCIkZm9sZGVyXCIgXSBcdTAwMjZcdTAwMjYgeyBlY2hvIFwidGhlIGFjY291bnQgZm9sZGVyIGlzIGEgbGlua1wiOyBleGl0IDE7IH1cbmlmIFsgLWUgXCIkZm9sZGVyXCIgXTsgdGhlblxuICBbIC1MIFwiJG1hcmtcIiBdIFx1MDAyNlx1MDAyNiB7IGVjaG8gXCJ0aGUgZm9sZGVyJ3Mgb3BlcmF0aW9uIG1hcmsgaXMgYSBsaW5rXCI7IGV4aXQgMTsgfVxuICBpZiBbIC1mIFwiJG1hcmtcIiBdIFx1MDAyNlx1MDAyNiBbIFwiJChjYXQgXCIkbWFya1wiKVwiICE9IFwic2NlbmFyaW8taG9zdC1mb2xkZXJzLTIwMjYxMTI3MTAwMjQ5OTQ0LTBcIiBdOyB0aGVuIGVjaG8gXCJhbm90aGVyIHNpZ24taW4gbWFkZSB0aGlzIGZvbGRlclwiOyBleGl0IDE7IGZpXG5lbHNlXG4gIG1rZGlyIC1tIDA3MDAgXCIkZm9sZGVyXCJcbmZpXG5jaG93biAxMDAwMToxMDAwMSBcIiRmb2xkZXJcIiBcdTAwMjZcdTAwMjYgY2htb2QgMDcwMCBcIiRmb2xkZXJcIlxuWyAtZiBcIiRtYXJrXCIgXSB8fCBwcmludGYgJyVzJyBcInNjZW5hcmlvLWhvc3QtZm9sZGVycy0yMDI2MTEyNzEwMDI0OTk0NC0wXCIgXHUwMDNlIFwiJG1hcmtcIlxuY2hvd24gMTAwMDE6MTAwMDEgXCIkbWFya1wiIFx1MDAyNlx1MDAyNiBjaG1vZCAwNjAwIFwiJG1hcmtcIlxuWyAtZSBcIiRmb2xkZXIvcHJvamVjdHNcIiBdIHx8IHsgbWtkaXIgLW0gMDcwMCBcIiRmb2xkZXIvcHJvamVjdHNcIjsgY2hvd24gMTAwMDE6MTAwMDEgXCIkZm9sZGVyL3Byb2plY3RzXCI7IH0iXSwiSW1hZ2UiOiJzaGEyNTY6MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNyIsIlZvbHVtZXMiOm51bGwsIldvcmtpbmdEaXIiOiIiLCJFbnRyeXBvaW50IjpbInNoIl0sIkxhYmVscyI6eyJqb3VybmFsLmluc3RhbGxhdGlvbiI6ImxvY2FsIn0sIkhvc3RDb25maWciOnsiQmluZHMiOm51bGwsIkNvbnRhaW5lcklERmlsZSI6IiIsIkxvZ0NvbmZpZyI6eyJUeXBlIjoiIiwiQ29uZmlnIjpudWxsfSwiTmV0d29ya01vZGUiOiJub25lIiwiUG9ydEJpbmRpbmdzIjpudWxsLCJSZXN0YXJ0UG9saWN5Ijp7Ik5hbWUiOiIiLCJNYXhpbXVtUmV0cnlDb3VudCI6MH0sIkF1dG9SZW1vdmUiOmZhbHNlLCJWb2x1bWVEcml2ZXIiOiIiLCJWb2x1bWVzRnJvbSI6bnVsbCwiQ29uc29sZVNpemUiOlswLDBdLCJDYXBBZGQiOlsiQ0FQX0NIT1dOIiwiQ0FQX0RBQ19PVkVSUklERSIsIkNBUF9GT1dORVIiXSwiQ2FwRHJvcCI6WyJBTEwiXSwiQ2dyb3VwbnNNb2RlIjoiIiwiRG5zIjpudWxsLCJEbnNPcHRpb25zIjpudWxsLCJEbnNTZWFyY2giOm51bGwsIkV4dHJhSG9zdHMiOm51bGwsIkdyb3VwQWRkIjpudWxsLCJJcGNNb2RlIjoiIiwiQ2dyb3VwIjoiIiwiTGlua3MiOm51bGwsIk9vbVNjb3JlQWRqIjowLCJQaWRNb2RlIjoiIiwiUHJpdmlsZWdlZCI6ZmFsc2UsIlB1Ymxpc2hBbGxQb3J0cyI6ZmFsc2UsIlJlYWRvbmx5Um9vdGZzIjpmYWxzZSwiU2VjdXJpdHlPcHQiOlsibm8tbmV3LXByaXZpbGVnZXMiXSwiVVRTTW9kZSI6IiIsIlVzZXJuc01vZGUiOiIiLCJTaG1TaXplIjowLCJJc29sYXRpb24iOiIiLCJDcHVTaGFyZXMiOjAsIk1lbW9yeSI6MCwiTmFub0NwdXMiOjAsIkNncm91cFBhcmVudCI6IiIsIkJsa2lvV2VpZ2h0IjowLCJCbGtpb1dlaWdodERldmljZSI6bnVsbCwiQmxraW9EZXZpY2VSZWFkQnBzIjpudWxsLCJCbGtpb0RldmljZVdyaXRlQnBzIjpudWxsLCJCbGtpb0RldmljZVJlYWRJT3BzIjpudWxsLCJCbGtpb0RldmljZVdyaXRlSU9wcyI6bnVsbCwiQ3B1UGVyaW9kIjowLCJDcHVRdW90YSI6MCwiQ3B1UmVhbHRpbWVQZXJpb2QiOjAsIkNwdVJlYWx0aW1lUnVudGltZSI6MCwiQ3B1c2V0Q3B1cyI6IiIsIkNwdXNldE1lbXMiOiIiLCJEZXZpY2VzIjpudWxsLCJEZXZpY2VDZ3JvdXBSdWxlcyI6bnVsbCwiRGV2aWNlUmVxdWVzdHMiOm51bGwsIk1lbW9yeVJlc2VydmF0aW9uIjowLCJNZW1vcnlTd2FwIjowLCJNZW1vcnlTd2FwcGluZXNzIjpudWxsLCJPb21LaWxsRGlzYWJsZSI6bnVsbCwiUGlkc0xpbWl0IjpudWxsLCJVbGltaXRzIjpudWxsLCJDcHVDb3VudCI6MCwiQ3B1UGVyY2VudCI6MCwiSU9NYXhpbXVtSU9wcyI6MCwiSU9NYXhpbXVtQmFuZHdpZHRoIjowLCJNb3VudHMiOlt7IlR5cGUiOiJiaW5kIiwiU291cmNlIjoiL3Nydi9qb3VybmFsL2FjY291bnRzIiwiVGFyZ2V0IjoiL2FjY291bnRzIiwiQmluZE9wdGlvbnMiOnsiUHJvcGFnYXRpb24iOiJycHJpdmF0ZSJ9fV0sIk1hc2tlZFBhdGhzIjpudWxsLCJSZWFkb25seVBhdGhzIjpudWxsfX0=",
+                "body": "eyJIb3N0bmFtZSI6IiIsIkRvbWFpbm5hbWUiOiIiLCJVc2VyIjoiMDowIiwiQXR0YWNoU3RkaW4iOmZhbHNlLCJBdHRhY2hTdGRvdXQiOnRydWUsIkF0dGFjaFN0ZGVyciI6dHJ1ZSwiVHR5IjpmYWxzZSwiT3BlblN0ZGluIjpmYWxzZSwiU3RkaW5PbmNlIjpmYWxzZSwiRW52IjpudWxsLCJDbWQiOlsiLWMiLCJzZXQgLWVcbmNob3duIDA6MCAvYWNjb3VudHMgXHUwMDI2XHUwMDI2IGNobW9kIDA3NTUgL2FjY291bnRzXG5mb2xkZXI9L2FjY291bnRzL3NjZW5hcmlvZm9sZGVyXG5tYXJrPVwiJGZvbGRlci8uam91cm5hbC1mb2xkZXItb3BlcmF0aW9uXCJcblsgLUwgXCIkZm9sZGVyXCIgXSBcdTAwMjZcdTAwMjYgeyBlY2hvIFwidGhlIGFjY291bnQgZm9sZGVyIGlzIGEgbGlua1wiOyBleGl0IDE7IH1cbmlmIFsgLWUgXCIkZm9sZGVyXCIgXTsgdGhlblxuICBbIC1MIFwiJG1hcmtcIiBdIFx1MDAyNlx1MDAyNiB7IGVjaG8gXCJ0aGUgZm9sZGVyJ3Mgb3BlcmF0aW9uIG1hcmsgaXMgYSBsaW5rXCI7IGV4aXQgMTsgfVxuICBpZiBbIC1mIFwiJG1hcmtcIiBdIFx1MDAyNlx1MDAyNiBbIFwiJChjYXQgXCIkbWFya1wiKVwiICE9IFwic2NlbmFyaW8taG9zdC1mb2xkZXJzLTIwMjYxMTI3MTEwNDQxMzY4LTBcIiBdOyB0aGVuIGVjaG8gXCJhbm90aGVyIHNpZ24taW4gbWFkZSB0aGlzIGZvbGRlclwiOyBleGl0IDE7IGZpXG5lbHNlXG4gIG1rZGlyIC1tIDA3MDAgXCIkZm9sZGVyXCJcbmZpXG5jaG93biAxMDAwMToxMDAwMSBcIiRmb2xkZXJcIiBcdTAwMjZcdTAwMjYgY2htb2QgMDcwMCBcIiRmb2xkZXJcIlxuWyAtZiBcIiRtYXJrXCIgXSB8fCBwcmludGYgJyVzJyBcInNjZW5hcmlvLWhvc3QtZm9sZGVycy0yMDI2MTEyNzExMDQ0MTM2OC0wXCIgXHUwMDNlIFwiJG1hcmtcIlxuY2hvd24gMTAwMDE6MTAwMDEgXCIkbWFya1wiIFx1MDAyNlx1MDAyNiBjaG1vZCAwNjAwIFwiJG1hcmtcIlxuWyAtZSBcIiRmb2xkZXIvcHJvamVjdHNcIiBdIHx8IHsgbWtkaXIgLW0gMDcwMCBcIiRmb2xkZXIvcHJvamVjdHNcIjsgY2hvd24gMTAwMDE6MTAwMDEgXCIkZm9sZGVyL3Byb2plY3RzXCI7IH0iXSwiSW1hZ2UiOiJzaGEyNTY6MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNyIsIlZvbHVtZXMiOm51bGwsIldvcmtpbmdEaXIiOiIiLCJFbnRyeXBvaW50IjpbInNoIl0sIkxhYmVscyI6eyJqb3VybmFsLmluc3RhbGxhdGlvbiI6ImxvY2FsIn0sIkhvc3RDb25maWciOnsiQmluZHMiOm51bGwsIkNvbnRhaW5lcklERmlsZSI6IiIsIkxvZ0NvbmZpZyI6eyJUeXBlIjoiIiwiQ29uZmlnIjpudWxsfSwiTmV0d29ya01vZGUiOiJub25lIiwiUG9ydEJpbmRpbmdzIjpudWxsLCJSZXN0YXJ0UG9saWN5Ijp7Ik5hbWUiOiIiLCJNYXhpbXVtUmV0cnlDb3VudCI6MH0sIkF1dG9SZW1vdmUiOmZhbHNlLCJWb2x1bWVEcml2ZXIiOiIiLCJWb2x1bWVzRnJvbSI6bnVsbCwiQ29uc29sZVNpemUiOlswLDBdLCJDYXBBZGQiOlsiQ0FQX0NIT1dOIiwiQ0FQX0RBQ19PVkVSUklERSIsIkNBUF9GT1dORVIiXSwiQ2FwRHJvcCI6WyJBTEwiXSwiQ2dyb3VwbnNNb2RlIjoiIiwiRG5zIjpudWxsLCJEbnNPcHRpb25zIjpudWxsLCJEbnNTZWFyY2giOm51bGwsIkV4dHJhSG9zdHMiOm51bGwsIkdyb3VwQWRkIjpudWxsLCJJcGNNb2RlIjoiIiwiQ2dyb3VwIjoiIiwiTGlua3MiOm51bGwsIk9vbVNjb3JlQWRqIjowLCJQaWRNb2RlIjoiIiwiUHJpdmlsZWdlZCI6ZmFsc2UsIlB1Ymxpc2hBbGxQb3J0cyI6ZmFsc2UsIlJlYWRvbmx5Um9vdGZzIjpmYWxzZSwiU2VjdXJpdHlPcHQiOlsibm8tbmV3LXByaXZpbGVnZXMiXSwiVVRTTW9kZSI6IiIsIlVzZXJuc01vZGUiOiIiLCJTaG1TaXplIjowLCJJc29sYXRpb24iOiIiLCJDcHVTaGFyZXMiOjAsIk1lbW9yeSI6MCwiTmFub0NwdXMiOjAsIkNncm91cFBhcmVudCI6IiIsIkJsa2lvV2VpZ2h0IjowLCJCbGtpb1dlaWdodERldmljZSI6bnVsbCwiQmxraW9EZXZpY2VSZWFkQnBzIjpudWxsLCJCbGtpb0RldmljZVdyaXRlQnBzIjpudWxsLCJCbGtpb0RldmljZVJlYWRJT3BzIjpudWxsLCJCbGtpb0RldmljZVdyaXRlSU9wcyI6bnVsbCwiQ3B1UGVyaW9kIjowLCJDcHVRdW90YSI6MCwiQ3B1UmVhbHRpbWVQZXJpb2QiOjAsIkNwdVJlYWx0aW1lUnVudGltZSI6MCwiQ3B1c2V0Q3B1cyI6IiIsIkNwdXNldE1lbXMiOiIiLCJEZXZpY2VzIjpudWxsLCJEZXZpY2VDZ3JvdXBSdWxlcyI6bnVsbCwiRGV2aWNlUmVxdWVzdHMiOm51bGwsIk1lbW9yeVJlc2VydmF0aW9uIjowLCJNZW1vcnlTd2FwIjowLCJNZW1vcnlTd2FwcGluZXNzIjpudWxsLCJPb21LaWxsRGlzYWJsZSI6bnVsbCwiUGlkc0xpbWl0IjpudWxsLCJVbGltaXRzIjpudWxsLCJDcHVDb3VudCI6MCwiQ3B1UGVyY2VudCI6MCwiSU9NYXhpbXVtSU9wcyI6MCwiSU9NYXhpbXVtQmFuZHdpZHRoIjowLCJNb3VudHMiOlt7IlR5cGUiOiJiaW5kIiwiU291cmNlIjoiL3Nydi9qb3VybmFsL2FjY291bnRzIiwiVGFyZ2V0IjoiL2FjY291bnRzIiwiQmluZE9wdGlvbnMiOnsiUHJvcGFnYXRpb24iOiJycHJpdmF0ZSJ9fV0sIk1hc2tlZFBhdGhzIjpudWxsLCJSZWFkb25seVBhdGhzIjpudWxsfX0=",
                 "upgraded": false,
                 "cut": false,
                 "withheld": false
@@ -83,75 +83,7 @@
         },
         {
             "type": "asked",
-            "at": 1795773769989318,
-            "bytes": "",
-            "stream": "",
-            "secret": false,
-            "columns": 0,
-            "rows": 0,
-            "call": {
-                "method": "HEAD",
-                "path": "/_ping",
-                "query": [],
-                "status": null,
-                "headers": [],
-                "body": "",
-                "upgraded": false,
-                "cut": false,
-                "withheld": false
-            }
-        },
-        {
-            "type": "asked",
-            "at": 1795773769994430,
-            "bytes": "",
-            "stream": "",
-            "secret": false,
-            "columns": 0,
-            "rows": 0,
-            "call": {
-                "method": "POST",
-                "path": "/v1.51/containers/create",
-                "query": [],
-                "status": null,
-                "headers": {
-                    "Content-Type": "application/json"
-                },
-                "body": "eyJIb3N0bmFtZSI6IiIsIkRvbWFpbm5hbWUiOiIiLCJVc2VyIjoiMDowIiwiQXR0YWNoU3RkaW4iOmZhbHNlLCJBdHRhY2hTdGRvdXQiOnRydWUsIkF0dGFjaFN0ZGVyciI6dHJ1ZSwiVHR5IjpmYWxzZSwiT3BlblN0ZGluIjpmYWxzZSwiU3RkaW5PbmNlIjpmYWxzZSwiRW52IjpudWxsLCJDbWQiOlsiLWMiLCJybSAtcmYgLS0gL2FjY291bnRzL3NjZW5hcmlvZm9sZGVyIFx1MDAyNlx1MDAyNiBbICEgLWUgL2FjY291bnRzL3NjZW5hcmlvZm9sZGVyIF0gXHUwMDI2XHUwMDI2IFsgISAtTCAvYWNjb3VudHMvc2NlbmFyaW9mb2xkZXIgXSJdLCJJbWFnZSI6InNoYTI1NjowMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA3IiwiVm9sdW1lcyI6bnVsbCwiV29ya2luZ0RpciI6IiIsIkVudHJ5cG9pbnQiOlsic2giXSwiTGFiZWxzIjp7ImpvdXJuYWwuaW5zdGFsbGF0aW9uIjoibG9jYWwifSwiSG9zdENvbmZpZyI6eyJCaW5kcyI6bnVsbCwiQ29udGFpbmVySURGaWxlIjoiIiwiTG9nQ29uZmlnIjp7IlR5cGUiOiIiLCJDb25maWciOm51bGx9LCJOZXR3b3JrTW9kZSI6Im5vbmUiLCJQb3J0QmluZGluZ3MiOm51bGwsIlJlc3RhcnRQb2xpY3kiOnsiTmFtZSI6IiIsIk1heGltdW1SZXRyeUNvdW50IjowfSwiQXV0b1JlbW92ZSI6ZmFsc2UsIlZvbHVtZURyaXZlciI6IiIsIlZvbHVtZXNGcm9tIjpudWxsLCJDb25zb2xlU2l6ZSI6WzAsMF0sIkNhcEFkZCI6WyJDQVBfQ0hPV04iLCJDQVBfREFDX09WRVJSSURFIiwiQ0FQX0ZPV05FUiJdLCJDYXBEcm9wIjpbIkFMTCJdLCJDZ3JvdXBuc01vZGUiOiIiLCJEbnMiOm51bGwsIkRuc09wdGlvbnMiOm51bGwsIkRuc1NlYXJjaCI6bnVsbCwiRXh0cmFIb3N0cyI6bnVsbCwiR3JvdXBBZGQiOm51bGwsIklwY01vZGUiOiIiLCJDZ3JvdXAiOiIiLCJMaW5rcyI6bnVsbCwiT29tU2NvcmVBZGoiOjAsIlBpZE1vZGUiOiIiLCJQcml2aWxlZ2VkIjpmYWxzZSwiUHVibGlzaEFsbFBvcnRzIjpmYWxzZSwiUmVhZG9ubHlSb290ZnMiOmZhbHNlLCJTZWN1cml0eU9wdCI6WyJuby1uZXctcHJpdmlsZWdlcyJdLCJVVFNNb2RlIjoiIiwiVXNlcm5zTW9kZSI6IiIsIlNobVNpemUiOjAsIklzb2xhdGlvbiI6IiIsIkNwdVNoYXJlcyI6MCwiTWVtb3J5IjowLCJOYW5vQ3B1cyI6MCwiQ2dyb3VwUGFyZW50IjoiIiwiQmxraW9XZWlnaHQiOjAsIkJsa2lvV2VpZ2h0RGV2aWNlIjpudWxsLCJCbGtpb0RldmljZVJlYWRCcHMiOm51bGwsIkJsa2lvRGV2aWNlV3JpdGVCcHMiOm51bGwsIkJsa2lvRGV2aWNlUmVhZElPcHMiOm51bGwsIkJsa2lvRGV2aWNlV3JpdGVJT3BzIjpudWxsLCJDcHVQZXJpb2QiOjAsIkNwdVF1b3RhIjowLCJDcHVSZWFsdGltZVBlcmlvZCI6MCwiQ3B1UmVhbHRpbWVSdW50aW1lIjowLCJDcHVzZXRDcHVzIjoiIiwiQ3B1c2V0TWVtcyI6IiIsIkRldmljZXMiOm51bGwsIkRldmljZUNncm91cFJ1bGVzIjpudWxsLCJEZXZpY2VSZXF1ZXN0cyI6bnVsbCwiTWVtb3J5UmVzZXJ2YXRpb24iOjAsIk1lbW9yeVN3YXAiOjAsIk1lbW9yeVN3YXBwaW5lc3MiOm51bGwsIk9vbUtpbGxEaXNhYmxlIjpudWxsLCJQaWRzTGltaXQiOm51bGwsIlVsaW1pdHMiOm51bGwsIkNwdUNvdW50IjowLCJDcHVQZXJjZW50IjowLCJJT01heGltdW1JT3BzIjowLCJJT01heGltdW1CYW5kd2lkdGgiOjAsIk1vdW50cyI6W3siVHlwZSI6ImJpbmQiLCJTb3VyY2UiOiIvc3J2L2pvdXJuYWwvYWNjb3VudHMiLCJUYXJnZXQiOiIvYWNjb3VudHMiLCJCaW5kT3B0aW9ucyI6eyJQcm9wYWdhdGlvbiI6InJwcml2YXRlIn19XSwiTWFza2VkUGF0aHMiOm51bGwsIlJlYWRvbmx5UGF0aHMiOm51bGx9fQ==",
-                "upgraded": false,
-                "cut": false,
-                "withheld": false
-            }
-        },
-        {
-            "type": "answered",
-            "at": 1795773770004692,
-            "bytes": "",
-            "stream": "",
-            "secret": false,
-            "columns": 0,
-            "rows": 0,
-            "call": {
-                "method": "HEAD",
-                "path": "/_ping",
-                "query": [],
-                "status": 200,
-                "headers": {
-                    "Api-Version": "1.51",
-                    "Content-Type": "text/plain; charset=utf-8",
-                    "Docker-Experimental": "false",
-                    "Ostype": "linux",
-                    "Server": "Docker/28.5.2 (linux)"
-                },
-                "body": "",
-                "upgraded": false,
-                "cut": false,
-                "withheld": false
-            }
-        },
-        {
-            "type": "asked",
-            "at": 1795773770004949,
+            "at": 1795777481423569,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -173,8 +105,30 @@
             }
         },
         {
+            "type": "asked",
+            "at": 1795777481423878,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/v1.51/containers/create",
+                "query": [],
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJIb3N0bmFtZSI6IiIsIkRvbWFpbm5hbWUiOiIiLCJVc2VyIjoiMDowIiwiQXR0YWNoU3RkaW4iOmZhbHNlLCJBdHRhY2hTdGRvdXQiOnRydWUsIkF0dGFjaFN0ZGVyciI6dHJ1ZSwiVHR5IjpmYWxzZSwiT3BlblN0ZGluIjpmYWxzZSwiU3RkaW5PbmNlIjpmYWxzZSwiRW52IjpudWxsLCJDbWQiOlsiLWMiLCJybSAtcmYgLS0gL2FjY291bnRzL3NjZW5hcmlvZm9sZGVyIFx1MDAyNlx1MDAyNiBbICEgLWUgL2FjY291bnRzL3NjZW5hcmlvZm9sZGVyIF0gXHUwMDI2XHUwMDI2IFsgISAtTCAvYWNjb3VudHMvc2NlbmFyaW9mb2xkZXIgXSJdLCJJbWFnZSI6InNoYTI1NjowMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA3IiwiVm9sdW1lcyI6bnVsbCwiV29ya2luZ0RpciI6IiIsIkVudHJ5cG9pbnQiOlsic2giXSwiTGFiZWxzIjp7ImpvdXJuYWwuaW5zdGFsbGF0aW9uIjoibG9jYWwifSwiSG9zdENvbmZpZyI6eyJCaW5kcyI6bnVsbCwiQ29udGFpbmVySURGaWxlIjoiIiwiTG9nQ29uZmlnIjp7IlR5cGUiOiIiLCJDb25maWciOm51bGx9LCJOZXR3b3JrTW9kZSI6Im5vbmUiLCJQb3J0QmluZGluZ3MiOm51bGwsIlJlc3RhcnRQb2xpY3kiOnsiTmFtZSI6IiIsIk1heGltdW1SZXRyeUNvdW50IjowfSwiQXV0b1JlbW92ZSI6ZmFsc2UsIlZvbHVtZURyaXZlciI6IiIsIlZvbHVtZXNGcm9tIjpudWxsLCJDb25zb2xlU2l6ZSI6WzAsMF0sIkNhcEFkZCI6WyJDQVBfQ0hPV04iLCJDQVBfREFDX09WRVJSSURFIiwiQ0FQX0ZPV05FUiJdLCJDYXBEcm9wIjpbIkFMTCJdLCJDZ3JvdXBuc01vZGUiOiIiLCJEbnMiOm51bGwsIkRuc09wdGlvbnMiOm51bGwsIkRuc1NlYXJjaCI6bnVsbCwiRXh0cmFIb3N0cyI6bnVsbCwiR3JvdXBBZGQiOm51bGwsIklwY01vZGUiOiIiLCJDZ3JvdXAiOiIiLCJMaW5rcyI6bnVsbCwiT29tU2NvcmVBZGoiOjAsIlBpZE1vZGUiOiIiLCJQcml2aWxlZ2VkIjpmYWxzZSwiUHVibGlzaEFsbFBvcnRzIjpmYWxzZSwiUmVhZG9ubHlSb290ZnMiOmZhbHNlLCJTZWN1cml0eU9wdCI6WyJuby1uZXctcHJpdmlsZWdlcyJdLCJVVFNNb2RlIjoiIiwiVXNlcm5zTW9kZSI6IiIsIlNobVNpemUiOjAsIklzb2xhdGlvbiI6IiIsIkNwdVNoYXJlcyI6MCwiTWVtb3J5IjowLCJOYW5vQ3B1cyI6MCwiQ2dyb3VwUGFyZW50IjoiIiwiQmxraW9XZWlnaHQiOjAsIkJsa2lvV2VpZ2h0RGV2aWNlIjpudWxsLCJCbGtpb0RldmljZVJlYWRCcHMiOm51bGwsIkJsa2lvRGV2aWNlV3JpdGVCcHMiOm51bGwsIkJsa2lvRGV2aWNlUmVhZElPcHMiOm51bGwsIkJsa2lvRGV2aWNlV3JpdGVJT3BzIjpudWxsLCJDcHVQZXJpb2QiOjAsIkNwdVF1b3RhIjowLCJDcHVSZWFsdGltZVBlcmlvZCI6MCwiQ3B1UmVhbHRpbWVSdW50aW1lIjowLCJDcHVzZXRDcHVzIjoiIiwiQ3B1c2V0TWVtcyI6IiIsIkRldmljZXMiOm51bGwsIkRldmljZUNncm91cFJ1bGVzIjpudWxsLCJEZXZpY2VSZXF1ZXN0cyI6bnVsbCwiTWVtb3J5UmVzZXJ2YXRpb24iOjAsIk1lbW9yeVN3YXAiOjAsIk1lbW9yeVN3YXBwaW5lc3MiOm51bGwsIk9vbUtpbGxEaXNhYmxlIjpudWxsLCJQaWRzTGltaXQiOm51bGwsIlVsaW1pdHMiOm51bGwsIkNwdUNvdW50IjowLCJDcHVQZXJjZW50IjowLCJJT01heGltdW1JT3BzIjowLCJJT01heGltdW1CYW5kd2lkdGgiOjAsIk1vdW50cyI6W3siVHlwZSI6ImJpbmQiLCJTb3VyY2UiOiIvc3J2L2pvdXJuYWwvYWNjb3VudHMiLCJUYXJnZXQiOiIvYWNjb3VudHMiLCJCaW5kT3B0aW9ucyI6eyJQcm9wYWdhdGlvbiI6InJwcml2YXRlIn19XSwiTWFza2VkUGF0aHMiOm51bGwsIlJlYWRvbmx5UGF0aHMiOm51bGx9fQ==",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
             "type": "answered",
-            "at": 1795773770031595,
+            "at": 1795777481465604,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -203,7 +157,7 @@
         },
         {
             "type": "answered",
-            "at": 1795773770092518,
+            "at": 1795777481567145,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -228,34 +182,8 @@
             }
         },
         {
-            "type": "asked",
-            "at": 1795773770092865,
-            "bytes": "",
-            "stream": "",
-            "secret": false,
-            "columns": 0,
-            "rows": 0,
-            "call": {
-                "method": "POST",
-                "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000008/attach",
-                "query": {
-                    "stderr": "1",
-                    "stdout": "1",
-                    "stream": "1"
-                },
-                "status": null,
-                "headers": {
-                    "Content-Type": "text/plain"
-                },
-                "body": "",
-                "upgraded": false,
-                "cut": false,
-                "withheld": false
-            }
-        },
-        {
             "type": "answered",
-            "at": 1795773770097730,
+            "at": 1795777481568348,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -281,7 +209,35 @@
         },
         {
             "type": "asked",
-            "at": 1795773770097868,
+            "at": 1795777481568037,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000008/attach",
+                "query": {
+                    "stderr": "1",
+                    "stdout": "1",
+                    "stream": "1"
+                },
+                "status": null,
+                "headers": {
+                    "Connection": "Upgrade",
+                    "Content-Type": "text/plain",
+                    "Upgrade": "tcp"
+                },
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795777481568515,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -297,7 +253,9 @@
                 },
                 "status": null,
                 "headers": {
-                    "Content-Type": "text/plain"
+                    "Connection": "Upgrade",
+                    "Content-Type": "text/plain",
+                    "Upgrade": "tcp"
                 },
                 "body": "",
                 "upgraded": false,
@@ -307,7 +265,7 @@
         },
         {
             "type": "answered",
-            "at": 1795773770104977,
+            "at": 1795777481569007,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -323,7 +281,9 @@
                 },
                 "status": 101,
                 "headers": {
-                    "Content-Type": "application/vnd.docker.multiplexed-stream"
+                    "Connection": "Upgrade",
+                    "Content-Type": "application/vnd.docker.multiplexed-stream",
+                    "Upgrade": "tcp"
                 },
                 "body": "",
                 "upgraded": true,
@@ -333,7 +293,7 @@
         },
         {
             "type": "asked",
-            "at": 1795773770105093,
+            "at": 1795777481569185,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -353,7 +313,7 @@
         },
         {
             "type": "answered",
-            "at": 1795773770105195,
+            "at": 1795777481569226,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -369,7 +329,9 @@
                 },
                 "status": 101,
                 "headers": {
-                    "Content-Type": "application/vnd.docker.multiplexed-stream"
+                    "Connection": "Upgrade",
+                    "Content-Type": "application/vnd.docker.multiplexed-stream",
+                    "Upgrade": "tcp"
                 },
                 "body": "",
                 "upgraded": true,
@@ -379,7 +341,7 @@
         },
         {
             "type": "asked",
-            "at": 1795773770105284,
+            "at": 1795777481569349,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -399,7 +361,7 @@
         },
         {
             "type": "answered",
-            "at": 1795773770302191,
+            "at": 1795777481951728,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -424,7 +386,7 @@
         },
         {
             "type": "answered",
-            "at": 1795773770321562,
+            "at": 1795777481953352,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -449,29 +411,7 @@
         },
         {
             "type": "asked",
-            "at": 1795773770327671,
-            "bytes": "",
-            "stream": "",
-            "secret": false,
-            "columns": 0,
-            "rows": 0,
-            "call": {
-                "method": "POST",
-                "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000008/wait",
-                "query": {
-                    "condition": "not-running"
-                },
-                "status": null,
-                "headers": [],
-                "body": "",
-                "upgraded": false,
-                "cut": false,
-                "withheld": false
-            }
-        },
-        {
-            "type": "asked",
-            "at": 1795773770342072,
+            "at": 1795777481970523,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -492,8 +432,8 @@
             }
         },
         {
-            "type": "answered",
-            "at": 1795773770416114,
+            "type": "asked",
+            "at": 1795777481973163,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -505,35 +445,6 @@
                 "query": {
                     "condition": "not-running"
                 },
-                "status": 200,
-                "headers": {
-                    "Api-Version": "1.51",
-                    "Content-Type": "application/json",
-                    "Docker-Experimental": "false",
-                    "Ostype": "linux",
-                    "Server": "Docker/28.5.2 (linux)"
-                },
-                "body": "eyJTdGF0dXNDb2RlIjowfQo=",
-                "upgraded": false,
-                "cut": false,
-                "withheld": false
-            }
-        },
-        {
-            "type": "asked",
-            "at": 1795773770416359,
-            "bytes": "",
-            "stream": "",
-            "secret": false,
-            "columns": 0,
-            "rows": 0,
-            "call": {
-                "method": "DELETE",
-                "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000008",
-                "query": {
-                    "force": "1",
-                    "v": "1"
-                },
                 "status": null,
                 "headers": [],
                 "body": "",
@@ -544,7 +455,7 @@
         },
         {
             "type": "answered",
-            "at": 1795773770418573,
+            "at": 1795777482036123,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -572,7 +483,7 @@
         },
         {
             "type": "asked",
-            "at": 1795773770418785,
+            "at": 1795777482036611,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -595,7 +506,35 @@
         },
         {
             "type": "answered",
-            "at": 1795773770423662,
+            "at": 1795777482037576,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000008/wait",
+                "query": {
+                    "condition": "not-running"
+                },
+                "status": 200,
+                "headers": {
+                    "Api-Version": "1.51",
+                    "Content-Type": "application/json",
+                    "Docker-Experimental": "false",
+                    "Ostype": "linux",
+                    "Server": "Docker/28.5.2 (linux)"
+                },
+                "body": "eyJTdGF0dXNDb2RlIjowfQo=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795777482037901,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -604,6 +543,29 @@
             "call": {
                 "method": "DELETE",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000008",
+                "query": {
+                    "force": "1",
+                    "v": "1"
+                },
+                "status": null,
+                "headers": [],
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795777482042004,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "DELETE",
+                "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000009",
                 "query": {
                     "force": "1",
                     "v": "1"
@@ -623,7 +585,7 @@
         },
         {
             "type": "answered",
-            "at": 1795773770426169,
+            "at": 1795777482043641,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -631,7 +593,7 @@
             "rows": 0,
             "call": {
                 "method": "DELETE",
-                "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000009",
+                "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000008",
                 "query": {
                     "force": "1",
                     "v": "1"

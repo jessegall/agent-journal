@@ -26,7 +26,7 @@ final class RecordingFakesTest extends TestCase
 {
     public function test_a_folder_of_the_environment_becomes_its_variable(): void
     {
-        $fakes = new RecordingFakes(['CODEX_HOME' => '/srv/accounts/owner/codex', 'PATH' => '/usr/bin:/bin']);
+        $fakes = new RecordingFakes(['CODEX_HOME' => '/srv/accounts/owner/codex', 'PATH' => '/usr/bin:/bin'], []);
 
         $this->assertSame(
             ['{env:CODEX_HOME}/auth.json', '/usr/bin:/bin'],
@@ -36,7 +36,7 @@ final class RecordingFakesTest extends TestCase
 
     public function test_addresses_tokens_and_the_users_folders_become_fakes(): void
     {
-        $fakes = new RecordingFakes([]);
+        $fakes = new RecordingFakes([], []);
 
         $this->assertSame(
             [
@@ -62,7 +62,7 @@ final class RecordingFakesTest extends TestCase
 
     public function test_one_uuid_is_one_fake_and_a_fake_stays_as_it_is(): void
     {
-        $fakes = new RecordingFakes([]);
+        $fakes = new RecordingFakes([], []);
         $first = $fakes->replaceIn('9b2f4c1e-7d3a-4e5b-8c6d-1a2b3c4d5e6f');
 
         $this->assertSame(
@@ -83,7 +83,7 @@ final class RecordingFakesTest extends TestCase
         $refusal = RecordedEnvironmentRefused::naming(['CLAUDE_CODE_ENTRYPOINT', 'ITERM_SESSION_ID']);
         $this->expectExceptionObject($refusal);
 
-        new RecordingFakes([])->assertClean($opening, '');
+        new RecordingFakes([], [])->assertClean($opening, '');
     }
 
     public function test_a_driver_exchange_outside_the_agent_image_is_refused(): void
@@ -92,7 +92,7 @@ final class RecordingFakesTest extends TestCase
 
         $this->expectException(RecordingOutsideContainer::class);
 
-        new RecordingFakes([])->assertClean($opening, 'journal-agent@sha256:1');
+        new RecordingFakes([], [])->assertClean($opening, 'journal-agent@sha256:1');
     }
 
     public function test_each_value_becomes_one_fake_of_its_shape_the_same_on_a_rerecord(): void
@@ -100,8 +100,8 @@ final class RecordingFakesTest extends TestCase
         $text = 'thread 01jd8x0g9m3qz6v4k2t7r5w1ca digest '.str_repeat('ab', 32)
             .' JOURNAL_START_TOKEN=s3cr3t-grant again 01jd8x0g9m3qz6v4k2t7r5w1ca';
 
-        $first = new RecordingFakes([])->replaceIn($text);
-        $again = new RecordingFakes([])->replaceIn($text);
+        $first = new RecordingFakes([], [])->replaceIn($text);
+        $again = new RecordingFakes([], [])->replaceIn($text);
 
         $this->assertSame(
             [
@@ -117,7 +117,7 @@ final class RecordingFakesTest extends TestCase
     {
         $this->expectExceptionObject(RecordingLeaks::at([1]));
 
-        new RecordingFakes([])->assertNoLeak('{"host":"acme-host-7"}', ['Example User', 'acme-host-7', '1']);
+        new RecordingFakes([], [])->assertNoLeak('{"host":"acme-host-7"}', ['Example User', 'acme-host-7', '1']);
     }
 
     public function test_a_faked_claims_instructions_are_signed_anew_with_the_recordings_instruction_secret(): void
@@ -146,7 +146,7 @@ final class RecordingFakesTest extends TestCase
             RecordingFakes::INSTRUCTION_SECRET,
         );
 
-        $resigned = new RecordingFakes([])->resignedClaim($claim);
+        $resigned = new RecordingFakes([], [])->resignedClaim($claim);
 
         $this->assertSame(
             $signature,
@@ -171,5 +171,14 @@ final class RecordingFakesTest extends TestCase
             '/workspace',
             inherit: $inherit,
         );
+    }
+
+    public function test_a_personal_value_of_the_journal_is_faked_wherever_it_stands(): void
+    {
+        $fakes = new RecordingFakes([], ['Jane Example-Owner', 'acct-workspace-77']);
+
+        $faked = $fakes->replaceIn('signed in as Jane Example-Owner in acct-workspace-77');
+
+        $this->assertSame('signed in as '.RecordingFakes::USER_NAME.' in '.RecordingFakes::USER_NAME, $faked);
     }
 }

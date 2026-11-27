@@ -12,6 +12,7 @@ use App\Models\Drivers\DriverConversation;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Sessions\Contracts\ConversationVisits as ConversationVisitsContract;
+use App\Sessions\Enums\StartRefusalReason;
 use Carbon\CarbonImmutable;
 
 /**
@@ -59,6 +60,7 @@ final readonly class ConversationVisits implements ConversationVisitsContract
         ConversationVisit::create($session, $conversation, $eventId, $observedAt);
         $session->enterConversation($conversation);
         $this->confirmConversation($session->id, $nativeId);
+        $this->proveStart($session->id, $nativeId);
 
         if ($start !== null) {
             $this->outputs->map($session, $conversation, $start, $transcriptPath);
@@ -85,6 +87,22 @@ final readonly class ConversationVisits implements ConversationVisitsContract
      * Records whether the session went on in the conversation its start chose: a session that entered another one,
      * or a fresh one, never counts as resumed.
      */
+    /**
+     * The conversation the driver's hook entered proves which conversation the session's start runs, for a driver whose
+     * wake reports none, such as a terminal: the start becomes ready and its held messages go out, and a start bound
+     * to another conversation is refused.
+     */
+    private function proveStart(string $sessionId, string $nativeId): void
+    {
+        SessionRequest::findLockedLatestOf($sessionId)
+            ->filter(fn (SessionRequest $start) => $start->readiness->isUnverified())
+            ->forAll(function (SessionRequest $start) use ($nativeId): void {
+                if (! $start->bindIdentity($nativeId)) {
+                    $start->refuseFor(StartRefusalReason::IdentityMismatch);
+                }
+            });
+    }
+
     private function confirmConversation(string $sessionId, string $nativeId): void
     {
         $start = SessionRequest::query()->ofSession($sessionId)->resumeUnsettled()->first();

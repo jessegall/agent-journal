@@ -8,7 +8,6 @@ use App\Agents\Drivers\Contracts\DriverKeyScripts;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Terminals\KeyScripts\KeyScript;
 use App\Terminals\KeyScripts\KeyStep;
-use App\Terminals\KeyScripts\ScreenExpectation;
 
 /**
  * The key scripts recorded for Claude Code: each changes a setting for this session only and ends on Claude
@@ -28,17 +27,14 @@ final readonly class ClaudeCodeKeyScripts implements DriverKeyScripts
      */
     public function __invoke(): array
     {
+        // The model and the level are named on the command line, so no picker is walked (user 28771, 28786).
         $changeModel = [
-            ...KeyScript::command('/model', '❯ /model'),
-            KeyStep::find('find the model', 'model-picker', 'model'),
-            KeyStep::press('set it for this session only', ScreenExpectation::menu('model-picker'), 's'),
+            ...KeyScript::command('/model {model}', '❯ /model {model}'),
             KeyStep::evidence('see the model applied', 'set model to {model}'),
         ];
 
         $changeEffort = [
-            ...KeyScript::command('/effort', '❯ /effort'),
-            KeyStep::find('find the effort level', 'effort-picker', 'effort'),
-            KeyStep::press('set it for this session only', ScreenExpectation::menu('effort-picker'), 's'),
+            ...KeyScript::command('/effort {effort}', '❯ /effort {effort}'),
             KeyStep::evidence('see the effort applied', 'set effort level to {effort}'),
         ];
 

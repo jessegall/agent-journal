@@ -50,6 +50,13 @@ final class ScanCacheTest extends TestCase
         $this->assertSame([['// one'], ['// two']], [$first, $second]);
     }
 
+    public function test_a_generated_file_is_never_judged(): void
+    {
+        $path = base_path('app/Hosts/Protocol/HostRefusal.php');
+
+        $this->assertSame([], ScanCache::findings($this->scan(), [$path]));
+    }
+
     public function test_an_unchanged_file_is_not_parsed_again(): void
     {
         $path = "{$this->folder}/note.php";

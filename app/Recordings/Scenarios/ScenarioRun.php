@@ -6,6 +6,7 @@ namespace App\Recordings\Scenarios;
 
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
@@ -71,6 +72,20 @@ final class ScenarioRun
         $this->lastAgent = $name;
 
         return Agent::query()->findOrFail($id);
+    }
+
+    /**
+     * Each agent of the play that still runs a session, so a play that failed stops them and the next play finds
+     * them free.
+     *
+     * @return list<Agent>
+     */
+    public function runningAgents(): array
+    {
+        return array_values(array_filter(
+            array_map(fn (string $id) => Agent::query()->findOrFail($id), array_values($this->agents)),
+            fn (Agent $agent) => AgentSession::query()->find($agent->current_session_id)?->hasEnded() === false,
+        ));
     }
 
     /**

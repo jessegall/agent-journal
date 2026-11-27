@@ -7,7 +7,7 @@
         },
         {
             "do": "wait-for",
-            "fact": "orders-answered",
+            "fact": "instructions-answered",
             "seconds": 60
         }
     ]

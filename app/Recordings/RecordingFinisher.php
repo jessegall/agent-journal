@@ -11,6 +11,8 @@ use App\Files\Values\Depth;
 use App\Hosts\HostProtocolCheck;
 use App\Hosts\Protocol\HostRoute;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
+use App\Models\Access\User;
+use App\Models\Accounts\Account;
 use App\Recordings\Enums\RecordedEventType;
 use App\Recordings\Enums\RecordingMode;
 use App\Recordings\Enums\Wire;
@@ -56,7 +58,8 @@ final readonly class RecordingFinisher
             throw HostProtocolDrifted::naming($drifted);
         }
 
-        $fakes = new RecordingFakes($run->environment());
+        $personal = [...User::resolvePersonalValues(), ...Account::resolvePersonalValues()];
+        $fakes = new RecordingFakes($run->environment(), $personal);
 
         $exchanges = array_map(
             fn (CutExchange $exchange) => $this->resigned($exchange->fakedBy($fakes), $fakes),
@@ -76,7 +79,7 @@ final readonly class RecordingFinisher
 
         $this->protocol->assertKept($recording);
         $text = implode("\n", array_map(fn (CutExchange $exchange) => $exchange->text(), $exchanges));
-        $fakes->assertNoLeak($text, $run->knownValues());
+        $fakes->assertNoLeak($text, [...$run->knownValues(), ...$personal]);
 
         return $this->written($run, $manifest, $recording, $fakes);
     }

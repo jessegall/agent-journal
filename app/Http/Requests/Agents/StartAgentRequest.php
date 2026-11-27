@@ -8,11 +8,13 @@ use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Enums\ConversationModeType;
+use App\Hosts\ArrangementSetting;
 use App\Models\Agents\Agent;
 use App\Sessions\Contracts\BuiltInStartProfiles;
 use App\Sessions\Enums\StartOriginType;
 use App\Sessions\StartPreviews;
 use App\Sessions\Values\StartPolicy;
+use App\Support\AgentImage;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
 use App\Values\StartRequest;
@@ -63,6 +65,8 @@ final class StartAgentRequest extends FormRequest
         DriverCatalogue $drivers,
         BuiltInStartProfiles $profiles,
         StartPreviews $previews,
+        ArrangementSetting $arrangement,
+        AgentImage $image,
     ): StartAgentCommand {
         $agent = Agent::query()->findOrFail(strtolower((string) $this->route('agent')));
 
@@ -91,7 +95,10 @@ final class StartAgentRequest extends FormRequest
             null,
             ConversationModeType::New,
             null,
-            StartPolicy::mainOnHost(base_path()),
+            // An installation that runs its agents contained starts its main agents in a container too.
+            $arrangement->arrangement->isContained()
+                ? StartPolicy::mainInContainer($image->reference)
+                : StartPolicy::mainOnHost(base_path()),
             $driverType,
         ));
     }

@@ -119,7 +119,8 @@ final class ScenarioStep extends Data
                 null,
                 ConversationModeType::New,
                 null,
-                StartPolicy::mainOnHost(base_path()),
+                // A recording keeps only what runs in the agent image, so every scenario starts contained.
+                StartPolicy::mainInContainer($run->agentImage),
                 $this->driverType ?? DriverType::Terminal,
             )),
             ScenarioStepType::SendMessage => DeliverAgentCommand::text(
