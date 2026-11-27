@@ -6,15 +6,19 @@ namespace Tests\Commands\Hosts;
 
 use App\Hosts\Commands\ClaimHostInstructions\ClaimHostInstructionsCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
+use App\Hosts\Commands\ReserveHostDriverImages\ReserveHostDriverImagesCommand;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
+use App\Hosts\Enums\DriverImageStatus;
 use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostProcessType;
+use App\Hosts\Protocol\HostProtocolVersion;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Models\Hosts\HostInstruction;
+use App\Models\Projects\HostDriverImage;
 use App\Values\HostInstructionSource;
 use App\Values\RowGuard;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -133,5 +137,29 @@ final class NotifyHostInventoryTest extends TestCase
                 $inventory,
             )),
         );
+    }
+
+    public function test_a_restarted_host_allows_its_ready_driver_images_again_before_any_start_uses_them(): void
+    {
+        $this->journal->enrollContainedHost('Box', [base_path()]);
+        $hostId = $this->journal->hostCalled('Box')->hostId;
+        $this->journal->asSystem(new ReserveHostDriverImagesCommand($hostId));
+        $image = HostDriverImage::query()->where('host_id', $hostId)->firstOrFail();
+        $image->startAttempt('build-1');
+        $image->built('sha256:'.str_repeat('3', 64));
+        $image->orderedIn('allow-1');
+        $image->acknowledged();
+        $image->markChecksSent('check-1');
+        $image->checked();
+
+        $this->journal->asSystem(new NotifyHostInventoryCommand($hostId, HostInventoryPayload::from([
+            'protocol' => HostProtocolVersion::CURRENT,
+            'release' => '6.0.0',
+            'capabilities' => [],
+            'processes' => [],
+        ])));
+
+        $image->refresh();
+        $this->journal->assertResult([DriverImageStatus::Allowing, null], [$image->status, $image->allow_instruction_id]);
     }
 }

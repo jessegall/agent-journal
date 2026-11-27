@@ -90,7 +90,6 @@ Close to the right
 Code from the sign-in page
 Code theme
 Codex
-Codex cannot run in a container yet: its tools would run as its own user
 Coding where the way is clear.
 Color scheme
 Command output
@@ -517,6 +516,7 @@ The terminal still has an unfinished line: {{ view.unsentLine }}
 The unfinished line
 This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
+This driver cannot run in a container.
 This item is unavailable
 This machine and the share service must keep running for the link to work.
 This paste has {{ preview.lines }} lines; each line break may run a command in the terminal.
@@ -580,7 +580,6 @@ Your last answer did not arrive. Paste it again.
 Your last code did not arrive. Paste it again.
 a file the user names on the command line, wherever it lies
 a sharing gateway's program in the host's tool folders
-and read its sign-in.
 approved by {{ signIn.approvedBy }}
 as {{ sample.approvedClasses.join(", ") }}
 characters

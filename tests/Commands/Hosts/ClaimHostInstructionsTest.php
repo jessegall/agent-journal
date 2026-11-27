@@ -7,7 +7,9 @@ namespace Tests\Commands\Hosts;
 use App\Hosts\Commands\ClaimHostInstructions\ClaimHostInstructionsCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Commands\WriteHostInput\WriteHostInputCommand;
+use App\Hosts\Enums\DriverImageStatus;
 use App\Hosts\Enums\HostInstructionStatus;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\Payloads\HostInstructionPayload;
@@ -15,6 +17,7 @@ use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Hosts\Values\HostInstructionClaim;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Projects\Host;
+use App\Models\Projects\HostDriverImage;
 use App\Support\AgentImage;
 use App\Values\HostInstructionSource;
 use Carbon\CarbonImmutable;
@@ -129,13 +132,16 @@ final class ClaimHostInstructionsTest extends TestCase
             $claim->instructions,
         );
         $image = $this->journal->service(AgentImage::class)->reference;
+        // The first claim also builds the host's driver images, one per deployed recipe, and a later claim none again;
+        // the restart refused the builds it had claimed, so the claim after it builds them again.
+        $builds = ['build_image', 'build_image', 'allow_images'];
         $this->journal->assertResult(
-            [['allow_images'], [], ['allow_images'], ['images' => [$image]]],
+            [$builds, [], $builds, ['images' => [$image]]],
             [
                 $typesOf($first),
                 $typesOf($second),
                 $typesOf($afterRestart),
-                $this->journal->payloadOf($this->journal->hostInstructionsOn('Box')[0]),
+                $this->journal->payloadOf($this->firstAllowOn('Box')),
             ],
         );
     }
@@ -153,14 +159,82 @@ final class ClaimHostInstructionsTest extends TestCase
 
         $whileAllowing = $this->journal->asSystem(new ClaimHostInstructionsCommand($hostId, 10));
         $this->journal->hostInstruction(
-            $this->journal->hostInstructionsOn('Box')[0],
-            fn (TestHostInstruction $allow) => $allow->answerWith(['allowed' => 1]),
+            $this->firstAllowOn('Box'),
+            fn (TestHostInstruction $allow) => $allow->answerWith(['allowed' => 1, 'absent' => []]),
         );
         $onceAllowed = $this->journal->asSystem(new ClaimHostInstructionsCommand($hostId, 10));
 
         $this->journal->assertResult(
-            [['allow_images'], ['open_container']],
+            [['build_image', 'build_image', 'allow_images'], ['open_container']],
             [$typesOf($whileAllowing), $typesOf($onceAllowed)],
         );
+    }
+
+    public function test_a_cold_contained_host_reaches_one_ready_image_per_recipe_with_no_build_sent_twice(): void
+    {
+        $this->journal->enrollContainedHost('Box', [base_path()]);
+        $hostId = $this->journal->hostCalled('Box')->hostId;
+
+        $this->journal->asSystem(new ClaimHostInstructionsCommand($hostId, 10));
+        $whileBuilding = $this->journal->asSystem(new ClaimHostInstructionsCommand($hostId, 10));
+
+        foreach ($this->openOn('Box', HostInstructionType::BuildImage) as $number => $build) {
+            $this->journal->hostInstruction($build, fn (TestHostInstruction $built) => $built->answerWith([
+                'image' => 'sha256:'.str_repeat((string) ($number + 4), 64),
+                'history' => ['RUN sh /opt/journal/checks/driver-image.sh'],
+                'stdout' => '',
+                'stderr' => '',
+                'exit_code' => 0,
+            ]));
+        }
+
+        // The first set, of the base alone, is still out; the set that names the built images follows its answer.
+        $answerOpenSet = fn () => $this->journal->hostInstruction(
+            $this->openOn('Box', HostInstructionType::AllowImages)[0],
+            fn (TestHostInstruction $allow) => $allow->answerWith(['allowed' => 3, 'absent' => []]),
+        );
+        $answerOpenSet();
+        $answerOpenSet();
+
+        foreach ($this->openOn('Box', HostInstructionType::RunContainers) as $checks) {
+            $passing = ['exitCode' => 0, 'stdout' => "10002\n", 'stderr' => '', 'isTruncated' => false];
+            $runs = count($this->journal->payloadOf($checks)['runs']);
+            $results = array_fill(0, $runs, [...$passing, 'isTimedOut' => false]);
+            $this->journal->hostInstruction(
+                $checks,
+                fn (TestHostInstruction $run) => $run->answerWith(['results' => $results]),
+            );
+        }
+
+        $this->journal->assertResult(
+            [[], [DriverImageStatus::Ready, DriverImageStatus::Ready]],
+            [
+                $whileBuilding->instructions,
+                HostDriverImage::query()->where('host_id', $hostId)->orderBy('id')->pluck('status')->all(),
+            ],
+        );
+    }
+
+    /**
+     * The host's instructions of the type it has not answered yet, oldest first.
+     *
+     * @return list<HostInstruction>
+     */
+    private function openOn(string $host, HostInstructionType $type): array
+    {
+        return array_values(array_filter(
+            $this->journal->hostInstructionsOn($host),
+            fn (HostInstruction $made) => $made->type === $type && $made->answered_at === null,
+        ));
+    }
+
+    private function firstAllowOn(string $host): HostInstruction
+    {
+        $allows = array_filter(
+            $this->journal->hostInstructionsOn($host),
+            fn (HostInstruction $made) => $made->type === HostInstructionType::AllowImages,
+        );
+
+        return reset($allows) ?: $this->fail("no allow_images was placed on {$host}");
     }
 }

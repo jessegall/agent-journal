@@ -21,11 +21,13 @@ use App\Hosts\Commands\MarkFailedUpgrades\MarkFailedUpgradesCommand;
 use App\Hosts\Commands\MarkSilentHosts\MarkSilentHostsCommand;
 use App\Hosts\Commands\SweepHostInstructions\SweepHostInstructionsCommand;
 use App\Hosts\Contracts\HostChannel as HostChannelContract;
+use App\Hosts\Contracts\HostDriverImages as HostDriverImagesContract;
 use App\Hosts\Contracts\HostOperatorAccess as HostOperatorAccessContract;
 use App\Hosts\Contracts\LocalProjectHosts as LocalProjectHostsContract;
 use App\Hosts\Contracts\ProjectFiles as ProjectFilesContract;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\HostChannel;
+use App\Hosts\HostDriverImages;
 use App\Hosts\HostOperatorAccess;
 use App\Links\ProjectFileLinkRecords;
 use App\Models\Projects\ProjectFile;
@@ -68,6 +70,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
         $this->app->bind(ProjectEdgesContract::class, ProjectEdges::class);
         $this->app->bind(LocalProjectHostsContract::class, LocalProjectHosts::class);
         $this->app->bind(HostChannelContract::class, HostChannel::class);
+        $this->app->bind(HostDriverImagesContract::class, HostDriverImages::class);
 
         // Each purpose of process the journal drives has its process driver; a test adds its mock drivers.
         $this->app->singleton(ProcessDrivers::class, fn ($app) => new ProcessDrivers($app)

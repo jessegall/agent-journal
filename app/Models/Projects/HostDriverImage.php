@@ -1,0 +1,373 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models\Projects;
+
+use App\Concerns\BoundedReads;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
+use App\Events\Connections\DriverImageAdmitted;
+use App\Events\Connections\DriverImageRefused;
+use App\Exceptions\HostDriverImageUnbuilt;
+use App\Hosts\Enums\DriverImagePhase;
+use App\Hosts\Enums\DriverImageStatus;
+use App\Models\Support\JournalModel;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
+
+/**
+ * One driver image recipe on one host, from its reservation to ready or refused: the one row each host keeps per
+ * recipe, which the build, the allow set and the start checks move along. Only the instruction of its present phase
+ * moves it, so a late answer to an earlier one changes nothing.
+ *
+ * @property string $id
+ * @property string $host_id
+ * @property string $driver_image_recipe_id
+ * @property DriverImageStatus $status
+ * @property int $attempt
+ * @property int $failures
+ * @property string|null $build_instruction_id
+ * @property string|null $allow_instruction_id
+ * @property string|null $check_instruction_id
+ * @property string|null $image
+ * @property string|null $refusal
+ * @property CarbonImmutable|null $ready_at
+ */
+#[Table('host_driver_images')]
+final class HostDriverImage extends JournalModel implements EventSource
+{
+    use BoundedReads;
+    use RaisesEvents;
+
+    /**
+     * How many recoveries in a row may fail before the image is refused: an interruption, an image the daemon lost or
+     * a daemon out of reach, with no ready image between.
+     */
+    public const int RECOVERY_LIMIT = 3;
+
+    /**
+     * The statuses whose image the host's allow set names: waiting for the runner, being checked, or ready.
+     */
+    private const array ALLOWED_STATUSES = [
+        DriverImageStatus::Allowing,
+        DriverImageStatus::Checking,
+        DriverImageStatus::Ready,
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => DriverImageStatus::class,
+            'attempt' => 'integer',
+            'failures' => 'integer',
+            'ready_at' => 'immutable_datetime',
+        ];
+    }
+
+    // ----------[ Constructors ]----------
+
+    /**
+     * The host's one row of the recipe, reserved pending when it is new, and locked until the transaction ends.
+     */
+    public static function reserve(Host $host, DriverImageRecipeRecord $recipe): self
+    {
+        self::query()->insertOrIgnore([
+            'id' => new self()->newUniqueId(),
+            'host_id' => $host->id,
+            'driver_image_recipe_id' => $recipe->id,
+            'status' => DriverImageStatus::Pending->value,
+            'attempt' => 0,
+            'failures' => 0,
+            'created_at' => CarbonImmutable::now(),
+            'updated_at' => CarbonImmutable::now(),
+        ]);
+
+        return self::query()
+            ->where('host_id', $host->id)
+            ->where('driver_image_recipe_id', $recipe->id)
+            ->lockForUpdate()
+            ->firstOrFail();
+    }
+
+    /**
+     * The built images of the host a container may run now or after its checks: those waiting for the runner to allow
+     * them, being checked, or ready.
+     *
+     * @return list<string>
+     */
+    public static function resolveAllowedImagesOn(string $hostId): array
+    {
+        $images = self::query()
+            ->where('host_id', $hostId)
+            ->whereIn('status', array_map(fn (DriverImageStatus $status) => $status->value, self::ALLOWED_STATUSES))
+            ->whereNotNull('image')
+            ->orderBy('id')
+            ->pluck('image');
+
+        return array_values(array_unique(array_map(strval(...), $images->all())));
+    }
+
+    /**
+     * Whether an image of the host waits to be allowed with no allow set of its own yet, as after a rebuild.
+     */
+    public static function hasUnorderedOn(string $hostId): bool
+    {
+        return self::query()
+            ->where('host_id', $hostId)
+            ->where('status', DriverImageStatus::Allowing->value)
+            ->whereNull('allow_instruction_id')
+            ->exists();
+    }
+
+    /**
+     * The host's images waiting for the runner to allow them, locked, so the set that names them is recorded on each.
+     *
+     * @return list<self>
+     */
+    public static function findAllowingOn(string $hostId): array
+    {
+        return array_values(self::query()
+            ->where('host_id', $hostId)
+            ->where('status', DriverImageStatus::Allowing->value)
+            ->lockForUpdate()
+            ->get()
+            ->all());
+    }
+
+    /**
+     * The host's images not built yet.
+     *
+     * @return list<self>
+     */
+    public static function findPendingOn(string $hostId): array
+    {
+        return array_values(self::query()->pendingOn($hostId)->orderBy('id')->get()->all());
+    }
+
+    /**
+     * The host's ready images, locked, so a restart sends each to be allowed again.
+     *
+     * @return list<self>
+     */
+    public static function findReadyOn(string $hostId): array
+    {
+        return array_values(self::query()
+            ->where('host_id', $hostId)
+            ->where('status', DriverImageStatus::Ready->value)
+            ->lockForUpdate()
+            ->get()
+            ->all());
+    }
+
+    /**
+     * The host's images whose build, allow set or checks went out as this instruction, locked.
+     *
+     * @return list<self>
+     */
+    public static function findWaitingOn(string $instructionId): array
+    {
+        return array_values(self::query()
+            ->where(fn (Builder $waiting) => $waiting->where('build_instruction_id', $instructionId)
+                ->orWhere('allow_instruction_id', $instructionId)
+                ->orWhere('check_instruction_id', $instructionId))
+            ->lockForUpdate()
+            ->get()
+            ->all());
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * Whether the instruction is the one this row waits on in the phase, so its answer may move the row.
+     */
+    public function isCurrent(string $instructionId, DriverImagePhase $phase): bool
+    {
+        return match ($phase) {
+            DriverImagePhase::Build => $this->status === DriverImageStatus::Building
+                && $this->build_instruction_id === $instructionId,
+            DriverImagePhase::Allow => $this->status === DriverImageStatus::Allowing
+                && $this->allow_instruction_id === $instructionId,
+            DriverImagePhase::Check => $this->status === DriverImageStatus::Checking
+                && $this->check_instruction_id === $instructionId,
+        };
+    }
+
+    /**
+     * Whether the instruction is the one the image's present phase waits on, whichever phase that is.
+     */
+    public function waitsOn(string $instructionId): bool
+    {
+        return $this->isCurrent($instructionId, DriverImagePhase::Build)
+            || $this->isCurrent($instructionId, DriverImagePhase::Allow)
+            || $this->isCurrent($instructionId, DriverImagePhase::Check);
+    }
+
+    /**
+     * The image the build gave, which every row past its build holds.
+     *
+     * @throws HostDriverImageUnbuilt for a row whose build gave no image yet
+     */
+    public function builtImage(): string
+    {
+        return $this->image ?? throw HostDriverImageUnbuilt::of($this->id);
+    }
+
+    public function isReady(): bool
+    {
+        return $this->status === DriverImageStatus::Ready;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === DriverImageStatus::Pending;
+    }
+
+    // ----------[ Changes ]----------
+
+    /**
+     * The build of a pending image is sent as this instruction.
+     */
+    public function startAttempt(string $instructionId): void
+    {
+        $this->status = DriverImageStatus::Building;
+        $this->attempt++;
+        $this->build_instruction_id = $instructionId;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The build gave this image; the runner must allow it before its checks run.
+     */
+    public function built(string $image): void
+    {
+        $this->status = DriverImageStatus::Allowing;
+        $this->image = $image;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The host's allow set that names this image went out as this instruction.
+     */
+    public function orderedIn(string $allowInstructionId): void
+    {
+        $this->allow_instruction_id = $allowInstructionId;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The runner allowed the image, so its start checks may run.
+     */
+    public function acknowledged(): void
+    {
+        $this->status = DriverImageStatus::Checking;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The start checks went out as this instruction.
+     */
+    public function markChecksSent(string $instructionId): void
+    {
+        $this->check_instruction_id = $instructionId;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The start checks passed: the image is ready, and its recoveries count from nothing again.
+     */
+    public function checked(): void
+    {
+        $this->status = DriverImageStatus::Ready;
+        $this->failures = 0;
+        $this->ready_at = CarbonImmutable::now();
+        $this->raise(new DriverImageAdmitted($this->id));
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The host restarted: a ready image goes back to be allowed by the runner that now runs.
+     */
+    public function reallow(): void
+    {
+        $this->status = DriverImageStatus::Allowing;
+        $this->allow_instruction_id = null;
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The phase's instruction was lost to a restart, an expiry or a daemon out of reach: the image is built again,
+     * unless that was the last recovery it had.
+     */
+    public function interrupted(string $why): void
+    {
+        $this->recover($why);
+    }
+
+    /**
+     * The daemon no longer holds the image: it is built again, unless that was the last recovery it had.
+     */
+    public function absent(): void
+    {
+        $this->image = null;
+        $this->recover('the Docker daemon no longer holds the image');
+    }
+
+    /**
+     * The image is refused for good, with why.
+     */
+    public function refuse(string $why): void
+    {
+        $this->status = DriverImageStatus::Refused;
+        $this->refusal = $why;
+        $this->raise(new DriverImageRefused($this->id));
+        $this->saveAndAssert();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The host's ready image of the recipe.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function readyOn(Builder $query, string $hostId, string $recipeId): void
+    {
+        $query->where('host_id', $hostId)
+            ->where('driver_image_recipe_id', $recipeId)
+            ->where('status', DriverImageStatus::Ready->value);
+    }
+
+    /**
+     * The host's images not built yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pendingOn(Builder $query, string $hostId): void
+    {
+        $query->where('host_id', $hostId)->where('status', DriverImageStatus::Pending->value);
+    }
+
+    // ----------[ Internals ]----------
+
+    private function recover(string $why): void
+    {
+        $this->failures++;
+
+        if ($this->failures >= self::RECOVERY_LIMIT) {
+            $this->refuse("{$why}; recovery failed {$this->failures} times in a row");
+
+            return;
+        }
+
+        $this->status = DriverImageStatus::Pending;
+        $this->build_instruction_id = null;
+        $this->allow_instruction_id = null;
+        $this->check_instruction_id = null;
+        $this->saveAndAssert();
+    }
+}

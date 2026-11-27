@@ -12,6 +12,7 @@ use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\Payloads\HostInventoryProcessPayload;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
+use App\Models\Projects\HostDriverImage;
 use App\Time\Contracts\ServerClock;
 
 /**
@@ -47,6 +48,10 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
         $now = $this->clock->now();
         $host->recordCapabilities($inventory->capabilities);
         $host->forgetAllowedImages();
+
+        foreach (HostDriverImage::findReadyOn($host->id) as $image) {
+            $image->reallow();
+        }
         $host->recordRelease($inventory->release);
 
         foreach (HostProcess::findLiveOn($host) as $process) {

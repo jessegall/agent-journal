@@ -60,6 +60,14 @@ final readonly class DriverProfile
     }
 
     /**
+     * The image folder the driver's image is built from.
+     */
+    public function image(): DriverImage
+    {
+        return $this->setup->image;
+    }
+
+    /**
      * @throws BuildNotPinned
      */
     public function assertPinnedBuild(string $printed): void

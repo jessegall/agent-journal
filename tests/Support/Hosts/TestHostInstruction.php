@@ -58,4 +58,21 @@ final readonly class TestHostInstruction
 
         return $this;
     }
+
+    /**
+     * The host refuses the instruction for the reason given, with the typed facts that refusal carries, such as an
+     * image fault's.
+     *
+     * @param  array<string, mixed>  $facts
+     */
+    public function refuseWith(HostRefusal $refusal, array $facts): self
+    {
+        $body = json_encode(
+            ['instruction_id' => $this->instruction->id, 'status' => 'refused', 'refusal' => $refusal->value, 'facts' => $facts],
+            JSON_THROW_ON_ERROR,
+        );
+        $this->journal->asSystem(new NotifyHostInstructionCommand($this->instruction->host_id, $this->instruction->id, $body));
+
+        return $this;
+    }
 }

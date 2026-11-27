@@ -180,6 +180,16 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     }
 
     /**
+     * The facts of the host's answer, done or refused: a reply, or what a refusal names; none before an answer.
+     *
+     * @return array<string, mixed>
+     */
+    public function answerFacts(): array
+    {
+        return $this->answer->facts ?? [];
+    }
+
+    /**
      * The instruction is refused, with the refusal, the words that say why (none when the refusal says it all) and the facts.
      *
      * @param  array<string, mixed>  $facts
@@ -309,6 +319,14 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
             ->get();
 
         return array_values($instructions->all());
+    }
+
+    /**
+     * The host's allow set the host has not answered yet, if one is out: a host takes one allow set at a time.
+     */
+    public static function findOutstandingAllowOf(Host $host): self|null
+    {
+        return self::query()->forHost($host)->ofType(HostInstructionType::AllowImages)->unanswered()->first();
     }
 
     /**
