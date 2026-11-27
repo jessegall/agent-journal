@@ -14,7 +14,7 @@ const HeartbeatInterval = 30 * time.Second
 // JournalCalls are the calls of host protocol 1 the relay makes to the journal.
 type JournalCalls interface {
 	ClaimInstructions(ctx context.Context, limit int, wait int) (ClaimedInstructions, error)
-	AnswerInstruction(ctx context.Context, instruction string, body Answer) error
+	AnswerInstructions(ctx context.Context, instruction string, body Answer) error
 	NotifyInventory(ctx context.Context, body Inventory) error
 	NotifyHeartbeat(ctx context.Context, body HostHeartbeat) error
 }

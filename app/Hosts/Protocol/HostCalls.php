@@ -38,9 +38,9 @@ interface HostCalls
     public function claimInstructions(HostContext $host, int $limit, int $wait): HostClaimedInstructionsPayload;
 
     /**
-     * Answers the host's answer_instruction call to /host/instructions/{instruction}.
+     * Answers the host's answer_instructions call to /host/instructions/{instruction}.
      */
-    public function answerInstruction(HostContext $host, string $instruction, HostAnswerPayload $body): void;
+    public function answerInstructions(HostContext $host, string $instruction, HostAnswerPayload $body): void;
 
     /**
      * Answers the host's pull_private_value call to /host/private-values/{submission}.

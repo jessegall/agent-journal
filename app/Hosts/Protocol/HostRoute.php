@@ -15,7 +15,7 @@ use Spatie\LaravelData\Data;
 enum HostRoute: string
 {
     case ClaimInstructions = 'claim_instructions';
-    case AnswerInstruction = 'answer_instruction';
+    case AnswerInstructions = 'answer_instructions';
     case PullPrivateValue = 'pull_private_value';
     case NotifyProcessOutput = 'notify_process_output';
     case NotifyProcessReport = 'notify_process_report';
@@ -30,7 +30,7 @@ enum HostRoute: string
     {
         return preg_match(match ($this) {
             self::ClaimInstructions => '#^/host/instructions/claim$#',
-            self::AnswerInstruction => '#^/host/instructions/[^/]+$#',
+            self::AnswerInstructions => '#^/host/instructions/[^/]+$#',
             self::PullPrivateValue => '#^/host/private\-values/[^/]+$#',
             self::NotifyProcessOutput => '#^/host/processes/[^/]+/output$#',
             self::NotifyProcessReport => '#^/host/processes/[^/]+$#',
@@ -49,7 +49,7 @@ enum HostRoute: string
     {
         return match ($this) {
             self::ClaimInstructions => Payloads\HostEmptyPayload::class,
-            self::AnswerInstruction => Payloads\HostAnswerPayload::class,
+            self::AnswerInstructions => Payloads\HostAnswerPayload::class,
             self::PullPrivateValue => Payloads\HostEmptyPayload::class,
             self::NotifyProcessOutput => Payloads\HostOutputPayload::class,
             self::NotifyProcessReport => Payloads\HostProcessReportPayload::class,
@@ -68,7 +68,7 @@ enum HostRoute: string
     {
         return match ($this) {
             self::ClaimInstructions => Payloads\HostClaimedInstructionsPayload::class,
-            self::AnswerInstruction => Payloads\HostEmptyPayload::class,
+            self::AnswerInstructions => Payloads\HostEmptyPayload::class,
             self::PullPrivateValue => Payloads\HostPrivateValuePayload::class,
             self::NotifyProcessOutput => Payloads\HostEmptyPayload::class,
             self::NotifyProcessReport => Payloads\HostEmptyPayload::class,

@@ -39,7 +39,7 @@ func (journal *fakeJournal) ClaimInstructions(ctx context.Context, _, _ int) (Cl
 	return ClaimedInstructions{}, ctx.Err()
 }
 
-func (journal *fakeJournal) AnswerInstruction(_ context.Context, _ string, answer Answer) error {
+func (journal *fakeJournal) AnswerInstructions(_ context.Context, _ string, answer Answer) error {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.answers = append(journal.answers, answer)
@@ -72,7 +72,7 @@ func relayFor(t *testing.T, journal *fakeJournal) (Relay, []byte) {
 	}
 	clock := &JournalClock{Host: time.Now}
 	dispatcher := NewDispatcher(Verifier{Secret: secret, Now: clock.Now}, record, executors, func(_ Instruction, answer Answer) {
-		_ = journal.AnswerInstruction(context.Background(), answer.InstructionID, answer)
+		_ = journal.AnswerInstructions(context.Background(), answer.InstructionID, answer)
 	})
 	outputs := NewOutputs(t.TempDir(), func(string, Output) error { return nil }, time.Now)
 	table := &ProcessTable{outputs: outputs, processes: map[string]*heldProcess{}}

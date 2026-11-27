@@ -218,7 +218,7 @@
     },
     "calls": {
         "claim_instructions": { "route": "instructions.claim", "path": "/host/instructions/claim", "query": { "limit": "int", "wait": "int" }, "query_bounds": { "limit": [1, 50], "wait": [0, 25] }, "body": null, "reply": "claimed_instructions" },
-        "answer_instruction": { "route": "instructions.answer", "path": "/host/instructions/{instruction}", "body": "answer", "reply": null },
+        "answer_instructions": { "route": "instructions.answer", "path": "/host/instructions/{instruction}", "body": "answer", "reply": null },
         "pull_private_value": { "route": "private-values.pull", "path": "/host/private-values/{submission}", "body": null, "reply": "private_value" },
         "notify_process_output": { "route": "processes.output", "path": "/host/processes/{process}/output", "body": "output", "body_byte_limit": 262144, "reply": null },
         "notify_process_report": { "route": "processes.report", "path": "/host/processes/{process}", "body": "process_report", "reply": null },

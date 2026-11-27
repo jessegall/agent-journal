@@ -744,8 +744,8 @@ func (journal Journal) ClaimInstructions(ctx context.Context, limit int, wait in
 	return reply, journal.Client.Call(ctx, "/host/instructions/claim"+"?limit="+strconv.Itoa(limit)+"&wait="+strconv.Itoa(wait), nil, &reply)
 }
 
-// AnswerInstruction makes the answer_instruction call to /host/instructions/{instruction}.
-func (journal Journal) AnswerInstruction(ctx context.Context, instruction string, body Answer) error {
+// AnswerInstructions makes the answer_instructions call to /host/instructions/{instruction}.
+func (journal Journal) AnswerInstructions(ctx context.Context, instruction string, body Answer) error {
 	return journal.Client.Call(ctx, "/host/instructions/"+url.PathEscape(instruction), body, nil)
 }
 

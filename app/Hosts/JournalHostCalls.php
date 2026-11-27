@@ -67,7 +67,7 @@ final readonly class JournalHostCalls implements HostCalls
     }
 
     #[Dispatches(NotifyHostInstructionCommand::class)]
-    public function answerInstruction(HostContext $host, string $instruction, HostAnswerPayload $body): void
+    public function answerInstructions(HostContext $host, string $instruction, HostAnswerPayload $body): void
     {
         $this->commands->run(new NotifyHostInstructionCommand($host->hostId, $instruction, $body->toJson()));
     }

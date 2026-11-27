@@ -13,7 +13,7 @@ import (
 // took it. The journal answers a repeated answer as it did the first, so sending twice is safe.
 func (journal Journal) AnswerUntilTaken(ctx context.Context, answer Answer, wait time.Duration, expires time.Time) error {
 	for {
-		err := journal.AnswerInstruction(ctx, answer.InstructionID, answer)
+		err := journal.AnswerInstructions(ctx, answer.InstructionID, answer)
 		if err == nil || !errors.Is(err, client.ErrUncertain) || !time.Now().Add(wait).Before(expires) {
 			return err
 		}

@@ -68,7 +68,7 @@ final readonly class RecordedProtocol
                     ];
                 }
 
-                if ($route === HostRoute::AnswerInstruction && $call->status === null && $call->body !== '') {
+                if ($route === HostRoute::AnswerInstructions && $call->status === null && $call->body !== '') {
                     $refusals[] = HostAnswerPayload::from($call->body)->refusal;
                 }
             }
