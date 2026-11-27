@@ -48,6 +48,11 @@ const rows = computed(() => {
     return found;
 });
 
+/** Whether an opened folder shows that it is loading or failed to load. */
+function showsFolderState(entry: ProjectEntry): boolean {
+    return opened.value.has(entry.path) && (entry.isLoading === true || entry.isFailed === true);
+}
+
 function setOpen(path: string, isOpen: boolean): void {
     const next = new Set(opened.value);
 
@@ -85,7 +90,7 @@ function setOpen(path: string, isOpen: boolean): void {
                     @update:expanded="setOpen(row.entry.path, $event)"
                     @open="row.entry.isFolder ? setOpen(row.entry.path, !opened.has(row.entry.path)) : emit('open', row.entry.path)"
                 />
-                <template v-if="opened.has(row.entry.path) && (row.entry.isLoading === true || row.entry.isFailed === true)">
+                <template v-if="showsFolderState(row.entry)">
                     <div
                         role="status"
                         class="flex items-center gap-2 py-1 text-small text-text-3"

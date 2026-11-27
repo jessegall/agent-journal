@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject } from 'vue';
+import { computed, inject } from 'vue';
 import type { IconName } from './Icon.vue';
 import Icon from './Icon.vue';
 import IconButton from './IconButton.vue';
@@ -12,6 +12,16 @@ import { tabsKey } from './tabs';
  */
 const props = defineProps<{ value: string; label: string; icon?: IconName; count?: number; closable?: boolean }>();
 const group = inject(tabsKey);
+const look = computed(() => {
+    if (group?.active.value !== props.value) {
+        return 'text-text-3 hover:text-text-2';
+    }
+
+    const underline =
+        group.line.value === 'brand' ? 'shadow-[inset_0_-1px_0_var(--brand)]' : 'shadow-[inset_0_-1px_0_var(--border-3)]';
+
+    return ['text-text', underline];
+});
 
 function press(event: KeyboardEvent): void {
     if (props.closable && (event.key === 'Delete' || event.key === 'Backspace')) {
@@ -42,14 +52,7 @@ function middleClick(event: MouseEvent): void {
         class="group/tab inline-flex shrink items-center gap-1.5 py-[7px] text-badge tracking-[0.03em] transition-colors duration-(--duration-hover) focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-focus"
         :class="[
             { 'min-w-14': group?.hasLeastWidth.value },
-            group?.active.value === value
-                ? [
-                      'text-text',
-                      group.line.value === 'brand'
-                          ? 'shadow-[inset_0_-1px_0_var(--brand)]'
-                          : 'shadow-[inset_0_-1px_0_var(--border-3)]',
-                  ]
-                : 'text-text-3 hover:text-text-2',
+            look,
         ]"
         @click="group?.select(value)"
         @auxclick="middleClick"

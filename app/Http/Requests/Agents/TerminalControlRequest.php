@@ -91,7 +91,7 @@ final class TerminalControlRequest extends FormRequest
             $this->boolean('enter'),
             $this->sequence(),
             $this->integer('screenRevision'),
-            $this->enum('type', TerminalInputType::class) ?? TerminalInputType::Text,
+            $this->enum('type', TerminalInputType::class, TerminalInputType::Text),
             $this->enum('key', TerminalNamedKey::class),
             $this->integer('rows'),
             $this->integer('columns'),
