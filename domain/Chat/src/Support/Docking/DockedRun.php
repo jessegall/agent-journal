@@ -54,6 +54,6 @@ final readonly class DockedRun implements Dockable
             $cardParts[] = new Subtitle('exit', $exit);
         }
 
-        return DockCard::named($title, Stack::of('root', ...$cardParts));
+        return DockCard::named($title, Stack::root(...$cardParts));
     }
 }

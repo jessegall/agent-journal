@@ -14,7 +14,7 @@ use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
-use App\Projects\ProjectEdges;
+use App\Projects\Contracts\ProjectEdges;
 use App\Support\ActorReference;
 
 /**

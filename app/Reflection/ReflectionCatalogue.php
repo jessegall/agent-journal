@@ -61,8 +61,10 @@ final class ReflectionCatalogue
     {
         $spelling = strtolower(ltrim($name, '\\'));
 
-        if (isset($this->canonicalNames[$spelling])) {
-            return $this->canonicalNames[$spelling];
+        $known = $this->canonicalNames[$spelling] ?? null;
+
+        if ($known !== null) {
+            return $known;
         }
 
         if (! self::loads($name)) {

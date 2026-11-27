@@ -38,7 +38,7 @@ final class AssignedPlansTool extends JournalReadTool
             'search' => $schema->string()->max(240),
             'states' => $schema->array()->items($this->caseArgument($schema, PlanStatus::class)),
             'page' => $schema->integer()->min(1),
-            'per_page' => $this->wholeNumberArgument($schema, 1, NumberedPage::LARGEST_SIZE),
+            'per_page' => $this->wholeNumberArgument($schema, NumberedPage::LARGEST_SIZE),
             'continuation' => $schema->string(),
         ];
     }
@@ -49,13 +49,13 @@ final class AssignedPlansTool extends JournalReadTool
             $this->name(),
             $arguments,
             fn (ToolArguments $initialArguments) => [
-                'search' => $initialArguments->textOr('search', ''),
-                'states' => $initialArguments->enumValues('states', PlanStatus::class),
+                'search' => $initialArguments->optionalText('search'),
+                'states' => $initialArguments->stateValues(PlanStatus::class),
                 'page' => $initialArguments->positiveIntegerOr('page', 1),
                 'per_page' => $initialArguments->positiveIntegerOr('per_page', 20, NumberedPage::LARGEST_SIZE),
             ],
             fn (ToolArguments $filters) => $this->page(new AssignedPlanFilters(
-                search: $filters->text('search'),
+                search: $filters->optionalText('search'),
                 states: array_map(PlanStatus::from(...), $filters->list('states')),
                 page: new NumberedPage($filters->positiveInteger('page'), $filters->positiveInteger('per_page')),
             )),

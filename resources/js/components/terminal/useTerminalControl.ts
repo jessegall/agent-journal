@@ -52,7 +52,7 @@ function failureOf(failure: unknown): ControlFailure {
         return { kind: failure.kind, code: failure.code, message: failure.message };
     }
 
-    return { kind: 'lost', code: '', message: '' };
+    return { kind: 'lost', code: null, message: '' };
 }
 
 /**

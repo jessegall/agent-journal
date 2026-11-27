@@ -40,7 +40,7 @@ final class RuleReadTool extends JournalReadTool
         ];
     }
 
-    public function readRequest(ToolArguments|null $arguments = null): ReadRequest
+    public function readRequest(ToolArguments $arguments): ReadRequest
     {
         return $this->recordReadRequest($arguments, self::ID_ARGUMENT);
     }

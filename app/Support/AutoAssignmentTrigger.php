@@ -123,7 +123,7 @@ final readonly class AutoAssignmentTrigger implements AutoAssignmentTriggerContr
         $key = $fact->key;
 
         $this->logger->warning('Auto-assignment claim failed.', [
-            ...$key->actor->asColumns('actor'),
+            ...$key->actor->asActorColumns(),
             'type' => $key->assignableType,
             'provider' => $this->providers->autoAssignerClass($key->assignableType),
             'failure' => $failure::class,

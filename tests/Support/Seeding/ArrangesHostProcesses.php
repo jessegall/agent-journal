@@ -14,6 +14,7 @@ use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
 use App\Agents\Enums\SessionProcessStatus;
+use App\Agents\SignInEgress;
 use App\Connections\PublishedReleases;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
@@ -439,6 +440,8 @@ trait ArrangesHostProcesses
             $this->service(DriverCatalogueContract::class),
             $this->service(PinnedBuilds::class),
             $this->service(HookReplies::class),
+            $this->service(Files::class),
+            $this->service(SignInEgress::class),
             [...$setups, $like->forFamily($family->key)],
         ));
         $this->app->forgetInstance(DriverProfiles::class);

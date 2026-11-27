@@ -21,26 +21,26 @@ use Laravel\Mcp\ResponseFactory;
 abstract class JournalReadTool extends JournalTool
 {
     /**
-     * The read a call of the tool makes, or its discovery when no arguments are given yet.
+     * The read that discovers the tool before any arguments are given.
      */
-    public function readRequest(ToolArguments|null $arguments = null): ReadRequest
+    public function discoveryRequest(): ReadRequest
     {
-        if ($arguments === null) {
-            return ReadRequest::forDiscovery($this->name());
-        }
+        return ReadRequest::forDiscovery($this->name());
+    }
 
+    /**
+     * The read a call of the tool makes with its arguments.
+     */
+    public function readRequest(ToolArguments $arguments): ReadRequest
+    {
         return new ReadRequest($this->name());
     }
 
     /**
      * The read of one record, targeted at the record the id argument names so a grant scoped to it admits it.
      */
-    protected function recordReadRequest(ToolArguments|null $arguments, string $idArgument): ReadRequest
+    protected function recordReadRequest(ToolArguments $arguments, string $idArgument): ReadRequest
     {
-        if ($arguments === null) {
-            return ReadRequest::forDiscovery($this->name());
-        }
-
         return ReadRequest::forRecord($this->name(), $idArgument, $arguments->ulid($idArgument));
     }
 

@@ -30,8 +30,20 @@ final class TextReadCommand extends Command
             'target' => (string) $this->argument('target'),
             'version' => (string) $this->option('at-revision'),
             'section' => $section === '' ? null : $section,
-            'firstLine' => isset($span[1]) ? (int) $span[1] : null,
-            'lastLine' => isset($span[2]) && $span[2] !== '' ? (int) $span[2] : null,
+            'firstLine' => self::lineOf($span[1] ?? ''),
+            'lastLine' => self::lineOf($span[2] ?? ''),
         ]));
+    }
+
+    /**
+     * The line number a --lines bound names; none when the bound is left out.
+     */
+    private static function lineOf(string $bound): int|null
+    {
+        if ($bound === '') {
+            return null;
+        }
+
+        return (int) $bound;
     }
 }

@@ -32,12 +32,8 @@ final class MemoryReadTool extends JournalReadTool
         ];
     }
 
-    public function readRequest(ToolArguments|null $arguments = null): ReadRequest
+    public function readRequest(ToolArguments $arguments): ReadRequest
     {
-        if ($arguments === null) {
-            return ReadRequest::forDiscovery($this->name());
-        }
-
         return new ReadRequest(
             $this->name(),
             arguments: ['memory_id' => $arguments->ulid('memory_id')],

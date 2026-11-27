@@ -29,8 +29,10 @@ final class SkillRefreshCommand extends Command
 
         $refresh = $dispatchers->runAsJournal(CommandEntry::SkillRefresh, 'skill refresh', new RefreshSkillsCommand());
 
-        if ($refresh->hasFailed) {
-            $this->error("The skills could not be generated, the previous generation stays in use: {$refresh->reason}");
+        if ($refresh->failure !== null) {
+            $this->error(
+                "The skills could not be generated, the previous generation stays in use: {$refresh->failure}",
+            );
 
             return self::FAILURE;
         }

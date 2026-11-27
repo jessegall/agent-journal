@@ -34,7 +34,8 @@ final readonly class DeviceGrantController
         $deviceCode = InstallTicket::generate();
         $userCode = implode('-', str_split(Str::upper(Str::random(8)), 4));
         $binding = $request->string('binding')->toString();
-        $startKey = $request->filled('startKey') ? $request->string('startKey')->toString() : (string) Str::uuid();
+        $givenStartKey = $request->string('startKey')->toString();
+        $startKey = $givenStartKey === '' ? (string) Str::uuid() : $givenStartKey;
         $start = new StartDeviceGrantCommand($host->hostId, $binding, $deviceCode->digest(), $userCode, $startKey);
         $started = $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $start);
 

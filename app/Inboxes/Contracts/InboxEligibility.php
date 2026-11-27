@@ -20,14 +20,14 @@ interface InboxEligibility
     public function lockAdmission(ActorReference $user, string|null $environmentId): void;
 
     /**
-     * Whether the user may use inboxes in the environment, or across the journal when none is named.
+     * Whether the user may use inboxes across the journal.
      */
-    public function isAdmitted(ActorReference $user, string|null $environmentId): bool;
+    public function isAdmitted(ActorReference $user): bool;
 
     /**
-     * Whether the user holds the inbox permission in the environment, or across the journal when none is named.
+     * Whether the user holds the inbox permission across the journal.
      */
-    public function holds(ActorReference $user, InboxPermission $permission, string|null $environmentId): bool;
+    public function holds(ActorReference $user, InboxPermission $permission): bool;
 
     /**
      * The ids of the admitted users who may receive an invitation, at most the given number, for candidate search.

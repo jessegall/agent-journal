@@ -89,7 +89,7 @@ final readonly class PlansIndex extends PlansPage
 
     private function emptyFor(PlanFiltersData $filters): ListEmpty
     {
-        if ($filters->state instanceof PlanStateGroup || $filters->search !== '') {
+        if ($filters->state instanceof PlanStateGroup || $filters->search !== null) {
             return $this->nothingMatches(
                 'No plan matches these filters.',
                 'Show all plans',
@@ -136,12 +136,12 @@ final readonly class PlansIndex extends PlansPage
                 ['method' => ActionMethod::Post, 'href' => route('plans.create-plan', [], false), 'isKeyed' => true],
             ),
             [
-                LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text'),
-                LayoutPartData::field('brief', 'Goal', new LayoutFieldData('brief'), 'text'),
+                LayoutPartData::field('title', 'Title', LayoutFieldData::from(['name' => 'title']), 'text'),
+                LayoutPartData::field('brief', 'Goal', LayoutFieldData::from(['name' => 'brief']), 'text'),
                 LayoutPartData::field(
                     'type',
                     'Type',
-                    new LayoutFieldData('type', '', [], $this->typeNames()),
+                    LayoutFieldData::from(['name' => 'type', 'options' => $this->typeNames()]),
                     'choice',
                 ),
                 ...$this->projectField->forProject(),

@@ -25,7 +25,7 @@ final readonly class SearchRequest
         public string|null $within,
         public int $limit,
         public string|null $continuation,
-        public string $prefix,
+        public string|null $prefix,
     ) {}
 
     /**
@@ -38,7 +38,7 @@ final readonly class SearchRequest
         int|null $limit = null,
         string|null $continuation = null,
         bool $shouldDiscover = false,
-        string $prefix = '',
+        string|null $prefix = null,
     ): self {
         $checkedLimit = self::checkedLimit($limit);
 
@@ -55,7 +55,9 @@ final readonly class SearchRequest
                 throw SearchRequestInvalid::conflicting('discover', 'within');
             }
 
-            return new self(SearchRequestType::Discovery, null, null, $checkedLimit, null, trim($prefix));
+            $discoveryPrefix = $prefix === null ? '' : trim($prefix);
+
+            return new self(SearchRequestType::Discovery, null, null, $checkedLimit, null, $discoveryPrefix);
         }
 
         if ($query === null) {
@@ -68,7 +70,7 @@ final readonly class SearchRequest
 
         $scope = $within === null ? null : trim($within);
 
-        return new self(SearchRequestType::Fresh, SearchWords::fromInput($query), $scope, $checkedLimit, null, '');
+        return new self(SearchRequestType::Fresh, SearchWords::fromInput($query), $scope, $checkedLimit, null, null);
     }
 
     public function isFresh(): bool
@@ -84,6 +86,20 @@ final readonly class SearchRequest
     public function continues(): bool
     {
         return $this->type === SearchRequestType::Continuation;
+    }
+
+    /**
+     * The prefix a discovery request lists the sources by.
+     *
+     * @throws SearchRequestInvalid
+     */
+    public function discoveryPrefix(): string
+    {
+        if ($this->prefix === null) {
+            throw SearchRequestInvalid::withoutWords();
+        }
+
+        return $this->prefix;
     }
 
     /**
@@ -122,7 +138,7 @@ final readonly class SearchRequest
             throw SearchRequestInvalid::conflicting('continuation', 'discover');
         }
 
-        return new self(SearchRequestType::Continuation, null, null, $limit, $continuation, '');
+        return new self(SearchRequestType::Continuation, null, null, $limit, $continuation, null);
     }
 
     /**

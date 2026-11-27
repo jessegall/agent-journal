@@ -95,8 +95,10 @@ final class PipelinePump
                     unset($inputs[$index]);
                     $waiting[$index - 1] = '';
 
-                    if ($consumerEnded && isset($readers[($index - 1).':1'])) {
-                        fclose($readers[($index - 1).':1']);
+                    $producer = $readers[($index - 1).':1'] ?? null;
+
+                    if ($consumerEnded && $producer !== null) {
+                        fclose($producer);
                         unset($readers[($index - 1).':1']);
                     }
                 }

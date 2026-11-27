@@ -38,6 +38,8 @@ use App\Values\ShellTree;
 use App\Values\UnresolvedFact;
 use App\Values\Word;
 use App\Values\WrapperRule;
+use PhpOption\None;
+use PhpOption\Option;
 
 /**
  * Classifies every node of a shell tree: each simple command by its program's rule, a wrapper with the child it runs, a
@@ -262,8 +264,8 @@ final readonly class CommandClassifier implements CommandClassifierContract
 
         $alias = $this->aliasOf($program, $boundWords);
 
-        if ($alias->isFound) {
-            return $this->aliasPart($program, $alias, $boundWords, $node, $depth, $context);
+        if ($alias->isDefined()) {
+            return $this->aliasPart($program, $alias->get(), $boundWords, $node, $depth, $context);
         }
 
         $programClassifiers = $this->programClassifiers->for($program);
@@ -428,17 +430,18 @@ final readonly class CommandClassifier implements CommandClassifierContract
     }
 
     /**
-     * The saved alias a journal run <name> part names, or a missing lookup for any other part; a route of the journal
-     * itself is never shadowed by an alias.
+     * The saved alias a journal run <name> part names, none for any other part; a route of the journal itself is
+     * never shadowed by an alias.
      *
      * @param  list<Word>  $words
+     * @return Option<AliasLookup>
      */
-    private function aliasOf(ProgramIdentity $program, array $words): AliasLookup
+    private function aliasOf(ProgramIdentity $program, array $words): Option
     {
         $name = self::runAliasName($program, $words);
 
         if ($name === null) {
-            return AliasLookup::missing('');
+            return None::create();
         }
 
         return $this->aliases->find($name);

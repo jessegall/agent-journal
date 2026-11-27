@@ -10,7 +10,6 @@ use App\Api\Processes\StartableAdmission;
 use App\Exceptions\AdmissionAnswerUnknown;
 use App\Exceptions\AdmittedPlanChanged;
 use App\Files\Enums\Place;
-use App\Processes\Enums\ShellDialect;
 use App\Values\ExecutionContext;
 use App\Values\ExecutionPlan;
 use App\Values\FilePath;
@@ -26,12 +25,7 @@ final readonly class FetchedAdmission
      */
     private function __construct(
         public string $runId,
-        public bool $isAlreadyStarted,
-        public ExecutionPlan|null $plan,
-        public string $treeDigest,
-        public string $workingFolder,
-        public ShellDialect|null $dialect,
-        public string $eventKey,
+        private StartableAdmission|null $startable,
         public array $environment,
     ) {}
 
@@ -41,19 +35,10 @@ final readonly class FetchedAdmission
     public static function fromAnswer(AdmissionFetched $answer, array $environment): self
     {
         if (! $answer instanceof StartableAdmission) {
-            return new self(self::runOf($answer), true, null, '', '', null, '', $environment);
+            return new self(self::runOf($answer), null, $environment);
         }
 
-        return new self(
-            $answer->runId,
-            false,
-            $answer->plan,
-            $answer->treeDigest,
-            $answer->workingFolder,
-            $answer->dialect,
-            $answer->eventKey,
-            $environment,
-        );
+        return new self($answer->runId, $answer, $environment);
     }
 
     private static function runOf(AdmissionFetched $answer): string
@@ -67,12 +52,16 @@ final readonly class FetchedAdmission
 
     public function isAlreadyStarted(): bool
     {
-        return $this->isAlreadyStarted;
+        return $this->startable === null;
     }
 
     public function planMatches(): bool
     {
-        return $this->plan !== null && hash_equals($this->treeDigest, $this->plan->treeDigest);
+        if ($this->startable === null) {
+            return false;
+        }
+
+        return hash_equals($this->startable->treeDigest, $this->startable->plan->treeDigest);
     }
 
     /**
@@ -80,7 +69,7 @@ final readonly class FetchedAdmission
      */
     public function plan(): ExecutionPlan
     {
-        return $this->plan ?? throw AdmittedPlanChanged::forRun($this->runId);
+        return $this->startable()->plan;
     }
 
     /**
@@ -88,13 +77,36 @@ final readonly class FetchedAdmission
      */
     public function context(): ExecutionContext
     {
-        $dialect = $this->dialect ?? throw AdmittedPlanChanged::forRun($this->runId);
+        $startable = $this->startable();
 
-        return new ExecutionContext($dialect, $this->workingFolder, $this->workingFolder, $this->environment);
+        return new ExecutionContext(
+            $startable->dialect,
+            $startable->workingFolder,
+            $startable->workingFolder,
+            $this->environment,
+        );
+    }
+
+    /**
+     * The key the run's events are reported under.
+     *
+     * @throws AdmittedPlanChanged when the journal handed out no run to start
+     */
+    public function eventKey(): string
+    {
+        return $this->startable()->eventKey;
     }
 
     public function spoolFolder(): FilePath
     {
         return FilePath::in(Place::Temporary, "journal-runs/{$this->runId}");
+    }
+
+    /**
+     * @throws AdmittedPlanChanged
+     */
+    private function startable(): StartableAdmission
+    {
+        return $this->startable ?? throw AdmittedPlanChanged::forRun($this->runId);
     }
 }

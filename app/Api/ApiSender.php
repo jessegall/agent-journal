@@ -57,7 +57,8 @@ final readonly class ApiSender implements ApiSenderContract
         );
 
         $deadline = CarbonImmutable::now()->addSeconds($this->settings->timeoutSeconds);
-        $key = isset($body['request_key']) ? new CallKey((string) $body['request_key']) : null;
+        $requestKey = $body['request_key'] ?? null;
+        $key = $requestKey === null ? null : new CallKey((string) $requestKey);
 
         /**
          * @var TAnswer

@@ -22,6 +22,5 @@ interface ProfileSelections
         ProfileKey $profile,
         ModelSelection $requested,
         string|null $driverKey,
-        string|null $parentDriver,
     ): ProfileSelection;
 }

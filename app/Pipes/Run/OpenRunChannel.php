@@ -24,7 +24,7 @@ final readonly class OpenRunChannel implements Pipe
         return new RunChannel($admission, new ChannelRunEvents(
             $this->processes,
             $admission->runId,
-            $admission->eventKey,
+            $admission->eventKey(),
             $admission->spoolFolder(),
             $this->files,
             $this->logger,

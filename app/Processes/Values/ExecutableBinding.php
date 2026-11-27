@@ -11,7 +11,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * What the host will actually execute for a program family: a built-in or module
- * program trusted by the folders it is installed in, or a project tool trusted by its path and content digest.
+ * program trusted by the folders it is installed in, with no content digest, or a project tool trusted by its path
+ * and content digest.
  * Relocating a program changes its binding, never its grammar.
  */
 #[MapName(SnakeCaseMapper::class)]
@@ -24,7 +25,7 @@ final class ExecutableBinding extends Data
         public readonly BindingType $type,
         public readonly string $family,
         public readonly array $locations,
-        public readonly string $contentDigest,
+        public readonly string|null $contentDigest,
         public readonly int $configurationRevision,
     ) {}
 
@@ -33,7 +34,7 @@ final class ExecutableBinding extends Data
      */
     public static function builtin(string $family, array $folders): self
     {
-        return new self(BindingType::BuiltinSearchPath, $family, $folders, '', 0);
+        return new self(BindingType::BuiltinSearchPath, $family, $folders, null, 0);
     }
 
     /**
@@ -41,7 +42,7 @@ final class ExecutableBinding extends Data
      */
     public static function modulePackage(string $family, array $folders): self
     {
-        return new self(BindingType::ModulePackage, $family, $folders, '', 0);
+        return new self(BindingType::ModulePackage, $family, $folders, null, 0);
     }
 
     public static function projectContent(
@@ -62,7 +63,7 @@ final class ExecutableBinding extends Data
         BindingType $type,
         string $family,
         array $locations,
-        string $contentDigest,
+        string|null $contentDigest,
         int $configurationRevision,
     ): self {
         return new self($type, $family, $locations, $contentDigest, $configurationRevision);

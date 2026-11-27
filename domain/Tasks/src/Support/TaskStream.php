@@ -38,6 +38,7 @@ final readonly class TaskStream
                     'at' => $change->at,
                     'id' => $change->id,
                     'change' => $change,
+                    'entry' => TaskStreamEntryData::ofTransition($change),
                 ],
                 $changes['entries'],
             ),
@@ -46,6 +47,7 @@ final readonly class TaskStream
                     'at' => $line->at,
                     'id' => $line->id,
                     'line' => $line,
+                    'entry' => TaskStreamEntryData::ofLine($line),
                 ],
                 $lines['entries'],
             ),
@@ -70,9 +72,7 @@ final readonly class TaskStream
         return TaskStreamPageData::from([
             'before' => $before,
             'entries' => array_reverse(array_map(
-                fn (array $entry) => isset($entry['change'])
-                    ? TaskStreamEntryData::ofTransition($entry['change'])
-                    : TaskStreamEntryData::ofLine($entry['line']),
+                fn (array $entry) => $entry['entry'],
                 $shown,
             )),
             'olderBefore' => $historyNext === '0' && $logNext === '0' ? Optional::create() : "{$historyNext},{$logNext}",

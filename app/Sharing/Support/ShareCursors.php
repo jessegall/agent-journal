@@ -24,7 +24,7 @@ final readonly class ShareCursors
 
     public function write(ShareCursor $cursor): string
     {
-        $encodedCursor = self::encode(json_encode(get_object_vars($cursor), JSON_THROW_ON_ERROR));
+        $encodedCursor = self::encode(ShareCursorData::from($cursor)->toJson(JSON_THROW_ON_ERROR));
 
         return $encodedCursor.'.'.$this->signatureOf($encodedCursor);
     }
@@ -33,11 +33,9 @@ final readonly class ShareCursors
      * The cursor in the text, refused when its signature fails or it belongs to another share, scope, path,
      * relation or order than the one expected.
      *
-     * @param  ShareCursor  $expected  the cursor's place, with any continuation
-     *
      * @throws ShareReadRefused
      */
-    public function read(string $text, ShareCursor $expected): ShareCursor
+    public function read(string $text, SharePlace $expected): ShareCursor
     {
         [$encodedCursor, $signature] = explode('.', $text, 2) + [1 => ''];
 

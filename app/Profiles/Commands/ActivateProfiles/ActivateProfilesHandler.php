@@ -188,8 +188,8 @@ final readonly class ActivateProfilesHandler implements CommandHandler
     private function activateDefinition(
         ProfileDefinition $definition,
         ActorReference $author,
-        ScriptSource $source = new ScriptSource(''),
-        CompiledScript|null $compiled = null,
+        ScriptSource $source,
+        CompiledScript $compiled,
     ): ProfileRevision {
         $profile = Profile::query()->withKey($definition->key)->lockForUpdate()->first();
 

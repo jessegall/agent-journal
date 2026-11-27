@@ -23,7 +23,7 @@ final readonly class UserActors implements ActorProvider
     {
         $user = User::query()->whereKey($identity->id)->first();
 
-        if ($user !== null && ($this->admission->admits($user) || $this->inboxes->isAdmitted($identity, null))) {
+        if ($user !== null && ($this->admission->admits($user) || $this->inboxes->isAdmitted($identity))) {
             return $user;
         }
 

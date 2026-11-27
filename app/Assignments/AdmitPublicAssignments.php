@@ -12,7 +12,7 @@ use App\Assignments\Contracts\AssigneeLocks;
 use App\Assignments\Contracts\AssignmentDestinationResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Policies\AssignmentRecipientPolicy;
-use App\Projects\ProjectEdges;
+use App\Projects\Contracts\ProjectEdges;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
 

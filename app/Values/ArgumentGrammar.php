@@ -84,11 +84,11 @@ final class ArgumentGrammar extends Data
     }
 
     /**
-     * Requires at least this many operands, as git branch topic requires the new branch's name.
+     * Requires at least one operand, as git branch topic requires the new branch's name.
      */
-    public function requiringOperands(int $count): self
+    public function requiringAnOperand(): self
     {
-        return clone ($this, ['minimumOperands' => $count]);
+        return clone ($this, ['minimumOperands' => 1]);
     }
 
     /**

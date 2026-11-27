@@ -42,6 +42,8 @@ final readonly class DriverProfile
         private Container $container,
         private PinnedBuilds $builds,
         private HookReplies $replies,
+        private Files $files,
+        private SignInEgress $egress,
     ) {}
 
     public function family(): string
@@ -217,8 +219,8 @@ final readonly class DriverProfile
             array_slice($this->setup->signInProbe, 1),
             $this->setup->signIn->executable,
             $this->container,
-            $this->container->make(Files::class),
-            $this->container->make(SignInEgress::class),
+            $this->files,
+            $this->egress,
         );
     }
 

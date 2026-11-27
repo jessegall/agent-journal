@@ -60,10 +60,10 @@ final class SearchablesRegistry
             foreach ($searchables as $searchable) {
                 $declared = self::declared($owner, $searchable);
 
-                if ($next->has($declared->qualifiedKey)) {
-                    $first = $next->get($declared->qualifiedKey)->owner;
+                $first = $next->find($declared->qualifiedKey);
 
-                    throw SearchableInvalid::forDuplicate($declared->qualifiedKey, $first, $owner);
+                if ($first->isDefined()) {
+                    throw SearchableInvalid::forDuplicate($declared->qualifiedKey, $first->get()->owner, $owner);
                 }
 
                 $next->put($declared->qualifiedKey, $declared);

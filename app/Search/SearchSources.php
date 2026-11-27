@@ -163,7 +163,7 @@ final readonly class SearchSources implements SearchSourcesContract
         string|null $after = null,
     ): DiscoveryPage {
         if ($size < 1 || $size > DiscoveryPage::SIZE_LIMIT) {
-            throw SearchValueInvalid::outOfRange('discovery page size', 1, DiscoveryPage::SIZE_LIMIT);
+            throw SearchValueInvalid::outOfRange('discovery page size', DiscoveryPage::SIZE_LIMIT);
         }
 
         $matching = array_values(array_filter(

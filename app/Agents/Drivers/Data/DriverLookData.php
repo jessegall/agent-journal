@@ -19,15 +19,17 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class DriverLookData extends Data
 {
+    /**
+     * @param  list<string>  $aliases
+     * @param  list<string>  $models
+     */
     public function __construct(
         public readonly string $family,
         public readonly string $label,
-        /** @var list<string> */
         public readonly array $aliases,
         public readonly string $markUrl,
         public readonly MarkTone $markTone,
         public readonly SignInCodeDirection $signInCode,
-        /** @var list<string> */
         public readonly array $models,
     ) {}
 

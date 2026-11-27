@@ -21,7 +21,7 @@ final class PlanFiltersData extends Data
 {
     public function __construct(
         #[MapName('q')]
-        public readonly string $search = '',
+        public readonly string|null $search = null,
         public readonly int $page = 1,
         #[Regex('/^[1-9][0-9]{0,18}$/')]
         public readonly string|Optional $plan = new Optional(),
@@ -65,7 +65,7 @@ final class PlanFiltersData extends Data
      */
     public function toQuery(): array
     {
-        return array_filter($this->toArray(), fn (mixed $filterValue) => $filterValue !== '' && $filterValue !== 1);
+        return array_filter($this->toArray(), fn (mixed $filterValue) => $filterValue !== null && $filterValue !== 1);
     }
 
     public function toDomain(): PlanFilters

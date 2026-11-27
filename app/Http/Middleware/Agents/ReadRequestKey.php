@@ -59,8 +59,10 @@ final readonly class ReadRequestKey
 
         $usesBusReceipt = $declaration === null || $declaration->endpoint->receipt === ReceiptOwner::CommandBus;
 
-        if ($usesBusReceipt && $request->filled(self::FIELD)) {
-            $this->key->set($request->string(self::FIELD)->value());
+        $givenKey = $request->string(self::FIELD)->value();
+
+        if ($usesBusReceipt && $givenKey !== '') {
+            $this->key->set($givenKey);
         }
 
         try {
@@ -101,9 +103,8 @@ final readonly class ReadRequestKey
             default => Str::replace(['/', '-'], '_', $path),
         };
 
-        $arguments = $name === 'messages_read' && $request->filled('message_id')
-            ? ['message_id' => $request->string('message_id')->value()]
-            : [];
+        $messageId = $request->string('message_id')->value();
+        $arguments = $name === 'messages_read' && $messageId !== '' ? ['message_id' => $messageId] : [];
 
         return new ReadRequest($name, arguments: $arguments);
     }

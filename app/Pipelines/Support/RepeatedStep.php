@@ -26,7 +26,7 @@ final readonly class RepeatedStep extends Step
             $value = $carried;
 
             while ($while($value)) {
-                $value = $round($value, fn (object $roundEnd): object => $roundEnd);
+                $value = $round($value, fn (object $roundEnd) => $roundEnd);
             }
 
             return $next($value);

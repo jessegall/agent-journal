@@ -92,7 +92,6 @@ final readonly class DefaultDrivers
                 DriverType::Terminal,
                 'Claude Code',
                 TerminalCapabilities::class,
-                isDrivenByJournal: true,
             ),
             self::registration(
                 'claude-code-headless',
@@ -100,7 +99,6 @@ final readonly class DefaultDrivers
                 DriverType::Headless,
                 'Claude Code headless',
                 HeadlessCapabilities::class,
-                isDrivenByJournal: true,
             ),
             self::registration(
                 'codex',
@@ -108,7 +106,6 @@ final readonly class DefaultDrivers
                 DriverType::Terminal,
                 'Codex',
                 CodexTerminalCapabilities::class,
-                isDrivenByJournal: true,
             ),
             self::registration(
                 'codex-headless',
@@ -116,7 +113,6 @@ final readonly class DefaultDrivers
                 DriverType::Headless,
                 'Codex headless',
                 CodexHeadlessCapabilities::class,
-                isDrivenByJournal: true,
             ),
         ];
     }
@@ -130,7 +126,6 @@ final readonly class DefaultDrivers
         DriverType $driverType,
         string $label,
         string $capabilities,
-        bool $isDrivenByJournal = false,
     ): DriverRegistration {
         return new DriverRegistration(
             DriverKey::from($key),
@@ -143,7 +138,7 @@ final readonly class DefaultDrivers
             $family,
             $capabilities,
             [DriverCapability::Run, DriverCapability::HookMethods],
-            $isDrivenByJournal,
+            true,
         );
     }
 }

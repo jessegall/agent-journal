@@ -30,7 +30,7 @@ final readonly class SearchQuery
         public SourcePosition|null $position = null,
     ) {
         if ($pageAllowance < 1 || $pageAllowance > self::HIT_LIMIT) {
-            throw SearchValueInvalid::outOfRange('page allowance', 1, self::HIT_LIMIT);
+            throw SearchValueInvalid::outOfRange('page allowance', self::HIT_LIMIT);
         }
     }
 

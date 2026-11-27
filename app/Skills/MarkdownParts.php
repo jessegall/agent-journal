@@ -69,7 +69,8 @@ final readonly class MarkdownParts implements MarkdownPartsContract
         $markdown = $this->markdownOf($file, $owner);
         $title = $this->titleOf($markdown, $file, $name);
         $headings = array_values(array_filter($markdown->sections, fn (Section $section) => $section->level === 2));
-        $purposeEnd = isset($headings[0]) ? $headings[0]->firstLine - 1 : $title->lastLine;
+        $firstHeading = $headings[0] ?? null;
+        $purposeEnd = $firstHeading === null ? $title->lastLine : $firstHeading->firstLine - 1;
         $purpose = trim($this->bodyUnderHeading($markdown, $title->firstLine, $purposeEnd), "\n");
         $sections = $purpose === '' ? [] : [SkillSection::text('purpose', 'Purpose', $purpose)];
 

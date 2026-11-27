@@ -131,15 +131,15 @@ final readonly class ActorReference implements Actor
     }
 
     /**
-     * This actor as the two columns of a row that the prefix names, such as sender_type and sender_id.
+     * This actor as the actor_type and actor_id columns of a row.
      *
      * @return array<string, string>
      */
-    public function asColumns(string $prefix): array
+    public function asActorColumns(): array
     {
         return [
-            "{$prefix}_type" => $this->type,
-            "{$prefix}_id" => $this->id,
+            'actor_type' => $this->type,
+            'actor_id' => $this->id,
         ];
     }
 

@@ -60,9 +60,9 @@ final readonly class PublicationLists
             return $this->continuations->open($cursor, $tool, '');
         }
 
-        $search = $arguments->textOr('search', '');
+        $search = $arguments->optionalText('search');
 
-        if (mb_strlen($search) > 200) {
+        if ($search !== null && mb_strlen($search) > 200) {
             throw ToolArgumentInvalid::for('search', 'at most 200 characters');
         }
 

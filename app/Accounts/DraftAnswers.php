@@ -7,20 +7,23 @@ namespace App\Accounts;
 use App\Accounts\Exceptions\DraftAnswerMissing;
 
 /**
- * The answers to a guided draft's questions, each trimmed; an empty or missing answer is refused, never filled in.
+ * The answers to a guided draft's three questions, each trimmed; an empty or missing answer is refused, never filled
+ * in.
  */
 final readonly class DraftAnswers
 {
+    public const int QUESTION_COUNT = 3;
+
     /**
      * @param  list<string>  $answers
      *
      * @throws DraftAnswerMissing
      */
-    public static function of(array $answers, int $questions): self
+    public static function of(array $answers): self
     {
-        $trimmed = array_pad(array_map(trim(...), $answers), $questions, '');
+        $trimmed = array_pad(array_map(trim(...), $answers), self::QUESTION_COUNT, '');
 
-        foreach (range(1, $questions) as $number) {
+        foreach (range(1, self::QUESTION_COUNT) as $number) {
             if ($trimmed[$number - 1] === '') {
                 throw DraftAnswerMissing::forQuestion($number);
             }

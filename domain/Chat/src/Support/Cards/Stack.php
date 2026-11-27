@@ -29,6 +29,14 @@ final readonly class Stack implements DockPart
         return new self($key, ...$children);
     }
 
+    /**
+     * The stack at the root of a card.
+     */
+    public static function root(DockPart ...$children): self
+    {
+        return new self('root', ...$children);
+    }
+
     public function key(): string
     {
         return $this->key;

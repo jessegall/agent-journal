@@ -92,9 +92,10 @@ final readonly class SignedCall
     {
         $parts = parse_url($url);
         $path = $parts['path'] ?? '/';
+        $query = $parts['query'] ?? null;
 
-        if (isset($parts['query'])) {
-            return "{$path}?{$parts['query']}";
+        if ($query !== null) {
+            return "{$path}?{$query}";
         }
 
         return $path;

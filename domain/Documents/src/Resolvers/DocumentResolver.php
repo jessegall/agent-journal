@@ -35,7 +35,8 @@ final readonly class DocumentResolver implements DocumentResolverContract
     {
         $size = $filters->pageSize()->rows;
         $searched = $filters->revisions ? 'revisions' : 'currentRevision';
-        $matching = fn (Builder|HasOneOrMany $revisions) => self::closedMatching($revisions, $filters->query);
+        $words = $filters->searchWords();
+        $matching = fn (Builder|HasOneOrMany $revisions) => self::closedMatching($revisions, $words->get());
 
         $documents = Document::query()->sharedPublished()->inAttention($filters->attention->state())
             ->when(
@@ -51,7 +52,7 @@ final readonly class DocumentResolver implements DocumentResolverContract
                 $filters->searches() && ! $filters->revisions,
                 fn (Builder $query) => $query->whereIn(
                     'current_revision_id',
-                    DocumentRevision::query()->closed()->matchingText($filters->query)->keys(),
+                    DocumentRevision::query()->closed()->matchingText($words->get())->keys(),
                 ),
             )
             ->when(
@@ -69,7 +70,7 @@ final readonly class DocumentResolver implements DocumentResolverContract
             'rows' => array_values(
                 $page->map(
                     fn (Document $document) => $filters->searches()
-                        ? $document->searchResult($filters->query, $searched)
+                        ? $document->searchResult($words->get(), $searched)
                         : $document->card,
                 )->all(),
             ),

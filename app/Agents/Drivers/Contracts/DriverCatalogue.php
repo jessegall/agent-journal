@@ -11,6 +11,7 @@ use App\Values\DriverFamily;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;
 use App\Values\PinnedDriver;
+use PhpOption\Option;
 
 /**
  * The drivers this journal can start: a lookup by key is the only way one is selected.
@@ -49,6 +50,13 @@ interface DriverCatalogue
      * The family registered under the key, such as claude-code.
      */
     public function family(string $key): DriverFamily;
+
+    /**
+     * The family registered under the key; none when no driver of that family is registered.
+     *
+     * @return Option<DriverFamily>
+     */
+    public function findFamily(string $key): Option;
 
     /**
      * A registration of the family, whose hook, skill and account protocols every driver of the family shares.

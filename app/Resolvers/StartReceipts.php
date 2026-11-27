@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActor;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
-use App\Sessions\Contracts\StartReceipts as StartReceiptsContract;
 use App\Sessions\Exceptions\SessionRequestMissing;
 use App\Sessions\OwnerStartReceipt;
 use App\Sessions\StartReceipt;
@@ -18,7 +17,7 @@ use App\Support\RecordIdentity;
  * Reads an owner's start again from its start record, found by the work and the actor that asked; another actor's
  * start answers as missing.
  */
-final readonly class StartReceipts implements StartReceiptsContract
+final readonly class StartReceipts
 {
     public function __construct(private CurrentActor $actors) {}
 

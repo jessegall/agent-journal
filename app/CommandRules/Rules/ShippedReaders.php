@@ -68,7 +68,7 @@ final readonly class ShippedReaders
                 'failure_field' => 'file_errors',
             ]),
             self::contract(),
-            ExitPolicy::of(self::passed(0), self::findings(1)),
+            ExitPolicy::of(self::passed(), self::findings(1)),
         );
     }
 
@@ -82,7 +82,7 @@ final readonly class ShippedReaders
             'vendor/bin/pint --test --format=junit',
             ReaderDefinition::from(['rules' => self::junitRules(), 'failure_field' => 'failures']),
             self::contract(),
-            ExitPolicy::of(self::passed(0), self::findings(1)),
+            ExitPolicy::of(self::passed(), self::findings(1)),
         );
     }
 
@@ -96,7 +96,7 @@ final readonly class ShippedReaders
             'vendor/bin/pint --format=junit',
             ReaderDefinition::from(['rules' => self::junitRules(), 'failure_field' => 'errors']),
             self::contract(),
-            ExitPolicy::of(self::passed(0)),
+            ExitPolicy::of(self::passed()),
         );
     }
 
@@ -133,7 +133,7 @@ final readonly class ShippedReaders
                 'failure_field' => 'failures',
             ]),
             self::contract(),
-            ExitPolicy::of(self::passed(0), self::findings(1)),
+            ExitPolicy::of(self::passed(), self::findings(1)),
         );
     }
 
@@ -166,7 +166,7 @@ final readonly class ShippedReaders
                 'failure_field' => 'sins',
             ]),
             self::contract(),
-            ExitPolicy::of(self::passed(0), self::findings(1)),
+            ExitPolicy::of(self::passed(), self::findings(1)),
         );
     }
 
@@ -187,7 +187,7 @@ final readonly class ShippedReaders
                 ],
             ]),
             self::contract(EmptyRunPolicy::allowedSuccess('no type errors')),
-            ExitPolicy::of(self::passed(0), self::findings(2)),
+            ExitPolicy::of(self::passed(), self::findings(2)),
         );
     }
 
@@ -208,7 +208,7 @@ final readonly class ShippedReaders
                 ],
             ]),
             self::contract(),
-            ExitPolicy::of(self::passed(0), self::findings(1)),
+            ExitPolicy::of(self::passed(), self::findings(1)),
         );
     }
 
@@ -232,7 +232,7 @@ final readonly class ShippedReaders
                 ],
             ]),
             self::contract(),
-            ExitPolicy::of(self::passed(0)),
+            ExitPolicy::of(self::passed()),
         );
     }
 
@@ -276,9 +276,9 @@ final readonly class ShippedReaders
         ]);
     }
 
-    private static function passed(int $status): ExitBranch
+    private static function passed(): ExitBranch
     {
-        return ExitBranch::of($status, Outcome::Passed, 'the output claims no failures');
+        return ExitBranch::of(0, Outcome::Passed, 'the output claims no failures');
     }
 
     private static function findings(int $status): ExitBranch

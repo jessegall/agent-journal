@@ -17,7 +17,7 @@ final readonly class AssignedPlanFilters
      * @param  list<PlanStatus>  $states
      */
     public function __construct(
-        public string $search = '',
+        public string|null $search = null,
         public array $states = [],
         public NumberedPage $page = new NumberedPage(),
     ) {}

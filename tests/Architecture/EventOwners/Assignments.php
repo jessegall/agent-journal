@@ -17,7 +17,6 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Assignments/ClaimRelease.php',
             'app/Assignments/Storage/AssignmentStorage.php',
         ],
     ],

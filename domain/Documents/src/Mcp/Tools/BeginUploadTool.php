@@ -34,7 +34,7 @@ final class BeginUploadTool extends JournalWriteTool
     {
         return [
             'type' => $this->caseArgument($schema, UploadType::class)->required(),
-            'bytes' => $this->wholeNumberArgument($schema, 1, BeginUploadCommand::MAX_BYTES)->required(),
+            'bytes' => $this->wholeNumberArgument($schema, BeginUploadCommand::MAX_BYTES)->required(),
             'digest' => $schema->string()->min(64)->max(64)->required(),
         ];
     }

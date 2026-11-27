@@ -7,7 +7,6 @@ namespace App\Api;
 use App\Exceptions\ApiDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
 use App\Sessions\AgentClientSettings;
-use App\Sessions\Contracts\AgentRequestClient as AgentRequestClientContract;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
@@ -20,7 +19,7 @@ use Illuminate\Support\Str;
  * and the signature over the body's digest. A prepared call is sent again unchanged on a retry. Redirects are refused
  * and certificates verified.
  */
-final readonly class AgentRequestClient implements AgentRequestClientContract
+final readonly class AgentRequestClient
 {
     public function __construct(private Factory $http) {}
 

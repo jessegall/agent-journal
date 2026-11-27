@@ -44,7 +44,7 @@ final class AssigneesListTool extends JournalReadTool
                 $this->actorTypes->requestTypes(),
             )->required(),
             'after_id' => $this->optionalRecordIdArgument($schema),
-            'limit' => $this->wholeNumberArgument($schema, 1, IdListPage::LARGEST_LIMIT),
+            'limit' => $this->wholeNumberArgument($schema, IdListPage::LARGEST_LIMIT),
             'continuation' => $schema->string(),
         ];
     }

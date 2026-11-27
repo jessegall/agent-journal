@@ -7,8 +7,8 @@ namespace App\Processes\Run;
 use App\Processes\Enums\PartResultType;
 
 /**
- * One part's result as the journal answers it: receipted with its outcome and receipt, evidence only, or unavailable
- * with the problems that keep it from a result.
+ * One part's result as the journal answers it: receipted with its outcome and receipt, evidence only with neither,
+ * or unavailable with the problems that keep it from a result.
  */
 final readonly class PartResult
 {
@@ -17,8 +17,8 @@ final readonly class PartResult
      */
     private function __construct(
         public PartResultType $type,
-        public string $outcome,
-        public string $receiptId,
+        public string|null $outcome,
+        public string|null $receiptId,
         public array $problems,
     ) {}
 
@@ -29,7 +29,7 @@ final readonly class PartResult
 
     public static function evidenceOnly(): self
     {
-        return new self(PartResultType::EvidenceOnly, '', '', []);
+        return new self(PartResultType::EvidenceOnly, null, null, []);
     }
 
     /**
@@ -37,11 +37,11 @@ final readonly class PartResult
      */
     public static function unavailable(array $problems): self
     {
-        return new self(PartResultType::Unavailable, '', '', $problems);
+        return new self(PartResultType::Unavailable, null, null, $problems);
     }
 
     /**
-     * @param  array{type: string, outcome: string, receipt_id: string, problems: list<string>}  $answer
+     * @param  array{type: string, outcome: string|null, receipt_id: string|null, problems: list<string>}  $answer
      */
     public static function fromAnswer(array $answer): self
     {
@@ -54,7 +54,7 @@ final readonly class PartResult
     }
 
     /**
-     * @return array{type: string, outcome: string, receipt_id: string, problems: list<string>}
+     * @return array{type: string, outcome: string|null, receipt_id: string|null, problems: list<string>}
      */
     public function toArray(): array
     {

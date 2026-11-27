@@ -19,9 +19,9 @@ final readonly class ListReportsController
         return $reports->list(new DocumentFilters(
             attention: $call->attention,
             page: $call->page,
-            query: (string) $call->query,
+            query: $call->query,
             revisions: false,
-            after: (string) $call->after,
+            after: $call->after,
         ));
     }
 }

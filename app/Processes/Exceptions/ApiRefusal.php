@@ -33,7 +33,7 @@ final class ApiRefusal extends ApiRefused implements ApiRefusalContract
             "Correction: {$details->correction}",
         ];
 
-        if ($details->requestId !== '') {
+        if ($details->requestId !== null) {
             $lines[] = "Request {$details->requestId}. Next: {$details->next}";
         }
 

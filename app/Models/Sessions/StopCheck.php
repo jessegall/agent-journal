@@ -22,8 +22,8 @@ use App\Reads\Values\RelationRead;
 use App\Records\Contracts\ReadableModel;
 use App\Sessions\Enums\StopCheckStatus;
 use App\Sessions\Values\StartPolicy;
+use App\Sessions\Values\StopIdentity;
 use App\Support\ActorReference;
-use App\Support\Inputs\Values\HookIdentity;
 use App\Values\StopCheckReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -88,7 +88,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      * @param  array<string, string>  $conditionHashes  condition key => hash of its definition
      */
     public static function create(
-        HookIdentity $stop,
+        StopIdentity $stop,
         string $policyDigest,
         int $workspaceGeneration,
         array $conditionHashes,
@@ -97,7 +97,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
         $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
         $attempt->agent_id = $stop->agentId;
         $attempt->session_id = $stop->sessionId;
-        $attempt->stop_id = $stop->hookId;
+        $attempt->stop_id = $stop->stopId;
         $attempt->policy_digest = $policyDigest;
         $attempt->workspace_generation = $workspaceGeneration;
         $attempt->condition_hashes = $conditionHashes;
@@ -113,7 +113,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     /**
      * The attempt of the stop under the session's policy, opened once: a retried stop finds the one it opened.
      */
-    public static function createForPolicy(HookIdentity $stop, StartPolicy $policy): self
+    public static function createForPolicy(StopIdentity $stop, StartPolicy $policy): self
     {
         return self::create(
             $stop,
@@ -308,7 +308,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function findOpenedFor(HookIdentity $stop): Option
+    public static function findOpenedFor(StopIdentity $stop): Option
     {
         $check = self::query()->withoutGlobalScope(AgentSessionScope::class)->ofStop($stop)->first();
 
@@ -318,7 +318,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     /**
      * The check of this stop, whichever session's.
      */
-    public static function findOfStop(HookIdentity $stop): self
+    public static function findOfStop(StopIdentity $stop): self
     {
         return self::query()->withoutGlobalScope(AgentSessionScope::class)->ofStop($stop)->sole();
     }
@@ -343,9 +343,9 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofStop(Builder $query, HookIdentity $stop): void
+    protected function ofStop(Builder $query, StopIdentity $stop): void
     {
-        $query->where('session_id', $stop->sessionId)->where('stop_id', $stop->hookId);
+        $query->where('session_id', $stop->sessionId)->where('stop_id', $stop->stopId);
     }
 
     /**

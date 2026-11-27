@@ -23,7 +23,7 @@ final readonly class StartPreviewLoader
     {
         $agent = Agent::query()->findOrFail(strtolower($input->agent));
         $model = $input->modelSelection();
-        $profile = $this->selections->select(ProfileKey::from($agent->profile_key), $model, $input->family, null);
+        $profile = $this->selections->select(ProfileKey::from($agent->profile_key), $model, $input->family);
 
         return StartPreviewData::fromPreview(
             $this->previews->preview($agent, $input->family, $input->driverType, $model, $profile->defaults, null),

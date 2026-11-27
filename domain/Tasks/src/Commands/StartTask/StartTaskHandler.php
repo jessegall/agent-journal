@@ -89,10 +89,20 @@ final readonly class StartTaskHandler extends TaskCommandHandler
      */
     private function requireRunNotTaken(Task $task, ActorReference $actor): void
     {
-        $run = $task->status === TaskStatus::Started ? $task->currentRun() : null;
-        $holder = $run === null ? null : $this->claims->holderOf($run->assignmentIdentity())->getOrElse(null);
+        if ($task->status !== TaskStatus::Started) {
+            return;
+        }
 
-        if ($holder !== null && ! $holder->isSameAs($actor)) {
+        $run = $task->currentRun();
+
+        if ($run === null) {
+            return;
+        }
+
+        $otherHolder = $this->claims->holderOf($run->assignmentIdentity())
+            ->filter(fn (ActorReference $holder) => ! $holder->isSameAs($actor));
+
+        if ($otherHolder->isDefined()) {
             throw TaskRunTaken::forTask($task);
         }
     }

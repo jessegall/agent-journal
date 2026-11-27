@@ -25,6 +25,7 @@ use App\Sharing\Support\ShareCursor;
 use App\Sharing\Support\ShareCursors;
 use App\Sharing\Support\SharedPage;
 use App\Sharing\Support\SharedPageItem;
+use App\Sharing\Support\SharePlace;
 use App\Sharing\Support\ShareReadPath;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Support\ActorReference;
@@ -198,13 +199,12 @@ final readonly class ReadShareHandler extends SharingCommandHandler
 
         $relation = $owned[0]->name;
 
-        $place = new ShareCursor(
+        $place = new SharePlace(
             $share->id,
             $share->scope_version,
             $path->text,
             $relation,
-            ShareCursor::ORDER_WRITTEN_THEN_ID,
-            '',
+            SharePlace::ORDER_WRITTEN_THEN_ID,
         );
 
         $continuation = $cursor === null ? null : $this->cursors->read($cursor, $place)->continuation;
@@ -218,14 +218,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
         );
 
         $next = $page->continuation === null ? null : $this->cursors->write(
-            new ShareCursor(
-                $share->id,
-                $share->scope_version,
-                $path->text,
-                $relation,
-                ShareCursor::ORDER_WRITTEN_THEN_ID,
-                $page->continuation,
-            ),
+            new ShareCursor($place, $page->continuation),
         );
 
         return [

@@ -42,11 +42,11 @@ abstract class JournalTool extends Tool
     }
 
     /**
-     * An argument that holds a whole number from the least to the most, such as how many rows to read.
+     * An argument that holds a whole number from one to the most, such as how many rows to read.
      */
-    final protected function wholeNumberArgument(JsonSchema $schema, int $least, int $most): IntegerType
+    final protected function wholeNumberArgument(JsonSchema $schema, int $most): IntegerType
     {
-        return $schema->integer()->min($least)->max($most);
+        return $schema->integer()->min(1)->max($most);
     }
 
     /**
@@ -73,8 +73,10 @@ abstract class JournalTool extends Tool
     final public function isVisibleTo(DiscoveryProfile $profile): bool
     {
         foreach (Reflector::of($this)->lineage() as $type) {
-            if ($type->hasAttribute(VisibleToProfiles::class)) {
-                return in_array($profile, $type->attribute(VisibleToProfiles::class)->profiles, true);
+            $visibility = $type->attributes(VisibleToProfiles::class)->first();
+
+            if ($visibility->isDefined()) {
+                return in_array($profile, $visibility->get()->profiles, true);
             }
         }
 

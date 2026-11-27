@@ -86,7 +86,12 @@ final readonly class OutputDocking implements DockableProvider
         foreach ($keys as $id => $key) {
             [$runId, $part, $stream] = $key->get();
             $run = $runs->get($runId);
-            $attempt = $run === null ? null : self::latestAttempt($run->parts, $part);
+
+            if ($run === null) {
+                continue;
+            }
+
+            $attempt = self::latestAttempt($run->parts, $part);
 
             if ($attempt === null) {
                 continue;

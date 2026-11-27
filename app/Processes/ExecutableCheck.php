@@ -25,11 +25,11 @@ final readonly class ExecutableCheck
     ): ExecutableVerdict {
         $resolved = $this->resolvedPath($program, $context);
 
-        if ($resolved === '') {
+        if ($resolved === null) {
             return new ExecutableVerdict(
                 false,
                 $program,
-                '',
+                null,
                 "The trusted context does not say where {$program->family} resolves to.",
             );
         }
@@ -89,9 +89,10 @@ final readonly class ExecutableCheck
     }
 
     /**
-     * The absolute path the command would execute: the written path, or the context's resolution of a bare name.
+     * The absolute path the command would execute: the written path, or the context's resolution of a bare name; none
+     * when the context does not resolve the name.
      */
-    private function resolvedPath(ProgramIdentity $program, ExecutionContext $context): string
+    private function resolvedPath(ProgramIdentity $program, ExecutionContext $context): string|null
     {
         if (str_contains($program->original, '/')) {
             if (str_starts_with($program->original, '/')) {
@@ -108,6 +109,6 @@ final readonly class ExecutableCheck
             );
         }
 
-        return $context->programs[$program->original] ?? '';
+        return $context->programs[$program->original] ?? null;
     }
 }

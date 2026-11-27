@@ -6,7 +6,6 @@ namespace App\Profiles\Values;
 
 use App\Profiles\Enums\ProfileChangeType;
 use App\Values\ProfileKey;
-use App\Values\ScriptSource;
 use App\Values\SupervisorCoverage;
 
 /**
@@ -22,7 +21,7 @@ final readonly class ActivatedProfile
         public ProfileKey $key,
         public int $revision,
         public ProfileChangeType $change,
-        public array $supervisorCoverage = [],
-        public ScriptDiff $script = new ScriptDiff(new ScriptSource(''), new ScriptSource('')),
+        public array $supervisorCoverage,
+        public ScriptDiff $script,
     ) {}
 }

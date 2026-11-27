@@ -20,8 +20,8 @@ final readonly class AdmissionRefusal
         public string $excerpt,
         public AgentText $reason,
         public AgentText $correction,
-        public string $requestId,
-        public string $next,
+        public string|null $requestId,
+        public string|null $next,
     ) {}
 
     public static function of(
@@ -31,7 +31,7 @@ final readonly class AdmissionRefusal
         AgentText $reason,
         AgentText $correction,
     ): self {
-        return new self($code, $node, self::redacted($source), $reason, $correction, '', '');
+        return new self($code, $node, self::redacted($source), $reason, $correction, null, null);
     }
 
     /**
@@ -49,7 +49,7 @@ final readonly class AdmissionRefusal
             'correction' => $this->correction,
         ];
 
-        if ($this->requestId === '') {
+        if ($this->requestId === null) {
             return AgentText::of('core.shell.refused', $values);
         }
 

@@ -50,7 +50,7 @@ final class AssignmentReadTool extends JournalReadTool
             'record_type' => $record->type,
             'record_id' => $record->id,
             'holder' => $holders->forRecord($record)->map(
-                fn (AssignmentHolder $holder): array => AssignmentData::ofHolder($holder)->toArray(),
+                fn (AssignmentHolder $holder) => AssignmentData::ofHolder($holder)->toArray(),
             )->getOrElse(null),
         ], []);
     }

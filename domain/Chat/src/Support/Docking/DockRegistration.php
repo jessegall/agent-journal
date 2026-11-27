@@ -43,8 +43,10 @@ final class DockRegistration implements DockRegistrationContract
             throw DockDefinitionInvalid::notAProvider($type, $provider);
         }
 
-        if ($this->owned->has($type)) {
-            throw DockDefinitionInvalid::repeated($type, $this->owned->get($type)->class, $class);
+        $owned = $this->owned->find($type);
+
+        if ($owned->isDefined()) {
+            throw DockDefinitionInvalid::repeated($type, $owned->get()->class, $class);
         }
 
         $definition = new DockDefinition($type, $class, $provider);
@@ -55,11 +57,7 @@ final class DockRegistration implements DockRegistrationContract
 
     public function definition(string $type): DockDefinition
     {
-        if ($this->owned->has($type)) {
-            return $this->owned->get($type);
-        }
-
-        return $this->fallbacks->definition($type);
+        return $this->owned->find($type)->getOrCall(fn () => $this->fallbacks->definition($type));
     }
 
     public function offersDock(string $type): bool

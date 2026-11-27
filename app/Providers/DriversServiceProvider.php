@@ -72,6 +72,8 @@ use App\Agents\Drivers\StartConditions\JournalServerAccount;
 use App\Agents\Drivers\StartConditions\OwnTerminalStart;
 use App\Agents\Drivers\StartConditions\ProtectedAccount;
 use App\Agents\Exceptions\ProfileRefused;
+use App\Agents\SignInEgress;
+use App\Files\Contracts\Files;
 use App\Processes\AnyContext;
 use App\Processes\Negation;
 use App\Support\PrivateAccountProcess;
@@ -112,6 +114,8 @@ final class DriversServiceProvider extends ServiceProvider
             $app->make(DriverCatalogueContract::class),
             $app->make(PinnedBuilds::class),
             $app->make(HookReplies::class),
+            $app->make(Files::class),
+            $app->make(SignInEgress::class),
             self::setups($app->make('config')),
         ));
     }

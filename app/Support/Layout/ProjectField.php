@@ -74,7 +74,11 @@ final readonly class ProjectField implements ProjectFieldContract
         return [LayoutPartData::field(
             self::NAME,
             self::LABEL,
-            new LayoutFieldData(self::NAME, '', [], $options, [...$this->labelsOf($listed), ...$labels]),
+            LayoutFieldData::from([
+                'name' => self::NAME,
+                'options' => $options,
+                'optionLabels' => [...$this->labelsOf($listed), ...$labels],
+            ]),
             'choice',
         )];
     }

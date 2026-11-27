@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actors\Contracts;
 
 use App\Values\AliasLookup;
+use PhpOption\Option;
 
 /**
  * Reads the selected project's saved command aliases by name.
@@ -12,7 +13,9 @@ use App\Values\AliasLookup;
 interface AliasResolver
 {
     /**
-     * The alias of this name in the selected project, or why none answers to it.
+     * The alias of this name in the selected project; none when no alias answers to it.
+     *
+     * @return Option<AliasLookup>
      */
-    public function find(string $name): AliasLookup;
+    public function find(string $name): Option;
 }

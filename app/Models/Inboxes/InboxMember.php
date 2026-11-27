@@ -174,7 +174,7 @@ final class InboxMember extends JournalModel implements EventSource, ReadableMod
     #[Scope]
     protected function ofActor(Builder $query, ActorReference $actor): void
     {
-        $query->where($actor->asColumns('actor'));
+        $query->where($actor->asActorColumns());
     }
 
     /**

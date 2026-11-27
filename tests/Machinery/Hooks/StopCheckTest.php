@@ -14,7 +14,7 @@ use App\Sessions\Commands\RecordStopConditionResults\RecordStopConditionResultsC
 use App\Sessions\Enums\StopCheckStatus;
 use App\Sessions\Enums\StopConditionResultType;
 use App\Sessions\Exceptions\StopConditionResultsRefused;
-use App\Support\Inputs\Values\HookIdentity;
+use App\Sessions\Values\StopIdentity;
 use App\Values\StopCheckReference;
 use App\Values\StopConditionResultReport;
 use Carbon\CarbonImmutable;
@@ -138,9 +138,9 @@ final class StopCheckTest extends TestCase
 
     private function open(TestStart $start, string $stopId, array $conditions = ['passed']): StopCheck
     {
-        $hook = new HookIdentity($start->agent->id, $start->session->id, $stopId, 'digest');
+        $stop = new StopIdentity($start->agent->id, $start->session->id, $stopId);
 
-        return StopCheck::create($hook, self::DIGEST, 1, array_fill_keys($conditions, self::HASH));
+        return StopCheck::create($stop, self::DIGEST, 1, array_fill_keys($conditions, self::HASH));
     }
 
     /**

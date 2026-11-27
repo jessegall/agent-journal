@@ -19,7 +19,7 @@ final readonly class ListAssignedPlansController
     public function __invoke(ListAssignedPlansPayload $call, PlanResolver $plans): AssignedPlanListData
     {
         $filters = new AssignedPlanFilters(
-            search: (string) $call->search,
+            search: $call->search,
             states: array_map(PlanStatus::from(...), $call->states),
             page: new NumberedPage($call->page, $call->perPage),
         );

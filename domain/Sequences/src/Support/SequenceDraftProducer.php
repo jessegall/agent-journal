@@ -38,7 +38,7 @@ final readonly class SequenceDraftProducer implements DraftProducer
 
     public function draft(array $answers): DraftedRecordData
     {
-        $draft = DraftAnswers::of($answers, 3);
+        $draft = DraftAnswers::of($answers);
 
         $steps = array_values(array_filter(
             array_map(trim(...), explode(',', $draft->to(2))),

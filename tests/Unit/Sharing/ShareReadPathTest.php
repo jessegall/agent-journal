@@ -8,6 +8,7 @@ use App\Sharing\Exceptions\ShareReadRefused;
 use App\Sharing\Exceptions\UnknownShareRelation;
 use App\Sharing\Support\ShareCursor;
 use App\Sharing\Support\ShareCursors;
+use App\Sharing\Support\SharePlace;
 use App\Sharing\Support\ShareReadPath;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Support\RecordIdentity;
@@ -84,10 +85,10 @@ final class ShareReadPathTest extends SharingTestCase
     public function test_a_cursor_reads_back_for_its_place_and_is_refused_after_a_scope_refresh_or_tampering(): void
     {
         $cursors = $this->app->make(ShareCursors::class);
-        $place = new ShareCursor(TestIds::of(9), 1, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, '');
+        $place = new SharePlace(TestIds::of(9), 1, '', 'notes', SharePlace::ORDER_WRITTEN_THEN_ID);
 
         $text = $cursors->write(
-            new ShareCursor(TestIds::of(9), 1, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, 'after-50'),
+            new ShareCursor($place, 'after-50'),
         );
 
         $this->assertSame('after-50', $cursors->read($text, $place)->continuation);
@@ -95,7 +96,7 @@ final class ShareReadPathTest extends SharingTestCase
         $this->assertThrows(
             fn () => $cursors->read(
                 $text,
-                new ShareCursor(TestIds::of(9), 2, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, ''),
+                new SharePlace(TestIds::of(9), 2, '', 'notes', SharePlace::ORDER_WRITTEN_THEN_ID),
             ),
             ShareReadRefused::class,
             ShareReadRefused::staleCursor()->getMessage(),
@@ -104,7 +105,7 @@ final class ShareReadPathTest extends SharingTestCase
         $this->assertThrows(
             fn () => $cursors->read(
                 $text,
-                new ShareCursor(TestIds::of(8), 1, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, ''),
+                new SharePlace(TestIds::of(8), 1, '', 'notes', SharePlace::ORDER_WRITTEN_THEN_ID),
             ),
             ShareReadRefused::class,
         );

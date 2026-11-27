@@ -106,8 +106,10 @@ final class FileContents
     {
         $path = $fingerprint->realPath;
 
-        if (isset($this->digests[$path]) && $this->digests[$path]->fingerprint->key() === $fingerprint->key()) {
-            return $this->digests[$path]->digest;
+        $kept = $this->digests[$path] ?? null;
+
+        if ($kept !== null && $kept->fingerprint->key() === $fingerprint->key()) {
+            return $kept->digest;
         }
 
         $hashed = $this->fresh($fingerprint, $hasher);

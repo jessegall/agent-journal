@@ -72,8 +72,10 @@ final readonly class Exports
                     throw MalformedExports::emptyName($exportGroup, $position);
                 }
 
-                if (isset($seenIn[$key])) {
-                    throw MalformedExports::listedTwice($name, $seenIn[$key], $exportGroup);
+                $firstGroup = $seenIn[$key] ?? null;
+
+                if ($firstGroup !== null) {
+                    throw MalformedExports::listedTwice($name, $firstGroup, $exportGroup);
                 }
 
                 $seenIn[$key] = $exportGroup;
