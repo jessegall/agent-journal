@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
-use App\Actors\AttentionOrigin;
 use App\Actors\Contracts\ActorAttention;
 use App\Bus\Contracts\Pipe;
 use App\Hooks\CallStages\WalkedCall;
@@ -19,8 +18,8 @@ final readonly class KeepMessagesAndWake implements Pipe
 
     public function handle(WalkedCall $walked): WalkedCall
     {
-        $agent = $walked->call->target->actorReference();
-        $origin = AttentionOrigin::agentMessages($walked->call->input->identity()->hookId);
+        $agent = $walked->agent();
+        $origin = $walked->messagesOrigin();
 
         PendingAgentMessage::createMany($agent, $origin, $walked->answer->messages);
 

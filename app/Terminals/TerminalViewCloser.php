@@ -174,7 +174,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
     ): TerminalFrameData {
         $identity = TerminalScreenIdentityData::from([
             'sessionId' => $runtime->agent_session_id,
-            'processGeneration' => $received->identity->registration->processGeneration,
+            'processGeneration' => $received->processGeneration(),
             'epoch' => $received->identity->epoch,
             'stream' => $received->identity->stream,
             'privacyRevision' => $received->identity->privacyRevision,
