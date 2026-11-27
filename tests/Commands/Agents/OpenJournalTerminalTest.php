@@ -95,6 +95,34 @@ final class OpenJournalTerminalTest extends TestCase
         );
     }
 
+    public function test_a_contained_terminal_runs_its_hooks_from_its_managed_settings_with_their_reply_file(): void
+    {
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->arrangeContainedJournal()
+            ->idleAgent('Driven')
+            ->enrollContainedHost('Box', [base_path()]);
+        $this->proveTerminalOn('Box');
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
+
+        [$open] = $this->journal->hostOrdersOf('terminal');
+        $files = array_column($this->journal->payloadOf($open)['files'], null, 'name');
+        $managed = json_decode($files['managed-settings.json']['content'], true, flags: JSON_THROW_ON_ERROR);
+        $settings = json_decode($files['settings.json']['content'], true, flags: JSON_THROW_ON_ERROR);
+
+        $this->journal->assertResult(
+            [true, $settings['hooks']['SessionStart'], '/opt/journal/bin/journal-hook claude-code {folder:files}/hook-replies.json'],
+            [
+                $files['managed-settings.json']['template'],
+                $managed['hooks']['SessionStart'],
+                $managed['hooks']['SessionStart'][0]['hooks'][0]['command'],
+            ],
+        );
+    }
+
     /**
      * A Claude Code terminal start on a host that runs agents itself, whose build and sign-in probes passed.
      *

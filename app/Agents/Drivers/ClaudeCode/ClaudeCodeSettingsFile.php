@@ -11,7 +11,6 @@ use App\Agents\Drivers\StartConditions\JournalServerAccount;
 use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\Values\HostPath;
 use App\Agents\Values\PlanFile;
-use App\Agents\Values\RelayedHookCommand;
 use App\Values\DriverStart;
 use App\Values\PlanAddition;
 
@@ -29,26 +28,9 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
     private const string REPLY_KEY = '{folder:files}/'.HookReplies::KEY_FILE;
 
     /**
-     * The hook events the journal answers.
-     */
-    private const array HOOK_EVENTS = [
-        'SessionStart',
-        'UserPromptSubmit',
-        'PreToolUse',
-        'PostToolUse',
-        'Stop',
-        'SessionEnd',
-    ];
-
-    /**
      * Every session runs in this mode: Claude Code asks nobody before a tool call.
      */
     private const string NEVER_ASKS = 'bypassPermissions';
-
-    /**
-     * The name the hook relay is told the driver by.
-     */
-    private const string HOOK_NAME = 'claude-code';
 
     private const string JOURNAL_TOOLS = 'mcp__journal__*';
 
@@ -176,14 +158,7 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
             throw ProfileRefused::unresolvedSetting("the hook command {$command}");
         }
 
-        $relayed = RelayedHookCommand::for($command, self::HOOK_NAME)->text;
-
-        $hook = [['hooks' => [[
-            'type' => 'command',
-            'command' => $relayed,
-        ]]]];
-
-        return array_fill_keys(self::HOOK_EVENTS, $hook);
+        return ClaudeCodeHooks::running($command);
     }
 
     /**

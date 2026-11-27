@@ -15,7 +15,7 @@ use App\Values\PlanAddition;
 
 /**
  * The managed settings a contained Claude Code reads and no session may change: a plan file the container mounts
- * where Claude Code looks for them.
+ * where Claude Code looks for them, with the session's own hooks, as only managed hooks run.
  */
 final readonly class ClaudeCodeManagedSettings implements PlanPart
 {
@@ -25,8 +25,14 @@ final readonly class ClaudeCodeManagedSettings implements PlanPart
 
     public function __invoke(DriverStart $start): PlanAddition
     {
-        $settings = $this->files->read(FilePath::in(Place::Project, self::TEMPLATE));
+        $settings = $this->files->readJson(FilePath::in(Place::Project, self::TEMPLATE));
 
-        return new PlanAddition(files: [new PlanFile(MountRules::MANAGED_SETTINGS_FILE, $settings)]);
+        if ($start->hookCommand !== null) {
+            $settings['hooks'] = ClaudeCodeHooks::running($start->hookCommand);
+        }
+
+        $text = json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        return new PlanAddition(files: [PlanFile::template(MountRules::MANAGED_SETTINGS_FILE, $text)]);
     }
 }
