@@ -17,7 +17,6 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
-use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
@@ -65,7 +64,6 @@ function main(array $arguments): void
  */
 function testFacts(array $paths): array
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $finder = new NodeFinder();
     $tests = [];
 
@@ -75,7 +73,7 @@ function testFacts(array $paths): array
                 continue;
             }
 
-            $nodes = parsedOnce($parser, $file, file_get_contents($file));
+            $nodes = parsedOnce($file, file_get_contents($file));
 
             foreach ($finder->findInstanceOf($nodes, ClassMethod::class) as $method) {
                 if (! str_starts_with($method->name->toString(), 'test_')) {

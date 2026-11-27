@@ -19,7 +19,6 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
@@ -89,14 +88,13 @@ function main(array $paths): void
  */
 function declarationsIn(array $paths): array
 {
-    $parser = new ParserFactory()->createForHostVersion();
     $finder = new NodeFinder();
     $declarations = [];
 
     foreach ($paths as $path) {
         foreach (phpFiles($path) as $file) {
             $traverser = new NodeTraverser(new NameResolver());
-            $nodes = $traverser->traverse(parsedOnce($parser, $file, file_get_contents($file)));
+            $nodes = $traverser->traverse(parsedOnce($file, file_get_contents($file)));
             $found = $finder->find($nodes, fn (Node $node) => $node instanceof Class_
                 || $node instanceof Enum_
                 || $node instanceof Interface_);

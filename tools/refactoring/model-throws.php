@@ -13,7 +13,6 @@ use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
-use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
@@ -54,14 +53,13 @@ function throwFaultsOf(Class_ $model): array
  */
 function runModelThrows(array $arguments): int
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $faultCount = 0;
 
     foreach (array_slice($arguments, 1) as $path) {
         foreach (phpFiles($path) as $file) {
             $source = (string) file_get_contents($file);
             $models = array_filter(
-                new NodeFinder()->findInstanceOf(parsedOnce($parser, $file, $source), Class_::class),
+                new NodeFinder()->findInstanceOf(parsedOnce($file, $source), Class_::class),
                 isModel(...),
             );
 

@@ -17,7 +17,6 @@ declare(strict_types=1);
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
-use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/php-parse.php';
@@ -209,7 +208,7 @@ function scriptTexts(string $path): array
  */
 function phpTexts(string $path): array
 {
-    $statements = parsedOnce(new ParserFactory()->createForHostVersion(), $path, (string) file_get_contents($path));
+    $statements = parsedOnce($path, (string) file_get_contents($path));
     $finder = new NodeFinder();
     $texts = [];
 

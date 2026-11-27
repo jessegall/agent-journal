@@ -23,7 +23,6 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\UnionType;
 use PhpParser\NodeFinder;
-use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
@@ -779,7 +778,6 @@ function sorted(string $source, Class_ $class): string
  */
 function runModelSections(array $arguments): int
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $fix = in_array('--fix', $arguments, true);
     $faultCount = 0;
 
@@ -787,7 +785,7 @@ function runModelSections(array $arguments): int
         foreach (phpFiles($path) as $file) {
             $source = (string) file_get_contents($file);
             $models = array_filter(
-                new NodeFinder()->findInstanceOf(parsedOnce($parser, $file, $source), Class_::class),
+                new NodeFinder()->findInstanceOf(parsedOnce($file, $source), Class_::class),
                 isModel(...),
             );
 

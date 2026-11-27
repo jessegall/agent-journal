@@ -12,13 +12,11 @@ declare(strict_types=1);
 
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeFinder;
-use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 require __DIR__.'/models.php';
 require_once __DIR__.'/php-parse.php';
 
-$parser = new ParserFactory()->createForHostVersion();
 $finder = new NodeFinder();
 $faults = 0;
 
@@ -26,7 +24,7 @@ foreach (array_slice($argv, 1) as $path) {
     foreach (phpFiles($path) as $file) {
         $code = (string) file_get_contents($file);
 
-        foreach ($finder->findInstanceOf(parsedOnce($parser, $file, $code), Class_::class) as $class) {
+        foreach ($finder->findInstanceOf(parsedOnce($file, $code), Class_::class) as $class) {
             if (! isModel($class)) {
                 continue;
             }

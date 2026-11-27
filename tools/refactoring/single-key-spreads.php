@@ -30,7 +30,6 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
@@ -249,14 +248,13 @@ function inheritedSingleKey(array $classes, string $class, string $method): stri
  */
 function runSingleKeySpreads(array $arguments): int
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $finder = new NodeFinder();
     $classes = [];
     $files = [];
 
     foreach (array_slice($arguments, 1) as $path) {
         foreach (phpFiles($path) as $file) {
-            $ast = parsedOnce($parser, $file, (string) file_get_contents($file));
+            $ast = parsedOnce($file, (string) file_get_contents($file));
             $ast = new NodeTraverser(new NameResolver())->traverse($ast);
 
             foreach ($finder->findInstanceOf($ast, ClassLike::class) as $class) {

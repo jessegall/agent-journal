@@ -10,8 +10,8 @@ use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A run parses each PHP file once: ParsedTrees keeps every tree by its content for every scan, test and worker, and
- * no other test code makes a parser of its own (users 29310, 29331).
+ * A run parses each PHP file once: ParsedTrees keeps every tree by its content for every scan, test, refactoring tool
+ * and worker, and no other test or tool makes a parser of its own (users 29310, 29331, 29339).
  */
 #[TimeLimit(seconds: 15, reason: 'Its scan reads every file of tests/, which a cold tree cache parses once.')]
 final class ParsedTreesTest extends TestCase
@@ -33,9 +33,10 @@ final class ParsedTreesTest extends TestCase
         $this->assertEquals($first, $second);
     }
 
-    public function test_no_test_code_makes_a_parser_of_its_own(): void
+    public function test_no_test_or_refactoring_tool_makes_a_parser_of_its_own(): void
     {
-        $byFile = ScanCache::findingsInFolders(new ParserMakingScan(), [base_path('tests')]);
+        $folders = [base_path('tests'), base_path('tools/refactoring')];
+        $byFile = ScanCache::findingsInFolders(new ParserMakingScan(), $folders);
         $makings = array_merge([], ...array_values($byFile));
         $outside = array_values(array_filter(
             $makings,

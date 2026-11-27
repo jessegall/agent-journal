@@ -19,7 +19,6 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
-use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/php-parse.php';
@@ -180,14 +179,13 @@ function renamesIn(ClassMethod $method, string $old, string $new): array
     return $replacements;
 }
 
-$parser = new ParserFactory()->createForNewestSupportedVersion();
 $findings = 0;
 $fix = in_array('--fix', $argv, true);
 
 foreach (array_values(array_diff(array_slice($argv, 1), ['--fix'])) as $path) {
     foreach (phpFiles($path) as $file) {
         $source = (string) file_get_contents($file);
-        $tree = parsedOnce($parser, $file, $source);
+        $tree = parsedOnce($file, $source);
         $replacements = [];
 
         foreach (new NodeFinder()->findInstanceOf($tree, ClassLike::class) as $class) {

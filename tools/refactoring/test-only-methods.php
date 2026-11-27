@@ -16,7 +16,6 @@ use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeFinder;
-use PhpParser\ParserFactory;
 
 $root = dirname(__DIR__, 2);
 
@@ -75,7 +74,6 @@ $domainTests = array_map(fn (string $path) => substr($path, strlen($root) + 1).'
 $domainDatabase = array_map(fn (string $path) => substr($path, strlen($root) + 1).'/database', $domains);
 $application = corpusOf($root, [...APPLICATION, ...$domainCode, ...$domainDatabase]);
 $tests = corpusOf($root, [...TESTS, ...$domainTests]);
-$parser = new ParserFactory()->createForNewestSupportedVersion();
 $knownFile = "{$root}/docs/naming/test-only-model-methods.txt";
 $known = is_file($knownFile) ? array_filter(array_map(trim(...), file($knownFile) ?: [])) : [];
 $found = 0;
@@ -85,7 +83,7 @@ foreach ([
     ...$domainCode,
 ] as $folder) {
     foreach (phpFiles("{$root}/{$folder}") as $file) {
-        $statements = parsedOnce($parser, $file, (string) file_get_contents($file));
+        $statements = parsedOnce($file, (string) file_get_contents($file));
 
         foreach (new NodeFinder()->findInstanceOf($statements, Class_::class) as $class) {
             if (! isModel($class)) {

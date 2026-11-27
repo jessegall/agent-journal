@@ -32,6 +32,13 @@ final class ScanCache
     private static int $parsedFiles = 0;
 
     /**
+     * Each cache file this process read or wrote, so a second scan of the same kind reads it from memory.
+     *
+     * @var array<string, array<string, array{hash: string, stamp?: string, findings: list<mixed>}>>
+     */
+    private static array $loaded = [];
+
+    /**
      * @template TFinding
      *
      * @param  FileScan<TFinding>  $scan
@@ -130,13 +137,17 @@ final class ScanCache
      */
     private static function read(string $cacheFile): array
     {
+        if (isset(self::$loaded[$cacheFile])) {
+            return self::$loaded[$cacheFile];
+        }
+
         if (! is_file($cacheFile)) {
             return [];
         }
 
         $stored = @unserialize((string) file_get_contents($cacheFile));
 
-        return is_array($stored) ? $stored : [];
+        return self::$loaded[$cacheFile] = is_array($stored) ? $stored : [];
     }
 
     /**
@@ -151,5 +162,6 @@ final class ScanCache
         $temporary = $cacheFile.'.'.getmypid().'.'.bin2hex(random_bytes(4));
         file_put_contents($temporary, serialize($findings));
         rename($temporary, $cacheFile);
+        self::$loaded[$cacheFile] = $findings;
     }
 }

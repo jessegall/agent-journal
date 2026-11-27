@@ -12,8 +12,8 @@ use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use PhpParser\ParserFactory;
 
 /**
- * The one place a PHP file is parsed: each file's resolved tree is kept on disk by its content, so every scan, test
- * and parallel worker of a run reads the tree made once, and a file this process already parsed throws ParsedTwice.
+ * The one place a PHP file of ours is parsed: each file's tree is kept on disk by its content, so every scan, test,
+ * refactoring tool and parallel worker reads the tree made once; a file this process already parsed throws ParsedTwice.
  */
 final class ParsedTrees
 {
@@ -27,12 +27,27 @@ final class ParsedTrees
     private static int $parseCount = 0;
 
     /**
+     * The file's tree with every name resolved and every node linked to its parent, as the architecture scans read it.
+     *
      * @return list<Node>
      */
     public static function of(string $path, string $code): array
     {
+        $traverser = new NodeTraverser(new NameResolver(), new ParentConnectingVisitor());
+
+        return array_values($traverser->traverse(self::raw($path, $code)));
+    }
+
+    /**
+     * The file's tree as the parser made it, before any visitor, for a reader that resolves it its own way.
+     *
+     * @return list<Node>
+     */
+    public static function raw(string $path, string $code): array
+    {
         $hash = sha1($code);
-        $cacheFile = self::folder()."/{$hash}.tree";
+        $cacheFile = self::folder()."/{$hash}.raw";
+
         if (is_file($cacheFile)) {
             $cached = @unserialize((string) file_get_contents($cacheFile));
 
@@ -77,9 +92,7 @@ final class ParsedTrees
             throw ParseFailed::unreadable($path);
         }
 
-        $traverser = new NodeTraverser(new NameResolver(), new ParentConnectingVisitor());
-
-        return array_values($traverser->traverse($statements));
+        return array_values($statements);
     }
 
     /**

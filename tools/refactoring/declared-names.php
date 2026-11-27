@@ -21,7 +21,6 @@ use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/promoted-parameters.php';
@@ -51,13 +50,12 @@ final readonly class DeclaredName
  */
 function declaredNames(array $files): array
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $names = [];
     // The parents of the classes that use each trait: a trait's method overrides what those parents declare.
     $traitUserParents = [];
 
     foreach ($files as $path) {
-        $statements = new NodeTraverser(new NameResolver())->traverse(parsedOnce($parser, $path, (string) file_get_contents($path)));
+        $statements = new NodeTraverser(new NameResolver())->traverse(parsedOnce($path, (string) file_get_contents($path)));
 
         foreach (new NodeFinder()->findInstanceOf($statements, ClassLike::class) as $type) {
             if ($type->name === null) {

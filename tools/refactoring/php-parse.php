@@ -3,19 +3,19 @@
 declare(strict_types=1);
 
 /**
- * The one funnel every PHP parse of the refactoring tools goes through: a file is parsed once per run, and a second
- * parse of it stops the run, so no tool can parse the project again for each item of a list.
+ * The one funnel every PHP parse of the refactoring tools goes through: a file is read once per run, from the tree
+ * ParsedTrees keeps for the tests too, and a second read of it stops the run.
  */
 
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\Parser;
+use Tests\Architecture\Support\ParsedTrees;
 
 /**
  * @return list<Node>
  */
-function parsedOnce(Parser $parser, string $file, string $code): array
+function parsedOnce(string $file, string $code): array
 {
     static $parsed = [];
 
@@ -27,5 +27,5 @@ function parsedOnce(Parser $parser, string $file, string $code): array
     // Each declaration learns its full name, and no name in the tree is changed.
     $traverser = new NodeTraverser(new NameResolver(null, ['replaceNodes' => false]));
 
-    return $traverser->traverse($parser->parse($code) ?? []);
+    return $traverser->traverse(ParsedTrees::raw($file, $code));
 }

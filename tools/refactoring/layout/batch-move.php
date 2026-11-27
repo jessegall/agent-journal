@@ -21,8 +21,6 @@ use PhpParser\Node\Stmt\Use_;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitorAbstract;
-use PhpParser\Parser;
-use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 3).'/vendor/autoload.php';
 require_once dirname(__DIR__).'/php-parse.php';
@@ -61,11 +59,11 @@ final class FileTree extends NodeVisitorAbstract
 
     private int $importDepth = 0;
 
-    public static function of(Parser $parser, string $file, string $source): self
+    public static function of(string $file, string $source): self
     {
         $tree = new self();
         $traverser = new NodeTraverser(new NameResolver(null, ['replaceNodes' => false]), $tree);
-        $traverser->traverse(parsedOnce($parser, $file, $source));
+        $traverser->traverse(parsedOnce($file, $source));
 
         return $tree;
     }
@@ -154,8 +152,6 @@ $started = microtime(true);
 $listed = array_values(array_filter(explode("\n", (string) shell_exec(
     'cd '.escapeshellarg($root).' && git ls-files -co --exclude-standard -- app domain tests tools config bootstrap routes database resources docs .ai .commandments/custom phpstan.neon phpunit.xml',
 )), fn (string $file) => $file !== '' && ! str_starts_with($file, 'tools/refactoring/layout/') && ! str_contains($file, '/vendor/') && is_file("{$root}/{$file}")));
-$parser = new ParserFactory()->createForNewestSupportedVersion();
-
 // The whole codebase, parsed once and kept: file => [source, tree].
 $trees = [];
 $unparsed = [];
@@ -170,7 +166,7 @@ foreach ($listed as $file) {
     try {
         $trees[$file] = [
             $source,
-            FileTree::of($parser, $file, $source),
+            FileTree::of($file, $source),
         ];
     } catch (Throwable) {
         $unparsed[] = $file;
@@ -189,7 +185,7 @@ foreach ($trees as $file => [$source, $tree]) {
     }
 
     try {
-        $after = FileTree::of($parser, "{$file} (rewritten)", $result);
+        $after = FileTree::of("{$file} (rewritten)", $result);
     } catch (Throwable $error) {
         $failures[] = "{$file} would not parse after the rewrite: {$error->getMessage()}";
 

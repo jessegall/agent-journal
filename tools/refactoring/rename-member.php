@@ -28,7 +28,6 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use PhpParser\NodeVisitorAbstract;
-use PhpParser\ParserFactory;
 
 ini_set('memory_limit', '4G');
 
@@ -390,7 +389,6 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
  */
 function parsedFiles(string $root, array $folders): array
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $files = [];
 
     foreach ($folders as $folder) {
@@ -415,7 +413,7 @@ function parsedFiles(string $root, array $folders): array
             }
 
             $code = (string) file_get_contents($name);
-            $statements = parsedOnce($parser, $name, $code);
+            $statements = parsedOnce($name, $code);
             $traverser = new NodeTraverser(new NameResolver(), new DeclaringTypeMarker(), new ParentConnectingVisitor());
             $files[substr($name, strlen($root) + 1)] = [
                 'code' => $code,
@@ -1282,11 +1280,10 @@ function namesCarriedBy(Node $node): array
  */
 function isSecondParseStopped(): bool
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
-    parsedOnce($parser, 'second-parse-check.php', '<?php');
+    parsedOnce('second-parse-check.php', '<?php');
 
     try {
-        parsedOnce($parser, 'second-parse-check.php', '<?php');
+        parsedOnce('second-parse-check.php', '<?php');
     } catch (LogicException) {
         return true;
     }

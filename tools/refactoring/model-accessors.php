@@ -21,7 +21,6 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeFinder;
-use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
@@ -422,7 +421,6 @@ function classNameOf(string $source, Class_ $model): string
     return $namespace[1].'\\'.$model->name?->toString();
 }
 
-$parser = new ParserFactory()->createForNewestSupportedVersion();
 $fix = in_array('--fix', $argv, true);
 $keptOption = array_values(preg_grep('/^--keep=/', $argv) ?: []);
 $kept = $keptOption === [] ? [] : explode(',', substr($keptOption[0], strlen('--keep=')));
@@ -432,7 +430,7 @@ foreach (array_values(array_diff(array_slice($argv, 1), ['--fix', ...$keptOption
     foreach (phpFiles($path) as $file) {
         $source = (string) file_get_contents($file);
         $models = array_filter(
-            new NodeFinder()->findInstanceOf(parsedOnce($parser, $file, $source), Class_::class),
+            new NodeFinder()->findInstanceOf(parsedOnce($file, $source), Class_::class),
             isModel(...),
         );
 

@@ -20,7 +20,6 @@ use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;
-use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
@@ -344,7 +343,7 @@ function chainOf(MethodCall $call): array
  * @param  list<string>  $files
  * @return array<string, list<list<string>>>
  */
-function indexesOf(array $files, $parser): array
+function indexesOf(array $files): array
 {
     $indexes = [];
 
@@ -357,7 +356,7 @@ function indexesOf(array $files, $parser): array
             $indexes[$table][] = array_map(fn (string $column) => trim(explode(' ', trim($column))[0], '"'), explode(',', $columns));
         }
 
-        $nodes = parsedOnce($parser, $file, $code);
+        $nodes = parsedOnce($file, $code);
 
         foreach (new NodeFinder()->findInstanceOf($nodes, StaticCall::class) as $create) {
             $table = $create->getArgs()[0]->value ?? null;
@@ -463,7 +462,6 @@ function isServed(ColumnUse $use, array $indexes): bool
  */
 function scopeIndexReport(array $codeFolders, array $migrationFolders): array
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $files = array_merge(...array_map('phpFiles', $codeFolders));
     $migrations = array_merge(...array_map('phpFiles', $migrationFolders));
     $files = array_values(array_diff($files, $migrations));
@@ -483,7 +481,7 @@ function scopeIndexReport(array $codeFolders, array $migrationFolders): array
         }
 
         $traverser = new NodeTraverser(new NameResolver(), new ParentConnectingVisitor());
-        $trees[$file] = $traverser->traverse(parsedOnce($parser, $file, $code));
+        $trees[$file] = $traverser->traverse(parsedOnce($file, $code));
 
         foreach (new NodeFinder()->findInstanceOf($trees[$file], Node\Stmt\Trait_::class) as $trait) {
             foreach ($trait->getMethods() as $method) {
@@ -522,7 +520,7 @@ function scopeIndexReport(array $codeFolders, array $migrationFolders): array
         }
     }
 
-    $indexes = indexesOf($migrations, $parser);
+    $indexes = indexesOf($migrations);
     $wanted = [];
 
     foreach ($trees as $file => $tree) {

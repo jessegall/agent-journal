@@ -19,7 +19,6 @@ use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;
-use PhpParser\ParserFactory;
 
 const KEY_FOLDERS = [
     'app',
@@ -47,7 +46,6 @@ function main(array $arguments): void
     $listPath = substr((string) current(array_filter($arguments, fn (string $argument) => str_starts_with($argument, '--list='))), 7);
     $isDryRun = in_array('--dry-run', $arguments, true);
     $renames = renamesByClass($listPath);
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $total = 0;
 
     foreach (phpFiles($root) as $path) {
@@ -57,7 +55,7 @@ function main(array $arguments): void
             continue;
         }
 
-        $statements = new NodeTraverser(new NameResolver(), new ParentConnectingVisitor())->traverse(parsedOnce($parser, $path, $code));
+        $statements = new NodeTraverser(new NameResolver(), new ParentConnectingVisitor())->traverse(parsedOnce($path, $code));
         $edits = keyEdits($statements, $renames);
 
         if ($edits === []) {

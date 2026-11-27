@@ -23,7 +23,6 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
@@ -36,7 +35,6 @@ main(array_slice($argv, 1));
  */
 function main(array $paths): void
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $accessors = [];
     $reads = [];
 
@@ -48,7 +46,7 @@ function main(array $paths): void
             }
 
             $traverser = new NodeTraverser(new NameResolver());
-            $nodes = $traverser->traverse(parsedOnce($parser, $file, file_get_contents($file)));
+            $nodes = $traverser->traverse(parsedOnce($file, file_get_contents($file)));
             $accessors = [...$accessors, ...accessorsOf($nodes)];
 
             foreach (typedReads($nodes) as $read) {

@@ -17,7 +17,6 @@ use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\NodeFinder;
-use PhpParser\ParserFactory;
 
 require_once dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/models.php';
@@ -33,7 +32,6 @@ main(array_slice($argv, 1));
  */
 function main(array $paths): void
 {
-    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $finder = new NodeFinder();
     $faults = [];
 
@@ -43,7 +41,7 @@ function main(array $paths): void
                 continue;
             }
 
-            $nodes = parsedOnce($parser, $file, file_get_contents($file));
+            $nodes = parsedOnce($file, file_get_contents($file));
 
             foreach ($finder->find($nodes, fn (Node $node) => isCall($node) || $node instanceof New_) as $call) {
                 array_push($faults, ...faultsOf($file, $call));
