@@ -21,7 +21,7 @@ final readonly class ShareAuditResolver
         $rows = array_slice($found, 0, self::ROWS);
 
         $auditEntries = array_map(fn (ShareAudit $audit) => $audit->entry, $rows);
-        $nextAfter = count($found) > self::ROWS ? $rows[array_key_last($rows)]->id : null;
+        $nextAfter = count($found) > self::ROWS ? array_last($rows)?->id : null;
 
         return ShareAuditPage::of($share, $auditEntries, $nextAfter);
     }

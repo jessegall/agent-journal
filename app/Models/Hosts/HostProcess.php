@@ -353,8 +353,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     /**
      * The name the host gives the container a contained process runs in.
      *
-     * @return Attribute<string, never>
-     */
+     * @return Attribute<non-falsy-string, never>     */
     protected function containerName(): Attribute
     {
         return Accessor::get(fn () => self::CONTAINER_PREFIX.$this->id);
@@ -363,8 +362,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     /**
      * How the host reported the process ended: its exit code, or its loss with the host's reason.
      *
-     * @return Attribute<string, never>
-     */
+     * @return Attribute<non-falsy-string, never>     */
     protected function endEvidence(): Attribute
     {
         return Accessor::get(function () {

@@ -126,12 +126,13 @@ final class Inbox extends JournalModel implements Assignee, EventSource, Labeled
      */
     protected function personalActor(): Attribute
     {
-        return Accessor::get(function () {
-            if ($this->provider_key !== self::PERSONAL_PROVIDER) {
-                return None::create();
-            }
+        return Accessor::get(function (): Option {
+            /** @var Option<ActorReference> $actor */
+            $actor = $this->provider_key === self::PERSONAL_PROVIDER
+                ? new Some(ActorReference::fromText($this->provider_id))
+                : None::create();
 
-            return new Some(ActorReference::fromText($this->provider_id));
+            return $actor;
         });
     }
 
