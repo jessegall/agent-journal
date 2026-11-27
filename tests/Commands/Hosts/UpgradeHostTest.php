@@ -12,6 +12,9 @@ use App\Hosts\Enums\HostRefusal;
 use App\Hosts\Exceptions\HostUpgradeRefused;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -54,12 +57,13 @@ final class UpgradeHostTest extends TestCase
 
     public function test_a_host_with_a_live_process_has_it_stopped_and_is_ordered_once_it_ended(): void
     {
-        $this->journal->openHostProcess('Mac', 'shell');
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
 
         $this->journal->asSystem(new UpgradeHostCommand($this->hostId(), self::RELEASE));
         $stops = $this->journal->hostOrdersOf('shell');
         $beforeEnd = $this->journal->hostOrdersOn('Mac');
-        $this->journal->reportHostProcess('shell', HostProcessReportType::Exited, 0);
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell
+            ->report(HostProcessReportType::Exited, 0));
 
         $this->journal->assertResult(
             [HostOrderType::Stop, [], [HostOrderType::Upgrade]],
@@ -94,7 +98,8 @@ final class UpgradeHostTest extends TestCase
     public function test_a_new_upgrade_clears_the_failure_of_the_last(): void
     {
         $this->journal->asSystem(new UpgradeHostCommand($this->hostId(), self::RELEASE));
-        $this->journal->refuseHostOrder($this->journal->hostOrdersOn('Mac')[0], HostRefusal::Fenced);
+        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+            ->refuse(HostRefusal::Fenced));
 
         $this->journal->asSystem(new UpgradeHostCommand($this->hostId(), self::RELEASE));
 

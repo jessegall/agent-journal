@@ -7,6 +7,7 @@ namespace Tests\Unit\Web;
 use App\Access\Values\OwnerAuthority;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Declarations\Page;
+use App\Declarations\PageLoaders;
 use App\Http\Responses\LoaderProps;
 use App\Inboxes\Contracts\InboxMemberRoutes;
 use App\Navigation\Contracts\ClientOwnerAvailability;
@@ -50,11 +51,11 @@ final class LoaderPropsTest extends TestCase
             pages: [
                 Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')
                     ->at('')
-                    ->loaders(Loader::make('shelf-rows', ShelfRowsLoader::class)),
+                    ->loaders(fn (PageLoaders $loaders) => $loaders->add('shelf-rows', ShelfRowsLoader::class)),
                 Page::make('book', 'Book', Icon::Docs, BooksResolver::class, 'Book/Reader.vue')
                     ->at('{book}')
                     ->visibleWhen(NobodySees::class)
-                    ->loaders(Loader::make('hidden-rows', ShelfRowsLoader::class)),
+                    ->loaders(fn (PageLoaders $loaders) => $loaders->add('hidden-rows', ShelfRowsLoader::class)),
             ],
             types: [ShelfRowsInput::class, ShelfRowsData::class],
             loaders: [Loader::make('refusing', RefusingLoader::class)],

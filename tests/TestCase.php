@@ -170,12 +170,14 @@ abstract class TestCase extends BaseTestCase
             TestAlarm::disarm();
         }
 
-        $this->journal->stopRunningHost();
+        try {
+            $this->journal->stopRunningHost();
+        } finally {
+            Relation::morphMap($this->applicationMorphMap, false);
 
-        Relation::morphMap($this->applicationMorphMap, false);
-
-        parent::tearDown();
-        DomainLoadGuard::release();
+            parent::tearDown();
+            DomainLoadGuard::release();
+        }
     }
 
     /**

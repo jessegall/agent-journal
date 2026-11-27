@@ -15,7 +15,6 @@ use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Connections\PublishedReleases;
-use App\Files\Enums\Place;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\ClaimedRequests;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
@@ -46,7 +45,7 @@ use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
 use Tests\Fixtures\Drivers\ShownDriverArrangements;
 use Tests\Support\Connections\PublicRelease;
-use Tests\Support\Hosts\StandInHost;
+use Tests\Support\Hosts\MockHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostOrder;
@@ -151,7 +150,7 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The named host runs for real: the host binary built from the checkout, against the Docker stand-in it carries
+     * The named host runs for real: the host binary built from the checkout, against the Docker mock it carries
      * and the test application on a port of its own, with the test journal's owner, made here when the test named
      * none; the scope acts on it. The test commits its rows, so the served application sees them.
      *
@@ -192,12 +191,14 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The test host the test runs stops, before the test's rows are emptied; nothing happens when none runs.
+     * The test host the test runs stops, before the test's rows are emptied, and every mock it ran must have heard what
+     * its script expected; nothing happens when none runs.
      */
     public function stopRunningHost(): self
     {
-        $this->testHost?->stop();
+        $host = $this->testHost;
         $this->testHost = null;
+        $host?->stop()->assertMocksPlayed();
 
         return $this;
     }
@@ -299,7 +300,11 @@ trait ArrangesHostProcesses
         );
 
         return array_values(array_map(
-            fn (HostOrder $order) => json_decode(base64_decode($this->payloadOf($order)['bytes']), true, flags: JSON_THROW_ON_ERROR),
+            fn (HostOrder $order) => json_decode(
+                base64_decode($this->payloadOf($order)['bytes']),
+                true,
+                flags: JSON_THROW_ON_ERROR,
+            ),
             $writes,
         ));
     }
@@ -384,7 +389,7 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The journal runs its agents contained, as a contained stand-in host's served journal does: the same arrangement,
+     * The journal runs its agents contained, as a contained mock host's served journal does: the same arrangement,
      * installation name, agent image, security profiles and workspace, so the sessions it opens freeze a container
      * policy.
      */
@@ -464,21 +469,28 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The host channel plays the committed recording in the folder, relative to the journal's recordings.
+     * The host channel is a mock host that plays the committed recording in the folder, relative to the journal's
+     * recordings; service(MockHost::class) reaches the same mock.
      */
-    public function playsRecording(string $recording): self
+    public function playRecording(string $recording): self
     {
-        $this->app->instance(
-            HostChannel::class,
-            StandInHost::playing(resource_path("recordings/{$recording}")),
-        );
+        $host = MockHost::playing(resource_path("recordings/{$recording}"));
+        $this->app->instance(HostChannel::class, $host);
+        $this->app->instance(MockHost::class, $host);
 
         return $this;
     }
 
-    public function standInHost(): StandInHost
+    /**
+     * The mock host the journal's host channel is, handed to the scope.
+     *
+     * @param  Closure(MockHost): mixed  $scope
+     */
+    public function mockHost(Closure $scope): self
     {
-        return $this->app->make(HostChannel::class);
+        $scope($this->app->make(MockHost::class));
+
+        return $this;
     }
 
     /**
@@ -512,9 +524,13 @@ trait ArrangesHostProcesses
     {
         $folder = $this->testHost?->installation();
         $state = $folder === null ? '' : dirname($folder).'/state/orders/answered.json';
-        $ids = implode(',', array_map(fn (HostOrder $order) => $order->id.':'.$order->sequence, HostOrder::query()->where('status', 'claimed')->get()->all()));
+        $ids = implode(',', array_map(fn (HostOrder $order) => $order
+            ->id.':'.$order->sequence, HostOrder::query()->where('status', 'claimed')->get()->all()));
 
-        return 'claimed in journal: '.$ids."\nhost answered: ".(is_file($state) ? substr((string) file_get_contents($state), -3000) : 'none');
+        return 'claimed in journal: '.$ids."\nhost answered: ".(is_file($state) ? substr(
+            (string) file_get_contents($state),
+            -3000,
+        ) : 'none');
     }
 
     /**
@@ -524,7 +540,10 @@ trait ArrangesHostProcesses
     {
         $payload = $this->payloadOf($order);
         $encoded = $payload['bytes'] ?? null;
-        $written = is_string($encoded) ? json_encode(base64_decode($encoded, true), JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE) : '';
+        $written = is_string($encoded) ? json_encode(
+            base64_decode($encoded, true),
+            JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE,
+        ) : '';
         $reason = $order->answer?->facts['reason'] ?? '';
 
         return "{$order->type->value} {$order->status->value} {$order->refusal?->value} {$reason} {$written}";
@@ -542,7 +561,10 @@ trait ArrangesHostProcesses
         while (($entries = $feed->after($processId, $cursor, 0)) !== []) {
             foreach ($entries as $entry) {
                 $cursor = $entry->cursor;
-                $chunks[] = $entry->chunk === null ? null : "{$entry->chunk->stream}: ".json_encode($entry->chunk->printed(), JSON_UNESCAPED_SLASHES);
+                $chunks[] = $entry->chunk === null ? null : "{$entry->chunk->stream}: ".json_encode(
+                    $entry->chunk->printed(),
+                    JSON_UNESCAPED_SLASHES,
+                );
             }
         }
 

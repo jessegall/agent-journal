@@ -7,7 +7,7 @@ namespace Tests\Architecture\Support\EntryPoints;
 use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\ClassesDeclared;
-use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
+use Tests\Support\Entries\Attributes\OverTheWire;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -59,7 +59,7 @@ final readonly class EntryAttributes
 
     /**
      * Each test class of no kind, by its file: outside the unit, machinery and architecture folders, it names no entry
-     * and runs against no stand-in.
+     * and runs against no mock.
      *
      * @return list<string>
      */
@@ -113,7 +113,7 @@ final readonly class EntryAttributes
         return ! $type->isAbstract()
             && $type->isSubclassOf(TestCase::class)
             && $this->namedBy($file, $class) === []
-            && $type->attributes(TestsAgainstStandIn::class)->entries() === [];
+            && $type->attributes(OverTheWire::class)->entries() === [];
     }
 
     /**

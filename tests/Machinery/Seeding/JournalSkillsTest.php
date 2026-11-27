@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Tests\Machinery\Seeding;
 
 use App\Hooks\Enums\ContextStartType;
+use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillReadEntry;
 use App\Processes\Values\PartKey;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
+use Tests\Support\Agents\TestAgent;
+use Tests\Support\Agents\TestSession;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Seeding\TestJournal;
@@ -74,7 +77,9 @@ final class JournalSkillsTest extends TestCase
     {
         $this->journal->refreshSkills()->actAs('Owner');
 
-        $session = $this->journal->handSkillsTo('Writer');
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session->handSkills()));
+        $session = AgentSession::findById($this->journal->sessionOf('Writer')->id);
 
         $this->assertSame(SkillGeneration::findLatestReady()?->id, $session->skill_generation_id);
     }
@@ -82,10 +87,14 @@ final class JournalSkillsTest extends TestCase
     public function test_a_finished_skill_show_call_records_the_read_for_the_session(): void
     {
         $this->journal->refreshSkills()->actAs('Owner');
-        $session = $this->journal->handSkillsTo('Writer');
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session->handSkills()));
+        $session = AgentSession::findById($this->journal->sessionOf('Writer')->id);
         $key = $session->skill_keys[0];
 
-        $this->journal->finishToolCall($session, 'Bash', ['command' => "php artisan skill:show {$key}"]);
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session
+                ->finishToolCall('Bash', ['command' => "php artisan skill:show {$key}"])));
 
         $this->assertCount(1, SkillReadEntry::findLatestOfSession($session->id, 10));
     }
@@ -93,9 +102,11 @@ final class JournalSkillsTest extends TestCase
     public function test_a_context_start_answers_the_reminders_its_boundary_added(): void
     {
         $this->journal->refreshSkills()->actAs('Owner');
-        $session = $this->journal->handSkillsTo('Writer');
-
-        $this->assertIsList($this->journal->startContext($session, ContextStartType::Start));
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer->session(
+            fn (TestSession $session) => $this->assertIsList(
+                $session->handSkills()->startContext(ContextStartType::Start)->reminders(),
+            ),
+        ));
     }
 
     public function test_a_created_process_run_is_given_back_and_still_found_by_its_name(): void

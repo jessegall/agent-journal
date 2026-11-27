@@ -7,8 +7,9 @@ namespace Tests\Machinery\Hosts;
 use App\Agents\Drivers\Work\DriverSupervisor;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\HostWake;
-use Tests\Support\Drivers\StandInProcessDriver;
+use Tests\Support\Drivers\MockProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -25,9 +26,9 @@ final class DriverSupervisorTest extends TestCase
     {
         $this->journal
             ->fakeStartedPrograms()
-            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, MockProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
         $process = $this->journal->hostProcessCalled('shell')->id;
         $supervisor = $this->journal->service(DriverSupervisor::class);
 
@@ -40,12 +41,13 @@ final class DriverSupervisorTest extends TestCase
 
     public function test_a_new_process_wakes_the_supervisor_which_otherwise_waits_without_a_timer(): void
     {
-        $this->journal->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class);
+        $this->journal->driveProcessesWith(HostProcessPurpose::Probe, MockProcessDriver::class);
         $supervisor = $this->journal->service(DriverSupervisor::class);
         $wake = $this->journal->service(HostWake::class);
         $wake->waitForSupervisor(1);
 
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell');
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('shell'));
 
         $this->journal->assertResult(
             [true, DriverSupervisor::UNTIL_WOKEN],

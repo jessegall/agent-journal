@@ -157,6 +157,16 @@
             "@types:check",
             "@php artisan test --parallel --recreate-databases"
         ],
+        "test:wire": [
+            "Composer\\Config::disableProcessTimeout",
+            "@test:go",
+            "@php tests/bin/in-docker.php test:wire-inside"
+        ],
+        "test:wire-inside": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan config:clear --ansi",
+            "@php artisan test --testsuite=Wire"
+        ],
         "test:run": [
             "Composer\\Config::disableProcessTimeout",
             "@php tests/bin/in-docker.php test:run-inside"

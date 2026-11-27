@@ -9,7 +9,6 @@ use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\PoolMembers;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\ListenerRegistry;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Sessions\StartSessions;
@@ -37,6 +36,7 @@ use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\StartNamedTask;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Domain\Tasks\Tests\Fixtures\TestTask;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Event;
@@ -108,7 +108,8 @@ final class StartTaskTest extends TestCase
 
         $this->assertSame([1, 1], [$run, $retry]);
 
-        $this->tasks->assertStarted('Owned work', by: 'First')->assertRunCount('Owned work', 1);
+        $this->tasks->assertStarted('Owned work', by: 'First')->withTask('Owned work', fn (TestTask $task) => $task
+            ->assertRunCount(1));
     }
 
     public function test_another_agent_is_refused_while_the_task_runs(): void
@@ -120,7 +121,8 @@ final class StartTaskTest extends TestCase
             fn () => $this->journal->run(new StartTaskCommand($work->task->id)),
         );
 
-        $this->tasks->assertStarted('Draft', by: 'First')->assertRunCount('Draft', 1);
+        $this->tasks->assertStarted('Draft', by: 'First')->withTask('Draft', fn (TestTask $task) => $task
+            ->assertRunCount(1));
     }
 
     public function test_a_task_that_ended_is_not_started_again(): void

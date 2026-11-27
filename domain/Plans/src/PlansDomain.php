@@ -16,8 +16,9 @@ use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasAssignables;
 use App\Concerns\HasLinkRecords;
 use App\Concerns\HasStates;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageSlots;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Navigation\Contracts\DraftProducerProvider;
 use App\Navigation\Contracts\NavigationProvider;
@@ -36,7 +37,6 @@ use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\Searchable;
 use App\Text\Declarations\Section;
-use App\Web\Declarations\Slot;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
 use Domain\Plans\Commands\ReassignPlanWork\ReassignPlanWorkCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
@@ -267,41 +267,39 @@ final class PlansDomain extends Domain implements
             Page::layout('list', 'Plans', Icon::Plan, PlansWindowResolver::class)
                 ->at('')
                 ->onHome(20)
-                ->actions(
-                    ActionRoute::post('{plan}/start', StartPlanController::class, 'start'),
-                    ActionRoute::post('create', CreatePlanPageController::class, 'create-plan'),
-                ),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('{plan}/start', StartPlanController::class, 'start')
+                    ->post('create', CreatePlanPageController::class, 'create-plan')),
             Page::layout('plan-task', 'Plan task', Icon::Plan, PlanTaskWindowResolver::class)
                 ->at('{plan}/tasks/{task}'),
             Page::layout('plan', 'Plan', Icon::Plan, PlanWindowResolver::class)
                 ->at('{plan}')
                 ->inInspector()
-                ->actions(
-                    ActionRoute::post('{plan}/cancel', CancelPlanPageController::class, 'cancel-plan'),
-                    ActionRoute::post('{plan}/graph/suggest', SuggestPlanGraphPageController::class, 'suggest-waits'),
-                    ActionRoute::post('{plan}/graph/apply', ApplyPlanGraphPageController::class, 'apply-waits'),
-                    ActionRoute::post('{plan}/graph/undo', UndoPlanGraphPageController::class, 'undo-waits'),
-                    ActionRoute::post('{plan}/work', AssignPlanWorkPageController::class, 'assign-work'),
-                    ActionRoute::post('{plan}/work/reassign', ReassignPlanWorkPageController::class, 'reassign-work'),
-                    ActionRoute::post('{plan}/finish', FinishPlanPageController::class, 'finish-plan'),
-                    ActionRoute::post('{plan}/review', RequestPlanReviewPageController::class, 'request-review'),
-                    ActionRoute::post(
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('{plan}/cancel', CancelPlanPageController::class, 'cancel-plan')
+                    ->post('{plan}/graph/suggest', SuggestPlanGraphPageController::class, 'suggest-waits')
+                    ->post('{plan}/graph/apply', ApplyPlanGraphPageController::class, 'apply-waits')
+                    ->post('{plan}/graph/undo', UndoPlanGraphPageController::class, 'undo-waits')
+                    ->post('{plan}/work', AssignPlanWorkPageController::class, 'assign-work')
+                    ->post('{plan}/work/reassign', ReassignPlanWorkPageController::class, 'reassign-work')
+                    ->post('{plan}/finish', FinishPlanPageController::class, 'finish-plan')
+                    ->post('{plan}/review', RequestPlanReviewPageController::class, 'request-review')
+                    ->post(
                         '{plan}/review/withdraw',
                         WithdrawPlanReviewPageController::class,
                         'withdraw-review',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         '{plan}/review/approve',
                         ApprovePlanReviewPageController::class,
                         'approve-review',
-                    ),
-                    ActionRoute::post(
+                    )
+                    ->post(
                         '{plan}/review/changes',
                         RequestPlanChangesPageController::class,
                         'request-changes',
-                    ),
-                )
-                ->slots(Slot::record('inspector', 'plan', 'plan')),
+                    ))
+                ->slots(fn (PageSlots $slots) => $slots->record('inspector', 'plan', 'plan')),
             Page::make('phase', 'Phase', Icon::Plan, PhaseWindowResolver::class, 'PhaseWindow.vue')
                 ->at('{plan}/phases/{phase}'),
         ];

@@ -13,6 +13,7 @@ use App\Terminals\KeyScripts\KeyScriptRun;
 use App\Terminals\KeyScripts\KeyScriptRunner;
 use App\Terminals\Screens\Enums\KeyMoveType;
 use App\Values\HostOrderSource;
+use Tests\Support\Hosts\MockHost;
 use Tests\TestCase;
 
 /**
@@ -38,7 +39,7 @@ final class ClaudeCodeKeyScriptsTest extends TestCase
         $move = $this->played('model-choice', 'ChangeModel', ['model' => 'Haiku 5.5']);
 
         $this->journal->assertResult([KeyMoveType::Finished, 7], [$move->type, $this->sends]);
-        $this->journal->standInHost()->assertTypedThrough(11);
+        $this->journal->mockHost(fn (MockHost $host) => $host->assertTypedThrough(11));
     }
 
     public function test_choosing_an_effort_moves_the_slider_to_it_and_sets_it_for_this_session_only(): void
@@ -56,7 +57,7 @@ final class ClaudeCodeKeyScriptsTest extends TestCase
             [KeyMoveType::Uncertain, NavigationReason::LabelMissing],
             [$move->type, $move->reason],
         );
-        $this->journal->standInHost()->assertTypedThrough(6);
+        $this->journal->mockHost(fn (MockHost $host) => $host->assertTypedThrough(6));
     }
 
     public function test_a_build_with_no_script_of_its_own_runs_the_newest_older_builds(): void
@@ -76,8 +77,8 @@ final class ClaudeCodeKeyScriptsTest extends TestCase
      */
     private function played(string $recording, string $script, array $values): KeyMove
     {
-        $this->journal->playsRecording(self::KEY_SCRIPTS."/{$recording}");
-        $host = $this->journal->standInHost();
+        $this->journal->playRecording(self::KEY_SCRIPTS."/{$recording}");
+        $host = $this->journal->service(MockHost::class);
         $runner = $this->journal->service(KeyScriptRunner::class);
         $layout = $this->profile()->layout();
         $catalogue = new KeyScriptCatalogue($this->profile()->keyScripts());

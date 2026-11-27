@@ -10,13 +10,14 @@ use App\Agents\Enums\AccessType;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Contracts\Events\EngineListenerProvider;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageLoaders;
+use App\Declarations\PageSlots;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Messages\MessageSearchAccess;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Contracts\SectionProvider;
-use App\Navigation\Declarations\Loader;
 use App\Navigation\Enums\Icon;
 use App\Profiles\Enums\SlotContextType;
 use App\Search\Contracts\MessageSearch;
@@ -26,7 +27,6 @@ use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\Searchable;
 use App\Text\Declarations\Section;
-use App\Web\Declarations\Slot;
 use Domain\Chat\Contracts\PairChats;
 use Domain\Chat\Events\ChatMessageChanged;
 use Domain\Chat\Events\DockChanged;
@@ -115,25 +115,23 @@ final class ChatDomain extends Domain implements
             Page::make('conversation', 'Chat', Icon::Speech, ChatWindowResolver::class, 'ChatWindow.vue')
                 ->at('')
                 ->onHome(10)
-                ->slots(Slot::make('dock', SlotContextType::Session))
-                ->actions(
-                    ActionRoute::post('messages', SendMessageController::class, 'send'),
-                    ActionRoute::post('messages/read', ReadShownController::class, 'read'),
-                    ActionRoute::post('messages/react', ReactController::class, 'react'),
-                    ActionRoute::post('questions/answer', AnswerQuestionController::class, 'answer'),
-                    ActionRoute::post('dock', DockController::class, 'dock'),
-                    ActionRoute::post('dock/remove', UndockController::class, 'undock'),
-                    ActionRoute::post('chats', CreateGroupChatController::class, 'create-group'),
-                    ActionRoute::post('chats/members', AddParticipantController::class, 'add-member'),
-                    ActionRoute::post('chats/members/remove', RemoveParticipantController::class, 'remove-member'),
-                    ActionRoute::post('chats/transfer', TransferChatController::class, 'transfer'),
-                    ActionRoute::post('chats/leave', LeaveChatController::class, 'leave'),
-                    ActionRoute::post('chats/close', CloseChatController::class, 'close'),
-                )
-                ->loaders(
-                    Loader::make('rows', ChatRowsLoader::class),
-                    Loader::make('candidates', ChatCandidatesLoader::class),
-                ),
+                ->slots(fn (PageSlots $slots) => $slots->add('dock', SlotContextType::Session))
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('messages', SendMessageController::class, 'send')
+                    ->post('messages/read', ReadShownController::class, 'read')
+                    ->post('messages/react', ReactController::class, 'react')
+                    ->post('questions/answer', AnswerQuestionController::class, 'answer')
+                    ->post('dock', DockController::class, 'dock')
+                    ->post('dock/remove', UndockController::class, 'undock')
+                    ->post('chats', CreateGroupChatController::class, 'create-group')
+                    ->post('chats/members', AddParticipantController::class, 'add-member')
+                    ->post('chats/members/remove', RemoveParticipantController::class, 'remove-member')
+                    ->post('chats/transfer', TransferChatController::class, 'transfer')
+                    ->post('chats/leave', LeaveChatController::class, 'leave')
+                    ->post('chats/close', CloseChatController::class, 'close'))
+                ->loaders(fn (PageLoaders $loaders) => $loaders
+                    ->add('rows', ChatRowsLoader::class)
+                    ->add('candidates', ChatCandidatesLoader::class)),
         ];
     }
 

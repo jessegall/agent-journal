@@ -11,6 +11,8 @@ use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPhase;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
@@ -43,7 +45,9 @@ final class RecordPhaseCheckTest extends TestCase
 
         $this->phase = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Checked phase')
-            ->phaseWithTask('Checked phase', 'Build', $this->task->assignmentIdentity())
+            ->withPlan('Checked phase', fn (TestPlan $plan) => $plan
+                ->addPhase('Build')->withPhase('Build', fn (TestPhase $phase) => $phase
+                ->place($this->task->assignmentIdentity())))
             ->phaseCalled('Build');
 
         $this->openAcmeRequest();

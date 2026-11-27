@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Assertions\Facts;
 
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Hosts\ProcessFeed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
@@ -24,6 +25,13 @@ final readonly class RuntimeFacts implements Facts
         return [
             'host' => $this->runtime->host_id,
             'conversation' => $this->runtime->conversation_id,
+            'activity' => fn () => $this->runtime->fresh()?->activity,
+            'holdReason' => fn () => $this->runtime->fresh()?->hold_reason,
+            'interrupts' => fn () => DriverRequest::query()
+                ->where('agent_runtime_id', $this->runtime->id)
+                ->where('operation', DriverOperation::Interrupt)
+                ->pluck('id')
+                ->all(),
             'firstRequest' => function () {
                 $request = DriverRequest::query()
                     ->where('agent_runtime_id', $this->runtime->id)

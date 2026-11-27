@@ -6,7 +6,6 @@ namespace Domain\Plans\Tests\Commands;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\RequestKey;
-use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentResult;
@@ -19,6 +18,8 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPhase;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
@@ -88,14 +89,15 @@ final class AssignPlanWorkTest extends TestCase
 
         $plans = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release')
-            ->phaseWithTask('Release', 'Working', $tasks->taskCalled('Open')->assignmentIdentity())
-            ->phase('Release', 'Over')
-            ->placeTasks(
-                'Over',
-                $tasks->taskCalled('Finished')->assignmentIdentity(),
-                $tasks->taskCalled('Cancelled')->assignmentIdentity(),
-            )
-            ->phase('Release', 'Empty');
+            ->withPlan('Release', fn (TestPlan $plan) => $plan
+                ->addPhase('Working')->withPhase('Working', fn (TestPhase $phase) => $phase
+                ->place($tasks->taskCalled('Open')->assignmentIdentity()))->addPhase('Over'))
+            ->withPhase('Over', fn (TestPhase $phase) => $phase
+                ->place(
+                    $tasks->taskCalled('Finished')->assignmentIdentity(),
+                    $tasks->taskCalled('Cancelled')->assignmentIdentity(),
+                ))
+            ->withPlan('Release', fn (TestPlan $plan) => $plan->addPhase('Empty'));
 
         $this->plan = $plans->planCalled('Release');
         $this->open = $tasks->taskCalled('Open');

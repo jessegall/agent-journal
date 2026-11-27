@@ -16,6 +16,7 @@ use App\Terminals\Screens\ScreenClassifier;
 use App\Terminals\Screens\ScreenHolds;
 use App\Terminals\Screens\ScreenLayout;
 use App\Values\HostOrderSource;
+use Tests\Support\Hosts\MockHost;
 use Tests\TestCase;
 
 /**
@@ -40,7 +41,7 @@ final class CodexKeyScriptsTest extends TestCase
         $move = $this->played('model-choice', 'ChangeModel', ['model' => 'gpt-6-luna']);
 
         $this->journal->assertResult(KeyMoveType::Finished, $move->type);
-        $this->journal->standInHost()->assertTypedThrough(15);
+        $this->journal->mockHost(fn (MockHost $host) => $host->assertTypedThrough(15));
     }
 
     public function test_choosing_an_effort_keeps_the_current_model_and_moves_to_the_level(): void
@@ -59,12 +60,15 @@ final class CodexKeyScriptsTest extends TestCase
      */
     private function played(string $recording, string $script, array $values): KeyMove
     {
-        $this->journal->playsRecording(self::KEY_SCRIPTS."/{$recording}");
-        $host = $this->journal->standInHost();
+        $this->journal->playRecording(self::KEY_SCRIPTS."/{$recording}");
+        $host = $this->journal->service(MockHost::class);
         $runner = $this->journal->service(KeyScriptRunner::class);
         $layout = $this->profile()->layout();
         $catalogue = new KeyScriptCatalogue($this->profile()->keyScripts());
-        $move = KeyMove::wait(new KeyScriptRun($catalogue->scriptFor(DefaultDrivers::CODEX, self::BUILD, $script), $values));
+        $move = KeyMove::wait(new KeyScriptRun(
+            $catalogue->scriptFor(DefaultDrivers::CODEX, self::BUILD, $script),
+            $values,
+        ));
 
         foreach ($host->streamTimes(self::STREAM_MS) as $time) {
             $host->clock->set($time);

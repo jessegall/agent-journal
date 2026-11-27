@@ -6,6 +6,8 @@ namespace Domain\Plans\Tests\Routes;
 
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPhase;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
@@ -31,7 +33,9 @@ final class PlanTaskGetTest extends GuardedRouteEntryTestCase
 
         $plans = $journal->fixtures(PlanFixtures::class)
             ->plan('Release')
-            ->phaseWithTask('Release', 'Working', $task->assignmentIdentity());
+            ->withPlan('Release', fn (TestPlan $plan) => $plan
+                ->addPhase('Working')->withPhase('Working', fn (TestPhase $phase) => $phase
+                ->place($task->assignmentIdentity())));
 
         return RouteCall::as(Caller::User)
             ->parameters(['plan' => $plans->planCalled('Release')->number, 'task' => $task->number]);

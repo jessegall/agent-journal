@@ -22,7 +22,11 @@ final readonly class TestHostOrder
      */
     public function answer(): self
     {
-        $this->journal->asSystem(new NotifyHostOrderCommand($this->order->host_id, $this->order->id, '{"status":"done"}'));
+        $this->journal->asSystem(new NotifyHostOrderCommand(
+            $this->order->host_id,
+            $this->order->id,
+            '{"status":"done"}',
+        ));
 
         return $this;
     }

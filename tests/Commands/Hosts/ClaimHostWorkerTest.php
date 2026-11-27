@@ -8,6 +8,7 @@ use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Models\Hosts\HostProcess;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -23,7 +24,11 @@ final class ClaimHostWorkerTest extends TestCase
     public function test_each_claim_takes_the_next_generation_and_holds_the_lease(): void
     {
         $now = CarbonImmutable::parse('2026-11-26 10:00:00');
-        $this->journal->useServerClockAt($now)->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell');
+        $this->journal
+            ->useServerClockAt($now)
+            ->enrollHost('Mac', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac
+                ->openProcess('shell'));
         $id = $this->journal->hostProcessCalled('shell')->id;
 
         $first = $this->journal->asSystem(new ClaimHostWorkerCommand($id));

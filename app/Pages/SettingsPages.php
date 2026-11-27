@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
 use App\Http\Controllers\ResetSettingsPageController;
 use App\Http\Controllers\SaveSettingsPageController;
 use App\Http\Controllers\SwitchSettingsGroupPageController;
@@ -56,11 +56,10 @@ final class SettingsPages implements NavigationProvider, PageProvider, TypeProvi
             Page::layout('settings', 'Settings', Icon::Rules, SettingsWindowResolver::class)
                 ->at('')
                 ->visibleWhen(SettingsOwnerCheck::class)
-                ->actions(
-                    ActionRoute::post('save', SaveSettingsPageController::class, 'save'),
-                    ActionRoute::post('reset', ResetSettingsPageController::class, 'reset'),
-                    ActionRoute::post('switch', SwitchSettingsGroupPageController::class, 'switch'),
-                ),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('save', SaveSettingsPageController::class, 'save')
+                    ->post('reset', ResetSettingsPageController::class, 'reset')
+                    ->post('switch', SwitchSettingsGroupPageController::class, 'switch')),
         ];
     }
 

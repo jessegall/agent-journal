@@ -27,7 +27,8 @@ final class FenceDriverWorkerTest extends TestCase
 
     public function test_a_deposed_workers_report_is_refused_and_the_current_workers_goes_through(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('shell'));
         $process = $this->journal->hostProcessCalled('shell');
         $deposed = $this->journal->asSystem(new ClaimHostWorkerCommand($process->id));
         $current = $this->journal->asSystem(new ClaimHostWorkerCommand($process->id));

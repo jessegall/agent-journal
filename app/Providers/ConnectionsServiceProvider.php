@@ -66,7 +66,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
         $this->app->bind(LocalProjectHostsContract::class, LocalProjectHosts::class);
         $this->app->bind(HostChannelContract::class, HostChannel::class);
 
-        // Each purpose of process the journal drives has its process driver; a test adds its stand-in drivers.
+        // Each purpose of process the journal drives has its process driver; a test adds its mock drivers.
         $this->app->singleton(ProcessDrivers::class, fn ($app) => new ProcessDrivers($app)
             ->with(HostProcessPurpose::AgentTurn, HeadlessDriver::class)
             ->with(HostProcessPurpose::AgentTerminal, TerminalDriver::class)

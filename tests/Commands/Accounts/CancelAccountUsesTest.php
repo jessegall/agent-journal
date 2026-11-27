@@ -103,7 +103,8 @@ final class CancelAccountUsesTest extends TestCase
         $running = $this->sessionOn($account);
         $this->journal->enrollHost('Mac', [base_path()])
             ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcessForStart('terminal', $running->id))
-            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->report(HostProcessReportType::Running));
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+                ->report(HostProcessReportType::Running));
 
         $this->actAsOwner();
 

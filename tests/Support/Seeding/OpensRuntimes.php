@@ -86,7 +86,7 @@ trait OpensRuntimes
         }
 
         $this->hosts[$name] = $this->asSystem(new EnrollHostCommand($name, $folders, ArrangementType::Contained));
-        // A contained host runs the stand-in agent image, which this journal's image record verifies.
+        // A contained host runs the mock agent image, which this journal's image record verifies.
         $this->app->instance(DockerImageVerifier::class, new VerifiedTestHostImage());
 
         return $this;

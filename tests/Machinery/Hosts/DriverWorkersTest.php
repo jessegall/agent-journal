@@ -10,8 +10,11 @@ use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostOrder;
 use App\Time\Contracts\ServerClock;
-use Tests\Support\Drivers\StandInProcessDriver;
+use Tests\Support\Drivers\MockProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -31,21 +34,21 @@ final class DriverWorkersTest extends TestCase
         parent::setUp();
 
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, MockProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
     }
 
     public function test_a_replaced_worker_is_fenced_and_the_one_after_it_pastes_no_second_time(): void
     {
-        $first = $this->journal->beginDriverWorker('shell');
-        $this->journal->printOnHostProcess('shell', '> ');
-        $firstGoesOn = $this->journal->stepDriverWorker($first, self::WAIT_MS);
+        $first = $this->journal->service(DriverWorkers::class)->begin($this->journal->hostProcessCalled('shell')->id);
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell->print('> '));
+        $firstGoesOn = $this->journal->service(DriverWorkers::class)->step($first, self::WAIT_MS);
 
-        $second = $this->journal->beginDriverWorker('shell');
-        $this->journal->printOnHostProcess('shell', '> ');
-        $replacedGoesOn = $this->journal->stepDriverWorker($first, self::WAIT_MS);
-        $secondGoesOn = $this->journal->stepDriverWorker($second, self::WAIT_MS);
+        $second = $this->journal->service(DriverWorkers::class)->begin($this->journal->hostProcessCalled('shell')->id);
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell->print('> '));
+        $replacedGoesOn = $this->journal->service(DriverWorkers::class)->step($first, self::WAIT_MS);
+        $secondGoesOn = $this->journal->service(DriverWorkers::class)->step($second, self::WAIT_MS);
 
         $this->journal->assertResult(
             [true, false, true, 1],
@@ -55,11 +58,11 @@ final class DriverWorkersTest extends TestCase
 
     public function test_an_answer_to_its_order_wakes_the_worker(): void
     {
-        $work = $this->journal->beginDriverWorker('shell');
+        $work = $this->journal->service(DriverWorkers::class)->begin($this->journal->hostProcessCalled('shell')->id);
         [, $snapshot, $stream] = $this->journal->hostOrdersOf('shell');
 
-        $this->journal->answerHostOrder($snapshot);
-        $this->journal->stepDriverWorker($work, self::WAIT_MS);
+        $this->journal->hostOrder($snapshot, fn (TestHostOrder $order) => $order->answer());
+        $this->journal->service(DriverWorkers::class)->step($work, self::WAIT_MS);
 
         $this->journal->assertResult(
             [[
@@ -72,16 +75,17 @@ final class DriverWorkersTest extends TestCase
 
     public function test_a_restart_ends_the_worker_between_steps(): void
     {
-        $work = $this->journal->beginDriverWorker('shell');
+        $work = $this->journal->service(DriverWorkers::class)->begin($this->journal->hostProcessCalled('shell')->id);
 
         $this->journal->service(DriverRestartSignal::class)->ask($this->journal->service(ServerClock::class)->now());
 
-        $this->journal->assertResult(false, $this->journal->stepDriverWorker($work, self::WAIT_MS));
+        $this->journal->assertResult(false, $this->journal->service(DriverWorkers::class)->step($work, self::WAIT_MS));
     }
 
     private function ordersOf(HostOrderType $type): int
     {
-        return count(array_filter($this->journal->hostOrdersOf('shell'), fn (HostOrder $order) => $order->type === $type));
+        return count(array_filter($this->journal->hostOrdersOf('shell'), fn (HostOrder $order) => $order
+            ->type === $type));
     }
 
     private function lastOrder(): HostOrder

@@ -33,7 +33,14 @@ final readonly class TestEnrolledHost
         HostProcessType $type = HostProcessType::Terminal,
         string|null $runtimeId = null,
     ): self {
-        $plan = new HostProcessPlan(HostProcessPurpose::Probe, $type, RestartPolicy::Never, ['sh', '-c', 'cat'], [], base_path());
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            $type,
+            RestartPolicy::Never,
+            ['sh', '-c', 'cat'],
+            [],
+            base_path(),
+        );
         $this->journal->openPlannedProcess($this->name, $name, $plan, $runtimeId);
 
         return $this;
@@ -52,7 +59,14 @@ final readonly class TestEnrolledHost
         $start = SessionProcess::findCurrentOf($sessionId)
             ?? throw FixtureRefused::missingAlias('start', $sessionId, 'The journal');
         $this->journal->claimStartOf($hostId, $sessionId);
-        $plan = new HostProcessPlan($purpose, HostProcessType::Terminal, RestartPolicy::Never, ['sh', '-c', 'cat'], [], base_path());
+        $plan = new HostProcessPlan(
+            $purpose,
+            HostProcessType::Terminal,
+            RestartPolicy::Never,
+            ['sh', '-c', 'cat'],
+            [],
+            base_path(),
+        );
         $runtimeId = AgentRuntime::findForSession($sessionId)?->id;
         $command = new OpenHostProcessCommand($hostId, $runtimeId, $plan, HostOrderSource::fromJournal(), $start->id);
         $this->journal->nameHostProcess($name, $this->journal->asSystem($command));

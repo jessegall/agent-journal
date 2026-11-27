@@ -12,6 +12,8 @@ use App\Hosts\Enums\HostProcessReportType;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -34,7 +36,7 @@ final class StreamHostProcessTest extends TestCase
         $this->journal
             ->useServerClockAt(CarbonImmutable::parse(self::NOW))
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
     }
 
     public function test_it_orders_the_host_with_its_payload_and_expiry(): void
@@ -53,18 +55,25 @@ final class StreamHostProcessTest extends TestCase
         $replaced = HostOrderSource::forStep('request-1', 'step', 0, 1);
         $current = HostOrderSource::forStep('request-1', 'step', 0, 0);
 
-        $this->journal->assertRefused(WorkerFenced::class, fn () => $this->journal->asSystem($this->command($replaced)));
+        $this->journal->assertRefused(
+            WorkerFenced::class,
+            fn () => $this->journal->asSystem($this->command($replaced)),
+        );
         $first = $this->journal->asSystem($this->command($current));
         $again = $this->journal->asSystem($this->command($current));
 
         $orders = $this->journal->hostOrdersOf('shell');
 
-        $this->journal->assertResult([$first, 'request-1:step:0', 2], [$again, $orders[1]->idempotency_key, count($orders)]);
+        $this->journal->assertResult(
+            [$first, 'request-1:step:0', 2],
+            [$again, $orders[1]->idempotency_key, count($orders)],
+        );
     }
 
     public function test_a_process_that_exited_takes_no_order(): void
     {
-        $this->journal->reportHostProcess('shell', HostProcessReportType::Exited, 0);
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell
+            ->report(HostProcessReportType::Exited, 0));
 
         $this->journal->assertRefused(
             HostProtocolRefused::class,

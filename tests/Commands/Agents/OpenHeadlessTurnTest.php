@@ -15,6 +15,7 @@ use App\Messages\Data\MessageTextData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostProcess;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestHostProcess;
@@ -38,17 +39,25 @@ final class OpenHeadlessTurnTest extends TestCase
 
     public function test_work_waits_for_the_proven_build_then_runs_one_turn_at_a_time(): void
     {
-        $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), firstMessage: 'Run: ls.');
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->idleAgent('Driven')
+            ->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), firstMessage: 'Run: ls.'));
+        $opened = $this->journal->openedRuntimeOf('Driven');
         $this->journal->assertResult(0, $this->turnCount($opened->runtimeId));
 
-        $this->journal->passBuildProbe('driven', $opened->runtimeId);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->passBuildProbe('driven'));
         $this->journal->assertResult(0, $this->turnCount($opened->runtimeId));
         $folder = $this->journal->startOfSession($opened->sessionId)->directory;
         $status = json_encode(['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => $folder]);
         $signIn = $this->journal->hostProcessCalled('driven-sign-in')->id;
         $this->journal->asSystem(new CheckSignInCommand($signIn, (string) $status));
-        $this->journal->callJournalProcess('first', $opened->runtimeId, HostProcessPurpose::AgentTurn);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('first', HostProcessPurpose::AgentTurn));
 
         $second = $this->journal->asOwner(new DeliverAgentCommand(
             $this->journal->agentCalled('Driven')->id,
@@ -58,8 +67,8 @@ final class OpenHeadlessTurnTest extends TestCase
         ));
         $this->journal->assertResult(1, $this->turnCount($opened->runtimeId));
 
-        $this->journal->hostProcess('first', fn (TestHostProcess $first) => $first->report(HostProcessReportType::Running))
-            ->hostProcess('first', fn (TestHostProcess $first) => $first->report(HostProcessReportType::Exited, 0));
+        $this->journal->hostProcess('first', fn (TestHostProcess $first) => $first
+            ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0));
         $first = DriverRequest::query()->findOrFail($this->journal->hostOrdersOf('first')[0]->driver_request_id);
         $this->journal->asSystem(new NotifyRequestProgressCommand(
             $this->journal->hostCalled('Mac')->hostId,
@@ -70,7 +79,8 @@ final class OpenHeadlessTurnTest extends TestCase
             null,
         ));
         $this->journal->asSystem(new OpenHeadlessTurnCommand($opened->runtimeId));
-        $this->journal->callJournalProcess('second', $opened->runtimeId, HostProcessPurpose::AgentTurn);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('second', HostProcessPurpose::AgentTurn));
 
         $this->journal->assertResult(
             ['Run: ls.', false, 'And then: pwd.', true, RequestProgress::Staged],

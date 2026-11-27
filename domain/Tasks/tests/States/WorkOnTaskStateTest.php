@@ -155,7 +155,8 @@ final class WorkOnTaskStateTest extends TestCase
             ['claim-9'],
         );
 
-        $this->journal->stateOn($this->work->session, $this->working(), fn (StateHandle $working) => $working->steps([$newer], fn (StateAssert $state) => $state->isFinished()));
+        $this->journal->stateOn($this->work->session, $this->working(), fn (StateHandle $working) => $working
+            ->steps([$newer], fn (StateAssert $state) => $state->isFinished()));
     }
 
     public function test_a_claim_another_agent_took_lets_the_stop_through(): void

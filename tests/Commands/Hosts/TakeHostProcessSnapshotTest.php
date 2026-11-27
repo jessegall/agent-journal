@@ -56,18 +56,25 @@ final class TakeHostProcessSnapshotTest extends TestCase
         $replaced = HostOrderSource::forStep('request-1', 'step', 0, 1);
         $current = HostOrderSource::forStep('request-1', 'step', 0, 0);
 
-        $this->journal->assertRefused(WorkerFenced::class, fn () => $this->journal->asSystem($this->command($replaced)));
+        $this->journal->assertRefused(
+            WorkerFenced::class,
+            fn () => $this->journal->asSystem($this->command($replaced)),
+        );
         $first = $this->journal->asSystem($this->command($current));
         $again = $this->journal->asSystem($this->command($current));
 
         $orders = $this->journal->hostOrdersOf('shell');
 
-        $this->journal->assertResult([$first, 'request-1:step:0', 2], [$again, $orders[1]->idempotency_key, count($orders)]);
+        $this->journal->assertResult(
+            [$first, 'request-1:step:0', 2],
+            [$again, $orders[1]->idempotency_key, count($orders)],
+        );
     }
 
     public function test_a_process_that_exited_takes_no_order(): void
     {
-        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell->report(HostProcessReportType::Exited, 0));
+        $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell
+            ->report(HostProcessReportType::Exited, 0));
 
         $this->journal->assertRefused(
             HostProtocolRefused::class,

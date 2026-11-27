@@ -21,8 +21,12 @@ final class DocumentFixturesTest extends TestCase
             ->publishedDocument('Design', author: 'Owner', body: 'First words.')
             ->revision('Design', author: 'Ada', body: 'Second words.');
 
-        $documents->assertRevision('Design', 1, author: 'Owner', body: 'First words.')
-            ->assertRevision('Design', 2, author: 'Ada', body: 'Second words.')
+        $documents->withDocument('Design', fn (TestDocument $document) => $document
+            ->assertRevision(
+                1,
+                author: 'Owner',
+                body: 'First words.',
+            )->assertRevision(2, author: 'Ada', body: 'Second words.'))
             ->assertClosed('Design', editor: 'Ada', number: 2);
     }
 
@@ -32,8 +36,12 @@ final class DocumentFixturesTest extends TestCase
             ->publishedDocument('Design', author: 'Owner', body: 'First words.')
             ->draft('Design', editor: 'Owner', body: 'Unsaved words.');
 
-        $documents->assertDraft('Design', editor: 'Owner', body: 'Unsaved words.')
-            ->assertRevision('Design', 1, author: 'Owner', body: 'First words.');
+        $documents->withDocument('Design', fn (TestDocument $document) => $document
+            ->assertDraft(editor: 'Owner', body: 'Unsaved words.')->assertRevision(
+                1,
+                author: 'Owner',
+                body: 'First words.',
+            ));
     }
 
     public function test_an_empty_document_has_no_revision_and_is_its_authors(): void

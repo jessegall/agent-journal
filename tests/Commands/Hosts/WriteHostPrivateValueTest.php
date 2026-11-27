@@ -8,6 +8,8 @@ use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Hosts\Enums\HostOrderType;
 use App\Values\HostOrderSource;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -28,10 +30,15 @@ final class WriteHostPrivateValueTest extends TestCase
         $this->journal
             ->enrollHost('Mac', [base_path()])
             ->enrollHost('Pi', [base_path()])
-            ->openHostProcess('Mac', 'claude')
-            ->submitPrivateValue('submission-1', self::VALUE);
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('claude'))
+            ->hostProcess('claude', fn (TestHostProcess $claude) => $claude
+                ->submitPrivateValue('submission-1', self::VALUE));
         $process = $this->journal->hostProcessCalled('claude')->id;
-        $this->journal->asSystem(new WriteHostPrivateValueCommand($process, 'submission-1', HostOrderSource::fromJournal()));
+        $this->journal->asSystem(new WriteHostPrivateValueCommand(
+            $process,
+            'submission-1',
+            HostOrderSource::fromJournal(),
+        ));
     }
 
     public function test_the_write_order_names_the_submission_and_holds_no_value(): void
@@ -40,7 +47,10 @@ final class WriteHostPrivateValueTest extends TestCase
 
         $this->journal->assertResult(
             [HostOrderType::WritePrivate, ['submission' => 'submission-1'], false],
-            [$order->type, $this->journal->payloadOf($order), str_contains($order->payload.$order->kept_payload, self::VALUE)],
+            [$order->type, $this->journal->payloadOf($order), str_contains(
+                $order->payload.$order->kept_payload,
+                self::VALUE,
+            )],
         );
     }
 }

@@ -11,6 +11,7 @@ use App\Hosts\Enums\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Sessions\Commands\RunStopConditions\RunStopConditionsCommand;
 use App\Values\StopCondition;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHostOrder;
@@ -31,9 +32,13 @@ final class RunStopConditionsTest extends TestCase
     {
         $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Writer', 'writing-helper')
             ->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Writer', 'Mac', base_path(), driverType: DriverType::Terminal);
-        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcessForStart('terminal', $opened->sessionId))
-            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->report(HostProcessReportType::Running));
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Writer');
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcessForStart('terminal', $opened->sessionId))
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+                ->report(HostProcessReportType::Running));
 
         $attempt = $this->journal->openStopAttempt($opened->sessionId);
 
@@ -68,9 +73,12 @@ final class RunStopConditionsTest extends TestCase
     {
         $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Writer', 'writing-helper')
             ->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Writer', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Writer');
         $attempt = $this->journal->openStopAttempt($opened->sessionId);
-        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order->refuse(HostRefusal::Fenced));
+        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+            ->refuse(HostRefusal::Fenced));
 
         $this->journal->asSystem(new RunStopConditionsCommand($attempt->id));
 

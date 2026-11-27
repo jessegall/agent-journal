@@ -107,7 +107,8 @@ final class ReadyStateTest extends TestCase
     public function test_it_never_finishes(): void
     {
         $this->grantFileChanges(true);
-        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready->tick(fn (StateAssert $state) => $state->isLive()));
+        $this->journal->stateOn('Writer', ReadyStateReference::bottom(), fn (StateHandle $ready) => $ready
+            ->tick(fn (StateAssert $state) => $state->isLive()));
     }
 
     public function test_unchanged_failures_are_counted_in_the_order_the_attempts_were_opened(): void

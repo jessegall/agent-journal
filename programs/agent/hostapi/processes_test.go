@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
-	"journal-agent/dockerstandin"
+	"journal-agent/dockermock"
 	"journal-agent/host"
 )
 
-const standinImage = "registry.example/journal-helper@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+const mockImage = "registry.example/journal-helper@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 // sentReports collects the reports a queue sends, for a test to wait on.
 type sentReports struct {
@@ -54,7 +54,7 @@ func (sent *sentReports) waitFor(t *testing.T, wanted ...string) {
 	t.Fatalf("the host reported %v, not %v", sent.kinds(), wanted)
 }
 
-func standinTable(t *testing.T, daemon *dockerstandin.Daemon) (*ProcessTable, *sentReports) {
+func mockTable(t *testing.T, daemon *dockermock.Daemon) (*ProcessTable, *sentReports) {
 	t.Helper()
 	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
@@ -89,7 +89,7 @@ func runQueue(t *testing.T, queue *ReportQueue) {
 
 // stopAndWait stops the daemon and waits for every process of the table to end, so nothing writes into the state
 // folder once the test removes it.
-func stopAndWait(daemon *dockerstandin.Daemon, table *ProcessTable) {
+func stopAndWait(daemon *dockermock.Daemon, table *ProcessTable) {
 	daemon.Stop()
 	table.mutex.Lock()
 	held := make([]*heldProcess, 0, len(table.processes))
@@ -110,7 +110,7 @@ func openOrder(t *testing.T, processID, restart, image string) Order {
 	plan := OpenPlan{
 		Type:    "terminal",
 		Restart: restart,
-		Argv:    []string{"stand-in-program"},
+		Argv:    []string{"mock-program"},
 		Container: &host.ContainerManifest{
 			Image:          image,
 			User:           "10001:10001",
@@ -132,10 +132,10 @@ func openOrder(t *testing.T, processID, restart, image string) Order {
 }
 
 func TestAnOpenContainerRunsAndIsReportedRunning(t *testing.T) {
-	daemon := dockerstandin.Start(t, standinImage)
-	table, sent := standinTable(t, daemon)
+	daemon := dockermock.Start(t, mockImage)
+	table, sent := mockTable(t, daemon)
 
-	facts, err := table.openContainer(context.Background(), openOrder(t, "p1", "never", standinImage))
+	facts, err := table.openContainer(context.Background(), openOrder(t, "p1", "never", mockImage))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -147,10 +147,10 @@ func TestAnOpenContainerRunsAndIsReportedRunning(t *testing.T) {
 }
 
 func TestACrashedContainerHealedOnACrashIsStartedAgainAndANeverContainerIsLeftDown(t *testing.T) {
-	daemon := dockerstandin.Start(t, standinImage)
+	daemon := dockermock.Start(t, mockImage)
 	var starts atomic.Int32
-	daemon.Programs = func(container *dockerstandin.Container) dockerstandin.Program {
-		return func(ctx context.Context, _ *dockerstandin.Container, _ io.Reader, _ io.Writer) int {
+	daemon.Programs = func(container *dockermock.Container) dockermock.Program {
+		return func(ctx context.Context, _ *dockermock.Container, _ io.Reader, _ io.Writer) int {
 			if starts.Add(1) == 1 {
 				return 1
 			}
@@ -158,23 +158,23 @@ func TestACrashedContainerHealedOnACrashIsStartedAgainAndANeverContainerIsLeftDo
 			return 0
 		}
 	}
-	table, sent := standinTable(t, daemon)
+	table, sent := mockTable(t, daemon)
 
-	if _, err := table.openContainer(context.Background(), openOrder(t, "healed", "on_crash", standinImage)); err != nil {
+	if _, err := table.openContainer(context.Background(), openOrder(t, "healed", "on_crash", mockImage)); err != nil {
 		t.Fatal(err)
 	}
 	sent.waitFor(t, "running", "restarted")
 
 	starts.Store(0)
-	neverTable, neverSent := standinTable(t, daemon)
-	if _, err := neverTable.openContainer(context.Background(), openOrder(t, "never", "never", standinImage)); err != nil {
+	neverTable, neverSent := mockTable(t, daemon)
+	if _, err := neverTable.openContainer(context.Background(), openOrder(t, "never", "never", mockImage)); err != nil {
 		t.Fatal(err)
 	}
 	neverSent.waitFor(t, "running", "exited")
 }
 
 func TestARunningContainerIsAdoptedAgainAfterTheHostRestarted(t *testing.T) {
-	daemon := dockerstandin.Start(t, standinImage)
+	daemon := dockermock.Start(t, mockImage)
 	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
 		t.Fatal(err)
@@ -191,7 +191,7 @@ func TestARunningContainerIsAdoptedAgainAfterTheHostRestarted(t *testing.T) {
 		return OpenProcessTable(state, containers, queue, outputs), sent
 	}
 	first, sent := open()
-	facts, err := first.openContainer(context.Background(), openOrder(t, "kept", "never", standinImage))
+	facts, err := first.openContainer(context.Background(), openOrder(t, "kept", "never", mockImage))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -209,7 +209,7 @@ func TestARunningContainerIsAdoptedAgainAfterTheHostRestarted(t *testing.T) {
 }
 
 func TestANativeProcessThatEndsIsReportedExitedWithItsCode(t *testing.T) {
-	table, sent := standinTable(t, dockerstandin.Start(t, standinImage))
+	table, sent := mockTable(t, dockermock.Start(t, mockImage))
 	plan, err := json.Marshal(OpenPlan{Type: "pipe", Restart: "never", Argv: []string{"sh", "-c", "exit 3"}, Folder: t.TempDir()})
 	if err != nil {
 		t.Fatal(err)
@@ -223,7 +223,7 @@ func TestANativeProcessThatEndsIsReportedExitedWithItsCode(t *testing.T) {
 }
 
 func TestANativeProcessReadsTheFilesItsPlanHandsItOnItsDescriptors(t *testing.T) {
-	table, sent := standinTable(t, dockerstandin.Start(t, standinImage))
+	table, sent := mockTable(t, dockermock.Start(t, mockImage))
 	token := filepath.Join(t.TempDir(), "token")
 	if err := os.WriteFile(token, []byte("secret\n"), 0o600); err != nil {
 		t.Fatal(err)
@@ -247,8 +247,8 @@ func TestANativeProcessReadsTheFilesItsPlanHandsItOnItsDescriptors(t *testing.T)
 }
 
 func TestAnUnpinnedImageIsRefused(t *testing.T) {
-	daemon := dockerstandin.Start(t, "registry.example/journal-helper:latest")
-	table, _ := standinTable(t, daemon)
+	daemon := dockermock.Start(t, "registry.example/journal-helper:latest")
+	table, _ := mockTable(t, daemon)
 
 	_, err := table.openContainer(context.Background(), openOrder(t, "p2", "never", "registry.example/journal-helper:latest"))
 
@@ -259,9 +259,9 @@ func TestAnUnpinnedImageIsRefused(t *testing.T) {
 }
 
 func TestAStoppedContainerEndsWithOneExitReport(t *testing.T) {
-	daemon := dockerstandin.Start(t, standinImage)
-	table, sent := standinTable(t, daemon)
-	if _, err := table.openContainer(context.Background(), openOrder(t, "p3", "on_crash", standinImage)); err != nil {
+	daemon := dockermock.Start(t, mockImage)
+	table, sent := mockTable(t, daemon)
+	if _, err := table.openContainer(context.Background(), openOrder(t, "p3", "on_crash", mockImage)); err != nil {
 		t.Fatal(err)
 	}
 	sent.waitFor(t, "running")
@@ -303,10 +303,10 @@ func TestReportsMadeWhileTheJournalIsAwayAreSentInOrderOnceItIsBack(t *testing.T
 }
 
 func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *testing.T) {
-	daemon := dockerstandin.Start(t, standinImage)
+	daemon := dockermock.Start(t, mockImage)
 	printAgain := make(chan struct{})
-	daemon.Programs = func(container *dockerstandin.Container) dockerstandin.Program {
-		return func(ctx context.Context, _ *dockerstandin.Container, _ io.Reader, output io.Writer) int {
+	daemon.Programs = func(container *dockermock.Container) dockermock.Program {
+		return func(ctx context.Context, _ *dockermock.Container, _ io.Reader, output io.Writer) int {
 			_, _ = output.Write([]byte("first\n"))
 			select {
 			case <-printAgain:
@@ -331,7 +331,7 @@ func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *t
 		return OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
 	}
 	before, after := &sentChunks{}, &sentChunks{}
-	order := openOrder(t, "turn", "never", standinImage)
+	order := openOrder(t, "turn", "never", mockImage)
 	order.Payload = strings.Replace(order.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
 	order.Payload = strings.Replace(order.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
 	if _, err := open(before).openContainer(context.Background(), order); err != nil {
@@ -351,9 +351,9 @@ func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *t
 
 // A pipe container whose program prints and exits at once, as a sign-in probe does, has all it printed read.
 func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.T) {
-	daemon := dockerstandin.Start(t, standinImage)
-	daemon.Programs = func(*dockerstandin.Container) dockerstandin.Program {
-		return dockerstandin.Printing("{\"loggedIn\":true}\n", 0)
+	daemon := dockermock.Start(t, mockImage)
+	daemon.Programs = func(*dockermock.Container) dockermock.Program {
+		return dockermock.Printing("{\"loggedIn\":true}\n", 0)
 	}
 	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
@@ -367,7 +367,7 @@ func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.
 	runQueue(t, queue)
 	sent := &sentChunks{}
 	table := OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
-	order := openOrder(t, "probe", "never", standinImage)
+	order := openOrder(t, "probe", "never", mockImage)
 	order.Payload = strings.Replace(order.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
 	order.Payload = strings.Replace(order.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
 
@@ -392,7 +392,7 @@ func waitForText(t *testing.T, sent *sentChunks, text string) {
 }
 
 func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T) {
-	containers, err := host.ContainersOn(dockerstandin.Start(t, standinImage).Host(), host.ContainerRules{Arrangement: host.Local})
+	containers, err := host.ContainersOn(dockermock.Start(t, mockImage).Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -433,7 +433,7 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 
 // A healed process resumes once its restart file lies anywhere under its folder, as a transcript in a project folder.
 func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(t *testing.T) {
-	containers, err := host.ContainersOn(dockerstandin.Start(t, standinImage).Host(), host.ContainerRules{Arrangement: host.Local})
+	containers, err := host.ContainersOn(dockermock.Start(t, mockImage).Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -477,7 +477,7 @@ func TestAHealedProcessRunsItsRestartArgvOnceItsFileExistsUnderItsFolder(t *test
 // A native terminal lost with its host is ended and reported lost only once its process is gone, so the journal never
 // opens it again while the old one still runs.
 func TestATerminalLostWithItsHostIsReportedLostOnlyOnceItsProcessEnded(t *testing.T) {
-	containers, err := host.ContainersOn(dockerstandin.Start(t, standinImage).Host(), host.ContainerRules{Arrangement: host.Local})
+	containers, err := host.ContainersOn(dockermock.Start(t, mockImage).Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
 		t.Fatal(err)
 	}

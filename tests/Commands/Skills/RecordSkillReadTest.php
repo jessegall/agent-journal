@@ -14,6 +14,8 @@ use App\Models\Skills\SkillReadEntry;
 use App\Skills\Commands\RecordSkillRead\RecordSkillReadCommand;
 use App\Skills\Enums\ReadEvidence;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Agents\TestAgent;
+use Tests\Support\Agents\TestSession;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
@@ -140,12 +142,13 @@ final class RecordSkillReadTest extends TestCase
 
     public function test_a_failed_call_records_nothing(): void
     {
-        $this->journal->finishToolCall(
-            $this->session,
-            'Bash',
-            ['command' => "php artisan skill:show {$this->key}"],
-            ToolOutcome::Failed,
-        );
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer->session(
+            fn (TestSession $session) => $session->finishToolCall(
+                'Bash',
+                ['command' => "php artisan skill:show {$this->key}"],
+                ToolOutcome::Failed,
+            ),
+        ));
 
         $this->assertSame([], SkillReadEntry::findLatestOfSession($this->session->id, 10));
     }
@@ -155,7 +158,8 @@ final class RecordSkillReadTest extends TestCase
      */
     private function read(string $tool, array $arguments): void
     {
-        $this->journal->finishToolCall($this->session, $tool, $arguments);
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session->finishToolCall($tool, $arguments)));
     }
 
     private function assertReadOnce(ReadEvidence $evidence): void

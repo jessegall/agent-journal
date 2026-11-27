@@ -19,7 +19,7 @@ use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 
 /**
- * The driver of the stand-in's echo program: a request's message waits until the screen shows the prompt, then is
+ * The driver of the mock's echo program: a request's message waits until the screen shows the prompt, then is
  * pasted with Enter, guarded on the rows it saw, as the one step of that request. A request a worker before it had
  * taken is pasted only when no paste of it was ordered yet.
  */

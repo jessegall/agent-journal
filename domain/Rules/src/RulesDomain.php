@@ -9,8 +9,8 @@ use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
 use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasLinkRecords;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
@@ -123,10 +123,9 @@ final class RulesDomain extends Domain implements
             Page::layout('list', 'Rules', Icon::Rules, RulesWindowResolver::class)
                 ->at('')
                 ->onHome(30)
-                ->actions(
-                    ActionRoute::patch('{rule}/approve', ApproveRuleController::class, 'approve'),
-                    ActionRoute::patch('{rule}/deny', DenyRuleController::class, 'deny'),
-                ),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->patch('{rule}/approve', ApproveRuleController::class, 'approve')
+                    ->patch('{rule}/deny', DenyRuleController::class, 'deny')),
         ];
     }
 

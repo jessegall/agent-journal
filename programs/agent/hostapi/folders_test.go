@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"journal-agent/dockerstandin"
+	"journal-agent/dockermock"
 	"journal-agent/host"
 )
 
@@ -31,7 +31,7 @@ func TestAHostWithNoDaemonRefusesFolderOrdersAndBindsNone(t *testing.T) {
 }
 
 func TestAFolderNoContainerBindsIsFree(t *testing.T) {
-	table, _ := standinTable(t, dockerstandin.Start(t, standinImage))
+	table, _ := mockTable(t, dockermock.Start(t, mockImage))
 
 	use, err := table.folderUse(context.Background(), folderOrder("folder_use"))
 

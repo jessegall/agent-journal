@@ -9,6 +9,7 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Hosts\EnrolledHost;
 use App\Projects\Commands\AssertBindingRuntime\AssertBindingRuntimeCommand;
 use Illuminate\Support\Str;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
@@ -33,7 +34,9 @@ final class HostBindingsRuntimesPostTest extends GuardedRouteEntryTestCase
         $opened = $journal->chooseActiveAccounts()
             ->idleAgent('Binding main')
             ->enrollHost('Runtime host', ['/work'])
-            ->openRuntimeOn('Binding main', 'Runtime host', '/work', driverType: DriverType::Terminal);
+            ->withAgent('Binding main', fn (TestAgent $main) => $main
+                ->openRuntime('Runtime host', '/work', driverType: DriverType::Terminal))
+            ->openedRuntimeOf('Binding main');
 
         return RouteCall::as(Caller::RelayHost, $relay)
             ->parameters([

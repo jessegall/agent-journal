@@ -99,6 +99,14 @@ trait ArrangesSignIns
     }
 
     /**
+     * The name of the sign-in the test began last.
+     */
+    public function newestSignIn(): string
+    {
+        return array_key_last($this->signIns) ?? throw FixtureRefused::missingAlias('sign-in', 'newest', self::OWNER);
+    }
+
+    /**
      * The attempt id of the sign-in the test began under the name.
      */
     public function signInCalled(string $name): string

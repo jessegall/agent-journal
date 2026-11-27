@@ -10,6 +10,7 @@ use App\Agents\Enums\SessionProcessStatus;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
@@ -32,9 +33,15 @@ final class OpenHeadlessStartTest extends TestCase
 
     public function test_a_headless_start_is_claimed_its_conversation_chosen_and_its_build_probed(): void
     {
-        $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->idleAgent('Driven')
+            ->enrollHost('Mac', [base_path()]);
 
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path());
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openRuntime('Mac', base_path()));
+        $opened = $this->journal->openedRuntimeOf('Driven');
 
         $start = $this->journal->startOfSession($opened->sessionId);
         $probe = HostProcess::query()->where('session_process_id', $start->id)->sole();
@@ -53,9 +60,16 @@ final class OpenHeadlessStartTest extends TestCase
 
     public function test_a_claude_terminal_start_is_claimed_and_probed_by_the_journal_too(): void
     {
-        $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->idleAgent('Driven')
+            ->enrollHost('Mac', [base_path()]);
 
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Driven');
 
         $start = $this->journal->startOfSession($opened->sessionId);
         $this->journal->assertResult(

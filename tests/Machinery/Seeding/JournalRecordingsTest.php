@@ -8,6 +8,7 @@ use App\Hosts\Contracts\HostChannel;
 use App\Values\HostOrderSource;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\Exceptions\RecordingDiverged;
+use Tests\Support\Hosts\MockHost;
 use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
@@ -22,18 +23,18 @@ final class JournalRecordingsTest extends TestCase
 
     public function test_a_driver_typing_the_recorded_inputs_passes_every_checkpoint_in_one_or_two_writes(): void
     {
-        $this->journal->playsRecording(self::RECORDING);
+        $this->journal->playRecording(self::RECORDING);
 
         $this->typeRecordedInputs(fn (string $input) => [$input]);
-        $this->journal->playsRecording(self::RECORDING);
+        $this->journal->playRecording(self::RECORDING);
         $this->typeRecordedInputs(fn (string $input) => str_split($input, max(1, intdiv(strlen($input), 2))));
 
-        $this->assertNotSame([], $this->journal->standInHost()->recordedInputs());
+        $this->journal->mockHost(fn (MockHost $host) => $this->assertNotSame([], $host->recordedInputs()));
     }
 
     public function test_one_wrong_byte_fails_naming_its_checkpoint(): void
     {
-        $this->journal->playsRecording(self::RECORDING);
+        $this->journal->playRecording(self::RECORDING);
 
         $this->journal->assertRefused(
             RecordingDiverged::class,
@@ -47,7 +48,7 @@ final class JournalRecordingsTest extends TestCase
      */
     private function typeRecordedInputs(callable $split): void
     {
-        $host = $this->journal->standInHost();
+        $host = $this->journal->service(MockHost::class);
         $channel = $this->journal->service(HostChannel::class);
 
         foreach ($host->recordedInputs() as $number => $input) {

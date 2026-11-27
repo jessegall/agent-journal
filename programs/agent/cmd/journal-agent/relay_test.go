@@ -22,9 +22,9 @@ const (
 	relayTestProcess = "01jprocess00000000000000001"
 )
 
-// standinJournal answers a relay as the journal does: the first claim hands it one order, every later claim none, each
+// mockJournal answers a relay as the journal does: the first claim hands it one order, every later claim none, each
 // naming the idle window, a presence report is acknowledged for a moment, and each process report is kept.
-type standinJournal struct {
+type mockJournal struct {
 	order   hostapi.Order
 	idle    int
 	mutex   sync.Mutex
@@ -32,7 +32,7 @@ type standinJournal struct {
 	reports []hostapi.ProcessReport
 }
 
-func (journal *standinJournal) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (journal *mockJournal) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	now := time.Now()
 	switch {
 	case strings.HasPrefix(request.URL.Path, "/host/orders/claim"):
@@ -52,7 +52,7 @@ func (journal *standinJournal) ServeHTTP(writer http.ResponseWriter, request *ht
 	}
 }
 
-func (journal *standinJournal) answerClaim(writer http.ResponseWriter, now time.Time) {
+func (journal *mockJournal) answerClaim(writer http.ResponseWriter, now time.Time) {
 	journal.mutex.Lock()
 	journal.claims++
 	isFirst := journal.claims == 1
@@ -66,7 +66,7 @@ func (journal *standinJournal) answerClaim(writer http.ResponseWriter, now time.
 	writeJSON(writer, map[string]any{"orders": orders, "now": now, "idle_window_s": journal.idle})
 }
 
-func (journal *standinJournal) reportsOf(kind string) int {
+func (journal *mockJournal) reportsOf(kind string) int {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	count := 0
@@ -96,7 +96,7 @@ func openOrder(t *testing.T, folder string, seconds string) hostapi.Order {
 	return order
 }
 
-// connectedRelay is the relay of a binding redeemed for a folder of its own, signing with the stand-in's secret.
+// connectedRelay is the relay of a binding redeemed for a folder of its own, signing with the mock's secret.
 func connectedRelay(t *testing.T, journalURL string) bindingRelay {
 	root := t.TempDir()
 	state := host.ConnectionState{Folder: t.TempDir(), CanonicalRoot: root}
@@ -123,7 +123,7 @@ func connectedRelay(t *testing.T, journalURL string) bindingRelay {
 }
 
 func TestARelayStaysOnlineWhileItsProcessLivesAndLeavesOnceItEndedAndTheIdleWindowPassed(t *testing.T) {
-	journal := &standinJournal{order: openOrder(t, t.TempDir(), "2"), idle: 1}
+	journal := &mockJournal{order: openOrder(t, t.TempDir(), "2"), idle: 1}
 	server := httptest.NewServer(journal)
 	defer server.Close()
 	relay := connectedRelay(t, server.URL)
@@ -149,7 +149,7 @@ func TestARelayStaysOnlineWhileItsProcessLivesAndLeavesOnceItEndedAndTheIdleWind
 }
 
 func TestARelayWithNoProcessLeavesOnceItsIdleWindowPassed(t *testing.T) {
-	journal := &standinJournal{order: openOrder(t, t.TempDir(), "1"), idle: 1}
+	journal := &mockJournal{order: openOrder(t, t.TempDir(), "1"), idle: 1}
 	journal.claims = 1
 	server := httptest.NewServer(journal)
 	defer server.Close()

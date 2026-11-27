@@ -11,8 +11,9 @@ use App\Agents\Enums\AccessType;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasLinkRecords;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageSlots;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
@@ -34,7 +35,6 @@ use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\Searchable;
 use App\Text\Declarations\Section;
-use App\Web\Declarations\Slot;
 use Domain\Chat\ChatDomain;
 use Domain\Comments\CommentsDomain;
 use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
@@ -348,33 +348,30 @@ final class DocumentsDomain extends Domain implements
             Page::layout('library', 'Documents', Icon::Docs, LibraryWindowResolver::class)
                 ->at('')
                 ->onHome(27)
-                ->actions(
-                    ActionRoute::post('docs', CreateDocumentPageController::class, 'create-document'),
-                    ActionRoute::post('reports', CreateReportPageController::class, 'create-report'),
-                ),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('docs', CreateDocumentPageController::class, 'create-document')
+                    ->post('reports', CreateReportPageController::class, 'create-report')),
             Page::layout('document', 'Document', Icon::Docs, DocumentWindowResolver::class)
                 ->at('docs/{document}')
                 ->inInspector()
-                ->actions(
-                    ActionRoute::post('docs/{document}/open', OpenDocumentPageController::class, 'open-document'),
-                    ActionRoute::post('docs/{document}/save', SaveDraftPageController::class, 'save-draft'),
-                    ActionRoute::post('docs/{document}/close', CloseDraftPageController::class, 'close-draft'),
-                    ActionRoute::post('docs/{document}/settle', SettleDocumentPageController::class, 'settle-document'),
-                    ActionRoute::post('docs/{document}/recover', RecoverDocumentPageController::class, 'recover-draft'),
-                    ActionRoute::post(
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('docs/{document}/open', OpenDocumentPageController::class, 'open-document')
+                    ->post('docs/{document}/save', SaveDraftPageController::class, 'save-draft')
+                    ->post('docs/{document}/close', CloseDraftPageController::class, 'close-draft')
+                    ->post('docs/{document}/settle', SettleDocumentPageController::class, 'settle-document')
+                    ->post('docs/{document}/recover', RecoverDocumentPageController::class, 'recover-draft')
+                    ->post(
                         'docs/{document}/feedback',
                         AskDocumentFeedbackPageController::class,
                         'ask-feedback',
-                    ),
-                )
-                ->slots(Slot::record('inspector', 'document', 'doc')),
+                    ))
+                ->slots(fn (PageSlots $slots) => $slots->record('inspector', 'document', 'doc')),
             Page::layout('revision', 'Revision', Icon::Docs, RevisionWindowResolver::class)
                 ->at('docs/{document}/revisions/{revision}'),
             Page::layout('report', 'Report', Icon::Docs, ReportWindowResolver::class)
                 ->at('reports/{report}')
-                ->actions(
-                    ActionRoute::post('reports/{report}/settle', SettleReportPageController::class, 'settle-report'),
-                ),
+                ->actions(fn (PageActions $actions) => $actions
+                    ->post('reports/{report}/settle', SettleReportPageController::class, 'settle-report')),
         ];
     }
 

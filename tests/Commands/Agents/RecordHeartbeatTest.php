@@ -4,25 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
-use App\Bus\Contracts\CommandBus;
 use App\Exceptions\CredentialRejected;
-use App\Models\Agents\AgentSession;
 use App\Sessions\Enums\SessionStatus;
-use App\Sessions\SessionTokens;
-use App\Sessions\StartedAgent;
-use App\Sessions\StartHeartbeats;
-use App\Sessions\StartSessions;
-use App\Support\ActorReference;
 use App\Support\ServerClock;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Agents\TestAgent;
+use Tests\Support\Agents\TestSession;
+use Tests\Support\Assertions\Assert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\TestStartAuthority;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
@@ -38,106 +31,98 @@ final class RecordHeartbeatTest extends TestCase
 
     public function test_a_beat_records_the_database_server_time(): void
     {
-        $started = $this->start();
-        $before = $this->app->make(ServerClock::class)->now()->startOfSecond();
+        $before = $this->journal->service(ServerClock::class)->now()->startOfSecond();
 
-        $this->beat($started->session);
-
-        $beat = $started->session->refresh()->last_heartbeat_at;
-        $this->assertInstanceOf(CarbonImmutable::class, $beat);
-        $this->assertTrue($beat->greaterThanOrEqualTo($before));
-        $this->assertTrue($beat->lessThanOrEqualTo($this->app->make(ServerClock::class)->now()->addSecond()));
-        $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
+        $this->journal->owner()
+            ->agent('Writer')
+            ->withAgent('Writer', fn (TestAgent $writer) => $writer
+                ->session(fn (TestSession $session) => $session->beat()))
+            ->assertJournal(fn (Assert $journal) => $journal
+                ->has('agents.Writer.session', fn (Assert $session) => $session
+                    ->where('status', SessionStatus::Active)
+                    ->where('lastHeartbeat', fn (CarbonImmutable $beat) => $beat->betweenIncluded(
+                        $before,
+                        $this->journal->service(ServerClock::class)->now()->addSecond(),
+                    ))
+                    ->etc()));
     }
 
     public function test_a_beat_makes_a_silent_session_active_again(): void
     {
-        $started = $this->start();
-        $this->startedSecondsAgo($started->session, 121);
-        $this->app->make(StartHeartbeats::class)->markSilentStarts();
-        $this->assertSame(SessionStatus::Silent, $started->session->refresh()->status);
-
-        $this->beat($started->session);
-
-        $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
-        $this->assertNull($started->session->refresh()->silent_since);
+        $this->journal->owner()
+            ->agent('Writer')
+            ->withAgent('Writer', fn (TestAgent $writer) => $writer->session(fn (TestSession $session) => $session
+                ->silentFor(121)
+                ->beat()))
+            ->assertJournal(fn (Assert $journal) => $journal
+                ->has('agents.Writer.session', fn (Assert $session) => $session
+                    ->where('status', SessionStatus::Active)
+                    ->missing('silentSince')
+                    ->etc()));
     }
 
     public function test_a_beat_of_an_ended_session_is_refused_and_writes_nothing(): void
     {
-        $started = $this->start();
-        $this->app->make(StartHeartbeats::class)->markExited($started->session, 'exit code 0');
+        $this->journal->owner()
+            ->agent('Writer')
+            ->withAgent('Writer', fn (TestAgent $writer) => $writer->session(
+                fn (TestSession $session) => $session->exited('exit code 0'),
+            ));
 
-        $this->assertRefused($started->session, CredentialRejected::revoked()->getMessage());
+        $this->assertBeatRefused(CredentialRejected::revoked());
     }
 
     public function test_a_beat_with_a_revoked_credential_is_refused_and_writes_nothing(): void
     {
-        $started = $this->start();
-        $this->app->make(SessionTokens::class)->revoke($started->session);
+        $this->journal->owner()
+            ->agent('Writer')
+            ->withAgent('Writer', fn (TestAgent $writer) => $writer->session(
+                fn (TestSession $session) => $session->revokeToken(),
+            ));
 
-        $this->assertRefused($started->session, CredentialRejected::revoked()->getMessage());
+        $this->assertBeatRefused(CredentialRejected::revoked());
     }
 
     public function test_a_beat_of_a_retired_agent_is_refused_and_writes_nothing(): void
     {
-        $started = $this->start();
-        $started->session->loadMissing('agent')->agent->retireAt(CarbonImmutable::now());
+        $this->journal->owner()->agent('Writer')->withAgent('Writer', fn (TestAgent $writer) => $writer->retire());
 
-        $this->assertRefused($started->session, CredentialRejected::agentRetired()->getMessage());
+        $this->assertBeatRefused(CredentialRejected::agentRetired());
     }
 
     public function test_a_beat_of_a_session_with_an_ended_status_but_a_live_credential_is_refused(): void
     {
-        $started = $this->start();
-        $started->session->endAt(CarbonImmutable::now());
+        $this->journal->owner()
+            ->agent('Writer')
+            ->withAgent('Writer', fn (TestAgent $writer) => $writer
+                ->session(fn (TestSession $session) => $session->end()));
 
-        $this->assertRefused($started->session, CredentialRejected::sessionEnded()->getMessage());
+        $this->assertBeatRefused(CredentialRejected::sessionEnded());
     }
 
     public function test_the_session_table_indexes_status_and_last_heartbeat(): void
     {
         $indexes = array_map(fn (array $index) => $index['columns'], Schema::getIndexes('agent_sessions'));
 
-        $this->assertContains(['status', 'last_heartbeat_at'], $indexes);
+        $this->journal->assertResult(true, in_array(['status', 'last_heartbeat_at'], $indexes, true));
     }
 
-    private function assertRefused(AgentSession $session, string $message): void
+    /**
+     * The writer's beat is refused as the expected refusal is, and the session keeps no heartbeat.
+     */
+    private function assertBeatRefused(CredentialRejected $expected): void
     {
-        try {
-            $this->beat($session);
-            $this->fail('The heartbeat was not refused.');
-        } catch (CredentialRejected $rejected) {
-            $this->assertSame($message, $rejected->getMessage());
-        }
-
-        $this->assertNull($session->refresh()->last_heartbeat_at);
-    }
-
-    private function start(): StartedAgent
-    {
-        $started = $this->app->make(StartSessions::class)->start(
-            $this->journal->idleAgent('Test agent', 'main-agent')->agentCalled('Test agent'),
-            TestSelections::of('claude-code'),
-            TestSelections::requestId(),
-        );
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorReference::forAgent($started->session->agent_id),
-            TestStartAuthority::forAgent($started->session->agent_id),
-        );
-
-        return $started;
-    }
-
-    private function beat(AgentSession $session): void
-    {
-        $this->app->make(CommandBus::class)->run(new RecordHeartbeatCommand($session->id));
-    }
-
-    private function startedSecondsAgo(AgentSession $session, int $seconds): void
-    {
-        DB::table('agent_sessions')->where('id', $session->id)->update(
-            ['created_at' => $this->app->make(ServerClock::class)->now()->subSeconds($seconds)],
-        );
+        $this->journal
+            ->assertRefused(
+                CredentialRejected::class,
+                fn (TestJournal $journal) => $journal->withAgent('Writer', fn (TestAgent $writer) => $writer->session(
+                    fn (TestSession $session) => $session->beat(),
+                )),
+                fn (CredentialRejected $rejected) => $this->assertSame(
+                    $expected->getMessage(),
+                    $rejected->getMessage(),
+                ),
+            )
+            ->assertJournal(fn (Assert $journal) => $journal->missing('agents.Writer.session.lastHeartbeat'));
     }
 }

@@ -8,6 +8,7 @@ use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Mcp\Tools\AddPhaseTasksTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
@@ -29,7 +30,10 @@ final class AddPhaseTasksToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Planner');
-        $phase = $journal->fixtures(PlanFixtures::class)->plan('Release')->phase('Release', 'Design')->phaseCalled('Design');
+
+        $phase = $journal->fixtures(PlanFixtures::class)->plan('Release')->withPlan('Release', fn (TestPlan $plan) => $plan
+            ->addPhase('Design'))->phaseCalled('Design');
+
         $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');
 
         return ToolCall::by($start)

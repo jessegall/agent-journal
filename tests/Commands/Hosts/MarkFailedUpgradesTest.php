@@ -10,6 +10,7 @@ use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostOrder;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -55,9 +56,14 @@ final class MarkFailedUpgradesTest extends TestCase
 
     private function upgradeAnsweredAt(CarbonImmutable $at): void
     {
-        $this->journal->travelTo($at)->useServerClockAt($at)->publishRelease(self::RELEASE)->enrollHost('Mac', [base_path()]);
+        $this->journal
+            ->travelTo($at)
+            ->useServerClockAt($at)
+            ->publishRelease(self::RELEASE)
+            ->enrollHost('Mac', [base_path()]);
         $this->journal->asSystem(new UpgradeHostCommand($this->journal->hostCalled('Mac')->hostId, self::RELEASE));
-        $this->journal->answerHostOrderWith($this->journal->hostOrdersOn('Mac')[0], ['release' => self::RELEASE]);
+        $this->journal->hostOrder($this->journal->hostOrdersOn('Mac')[0], fn (TestHostOrder $order) => $order
+            ->answerWith(['release' => self::RELEASE]));
     }
 
     private function host(): Host

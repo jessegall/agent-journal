@@ -13,6 +13,8 @@ use App\Skills\Enums\ReadEvidence;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
 use App\Values\SessionSkillStatus;
+use Tests\Support\Agents\TestAgent;
+use Tests\Support\Agents\TestSession;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
@@ -50,7 +52,9 @@ final class SkillStatusTest extends TestCase
 
     public function test_a_session_handed_skills_shows_its_generation_keys_and_skills_unchanged(): void
     {
-        $session = $this->journal->handSkillsTo('Writer');
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session->handSkills()));
+        $session = AgentSession::findById($this->journal->sessionOf('Writer')->id);
 
         $skills = $this->skillsOf($session);
 
@@ -65,7 +69,9 @@ final class SkillStatusTest extends TestCase
 
     public function test_a_skill_made_after_the_start_is_marked_as_changed(): void
     {
-        $session = $this->journal->handSkillsTo('Writer');
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session->handSkills()));
+        $session = AgentSession::findById($this->journal->sessionOf('Writer')->id);
         $this->journal->skill('user-review-notes', new SkillDraft(
             'Review notes',
             'Read before reviewing.',
@@ -85,7 +91,9 @@ final class SkillStatusTest extends TestCase
 
     public function test_a_key_read_in_the_session_shows_its_last_read_and_an_unread_key_shows_none(): void
     {
-        $session = $this->journal->handSkillsTo('Writer');
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session->handSkills()));
+        $session = AgentSession::findById($this->journal->sessionOf('Writer')->id);
         $key = $session->skill_keys[0];
         SkillReadEntry::record($session, $key, ReadEvidence::FullFileRead);
         SkillReadEntry::record($session, $key, ReadEvidence::SkillShow);
@@ -103,11 +111,15 @@ final class SkillStatusTest extends TestCase
 
     public function test_a_key_still_to_read_shows_so_and_a_read_key_does_not(): void
     {
-        $session = $this->journal->handSkillsTo('Writer');
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session->handSkills()));
+        $session = AgentSession::findById($this->journal->sessionOf('Writer')->id);
         [$first, $second] = $session->skill_keys;
         $this->journal->actAsAgentIds($session->agent_id, $session->id);
         $this->journal->runUnkeyed(new AskSkillReadCommand($session->id, [$first, $second]));
-        $this->journal->finishToolCall($session, 'Bash', ['command' => "php artisan skill:show {$first}"]);
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session
+                ->finishToolCall('Bash', ['command' => "php artisan skill:show {$first}"])));
         $this->journal->actAs('Owner');
 
         $skills = $this->skillsOf($session);
@@ -117,8 +129,12 @@ final class SkillStatusTest extends TestCase
 
     public function test_an_agent_sees_its_own_session_and_no_other(): void
     {
-        $own = $this->journal->handSkillsTo('Writer');
-        $other = $this->journal->handSkillsTo('Reader');
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->session(fn (TestSession $session) => $session->handSkills()));
+        $own = AgentSession::findById($this->journal->sessionOf('Writer')->id);
+        $this->journal->withAgent('Reader', fn (TestAgent $reader) => $reader
+            ->session(fn (TestSession $session) => $session->handSkills()));
+        $other = AgentSession::findById($this->journal->sessionOf('Reader')->id);
 
         $this->journal->actAs('Writer');
         $resolver = $this->app->make(SkillStatusResolver::class);

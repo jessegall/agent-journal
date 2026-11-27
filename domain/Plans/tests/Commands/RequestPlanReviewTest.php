@@ -21,6 +21,8 @@ use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPhase;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Models\Task;
@@ -185,7 +187,9 @@ final class RequestPlanReviewTest extends TestCase
 
         $plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release', title: 'Build the release page')
-            ->phaseWithTask('Release', 'Reading', $task->assignmentIdentity())
+            ->withPlan('Release', fn (TestPlan $plan) => $plan
+                ->addPhase('Reading')->withPhase('Reading', fn (TestPhase $phase) => $phase
+                ->place($task->assignmentIdentity())))
             ->planCalled('Release');
 
         return [

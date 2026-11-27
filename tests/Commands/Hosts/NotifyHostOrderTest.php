@@ -12,7 +12,9 @@ use App\Hosts\Enums\HostOrderStatus;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\HostRefusal;
 use App\Hosts\ProcessFeed;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -33,17 +35,29 @@ final class NotifyHostOrderTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->enrollHost('Mac', [base_path()])->enrollHost('Other', [base_path()])->openHostProcess('Mac', 'shell');
+        $this->journal
+            ->enrollHost('Mac', [base_path()])
+            ->enrollHost('Other', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac
+                ->openProcess('shell'));
     }
 
     public function test_a_refused_answer_is_stored_with_its_facts_and_its_worker_is_woken(): void
     {
         [$open] = $this->journal->hostOrdersOf('shell');
 
-        $this->journal->asSystem(new NotifyHostOrderCommand($this->journal->hostCalled('Mac')->hostId, $open->id, self::REFUSED));
+        $this->journal->asSystem(new NotifyHostOrderCommand(
+            $this->journal->hostCalled('Mac')->hostId,
+            $open->id,
+            self::REFUSED,
+        ));
 
         $open->refresh();
-        $heard = $this->journal->service(ProcessFeed::class)->after($open->host_process_id, ProcessFeed::FIRST_CURSOR, 0);
+        $heard = $this->journal->service(ProcessFeed::class)->after(
+            $open->host_process_id,
+            ProcessFeed::FIRST_CURSOR,
+            0,
+        );
         $this->journal->assertResult(
             [HostOrderStatus::Refused, HostRefusal::GuardMoved, ['row_hash' => 'abc'], $open->id],
             [$open->status, $open->refusal, $open->answer?->facts, $heard[0]->answeredOrderId],
@@ -54,7 +68,11 @@ final class NotifyHostOrderTest extends TestCase
     {
         [$open] = $this->journal->hostOrdersOf('shell');
 
-        $this->journal->asSystem(new NotifyHostOrderCommand($this->journal->hostCalled('Mac')->hostId, $open->id, self::REFUSED));
+        $this->journal->asSystem(new NotifyHostOrderCommand(
+            $this->journal->hostCalled('Mac')->hostId,
+            $open->id,
+            self::REFUSED,
+        ));
 
         $process = $this->journal->hostProcessCalled('shell');
         $this->journal->assertResult(
@@ -67,11 +85,18 @@ final class NotifyHostOrderTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven');
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
-        $this->journal->openHostProcessForStart('Mac', 'agent', $opened->sessionId);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Driven');
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcessForStart('agent', $opened->sessionId));
         [$open] = $this->journal->hostOrdersOf('agent');
 
-        $this->journal->asSystem(new NotifyHostOrderCommand($this->journal->hostCalled('Mac')->hostId, $open->id, self::REFUSED));
+        $this->journal->asSystem(new NotifyHostOrderCommand(
+            $this->journal->hostCalled('Mac')->hostId,
+            $open->id,
+            self::REFUSED,
+        ));
 
         $start = $this->journal->startOfSession($opened->sessionId);
         $this->journal->assertResult(

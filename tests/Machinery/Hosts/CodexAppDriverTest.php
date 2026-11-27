@@ -10,7 +10,9 @@ use App\Hosts\Enums\HostOrderType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostOrder;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -30,34 +32,47 @@ final class CodexAppDriverTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->chooseActiveAccounts(config('accounts.root'))->showDriverArrangements()->idleAgent('Coder')->idleAgent('Tester')->enrollHost('Mac', [base_path()]);
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts(config('accounts.root'))
+            ->showDriverArrangements()
+            ->idleAgent('Coder')
+            ->idleAgent('Tester')
+            ->enrollHost('Mac', [base_path()]);
     }
 
     public function test_an_accounts_turns_run_on_one_server_each_on_its_runtimes_own_thread(): void
     {
-        $first = $this->journal->openCodexRuntimeOn('Coder', 'Mac', base_path(), 'Run: ls.');
-        $this->journal->passCodexProbes('coder', $first->runtimeId);
-        $second = $this->journal->openCodexRuntimeOn('Tester', 'Mac', base_path(), 'Run: pwd.');
-        $this->journal->passCodexProbes('tester', $second->runtimeId);
-        $this->journal->callAccountOwner('owner', $first->runtimeId);
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder
+            ->openCodexRuntime('Mac', base_path(), 'Run: ls.'));
+        $first = $this->journal->openedRuntimeOf('Coder');
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder->passCodexProbes('coder'));
+        $this->journal->withAgent('Tester', fn (TestAgent $tester) => $tester
+            ->openCodexRuntime('Mac', base_path(), 'Run: pwd.'));
+        $second = $this->journal->openedRuntimeOf('Tester');
+        $this->journal->withAgent('Tester', fn (TestAgent $tester) => $tester->passCodexProbes('tester'));
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder->callAccountOwner('owner'));
 
-        $work = $this->journal->beginDriverWorker('owner');
-        $this->answer($work, 'owner.initialize', ['userAgent' => 'codex']);
-        $this->answer($work, 'owner.account', ['account' => ['type' => 'chatgpt'], 'requiresOpenaiAuth' => true]);
+        $this->journal->hostProcess('owner', fn (TestHostProcess $owner) => $owner->beginWorker());
+        $this->answer('owner.initialize', ['userAgent' => 'codex']);
+        $this->answer('owner.account', ['account' => ['type' => 'chatgpt'], 'requiresOpenaiAuth' => true]);
         $threadStarts = $this->writtenWith('thread/start');
 
         foreach ($threadStarts as $index => $start) {
-            $this->answer($work, $start['id'], ['thread' => ['id' => "thread-{$index}"]]);
+            $this->answer($start['id'], ['thread' => ['id' => "thread-{$index}"]]);
         }
 
         $turnStarts = $this->writtenWith('turn/start');
 
         foreach ($turnStarts as $index => $turn) {
-            $this->answer($work, $turn['id'], ['turn' => ['id' => "turn-{$index}", 'status' => 'inProgress']]);
+            $this->answer($turn['id'], ['turn' => ['id' => "turn-{$index}", 'status' => 'inProgress']]);
         }
 
-        $this->notify($work, 'turn/completed', ['threadId' => 'thread-0', 'turn' => ['id' => 'turn-0', 'status' => 'completed']]);
-        $this->notify($work, 'turn/completed', ['threadId' => 'thread-1', 'turn' => ['id' => 'turn-1', 'status' => 'failed']]);
+        $this->notify(
+            'turn/completed',
+            ['threadId' => 'thread-0', 'turn' => ['id' => 'turn-0', 'status' => 'completed']],
+        );
+        $this->notify('turn/completed', ['threadId' => 'thread-1', 'turn' => ['id' => 'turn-1', 'status' => 'failed']]);
 
         $this->journal->assertResult(
             [
@@ -77,13 +92,15 @@ final class CodexAppDriverTest extends TestCase
 
     public function test_a_server_signed_in_another_way_than_the_account_refuses_its_starts(): void
     {
-        $opened = $this->journal->openCodexRuntimeOn('Coder', 'Mac', base_path(), 'Run: ls.');
-        $this->journal->passCodexProbes('coder', $opened->runtimeId);
-        $this->journal->callAccountOwner('owner', $opened->runtimeId);
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder
+            ->openCodexRuntime('Mac', base_path(), 'Run: ls.'));
+        $opened = $this->journal->openedRuntimeOf('Coder');
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder->passCodexProbes('coder'));
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder->callAccountOwner('owner'));
 
-        $work = $this->journal->beginDriverWorker('owner');
-        $this->answer($work, 'owner.initialize', ['userAgent' => 'codex']);
-        $this->answer($work, 'owner.account', ['account' => ['type' => 'apiKey'], 'requiresOpenaiAuth' => true]);
+        $this->journal->hostProcess('owner', fn (TestHostProcess $owner) => $owner->beginWorker());
+        $this->answer('owner.initialize', ['userAgent' => 'codex']);
+        $this->answer('owner.account', ['account' => ['type' => 'apiKey'], 'requiresOpenaiAuth' => true]);
 
         $this->journal->assertResult(
             [
@@ -102,26 +119,27 @@ final class CodexAppDriverTest extends TestCase
     /**
      * @param  array<string, mixed>  $result
      */
-    private function answer(mixed $work, string $id, array $result): void
+    private function answer(string $id, array $result): void
     {
-        $this->print($work, ['id' => $id, 'result' => $result]);
+        $this->print(['id' => $id, 'result' => $result]);
     }
 
     /**
      * @param  array<string, mixed>  $params
      */
-    private function notify(mixed $work, string $method, array $params): void
+    private function notify(string $method, array $params): void
     {
-        $this->print($work, ['method' => $method, 'params' => $params]);
+        $this->print(['method' => $method, 'params' => $params]);
     }
 
     /**
      * @param  array<string, mixed>  $message
      */
-    private function print(mixed $work, array $message): void
+    private function print(array $message): void
     {
-        $this->journal->printOnPipe('owner', json_encode($message, JSON_THROW_ON_ERROR)."\n");
-        $this->journal->stepDriverWorker($work, self::WAIT_MS);
+        $this->journal->hostProcess('owner', fn (TestHostProcess $owner) => $owner
+            ->printOnPipe(json_encode($message, JSON_THROW_ON_ERROR)."\n")
+            ->drive(self::WAIT_MS));
     }
 
     /**

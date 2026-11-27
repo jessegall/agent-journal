@@ -32,7 +32,7 @@ final class TaskFixturesTest extends TestCase
 
     public function test_a_task_is_open_and_owned_by_the_owner_until_it_is_started(): void
     {
-        $this->tasks->task('Write it')->assertRunCount('Write it', 0);
+        $this->tasks->task('Write it')->withTask('Write it', fn (TestTask $task) => $task->assertRunCount(0));
 
         $task = $this->tasks->taskCalled('Write it');
 
@@ -52,7 +52,8 @@ final class TaskFixturesTest extends TestCase
 
         $this->journal->run(new LogTaskRunCommand($this->tasks->taskCalled('Write it')->id, 1, 'Begun.'));
 
-        $this->tasks->assertRunCount('Write it', 1)->assertLog('Write it', 1, ['Begun.']);
+        $this->tasks->withTask('Write it', fn (TestTask $task) => $task
+            ->assertRunCount(1))->assertLog('Write it', 1, ['Begun.']);
     }
 
     public function test_a_competing_start_is_refused_and_no_second_run_exists(): void
@@ -61,7 +62,8 @@ final class TaskFixturesTest extends TestCase
 
         $this->journal->assertRefused(TaskRunTaken::class, fn () => $this->tasks->startRun('Write it', 'Grace'));
 
-        $this->tasks->assertRunCount('Write it', 1)->assertStarted('Write it', by: 'Ada');
+        $this->tasks->withTask('Write it', fn (TestTask $task) => $task
+            ->assertRunCount(1))->assertStarted('Write it', by: 'Ada');
     }
 
     public function test_a_wait_is_outstanding_until_its_prerequisite_finishes_or_it_is_waived(): void
@@ -71,13 +73,14 @@ final class TaskFixturesTest extends TestCase
             'Design',
         )->waitFor('Ship', 'Design');
 
-        $this->tasks->assertWait('Build', 'Design', isSatisfied: false)->waiveWait('Ship', 'Design', 'Not needed.');
+        $this->tasks->withTask('Build', fn (TestTask $task) => $task
+            ->assertWait('Design', isSatisfied: false))->waiveWait('Ship', 'Design', 'Not needed.');
 
         $this->tasks->startRun('Design', 'Ada');
         $this->journal->run(new FinishTaskCommand($this->tasks->taskCalled('Design')->id, 1, 'Done.'));
 
-        $this->tasks->assertWait('Build', 'Design', isSatisfied: true)
-            ->assertWait('Ship', 'Design', isSatisfied: true, isWaived: true);
+        $this->tasks->withTask('Build', fn (TestTask $task) => $task->assertWait('Design', isSatisfied: true))
+            ->withTask('Ship', fn (TestTask $task) => $task->assertWait('Design', isSatisfied: true, isWaived: true));
     }
 
     public function test_a_task_in_a_state_stands_in_it_with_no_run_and_the_owner_as_creator(): void
@@ -86,7 +89,7 @@ final class TaskFixturesTest extends TestCase
 
         $this->assertSame([TaskStatus::Blocked, $this->journal->ownerUser()->id], [$task->status, $task->creator_id]);
 
-        $this->tasks->assertRunCount('Blocked work', 0);
+        $this->tasks->withTask('Blocked work', fn (TestTask $task) => $task->assertRunCount(0));
     }
 
     public function test_a_finished_and_a_cancelled_task_keep_their_outcome_and_reason(): void

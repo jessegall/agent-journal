@@ -84,7 +84,13 @@ final class TestHostProcess
         $rows = $this->journal->service(ProcessFeed::class)->latestFrame($process->id)?->rows
             ?? throw FixtureRefused::missingAlias('screen of host process', $this->name, 'The journal');
         $guard = new RowGuard(0, count($rows) - 1, hash('sha256', implode("\n", $rows)));
-        $this->journal->asSystem(new SendHostKeysCommand($process->id, $keys, $guard, 0, HostOrderSource::fromJournal()));
+        $this->journal->asSystem(new SendHostKeysCommand(
+            $process->id,
+            $keys,
+            $guard,
+            0,
+            HostOrderSource::fromJournal(),
+        ));
 
         return $this;
     }
@@ -174,7 +180,11 @@ final class TestHostProcess
     public function order(Closure $scope): self
     {
         $open = HostOrder::findOpenOf($this->journal->hostProcessCalled($this->name)->id);
-        $order = $open[0] ?? throw FixtureRefused::missingAlias('open order of host process', $this->name, 'The journal');
+        $order = $open[0] ?? throw FixtureRefused::missingAlias(
+            'open order of host process',
+            $this->name,
+            'The journal',
+        );
         $this->journal->hostOrder($order, $scope);
 
         return $this;

@@ -135,7 +135,8 @@ final class AnswerMessageStateTest extends TestCase
 
     public function test_a_tick_leaves_it_as_it_was(): void
     {
-        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering->tick(fn (StateAssert $state) => $state->isLive()));
+        $this->journal->stateOn('Writer', $this->answering(), fn (StateHandle $answering) => $answering
+            ->tick(fn (StateAssert $state) => $state->isLive()));
     }
 
     /**

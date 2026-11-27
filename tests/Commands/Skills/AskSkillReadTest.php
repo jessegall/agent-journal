@@ -54,9 +54,10 @@ final class AskSkillReadTest extends TestCase
         $this->ask($session, [$first]);
         $this->ask($session, [$first, $second]);
 
-        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading->tick(
-            fn (StateAssert $state) => $state->where('skillKeys', [$first, $second]),
-        ));
+        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading
+            ->tick(
+                fn (StateAssert $state) => $state->where('skillKeys', [$first, $second]),
+            ));
     }
 
     public function test_it_asks_a_codex_session_the_same_way(): void
@@ -66,9 +67,10 @@ final class AskSkillReadTest extends TestCase
 
         $this->assertSame([$first], $this->ask($session, [$first]));
 
-        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading->tick(
-            fn (StateAssert $state) => $state->where('skillKeys', [$first]),
-        ));
+        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading
+            ->tick(
+                fn (StateAssert $state) => $state->where('skillKeys', [$first]),
+            ));
     }
 
     public function test_an_ask_after_the_state_finished_pushes_a_fresh_frame(): void
@@ -76,16 +78,18 @@ final class AskSkillReadTest extends TestCase
         $session = $this->handed($this->journal->sessionOf('Writer'));
         [$first, $second] = $session->skill_keys;
         $this->ask($session, [$first]);
-        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading->event(
-            new SkillRead($session->id, $first, ReadEvidence::SkillShow),
-            fn (StateAssert $state) => $state->isFinished(),
-        ));
+        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading
+            ->event(
+                new SkillRead($session->id, $first, ReadEvidence::SkillShow),
+                fn (StateAssert $state) => $state->isFinished(),
+            ));
 
         $this->ask($session, [$second]);
 
-        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading->tick(
-            fn (StateAssert $state) => $state->where('skillKeys', [$second]),
-        ));
+        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading
+            ->tick(
+                fn (StateAssert $state) => $state->where('skillKeys', [$second]),
+            ));
     }
 
     public function test_an_ask_for_one_session_leaves_the_state_of_another_alone(): void

@@ -7,7 +7,7 @@ namespace Tests\Unit\Accounts;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The Claude native evidence procedure, run against a stand-in program: without accounts every signed-in item is
+ * The Claude native evidence procedure, run against a mock program: without accounts every signed-in item is
  * missing with what it needs, with two journal accounts it compares them without printing who they are, and it never
  * reads an account outside the journal's accounts folder.
  */

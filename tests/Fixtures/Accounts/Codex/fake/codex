@@ -1,5 +1,5 @@
 #!/bin/sh
-# A stand-in for the codex command: a CODEX_HOME holding auth.json is signed in, and mcp list names the hostile
+# A mock for the codex command: a CODEX_HOME holding auth.json is signed in, and mcp list names the hostile
 # server when the working folder is trusted and holds its own .codex/config.toml.
 case "$1" in
     --version) echo "codex-cli 0.165.0" ;;

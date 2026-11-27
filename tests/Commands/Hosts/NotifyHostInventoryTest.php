@@ -17,6 +17,9 @@ use App\Models\Hosts\HostOrder;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -34,12 +37,12 @@ final class NotifyHostInventoryTest extends TestCase
     {
         $this->journal
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'kept')
-            ->openHostProcess('Mac', 'gone')
-            ->reportHostProcess('kept', HostProcessReportType::Running)
-            ->reportHostProcess('gone', HostProcessReportType::Running);
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('kept')->openProcess('gone'))
+            ->hostProcess('kept', fn (TestHostProcess $kept) => $kept->report(HostProcessReportType::Running))
+            ->hostProcess('gone', fn (TestHostProcess $gone) => $gone->report(HostProcessReportType::Running));
         [$goneOpen] = $this->journal->hostOrdersOf('gone');
-        $this->journal->answerHostOrder($goneOpen)->openHostProcess('Mac', 'newer');
+        $this->journal->hostOrder($goneOpen, fn (TestHostOrder $order) => $order
+            ->answer())->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('newer'));
         $hostId = $this->journal->hostCalled('Mac')->hostId;
         $kept = $this->journal->hostProcessCalled('kept')->id;
         $keys = new SendHostKeysCommand($kept, 'hi', new RowGuard(0, 0, 'rows'), 0, HostOrderSource::fromJournal());
@@ -80,9 +83,9 @@ final class NotifyHostInventoryTest extends TestCase
     {
         $this->journal
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'turn', HostProcessType::Pipe)
-            ->reportHostProcess('turn', HostProcessReportType::Running)
-            ->printOnPipe('turn', "{\"type\":\"system\"}\n");
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('turn', HostProcessType::Pipe))
+            ->hostProcess('turn', fn (TestHostProcess $turn) => $turn
+                ->report(HostProcessReportType::Running)->printOnPipe("{\"type\":\"system\"}\n"));
         $process = $this->journal->hostProcessCalled('turn');
         $inventory = json_encode([
             'protocol' => 1,
@@ -106,7 +109,10 @@ final class NotifyHostInventoryTest extends TestCase
 
         $this->journal->assertRefused(
             HostProtocolUnsupported::class,
-            fn () => $this->journal->asSystem(new NotifyHostInventoryCommand($this->journal->hostCalled('Mac')->hostId, $inventory)),
+            fn () => $this->journal->asSystem(new NotifyHostInventoryCommand(
+                $this->journal->hostCalled('Mac')->hostId,
+                $inventory,
+            )),
         );
     }
 }

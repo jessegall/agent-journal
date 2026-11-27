@@ -15,6 +15,8 @@ use App\Stacks\Support\ReadSkillStateReference;
 use App\Values\ProfileBase;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\Agents\TestAgent;
+use Tests\Support\Agents\TestSession;
 use Tests\Support\Assertions\StateAssert;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -64,7 +66,8 @@ final class AskRequiredSkillReadsTest extends TestCase
         $this->requiring(['user-second', 'user-first']);
         $session = $this->started('Reviewer', 'claude-code');
 
-        $this->journal->startContext($session, ContextStartType::Start);
+        $this->journal->withAgent('Reviewer', fn (TestAgent $reviewer) => $reviewer
+            ->session(fn (TestSession $session) => $session->startContext(ContextStartType::Start)));
 
         $this->assertListed($session, ['user-second', 'user-first']);
     }
@@ -74,7 +77,8 @@ final class AskRequiredSkillReadsTest extends TestCase
         $this->requiring(['user-first', 'user-second']);
         $session = $this->started('Coder', 'codex');
 
-        $this->journal->startContext($session, ContextStartType::Start);
+        $this->journal->withAgent('Coder', fn (TestAgent $coder) => $coder
+            ->session(fn (TestSession $session) => $session->startContext(ContextStartType::Start)));
 
         $this->assertListed($session, ['user-first', 'user-second']);
     }
@@ -84,7 +88,8 @@ final class AskRequiredSkillReadsTest extends TestCase
         $this->requiring([]);
         $session = $this->started('Reviewer', 'claude-code');
 
-        $this->journal->startContext($session, ContextStartType::Start);
+        $this->journal->withAgent('Reviewer', fn (TestAgent $reviewer) => $reviewer
+            ->session(fn (TestSession $session) => $session->startContext(ContextStartType::Start)));
 
         $this->journal->assertNoFrame($session, ReadSkillStateReference::forSession($session->id));
     }
@@ -94,7 +99,8 @@ final class AskRequiredSkillReadsTest extends TestCase
         $this->requiring(['user-first']);
         $session = $this->started('Reviewer', 'claude-code');
 
-        $this->journal->startContext($session, ContextStartType::Resume);
+        $this->journal->withAgent('Reviewer', fn (TestAgent $reviewer) => $reviewer
+            ->session(fn (TestSession $session) => $session->startContext(ContextStartType::Resume)));
 
         $this->journal->assertNoFrame($session, ReadSkillStateReference::forSession($session->id));
     }
@@ -103,15 +109,18 @@ final class AskRequiredSkillReadsTest extends TestCase
     {
         $this->requiring(['user-first']);
         $session = $this->started('Reviewer', 'claude-code');
-        $this->journal->startContext($session, ContextStartType::Start);
+        $this->journal->withAgent('Reviewer', fn (TestAgent $reviewer) => $reviewer
+            ->session(fn (TestSession $session) => $session->startContext(ContextStartType::Start)));
         $reference = ReadSkillStateReference::forSession($session->id);
         $this->journal->stateOn($session, $reference, fn (StateHandle $reading) => $reading->steps(
             [SessionHook::toolFinished(), SessionHook::toolFinished('pwd')],
             fn (StateAssert $state) => $state->where('toolUses', 2),
         ));
 
-        $this->journal->startContext($session, ContextStartType::Clear);
-        $this->journal->startContext($session, ContextStartType::Compact);
+        $this->journal->withAgent('Reviewer', fn (TestAgent $reviewer) => $reviewer
+            ->session(fn (TestSession $session) => $session->startContext(ContextStartType::Clear)));
+        $this->journal->withAgent('Reviewer', fn (TestAgent $reviewer) => $reviewer
+            ->session(fn (TestSession $session) => $session->startContext(ContextStartType::Compact)));
 
         $this->journal->stateOn($session, $reference, fn (StateHandle $reading) => $reading->tick(
             fn (StateAssert $state) => $state
@@ -124,14 +133,16 @@ final class AskRequiredSkillReadsTest extends TestCase
     {
         $this->requiring(['user-first']);
         $session = $this->started('Reviewer', 'claude-code');
-        $this->journal->startContext($session, ContextStartType::Start);
+        $this->journal->withAgent('Reviewer', fn (TestAgent $reviewer) => $reviewer
+            ->session(fn (TestSession $session) => $session->startContext(ContextStartType::Start)));
         $reference = ReadSkillStateReference::forSession($session->id);
         $this->journal->stateOn($session, $reference, fn (StateHandle $reading) => $reading->event(
             new SkillRead($session->id, 'user-first', ReadEvidence::SkillShow),
             fn (StateAssert $state) => $state->isFinished(),
         ));
 
-        $this->journal->startContext($session, ContextStartType::Compact);
+        $this->journal->withAgent('Reviewer', fn (TestAgent $reviewer) => $reviewer
+            ->session(fn (TestSession $session) => $session->startContext(ContextStartType::Compact)));
 
         $this->journal->stateOn($session, $reference, fn (StateHandle $reading) => $reading->tick(
             fn (StateAssert $state) => $state->where('skillKeys', ['user-first']),
@@ -166,8 +177,9 @@ final class AskRequiredSkillReadsTest extends TestCase
      */
     private function assertListed(AgentSession $session, array $keys): void
     {
-        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading->tick(
-            fn (StateAssert $state) => $state->where('skillKeys', $keys),
-        ));
+        $this->journal->stateOn($session, ReadSkillStateReference::forSession($session->id), fn (StateHandle $reading) => $reading
+            ->tick(
+                fn (StateAssert $state) => $state->where('skillKeys', $keys),
+            ));
     }
 }

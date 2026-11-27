@@ -87,6 +87,14 @@ final class FixtureRegistryTest extends TestCase
         $this->assertSame(0, $queries);
     }
 
+    public function test_a_fixture_scope_reaches_the_builder_the_getter_reaches(): void
+    {
+        $this->assertThrows(
+            fn () => $this->journal->withFixtures('Domain\\Plans\\Tests\\Fixtures\\PlanFixtures', fn () => null),
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::DomainNotBooted,
+        );
+    }
+
     private function registry(): FixtureRegistry
     {
         return new FixtureRegistry($this->app->make(DomainRegistry::class));

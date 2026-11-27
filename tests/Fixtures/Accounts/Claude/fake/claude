@@ -1,5 +1,5 @@
 #!/bin/sh
-# A stand-in for the claude command: a folder holding signed-in is an account signed in as the email it names. Its
+# A mock for the claude command: a folder holding signed-in is an account signed in as the email it names. Its
 # login prints an address, reads one code, and signs the folder in when the code is ok; the code exit-1 signs it in
 # yet makes the login fail. A folder's auth-method or config-directory file changes what its status prints. A token on
 # the CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR descriptor or an apiKeyHelper in the folder's settings signs it in by that

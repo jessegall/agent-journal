@@ -10,6 +10,7 @@ use App\Terminals\Exceptions\PrivateValueRefused;
 use App\Values\HostOrderSource;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -32,9 +33,14 @@ final class PullHostPrivateValueTest extends TestCase
             ->enrollHost('Mac', [base_path()])
             ->enrollHost('Pi', [base_path()])
             ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('claude'))
-            ->submitPrivateValue('submission-1', self::VALUE);
+            ->hostProcess('claude', fn (TestHostProcess $claude) => $claude
+                ->submitPrivateValue('submission-1', self::VALUE));
         $process = $this->journal->hostProcessCalled('claude')->id;
-        $this->journal->asSystem(new WriteHostPrivateValueCommand($process, 'submission-1', HostOrderSource::fromJournal()));
+        $this->journal->asSystem(new WriteHostPrivateValueCommand(
+            $process,
+            'submission-1',
+            HostOrderSource::fromJournal(),
+        ));
     }
 
     public function test_the_host_pulls_the_value_once_and_a_second_pull_is_refused(): void

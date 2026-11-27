@@ -126,7 +126,7 @@ it. Escalation and the retry after a sandbox denial only drop the sandbox wrappe
 The protected start writes `CODEX_HOME/environments.toml`, as root for uid 10001 before the container
 starts, with one `[[environments]]` entry whose `program` is `/opt/journal/shell/bash` with
 `args = ["-c", "exec codex exec-server --listen stdio"]`, `default` set to it, and `include_local = false`.
-Shown in the agent image with a local stand-in model: a shell command, a PTY command and a resumed
+Shown in the agent image with a local mock model: a shell command, a PTY command and a resumed
 thread's command report uid 10002, and a patch leaves a file owned by 10002 in `/workspace`. What the
 real gpt-6 models are offered with code mode off is left to the acceptance run. The
 command text reaches journal-shell unparsed, as the last argv element. If a run shows that a local

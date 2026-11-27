@@ -40,7 +40,8 @@ final class JournalAssertionsTest extends TestCase
     {
         $this->journal->assertRefused(
             AssertionFailedError::class,
-            fn () => $this->journal->assertJournal(fn (Assert $journal) => $journal->where('agents.Writer.name', 'Reader')),
+            fn () => $this->journal->assertJournal(fn (Assert $journal) => $journal
+                ->where('agents.Writer.name', 'Reader')),
             fn (AssertionFailedError $failure) => $this->assertStringContainsString(
                 'agents.Writer.name',
                 $failure->getMessage(),
@@ -51,9 +52,10 @@ final class JournalAssertionsTest extends TestCase
     public function test_has_scopes_into_a_subject_and_a_missing_key_fails_naming_the_keys_there_are(): void
     {
         $this->journal
-            ->assertJournal(fn (Assert $journal) => $journal->has('agents.Writer.session', fn (Assert $session) => $session
-                ->where('status', SessionStatus::Active)
-                ->etc()))
+            ->assertJournal(fn (Assert $journal) => $journal
+                ->has('agents.Writer.session', fn (Assert $session) => $session
+                    ->where('status', SessionStatus::Active)
+                    ->etc()))
             ->assertRefused(
                 AssertionFailedError::class,
                 fn () => $this->journal->assertJournal(fn (Assert $journal) => $journal->has('agents.Nobody')),
@@ -98,7 +100,8 @@ final class JournalAssertionsTest extends TestCase
     public function test_a_fact_is_read_only_when_it_is_asked_for(): void
     {
         $queries = $this->journal->queriesDuring(
-            fn () => $this->journal->assertJournal(fn (Assert $journal) => $journal->where('agents.Writer.name', 'Writer')),
+            fn () => $this->journal->assertJournal(fn (Assert $journal) => $journal
+                ->where('agents.Writer.name', 'Writer')),
         );
 
         $this->journal->assertResult(0, $queries);
@@ -106,8 +109,9 @@ final class JournalAssertionsTest extends TestCase
 
     public function test_value_reads_a_fact_without_counting_as_an_assertion(): void
     {
-        $this->journal->assertJournal(fn (Assert $journal) => $journal->has('agents.Writer', fn (Assert $writer) => $writer
-            ->where('name', $writer->value('name'))
-            ->etc()));
+        $this->journal->assertJournal(fn (Assert $journal) => $journal
+            ->has('agents.Writer', fn (Assert $writer) => $writer
+                ->where('name', $writer->value('name'))
+                ->etc()));
     }
 }

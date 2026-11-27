@@ -6,7 +6,7 @@ namespace App\Access\Contracts;
 
 /**
  * Where the acting actor's authority comes from, installed with its identity in one step: an agent's start profile,
- * an admitted owner, or a named trusted entry of the journal itself. It is never a stand-in profile that allows all.
+ * an admitted owner, or a named trusted entry of the journal itself. It is never a catch-all profile that allows all.
  */
 interface AuthoritySource
 {

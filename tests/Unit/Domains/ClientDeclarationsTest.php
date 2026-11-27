@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Domains;
 
 use App\Access\Contracts\VisibilityCheck;
-use App\Declarations\ActionRoute;
 use App\Declarations\Page;
+use App\Declarations\PageActions;
+use App\Declarations\PageSlots;
 use App\Exceptions\ClientKeyRepeated;
 use App\Exceptions\ClientPathInvalid;
 use App\Exceptions\ClientPathRepeated;
@@ -25,7 +26,6 @@ use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Text\Declarations\Section;
 use App\Web\Declarations\RegisteredPage;
-use App\Web\Declarations\Slot;
 use App\Web\Exceptions\ClientSlotMismatch;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\ClientDeclarations\Desk\DeskDomain;
@@ -140,7 +140,8 @@ final class ClientDeclarationsTest extends TestCase
     {
         $this->expectExceptionObject(ClientRouteConflict::nameRepeated('library.books'));
 
-        $this->check(pages: [$this->page('books')->actions(ActionRoute::post('add', AddBook::class, 'books'))]);
+        $this->check(pages: [$this->page('books')->actions(fn (PageActions $actions) => $actions
+            ->post('add', AddBook::class, 'books'))]);
     }
 
     public function test_a_component_outside_its_domain_is_refused(): void
@@ -151,7 +152,13 @@ final class ClientDeclarationsTest extends TestCase
 
         $this->check(
             pages: [
-                Page::make('books', 'Books', Icon::Docs, BooksResolver::class, '../../../../Desk/Resources/js/pages/desk/Notes.vue'),
+                Page::make(
+                    'books',
+                    'Books',
+                    Icon::Docs,
+                    BooksResolver::class,
+                    '../../../../Desk/Resources/js/pages/desk/Notes.vue',
+                ),
             ],
         );
     }
@@ -258,7 +265,7 @@ final class ClientDeclarationsTest extends TestCase
 
         RegisteredPage::of(
             DomainEntry::fromClass(LibraryDomain::class)->declaring(),
-            $this->page('books')->slots(Slot::record('inspector', 'book', 'book')),
+            $this->page('books')->slots(fn (PageSlots $slots) => $slots->record('inspector', 'book', 'book')),
         );
     }
 

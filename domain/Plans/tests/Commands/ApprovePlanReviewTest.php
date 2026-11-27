@@ -16,6 +16,8 @@ use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPhase;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
@@ -60,7 +62,9 @@ final class ApprovePlanReviewTest extends TestCase
 
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release', title: 'Build the release page')
-            ->phaseWithTask('Release', 'Writing', $this->task->assignmentIdentity())
+            ->withPlan('Release', fn (TestPlan $plan) => $plan
+                ->addPhase('Writing')->withPhase('Writing', fn (TestPhase $phase) => $phase
+                ->place($this->task->assignmentIdentity())))
             ->planCalled('Release');
     }
 

@@ -23,6 +23,7 @@ use App\Hosts\Enums\HostProcessReportType;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
@@ -30,11 +31,18 @@ use App\Projects\Enums\ArrangementType;
 use App\Support\AgentImage;
 use App\Values\DriverFamily;
 use App\Values\HostOrderSource;
+use App\Values\HostProcessPlan;
+use Tests\Support\Agents\TestAgent;
+use Tests\Support\Assertions\Assert;
 use Tests\Support\Drivers\AcceptingSignInReader;
-use Tests\Support\Drivers\StandInProcessDriver;
+use Tests\Support\Drivers\MockProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
+use Tests\Support\Hosts\TestHostOrder;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\TestJournal;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -111,7 +119,9 @@ final class JournalHostProcessesTest extends TestCase
     {
         $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Writer', 'writing-helper')
             ->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Writer', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Writer');
         $first = $this->journal->openStopAttempt($opened->sessionId, 'stop-1');
         $second = $this->journal->openStopAttempt($opened->sessionId, 'stop-2');
         [$answered, $refused] = $this->journal->hostOrdersOn('Mac');
@@ -127,8 +137,8 @@ final class JournalHostProcessesTest extends TestCase
             'truncated' => false,
         ];
 
-        $this->journal->answerHostOrderWith($answered, ['results' => [$passed]])
-            ->refuseHostOrder($refused, HostRefusal::Fenced);
+        $this->journal->hostOrder($answered, fn (TestHostOrder $order) => $order->answerWith(['results' => [$passed]]))
+            ->hostOrder($refused, fn (TestHostOrder $order) => $order->refuse(HostRefusal::Fenced));
 
         $this->journal->assertResult(
             [
@@ -146,12 +156,66 @@ final class JournalHostProcessesTest extends TestCase
         );
     }
 
+    public function test_a_planned_process_is_opened_by_its_order_and_a_process_is_named_by_its_id_once(): void
+    {
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Pipe,
+            RestartPolicy::Never,
+            ['cat'],
+            [],
+            base_path(),
+        );
+
+        $this->journal
+            ->enrollHost('Mac', [base_path()])
+            ->openPlannedProcess('Mac', 'planned', $plan)
+            ->nameHostProcess('same', $this->journal->hostProcessCalled('planned')->id)
+            ->assertJournal(fn (Assert $journal) => $journal
+                ->where('hostProcesses.planned.purpose', HostProcessPurpose::Probe)
+                ->where('hostProcesses.same.purpose', HostProcessPurpose::Probe))
+            ->assertRefused(
+                FixtureRefused::class,
+                fn (TestJournal $journal) => $journal
+                    ->nameHostProcess('same', $journal->hostProcessCalled('planned')->id),
+            );
+    }
+
+    public function test_an_unknown_process_name_fails_naming_the_processes_the_test_named(): void
+    {
+        $this->journal
+            ->enrollHost('Mac', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'))
+            ->assertRefused(
+                FixtureRefused::class,
+                fn (TestJournal $journal) => $journal
+                    ->hostProcess('nope', fn (TestHostProcess $nope) => $nope->drive()),
+                fn (FixtureRefused $refused) => $this->assertStringContainsString('shell', $refused->getMessage()),
+            );
+    }
+
+    public function test_a_process_answers_its_oldest_open_order_in_its_own_scope(): void
+    {
+        $this->journal
+            ->enrollHost('Mac', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell')->markAnswered())
+            ->hostProcess('shell', fn (TestHostProcess $shell) => $shell
+                ->order(fn (TestHostOrder $open) => $open->answer()))
+            ->assertJournal(fn (Assert $journal) => $journal->count(
+                'hostProcesses.shell.orders',
+                1,
+                fn (Assert $open) => $open->where('status', HostOrderStatus::Done)->etc(),
+            ));
+    }
+
     public function test_a_process_is_opened_by_its_order_and_moved_by_its_hosts_report(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'pipe', HostProcessType::Pipe);
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('pipe', HostProcessType::Pipe));
         [$open] = $this->journal->hostOrdersOf('pipe');
 
-        $this->journal->reportHostProcess('pipe', HostProcessReportType::Running);
+        $this->journal->hostProcess('pipe', fn (TestHostProcess $pipe) => $pipe
+            ->report(HostProcessReportType::Running));
 
         $this->journal->assertResult(
             [HostOrderType::OpenProcess, HostProcessType::Pipe, HostProcessStatus::Running, 'pid:pipe'],
@@ -168,14 +232,14 @@ final class JournalHostProcessesTest extends TestCase
     {
         $this->journal
             ->fakeStartedPrograms()
-            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, MockProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell')
-            ->printOnHostProcess('shell', 'ready');
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'))
+            ->hostProcess('shell', fn (TestHostProcess $shell) => $shell->print('ready'));
         [$open] = $this->journal->hostOrdersOf('shell');
         $process = $this->journal->hostProcessCalled('shell')->id;
 
-        $this->journal->answerHostOrder($open);
+        $this->journal->hostOrder($open, fn (TestHostOrder $order) => $order->answer());
         $this->journal->service(DriverSupervisor::class)->startNeeded();
 
         $this->journal
@@ -192,44 +256,49 @@ final class JournalHostProcessesTest extends TestCase
     public function test_a_driver_worker_begins_on_a_process_and_steps_on_what_it_prints(): void
     {
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, MockProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
-
-        $work = $this->journal->beginDriverWorker('shell');
-        $this->journal->printOnHostProcess('shell', '> ');
-
-        $this->journal->assertResult([1, true], [$work->generation, $this->journal->stepDriverWorker($work, 200)]);
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'))
+            ->hostProcess('shell', fn (TestHostProcess $shell) => $shell->beginWorker()->print('> ')->drive())
+            ->assertJournal(fn (Assert $journal) => $journal->where('hostProcesses.shell.workerGeneration', 1));
     }
 
     public function test_an_idle_driver_worker_steps_with_no_query_and_ends_on_its_processes_end(): void
     {
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, MockProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
-        $work = $this->journal->beginDriverWorker('shell');
-        $this->journal->stepDriverWorker($work, 0);
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'))
+            ->hostProcess('shell', fn (TestHostProcess $shell) => $shell->beginWorker()->drive(0));
 
-        $idleQueries = $this->journal->queriesDuring(fn () => $this->journal->stepDriverWorker($work, 0));
-        $this->journal->reportHostProcess('shell', HostProcessReportType::Exited, 0);
+        $idleQueries = $this->journal->queriesDuring(
+            fn () => $this->journal->hostProcess('shell', fn (TestHostProcess $shell) => $shell->drive(0)),
+        );
 
-        $this->journal->assertResult([0, false], [$idleQueries, $this->journal->stepDriverWorker($work, 0)]);
+        $this->journal
+            ->hostProcess('shell', fn (TestHostProcess $shell) => $shell
+                ->report(HostProcessReportType::Exited, 0)->drive(0))
+            ->assertResult(0, $idleQueries)
+            ->assertJournal(fn (Assert $journal) => $journal
+                ->where('hostProcesses.shell.status', HostProcessStatus::Exited));
     }
 
     public function test_a_process_driver_is_made_for_a_named_process_by_its_purpose(): void
     {
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, MockProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
 
-        $this->journal->assertResult(true, $this->journal->processDriverOf('shell') instanceof StandInProcessDriver);
+        $this->journal->assertResult(true, $this->journal->processDriverOf('shell') instanceof MockProcessDriver);
     }
 
     public function test_a_submitted_private_value_waits_for_the_host_its_write_was_ordered_on(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell')->submitPrivateValue('s-1', 'sk-1');
+        $this->journal
+            ->enrollHost('Mac', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'))
+            ->hostProcess('shell', fn (TestHostProcess $shell) => $shell->submitPrivateValue('s-1', 'sk-1'));
         $process = $this->journal->hostProcessCalled('shell');
 
         $this->journal->asSystem(new WriteHostPrivateValueCommand($process->id, 's-1', HostOrderSource::fromJournal()));
@@ -244,9 +313,12 @@ final class JournalHostProcessesTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Driven');
 
-        $this->journal->openHostProcessForStart('Mac', 'agent', $opened->sessionId, HostProcessPurpose::AgentTurn);
+        $this->journal->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcessForStart('agent', $opened->sessionId, HostProcessPurpose::AgentTurn));
 
         $process = $this->journal->hostProcessCalled('agent');
         $start = $this->journal->startOfSession($opened->sessionId);
@@ -260,9 +332,11 @@ final class JournalHostProcessesTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path());
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openRuntime('Mac', base_path()));
+        $opened = $this->journal->openedRuntimeOf('Driven');
 
-        $this->journal->callJournalProcess('probe', $opened->runtimeId, HostProcessPurpose::BuildProbe);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('probe', HostProcessPurpose::BuildProbe));
 
         $process = $this->journal->hostProcessCalled('probe');
         $this->journal->assertResult(
@@ -275,9 +349,10 @@ final class JournalHostProcessesTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path());
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openRuntime('Mac', base_path()));
+        $opened = $this->journal->openedRuntimeOf('Driven');
 
-        $this->journal->passBuildProbe('driven', $opened->runtimeId);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->passBuildProbe('driven'));
 
         $this->journal->assertResult(
             [HostProcessPurpose::BuildProbe, HostProcessPurpose::SignInProbe],
@@ -290,12 +365,19 @@ final class JournalHostProcessesTest extends TestCase
 
     public function test_passed_codex_probes_open_the_accounts_owner_whose_writes_read_back(): void
     {
-        $this->journal->owner()->chooseActiveAccounts(config('accounts.root'))->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openCodexRuntimeOn('Driven', 'Mac', base_path());
+        $this->journal
+            ->owner()
+            ->chooseActiveAccounts(config('accounts.root'))
+            ->showDriverArrangements()
+            ->idleAgent('Driven')
+            ->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openCodexRuntime('Mac', base_path()));
+        $opened = $this->journal->openedRuntimeOf('Driven');
 
-        $this->journal->passCodexProbes('driven', $opened->runtimeId)->callAccountOwner('owner', $opened->runtimeId);
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->passCodexProbes('driven')->callAccountOwner('owner'));
 
-        $this->journal->beginDriverWorker('owner');
+        $this->journal->hostProcess('owner', fn (TestHostProcess $owner) => $owner->beginWorker());
 
         $this->journal->assertResult(
             [true, HostProcessPurpose::AccountOwner, ['codex', 'app-server'], ['initialize']],
@@ -313,7 +395,8 @@ final class JournalHostProcessesTest extends TestCase
         $this->chooseActiveAccounts();
         $this->journal->owner()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
 
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path());
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openRuntime('Mac', base_path()));
+        $opened = $this->journal->openedRuntimeOf('Driven');
 
         $this->journal->assertResult(
             SessionProcessStatus::Starting,
@@ -323,7 +406,10 @@ final class JournalHostProcessesTest extends TestCase
 
     public function test_a_driver_profile_is_the_one_the_journal_starts_its_family_by(): void
     {
-        $this->journal->assertResult(DefaultDrivers::CODEX, $this->journal->driverProfile(DefaultDrivers::CODEX)->family());
+        $this->journal->assertResult(
+            DefaultDrivers::CODEX,
+            $this->journal->driverProfile(DefaultDrivers::CODEX)->family(),
+        );
     }
 
     public function test_a_swapped_driver_part_is_the_one_the_profile_uses(): void
@@ -343,7 +429,8 @@ final class JournalHostProcessesTest extends TestCase
 
     public function test_an_orders_payload_reads_back_as_the_host_receives_it(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'pipe', HostProcessType::Pipe);
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('pipe', HostProcessType::Pipe));
 
         $payload = $this->journal->payloadOf($this->journal->hostOrdersOf('pipe')[0]);
 
@@ -356,9 +443,11 @@ final class JournalHostProcessesTest extends TestCase
 
     public function test_what_a_pipe_prints_follows_what_it_printed_before(): void
     {
-        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'pipe', HostProcessType::Pipe);
+        $this->journal->enrollHost('Mac', [base_path()])->host('Mac', fn (TestEnrolledHost $mac) => $mac
+            ->openProcess('pipe', HostProcessType::Pipe));
 
-        $this->journal->printOnPipe('pipe', "one\n")->printOnPipe('pipe', "two\n");
+        $this->journal->hostProcess('pipe', fn (TestHostProcess $pipe) => $pipe
+            ->printOnPipe("one\n")->printOnPipe("two\n"));
 
         $process = $this->journal->hostProcessCalled('pipe');
         $chunks = array_map(

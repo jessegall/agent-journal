@@ -95,7 +95,12 @@ final readonly class SessionHook
      */
     public function inputFor(StackTarget $target): HookInput
     {
-        $identity = new HookIdentity($target->agentId, $target->sessionId, $this->hookId, hash('sha256', $this->signed));
+        $identity = new HookIdentity(
+            $target->agentId,
+            $target->sessionId,
+            $this->hookId,
+            hash('sha256', $this->signed),
+        );
 
         return ($this->input)($identity);
     }

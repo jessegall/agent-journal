@@ -9,6 +9,7 @@ use App\Hosts\Enums\HostOrderType;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -28,10 +29,14 @@ final class ForwardUserKeysTest extends TestCase
         $this->journal
             ->useServerClockAt(CarbonImmutable::parse(self::NOW))
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Mac', 'shell');
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('shell'));
         $process = $this->journal->hostProcessCalled('shell');
 
-        $id = $this->journal->asSystem(new ForwardUserKeysCommand($process->id, "hi\r", HostOrderSource::fromJournal()));
+        $id = $this->journal->asSystem(new ForwardUserKeysCommand(
+            $process->id,
+            "hi\r",
+            HostOrderSource::fromJournal(),
+        ));
         $order = $this->journal->hostOrdersOf('shell')[1];
 
         $this->journal->assertResult(

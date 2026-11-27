@@ -9,6 +9,8 @@ use App\Support\ActorReference;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanGraphService;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPhase;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
@@ -55,13 +57,11 @@ final class PlanGraphEditingTest extends TestCase
 
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Ship', title: 'Ship the graph')
-            ->phaseWithTask('Ship', 'Design', $this->tasks['design']->assignmentIdentity())
-            ->phase('Ship', 'Build')
-            ->placeTasks(
-                'Build',
-                $this->tasks['build']->assignmentIdentity(),
-                $this->tasks['ship']->assignmentIdentity(),
-            )
+            ->withPlan('Ship', fn (TestPlan $plan) => $plan
+                ->addPhase('Design')->withPhase('Design', fn (TestPhase $phase) => $phase
+                ->place($this->tasks['design']->assignmentIdentity()))->addPhase('Build'))
+            ->withPhase('Build', fn (TestPhase $phase) => $phase
+                ->place($this->tasks['build']->assignmentIdentity(), $this->tasks['ship']->assignmentIdentity()))
             ->planCalled('Ship');
 
         $this->wait('ship', 'design');

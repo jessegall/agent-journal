@@ -20,6 +20,7 @@ final readonly class HostOrderFacts implements Facts
             'type' => $this->order->type,
             'status' => $this->order->status,
             'refusal' => $this->order->refusal,
+            'request' => $this->order->driver_request_id,
             'payload' => fn () => json_decode($this->order->payload, true, flags: JSON_THROW_ON_ERROR),
         ];
     }

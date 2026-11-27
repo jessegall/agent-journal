@@ -8,6 +8,8 @@ use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessReportType;
 use App\Listeners\RemoveEndedContainers;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -24,12 +26,12 @@ final class RemoveEndedContainersTest extends TestCase
     {
         $this->journal->enrollContainedHost('Box', [base_path()])
             ->enrollHost('Mac', [base_path()])
-            ->openHostProcess('Box', 'contained')
-            ->openHostProcess('Mac', 'native')
-            ->reportHostProcess('contained', HostProcessReportType::Running)
-            ->reportHostProcess('contained', HostProcessReportType::Exited, 0)
-            ->reportHostProcess('native', HostProcessReportType::Running)
-            ->reportHostProcess('native', HostProcessReportType::Exited, 0);
+            ->host('Box', fn (TestEnrolledHost $box) => $box->openProcess('contained'))
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('native'))
+            ->hostProcess('contained', fn (TestHostProcess $contained) => $contained
+                ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0))
+            ->hostProcess('native', fn (TestHostProcess $native) => $native
+                ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0));
         $removalsOn = fn (string $host) => array_values(array_filter(
             $this->journal->hostOrdersOn($host),
             fn ($order) => $order->type === HostOrderType::Remove,

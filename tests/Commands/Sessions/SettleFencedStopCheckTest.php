@@ -10,6 +10,7 @@ use App\Models\Sessions\StopCheck;
 use App\Models\Sessions\StopConditionResult;
 use App\Sessions\Commands\SettleFencedStopCheck\SettleFencedStopCheckCommand;
 use App\Sessions\Enums\StopCheckStatus;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestHostOrder;
 use Tests\Support\RefreshHookDatabase;
@@ -32,7 +33,9 @@ final class SettleFencedStopCheckTest extends TestCase
 
         $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Writer', 'writing-helper')
             ->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Writer', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $this->journal->withAgent('Writer', fn (TestAgent $writer) => $writer
+            ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));
+        $opened = $this->journal->openedRuntimeOf('Writer');
         $this->attempt = $this->journal->openStopAttempt($opened->sessionId);
     }
 
@@ -40,7 +43,8 @@ final class SettleFencedStopCheckTest extends TestCase
     {
         $order = $this->journal->hostOrdersOn('Mac')[0];
 
-        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order->answerWith(['results' => [$this->conditionResult('failed', 'NOTE is not committed')]]));
+        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order
+            ->answerWith(['results' => [$this->conditionResult('failed', 'NOTE is not committed')]]));
 
         $result = StopConditionResult::query()->sole();
         $this->journal->assertResult(
@@ -53,7 +57,8 @@ final class SettleFencedStopCheckTest extends TestCase
     {
         $order = $this->journal->hostOrdersOn('Mac')[0];
 
-        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order->answerWith(['results' => [$this->conditionResult('passed', 'clean')]]));
+        $this->journal->hostOrder($order, fn (TestHostOrder $order) => $order
+            ->answerWith(['results' => [$this->conditionResult('passed', 'clean')]]));
 
         $this->journal->assertResult(StopCheckStatus::Passed, $this->attempt->refresh()->status);
     }

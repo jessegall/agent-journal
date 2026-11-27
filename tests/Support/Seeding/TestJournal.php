@@ -130,7 +130,7 @@ final class TestJournal
 
     private readonly FixtureRequests $requests;
 
-    private bool $hasStandInOwner = false;
+    private bool $hasMockOwner = false;
 
     private readonly FixtureInboxes $inboxes;
 
@@ -225,6 +225,21 @@ final class TestJournal
     public function fixtures(string $fixtures): object
     {
         return $this->registry->fixtures($fixtures, $this);
+    }
+
+    /**
+     * The fixture builder of the class, handed to the scope; its entities are reached in scopes of their own.
+     *
+     * @template TFixtures of object
+     *
+     * @param  class-string<TFixtures>  $fixtures
+     * @param  Closure(TFixtures): mixed  $scope
+     */
+    public function withFixtures(string $fixtures, Closure $scope): self
+    {
+        $scope($this->fixtures($fixtures));
+
+        return $this;
     }
 
     /**
@@ -505,9 +520,9 @@ final class TestJournal
      */
     public function actAsUserId(string $userId): self
     {
-        if ($this->owner === null && ! $this->hasStandInOwner) {
+        if ($this->owner === null && ! $this->hasMockOwner) {
             $this->app->instance(AccessSettings::class, new AccessSettings($userId));
-            $this->hasStandInOwner = true;
+            $this->hasMockOwner = true;
         }
 
         $this->requests->asUserId($userId);

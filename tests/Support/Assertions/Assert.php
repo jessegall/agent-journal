@@ -168,7 +168,7 @@ class Assert
     /**
      * Fails a scope on each fact nobody touched, unless the scope ended in etc(); the root passes them.
      */
-    public function interacted(): void
+    private function interacted(): void
     {
         if (! $this->isScope || $this->allowsUntouched) {
             return;

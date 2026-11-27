@@ -48,4 +48,4 @@ the task that consumes it.
 | host-* | missing: the protected host's native boundary for each item, as the journal's protection report of the host reports it ([host-protection.md](host-protection.md)) | task 258 |
 
 A thread's id, recorded when `thread/started` arrives, is the execution key; a session tree's or a fork's id never
-is. `tests/Unit/Accounts/CodexNativeEvidenceTest.php` runs the procedure against a stand-in program.
+is. `tests/Unit/Accounts/CodexNativeEvidenceTest.php` runs the procedure against a mock program.

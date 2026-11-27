@@ -68,7 +68,8 @@ final class ReadSkillStateTest extends TestCase
             ->steps([$this->asked('alpha', 'beta')], fn (StateAssert $state) => $state
                 ->where('skillKeys', ['alpha', 'beta'])
                 ->where('hasBeenAsked', true))
-            ->steps([$this->asked('beta', 'gamma')], fn (StateAssert $state) => $state->where('skillKeys', ['alpha', 'beta', 'gamma'])));
+            ->steps([$this->asked('beta', 'gamma')], fn (StateAssert $state) => $state
+                ->where('skillKeys', ['alpha', 'beta', 'gamma'])));
     }
 
     public function test_a_replayed_ask_changes_nothing_and_a_new_skill_starts_a_fresh_budget(): void

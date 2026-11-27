@@ -11,6 +11,8 @@ use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Plans\Tests\Fixtures\TestPhase;
+use Domain\Plans\Tests\Fixtures\TestPlan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Plans\Values\PlanProgress;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
@@ -61,7 +63,9 @@ final class AddPhaseTasksTest extends TestCase
     {
         parent::setUp();
 
-        $this->plans = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Build')->phase('Build', 'Read');
+        $this->plans = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Build')->withPlan('Build', fn (TestPlan $plan) => $plan
+            ->addPhase('Read'));
+
         $this->tasks = $this->journal->fixtures(TaskFixtures::class)->task('First')->task('Second');
     }
 
@@ -74,8 +78,8 @@ final class AddPhaseTasksTest extends TestCase
 
         $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$second->id, $first->id]));
 
-        $this->plans->assertPhaseTask('Read', $second->assignmentIdentity(), 1)
-            ->assertPhaseTask('Read', $first->assignmentIdentity(), 2);
+        $this->plans->withPhase('Read', fn (TestPhase $phase) => $phase
+            ->assertTask($second->assignmentIdentity(), 1)->assertTask($first->assignmentIdentity(), 2));
     }
 
     public function test_one_missing_task_refuses_the_whole_addition(): void

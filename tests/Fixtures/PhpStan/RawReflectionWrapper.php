@@ -7,7 +7,7 @@ namespace Tests\Fixtures\PhpStan;
 use ReflectionClass;
 
 /**
- * A stand-in wrapper file: native reflection inside it passes, a native reflector in a public signature does not.
+ * A sample wrapper file: native reflection inside it passes, a native reflector in a public signature does not.
  */
 final class RawReflectionWrapper
 {
