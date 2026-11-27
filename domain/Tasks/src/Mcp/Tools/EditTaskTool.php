@@ -9,6 +9,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Enums\TaskTextLimit;
+use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -25,7 +26,7 @@ final class EditTaskTool extends TaskWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'task_id' => $this->recordIdArgument($schema),
+            TaskReadResult::ID_ARGUMENT => $this->recordIdArgument($schema),
             'expected_revision' => $schema->integer()->min(1)->required(),
             'title' => $schema->string()->max(TaskTextLimit::Title->value),
             'brief' => $schema->string()->max(TaskTextLimit::Note->value),
@@ -35,7 +36,7 @@ final class EditTaskTool extends TaskWriteTool
     protected function command(ToolArguments $arguments): EditTaskCommand
     {
         return new EditTaskCommand(
-            $arguments->ulid('task_id'),
+            $arguments->ulid(TaskReadResult::ID_ARGUMENT),
             $arguments->positiveInteger('expected_revision'),
             $arguments->optionalText('title'),
             $arguments->optionalText('brief'),

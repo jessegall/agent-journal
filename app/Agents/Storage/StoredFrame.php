@@ -34,7 +34,9 @@ final class StoredFrame extends Data
         #[WithCast(DateTimeInterfaceCast::class, format: self::TIME_FORMAT)]
         #[WithTransformer(DateTimeInterfaceTransformer::class, format: self::TIME_FORMAT)]
         public readonly CarbonImmutable $enteredAt,
-        /** @var array<string, mixed> */
+        /**
+         * @var array<string, mixed>
+         */
         public readonly array $values = [],
     ) {}
 

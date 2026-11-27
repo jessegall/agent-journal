@@ -7,7 +7,6 @@ namespace App\Hooks\Pipes\Answer;
 use App\Bus\Contracts\Pipe;
 use App\Hooks\CallStages\RestoredCall;
 use App\Models\Drivers\DriverTurn;
-use App\Support\Inputs\StopRequested;
 
 /**
  * A stop with the same closing words as the offer pending on its turn keeps them private; the stack then answers the
@@ -17,9 +16,9 @@ final readonly class KeepRepeatedClosingWordsPrivate implements Pipe
 {
     public function handle(RestoredCall $restored): RestoredCall
     {
-        $input = $restored->call->input;
+        $input = $restored->call->stopWithClosingWords();
 
-        if (! $input instanceof StopRequested || ! $input->stop->hasClosingWords()) {
+        if ($input === null) {
             return $restored;
         }
 

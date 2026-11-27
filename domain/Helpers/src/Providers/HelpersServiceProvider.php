@@ -10,7 +10,6 @@ use App\Support\FolderClasses;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Support\HelperLifecycleEntry;
 use Domain\Helpers\Support\HelperSupervisorDispatch;
-use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -29,7 +28,7 @@ final class HelpersServiceProvider extends ServiceProvider
     public function boot(SystemEntryPolicies $systemEntries): void
     {
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
+        $this->commands(FolderClasses::consoleCommandsIn(dirname(__DIR__)));
         $systemEntries->allow(HelperLifecycleEntry::NAME, HelperPolicy::class);
     }
 }

@@ -12,7 +12,7 @@ defineProps<{ top: number; left: number }>();
 const emit = defineEmits<{ comment: []; dismiss: [] }>();
 
 const root = useTemplateRef<HTMLElement>('root');
-const dismiss = (): void => emit('dismiss');
+const dismiss = () => emit('dismiss');
 
 onMounted(() => window.addEventListener('scroll', dismiss, true));
 onBeforeUnmount(() => window.removeEventListener('scroll', dismiss, true));

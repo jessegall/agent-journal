@@ -35,7 +35,7 @@ final readonly class TaskResolver implements TaskResolverContract
 
         $visibleTaskIds = array_values(array_map(
             strval(...),
-            Task::query()->whereKey($requestedTaskIds)->readExactly(count($requestedTaskIds))->pluck('id')->all(),
+            Task::query()->whereKey($requestedTaskIds)->readExactlyOf($requestedTaskIds)->pluck('id')->all(),
         ));
 
         $this->assertAllFound($requestedTaskIds, $visibleTaskIds);
@@ -45,7 +45,7 @@ final readonly class TaskResolver implements TaskResolverContract
     {
         $this->actors->actor();
         $requestedTaskIds = array_values(array_unique($ids));
-        $tasks = Task::query()->whereKey($requestedTaskIds)->readExactly(count($requestedTaskIds))->get();
+        $tasks = Task::query()->whereKey($requestedTaskIds)->readExactlyOf($requestedTaskIds)->get();
         $this->assertAllFound($requestedTaskIds, array_values(array_map(strval(...), $tasks->modelKeys())));
 
         foreach ($tasks as $task) {
@@ -61,7 +61,7 @@ final readonly class TaskResolver implements TaskResolverContract
     {
         $this->actors->actor();
         $requestedTaskIds = array_values(array_unique($ids));
-        $tasks = Task::query()->whereKey($requestedTaskIds)->readExactly(count($requestedTaskIds))->get()->keyBy('id');
+        $tasks = Task::query()->whereKey($requestedTaskIds)->readExactlyOf($requestedTaskIds)->get()->keyBy('id');
         $this->assertAllFound($requestedTaskIds, array_values(array_map(strval(...), $tasks->keys()->all())));
 
         return array_map(fn (string $taskId) => $tasks[$taskId]->summary, $ids);

@@ -107,7 +107,7 @@ function subscribed() {
         () => `request-${++requests}`,
         () => clock.now,
         (screen) => shown.push(screen),
-        (failure): TerminalFailure => failure as TerminalFailure,
+        (failure) => failure as TerminalFailure,
     );
 
     return { client, clock, shown, subscription };

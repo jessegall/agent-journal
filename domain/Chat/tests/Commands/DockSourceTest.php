@@ -71,6 +71,10 @@ final class DockSourceTest extends TestCase
         'reports',
     ];
 
+    private const string KEY = '01JD8X0G9M3QZ6V4K2DOCKADD01';
+
+    private const string TASK_TITLE = 'Feed the cat';
+
     private User $owner;
 
     private string $agentId;
@@ -81,13 +85,9 @@ final class DockSourceTest extends TestCase
 
     private TestStart $start;
 
-    private const string KEY = '01JD8X0G9M3QZ6V4K2DOCKADD01';
-
     private string $chatInboxId;
 
     private TestStart $agent;
-
-    private const string TASK_TITLE = 'Feed the cat';
 
     protected static function bootedDomains(): array
     {

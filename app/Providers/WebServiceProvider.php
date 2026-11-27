@@ -44,6 +44,10 @@ use App\Support\DeclaredRoutes;
 use App\Support\DomainRegistry;
 use App\Support\DraftProducers;
 use App\Support\InstalledVersion;
+use App\Support\Layout\Contracts\ProjectField as ProjectFieldContract;
+use App\Support\Layout\Contracts\ProjectRowLabel as ProjectRowLabelContract;
+use App\Support\Layout\ProjectField;
+use App\Support\Layout\ProjectRowLabel;
 use App\Support\NavigationRecords;
 use App\Support\OwnerAutoAssignmentAccess;
 use App\Support\PageChangeBroadcastLog;
@@ -84,6 +88,8 @@ final class WebServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind(ProjectRowLabelContract::class, ProjectRowLabel::class);
+        $this->app->bind(ProjectFieldContract::class, ProjectField::class);
         $this->app->bind(NavigationRecordsContract::class, NavigationRecords::class);
         $this->app->bind(RecordMenusContract::class, RecordMenus::class);
         $this->app->singleton(DraftProducers::class);
@@ -173,9 +179,13 @@ final class WebServiceProvider extends ServiceProvider
     }
 
     /**
-     * The form field a refusal is shown under: a start refusal's own next step names it, every other refusal is the
-     * whole command's.
+     * Whether a page of the signed-in session asked for a JSON answer, as a partial reload does.
      */
+    private static function isSessionJsonRequest(Request $request): bool
+    {
+        return $request->expectsJson() && $request->hasSession();
+    }
+
     /**
      * @return array<string, string>
      */
@@ -188,6 +198,10 @@ final class WebServiceProvider extends ServiceProvider
         return [self::fieldOf($refusal) => $refusal->getMessage()];
     }
 
+    /**
+     * The form field a refusal is shown under: a start refusal's own next step names it, every other refusal is the
+     * whole command's.
+     */
     private static function fieldOf(CommandRefusal $refusal): string
     {
         if ($refusal instanceof StartRefusal) {
@@ -242,7 +256,7 @@ final class WebServiceProvider extends ServiceProvider
         });
 
         $exceptions->renderable(function (ValidationException $refused, Request $request): JsonResponse|null {
-            if (! $request->expectsJson() || ! $request->hasSession()) {
+            if (! self::isSessionJsonRequest($request)) {
                 return null;
             }
 
@@ -252,7 +266,7 @@ final class WebServiceProvider extends ServiceProvider
         });
 
         $exceptions->renderable(function (AuthenticationException $expired, Request $request): JsonResponse|null {
-            if (! $request->expectsJson() || ! $request->hasSession()) {
+            if (! self::isSessionJsonRequest($request)) {
                 return null;
             }
 

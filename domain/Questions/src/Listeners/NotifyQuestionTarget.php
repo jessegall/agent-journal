@@ -6,9 +6,9 @@ namespace Domain\Questions\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
+use App\Notifications\Contracts\NotificationDelivery;
 use App\Notifications\Data\NotificationTarget;
 use App\Notifications\Enums\NotificationSourceType;
-use App\Notifications\NotificationDelivery;
 use Domain\Questions\Events\QuestionAsked;
 use Domain\Questions\Values\QuestionNotificationKeys;
 

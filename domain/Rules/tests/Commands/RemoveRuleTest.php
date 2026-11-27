@@ -21,20 +21,20 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 
 /**
- * The user removes a rule that holds, which then no longer does; an agent may not remove one, and a rule that is not
- * there is refused by name.
+ * The user removes a rule that holds, and it stops holding; an agent may not remove one, and a rule that is not there
+ * is refused by name.
  */
 #[TestsCommand(RemoveRuleCommand::class)]
 final class RemoveRuleTest extends TestCase
 {
     use CommitsHookRows;
 
-    private Rule $active;
-
     private const array TABLES = [
         'rules',
         'users',
     ];
+
+    private Rule $active;
 
     protected function setUp(): void
     {

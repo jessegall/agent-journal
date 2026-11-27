@@ -18,6 +18,6 @@ final readonly class PendingSegment
      */
     public static function allOf(UnparsedSubstitutions $toParse): array
     {
-        return array_map(fn (WordSegment $segment): self => new self($toParse, $segment), $toParse->word->segments);
+        return array_map(fn (WordSegment $segment) => new self($toParse, $segment), $toParse->word->segments);
     }
 }

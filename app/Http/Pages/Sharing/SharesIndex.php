@@ -36,7 +36,7 @@ final readonly class SharesIndex extends SharingPage
             ->withReader(new LayoutBackData('/sharing', 'Shares'));
 
         if ($filters->after === null && $after === null) {
-            $page = $page->counting(count($shown));
+            $page = $page->countingRows();
         }
 
         return $page->layout();

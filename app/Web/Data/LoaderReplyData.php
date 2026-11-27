@@ -20,7 +20,9 @@ final class LoaderReplyData extends Data
         public readonly string $token,
         public readonly LoaderStatus $status,
         public readonly Data|Optional $value,
-        /** @var array<string, string>|Optional */
+        /**
+         * @var array<string, string>|Optional
+         */
         public readonly array|Optional $errors,
     ) {}
 }

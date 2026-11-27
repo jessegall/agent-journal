@@ -38,7 +38,9 @@ final readonly class NotifyRequestProgressCommand extends Command
         public HostWakeRefusal|null $refusal = null,
         public bool $hasCreatedNoProcess = false,
         public RequestReportBinding|null $binding = null,
-        /** the report's place in its runtime generation's numbered reports; none from a host that numbers none */
+        /**
+         * the report's place in its runtime generation's numbered reports; none from a host that numbers none
+         */
         public int|null $sequence = null,
         /**
          * what the host saw when the attempt's turn ended; none for any other report

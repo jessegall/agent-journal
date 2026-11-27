@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace App\Skills;
 
 use App\Skills\Contracts\Skill;
-use App\Skills\Shipped\AccessSkill;
-use App\Skills\Shipped\JournalSkill;
-use App\Skills\Shipped\ProfilesSkill;
-use App\Skills\Shipped\ShellSkill;
-use App\Skills\Shipped\SkillsSkill;
+use App\Support\FolderClasses;
 use App\Values\SkillOwner;
 
 /**
@@ -24,13 +20,7 @@ final class CoreSkills
      */
     public static function skills(): array
     {
-        return [
-            JournalSkill::class,
-            AccessSkill::class,
-            ProfilesSkill::class,
-            SkillsSkill::class,
-            ShellSkill::class,
-        ];
+        return FolderClasses::in(__DIR__.'/Shipped', Skill::class);
     }
 
     /**

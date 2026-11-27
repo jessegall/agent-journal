@@ -9,6 +9,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
 use Domain\Tasks\Enums\TaskTextLimit;
+use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -33,7 +34,7 @@ final class LogTaskTool extends TaskWriteTool
     protected function command(ToolArguments $arguments): LogTaskRunCommand
     {
         return new LogTaskRunCommand(
-            $arguments->ulid('task_id'),
+            $arguments->ulid(TaskReadResult::ID_ARGUMENT),
             $arguments->positiveInteger('run_number'),
             $arguments->text('text'),
         );

@@ -33,7 +33,7 @@ final readonly class AgentLabels implements ActorLabelProvider, AgentResolver
             return [];
         }
 
-        return Agent::query()->whereKey($visible)->readExactly(count($visible))->get()
+        return Agent::query()->whereKey($visible)->readExactlyOf($visible)->get()
             ->mapWithKeys(fn (Agent $agent) => [$agent->id => new AgentLabel($agent->id, $agent->name)])
             ->all();
     }

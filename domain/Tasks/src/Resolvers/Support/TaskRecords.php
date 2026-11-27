@@ -25,6 +25,6 @@ final readonly class TaskRecords
      */
     public function many(array $ids): array
     {
-        return Task::query()->whereKey($ids)->readExactly(count($ids))->get()->keyBy('id')->all();
+        return Task::query()->whereKey($ids)->readExactlyOf($ids)->get()->keyBy('id')->all();
     }
 }

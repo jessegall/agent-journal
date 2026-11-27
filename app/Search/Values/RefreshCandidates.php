@@ -61,7 +61,7 @@ final readonly class RefreshCandidates
 
     public function asks(HitIdentity $identity): bool
     {
-        return array_any($this->candidates, fn (HitIdentity $candidate): bool => $candidate->equals($identity));
+        return array_any($this->candidates, fn (HitIdentity $candidate) => $candidate->equals($identity));
     }
 
     /**

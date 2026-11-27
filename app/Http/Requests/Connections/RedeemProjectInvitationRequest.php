@@ -20,7 +20,7 @@ final class RedeemProjectInvitationRequest extends FormRequest
      */
     public function authorize(ServerOrigin $origin): bool
     {
-        return $this->isSecure() || $origin->canTakePlainHttp();
+        return $origin->takes($this);
     }
 
     /**
@@ -29,13 +29,45 @@ final class RedeemProjectInvitationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ticket' => ['required', 'string', 'max:128', 'regex:/^[A-Za-z0-9_-]+$/'],
-            'installationNonce' => ['required', 'string', 'min:16', 'max:128'],
-            'hostCredential' => ['required', 'string', 'min:32', 'max:256'],
-            'rootId' => ['required', 'string', 'max:128'],
-            'canonicalRoot' => ['required', 'string', 'max:4096', 'starts_with:/'],
-            'projectLabel' => ['required', 'string', 'max:200'],
-            'machineLabel' => ['required', 'string', 'max:200'],
+            'ticket' => [
+                'required',
+                'string',
+                'max:128',
+                'regex:/^[A-Za-z0-9_-]+$/',
+            ],
+            'installationNonce' => [
+                'required',
+                'string',
+                'min:16',
+                'max:128',
+            ],
+            'hostCredential' => [
+                'required',
+                'string',
+                'min:32',
+                'max:256',
+            ],
+            'rootId' => [
+                'required',
+                'string',
+                'max:128',
+            ],
+            'canonicalRoot' => [
+                'required',
+                'string',
+                'max:4096',
+                'starts_with:/',
+            ],
+            'projectLabel' => [
+                'required',
+                'string',
+                'max:200',
+            ],
+            'machineLabel' => [
+                'required',
+                'string',
+                'max:200',
+            ],
         ];
     }
 

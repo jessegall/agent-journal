@@ -27,11 +27,11 @@ final readonly class HeldTasksOverview implements OverviewContribution
     public function read(): OverviewSection
     {
         $states = array_values(
-            array_filter(TaskStatus::cases(), fn (TaskStatus $status): bool => ! $status->hasEnded()),
+            array_filter(TaskStatus::cases(), fn (TaskStatus $status) => ! $status->hasEnded()),
         );
 
         $held = $this->tasks->assignedToCaller(new TaskFilters(states: $states, page: new NumberedPage(1, 1)))->total;
-        $stateNames = array_map(fn (TaskStatus $status): string => $status->value, $states);
+        $stateNames = array_map(fn (TaskStatus $status) => $status->value, $states);
 
         return OverviewSection::from([
             'title' => 'Tasks you hold',

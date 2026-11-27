@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Bootstrap\KnownFolderClasses;
 use App\Bootstrap\Psr4ClassNames;
+use Illuminate\Console\Command;
 
 /**
  * The classes of one type a folder declares, read through Composer's PSR-4 roots, so a list that mirrors a folder is
@@ -31,6 +32,24 @@ final readonly class FolderClasses
             $found,
             fn (string $class) => Reflector::factory()->is($class, $type),
         ));
+    }
+
+    /**
+     * The folder of the Artisan commands under a source root, such as app or a domain's src.
+     */
+    public static function consoleCommandFolder(string $sourceRoot): string
+    {
+        return $sourceRoot.'/Console/Commands';
+    }
+
+    /**
+     * The Artisan commands declared directly in the console command folder of a source root.
+     *
+     * @return list<class-string<Command>>
+     */
+    public static function consoleCommandsIn(string $sourceRoot): array
+    {
+        return self::in(self::consoleCommandFolder($sourceRoot), Command::class);
     }
 
     /**

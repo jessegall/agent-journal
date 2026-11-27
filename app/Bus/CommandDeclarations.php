@@ -61,10 +61,10 @@ final readonly class CommandDeclarations
     {
         $owners = $this->owners;
 
-        $exportsTo = static fn (CommandOwner $other, string $class): bool => $other->exportsClass($class)
+        $exportsTo = static fn (CommandOwner $other, string $class) => $other->exportsClass($class)
             && ($other->name === CommandOwner::CORE || $owner->requiresOwner($other->name));
 
-        return new CommandGrammar(static fn (string $class): bool => str_starts_with($class, $owner->namespace.'\\')
+        return new CommandGrammar(static fn (string $class) => str_starts_with($class, $owner->namespace.'\\')
             || array_filter($owners, static fn (CommandOwner $other): bool => $exportsTo($other, $class)) !== []);
     }
 }

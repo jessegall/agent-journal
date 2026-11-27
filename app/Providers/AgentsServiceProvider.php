@@ -25,9 +25,11 @@ use App\Agents\ActivityRetentionService;
 use App\Agents\AgentActivity;
 use App\Agents\AgentActors;
 use App\Agents\AgentAssignees;
+use App\Agents\AgentDrivers;
 use App\Agents\AgentNotices;
 use App\Agents\AgentSessionCounter;
 use App\Agents\AgentVisibility;
+use App\Agents\Contracts\AgentDrivers as AgentDriversContract;
 use App\Agents\DriverBudgets;
 use App\Agents\Drivers\Contracts\AttachmentReferences;
 use App\Agents\Drivers\Contracts\CallingDriver as CallingDriverContract;
@@ -75,7 +77,6 @@ use App\Policies\ActivityPolicy;
 use App\Policies\AgentMaintenancePolicy;
 use App\Policies\AgentPolicy;
 use App\Policies\AgentTerminalControlPolicy;
-use App\Processes\Contracts\RuntimeStops as RuntimeStopsContract;
 use App\Profiles\StartProfiles;
 use App\Projects\WorkspaceReader;
 use App\Reads\Contracts\SessionOutputAccess as SessionOutputAccessContract;
@@ -114,7 +115,6 @@ use App\Sessions\Contracts\StartTransaction;
 use App\Sessions\DatabaseStartTransaction;
 use App\Sessions\Exceptions\AgentContextMissing;
 use App\Sessions\ReadinessCheckSweep;
-use App\Sessions\RuntimeStops;
 use App\Sessions\SessionOutputAccess;
 use App\Sessions\SessionPolicyReader;
 use App\Sessions\SessionProvenance;
@@ -154,6 +154,7 @@ final class AgentsServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind(AgentDriversContract::class, AgentDrivers::class);
         $this->app->bind(ReadGrantContract::class, ReadGrant::class);
         $this->app->bind(AgentResolver::class, AgentLabels::class);
         $this->app->bind(ActivityLogContract::class, ActivityLog::class);
@@ -179,7 +180,6 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(WorkspaceReaderContract::class, WorkspaceReader::class);
         $this->app->bindIf(AttachmentReferences::class, UnavailableAttachments::class);
         $this->app->bindIf(InboxParticipationEnding::class, KeptInboxParticipation::class);
-        $this->app->bind(RuntimeStopsContract::class, RuntimeStops::class);
         $this->app->bind(NavigationReaderContract::class, NavigationReader::class);
         $this->app->bind(TerminalViewCloserContract::class, TerminalViewCloser::class);
 

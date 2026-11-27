@@ -7,7 +7,7 @@ function step(id: string): SequenceStepData {
 }
 
 const steps = ['a', 'b', 'c'].map(step);
-const ids = (list: SequenceStepData[]): string[] => list.map((each) => each.id);
+const ids = (list: SequenceStepData[]) => list.map((each) => each.id);
 
 describe('the order of steps while they are edited', () => {
     it('starts a new step empty', () => {

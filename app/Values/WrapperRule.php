@@ -29,6 +29,6 @@ final readonly class WrapperRule
      */
     public function optionFor(string $word): array
     {
-        return array_values(array_filter($this->options, fn (OptionGrammar $option): bool => $option->matches($word)));
+        return array_values(array_filter($this->options, fn (OptionGrammar $option) => $option->matches($word)));
     }
 }

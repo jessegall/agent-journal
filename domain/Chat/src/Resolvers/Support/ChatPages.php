@@ -6,11 +6,11 @@ namespace Domain\Chat\Resolvers\Support;
 
 use App\Actors\Contracts\ActorLabels;
 use App\Actors\Contracts\CurrentActor;
-use App\Agents\AgentDrivers;
+use App\Agents\Contracts\AgentDrivers;
 use App\Inboxes\Contracts\InboxEligibility;
 use App\Messages\Contracts\MessageParticipant;
+use App\Messages\Contracts\MessageParticipants;
 use App\Messages\Enums\InboxPermission;
-use App\Messages\MessageParticipants;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;

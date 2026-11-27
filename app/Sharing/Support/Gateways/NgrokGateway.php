@@ -145,14 +145,15 @@ final readonly class NgrokGateway implements ShareGateway
             $forwardsHere = self::isUpstream(Arr::string($tunnel, 'config.addr'), $upstream);
             $claimsOrigin = $this->origins->accepts(Arr::string($tunnel, 'public_url'), $publicOrigin);
 
-            if ($forwardsHere || $claimsOrigin) {
-                if ($forwardsHere
-                    && $claimsOrigin) {
-                    return GatewayAddressCheck::Confirmed;
-                }
-
-                return GatewayAddressCheck::Unexpected;
+            if (! $forwardsHere && ! $claimsOrigin) {
+                continue;
             }
+
+            if ($forwardsHere && $claimsOrigin) {
+                return GatewayAddressCheck::Confirmed;
+            }
+
+            return GatewayAddressCheck::Unexpected;
         }
 
         return GatewayAddressCheck::Waiting;

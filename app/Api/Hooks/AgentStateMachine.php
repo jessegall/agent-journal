@@ -61,7 +61,7 @@ final readonly class AgentStateMachine
                 $deadline,
                 fn (): DriverReply => $this->eventActivity->evaluate(
                     $target,
-                    fn (): DriverReply => $this->pipelines->run(AnswerHookPipeline::class, $call, DriverReply::class),
+                    fn () => $this->pipelines->run(AnswerHookPipeline::class, $call, DriverReply::class),
                 ),
             );
         } catch (ReplayFound $replay) {

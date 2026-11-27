@@ -22,6 +22,16 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class LayoutPartData extends Data
 {
     /**
+     * The deepest a part may sit below the layout's root.
+     */
+    public const int DEPTH_LIMIT = 12;
+
+    /**
+     * The most rows one collection holds; a longer list is paged by its reader.
+     */
+    public const int ROW_LIMIT = 100;
+
+    /**
      * The tones a badge takes; waiting is a state that has not started or is absent, drawn with a hollow dot.
      */
     private const array TONES = [
@@ -320,8 +330,8 @@ final class LayoutPartData extends Data
      */
     public function assertWithinCatalogue(string $path = 'root', int $depth = 0, bool $isInForm = false): int
     {
-        if ($depth > LayoutLimits::DEPTH_LIMIT) {
-            throw LayoutRefused::tooDeep($path, LayoutLimits::DEPTH_LIMIT);
+        if ($depth > self::DEPTH_LIMIT) {
+            throw LayoutRefused::tooDeep($path, self::DEPTH_LIMIT);
         }
 
         $this->assertTagAccepts($path);
@@ -378,8 +388,8 @@ final class LayoutPartData extends Data
 
         $this->assertBindings($path);
 
-        if (count($this->rows) > LayoutLimits::ROW_LIMIT) {
-            throw LayoutRefused::tooManyRows($path, count($this->rows), LayoutLimits::ROW_LIMIT);
+        if (count($this->rows) > self::ROW_LIMIT) {
+            throw LayoutRefused::tooManyRows($path, count($this->rows), self::ROW_LIMIT);
         }
     }
 

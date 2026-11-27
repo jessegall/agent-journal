@@ -47,9 +47,6 @@ final readonly class FrameRecords
     }
 
     /**
-     * Whether a frame of a ticking state type is among these frames.
-     */
-    /**
      * Whether every frame holds the same state values as its counterpart in the other list, frame for frame.
      */
     public function hasSameValuesAs(self $other): bool
@@ -79,6 +76,9 @@ final readonly class FrameRecords
         );
     }
 
+    /**
+     * Whether a frame of a ticking state type is among these frames.
+     */
     public function holdTicking(TickingTypes $ticking): bool
     {
         foreach ($this->records as $record) {

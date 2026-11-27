@@ -74,7 +74,7 @@ final readonly class ShippedReaderInstaller
     {
         return $this->projects->within(
             ProjectSelection::of($project->id),
-            fn (): array => $this->installMatching($installed, $folder),
+            fn () => $this->installMatching($installed, $folder),
         );
     }
 

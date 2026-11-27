@@ -44,7 +44,7 @@ final readonly class ProfilesIndex extends ProfilesPage
                 'users',
             ),
         )
-            ->counting(count($profiles))
+            ->countingRows()
             ->withReader(
                 LayoutBackData::from(['href' => route('accounts.profiles', [], false), 'label' => 'Profiles']),
                 ...$reader,

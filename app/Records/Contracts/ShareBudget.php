@@ -31,9 +31,11 @@ interface ShareBudget
     public function chargeText(int $bytes): void;
 
     /**
+     * Counts the bytes of a record's metadata text, such as its title, against the loaded bytes.
+     *
      * @throws ShareBudgetExceeded
      */
-    public function chargeMetadata(int $bytes): void;
+    public function chargeMetadata(string $text): void;
 
     /**
      * @throws ShareBudgetExceeded

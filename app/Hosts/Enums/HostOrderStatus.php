@@ -13,4 +13,15 @@ enum HostOrderStatus: string
     case Claimed = 'claimed';
     case Done = 'done';
     case Refused = 'refused';
+
+    /**
+     * Whether the order is still to be carried out: waiting or handed out.
+     */
+    public function isOpen(): bool
+    {
+        return match ($this) {
+            self::Pending, self::Claimed => true,
+            self::Done, self::Refused => false,
+        };
+    }
 }

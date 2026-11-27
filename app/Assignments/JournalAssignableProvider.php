@@ -112,7 +112,7 @@ final readonly class JournalAssignableProvider implements JournalAssignableProvi
         }
 
         $ids = array_map(fn (RecordIdentity $record) => $record->id, $records);
-        $found = $this->asks->visible()->whereKey($ids)->readExactly(count($ids))->pluck('id')->all();
+        $found = $this->asks->visible()->whereKey($ids)->readExactlyOf($ids)->pluck('id')->all();
 
         return RecordIdentity::among($records, $found);
     }

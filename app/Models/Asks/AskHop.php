@@ -208,7 +208,7 @@ final class AskHop extends JournalModel implements EventSource, ReadableModel
             return [];
         }
 
-        return self::query()->currentHops()->whereKey($hops)->readExactly(count($hops))
+        return self::query()->currentHops()->whereKey($hops)->readExactlyOf($hops)
             ->pluck('ask_hops.version', 'ask_hops.id')->map(fn (mixed $version) => (int) $version)->all();
     }
 

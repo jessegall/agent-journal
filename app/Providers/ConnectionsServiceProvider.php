@@ -38,6 +38,7 @@ use App\Projects\Contracts\FileComments;
 use App\Projects\Contracts\HeldFileVersions;
 use App\Projects\Contracts\ProjectDestination as ProjectDestinationContract;
 use App\Projects\Contracts\ProjectDirectory as ProjectDirectoryContract;
+use App\Projects\Contracts\ProjectEdges as ProjectEdgesContract;
 use App\Projects\CurrentProject;
 use App\Projects\LocalProjectHosts;
 use App\Projects\NoFileComments;
@@ -45,6 +46,7 @@ use App\Projects\NoHeldFileVersions;
 use App\Projects\ProjectCommands;
 use App\Projects\ProjectDestination;
 use App\Projects\ProjectDirectory;
+use App\Projects\ProjectEdges;
 use App\Projects\ProjectFiles;
 use App\Projects\ProjectReadRetentionService;
 use App\Records\Contracts\RecordProviderRegistration;
@@ -63,6 +65,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind(ProjectEdgesContract::class, ProjectEdges::class);
         $this->app->bind(LocalProjectHostsContract::class, LocalProjectHosts::class);
         $this->app->bind(HostChannelContract::class, HostChannel::class);
 

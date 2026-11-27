@@ -641,7 +641,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
      */
     public static function resolveLiveScopeVersions(array $ids): array
     {
-        return self::query()->whereKey($ids)->liveNow()->readExactly(count($ids))->pluck('scope_version', 'id')->map(
+        return self::query()->whereKey($ids)->liveNow()->readExactlyOf($ids)->pluck('scope_version', 'id')->map(
             fn (mixed $version) => (int) $version,
         )->all();
     }
@@ -800,7 +800,10 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     #[Scope]
     protected function pastDeadline(Builder $query): void
     {
-        $open = [ShareStatus::Proposed, ...ShareStatus::liveStates()];
+        $open = [
+            ShareStatus::Proposed,
+            ...ShareStatus::liveStates(),
+        ];
 
         $query->whereIn(
             'status',

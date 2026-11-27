@@ -131,7 +131,14 @@ export function windowLine(window: MeasuredWindow): string {
 }
 
 export function costLine(cost: AccountMonthCostData): string {
-    return `Est. ${dollars(Number(cost.usd))} this month`;
+    return `Est. ${costInDollars(cost)} this month`;
+}
+
+/**
+ * The month's estimate in dollars; the server sends the amount as a decimal string.
+ */
+function costInDollars(cost: AccountMonthCostData): string {
+    return dollars(Number(cost.usd));
 }
 
 function tokens(total: number): string {
@@ -239,7 +246,7 @@ function windowValue(window: MeasuredWindow, now: Date): string {
  */
 export function costFacts(cost: AccountMonthCostData): UsageFact[] {
     return [
-        { term: 'Estimated cost', value: dollars(Number(cost.usd)) },
+        { term: 'Estimated cost', value: costInDollars(cost) },
         { term: 'Month', value: `${monthInUtc(cost.monthStart)}, UTC` },
         { term: 'Last observed', value: dateTimeWithZone(cost.lastObservedAt) },
     ];

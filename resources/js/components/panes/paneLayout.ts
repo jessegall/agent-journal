@@ -155,7 +155,7 @@ export function openCopy(
 
 function copyWindowAs(node: LayoutNode, copyKey: string, paneId: string): LayoutNode {
     return mapNodes(node, (each) => {
-        if (each.type !== 'pane' || each.id !== paneId) {
+        if (!isPane(each, paneId)) {
             return each;
         }
 
@@ -306,7 +306,7 @@ export function moveWindow(
     place?: number,
 ): LayoutNode {
     return mapNodes(closeWindow(node, windowKey), (each) => {
-        if (each.type !== 'pane' || each.id !== paneId) {
+        if (!isPane(each, paneId)) {
             return each;
         }
 
@@ -368,6 +368,15 @@ export function addPaneAtRight(
  * A drop on the tab strip or an empty pane aims at the centre. Elsewhere, it aims at the nearest edge within a
  * quarter of the pane's size, or the centre outside that range.
  */
+/** Whether the point lies inside the box, its edges included. */
+export function contains(
+    box: { left: number; right: number; top: number; bottom: number },
+    x: number,
+    y: number,
+): boolean {
+    return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+}
+
 export function zoneAt(
     box: { left: number; top: number; width: number; height: number },
     x: number,

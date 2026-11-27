@@ -10,6 +10,7 @@ use App\Mcp\Support\ToolArguments;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskTextLimit;
+use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -34,7 +35,7 @@ final class BlockTaskTool extends TaskWriteTool
     protected function command(ToolArguments $arguments): BlockTaskCommand
     {
         return new BlockTaskCommand(
-            $arguments->ulid('task_id'),
+            $arguments->ulid(TaskReadResult::ID_ARGUMENT),
             $arguments->positiveInteger('run_number'),
             $arguments->text('reason'),
         );

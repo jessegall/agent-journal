@@ -44,7 +44,7 @@ final readonly class DockRequests
         try {
             $agent = $this->agents->visibleAgent($agentId);
         } catch (StackTargetRefused $refused) {
-            throw ChatUnavailable::notAttached($agentId);
+            throw ChatUnavailable::withHiddenAgent($agentId, $refused);
         }
 
         return Inbox::query()->findOrFail(

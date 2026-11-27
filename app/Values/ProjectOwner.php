@@ -76,6 +76,6 @@ final readonly class ProjectOwner
             return true;
         }
 
-        return $this->project->filter(fn (string $id): bool => $id === $other->projectId())->isDefined();
+        return $this->project->filter(fn (string $id) => $id === $other->projectId())->isDefined();
     }
 }

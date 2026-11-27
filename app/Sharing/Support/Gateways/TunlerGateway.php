@@ -57,7 +57,7 @@ final readonly class TunlerGateway implements ShareGateway
             $problems[] = "The journal's tunler configuration folder does not exist.";
         }
 
-        if ($this->subdomain === null || $this->subdomain === '') {
+        if (! $this->hasSubdomain()) {
             $problems[] = 'No subdomain is set for Tunler (journal.tunnels.tunler.subdomain).';
         }
 
@@ -89,7 +89,7 @@ final readonly class TunlerGateway implements ShareGateway
     {
         $settings = $operation->settings();
 
-        if ($this->subdomain === null || $this->subdomain === '') {
+        if (! $this->hasSubdomain()) {
             throw GatewayOpenFailed::notReady(self::KEY);
         }
 
@@ -190,5 +190,10 @@ final readonly class TunlerGateway implements ShareGateway
             'XDG_CONFIG_HOME' => $this->configFolder,
             'HOME' => $this->configFolder,
         ];
+    }
+
+    private function hasSubdomain(): bool
+    {
+        return $this->subdomain !== null && $this->subdomain !== '';
     }
 }

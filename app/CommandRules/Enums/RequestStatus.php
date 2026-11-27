@@ -39,7 +39,11 @@ enum RequestStatus: string
      */
     public function isClosed(): bool
     {
-        return $this === self::Rejected || $this === self::Withdrawn;
+        return match ($this) {
+            self::Rejected, self::Withdrawn => true,
+            self::CollectingDeclaration, self::AwaitingSampleApproval, self::ReadyForSample, self::CapturingSample,
+            self::AwaitingProof, self::AwaitingApproval, self::Active => false,
+        };
     }
 
     /**
@@ -55,7 +59,7 @@ enum RequestStatus: string
      */
     public function allows(self $next): bool
     {
-        if ($next === self::Rejected || $next === self::Withdrawn) {
+        if ($next->isClosed()) {
             return $this->isOpen();
         }
 

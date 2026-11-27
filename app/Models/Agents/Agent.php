@@ -11,6 +11,7 @@ use App\Asks\Contracts\QuestionRecipient;
 use App\Assignments\Contracts\Assignee;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersByCreation;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Concerns\TakesPartInMessages;
@@ -72,6 +73,7 @@ final class Agent extends JournalModel implements
     use BoundedReads;
     use HasProjectColumn;
     use Linkable;
+    use OrdersByCreation;
     use OrdersById;
     use RaisesEvents;
     use TakesPartInMessages;
@@ -290,18 +292,6 @@ final class Agent extends JournalModel implements
     }
 
     /**
-     * The rows by created at, then id.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function byCreatedAt(Builder $query): void
-    {
-        $query->orderBy('created_at');
-        $query->orderBy('id');
-    }
-
-    /**
      * The rows by name.
      *
      * @param  Builder<self>  $query
@@ -320,6 +310,6 @@ final class Agent extends JournalModel implements
     #[Scope]
     protected function inSelection(Builder $query, ProjectSelection $selection): void
     {
-        new ProjectScope(static fn (): ProjectSelection => $selection, false)->apply($query, $query->getModel());
+        new ProjectScope(static fn () => $selection, false)->apply($query, $query->getModel());
     }
 }

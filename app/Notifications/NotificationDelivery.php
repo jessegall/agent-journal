@@ -8,6 +8,7 @@ use App\Models\Notifications\NotificationChange;
 use App\Models\Notifications\NotificationOccurrence;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
+use App\Notifications\Contracts\NotificationDelivery as NotificationDeliveryContract;
 use App\Notifications\Data\NotificationTarget;
 use App\Notifications\Enums\NotificationMutationType;
 use App\Notifications\Enums\NotificationSourceType;
@@ -18,7 +19,7 @@ use App\Support\ActorReference;
  * the same occurrence key changes nothing. Scopes are locked in one stable order, so two deliveries never deadlock,
  * and each new receipt appends its change to the scope's log under the same lock.
  */
-final readonly class NotificationDelivery
+final readonly class NotificationDelivery implements NotificationDeliveryContract
 {
     public function __construct(private NotificationScopes $scopes) {}
 

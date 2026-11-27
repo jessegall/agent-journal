@@ -7,13 +7,14 @@ namespace App\Support\Layout;
 use App\Projects\Contracts\CurrentProject;
 use App\Projects\Contracts\ProjectDirectory;
 use App\Projects\Enums\ProjectSelectionType;
+use App\Support\Layout\Contracts\ProjectRowLabel as ProjectRowLabelContract;
 use App\Values\ProjectOwner;
 
 /**
  * The badge a list row names its project by: under All projects the project's label, with its key beside a label
  * two projects share; a Global row says Global under every choice; a row of the one project chosen says nothing.
  */
-final class ProjectRowLabel
+final class ProjectRowLabel implements ProjectRowLabelContract
 {
     private const string KEY = 'project';
 

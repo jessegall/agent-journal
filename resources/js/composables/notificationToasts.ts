@@ -7,7 +7,7 @@ import type { ToastOutcome } from './toastStore';
  * its own address needs no toast.
  */
 export function notificationToasts(items: NotificationItem[], currentUrl: string): ToastOutcome[] {
-    return items.map((item) => toastOf(item, currentUrl)).filter((toast): toast is ToastOutcome => toast !== null);
+    return items.map((item) => toastOf(item, currentUrl)).filter((toast) => toast !== null);
 }
 
 export function toastOf(item: NotificationItem, currentUrl: string): ToastOutcome | null {

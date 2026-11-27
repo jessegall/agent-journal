@@ -123,7 +123,7 @@ final class AccountUsageCost extends JournalModel implements EventSource, Readab
             ->ofAccounts($ids)
             ->observedInMonthOf($monthStart)
             ->totalPerAccount()
-            ->readExactly(count($ids))
+            ->readExactlyOf($ids)
             ->get();
 
         $costs = [];

@@ -71,7 +71,7 @@ final class SharingServiceProvider extends ServiceProvider
             $records->checkRelations();
         });
 
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands/Sharing', Command::class));
+        $this->commands(FolderClasses::in(FolderClasses::consoleCommandFolder(dirname(__DIR__)).'/Sharing', Command::class));
         $this->loadCoreRoutes('sharing/sharing.php');
     }
 }

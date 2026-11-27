@@ -18,7 +18,7 @@ final class RecoverBindingRequest extends FormRequest
      */
     public function authorize(ServerOrigin $origin): bool
     {
-        return $this->isSecure() || $origin->canTakePlainHttp();
+        return $origin->takes($this);
     }
 
     /**
@@ -26,7 +26,12 @@ final class RecoverBindingRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['installationNonce' => ['required', 'string', 'min:16', 'max:128']];
+        return ['installationNonce' => [
+            'required',
+            'string',
+            'min:16',
+            'max:128',
+        ]];
     }
 
     public function installationNonce(): string

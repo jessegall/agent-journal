@@ -91,7 +91,7 @@ final readonly class DriverRequestPayload
     {
         $content = [
             $this->message,
-            array_map(fn (MessagePart $part): array => $part->toArray(), $this->parts),
+            array_map(fn (MessagePart $part) => $part->toArray(), $this->parts),
             $this->model,
             $this->effort,
             $this->scriptId,

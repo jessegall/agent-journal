@@ -7,8 +7,8 @@ namespace App\Console\Commands;
 use App\Bus\ConsoleOwner;
 use App\CommandRules\ShippedReaderInstaller;
 use App\CommandRules\Values\ToolVersions;
+use App\Console\Concerns\ReadsProjectOption;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Models\Projects\Project;
 use Illuminate\Console\Command;
 
 /**
@@ -17,6 +17,8 @@ use Illuminate\Console\Command;
  */
 final class InstallShippedReadersCommand extends Command
 {
+    use ReadsProjectOption;
+
     protected $signature = 'process:install-shipped-readers'
         .' {--project= : The key of the project to install into, the local project when none is given}';
 
@@ -45,16 +47,5 @@ final class InstallShippedReadersCommand extends Command
         $this->line('Approved: '.implode(', ', $installed).'.');
 
         return self::SUCCESS;
-    }
-
-    private function project(): Project
-    {
-        $key = $this->option('project');
-
-        if (! is_string($key)) {
-            return Project::findLocal();
-        }
-
-        return Project::findForKey($key);
     }
 }

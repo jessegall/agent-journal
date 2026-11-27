@@ -34,12 +34,10 @@ enum CommandType: string
      */
     public function outputRequirement(): OutputRequirement
     {
-        if ($this === self::Verification
-            || $this === self::Build) {
-            return OutputRequirement::Full;
-        }
-
-        return OutputRequirement::Ordinary;
+        return match ($this) {
+            self::Verification, self::Build => OutputRequirement::Full,
+            self::Ordinary, self::Alias, self::Unknown => OutputRequirement::Ordinary,
+        };
     }
 
     public function needsAlias(): bool

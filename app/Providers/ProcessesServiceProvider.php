@@ -40,6 +40,7 @@ use App\Policies\ProcessPolicy;
 use App\Processes\AliasResolver;
 use App\Processes\Contracts\ProcessRunResolver as ProcessRunResolverContract;
 use App\Processes\Contracts\ShellCommandParser as ShellCommandParserContract;
+use App\Processes\Contracts\StoredOutput as StoredOutputContract;
 use App\Processes\OutputRecorder;
 use App\Processes\ProcessRunResolver;
 use App\Processes\ReceiptPublisher;
@@ -47,6 +48,7 @@ use App\Processes\RequiredServices;
 use App\Processes\Resolvers\RunNotificationTarget;
 use App\Processes\ResultReceipts;
 use App\Processes\ShellCommandParser;
+use App\Processes\StoredOutput;
 use App\Projects\ServedEnvironment;
 use App\Reads\Contracts\OutputRecorder as OutputRecorderContract;
 use App\Support\Classification\CommandClassifier;
@@ -69,6 +71,7 @@ final class ProcessesServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind(StoredOutputContract::class, StoredOutput::class);
         $this->app->scoped(ShellCommandParserContract::class, ShellCommandParser::class);
         $this->app->singleton(TreeParser::class);
         $this->app->scoped(CommandClassifierContract::class, CommandClassifier::class);

@@ -17,7 +17,7 @@ final readonly class RuleBundle
 
     public function digest(): string
     {
-        $rules = array_map(fn (CommandRule $rule): array => $rule->toArray(), $this->rules);
+        $rules = array_map(fn (CommandRule $rule) => $rule->toArray(), $this->rules);
 
         return hash('sha256', json_encode($rules, JSON_THROW_ON_ERROR));
     }

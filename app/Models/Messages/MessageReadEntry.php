@@ -39,9 +39,9 @@ final class MessageReadEntry extends JournalModel implements EventSource, Readab
     use Linkable;
     use RaisesEvents;
 
-    public $timestamps = false;
-
     public const string CREATED_AT = 'read_at';
+
+    public $timestamps = false;
 
     protected $table = 'message_reads';
 
@@ -58,6 +58,10 @@ final class MessageReadEntry extends JournalModel implements EventSource, Readab
 
     // ----------[ Constructors ]----------
 
+    /**
+     * Records the reader's read of the message: the first read raises MessageRead, a later one only moves its last
+     * read time.
+     */
     public static function create(Message $message, MessageSender&MessageReceiver $reader, CarbonImmutable $at): void
     {
         $entry = self::findOfReader($message, $reader);
@@ -84,10 +88,6 @@ final class MessageReadEntry extends JournalModel implements EventSource, Readab
 
     // ----------[ Relations ]----------
 
-    /**
-     * Records the reader's read of the message: the first read raises MessageRead, a later one only moves its last
-     * read time.
-     */
     /**
      * @return BelongsTo<Message, $this>
      */

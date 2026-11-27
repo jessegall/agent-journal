@@ -25,12 +25,16 @@ final class AppContextData extends Data
     public function __construct(
         public readonly Lazy|InstallationData $installation,
         public readonly Lazy|ViewerData $viewer,
-        /** @var Lazy|list<DriverLookData> */
+        /**
+         * @var Lazy|list<DriverLookData>
+         */
         public readonly Lazy|array $drivers,
         public readonly string|Optional $refusalCode,
         public readonly Lazy|NavigationData|Optional $navigation,
         public readonly Lazy|NavigationCountsData|Optional $navigationCounts,
-        /** @var list<ProjectData>|Optional */
+        /**
+         * @var list<ProjectData>|Optional
+         */
         #[DataCollectionOf(ProjectData::class)]
         public readonly array|Optional $projects = new Optional(),
         // The chosen project's id; null while All projects are shown.

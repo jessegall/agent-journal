@@ -20,16 +20,16 @@ use App\Support\Syntax\TokenCursor;
  */
 final readonly class ReadOptionStatementPipeline implements CommandReader, PipelineDefinition
 {
-    public string $input = UnparsedCommand::class;
-
-    public string $output = NodeRead::class;
-
     private const array OPTION_STATEMENTS = [
         'set',
         'shopt',
         'setopt',
         'unsetopt',
     ];
+
+    public string $input = UnparsedCommand::class;
+
+    public string $output = NodeRead::class;
 
     public static function reads(TokenCursor $cursor): bool
     {

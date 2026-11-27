@@ -48,8 +48,8 @@ final class OutputRecord extends Data
     public function claimedOutcome(): ClaimedOutcome
     {
         return match (true) {
-            $this->hasFilled('passed') => ClaimedOutcome::Passed,
-            $this->hasFilled('failed') => ClaimedOutcome::Failed,
+            $this->hasFilled(ClaimedOutcome::Passed->value) => ClaimedOutcome::Passed,
+            $this->hasFilled(ClaimedOutcome::Failed->value) => ClaimedOutcome::Failed,
             default => ClaimedOutcome::Unknown,
         };
     }

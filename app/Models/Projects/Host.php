@@ -600,11 +600,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The host a secret belongs to, if it is enrolled and not revoked.
-     *
-     * @throws HostCredentialRejected
-     */
-    /**
      * The secret the host's orders are signed with, worked out from its credential the way the host works it out, so
      * enrolment hands over nothing more.
      */
@@ -647,6 +642,11 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             ->all());
     }
 
+    /**
+     * The host a secret belongs to, if it is enrolled and not revoked.
+     *
+     * @throws HostCredentialRejected
+     */
     public static function findForSecret(string $secret): self
     {
         $host = self::query()->withSecret($secret)->firstOr(HostCredentialRejected::throwing()->unknown());

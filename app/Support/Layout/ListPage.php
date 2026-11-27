@@ -53,6 +53,14 @@ final readonly class ListPage
         return clone ($this, ['total' => $total]);
     }
 
+    /**
+     * Announces the total of a list that shows every row it has: the number of its rows.
+     */
+    public function countingRows(): self
+    {
+        return $this->counting(count($this->rows));
+    }
+
     public function filteredBy(LayoutPartData ...$filters): self
     {
         return clone ($this, ['filters' => array_values($filters)]);

@@ -24,7 +24,12 @@ export type ChatTimelineClient = {
 /**
  * The chat's rows could not be read for this viewer: the chat is gone or no longer visible to them.
  */
-export class ChatRowsUnavailable extends Error {}
+export class ChatRowsUnavailable extends Error {
+  /** The rows of the chat could not be read, even from its newest page. */
+  static unreadable(): ChatRowsUnavailable {
+    return new ChatRowsUnavailable("The chat's rows are unavailable.");
+  }
+}
 
 export const chatTimelineClient: ChatTimelineClient = {
   rows: async (inboxId, beforeId) => {
@@ -39,7 +44,7 @@ export const chatTimelineClient: ChatTimelineClient = {
       return chatTimelineClient.rows(inboxId, null);
     }
 
-    throw new ChatRowsUnavailable("The chat's rows are unavailable.");
+    throw ChatRowsUnavailable.unreadable();
   },
 };
 

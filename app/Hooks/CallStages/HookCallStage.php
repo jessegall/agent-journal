@@ -10,6 +10,7 @@ use App\Agents\Drivers\Hooks\DriverReply;
 use App\Models\Agents\AgentStackRow;
 use App\Stacks\HookAnswer;
 use App\Support\Inputs\Contracts\HookInput;
+use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Values\StackTarget;
 use Closure;
@@ -30,6 +31,20 @@ final readonly class HookCallStage
         public HookIdentity $identity,
         public StackTarget $target,
     ) {}
+
+    /**
+     * The input when this call is a stop that carries closing words; none for any other call.
+     */
+    public function stopWithClosingWords(): StopRequested|null
+    {
+        $input = $this->input;
+
+        if ($input instanceof StopRequested && $input->stop->hasClosingWords()) {
+            return $input;
+        }
+
+        return null;
+    }
 
     public function locked(AgentStackRow $row): LockedCall
     {

@@ -6,18 +6,28 @@ import type { Loader } from '@/framework/loaders';
 /**
  * Why a guided draft request did not give its answer: the server refused it, or no answer came.
  */
-export class DraftRequestFailed extends Error {}
+export class DraftRequestFailed extends Error {
+    /** No answer came from the journal. */
+    static unanswered(cause: Error): DraftRequestFailed {
+        return new DraftRequestFailed(cause.message, { cause });
+    }
+
+    /** The journal answered with something other than the draft. */
+    static answered(status: string): DraftRequestFailed {
+        return new DraftRequestFailed(`The draft request was answered ${status}.`);
+    }
+}
 
 /**
  * The answer of a draft loader; any other end, invalid, unavailable or no answer at all, is a failed request.
  */
 async function read<I, O>(loader: Loader<I, O>, input: I): Promise<O> {
     const answer = await load(loader, input).catch((failure: Error) => {
-        throw new DraftRequestFailed(failure.message);
+        throw DraftRequestFailed.unanswered(failure);
     });
 
     if (answer.status !== 'ok') {
-        throw new DraftRequestFailed(`The draft request was answered ${answer.status}.`);
+        throw DraftRequestFailed.answered(answer.status);
     }
 
     return answer.value;

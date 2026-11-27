@@ -16,7 +16,9 @@ use Illuminate\Support\Str;
  */
 final readonly class MorphAliases
 {
-    /** The folders of the core models, as FolderClasses reads them. */
+    /**
+     * The folders of the core models, as FolderClasses reads them.
+     */
     private const array CORE_FOLDERS = [
         'app/Models',
         'app/Models/*',

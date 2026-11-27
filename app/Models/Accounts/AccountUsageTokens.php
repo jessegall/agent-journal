@@ -140,7 +140,7 @@ final class AccountUsageTokens extends JournalModel implements EventSource, Read
         $snapshots = self::query()
             ->inCurrentGenerationOf($accounts)
             ->newestPerAccount()
-            ->readExactly(count($accounts))
+            ->readExactlyOf($accounts)
             ->get();
 
         $newest = [];

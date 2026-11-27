@@ -39,14 +39,6 @@ final class PostCommentTest extends TestCase
     use CommitsHookRows;
     use InstallsNotesModule;
 
-    /**
-     * The notes module these tests install requires Cards and Rules beside Comments.
-     */
-    protected static function bootedDomains(): array
-    {
-        return DomainBoot::withRequirements(CommentsDomain::class, CardsDomain::class, RulesDomain::class);
-    }
-
     private const string QUESTION = 'Is this still open?';
 
     private const array TABLES = [
@@ -61,13 +53,21 @@ final class PostCommentTest extends TestCase
         'command_receipts',
     ];
 
-    private RecordIdentity $note;
-
     private const string FIRST_ABSTRACT = 'Comment 1.';
 
     private const string NOTE_LABEL = 'note %d';
 
     private const string WIRE_TEXT = 'Over the wire.';
+
+    private RecordIdentity $note;
+
+    /**
+     * The notes module these tests install requires Cards and Rules beside Comments.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(CommentsDomain::class, CardsDomain::class, RulesDomain::class);
+    }
 
     protected function setUp(): void
     {

@@ -6,6 +6,7 @@ namespace App\Messages;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\ActorResolver;
+use App\Messages\Contracts\MessageParticipants as MessageParticipantsContract;
 use App\Messages\Contracts\MessageReceiver;
 use App\Messages\Contracts\MessageSender;
 use App\Messages\Exceptions\MessageParticipantRefused;
@@ -14,7 +15,7 @@ use App\Support\ActorReference;
 /**
  * The model behind the actor in hand, as the sender or the reader of messages; an actor that is neither is refused.
  */
-final readonly class MessageParticipants
+final readonly class MessageParticipants implements MessageParticipantsContract
 {
     public function __construct(private ActorResolver $actors) {}
 

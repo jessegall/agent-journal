@@ -36,12 +36,12 @@ final class ApproveRuleTest extends TestCase
 {
     use CommitsHookRows;
 
-    private Rule $proposed;
-
     private const array TABLES = [
         'rules',
         'users',
     ];
+
+    private Rule $proposed;
 
     protected function setUp(): void
     {

@@ -10,6 +10,7 @@ use App\Mcp\Support\ToolArguments;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskTextLimit;
+use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -26,14 +27,14 @@ final class CancelTaskTool extends TaskWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'task_id' => $this->recordIdArgument($schema),
+            TaskReadResult::ID_ARGUMENT => $this->recordIdArgument($schema),
             'reason' => $schema->string()->max(TaskTextLimit::Note->value)->required(),
         ];
     }
 
     protected function command(ToolArguments $arguments): CancelTaskCommand
     {
-        return new CancelTaskCommand($arguments->ulid('task_id'), $arguments->text('reason'));
+        return new CancelTaskCommand($arguments->ulid(TaskReadResult::ID_ARGUMENT), $arguments->text('reason'));
     }
 
     protected function present(mixed $commandResult): ToolResult

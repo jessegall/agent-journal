@@ -97,7 +97,17 @@ class ReadBuilder extends Builder
     }
 
     /**
-     * Exactly a known set, however many: the rows of the given ids, read as readExactly(count($ids)).
+     * Exactly a known set, however many: as many rows as the set holds, such as the rows of the given ids.
+     *
+     * @param  array<array-key, mixed>  $set
+     */
+    public function readExactlyOf(array $set): static
+    {
+        return $this->readExactly(count($set));
+    }
+
+    /**
+     * Exactly this many rows, however many, such as a known number of rows for each of a set.
      *
      * @throws ReadLimitInvalid
      */

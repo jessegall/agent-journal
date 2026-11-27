@@ -18,7 +18,7 @@ final readonly class ProjectDestination implements ProjectDestinationContract
 
     public function projectFor(Option $chosen): string
     {
-        return $chosen->getOrCall(fn (): string => $this->projects->selection()->projectId());
+        return $chosen->getOrCall(fn () => $this->projects->selection()->projectId());
     }
 
     public function ownerFor(Option $chosen): ProjectOwner

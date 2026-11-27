@@ -29,7 +29,6 @@ use App\Inboxes\Contracts\InboxDestinationResolver as InboxDestinationResolverCo
 use App\Inboxes\Contracts\InboxMemberPolicies;
 use App\Inboxes\Contracts\InboxMemberRoutes;
 use App\Inboxes\Contracts\InboxRegistration;
-use App\Inboxes\Contracts\InboxResolver;
 use App\Inboxes\Contracts\MainInbox as MainInboxContract;
 use App\Inboxes\CoreInboxes;
 use App\Inboxes\InboxAssignees;
@@ -37,11 +36,15 @@ use App\Inboxes\MainInbox;
 use App\Inboxes\RegisteredInboxes;
 use App\Inboxes\SharedHolders;
 use App\Links\MessageLinkRecords;
+use App\Messages\Contracts\MessageParticipants as MessageParticipantsContract;
+use App\Messages\MessageParticipants;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
+use App\Notifications\Contracts\NotificationDelivery as NotificationDeliveryContract;
 use App\Notifications\Contracts\Notifications as NotificationsContract;
 use App\Notifications\Contracts\NotificationTargets as NotificationTargetsContract;
 use App\Notifications\NotificationChangeRetentionService;
+use App\Notifications\NotificationDelivery;
 use App\Notifications\Notifications;
 use App\Notifications\NotificationTargets;
 use App\Policies\MessageAdministrationPolicy;
@@ -66,6 +69,8 @@ final class CommunicationServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind(NotificationDeliveryContract::class, NotificationDelivery::class);
+        $this->app->bind(MessageParticipantsContract::class, MessageParticipants::class);
         $this->app->singleton(RegisteredInboxes::class);
         $this->app->singleton(InboxRegistration::class, RegisteredInboxes::class);
         $this->app->scoped(ActorProvisioningContract::class, ActorProvisioning::class);
@@ -76,7 +81,6 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->singleton(DestinationRegistry::class);
         $this->app->scoped(AssignmentDestinationResolverContract::class, AssignmentDestinationResolver::class);
         $this->app->scoped(InboxDestinationResolverContract::class, InboxDestinationResolver::class);
-        $this->app->singleton(InboxResolver::class, RegisteredInboxes::class);
         $this->app->singleton(RegisteredInboxes::class);
         $this->app->bind(AgentNoticesContract::class, AgentNotices::class);
         $this->app->singleton(NotificationTargets::class);

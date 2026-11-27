@@ -88,6 +88,14 @@ final readonly class DeclaredType
     }
 
     /**
+     * Whether it names one class, interface or enum rather than one of PHP's own types or a union.
+     */
+    public function namesClass(): bool
+    {
+        return $this->isNamed() && ! $this->isBuiltin;
+    }
+
+    /**
      * The one name of a named type, without its question mark, such as int or App\Models\Task.
      *
      * @throws TypeNotNamed
@@ -115,7 +123,9 @@ final readonly class DeclaredType
         }
 
         // PHP names a class or an interface for every named type that is not one of its own.
-        /** @var class-string $class */
+        /**
+         * @var class-string $class
+         */
         $class = $this->name();
 
         return $class;

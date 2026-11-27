@@ -21,8 +21,8 @@ export function useOpenSessionDialog(viewerId: string, agentId: string) {
  */
 function storedForThisTab(key: string) {
   return {
-    read: (): string | null => readStored("session", key),
-    keep: (text: string): void => keepStored("session", key, text),
-    forget: (): void => forgetStored("session", key),
+    read: () => readStored("session", key),
+    keep: (text: string) => keepStored("session", key, text),
+    forget: () => forgetStored("session", key),
   };
 }

@@ -16,6 +16,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class DeclaredLayoutData extends Data implements PresentsLayout
 {
+    /**
+     * The most parts one layout holds, its root among them.
+     */
+    public const int PART_LIMIT = 500;
+
     private function __construct(public readonly LayoutPartData $root) {}
 
     /**
@@ -23,8 +28,8 @@ final class DeclaredLayoutData extends Data implements PresentsLayout
      */
     public static function of(LayoutPartData $root): self
     {
-        if ($root->assertWithinCatalogue() > LayoutLimits::PART_LIMIT) {
-            throw LayoutRefused::tooManyParts(LayoutLimits::PART_LIMIT);
+        if ($root->assertWithinCatalogue() > self::PART_LIMIT) {
+            throw LayoutRefused::tooManyParts(self::PART_LIMIT);
         }
 
         return new self($root);

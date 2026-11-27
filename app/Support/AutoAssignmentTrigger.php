@@ -70,7 +70,7 @@ final readonly class AutoAssignmentTrigger implements AutoAssignmentTriggerContr
             array_filter($page->facts, fn (AutoAssignmentFact $fact) => $this->mayTakeTurn($fact, $stop)),
         );
 
-        usort($ready, static fn (AutoAssignmentFact $one, AutoAssignmentFact $other): int => $one->compareTurn($other));
+        usort($ready, static fn (AutoAssignmentFact $one, AutoAssignmentFact $other) => $one->compareTurn($other));
         $started = 0;
         $assigned = 0;
         $failed = 0;

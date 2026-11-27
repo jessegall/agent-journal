@@ -94,7 +94,9 @@ final class DriverCatalogue implements DriverCatalogueContract
     {
         $registration = $this->registrations->get((string) $key);
 
-        /** @var DriverCapabilities $capabilities */
+        /**
+         * @var DriverCapabilities $capabilities
+         */
         $capabilities = $this->container->make($registration->capabilities);
 
         return new Driver($registration, $capabilities, $this->container->make(CommandBus::class));

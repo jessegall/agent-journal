@@ -56,7 +56,7 @@ final readonly class SequencesIndex extends SequencesPage
                 ),
             ),
         )
-            ->counting(count($sequences))
+            ->countingRows()
             ->creatingWith($this->creation())
             ->withReader(
                 LayoutBackData::from(['href' => route('sequences.index', [], false), 'label' => 'Sequences']),

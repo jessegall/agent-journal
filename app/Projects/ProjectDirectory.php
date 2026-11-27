@@ -27,7 +27,7 @@ final readonly class ProjectDirectory implements ProjectDirectoryContract
     public function listed(): array
     {
         return array_map(
-            fn (Project $project): ProjectData => ProjectData::from([
+            fn (Project $project) => ProjectData::from([
                 'id' => $project->id,
                 'key' => $project->key,
                 'label' => $project->label,

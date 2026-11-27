@@ -24,7 +24,7 @@ final class FocusTaskTool extends TaskWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
-        return ['task_id' => $this->recordIdArgument($schema)];
+        return [TaskReadResult::ID_ARGUMENT => $this->recordIdArgument($schema)];
     }
 
     protected function command(ToolArguments $arguments): FocusTaskCommand

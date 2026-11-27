@@ -27,7 +27,7 @@ final readonly class ProgramClassifiers
         return array_values(
             array_filter(
                 $this->classifiers,
-                fn (ProgramClassifier $classifier): bool => $classifier->classifies($program),
+                fn (ProgramClassifier $classifier) => $classifier->classifies($program),
             ),
         );
     }

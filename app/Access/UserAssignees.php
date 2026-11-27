@@ -70,7 +70,7 @@ final readonly class UserAssignees implements AssigneeProvider
         $this->actors->actor();
         $ids = array_values(array_unique(array_map(fn (AssigneeIdentity $actor) => $actor->id, $actors)));
 
-        return array_values(User::query()->whereKey($ids)->readExactly(count($ids))->orderBy('id')->get()
+        return array_values(User::query()->whereKey($ids)->readExactlyOf($ids)->orderBy('id')->get()
             ->map(fn (User $user) => new AssigneeName(AssigneeIdentity::of($user), $user->name))
             ->all());
     }
