@@ -98,6 +98,14 @@ final class TestScenario
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public function hookFields(string $event, int $nth = 1): array
+    {
+        return json_decode($this->hookBody($event, $nth), true, flags: JSON_THROW_ON_ERROR);
+    }
+
+    /**
      * Plays the steps up to and with the next one of the type named, such as send-message.
      */
     public function playThrough(string $step): self

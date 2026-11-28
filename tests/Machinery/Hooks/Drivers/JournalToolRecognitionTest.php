@@ -18,6 +18,7 @@ use App\Support\Inputs\StopRequested;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ChecksProgramFixtures;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Recordings\TestScenario;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -106,8 +107,8 @@ final class JournalToolRecognitionTest extends TestCase
             $toolSearch,
             $listResources,
         ] as $toolName) {
-            $starting = $driver->callFor(self::toolPayload('PreToolUse', $toolName, []), $this->hook());
-            $finished = $driver->callFor(self::toolPayload('PostToolUse', $toolName, []), $this->hook());
+            $starting = $driver->callFor($this->toolPayload($adapter, 'PreToolUse', $toolName, []), $this->hook());
+            $finished = $driver->callFor($this->toolPayload($adapter, 'PostToolUse', $toolName, []), $this->hook());
 
             $this->assertInstanceOf(JournalToolCall::class, $starting);
             $this->assertInstanceOf(JournalToolCall::class, $finished);
@@ -127,7 +128,7 @@ final class JournalToolRecognitionTest extends TestCase
 
         $this->assertInstanceOf(
             JournalToolCall::class,
-            $driver->callFor(self::toolPayload('PreToolUse', $readResource, $resource), $this->hook()),
+            $driver->callFor($this->toolPayload($adapter, 'PreToolUse', $readResource, $resource), $this->hook()),
         );
     }
 
@@ -147,14 +148,14 @@ final class JournalToolRecognitionTest extends TestCase
 
         foreach ($refused as [$toolName, $arguments]) {
             $this->assertThrows(
-                fn () => $driver->callFor(self::toolPayload('PreToolUse', $toolName, $arguments), $this->hook()),
+                fn () => $driver->callFor($this->toolPayload($adapter, 'PreToolUse', $toolName, $arguments), $this->hook()),
                 UnsupportedHook::class,
             );
         }
 
         $this->assertInstanceOf(
             JudgedCall::class,
-            $driver->callFor(self::toolPayload('PostToolUse', 'mcp__other__x', []), $this->hook()),
+            $driver->callFor($this->toolPayload($adapter, 'PostToolUse', 'mcp__other__x', []), $this->hook()),
         );
     }
 
@@ -168,9 +169,7 @@ final class JournalToolRecognitionTest extends TestCase
         $closingWords = 'It-is-4.';
 
         $call = $this->app->make($adapter)->callFor(HookPayload::from([
-            'session_id' => 'session-redacted',
-            'hook_event_name' => 'Stop',
-            'stop_hook_active' => false,
+            ...$this->terminalTurn($adapter)->hookFields('Stop'),
             'last_assistant_message' => "  {$closingWords}\n",
         ]), $this->hook());
 
@@ -182,17 +181,19 @@ final class JournalToolRecognitionTest extends TestCase
     /**
      * @param  array<string, string>  $arguments
      */
-    private static function toolPayload(string $hookEventName, string $toolName, array $arguments): HookPayload
+    private function toolPayload(string $adapter, string $hookEventName, string $toolName, array $arguments): HookPayload
     {
         return HookPayload::from([
-            'session_id' => 'session-redacted',
-            'transcript_path' => '/redacted/transcript.jsonl',
-            'cwd' => '/redacted',
-            'hook_event_name' => $hookEventName,
+            ...$this->terminalTurn($adapter)->hookFields($hookEventName),
             'tool_name' => $toolName,
             'tool_input' => $arguments,
-            'tool_response' => ['content' => 'done'],
-            'tool_use_id' => 'tool-redacted',
         ]);
+    }
+
+    private function terminalTurn(string $adapter): TestScenario
+    {
+        $driver = $adapter === CodexAdapter::class ? 'codex' : 'claude-code';
+
+        return new TestScenario($this->journal, "{$driver}/terminal-turn");
     }
 }

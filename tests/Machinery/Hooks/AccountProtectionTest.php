@@ -22,6 +22,7 @@ use App\Values\StackTarget;
 use Closure;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Recordings\TestScenario;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -131,15 +132,8 @@ final class AccountProtectionTest extends TestCase
      */
     private function codexDecision(string $tool, array $toolInput): string
     {
-        $payload = HookPayload::from([
-            'hook_event_name' => 'PreToolUse',
-            'session_id' => 'native-1',
-            'cwd' => '/work',
-            'tool_name' => $tool,
-            'tool_input' => $toolInput,
-        ]);
         $call = $this->app->make(CodexAdapter::class)->callFor(
-            $payload,
+            $this->toolPayload('codex', $tool, $toolInput),
             new HookIdentity('agent-1', 'session-1', 'call-1', 'digest'),
         );
 
@@ -151,19 +145,27 @@ final class AccountProtectionTest extends TestCase
      */
     private function decision(string $tool, array $toolInput, string $sessionId = 'session-1'): string
     {
-        $payload = HookPayload::from([
-            'hook_event_name' => 'PreToolUse',
-            'session_id' => 'native-1',
-            'cwd' => '/work',
-            'tool_name' => $tool,
-            'tool_input' => $toolInput,
-        ]);
         $call = $this->app->make(ClaudeCodeAdapter::class)->callFor(
-            $payload,
+            $this->toolPayload('claude-code', $tool, $toolInput),
             new HookIdentity('agent-1', $sessionId, 'call-1', 'digest'),
         );
 
         return self::permissionOf($call);
+    }
+
+    /**
+     * @param  array<string, string>  $toolInput
+     */
+    private function toolPayload(string $driver, string $tool, array $toolInput): HookPayload
+    {
+        $recording = new TestScenario($this->journal, "{$driver}/terminal-turn");
+
+        return HookPayload::from([
+            ...$recording->hookFields('PreToolUse', 2),
+            'cwd' => '/work',
+            'tool_name' => $tool,
+            'tool_input' => $toolInput,
+        ]);
     }
 
     /**
