@@ -41,6 +41,8 @@ final class ScenarioRun
 
     private string|null $signInCode = null;
 
+    private bool $isSignedInOnPage = false;
+
     private int $stepsRun = 0;
 
     private int $turnsAsked = 0;
@@ -328,6 +330,19 @@ final class ScenarioRun
     public function holdSignInCode(string $code): void
     {
         $this->signInCode = $code;
+    }
+
+    /**
+     * The person signed the sign-in in on the journal's own page, so no code of the play's is submitted for it.
+     */
+    public function holdSignedInOnPage(): void
+    {
+        $this->isSignedInOnPage = true;
+    }
+
+    public function isSignedInOnPage(): bool
+    {
+        return $this->isSignedInOnPage;
     }
 
     /**

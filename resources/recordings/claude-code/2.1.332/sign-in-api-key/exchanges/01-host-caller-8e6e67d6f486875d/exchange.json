@@ -1,0 +1,181 @@
+{
+    "opening": {
+        "wire": "host",
+        "exchange": "caller-8e6e67d6f486875d",
+        "mode": "calls",
+        "argv": [],
+        "environment": {},
+        "inherited": [],
+        "folder": null,
+        "columns": 0,
+        "rows": 0,
+        "image": null,
+        "openedAt": 1795862288988313
+    },
+    "events": [
+        {
+            "type": "asked",
+            "at": 1795862288988302,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "e30=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795862289147458,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000001",
+                "query": {},
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbl9pZCI6IjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxIiwic3RhdHVzIjoiZG9uZSIsImZhY3RzIjp7InJlc3VsdHMiOlt7ImV4aXRDb2RlIjowLCJpc1RpbWVkT3V0IjpmYWxzZSwiaXNUcnVuY2F0ZWQiOmZhbHNlLCJzdGRlcnIiOiIiLCJzdGRvdXQiOiIifV19fQ==",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795862289155417,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000001",
+                "query": {},
+                "status": 204,
+                "headers": {},
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795862293521602,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/heartbeat",
+                "query": {},
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJsaXZlX3Byb2Nlc3NlcyI6W10sImFuc3dlcmVkX3Rocm91Z2giOiIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMSJ9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795862293526715,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/heartbeat",
+                "query": {},
+                "status": 204,
+                "headers": {},
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795862299061660,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbnMiOltdLCJpZGxlX3dpbmRvd19zZWNvbmRzIjo2MDAsIm5vdyI6IjIwMjYtMTEtMjhUMTA6Mzg6MDguOTk5WiJ9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795862299081367,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "e30=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        }
+    ],
+    "exit_code": null
+}

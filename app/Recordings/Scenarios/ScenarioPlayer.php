@@ -36,6 +36,11 @@ use Illuminate\Support\Str;
 final readonly class ScenarioPlayer
 {
     /**
+     * How long an ask step waits for the person to sign in on the journal's page when they typed nothing.
+     */
+    private const int SIGN_IN_IN_PAGE_SECONDS = 900;
+
+    /**
      * Where the player asks the record script for a machine change, under the drafts' folder.
      */
     public const string MACHINE_CHANGE = RecordingDrafts::DRAFTS.'/machine-change.args';
@@ -168,6 +173,11 @@ final readonly class ScenarioPlayer
             return;
         }
 
+        // A code the person already submitted on the journal's page is not submitted again.
+        if ($step->stepType === ScenarioStepType::SubmitCode && $run->isSignedInOnPage()) {
+            return;
+        }
+
         if ($step->stepType->isCommand()) {
             // A step is one request of the owner, so a command that runs only under a request key gets its own.
             $result = $this->requestKey->independently(
@@ -209,7 +219,13 @@ final readonly class ScenarioPlayer
 
             if ($typed !== '') {
                 $run->holdSignInCode($typed);
+
+                return;
             }
+
+            // Nothing typed: the person answers the sign-in in the journal's own page, which signs it in.
+            $this->waitFor($run, ScenarioFact::SignedIn, self::SIGN_IN_IN_PAGE_SECONDS);
+            $run->holdSignedInOnPage();
 
             return;
         }

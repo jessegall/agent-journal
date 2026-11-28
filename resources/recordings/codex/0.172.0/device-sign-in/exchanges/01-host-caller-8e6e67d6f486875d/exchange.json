@@ -1,0 +1,87 @@
+{
+    "opening": {
+        "wire": "host",
+        "exchange": "caller-8e6e67d6f486875d",
+        "mode": "calls",
+        "argv": [],
+        "environment": {},
+        "inherited": [],
+        "folder": null,
+        "columns": 0,
+        "rows": 0,
+        "image": null,
+        "openedAt": 1795862322932150
+    },
+    "events": [
+        {
+            "type": "asked",
+            "at": 1795862322932116,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "e30=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795862323530518,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/heartbeat",
+                "query": {},
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJsaXZlX3Byb2Nlc3NlcyI6W10sImFuc3dlcmVkX3Rocm91Z2giOiIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMSJ9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795862323551787,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/heartbeat",
+                "query": {},
+                "status": 204,
+                "headers": {},
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        }
+    ],
+    "exit_code": null
+}

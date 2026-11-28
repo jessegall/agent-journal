@@ -31,7 +31,7 @@ final readonly class AgentListing
     /**
      * How many of the newest questions in the viewer's agent chats are looked at for one still waiting.
      */
-    public const int QUESTIONS_READ = 200;
+    public const int QUESTIONS_READ = 100;
 
     public function __construct(
         private AgentDirectory $agents,
