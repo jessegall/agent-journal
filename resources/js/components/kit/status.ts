@@ -17,7 +17,8 @@ export type StatusState =
     | 'live'
     | 'ended'
     | 'stopped'
-    | 'interrupted';
+    | 'interrupted'
+    | 'unknown';
 
 export interface StatusLook {
     mark: 'spinner' | 'tick' | 'alert' | 'hollow' | 'brand' | 'solid';
@@ -45,4 +46,5 @@ export const statusLooks: Record<StatusState, StatusLook> = {
     ended: { mark: 'hollow', word: 'Ended' },
     stopped: { mark: 'hollow', word: 'Stopped' },
     interrupted: { mark: 'hollow', word: 'Interrupted' },
+    unknown: { mark: 'hollow', word: 'Unknown' },
 };
