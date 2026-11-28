@@ -2,6 +2,9 @@
     "description": "A Codex app-server turn answers one message on its thread",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "start-session",
             "agent": "Coder",
             "type": "headless",

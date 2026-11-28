@@ -2,6 +2,9 @@
     "description": "A Claude Code terminal killed mid-turn is started again on its conversation",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "start-session",
             "agent": "Coder",
             "type": "terminal",

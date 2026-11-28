@@ -2,6 +2,9 @@
     "description": "A Codex app-server turn is interrupted, released as a user releases it, and its thread resumes for the next one",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "start-session",
             "agent": "Coder",
             "type": "headless",

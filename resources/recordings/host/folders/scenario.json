@@ -1,11 +1,11 @@
 {
     "format": 2,
     "protocol": 1,
-    "scenario_hash": "d994d6f8316c89d388f93260dbec4bd9f8ddb6afabbf65f162839d0447e97a17",
+    "scenario_hash": "597ea2720c85ec3de688bb90741834c4f94dd3c8e9e74165c43f4d9b266f9782",
     "driver": "host",
     "build": "",
-    "image_programs": "234caf25e241cc459eb4eff37ea55a2a828df57309c75dd16ab3e9247c6d692d",
-    "recorded_at": "2026-11-28T01:01:53+00:00",
+    "image_programs": "0a1b73e72b6fbc13cd901dffbc1819e849055247b77d6e6ac75228414cdccedb",
+    "recorded_at": "2026-11-28T05:32:58+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",
         "02-docker-daemon"

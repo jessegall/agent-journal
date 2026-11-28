@@ -1,18 +1,18 @@
 {
     "format": 2,
     "protocol": 1,
-    "scenario_hash": "9645bea84861fd157840d360d22d1debf3a5802f6c24f8a04443df7bd90271d0",
+    "scenario_hash": "51420deea45877a0b2cab04e2b7f13367c00043e080e9bff3070670b88973866",
     "driver": "codex",
     "build": "0.165.0",
-    "image_programs": "234caf25e241cc459eb4eff37ea55a2a828df57309c75dd16ab3e9247c6d692d",
-    "recorded_at": "2026-11-28T01:24:49+00:00",
+    "image_programs": "0a1b73e72b6fbc13cd901dffbc1819e849055247b77d6e6ac75228414cdccedb",
+    "recorded_at": "2026-11-28T05:34:48+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",
-        "02-hooks-caller-49818ff800ef0a6a",
-        "03-agent-caller-49818ff800ef0a6a",
+        "02-hooks-caller-fa557bb823e2f164",
+        "03-agent-caller-fa557bb823e2f164",
         "04-docker-daemon",
-        "05-driver-01m8fw1me0eh59461z40akba8x",
-        "06-driver-01m8fw1mxnz9z5e7e6y1tjvdds",
-        "07-driver-01m8fw1p3tvpk9bv72evmtd1bx"
+        "05-driver-01m8gabqh7ac9e5ec1atk3arje",
+        "06-driver-01m8gabqyvaz6c385r2njpnv2v",
+        "07-driver-01m8gabrkjhkwx9awzf63t0tps"
     ]
 }

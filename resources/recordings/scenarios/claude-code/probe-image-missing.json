@@ -2,6 +2,9 @@
     "description": "A Claude Code start whose agent image is missing ends refused, naming the missing image",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "remove-image",
             "image": "agent"
         },

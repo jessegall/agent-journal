@@ -13,6 +13,9 @@ use App\Bus\Contracts\OwnerCommands;
 use App\Bus\RequestKey;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
+use App\Models\Hosts\HostInstruction;
+use App\Models\Projects\Host;
+use App\Models\Projects\HostDriverImage;
 use App\Recordings\RecordingDrafts;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Enums\ScenarioStepType;
@@ -64,6 +67,16 @@ final readonly class ScenarioPlayer
      */
     private const int QUIET_SECOND_LIMIT = 20;
 
+    /**
+     * The program line that restarts the local host, run by the record script on the machine.
+     */
+    private const array HOST_RESTART = ['docker', 'compose', 'restart', 'agent-host'];
+
+    /**
+     * How long a restarted host may take to allow its images again.
+     */
+    private const int HOST_RESTART_SECOND_LIMIT = 120;
+
     public function __construct(
         private OwnerCommands $commands,
         private JournalCommands $journal,
@@ -86,13 +99,59 @@ final readonly class ScenarioPlayer
      */
     public function play(ScenarioRun $run, Closure $askUser, Closure $tell): void
     {
-        foreach ($run->scenario->steps as $index => $step) {
+        while (! $run->isPlayedWhole()) {
             $began = microtime(true);
-            $tell(sprintf('step %d: %s', $index + 1, $step->summary()));
-            $this->playStep($run, $step, $askUser);
-            $run->stepRan();
-            $tell(sprintf('step %d done after %.1f s', $index + 1, microtime(true) - $began));
+            $number = $run->stepIndex() + 1;
+            $tell(sprintf('step %d: %s', $number, $run->nextStep()->summary()));
+            $this->playNext($run, $askUser);
+            $tell(sprintf('step %d done after %.1f s', $number, microtime(true) - $began));
         }
+    }
+
+    /**
+     * Restarts the local host through the record script and waits until it allowed and checked its images again, so a
+     * recording that begins with it holds the start a fresh host makes: its inventory, its image allow and checks.
+     *
+     * @throws ScenarioStuck
+     */
+    private function restartHost(ScenarioRun $run): void
+    {
+        $restartedAt = CarbonImmutable::now();
+        $exitCode = $this->changeMachine(self::HOST_RESTART);
+
+        if ($exitCode !== 0) {
+            throw ScenarioStuck::hostNotRestarted($run->scenario->name, $exitCode);
+        }
+
+        $host = Host::query()->findOrFail($run->hostId());
+        $looks = intdiv(self::HOST_RESTART_SECOND_LIMIT * 1_000_000_000, self::LOOK_NANOSECONDS);
+
+        for ($look = 0; $look <= $looks; $look++) {
+            if (HostInstruction::hasAllowedSince($host, $restartedAt) && ! HostDriverImage::isAdmittingOn($host->id)) {
+                return;
+            }
+
+            $this->sleeper->sleep(self::LOOK_NANOSECONDS);
+        }
+
+        throw ScenarioStuck::hostNotBack($run->scenario->name, self::HOST_RESTART_SECOND_LIMIT);
+    }
+
+    /**
+     * Plays the run's next step and answers it.
+     *
+     * @param  Closure(ScenarioPause): string  $askUser
+     *
+     * @throws ScenarioStuck
+     * @throws ScenarioInvalid
+     */
+    public function playNext(ScenarioRun $run, Closure $askUser): ScenarioStep
+    {
+        $step = $run->nextStep();
+        $this->playStep($run, $step, $askUser);
+        $run->stepRan();
+
+        return $step;
     }
 
     /**
@@ -119,6 +178,12 @@ final readonly class ScenarioPlayer
             if ($result instanceof SignInStarted) {
                 $run->holdSignInAttempt($result->attemptId);
             }
+
+            return;
+        }
+
+        if ($step->stepType === ScenarioStepType::RestartHost) {
+            $this->restartHost($run);
 
             return;
         }

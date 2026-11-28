@@ -2,6 +2,9 @@
     "description": "A Codex terminal of a fresh account passes its first-run screens and answers",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "start-session",
             "agent": "Coder",
             "type": "terminal",

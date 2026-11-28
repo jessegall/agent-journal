@@ -278,6 +278,19 @@ final class ScenarioRun
         $this->stepsRun++;
     }
 
+    /**
+     * The step the run plays next.
+     */
+    public function nextStep(): ScenarioStep
+    {
+        return $this->scenario->steps[$this->stepsRun];
+    }
+
+    public function isPlayedWhole(): bool
+    {
+        return $this->stepsRun >= count($this->scenario->steps);
+    }
+
     public function holdSignInAttempt(string $attemptId): void
     {
         $this->signInAttempt = $attemptId;

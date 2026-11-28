@@ -69,10 +69,15 @@ stop_at_failure() {
     exit 1
 }
 
-# The running journal reads the switch file at each play, so switching restarts nothing.
+# The running journal reads the switch file at each play, so switching restarts nothing; the local host is set up only
+# when it does not run yet, so a rerun goes straight to its scenarios.
 switch_recording_on() {
-    sh scripts/local-host.sh
+    is_host_running || sh scripts/local-host.sh
     touch storage/recordings/.enabled
+}
+
+is_host_running() {
+    [ "$(docker compose ps --status running --quiet agent-host 2>/dev/null)" != "" ]
 }
 
 switch_recording_off() {

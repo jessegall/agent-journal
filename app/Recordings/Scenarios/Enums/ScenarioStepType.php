@@ -33,6 +33,7 @@ enum ScenarioStepType: string
     case Update = 'update';
     case Heal = 'heal';
     case WaitFor = 'wait-for';
+    case RestartHost = 'restart-host';
 
     /**
      * Whether a step of this type is carried out by a bus command the owner sends, as the application sends it.
@@ -132,7 +133,8 @@ enum ScenarioStepType: string
                 'fact',
                 'seconds',
             ],
-            self::KillAgents, self::StopDaemon, self::StartDaemon, self::Install, self::Update, self::Heal => [],
+            self::KillAgents, self::StopDaemon, self::StartDaemon, self::Install, self::Update, self::Heal,
+            self::RestartHost => [],
         };
     }
 }

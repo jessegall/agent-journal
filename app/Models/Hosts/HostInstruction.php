@@ -265,6 +265,19 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     }
 
     /**
+     * Whether the host carried out an allow set placed since the moment, as a host does once it started again.
+     */
+    public static function hasAllowedSince(Host $host, CarbonImmutable $since): bool
+    {
+        return self::query()
+            ->forHost($host)
+            ->ofType(HostInstructionType::AllowImages)
+            ->placedSince($since)
+            ->withAnyStatus([HostInstructionStatus::Done])
+            ->exists();
+    }
+
+    /**
      * The instruction, locked until the transaction ends, so one answer is stored at a time.
      */
     public static function findLocked(string $id): self

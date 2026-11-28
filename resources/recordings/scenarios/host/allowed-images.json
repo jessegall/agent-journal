@@ -2,6 +2,9 @@
     "description": "The host is told which agent images it may open containers from",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "allow-images",
             "images": [
                 "agent"

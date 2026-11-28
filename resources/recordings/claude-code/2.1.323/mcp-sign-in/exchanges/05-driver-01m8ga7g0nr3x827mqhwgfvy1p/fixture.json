@@ -1,0 +1,33 @@
+{
+    "driver": "driver",
+    "driver_version": "sha256:29ab717ac82226aa49e227dd87fe37d2d5ff63209b0fc7c8da5e28ff471ad26c",
+    "profile": "",
+    "mode": "process",
+    "geometry": {
+        "columns": 0,
+        "rows": 0
+    },
+    "recorded_at": "2026-11-28T05:32:12.218711+00:00",
+    "initial_state": {
+        "working_folder": "/workspace",
+        "arguments": [
+            "claude",
+            "--version"
+        ],
+        "environment_names": []
+    },
+    "output": [
+        {
+            "offset": 107808000,
+            "stream": "stdout",
+            "bytes": "Mi4xLjMyMyAoQ2xhdWRlIENvZGUpCg=="
+        }
+    ],
+    "inputs": [],
+    "resizes": [],
+    "exit_code": 0,
+    "checkpoints": [],
+    "script_parameters": [],
+    "expected_keys": [],
+    "expected_transitions": []
+}

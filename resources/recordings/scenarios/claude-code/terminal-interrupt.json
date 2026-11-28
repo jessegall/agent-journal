@@ -2,6 +2,9 @@
     "description": "A Claude Code terminal is interrupted mid-turn and holds",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "start-session",
             "agent": "Coder",
             "type": "terminal",

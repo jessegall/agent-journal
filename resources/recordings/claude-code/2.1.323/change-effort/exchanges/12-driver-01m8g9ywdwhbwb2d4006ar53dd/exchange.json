@@ -1,0 +1,82 @@
+{
+    "opening": {
+        "wire": "driver",
+        "exchange": "01m8g9ywdwhbwb2d4006ar53dd",
+        "mode": "process",
+        "argv": [
+            "--",
+            "claude",
+            "--settings",
+            "/tmp/journal-session/settings.json",
+            "--setting-sources",
+            "",
+            "--strict-mcp-config",
+            "--agents",
+            "{}",
+            "--tools",
+            "Bash,Read,Edit,Write,NotebookEdit,WebFetch,WebSearch,ToolSearch",
+            "--disallowedTools",
+            "Agent",
+            "Task",
+            "Workflow",
+            "SendMessage",
+            "ListAgents",
+            "RemoteTrigger",
+            "Skill",
+            "--mcp-config",
+            "/tmp/journal-session/mcp.json",
+            "--model",
+            "opus",
+            "--resume",
+            "00000000-0000-4000-8000-000000000002",
+            "--print",
+            "--output-format",
+            "stream-json",
+            "--verbose",
+            "Check your pending journal work."
+        ],
+        "environment": {
+            "HOME": "{env:HOME}",
+            "ANTHROPIC_CONFIG_DIR": "{env:ANTHROPIC_CONFIG_DIR}",
+            "CLAUDE_CONFIG_DIR": "{env:CLAUDE_CONFIG_DIR}",
+            "JOURNAL_ACCOUNTS_ROOT": "{env:JOURNAL_ACCOUNTS_ROOT}",
+            "JOURNAL_START_REF": "{env:JOURNAL_START_REF}",
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN": "{env:CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN}",
+            "MCP_TIMEOUT": "{env:MCP_TIMEOUT}",
+            "MCP_TOOL_TIMEOUT": "{env:MCP_TOOL_TIMEOUT}",
+            "JOURNAL_URL": "{env:JOURNAL_URL}",
+            "JOURNAL_START_TOKEN": "{env:JOURNAL_START_TOKEN}",
+            "JOURNAL_PROFILE": "{env:JOURNAL_PROFILE}",
+            "JOURNAL_PROFILE_REVISION": "{env:JOURNAL_PROFILE_REVISION}"
+        },
+        "inherited": [],
+        "folder": "/workspace",
+        "columns": 0,
+        "rows": 0,
+        "image": "sha256:29ab717ac82226aa49e227dd87fe37d2d5ff63209b0fc7c8da5e28ff471ad26c",
+        "openedAt": 1795843650024359
+    },
+    "events": [
+        {
+            "type": "printed",
+            "at": 1795843650885729,
+            "bytes": "Tm8gY29udmVyc2F0aW9uIGZvdW5kIHdpdGggc2Vzc2lvbiBJRDogMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAyCg==",
+            "stream": "stderr",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843650903581,
+            "bytes": "eyJ0eXBlIjoicmVzdWx0Iiwic3VidHlwZSI6ImVycm9yX2R1cmluZ19leGVjdXRpb24iLCJkdXJhdGlvbl9tcyI6MCwiZHVyYXRpb25fYXBpX21zIjowLCJpc19lcnJvciI6dHJ1ZSwibnVtX3R1cm5zIjowLCJzdG9wX3JlYXNvbiI6bnVsbCwic2Vzc2lvbl9pZCI6IjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMiIsInRvdGFsX2Nvc3RfdXNkIjowLCJ1c2FnZSI6eyJvdXRwdXRfdG9rZW5zX2RldGFpbHMiOnsidGhpbmtpbmdfdG9rZW5zIjowfSwiaW5wdXRfdG9rZW5zIjowLCJjYWNoZV9jcmVhdGlvbl9pbnB1dF90b2tlbnMiOjAsImNhY2hlX3JlYWRfaW5wdXRfdG9rZW5zIjowLCJvdXRwdXRfdG9rZW5zIjowLCJzZXJ2ZXJfdG9vbF91c2UiOnsid2ViX3NlYXJjaF9yZXF1ZXN0cyI6MCwid2ViX2ZldGNoX3JlcXVlc3RzIjowfSwic2VydmljZV90aWVyIjoic3RhbmRhcmQiLCJjYWNoZV9jcmVhdGlvbiI6eyJlcGhlbWVyYWxfMWhfaW5wdXRfdG9rZW5zIjowLCJlcGhlbWVyYWxfNW1faW5wdXRfdG9rZW5zIjowfSwiaW5mZXJlbmNlX2dlbyI6IiIsIml0ZXJhdGlvbnMiOltdLCJzcGVlZCI6InN0YW5kYXJkIiwiZmFsbGJhY2tfY3JlZGl0IjpudWxsfSwibW9kZWxVc2FnZSI6e30sInBlcm1pc3Npb25fZGVuaWFscyI6W10sInV1aWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDMiLCJlcnJvcnMiOlsiTm8gY29udmVyc2F0aW9uIGZvdW5kIHdpdGggc2Vzc2lvbiBJRDogMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAyIl0sInJlc3VsdF9pbmRleCI6MH0K",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        }
+    ],
+    "exit_code": 1
+}

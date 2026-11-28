@@ -2,6 +2,9 @@
     "description": "A headless Claude Code turn answers one message and ends",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "start-session",
             "agent": "Coder",
             "type": "headless",

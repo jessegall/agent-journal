@@ -2,6 +2,9 @@
     "description": "The host makes an account folder, says whether it is in use, and removes it",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "make-folder",
             "folder": "scenariofolder"
         },

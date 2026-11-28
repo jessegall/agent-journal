@@ -2,6 +2,9 @@
     "description": "A Claude Code start while the agent daemon is down ends refused, and the daemon comes back",
     "steps": [
         {
+            "do": "restart-host"
+        },
+        {
             "do": "stop-daemon"
         },
         {

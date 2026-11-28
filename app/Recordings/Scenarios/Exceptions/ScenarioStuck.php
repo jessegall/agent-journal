@@ -20,6 +20,16 @@ final class ScenarioStuck extends RuntimeException
         return new self("The record script did not run \"{$line}\" within {$seconds} seconds: {$script}");
     }
 
+    public static function hostNotRestarted(string $scenario, int $exitCode): self
+    {
+        return new self("The local host could not be restarted for {$scenario}: the restart ended with code {$exitCode}.");
+    }
+
+    public static function hostNotBack(string $scenario, int $seconds): self
+    {
+        return new self("The local host restarted for {$scenario} did not allow and check its images again within {$seconds} seconds.");
+    }
+
     public static function quiet(ScenarioRun $run, ScenarioFact $fact, int $seconds): self
     {
         $place = $run->stepIndex() + 1;

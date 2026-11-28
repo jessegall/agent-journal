@@ -1,0 +1,183 @@
+{
+    "opening": {
+        "wire": "driver",
+        "exchange": "01m8ga912zyphdnjfe7whdhmsz",
+        "mode": "process",
+        "argv": [
+            "--",
+            "claude",
+            "auth",
+            "status",
+            "--json"
+        ],
+        "environment": {
+            "HOME": "{env:HOME}",
+            "ANTHROPIC_CONFIG_DIR": "{env:ANTHROPIC_CONFIG_DIR}",
+            "CLAUDE_CONFIG_DIR": "{env:CLAUDE_CONFIG_DIR}",
+            "JOURNAL_ACCOUNTS_ROOT": "{env:JOURNAL_ACCOUNTS_ROOT}",
+            "JOURNAL_START_REF": "{env:JOURNAL_START_REF}",
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN": "{env:CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN}",
+            "MCP_TIMEOUT": "{env:MCP_TIMEOUT}",
+            "MCP_TOOL_TIMEOUT": "{env:MCP_TOOL_TIMEOUT}"
+        },
+        "inherited": [],
+        "folder": "/workspace",
+        "columns": 0,
+        "rows": 0,
+        "image": "sha256:29ab717ac82226aa49e227dd87fe37d2d5ff63209b0fc7c8da5e28ff471ad26c",
+        "openedAt": 1795843982486540
+    },
+    "events": [
+        {
+            "type": "printed",
+            "at": 1795843983354999,
+            "bytes": "ewo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983367988,
+            "bytes": "ICAibG9nZ2VkSW4iOiB0cnVlLAo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983377262,
+            "bytes": "ICAiYXV0aE1ldGhvZCI6ICJjbGF1ZGUuYWkiLAo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983385760,
+            "bytes": "ICAiYXBpUHJvdmlkZXIiOiAiZmlyc3RQYXJ0eSIsCg==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983393648,
+            "bytes": "ICAiYW5hbHl0aWNzRGlzYWJsZWQiOiBmYWxzZSwK",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983401515,
+            "bytes": "ICAicHJvamVjdHNEaXJlY3RvcnkiOiAiL2hvbWUvdXNlci8uYWNjb3VudC9wcm9qZWN0cyIsCg==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983410132,
+            "bytes": "ICAiY29uZmlnRGlyZWN0b3J5IjogIi9ob21lL3VzZXIvLmFjY291bnQiLAo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983421927,
+            "bytes": "ICAibG9naW5FeHBpcmVzQXQiOiAiMjAyNi0xMi0yNVQyMToxNzo1Ny4zNzlaIiwK",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983432005,
+            "bytes": "ICAiZW1haWwiOiAidXNlckBleGFtcGxlLmNvbSIsCg==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983473975,
+            "bytes": "ICAib3JnSWQiOiAiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwK",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983521183,
+            "bytes": "ICAib3JnTmFtZSI6ICJFeGFtcGxlIE9yZ2FuaXphdGlvbiIsCg==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983533294,
+            "bytes": "ICAic3Vic2NyaXB0aW9uVHlwZSI6ICJtYXgiLAo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983542841,
+            "bytes": "ICAic3RvcmVkQ2xhdWRlQWlMb2dpbiI6IHRydWUsCg==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983553672,
+            "bytes": "ICAicGxhblRpZXIiOiAibWF4XzIweCIK",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795843983565935,
+            "bytes": "fQo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        }
+    ],
+    "exit_code": 0
+}
