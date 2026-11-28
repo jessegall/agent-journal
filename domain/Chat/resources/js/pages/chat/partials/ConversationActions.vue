@@ -6,16 +6,18 @@ import type { AgentOptionData } from "@generated/types/chat";
 import { openAgentTerminal } from "../../../composables/useTerminalModal";
 
 /**
- * The bottom of the chat list, which stays while the list scrolls: New chat, and what the chosen chat offers, its
- * terminal, Switch driver… and End session. Nothing here starts a session: the next message does.
+ * The bottom of the chat list, which stays while the list scrolls: New chat, and what the chosen chat offers, Stop the
+ * turn while its agent works, its terminal, Switch driver… and End session. A chat with no session starts from its
+ * start picker.
  */
 defineProps<{
   chosenAgent: AgentOptionData | undefined;
   terminalAgent: AgentOptionData | undefined;
   endableAgent: AgentOptionData | undefined;
+  workingAgent: AgentOptionData | undefined;
 }>();
 
-const emit = defineEmits<{ newChat: []; switchDriver: []; endSession: [] }>();
+const emit = defineEmits<{ newChat: []; switchDriver: []; endSession: []; stopTurn: [] }>();
 </script>
 
 <template>
@@ -43,6 +45,12 @@ const emit = defineEmits<{ newChat: []; switchDriver: []; endSession: [] }>();
         <span class="mr-auto truncate text-badge text-text-3">{{
           chosenAgent.name
         }}</span>
+        <template v-if="workingAgent">
+          <Button size="small" data-stop-turn @click="emit('stopTurn')">
+            <Icon name="stop" :size="14" />
+            Stop the turn
+          </Button>
+        </template>
         <template v-if="terminalAgent">
           <Button
             size="small"

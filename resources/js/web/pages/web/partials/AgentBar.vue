@@ -67,7 +67,7 @@ function deskEdges(): DeskEdges {
         aria-label="Chats"
         data-chat-bar
     >
-        <div class="flex h-full min-w-0 flex-1 items-center">
+        <div class="flex h-full min-w-0 flex-1 items-center overflow-hidden">
             <slot />
         </div>
         <span class="mx-1 h-4 w-px flex-none bg-border-2" aria-hidden="true" data-bar-divider></span>

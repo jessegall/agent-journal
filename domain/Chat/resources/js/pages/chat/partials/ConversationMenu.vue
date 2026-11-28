@@ -13,6 +13,7 @@ import StopConfirmation from "./StopConfirmation.vue";
 import { onChatListRequest, requestChatChoice } from "../../../composables/useChatBarAsks";
 import { chooseChat } from "../../../chatChoice";
 import { useSessionEnd } from "../../../composables/useSessionEnd";
+import { useTurnInterrupt } from "../../../composables/useTurnInterrupt";
 import {
   carriesRecord,
   droppedRecord,
@@ -88,6 +89,21 @@ const terminalAgent = computed(() =>
     ? chosenAgent.value
     : undefined,
 );
+// The chosen agent while its status offers to stop its turn: Stop the turn keeps its session.
+const workingAgent = computed(() =>
+  chosenAgent.value?.status.actions.some((action) => action.type === "interrupt") === true
+    ? chosenAgent.value
+    : undefined,
+);
+const turnInterrupt = useTurnInterrupt();
+
+function stopTurn(): void {
+  isOpen.value = false;
+
+  if (workingAgent.value !== undefined) {
+    turnInterrupt.interrupt(workingAgent.value);
+  }
+}
 // The chosen agent, while its status offers to end its session; End session asks first.
 const endableAgent = computed(() =>
   chosenAgent.value?.status.actions.some((action) => action.type === "stop") === true
@@ -301,6 +317,8 @@ function askEnd(): void {
         :chosen-agent="chosenAgent"
         :terminal-agent="terminalAgent"
         :endable-agent="endableAgent"
+        :working-agent="workingAgent"
+        @stop-turn="stopTurn"
         @new-chat="newChat"
         @switch-driver="switchDriver"
         @end-session="askEnd"
