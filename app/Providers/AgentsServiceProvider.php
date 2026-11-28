@@ -37,8 +37,8 @@ use App\Agents\Drivers\Contracts\DriverConversationResolver as DriverConversatio
 use App\Agents\Drivers\Contracts\ToolDiscovery as ToolDiscoveryContract;
 use App\Agents\Enums\AccessType;
 use App\Agents\RequestSession;
-use App\Agents\RunningToolRecords;
 use App\Agents\Resolvers\Support\PendingStartSecrets;
+use App\Agents\RunningToolRecords;
 use App\Agents\ToolDiscovery;
 use App\Agents\UnavailableAttachments;
 use App\Api\ApiSender;
@@ -116,7 +116,6 @@ use App\Sessions\SessionTokenSource;
 use App\Sessions\StartEnvironment;
 use App\Sessions\StartHeartbeats;
 use App\Sessions\StartPreflight;
-use App\Sessions\Values\HostCapacity;
 use App\Settings\Contracts\SettingsResolver;
 use App\Settings\CoreSettings;
 use App\Stacks\PendingWorkSources;
@@ -233,13 +232,6 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
             $this->app->make('config')->string('journal.agents.server_origin'),
             $this->app->isLocal(),
-        ));
-
-        $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
-            $this->app->make('config')->integer('journal.agents.host_capacity.cpu_cores'),
-            $this->app->make('config')->integer('journal.agents.host_capacity.memory_bytes'),
-            $this->app->make('config')->integer('journal.agents.host_capacity.disk_bytes'),
-            $this->app->make('config')->boolean('journal.agents.host_capacity.guarded'),
         ));
 
         $this->app->scoped(PendingStartSecrets::class);

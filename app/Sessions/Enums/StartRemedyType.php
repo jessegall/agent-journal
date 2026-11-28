@@ -14,7 +14,6 @@ enum StartRemedyType: string
     case ChooseAccount = 'choose-account';
     case ReviewConfiguration = 'review-configuration';
     case RetryStart = 'retry-start';
-    case CheckCapacity = 'check-capacity';
     case ConnectHost = 'connect-host';
     case StartNewConversation = 'start-new-conversation';
     case ChooseConversation = 'choose-conversation';
@@ -31,7 +30,7 @@ enum StartRemedyType: string
             self::ChooseDriver => 'driver',
             self::ChooseAccount => 'accountId',
             self::ChooseConversation, self::StartNewConversation => 'conversationId',
-            self::ReviewConfiguration, self::RetryStart, self::CheckCapacity, self::ConnectHost,
+            self::ReviewConfiguration, self::RetryStart, self::ConnectHost,
             self::OperatorInstruction => 'command',
         };
     }

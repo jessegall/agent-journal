@@ -9,6 +9,7 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Bus\Contracts\CommandBus;
+use App\Exceptions\ImageUnverified;
 use App\Hosts\Contracts\DockerImageVerifier;
 use App\Hosts\Contracts\HostCapabilities;
 use App\Hosts\HostCapability;
@@ -20,11 +21,9 @@ use App\Sessions\Contracts\AgentDirectory;
 use App\Sessions\Enums\StartDisposition;
 use App\Sessions\Enums\StartOriginType;
 use App\Sessions\Enums\StartRefusalType;
-use App\Sessions\Exceptions\CapacityUnavailable;
 use App\Sessions\SessionStartOutcome;
 use App\Sessions\StartReceipt;
 use App\Sessions\Values\ExecutionPolicy;
-use App\Sessions\Values\HostCapacity;
 use App\Sessions\Values\StartPolicy;
 use App\Support\RecordIdentity;
 use App\Values\ExecutionBudgets;
@@ -51,6 +50,8 @@ final class DismissSessionStartOutcomeTest extends TestCase
 
     private string $agentId;
 
+    private CountingImageVerifier $images;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -70,7 +71,8 @@ final class DismissSessionStartOutcomeTest extends TestCase
                 );
             }
         });
-        $this->app->instance(DockerImageVerifier::class, new CountingImageVerifier());
+        $this->images = new CountingImageVerifier();
+        $this->app->instance(DockerImageVerifier::class, $this->images);
     }
 
     public function test_a_dismissal_survives_a_reload_for_that_viewer_only(): void
@@ -85,14 +87,14 @@ final class DismissSessionStartOutcomeTest extends TestCase
         $this->assertSame($request->requestId, $this->outcome()?->requestId);
     }
 
-    public function test_a_sessionless_capacity_refusal_is_the_agents_last_start_outcome(): void
+    public function test_a_sessionless_refusal_is_the_agents_last_start_outcome(): void
     {
         $request = $this->refusedStart();
 
         $outcome = $this->outcome();
 
         $this->assertSame(
-            [$request->requestId, StartDisposition::Refused, null, StartRefusalType::CapacityUnavailable->value],
+            [$request->requestId, StartDisposition::Refused, null, StartRefusalType::ImageUnverified->value],
             [$outcome?->requestId, $outcome?->disposition, $outcome?->sessionId, $outcome?->refusalReason],
         );
     }
@@ -101,7 +103,7 @@ final class DismissSessionStartOutcomeTest extends TestCase
     {
         $refused = $this->refusedStart();
         $this->dismiss($refused);
-        $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
+        $this->images->verifyEvery();
 
         $receipt = $this->start($this->containerRequest());
 
@@ -114,9 +116,9 @@ final class DismissSessionStartOutcomeTest extends TestCase
 
     private function refusedStart(): StartRequest
     {
-        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
+        $this->images->refuseEvery();
         $request = $this->containerRequest();
-        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
+        $this->assertThrows(fn () => $this->start($request), ImageUnverified::class);
 
         return $request;
     }

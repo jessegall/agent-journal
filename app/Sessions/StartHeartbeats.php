@@ -11,7 +11,6 @@ use App\Agents\Enums\SessionProcessStatus;
 use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandRefusal;
 use App\Events\Sessions\SessionClosed;
-use App\Hosts\CapacityRelease;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
@@ -59,7 +58,6 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
         private ServerClock $clock,
         private CommandFacts $facts,
         private DriverRequestEndings $endings,
-        private CapacityRelease $capacity,
         private DriverCatalogue $drivers,
     ) {}
 
@@ -162,7 +160,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
 
     /**
      * Ends each session that never beat and whose start still waits for a host since the cutoff, so the agent can start
-     * again and its capacity is freed. A start whose host cannot be reached, or with no host while none can be reached,
+     * again. A start whose host cannot be reached, or with no host while none can be reached,
      * waits up to half an hour instead.
      */
     private function endUnclaimedSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
@@ -229,7 +227,6 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
             $session = AgentSession::query()->findOrFail($sessionId);
             $session->endWithEvidenceAt($now, 'no host took up its start within the presence window');
             $start->cancelPending();
-            $this->capacity->releaseFor($session->start_request_id);
             $this->credentials->revoke($session);
 
             AgentRuntime::query()

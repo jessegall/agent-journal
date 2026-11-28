@@ -89,14 +89,14 @@ final readonly class StartAgentHandler implements CommandHandler
         );
 
         // A replay of a start interrupted before its receipt resumes from the evidence its key holds: a session it
-        // started, else a reservation the admission finds.
+        // started, else it starts again.
         if ($record->session_id !== null) {
             $session = AgentSession::query()->findOrFail($record->session_id);
 
             return $this->receiptOf($request, $session, false);
         }
 
-        // Where the start runs, then the agent's lifecycle and start reservation, then the host's capacity, then the
+        // Where the start runs, then the agent's lifecycle and start reservation, then the container's admission, then the
         // driver's account, then the session: the order of every start.
         $agent = Agent::query()->findOrFail($request->agentId);
         $runtime = $this->hostRuntimeOf($request, $agent);
@@ -107,7 +107,7 @@ final readonly class StartAgentHandler implements CommandHandler
         }
 
         if ($request->execution()->mode === ExecutionModeType::RequiredContainer) {
-            $this->containers->admit($request->requestId, $request->selection->driver, $request->execution());
+            $this->containers->admit($request->selection->driver, $request->execution());
         }
 
         $account = $request->chosenAccount === null

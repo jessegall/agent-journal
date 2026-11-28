@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Sessions\Enums\CapacityResource;
 use App\Sessions\Enums\ResumeRefusal;
 use App\Sessions\Enums\StartPreflightRefusal;
 use App\Sessions\Enums\StartRefusalReason;
 use App\Sessions\Enums\StartRefusalType;
 use App\Sessions\Enums\StartRemedyType;
-use App\Sessions\Exceptions\CapacityUnavailable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -88,13 +86,6 @@ final class StartRefusalCopyTest extends TestCase
                 StartRemedyType::OperatorInstruction,
                 'Verify the host image',
                 'Ask your host operator to verify the host image.',
-            ],
-            'capacity-unavailable' => [
-                StartRefusalType::CapacityUnavailable,
-                'The host lacks the required CPU, memory or disk.',
-                StartRemedyType::CheckCapacity,
-                'Check capacity',
-                'Ask your host operator to check capacity.',
             ],
             'driver-not-containable' => [
                 StartPreflightRefusal::DriverNotContainable,
@@ -214,21 +205,5 @@ final class StartRefusalCopyTest extends TestCase
         foreach ($cases as $case) {
             $this->assertContains($case, $listed);
         }
-    }
-
-    public function test_a_capacity_refusal_names_the_resource_it_did_not_fit_in(): void
-    {
-        $this->assertSame(
-            [
-                'The host lacks the required CPU.',
-                'The host lacks the required memory.',
-                'The host lacks the required disk.',
-            ],
-            array_map(
-                fn (CapacityResource $resource) => CapacityUnavailable::because($resource, 'it did not fit.')
-                    ->explanation(),
-                CapacityResource::cases(),
-            ),
-        );
     }
 }

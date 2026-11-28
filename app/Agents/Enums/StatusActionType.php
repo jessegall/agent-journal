@@ -17,7 +17,6 @@ enum StatusActionType: string
     case Retry = 'retry';
     case Switch = 'switch';
     case CheckStatus = 'check-status';
-    case CheckCapacity = 'check-capacity';
     case SignIn = 'sign-in';
     case Dismiss = 'dismiss';
     case CancelStart = 'cancel-start';
@@ -35,7 +34,6 @@ enum StatusActionType: string
             self::Retry => 'Retry',
             self::Switch => 'Switch',
             self::CheckStatus => 'Check status',
-            self::CheckCapacity => 'Check capacity',
             self::SignIn => 'Sign in',
             self::Dismiss => 'Dismiss',
             self::CancelStart => 'Cancel start',

@@ -20,10 +20,9 @@ enum StartRefusalType: string
     case ContextFailed = 'context-failed';
     case ContainerUnavailable = 'container-unavailable';
     case ImageUnverified = 'image-unverified';
-    case CapacityUnavailable = 'capacity-unavailable';
 
     /**
-     * The public explanation of this refusal; a capacity refusal that names its resource says it through that resource.
+     * The public explanation of this refusal.
      */
     public function explanation(): string
     {
@@ -37,7 +36,6 @@ enum StartRefusalType: string
             self::ContextFailed => 'The journal could not prepare this session.',
             self::ContainerUnavailable => 'The host cannot provide a container.',
             self::ImageUnverified => 'The host could not verify its agent image.',
-            self::CapacityUnavailable => 'The host lacks the required CPU, memory or disk.',
         };
     }
 
@@ -73,7 +71,6 @@ enum StartRefusalType: string
                 StartRemedyType::OperatorInstruction,
                 'Verify the host image',
             ),
-            self::CapacityUnavailable => StartRemedy::forOperators(StartRemedyType::CheckCapacity, 'Check capacity'),
         };
     }
 }

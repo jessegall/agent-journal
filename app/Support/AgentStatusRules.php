@@ -15,8 +15,6 @@ use App\Processes\Enums\RuntimeActivity;
 use App\Sessions\Enums\SessionActivityStatus;
 use App\Sessions\Enums\SessionStatus;
 use App\Sessions\Enums\StartDisposition;
-use App\Sessions\Enums\StartRefusalType;
-use App\Sessions\Enums\StartRemedyType;
 use App\Sessions\Enums\StartUnavailableReason;
 use App\Sessions\SessionStartOutcome;
 use App\Sessions\StartRefusalCodes;
@@ -354,15 +352,12 @@ final class AgentStatusRules
         $remedy = $reason->remedy();
 
         $state = match ($reason) {
-            StartRefusalType::CapacityUnavailable => SessionActivityStatus::NoCapacity,
             StartUnavailableReason::NeedsSignIn => SessionActivityStatus::WaitingForSignIn,
             default => SessionActivityStatus::Refused,
         };
 
         // A start the next message may try again offers no button: the remedy's words say what to change first.
-        $primary = $remedy->type === StartRemedyType::CheckCapacity
-            ? [StatusAction::of(StatusActionType::CheckCapacity)]
-            : [];
+        $primary = [];
 
         if ($reason === StartUnavailableReason::NeedsSignIn) {
             $primary = [StatusAction::of(StatusActionType::SignIn)];

@@ -33,7 +33,6 @@ final class AnnounceUnavailableStartTest extends TestCase
         'accounts',
         'active_accounts',
         'session_requests',
-        'capacity_reservations',
         'session_processes',
         'session_policies',
         'session_tokens',

@@ -15,7 +15,6 @@ export const sessionLooks: Record<SessionActivityStatus, StatusState> = {
   failed: "failed",
   refused: "failed",
   "waiting-for-sign-in": "not-signed-in",
-  "no-capacity": "failed",
   unknown: "open",
   retired: "ended",
   verifying: "connecting",

@@ -50,7 +50,6 @@ final class RecordAccountNoticeTest extends TestCase
         'agents',
         'agent_sessions',
         'session_requests',
-        'capacity_reservations',
         'session_processes',
         'session_policies',
         'session_tokens',

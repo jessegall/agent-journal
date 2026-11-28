@@ -8,8 +8,6 @@ use App\Accounts\Data\LoginInput;
 use App\Agents\Activity\Data\ActivityEventData;
 use App\Agents\Activity\Data\ActivityWindowData;
 use App\Agents\ActivityOwnerCheck;
-use App\Agents\Data\CapacityData;
-use App\Agents\Data\CapacityInput;
 use App\Agents\Data\StartPreviewData;
 use App\Agents\Data\StartPreviewInput;
 use App\Agents\Drivers\Contracts\NativePartProvider;
@@ -49,7 +47,6 @@ use App\Http\Controllers\Terminal\SubmitPrivateInputController;
 use App\Http\Controllers\Terminal\TakeTerminalControlController;
 use App\Http\Controllers\Terminal\TerminalControlReceiptController;
 use App\Http\Controllers\Terminal\TerminalFrameController;
-use App\Http\Loaders\Agents\CapacityLoader;
 use App\Http\Loaders\Agents\StartPreviewLoader;
 use App\Http\Loaders\Drafts\DraftQuestionsLoader;
 use App\Http\Loaders\Drafts\DraftRecordLoader;
@@ -105,8 +102,6 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             ActivityEventData::class,
             ActivityWindowData::class,
             AppContextData::class,
-            CapacityData::class,
-            CapacityInput::class,
             DeniedWindow::class,
             DraftAnswersInput::class,
             DraftedRecordData::class,
@@ -171,7 +166,6 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                     ->add('draft-questions', DraftQuestionsLoader::class)
                     ->add('draft-record', DraftRecordLoader::class)
                     ->add('start-receipt', StartReceiptLoader::class)
-                    ->add('capacity', CapacityLoader::class)
                     ->add('start-preview', StartPreviewLoader::class)),
             Page::make('asks', 'Asks', Icon::Speech, AskInboxResolver::class, 'Asks.vue')->at('asks')->onHome(26),
             Page::make('ask', 'Ask', Icon::Speech, AskDetailResolver::class, 'AskDetail.vue')->at('asks/{ask}'),

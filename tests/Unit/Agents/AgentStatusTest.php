@@ -70,15 +70,6 @@ final class AgentStatusTest extends TestCase
                 'Status unknown',
                 ['check-status'],
             ],
-            'refused and ended' => [
-                self::stopped(self::startOutcome(StartDisposition::Refused, 'capacity-unavailable')),
-                SessionActivityStatus::NoCapacity,
-                'No capacity',
-                [
-                    'check-capacity',
-                    'dismiss',
-                ],
-            ],
             'sessionless refusal' => [
                 self::stopped(self::startOutcome(StartDisposition::Refused, 'model-required')),
                 SessionActivityStatus::Refused,

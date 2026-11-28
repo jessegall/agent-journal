@@ -13,8 +13,6 @@ import {
   retry,
 } from "@kit/sessionStarts";
 import { sendPageAction } from "@kit/pageActions";
-import { load, LoaderCancelled, webCapacity } from "@kit/loaders";
-import type { CapacityData } from "@kit/CoreTypes";
 import { useStatusCheck } from "../../../composables/useStatusCheck";
 import { useSwitchOperation } from "../../../composables/useSwitchOperation";
 import { openAgentTerminal } from "../../../composables/useTerminalModal";
@@ -55,30 +53,6 @@ function settleSwitch(
 
 function readAgain(): void {
   router.reload({ onFinish: () => (pendingType.value = null) });
-}
-
-function checkCapacity(): void {
-  pendingType.value = "check-capacity";
-  load(webCapacity, {
-    agent: props.agent.id,
-    mode: "required_container",
-    cpuCores: null,
-    memoryBytes: null,
-    diskBytes: null,
-  })
-    .then((answer) => {
-      notice.value = answer.status === "ok" ? capacityNotice(answer.value) : null;
-    })
-    .catch((failure: Error) => {
-      if (!(failure instanceof LoaderCancelled)) {
-        notice.value = "The capacity check did not arrive; check again.";
-      }
-    })
-    .finally(() => (pendingType.value = null));
-}
-
-function capacityNotice(capacity: CapacityData): string | null {
-  return capacity.fits ? "The host has room for this start now." : (capacity.explanation ?? null);
 }
 
 function dismiss(): void {
@@ -159,7 +133,6 @@ const handlers: Record<BarActionType, () => void> = {
   retry: () => settleSwitch(retry, "Retrying"),
   "recheck-switch": () => settleSwitch(recheck, "Checking"),
   "check-status": checkStatus,
-  "check-capacity": checkCapacity,
   "sign-in": () => router.visit(accountsPage.url()),
   "open-terminal": openTerminal,
   dismiss,

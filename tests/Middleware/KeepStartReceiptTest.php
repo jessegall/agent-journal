@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace Tests\Middleware;
 
 use App\CommandMiddleware\KeepStartReceipt;
+use App\Exceptions\ImageUnverified;
 use App\Exceptions\StartRefusalReplayed;
 use App\Exceptions\StartRequestConflict;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Sessions\CapacityReservation;
 use App\Models\Sessions\SessionRequest;
 use App\Sessions\Contracts\SessionRequestResolver;
 use App\Sessions\Enums\StartDisposition;
 use App\Sessions\Enums\StartRefusalType;
-use App\Sessions\Exceptions\CapacityUnavailable;
 use App\Sessions\Exceptions\SessionRequestMissing;
-use App\Sessions\Values\HostCapacity;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use PhpOption\None;
@@ -44,7 +42,6 @@ final class KeepStartReceiptTest extends TestCase
         'accounts',
         'active_accounts',
         'session_requests',
-        'capacity_reservations',
         'session_processes',
         'session_policies',
         'session_tokens',
@@ -64,44 +61,42 @@ final class KeepStartReceiptTest extends TestCase
         $this->prepareAgentStarts();
     }
 
-    public function test_a_capacity_refusal_keeps_its_receipt_after_the_rollback(): void
+    public function test_a_refused_start_keeps_its_receipt_after_the_rollback(): void
     {
         $this->proveTheHost();
 
-        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
+        $this->images->refuseEvery();
         $request = $this->containerRequest(TestSelections::requestId());
 
-        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
+        $this->assertThrows(fn () => $this->start($request), ImageUnverified::class);
 
         $record = SessionRequest::query()->where('request_id', $request->requestId)->sole();
         $this->assertSame(
-            [StartDisposition::Refused, StartRefusalType::CapacityUnavailable->value, null],
+            [StartDisposition::Refused, StartRefusalType::ImageUnverified->value, null],
             [$record->disposition, $record->refusal_reason, $record->session_id],
         );
         $this->assertNotNull($record->refused_at);
         $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agentId)->count());
-        $this->assertSame(0, CapacityReservation::query()->count());
     }
 
     public function test_a_replay_answers_the_kept_refusal_without_a_second_admission(): void
     {
         $this->proveTheHost();
 
-        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
+        $this->images->refuseEvery();
         $request = $this->containerRequest(TestSelections::requestId());
-        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
+        $this->assertThrows(fn () => $this->start($request), ImageUnverified::class);
         $checksAtRefusal = $this->images->checks;
-        $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
+        $this->images->verifyEvery();
 
         try {
             $this->start($request);
             $this->fail('A refused start ran again under its request id.');
         } catch (StartRefusalReplayed $replayed) {
-            $this->assertSame(StartRefusalType::CapacityUnavailable->value, $replayed->reason);
+            $this->assertSame(StartRefusalType::ImageUnverified->value, $replayed->reason);
         }
 
         $this->assertSame($checksAtRefusal, $this->images->checks);
-        $this->assertSame(0, CapacityReservation::query()->count());
         $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agentId)->count());
     }
 
@@ -109,9 +104,9 @@ final class KeepStartReceiptTest extends TestCase
     {
         $this->proveTheHost();
 
-        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
+        $this->images->refuseEvery();
         $request = $this->containerRequest(TestSelections::requestId());
-        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
+        $this->assertThrows(fn () => $this->start($request), ImageUnverified::class);
 
         $this->assertThrows(
             fn () => $this->start(
@@ -132,7 +127,7 @@ final class KeepStartReceiptTest extends TestCase
     {
         $this->proveTheHost();
 
-        $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
+        $this->images->verifyEvery();
         $request = $this->containerRequest(TestSelections::requestId());
         SessionRequest::create(
             $request,
@@ -155,7 +150,6 @@ final class KeepStartReceiptTest extends TestCase
                 $replayed->isNewSession,
             ],
         );
-        $this->assertSame(1, CapacityReservation::query()->where('start_request_id', $request->requestId)->count());
         $this->assertSame(1, AgentSession::query()->where('agent_id', $this->agentId)->count());
     }
 
@@ -163,14 +157,14 @@ final class KeepStartReceiptTest extends TestCase
     {
         $this->proveTheHost();
 
-        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
+        $this->images->refuseEvery();
         $request = $this->containerRequest(TestSelections::requestId());
-        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
+        $this->assertThrows(fn () => $this->start($request), ImageUnverified::class);
 
         $receipt = $this->app->make(SessionRequestResolver::class)->receipt($request->requestId);
 
         $this->assertSame(
-            [StartDisposition::Refused, StartRefusalType::CapacityUnavailable->value, null],
+            [StartDisposition::Refused, StartRefusalType::ImageUnverified->value, null],
             [$receipt->disposition, $receipt->refusalReason, $receipt->sessionId],
         );
         $reader = Agent::create('Reader', 'writing-helper', $this->localProject());

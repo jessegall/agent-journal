@@ -97,7 +97,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         $mode = $policy->execution->mode;
 
         if ($mode === ExecutionModeType::RequiredContainer && $host->runsPlacement($mode)) {
-            $this->containers->admit($requestId, $selection->driver, $policy->execution);
+            $this->containers->admit($selection->driver, $policy->execution);
         }
 
         $account = $this->accounts->forStart($selection->driver);

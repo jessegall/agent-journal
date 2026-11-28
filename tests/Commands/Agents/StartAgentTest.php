@@ -37,7 +37,6 @@ use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
-use App\Models\Sessions\CapacityReservation;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
@@ -53,11 +52,8 @@ use App\Sessions\Enums\SessionStatus;
 use App\Sessions\Enums\StartDisposition;
 use App\Sessions\Enums\StartOriginType;
 use App\Sessions\Enums\StartUnavailableReason;
-use App\Sessions\Exceptions\CapacityUnavailable;
 use App\Sessions\Exceptions\SessionPolicyFrozen;
-use App\Sessions\StartHeartbeats as SessionEndings;
 use App\Sessions\StartReceipt;
-use App\Sessions\Values\HostCapacity;
 use App\Sessions\Values\StartPolicy;
 use App\Time\Contracts\ServerClock;
 use App\Values\PresenceReport;
@@ -93,7 +89,6 @@ final class StartAgentTest extends TestCase
         'accounts',
         'active_accounts',
         'session_requests',
-        'capacity_reservations',
         'session_processes',
         'session_policies',
         'session_tokens',
@@ -258,8 +253,8 @@ final class StartAgentTest extends TestCase
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
         $start = SessionProcess::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole();
         $this->assertSame(
-            [SessionStatus::Ended, SessionProcessStatus::Cancelled, false],
-            [$session->status, $start->status, CapacityReservation::isHeldFor($session->start_request_id)],
+            [SessionStatus::Ended, SessionProcessStatus::Cancelled],
+            [$session->status, $start->status],
         );
         $this->assertNotSame($receipt->sessionId, $this->start($this->request())->sessionId);
     }
@@ -312,7 +307,6 @@ final class StartAgentTest extends TestCase
             StartRefused::class,
         );
 
-        $this->assertSame(0, CapacityReservation::query()->count());
         $this->assertSame(0, AgentSession::query()->where('agent_id', $shopper->id)->count());
     }
 
@@ -370,36 +364,23 @@ final class StartAgentTest extends TestCase
 
         $this->assertThrows(fn () => $this->start($this->newAgentContainerRequest()), ContainerUnavailable::class);
 
-        $this->assertSame(0, CapacityReservation::query()->count());
     }
 
-    public function test_capacity_beyond_the_host_refuses(): void
+    public function test_container_starts_are_never_limited_by_the_host(): void
     {
-        $this->arrangeRoomForOneContainer();
+        $this->arrangeProvenContainerHost();
 
         $this->start($this->newAgentContainerRequest());
-
-        $this->assertThrows(fn () => $this->start($this->newAgentContainerRequest()), CapacityUnavailable::class);
-        $this->assertSame(1, CapacityReservation::query()->count());
-        $this->assertSame(1, AgentSession::query()->count());
-    }
-
-    public function test_an_ended_session_gives_its_capacity_back_for_the_next_start(): void
-    {
-        $this->arrangeRoomForOneContainer();
         $this->start($this->newAgentContainerRequest());
-        $first = AgentSession::query()->sole();
-
-        $this->journal->service(SessionEndings::class)->markExited($first, 'exit code 0');
         $this->start($this->newAgentContainerRequest());
 
-        $this->assertSame(2, AgentSession::query()->count());
+        $this->assertSame(3, AgentSession::query()->count());
     }
 
     /**
-     * A signed-in owner on a host with room for one agent container, whose capabilities and image are proven.
+     * A signed-in owner on a host whose capabilities and image are proven.
      */
-    private function arrangeRoomForOneContainer(): void
+    private function arrangeProvenContainerHost(): void
     {
         $this->signIn();
         $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
@@ -421,7 +402,6 @@ final class StartAgentTest extends TestCase
                 return true;
             }
         });
-        $this->app->instance(HostCapacity::class, new HostCapacity(3, 16 * 1024 ** 3, 50 * 1024 ** 3));
     }
 
     /**

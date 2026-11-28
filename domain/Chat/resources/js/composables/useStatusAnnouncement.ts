@@ -17,7 +17,6 @@ export function useStatusAnnouncement(
   const actionable = new Set([
     "failed",
     "refused",
-    "no-capacity",
     "waiting-for-sign-in",
   ]);
 

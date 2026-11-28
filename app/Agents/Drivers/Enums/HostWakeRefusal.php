@@ -15,7 +15,6 @@ enum HostWakeRefusal: string
 {
     case ContainerUnavailable = 'container-unavailable';
     case ImageUnverified = 'image-unverified';
-    case CapacityUnavailable = 'capacity-unavailable';
     case ProtectedAccountFolderRejected = 'protected-account-folder-rejected';
     case PinnedBuildMissing = 'pinned-build-missing';
     // The host keeps no ready report for the runtime's start, so Check status has nothing to send again.
@@ -43,7 +42,6 @@ enum HostWakeRefusal: string
         return match ($this) {
             self::ContainerUnavailable => StartRefusalType::ContainerUnavailable,
             self::ImageUnverified => StartRefusalType::ImageUnverified,
-            self::CapacityUnavailable => StartRefusalType::CapacityUnavailable,
             self::ProtectedAccountFolderRejected => StartRefusalReason::AccountFolderRejected,
             self::PinnedBuildMissing => StartRefusalReason::PinnedBuildMissing,
             self::NotSignedIn => StartRefusalReason::NotSignedIn,
