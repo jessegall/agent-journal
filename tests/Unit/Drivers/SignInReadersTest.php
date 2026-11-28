@@ -8,6 +8,7 @@ use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSignInReader;
 use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Exceptions\ProbeOutputRefused;
 use App\Agents\Values\SignInFolder;
 use App\Recordings\Recordings;
 use Tests\Support\Recordings\RecordedProgram;
@@ -53,6 +54,23 @@ final class SignInReadersTest extends TestCase
                 $unreadable->isReadable,
                 $unreadable->isSignedIn,
             ],
+        );
+    }
+
+    public function test_a_line_printed_before_the_claude_code_status_refuses_the_probe_naming_the_line(): void
+    {
+        $recordings = $this->journal->service(Recordings::class);
+        $status = RecordedProgram::from(
+            $recordings->scenario(DefaultDrivers::CLAUDE_CODE, 'first-start'),
+            ['claude', 'auth', 'status', '--json'],
+        );
+
+        $this->expectExceptionObject(ProbeOutputRefused::before('journal-init: ready'));
+
+        (new ClaudeCodeSignInReader())(
+            "journal-init: ready\n".$status->printedOn('stdout'),
+            $status->exitCode(),
+            SignInFolder::named('/accounts/a7'),
         );
     }
 

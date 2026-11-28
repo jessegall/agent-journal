@@ -7,6 +7,7 @@ namespace App\Agents\Drivers\ClaudeCode;
 use App\Accounts\Data\ClaudeStatusData;
 use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\Contracts\SignInReader;
+use App\Agents\Exceptions\ProbeOutputRefused;
 use App\Agents\Values\SignInFolder;
 use App\Agents\Values\SignInReport;
 use JsonException;
@@ -27,8 +28,17 @@ final readonly class ClaudeCodeSignInReader implements SignInReader
         'api_key_helper' => SignInMethod::ApiKey,
     ];
 
+    /**
+     * @throws ProbeOutputRefused when a line comes before the status's JSON
+     */
     public function __invoke(string $printed, int|null $exitCode, SignInFolder $folder): SignInReport
     {
+        $answerAt = strpos($printed, '{');
+
+        if ($answerAt !== false && trim(substr($printed, 0, $answerAt)) !== '') {
+            throw ProbeOutputRefused::before(trim(strtok($printed, "\n")));
+        }
+
         try {
             $status = ClaudeStatusData::from(json_decode($printed, true, 512, JSON_THROW_ON_ERROR));
         } catch (JsonException|CannotCreateData|TypeError) {
