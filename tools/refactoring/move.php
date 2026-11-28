@@ -72,9 +72,16 @@ if ($dryRun) {
 $list = tempnam(sys_get_temp_dir(), 'moves');
 file_put_contents($list, implode("\n", $rows)."\n");
 $status = 0;
+// The kept classes as they were, put back when the batch refuses, so a refused merge writes nothing.
+$keptBefore = [];
 
 // A merge first carries the old class's members into the kept class; the batch then repoints every reference.
 if ($replace) {
+    foreach ($requests as [$old, $new]) {
+        $kept = fileOf($prefixes, str_contains($new, '\\') ? $new : namespaceOf($old).'\\'.$new);
+        $keptBefore[$kept] = (string) file_get_contents("{$root}/{$kept}");
+    }
+
     passthru(implode(' ', array_map('escapeshellarg', [
         PHP_BINARY,
         __DIR__.'/layout/merge-members.php',
@@ -90,6 +97,12 @@ if ($status === 0) {
         $list,
         "--root={$root}",
     ])), $status);
+}
+
+if ($status !== 0) {
+    foreach ($keptBefore as $kept => $source) {
+        file_put_contents("{$root}/{$kept}", $source);
+    }
 }
 
 // The syntax tree misses a path or a name written as text; the same rows rewrite those once the move succeeded.

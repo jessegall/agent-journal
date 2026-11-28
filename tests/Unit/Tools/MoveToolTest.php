@@ -189,6 +189,29 @@ final class MoveToolTest extends TestCase
         );
     }
 
+    public function test_a_file_that_imports_both_classes_keeps_one_import_of_the_kept_class(): void
+    {
+        file_put_contents($this->tree.'/app/Contracts/Both.php', <<<'PHP'
+            <?php
+
+            namespace App\Contracts;
+
+            use App\Values\Kept;
+            use App\Values\Old;
+
+            final readonly class Both
+            {
+                public function __construct(public Kept $kept, public Old $old) {}
+            }
+
+            PHP);
+
+        [$exit] = $this->move('--replace', 'App\\Values\\Old', 'App\\Values\\Kept');
+        preg_match_all('/^use ([^;]+);/m', (string) file_get_contents($this->tree.'/app/Contracts/Both.php'), $imports);
+
+        $this->assertSame([0, ['App\\Values\\Kept']], [$exit, $imports[1]]);
+    }
+
     public function test_a_merge_of_a_member_name_in_both_classes_is_refused_and_writes_nothing(): void
     {
         $method = "\n    public function label(): string\n    {\n        return '%s';\n    }\n";

@@ -301,11 +301,29 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
         }
     }
 
+    // The classes the file imports as they are written, so a merged class whose kept class is imported already drops.
+    $importedAsWritten = array_map(
+        fn (array $import) => ltrim(($import['prefix'] !== '' ? $import['prefix'].'\\' : '').$import['item']->name->toString(), '\\'),
+        $tree->imports,
+    );
+
     foreach ($tree->imports as ['item' => $use, 'statement' => $statement, 'prefix' => $prefix]) {
         $full = ltrim(($prefix !== '' ? $prefix.'\\' : '').$use->name->toString(), '\\');
         $alias = $use->alias?->toString() ?? shortName($full);
         $target = $renames[$full] ?? $full;
         $imported[strtolower($alias)] = $target;
+
+        // A merged class whose kept class the file imports already: the statement goes, and its uses take the kept name.
+        if ($target !== $full && $prefix === '' && count($statement->uses) === 1 && $use->alias === null && in_array($target, $importedAsWritten, true)) {
+            $edits[] = [
+                $statement->getStartFilePos(),
+                lineEnd($source, $statement->getEndFilePos()),
+                '',
+            ];
+            $shortRenames[strtolower(shortName($full))] = shortName($target);
+
+            continue;
+        }
 
         // An import of a class in the moved file's own new namespace says nothing there: the statement goes.
         if ($movedTo !== null && $prefix === '' && count($statement->uses) === 1 && $use->alias === null && namespaceOf($target) === $newNamespace) {
