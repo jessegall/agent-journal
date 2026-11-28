@@ -41,7 +41,9 @@ final class DriverSwitchLinesTest extends TestCase
         [$switch, $chat] = $this->switchOf(carriesConversation: false);
 
         $reason = 'Its account must sign in again.';
-        $this->app->make(DriverSwitchLines::class)->failed($switch, $reason);
+        $lines = $this->app->make(DriverSwitchLines::class);
+        $lines->failed($switch, $reason);
+        $lines->failed($switch, $reason);
 
         $message = Message::query()->inInbox($chat->id)->sole();
         $this->assertEquals(ActorReference::system(), $message->author());

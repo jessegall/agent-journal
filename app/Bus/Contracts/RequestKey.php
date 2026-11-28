@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Bus\Contracts;
 
+use Closure;
+
 interface RequestKey
 {
     public const int LONGEST = 128;
@@ -27,4 +29,14 @@ interface RequestKey
      * @param  class-string  $command
      */
     public function requireFor(string $command): string;
+
+    /**
+     * Runs a write under its own receipt key and restores the enclosing request afterward.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function independently(string $key, Closure $work): mixed;
 }
