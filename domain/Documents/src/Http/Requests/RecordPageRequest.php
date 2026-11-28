@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Requests;
 
-use App\Http\Requests\Concerns\ReadsOptionalText;
 use App\Http\Requests\Web\Concerns\ReadsCommentsPage;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Reads\Values\PageSize;
+use Domain\Documents\Http\Requests\Concerns\ReadsLibraryFilters;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -17,15 +17,16 @@ use Illuminate\Foundation\Http\FormRequest;
 final class RecordPageRequest extends FormRequest
 {
     use ReadsCommentsPage;
-    use ReadsOptionalText;
+    use ReadsLibraryFilters;
     use ReadsRouteNumber;
 
     /**
-     * @return array<string, list<string>>
+     * @return array<string, list<mixed>>
      */
     public function rules(): array
     {
         return [
+            ...$this->libraryRules(),
             'commentsAfter' => ['nullable', 'string', 'max:64'],
             'commentLocation' => ['nullable', 'string', 'max:64'],
             'sectionsVersion' => ['nullable', 'string', 'max:64'],

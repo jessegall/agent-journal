@@ -14,7 +14,7 @@ use Domain\Comments\Contracts\CommentResolver;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Http\Pages\Documents\DocumentsShow;
-use Domain\Documents\Http\Pages\Resolvers\Support\LibraryListing;
+use Domain\Documents\Http\Pages\Support\LibraryListing;
 use Domain\Documents\Http\Requests\RecordPageRequest;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Support\RecordPageReads;
@@ -57,7 +57,7 @@ final readonly class DocumentWindowResolver implements PageResolver
         );
 
         return RecordLayoutData::build()
-            ->shown($this->library->layout($reader))
+            ->shown($this->library->layout($this->request->filters(), $this->request->typeFilter(), $reader))
             ->record(new RecordIdentity(Document::linkType(), $document->id))
             ->finish();
     }
