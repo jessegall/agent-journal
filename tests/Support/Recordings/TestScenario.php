@@ -78,23 +78,47 @@ final class TestScenario
     public function hookBody(string $event, int $nth = 1): string
     {
         Assert::assertGreaterThan(0, $nth);
+        $occurrence = 0;
+
+        foreach ($this->hookBodies($event) as $body => $fields) {
+            if (++$occurrence === $nth) {
+                return $body;
+            }
+        }
+
+        Assert::fail("The scenario {$this->name} has no complete {$event} hook at occurrence {$nth}.");
+    }
+
+    public function toolHookBody(string $event, string $tool): string
+    {
+        foreach ($this->hookBodies($event) as $body => $fields) {
+            if (($fields['tool_name'] ?? null) === $tool) {
+                return $body;
+            }
+        }
+
+        Assert::fail("The scenario {$this->name} has no complete {$event} hook for {$tool}.");
+    }
+
+    /**
+     * @return iterable<string, array<string, mixed>>
+     */
+    private function hookBodies(string $event): iterable
+    {
         [$driver, $scenario] = explode('/', $this->name, 2);
         $recording = $this->journal->service(Recordings::class)->scenario($driver, $scenario);
-        $occurrence = 0;
 
         foreach ($recording->calls(Wire::Hooks) as $call) {
             if ($call->status !== null || $call->isCut || $call->isWithheld) {
                 continue;
             }
 
-            $body = json_decode($call->body, true);
+            $fields = json_decode($call->body, true);
 
-            if (($body['hook_event_name'] ?? '') === $event && ++$occurrence === $nth) {
-                return $call->body;
+            if (is_array($fields) && ($fields['hook_event_name'] ?? null) === $event) {
+                yield $call->body => $fields;
             }
         }
-
-        Assert::fail("The scenario {$this->name} has no complete {$event} hook at occurrence {$nth}.");
     }
 
     /**

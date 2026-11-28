@@ -6,6 +6,7 @@ namespace Tests\Support\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Api\SignedCall;
+use App\Models\Drivers\HookCall;
 use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Support\ActorReference;
@@ -31,6 +32,18 @@ trait SendsSignedHooks
     private function recordedHookBody(string $scenario, string $event, int $nth = 1): string
     {
         return new TestScenario($this->journal, $scenario)->hookBody($event, $nth);
+    }
+
+    private function assertRecordedMoment(string $driver, string $scenario, string $event, string|null $tool): void
+    {
+        $this->journal->scenario($scenario, function (TestScenario $turn) use ($driver, $event, $tool): void {
+            $body = $tool === null ? $turn->hookBody($event) : $turn->toolHookBody($event, $tool);
+            $reply = $this->hook($driver, $body)->assertOk();
+
+            $this->assertSame(0, $reply->json('exitCode'));
+            $this->assertIsArray(json_decode((string) $reply->json('stdout'), true));
+            $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+        });
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Hooks;
 
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Enums\CodexTool;
 use App\Hooks\Enums\HookEvent;
 use App\Models\Drivers\HookCall;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -62,34 +63,24 @@ final class CodexHooksTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string, string, int}>
+     * @return iterable<string, array{string, string, string|null}>
      */
     public static function moments(): iterable
     {
-        yield 'session start' => ['codex/terminal-turn', 'SessionStart', 1];
-        yield 'prompt' => ['codex/terminal-turn', 'UserPromptSubmit', 1];
-        yield 'tool call' => ['codex/terminal-turn', 'PreToolUse', 2];
-        yield 'finished tool' => ['codex/terminal-turn', 'PostToolUse', 1];
-        yield 'stop' => ['codex/terminal-turn', 'Stop', 1];
+        yield 'session start' => ['codex/terminal-turn', 'SessionStart', null];
+        yield 'prompt' => ['codex/terminal-turn', 'UserPromptSubmit', null];
+        yield 'tool call' => ['codex/terminal-turn', 'PreToolUse', CodexTool::Bash->value];
+        yield 'finished tool' => ['codex/terminal-turn', 'PostToolUse', CodexTool::Bash->value];
+        yield 'stop' => ['codex/terminal-turn', 'Stop', null];
     }
 
     #[DataProvider('moments')]
     public function test_each_moment_is_answered_with_a_reply_codex_reads_and_recorded(
         string $scenario,
         string $event,
-        int $nth,
+        string|null $tool,
     ): void {
-        $this->journal->scenario($scenario, fn (TestScenario $turn) => $turn->sendHook(
-            $event,
-            $nth,
-            function (string $body): void {
-                $reply = $this->hook('codex', $body)->assertOk();
-
-                $this->assertSame(0, $reply->json('exitCode'));
-                $this->assertIsArray(json_decode((string) $reply->json('stdout'), true));
-                $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
-            },
-        ));
+        $this->assertRecordedMoment(DefaultDrivers::CODEX, $scenario, $event, $tool);
     }
 
     public function test_a_session_end_is_answered_and_recorded(): void
