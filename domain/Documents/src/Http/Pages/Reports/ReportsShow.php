@@ -52,47 +52,51 @@ final readonly class ReportsShow extends ReportsPage
     ): DeclaredLayoutData {
         $label = "report {$number}";
 
-        return PublicationPage::make(
-            $report->title,
-            [
-                LayoutPartData::build()->asText()->key('label')->value($label)->style('code')->finish(),
-                LayoutPartData::build()
-                    ->asNative()
-                    ->key('receipt')
-                    ->native(
-                        LayoutNativeData::build()
-                        ->component('documents/ReportReceipt')
-                        ->props(new ReportReceiptPartData((string) $number))
-                        ->finish(),
-                    )
-                    ->finish(),
-            ],
-            $report->abstract,
-            fn () => LayoutBodyData::fromMarkdown($report->body),
-            [
-                PublicationTab::deferred('text', 'Text', fn () => $this->textOf($report, $isPublic(), $comments())),
-                PublicationTab::deferred('links', 'Links', fn () => LayoutPartData::build()
-                    ->asNative()
-                    ->key('links')
-                    ->native(
-                        LayoutNativeData::build()
-                        ->component('documents/RecordLinks')
-                        ->props(
-                            RecordLinksPartData::from([
-                                'source' => $label,
-                                'links' => $links(),
-                            ]),
+        return PublicationPage::build()
+            ->title($report->title)
+            ->metadata(
+                [
+                    LayoutPartData::build()->asText()->key('label')->value($label)->style('code')->finish(),
+                    LayoutPartData::build()
+                        ->asNative()
+                        ->key('receipt')
+                        ->native(
+                            LayoutNativeData::build()
+                            ->component('documents/ReportReceipt')
+                            ->props(new ReportReceiptPartData((string) $number))
+                            ->finish(),
                         )
                         ->finish(),
-                    )
-                    ->finish()),
-                PublicationTab::deferred(
-                    'details',
-                    'Details',
-                    fn () => $this->detailsOf($report, $number, $label, $inspection()),
-                ),
-            ],
-        )->layout($tab);
+                ],
+            )
+            ->summary($report->abstract)
+            ->body(fn () => LayoutBodyData::fromMarkdown($report->body))
+            ->tabs(
+                [
+                    PublicationTab::deferred('text', 'Text', fn () => $this->textOf($report, $isPublic(), $comments())),
+                    PublicationTab::deferred('links', 'Links', fn () => LayoutPartData::build()
+                        ->asNative()
+                        ->key('links')
+                        ->native(
+                            LayoutNativeData::build()
+                            ->component('documents/RecordLinks')
+                            ->props(
+                                RecordLinksPartData::from([
+                                    'source' => $label,
+                                    'links' => $links(),
+                                ]),
+                            )
+                            ->finish(),
+                        )
+                        ->finish()),
+                    PublicationTab::deferred(
+                        'details',
+                        'Details',
+                        fn () => $this->detailsOf($report, $number, $label, $inspection()),
+                    ),
+                ],
+            )
+            ->finish()->layout($tab);
     }
 
     private function textOf(ReportView $report, bool $isPublic, RecordCommentsPartData $comments): LayoutPartData

@@ -11,6 +11,11 @@ namespace App\Support\Layout;
  */
 final readonly class DetailPage
 {
+    /** @use \App\Web\Creation\Buildable<DetailPageFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = DetailPageFields::class;
+
     /**
      * @param  list<LayoutPartData>  $metadata
      * @param  list<LayoutPartData>  $actions
@@ -18,7 +23,7 @@ final readonly class DetailPage
      * @param  list<LayoutPartData>  $standing
      * @param  list<PublicationTab>  $tabs
      */
-    private function __construct(
+    public function __construct(
         public string $title,
         public array $metadata = [],
         public string|null $abstract = null,
@@ -27,11 +32,6 @@ final readonly class DetailPage
         public array $standing = [],
         public array $tabs = [],
     ) {}
-
-    public static function make(string $title): self
-    {
-        return new self($title);
-    }
 
     /**
      * The line above the title, such as the link to the plan a task belongs to.

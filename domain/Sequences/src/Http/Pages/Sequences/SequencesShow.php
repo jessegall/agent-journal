@@ -22,7 +22,7 @@ final readonly class SequencesShow extends SequencesPage
 
     public function of(Sequence $sequence): DeclaredLayoutData
     {
-        $page = DetailPage::make($sequence->name);
+        $page = DetailPage::build()->title($sequence->name)->finish();
         $summarisedPage = $sequence->summary === '' ? $page : $page->summarising($sequence->summary);
 
         $reader = $summarisedPage

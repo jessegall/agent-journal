@@ -23,7 +23,7 @@ final class DetailPageTest extends TestCase
     {
         $reads = [];
 
-        $root = DetailPage::make('Task 7')
+        $root = DetailPage::build()->title('Task 7')->finish()
             ->above(LayoutPartData::build()
                 ->asAction()
                 ->key('plan')

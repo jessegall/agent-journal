@@ -211,7 +211,7 @@ final readonly class AccountsIndex extends AccountsPage
         }
 
         return [
-            DetailPage::make($row->label)
+            DetailPage::build()->title($row->label)->finish()
                 ->summarising($this->summaryOf($row))
                 ->withStanding(...array_map(fn (SettingsGroup $group) => $group->part(), $groups))
                 ->part(),
@@ -230,10 +230,11 @@ final readonly class AccountsIndex extends AccountsPage
             $rows[] = $this->defaultRow($row);
         }
 
-        $rows[] = SettingsRow::control(
-            'sign-in',
-            'Sign-in',
-            $row->status === AccountStatus::Unauthenticated
+        $rows[] = SettingsRow::build()
+            ->key('sign-in')
+            ->label('Sign-in')
+            ->control(
+                $row->status === AccountStatus::Unauthenticated
                 ? $this->form('sign-in-again', 'accounts.sign-in-again', $row->id, 'Sign in again')
                 : LayoutPartData::build()
                     ->asBadge()
@@ -241,10 +242,11 @@ final readonly class AccountsIndex extends AccountsPage
                     ->text($this->stateWordOf($row))
                     ->tone($this->stateToneOf($row))
                     ->finish(),
-            $this->signInHelp($row),
-        );
+            )
+            ->help($this->signInHelp($row))
+            ->finish();
 
-        return SettingsGroup::make('account', 'Account')->leading()->withRows(...$rows);
+        return SettingsGroup::build()->key('account')->title('Account')->finish()->leading()->withRows(...$rows);
     }
 
     private function nameRow(AccountRowData $row): SettingsRow
@@ -256,10 +258,11 @@ final readonly class AccountsIndex extends AccountsPage
             ->isKeyed(true)
             ->finish();
 
-        return SettingsRow::control(
-            'name',
-            'Name',
-            LayoutPartData::build()
+        return SettingsRow::build()
+            ->key('name')
+            ->label('Name')
+            ->control(
+                LayoutPartData::build()
                 ->asForm()
                 ->key('rename')
                 ->form($rename)
@@ -274,8 +277,9 @@ final readonly class AccountsIndex extends AccountsPage
                     ->finish(),
                 )
                 ->finish(),
-            'Shown in the account list and the agent bar.',
-        );
+            )
+            ->help('Shown in the account list and the agent bar.')
+            ->finish();
     }
 
     private function defaultRow(AccountRowData $row): SettingsRow
@@ -288,10 +292,11 @@ final readonly class AccountsIndex extends AccountsPage
             ->isKeyed(true)
             ->finish();
 
-        return SettingsRow::control(
-            'default',
-            'Make default',
-            LayoutPartData::build()
+        return SettingsRow::build()
+            ->key('default')
+            ->label('Make default')
+            ->control(
+                LayoutPartData::build()
                 ->asForm()
                 ->key('activate')
                 ->form($activate)
@@ -308,8 +313,9 @@ final readonly class AccountsIndex extends AccountsPage
                     ->finish(),
                 )
                 ->finish(),
-            $help,
-        );
+            )
+            ->help($help)
+            ->finish();
     }
 
     private function signInHelp(AccountRowData $row): string
@@ -335,7 +341,7 @@ final readonly class AccountsIndex extends AccountsPage
     {
         $rows = array_map(fn (AccountUsageWindowData $window) => $this->windowRow($window), $usage->windows);
 
-        return SettingsGroup::make('usage', 'Usage')->withRows(...$rows);
+        return SettingsGroup::build()->key('usage')->title('Usage')->finish()->withRows(...$rows);
     }
 
     private function windowRow(AccountUsageWindowData $window): SettingsRow
@@ -345,13 +351,19 @@ final readonly class AccountsIndex extends AccountsPage
         $reset = $window->resetsAt === null ? null : "Resets {$this->resetTime($window->resetsAt)}.";
 
         if ($window->usedPercent === null) {
-            return SettingsRow::value($key, $label, 'Usage unavailable', $reset)->inBlock();
+            return SettingsRow::build()
+                ->key($key)
+                ->label($label)
+                ->value('Usage unavailable')
+                ->help($reset)
+                ->finish()->inBlock();
         }
 
-        return SettingsRow::reading(
-            $key,
-            $label,
-            LayoutPartData::build()
+        return SettingsRow::build()
+            ->key($key)
+            ->label($label)
+            ->control(
+                LayoutPartData::build()
                 ->asUsage()
                 ->key('meter')
                 ->progress(
@@ -363,8 +375,10 @@ final readonly class AccountsIndex extends AccountsPage
                     ->finish(),
                 )
                 ->finish(),
-            $reset,
-        );
+            )
+            ->help($reset)
+            ->isBlock(true)
+            ->finish();
     }
 
     /**

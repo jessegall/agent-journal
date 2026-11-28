@@ -23,7 +23,7 @@ final readonly class PlansTasksShow extends PlansPage
 
     public function of(PlanFiltersData $filters, int $number, string $back, TaskDetails $task): DeclaredLayoutData
     {
-        $reader = DetailPage::make($task->title)
+        $reader = DetailPage::build()->title($task->title)->finish()
             ->above(LayoutPartData::build()
                 ->asAction()
                 ->key('back')

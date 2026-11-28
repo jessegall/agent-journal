@@ -11,10 +11,15 @@ namespace App\Support\Layout;
  */
 final readonly class SettingsGroup
 {
+    /** @use \App\Web\Creation\Buildable<SettingsGroupFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = SettingsGroupFields::class;
+
     /**
      * @param  list<SettingsRow>  $rows
      */
-    private function __construct(
+    public function __construct(
         private string $key,
         private string $title,
         private string|null $help,
@@ -24,11 +29,6 @@ final readonly class SettingsGroup
         private LayoutPartData|null $switch,
         private bool $isLeading = false,
     ) {}
-
-    public static function make(string $key, string $title, string|null $help = null): self
-    {
-        return new self($key, $title, $help, [], null, null, null);
-    }
 
     /**
      * The first group of a reader, which stands right under the reader's title: its own title names the region for a

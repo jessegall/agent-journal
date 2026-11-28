@@ -36,7 +36,7 @@ final readonly class PlansShow extends PlansPage
         Closure $reader,
         Closure $graph,
     ): DeclaredLayoutData {
-        $detail = DetailPage::make($card->title)
+        $detail = DetailPage::build()->title($card->title)->finish()
             ->above(LayoutPartData::build()
                 ->asText()
                 ->key('label')

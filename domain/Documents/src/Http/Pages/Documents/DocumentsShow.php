@@ -84,7 +84,7 @@ final readonly class DocumentsShow extends DocumentsPage
             'address' => route('documents.ask-feedback', ['document' => $number], false),
         ]);
 
-        return DetailPage::make($document->title)
+        return DetailPage::build()->title($document->title)->finish()
             ->above(LayoutPartData::build()
                 ->asText()
                 ->key('label')

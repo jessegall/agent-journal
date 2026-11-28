@@ -44,7 +44,13 @@ final class PublicationPageTest extends TestCase
 
     public function test_a_page_with_no_tabs_shows_its_trusted_body_once(): void
     {
-        $page = PublicationPage::make('Entry 7', [], 'Its summary', $this->body(...), []);
+        $page = PublicationPage::build()
+            ->title('Entry 7')
+            ->metadata([])
+            ->summary('Its summary')
+            ->body($this->body(...))
+            ->tabs([])
+            ->finish();
 
         $body = $page->layout('')->root->children[1];
 
@@ -76,28 +82,38 @@ final class PublicationPageTest extends TestCase
 
     private function page(): PublicationPage
     {
-        return PublicationPage::make('Entry 7', [LayoutPartData::build()
-            ->asText()
-            ->key('edition')
-            ->value('Second edition')
-            ->style('muted')
-            ->finish()], 'Its summary', $this->body(...), [
-            PublicationTab::deferred('text', 'Text', fn () => LayoutPartData::build()
-                ->asBody()
-                ->key('text')
-                ->body($this->body())
-                ->finish()),
-            PublicationTab::deferred('references', 'References', function (): LayoutPartData {
-                $this->reads['references']++;
+        return PublicationPage::build()
+            ->title('Entry 7')
+            ->metadata(
+                [LayoutPartData::build()
+                ->asText()
+                ->key('edition')
+                ->value('Second edition')
+                ->style('muted')
+                ->finish()],
+            )
+            ->summary('Its summary')
+            ->body($this->body(...))
+            ->tabs(
+                [
+                    PublicationTab::deferred('text', 'Text', fn () => LayoutPartData::build()
+                        ->asBody()
+                        ->key('text')
+                        ->body($this->body())
+                        ->finish()),
+                    PublicationTab::deferred('references', 'References', function (): LayoutPartData {
+                        $this->reads['references']++;
 
-                return LayoutPartData::build()
-                    ->asNotice()
-                    ->key('references')
-                    ->style('empty')
-                    ->title('No references.')
-                    ->finish();
-            }),
-        ]);
+                        return LayoutPartData::build()
+                            ->asNotice()
+                            ->key('references')
+                            ->style('empty')
+                            ->title('No references.')
+                            ->finish();
+                    }),
+                ],
+            )
+            ->finish();
     }
 
     private function body(): LayoutBodyData

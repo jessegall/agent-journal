@@ -10,15 +10,15 @@ namespace App\Support\Layout;
  */
 final readonly class SettingsPage
 {
+    /** @use \App\Web\Creation\Buildable<SettingsPageFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = SettingsPageFields::class;
+
     /**
      * @param  list<SettingsGroup>  $groups
      */
-    private function __construct(private array $groups) {}
-
-    public static function make(SettingsGroup ...$groups): self
-    {
-        return new self(array_values($groups));
-    }
+    public function __construct(private array $groups) {}
 
     public function layout(): DeclaredLayoutData
     {

@@ -39,31 +39,35 @@ final readonly class SharesShow extends SharingPage
     ): DeclaredLayoutData {
         $title = ($share->status === ShareStatus::Proposed ? 'Proposal' : 'Share')." {$share->number}";
 
-        return PublicationPage::make(
-            $title,
-            [LayoutPartData::build()
+        return PublicationPage::build()
+            ->title($title)
+            ->metadata(
+                [LayoutPartData::build()
                 ->asText()
                 ->key('state')
                 ->value($share->status->value)
                 ->style('muted')
                 ->finish()],
-            "A share of a {$share->root_type}.",
-            fn () => LayoutBodyData::fromMarkdown(''),
-            [
-                PublicationTab::deferred('share', 'Share', fn () => $this->factsOf($share, $members())),
-                PublicationTab::deferred(
-                    'audit',
-                    'Audit',
-                    fn () => LayoutPartData::build()
-                        ->asNative()
-                        ->key('audit')
-                        ->native(
-                            LayoutNativeData::build()->component('sharing/AuditSection')->props($audit())->finish(),
-                        )
-                        ->finish(),
-                ),
-            ],
-        )->withStanding(
+            )
+            ->summary("A share of a {$share->root_type}.")
+            ->body(fn () => LayoutBodyData::fromMarkdown(''))
+            ->tabs(
+                [
+                    PublicationTab::deferred('share', 'Share', fn () => $this->factsOf($share, $members())),
+                    PublicationTab::deferred(
+                        'audit',
+                        'Audit',
+                        fn () => LayoutPartData::build()
+                            ->asNative()
+                            ->key('audit')
+                            ->native(
+                                LayoutNativeData::build()->component('sharing/AuditSection')->props($audit())->finish(),
+                            )
+                            ->finish(),
+                    ),
+                ],
+            )
+            ->finish()->withStanding(
             LayoutPartData::build()
                 ->asNative()
                 ->key('controls')

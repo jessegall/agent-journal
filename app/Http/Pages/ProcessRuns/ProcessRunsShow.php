@@ -19,7 +19,7 @@ final readonly class ProcessRunsShow extends ProcessRunsPage
 {
     public function of(RunWindowData $detail): DeclaredLayoutData
     {
-        return DetailPage::make("Run {$detail->snapshot->runId}")
+        return DetailPage::build()->title("Run {$detail->snapshot->runId}")->finish()
             ->withStanding(LayoutPartData::build()
                 ->asNative()
                 ->key('detail')

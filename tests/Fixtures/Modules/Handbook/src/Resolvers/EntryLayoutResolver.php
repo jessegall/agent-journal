@@ -41,13 +41,15 @@ final readonly class EntryLayoutResolver implements PageResolver
         $entry = $this->entries->visibleTo($ownerId, $this->request->entryNumber());
         $text = fn () => LayoutBodyData::fromMarkdown($this->entries->textSlice($entry, self::TEXT_BYTE_LIMIT));
 
-        return PublicationPage::make(
-            $entry->title,
-            [LayoutPartData::build()->asText()->key('edition')->value($entry->edition)->style('muted')->finish()],
-            $entry->summary,
-            $text,
-            $this->tabsOf($entry, $text),
-        )->layout($this->request->chosenTab());
+        return PublicationPage::build()
+            ->title($entry->title)
+            ->metadata(
+                [LayoutPartData::build()->asText()->key('edition')->value($entry->edition)->style('muted')->finish()],
+            )
+            ->summary($entry->summary)
+            ->body($text)
+            ->tabs($this->tabsOf($entry, $text))
+            ->finish()->layout($this->request->chosenTab());
     }
 
     /**

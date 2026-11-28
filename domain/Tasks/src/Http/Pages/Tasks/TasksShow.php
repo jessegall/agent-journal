@@ -69,7 +69,7 @@ final readonly class TasksShow extends TasksPage
 
     private function pageWithBrief(TaskReaderData $reader, LayoutPartData $brief): DetailPage
     {
-        return DetailPage::make($reader->title)
+        return DetailPage::build()->title($reader->title)->finish()
             ->above(LayoutPartData::build()
                 ->asText()
                 ->key('number')

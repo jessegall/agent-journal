@@ -56,7 +56,7 @@ final readonly class SequenceRunsShow extends SequenceRunsPage
                 ->finish();
         }
 
-        return DetailPage::make($run->name)
+        return DetailPage::build()->title($run->name)->finish()
             ->above(LayoutPartData::build()
                 ->asText()
                 ->key('label')

@@ -53,12 +53,14 @@ final readonly class RevisionsShow extends RevisionsPage
                 ->finish();
         }
 
-        return PublicationPage::make(
-            $revision->title,
-            $metadata,
-            $revision->abstract,
-            fn () => LayoutBodyData::fromMarkdown(trim($revision->body) === '' ? self::NO_TEXT : $revision->body),
-            [],
-        )->layout('');
+        return PublicationPage::build()
+            ->title($revision->title)
+            ->metadata($metadata)
+            ->summary($revision->abstract)
+            ->body(
+                fn () => LayoutBodyData::fromMarkdown(trim($revision->body) === '' ? self::NO_TEXT : $revision->body),
+            )
+            ->tabs([])
+            ->finish()->layout('');
     }
 }

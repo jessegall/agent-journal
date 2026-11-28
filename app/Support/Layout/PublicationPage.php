@@ -14,13 +14,18 @@ use Closure;
  */
 final readonly class PublicationPage
 {
+    /** @use \App\Web\Creation\Buildable<PublicationPageFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = PublicationPageFields::class;
+
     /**
      * @param  list<LayoutPartData>  $metadata
      * @param  Closure(): LayoutBodyData  $body
      * @param  list<PublicationTab>  $tabs
      * @param  list<LayoutPartData>  $standing  shown on every tab under the header, so a tab change keeps them mounted
      */
-    private function __construct(
+    public function __construct(
         public string $title,
         public array $metadata,
         public string $summary,
@@ -28,16 +33,6 @@ final readonly class PublicationPage
         public array $tabs,
         public array $standing = [],
     ) {}
-
-    /**
-     * @param  list<LayoutPartData>  $metadata
-     * @param  Closure(): LayoutBodyData  $body
-     * @param  list<PublicationTab>  $tabs
-     */
-    public static function make(string $title, array $metadata, string $summary, Closure $body, array $tabs): self
-    {
-        return new self($title, $metadata, $summary, $body, $tabs);
-    }
 
     /**
      * The page with parts that stay under its header whichever tab is shown, such as the editor of a held draft.
