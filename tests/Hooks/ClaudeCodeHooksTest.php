@@ -6,6 +6,7 @@ namespace Tests\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Agents\CredentialLookup;
+use App\Agents\Drivers\ClaudeCode\Enums\ClaudeCodeTool;
 use App\Agents\Drivers\Contracts\DriverAdapters;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
@@ -156,35 +157,25 @@ final class ClaudeCodeHooksTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string, string, int}>
+     * @return iterable<string, array{string, string, string|null}>
      */
     public static function moments(): iterable
     {
-        yield 'session start' => ['claude-code/terminal-turn', 'SessionStart', 1];
-        yield 'prompt' => ['claude-code/terminal-turn', 'UserPromptSubmit', 1];
-        yield 'tool call' => ['claude-code/terminal-turn', 'PreToolUse', 2];
-        yield 'finished tool' => ['claude-code/terminal-turn', 'PostToolUse', 2];
-        yield 'stop' => ['claude-code/terminal-turn', 'Stop', 1];
-        yield 'session end' => ['claude-code/headless-turn', 'SessionEnd', 1];
+        yield 'session start' => ['claude-code/terminal-turn', 'SessionStart', null];
+        yield 'prompt' => ['claude-code/terminal-turn', 'UserPromptSubmit', null];
+        yield 'tool call' => ['claude-code/terminal-turn', 'PreToolUse', ClaudeCodeTool::Bash->value];
+        yield 'finished tool' => ['claude-code/terminal-turn', 'PostToolUse', ClaudeCodeTool::Bash->value];
+        yield 'stop' => ['claude-code/terminal-turn', 'Stop', null];
+        yield 'session end' => ['claude-code/headless-turn', 'SessionEnd', null];
     }
 
     #[DataProvider('moments')]
     public function test_each_moment_is_answered_with_a_reply_claude_code_reads_and_recorded(
         string $scenario,
         string $event,
-        int $nth,
+        string|null $tool,
     ): void {
-        $this->journal->scenario($scenario, fn (TestScenario $turn) => $turn->sendHook(
-            $event,
-            $nth,
-            function (string $body): void {
-                $reply = $this->hook('claude-code', $body)->assertOk();
-
-                $this->assertSame(0, $reply->json('exitCode'));
-                $this->assertIsArray(json_decode((string) $reply->json('stdout'), true));
-                $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
-            },
-        ));
+        $this->assertRecordedMoment(DefaultDrivers::CLAUDE_CODE, $scenario, $event, $tool);
     }
 
     public function test_a_call_from_a_process_the_host_has_since_replaced_conflicts(): void
@@ -231,10 +222,11 @@ final class ClaudeCodeHooksTest extends TestCase
 
     public function test_a_retry_with_other_input_conflicts(): void
     {
-        $first = $this->recordedHookBody('claude-code/one-shot-allowlist', 'PreToolUse', 9);
-        $retry = $this->recordedHookBody('claude-code/terminal-turn', 'PreToolUse', 2);
+        $first = $this->recordedHookBody('claude-code/terminal-turn', 'UserPromptSubmit');
+        $retry = $this->stopBody();
 
         $this->hook('claude-code', $first, 'call-7')->assertOk();
+        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
         $this->hook('claude-code', $retry, 'call-7')->assertStatus(409);
     }
 
