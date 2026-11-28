@@ -139,19 +139,19 @@ final class StartProfileMainTest extends TestCase
             $this->recorded($explicit->requestId, $explicit->sessionId),
         );
         $this->assertSame(
-            [DefaultDrivers::CLAUDE_CODE, DriverType::Terminal, false, $this->accounts['claude-code']->id],
+            [DefaultDrivers::CLAUDE_CODE, DriverType::Headless, false, $this->accounts['claude-code']->id],
             $this->recorded($automatic->requestId, $automatic->sessionId),
         );
     }
 
-    public function test_an_automatic_codex_start_takes_the_terminal_default(): void
+    public function test_an_automatic_codex_start_takes_the_headless_default(): void
     {
         $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
 
         $started = $this->start('default', 'codex');
 
         $this->assertSame(
-            [DefaultDrivers::CODEX, DriverType::Terminal],
+            [DefaultDrivers::CODEX, DriverType::Headless],
             array_slice($this->recorded($started->requestId, $started->sessionId), 0, 2),
         );
     }

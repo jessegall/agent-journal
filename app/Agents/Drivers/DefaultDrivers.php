@@ -97,7 +97,7 @@ final readonly class DefaultDrivers
                 'claude-code-headless',
                 self::CLAUDE_CODE,
                 DriverType::Headless,
-                'Claude Code headless',
+                'Claude Code',
                 HeadlessCapabilities::class,
             ),
             self::registration(
@@ -111,7 +111,7 @@ final readonly class DefaultDrivers
                 'codex-headless',
                 self::CODEX,
                 DriverType::Headless,
-                'Codex headless',
+                'Codex',
                 CodexHeadlessCapabilities::class,
             ),
         ];

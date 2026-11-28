@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 /**
  * Each change of an agent's chat line reaches the users who share a chat with the agent, once each however many
- * chats they share, with only the line, the running flag and the time; nobody else hears it.
+ * chats they share, with only the line, the running flag and the time; nobody else receives it.
  */
 #[TestsMachinery(BroadcastRunningCommand::class)]
 final class BroadcastRunningCommandTest extends TestCase

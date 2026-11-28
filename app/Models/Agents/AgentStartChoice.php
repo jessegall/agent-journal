@@ -42,7 +42,8 @@ final class AgentStartChoice extends JournalModel implements ReadableModel
      */
     public static function keep(string $agentId, string $driver, string $model, ChosenAccount|null $account): self
     {
-        $choice = self::query()->firstOrNew(['agent_id' => $agentId]);
+        $choice = self::findFor($agentId) ?? new self();
+        $choice->agent_id = $agentId;
         $choice->driver = $driver;
         $choice->model = $model;
         $choice->account_id = $account?->accountId;
