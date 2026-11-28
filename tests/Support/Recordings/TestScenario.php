@@ -64,6 +64,40 @@ final class TestScenario
     }
 
     /**
+     * Sends the selected native hook body through the test's signed hook transport.
+     *
+     * @param  Closure(string): mixed  $send
+     */
+    public function sendHook(string $event, int $nth, Closure $send): self
+    {
+        $send($this->hookBody($event, $nth));
+
+        return $this;
+    }
+
+    public function hookBody(string $event, int $nth = 1): string
+    {
+        Assert::assertGreaterThan(0, $nth);
+        [$driver, $scenario] = explode('/', $this->name, 2);
+        $recording = $this->journal->service(Recordings::class)->scenario($driver, $scenario);
+        $occurrence = 0;
+
+        foreach ($recording->calls(Wire::Hooks) as $call) {
+            if ($call->status !== null || $call->isCut || $call->isWithheld) {
+                continue;
+            }
+
+            $body = json_decode($call->body, true);
+
+            if (($body['hook_event_name'] ?? '') === $event && ++$occurrence === $nth) {
+                return $call->body;
+            }
+        }
+
+        Assert::fail("The scenario {$this->name} has no complete {$event} hook at occurrence {$nth}.");
+    }
+
+    /**
      * Plays the steps up to and with the next one of the type named, such as send-message.
      */
     public function playThrough(string $step): self

@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsHook;
 use Tests\Support\Hooks\SendsSignedHooks;
+use Tests\Support\Recordings\TestScenario;
 use Tests\TestCase;
 
 /**
@@ -61,34 +62,40 @@ final class CodexHooksTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<string, array{string, string, int}>
      */
     public static function moments(): iterable
     {
-        yield 'session start' => [
-            '{"session_id":"driver-session-1","hook_event_name":"SessionStart","source":"startup"}',
-        ];
-
-        yield 'prompt' => ['{"session_id":"driver-session-1","hook_event_name":"UserPromptSubmit","prompt":"Go on."}'];
-
-        yield 'tool call' => [
-            '{"session_id":"driver-session-1","hook_event_name":"PreToolUse","tool_name":"Bash",'
-                .'"tool_input":{"command":"git status"}}',
-        ];
-
-        yield 'finished tool' => [
-            '{"session_id":"driver-session-1","hook_event_name":"PostToolUse","tool_name":"Bash",'
-                .'"tool_input":{"command":"git status"},"tool_response":"Exit code: 0\nclean"}',
-        ];
-
-        yield 'stop' => ['{"session_id":"driver-session-1","hook_event_name":"Stop","stop_hook_active":false}'];
-
-        yield 'session end' => ['{"session_id":"driver-session-1","hook_event_name":"SessionEnd","reason":"other"}'];
+        yield 'session start' => ['codex/terminal-turn', 'SessionStart', 1];
+        yield 'prompt' => ['codex/terminal-turn', 'UserPromptSubmit', 1];
+        yield 'tool call' => ['codex/terminal-turn', 'PreToolUse', 2];
+        yield 'finished tool' => ['codex/terminal-turn', 'PostToolUse', 1];
+        yield 'stop' => ['codex/terminal-turn', 'Stop', 1];
     }
 
     #[DataProvider('moments')]
-    public function test_each_moment_is_answered_with_a_reply_codex_reads_and_recorded(string $body): void
+    public function test_each_moment_is_answered_with_a_reply_codex_reads_and_recorded(
+        string $scenario,
+        string $event,
+        int $nth,
+    ): void {
+        $this->journal->scenario($scenario, fn (TestScenario $turn) => $turn->sendHook(
+            $event,
+            $nth,
+            function (string $body): void {
+                $reply = $this->hook('codex', $body)->assertOk();
+
+                $this->assertSame(0, $reply->json('exitCode'));
+                $this->assertIsArray(json_decode((string) $reply->json('stdout'), true));
+                $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+            },
+        ));
+    }
+
+    public function test_a_session_end_is_answered_and_recorded(): void
     {
+        $body = '{"session_id":"session-redacted","hook_event_name":"SessionEnd","reason":"other"}';
+
         $reply = $this->hook(DefaultDrivers::CODEX, $body)->assertOk();
 
         $this->assertSame(0, $reply->json('exitCode'));
@@ -98,7 +105,7 @@ final class CodexHooksTest extends TestCase
 
     public function test_a_failure_notification_codex_never_sends_is_refused(): void
     {
-        $body = '{"session_id":"driver-session-1","hook_event_name":"StopFailure","error":"authentication_failed"}';
+        $body = '{"session_id":"session-redacted","hook_event_name":"StopFailure","error":"authentication_failed"}';
 
         $this->hook(DefaultDrivers::CODEX, $body)->assertUnprocessable();
     }

@@ -70,6 +70,7 @@ use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsHook;
 use Tests\Support\HookDatabase;
 use Tests\Support\Hooks\SendsSignedHooks;
+use Tests\Support\Recordings\TestScenario;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -155,39 +156,35 @@ final class ClaudeCodeHooksTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<string, array{string, string, int}>
      */
     public static function moments(): iterable
     {
-        yield 'session start' => [
-            '{"session_id":"driver-session-1","hook_event_name":"SessionStart","source":"startup"}',
-        ];
-
-        yield 'prompt' => ['{"session_id":"driver-session-1","hook_event_name":"UserPromptSubmit","prompt":"Go on."}'];
-
-        yield 'tool call' => [
-            '{"session_id":"driver-session-1","hook_event_name":"PreToolUse","tool_name":"Bash",'
-                .'"tool_input":{"command":"git status"}}',
-        ];
-
-        yield 'finished tool' => [
-            '{"session_id":"driver-session-1","hook_event_name":"PostToolUse","tool_name":"Bash",'
-                .'"tool_input":{"command":"git status"},"tool_response":{"stdout":"clean","stderr":""}}',
-        ];
-
-        yield 'stop' => ['{"session_id":"driver-session-1","hook_event_name":"Stop","stop_hook_active":false}'];
-
-        yield 'session end' => ['{"session_id":"driver-session-1","hook_event_name":"SessionEnd","reason":"other"}'];
+        yield 'session start' => ['claude-code/terminal-turn', 'SessionStart', 1];
+        yield 'prompt' => ['claude-code/terminal-turn', 'UserPromptSubmit', 1];
+        yield 'tool call' => ['claude-code/terminal-turn', 'PreToolUse', 2];
+        yield 'finished tool' => ['claude-code/terminal-turn', 'PostToolUse', 2];
+        yield 'stop' => ['claude-code/terminal-turn', 'Stop', 1];
+        yield 'session end' => ['claude-code/headless-turn', 'SessionEnd', 1];
     }
 
     #[DataProvider('moments')]
-    public function test_each_moment_is_answered_with_a_reply_claude_code_reads_and_recorded(string $body): void
-    {
-        $reply = $this->hook('claude-code', $body)->assertOk();
+    public function test_each_moment_is_answered_with_a_reply_claude_code_reads_and_recorded(
+        string $scenario,
+        string $event,
+        int $nth,
+    ): void {
+        $this->journal->scenario($scenario, fn (TestScenario $turn) => $turn->sendHook(
+            $event,
+            $nth,
+            function (string $body): void {
+                $reply = $this->hook('claude-code', $body)->assertOk();
 
-        $this->assertSame(0, $reply->json('exitCode'));
-        $this->assertIsArray(json_decode((string) $reply->json('stdout'), true));
-        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+                $this->assertSame(0, $reply->json('exitCode'));
+                $this->assertIsArray(json_decode((string) $reply->json('stdout'), true));
+                $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+            },
+        ));
     }
 
     public function test_a_call_from_a_process_the_host_has_since_replaced_conflicts(): void
@@ -224,7 +221,7 @@ final class ClaudeCodeHooksTest extends TestCase
 
     public function test_no_native_flag_makes_a_line_admitted(): void
     {
-        $flagged = json_decode($this->bashBody('composer test'), true);
+        $flagged = json_decode($this->recordedHookBody('claude-code/one-shot-allowlist', 'PreToolUse', 9), true);
         $flagged['tool_input']['saved'] = true;
 
         $stdout = $this->hookOutput('claude-code', (string) json_encode($flagged));
@@ -234,9 +231,11 @@ final class ClaudeCodeHooksTest extends TestCase
 
     public function test_a_retry_with_other_input_conflicts(): void
     {
-        $this->hook('claude-code', $this->bashBody('composer test'), 'call-7')->assertOk();
+        $first = $this->recordedHookBody('claude-code/one-shot-allowlist', 'PreToolUse', 9);
+        $retry = $this->recordedHookBody('claude-code/terminal-turn', 'PreToolUse', 2);
 
-        $this->hook('claude-code', $this->bashBody('git status'), 'call-7')->assertStatus(409);
+        $this->hook('claude-code', $first, 'call-7')->assertOk();
+        $this->hook('claude-code', $retry, 'call-7')->assertStatus(409);
     }
 
     public function test_a_failure_notification_is_heard_once_and_answers_without_walking_the_stack(): void
@@ -293,7 +292,7 @@ final class ClaudeCodeHooksTest extends TestCase
 
     public function test_a_clear_keeps_the_journal_session_and_records_the_new_program_session(): void
     {
-        $startup = '{"session_id":"driver-session-1","hook_event_name":"SessionStart","source":"startup"}';
+        $startup = $this->recordedHookBody('claude-code/terminal-turn', 'SessionStart');
         $clear = '{"session_id":"driver-session-2","hook_event_name":"SessionStart","source":"clear"}';
         $this->hook('claude-code', $startup, 'call-1')->assertOk();
         $this->hook('claude-code', $clear, 'call-2')->assertOk();
@@ -748,14 +747,14 @@ final class ClaudeCodeHooksTest extends TestCase
 
     public function test_a_replayed_session_start_with_another_program_session_keeps_the_first(): void
     {
-        $first = '{"session_id":"driver-session-1","hook_event_name":"SessionStart","source":"startup"}';
-        $replayed = '{"session_id":"driver-session-2","hook_event_name":"SessionStart","source":"startup"}';
+        $first = $this->recordedHookBody('claude-code/terminal-turn', 'SessionStart');
+        $replayed = $this->recordedHookBody('claude-code/headless-turn', 'SessionStart');
 
         $this->hook('claude-code', $first, 'call-start')->assertOk();
         $this->hook('claude-code', $replayed, 'call-start')->assertStatus(409);
 
         $conversation = $this->start->session->fresh(['currentConversation'])?->currentConversation;
-        $this->assertSame('driver-session-1', $conversation?->native_id);
+        $this->assertSame(json_decode($first, true)['session_id'], $conversation?->native_id);
         $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
     }
 
@@ -810,7 +809,7 @@ final class ClaudeCodeHooksTest extends TestCase
 
     private function stopBody(): string
     {
-        return '{"session_id":"session-redacted","hook_event_name":"Stop","stop_hook_active":false}';
+        return $this->recordedHookBody('claude-code/terminal-turn', 'Stop');
     }
 
     private function failureBody(string $error): string
@@ -820,16 +819,6 @@ final class ClaudeCodeHooksTest extends TestCase
             'hook_event_name' => 'StopFailure',
             'error' => $error,
             'error_details' => 'secret detail',
-        ]);
-    }
-
-    private function bashBody(string $command): string
-    {
-        return (string) json_encode([
-            'session_id' => 'session-redacted',
-            'hook_event_name' => 'PreToolUse',
-            'tool_name' => 'Bash',
-            'tool_input' => ['command' => $command],
         ]);
     }
 

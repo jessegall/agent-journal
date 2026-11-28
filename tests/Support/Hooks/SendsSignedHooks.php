@@ -17,6 +17,7 @@ use Closure;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Recordings\TestScenario;
 use Tests\Support\TestStartAuthority;
 
 /**
@@ -26,6 +27,11 @@ use Tests\Support\TestStartAuthority;
 trait SendsSignedHooks
 {
     private TestStart $start;
+
+    private function recordedHookBody(string $scenario, string $event, int $nth = 1): string
+    {
+        return new TestScenario($this->journal, $scenario)->hookBody($event, $nth);
+    }
 
     /**
      * Starts the agent the hooks are signed for, with its runtime and its stack of the ready state alone.
