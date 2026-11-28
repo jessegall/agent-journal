@@ -97,7 +97,9 @@ final readonly class RecordingFinisher
      */
     private function exchangesOf(RecordingRun $run, RecordingFakes $fakes): array
     {
-        $windowed = $run->windowed();
+        // Only what crossed for the processes the scenario opened is kept, not a session that ran beside it.
+        $opened = ScenarioProcesses::openedIn($run->windowed());
+        $windowed = array_map($opened->scoped(...), $run->windowed());
 
         $hostEvents = array_merge(...array_map(
             fn (CutExchange $exchange) => $exchange->opening->wire === Wire::Host ? $exchange->events : [],

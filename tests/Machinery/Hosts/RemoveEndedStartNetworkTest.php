@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
-use App\Access\Values\OwnerAuthority;
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Events\Sessions\SessionProcessStopped;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Listeners\RemoveEndedStartNetwork;
 use App\Models\Sessions\SessionProcess;
-use App\Sessions\StartSessions;
-use App\Support\ActorReference;
-use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -30,7 +25,7 @@ final class RemoveEndedStartNetworkTest extends TestCase
 
     public function test_a_failed_start_on_a_contained_host_has_its_network_removed(): void
     {
-        $this->journal->enrollContainedHost('Box', [base_path()]);
+        $this->journal->arrangeContainedJournal()->enrollContainedHost('Box', [base_path()]);
         $start = $this->endedStartOn('Box');
 
         $this->app->make(RemoveEndedStartNetwork::class)->handle(new SessionProcessStopped($start->id));
@@ -57,15 +52,9 @@ final class RemoveEndedStartNetworkTest extends TestCase
 
     private function endedStartOn(string $host): SessionProcess
     {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorReference::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
-        $agent = $this->journal->idleAgent('Main agent', 'main-agent')->agentCalled('Main agent');
-        $session = $this->app->make(StartSessions::class)
-            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
-            ->session;
-        $start = $this->journal->claimStartOf($this->journal->hostCalled($host)->hostId, $session->id);
+        $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->idleAgent('Driven');
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openRuntime($host, base_path()));
+        $start = $this->journal->startOfSession($this->journal->openedRuntimeOf('Driven')->sessionId);
         $start->stopWithProof();
 
         return $start;
