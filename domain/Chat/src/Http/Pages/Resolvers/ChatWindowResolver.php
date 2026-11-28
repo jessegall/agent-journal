@@ -15,11 +15,13 @@ use App\Navigation\Contracts\SlotSections;
 use App\Sessions\Contracts\AgentDirectory;
 use App\Support\ActorReference;
 use App\Support\AgentOption;
+use Domain\Chat\Data\AgentOptionData;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Resolvers\Support\ChatPages;
+use Domain\Chat\Support\AgentListing;
 use Domain\Chat\Support\PairChats;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
@@ -41,11 +43,12 @@ final readonly class ChatWindowResolver implements PageResolver
         private ChatPages $pages,
         private PairChats $chats,
         private SlotSections $slots,
+        private AgentListing $listing,
     ) {}
 
     public function read(): ChatData
     {
-        $agents = $this->agents->visible();
+        $agents = $this->listing->visible();
         $main = $this->agents->mainAgentId();
         $chosenInbox = $this->request->chosenInbox();
 
@@ -72,7 +75,7 @@ final readonly class ChatWindowResolver implements PageResolver
      * The chat window on a chat chosen by its inbox, with or without an agent in it; a chat the reader is not in is
      * refused like a missing one.
      *
-     * @param  list<AgentOption>  $agents
+     * @param  list<AgentOptionData>  $agents
      * @param  Option<string>  $main
      */
     private function readChat(array $agents, Option $main, string $inboxId): ChatData

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router, usePage } from "@inertiajs/vue3";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
-import { agentUrl, chatUrl } from "../../agentLinks";
+import { agentUrl } from "../../agentLinks";
 import ChatPane from "./partials/ChatPane.vue";
 import TerminalModal from "./partials/TerminalModal.vue";
 
@@ -37,7 +37,6 @@ function loadMore(token: string): void {
     :chat="data"
     :offers-choice="ownPage"
     :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
-    :chat-url="(inboxId: string) => chatUrl(page.url, inboxId)"
     :load-more="loadMore"
     :protected-prop="ownPage ? 'page' : HOME_PROP"
   />

@@ -10,6 +10,7 @@ use App\Sessions\Contracts\AgentDirectory;
 use App\Support\AgentOption;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Http\Requests\ConversationRequest;
+use Domain\Chat\Support\AgentListing;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -18,7 +19,11 @@ use Spatie\LaravelData\Optional;
  */
 final readonly class ChosenAgentSection implements SectionResolver
 {
-    public function __construct(private ConversationRequest $request, private AgentDirectory $agents) {}
+    public function __construct(
+        private ConversationRequest $request,
+        private AgentDirectory $agents,
+        private AgentListing $listing,
+    ) {}
 
     public function read(SlotContext $context): ChatData
     {
@@ -26,7 +31,7 @@ final readonly class ChosenAgentSection implements SectionResolver
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->agents->visibleAgent(...));
 
         return ChatData::from([
-            'agents' => $this->agents->visible(),
+            'agents' => $this->listing->visible(),
             'isSetupRequired' => $main->isEmpty(),
             'mainAgentId' => $main->getOrElse(Optional::create()),
             'selectedAgentId' => $chosen

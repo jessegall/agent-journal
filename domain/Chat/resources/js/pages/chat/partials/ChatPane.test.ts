@@ -68,11 +68,7 @@ vi.mock("./DockStack.vue", () => ({ default: { template: "<div />" } }));
 vi.mock("./Composer.vue", () => ({
   default: { name: "Composer", template: '<form aria-label="Composer" />' },
 }));
-vi.mock("./AgentPicker.vue", () => ({ default: { template: "<div />" } }));
-vi.mock("./ChatRoster.vue", () => ({ default: { template: "<div />" } }));
-vi.mock("./InboxSelector.vue", () => ({
-  default: { template: "<div />" },
-}));
+vi.mock("./ConversationMenu.vue", () => ({ default: { template: "<div />" } }));
 vi.mock("./AgentSessionActions.vue", () => ({
   default: { template: "<div />" },
 }));
@@ -125,7 +121,6 @@ function mountPane(inboxId = "conversation-1", runningCommand: string | null = n
       chat: chatWith(inboxId, runningCommand),
       offersChoice: false,
       agentUrl: () => "/chat",
-      chatUrl: () => "/chat",
       questionUrl: () => "/chat?question=1",
       loadMore: () => undefined,
       protectedProp: "window_chat_conversation",
@@ -142,21 +137,12 @@ describe("ChatPane", () => {
     reads.length = 0;
   });
 
-  it("shows who is in the chat in the agent bar while the bar is there, and above the chat without it", async () => {
-    const bar = document.createElement("span");
-    bar.id = "agent-bar-members";
-    document.body.appendChild(bar);
-
-    mountPane();
-    await flushPromises();
-
-    expect(bar.querySelector('[aria-label="Who is in this chat"]')).not.toBeNull();
-    bar.remove();
-
+  it("shows no members or add-someone button while group chats are hidden", async () => {
     const pane = mountPane();
     await flushPromises();
 
-    expect(pane.find('[aria-label="Who is in this chat"]').exists()).toBe(true);
+    expect(pane.find('[aria-label="Who is in this chat"]').exists()).toBe(false);
+    expect(pane.find('[aria-label="Add someone to this chat"]').exists()).toBe(false);
   });
 
   it("keeps the conversation hidden and reads nothing until a read that included its prop answered", async () => {

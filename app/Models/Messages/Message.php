@@ -198,6 +198,18 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
     }
 
     /**
+     * Messages stored in any of the inboxes.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $inboxIds
+     */
+    #[Scope]
+    protected function inInboxes(Builder $query, array $inboxIds): void
+    {
+        $query->whereIn('inbox_id', $inboxIds);
+    }
+
+    /**
      * Messages stored in an inbox the participant is attached to now, sent at or after it joined.
      *
      * @param  Builder<self>  $query

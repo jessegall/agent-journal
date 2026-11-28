@@ -50,9 +50,8 @@ vi.mock('@kit/SlotSections', () => ({ default: { template: '<div />' } }));
 vi.mock('./MessageList.vue', () => ({ default: { name: 'MessageList', template: '<ol aria-label="Messages" />' } }));
 vi.mock('./DockStack.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('./Composer.vue', () => ({ default: { template: '<form aria-label="Composer" />' } }));
-vi.mock('./AgentPicker.vue', () => ({ default: { template: '<div />' } }));
+vi.mock('./ConversationMenu.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('./ChatRoster.vue', () => ({ default: { template: '<div />' } }));
-vi.mock('./InboxSelector.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('./AgentSessionActions.vue', () => ({ default: { template: '<div />' } }));
 vi.mock('./VerifyingSessionCard.vue', () => ({ default: { template: '<div />' } }));
 
@@ -95,7 +94,6 @@ function pane() {
             chat,
             offersChoice: false,
             agentUrl: () => '/chat',
-            chatUrl: () => '/chat',
             questionUrl: () => '/chat?question=1',
             loadMore: () => undefined,
             protectedProp: PROP,

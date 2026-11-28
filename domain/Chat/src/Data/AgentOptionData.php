@@ -8,14 +8,16 @@ use App\Agents\Drivers\Enums\DriverSwitchStage;
 use App\Agents\Enums\AgentAction;
 use App\Agents\Enums\AgentPresence;
 use App\Support\AgentOption;
+use Domain\Chat\Support\AgentChatActivity;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * An agent Home lists, live or idle, with the actions it offers now.
+ * An agent Home lists, live or idle, with the actions it offers now and its chat with the viewer as the chat list shows
+ * it.
  *
- * @method static static from(array<string, mixed> $agent)
+ * @method static static from(array<string, mixed>|AgentOption $agent, AgentChatActivity ...$activity)
  */
 #[TypeScript]
 final class AgentOptionData extends Data
@@ -54,9 +56,16 @@ final class AgentOptionData extends Data
         // Whether the current runtime waits at a driver menu only its user can answer, such as folder trust or
         // first-run setup; the notice it raises names this session and generation.
         public readonly bool $needsAttention,
+        // A main agent coordinates the journal's work; any number of agents may be one.
+        public readonly bool $isMain,
+        // The viewer's unread messages in its chat, and when that chat last moved; none while it holds nothing.
+        public readonly int $unreadCount,
+        public readonly string|null $lastActiveAt,
+        // Whether a question of it waits for the viewer's answer.
+        public readonly bool $waitsOnYou,
     ) {}
 
-    public static function fromAgentOption(AgentOption $agent): self
+    public static function fromAgentOption(AgentOption $agent, AgentChatActivity $activity): self
     {
         return self::from([
             'id' => $agent->agentId,
@@ -80,6 +89,10 @@ final class AgentOptionData extends Data
             'sessionDriverLabel' => $agent->sessionDriverLabel,
             'sessionModel' => $agent->sessionModel,
             'needsAttention' => $agent->hold->needsAttentionInDriver(),
+            'isMain' => $activity->isMain,
+            'unreadCount' => $activity->unreadCount,
+            'lastActiveAt' => $activity->lastActiveAt?->toIso8601String(),
+            'waitsOnYou' => $activity->waitsOnYou,
         ]);
     }
 }

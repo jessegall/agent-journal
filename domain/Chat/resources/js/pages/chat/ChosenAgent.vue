@@ -2,17 +2,13 @@
 import { usePage } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
-import type { SessionActivityStatus } from "@kit/CoreTypes";
 import Avatar from "@kit/Avatar";
 import Icon from "@kit/Icon";
 import Status from "@kit/Status";
-import type { StatusState } from "@kit/Status";
 import { agentUrl } from "../../agentLinks";
-import Dialog from "@kit/Dialog";
-import CreateChatForm from "./partials/CreateChatForm.vue";
+import { sessionLooks } from "../../sessionLooks";
 import ConversationMenu from "./partials/ConversationMenu.vue";
 import AgentSessionActions from "./partials/AgentSessionActions.vue";
-import { AGENT_BAR_MEMBERS } from "../../agentBarMembers";
 import { useStatusAnnouncement } from "../../composables/useStatusAnnouncement";
 
 /**
@@ -23,7 +19,6 @@ import { useStatusAnnouncement } from "../../composables/useStatusAnnouncement";
 const props = defineProps<{ data: ChatData }>();
 
 const page = usePage();
-const isNewGroupOpen = ref(false);
 const isDialogOpen = ref(false);
 const selected = computed(() =>
   props.data.agents.find((agent) => agent.id === props.data.selectedAgentId),
@@ -34,28 +29,6 @@ const announcement = useStatusAnnouncement(
   () => isDialogOpen.value,
 );
 
-// Each session state as the kit's Status shows it: a spinner while it moves, a hollow dot at rest, an alert when refused.
-const looks: Record<SessionActivityStatus, StatusState> = {
-  stopped: "stopped",
-  starting: "connecting",
-  working: "working",
-  idle: "open",
-  stopping: "running",
-  interrupting: "running",
-  failed: "failed",
-  refused: "failed",
-  "waiting-for-sign-in": "not-signed-in",
-  "no-capacity": "failed",
-  unknown: "open",
-  retired: "ended",
-  verifying: "connecting",
-  unverified: "open",
-};
-const isMain = computed(
-  () =>
-    selected.value !== undefined &&
-    selected.value.id === props.data.mainAgentId,
-);
 // The second line names what runs the agent: its driver and model while a session runs, else the profile it starts from.
 const subline = computed(() => {
   const agent = selected.value;
@@ -79,11 +52,9 @@ const subline = computed(() => {
     <div class="relative">
       <ConversationMenu
         :agents="data.agents"
-        :main-agent-id="data.mainAgentId"
         :selected-agent-id="data.selectedAgentId"
-        :can-create-chats="data.canCreateChats"
+        :open-agent-ids="selected ? [selected.id] : []"
         :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
-        @new-group="isNewGroupOpen = true"
       >
         <template #trigger>
         <template v-if="selected">
@@ -96,7 +67,7 @@ const subline = computed(() => {
           />
           <span class="flex min-w-0 flex-col leading-[1.25] whitespace-nowrap">
             <span class="text-body text-text">{{
-              isMain ? `${selected.name} · main` : selected.name
+              selected.isMain ? `${selected.name} · main` : selected.name
             }}</span>
             <small class="max-w-[340px] truncate text-badge text-text-3">{{ subline }}</small>
           </span>
@@ -125,20 +96,11 @@ const subline = computed(() => {
           Last report {{ status.observationAgeSeconds }} s ago
         </p>
       </template>
-      <Dialog
-        :open="isNewGroupOpen"
-        title="New group chat"
-        size="sm"
-        @close="isNewGroupOpen = false"
-      >
-        <CreateChatForm />
-      </Dialog>
     </div>
-    <span :id="AGENT_BAR_MEMBERS" class="flex items-center"></span>
     <template v-if="status">
       <Status
         class="ml-1"
-        :state="looks[status.sessionState]"
+        :state="sessionLooks[status.sessionState]"
         :label="status.label"
         secondary
       />

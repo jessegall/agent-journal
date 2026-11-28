@@ -304,6 +304,18 @@ final class ChatMessage extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
+     * The rows of any of the inboxes.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $inboxIds
+     */
+    #[Scope]
+    protected function ofInboxes(Builder $query, array $inboxIds): void
+    {
+        $query->whereIn('inbox_id', $inboxIds);
+    }
+
+    /**
      * The rows with their source loaded.
      *
      * @param  Builder<self>  $query
