@@ -7,7 +7,8 @@ namespace App\Recordings\Exceptions;
 use RuntimeException;
 
 /**
- * A driver's exchange was recorded outside the agent image, where it would carry the machine it ran on.
+ * A driver's exchange was recorded outside the agent image and every driver image a host built, where it would carry
+ * the machine it ran on.
  */
 final class RecordingOutsideContainer extends RuntimeException
 {
@@ -15,6 +16,6 @@ final class RecordingOutsideContainer extends RuntimeException
     {
         $ranIn = $image === null ? 'on the host itself' : "in the image {$image}";
 
-        return new self("The driver exchange {$exchange} ran {$ranIn}, not in the agent image.");
+        return new self("The driver exchange {$exchange} ran {$ranIn}, not in the agent image or a driver image a host built.");
     }
 }

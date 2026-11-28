@@ -85,7 +85,7 @@ final class RecordingFakesTest extends TestCase
         $refusal = RecordedEnvironmentRefused::naming(['CLAUDE_CODE_ENTRYPOINT', 'ITERM_SESSION_ID']);
         $this->expectExceptionObject($refusal);
 
-        new RecordingFakes([], [])->assertClean($opening, '');
+        new RecordingFakes([], [])->assertClean($opening, []);
     }
 
     public function test_a_driver_exchange_outside_the_agent_image_is_refused(): void
@@ -94,7 +94,17 @@ final class RecordingFakesTest extends TestCase
 
         $this->expectException(RecordingOutsideContainer::class);
 
-        new RecordingFakes([], [])->assertClean($opening, 'journal-runner@sha256:1');
+        new RecordingFakes([], [])->assertClean($opening, ['journal-runner@sha256:1']);
+    }
+
+    public function test_a_driver_exchange_in_a_driver_image_a_host_built_is_clean(): void
+    {
+        $line = RecordingOpening::ofProcess('terminal', $this->planWith(['LANG=C.UTF-8'])->payload(), 0)->jsonSerialize();
+        $opening = RecordingOpening::fromLine([...$line, 'image' => 'sha256:2']);
+
+        new RecordingFakes([], [])->assertClean($opening, ['journal-agent@sha256:1', 'sha256:2']);
+
+        $this->assertSame('sha256:2', $opening->image);
     }
 
     public function test_each_value_becomes_one_fake_of_its_shape_the_same_on_a_rerecord(): void

@@ -153,12 +153,14 @@ final class RecordingFakes
 
     /**
      * Refuses an exchange that carries a variable of the recording user's own session, or a driver's exchange that
-     * ran anywhere but in the agent image.
+     * ran anywhere but in one of the images: the agent image or a driver image a host built and checked.
+     *
+     * @param  list<string>  $images
      *
      * @throws RecordedEnvironmentRefused
      * @throws RecordingOutsideContainer
      */
-    public function assertClean(RecordingOpening $opening, string $agentImage): void
+    public function assertClean(RecordingOpening $opening, array $images): void
     {
         $refused = array_values(array_filter(
             $opening->environmentNames(),
@@ -169,7 +171,7 @@ final class RecordingFakes
             throw RecordedEnvironmentRefused::naming($refused);
         }
 
-        if ($opening->wire === Wire::Driver && $opening->image !== $agentImage) {
+        if ($opening->wire === Wire::Driver && ! in_array($opening->image, $images, true)) {
             throw RecordingOutsideContainer::of($opening->exchange, $opening->image);
         }
     }

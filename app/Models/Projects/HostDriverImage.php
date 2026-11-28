@@ -323,6 +323,18 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
     }
 
     /**
+     * Every ready driver image of every host: built, allowed and checked.
+     *
+     * @return list<string>
+     */
+    public static function resolveReadyImages(): array
+    {
+        $images = self::query()->inStatuses([DriverImageStatus::Ready])->withImage()->oldestFirst()->pluck('image');
+
+        return array_values(array_unique(array_map(strval(...), $images->all())));
+    }
+
+    /**
      * Whether an image of the host waits to be allowed with no allow set of its own yet, as after a rebuild.
      */
     public static function hasUnorderedOn(string $hostId): bool

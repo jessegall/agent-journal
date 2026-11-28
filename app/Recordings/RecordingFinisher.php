@@ -13,6 +13,7 @@ use App\Hosts\Protocol\HostRoute;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
 use App\Models\Access\User;
 use App\Models\Accounts\Account;
+use App\Models\Projects\HostDriverImage;
 use App\Recordings\Enums\RecordedEventType;
 use App\Recordings\Enums\RecordingMode;
 use App\Recordings\Enums\Wire;
@@ -109,9 +110,10 @@ final readonly class RecordingFinisher
         ];
 
         $named = [];
+        $images = [$this->agentImage, ...HostDriverImage::resolveReadyImages()];
 
         foreach ($all as $index => $exchange) {
-            $fakes->assertClean($exchange->opening, $this->agentImage);
+            $fakes->assertClean($exchange->opening, $images);
             $name = sprintf('%02d-%s-%s', $index + 1, $exchange->opening->wire->value, $exchange->opening->exchange);
             $named[$name] = $exchange;
         }
