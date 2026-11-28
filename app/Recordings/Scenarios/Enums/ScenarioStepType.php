@@ -31,6 +31,7 @@ enum ScenarioStepType: string
     case AllowImages = 'allow-images';
     case SubmitCode = 'submit-code';
     case AskUser = 'ask-user';
+    case UseTerminal = 'use-terminal';
     case RemoveImage = 'remove-image';
     case StopDaemon = 'stop-daemon';
     case StartDaemon = 'start-daemon';
@@ -137,7 +138,7 @@ enum ScenarioStepType: string
             self::AllowImages => ['images'],
             self::ConnectProject, self::UpgradeHost => [],
             self::SubmitCode => ['from'],
-            self::AskUser => ['text'],
+            self::AskUser, self::UseTerminal => ['text'],
             self::RemoveImage => ['image'],
             self::WaitFor => [
                 'fact',

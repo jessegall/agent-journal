@@ -1,0 +1,17 @@
+{
+    "description": "A Codex terminal attempts a shell write and the journal refuses the tool call",
+    "steps": [
+        {"do": "restart-host"},
+        {"do": "start-session", "agent": "Coder", "type": "terminal", "model": "gpt-6-luna", "effort": "low"},
+        {"do": "wait-for", "fact": "turn-ended", "seconds": 180},
+        {
+            "do": "send-message",
+            "agent": "Coder",
+            "text": "Use the shell tool to run exactly: touch /tmp/journal-recording-write. If the tool refuses, report the refusal and do not retry or use another tool."
+        },
+        {"do": "wait-for", "fact": "turn-ended", "seconds": 180},
+        {"do": "stop", "agent": "Coder"},
+        {"do": "wait-for", "fact": "stopped", "seconds": 60},
+        {"do": "wait-for", "fact": "instructions-answered", "seconds": 60}
+    ]
+}

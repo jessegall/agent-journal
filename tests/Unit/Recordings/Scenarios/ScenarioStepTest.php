@@ -17,6 +17,8 @@ use App\Projects\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Recordings\Scenarios\Scenario;
+use App\Recordings\Scenarios\ScenarioPause;
+use App\Recordings\Scenarios\ScenarioPlayer;
 use App\Recordings\Scenarios\ScenarioRun;
 use App\Sessions\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Values\SignInChallenge;
@@ -131,6 +133,22 @@ final class ScenarioStepTest extends TestCase
         $this->assertInstanceOf(IssueProjectInvitationCommand::class, $issue);
         $this->assertNull($issue->projectId);
         $this->assertFalse(ScenarioFact::Connected->isReached($run));
+    }
+
+    public function test_a_terminal_step_waits_for_the_operator_without_a_sign_in(): void
+    {
+        $this->journal->owner();
+        $scenario = Scenario::read('claude-code/terminal-clear', '{"steps":[{"do":"use-terminal","text":"Enter /clear"}]}');
+        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), [], 'journal-runner@sha256:1');
+
+        $this->app->make(ScenarioPlayer::class)->playNext($run, function (ScenarioPause $pause): string {
+            $this->assertSame('Enter /clear', $pause->text);
+            $this->assertNull($pause->signIn);
+
+            return '';
+        });
+
+        $this->assertTrue($run->isPlayedWhole());
     }
 
     public function test_the_sign_in_steps_begin_a_sign_in_and_submit_the_code_the_user_typed(): void

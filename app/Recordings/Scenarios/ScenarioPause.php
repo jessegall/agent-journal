@@ -13,5 +13,9 @@ use App\Values\SignInChallenge;
  */
 final readonly class ScenarioPause
 {
-    public function __construct(public string $text, public SignInChallenge|null $signIn) {}
+    public function __construct(
+        public string $text,
+        public SignInChallenge|null $signIn,
+        public string $prompt = 'Type the code the page shows, or press Enter',
+    ) {}
 }

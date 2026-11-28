@@ -265,6 +265,12 @@ final readonly class ScenarioPlayer
             return;
         }
 
+        if ($step->stepType === ScenarioStepType::UseTerminal) {
+            $askUser(new ScenarioPause((string) $step->text, null, 'Press Enter when the terminal is ready again'));
+
+            return;
+        }
+
         $fact = $step->fact ?? throw ScenarioInvalid::at($run->scenario->name, $run->stepIndex(), 'waits for no fact');
         $this->waitFor($run, $fact, (int) $step->seconds);
     }
