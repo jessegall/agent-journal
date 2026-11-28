@@ -319,13 +319,13 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Whether the runtime's conversation is one its driver already holds, so its next turn resumes it: a headless turn
-     * ran in it, its driver named it, or its start chose it to continue.
+     * Whether the runtime's conversation is one its driver already holds, so its next process resumes it: a process of
+     * the purpose that resumes it ran in it, its driver named it, or its start chose it to continue.
      */
-    public function continuesConversation(): bool
+    public function continuesConversation(HostProcessPurpose $resumedBy): bool
     {
         return $this->conversation_named_at !== null
-            || $this->hostProcesses()->ofPurposes([HostProcessPurpose::AgentTurn])->exists()
+            || $this->hostProcesses()->ofPurposes([$resumedBy])->exists()
             || SessionRequest::resolveConversationTargetOf($this->agent_session_id) === $this->conversation_id;
     }
 

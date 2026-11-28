@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Agents;
 
 use App\Agents\Commands\ChooseRuntimeConversation\ChooseRuntimeConversationCommand;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -33,14 +34,14 @@ final class ChooseRuntimeConversationTest extends TestCase
             ->openCodexRuntime('Mac', base_path(), 'Run: ls.'));
         $opened = $this->journal->openedRuntimeOf('Coder');
 
-        $before = AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->continuesConversation();
+        $before = AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->continuesConversation(HostProcessPurpose::AgentTurn);
 
         $this->journal->asSystem(new ChooseRuntimeConversationCommand($opened->runtimeId, self::THREAD));
 
         $runtime = AgentRuntime::query()->whereKey($opened->runtimeId)->sole();
         $this->journal->assertResult(
             [false, self::THREAD, true],
-            [$before, $runtime->conversation_id, $runtime->continuesConversation()],
+            [$before, $runtime->conversation_id, $runtime->continuesConversation(HostProcessPurpose::AgentTurn)],
         );
     }
 }

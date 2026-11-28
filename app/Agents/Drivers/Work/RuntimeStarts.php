@@ -7,6 +7,7 @@ namespace App\Agents\Drivers\Work;
 use App\Agents\ContainerManifest;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Values\JournalServer;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
@@ -110,7 +111,7 @@ final readonly class RuntimeStarts
             type: HostProcessType::Pipe,
             workFolder: $runtime->canonical_folder,
             prompt: $prompt,
-            isResume: $runtime->continuesConversation(),
+            isResume: $runtime->continuesConversation(HostProcessPurpose::AgentTurn),
             model: $model ?? $runtime->startModel(),
             effort: $effort ?? $runtime->startEffort(),
             hookCommand: self::HOOK_COMMAND,
@@ -140,7 +141,7 @@ final readonly class RuntimeStarts
             type: HostProcessType::Pipe,
             workFolder: ContainerManifest::WORKDIR,
             prompt: $prompt,
-            isResume: $runtime->continuesConversation(),
+            isResume: $runtime->continuesConversation(HostProcessPurpose::AgentTurn),
             model: $model ?? $runtime->startModel(),
             effort: $effort ?? $runtime->startEffort(),
             hookCommand: self::IMAGE_HOOK_COMMAND,
