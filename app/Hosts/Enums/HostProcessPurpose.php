@@ -25,10 +25,6 @@ enum HostProcessPurpose: string
     }
 
     /**
-     * Whether the process is its runtime's own: it takes the runtime's work and its end is the runtime's end. A turn
-     * the journal opened for a runtime takes only stops and interrupts, a probe none, and both end alone.
-     */
-    /**
      * Whether every worker of the process reads all it printed again: a probe, whose verdict needs the whole of what
      * it printed, often before its first worker began, and an account owner, which rebuilds its threads and turns.
      */
@@ -37,6 +33,10 @@ enum HostProcessPurpose: string
         return $this === self::AccountOwner || $this->isProbe();
     }
 
+    /**
+     * Whether the process is its runtime's own: it takes the runtime's work and its end is the runtime's end. A turn
+     * the journal opened for a runtime takes only stops and interrupts, a probe none, and both end alone.
+     */
     public function isRuntimeProcess(): bool
     {
         $ownedByNoRuntime = [self::AgentTurn, self::BuildProbe, self::SignInProbe];

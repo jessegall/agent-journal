@@ -136,8 +136,9 @@ trait ArrangesHostProcesses
     private function requestWorkerOf(AgentRuntime $runtime): array
     {
         if (! array_key_exists($runtime->id, $this->requestWorkers)) {
+            // The runtime's own process takes its work; a probe takes none.
             $plan = new HostProcessPlan(
-                HostProcessPurpose::Probe,
+                HostProcessPurpose::AgentTerminal,
                 HostProcessType::Pipe,
                 RestartPolicy::Never,
                 ['sh', '-c', 'cat'],
