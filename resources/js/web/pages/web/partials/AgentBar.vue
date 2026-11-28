@@ -11,7 +11,7 @@ import { useWindowDrag } from '@/components/panes/useWindowDrag';
 import type { LayoutData } from '@/types/generated';
 
 /**
- * Home's one chat bar, 38 px: the domains' bar sections, such as the open chats with New chat and the view switch,
+ * Home's one chat bar, 38 px: the domains' bar sections, such as the open chats with New chat and the chat layout,
  * then a thin divider, the layouts menu and Add a window, every control on one centre line and named on hover and
  * focus. The agent itself is named in its chat, above the composer.
  */

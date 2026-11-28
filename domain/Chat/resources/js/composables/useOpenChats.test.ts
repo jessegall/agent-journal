@@ -11,9 +11,9 @@ describe("useOpenChats", () => {
 
     const chats = useOpenChats("user-kept");
 
-    expect([chats.chats.agentIds, chats.chats.mode, chats.besideOf("agent-2")]).toEqual([
+    expect([chats.chats.agentIds, chats.chats.columns, chats.besideOf("agent-2")]).toEqual([
       ["agent-2", "agent-3"],
-      "one",
+      1,
       [],
     ]);
   });
@@ -23,7 +23,7 @@ describe("useOpenChats", () => {
     chats.open("agent-2");
     chats.open("agent-3");
 
-    chats.show("side");
+    chats.showColumns(2);
 
     expect(chats.besideOf("agent-3")).toEqual(["agent-2"]);
   });

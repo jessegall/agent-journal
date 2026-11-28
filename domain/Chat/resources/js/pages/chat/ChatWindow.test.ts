@@ -45,7 +45,7 @@ describe("ChatWindow", () => {
     chats.chats.recent = [];
     chats.open("agent-3");
     chats.open("agent-2");
-    chats.show("side");
+    chats.showColumns(2);
   });
 
   it("reads each column side by side by its own reload of the chat window alone, on its skeleton until it answers", async () => {
@@ -70,7 +70,7 @@ describe("ChatWindow", () => {
   });
 
   it("opens Home with two chats open on one chat alone, reading no other", async () => {
-    useOpenChats("user-window").show("one");
+    useOpenChats("user-window").showColumns(1);
 
     const window = mount(ChatWindow, { props: { data: windowWith("agent-2", conversationOf("agent-2")) } });
     await flushPromises();

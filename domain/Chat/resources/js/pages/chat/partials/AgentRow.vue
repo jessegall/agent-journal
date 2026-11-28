@@ -38,7 +38,7 @@ const settings = computed(() =>
 function openBeside(other: AgentOptionData): void {
   openChats.open(other.id);
   openChats.open(props.agent.id);
-  openChats.show("side");
+  openChats.showColumns(Math.max(2, openChats.chats.columns));
 }
 </script>
 
