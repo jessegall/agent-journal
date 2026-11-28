@@ -6,10 +6,11 @@ namespace Tests\Machinery\Seeding;
 
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
-use Domain\Plans\PlansDomain;
+use Domain\Rules\RulesDomain;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Tests\Fixtures\NoteFixtures;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
@@ -25,6 +26,15 @@ use Tests\TestCase;
 #[TestsMachinery(FixtureRegistry::class)]
 final class FixtureRegistryTest extends TestCase
 {
+    /**
+     * Rules, which the Notes test domain requires and which stands for a foreign domain; Plans stays unbooted, as a
+     * domain whose builders are refused.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
+
     public function test_a_builder_is_made_once_and_handed_the_journal(): void
     {
         $registry = $this->registry();
@@ -43,11 +53,11 @@ final class FixtureRegistryTest extends TestCase
     public function test_a_foreign_or_second_registration_is_refused(): void
     {
         $registry = $this->registry();
-        $plans = DomainEntry::fromClass(PlansDomain::class);
+        $rules = DomainEntry::fromClass(RulesDomain::class);
         $maker = fn (TestJournal $journal) => new NoteFixtures($journal);
 
         $this->assertThrows(
-            fn () => $registry->register($plans, NoteFixtures::class, $maker),
+            fn () => $registry->register($rules, NoteFixtures::class, $maker),
             fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::Foreign,
         );
         $registry->register($this->notes(), NoteFixtures::class, $maker);
