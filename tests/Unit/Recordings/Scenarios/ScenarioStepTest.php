@@ -22,6 +22,7 @@ use App\Recordings\Scenarios\ScenarioRun;
 use App\Sessions\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use App\Values\SignInChallenge;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestProjects;
 use Tests\TestCase;
 
 /**
@@ -86,6 +87,7 @@ final class ScenarioStepTest extends TestCase
     public function test_a_new_chat_makes_a_main_agent_on_the_scenarios_driver_and_names_none_made_before_the_play(): void
     {
         $this->journal->owner();
+        $project = TestProjects::local();
         $scenario = Scenario::read('claude-code/new-chat', (string) json_encode(['steps' => [
             ['do' => 'new-chat', 'agent' => 'Chat', 'model' => 'claude-haiku-5-5'],
             ['do' => 'send-chat-message', 'agent' => 'Chat', 'text' => 'Run: ls.'],
@@ -96,6 +98,7 @@ final class ScenarioStepTest extends TestCase
         $chat = $scenario->steps[0]->commandFor($run, $this->app->make(DriverCatalogue::class));
 
         $this->assertInstanceOf(CreateMainAgentCommand::class, $chat);
+        $this->assertSame($project->id, $chat->projectId);
         $this->assertSame(
             ['claude-code', 'claude-haiku-5-5', null, []],
             [$chat->driver, $chat->model, $chat->account, $scenario->agentsMadeBeforePlay()],
