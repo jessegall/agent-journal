@@ -11,7 +11,6 @@ use App\Connections\Enums\FileWindowStatus;
 use App\Connections\Layout\LayoutBodyData;
 use App\Hosts\Contracts\ProjectFiles;
 use App\Hosts\Contracts\ServedEnvironment;
-use App\Hosts\Protocol\HostProjectReadFailure;
 use App\Http\Requests\Connections\FileWindowRequest;
 use App\Models\Agents\Agent;
 use App\Models\Projects\ProjectBinding;
@@ -74,16 +73,7 @@ final readonly class FilePageBuilder implements PageBuilder
         return match ($answer->status) {
             ProjectReadStatus::Pending => $this->window(FileWindowStatus::Pending, $path),
             ProjectReadStatus::Answered => $this->answered($binding, $answer),
-            ProjectReadStatus::Failed, ProjectReadStatus::Expired => $this->window($this->failedState($answer), $path),
-        };
-    }
-
-    private function failedState(ProjectFileAnswer $answer): FileWindowStatus
-    {
-        return match ($answer->failure) {
-            HostProjectReadFailure::Binary => FileWindowStatus::Binary,
-            HostProjectReadFailure::TooLarge => FileWindowStatus::TooLarge,
-            default => FileWindowStatus::Failed,
+            ProjectReadStatus::Failed, ProjectReadStatus::Expired => $this->window(FileWindowStatus::fromFailure($answer->failure), $path),
         };
     }
 
