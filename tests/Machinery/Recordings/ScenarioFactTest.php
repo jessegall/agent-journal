@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Recordings;
 
+use App\Hosts\Commands\MakeHostFolder\MakeHostFolderCommand;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
+use App\Recordings\Scenarios\Exceptions\ScenarioStuck;
 use App\Recordings\Scenarios\Scenario;
+use App\Recordings\Scenarios\ScenarioPlayer;
 use App\Recordings\Scenarios\ScenarioRun;
 use App\Sessions\Commands\EndStoppedSession\EndStoppedSessionCommand;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -79,6 +82,23 @@ final class ScenarioFactTest extends TestCase
         $this->journal->asOwner(new EndStoppedSessionCommand($agent->id, (string) $agent->current_session_id));
 
         $this->assertSame([null, 'stopped with no process running'], [$running, $run->endReason()]);
+    }
+
+    public function test_a_wait_for_instruction_answers_can_continue_after_the_session_ends(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()])->idleAgent('Coder')->startSession('Coder', 'Coder');
+        $agent = $this->journal->agentCalled('Coder');
+        $file = '{"steps":[{"do":"wait-for","fact":"instructions-answered","seconds":0}]}';
+        $scenario = Scenario::read('claude-code/cleanup', $file);
+        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), ['Coder' => $agent->id], 'journal-runner@sha256:1');
+        $run->agentNamed('Coder');
+        $this->journal->asOwner(new EndStoppedSessionCommand($agent->id, (string) $agent->current_session_id));
+        $hostId = $this->journal->hostCalled('Mac')->hostId;
+        $this->journal->asSystem(new MakeHostFolderCommand($hostId, 'cleanup', 'scenario-cleanup'));
+
+        $this->expectException(ScenarioStuck::class);
+        $this->expectExceptionMessage('instructions-answered did not happen in 0 seconds');
+        $this->app->make(ScenarioPlayer::class)->playNext($run, fn () => '');
     }
 
     public function test_a_play_says_what_the_journal_holds_of_its_session(): void

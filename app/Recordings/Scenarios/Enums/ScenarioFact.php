@@ -32,6 +32,14 @@ enum ScenarioFact: string
     case Connected = 'connected';
     case InstructionsAnswered = 'instructions-answered';
 
+    public function isAboutSession(): bool
+    {
+        return match ($this) {
+            self::Answering, self::TurnEnded, self::Interrupted, self::Stopped, self::StartRefused => true,
+            default => false,
+        };
+    }
+
     /**
      * Whether the journal holds the fact now for the run: of its last agent's session, its start, its sign-in or its
      * installer. Only a yes or no now; the player waits.

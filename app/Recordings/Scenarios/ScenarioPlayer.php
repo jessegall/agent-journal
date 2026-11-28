@@ -325,6 +325,12 @@ final readonly class ScenarioPlayer
                 return;
             }
 
+            if (! $fact->isAboutSession()) {
+                $this->sleeper->sleep(self::LOOK_NANOSECONDS);
+
+                continue;
+            }
+
             // A session that ended waits for nothing more: the play ends at once with the journal's own reason (user
             // 29751), so the cause reaches whoever runs it.
             $endReason = $run->endReason();
