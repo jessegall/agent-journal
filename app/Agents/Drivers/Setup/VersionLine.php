@@ -23,17 +23,18 @@ final readonly class VersionLine
     }
 
     /**
-     * Whether the trimmed printed line names the build.
+     * Whether a printed line names the build: a program may print a warning on a line of its own before its version.
      */
     public function accepts(string $printed, string $build): bool
     {
         $expected = str_replace('{build}', $build, $this->text);
-        $line = trim($printed);
 
-        if ($this->isExact) {
-            return $line === $expected;
+        foreach (preg_split('/\R/', trim($printed)) ?: [] as $line) {
+            if ($this->isExact ? trim($line) === $expected : str_starts_with(trim($line), $expected)) {
+                return true;
+            }
         }
 
-        return str_starts_with($line, $expected);
+        return false;
     }
 }
