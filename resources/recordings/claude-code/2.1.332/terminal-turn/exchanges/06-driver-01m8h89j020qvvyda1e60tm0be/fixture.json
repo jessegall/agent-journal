@@ -1,13 +1,13 @@
 {
     "driver": "driver",
-    "driver_version": "sha256:b49ca185d967c29dd7e772647cf7c9777ee6e723c79a4a0274b296cff7bb4a45",
+    "driver_version": "sha256:7d7d51e53d069cd52799a85627138a5b1fa940609ea73e229a9d86056967569c",
     "profile": "",
     "mode": "process",
     "geometry": {
         "columns": 0,
         "rows": 0
     },
-    "recorded_at": "2026-11-28T08:17:38.142314+00:00",
+    "recorded_at": "2026-11-28T14:17:37.107881+00:00",
     "initial_state": {
         "working_folder": "/workspace",
         "arguments": [
@@ -30,9 +30,9 @@
     },
     "output": [
         {
-            "offset": 737413000,
+            "offset": 1312097000,
             "stream": "stdout",
-            "bytes": "ewogICJsb2dnZWRJbiI6IHRydWUsCiAgImF1dGhNZXRob2QiOiAiY2xhdWRlLmFpIiwKICAiYXBpUHJvdmlkZXIiOiAiZmlyc3RQYXJ0eSIsCiAgImFuYWx5dGljc0Rpc2FibGVkIjogZmFsc2UsCiAgInByb2plY3RzRGlyZWN0b3J5IjogIi9ob21lL2pvdXJuYWwvLmFjY291bnQvcHJvamVjdHMiLAogICJjb25maWdEaXJlY3RvcnkiOiAiL2hvbWUvam91cm5hbC8uYWNjb3VudCIsCiAgImxvZ2luRXhwaXJlc0F0IjogIjIwMjYtMTItMjVUMjE6MTc6NTcuMzc5WiIsCiAgImNvbnNvbGVQcm9maWxlU2lnbkluT2ZmZXJlZCI6IHRydWUsCiAgImVtYWlsIjogInVzZXJAZXhhbXBsZS5jb20iLAogICJvcmdJZCI6ICIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLAogICJvcmdOYW1lIjogIkV4YW1wbGUgT3JnYW5pemF0aW9uIiwKICAic3Vic2NyaXB0aW9uVHlwZSI6ICJtYXgiLAogICJzdG9yZWRDbGF1ZGVBaUxvZ2luIjogdHJ1ZSwKICAicGxhblRpZXIiOiAibWF4XzIweCIKfQo="
+            "bytes": "ewogICJsb2dnZWRJbiI6IHRydWUsCiAgImF1dGhNZXRob2QiOiAiY2xhdWRlLmFpIiwKICAiYXBpUHJvdmlkZXIiOiAiZmlyc3RQYXJ0eSIsCiAgImFuYWx5dGljc0Rpc2FibGVkIjogZmFsc2UsCiAgInByb2plY3RzRGlyZWN0b3J5IjogIi9ob21lL2pvdXJuYWwvLmFjY291bnQvcHJvamVjdHMiLAogICJjb25maWdEaXJlY3RvcnkiOiAiL2hvbWUvam91cm5hbC8uYWNjb3VudCIsCiAgImxvZ2luRXhwaXJlc0F0IjogIjIwMjYtMTItMjZUMjA6MjU6MzcuMzYxWiIsCiAgImNvbnNvbGVQcm9maWxlU2lnbkluT2ZmZXJlZCI6IHRydWUsCiAgImVtYWlsIjogInVzZXJAZXhhbXBsZS5jb20iLAogICJvcmdJZCI6ICIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLAogICJvcmdOYW1lIjogIkV4YW1wbGUgT3JnYW5pemF0aW9uIiwKICAic3Vic2NyaXB0aW9uVHlwZSI6ICJtYXgiLAogICJzdG9yZWRDbGF1ZGVBaUxvZ2luIjogdHJ1ZSwKICAicGxhblRpZXIiOiAibWF4XzIweCIKfQo="
         }
     ],
     "inputs": [],
