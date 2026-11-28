@@ -11,6 +11,7 @@ use Domain\Chat\Data\ChatData;
 use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Tests\TestCase;
+use Tests\Support\RefreshHookDatabase;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -19,6 +20,8 @@ use Spatie\LaravelData\Optional;
  */
 final class NoAccountsYetTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_the_chat_shows_no_accounts_yet_with_the_wizard_while_no_account_is_signed_in(): void
     {
         $this->journal->owner()->idleAgent('Planner');

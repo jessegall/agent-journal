@@ -33,7 +33,7 @@ final class StartDriversLoaderTest extends TestCase
         $reasons = array_column($drivers, 'unavailableReason', 'family');
 
         $this->journal->assertResult(
-            [null, 'No account can run Codex headless yet: add one under Accounts.'],
+            [null, 'No account can run Codex yet: add one under Accounts.'],
             [$reasons[DefaultDrivers::CLAUDE_CODE], $reasons[DefaultDrivers::CODEX]],
         );
     }

@@ -7,26 +7,28 @@ import SegmentedControl from "@kit/SegmentedControl";
 import Status from "@kit/Status";
 import Toast from "@kit/Toast";
 import { useAppContext } from "@kit/appContext";
-import { router } from "@inertiajs/vue3";
+import { useHostProp } from "@kit/hostProp";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
 import { sessionLooks } from "../../../sessionLooks";
 import { useOpenChats, type ChatViewMode } from "../../../composables/useOpenChats";
-import { useHandOver } from "../../../composables/useHandOver";
-import CreateChatForm from "./CreateChatForm.vue";
+import { keyedPost } from "@kit/keyedPost";
+import { newRequestId } from "@kit/requestId";
+import { createMainAgent } from "@kit/sessionStarts";
+import { onChatChoiceRequest, onNewChatRequest, requestChatList } from "../../../composables/useChatBarAsks";
+import { chooseChat, HOME_CHAT_PROP } from "../../../chatChoice";
+import { readNewChatChoice } from "../../../newChatChoice";
 
 /**
- * Home's row of open chats above the agent bar, so the user moves between several agents: each tab shows the agent, its
- * state and unread count, and closing one leaves the agent working. It opens New chat (Option+N) and switches between
- * one chat at a time and side by side.
+ * The open chats in Home's one chat bar, so the user moves between several agents: each tab shows the agent, its state
+ * and unread count, the chosen one a caret that opens the chat list, and closing one leaves the agent working. New chat
+ * (Option+N) opens a tab whose chat asks what runs it, and a switch shows one chat at a time or side by side.
  */
 const props = defineProps<{
   agents: AgentOptionData[];
   selectedAgentId: string | undefined;
   // The chats that have a column side by side, which their tabs underline.
   columnAgentIds: string[];
-  agentUrl: (agent: AgentOptionData) => string;
-  newAgentUrl: (agentId: string) => string;
 }>();
 
 const MODES: readonly { value: ChatViewMode; label: string }[] = [
@@ -34,17 +36,15 @@ const MODES: readonly { value: ChatViewMode; label: string }[] = [
   { value: "side", label: "Side by side" },
 ];
 
-const viewerId = useAppContext().viewer.value.id ?? "guest";
+const { viewer, drivers } = useAppContext();
+const viewerId = viewer.value.id ?? "guest";
 const openChats = useOpenChats(viewerId);
-const handOver = useHandOver();
-const isNewChatOpen = ref(false);
+const isOpeningNewChat = ref(false);
+const newChatRefusal = ref<string | null>(null);
 const closed = ref<{ agent: AgentOptionData; place: number } | null>(null);
 
 const tabs = computed(() =>
   openChats.chats.agentIds.flatMap((id) => props.agents.filter((agent) => agent.id === id && !agent.isRetired)),
-);
-const referenceAgentId = computed(
-  () => props.selectedAgentId ?? props.agents.find((agent) => agent.isMain)?.id ?? props.agents[0]?.id ?? "",
 );
 
 // The chat shown is always open as a tab, and the most recently used.
@@ -62,9 +62,18 @@ function tabId(agent: AgentOptionData): string {
   return `chat-tab-${agent.id}`;
 }
 
-function choose(agent: AgentOptionData): void {
-  router.visit(props.agentUrl(agent), { preserveScroll: true });
+// Choosing a chat reads only the chat window and this bar again, and only the chosen chat's conversation.
+const barProp = useHostProp();
+
+function chooseById(agentId: string, sessionId: string | null): void {
+  chooseChat([HOME_CHAT_PROP, barProp], agentId, sessionId);
 }
+
+function choose(agent: AgentOptionData): void {
+  chooseById(agent.id, agent.sessionId);
+}
+
+onChatChoiceRequest(chooseById);
 
 function close(agent: AgentOptionData): void {
   const place = tabs.value.indexOf(agent);
@@ -106,20 +115,44 @@ function pressOnTab(event: KeyboardEvent, agent: AgentOptionData): void {
   }
 }
 
-function opened(agentId: string, firstMessage: string): void {
-  isNewChatOpen.value = false;
+function opened(agentId: string): void {
   openChats.open(agentId);
+  chooseById(agentId, null);
+}
 
-  if (firstMessage !== "") {
-    handOver.hold({ agentId, text: firstMessage });
+/**
+ * Makes the new chat's agent at once, on the driver last chosen for a new chat, and opens its tab: its chat shows the
+ * start picker, where the user chooses what runs it and starts it.
+ */
+function openNewChat(): void {
+  const last = readNewChatChoice(viewerId);
+  const family = last?.family ?? drivers.value[0]?.family;
+
+  if (isOpeningNewChat.value || family === undefined) {
+    return;
   }
 
-  router.visit(props.newAgentUrl(agentId), { preserveScroll: true });
+  const requestId = newRequestId();
+  isOpeningNewChat.value = true;
+  newChatRefusal.value = null;
+  keyedPost(
+    createMainAgent.url(),
+    { requestId, driver: family, model: last?.model ?? "default", accountId: null, accountRevision: null },
+    requestId,
+    {
+      onAccepted: (flash) => {
+        if (typeof flash.createdAgentId === "string") {
+          opened(flash.createdAgentId);
+        }
+      },
+      onRefused: (reason) => (newChatRefusal.value = reason ?? "The new chat could not be opened."),
+      onUncertain: () => (newChatRefusal.value = "We could not confirm the new chat opened; look in the chat list."),
+      onFinish: () => (isOpeningNewChat.value = false),
+    },
+  );
 }
 
-function openNewChat(): void {
-  isNewChatOpen.value = true;
-}
+onNewChatRequest(openNewChat);
 
 function openOnShortcut(event: KeyboardEvent): void {
   if (event.altKey && !event.metaKey && !event.ctrlKey && event.code === "KeyN") {
@@ -128,15 +161,13 @@ function openOnShortcut(event: KeyboardEvent): void {
   }
 }
 
-// The chat list's New chat opens the same form.
-defineExpose({ openNewChat });
 
 onMounted(() => window.addEventListener("keydown", openOnShortcut));
 onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
 </script>
 
 <template>
-  <div class="flex h-[34px] w-full items-stretch gap-1 border-b border-line" data-chat-tabs>
+  <div class="@container/bar flex h-full w-full min-w-0 items-stretch gap-1" data-chat-tabs>
     <div class="flex min-w-0 items-stretch overflow-x-auto" role="tablist" aria-label="Open chats">
       <template v-for="agent in tabs" :key="agent.id">
         <div
@@ -164,6 +195,16 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
               }}</span>
             </template>
           </button>
+          <template v-if="agent.id === selectedAgentId">
+            <IconButton
+              icon="caret"
+              size="xs"
+              :tooltip="false"
+              :label="`The chat list, from ${agent.name}'s chat`"
+              :data-tab-caret="agent.id"
+              @click="requestChatList(agent.id)"
+            />
+          </template>
           <IconButton
             icon="close"
             size="xs"
@@ -179,12 +220,14 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
     <button
       type="button"
       class="flex items-center gap-1.5 px-2.5 text-small text-text-2 hover:bg-hover"
+      :aria-busy="isOpeningNewChat"
+      title="New chat · ⌥N"
       data-new-chat-tab
-      @click="isNewChatOpen = true"
+      @click="openNewChat"
     >
       <Icon name="plus" :size="14" />
-      New chat
-      <Kbd variant="bare" decorative>⌥N</Kbd>
+      <span class="@max-[820px]/bar:hidden">New chat</span>
+      <Kbd class="@max-[820px]/bar:hidden" variant="bare" decorative>⌥N</Kbd>
     </button>
     <span class="flex-1"></span>
     <span class="flex items-center pr-1">
@@ -196,12 +239,8 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
         @update:model-value="(mode: ChatViewMode) => openChats.show(mode)"
       />
     </span>
-    <template v-if="isNewChatOpen && referenceAgentId !== ''">
-      <CreateChatForm
-        :reference-agent-id="referenceAgentId"
-        @created="opened"
-        @close="isNewChatOpen = false"
-      />
+    <template v-if="newChatRefusal">
+      <p class="flex items-center px-2 text-small text-danger" role="alert" data-new-chat-refusal>{{ newChatRefusal }}</p>
     </template>
     <template v-if="closed">
       <Toast

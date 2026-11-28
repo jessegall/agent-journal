@@ -11,20 +11,19 @@ import { useWindowDrag } from '@/components/panes/useWindowDrag';
 import type { LayoutData } from '@/types/generated';
 
 /**
- * The agent bar, 54 px under decision D3: the domains' bar sections, such as the conversation trigger, the chosen
- * agent, its members and Stop, then the layouts menu, Add a window and Hide. Every control is named on hover and focus,
- * and Hide leaves a button that brings the bar back.
+ * Home's one chat bar, 38 px: the domains' bar sections, such as the open chats with New chat and the view switch,
+ * then a thin divider, the layouts menu and Add a window, every control on one centre line and named on hover and
+ * focus. The agent itself is named in its chat, above the composer.
  */
 defineProps<{ layouts: LayoutData[] }>();
 
 const store = usePaneLayout();
 const { grabNewWindow } = useWindowDrag();
 const grabbedToAdd = grabNewWindow(add);
-const isHidden = ref(false);
 const isLayoutMenuOpen = ref(false);
 const isAdding = ref(false);
 const addButton = ref<{ $el: HTMLElement } | null>(null);
-const agentBar = ref<HTMLElement | null>(null);
+const chatBar = ref<HTMLElement | null>(null);
 const addAnchor = computed(() => addButton.value?.$el ?? null);
 const layoutButton = ref<{ $el: HTMLElement } | null>(null);
 const layoutAnchor = computed(() => layoutButton.value?.$el ?? null);
@@ -51,7 +50,7 @@ function add(key: string): void {
  * Where the desk below the bars starts and ends on screen, so a new floating window opens inside it.
  */
 function deskEdges(): DeskEdges {
-    const bar = agentBar.value?.getBoundingClientRect();
+    const bar = chatBar.value?.getBoundingClientRect();
 
     return {
         top: (bar?.bottom ?? 0) + INFORMATION_BAR_HEIGHT,
@@ -62,16 +61,16 @@ function deskEdges(): DeskEdges {
 
 <template>
     <div
-        ref="agentBar"
-        class="flex min-h-[54px] flex-none items-center gap-2 border-b border-border px-3 text-body max-[760px]:flex-wrap max-[760px]:py-2"
+        ref="chatBar"
+        class="flex h-[38px] flex-none items-center gap-1 border-b border-border pr-3 text-body"
         role="region"
-        aria-label="Agent"
+        aria-label="Chats"
+        data-chat-bar
     >
-        <div class="flex min-w-0 flex-1 items-center gap-2.5">
-            <template v-if="!isHidden">
-                <slot />
-            </template>
+        <div class="flex h-full min-w-0 flex-1 items-center">
+            <slot />
         </div>
+        <span class="mx-1 h-4 w-px flex-none bg-border-2" aria-hidden="true" data-bar-divider></span>
         <Button
             ref="layoutButton"
             variant="icon"
@@ -90,14 +89,6 @@ function deskEdges(): DeskEdges {
             :aria-expanded="isAdding"
             @click="isAdding = !isAdding"
             ><Icon name="plus" :size="13"
-        /></Button>
-        <Button
-            variant="icon"
-            :aria-label="isHidden ? 'Show the agent bar' : 'Hide the agent bar'"
-            :title="isHidden ? 'Show the agent bar' : 'Hide the agent bar'"
-            :pressed="isHidden"
-            @click="isHidden = !isHidden"
-            ><Icon name="minimize" :size="13"
         /></Button>
         <LayoutPicker v-model:open="isLayoutMenuOpen" :layouts="layouts" :anchor="layoutAnchor" />
         <AddWindowPopover

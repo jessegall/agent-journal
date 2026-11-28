@@ -54,7 +54,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
         );
 
         $target = $command->target;
-        $selection = $this->profiles->select($command->profile, $command->requested, $target->driver);
+        $selection = $this->profiles->select($command->profile, $command->requested, $target->driver, null);
         $refusals = $this->preflight->refusals($selection->proposal($target->driverType, $command->requested->model));
 
         if ($refusals === []) {

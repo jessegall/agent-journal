@@ -161,6 +161,9 @@ final class AppContextTest extends TestCase
             'markUrl' => '/images/drivers/claude-code.svg',
             'markTone' => 'own',
             'signInCode' => 'paste-back',
+            'models' => ['haiku', 'sonnet', 'opus', 'fable'],
+            'efforts' => ['low', 'medium', 'high'],
+            'defaultEffort' => 'medium',
         ], $drivers[0]);
         $this->assertSame(['current-color', 'outgoing'], [$drivers[1]['markTone'], $drivers[1]['signInCode']]);
         $this->assertFileExists(public_path('images/drivers/claude-code.svg'));
