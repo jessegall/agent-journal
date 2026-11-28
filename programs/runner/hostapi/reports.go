@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"journal-runner/client"
 )
 
 // ReportsBackoffLimit is the longest the queue waits before it sends again after a failure.
@@ -15,7 +17,8 @@ const ReportsBackoffLimit = 15 * time.Second
 
 // ReportQueue keeps process reports on disk in the order they happened and sends them one at a time, so a report
 // made while the journal is away is sent once it is back, in order per process. A failed send waits twice as long
-// each time, at most ReportsBackoffLimit, and Retry sends at once, as after a heartbeat that went through.
+// each time, at most ReportsBackoffLimit, and Retry sends at once, as after a heartbeat that went through. A report
+// the journal answers as gone, about a process it does not know, is dropped, so it never holds up the reports after it.
 type ReportQueue struct {
 	path  string
 	send  func(ProcessReport) error
@@ -94,10 +97,14 @@ func (queue *ReportQueue) Run(stopped <-chan struct{}) {
 	}
 }
 
-// sendFirst sends the oldest report and drops it once sent; it answers whether one was sent.
+// sendFirst sends the oldest report and drops it once sent, or once the journal answers that its process is gone; it
+// answers whether the queue moved on.
 func (queue *ReportQueue) sendFirst() bool {
 	pending := queue.Pending()
-	if len(pending) == 0 || queue.send(pending[0]) != nil {
+	if len(pending) == 0 {
+		return false
+	}
+	if err := queue.send(pending[0]); err != nil && !errors.Is(err, client.ErrGone) {
 		return false
 	}
 	queue.mutex.Lock()

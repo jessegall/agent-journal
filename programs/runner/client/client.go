@@ -45,9 +45,9 @@ const (
 // ErrRefused is returned when the journal refuses a call outright (4xx): a retry would be refused again.
 var ErrRefused = errors.New("the journal refused the call")
 
-// ErrAlreadyGranted is returned when a runtime's start token was handed out before, or a start was claimed,
-// cancelled or ended already (410): it is gone, and asking again gets nothing.
-var ErrAlreadyGranted = errors.New("this start was already granted")
+// ErrGone is returned when what the call names is gone from the journal (410), such as a start claimed, cancelled or
+// ended already, or a process the journal does not know: asking again gets nothing, so the caller drops it.
+var ErrGone = errors.New("the journal no longer knows what the call names")
 
 // ErrConflict is returned when the journal refuses a call because of the state it is in (409), such as a program
 // arrangement the host has not proven.
@@ -224,7 +224,7 @@ func refusalOf(response *http.Response, target string) error {
 		return nil
 	}
 	if response.StatusCode == http.StatusGone {
-		return ErrAlreadyGranted
+		return ErrGone
 	}
 	message, _ := io.ReadAll(io.LimitReader(response.Body, 512))
 	failure := fmt.Errorf("the journal answered %d to %s: %s", response.StatusCode, target, message)
