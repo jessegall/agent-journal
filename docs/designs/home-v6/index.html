@@ -953,7 +953,7 @@ const SIDE=()=>ui.rail?56:216;
 const W=()=>frameW-SIDE()-2;
 /* The information bar shows only when it holds something: floating windows, or Layouts while the agent bar is hidden. */
 const infoShown=()=>!!A&&(A.floats.length>0||ui.barHidden);
-const H=()=>innerHeight-40-(infoShown()?30:0)-(ui.barHidden?0:54);
+const H=()=>innerHeight-40-(infoShown()?30:0)-(ui.barHidden?0:54)-(window.mcStripH?mcStripH():0);
 
 /* =====================================================================================================================
    Windows: what each key shows
@@ -2846,6 +2846,400 @@ const NEW_NOTES=[['No account connected','With no account connected, the chat sa
   ['The waiting states of a start','“Starting session…” then “Verifying session”, each with the bar\'s spinner on its one line and nothing red: no sentence under the agent selector while a start is on its way. Red is kept for an end that failed (“Start failed”, its reason in --text-3, then Start again). The card above the composer shows only while the session is verified, with Check status and Cancel start; it goes when the start ends, fails or is cancelled.']];
 NOTE_CARDS.push(...NEW_NOTES);
 const dn=$('[data-slot="notes"]');if(dn)dn.insertAdjacentHTML('beforeend',NEW_NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join(''));
+})();
+</script>
+<!-- Round 6, several chats: several chats on Home, a chat list that holds up with a long list (users 30949, 30959), and a
+     session that follows the chat: sending starts or resumes it, Stop in the composer stops the turn (user 30973). -->
+<style>
+/* The chat tabs: one row above the agent bar, built like a pane's strip. The agent bar under it belongs to the chosen tab. */
+.ctabs{height:34px;flex:none;display:flex;align-items:stretch;border-bottom:1px solid var(--line);background:var(--side);padding:0 8px 0 6px;user-select:none}
+.ctabs .tl{display:flex;align-items:stretch;min-width:0;overflow-x:auto;scrollbar-width:none}
+.ctabs .tl::-webkit-scrollbar{display:none}
+.ctab{position:relative;display:inline-flex;align-items:center;gap:6px;flex:none;max-width:210px;padding:0 4px 0 8px;font-size:var(--text-badge);letter-spacing:.03em;color:var(--text-3);cursor:pointer;white-space:nowrap;transition:color var(--duration-hover) var(--ease-journal)}
+.ctab:hover{color:var(--text-2)}
+.ctab[aria-selected=true]{color:var(--text);box-shadow:inset 0 -1px 0 var(--border-3)}
+.ctab.col:not([aria-selected=true])::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:1px;background:var(--border-2)}
+.ctab:focus-visible{outline:1px solid var(--focus);outline-offset:-1px}
+.ctab .nm{overflow:hidden;text-overflow:ellipsis}
+.ctab .x{width:18px;height:18px;opacity:0}
+.ctab:hover .x,.ctab[aria-selected=true] .x,.ctab .x:focus-visible{opacity:1}
+.ctab .spin{width:9px;height:9px}
+.num.u{font-size:var(--text-meta);color:var(--text);min-width:16px;height:16px;padding:0 5px;border-radius:8px;background:var(--chip);display:inline-flex;align-items:center;justify-content:center;letter-spacing:0}
+.ctab .bad,.prow .bad{color:var(--danger);display:inline-flex}
+.ctabs .newc{align-self:center;margin-left:6px;flex:none}
+.ctabs .r{margin-left:auto;display:flex;align-items:center;gap:6px;padding-left:12px;flex:none}
+.ctabs .r .num{font-size:var(--text-meta);color:var(--text-3)}
+.vseg{display:inline-flex;border:1px solid var(--border-2);border-radius:var(--radius-button);overflow:hidden;height:24px;flex:none}
+.vseg button{font:inherit;font-size:var(--text-small);border:0;background:transparent;color:var(--text-3);padding:0 9px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.vseg button+button{border-left:1px solid var(--border-2)}
+.vseg button:hover{color:var(--text)}
+.vseg button[aria-pressed=true]{background:var(--sel);color:var(--text)}
+.vseg button[disabled]{opacity:.45;pointer-events:none}
+.vseg button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+
+/* The chat list: a search, filters, a list capped in height that scrolls, and a foot that never scrolls away. */
+.cpick,.mcnew{position:absolute;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-menu);box-shadow:var(--shadow-pop);z-index:150;display:flex;flex-direction:column;overflow:hidden}
+.cpick{width:384px;max-height:calc(100% - 16px)}
+.cpick .qs{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);color:var(--text-3);flex:none}
+.cpick .qs input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:inherit}
+.cpick .qs input::placeholder{color:var(--text-4)}
+.cpick .qs .k{font-size:var(--text-meta);font-family:var(--font-mono);color:var(--text-4)}
+.cpick .pf{display:flex;gap:4px;padding:7px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap;flex:none}
+.pfb{font:inherit;font-size:var(--text-badge);height:22px;padding:0 8px;border-radius:var(--radius-seg);border:1px solid var(--line);background:transparent;color:var(--text-3);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.pfb:hover{color:var(--text);border-color:var(--border-3)}
+.pfb[aria-pressed=true]{color:var(--text);border-color:var(--border-3);background:var(--sel)}
+.pfb:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.pfb .n{color:var(--text-3)}
+.cpick .pl{max-height:336px;min-height:0;overflow-y:auto;padding:0 6px 6px;overscroll-behavior:contain}
+.cpick .pl .mgroup{position:sticky;top:0;background:var(--raised);z-index:1;display:flex;justify-content:space-between}
+.cpick .pl .mgroup span{text-transform:none;letter-spacing:0;font-weight:400}
+.prow{display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:var(--radius-control);color:var(--text-2);cursor:pointer;font-size:var(--text-small)}
+.prow:hover,.prow.on{background:var(--hover);color:var(--text)}
+.prow .av{width:24px;height:24px}
+.prow .lb{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.prow .lb b{font-weight:500;color:var(--text);display:flex;gap:6px;align-items:center;white-space:nowrap;min-width:0}
+.prow .lb b .t{overflow:hidden;text-overflow:ellipsis}
+.prow .lb small{color:var(--text-3);font-size:var(--text-badge);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .when{font-size:var(--text-meta);color:var(--text-3);white-space:nowrap;display:inline-flex;align-items:center;gap:6px;flex:none}
+.prow .when .spin{width:9px;height:9px}
+.prow .tk{display:inline-flex;width:22px;justify-content:center;color:var(--text);flex:none}
+.prow .ib{width:22px;height:22px;opacity:0}
+.prow:hover .ib,.prow.on .ib{opacity:1}
+.prow.retired .lb b,.prow.retired .av{opacity:.7}
+.prow mark{background:none;color:var(--text);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.cpick .pmore{display:block;width:100%;text-align:left;margin-top:4px;padding:7px 8px;font:inherit;font-size:var(--text-small);color:var(--text-3);background:none;border:0;border-top:1px solid var(--line);cursor:pointer}
+.cpick .pmore:hover{color:var(--text)}
+.cpick .pmore:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.pnone{padding:22px 16px 16px;text-align:center;color:var(--text-3);font-size:var(--text-small);display:flex;flex-direction:column;align-items:center;gap:4px}
+.pnone b{color:var(--text-2);font-weight:500;font-size:var(--text-field)}
+.pnone .acts{display:flex;gap:6px;margin-top:10px}
+.cpick .pfoot{border-top:1px solid var(--line);padding:4px 6px 6px;flex:none}
+.cpick .pacts{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:6px 4px 0;margin-top:4px;border-top:1px solid var(--line)}
+.cpick .pacts .lbl2{font-size:var(--text-meta);color:var(--text-3);margin-right:2px}
+.cpick .qfoot{flex:none}
+
+/* New chat: a small form; it remembers the last choice, so ⌥N then Enter starts one more. */
+.mcnew{width:356px}
+.mcnew header{display:flex;flex-direction:column;gap:2px;padding:12px 14px 8px}
+.mcnew header b{font-size:var(--text-card);font-weight:600;color:var(--text)}
+.mcnew header small{font-size:var(--text-small);color:var(--text-3)}
+.mcnew .frow{display:grid;grid-template-columns:92px 1fr;align-items:center;gap:8px;padding:5px 14px}
+.mcnew .frow.top{align-items:start}
+.mcnew .frow .l{font-size:var(--text-small);color:var(--text-3)}
+.mcnew .frow.top .l{padding-top:6px}
+.mcnew .field{width:100%}
+.mcnew textarea.field{height:auto;min-height:62px;padding:6px 10px;resize:none;line-height:1.4;display:block}
+.mcnew .warn{font-size:var(--text-small);color:var(--text-3)}
+.mcnew footer{display:flex;align-items:center;gap:6px;padding:10px 14px;margin-top:6px;border-top:1px solid var(--line)}
+.mcnew footer small{flex:1;color:var(--text-3);font-size:var(--text-meta);line-height:1.35}
+
+/* The composer while the agent works: Stop beside Send, as Claude Code has. It stops the turn, never the session. */
+.composer .stopturn{margin-right:2px}
+.mc-ro{margin:0 0 14px;padding:11px 12px;border:1px dashed var(--border-2);border-radius:var(--radius-composer);color:var(--text-3);font-size:var(--text-small);text-align:center}
+/* A long list in any menu scrolls inside it. */
+.menu{max-height:min(440px,calc(100% - 24px));overflow-y:auto}
+</style>
+<script>
+(function(){
+/* =====================================================================================================================
+   Several chats on Home. Main agent is a role: any number of agents hold it, each with its own chat. The open chats
+   are tabs above the agent bar; New chat starts another main agent; Side by side shows the open chats as columns.
+   ===================================================================================================================== */
+const MC={view:'one',open:['main'],seen:['main'],pick:null,nw:null,failNext:false,next:2,prevGrid:null,kick:false,
+  last:{prog:'claude',acct:'Work (Max)',model:'Opus'}};
+const MAINS=new Set(['a1']);
+let INFO={}, NOSESS={};
+window.mcStripH=()=>page==='home'&&!ui.barHidden?34:0;
+const PROG={claude:{t:'Claude Code',mk:CLAUDE,models:['Opus','Sonnet']},codex:{t:'Codex',mk:CODEX,models:['GPT-5','GPT-5 mini']}};
+const TYPE_W={main:'main agent',helper:'helper worker designer',group:'group'};
+const IDLE=/waits for you|Ended|Stopped|Interrupted|Not started|failed|cancelled|No account|Idle|Retired|Not running|Ready/i;
+const STARTING=/Starting|Verifying|Resuming/;
+const uniq=a=>a.filter((x,i)=>a.indexOf(x)===i);
+const allConvs=()=>uniq(activeConvs()).filter(c=>CONV[c]);
+const typeOf=c=>isGroup(c)?'group':MAINS.has(agentOf(c))?'main':'helper';
+const isRetired=c=>!!(INFO[c]&&INFO[c].retired);
+const minOf=c=>INFO[c]?INFO[c].min:(c==='main'?0:30);
+const waitsOnYou=c=>!!(INFO[c]&&INFO[c].you);
+const unreadOf=c=>INFO[c]&&INFO[c].unread||0;
+const working=c=>!!STATE[c]&&!IDLE.test(STATE[c])&&!STARTING.test(STATE[c]);
+const progOf=c=>MEM[agentOf(c)].prog==='codex'?'codex':'claude';
+const ago=m=>m<1?'now':m<60?m+' min':m<1440?Math.floor(m/60)+' h':Math.floor(m/1440)+' d';
+const agoLong=m=>m<1?'Active now':'Last active '+agoWords(m);
+const acctsFor=p=>ACCOUNTS.filter(a=>a[0]===p).map(a=>({n:a[1],ok:a[3]==='Signed in'}));
+const mainName=c=>c==='main'?'Agent 1':convName(c);
+
+function baseInfo(){INFO={main:{min:0},h262:{min:2,you:true},w3:{min:5},g1:{min:8},w5:{min:1}}}
+function syncOpen(){MC.open=MC.open.filter(c=>CONV[c]);if(CONV[A.mainConv]&&!MC.open.includes(A.mainConv))MC.open.push(A.mainConv);
+  if(MC.seen[0]!==A.mainConv)MC.seen=[A.mainConv,...MC.seen.filter(x=>x!==A.mainConv)]}
+function markOf(c){const s=STATE[c]||'';
+  if(/failed/i.test(s))return `<span class="bad" title="${esc(s)}">${I('alert','s13')}</span>`;
+  if(isRetired(c))return '';
+  if(working(c)||STARTING.test(s))return `<span class="spin" title="${esc(s)}" aria-hidden="true"></span>`;
+  return `<span class="dot hollow" title="${esc(s)}" aria-hidden="true"></span>`}
+const tabIcon=c=>isGroup(c)?I('users','s13'):PROG[progOf(c)].mk('s13');
+
+/* ---- The tab row ------------------------------------------------------------------------------------------------ */
+function stripHtml(){syncOpen();const cols=MC.view==='side'?columns():[],n=allConvs().filter(c=>!isRetired(c)).length;
+  return `<div class="ctabs"><div class="tl" role="tablist" aria-label="Chats on Home">${MC.open.map(c=>{const sel=c===A.mainConv,u=unreadOf(c);
+      return `<div class="ctab ${cols.includes(c)?'col':''}" role="tab" tabindex="${sel?0:-1}" aria-selected="${sel}" data-mctab="${c}" data-fk="mctab:${c}" title="${esc(mainName(c))} · ${esc(STATE[c]||'')}">${tabIcon(c)}<span class="nm">${esc(mainName(c))}</span>${markOf(c)}${u?`<span class="num u" aria-label="${u} unread">${u}</span>`:''}${MC.open.length>1?`<button class="ib x" data-mcclose="${c}" tabindex="-1" aria-label="Close the tab of ${esc(mainName(c))}; it keeps working" title="Close the tab · it keeps working">${I('close','s13')}</button>`:''}</div>`}).join('')}</div>
+    <button class="btn sm newc" data-mcnew data-fk="mcnew" aria-haspopup="dialog" aria-expanded="${!!MC.nw}" title="Start another main agent · ⌥N">${I('plus','s14')}New chat</button>
+    <div class="r"><button class="btn sm" data-mcpick data-fk="mcpick" aria-haspopup="dialog" aria-expanded="${!!MC.pick}" title="Find any chat · ⌥F">${I('search','s14')}All chats <span class="num">${n}</span></button>
+    <div class="vseg" role="group" aria-label="How the open chats show"><button data-mcview="one" data-fk="mcview:one" aria-pressed="${MC.view==='one'}">${I('window','s13')}One at a time</button><button data-mcview="side" data-fk="mcview:side" aria-pressed="${MC.view==='side'}" ${MC.open.length<2?'disabled title="Open a second chat first"':'title="The open chats as columns"'}>${I('layout','s13')}Side by side</button></div></div></div>`}
+
+/* ---- Side by side: the open chats as columns, as many as fit at 400 px each; the most recently used win. --------- */
+const maxCols=()=>Math.max(2,Math.floor(W()/400));
+function columns(){const pick=MC.seen.filter(c=>MC.open.includes(c)).slice(0,maxCols());return MC.open.filter(c=>pick.includes(c))}
+function layoutSide(){const cols=columns();if(cols.length<2){toOne();return}
+  const mk=i=>i===cols.length-1?pane(['conv:'+cols[i]],{framed:true}):split('row',pane(['conv:'+cols[i]],{framed:true}),mk(i+1),1/(cols.length-i));
+  A.floats=A.floats.filter(f=>!cols.some(c=>f.key==='conv:'+c));A.grid=mk(0);A.zoom=null;const p=paneOf('conv:'+A.mainConv);A.active=p?{pane:p.id}:null}
+function toOne(){MC.view='one';A.grid=MC.prevGrid&&panesIn(MC.prevGrid).some(p=>p.tabs.includes('chat'))?MC.prevGrid:pane(['chat']);MC.prevGrid=null;A.zoom=null}
+function setView(v){if(v===MC.view)return;if(v==='side'){if(MC.open.length<2)return;MC.prevGrid=A.grid;MC.view='side';layoutSide()}else toOne();changed();focusFk('mcview:'+v)}
+
+function openChat(c,beside){if(page!=='home')page='home';MC.pick=null;if(!MC.open.includes(c))MC.open.push(c);if(INFO[c])INFO[c].unread=0;
+  if(beside&&c!==A.mainConv){MC.seen=[c,A.mainConv,...MC.seen.filter(x=>x!==c&&x!==A.mainConv)];A.mainConv=c;if(MC.view!=='side'){MC.prevGrid=A.grid;MC.view='side'}layoutSide()}
+  else{A.mainConv=c;MC.seen=[c,...MC.seen.filter(x=>x!==c)];if(MC.view==='side')layoutSide()}
+  changed();focusFk('compose:'+c)}
+function closeTab(c){if(MC.open.length<2)return;const i=MC.open.indexOf(c),before={open:MC.open.slice(),seen:MC.seen.slice(),cur:A.mainConv,view:MC.view,grid:clone(A.grid),prev:MC.prevGrid};
+  MC.open.splice(i,1);MC.seen=MC.seen.filter(x=>x!==c);if(A.mainConv===c)A.mainConv=MC.open[Math.min(i,MC.open.length-1)];
+  if(MC.view==='side')layoutSide();changed();focusFk('mctab:'+A.mainConv);
+  toast(`Closed the tab of ${mainName(c)} · it keeps working, and All chats finds it`,()=>{Object.assign(MC,{open:before.open,seen:before.seen,view:before.view,prevGrid:before.prev});A.mainConv=before.cur;A.grid=before.grid;render()})}
+
+/* ---- New chat ----------------------------------------------------------------------------------------------------- */
+function anchorAt(el,w,right){const app=$('#app').getBoundingClientRect(),r=el?el.getBoundingClientRect():{left:200,right:600,bottom:120};
+  const x=right?r.right-app.left-w:r.left-app.left;return {x:Math.max(6,Math.min(x,app.width-w-6)),y:r.bottom-app.top+4}}
+function openNew(trigger){const el=$('[data-mcnew]'),at=anchorAt(el,356),L=MC.last,ok=acctsFor(L.prog).filter(a=>a.ok);
+  MC.nw={...at,prog:L.prog,acct:ok.some(a=>a.n===L.acct)?L.acct:ok.length?ok[0].n:null,model:L.model,text:'',same:MC.next>2,trigger:trigger||'mcnew'};MC.pick=null;menu=null;addpop=null;render();focusFk('ntext')}
+function newHtml(){const d=MC.nw,P=PROG[d.prog],accts=acctsFor(d.prog),ok=accts.filter(a=>a.ok);
+  return `<div class="mcnew" id="mcnew" role="dialog" aria-label="New chat" style="left:${d.x}px;top:${d.y}px">
+    <header><b>New chat</b><small>Starts Agent ${MC.next}, another main agent with a chat of its own.</small></header>
+    <div class="frow"><span class="l" id="mcl-p">Program</span><div class="vseg" role="group" aria-labelledby="mcl-p" style="width:max-content">${Object.entries(PROG).map(([k,p])=>`<button data-nprog="${k}" data-fk="nprog:${k}" aria-pressed="${d.prog===k}">${p.mk('s13')}${p.t}</button>`).join('')}</div></div>
+    <div class="frow"><label class="l" for="nacct">Account</label>${ok.length?`<select class="field" id="nacct" data-nacct data-fk="nacct">${accts.map(a=>`<option value="${esc(a.n)}" ${a.n===d.acct?'selected':''} ${a.ok?'':'disabled'}>${esc(a.n)}${a.ok?'':' · needs sign-in'}</option>`).join('')}</select>`
+      :`<span class="warn">No ${P.t} account is connected. <button class="lk" data-ngoacc>Add one on Accounts</button></span>`}</div>
+    <div class="frow"><label class="l" for="nmodel">Model</label><select class="field" id="nmodel" data-nmodel data-fk="nmodel">${P.models.map(m=>`<option ${m===d.model?'selected':''}>${m}</option>`).join('')}</select></div>
+    <div class="frow top"><label class="l" for="ntext">First message</label><textarea class="field" id="ntext" data-ntext data-fk="ntext" rows="3" placeholder="Optional. What should Agent ${MC.next} work on?">${esc(d.text)}</textarea></div>
+    <footer><small>${d.same?'The same as last time. ':''}Enter starts the chat; its session starts with the first message.</small><button class="btn sm" data-ncancel data-fk="ncancel">Cancel</button><button class="btn sm primary" data-nstart data-fk="nstart" ${d.acct?'':'disabled'}>Start chat</button></footer></div>`}
+function startChat(){const d=MC.nw;if(!d||!d.acct)return;MC.nw=null;MC.last={prog:d.prog,acct:d.acct,model:d.model};
+  const n=MC.next++,a='a'+n,c='m'+n,P=PROG[d.prog];
+  MEM[a]={name:'Agent '+n,kind:'agent',prog:d.prog,role:P.t+' · main agent'};MAINS.add(a);
+  CONV[c]={name:'Agent '+n,sub:`${P.t} · ${d.model} · ${d.acct}`,msgs:[]};OWN[c]=a;INFO[c]={min:0};
+  NOSESS[c]='new';STATE[c]='Ready · your first message starts it';EXTRA.push(c);opened.add('conv:'+c);
+  openChat(c);const t=d.text.trim();if(t)setTimeout(()=>sendMessage(c,t),80)}
+
+/* ---- The chat list ------------------------------------------------------------------------------------------------ */
+const FILTERS=[['all','All'],['main','Main agents'],['helper','Helpers'],['group','Groups'],['you','Waits on you']];
+function openPick(el,trigger,right){const at=anchorAt(el,384,right);MC.pick={...at,q:'',f:'all',i:0,retired:false,trigger};MC.nw=null;menu=null;addpop=null;render();focusFk('pick:q')}
+function closePick(back){const t=MC.pick&&MC.pick.trigger;MC.pick=null;const e=$('#cpick');if(e)e.remove();$$('[data-mcpick],[data-convmenu]').forEach(b=>b.setAttribute('aria-expanded','false'));if(back&&t)focusFk(t)}
+const hl=(s,q)=>{const e=esc(s);if(!q)return e;const i=s.toLowerCase().indexOf(q);return i<0?e:esc(s.slice(0,i))+'<mark>'+esc(s.slice(i,i+q.length))+'</mark>'+esc(s.slice(i+q.length))};
+function subOf(c){if(isGroup(c))return 'Group · '+members(c).filter(m=>m!=='you').map(m=>MEM[m].name).join(', ');
+  const a=agentOf(c);if(MAINS.has(a))return STATE[c]||MEM[a].role;return CONV[c].sub||MEM[a].role}
+function pickData(){const P=MC.pick,q=P.q.trim().toLowerCase();
+  let rs=allConvs().map(c=>({c,name:mainName(c),sub:subOf(c),type:typeOf(c),min:minOf(c),ret:isRetired(c),you:waitsOnYou(c)}));
+  const counts={you:rs.filter(r=>r.you&&!r.ret).length},retAll=rs.filter(r=>r.ret).length;
+  if(P.f==='you')rs=rs.filter(r=>r.you);else if(P.f!=='all')rs=rs.filter(r=>r.type===P.f);
+  if(q)rs=rs.filter(r=>(r.name+' '+r.sub+' '+TYPE_W[r.type]).toLowerCase().includes(q));
+  const hiddenRet=P.retired?0:rs.filter(r=>r.ret).length;if(!P.retired)rs=rs.filter(r=>!r.ret);
+  rs.sort((a,b)=>a.ret-b.ret||a.min-b.min);
+  const groups=q?[['Found',rs]]:[['On Home',rs.filter(r=>MC.open.includes(r.c)&&!r.ret)],['Recent',rs.filter(r=>!MC.open.includes(r.c)&&!r.ret)],['Retired',rs.filter(r=>r.ret)]];
+  const shown=groups.filter(g=>g[1].length);return {q,groups:shown,flat:shown.flatMap(g=>g[1]),hiddenRet,retAll,counts}}
+function rowHtml(r,i,P,q){const cur=r.c===A.mainConv,u=unreadOf(r.c);
+  return `<div class="prow ${i===P.i?'on':''} ${r.ret?'retired':''}" role="option" id="prow-${i}" aria-selected="${i===P.i}" ${cur?'aria-current="true"':''} data-prow="${r.c}" data-pi="${i}">
+    ${r.type==='group'?`<span class="av">${I('users','s14')}</span>`:avatar(agentOf(r.c))}
+    <span class="lb"><b><span class="t">${hl(r.name,q)}</span>${r.type==='main'?'<span class="chip">main</span>':''}${r.ret?'<span class="chip">Retired</span>':''}</b><small>${hl(r.sub,q)}</small></span>
+    <span class="when" title="${agoLong(r.min)}">${r.you?'<span class="chip">Waits on you</span>':''}${u?`<span class="num u" aria-label="${u} unread">${u}</span>`:''}${ago(r.min)}${markOf(r.c)}</span>
+    ${cur?`<span class="tk" title="This chat">${I('tick','s14')}</span>`:`<button class="ib" data-pbeside="${r.c}" tabindex="-1" title="Open beside this chat · ⇧Enter" aria-label="Open ${esc(r.name)} beside this chat">${I('float','s14')}</button>`}</div>`}
+function listHtml(D){const P=MC.pick;let i=0;
+  if(!D.flat.length)return `<div class="pnone" role="status">${D.q?`<b>No chat matches “${esc(P.q.trim())}”</b><span>${D.hiddenRet?`${D.hiddenRet} retired ${D.hiddenRet===1?'agent matches':'agents match'}; they are hidden.`:'Try another name, or a task number.'}</span>`
+      :P.f==='you'?'<b>Nothing waits on you</b><span>When an agent asks you something, its chat shows here.</span>':'<b>No chats here yet</b>'}
+    <div class="acts">${D.hiddenRet?'<button class="btn sm bordered" data-pretired>Show retired agents</button>':''}<button class="btn sm bordered" data-pnew>${I('plus','s14')}New chat</button></div></div>`;
+  return D.groups.map(([g,rs])=>`<div class="mgroup" role="presentation">${g}<span>${g==='On Home'?'tabs above the agent bar':g==='Recent'?'most recent first':''}</span></div>`+rs.map(r=>rowHtml(r,i++,P,D.q)).join('')).join('')
+    +(D.retAll&&!D.q?`<button class="pmore" data-pretired data-fk="pretired">${P.retired?'Hide retired agents':`Show ${D.retAll} retired agents`}</button>`:D.hiddenRet?`<button class="pmore" data-pretired data-fk="pretired">Show ${D.hiddenRet} retired ${D.hiddenRet===1?'agent':'agents'} that ${D.hiddenRet===1?'matches':'match'}</button>`:'')}
+function pickHtml(){const P=MC.pick,D=pickData();P.flat=D.flat;if(P.i>=D.flat.length)P.i=Math.max(0,D.flat.length-1);
+  const c=A.mainConv,grp=isGroup(c),ended=!!NOSESS[c];
+  return `<div class="cpick" id="cpick" role="dialog" aria-label="Chats" style="left:${P.x}px;top:${P.y}px">
+    <div class="qs">${I('search','s14')}<input id="pickq" data-pickq data-fk="pick:q" value="${esc(P.q)}" placeholder="Find a chat, an agent or a task" aria-label="Find a chat" role="combobox" aria-expanded="true" aria-controls="plist" aria-activedescendant="${D.flat.length?'prow-'+P.i:''}" autocomplete="off"><span class="k">⌥F</span></div>
+    <div class="pf" role="group" aria-label="Show">${FILTERS.map(([k,t])=>`<button class="pfb" data-pf="${k}" data-fk="pf:${k}" aria-pressed="${P.f===k}">${t}${k==='you'&&D.counts.you?` <span class="n">${D.counts.you}</span>`:''}</button>`).join('')}</div>
+    <div class="pl" id="plist" role="listbox" aria-label="Chats">${listHtml(D)}</div>
+    <div class="pfoot"><button class="mi" data-pnew data-fk="pnew">${I('plus','s14')}<span class="lb">New chat<small>Starts another main agent</small></span><span class="k">⌥N</span></button>
+      <button class="mi" data-pgroup data-fk="pgroup">${I('users','s14')}<span class="lb">New group chat…</span></button>
+      <div class="pacts" role="group" aria-label="This chat"><span class="lbl2">${esc(mainName(c))}</span>${grp?`<button class="btn sm" data-paddto>${I('userplus','s14')}Add someone…</button>`
+        :`<button class="btn sm" data-pmem>${I('brain','s14')}Memories</button><button class="btn sm" data-pswitch title="Choose another program for this agent">Switch driver…</button><button class="btn sm" data-pend ${ended?'disabled':''} title="${ended?'No session is running':'Ends the session; the chat stays, and your next message starts a new one'}">End session</button>`}</div></div>
+    <div class="qfoot">↑ ↓ choose · Enter opens · ⇧Enter opens beside · Esc closes</div></div>`}
+function moveSel(d){const P=MC.pick;if(!P.flat.length)return;P.i=Math.max(0,Math.min(P.flat.length-1,P.i+d));
+  $$('#cpick .prow').forEach(r=>{const on=+r.dataset.pi===P.i;r.classList.toggle('on',on);r.setAttribute('aria-selected',on);if(on&&d)r.scrollIntoView({block:'nearest'})});
+  $('#pickq').setAttribute('aria-activedescendant','prow-'+P.i)}
+function drawPick(){const old=$('#cpick');if(old)old.remove();if(!MC.pick||page!=='home')return;
+  $('#main').insertAdjacentHTML('beforeend',pickHtml());const g=$('#cpick'),inp=$('#pickq');
+  inp.oninput=()=>{MC.pick.q=inp.value;MC.pick.i=0;const D=pickData();MC.pick.flat=D.flat;$('#plist').innerHTML=listHtml(D);bindList();inp.setAttribute('aria-activedescendant',D.flat.length?'prow-0':'')};
+  inp.onkeydown=e=>{if(e.key==='ArrowDown'){e.preventDefault();moveSel(1)}else if(e.key==='ArrowUp'){e.preventDefault();moveSel(-1)}
+    else if(e.key==='Enter'){e.preventDefault();const r=MC.pick.flat[MC.pick.i];if(r)openChat(r.c,e.shiftKey);else if(MC.pick.q.trim()){closePick();openNew('mcnew')}}};
+  g.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePick(true)}});
+  $$('[data-pf]',g).forEach(b=>b.onclick=()=>{MC.pick.f=b.dataset.pf;MC.pick.i=0;drawPick();focusFk('pf:'+b.dataset.pf)});
+  $$('.pfoot [data-pnew]',g).forEach(b=>b.onclick=()=>{closePick();openNew('mcnew')});
+  $('[data-pgroup]',g).onclick=()=>{closePick();newGroup()};
+  const on=(s,f)=>{const e=$(s,g);if(e)e.onclick=f};
+  on('[data-paddto]',()=>{closePick();addMenu($('[data-addto]'))});
+  on('[data-pmem]',()=>{closePick();openWin('mem:'+agentOf(A.mainConv))});
+  on('[data-pswitch]',()=>{closePick(true);toast(`Switch driver opens its dialog for ${MEM[agentOf(A.mainConv)].name}: the one deliberate way to change its program`)});
+  on('[data-pend]',()=>{const c=A.mainConv,before=STATE[c];closePick(true);NOSESS[c]='ended';STATE[c]='Session ended · your next message starts a new one';render();
+    toast(`Ended the session of ${MEM[agentOf(c)].name} · the chat stays`,()=>{delete NOSESS[c];STATE[c]=before;render()})});
+  bindList()}
+function bindList(){const g=$('#cpick');if(!g)return;
+  $$('.prow',g).forEach(r=>{r.onclick=e=>{if(e.target.closest('[data-pbeside]'))return;openChat(r.dataset.prow,e.shiftKey)};r.onmousemove=()=>{if(+r.dataset.pi!==MC.pick.i){MC.pick.i=+r.dataset.pi;moveSel(0)}}});
+  $$('[data-pbeside]',g).forEach(b=>b.onclick=()=>openChat(b.dataset.pbeside,true));
+  $$('[data-pretired]',g).forEach(b=>b.onclick=()=>{MC.pick.retired=!MC.pick.retired;drawPick();focusFk('pick:q')});
+  $$('#plist [data-pnew]',g).forEach(b=>b.onclick=()=>{closePick();openNew('mcnew')})}
+
+/* ---- The session follows the chat: no Start session, no Resume. --------------------------------------------------- */
+/* A message to an agent with no running session starts it (or resumes the one it had); the message waits under its
+   bubble until the agent runs, then is delivered. Ending a session is a deliberate choice: End session, or Switch driver. */
+function wake(c,dl){const a=agentOf(c),kind=NOSESS[c],cv=CONV[c];STATE[c]=kind==='asleep'?'Resuming the session…':'Starting the session…';if(INFO[c])INFO[c].min=0;render();
+  const fail=MC.failNext;MC.failNext=false;
+  setTimeout(()=>{if(!CONV[c])return;if(fail){dl.to=[[a,'failed',`${(CONV[c].sub||'').split(' · ')[2]||'The account'} reached its usage limit for now`]];STATE[c]='Not running · the start failed';dl.wake=true;render();return}
+    delete NOSESS[c];dl.to=[[a,'delivered']];STATE[c]='Working on your message';render();
+    setTimeout(()=>{cv.msgs.push(['ag','now',kind==='asleep'?'Back with you. I picked up where we left off.':kind==='ended'?'A new session, same chat. I\'ve read what we said before; go on.':'On it. I\'ve read the journal, and I\'ll tell you here when something needs you.']);STATE[c]='Idle · waits for you';render()},1600)},1500)}
+const mcSend=sendMessage;
+sendMessage=function(c,t,extra){
+  if(step==='noacct'&&c==='main'&&/^(Not started|Start cancelled|Start failed)$/.test(STATE.main||'')){mcSend(c,t,extra);if(t&&t.trim()){MC.kick=true;render()}return}
+  if(NOSESS[c]&&!isGroup(c)){if(!t||!t.trim())return;const dl={s:'sent',to:[[agentOf(c),'waiting']]};CONV[c].msgs.push(['me',esc(t),undefined,Object.assign({},extra,{dl})]);REPLYTO=null;wake(c,dl);return}
+  if(INFO[c])INFO[c].min=0;
+  if(!isGroup(c)&&CONV[c]&&t&&t.trim()&&!working(c)){STATE[c]='Working on your message';setTimeout(()=>{if(STATE[c]==='Working on your message'){STATE[c]='Idle · waits for you';render()}},2400)}
+  return mcSend(c,t,extra)};
+function stopTurn(c){STATE[c]='Stopped · waits for you';CONV[c].msgs.push(['sys','You stopped this turn · your next message goes on from here']);render();focusFk('compose:'+c)}
+
+/* The composer: Stop beside Send while the agent works; a retired agent's chat is read-only. */
+const mcComposer=composer;
+composer=function(c){if(isRetired(c))return `<div class="mc-ro">${esc(mainName(c))} is retired. Its chat stays here to read.</div>`;
+  const h=mcComposer(c);if(!h||isGroup(c)||!working(c))return h;
+  return h.replace('<button class="btn sm send"',`<button class="btn sm bordered stopturn" data-stopturn="${c}" data-fk="stopturn:${c}" title="Stop this turn · Esc" aria-label="Stop the current turn of ${esc(MEM[agentOf(c)].name)}">${I('stop','s14')}Stop</button><button class="btn sm send"`)};
+
+/* The agent bar: the tab row above it; no Stop at its right (the composer has it); a main agent says so. */
+const mcBar=abarHtml;
+abarHtml=function(){syncOpen();const c=A.mainConv;let h=mcBar();
+  h=h.replace(/<button class="btn sm bordered" data-stop[^>]*>[\s\S]*?<\/button>/,'');
+  if(c!=='main'&&!isGroup(c)&&MAINS.has(agentOf(c)))h=h.replace(`<span>${convName(c)}</span>`,`<span>${convName(c)} · main</span>`);
+  h=h.replace(/<button class="btn sm bordered stact" data-na="start" data-fk="na:bar">Start session<\/button>/,'').replace('data-na="start" data-fk="na:bar">Start again','data-na="go" data-fk="na:bar">Try again');
+  return stripHtml()+h};
+/* An agent that stopped by itself starts again with the next message; the bar only says so. */
+STALE_KIND.stopped.why='The agent\'s program ended without being asked to. Your next message starts it again.';
+const mcStale=staleHtml;
+staleHtml=function(c){const s=STALE[c],h=mcStale(c);if(!s||s.kind!=='stopped'||s.checking)return h;
+  return h.replace(/<button class="btn sm stact"[^>]*>[\s\S]*?<\/button>/,'<span class="st" style="margin-left:2px">· your next message starts it again</span>')};
+/* The empty chat of a new main agent; and with no account, a ready Agent 1 starts with the first message. */
+const mcChat=chatHtml;
+chatHtml=function(c){const cv=CONV[c];
+  if(cv&&!cv.msgs.length&&NOSESS[c]==='new'){const a=agentOf(c);
+    return `<div class="na-empty" role="region" aria-label="${esc(MEM[a].name)} is ready"><div class="mk">${PROG[progOf(c)].mk('s18')}</div><h3>${MEM[a].name} is ready</h3>
+      <p>A main agent of its own: it plans the work, starts helpers and tells you here when something needs you.</p><p class="q">Its session starts when you send the first message.</p></div>`}
+  return mcChat(c).replace('Start a session, or send a message: it waits and goes out once Agent 1 runs.','Send a message, and Agent 1 starts with it.')
+    .replace(/<div class="acts"><button class="btn sm primary" data-na="start" data-fk="na:startc">Start session<\/button><\/div>/,'')
+    .replace('data-na="start" data-fk="na:startc">Start again','data-na="go" data-fk="na:startc">Try again')
+    .replace('Nothing was lost; start again when you are ready.','Nothing was lost; your message waits. Try again, or send another.')};
+for(let i=0;i<ABOVE_COMPOSER.length;i++){const f=ABOVE_COMPOSER[i];ABOVE_COMPOSER[i]=c=>{const h=f(c);return /data-na="startc"/.test(h)?'':h}}
+ABOVE_COMPOSER.push(c=>c==='main'&&MC.kick?'<button hidden data-na="go" data-mckick></button>':'');
+STEPS.noacct[1]=STEPS.noacct[1].replace('Then Start session: a driver with no account shows as unavailable.','Then send a message: Agent 1 starts with it, with no Start session button.');
+/* The drag-and-drop list under the name: recent first, retired hidden, no Open-beside rows; it scrolls when long. */
+const mcItems=convMenuItems;
+convMenuItems=function(){const it=mcItems(),rows=it.filter(x=>x.dropconv&&!isRetired(x.dropconv)).sort((a,b)=>minOf(a.dropconv)-minOf(b.dropconv)),rest=it.filter(x=>!x.dropconv&&!(x.ic==='float'&&/^Open /.test(x.label||'')));
+  return [rest[0],...rows,...rest.slice(1)]};
+const mcKeys=keysHtml;
+keysHtml=function(){return mcKeys().replace('</dl>','<dt><kbd>⌥N</kbd></dt><dd>New chat: start another main agent</dd><dt><kbd>⌥F</kbd></dt><dd>Find any chat</dd><dt><kbd>Esc</kbd> in the composer</dt><dd>Stop the agent\'s current turn</dd></dl>')};
+PAL_EXTRA.push(C=>{if(page!=='home')return;C('New chat','plus',()=>{setTimeout(()=>openNew(),0);return false},'⌥N');C('Find a chat','search',()=>{setTimeout(()=>openPick($('[data-mcpick]'),'mcpick',true),0);return false},'⌥F');
+  if(MC.open.length>1)C(MC.view==='side'?'Show one chat at a time':'Show the open chats side by side','layout',()=>setView(MC.view==='side'?'one':'side'))});
+
+/* ---- Wiring ------------------------------------------------------------------------------------------------------- */
+WIRE_EXTRA.push(on=>{
+  on('[data-convmenu]',b=>{b.onclick=()=>MC.pick?closePick(true):openPick(b,'convmenu');b.setAttribute('aria-haspopup','dialog');b.setAttribute('aria-expanded',!!MC.pick)});
+  on('[data-mcpick]',b=>b.onclick=()=>MC.pick?closePick(true):openPick(b,'mcpick',true));
+  on('[data-mcnew]',b=>b.onclick=()=>{if(MC.nw){MC.nw=null;render()}else openNew()});
+  on('[data-mcview]',b=>b.onclick=()=>setView(b.dataset.mcview));
+  on('[data-mctab]',t=>{t.onclick=e=>{if(e.target.closest('[data-mcclose]'))return;openChat(t.dataset.mctab)};
+    t.onkeydown=e=>{const tabs=$$('[data-mctab]'),i=tabs.indexOf(t);
+      if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();e.stopPropagation();tabs[(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length].focus()}
+      else if(e.key==='Enter'||e.key===' '){e.preventDefault();openChat(t.dataset.mctab)}else if(e.key==='Delete'){e.preventDefault();closeTab(t.dataset.mctab)}}});
+  on('[data-mcclose]',b=>b.onclick=e=>{e.stopPropagation();closeTab(b.dataset.mcclose)});
+  on('[data-stopturn]',b=>b.onclick=()=>stopTurn(b.dataset.stopturn));
+  /* Retry on a message that waited for a start that failed: it starts the agent again. */
+  on('[data-dlretry]',b=>{const [c,i]=b.dataset.dlretry.split(':'),m=CONV[c]&&CONV[c].msgs[+i],dl=m&&m[3]&&m[3].dl;if(!dl||!dl.wake)return;
+    b.onclick=()=>{dl.wake=false;dl.to=[[agentOf(c),'waiting']];wake(c,dl)}})});
+AFTER_RENDER.push(()=>{
+  const sl=$('#sLine'),fb=sl&&$('[data-mcfail]',sl);if(fb)fb.onclick=()=>{MC.failNext=!MC.failNext;fb.setAttribute('aria-pressed',MC.failNext)};
+  const old=$('#mcnew');if(old)old.remove();
+  if(MC.nw&&page==='home'){$('#main').insertAdjacentHTML('beforeend',newHtml());const g=$('#mcnew'),d=MC.nw,ta=$('[data-ntext]',g);
+    $$('[data-nprog]',g).forEach(b=>b.onclick=()=>{d.prog=b.dataset.nprog;const ok=acctsFor(d.prog).filter(a=>a.ok);d.acct=ok.length?ok[0].n:null;d.model=PROG[d.prog].models[0];d.same=false;render();focusFk('nprog:'+d.prog)});
+    const ac=$('[data-nacct]',g);if(ac)ac.onchange=()=>{d.acct=ac.value;d.same=false};
+    const md=$('[data-nmodel]',g);md.onchange=()=>{d.model=md.value;d.same=false};
+    ta.oninput=()=>{d.text=ta.value};
+    const ga=$('[data-ngoacc]',g);if(ga)ga.onclick=()=>{MC.nw=null;page='accounts';render()};
+    $('[data-ncancel]',g).onclick=()=>{const t=d.trigger;MC.nw=null;render();focusFk(t)};
+    $('[data-nstart]',g).onclick=startChat;
+    g.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();const t=d.trigger;MC.nw=null;render();focusFk(t)}
+      else if(e.key==='Enter'&&!e.shiftKey&&!e.target.closest('select,button')){e.preventDefault();startChat()}})}
+  drawPick();
+  if(MC.kick){MC.kick=false;const k=$('[data-mckick]');if(k)k.click()}});
+/* A popover closes on a click outside it, without taking that click. */
+document.addEventListener('pointerdown',e=>{const t=e.target;if(!t.closest)return;
+  if(MC.pick&&!t.closest('#cpick,[data-convmenu],[data-mcpick]'))closePick();
+  if(MC.nw&&!t.closest('#mcnew,[data-mcnew]')){MC.nw=null;const n=$('#mcnew');if(n)n.remove()}},true);
+/* Side by side: the agent bar follows the column you work in. */
+function follow(el){if(MC.view!=='side'||page!=='home'||!el.closest)return;const p=el.closest('#desk [data-pane]'),pn=p&&paneById(p.dataset.pane);
+  if(!pn||!pn.act||!pn.act.startsWith('conv:'))return;const c=pn.act.slice(5);if(c===A.mainConv)return;
+  A.mainConv=c;A.active={pane:pn.id};MC.seen=[c,...MC.seen.filter(x=>x!==c)];if(INFO[c])INFO[c].unread=0;render()}
+document.addEventListener('focusin',e=>follow(e.target));
+document.addEventListener('pointerdown',e=>{if(e.target.closest&&!e.target.closest('button,textarea,input,select,a,[tabindex]'))follow(e.target)});
+addEventListener('keydown',e=>{if(page!=='home')return;
+  if(e.altKey&&!e.metaKey&&!e.ctrlKey&&e.code==='KeyN'){e.preventDefault();e.stopImmediatePropagation();if(MC.nw){MC.nw=null;render()}else openNew();return}
+  if(e.altKey&&!e.metaKey&&!e.ctrlKey&&e.code==='KeyF'){e.preventDefault();e.stopImmediatePropagation();if(MC.pick)closePick(true);else openPick($('[data-mcpick]'),'mcpick',true);return}
+  const t=e.target;if(e.key==='Escape'&&t.matches&&t.matches('[data-compose]')&&!menu&&!MC.pick){const c=t.dataset.compose;if(working(c)&&!isGroup(c)){e.preventDefault();e.stopImmediatePropagation();stopTurn(c)}}},true);
+
+/* ---- The steps ---------------------------------------------------------------------------------------------------- */
+const HELP=[ // [conv, name, program, role, what it does, minutes since it was active, extra]
+  ['h263','Designer 263','claude','designer','Designing the chat list',3,{unread:2}],['w4','Worker 4','claude','worker','Task 1730 · 3 of 4 steps',4],
+  ['rv2','Reviewer 2','claude','reviewer','Reviewing task 1702',6,{you:true,idle:1}],['cx1c','Codex 1','codex','Codex agent','Checks the Go host against the code',9],
+  ['w6','Worker 6','claude','worker','Task 1733 · waits for review',12,{idle:1}],['w7','Worker 7','codex','worker','Task 1734 · writing the migration',14],
+  ['h270','Designer 270','claude','designer','Drawing the accounts page',18,{idle:1}],['rs1','Researcher 1','claude','researcher','Reading the Docker docs',22],
+  ['w8','Worker 8','claude','worker','Task 1736 · 1 of 3 steps',25],['w9','Worker 9','claude','worker','Task 1737 · tests',31],
+  ['w10','Worker 10','codex','worker','Task 1738 · done, waits for you to test',38,{you:true,idle:1}],['h271','Designer 271','claude','designer','Sketching the notifications page',44,{idle:1}],
+  ['w11','Worker 11','claude','worker','Task 1741 · 2 of 5 steps',52],['w12','Worker 12','claude','worker','Task 1742 · waits for Worker 11',63,{idle:1}],
+  ['rv3','Reviewer 3','codex','reviewer','Reviewed task 1729',80,{idle:1}],['w13','Worker 13','claude','worker','Task 1744 · finished',120,{idle:1}],
+  ['w14','Worker 14','claude','worker','Task 1745 · finished',170,{idle:1}],['h272','Designer 272','claude','designer','Drew the documents reader',240,{idle:1}],
+  ['w15','Worker 15','codex','worker','Task 1746 · finished',300,{idle:1}],['rs2','Researcher 2','claude','researcher','Compared terminal libraries',420,{idle:1}],
+  ['w16','Worker 16','claude','worker','Task 1748 · finished',1500,{idle:1}],['w17','Worker 17','claude','worker','Task 1750 · finished',2900,{idle:1}]];
+const GONE=[['w1','Worker 1','Task 1650'],['w2','Worker 2','Task 1652'],['h240','Designer 240','Home, version 5'],['h251','Designer 251','The task graph'],['h255','Designer 255','The house style'],
+  ['rv1','Reviewer 1','Task 1660'],['w18','Worker 18','Task 1661'],['w19','Worker 19','Task 1663'],['w20','Worker 20','Task 1670'],['rs0','Researcher 0','Terminal sizes'],['w21','Worker 21','Task 1672'],['cx0','Codex 0','Go host checks']];
+function seed(){
+  MEM.a2={name:'Agent 2',kind:'agent',prog:'claude',role:'Claude Code · main agent'};MEM.a3={name:'Agent 3',kind:'agent',prog:'codex',role:'Codex · main agent'};MAINS.add('a2');MAINS.add('a3');
+  CONV.m2={name:'Agent 2',sub:'Claude Code · Sonnet · Personal',msgs:[['day','Today'],['me','Plan the release of version 6: what is left, in order.'],['ag','13:58','Reading plan 56 and its open tasks. Eleven are left; I\'ll put them in order and say which can run at once.']]};
+  CONV.m3={name:'Agent 3',sub:'Codex · GPT-5 · Codex team key',msgs:[['day','Yesterday'],['me','Check the Go host for leaked processes after a restart.'],['ag','17:20','Done: none leak. Two stray shells came from the old executor; task 1712 fixed that.'],['sys','The host restarted at 02:10 · Agent 3 has no session running']]};
+  OWN.m2='a2';OWN.m3='a3';STATE.m2='Ordering the release tasks';STATE.m3='Not running · your next message resumes it';NOSESS.m3='asleep';
+  Object.assign(INFO,{m2:{min:1,unread:1},m3:{min:960},h262:{min:2,you:true},w3:{min:5},g1:{min:8},g2:{min:27}});
+  HELP.forEach(([c,name,prog,role,what,min,x={}])=>{const by=min>200?'Agent 2':'Agent 1';MEM[c]={name,kind:'agent',prog,role:(prog==='codex'?'Codex':'Claude Code')+' · '+role};OWN[c]=c;
+    CONV[c]={name,sub:what,origin:`Started by ${by} · supervised by ${by}`,msgs:[['ag',min<60?'13:'+String(59-min).padStart(2,'0'):'earlier',x.you?'Ready for you: can you look at this before I go on?':`${what}.`]]};
+    STATE[c]=x.idle?(x.you?'Waits for you':'Idle · waits for you'):what;INFO[c]={min,unread:x.unread||0,you:!!x.you};EXTRA.push(c)});
+  GONE.forEach(([c,name,what],i)=>{MEM[c]={name,kind:'agent',prog:c.startsWith('cx')?'codex':'claude',role:'retired'};OWN[c]=c;
+    CONV[c]={name,sub:what,origin:'This agent is retired',msgs:[['ag','earlier',`Finished: ${what}.`]]};STATE[c]='Retired';INFO[c]={min:3000+i*900,retired:true};EXTRA.push(c)});
+  CONV.g2={name:'Release check',members:['you','a1','a2','w3','sam'],origin:'You started this chat with Agent 1, Agent 2, Worker 3 and Sam',msgs:[['say','a2','13:32','The release order is in plan 56; Worker 3 tests the last two.']]};STATE.g2='Agent 2 reading';
+  EXTRA.push('h262','w3','m2','m3','g1','g2');MC.next=4}
+const failTool=()=>`<button class="tbtn" data-mcfail aria-pressed="${MC.failNext}">The next start fails</button>`;
+STEPS.many=['16 · Several chats','Agent 1, Agent 2 and Agent 3 are main agents, each with its own chat, open as tabs above the agent bar. New chat (⌥N) starts another: the program, the account and the model, the same as last time, and Enter starts it, so ⌥N then Enter makes one more. Its session starts with the first message. Click the agent\'s name, or All chats (⌥F), to find any of 40 chats: type to search, filter, the most recent first, retired agents hidden until asked for, a list that scrolls inside a fixed height, and New chat always at the foot.',''];
+STEPS.side=['17 · Side by side','Three chats as columns, each with its own composer. The agent bar follows the column you work in, and the tab row underlines the chats that have a column. A chat with no column takes the place of the one used longest ago. One at a time brings back your own layout.',''];
+STEPS.session=['18 · Sending starts the session','No Start session and no Resume. Agent 3 has had no session since the host restarted: send it a message and the journal resumes it by itself (“Resuming the session…”, then the answer). Agent 1 works: Stop sits beside Send (or press Esc in the composer) and stops only its current turn. End session and Switch driver stay deliberate, in the chat list.',''];
+['many','side','session'].forEach(k=>Object.defineProperty(STEPS[k],2,{get:failTool}));
+LOADERS.push(()=>{baseInfo();NOSESS={};MAINS.clear();MAINS.add('a1');Object.assign(MC,{view:'one',open:[A.mainConv],seen:[A.mainConv],pick:null,nw:null,prevGrid:null,next:2,kick:false,failNext:false});
+  if(/^Stopped|^Idle|^Working on your/.test(STATE.main||''))STATE.main='Working on task 1702';
+  if(!['many','side','session'].includes(step))return;
+  seed();
+  if(step==='many'){MC.open=['main','m2','m3'];MC.seen=['main','m2','m3']}
+  if(step==='side'){MC.open=['main','m2','h262','m3'];MC.seen=['main','m2','h262','m3'];MC.prevGrid=A.grid;MC.view='side';layoutSide()}
+  if(step==='session'){MC.open=['main','m3'];A.mainConv='m3';MC.seen=['m3','main']}});
+['many','side','session'].forEach(k=>{const b=document.createElement('button');b.dataset.k=k;b.textContent=STEPS[k][0];b.onclick=()=>{step=k;page='home';load()};$('#steps').append(b)});
+const NEW_NOTES=[['Several chats','Main agent is a role. Any number of agents hold it, each with its own chat. The open chats are tabs in one row above the agent bar (34 px, the pane strip\'s look): the program\'s mark, the name, a spinner while it works or a hollow dot while idle, the unread count, and × on hover, which closes the tab only: the agent keeps working and All chats finds it. The agent bar under the row belongs to the chosen tab. ← → move between tabs, Delete closes one.'],
+  ['New chat','New chat, after the tabs and at the foot of the chat list, or ⌥N: a small form with the program, the account (only signed-in ones can be chosen), the model and an optional first message. It opens with the last choice, so Enter starts one more at once. The new tab opens and its chat says “Agent 4 is ready”; its session starts with the first message. There is no limit on how many.'],
+  ['Side by side','One at a time shows the chosen chat; Side by side shows the open chats as framed columns, as many as fit at 400 px each (three at 1440 px), the most recently used first. Choosing a tab without a column swaps out the column used longest ago. The agent bar follows the column you type in. One at a time brings back the layout you had.'],
+  ['The chat list','The agent\'s name and All chats (⌥F) open one list: a search on top (name, what it does, a task number; the match is underlined), filters (All, Main agents, Helpers, Groups, Waits on you with its count), then On Home and Recent, the most recent first, each row with its time and state. Retired agents are hidden behind “Show 12 retired agents”; a retired chat opens to read only. The list is capped at 336 px and scrolls; the foot stays: New chat, New group chat, and the chosen chat\'s Memories, Switch driver and End session. ↑ ↓ and Enter open, ⇧Enter or the row\'s button opens beside. No match says so and offers New chat.'],
+  ['Sending starts the session','The chat never asks to start or resume. A message to an agent with no session waits under its bubble (“Waiting for Agent 3 to start”) while the bar says “Resuming the session…” or “Starting the session…”; then it is delivered and answered. If the start fails, the message says Not delivered with the reason and Retry. While the agent works, Stop sits beside Send (Esc in the composer does the same) and stops only the current turn; the bar has no Stop. A session ends only when you ask: End session, or Switch driver.']];
+NOTE_CARDS.push(...NEW_NOTES);
+const dn=$('[data-slot="notes"]');if(dn)dn.insertAdjacentHTML('beforeend',NEW_NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join(''));
+load();
 })();
 </script>
 </body>
