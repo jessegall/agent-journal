@@ -75,9 +75,12 @@ final readonly class FluentChains
         $faults = [];
 
         foreach ($fluent as $class) {
-            foreach (self::publicMethods($class) as $method) {
+            $type = Reflector::of($class);
+            $shortName = $type->shortName();
+
+            foreach ($type->ownPublicInstanceMethods() as $method) {
                 $returned = self::returnedClass($method);
-                $name = Reflector::of($class)->shortName().'::'.$method->name();
+                $name = $shortName.'::'.$method->name();
                 $switches = $returned !== null && $returned !== $class && in_array($returned, $fluent, true);
 
                 if ($switches && ! self::isGetter($method)) {
@@ -104,11 +107,11 @@ final readonly class FluentChains
         // value: what it hands back of its own class is a new value, never the same subject changed.
         $type = Reflector::of($class);
 
-        if ($type->isSubclassOf(Model::class) || $type->isReadOnly()) {
+        if (! $type->isClass() || $type->isSubclassOf(Model::class) || $type->isReadOnly()) {
             return false;
         }
 
-        foreach (self::publicMethods($class) as $method) {
+        foreach ($type->ownPublicInstanceMethods() as $method) {
             $returnsItself = $method->returnType()
                 ->map(fn (DeclaredType $type) => $type->isNamed()
                     && in_array($type->name(), ['self', 'static', $class], true))
@@ -146,28 +149,5 @@ final readonly class FluentChains
                 && ! in_array($type->name(), ['self', 'static'], true))
             ->map(fn (DeclaredType $type) => $type->className())
             ->getOrElse(null);
-    }
-
-    /**
-     * The public methods the class declares itself, neither static nor its constructor.
-     *
-     * @param  class-string  $class
-     * @return list<ReflectedMethod>
-     */
-    private static function publicMethods(string $class): array
-    {
-        $type = Reflector::of($class);
-
-        if ($type->isInterface() || $type->isTrait() || $type->isEnum()) {
-            return [];
-        }
-
-        return array_values(array_filter(
-            $type->methods(),
-            fn (ReflectedMethod $method) => $method->isPublic()
-                && ! $method->isStatic()
-                && $method->name() !== '__construct'
-                && $method->declaringClass()->name() === $class,
-        ));
     }
 }

@@ -586,12 +586,28 @@ final class Reflector implements ReflectorContract
     public function methods(): array
     {
         return $this->allMethods ??= array_map(
-            fn (ReflectionMethod $method) => $this->methods[strtolower($method->getName())] ??= new ReflectedMethod(
-                $method,
-                self::of(...),
-            ),
+            fn (ReflectionMethod $method) => $this->methods[strtolower($method->getName())]
+                ??= self::reflectMethod($method),
             $this->type->getMethods(),
         );
+    }
+
+    /**
+     * Streams the class's public instance methods, excluding its constructor, without retaining the descriptors.
+     *
+     * @return iterable<ReflectedMethod>
+     */
+    public function ownPublicInstanceMethods(): iterable
+    {
+        $class = $this->name();
+
+        foreach ($this->type->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if ($method->isStatic() || $method->isConstructor() || $method->getDeclaringClass()->getName() !== $class) {
+                continue;
+            }
+
+            yield self::reflectMethod($method);
+        }
     }
 
     /**
@@ -690,10 +706,7 @@ final class Reflector implements ReflectorContract
             throw MethodMissing::on($this->name(), $name);
         }
 
-        return $this->methods[strtolower($name)] ??= new ReflectedMethod(
-            $this->type->getMethod($name),
-            self::of(...),
-        );
+        return $this->methods[strtolower($name)] ??= self::reflectMethod($this->type->getMethod($name));
     }
 
     /**
@@ -712,6 +725,11 @@ final class Reflector implements ReflectorContract
         return $this->constructor = $constructor === null
             ? None::create()
             : new Some($this->method($constructor->getName()));
+    }
+
+    private static function reflectMethod(ReflectionMethod $method): ReflectedMethod
+    {
+        return new ReflectedMethod($method, self::of(...));
     }
 
     private function declaredAttributes(): DeclarationAttributes
