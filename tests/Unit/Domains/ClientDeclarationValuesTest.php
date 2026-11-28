@@ -24,18 +24,20 @@ use App\Text\Declarations\Section;
 use App\Text\Exceptions\InvalidSectionDeclaration;
 use App\Web\Attributes\Deferred;
 use App\Web\Creation\Exceptions\InvalidSurfacePolicy;
+use App\Web\Creation\Exceptions\MissingFields;
 use App\Web\Creation\SurfacePropPolicy;
 use App\Web\Declarations\Slot;
 use App\Web\Enums\PageDestination;
 use App\Web\Enums\PageSkeleton;
-use App\Web\Creation\Exceptions\MissingFields;
 use App\Web\Exceptions\InvalidPageDeclaration;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\ClientDeclarations\Library\AddBook;
 use Tests\Fixtures\ClientDeclarations\Library\BooksPaneData;
 use Tests\Fixtures\ClientDeclarations\Library\Http\Windows\BooksWindowBuilder;
-use Tests\Fixtures\ClientDeclarations\Library\AddBook;
+use Tests\Fixtures\ClientDeclarations\Library\ShelfRowsLoader;
 use Tests\Fixtures\ClientDeclarations\RecentNotesData;
 use Tests\Fixtures\ClientDeclarations\RecentNotesPageBuilder;
+use Tests\Fixtures\ClientDeclarations\RecentNotesSection;
 use Tests\Support\TestIds;
 use ValueError;
 
@@ -60,7 +62,7 @@ final class ClientDeclarationValuesTest extends TestCase
             ->icon(Icon::Plan)
             ->pageType(RecentNotesData::class)
             ->pageBuilder(RecentNotesPageBuilder::class)
-            ->component('PlanResolver.vue')
+            ->component('Plan.vue')
             ->finish()
             ->slots(fn (PageSlots $slots) => $slots
                 ->add('bar', SlotContextType::Nothing)
@@ -70,7 +72,7 @@ final class ClientDeclarationValuesTest extends TestCase
                 ->post('start', AddBook::class, 'start')
                 ->patch('rename', AddBook::class, 'rename')
                 ->delete('drop', AddBook::class, 'drop'))
-            ->loaders(fn (PageLoaders $loaders) => $loaders->add('rows', RecentNotesSection::class));
+            ->loaders(fn (PageLoaders $loaders) => $loaders->add('rows', ShelfRowsLoader::class));
 
         $this->assertEquals(
             [
@@ -81,13 +83,13 @@ final class ClientDeclarationValuesTest extends TestCase
                     ActionRoute::patch('rename', AddBook::class, 'rename'),
                     ActionRoute::delete('drop', AddBook::class, 'drop'),
                 ],
-                [Loader::make('rows', RecentNotesSection::class)],
+                [Loader::make('rows', ShelfRowsLoader::class)],
             ],
             [$page->slots, $page->actions, $page->loaders],
         );
     }
 
-    public function test_a_parameterised_page_records_its_reader_data_class_slots_and_actions(): void
+    public function test_a_parameterised_page_records_its_surface_types_slots_and_actions(): void
     {
         $page = Page::build()
             ->key('plan')
@@ -95,7 +97,7 @@ final class ClientDeclarationValuesTest extends TestCase
             ->icon(Icon::Plan)
             ->pageType(RecentNotesData::class)
             ->pageBuilder(RecentNotesPageBuilder::class)
-            ->component('PlanResolver.vue')
+            ->component('Plan.vue')
             ->withWindow(BooksPaneData::class, BooksWindowBuilder::class, 'BooksPane.vue')
             ->finish()
             ->at('{plan}')

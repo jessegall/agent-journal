@@ -324,7 +324,7 @@ final readonly class PageProps
             fn () => $this->readers->sectionReader(
                 $section->key,
                 $section->resolver,
-                $request,
+                $request->visit($request->plainQuery(), $route),
             )->read($this->contexts->contextFor($section->slot, $argument->get())),
         );
     }

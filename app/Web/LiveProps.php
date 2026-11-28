@@ -9,9 +9,7 @@ use App\Actors\CurrentUser;
 use App\Web\Attributes\Live;
 use App\Web\Values\LiveListeners;
 use Closure;
-use Inertia\DeferProp;
 use Inertia\LiveProp;
-use Inertia\OptionalProp;
 use Inertia\ResponseFactory;
 use Inertia\SupportsLiveUpdates;
 use PhpOption\Option;
@@ -23,22 +21,6 @@ use PhpOption\Option;
 final readonly class LiveProps
 {
     public function __construct(private CurrentUserResolver $users, private ResponseFactory $inertia) {}
-
-    /**
-     * A prop read only when a partial reload names it.
-     */
-    public function optional(callable $read): OptionalProp
-    {
-        return $this->mark($this->inertia->optional($read));
-    }
-
-    /**
-     * A prop read after the first paint, together with the other props of its group.
-     */
-    public function deferred(callable $read, string $group): DeferProp
-    {
-        return $this->mark($this->inertia->defer($read, $group));
-    }
 
     /**
      * A prop read on every visit that does not leave it out.

@@ -231,7 +231,7 @@ final readonly class DomainClient
     }
 
     /**
-     * Refuses a class named by a declaration that does not implement the interface its role needs.
+     * Checks the contract of a section resolver or another declared role.
      *
      * @param  class-string  $interface
      */

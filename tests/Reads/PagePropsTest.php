@@ -15,10 +15,15 @@ use App\Web\LiveProps;
 use App\Web\PageProps;
 use App\Web\UserChannel;
 use Closure;
+use Domain\Chat\ChatDomain;
+use Domain\Chat\Http\Windows\ConversationWindowBuilder;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
+use LogicException;
+use Spatie\LaravelData\Lazy;
 use Tests\Fixtures\ClientDeclarations\Library\BooksPaneData;
 use Tests\Fixtures\ClientDeclarations\Library\Http\Windows\BooksWindowBuilder;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRead;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -33,6 +38,30 @@ final class PagePropsTest extends TestCase
     use RefreshHookDatabase;
 
     private const array EVENTS = [PageChanged::NAME, InboxAccessEnded::NAME, ProtectedViewInvalidated::NAME];
+
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
+
+    public function test_the_agent_section_reads_the_plain_form_request_only_when_its_group_is_loaded(): void
+    {
+        $journal = $this->journal->owner()->idleAgent('Second agent');
+        $agent = $journal->agentCalled('Second agent');
+        $section = 'section_web_bar_chat_agent';
+        $this->app->bind(
+            ConversationWindowBuilder::class,
+            static fn () => throw new LogicException('The unselected chat pane was resolved.'),
+        );
+
+        $this->actingAs($journal->ownerUser())->get(route('home', ['agent' => $agent->id]))->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->missing($section)
+                ->loadDeferredProps($section, fn (AssertableInertia $group) => $group
+                    ->where("{$section}.data.selectedAgentId", $agent->id)
+                    ->missing('window_chat_conversation')),
+        );
+    }
 
     public function test_every_on_screen_prop_listens_on_the_viewers_channel_for_the_page_events(): void
     {
@@ -58,8 +87,8 @@ final class PagePropsTest extends TestCase
         $this->journal->asGuest();
         $live = $this->app->make(LiveProps::class);
 
-        $this->assertFalse($live->optional(fn () => 'read')->isLive());
-        $this->assertFalse($live->deferred(fn () => 'read', 'sections')->isLive());
+        $this->assertFalse($live->mark(Lazy::inertia(fn () => 'read')->resolve())->isLive());
+        $this->assertFalse($live->mark(Lazy::inertiaDeferred(fn () => 'read', 'sections')->resolve())->isLive());
         $this->assertInstanceOf(Closure::class, $live->value(fn () => 'read'));
     }
 

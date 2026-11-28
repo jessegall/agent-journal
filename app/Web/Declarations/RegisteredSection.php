@@ -7,7 +7,6 @@ namespace App\Web\Declarations;
 use App\Access\Contracts\VisibilityCheck;
 use App\Declarations\ActionRoute;
 use App\Declarations\ResolverDefinition;
-use App\Navigation\Contracts\SectionResolver;
 use App\Navigation\Declarations\DomainClient;
 use App\Text\Declarations\Section;
 use App\Web\Exceptions\ClientSlotMismatch;
@@ -52,7 +51,6 @@ final readonly class RegisteredSection
                 $owner,
                 $key,
                 $section->resolver,
-                SectionResolver::class,
                 $section->dataClass,
             ),
             componentFile: $owner->presentationFile($key, $section->component, $section->isDeclared),
