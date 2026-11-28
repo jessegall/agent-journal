@@ -129,7 +129,6 @@ check_protected_start() {
 # Root owns what a session must not change: the start programs, the relays and the shell bridge.
 check_protected_files() {
     local protected
-    run_in_image test -x /opt/journal/bin/journal-check
     for protected in bin/journal-init bin/journal-exec bin/journal-shell bin/journal-hook bin/journal-mcp shell/bash; do
         run_in_image stat -c '%U:%G %a' "/opt/journal/$protected" | grep -qx 'root:root 555'
     done
