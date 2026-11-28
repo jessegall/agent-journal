@@ -9,47 +9,42 @@ const posts: Array<{ url: string; body: Record<string, unknown>; outcome: Outcom
 // Each driver family's signed-in accounts, as the accounts loader answers them.
 let signedIn: Record<string, Array<{ id: string; label: string; isDefault: boolean }>> = {};
 
+const loads: string[] = [];
+
 vi.mock("@inertiajs/vue3", () => ({
   Link: { props: ["href"], template: '<a :href="href"><slot /></a>' },
   usePage: () => ({
     url: "/",
-    props: {
-      viewer: { id: "user-picker" },
-      drivers: [
-        { family: "claude-code", label: "Claude Code", models: ["haiku", "sonnet", "opus"], efforts: ["low", "medium", "high"], defaultEffort: "medium" },
-        { family: "codex", label: "Codex", models: ["gpt-6-luna"], efforts: ["low", "medium"], defaultEffort: "medium" },
-      ],
+    get props() {
+      return {
+        viewer: { id: "user-picker" },
+        drivers: [
+          { family: "claude-code", label: "Claude Code", models: ["haiku", "sonnet", "opus"], efforts: ["low", "medium", "high"], defaultEffort: "medium" },
+          { family: "codex", label: "Codex", models: ["gpt-6-luna"], efforts: ["low", "medium"], defaultEffort: "medium" },
+        ],
+        // The app context names each family's accounts and default model, so the picker reads no loader.
+        startAccounts: ["claude-code", "codex"].map((family) => ({
+          driver: family,
+          defaultModel: family === "codex" ? "gpt-6-luna" : "sonnet",
+          preferredDriver: null,
+          accounts: (signedIn[family] ?? []).map((account) => ({
+            ...account,
+            unavailableReason: null,
+            unavailableSentence: null,
+            expiresAt: null,
+            signInRevision: 3,
+          })),
+        })),
+      };
     },
   }),
 }));
 vi.mock("@kit/loaders", () => ({
-  chatStartDrivers: { key: "start-drivers" },
-  accountsStartAccounts: { key: "start-accounts" },
-  load: (loader: { key: string }, input: { family?: string }) =>
-    Promise.resolve(
-      loader.key === "start-drivers"
-        ? {
-            status: "ok",
-            value: {
-              drivers: [
-                { key: "claude-code", family: "claude-code", label: "Claude Code", driverType: "terminal", isAvailable: true },
-                { key: "codex", family: "codex", label: "Codex", driverType: "terminal", isAvailable: true },
-              ],
-            },
-          }
-        : {
-            status: "ok",
-            value: {
-              driver: input.family,
-              defaultModel: input.family === "codex" ? "gpt-6-luna" : "sonnet",
-              accounts: (signedIn[input.family ?? ""] ?? []).map((account) => ({
-                ...account,
-                unavailableReason: null,
-                signInRevision: 3,
-              })),
-            },
-          },
-    ),
+  load: (loader: { key: string }) => {
+    loads.push(loader.key);
+
+    return Promise.resolve({ status: "failed" });
+  },
 }));
 vi.mock("@kit/keyedPost", () => ({
   keyedPost: (url: string, body: Record<string, unknown>, _key: string, outcome: Outcome, only: string[]) =>
@@ -84,6 +79,7 @@ async function pickerFor(agent: AgentOptionData, isNew = true) {
 describe("StartPicker", () => {
   beforeEach(() => {
     posts.length = 0;
+    loads.length = 0;
     localStorage.clear();
     signedIn = { "claude-code": [{ id: "acct-work", label: "Work (Max)", isDefault: true }] };
   });
@@ -162,5 +158,12 @@ describe("StartPicker", () => {
     expect(labels.length).toBeGreaterThan(3);
     labels.forEach((label) => expect(label.classes()).toContain("text-text"));
     expect(picker.get('[data-start-option="effort:low"]').classes()).toContain("text-text");
+  });
+
+  it("shows its choices on its first paint, read from the app context with no loader call", () => {
+    const picker = mount(StartPicker, { props: { agent: agentWith(), isNew: true } });
+
+    expect(picker.find('[data-start-option="driver:claude-code"]').exists()).toBe(true);
+    expect(loads).toEqual([]);
   });
 });

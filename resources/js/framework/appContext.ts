@@ -3,6 +3,7 @@ import type { ComputedRef } from 'vue';
 import { computed } from 'vue';
 import type {
     DriverLookData,
+    EligibleAccountsData,
     InstallationData,
     NavigationCountsData,
     NavigationData,
@@ -23,6 +24,8 @@ export type AppContext = {
     navigation: ComputedRef<NavigationData | undefined>;
     navigationCounts: ComputedRef<NavigationCountsData | undefined>;
     refusalCode: ComputedRef<string | undefined>;
+    /** The owner's accounts a new main agent may start on, by driver family, with each family's default model. */
+    startAccounts: ComputedRef<EligibleAccountsData[]>;
 };
 
 /**
@@ -43,6 +46,7 @@ export function useAppContext(): AppContext {
         navigation: computed(() => page.props.navigation),
         navigationCounts: computed(() => page.props.navigationCounts),
         refusalCode: computed(() => page.props.refusalCode),
+        startAccounts: computed(() => page.props.startAccounts ?? []),
     };
 }
 

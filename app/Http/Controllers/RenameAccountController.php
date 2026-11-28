@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Accounts\Commands\RenameAccount\RenameAccountCommand;
+use App\Attributes\Web\RefreshesAppContext;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\RenameAccountRequest;
@@ -14,6 +15,7 @@ use Illuminate\Routing\Redirector;
 /**
  * Renames the account through the bus and returns to the Accounts page.
  */
+#[RefreshesAppContext]
 final readonly class RenameAccountController
 {
     #[Dispatches(RenameAccountCommand::class)]

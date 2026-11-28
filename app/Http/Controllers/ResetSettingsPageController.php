@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Web\RefreshesAppContext;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Settings\SettingsGroupRequest;
@@ -19,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
  * Takes every changed setting of one group back to its default, one reset each against the revision the page read, the
  * next against the revision the last made; a group changed meanwhile is refused with its current revision.
  */
+#[RefreshesAppContext]
 final readonly class ResetSettingsPageController
 {
     #[Dispatches(ResetSettingCommand::class)]

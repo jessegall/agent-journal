@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Accounts\Commands\RecheckAccount\RecheckAccountCommand;
+use App\Attributes\Web\RefreshesAppContext;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +14,7 @@ use Illuminate\Routing\Redirector;
 /**
  * Asks the host to check a held account again, and returns to the accounts page.
  */
+#[RefreshesAppContext]
 final readonly class RecheckAccountController
 {
     #[Dispatches(RecheckAccountCommand::class)]
