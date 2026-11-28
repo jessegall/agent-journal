@@ -449,7 +449,7 @@ final class RetireAgentTest extends TestCase
             $host->hostId,
             self::FOLDER,
             'claude-code',
-            '2.1.323',
+            '2.1.332',
             'claude',
             DriverType::Terminal,
             'claude-opus-5-5',

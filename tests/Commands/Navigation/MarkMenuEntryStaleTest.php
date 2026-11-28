@@ -57,7 +57,7 @@ final class MarkMenuEntryStaleTest extends TestCase
         $this->stale($host, $entry->id, $stalled->agent_runtime_id, ['Model: GPT-5']);
         $this->stale($host, $entry->id, $stalled->agent_runtime_id, ['Something else']);
 
-        $build = $entry->refresh()->buildOn('2.1.323');
+        $build = $entry->refresh()->buildOn('2.1.332');
         $this->assertTrue($build?->isStale);
         $this->assertSame(['Model: GPT-5'], $build->staleScreen);
         $this->assertStringStartsWith(NavigationReason::LabelMissing->value, (string) $build->staleReason);
@@ -84,7 +84,7 @@ final class MarkMenuEntryStaleTest extends TestCase
             $runtimeId,
             NavigationReason::LabelMissing,
             2,
-            '2.1.323',
+            '2.1.332',
             $rows,
         ));
     }

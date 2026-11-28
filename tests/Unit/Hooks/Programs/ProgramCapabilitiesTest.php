@@ -29,9 +29,9 @@ final class ProgramCapabilitiesTest extends TestCase
 
     private const string CODEX_HEADING = '## Codex';
 
-    private const string CLAUDE_VERSION_ROW = '| Driver and pinned version | Claude Code 2.1.323,';
+    private const string CLAUDE_VERSION_ROW = '| Driver and pinned version | Claude Code 2.1.332,';
 
-    private const string CODEX_VERSION_ROW = '| Driver and pinned version | codex-cli 0.165.0,';
+    private const string CODEX_VERSION_ROW = '| Driver and pinned version | codex-cli 0.172.0,';
 
     private const string NO_PRODUCTION_RUN = 'No production driver runs under it yet:';
 

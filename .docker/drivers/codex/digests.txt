@@ -1,6 +1,6 @@
 # Codex's native release archives this image installs: program, version, architecture, sha256 of the archive
 # downloaded. install.sh refuses any other file.
-codex 0.165.0 arm64 6522e056d0be7f531da915c9a81ae05bc70811b782542499cc0a9776d3abf5d3
-codex 0.165.0 amd64 be635d3486a5bd060d0fff582ae6d30160280c31344dd85719707fa920e187f0
-codex-code-mode-host 0.165.0 arm64 400956c325a2118768029f235958b7d2fd2ea4e59c5466d336fb4fb7f0e94b61
-codex-code-mode-host 0.165.0 amd64 9577b09b2a546eeb3da8a09807de6d58fbaa207755256390113772ea4f05235e
+codex 0.172.0 arm64 0b99526c185a4425fe96a2214fb7b6a6a7f7c1471883b7afbebe97e15e83e79e
+codex 0.172.0 amd64 a2342a8f7f68f088be30620ccfe9cb84162c93a6b56177855961cda3ed6be392
+codex-code-mode-host 0.172.0 arm64 b6637ebaa353ea3a934d40e3751289a9a39ed81cf96fe3fa3afea11e3840dc68
+codex-code-mode-host 0.172.0 amd64 20b0a4bcf332415a5997914c943d04af6c3627af0c379fdbf65400550e352bb4

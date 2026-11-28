@@ -275,7 +275,7 @@ final class RaiseNavigationTest extends TestCase
         $this->app->bind(ActorAttention::class, fn () => $this->attention);
 
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
-        $entry = $this->libraryEntry('2.1.323');
+        $entry = $this->libraryEntry('2.1.332');
         [$host, $opened, $request] = $this->stalledScriptOnHost();
         $before = NavigationRequest::query()->acrossActors()->count();
         $wakes = count($this->attention->wakes);
@@ -320,7 +320,7 @@ final class RaiseNavigationTest extends TestCase
         $this->app->bind(ActorAttention::class, fn () => $this->attention);
 
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
-        $entry = $this->libraryEntry('2.1.323');
+        $entry = $this->libraryEntry('2.1.332');
         $this->travel(1)->seconds();
         $this->addPaths($this->librarySource('2.1.300'));
         [$host, $opened, $request] = $this->stalledScriptOnHost();
@@ -341,7 +341,7 @@ final class RaiseNavigationTest extends TestCase
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         $entry = $this->libraryEntry('2.1.300');
         $this->travel(1)->seconds();
-        $this->addPaths($this->librarySource('2.1.323'), ['2.1.323']);
+        $this->addPaths($this->librarySource('2.1.332'), ['2.1.332']);
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
         $answer = $this->raiseThroughHost($host, $opened, $request);
@@ -359,7 +359,7 @@ final class RaiseNavigationTest extends TestCase
 
         $entry = $this->libraryEntry('2.1.300');
         $this->travel(1)->seconds();
-        $navigation = $this->librarySource('2.1.323');
+        $navigation = $this->librarySource('2.1.332');
         $this->addPaths($navigation);
 
         $saved = $this->app->make(AssignmentTransaction::class)->run(
@@ -367,7 +367,7 @@ final class RaiseNavigationTest extends TestCase
         );
 
         $this->assertSame($entry->id, $saved->id);
-        $this->assertSame(false, $saved->buildOn('2.1.323')?->isStale);
+        $this->assertSame(false, $saved->buildOn('2.1.332')?->isStale);
         $this->assertSame(21, MenuEntry::query()->acrossActors()->count());
     }
 
@@ -379,7 +379,7 @@ final class RaiseNavigationTest extends TestCase
         $this->app->bind(ActorAttention::class, fn () => $this->attention);
 
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
-        $this->libraryEntry('2.1.323')->markStaleOn('2.1.323', 'label-missing', []);
+        $this->libraryEntry('2.1.332')->markStaleOn('2.1.332', 'label-missing', []);
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
         $this->assertSame('opened', $this->raiseThroughHost($host, $opened, $request)['answer']);
@@ -393,7 +393,7 @@ final class RaiseNavigationTest extends TestCase
         $this->app->bind(ActorAttention::class, fn () => $this->attention);
 
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
-        $entry = $this->libraryEntry('2.1.323');
+        $entry = $this->libraryEntry('2.1.332');
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
         $answer = $this->raiseThroughHost($host, $opened, $request, declined: [$entry->id]);
@@ -409,8 +409,8 @@ final class RaiseNavigationTest extends TestCase
         $this->app->bind(ActorAttention::class, fn () => $this->attention);
 
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
-        $stale = $this->libraryEntry('2.1.323');
-        $stale->markStaleOn('2.1.323', 'label-missing at step 1', []);
+        $stale = $this->libraryEntry('2.1.332');
+        $stale->markStaleOn('2.1.332', 'label-missing at step 1', []);
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
         $answer = $this->raiseThroughHost($host, $opened, $request, staleEntry: $stale->id, sentSteps: ['choose GPT-6']);
@@ -436,7 +436,7 @@ final class RaiseNavigationTest extends TestCase
             $navigation->driver_request_id,
             $navigation->agent_runtime_id,
         ]);
-        $this->assertSame(['claude-code', '2.1.323'], [$navigation->family, $navigation->build]);
+        $this->assertSame(['claude-code', '2.1.332'], [$navigation->family, $navigation->build]);
         $this->assertEquals($stalled->scriptGoal(), $navigation->goal);
         $this->assertSame(['Model: GPT-5', '❯ GPT-6'], $navigation->fresh()?->screen->rows);
         $this->assertSame(['Model: GPT-5', '❯ GPT-6'], $navigation->raise_rows);

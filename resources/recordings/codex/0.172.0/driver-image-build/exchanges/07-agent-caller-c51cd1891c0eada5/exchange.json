@@ -1,0 +1,63 @@
+{
+    "opening": {
+        "wire": "agent",
+        "exchange": "caller-c51cd1891c0eada5",
+        "mode": "calls",
+        "argv": [],
+        "environment": {},
+        "inherited": [],
+        "folder": null,
+        "columns": 0,
+        "rows": 0,
+        "image": null,
+        "openedAt": 1795846084275983
+    },
+    "events": [
+        {
+            "type": "asked",
+            "at": 1795846084275943,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/agent/mcp/v1",
+                "query": {},
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJtZXRob2QiOiJ0b29scy9jYWxsIiwicGFyYW1zIjp7Im5hbWUiOiJtZXNzYWdlc19zZW5kIiwiYXJndW1lbnRzIjp7ImluYm94X2lkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODUiLCJib2R5IjoiSGksIEknbSBoZXJlLiBJIGhhdmUgbm8gdGFza3MsIHBsYW5zLCByZXBvcnRzIG9yIHJ1bGVzIHdhaXRpbmcsIHNvIEknbSBmcmVlIHRvIHRha2Ugd29yay4gV2hhdCB3b3VsZCB5b3UgbGlrZSBtZSB0byBkbz8iLCJ0YXJnZXRfbWVzc2FnZV9udW1iZXIiOjIzLCJyZXF1ZXN0X2tleSI6InJlcGx5LW1zZy0yMyJ9LCJfbWV0YSI6eyJpby5tb2RlbGNvbnRleHRwcm90b2NvbC9wcm90b2NvbFZlcnNpb24iOiIyMDI2LTA3LTI4IiwiaW8ubW9kZWxjb250ZXh0cHJvdG9jb2wvY2xpZW50SW5mbyI6eyJuYW1lIjoiY2xhdWRlLWNvZGUiLCJ0aXRsZSI6IkNsYXVkZSBDb2RlIiwidmVyc2lvbiI6IjIuMS4zMzIiLCJkZXNjcmlwdGlvbiI6IkFudGhyb3BpYydzIGFnZW50aWMgY29kaW5nIHRvb2wiLCJ3ZWJzaXRlVXJsIjoiaHR0cHM6Ly9jbGF1ZGUuY29tL2NsYXVkZS1jb2RlIn0sImlvLm1vZGVsY29udGV4dHByb3RvY29sL2NsaWVudENhcGFiaWxpdGllcyI6eyJyb290cyI6eyJsaXN0Q2hhbmdlZCI6dHJ1ZX0sImVsaWNpdGF0aW9uIjp7ImZvcm0iOnt9LCJ1cmwiOnt9fX0sImNsYXVkZWNvZGUvdG9vbFVzZUlkIjoidG9vbHVfMDFOeFh0d3dWbVhaNDlQRjlQTm9VTEhuIiwicHJvZ3Jlc3NUb2tlbiI6OH19LCJqc29ucnBjIjoiMi4wIiwiaWQiOjh9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795846084438607,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/agent/mcp/v1",
+                "query": {},
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJqc29ucnBjIjoiMi4wIiwiaWQiOjgsInJlc3VsdCI6eyJyZXN1bHRUeXBlIjoiY29tcGxldGUiLCJjb250ZW50IjpbeyJ0eXBlIjoidGV4dCIsInRleHQiOiJ7XCJzdGF0dXNcIjpcIm9rXCIsXCJtZXNzYWdlX2lkXCI6XCIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA4NlwiLFwibmV4dF9hY3Rpb25zXCI6W119In1dLCJpc0Vycm9yIjpmYWxzZSwic3RydWN0dXJlZENvbnRlbnQiOnsic3RhdHVzIjoib2siLCJtZXNzYWdlX2lkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODYiLCJuZXh0X2FjdGlvbnMiOltdfSwiX21ldGEiOnsiaW8ubW9kZWxjb250ZXh0cHJvdG9jb2xcL3NlcnZlckluZm8iOnsibmFtZSI6ImpvdXJuYWwiLCJ2ZXJzaW9uIjoiMS4wLjAifX19fQ==",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        }
+    ],
+    "exit_code": null
+}

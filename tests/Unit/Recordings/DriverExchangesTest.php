@@ -46,7 +46,7 @@ final class DriverExchangesTest extends TestCase
             ]),
             $this->asked(4, '/host/processes/probe/output', [
                 'frames' => [],
-                'chunks' => [['stream' => 'stdout', 'offset' => 0, 'bytes' => base64_encode('2.1.323')]],
+                'chunks' => [['stream' => 'stdout', 'offset' => 0, 'bytes' => base64_encode('2.1.332')]],
             ]),
             $this->asked(5, '/host/processes/probe', $this->report('probe', 'exited', 0)),
             $this->asked(6, '/host/processes/terminal', $this->report('terminal', 'exited', 3)),
@@ -66,7 +66,7 @@ final class DriverExchangesTest extends TestCase
                     [RecordedEventType::Typed, '', true],
                     [RecordedEventType::Printed, 'README.md', false],
                 ], 3],
-                'probe' => [['claude', '--version'], [[RecordedEventType::Printed, '2.1.323', false]], 0],
+                'probe' => [['claude', '--version'], [[RecordedEventType::Printed, '2.1.332', false]], 0],
             ],
             $kept,
         );

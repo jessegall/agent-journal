@@ -1,0 +1,70 @@
+{
+    "driver": "driver",
+    "driver_version": "sha256:3410274eba844d7361f36bb3b4d36b12d5a1841df4afa369baacfc6c494e14e0",
+    "profile": "",
+    "mode": "process",
+    "geometry": {
+        "columns": 0,
+        "rows": 0
+    },
+    "recorded_at": "2026-11-28T06:08:23.356465+00:00",
+    "initial_state": {
+        "working_folder": "/workspace",
+        "arguments": [
+            "--",
+            "codex",
+            "exec",
+            "resume",
+            "00000000-0000-4000-8000-000000000001",
+            "--json",
+            "--skip-git-repo-check",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "gpt-6-luna",
+            "-c",
+            "model_reasoning_effort=low",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: ls."
+        ],
+        "environment_names": [
+            "CODEX_HOME",
+            "HOME",
+            "JOURNAL_ACCOUNTS_ROOT",
+            "JOURNAL_PROFILE",
+            "JOURNAL_PROFILE_REVISION",
+            "JOURNAL_START_REF",
+            "JOURNAL_START_TOKEN",
+            "JOURNAL_URL"
+        ]
+    },
+    "output": [
+        {
+            "offset": 770902000,
+            "stream": "stderr",
+            "bytes": "MjAyNi0xMS0yOFQwNjowODoyNC4xMTk3MjZaIEVSUk9SIGNvZGV4X2NvcmU6OnNoZWxsX3NuYXBzaG90OiBTaGVsbCBzbmFwc2hvdCB2YWxpZGF0aW9uIGZhaWxlZDogU25hcHNob3QgY29tbWFuZCBleGl0ZWQgd2l0aCBzdGF0dXMgZXhpdCBzdGF0dXM6IDE6IC9iaW4vYmFzaDogbGluZSAxOiAvaG9tZS91c2VyLy5hY2NvdW50L3NoZWxsX3NuYXBzaG90cy8wMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEudG1wLTE3OTU4NDYxMDQwOTE5NjAwNzc6IFBlcm1pc3Npb24gZGVuaWVkCgo="
+        },
+        {
+            "offset": 797883000,
+            "stream": "stdout",
+            "bytes": "eyJ0eXBlIjoidGhyZWFkLnN0YXJ0ZWQiLCJ0aHJlYWRfaWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEifQp7InR5cGUiOiJpdGVtLmNvbXBsZXRlZCIsIml0ZW0iOnsiaWQiOiJpdGVtXzAiLCJ0eXBlIjoiZXJyb3IiLCJtZXNzYWdlIjoic2tpcHBpbmcgTUNQIHRvb2wgaG9vayBpbiAvZXRjL2NvZGV4L2hvb2tzLmpzb246IFNlc3Npb25FbmQgTUNQIGhvb2tzIGFyZSBub3Qgc3VwcG9ydGVkIn19CnsidHlwZSI6InR1cm4uc3RhcnRlZCJ9CnsidHlwZSI6Iml0ZW0uY29tcGxldGVkIiwiaXRlbSI6eyJpZCI6Iml0ZW1fMSIsInR5cGUiOiJhZ2VudF9tZXNzYWdlIiwidGV4dCI6IknigJlsbCBydW4gYGxzYCBpbiB0aGUgd29ya3NwYWNlLiJ9fQp7InR5cGUiOiJpdGVtLnN0YXJ0ZWQiLCJpdGVtIjp7ImlkIjoiaXRlbV8yIiwidHlwZSI6ImNvbW1hbmRfZXhlY3V0aW9uIiwiY29tbWFuZCI6Ii9vcHQvam91cm5hbC9zaGVsbC9iYXNoIC1sYyBscyIsImFnZ3JlZ2F0ZWRfb3V0cHV0IjoiIiwiZXhpdF9jb2RlIjpudWxsLCJzdGF0dXMiOiJpbl9wcm9ncmVzcyJ9fQp7InR5cGUiOiJpdGVtLmNvbXBsZXRlZCIsIml0ZW0iOnsiaWQiOiJpdGVtXzIiLCJ0eXBlIjoiY29tbWFuZF9leGVjdXRpb24iLCJjb21tYW5kIjoiL29wdC9qb3VybmFsL3NoZWxsL2Jhc2ggLWxjIGxzIiwiYWdncmVnYXRlZF9vdXRwdXQiOiIiLCJleGl0X2NvZGUiOjAsInN0YXR1cyI6ImNvbXBsZXRlZCJ9fQp7InR5cGUiOiJpdGVtLmNvbXBsZXRlZCIsIml0ZW0iOnsiaWQiOiJpdGVtXzMiLCJ0eXBlIjoiYWdlbnRfbWVzc2FnZSIsInRleHQiOiJgbHNgIHJldHVybmVkIG5vIG91dHB1dDsgYC93b3Jrc3BhY2VgIGFwcGVhcnMgdG8gYmUgZW1wdHkuIn19CnsidHlwZSI6InR1cm4uY29tcGxldGVkIiwidXNhZ2UiOnsiaW5wdXRfdG9rZW5zIjoxNTU4MDAsImNhY2hlZF9pbnB1dF90b2tlbnMiOjEzNzA4OCwiY2FjaGVfd3JpdGVfaW5wdXRfdG9rZW5zIjowLCJvdXRwdXRfdG9rZW5zIjo1MjIsInJlYXNvbmluZ19vdXRwdXRfdG9rZW5zIjowfX0K"
+        }
+    ],
+    "inputs": [],
+    "resizes": [],
+    "exit_code": 0,
+    "checkpoints": [],
+    "script_parameters": [],
+    "expected_keys": [],
+    "expected_transitions": []
+}

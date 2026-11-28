@@ -15,7 +15,6 @@ use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Protocol\HostProcessReportType;
-use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
@@ -26,7 +25,6 @@ use Carbon\CarbonImmutable;
 use Closure;
 use PHPUnit\Framework\Assert as PHPUnit;
 use Tests\Support\Assertions\Assert;
-use Tests\Support\Hosts\AccountOwners;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\TestJournal;
@@ -49,7 +47,7 @@ final class TestAgent
         string $host,
         string $folder,
         string $driver = 'claude-code',
-        string $build = '2.1.323',
+        string $build = '2.1.332',
         string $profile = 'claude',
         DriverType $driverType = DriverType::Headless,
         string|null $model = 'claude-opus-5-5',
@@ -92,28 +90,20 @@ final class TestAgent
     /**
      * The journal proves the runtime's start on the running test host: its build probe, then its sign-in probe, run
      * there and are driven until the process the proven start opens is ordered, which the test then calls by the
-     * name. An account's owner belongs to the account rather than the runtime, so it is found by the account.
+     * name.
      */
     public function proveStart(HostProcessPurpose $opens, string $name): self
     {
         $runtime = "agents.{$this->name}.runtime";
         $ordered = fn (HostProcessPurpose $purpose) => fn (Assert $journal) => $journal
             ->has("{$runtime}.processes.{$purpose->value}");
-        $ownerOrdered = fn (Assert $journal) => $journal
-            ->where("{$runtime}.startProven", true)
-            ->has("{$runtime}.accountOwner");
-        $isOwner = $opens === HostProcessPurpose::AccountOwner;
         $this->awaitProcess(HostProcessPurpose::BuildProbe);
         $this->nameProcess("{$this->name} probe", HostProcessPurpose::BuildProbe)
             ->process("{$this->name} probe", fn (TestHostProcess $probe) => $probe
                 ->driveUntil($ordered(HostProcessPurpose::SignInProbe)))
             ->nameProcess("{$this->name} sign-in", HostProcessPurpose::SignInProbe)
             ->process("{$this->name} sign-in", fn (TestHostProcess $signIn) => $signIn
-                ->driveUntil($isOwner ? $ownerOrdered : $ordered($opens)));
-
-        if ($isOwner) {
-            return $this->callAccountOwner($name);
-        }
+                ->driveUntil($ordered($opens)));
 
         return $this->nameProcess($name, $opens);
     }
@@ -203,19 +193,6 @@ final class TestAgent
         $files->makeFolder($folder, Permissions::OwnerOnly);
         $files->write($folder->child('auth.json'), '{}', Permissions::OwnerOnly);
         $this->journal->asSystem(new CheckSignInCommand($signIn->id, "Logged in using ChatGPT\n"));
-
-        return $this;
-    }
-
-    /**
-     * Names the live owner that runs the headless turns of the runtime's account.
-     */
-    public function callAccountOwner(string $name): self
-    {
-        $runtime = AgentRuntime::query()->whereKey($this->runtime()->runtimeId)->sole();
-        $owner = AccountOwners::liveOwnerOf($runtime)
-            ?? throw FixtureRefused::missingAlias('account owner', $this->name, 'The journal');
-        $this->journal->nameHostProcess($name, $owner->id);
 
         return $this;
     }

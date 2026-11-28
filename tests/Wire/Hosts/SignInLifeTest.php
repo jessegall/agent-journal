@@ -63,7 +63,7 @@ final class SignInLifeTest extends TestCase
 
     public function test_a_claude_code_account_is_signed_in_with_the_code_the_owner_types(): void
     {
-        $claude = ClaudeMock::from('claude-code/2.1.323')
+        $claude = ClaudeMock::from('claude-code/2.1.332')
             ->expectsCode(fn (Answer $answer) => $answer->replies('login-with-code'));
 
         $this->journal->owner()
@@ -88,7 +88,7 @@ final class SignInLifeTest extends TestCase
 
     public function test_a_codex_account_is_signed_in_by_its_device_code_login(): void
     {
-        $codex = CodexMock::from('codex/0.165.0')
+        $codex = CodexMock::from('codex/0.172.0')
             ->expects('initialize', fn (Answer $answer) => $answer->replies('device-login'))
             ->expects('initialized', fn (Answer $answer) => $answer)
             ->expects('account/login/start', fn (Answer $answer) => $answer
@@ -120,7 +120,7 @@ final class SignInLifeTest extends TestCase
 
     public function test_a_sign_in_again_of_an_account_whose_terminal_runs_stops_it_before_the_host_signs_in(): void
     {
-        $claude = ClaudeMock::from('claude-code/2.1.323')
+        $claude = ClaudeMock::from('claude-code/2.1.332')
             ->expectsCode(fn (Answer $answer) => $answer->replies('login-with-code'))
             ->expectsCode(fn (Answer $answer) => $answer->replies('login-with-code'));
 

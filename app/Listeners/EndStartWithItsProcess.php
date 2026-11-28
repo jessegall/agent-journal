@@ -28,7 +28,8 @@ final readonly class EndStartWithItsProcess implements Listener
     {
         $process = HostProcess::query()->whereKey($fact->processId)->sole();
 
-        if ($process->session_process_id === null) {
+        // A headless turn ends alone: the start it ran for goes on, and its next turn opens for the work that waits.
+        if ($process->session_process_id === null || $process->purpose === HostProcessPurpose::AgentTurn) {
             return;
         }
 

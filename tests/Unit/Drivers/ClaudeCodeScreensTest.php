@@ -79,7 +79,7 @@ final class ClaudeCodeScreensTest extends TestCase
         $profile = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE);
         $runner = $this->journal->service(KeyScriptRunner::class);
         $script = new KeyScriptCatalogue($profile->keyScripts())
-            ->scriptFor(DefaultDrivers::CLAUDE_CODE, '2.1.323', 'ChangeModel');
+            ->scriptFor(DefaultDrivers::CLAUDE_CODE, '2.1.332', 'ChangeModel');
         $atTheQuestion = new KeyScriptRun($script, ['model' => 'claude-sonnet-5-5'], step: 2);
 
         $asked = $runner->moveOn($profile->layout(), $atTheQuestion, $this->lastFrameOf('model-switch'));

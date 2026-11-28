@@ -25,12 +25,12 @@ final class MockAnswersTest extends TestCase
 
     public function test_the_claude_code_stand_in_prints_its_recorded_build_and_sign_in(): void
     {
-        $installation = $this->installation('claude-code', '2.1.323', 'claude');
+        $installation = $this->installation('claude-code', '2.1.332', 'claude');
 
         $this->journal->assertResult(
             [
-                $this->recorded('claude-code', '2.1.323', 'version', $installation),
-                $this->recorded('claude-code', '2.1.323', 'auth-status', $installation),
+                $this->recorded('claude-code', '2.1.332', 'version', $installation),
+                $this->recorded('claude-code', '2.1.332', 'auth-status', $installation),
             ],
             [
                 $this->printed($installation, 'claude', ['--version']),
@@ -41,12 +41,12 @@ final class MockAnswersTest extends TestCase
 
     public function test_the_codex_stand_in_prints_its_recorded_build_and_sign_in(): void
     {
-        $installation = $this->installation('codex', '0.165.0', 'codex');
+        $installation = $this->installation('codex', '0.172.0', 'codex');
 
         $this->journal->assertResult(
             [
-                $this->recorded('codex', '0.165.0', 'version', $installation),
-                $this->recorded('codex', '0.165.0', 'login-status', $installation),
+                $this->recorded('codex', '0.172.0', 'version', $installation),
+                $this->recorded('codex', '0.172.0', 'login-status', $installation),
             ],
             [
                 $this->printed($installation, 'codex', ['--version']),
@@ -57,8 +57,8 @@ final class MockAnswersTest extends TestCase
 
     public function test_the_codex_app_server_stand_in_answers_each_request_under_its_own_id(): void
     {
-        $installation = $this->installation('codex', '0.165.0', 'codex');
-        $mock = CodexMock::from('codex/0.165.0')
+        $installation = $this->installation('codex', '0.172.0', 'codex');
+        $mock = CodexMock::from('codex/0.172.0')
             ->expects('initialize', fn (Answer $answer) => $answer->replies('device-login'))
             ->expects('initialized', fn (Answer $answer) => $answer)
             ->expects('account/read', fn (Answer $answer) => $answer->replies('device-login'))

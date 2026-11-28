@@ -7,6 +7,7 @@ namespace App\Agents\Drivers\Processes;
 use App\Accounts\Commands\AddUsageCost\AddUsageCostCommand;
 use App\Accounts\Commands\RecordThreadTokens\RecordThreadTokensCommand;
 use App\Accounts\Commands\RecordUsageWindow\RecordUsageWindowCommand;
+use App\Agents\Commands\ChooseRuntimeConversation\ChooseRuntimeConversationCommand;
 use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Agents\Drivers\Contracts\ProcessDriver;
@@ -126,6 +127,7 @@ final class HeadlessDriver implements ProcessDriver
     {
         $process = $this->process->refresh();
         $end = $this->result->end($process->exit_code, $process->exit_evidence);
+        $end = $this->interrupts === [] ? $end : $end->interrupted();
         $reports = [];
         $turn = $this->turnRequest();
 
@@ -137,7 +139,11 @@ final class HeadlessDriver implements ProcessDriver
             $reports[] = $this->endReport($requestId, $attempt, $end);
         }
 
-        return DriverActions::of(...[...$reports, new OpenHeadlessTurnCommand((string) $process->agent_runtime_id)]);
+        return DriverActions::of(...[
+            ...$this->namedConversation(),
+            ...$reports,
+            new OpenHeadlessTurnCommand((string) $process->agent_runtime_id),
+        ]);
     }
 
     /**
@@ -225,6 +231,23 @@ final class HeadlessDriver implements ProcessDriver
      * The conversation every turn of the runtime continues, chosen when the journal opened it, which the turn's request
      * is applied to.
      */
+    /**
+     * The conversation the turn's driver started, such as a Codex thread, chosen for the runtime so its next turn
+     * resumes it; none when the turn started none or continued the runtime's own.
+     *
+     * @return list<ChooseRuntimeConversationCommand>
+     */
+    private function namedConversation(): array
+    {
+        $named = $this->result->conversation();
+
+        if ($named === null || $named === $this->conversation()) {
+            return [];
+        }
+
+        return [new ChooseRuntimeConversationCommand((string) $this->process->agent_runtime_id, $named)];
+    }
+
     private function conversation(): string|null
     {
         return $this->process->runtime?->conversation_id;

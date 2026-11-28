@@ -48,4 +48,11 @@ describe("ChosenAgent", () => {
 
     expect(bar.find("#agent-bar-members").exists()).toBe(true);
   });
+
+  it("stays one line: an old report adds no Last report line under it", () => {
+    const status = { sessionState: "unknown", observationAgeSeconds: 256, reason: null, remedy: null };
+    const bar = mount(ChosenAgent, { props: { data: chatWith({ status } as unknown as Partial<AgentOptionData>) } });
+
+    expect(bar.text()).not.toContain("Last report");
+  });
 });

@@ -27,7 +27,6 @@ use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Values\ProcessExit;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Support\Accessor;
@@ -511,23 +510,6 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
-     * Whether a live owner on the host runs the headless turns of the start's account and sign-in generation in the
-     * driver image the start's session froze: an owner serves one image only.
-     */
-    public static function hasLiveOwnerOf(string $hostId, SessionProcess $start): bool
-    {
-        $image = AgentSession::query()->whereKey($start->session_id)->value('driver_image');
-
-        return self::query()
-            ->onHostWithId($hostId)
-            ->ofPurposes([HostProcessPurpose::AccountOwner])
-            ->live()
-            ->openedForAccountGenerationOf($start)
-            ->ofStarts(SessionProcess::query()->supervised()->ofSessionsInImage($image)->ids())
-            ->exists();
-    }
-
-    /**
      * @param  Builder<self>  $query
      */
     #[Scope]
@@ -567,17 +549,6 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $query->where(fn (Builder $working) => $working
             ->whereHas('runtime', fn (Builder $runtime) => $runtime->ofSessions([$sessionId]))
             ->orWhereHas('sessionProcess', fn (Builder $start) => $start->ofSessions([$sessionId])));
-    }
-
-    /**
-     * The processes opened for a start on the account and sign-in generation of this start.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function openedForAccountGenerationOf(Builder $query, SessionProcess $start): void
-    {
-        $query->whereHas('sessionProcess', fn (Builder $owned) => $owned->onAccountGenerationOf($start));
     }
 
     /**

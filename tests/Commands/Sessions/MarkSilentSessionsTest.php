@@ -136,6 +136,19 @@ final class MarkSilentSessionsTest extends TestCase
         $this->assertFalse(AgentSession::query()->findOrFail($alone->sessionId)->isActive());
     }
 
+    public function test_a_headless_session_between_its_turns_is_never_marked_silent(): void
+    {
+        // The journal drives it one turn at a time; between turns nothing beats, and nothing is wrong.
+        [, $headless] = $this->openRuntime(driverType: DriverType::Headless);
+        AgentSession::query()->whereKey($headless->sessionId)->update([
+            'last_heartbeat_at' => CarbonImmutable::now()->subMinutes(5),
+        ]);
+
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+
+        $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($headless->sessionId)->status);
+    }
+
     private function start(): StartedAgent
     {
         $name = 'Test agent '.++$this->startCount;
@@ -150,7 +163,7 @@ final class MarkSilentSessionsTest extends TestCase
             $host->hostId,
             self::FOLDER,
             'claude-code',
-            '2.1.323',
+            '2.1.332',
             'claude',
             DriverType::Terminal,
             'claude-opus-5-5',

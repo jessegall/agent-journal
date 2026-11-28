@@ -24,6 +24,16 @@ final readonly class CutExchange
     }
 
     /**
+     * The exchange with these events in place of its own.
+     *
+     * @param  list<RecordedEvent>  $events
+     */
+    public function withEvents(array $events): self
+    {
+        return clone ($this, ['events' => $events]);
+    }
+
+    /**
      * The exchange with every real value of its opening and events faked.
      */
     public function fakedBy(RecordingFakes $fakes): self

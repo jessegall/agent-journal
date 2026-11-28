@@ -43,7 +43,15 @@ final class RecordingValues
      */
     public function live(string $recorded): string
     {
-        return strtr($recorded, $this->bound);
+        $live = '';
+        $from = 0;
+
+        foreach ($this->spansOf($recorded) as [$offset, $fake]) {
+            $live .= substr($recorded, $from, $offset - $from).($this->bound[$fake] ?? $fake);
+            $from = $offset + strlen($fake);
+        }
+
+        return $live.substr($recorded, $from);
     }
 
     /**
@@ -75,6 +83,12 @@ final class RecordingValues
                 throw LiveValueRefused::bound($place, $live[$index + 1], $fake, $earlier);
             }
 
+            $other = array_search($live[$index + 1], $this->bound, true);
+
+            if ($other !== false && $other !== $fake) {
+                throw LiveValueRefused::standsFor($place, $live[$index + 1], (string) $other);
+            }
+
             $this->bound[$fake] = $live[$index + 1];
         }
     }
@@ -87,28 +101,49 @@ final class RecordingValues
      */
     private function fakesOf(string $recorded): array
     {
+        $pattern = '';
+        $from = 0;
+
+        foreach ($this->spansOf($recorded) as [$offset, $fake, $shape]) {
+            $pattern .= preg_quote(substr($recorded, $from, $offset - $from), '#')."({$shape})";
+            $from = $offset + strlen($fake);
+        }
+
+        $fakes = array_map(fn (array $span) => $span[1], $this->spansOf($recorded));
+
+        return [$fakes, '#^'.$pattern.preg_quote(substr($recorded, $from), '#').'$#'];
+    }
+
+    /**
+     * Where each fake of a recorded string stands, with the shape a live value in its place has: the earliest fake
+     * wins, the longest of those starting together, and a fake inside one already taken is part of it.
+     *
+     * @return list<array{int, string, string}>
+     */
+    private function spansOf(string $recorded): array
+    {
         $found = [];
 
         foreach (RecordingFakes::fakeShapes() as $fake => $shape) {
             preg_match_all($fake, $recorded, $matches, PREG_OFFSET_CAPTURE);
 
             foreach ($matches[0] as [$text, $offset]) {
-                $found[$offset] = [$text, trim($shape, '/')];
+                $found[] = [$offset, $text, trim($shape, '/')];
             }
         }
 
-        ksort($found);
-        $pattern = '';
+        usort($found, fn (array $left, array $right) => [$left[0], -strlen($left[1])] <=> [$right[0], -strlen($right[1])]);
+        $spans = [];
         $from = 0;
 
-        foreach ($found as $offset => [$text, $shape]) {
-            $pattern .= preg_quote(substr($recorded, $from, $offset - $from), '#')."({$shape})";
-            $from = $offset + strlen($text);
+        foreach ($found as $span) {
+            if ($span[0] >= $from) {
+                $spans[] = $span;
+                $from = $span[0] + strlen($span[1]);
+            }
         }
 
-        $fakes = array_values(array_map(fn (array $fake) => $fake[0], $found));
-
-        return [$fakes, '#^'.$pattern.preg_quote(substr($recorded, $from), '#').'$#'];
+        return $spans;
     }
 
     private function isAddress(string $text): bool

@@ -641,17 +641,6 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     // ----------[ Scopes ]----------
 
     /**
-     * The sessions that froze the driver image; with none, the sessions that froze none.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function inDriverImage(Builder $query, string|null $image): void
-    {
-        $query->where('driver_image', $image);
-    }
-
-    /**
      * Only the id of each session, as a subquery.
      *
      * @param  Builder<self>  $query
@@ -809,6 +798,19 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     protected function withLiveRuntime(Builder $query): void
     {
         $query->whereIn('id', AgentRuntime::query()->notStopped()->sessionIds());
+    }
+
+    /**
+     * The sessions no live runtime of these drivers runs: a runtime the journal drives itself shows its life through
+     * its turns, not through beats between them.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $driverKeys
+     */
+    #[Scope]
+    protected function withoutLiveRuntimeOf(Builder $query, array $driverKeys): void
+    {
+        $query->whereNotIn('id', AgentRuntime::query()->notStopped()->ofDrivers($driverKeys)->sessionIds());
     }
 
     /**

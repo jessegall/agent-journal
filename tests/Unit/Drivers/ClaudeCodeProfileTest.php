@@ -287,7 +287,7 @@ final class ClaudeCodeProfileTest extends TestCase
             removedVariables: ['ANTHROPIC_API_KEY'],
             startFlags: [],
             accountSettings: [],
-            driverVersion: '2.1.323',
+            driverVersion: '2.1.332',
             binaryDigest: '',
             arrangement: 'local',
             protectionSettings: $protection ?? ClaudeAccountProtection::settingsFor('/accounts/a', '/accounts'),

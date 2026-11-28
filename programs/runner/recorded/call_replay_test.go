@@ -42,7 +42,7 @@ func ask(t *testing.T, server *httptest.Server, call Call) int {
 
 func TestTheRecordedCallsPlayInOrderAndWhole(t *testing.T) {
 	scenario := MustLoad(t, "host", "folders")
-	replay := NewCallReplay(t, scenario, recording.WireHost)
+	replay := MustCallReplay(t, scenario, recording.WireHost)
 	server := httptest.NewServer(replay)
 	defer server.Close()
 
@@ -57,7 +57,7 @@ func TestTheRecordedCallsPlayInOrderAndWhole(t *testing.T) {
 
 func TestACallOutOfTheRecordedOrderFailsNamingTheNextOne(t *testing.T) {
 	failed := &failures{TB: t}
-	replay := NewCallReplay(failed, MustLoad(t, "host", "folders"), recording.WireHost)
+	replay := MustCallReplay(failed, MustLoad(t, "host", "folders"), recording.WireHost)
 	server := httptest.NewServer(replay)
 	defer server.Close()
 	first := replay.calls[0]
@@ -72,7 +72,7 @@ func TestACallOutOfTheRecordedOrderFailsNamingTheNextOne(t *testing.T) {
 
 func TestACallNeverAskedFailsThePlay(t *testing.T) {
 	failed := &failures{TB: t}
-	replay := NewCallReplay(t, MustLoad(t, "host", "folders"), recording.WireHost)
+	replay := MustCallReplay(t, MustLoad(t, "host", "folders"), recording.WireHost)
 
 	replay.AssertPlayedWhole(failed)
 

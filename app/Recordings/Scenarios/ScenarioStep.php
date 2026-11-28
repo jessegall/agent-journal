@@ -242,7 +242,7 @@ final class ScenarioStep extends Data
      */
     public function machineChange(ScenarioRun $run): array
     {
-        $image = $run->imageNamed((string) $this->image);
+        $images = $run->imagesNamed((string) $this->image);
 
         $compose = [
             'docker',
@@ -258,7 +258,7 @@ final class ScenarioStep extends Data
                 'docker',
                 'rmi',
                 '--force',
-                $image,
+                ...$images,
             ],
             ScenarioStepType::KillAgents => [
                 ...$compose,

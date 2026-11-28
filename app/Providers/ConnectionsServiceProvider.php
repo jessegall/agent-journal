@@ -7,7 +7,6 @@ namespace App\Providers;
 use App\Access\Contracts\PolicyCatalogue;
 use App\Access\Values\PolicyDefinition;
 use App\Accounts\Enums\CommandEntry;
-use App\Agents\Drivers\Codex\CodexAppDriver;
 use App\Agents\Drivers\Processes\HeadlessDriver;
 use App\Agents\Drivers\Processes\ProbeDriver;
 use App\Agents\Drivers\Processes\ProcessDrivers;
@@ -76,7 +75,6 @@ final class ConnectionsServiceProvider extends ServiceProvider
         $this->app->singleton(ProcessDrivers::class, fn ($app) => new ProcessDrivers($app)
             ->with(HostProcessPurpose::AgentTurn, HeadlessDriver::class)
             ->with(HostProcessPurpose::AgentTerminal, TerminalDriver::class)
-            ->with(HostProcessPurpose::AccountOwner, CodexAppDriver::class)
             ->with(HostProcessPurpose::BuildProbe, ProbeDriver::class)
             ->with(HostProcessPurpose::SignInProbe, ProbeDriver::class));
 

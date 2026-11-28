@@ -158,7 +158,7 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_terminal_driven_by_the_journal_answers_its_message_and_stops(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5', 'done')
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', 'done')
             ->asSystem($this->stopOf('terminal'));
 
         $this->journal
@@ -169,7 +169,7 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_terminal_lost_with_its_hosts_restart_is_opened_again_resuming_its_conversation(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5', 'done')
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', 'done')
             ->testHost(fn (TestHost $mac) => $mac->restartHost())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Lost))
             ->withAgent('Terminal', fn (TestAgent $terminal) => $terminal
@@ -186,7 +186,7 @@ final class SessionLifeTest extends TestCase
     public function test_a_codex_terminal_driven_by_the_journal_answers_its_message_and_stops(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5', self::CODEX_ANSWER)
+            ->answerTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5', self::CODEX_ANSWER)
             ->asSystem($this->stopOf('codex'));
 
         $this->journal
@@ -202,9 +202,9 @@ final class SessionLifeTest extends TestCase
         // presses Escape.
         $this->arrangeTerminalHost()->journal->testHost(fn (TestHost $mac) => $mac
             ->playClaudeTerminal('terminal-interrupt'));
-        $this->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5')
+        $this->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5')
             ->interruptRunningTurn('Terminal', 'terminal')
-            ->openTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5')
+            ->openTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5')
             ->interruptRunningTurn('Codex', 'codex');
 
         $this->journal->assertJournal(fn (Assert $journal) => $journal
@@ -215,8 +215,8 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_and_a_codex_terminal_lost_with_their_hosts_restart_are_both_opened_again(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5', 'done');
-        $this->answerTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5', self::CODEX_ANSWER)
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', 'done');
+        $this->answerTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5', self::CODEX_ANSWER)
             ->testHost(fn (TestHost $mac) => $mac->restartHost())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Lost))
             ->hostProcess('codex', fn (TestHostProcess $codex) => $codex->waitFor(HostProcessStatus::Lost))

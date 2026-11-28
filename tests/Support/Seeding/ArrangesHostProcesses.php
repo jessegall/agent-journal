@@ -60,6 +60,7 @@ use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
+use Tests\Support\Recordings\PlayedScenario;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
@@ -169,6 +170,24 @@ trait ArrangesHostProcesses
      */
     public function runTestHost(string $host, Closure $scope): self
     {
+        return $this->startTestHost($host, null, $scope);
+    }
+
+    /**
+     * The named host runs for real as runTestHost runs it, its Docker daemon played from the recorded scenario.
+     *
+     * @param  Closure(TestHost): mixed  $scope
+     */
+    public function runPlayingTestHost(string $host, PlayedScenario $playing, Closure $scope): self
+    {
+        return $this->startTestHost($host, $playing, $scope);
+    }
+
+    /**
+     * @param  Closure(TestHost): mixed  $scope
+     */
+    private function startTestHost(string $host, PlayedScenario|null $playing, Closure $scope): self
+    {
         if ($this->testHost !== null) {
             throw FixtureRefused::testHostRuns($this->testHost->name);
         }
@@ -183,6 +202,7 @@ trait ArrangesHostProcesses
             ($this->owner ?? $this->owner()->ownerUser())->email,
             Host::query()->findOrFail($this->hostCalled($host)->hostId)->arrangement,
             $this->app->make(DriverCompatibilities::class) instanceof ShownDriverArrangements,
+            $playing,
         );
         $scope($this->testHost);
 

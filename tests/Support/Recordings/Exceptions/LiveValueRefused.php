@@ -26,4 +26,9 @@ final class LiveValueRefused extends RuntimeException
     {
         return new self("{$place} is {$heard} where {$fake} is already {$earlier}.");
     }
+
+    public static function standsFor(string $place, string $heard, string $fake): self
+    {
+        return new self("{$place} is {$heard}, which {$fake} already stands for.");
+    }
 }

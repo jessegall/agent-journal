@@ -1,0 +1,1079 @@
+{
+    "opening": {
+        "wire": "driver",
+        "exchange": "01m8gdehcszfvtkwdey6pb7fjj",
+        "mode": "terminal",
+        "argv": [
+            "--",
+            "/bin/sh",
+            "-c",
+            "if find \"$1\" -name \"$2\" -print -quit 2>/dev/null | grep -q .; then exec 'claude' '--settings' '/tmp/journal-session/settings.json' '--setting-sources' '' '--strict-mcp-config' '--agents' '{}' '--tools' 'Bash,Read,Edit,Write,NotebookEdit,WebFetch,WebSearch,ToolSearch' '--disallowedTools' 'Agent' 'Task' 'Workflow' 'SendMessage' 'ListAgents' 'RemoteTrigger' 'Skill' '--mcp-config' '/tmp/journal-session/mcp.json' '--model' 'claude-haiku-5-5' '--resume' '00000000-0000-4000-8000-000000000036'; fi; exec 'claude' '--settings' '/tmp/journal-session/settings.json' '--setting-sources' '' '--strict-mcp-config' '--agents' '{}' '--tools' 'Bash,Read,Edit,Write,NotebookEdit,WebFetch,WebSearch,ToolSearch' '--disallowedTools' 'Agent' 'Task' 'Workflow' 'SendMessage' 'ListAgents' 'RemoteTrigger' 'Skill' '--mcp-config' '/tmp/journal-session/mcp.json' '--model' 'claude-haiku-5-5' '--session-id' '00000000-0000-4000-8000-000000000036'",
+            "journal-session",
+            "/home/user/.account/projects",
+            "*00000000-0000-4000-8000-000000000036.jsonl"
+        ],
+        "environment": {
+            "HOME": "{env:HOME}",
+            "ANTHROPIC_CONFIG_DIR": "{env:ANTHROPIC_CONFIG_DIR}",
+            "CLAUDE_CONFIG_DIR": "{env:CLAUDE_CONFIG_DIR}",
+            "JOURNAL_ACCOUNTS_ROOT": "{env:JOURNAL_ACCOUNTS_ROOT}",
+            "JOURNAL_START_REF": "{env:JOURNAL_START_REF}",
+            "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN": "{env:CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN}",
+            "MCP_TIMEOUT": "{env:MCP_TIMEOUT}",
+            "MCP_TOOL_TIMEOUT": "{env:MCP_TOOL_TIMEOUT}",
+            "JOURNAL_URL": "{env:JOURNAL_URL}",
+            "JOURNAL_START_TOKEN": "{env:JOURNAL_START_TOKEN}",
+            "JOURNAL_PROFILE": "{env:JOURNAL_PROFILE}",
+            "JOURNAL_PROFILE_REVISION": "{env:JOURNAL_PROFILE_REVISION}"
+        },
+        "inherited": [],
+        "folder": "/workspace",
+        "columns": 120,
+        "rows": 40,
+        "image": "sha256:b49ca185d967c29dd7e772647cf7c9777ee6e723c79a4a0274b296cff7bb4a45",
+        "openedAt": 1795847308748538
+    },
+    "events": [
+        {
+            "type": "printed",
+            "at": 1795847309705841,
+            "bytes": "GzcbW3IbOBtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847309795516,
+            "bytes": "G1s/MjVsG1s/MjAwNGgbWz8yMDMxaBtbPzEwMDRo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847309810806,
+            "bytes": "G10wO+KcsyBDbGF1ZGUgQ29kZQc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847309846881,
+            "bytes": "G1szMW0g4paQG1s0MG3ilpvilojilojilojilpvilogbWzEyRxtbMzltG1s0OW0bWzFtQ2xhdWRlG1sxOUdDb2RlG1syNEcbWzIybRtbMzdtG1sybXYyLjEuMzMyG1syMm0bWzM5bQ0NChtbMzFt4pad4pacG1s0MG3ilojilojilojilojilogbWzQ5beKWiOKWgBtbMTJHG1szN20bWzJtSGFpa3UbWzE4RzUuNRtbMjJHd2l0aBtbMjdHbG93G1szMUdlZmZvcnQbWzM4R8K3G1s0MEdDbGF1ZGUbWzQ3R1VsdHJhG1syMm0bWzM5bQ0NChtbMzFtIOKWneKWnRtbN0filp3ilp0bWzEyRxtbMzdtG1sybS93b3Jrc3BhY2UbWzIybRtbMzltDQ0KDQ0KG1szRxtbMW1VcGRhdGVkOhtbMTJHNjAbWzE1R2ZlYXR1cmVzLBtbMjVHNDc2G1syOUdmaXhlcywbWzM2RzE4NxtbNDBHb3RoZXIbWzQ2R2NoYW5nZXMbWzIybQ0NChtbM0cbXTg7aWQ9MXJtd2cwbTtodHRwczovL2NvZGUuY2xhdWRlLmNvbS9kb2NzL2VuL2NoYW5nZWxvZwcbWzM3bRtbMm1jb2RlLmNsYXVkZS5jb20vZG9jcy9lbi9jaGFuZ2Vsb2cbWzM3RxtdODs7B2ZvchtbNDFHZGV0YWlscxtbMjJtG1szOW0NDQoNDQoNDQobWzM3beKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgBtbMzltDQ0K4p2vwqAbWzJtVHJ5G1s3RyJ3cml0ZRtbMTRHYRtbMTZHdGVzdBtbMjFHZm9yG1syNUc8ZmlsZXBhdGg+IhtbMjJtDQ0KG1szN23ilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAbWzM5bQ0NChtbM0cbWzk1beKPteKPtRtbNkdieXBhc3MbWzEzR3Blcm1pc3Npb25zG1syNUdvbhtbMzdtG1sybSAoc2hpZnQrdGFiG1szOUd0bxtbNDJHY3ljbGUpG1s0OUfCtxtbNTFH4oaQG1s1M0dmb3IbWzU3R2FnZW50cxtbMTA0R+KXixtbMTA2R2xvdxtbMTEwR8K3G1sxMTJHL2VmZm9ydBtbMjJtG1szOW0NDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847310044942,
+            "bytes": "G1s+MHEbWz91G103NTAxOz8HG1tj",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "typed",
+            "at": 1795847310406686,
+            "bytes": "G1syMDB+Q2hlY2sgeW91ciBwZW5kaW5nIGpvdXJuYWwgd29yay4bWzIwMX4=",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847310449849,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbM0FDaGVjayB5b3VyIHBlbmRpbmcgam91cm5hbCB3b3JrLhtbSw0bWzQ3QxtbMkIgICAgICAgICAgICAgICANDQobWzM0QxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "typed",
+            "at": 1795847310805448,
+            "bytes": "DQ==",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847310872293,
+            "bytes": "G10wO+KXkCBDbGF1ZGUgQ29kZQc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847310891464,
+            "bytes": "G1s/MjVsG1szNEQbWzNCDRtbNEEbWzQwbRtbMzdt4p2vIBtbOTdtQ2hlY2sgeW91ciBwZW5kaW5nIGpvdXJuYWwgd29yay4bWzM5bSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDRtbMUIbWzQ5bRtbSw0bWzFCG1szMW3inL0bWzM5bSAbWzMxbU1hbmlmZXN0aW5n4oCmIBtbMzdtG1sybShydW5uaW5nIFVzZXJQcm9tcHRTdWJtaXQgaG9vayDCtyAwcykbWzIybRtbMzltG1tLDRtbMkMbWzFCG1tLDQ0KG1szN23ilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAbWzM5bQ0NChtbMzdtG1sybeKdr8KgG1syMm0bWzM5bQ0NChtbMzdt4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSAG1szOW0NDQobWzNHG1s5NW3ij7Xij7UbWzZHYnlwYXNzG1sxM0dwZXJtaXNzaW9ucxtbMjVHb24bWzM3bRtbMm0gKHNoaWZ0K3RhYhtbMzlHdG8bWzQyR2N5Y2xlKRtbNDlHwrcbWzUxR2VzYxtbNTVHdG8bWzU4R2ludGVycnVwdBtbNjhHwrcbWzcwR+KGkBtbNzJHZm9yG1s3NkdhZ2VudHMbWzEwNEfil4sbWzEwNkdsb3cbWzExMEfCtxtbMTEyRy9lZmZvcnQbWzIybRtbMzltDQ0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847310978236,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNUMbWzZBG1tLDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847311008175,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py7G1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847311220612,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py2G1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847311344920,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFtKhtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847311447479,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4pyiG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847311679706,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFtwrcbWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847311783262,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxM0MbWzZBG1s5M23igKYbWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847311829343,
+            "bytes": "G10wO+KXkSBDbGF1ZGUgQ29kZQc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847311899834,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzdtG1sybSAbWzNHG1syMm0bWzM5bUNhbGxpbmcgam91cm5hbOKAphtbMjBHG1szN20bWzJtKGN0cmwrbyB0byBleHBhbmQpDRtbMkIbWzIybRtbMzFtwrcbWzM5bSAbWzMxbU1hbmlmZXN0aW5nG1s5M23igKYbWzMxbSAbWzM5bRtbSw0bWzFCG1tLDRtbMkIbWzM3bRtbMm3ina/CoBtbMjJtG1szOW0bW0sNDQobWzM3beKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgBtbMzltDQ0KG1szRxtbOTVt4o+14o+1G1s2R2J5cGFzcxtbMTNHcGVybWlzc2lvbnMbWzI1R29uG1szN20bWzJtIChzaGlmdCt0YWIbWzM5R3RvG1s0MkdjeWNsZSkbWzQ5R8K3G1s1MUdlc2MbWzU1R3RvG1s1OEdpbnRlcnJ1cHQbWzY4R8K3G1s3MEfihpAbWzcyR2ZvchtbNzZHYWdlbnRzG1sxMDRH4peLG1sxMDZHbG93G1sxMTBHwrcbWzExMkcvZWZmb3J0G1syMm0bWzM5bQ0NChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312000744,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4pyiG1sxM0cbWzkzbWcbWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312034200,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNUMbWzZBG1szN20bWzJtKHJ1bm5pbmcgUHJlVG9vbFVzZSBob29rIMK3IDFzKRtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312045489,
+            "bytes": "G10wO+KXkSBQZW5kaW5nIGpvdXJuYWwgd29yawc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312054482,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbNkEbWzkzbU1hbmlmZXN0aW4bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312097686,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNUMbWzZBG1tLDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312114015,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNUMbWzZBG1szN20bWzJtKDFzIMK3IOKGkxtbMjRHMTAgdG9rZW5zKRtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312136317,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtcnVubmluZyBQb3N0VG9vbFVzZSBob29rIMK3IDFzIMK3IOKGkxtbNTFHMTAgdG9rZW5zKRtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312181016,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtMXMgwrcg4oaTG1syMm0bWzM5bSAbWzM3bRtbMm0xMCB0b2tlbnMpG1syMm0bWzM5bRtbSw0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312200721,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s4QRtbMzdtG1sybeKXjxtbMjJtG1szOW0NDQoNCg0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312237987,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFtKhtbMjVHG1szN20bWzJtOBtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312359930,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py2G1syNUcbWzM3bRtbMm05G1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312448281,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py7G1syNEcbWzM3bRtbMm0yMRtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312579015,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py9G1syNUcbWzM3bRtbMm0yG1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312683428,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbNkEbWzMzbU1hbmlmZXN0aW5n4oCmG1syNUcbWzM3bRtbMm00G1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312792171,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syNEMbWzZBG1szN20bWzJtNhtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312814856,
+            "bytes": "G10wO+KXkCBQZW5kaW5nIGpvdXJuYWwgd29yawcbWz8yNWwbWzJEG1szQg0bWzhBG1szN20bWzJtIBtbMjJtG1szOW0NDQoNCg0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847312906582,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtMhtbMjVHNxtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313022725,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py7G1szR01hbmlmZXN0aW5n4oCmG1syNUcbWzM3bRtbMm05G1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313033985,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s3QxtbNkEbWzkzbWVzdBtbMzNHG1szN20bWzJtIMK3IBtbMjJtdGhpbmtpbmcgd2l0aCBsb3cgZWZmb3J0G1sybSkbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313130054,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syM0MbWzZBG1szN20bWzJtMzEbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313241297,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py2G1s3RxtbOTNtZhtbMTBHG1szMW10G1syNUcbWzM3bRtbMm0zG1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313358660,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFtKhtbMjRHG1szN20bWzJtNTEbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313430829,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s4QRtbMzdtG1sybeKXjxtbMjJtG1szOW0NDQoNCg0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313454692,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4pyiG1s2RxtbOTNtaRtbOUcbWzMxbXMbWzI0RxtbMzdtG1sybTYwG1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313574841,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFtwrcbWzVHG1s5M21uG1s4RxtbMzFtZRtbMjVHG1szN20bWzJtOBtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313694388,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syNEMbWzZBG1szN20bWzJtORtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313752017,
+            "bytes": "G10wO+KXkSBQZW5kaW5nIGpvdXJuYWwgd29yawc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313798067,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1szQxtbNkEbWzkzbWEbWzdHG1szMW1mG1syNEcbWzM3bRtbMm03MRtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313828484,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtMxtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847313904384,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syM0MbWzZBG1szN20bWzJtOTYbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314026057,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtcnVubmluZyBQcmVUb29sVXNlG1szNkdob29rIMK3IDNzIMK3IOKGkxtbMjJtG1szOW0gG1szN20bWzJtOTYgdG9rZW5zIMK3IBtbMjJtdGhpbmtpbmcgd2l0aCBsb3cgZWZmb3J0G1sybSkbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314041005,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s4QSAbWzNHG1szN20bWzJtQ2FsbGVkIGpvdXJuYWwgKGN0cmwrbyB0byBleHBhbmQpG1syMm0bWzM5bRtbSw0bWzJCG1szMW3inKIbWzNHG1s5M21NG1s3R2Zlc3RpbmfigKYbWzUwRxtbMzdtG1sybTEyMSB0b2tlbnMgwrcgG1syMm10aGlua2luZyB3aXRoIGxvdyBlG1s4M0dmb3J0G1sybSkbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314138994,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syNUMbWzZBG1szN20bWzJtb3N0VBtbMzFHb2xVc2UgaBtbMzlHb2sgwrcgM3Mgwrcg4oaTG1syMm0bWzM5bSAbWzM3bRtbMm0xNTggdG9rZW5zKRtbMjJtG1szOW0bW0sNDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314189859,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtM3Mgwrcg4oaTG1syMm0bWzM5bSAbWzM3bRtbMm0xNTggG1syOUdva2VucyDCtxtbMzdHG1syMm10aGlua2luZyB3aXRoIGxvdyBlZmZvcnQbWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314240113,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFtKhtbMjVHG1szN20bWzJtODMbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314350961,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py2G1syNEcbWzM3bRtbMm0yMDgbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314477967,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py7G1syNUcbWzM3bRtbMm0yMhtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314587132,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py9G1syNUcbWzM3bRtbMm0zNhtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314695826,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbNkEbWzMzbU1hbmlmZXN0aW5n4oCmG1syNUcbWzM3bRtbMm00MhtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314715700,
+            "bytes": "G10wO+KXkCBQZW5kaW5nIGpvdXJuYWwgd29yawc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314811542,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syNUMbWzZBG1szN20bWzJtMxtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847314918275,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtNBtbMjZHNRtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315004307,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbNkEbWzMxbU1hbmlmZXN0aW5n4oCmG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315039123,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py7G1syNkcbWzM3bRtbMm03G1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315142084,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py2G1syNkcbWzM3bRtbMm05G1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315248759,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syNEMbWzZBG1szN20bWzJtNTAbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315381354,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFtKhtbMjVHG1szN20bWzJtNjkbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315473797,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4pyiG1syNUcbWzM3bRtbMm04NBtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315575951,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzdtG1sybSAbWzNHG1syMm0bWzM5bUNhbGxpbmcgam91cm5hbOKApiAbWzM3bRtbMm0oY3RybCtvG1szMEcgG1szMkd4cGFuZCkbWzIybRtbMzltG1tLDRtbMkIbWzMxbeKcohtbMzltIBtbMzFtTWFuaWZlc3RpbmfigKYgG1szN20bWzJtKDRzIMK3IOKGkxtbMjJtG1szOW0gG1szN20bWzJtMjg0IHRva2VucyDCtyAbWzIybXRoaW5raW5nIHdpdGggbG93IGVmZm9ydBtbMm0pG1syMm0bWzM5bRtbSw0bWzFCG1tLDRtbMkIbWzM3bRtbMm3ina/CoBtbMjJtG1szOW0bW0sNDQobWzM3beKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgBtbMzltDQ0KG1szRxtbOTVt4o+14o+1G1s2R2J5cGFzcxtbMTNHcGVybWlzc2lvbnMbWzI1R29uG1szN20bWzJtIChzaGlmdCt0YWIbWzM5R3RvG1s0MkdjeWNsZSkbWzQ5R8K3G1s1MUdlc2MbWzU1R3RvG1s1OEdpbnRlcnJ1cHQbWzY4R8K3G1s3MEfihpAbWzcyR2ZvchtbNzZHYWdlbnRzG1sxMDRH4peLG1sxMDZHbG93G1sxMTBHwrcbWzExMkcvZWZmb3J0G1syMm0bWzM5bQ0NChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315592044,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFtwrcbWzI0RxtbMzdtG1sybTMwORtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315674490,
+            "bytes": "G10wO+KXkSBQZW5kaW5nIGpvdXJuYWwgd29yawc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315696481,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syNEMbWzZBG1szN20bWzJtMzQbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315750167,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtcnVubmluZyBQcmVUG1szMEdvbFUbWzM0R2UgaG9vayDCtyA0cyDCtyDihpMbWzIybRtbMzltIBtbMzdtG1sybTMzNCB0b2tlbnMgwrcgG1syMm10aGlua2luZyB3aXRoIGxvdyBlZmZvcnQbWzJtKRtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315765521,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbNkEbWzMzbU1hbmlmZXN0aW5n4oCmG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315807496,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtNHMgwrcg4oaTG1syMm0bWzM5bSAbWzM3bRtbMm0zMzQgdBtbMzBHa2VuG1szNEcpG1syMm0bWzM5bRtbSw0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315824382,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syNEMbWzZBG1szN20bWzJtNTkbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315841847,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtcnVubmluZyBQb3MbWzI5R1Rvb2xVc2UgaG9vayDCtyA1cyDCtyDihpMbWzUxRzM1OSB0b2tlbnMpG1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315856862,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s4QRtbMzdtG1sybeKXjxtbMjJtG1szOW0NDQoNCg0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315890353,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxNkMbWzZBG1szN20bWzJtNXMgwrcg4oaTG1syMm0bWzM5bSAbWzM3bRtbMm0zNTkgG1syOUdva2VucyDCtxtbMzdHG1syMm10aGlua2luZyB3aXRoIGxvdyBlZmZvcnQbWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847315924234,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbNkEbWzkzbU1hbmlmZXN0aW5n4oCmG1syNUcbWzM3bRtbMm04NRtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316032805,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4pyiG1syNUcbWzM3bRtbMm05G1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316152086,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFtKhtbMjRHG1szN20bWzJtNDAyG1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316265189,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syNUMbWzZBG1szN20bWzJtNhtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316390788,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py2G1syNkcbWzM3bRtbMm04G1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316461286,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s4QRtbMzdtG1sybSAbWzIybRtbMzltDQ0KDQoNCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316491270,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py7G1syNkcbWzM3bRtbMm05G1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316600277,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzFt4py9G1syNUcbWzM3bRtbMm0xMRtbMjJtG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316638472,
+            "bytes": "G10wO+KXkCBQZW5kaW5nIGpvdXJuYWwgd29yawc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316712288,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbNkEbWzMzbU1hbmlmZXN0aW5n4oCmG1syNkcbWzM3bRtbMm0yG1syMm0bWzM5bQ0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316727555,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbNkEbWzMxbU1hbmlmZXN0aW5n4oCmG1szOW0NDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316836195,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s4QSAbWzNHG1szN20bWzJtQ2FsbGVkIGpvdXJuYWwgKGN0cmwrbyB0byBleHBhbmQpG1syMm0bWzM5bRtbSw0bWzJCG1s5N23il48bWzNHG1szOW0bW0sNG1syQhtbMzFt4py9G1szOW0gG1szMW1NYW5pZmVzdGluZ+KApiAbWzM3bRtbMm0oNnMgwrcg4oaTG1syMm0bWzM5bSAbWzM3bRtbMm00MTQgdG9rZW5zIMK3IBtbMjJtdGhpbmtpbmcgd2l0aCBsb3cgZWZmb3J0G1sybSkbWzIybRtbMzltG1tLDRtbMUIbW0sNG1syQhtbMzdtG1sybeKdr8KgG1syMm0bWzM5bRtbSw0NChtbMzdt4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSAG1szOW0NDQobWzNHG1s5NW3ij7Xij7UbWzZHYnlwYXNzG1sxM0dwZXJtaXNzaW9ucxtbMjVHb24bWzM3bRtbMm0gKHNoaWZ0K3RhYhtbMzlHdG8bWzQyR2N5Y2xlKRtbNDlHwrcbWzUxR2VzYxtbNTVHdG8bWzU4R2ludGVycnVwdBtbNjhHwrcbWzcwR+KGkBtbNzJHZm9yG1s3NkdhZ2VudHMbWzEwNEfil4sbWzEwNkdsb3cbWzExMEfCtxtbMTEyRy9lZmZvcnQbWzIybRtbMzltDQ0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316940600,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbOEFOb3RoaW5nG1sxMUdpcxtbMTRHcGVuZGluZy4bWzIzR1RoZRtbMjdHam91cm5hbBtbMzVHb3ZlcnZpZXcbWzQ0R3Nob3dzG1s1MEdubxtbNTNHdGFza3MsG1s2MEdwbGFucywbWzY3R29wZW4bWzcyR3JlcG9ydHMsG1s4MUdvchtbODRHYWN0aXZlG1s5MUdydWxlcxtbOTdHaGVsZBtbMTAyR2J5G1sxMDVHdGhpcxtbMTEwR2FnZW50LBtbMTE3R2FuZA0bWzJDG1sxQnRoZXJlG1s5R2FyZRtbMTNHbm8bWzE2R3VucmVhZBtbMjNHbWVzc2FnZXMbWzMyR2luG1szNUd0aGUbWzM5R2luYm94Lg0bWzFCG1tLDRtbMUIbWzMxbeKcvRtbM0dNYW5pZmVzdGluZ+KApiAbWzM3bRtbMm0oNnMgwrcg4oaTG1syNEc0MzIgdG9rZW5zIMK3IBtbMjJtdGhpbmtpbmcgd2l0aCBsb3cgZWZmb3J0G1sybSkNG1sxQhtbMjJtG1szOW0bW0sNG1sxQhtbMzdt4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSADRtbMUIbWzJt4p2vwqAbWzIybRtbMzltG1tLDRtbMUIbWzM3beKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgBtbMzltDQ0KG1szRxtbOTVt4o+14o+1G1s2R2J5cGFzcxtbMTNHcGVybWlzc2lvbnMbWzI1R29uG1szN20bWzJtIChzaGlmdCt0YWIbWzM5R3RvG1s0MkdjeWNsZSkbWzQ5R8K3G1s1MUdlc2MbWzU1R3RvG1s1OEdpbnRlcnJ1cHQbWzY4R8K3G1s3MEfihpAbWzcyR2ZvchtbNzZHYWdlbnRzG1sxMDRH4peLG1sxMDZHbG93G1sxMTBHwrcbWzExMkcvZWZmb3J0G1syMm0bWzM5bQ0NChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316957963,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbNkEbWzMzbU1hbmlmZXN0aW5n4oCmG1sxN0cbWzM3bRtbMm1ydW5uaW5nIFN0b3AgaG9vaxtbMzdHNnMgwrcg4oaTG1syMm0bWzM5bSAbWzM3bRtbMm00MzIgdG9rZW5zIMK3IBtbMjJtdGhpbmtpbmcgd2l0aCBsb3cgZWZmb3J0G1sybSkbWzIybRtbMzltDQ0KDQoNCg0KDQoNChtbMkMbWzNBG1s/MjVo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847316996878,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s1NkMbWzZBG1szN20bWzJtdGhvdWdodCBmb3IgMXMpG1syMm0bWzM5bRtbSw0NCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847317029751,
+            "bytes": "G10wO+KcsyBQZW5kaW5nIGpvdXJuYWwgd29yawc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847317038160,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s2QRtbMzdtG1sybeKcuxtbM0dCcmV3ZWQgZm9yIDZzIMK3IGRvbmUgNjoyOCBBTRtbMjJtG1szOW0bW0sNG1szQuKdr8KgDRtbNTBDG1syQhtbMzdtG1sybeKGkCBmb3IgYWdlbnRzG1syMm0bWzM5bSAgICAgICAgICAgICAgICAgICANDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "typed",
+            "at": 1795847318042449,
+            "bytes": "G1syMDB+Q291bnQgc2xvd2x5IGZyb20gMSB0byAxMDAsIG9uZSBudW1iZXIgcGVyIGxpbmUuG1syMDF+",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847318050400,
+            "bytes": "GyhCDxtbPzIwMDRo",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847318060819,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1syQxtbM0FDb3VudBtbOUdzbG93bHkbWzE2R2Zyb20bWzIxRzEbWzIzR3RvG1syNkcxMDAsG1szMUdvbmUbWzM1R251bWJlchtbNDJHcGVyG1s0NkdsaW5lLg0bWzQ3QxtbMkIgICAgICAgICAgICAgICANDQobWzUwQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "typed",
+            "at": 1795847318404051,
+            "bytes": "DQ==",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847318432024,
+            "bytes": "G10wO+KXkCBQZW5kaW5nIGpvdXJuYWwgd29yawc=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847318442457,
+            "bytes": "G1s/MjVsG1s1MEQbWzNCDRtbNEEbWzQwbRtbMzdt4p2vIBtbOTdtQ291bnQgc2xvd2x5IGZyb20gMSB0byAxMDAsIG9uZSBudW1iZXIgcGVyIGxpbmUuG1szOW0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDRtbMUIbWzQ5bRtbSw0bWzFCG1szMW3inLYbWzM5bSAbWzMxbUZvG1s5M21ybWkbWzMxbW5n4oCmIBtbMzdtG1sybShydW5uaW5nIFVzZXJQcm9tcHRTdWJtaXQgaG9vayDCtyAwcykbWzIybRtbMzltG1tLDRtbMUIbWzM3bRtbMm0gIOKOvyDCoFRpcDogVXNlIC9tZW1vcnkgdG8gdmlldyBhbmQgbRtbMzdHbmFnZRtbNDJHQ2xhdWRlIG1lbW9yeRtbMTA0RxtbMjJtG1szOW0bW0sNDQoNDQobWzM3beKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgBtbMzltDQ0KG1szN20bWzJt4p2vwqAbWzIybRtbMzltDQ0KG1szN23ilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAbWzM5bQ0NChtbM0cbWzk1beKPteKPtRtbNkdieXBhc3MbWzEzR3Blcm1pc3Npb25zG1syNUdvbhtbMzdtG1sybSAoc2hpZnQrdGFiG1szOUd0bxtbNDJHY3ljbGUpG1s0OUfCtxtbNTFHZXNjG1s1NUd0bxtbNThHaW50ZXJydXB0G1s2OEfCtxtbNzBH4oaQG1s3Mkdmb3IbWzc2R2FnZW50cxtbMTA0R+KXixtbMTA2R2xvdxtbMTEwR8K3G1sxMTJHL2VmZm9ydBtbMjJtG1szOW0NDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847318494235,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1sxMUMbWzdBG1tLDQ0KDQoNCg0KDQoNCg0KG1syQxtbM0EbWz8yNWg=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847318508792,
+            "bytes": "G1s/MjVsG1syRBtbM0ING1s3QRtbMzFt4py7G1szOW0NDQoNCg0KDQoNCg0KDQobWzJDG1szQRtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795847318989794,
+            "bytes": "GzcbW3IbOBtbPzI1aA==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        }
+    ],
+    "exit_code": 2
+}

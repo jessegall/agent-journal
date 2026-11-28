@@ -14,6 +14,7 @@ use App\Agents\Drivers\Codex\CodexModelAnswer;
 use App\Agents\Drivers\Codex\CodexSignInEnvironment;
 use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\Codex\CodexSkills;
+use App\Agents\Drivers\Codex\CodexTurnResults;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
@@ -58,10 +59,10 @@ final class DriverSetupTest extends TestCase
         $this->journal->assertResult(
             [true, false, true, false],
             [
-                $exact->accepts("codex-cli 0.165.0\n", '0.165.0'),
-                $exact->accepts('codex-cli 0.165.0 beta', '0.165.0'),
-                $prefix->accepts('2.1.323 (Claude Code)', '2.1.323'),
-                $prefix->accepts('2.1.3230 (Claude Code)', '2.1.323'),
+                $exact->accepts("codex-cli 0.172.0\n", '0.172.0'),
+                $exact->accepts('codex-cli 0.172.0 beta', '0.172.0'),
+                $prefix->accepts('2.1.332 (Claude Code)', '2.1.332'),
+                $prefix->accepts('2.1.3320 (Claude Code)', '2.1.332'),
             ],
         );
     }
@@ -108,7 +109,7 @@ final class DriverSetupTest extends TestCase
             ->signInProbe(['codex', 'login', 'status'], CodexSignInReader::class)
             ->layout(CodexLayout::class)
             ->keyScripts([CodexChangeModel::class, CodexChangeEffort::class])
-            ->headlessTurns(HeadlessTurns::onAccountOwner(['codex', 'app-server']))
+            ->headlessTurns(HeadlessTurns::eachInAProcess(CodexTurnResults::class))
             ->signIn(new SignInSetup(
                 executable: 'codex',
                 environment: CodexSignInEnvironment::class,

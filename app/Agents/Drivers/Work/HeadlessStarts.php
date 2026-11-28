@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Work;
 
 use App\Accounts\Enums\CommandEntry;
-use App\Agents\Commands\OpenAccountOwner\OpenAccountOwnerCommand;
 use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Agents\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
 use App\Agents\ContainerManifest;
@@ -66,7 +65,6 @@ final readonly class HeadlessStarts
         private DriverCatalogue $drivers,
         private JournalCommands $commands,
         private SessionTokens $tokens,
-        private AccountOwners $owners,
         private SessionOfflineReplies $offlineReplies,
         private StartSkillFiles $skills,
         private SessionContainers $containers,
@@ -75,14 +73,12 @@ final readonly class HeadlessStarts
     ) {}
 
     /**
-     * The journal opens what runs the headless runtime's next turn: its account's owner when its driver runs turns on
-     * one, else a turn of its own when its start is proven, no turn runs and work waits.
+     * The journal opens the headless runtime's next turn, a process of its own, when its start is proven, no turn runs
+     * and work waits.
      */
     public function openNextTurn(AgentRuntime $runtime): void
     {
-        $open = $this->owners->serves($runtime)
-            ? new OpenAccountOwnerCommand($runtime->id)
-            : new OpenHeadlessTurnCommand($runtime->id);
+        $open = new OpenHeadlessTurnCommand($runtime->id);
 
         $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $open);
     }
@@ -135,26 +131,11 @@ final readonly class HeadlessStarts
     }
 
     /**
-     * The keys of the drivers whose runtimes the journal drives itself, so no host claims their work.
-     *
-     * @return list<string>
-     */
-    public function drivenKeys(): array
-    {
-        $driven = array_filter(
-            $this->drivers->catalogue(),
-            fn (DriverRegistration $registration) => $registration->isDrivenByJournal,
-        );
-
-        return array_values(array_map(fn (DriverRegistration $registration) => $registration->key->key, $driven));
-    }
-
-    /**
      * Whether the journal drives this runtime itself, as its driver's registration says.
      */
     public function drives(AgentRuntime $runtime): bool
     {
-        return in_array($runtime->driver_key, $this->drivenKeys(), true);
+        return in_array($runtime->driver_key, $this->drivers->drivenKeys(), true);
     }
 
     /**

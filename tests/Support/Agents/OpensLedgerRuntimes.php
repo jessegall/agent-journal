@@ -46,7 +46,7 @@ trait OpensLedgerRuntimes
      */
     private function openRuntime(
         string|null $firstMessage = null,
-        string $build = '2.1.323',
+        string $build = '2.1.332',
         string $driver = 'claude-code',
         DriverType $driverType = DriverType::Terminal,
     ): array {

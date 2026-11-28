@@ -16,7 +16,7 @@ const recordedSecret = "recorded-instruction-secret"
 // in the order it handed them out, as the host claimed them.
 func recordedInstructions(t *testing.T, instructionType string) []Instruction {
 	t.Helper()
-	calls, err := recorded.MustLoad(t, "codex", "terminal-turn").Calls(recording.WireHost)
+	calls, err := recorded.MustLoad(t, "codex", "driver-image-build").Calls(recording.WireHost)
 	if err != nil {
 		t.Fatal(err)
 	}

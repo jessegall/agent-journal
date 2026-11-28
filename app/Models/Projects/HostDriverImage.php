@@ -335,6 +335,24 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
     }
 
     /**
+     * The images the host holds ready of the recipes built from the folder.
+     *
+     * @return list<string>
+     */
+    public static function resolveReadyImagesOf(string $hostId, string $folder): array
+    {
+        return array_values(array_map(
+            fn (self $image) => (string) $image->image,
+            self::query()
+                ->onHost($hostId)
+                ->inStatuses([DriverImageStatus::Ready])
+                ->whereIn('driver_image_recipe_id', DriverImageRecipeRecord::query()->where('folder', $folder)->select('id'))
+                ->get()
+                ->all(),
+        ));
+    }
+
+    /**
      * Whether an image of the host waits to be allowed with no allow set of its own yet, as after a rebuild.
      */
     public static function hasUnorderedOn(string $hostId): bool

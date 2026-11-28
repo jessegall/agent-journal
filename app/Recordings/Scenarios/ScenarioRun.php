@@ -11,6 +11,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\HookCall;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
+use App\Models\Projects\HostDriverImage;
 use App\Models\Projects\ProjectBinding;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use Carbon\CarbonImmutable;
@@ -25,6 +26,16 @@ final class ScenarioRun
      * The name a step gives the agent image, whichever build it is pinned to.
      */
     private const string AGENT_IMAGE = 'agent';
+
+    /**
+     * The name a step gives the ready images of the scenario's own driver.
+     */
+    private const string DRIVER_IMAGES = 'driver';
+
+    /**
+     * The folder each driver's image is built from, by the driver's name.
+     */
+    private const string DRIVER_FOLDERS = '.docker/drivers';
 
     private string|null $signInAttempt = null;
 
@@ -61,6 +72,21 @@ final class ScenarioRun
         }
 
         return $name;
+    }
+
+    /**
+     * The images a step's name stands for: driver is every ready image the host holds of the scenario's own driver,
+     * so a scenario that removes them makes the journal build its driver image again; any other name is one image.
+     *
+     * @return list<string>
+     */
+    public function imagesNamed(string $name): array
+    {
+        if ($name !== self::DRIVER_IMAGES) {
+            return [$this->imageNamed($name)];
+        }
+
+        return HostDriverImage::resolveReadyImagesOf($this->hostId(), self::DRIVER_FOLDERS.'/'.$this->scenario->driver());
     }
 
     /**

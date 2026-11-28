@@ -12,7 +12,6 @@ use App\Agents\Drivers\StartConditions\AccountWithoutFolder;
 use App\Agents\Drivers\StartConditions\CliTransportAccount;
 use App\Agents\Drivers\StartConditions\JournalServerAccount;
 use App\Agents\Drivers\StartConditions\ResumedStart;
-use App\Agents\Drivers\StartConditions\ResumedTerminal;
 use App\Agents\Drivers\StartConditions\ResumedTurn;
 use App\Agents\Drivers\StartConditions\TurnStart;
 use App\Hosts\Protocol\HostProcessType;
@@ -52,7 +51,6 @@ final class StartConditionsTest extends TestCase
         $conditions = [
             TurnStart::class => ['resumed turn', 'turn on an account with a folder'],
             ResumedStart::class => ['resumed turn', 'resumed terminal on a CLI account'],
-            ResumedTerminal::class => ['resumed terminal on a CLI account'],
             ResumedTurn::class => ['resumed turn'],
             AccountStart::class => [
                 'resumed terminal on a CLI account',
@@ -102,7 +100,7 @@ final class StartConditionsTest extends TestCase
             removedVariables: [],
             startFlags: [],
             accountSettings: [],
-            driverVersion: '2.1.323',
+            driverVersion: '2.1.332',
             binaryDigest: '',
             arrangement: 'local',
             protectionSettings: '',

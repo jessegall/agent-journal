@@ -8,7 +8,7 @@ use Tests\Support\Mocks\Exceptions\MockRefused;
 
 /**
  * The script of Codex's app-server on the test host: the lines the journal writes to it, in order, each answered from
- * the recordings of the build, such as CodexMock::from('codex/0.165.0')->expects('initialize', ...).
+ * the recordings of the build, such as CodexMock::from('codex/0.172.0')->expects('initialize', ...).
  */
 final class CodexMock extends Mock
 {

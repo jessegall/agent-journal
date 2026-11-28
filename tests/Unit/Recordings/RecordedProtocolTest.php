@@ -86,7 +86,7 @@ final class RecordedProtocolTest extends TestCase
      */
     private function recordingOf(array $events): ScenarioRecording
     {
-        $manifest = RecordingManifest::of('scenario', 'claude-code', '2.1.323', 'programs', '2026-11-27', ['01-host']);
+        $manifest = RecordingManifest::of('scenario', 'claude-code', '2.1.332', 'programs', '2026-11-27', ['01-host']);
 
         return ScenarioRecording::of($manifest, ['01-host' => [
             'opening' => RecordingOpening::ofCalls(Wire::Host, '01-host')->jsonSerialize(),

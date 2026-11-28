@@ -1,5 +1,5 @@
 {
-    "description": "A Codex app-server turn started while its account is signed out fails, saying so (sign the account out first)",
+    "description": "A headless Codex turn started while its account is signed out fails, saying so (sign the account out first)",
     "steps": [
         {
             "do": "start-session",

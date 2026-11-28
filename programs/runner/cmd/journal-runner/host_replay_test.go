@@ -33,7 +33,7 @@ const replayDeadline = 30 * time.Second
 // journal holds a long poll with nothing to give.
 func journalReplay(t *testing.T, scenario recorded.Scenario) (*recorded.CallReplay, string) {
 	t.Helper()
-	replay := recorded.NewCallReplay(t, scenario, recording.WireHost)
+	replay := recorded.MustCallReplay(t, scenario, recording.WireHost)
 	replay.IsLongPoll = func(call recorded.Call) bool { return call.Answered.Path == claimPath }
 	replay.OrderGroup = func(recorded.Call) string { return "the journal" }
 	replay.IsStreamed = func(call recorded.Call) bool {
@@ -87,16 +87,14 @@ func claimedOf(call recorded.Call, body []byte) ([]hostapi.Instruction, map[stri
 }
 
 // recordedRules are the container rules of the host the scenario was recorded on, as its recorded plans show them: the
-// images they run, which the journal had allowed before the scenario began, the data folder every daemon bind comes
-// from and the installation name every volume starts with.
+// data folder every daemon bind comes from and the installation name every volume starts with; the images it may run
+// come from the recorded allow order, as on a host that starts.
 func recordedRules(t *testing.T, scenario recorded.Scenario) host.ContainerRules {
 	t.Helper()
 	manifests := recordedManifests(t, scenario)
-	images := []string{}
 	sources := []string{}
 	installation := ""
 	for _, manifest := range manifests {
-		images = append(images, manifest.Image)
 		for _, mount := range manifest.Mounts {
 			switch mount.Type {
 			case host.MountDaemonBind:
@@ -106,10 +104,8 @@ func recordedRules(t *testing.T, scenario recorded.Scenario) host.ContainerRules
 			}
 		}
 	}
-	allowed := host.NewAllowedImages()
-	allowed.Replace(images)
-	return host.ContainerRules{Arrangement: host.Contained, Allowed: allowed, DataFolder: commonFolder(sources),
-		InstallationName: host.InstallationName(installation)}
+	return host.ContainerRules{Arrangement: host.Contained, Allowed: host.NewAllowedImages(),
+		DataFolder: commonFolder(sources), InstallationName: host.InstallationName(installation)}
 }
 
 // recordedManifests are the containers the scenario's recorded plans open, with the containers that prepare them.
@@ -155,8 +151,8 @@ func commonFolder(paths []string) string {
 }
 
 // TestARecordedTerminalTurnPlaysThroughTheHostWhole runs the host against the journal's side and the Docker daemon of
-// a recorded Claude Code terminal turn, and waits until the host asked every call the journal answered. The recording
-// starts on a host already running, so it holds no inventory and the host's loops start without one.
+// a recorded Claude Code terminal turn, from the host's start, and waits until the host asked every call the journal
+// answered.
 func TestARecordedTerminalTurnPlaysThroughTheHostWhole(t *testing.T) {
 	scenario := recorded.MustLoad(t, "claude-code", "terminal-turn")
 	replay, address := journalReplay(t, scenario)
@@ -170,12 +166,10 @@ func TestARecordedTerminalTurnPlaysThroughTheHostWhole(t *testing.T) {
 	ctx, stop := context.WithTimeout(t.Context(), replayDeadline)
 	defer stop()
 
-	protocol, err := openHostProtocol(ctx, journal, enrollment, t.TempDir(), map[string]string{}, containers,
-		"development", hostProtocolOptions{})
-	if err != nil {
+	if _, err := startHostProtocol(ctx, journal, enrollment, t.TempDir(), map[string]string{}, containers,
+		"development", hostProtocolOptions{}); err != nil {
 		t.Fatal(err)
 	}
-	protocol.serve(ctx)
 
 	for !replay.IsPlayedWhole() {
 		select {

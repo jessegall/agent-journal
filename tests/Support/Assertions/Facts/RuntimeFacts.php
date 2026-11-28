@@ -10,7 +10,6 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostProcess;
 use Tests\Support\Assertions\Contracts\Facts;
-use Tests\Support\Hosts\AccountOwners;
 
 /**
  * An agent's runtime as a test asserts it: its host, the conversation its driver named, its first request, whether
@@ -42,11 +41,6 @@ final readonly class RuntimeFacts implements Facts
             },
             'startProven' => fn () => $this->runtime->fresh()?->hasProvenStart() ?? false,
             'processes' => fn () => $this->processesByPurpose(),
-            'accountOwner' => function () {
-                $owner = AccountOwners::liveOwnerOf($this->runtime);
-
-                return $owner === null ? null : new HostProcessFacts($owner->id, $this->feed);
-            },
         ];
     }
 
