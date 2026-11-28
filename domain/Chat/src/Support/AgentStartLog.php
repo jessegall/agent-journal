@@ -15,8 +15,8 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\RetryAttempt;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
-use App\Values\ShownShellLine;
 use App\Values\RetrySchedule;
+use App\Values\ShownShellLine;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Data\AgentLogData;
 use Domain\Chat\Data\AgentLogLineData;
@@ -65,7 +65,8 @@ final readonly class AgentStartLog
     {
         $starts = SessionProcess::query()->supervised()->ofSessions([$session->id])->limit(self::LINE_LIMIT)->get();
         $attempts = RetryAttempt::query()->ofSession($session->id)->latest()->limit(self::LINE_LIMIT)->get();
-        $gaveUp = $attempts->where('outcome', RetryOutcome::GaveUp)->pluck('driver_request_id')->all();
+        $gaveUp = $attempts->filter(fn (RetryAttempt $attempt) => $attempt->outcome === RetryOutcome::GaveUp)
+            ->pluck('driver_request_id')->all();
         $lines = [
             ...$this->startLinesOf($starts->all(), $this->runsOn($session)),
             ...$this->processLinesOf($starts->pluck('id')->all()),

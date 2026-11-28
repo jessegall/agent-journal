@@ -15,9 +15,9 @@ use App\Models\Sessions\SessionRequest;
 use App\Processes\Enums\RuntimeActivity;
 use App\Stacks\PendingWorkSources;
 use App\Support\ActorReference;
+use App\Time\Contracts\ServerClock;
 use App\Values\AgentText;
 use App\Values\ClaimedRequest;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 /**
@@ -30,6 +30,7 @@ final readonly class DriverRequestClaims
     public function __construct(
         private PendingWorkSources $pendingWork,
         private AgentTexts $texts,
+        private ServerClock $clock,
     ) {}
 
     /**
@@ -79,7 +80,7 @@ final readonly class DriverRequestClaims
             ->lockForUpdate()
             ->get();
 
-        $now = CarbonImmutable::now();
+        $now = $this->clock->now();
         $sessions = $this->sessionsOf($runtimes);
         $starts = SessionProcess::resolveLatestIdsOfSessions($sessions);
         $waitingOnHelpers = AgentRuntime::resolveSessionsWaitingOnHelpers($sessions);
@@ -110,10 +111,11 @@ final readonly class DriverRequestClaims
             return [];
         }
 
+        $now = $this->clock->now();
         $pending = DriverRequest::query()
             ->ofAgentRuntimes($runtimes->keys()->all())
             ->withProgress(RequestProgress::Accepted)
-            ->offerable(CarbonImmutable::now())
+            ->offerable($now)
             ->excludingControl()
             ->bySequence()
             ->lockForUpdate()
@@ -121,7 +123,6 @@ final readonly class DriverRequestClaims
             ->get()
             ->groupBy('agent_runtime_id');
 
-        $now = CarbonImmutable::now();
         $sessions = $this->sessionsOf($runtimes);
         $held = SessionRequest::resolveSessionsHoldingDeliveries($sessions);
         $starts = SessionProcess::resolveLatestIdsOfSessions($sessions);

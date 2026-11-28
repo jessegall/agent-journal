@@ -82,15 +82,22 @@ final readonly class RequestRetries
         }
     }
 
-    public function retryUnclaimedOpen(HostInstruction $instruction): void
+    public function settleExpiredOpen(HostInstruction $instruction): void
     {
-        if ($instruction->driver_request_id === null || ! $instruction->expiredUnclaimed()) {
+        if ($instruction->driver_request_id === null || ! $instruction->hasExpired()) {
             return;
         }
 
         $request = DriverRequest::findLockedById($instruction->driver_request_id);
 
         if (! $request->operation->opensTurn() || $request->progress->isFinal() || ! $instruction->isForAttemptOf($request)) {
+            return;
+        }
+
+        if ($instruction->hasBeenClaimed()) {
+            $request->markUncertain();
+            $this->finishWithoutRetry($request, 'The host claimed the open order before it expired.');
+
             return;
         }
 

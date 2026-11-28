@@ -241,9 +241,14 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
         return $this->status->isOpen();
     }
 
-    public function expiredUnclaimed(): bool
+    public function hasExpired(): bool
     {
-        return $this->refusal === HostRefusal::Expired && $this->claimed_at === null;
+        return $this->refusal === HostRefusal::Expired;
+    }
+
+    public function hasBeenClaimed(): bool
+    {
+        return $this->claimed_at !== null;
     }
 
     public function isForAttemptOf(DriverRequest $request): bool

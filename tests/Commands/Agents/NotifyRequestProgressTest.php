@@ -97,6 +97,8 @@ final class NotifyRequestProgressTest extends TestCase
 
     public function test_a_staged_report_gives_the_request_back_to_be_offered_again_after_a_wait(): void
     {
+        $now = CarbonImmutable::now();
+        $this->journal->useServerClockAt($now);
         [$host, $opened] = $this->openHostClaimedRuntime(firstMessage: 'Behind a menu');
         $this->journal->claimRequestsOnHost($host->hostId, 10);
 
@@ -109,7 +111,7 @@ final class NotifyRequestProgressTest extends TestCase
         $tooSoon = $this->journal->claimRequestsOnHost($host->hostId, 10);
         $this->assertSame([], $tooSoon->requests);
 
-        $this->travel(3)->seconds();
+        $this->journal->moveServerClockTo($now->addSeconds(3));
         $again = $this->journal->claimRequestsOnHost($host->hostId, 10);
 
         $this->assertSame(
@@ -326,13 +328,16 @@ final class NotifyRequestProgressTest extends TestCase
 
     public function test_a_wake_that_fails_twice_retries_before_releasing_its_message_once(): void
     {
+        $now = CarbonImmutable::now();
+        $this->journal->useServerClockAt($now);
         [$host, $opened, $wake] = $this->startWithMessage();
         $this->assertSame([$wake->id], $this->claimedIds($host));
 
         foreach ([5, 10] as $wait) {
             $this->notifyProgress($host->hostId, $wake->id, RequestProgress::Unavailable);
             $this->assertSame([], $this->claimedIds($host));
-            $this->travel($wait)->seconds();
+            $now = $now->addSeconds($wait);
+            $this->journal->moveServerClockTo($now);
             $this->assertSame([$wake->id], $this->claimedIds($host));
         }
 
@@ -347,19 +352,25 @@ final class NotifyRequestProgressTest extends TestCase
 
     public function test_a_wake_that_exhausts_its_three_retries_keeps_its_final_failure(): void
     {
+        $now = CarbonImmutable::now();
+        $this->journal->useServerClockAt($now);
         [$host, $opened, $wake] = $this->startWithMessage();
         $this->assertSame([$wake->id], $this->claimedIds($host));
 
         foreach ([5, 10, 20] as $wait) {
             $this->notifyProgress($host->hostId, $wake->id, RequestProgress::Unavailable);
-            $this->travel($wait)->seconds();
+            $now = $now->addSeconds($wait);
+            $this->journal->moveServerClockTo($now);
             $this->assertSame([$wake->id], $this->claimedIds($host));
         }
 
-        $this->notifyProgress($host->hostId, $wake->id, RequestProgress::Unavailable);
+        $start = $this->journal->startOfSession($opened->sessionId);
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+        $binding = new RequestReportBinding($opened->sessionId, $start->id, $runtime->process_generation);
+        $this->notifyProgress($host->hostId, $wake->id, RequestProgress::Unavailable, $binding);
 
         $this->assertSame(RequestProgress::Unavailable, $wake->refresh()->progress);
-        $this->assertSame([], $this->claimedIds($host));
+        $this->assertTrue($start->refresh()->isRefused());
         $attempts = RetryAttempt::query()->ofSession($opened->sessionId)->orderBy('retry')->limit(4)->get();
         $this->assertSame([5, 10, 20], $attempts->pluck('wait_seconds')->all());
         $this->assertSame(
@@ -430,8 +441,12 @@ final class NotifyRequestProgressTest extends TestCase
         );
     }
 
-    private function notifyProgress(string $hostId, string $requestId, RequestProgress $progress): void
-    {
+    private function notifyProgress(
+        string $hostId,
+        string $requestId,
+        RequestProgress $progress,
+        RequestReportBinding|null $binding = null,
+    ): void {
         $request = DriverRequest::query()->findOrFail($requestId);
 
         $this->journal->asSystem(new NotifyRequestProgressCommand(
@@ -443,6 +458,7 @@ final class NotifyRequestProgressTest extends TestCase
             RequestOutcome::EntryUnavailable,
             refusal: HostWakeRefusal::ContainerUnavailable,
             hasCreatedNoProcess: true,
+            binding: $binding,
         ));
     }
 

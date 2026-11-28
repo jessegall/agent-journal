@@ -23,6 +23,7 @@ use App\Processes\Enums\RuntimeEventType;
 use App\Sessions\InitialWakeSettlement;
 use App\Sessions\StartIdentity;
 use App\Terminals\TerminalGrantReports;
+use App\Time\Contracts\ServerClock;
 use Carbon\CarbonImmutable;
 
 final readonly class NotifyRequestProgressHandler implements CommandHandler
@@ -41,6 +42,7 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
         private StartIdentity $startIdentity,
         private CommandFacts $facts,
         private RequestRetries $retries,
+        private ServerClock $clock,
     ) {}
 
     public function handle(NotifyRequestProgressCommand $command): void
@@ -162,7 +164,7 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
             return;
         }
 
-        $request->giveBack(CarbonImmutable::now()->addMilliseconds(self::OFFER_AGAIN_WAIT_MS));
+        $request->giveBack($this->clock->now()->addMilliseconds(self::OFFER_AGAIN_WAIT_MS));
     }
 
     /**

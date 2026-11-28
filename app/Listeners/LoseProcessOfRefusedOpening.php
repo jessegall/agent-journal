@@ -32,7 +32,7 @@ final readonly class LoseProcessOfRefusedOpening implements Listener
         if ($process->isOrdered()) {
             $reason = $fact->reason === null ? '' : ", {$fact->reason}";
             $process->lose("the host refused to open it ({$fact->refusal->value}){$reason}", $this->clock->now());
-            $this->retries->retryUnclaimedOpen(HostInstruction::findLocked($fact->instructionId));
+            $this->retries->settleExpiredOpen(HostInstruction::findLocked($fact->instructionId));
         }
     }
 }

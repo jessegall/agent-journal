@@ -25,7 +25,7 @@ use App\Time\Contracts\ServerClock;
 use App\Values\RetrySchedule;
 use Illuminate\Contracts\Bus\Dispatcher as Jobs;
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Contracts\Events\Dispatcher as Events;
+use Illuminate\Events\Dispatcher as Events;
 use ReflectionClass;
 use Throwable;
 
