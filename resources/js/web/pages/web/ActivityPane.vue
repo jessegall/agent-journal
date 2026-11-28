@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PaneRows from '@/components/panes/PaneRows.vue';
+import PaneRows from '@kit/PaneRows';
 import type { ActivityPaneData } from '@generated/types/web';
 
 defineProps<ActivityPaneData>();

@@ -2,6 +2,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AgentOptionData } from "@generated/types/chat";
+import { chatAgent, chatAgentStatus } from "../../../testing/chatAgent";
 
 type Outcome = { onAccepted: () => void; onRefused: (reason: string | null) => void; onUncertain: () => void };
 
@@ -58,15 +59,11 @@ vi.mock("@kit/sessionStarts", () => ({
 const { default: StartPicker } = await import("./StartPicker.vue");
 
 function agentWith(facts: Partial<AgentOptionData> = {}): AgentOptionData {
-  return {
-    id: "agent-4",
-    name: "Agent 4",
+  return chatAgent("agent-4", "Agent 4", {
     profileKey: "main-agent",
-    sessionId: null,
-    conversations: [],
-    status: { sessionState: "stopped", label: "Stopped", actions: [], reason: null },
+    status: chatAgentStatus("stopped", "Stopped"),
     ...facts,
-  } as unknown as AgentOptionData;
+  });
 }
 
 async function pickerFor(agent: AgentOptionData, isNew = true) {
@@ -134,7 +131,9 @@ describe("StartPicker", () => {
   });
 
   it("asks an ended chat to start again as it ran last", async () => {
-    const ended = agentWith({ conversations: [{ id: "conversation-1", driver: "claude-code" }] } as Partial<AgentOptionData>);
+    const ended = agentWith({
+      conversations: [{ id: "conversation-1", driver: "claude-code", startedAt: "2026-11-28T10:00:00Z" }],
+    });
     const picker = await pickerFor(ended, false);
 
     expect(picker.get("[data-start-title]").text()).toBe("Start Agent 4 again");
@@ -169,12 +168,12 @@ describe("StartPicker", () => {
 
   it("renders a start the server says runs, or failed, from the agent's status alone", async () => {
     const starting = await pickerFor(
-      agentWith({ status: { sessionState: "starting", label: "Starting", actions: [], reason: null } } as Partial<AgentOptionData>),
+      agentWith({ status: chatAgentStatus("starting", "Starting") }),
     );
     const failed = await pickerFor(
       agentWith({
-        status: { sessionState: "failed", label: "Start failed", actions: [], reason: "Work (Max) reached its usage limit" },
-      } as Partial<AgentOptionData>),
+        status: chatAgentStatus("failed", "Start failed", "Work (Max) reached its usage limit"),
+      }),
     );
 
     expect(starting.text()).toContain("Starting the session");
