@@ -14,13 +14,18 @@ use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Exceptions\BuildNotPinned;
 use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\Values\JournalServer;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
+use App\Recordings\Enums\Wire;
+use App\Recordings\RecordingOpening;
 use App\Recordings\Recordings;
 use App\Sessions\Enums\TransportProfileType;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
+use App\Values\FilePath;
 use App\Values\HostProcessPlan;
 use Tests\Support\Recordings\RecordedProgram;
 use Tests\TestCase;
@@ -36,51 +41,57 @@ final class ClaudeCodeProfileTest extends TestCase
 
     private const string EFFORT = 'high';
 
-    private const string RECORDINGS = __DIR__.'/../../../resources/recordings/claude-code/2.1.323';
-
     public function test_a_headless_turn_is_planned_as_each_recorded_turn_ran(): void
     {
-        foreach ([
-            'turns/process-turn',
-            'one-shot-allowlist',
-        ] as $name) {
-            $recorded = $this->recordedStart($name);
-            $arguments = $recorded['arguments'];
-            $start = new DriverStart(
-                sessionId: $arguments[array_search('--session-id', $arguments, true) + 1],
-                type: HostProcessType::Pipe,
-                workFolder: $recorded['working_folder'],
-                prompt: $arguments[array_key_last($arguments)],
-                model: self::MODEL,
-                effort: self::EFFORT,
-            );
-
-            $plan = $this->profile()->startPlan($start);
-            $arguments[array_search('--settings', $arguments, true) + 1] = '{folder:files}/settings.json';
-            // The recordings ran at the driver's own model; every start names its model now.
-            array_splice($arguments, (int) array_search('--session-id', $arguments, true), 0, ['--model', self::MODEL]);
-
-            $this->journal->assertResult(
-                [$arguments, [], HostProcessPurpose::AgentTurn],
-                [$plan->argv, array_diff($this->namesOf($plan), $recorded['environment_names']), $plan->purpose],
-            );
+        foreach (['headless-turn', 'one-shot-allowlist'] as $name) {
+            foreach ($this->recordedHeadlessStarts($name) as $recorded) {
+                $this->assertHeadlessStart($recorded);
+            }
         }
     }
 
-    public function test_a_headless_turn_allows_and_denies_what_the_recorded_settings_did(): void
+    private function assertHeadlessStart(RecordingOpening $recorded): void
     {
-        $recorded = json_decode(
-            (string) file_get_contents(self::RECORDINGS.'/one-shot-allowlist/settings/settings.json'),
-            true,
-            flags: JSON_THROW_ON_ERROR,
+        // The contained recording starts after the init's -- and mounts the account's MCP configuration.
+        $arguments = array_slice($recorded->argv, 1);
+        $resume = array_search('--resume', $arguments, true);
+        $conversation = $resume === false ? array_search('--session-id', $arguments, true) : $resume;
+        $start = new DriverStart(
+            sessionId: $arguments[$conversation + 1],
+            type: HostProcessType::Pipe,
+            workFolder: $recorded->folder,
+            prompt: $arguments[array_key_last($arguments)],
+            isResume: $resume !== false,
+            model: $arguments[array_search('--model', $arguments, true) + 1],
+            effort: self::EFFORT,
         );
-
-        $settings = $this->settingsOf($this->profile()->startPlan($this->turn()));
+        $plan = $this->profile()->startPlan($start);
+        $arguments[array_search('--settings', $arguments, true) + 1] = '{folder:files}/settings.json';
+        array_splice($arguments, (int) array_search('--mcp-config', $arguments, true), 2);
 
         $this->journal->assertResult(
-            [$recorded['permissions']['allow'], [...$recorded['permissions']['deny'], $this->replyKeyRule()], 'bypassPermissions'],
+            [$arguments, [], HostProcessPurpose::AgentTurn],
+            [$plan->argv, array_diff($this->namesOf($plan), $recorded->environmentNames()), $plan->purpose],
+        );
+    }
+
+    public function test_a_headless_turn_uses_the_images_shell_and_delegation_rules(): void
+    {
+        $managed = $this->journal->service(Files::class)->readJson(
+            FilePath::in(Place::Project, '.docker/drivers/claude-code/managed-settings.json'),
+        );
+        $settings = $this->settingsOf($this->profile()->startPlan($this->turn()));
+        $shell = fn (string $rule) => str_starts_with($rule, 'Bash(');
+        $withoutPaths = fn (string $rule) => ! str_contains($rule, '(//');
+
+        $this->journal->assertResult(
             [
-                $settings['permissions']['allow'],
+                array_values(array_filter($managed['permissions']['allow'], $shell)),
+                [...array_filter($managed['permissions']['deny'], $withoutPaths), $this->replyKeyRule()],
+                $managed['permissions']['defaultMode'],
+            ],
+            [
+                array_values(array_filter($settings['permissions']['allow'], $shell)),
                 $settings['permissions']['deny'],
                 $settings['permissions']['defaultMode'],
             ],
@@ -298,13 +309,33 @@ final class ClaudeCodeProfileTest extends TestCase
     }
 
     /**
-     * @return array{working_folder: string, arguments: list<string>, environment_names: list<string>}
+     * @return list<RecordingOpening>
      */
+    private function recordedHeadlessStarts(string $name): array
+    {
+        $recordings = $this->journal->service(Recordings::class);
+        $scenario = $recordings->scenario(DefaultDrivers::CLAUDE_CODE, $name);
+        $starts = [];
+
+        foreach ($scenario->exchangesOn(Wire::Driver) as $exchange) {
+            $opening = $scenario->exchange($exchange)->opening;
+
+            if (in_array('--print', $opening->argv, true)) {
+                $starts[] = $opening;
+            }
+        }
+
+        $this->assertNotEmpty($starts);
+
+        return $starts;
+    }
+
+    /** @return array{working_folder: string, arguments: list<string>, environment_names: list<string>} */
     private function recordedStart(string $name): array
     {
-        $fixture = json_decode((string) file_get_contents(self::RECORDINGS."/{$name}/fixture.json"), true, flags: JSON_THROW_ON_ERROR);
+        $path = FilePath::in(Place::Project, "resources/recordings/claude-code/2.1.323/{$name}/fixture.json");
 
-        return $fixture['initial_state'];
+        return $this->journal->service(Files::class)->readJson($path)['initial_state'];
     }
 
     /**

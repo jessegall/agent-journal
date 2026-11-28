@@ -9,11 +9,10 @@ use App\Events\Assignments\AssignmentsEnded;
 use App\Hooks\Enums\AnswerType;
 use App\Models\Agents\AgentFocus;
 use App\Models\Agents\AgentStackRow;
+use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
 use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\Contracts\HookInput;
-use App\Support\Inputs\StopRequested;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
@@ -84,13 +83,13 @@ final class WorkOnTaskStateTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{HookInput}>
+     * @return iterable<string, array{string}>
      */
     public static function otherHooks(): iterable
     {
-        foreach (HookInputs::all() as $name => $input) {
-            if (! $input instanceof StopRequested) {
-                yield $name => [$input];
+        foreach (HookInputs::dataSets() as $name => $hook) {
+            if ($name !== 'stop') {
+                yield $name => $hook;
             }
         }
     }
@@ -221,8 +220,9 @@ final class WorkOnTaskStateTest extends TestCase
      * The hooks a state test's driver sends no other way, such as a prompt or a compaction, pass the state itself.
      */
     #[DataProvider('otherHooks')]
-    public function test_every_other_hook_is_passed(HookInput $input): void
+    public function test_every_other_hook_is_passed(string $hook): void
     {
+        $input = HookInputs::of($hook);
         $this->assertEquals(Decision::delegate(), $input->answerBy(new WorkOnTaskState('task-42', 42, 1)));
     }
 
@@ -330,7 +330,7 @@ final class WorkOnTaskStateTest extends TestCase
     /**
      * The work state its start pushed for the agent's task.
      */
-    private function working(): WorkOnTaskStateReference
+    private function working(): StateReference
     {
         return WorkOnTaskStateReference::forTask($this->work->task);
     }

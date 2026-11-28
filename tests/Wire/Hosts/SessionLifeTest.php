@@ -128,6 +128,7 @@ final class SessionLifeTest extends TestCase
                 ->driveUntil($this->onePasteOn('terminal')))
             ->testHost(fn (TestHost $mac) => $mac->restartJournal())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+                ->beginWorker()
                 ->driveUntil($first->answeredOn('terminal'), HostInstruction::CLAIM_SECONDS * 2))
             ->assertJournal($this->onePasteOn('terminal'));
     }

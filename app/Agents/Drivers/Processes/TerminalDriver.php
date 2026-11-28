@@ -89,6 +89,8 @@ final class TerminalDriver implements ProcessDriver
 
     private const string ROUND_FAILED = 'round_failed';
 
+    private const string PASTE_STEP = 'paste';
+
     /**
      * How long the echo of a paste must hold still before its Enter, so the Enter never lands in the paste's read.
      */
@@ -130,6 +132,8 @@ final class TerminalDriver implements ProcessDriver
 
     private ClaimedRequest|null $delivery = null;
 
+    private bool $awaitsRecoveredEcho = false;
+
     private DeliveryStage $stage = DeliveryStage::Pasted;
 
     /**
@@ -138,7 +142,7 @@ final class TerminalDriver implements ProcessDriver
      */
     private string|null $stageRows = null;
 
-    private int $stageAt = 0;
+    private int|null $stageAt = null;
 
     private int $enters = 0;
 
@@ -188,6 +192,8 @@ final class TerminalDriver implements ProcessDriver
      */
     private array $escapesRefused = [];
 
+    private readonly AgentRuntime $runtime;
+
     public function __construct(
         private readonly HostProcess $process,
         private readonly int $generation,
@@ -198,19 +204,47 @@ final class TerminalDriver implements ProcessDriver
         private readonly ScreenFingerprint $fingerprints,
         private readonly DriverLimits $limits,
     ) {
-        $runtime = AgentRuntime::query()->findOrFail($process->agent_runtime_id);
-        $this->profile = $profiles->of($runtime);
+        $this->runtime = AgentRuntime::query()->findOrFail($process->agent_runtime_id);
+        $this->profile = $profiles->of($this->runtime);
         $this->layout = $this->profile->layout();
         $this->catalogue = new KeyScriptCatalogue($this->profile->keyScripts());
     }
 
     /**
-     * A worker that takes over reads the screen afresh: it instructs a snapshot, and the requests in flight are claimed
-     * again by their own attempts.
+     * A worker that takes over looks for the echo of a paste already ordered for the current attempt.
      */
     public function resume(array $flight, array $ordered): DriverActions
     {
+        foreach ($flight as $request) {
+            if ($request->operation !== DriverOperation::Deliver || $request->progress !== RequestProgress::Staged) {
+                continue;
+            }
+
+            $claim = $request->claimed($this->runtime, null, false);
+            $last = $this->lastDeliveryKey($claim, $ordered);
+
+            if ($last?->step === self::PASTE_STEP) {
+                $this->delivery = $claim;
+                $this->awaitsRecoveredEcho = true;
+
+                break;
+            }
+        }
+
         return DriverActions::of($this->snapshot());
+    }
+
+    /** @param list<HostInstruction> $ordered */
+    private function lastDeliveryKey(ClaimedRequest $claim, array $ordered): HostInstruction|null
+    {
+        return array_find(
+            array_reverse($ordered),
+            fn (HostInstruction $instruction) => $instruction->type === HostInstructionType::WriteKeys
+                && $instruction->host_process_id === $this->process->id
+                && $instruction->driver_request_id === $claim->requestId
+                && $instruction->step !== null
+                && $this->sourceOf($claim, $instruction->step)->idempotencyKey() === $instruction->idempotency_key,
+        );
     }
 
     public function onOutput(FeedEntry $entry): DriverActions
@@ -277,6 +311,10 @@ final class TerminalDriver implements ProcessDriver
         }
 
         if ($this->delivery !== null && $instruction->driver_request_id === $this->delivery->requestId) {
+            if ($this->awaitsRecoveredEcho) {
+                return $this->uncertain($this->delivery)->then(DriverActions::of($this->snapshot()));
+            }
+
             $this->waiting = [
                 $this->delivery,
                 ...$this->waiting,
@@ -607,7 +645,7 @@ final class TerminalDriver implements ProcessDriver
     private function paste(ClaimedRequest $request, HostFramePayload $frame): DriverActions
     {
         $composer = $this->layout->composer->rowsOf($frame);
-        $text = (string) preg_replace(self::CONTROL_CHARACTERS, '', (string) $request->prompt());
+        $text = $this->pasteText($request);
 
         if ($composer === null) {
             $this->waiting = [
@@ -628,7 +666,7 @@ final class TerminalDriver implements ProcessDriver
         $this->onStage(DeliveryStage::Pasted, $composer, $frame);
         $this->enters = 0;
 
-        return DriverActions::of($this->keys($pasted, $composer, $frame, $this->sourceOf($request, 'paste')));
+        return DriverActions::of($this->keys($pasted, $composer, $frame, $this->sourceOf($request, self::PASTE_STEP)));
     }
 
     /**
@@ -638,12 +676,16 @@ final class TerminalDriver implements ProcessDriver
     private function delivered(ClaimedRequest $request, HostFramePayload $frame): DriverActions
     {
         $composer = $this->layout->composer->rowsOf($frame);
-        $rows = $composer?->guardOn($frame)->hash;
-        $waited = $frame->captured - $this->stageAt;
+        $waited = $frame->captured - ($this->stageAt ??= $frame->captured);
 
         if ($this->stage === DeliveryStage::Pasted) {
-            if ($composer !== null && $rows !== $this->stageRows && self::isQuiet($composer, $frame)) {
+            if (
+                $composer !== null
+                && $this->hasPasteEcho($request, $composer, $frame)
+                && self::isQuiet($composer, $frame)
+            ) {
                 $this->enters = 0;
+                $this->awaitsRecoveredEcho = false;
 
                 return $this->pressEnter($request, $composer, $frame);
             }
@@ -655,7 +697,7 @@ final class TerminalDriver implements ProcessDriver
             return DriverActions::none();
         }
 
-        if ($composer === null || $rows !== $this->stageRows) {
+        if ($composer === null || $composer->guardOn($frame)->hash !== $this->stageRows) {
             return $this->startTurn($request, $frame);
         }
 
@@ -668,6 +710,24 @@ final class TerminalDriver implements ProcessDriver
         }
 
         return $this->pressEnter($request, $composer, $frame);
+    }
+
+    private function hasPasteEcho(ClaimedRequest $request, RowRange $composer, HostFramePayload $frame): bool
+    {
+        if (! $this->awaitsRecoveredEcho) {
+            return $composer->guardOn($frame)->hash !== $this->stageRows;
+        }
+
+        $lines = array_slice($frame->rows, $composer->first, $composer->last - $composer->first);
+        $prompt = $this->pasteText($request);
+        $echo = rtrim(mb_substr(implode("\n", $lines), $this->layout->emptyCursorColumn));
+
+        return $prompt !== '' && $echo === $prompt;
+    }
+
+    private function pasteText(ClaimedRequest $request): string
+    {
+        return (string) preg_replace(self::CONTROL_CHARACTERS, '', (string) $request->prompt());
     }
 
     /**
@@ -1055,6 +1115,7 @@ final class TerminalDriver implements ProcessDriver
     private function uncertain(ClaimedRequest $request): DriverActions
     {
         $this->delivery = null;
+        $this->awaitsRecoveredEcho = false;
 
         return DriverActions::of($this->progress($request, RequestProgress::DeliveryUncertain));
     }

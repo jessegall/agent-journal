@@ -18,6 +18,7 @@ use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\RefreshHookDatabase;
 
 /**
  * A driver switch writes one line in the chat of the user who asked for it: where the agent moved and what its new
@@ -25,6 +26,8 @@ use Tests\Fixtures\Agents\TestSelections;
  */
 final class DriverSwitchLinesTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_failed_switch_says_why_and_that_the_agent_stays_on_its_old_driver(): void
     {
         [$switch, $chat] = $this->switchOf(carriesConversation: false);
