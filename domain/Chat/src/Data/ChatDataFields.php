@@ -36,6 +36,8 @@ final class ChatDataFields
 
     private LayoutPartData|Optional $noAccounts;
 
+    private AgentPageCursorData|null $nextAgents = null;
+
     public function __construct()
     {
         $this->mainAgentId = new Optional();
@@ -126,6 +128,13 @@ final class ChatDataFields
         return $this;
     }
 
+    public function nextAgents(AgentPageCursorData|null $nextAgents): self
+    {
+        $this->nextAgents = $nextAgents;
+
+        return $this;
+    }
+
     public function finish(): ChatData
     {
         if (! isset($this->agents)) {
@@ -148,6 +157,7 @@ final class ChatDataFields
             canCreateChats: $this->canCreateChats,
             selectedInboxId: $this->selectedInboxId,
             noAccounts: $this->noAccounts,
+            nextAgents: $this->nextAgents,
         );
     }
 }

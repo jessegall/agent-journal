@@ -20,7 +20,7 @@ use App\Support\AgentOption;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
 use App\Web\Creation\Contracts\PageBuilder;
-use Domain\Chat\Data\AgentOptionData;
+use Domain\Chat\Data\AgentPageData;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatDataFields;
 use Domain\Chat\Data\ConversationData;
@@ -57,19 +57,19 @@ final readonly class ChatPageBuilder implements PageBuilder
     {
         $input = $this->requests->from(ConversationRequest::class, $visit);
 
-        $agents = $this->listing->visible();
         $main = $this->agents->mainAgentId();
         $chosenInbox = $input->chosenInbox();
 
         if ($chosenInbox->isDefined()) {
-            return $this->readChat($input, $agents, $main, $chosenInbox->get());
+            return $this->readChat($input, $this->listing->firstPageWith([]), $main, $chosenInbox->get());
         }
 
         $chosen = $input->chosenAgent()->orElse($main)->map($this->visibleOrPrivate(...));
         // One conversation per read: the chosen agent's, or the one a column's own reload names.
         $read = $input->columnAgent()->map($this->visibleOrPrivate(...))->orElse($chosen);
 
-        $fields = $this->fields($agents, $main)
+        $page = $this->listing->firstPageWith([...$this->idOf($chosen), ...$this->idOf($read)]);
+        $fields = $this->fields($page, $main)
             ->selectedAgentId($chosen->map(fn (AgentOption $agent) => $agent->agentId)->getOrElse(Optional::create()));
 
         if ($read->isDefined()) {
@@ -89,26 +89,25 @@ final readonly class ChatPageBuilder implements PageBuilder
      * The chat window on a chat chosen by its inbox, with or without an agent in it; a chat the reader is not in is
      * refused like a missing one.
      *
-     * @param  list<AgentOptionData>  $agents
      * @param  Option<string>  $main
      */
-    private function readChat(ConversationRequest $input, array $agents, Option $main, string $inboxId): ChatData
+    private function readChat(ConversationRequest $input, AgentPageData $page, Option $main, string $inboxId): ChatData
     {
         $inbox = $this->chats->attached($inboxId);
 
-        return $this->finish($this->fields($agents, $main)
+        return $this->finish($this->fields($page, $main)
             ->selectedInboxId($inboxId)
             ->conversation($this->pages->pageFor(null, $inbox, $input->dockToken())));
     }
 
     /**
-     * @param list<AgentOptionData> $agents
      * @param Option<string> $main
      */
-    private function fields(array $agents, Option $main): ChatDataFields
+    private function fields(AgentPageData $page, Option $main): ChatDataFields
     {
         return ChatData::build()
-            ->agents($agents)
+            ->agents($page->agents)
+            ->nextAgents($page->next)
             ->isSetupRequired($main->isEmpty())
             ->mainAgentId($main->getOrElse(Optional::create()));
     }
@@ -137,6 +136,14 @@ final readonly class ChatPageBuilder implements PageBuilder
         $wizard = LayoutActionData::build()->href(route('accounts.accounts', ['add' => '1'], false))->finish();
 
         return NoAccountsYet::addingWith($wizard)->page();
+    }
+
+    /** @param Option<AgentOption> $agent
+     * @return list<string>
+     */
+    private function idOf(Option $agent): array
+    {
+        return $agent->map(fn (AgentOption $shown) => [$shown->agentId])->getOrElse([]);
     }
 
     /**

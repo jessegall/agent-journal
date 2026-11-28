@@ -10,6 +10,7 @@ use App\Agents\Values\CommandPart;
 use App\Bus\Contracts\CommandClassifier;
 use App\CommandRules\Enums\CommandEffect;
 use App\CommandRules\Enums\CommandType;
+use App\CommandRules\Enums\NodeType;
 use App\CommandRules\Enums\ParseOutcome;
 use App\Processes\Contracts\ShellCommandParser as ShellCommandParserContract;
 use App\Processes\Enums\PartJoin;
@@ -47,7 +48,9 @@ final readonly class ShellCommandParser implements ShellCommandParserContract
             $classification->parts,
         );
 
-        return new ShellCommand($line, $dialect, $this->outcomeOf($tree), $parts);
+        $hasBackgroundJob = array_any($tree->nodes, fn (ShellNode $node) => $node->type === NodeType::Background);
+
+        return new ShellCommand($line, $dialect, $this->outcomeOf($tree), $parts, $hasBackgroundJob);
     }
 
     /**

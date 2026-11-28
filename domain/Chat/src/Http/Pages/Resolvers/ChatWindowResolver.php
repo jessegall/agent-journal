@@ -19,7 +19,7 @@ use App\Support\ActorReference;
 use App\Support\AgentOption;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
-use Domain\Chat\Data\AgentOptionData;
+use Domain\Chat\Data\AgentPageData;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatDataFields;
 use Domain\Chat\Data\ConversationData;
@@ -31,9 +31,9 @@ use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
 /**
- * The chat window, on Home and on its own page: every agent the user can see, idle ones included, the chosen one
- * (the main agent unless the query names another) and one conversation, the chosen agent's or the one a reload names,
- * which is there with or without a session. An agent out of sight is refused like a missing one.
+ * The chat window, on Home and on its own page: the first page of the agents the user can see, idle ones included,
+ * the chosen one (the main agent unless the query names another) and one conversation, the chosen agent's or the one
+ * a reload names, which is there with or without a session. An agent out of sight is refused like a missing one.
  */
 final readonly class ChatWindowResolver implements PageResolver
 {
@@ -53,19 +53,19 @@ final readonly class ChatWindowResolver implements PageResolver
 
     public function read(): ChatData
     {
-        $agents = $this->listing->visible();
         $main = $this->agents->mainAgentId();
         $chosenInbox = $this->request->chosenInbox();
 
         if ($chosenInbox->isDefined()) {
-            return $this->readChat($agents, $main, $chosenInbox->get());
+            return $this->readChat($this->listing->firstPageWith([]), $main, $chosenInbox->get());
         }
 
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->visibleOrPrivate(...));
         // One conversation per read: the chosen agent's, or the one a column's own reload names.
         $read = $this->request->columnAgent()->map($this->visibleOrPrivate(...))->orElse($chosen);
+        $page = $this->listing->firstPageWith([...$this->idOf($chosen), ...$this->idOf($read)]);
 
-        $fields = $this->fields($agents, $main)
+        $fields = $this->fields($page, $main)
             ->selectedAgentId($chosen->map(fn (AgentOption $agent) => $agent->agentId)->getOrElse(Optional::create()));
 
         if ($read->isDefined()) {
@@ -85,26 +85,25 @@ final readonly class ChatWindowResolver implements PageResolver
      * The chat window on a chat chosen by its inbox, with or without an agent in it; a chat the reader is not in is
      * refused like a missing one.
      *
-     * @param  list<AgentOptionData>  $agents
      * @param  Option<string>  $main
      */
-    private function readChat(array $agents, Option $main, string $inboxId): ChatData
+    private function readChat(AgentPageData $page, Option $main, string $inboxId): ChatData
     {
         $inbox = $this->chats->attached($inboxId);
 
-        return $this->finish($this->fields($agents, $main)
+        return $this->finish($this->fields($page, $main)
             ->selectedInboxId($inboxId)
             ->conversation($this->pages->pageFor(null, $inbox, $this->request->dockToken())));
     }
 
     /**
-     * @param list<AgentOptionData> $agents
      * @param Option<string> $main
      */
-    private function fields(array $agents, Option $main): ChatDataFields
+    private function fields(AgentPageData $page, Option $main): ChatDataFields
     {
         return ChatData::build()
-            ->agents($agents)
+            ->agents($page->agents)
+            ->nextAgents($page->next)
             ->isSetupRequired($main->isEmpty())
             ->mainAgentId($main->getOrElse(Optional::create()));
     }
@@ -133,6 +132,14 @@ final readonly class ChatWindowResolver implements PageResolver
         $wizard = LayoutActionData::build()->href(route('accounts.accounts', ['add' => '1'], false))->finish();
 
         return NoAccountsYet::addingWith($wizard)->page();
+    }
+
+    /** @param Option<AgentOption> $agent
+     * @return list<string>
+     */
+    private function idOf(Option $agent): array
+    {
+        return $agent->map(fn (AgentOption $shown) => [$shown->agentId])->getOrElse([]);
     }
 
     /**

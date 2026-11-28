@@ -64,6 +64,7 @@ const chat = {
     agents: [],
     selectedAgentId: null,
     isSetupRequired: false,
+    nextAgents: null,
     dockSections: [],
     chats: [],
     canCreateChats: false,

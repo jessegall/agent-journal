@@ -14,8 +14,8 @@ use Domain\Chat\Support\AgentListing;
 use Spatie\LaravelData\Optional;
 
 /**
- * Home's agent bar: every agent the user can see, the one the page chose (the main agent unless the query's agent
- * names another) with its state and actions. An agent out of sight is refused like a missing one.
+ * Home's agent bar: the first page of the agents the user can see and the one the page chose (the main agent unless
+ * the query's agent names another) with its state and actions. An agent out of sight is refused like a missing one.
  */
 final readonly class ChosenAgentSection implements SectionResolver
 {
@@ -29,9 +29,13 @@ final readonly class ChosenAgentSection implements SectionResolver
     {
         $main = $this->agents->mainAgentId();
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->agents->visibleAgent(...));
+        $page = $this->listing->firstPageWith(
+            $chosen->map(fn (AgentOption $agent) => [$agent->agentId])->getOrElse([]),
+        );
 
         return ChatData::build()
-            ->agents($this->listing->visible())
+            ->agents($page->agents)
+            ->nextAgents($page->next)
             ->isSetupRequired($main->isEmpty())
             ->mainAgentId($main->getOrElse(Optional::create()))
             ->selectedAgentId(

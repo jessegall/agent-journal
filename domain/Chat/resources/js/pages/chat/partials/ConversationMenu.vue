@@ -5,12 +5,13 @@ import Popover from "@kit/Popover";
 import SearchField from "@kit/SearchField";
 import { useHostProp } from "@kit/hostProp";
 import { computed, ref, useTemplateRef, watch } from "vue";
-import type { AgentOptionData } from "@generated/types/chat";
+import type { AgentOptionData, AgentPageCursorData } from "@generated/types/chat";
 import { CHAT_LIST_FILTERS, chatListRows, type ChatListFilter } from "../../../chatList";
 import ConversationActions from "./ConversationActions.vue";
 import ConversationRow from "./ConversationRow.vue";
 import StopConfirmation from "./StopConfirmation.vue";
 import { onChatListRequest, requestChatChoice } from "../../../composables/useChatBarAsks";
+import { useAgentPages } from "../../../composables/useAgentPages";
 import { chooseChat } from "../../../chatChoice";
 import { useSessionEnd } from "../../../composables/useSessionEnd";
 import { useTurnInterrupt } from "../../../composables/useTurnInterrupt";
@@ -29,13 +30,15 @@ import {
 const props = withDefaults(
   defineProps<{
     agents: AgentOptionData[];
+    // Where the list's next page starts; none when the agents given are all there are.
+    nextAgents?: AgentPageCursorData | null;
     selectedAgentId: string | undefined;
     // The chats Home shows now, listed first under On Home.
     openAgentIds: string[];
     // Opened from above the composer, the list opens upward over the chat and moves nothing.
     placement?: "below" | "above";
   }>(),
-  { placement: "below" },
+  { placement: "below", nextAgents: null },
 );
 
 const emit = defineEmits<{
@@ -56,11 +59,27 @@ const filter = ref<ChatListFilter>("all");
 const showsRetired = ref(false);
 const activeIndex = ref(0);
 
-const retiredCount = computed(() => props.agents.filter((agent) => agent.isRetired).length);
-const waitingCount = computed(
-  () => props.agents.filter((agent) => agent.waitsOnYou && !agent.isRetired).length,
+// The list reads its next page as it is scrolled to its end, or on Show more chats when it cannot scroll.
+const pages = useAgentPages(
+  () => props.agents,
+  () => props.nextAgents,
 );
-const matching = computed(() => chatListRows(props.agents, filter.value, search.value));
+const retiredCount = computed(() => pages.listed.value.filter((agent) => agent.isRetired).length);
+const waitingCount = computed(
+  () => pages.listed.value.filter((agent) => agent.waitsOnYou && !agent.isRetired).length,
+);
+const matching = computed(() => chatListRows(pages.listed.value, filter.value, search.value));
+
+// How near the end of the list, in pixels, its next page is read.
+const NEAR_END = 48;
+
+function readMoreNearEnd(event: Event): void {
+  const list = event.target as HTMLElement;
+
+  if (list.scrollTop + list.clientHeight >= list.scrollHeight - NEAR_END) {
+    pages.loadMore();
+  }
+}
 const hiddenRetired = computed(() =>
   showsRetired.value ? 0 : matching.value.filter((agent) => agent.isRetired).length,
 );
@@ -266,6 +285,7 @@ function askEnd(): void {
         aria-label="Chats"
         class="max-h-[336px] overflow-y-auto pb-1"
         data-chat-list
+        @scroll="readMoreNearEnd"
       >
         <template v-for="group in groups" :key="group.label">
           <div
@@ -312,6 +332,17 @@ function askEnd(): void {
               <Button size="small" variant="bordered" @click="newChat">New chat</Button>
             </span>
           </div>
+        </template>
+        <template v-if="pages.hasMore.value">
+          <button
+            type="button"
+            class="w-full px-3 py-1.5 text-left text-small text-text-3 hover:bg-hover"
+            :disabled="pages.isLoading.value"
+            data-more-chats
+            @click="pages.loadMore()"
+          >
+            {{ pages.isLoading.value ? "Reading more chats…" : "Show more chats" }}
+          </button>
         </template>
         <template v-if="retiredCount > 0 && (shownRows.length > 0 || showsRetired)">
           <button
