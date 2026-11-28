@@ -1,13 +1,29 @@
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 /**
- * The asks a chat sends to Home's one chat bar and its own list, from wherever it shows: New chat, from the list of
- * any chat, reaches the bar's tabs; the list of one agent's chat opens from the caret on its tab or Option+F.
+ * The asks a chat sends to Home's one chat bar and its own list, from wherever it shows: New chat and choosing a chat
+ * reach the bar's tabs; the list of one agent's chat opens from the caret on its tab or Option+F.
  */
 
 // Each ask is counted, so asking twice for the same thing answers twice.
 const chatListAsks = ref<{ agentId: string; count: number } | null>(null);
 const newChatAsks = ref(0);
+const chatChoiceAsks = ref<{ agentId: string; sessionId: string | null; count: number } | null>(null);
+
+/**
+ * Asks Home's chat bar to choose this agent's chat, so its tabs and the chat window read it together.
+ */
+export function requestChatChoice(agentId: string, sessionId: string | null): void {
+  chatChoiceAsks.value = { agentId, sessionId, count: (chatChoiceAsks.value?.count ?? 0) + 1 };
+}
+
+export function onChatChoiceRequest(choose: (agentId: string, sessionId: string | null) => void): void {
+  watch(chatChoiceAsks, (ask) => {
+    if (ask !== null) {
+      choose(ask.agentId, ask.sessionId);
+    }
+  });
+}
 
 export function requestNewChat(): void {
   newChatAsks.value++;

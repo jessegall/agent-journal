@@ -3,13 +3,20 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AgentOptionData } from "@generated/types/chat";
 
+// The chats chosen, each as the agent its reload named and the props it read.
 const visited: string[] = [];
+const reloaded: string[][] = [];
 
 const created: Array<{ url: string; body: Record<string, unknown> }> = [];
 
 vi.mock("@inertiajs/vue3", () => ({
   usePage: () => ({ url: "/", props: { drivers: [{ family: "claude-code" }], viewer: { id: "user-tabs" } } }),
-  router: { visit: (url: string) => visited.push(url) },
+  router: {
+    reload: (options: { only: string[]; data: { agent: string } }) => {
+      visited.push(options.data.agent);
+      reloaded.push(options.only);
+    },
+  },
 }));
 // The server makes the new chat's agent and flashes its id back.
 vi.mock("@kit/keyedPost", () => ({
@@ -50,8 +57,6 @@ function tabsFor(selectedAgentId: string, columnAgentIds: string[] = []) {
       agents,
       selectedAgentId,
       columnAgentIds,
-      agentUrl: (agent: AgentOptionData) => `/?agent=${agent.id}`,
-      newAgentUrl: (agentId: string) => `/?agent=${agentId}`,
     },
   });
 }
@@ -59,6 +64,7 @@ function tabsFor(selectedAgentId: string, columnAgentIds: string[] = []) {
 describe("ChatTabs", () => {
   beforeEach(() => {
     visited.length = 0;
+    reloaded.length = 0;
     created.length = 0;
     const store = useOpenChats("user-tabs");
     store.chats.agentIds = [];
@@ -80,14 +86,16 @@ describe("ChatTabs", () => {
     expect(tabs.get('[data-chat-tab="agent-3"]').find('[aria-label="2 unread"]').exists()).toBe(true);
   });
 
-  it("switches to another chat by its tab and with the arrow keys", async () => {
+  it("switches to another chat by its tab and with the arrow keys, reading only that chat", async () => {
     useOpenChats("user-tabs").open("agent-3");
     const tabs = tabsFor("agent-2");
 
     await tabs.get('[data-chat-tab="agent-3"]').trigger("click");
     await tabs.get('[data-chat-tab="agent-2"]').trigger("keydown", { key: "ArrowRight" });
 
-    expect(visited).toEqual(["/?agent=agent-3", "/?agent=agent-3"]);
+    expect(visited).toEqual(["agent-3", "agent-3"]);
+    // Only the chat window and the bar are read again, never the whole page.
+    expect(reloaded[0]).toEqual(["window_chat_conversation", "page"]);
   });
 
   it("closes only the tab, offers Undo, and Undo brings it back", async () => {
@@ -111,7 +119,7 @@ describe("ChatTabs", () => {
 
     expect(created[0]?.body).toMatchObject({ driver: "claude-code", model: "default" });
     expect(useOpenChats("user-tabs").chats.agentIds).toContain("agent-4");
-    expect(visited).toEqual(["/?agent=agent-4"]);
+    expect(visited).toEqual(["agent-4"]);
     expect(tabs.find("[data-new-chat-form]").exists()).toBe(false);
   });
 

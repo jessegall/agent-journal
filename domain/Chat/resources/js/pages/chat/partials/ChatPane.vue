@@ -40,7 +40,6 @@ import SessionForm from "./SessionForm.vue";
 const props = defineProps<{
   chat: ChatData;
   offersChoice: boolean;
-  agentUrl: (agent: AgentOptionData) => string;
   loadMore: (token: string) => void;
   protectedProp: string;
 }>();
@@ -355,7 +354,6 @@ watch(isShown, readOnOpen);
           :agents="chat.agents"
           :selected-agent-id="chat.selectedAgentId"
           :open-agent-ids="selected ? [selected.id] : []"
-          :agent-url="agentUrl"
           @switch-driver="isSwitchOpen = true"
         >
           <template #trigger>

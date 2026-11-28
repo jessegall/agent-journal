@@ -7,7 +7,7 @@ import SegmentedControl from "@kit/SegmentedControl";
 import Status from "@kit/Status";
 import Toast from "@kit/Toast";
 import { useAppContext } from "@kit/appContext";
-import { router } from "@inertiajs/vue3";
+import { useHostProp } from "@kit/hostProp";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
 import { sessionLooks } from "../../../sessionLooks";
@@ -15,7 +15,8 @@ import { useOpenChats, type ChatViewMode } from "../../../composables/useOpenCha
 import { keyedPost } from "@kit/keyedPost";
 import { newRequestId } from "@kit/requestId";
 import { createMainAgent } from "@kit/sessionStarts";
-import { onNewChatRequest, requestChatList } from "../../../composables/useChatBarAsks";
+import { onChatChoiceRequest, onNewChatRequest, requestChatList } from "../../../composables/useChatBarAsks";
+import { chooseChat, HOME_CHAT_PROP } from "../../../chatChoice";
 import { readNewChatChoice } from "../../../newChatChoice";
 
 /**
@@ -28,8 +29,6 @@ const props = defineProps<{
   selectedAgentId: string | undefined;
   // The chats that have a column side by side, which their tabs underline.
   columnAgentIds: string[];
-  agentUrl: (agent: AgentOptionData) => string;
-  newAgentUrl: (agentId: string) => string;
 }>();
 
 const MODES: readonly { value: ChatViewMode; label: string }[] = [
@@ -63,9 +62,18 @@ function tabId(agent: AgentOptionData): string {
   return `chat-tab-${agent.id}`;
 }
 
-function choose(agent: AgentOptionData): void {
-  router.visit(props.agentUrl(agent), { preserveScroll: true });
+// Choosing a chat reads only the chat window and this bar again, and only the chosen chat's conversation.
+const barProp = useHostProp();
+
+function chooseById(agentId: string, sessionId: string | null): void {
+  chooseChat([HOME_CHAT_PROP, barProp], agentId, sessionId);
 }
+
+function choose(agent: AgentOptionData): void {
+  chooseById(agent.id, agent.sessionId);
+}
+
+onChatChoiceRequest(chooseById);
 
 function close(agent: AgentOptionData): void {
   const place = tabs.value.indexOf(agent);
@@ -109,7 +117,7 @@ function pressOnTab(event: KeyboardEvent, agent: AgentOptionData): void {
 
 function opened(agentId: string): void {
   openChats.open(agentId);
-  router.visit(props.newAgentUrl(agentId), { preserveScroll: true });
+  chooseById(agentId, null);
 }
 
 /**

@@ -32,8 +32,8 @@ use Spatie\LaravelData\Optional;
 
 /**
  * The chat window, on Home and on its own page: every agent the user can see, idle ones included, the chosen one
- * (the main agent unless the query names another) and its conversation, which is there with or without a session.
- * An agent out of sight is refused like a missing one.
+ * (the main agent unless the query names another) and one conversation, the chosen agent's or the one a reload names,
+ * which is there with or without a session. An agent out of sight is refused like a missing one.
  */
 final readonly class ChatWindowResolver implements PageResolver
 {
@@ -62,6 +62,8 @@ final readonly class ChatWindowResolver implements PageResolver
         }
 
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->visibleOrPrivate(...));
+        // One conversation per read: the chosen agent's, or the one a column's own reload names.
+        $read = $this->request->chatToRead()->map($this->visibleOrPrivate(...))->orElse($chosen);
 
         return ChatData::from([
             'agents' => $agents,
@@ -70,35 +72,11 @@ final readonly class ChatWindowResolver implements PageResolver
             'selectedAgentId' => $chosen
                 ->map(fn (AgentOption $agent) => $agent->agentId)
                 ->getOrElse(Optional::create()),
-            ...$chosen->map($this->conversationFields(...))->getOrElse([]),
+            ...$read->map($this->conversationFields(...))->getOrElse([]),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->chatList(),
-            'beside' => $this->besideOf($chosen),
             'noAccounts' => $this->noAccounts(),
         ]);
-    }
-
-    /**
-     * The chats the query shows beside the chosen one, each agent once; one out of sight is left out.
-     *
-     * @param  Option<AgentOption>  $chosen
-     * @return list<ConversationData>
-     */
-    private function besideOf(Option $chosen): array
-    {
-        $chosenId = $chosen->map(fn (AgentOption $agent) => $agent->agentId)->getOrElse(null);
-        $visible = [];
-
-        foreach ($this->agents->visible() as $agent) {
-            $visible[$agent->agentId] = $agent;
-        }
-
-        $shown = array_filter(
-            array_unique($this->request->besideAgents()),
-            fn (string $agentId) => $agentId !== $chosenId && isset($visible[$agentId]),
-        );
-
-        return array_values(array_map(fn (string $agentId) => $this->conversationWith($visible[$agentId]), $shown));
     }
 
     /**

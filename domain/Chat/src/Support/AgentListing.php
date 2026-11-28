@@ -91,7 +91,8 @@ final readonly class AgentListing
         return InboxMember::query()->ofInboxes($pairIds)->ofActorType(Agent::storedType())->active()
             ->limit(InboxMember::ATTACHED_LIMIT)
             ->pluck('inbox_id', 'actor_id')
-            ->map(strval(...))
+            // A collection hands the key too, which strval refuses as a second argument.
+            ->map(fn (mixed $inboxId) => strval($inboxId))
             ->all();
     }
 

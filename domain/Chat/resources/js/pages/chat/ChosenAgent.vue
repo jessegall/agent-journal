@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { usePage } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
 import Avatar from "@kit/Avatar";
 import Icon from "@kit/Icon";
 import Status from "@kit/Status";
 import { useAppContext } from "@kit/appContext";
-import { agentUrl, newAgentUrl } from "../../agentLinks";
 import { useOpenChats } from "../../composables/useOpenChats";
 import ChatTabs from "./partials/ChatTabs.vue";
 import SessionForm from "./partials/SessionForm.vue";
@@ -24,7 +22,6 @@ import { requestNewChat, useChatListShortcut } from "../../composables/useChatBa
  */
 const props = defineProps<{ data: ChatData }>();
 
-const page = usePage();
 const viewerId = useAppContext().viewer.value.id ?? "guest";
 const openChats = useOpenChats(viewerId);
 // The chosen agent's Switch driver dialog, opened from the chat list; it comes back after a chat switch or a reload.
@@ -92,8 +89,6 @@ const subline = computed(() => {
       :agents="data.agents"
       :selected-agent-id="data.selectedAgentId"
       :column-agent-ids="columnAgentIds"
-      :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
-      :new-agent-url="(agentId: string) => newAgentUrl(page.url, agentId)"
     />
     <div class="relative">
       <ConversationMenu
@@ -103,7 +98,6 @@ const subline = computed(() => {
         @new-chat="requestNewChat()"
         @open-beside="openBeside"
         @switch-driver="openSwitch"
-        :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
       >
         <template #trigger>
         <template v-if="selected">

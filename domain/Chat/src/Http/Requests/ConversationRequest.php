@@ -11,17 +11,12 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * The chat window's own query: the agent it talks to, when one is chosen, the chat, the agents whose chats show beside
- * it, and where the dock's next page starts.
+ * The chat window's own query: the agent it talks to, when one is chosen, the chat, the one agent whose chat a reload
+ * reads when it is not the chosen one's, and where the dock's next page starts.
  */
 final class ConversationRequest extends FormRequest
 {
     use ReadsOptionalText;
-
-    /**
-     * The most chats shown beside the chosen one.
-     */
-    public const int MOST_BESIDE = 3;
 
     /**
      * @return array<string, list<string>>
@@ -44,12 +39,8 @@ final class ConversationRequest extends FormRequest
                 'string',
                 'max:2048',
             ],
-            'beside' => [
+            'read' => [
                 'nullable',
-                'array',
-                'max:'.self::MOST_BESIDE,
-            ],
-            'beside.*' => [
                 'string',
                 'ulid',
             ],
@@ -97,16 +88,16 @@ final class ConversationRequest extends FormRequest
     }
 
     /**
-     * The agents whose chats show beside the chosen one, in the order the query names them; none in one-at-a-time view.
+     * The agent whose chat a reload reads, such as a column side by side that is not chosen; the chosen agent's when
+     * it names none.
      *
-     * @return list<string>
+     * @return Option<string>
      */
-    public function besideAgents(): array
+    public function chatToRead(): Option
     {
-        return array_values(array_map(
-            fn (string $agentId) => strtolower($agentId),
-            $this->collect('beside')->filter(fn (mixed $agentId) => is_string($agentId))->all(),
-        ));
+        $read = $this->optionalText('read');
+
+        return $read === null ? None::create() : new Some(strtolower($read));
     }
 
     /**

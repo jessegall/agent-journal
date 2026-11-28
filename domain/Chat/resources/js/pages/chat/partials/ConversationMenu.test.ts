@@ -6,7 +6,7 @@ import type { AgentOptionData } from "@generated/types/chat";
 const visited: string[] = [];
 
 vi.mock("@inertiajs/vue3", () => ({
-  router: { visit: (url: string) => visited.push(url), reload: () => undefined },
+  router: { reload: (options: { data: { agent: string } }) => visited.push(options.data.agent) },
 }));
 
 const { default: ConversationMenu } = await import("./ConversationMenu.vue");
@@ -77,7 +77,6 @@ async function openList(shown: AgentOptionData[] = agents) {
       agents: shown,
       selectedAgentId: "main",
       openAgentIds: ["main"],
-      agentUrl: (chosen: AgentOptionData) => `/?agent=${chosen.id}`,
     },
   });
   await list.get("[data-chat-list-trigger]").trigger("click");
@@ -186,7 +185,7 @@ describe("ConversationMenu", () => {
     await flushPromises();
     await list.get('input[role="combobox"]').trigger("keydown", { key: "Enter" });
 
-    expect(visited).toEqual(["/?agent=main"]);
+    expect(visited).toEqual(["main"]);
   });
 
   it("offers End session only while the chosen agent's status offers to stop it, and asks first", async () => {
@@ -216,7 +215,7 @@ describe("ConversationMenu", () => {
       .get('[data-conversation="reviewer"]')
       .trigger("drop", { dataTransfer });
 
-    expect(visited).toEqual(["/?agent=reviewer"]);
+    expect(visited).toEqual(["reviewer"]);
     expect(useHandOver().takeFor("reviewer")).toEqual({
       agentId: "reviewer",
       text: "Read this, please: Doc 101 (/documents/101)",

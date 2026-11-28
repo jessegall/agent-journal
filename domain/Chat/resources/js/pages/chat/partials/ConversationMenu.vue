@@ -3,14 +3,15 @@ import Button from "@kit/Button";
 import ChipButton from "@kit/ChipButton";
 import Popover from "@kit/Popover";
 import SearchField from "@kit/SearchField";
-import { router } from "@inertiajs/vue3";
+import { useHostProp } from "@kit/hostProp";
 import { computed, ref, useTemplateRef, watch } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
 import { CHAT_LIST_FILTERS, chatListRows, type ChatListFilter } from "../../../chatList";
 import ConversationActions from "./ConversationActions.vue";
 import ConversationRow from "./ConversationRow.vue";
 import StopConfirmation from "./StopConfirmation.vue";
-import { onChatListRequest } from "../../../composables/useChatBarAsks";
+import { onChatListRequest, requestChatChoice } from "../../../composables/useChatBarAsks";
+import { chooseChat } from "../../../chatChoice";
 import { useSessionEnd } from "../../../composables/useSessionEnd";
 import {
   carriesRecord,
@@ -29,7 +30,6 @@ const props = defineProps<{
   selectedAgentId: string | undefined;
   // The chats Home shows now, listed first under On Home.
   openAgentIds: string[];
-  agentUrl: (agent: AgentOptionData) => string;
 }>();
 
 const emit = defineEmits<{
@@ -111,9 +111,19 @@ function move(step: 1 | -1): void {
   document.getElementById(rowId(shownRows.value[activeIndex.value]))?.scrollIntoView?.({ block: "nearest" });
 }
 
+// On Home the chat bar chooses the chat, reading its tabs and the chat window again; on its own page the page does.
+const hostProp = useHostProp();
+
 function choose(agent: AgentOptionData): void {
   isOpen.value = false;
-  router.visit(props.agentUrl(agent), { preserveScroll: true });
+
+  if (hostProp === "page") {
+    chooseChat(["page"], agent.id, agent.sessionId);
+
+    return;
+  }
+
+  requestChatChoice(agent.id, agent.sessionId);
 }
 
 function openBeside(agent: AgentOptionData): void {
