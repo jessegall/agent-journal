@@ -19,9 +19,25 @@ final class HostWakeTimeLimitTest extends TestCase
         $before = ini_get('max_execution_time');
 
         try {
+            // A request runs under its limit, as RequestTimeLimit::handle sets it when Octane takes the request.
+            set_time_limit($limit);
             $this->journal->service(HostWake::class)->waitForHost('host-that-is-never-woken', 1);
 
             $this->assertSame((string) ($limit + 1), ini_get('max_execution_time'));
+        } finally {
+            set_time_limit((int) $before);
+        }
+    }
+
+    public function test_a_wait_in_a_process_with_no_limit_sets_none(): void
+    {
+        $before = ini_get('max_execution_time');
+
+        try {
+            set_time_limit(0);
+            $this->journal->service(HostWake::class)->waitForHost('host-that-is-never-woken', 1);
+
+            $this->assertSame('0', ini_get('max_execution_time'));
         } finally {
             set_time_limit((int) $before);
         }

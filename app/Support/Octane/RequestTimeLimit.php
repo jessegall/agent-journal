@@ -26,6 +26,11 @@ final readonly class RequestTimeLimit
      */
     public function lendWait(int $waitSeconds): void
     {
+        // A process with no limit, such as a console command or a test run, keeps none: a wait never sets one on it.
+        if ((int) ini_get('max_execution_time') === 0) {
+            return;
+        }
+
         set_time_limit($waitSeconds + $this->seconds);
     }
 }
