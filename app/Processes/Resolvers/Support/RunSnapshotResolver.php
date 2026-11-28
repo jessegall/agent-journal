@@ -38,7 +38,7 @@ final readonly class RunSnapshotResolver
     {
         $run = $this->visibleRuns()->whereKey($runId)->firstOr(fn () => throw new NotFoundHttpException());
 
-        $parts = $run->parts()->bySyntaxNodeThenAttempt()->readLimit(500)->get();
+        $parts = $run->parts()->bySyntaxNodeThenAttempt()->limit(ProcessRun::PART_LIMIT)->get();
 
         return RunSnapshotData::from([
             'runId' => $run->id,

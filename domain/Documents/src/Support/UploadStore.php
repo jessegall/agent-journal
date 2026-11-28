@@ -55,7 +55,7 @@ final readonly class UploadStore
     {
         TextUpload::query()->acrossSessions()
             ->expiredAt(CarbonImmutable::now())
-            ->readInChunks(100, function ($uploads): void {
+            ->chunkById(100, function ($uploads): void {
                 $uploads->each(fn (TextUpload $upload) => $upload->delete());
             });
     }

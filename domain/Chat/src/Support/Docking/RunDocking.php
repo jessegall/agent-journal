@@ -46,7 +46,7 @@ final readonly class RunDocking implements DockableProvider
     {
         $cards = [];
 
-        foreach (ProcessRun::query()->withAllParts()->whereKey($ids)->readExactlyOf($ids)->get() as $run) {
+        foreach (ProcessRun::query()->withAllParts()->whereKey($ids)->get() as $run) {
             $docked = new DockedRun($run);
             $cards[] = new ComposedCard($docked->identifyFor($definition), $docked->composeDockCard($context));
         }

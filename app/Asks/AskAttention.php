@@ -92,7 +92,7 @@ final readonly class AskAttention
     private function recoverEach(Closure $recover): void
     {
         AskHop::query()->awaitingDeliveryOrCurrent()
-            ->readInChunks(50, function ($hops) use ($recover): void {
+            ->chunkById(50, function ($hops) use ($recover): void {
                 foreach ($hops as $hop) {
                     $recover($hop);
                 }

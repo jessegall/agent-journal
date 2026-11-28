@@ -182,7 +182,7 @@ final class Skill extends JournalModel implements EventSource, Numbered, Readabl
             self::query()->visibleIn($environment)
                 ->unretired()
                 ->inKeyOrder()
-                ->readExactly($limit)
+                ->limit($limit)
                 ->get()
                 ->all(),
         );

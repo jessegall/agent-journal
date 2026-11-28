@@ -91,7 +91,7 @@ final class RetryShareTest extends SharingTestCase
         $this->assertEquals($share->expires_at, Share::query()->findOrFail($share->id)->expires_at);
 
         $this->assertTrue(
-            ShareAudit::query()->readAll('two audits')->get()->contains(
+            ShareAudit::query()->get()->contains(
                 fn (ShareAudit $audit) => $audit->type === ShareAuditType::Retried,
             ),
         );

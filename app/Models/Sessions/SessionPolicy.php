@@ -147,7 +147,7 @@ final class SessionPolicy extends JournalModel implements ReadableModel
             $starts[$session->id] = CarbonImmutable::instance($session->created_at);
         }
 
-        $policies = self::query()->ofSessions(array_keys($starts))->readExactlyOf($starts)->get();
+        $policies = self::query()->ofSessions(array_keys($starts))->get();
         $deadlines = [];
 
         foreach ($policies as $policy) {

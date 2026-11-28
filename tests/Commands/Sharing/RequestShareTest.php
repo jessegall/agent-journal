@@ -121,7 +121,7 @@ final class RequestShareTest extends SharingTestCase
         );
 
         $this->assertSame(0, ShareGatewayOperation::query()->count());
-        $audit = ShareAudit::query()->readAll('one audit')->sole();
+        $audit = ShareAudit::query()->sole();
 
         $this->assertSame([ShareAuditType::Created, Agent::storedType()], [$audit->type, $audit->actor_type]);
     }

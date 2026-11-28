@@ -15,7 +15,7 @@ final readonly class MarkRunsStaleHandler implements CommandHandler
             ->acrossActors()
             ->inProject($command->projectId)
             ->unfinished()
-            ->readLimit(1_000)
+            ->limit(1_000)
             ->get();
 
         foreach ($runs as $run) {

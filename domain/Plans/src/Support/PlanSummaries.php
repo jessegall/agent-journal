@@ -43,7 +43,7 @@ final readonly class PlanSummaries implements SummaryProvider
 
     public function visibleSummaries(array $ids): array
     {
-        $plans = Plan::query()->whereKey($ids)->readExactlyOf($ids)->get();
+        $plans = Plan::query()->whereKey($ids)->get();
 
         return $this->summaries($plans);
     }
@@ -58,7 +58,6 @@ final readonly class PlanSummaries implements SummaryProvider
 
         $phases = Phase::query()
             ->ofPlans($plans->modelKeys())
-            ->readAll('the current phase of each summarized plan is named by its title')
             ->get(['plan_id', 'number', 'title']);
 
         foreach ($phases as $phase) {

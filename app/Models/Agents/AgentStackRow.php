@@ -301,7 +301,7 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
 
         return array_values(self::query()->historyOf($actor)->ofSessions($sessions)
             ->inStatus(StackStatus::Active)
-            ->inSessionOrder()->lockForUpdate()->readExactlyOf($sessions)->get()->all());
+            ->inSessionOrder()->lockForUpdate()->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -335,7 +335,7 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
     {
         $targets = [];
 
-        self::query()->runningOpen()->readInChunks(100, function ($rows) use ($typeKeys, &$targets): void {
+        self::query()->runningOpen()->chunkById(100, function ($rows) use ($typeKeys, &$targets): void {
             foreach ($rows as $row) {
                 if ($row->frames->holdAnyOf($typeKeys)) {
                     $targets[] = $row->target;

@@ -168,7 +168,7 @@ final class NotificationReceipt extends JournalModel implements EventSource, Rea
             ->beforeSequence($beforeSequence)
             ->newestSequenceFirst()
             ->with('occurrence')
-            ->readUpTo($limit)
+            ->limit($limit)
             ->get()
             ->all());
     }
@@ -189,7 +189,7 @@ final class NotificationReceipt extends JournalModel implements EventSource, Rea
             ->inScope($scopeId)
             ->visible()
             ->ofOccurrences(NotificationOccurrence::query()->targeting($targetKey, $ids))
-            ->readUpTo($limit)
+            ->limit($limit)
             ->get()
             ->all());
     }
@@ -208,7 +208,7 @@ final class NotificationReceipt extends JournalModel implements EventSource, Rea
             ->visible()
             ->inSequenceRange($afterSequence, $through)
             ->inSequenceOrder()
-            ->readUpTo($limit)
+            ->limit($limit)
             ->get()
             ->all());
     }
@@ -225,7 +225,7 @@ final class NotificationReceipt extends JournalModel implements EventSource, Rea
             return [];
         }
 
-        return self::query()->whereKey($ids)->with('occurrence')->readExactlyOf($ids)->get()->keyBy('id')->all();
+        return self::query()->whereKey($ids)->with('occurrence')->get()->keyBy('id')->all();
     }
 
     /**
@@ -250,7 +250,7 @@ final class NotificationReceipt extends JournalModel implements EventSource, Rea
         return array_values(self::query()
             ->inScope($scopeId)
             ->ofOccurrences(NotificationOccurrence::query()->aboutTarget($targetKey, $targetId))
-            ->readUpTo($limit)
+            ->limit($limit)
             ->get()
             ->all());
     }

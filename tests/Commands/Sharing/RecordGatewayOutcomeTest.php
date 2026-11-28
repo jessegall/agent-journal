@@ -252,7 +252,7 @@ final class RecordGatewayOutcomeTest extends SharingTestCase
     private function auditTypes(): array
     {
         return array_values(
-            ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(
+            ShareAudit::query()->orderBy('id')->get()->map(
                 fn (ShareAudit $audit) => $audit->type,
             )->all(),
         );

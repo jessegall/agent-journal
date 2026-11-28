@@ -27,7 +27,7 @@ final readonly class ActivityProjection
      */
     public function ofRun(ProcessRun $run): array
     {
-        $parts = $run->parts()->bySyntaxNodeThenAttempt()->readLimit(500)->get();
+        $parts = $run->parts()->bySyntaxNodeThenAttempt()->limit(ProcessRun::PART_LIMIT)->get();
 
         return array_values($parts->map(fn (PartRun $part) => $this->ofPart($part))->all());
     }

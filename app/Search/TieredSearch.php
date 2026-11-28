@@ -349,7 +349,7 @@ final readonly class TieredSearch implements TieredSearchContract
      */
     private function rowsWithText(TieredSearchSource $source, array $ids): Collection
     {
-        $rows = $source->rows()->whereIn($source->idColumn, $ids)->readExactlyOf($ids)->select($source->columns);
+        $rows = $source->rows()->whereIn($source->idColumn, $ids)->select($source->columns);
 
         if ($source->body !== null) {
             $rows->selectRaw("{$source->body->column} as ".self::TEXT);

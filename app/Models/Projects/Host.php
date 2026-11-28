@@ -611,7 +611,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             self::query()
                 ->unrevoked()
                 ->enrolled()
-                ->readAll('an installation enrolls a handful of hosts')
                 ->get()
                 ->all(),
         );

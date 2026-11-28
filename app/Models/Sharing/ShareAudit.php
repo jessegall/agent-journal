@@ -123,7 +123,7 @@ final class ShareAudit extends JournalModel implements ReadableModel
     public static function findPageOf(Share $share, string|null $after, int $rows): array
     {
         $audits = self::query()->ofShare($share)->newestFirst()->olderThanWhenNamed($after)
-            ->readExactly($rows + 1)
+            ->limit($rows + 1)
             ->get();
 
         return array_values($audits->all());
@@ -137,7 +137,7 @@ final class ShareAudit extends JournalModel implements ReadableModel
      */
     public static function findLockedPastRetention(CarbonImmutable $now, int $most): array
     {
-        $audits = self::query()->pastRetentionAt($now)->oldestFirst()->lockForUpdate()->readExactly($most)->get();
+        $audits = self::query()->pastRetentionAt($now)->oldestFirst()->lockForUpdate()->limit($most)->get();
 
         return array_values($audits->all());
     }

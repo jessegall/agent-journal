@@ -465,7 +465,6 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
             ->inProject($project->id)
             ->unrevoked()
             ->with('host')
-            ->readAll('a project connects a handful of folders')
             ->get();
 
         return $bindings->first(

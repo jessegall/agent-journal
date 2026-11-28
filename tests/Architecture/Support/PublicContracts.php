@@ -27,7 +27,7 @@ final readonly class PublicContracts
 {
     /**
      * Core's Eloquent adapters: LinkAccess holds the model whose links it reads and hands back the caller's own query,
-     * and ReadBuilder bounds a domain's reads.
+     * and ReadBuilder orders and guards a domain's reads.
      */
     private const array CORE_ELOQUENT_ADAPTERS = [LinkAccess::class, ReadBuilder::class];
 

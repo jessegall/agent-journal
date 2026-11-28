@@ -236,8 +236,7 @@ final class ProjectCommandRun extends JournalModel implements EventSource, Reada
      */
     public static function findLockedRunningOf(ProjectBinding $binding): array
     {
-        return array_values(self::query()->ofBinding($binding->id)->active()->lockForUpdate()
-            ->readAll('a binding runs a few journal verbs at once')->get()->all());
+        return array_values(self::query()->ofBinding($binding->id)->active()->lockForUpdate()->get()->all());
     }
 
     // ----------[ Scopes ]----------

@@ -43,7 +43,6 @@ final readonly class DocumentSummaries implements SummaryProvider
             ->sharedPublished()
             ->withCurrentRevision()
             ->whereKey($ids)
-            ->readExactlyOf($ids)
             ->get();
 
         return array_values($documents->map(self::summary(...))->all());

@@ -44,7 +44,6 @@ final readonly class TaskSummaries implements SummaryProvider
     {
         $readable = Task::query()
             ->whereKey($ids)
-            ->readExactlyOf($ids)
             ->get()
             ->filter(
                 fn (Task $task) => $this->authorizer->filterActions(

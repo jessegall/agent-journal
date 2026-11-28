@@ -179,7 +179,6 @@ final class ProfileRevision extends JournalModel implements ReadableModel
 
         return self::query()->currentOfProfiles($keys)
             ->select(['profiles.key as profile_key', 'profile_revisions.script_source'])
-            ->readExactlyOf($keys)
             ->get()
             ->mapWithKeys(fn (self $revision) => [
                 (string) $revision->getAttribute('profile_key') => $revision->script_source,
@@ -196,7 +195,7 @@ final class ProfileRevision extends JournalModel implements ReadableModel
         self::query()
             ->currentOfUnretiredProfiles()
             ->select(['profile_revisions.*', 'profiles.key as profile_key'])
-            ->readInChunks(50, function ($revisions) use (&$profiles): void {
+            ->chunkById(50, function ($revisions) use (&$profiles): void {
                 foreach ($revisions as $revision) {
                     $profiles[] = new SupervisorProfile(
                         ProfileKey::from((string) $revision->getAttribute('profile_key')),
@@ -204,7 +203,7 @@ final class ProfileRevision extends JournalModel implements ReadableModel
                         $revision->authorization,
                     );
                 }
-            });
+            }, 'profile_revisions.id', 'id');
 
         return $profiles;
     }

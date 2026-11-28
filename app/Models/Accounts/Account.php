@@ -760,7 +760,6 @@ final class Account extends JournalModel implements EventSource, ReadableModel
         $accounts = self::query()
             ->kept()
             ->inListOrder()
-            ->readAll('the owner sees every saved account at once')
             ->get();
 
         return array_values($accounts->all());
@@ -879,7 +878,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->awaitingCleanupRelease()
             ->leastRecentlyUpdatedFirst()
-            ->readExactly($limit)
+            ->limit($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));

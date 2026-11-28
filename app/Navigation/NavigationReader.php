@@ -104,7 +104,7 @@ final readonly class NavigationReader implements NavigationReaderContract
         $rounds = $roundQuery
             ->orderBy('sequence')
             ->offset($firstRound - 1)
-            ->readExactly(self::ROUND_LIMIT)
+            ->limit(self::ROUND_LIMIT)
             ->get();
 
         $nextRound = $firstRound + $rounds->count();

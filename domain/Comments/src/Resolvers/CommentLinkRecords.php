@@ -60,7 +60,7 @@ final readonly class CommentLinkRecords implements RecordProvider
     {
         $targets = Comment::query()->whereKey(
             array_map(fn (RecordIdentity $record) => $record->id, $records),
-        )->readExactlyOf($records)->get(['id', 'target_type', 'target_id']);
+        )->get(['id', 'target_type', 'target_id']);
 
         $visibleTargets = [];
 
@@ -82,7 +82,6 @@ final readonly class CommentLinkRecords implements RecordProvider
         $comments = Comment::query()
             ->whereKey($shown)
             ->withAnchor()
-            ->readExactly(max(1, count($shown)))
             ->get()
             ->keyBy('id');
 

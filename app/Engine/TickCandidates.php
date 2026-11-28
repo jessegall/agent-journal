@@ -100,7 +100,7 @@ final class TickCandidates
         $ticking = $this->types->ticking();
 
         $rows = AgentStackRow::query()->tickingOpen()->fromKey($progress->stackId)->oldestFirst()
-            ->readExactly($limit)->get();
+            ->limit($limit)->get();
 
         $selected = [];
         $last = $progress;

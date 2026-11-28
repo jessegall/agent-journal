@@ -42,7 +42,7 @@ final readonly class SequenceRunSummaries implements SummaryProvider
 
     public function visibleSummaries(array $ids): array
     {
-        $runs = SequenceRun::query()->acrossActors()->whereKey($ids)->readExactlyOf($ids)->get();
+        $runs = SequenceRun::query()->acrossActors()->whereKey($ids)->get();
 
         return array_values($runs->map(self::summary(...))->all());
     }

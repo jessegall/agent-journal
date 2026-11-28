@@ -198,7 +198,6 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $this->raise(new AgentSessionEnded($this->id));
 
         $starts = SessionProcess::query()->supervised()->ofSessions([$this->id])->unresolved()
-            ->readAll('every start of an ending session ends with it')
             ->get();
 
         foreach ($starts as $start) {
@@ -534,7 +533,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $ids = self::query()
             ->ofAgents([$agentId])
             ->newestFirst()
-            ->readExactly($limit)
+            ->limit($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));
@@ -547,7 +546,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
      */
     public static function findNewestSessions(int $limit): array
     {
-        return array_values(self::query()->newestFirst()->readExactly($limit)->get()->all());
+        return array_values(self::query()->newestFirst()->limit($limit)->get()->all());
     }
 
     /**
@@ -557,7 +556,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
      */
     public static function findNewestSessionsOfAgent(string $agentId, int $limit): array
     {
-        return array_values(self::query()->ofAgents([$agentId])->newestFirst()->readExactly($limit)->get()->all());
+        return array_values(self::query()->ofAgents([$agentId])->newestFirst()->limit($limit)->get()->all());
     }
 
     /**
@@ -571,7 +570,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
             ->running()
             ->started()
             ->oldestFirst()
-            ->readExactly($limit)
+            ->limit($limit)
             ->get();
 
         return array_values($starts->all());
@@ -587,7 +586,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $sessions = self::query()
             ->running()
             ->fromProfileRevision($key, $revision)
-            ->readExactly($limit)
+            ->limit($limit)
             ->get();
 
         return array_values($sessions->all());

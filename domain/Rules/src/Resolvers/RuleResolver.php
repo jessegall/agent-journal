@@ -30,7 +30,7 @@ final readonly class RuleResolver implements RuleResolverContract
     public function all(): array
     {
         return array_values(
-            Rule::query()->newestFirst()->readAll('every rule, for a caller that lists them all')->get()->all(),
+            Rule::query()->newestFirst()->get()->all(),
         );
     }
 

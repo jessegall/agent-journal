@@ -91,7 +91,7 @@ final class PermissionRevocation extends JournalModel implements ReadableModel
      */
     public static function resolveNarrow(CommandPermissions $permissions): CommandPermissions
     {
-        self::query()->ofSource($permissions->source)->oldestFirst()->readInChunks(200, function (
+        self::query()->ofSource($permissions->source)->chunkById(200, function (
             Collection $revocations,
         ) use (&$permissions): void {
             foreach ($revocations as $revocation) {

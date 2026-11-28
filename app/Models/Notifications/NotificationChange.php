@@ -90,7 +90,7 @@ final class NotificationChange extends JournalModel implements ReadableModel
             ->ofScope($scopeId)
             ->versionedBetween($afterVersion, $throughVersion)
             ->inVersionOrder()
-            ->readUpTo($limit)
+            ->limit($limit)
             ->get()
             ->all());
     }

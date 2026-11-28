@@ -39,7 +39,6 @@ final readonly class DriverRequestEndings
 
         $open = $runtime->requests()
             ->open()
-            ->readAll('every open request of a runtime that exited gets its final outcome')
             ->get();
 
         foreach ($open as $request) {

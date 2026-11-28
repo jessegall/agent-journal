@@ -77,7 +77,6 @@ final readonly class OutputDocking implements DockableProvider
         $runs = ProcessRun::query()
             ->withAllParts()
             ->whereKey($runIds)
-            ->readExactlyOf($runIds)
             ->get()
             ->keyBy('id');
 

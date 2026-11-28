@@ -153,7 +153,7 @@ final readonly class DockProjection
             ->inInbox($inbox)
             ->olderThan($place->assignedAt, $place->placementId)
             ->newestAssignedFirst()
-            ->readExactly(self::BATCH_LIMIT)
+            ->limit(self::BATCH_LIMIT)
             ->get();
     }
 

@@ -14,7 +14,7 @@ final readonly class OfferNextAskHandler implements CommandHandler
 
     public function handle(OfferNextAskCommand $command): void
     {
-        $hop = AskHop::query()->whereKey($command->hopId)->readExactly(1)->sole();
+        $hop = AskHop::query()->whereKey($command->hopId)->sole();
         $this->attention->offerNext($hop->actor());
     }
 }

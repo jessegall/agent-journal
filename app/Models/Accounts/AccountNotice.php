@@ -116,7 +116,6 @@ final class AccountNotice extends JournalModel implements EventSource, ReadableM
             ->ofDriver($driver)
             ->oldestFirst()
             ->lockForUpdate()
-            ->readAll('a driver keeps one open notice per reason')
             ->get();
 
         return array_values($notices->all());

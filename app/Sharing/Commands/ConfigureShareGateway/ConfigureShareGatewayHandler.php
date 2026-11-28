@@ -67,7 +67,7 @@ final readonly class ConfigureShareGatewayHandler extends SharingCommandHandler
 
             ShareGatewayConfiguration::query()->markedDefault()->whereKeyNot(
                 $configuration->id,
-            )->lockForUpdate()->readAll('at most one configuration is the default')->get();
+            )->lockForUpdate()->get();
 
             ShareGatewayConfiguration::query()->markedDefault()->whereKeyNot($configuration->id)->update(
                 ['is_default' => false],

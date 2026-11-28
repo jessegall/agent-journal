@@ -81,7 +81,7 @@ final class ProfileRevisionHold extends JournalModel implements EventSource, Rea
      */
     public static function findPending(int $limit): array
     {
-        $pending = self::query()->unreconciled()->oldestFirst()->readExactly($limit)->get();
+        $pending = self::query()->unreconciled()->oldestFirst()->limit($limit)->get();
 
         return array_values($pending->all());
     }

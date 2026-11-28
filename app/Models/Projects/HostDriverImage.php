@@ -184,7 +184,7 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
                 ->select('id'));
 
         // Each dropped image the host built is removed from its daemon once the drop commits.
-        $built = (clone $replaced)->whereNotNull('image')->readAll('the replaced images of one driver on one host');
+        $built = (clone $replaced)->whereNotNull('image');
 
         foreach ($built->get() as $dropped) {
             $this->raise(new DriverImageReplaced($dropped->id, $dropped->host_id, (string) $dropped->image));

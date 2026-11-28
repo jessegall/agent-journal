@@ -134,7 +134,6 @@ final class AccountUsageWindow extends JournalModel implements EventSource, Read
         $windows = self::query()
             ->inCurrentGenerationOf($accounts)
             ->inWindowOrder()
-            ->readAll('an account holds a few windows of its current sign-in')
             ->get();
 
         $grouped = [];

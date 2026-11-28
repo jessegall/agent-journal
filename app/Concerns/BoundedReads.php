@@ -7,15 +7,13 @@ namespace App\Concerns;
 use App\Exceptions\LazyLoadRefused;
 use App\Exceptions\ModelReadAllRefused;
 use App\Reads\ReadMeter;
-use App\Reads\ReadSettings;
 use App\Records\Values\ReadOrder;
 use App\Support\ReadBuilder;
-use Illuminate\Container\Container;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
- * Bounds every plain read of a model: at most reads.default_limit rows, newest first, unless the read names a
- * larger one. A model without a creation time overrides defaultReadOrder().
+ * Guards the reads of a model: newest first unless the read names an order, no lazy load, no query in an accessor
+ * and no read of every row. A model without a creation time overrides defaultReadOrder().
  */
 trait BoundedReads
 {
@@ -28,11 +26,6 @@ trait BoundedReads
     public function newEloquentBuilder($query): ReadBuilder
     {
         return new ReadBuilder($query);
-    }
-
-    public function defaultReadLimit(): int
-    {
-        return Container::getInstance()->make(ReadSettings::class)->defaultLimit;
     }
 
     public function defaultReadOrder(): ReadOrder

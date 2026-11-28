@@ -697,7 +697,6 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
             ->with('session')
             ->notStopping()
             ->helpingSession($sessionId)
-            ->readAll('every running helper of one session is stopped before the session itself')
             ->get()
             ->all());
     }
@@ -713,7 +712,6 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $sessionsWithRunningHelpers = AgentSession::query()
             ->helpersOfAny($ids)
             ->withLiveRuntime()
-            ->readAll('every helper still running holds back the stop of the session it helps')
             ->pluck('parent_session_id')
             ->all();
 

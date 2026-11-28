@@ -27,7 +27,7 @@ final readonly class RuntimeResolver implements RuntimeResolverContract
             ->withWatchers()
             ->orderBy('id')
             ->forPage(max(1, $page), $perPage)
-            ->readExactly($perPage)
+            ->limit($perPage)
             ->get()
             ->map(fn (AgentRuntime $runtime) => $runtime->status($now))
             ->all());
@@ -48,7 +48,7 @@ final readonly class RuntimeResolver implements RuntimeResolverContract
         return array_values(DriverRequest::query()
             ->ofAgentRuntime($this->visibleRuntimeOf($sessionId)->id)
             ->bySequenceDescending()
-            ->readExactly($limit)
+            ->limit($limit)
             ->get()
             ->map(fn (DriverRequest $request) => $request->status)
             ->all());

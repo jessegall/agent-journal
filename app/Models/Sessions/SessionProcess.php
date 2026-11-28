@@ -356,7 +356,6 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
         return self::query()->supervised()
             ->ofSessions($ids)
             ->newestOfItsSession()
-            ->readExactlyOf($ids)
             ->pluck('id', 'session_id')
             ->all();
     }
@@ -373,7 +372,6 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
         $latest = self::query()->supervised()
             ->ofAgents($agentIds)
             ->newestOfItsAgent()
-            ->readExactlyOf($agentIds)
             ->get();
 
         return $latest->filter(fn (self $start) => $start->refusal !== null)->mapWithKeys(
@@ -405,7 +403,6 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
             ->onHost($hostId)
             ->unresolved()
             ->oldestFirst()
-            ->readAll('a host reconciles every start it may still run')
             ->pluck('start_key');
 
         return array_values(array_map(strval(...), $keys->all()));
@@ -430,7 +427,6 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
             ->onAccount($account)
             ->unresolved()
             ->oldestFirst()
-            ->readAll('every start that may still use a held account must end before its sign-in changes')
             ->pluck('session_id');
 
         return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
@@ -447,7 +443,6 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
             ->onHost($hostId)
             ->unresolved()
             ->oldestFirst()
-            ->readAll('a host runs the stop conditions of every session it may still run')
             ->pluck('session_id');
 
         return array_values(array_unique(array_map(strval(...), $sessionIds->all())));

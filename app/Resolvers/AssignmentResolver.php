@@ -61,7 +61,7 @@ final readonly class AssignmentResolver implements AssignmentResolverContract
 
         $rows = AssignmentRecord::query()
             ->ofAnyRecords($visibleIdsByType)
-            ->readExactly(array_sum(array_map(count(...), $visibleIdsByType)))
+            ->limit(array_sum(array_map(count(...), $visibleIdsByType)))
             ->oldestFirst()
             ->get();
 

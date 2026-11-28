@@ -4,21 +4,14 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Engine\Enums\ReadMode;
 use App\Exceptions\ReadLimitExceeded;
-use App\Exceptions\ReadLimitInvalid;
-use App\Exceptions\ReadLimitTooLarge;
-use App\Exceptions\ReadReasonMissing;
 use App\Exceptions\ReadShapeUnsupported;
 use App\Exceptions\RelationReadUndeclared;
-use App\Reads\ChunkedRead;
-use App\Reads\ReadSettings;
+use App\Reads\ReadMeter;
 use App\Reads\Values\PageSize;
 use App\Records\Contracts\ReadableModel;
 use Closure;
-use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -27,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use PhpOption\Option;
 
 /**
- * The query builder of a model with BoundedReads. A plain read returns at most the model's default rows, newest
- * first; a larger read is named (readLimit, readAll, readInChunks) or paged. Counts, sums and writes are never
- * limited.
+ * The query builder of a model with BoundedReads: a read without an order of its own is read in the model's default
+ * order, a page holds at most reads.page_max rows, a scan goes by key batches, and a to-many eager load declares how
+ * many rows it reads.
  *
  * @template TModel of Model
  *
@@ -37,10 +30,6 @@ use PhpOption\Option;
  */
 class ReadBuilder extends Builder
 {
-    private ReadMode $mode = ReadMode::Default;
-
-    private int|null $namedLimit = null;
-
     private int|null $completeRelationMax = null;
 
     /**
@@ -67,96 +56,12 @@ class ReadBuilder extends Builder
     }
 
     /**
-     * A fixed number of rows larger than a page, such as a sweep of 500; a number a page holds is limit()'s.
-     *
-     * @throws ReadLimitInvalid
-     */
-    public function readLimit(int $rows): static
-    {
-        $pageMax = Container::getInstance()->make(ReadSettings::class)->pageMax;
-
-        if ($rows <= $pageMax) {
-            throw ReadLimitInvalid::withinPage($rows, $pageMax);
-        }
-
-        return $this->readExactly($rows);
-    }
-
-    /**
-     * At most this many rows, whatever their number: a page's limit() when a page holds them, else readLimit().
-     */
-    public function readUpTo(int $rows): static
-    {
-        $pageMax = Container::getInstance()->make(ReadSettings::class)->pageMax;
-
-        if ($rows <= $pageMax) {
-            return $this->limit($rows);
-        }
-
-        return $this->readLimit($rows);
-    }
-
-    /**
-     * Exactly a known set, however many: as many rows as the set holds, such as the rows of the given ids.
-     *
-     * @param  array<array-key, mixed>  $set
-     */
-    public function readExactlyOf(array $set): static
-    {
-        return $this->readExactly(count($set));
-    }
-
-    /**
-     * Exactly this many rows, however many, such as a known number of rows for each of a set.
-     *
-     * @throws ReadLimitInvalid
-     */
-    public function readExactly(int $rows): static
-    {
-        if ($rows < 0) {
-            throw ReadLimitInvalid::rows($rows);
-        }
-
-        $this->mode = ReadMode::Limited;
-        $this->namedLimit = $rows;
-
-        return $this;
-    }
-
-    /**
-     * Every matching row, for the reason given, keeping every scope and order of the query.
-     *
-     * @throws ReadReasonMissing
-     */
-    public function readAll(string $reason): static
-    {
-        if (trim($reason) === '') {
-            throw ReadReasonMissing::create();
-        }
-
-        $this->mode = ReadMode::Unbounded;
-
-        return $this;
-    }
-
-    /**
-     * Every matching row in batches by ascending key; the callback gets each batch and may stop with false.
-     *
-     * @param  callable(Collection<int, TModel>): (bool|void)  $each
-     */
-    public function readInChunks(int $size, callable $each): void
-    {
-        $this->mode = ReadMode::Chunked;
-        new ChunkedRead($this, $size)->run($each);
-    }
-
-    /**
      * Read as the eager load of a to-many relation declared complete up to the given number of rows.
      */
     public function readRelationCompletely(int $max): void
     {
         $this->completeRelationMax = $max;
-        $this->readExactly($max + 1);
+        $this->limit($max + 1);
     }
 
     /**
@@ -187,7 +92,7 @@ class ReadBuilder extends Builder
      */
     public function getModels($columns = ['*']): array
     {
-        $this->applyReadPolicy();
+        $this->orderForReading();
 
         return parent::getModels($columns);
     }
@@ -198,14 +103,14 @@ class ReadBuilder extends Builder
      */
     public function pluck($column, $key = null)
     {
-        $this->applyReadPolicy();
+        $this->orderForReading();
 
         return parent::pluck($column, $key);
     }
 
     public function cursor()
     {
-        $this->applyReadPolicy();
+        $this->orderForReading();
 
         return parent::cursor();
     }
@@ -260,13 +165,18 @@ class ReadBuilder extends Builder
     }
 
     /**
+     * Every matching row in batches by ascending key, read again on purpose for each batch.
+     *
      * @param  int  $count
      * @param  string|null  $column
      * @param  string|null  $alias
      */
     public function chunkById($count, callable $callback, $column = null, $alias = null): bool
     {
-        throw ReadShapeUnsupported::method('chunkById');
+        return ReadMeter::ofCurrentScope()->withinSchedule(
+            'chunked read',
+            fn (): bool => parent::chunkById($count, $callback, $column, $alias),
+        );
     }
 
     /**
@@ -307,10 +217,6 @@ class ReadBuilder extends Builder
             || $relation instanceof MorphOne
             || $relation instanceof MorphTo;
 
-        if ($query instanceof self && $readsOnePerParent) {
-            $query->readAll('one row per parent of the eager load');
-        }
-
         if ($query instanceof self && ! $readsOnePerParent && $query->completeRelationMax === null) {
             throw RelationReadUndeclared::for($name);
         }
@@ -324,32 +230,6 @@ class ReadBuilder extends Builder
         }
 
         return $relation->match($parents, $relatedModels, $name);
-    }
-
-    /**
-     * Puts the default limit and order on a plain read, and the unique key last in any order.
-     *
-     * @throws ReadLimitTooLarge
-     */
-    private function applyReadPolicy(): void
-    {
-        $query = $this->getQuery();
-        $pageMax = Container::getInstance()->make(ReadSettings::class)->pageMax;
-
-        $query->limit = match ($this->mode) {
-            ReadMode::Limited => $query->limit === null ? $this->namedLimit : min(
-                (int) $query->limit,
-                (int) $this->namedLimit,
-            ),
-            ReadMode::Unbounded, ReadMode::Chunked => $query->limit,
-            ReadMode::Default => $query->limit ?? $this->defaultLimit(),
-        };
-
-        if (! $this->mode->mayExceedPage() && $query->limit !== null && $query->limit > $pageMax) {
-            throw ReadLimitTooLarge::rows((int) $query->limit, $pageMax);
-        }
-
-        $this->orderForReading();
     }
 
     /**
@@ -414,14 +294,5 @@ class ReadBuilder extends Builder
     private function holdsMoreThanDeclared(int $rows): bool
     {
         return $this->completeRelationMax !== null && $rows > $this->completeRelationMax;
-    }
-
-    private function defaultLimit(): int
-    {
-        if ($this->model instanceof ReadableModel) {
-            return $this->model->defaultReadLimit();
-        }
-
-        return Container::getInstance()->make(ReadSettings::class)->defaultLimit;
     }
 }

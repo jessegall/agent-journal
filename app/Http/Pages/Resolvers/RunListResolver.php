@@ -25,7 +25,7 @@ final readonly class RunListResolver implements PageResolver
 
         $operations = PartRun::query()
             ->ofRuns($runs->modelKeys())
-            ->readLimit(1_000)
+            ->limit(1_000)
             ->get()
             ->groupBy('process_run_id');
 

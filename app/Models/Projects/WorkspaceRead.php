@@ -172,7 +172,7 @@ final class WorkspaceRead extends JournalModel implements EventSource, ReadableM
             ->unsampled()
             ->byAgentsOnHost($hostId)
             ->oldestFirst()
-            ->readExactly($limit)
+            ->limit($limit)
             ->get();
 
         return array_values($pending->all());

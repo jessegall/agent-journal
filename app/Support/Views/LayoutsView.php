@@ -19,7 +19,6 @@ final readonly class LayoutsView
     {
         return array_values(Layout::query()
             ->byName()
-            ->readAll('the layout picker lists every layout of the user')
             ->get()
             ->map(
                 fn (Layout $layout) => LayoutData::from(

@@ -113,7 +113,7 @@ final class Profile extends JournalModel implements EventSource, ReadableModel
      */
     public static function findListed(int $limit): array
     {
-        return array_values(self::query()->inKeyOrder()->readExactly($limit)->get()->all());
+        return array_values(self::query()->inKeyOrder()->limit($limit)->get()->all());
     }
 
     // ----------[ Scopes ]----------

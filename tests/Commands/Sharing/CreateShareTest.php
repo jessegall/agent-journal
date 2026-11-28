@@ -143,15 +143,15 @@ final class CreateShareTest extends SharingTestCase
         $this->assertSame(ShareStatus::Pending, $summary->status);
         $this->assertSame($share->number, $summary->number);
         $this->assertSame(Share::FIRST_SCOPE_VERSION, $share->scope_version);
-        $this->assertSame([TestIds::of(101)], ShareMember::query()->readAll('one member')->pluck('target_id')->all());
+        $this->assertSame([TestIds::of(101)], ShareMember::query()->pluck('target_id')->all());
 
         $this->assertSame(
             GatewayOperationType::Open,
-            ShareGatewayOperation::query()->readAll('one operation')->sole()->type,
+            ShareGatewayOperation::query()->sole()->type,
         );
 
-        $this->assertSame(ShareAuditType::Created, ShareAudit::query()->readAll('one audit')->sole()->type);
-        $this->assertTrue(SharePreview::query()->readAll('one preview')->sole()->consumed_at !== null);
+        $this->assertSame(ShareAuditType::Created, ShareAudit::query()->sole()->type);
+        $this->assertTrue(SharePreview::query()->sole()->consumed_at !== null);
         $this->assertSame(ShareToken::digestOf((string) $share->token_ciphertext), $share->token_digest);
 
         $this->assertEqualsWithDelta(

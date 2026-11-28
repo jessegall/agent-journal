@@ -109,7 +109,7 @@ final class Project extends JournalModel implements EventSource, ReadableModel
     public static function findListed(): array
     {
         return array_values(
-            self::query()->inLabelOrder()->readAll('an installation connects a handful of projects')->get()->all(),
+            self::query()->inLabelOrder()->get()->all(),
         );
     }
 

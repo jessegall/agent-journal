@@ -49,7 +49,7 @@ final readonly class PruneHookHistory
         $deleted = 0;
 
         do {
-            $batch = $prunable()->orderBy('id')->readExactly($this->periods->batchSize)->get();
+            $batch = $prunable()->orderBy('id')->limit($this->periods->batchSize)->get();
             $this->removal->forgetModels(array_values($batch->all()));
             $count = $prunable()->whereKey($batch->modelKeys())->delete();
             $deleted += (int) $count;

@@ -4,7 +4,7 @@
     "sin": {
         "description": "A row is read once per item of a loop.",
         "name": "load-in-loop",
-        "rule": "Read every row the loop needs in one query before the loop (whereKey, whereIn, with), or use readInChunks.",
+        "rule": "Read every row the loop needs in one query before the loop (whereKey, whereIn, with), or scan with chunkById.",
         "skill": "bounded-reads"
     },
     "find": {

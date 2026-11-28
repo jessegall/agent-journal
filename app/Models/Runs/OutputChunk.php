@@ -127,29 +127,6 @@ final class OutputChunk extends JournalModel implements ReadableModel
     }
 
     /**
-     * The rows by stream, then offset.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function byStreamThenOffset(Builder $query): void
-    {
-        $query->orderBy('stream');
-        $query->orderBy('offset');
-    }
-
-    /**
-     * The rows by offset.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function byOffset(Builder $query): void
-    {
-        $query->orderBy('offset');
-    }
-
-    /**
      * The chunks at or past the offset.
      *
      * @param  Builder<self>  $query

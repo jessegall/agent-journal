@@ -51,7 +51,7 @@ final class EngineFrameTime extends JournalModel implements ReadableModel
             return [];
         }
 
-        return self::query()->ofFrames($ids)->readExactlyOf($ids)->get()
+        return self::query()->ofFrames($ids)->get()
             ->mapWithKeys(fn (self $time) => [$time->frame_id => $time->settled_at])
             ->all();
     }

@@ -281,8 +281,7 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
      */
     public static function findListedOfBindings(array $ids): array
     {
-        return array_values(self::query()->ofBindings($ids)->newestFirst()
-            ->readAll('a binding has a device grant per shell that asked')->get()->all());
+        return array_values(self::query()->ofBindings($ids)->newestFirst()->get()->all());
     }
 
     /**
@@ -352,8 +351,7 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
     public static function findLockedLiveOf(ProjectBinding $binding): array
     {
         return array_values(self::query()->ofBindings([$binding->id])
-            ->unrevoked()->lockForUpdate()
-            ->readAll('a binding has a device grant per shell that asked')->get()->all());
+            ->unrevoked()->lockForUpdate()->get()->all());
     }
 
     // ----------[ Scopes ]----------

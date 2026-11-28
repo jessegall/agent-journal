@@ -491,7 +491,7 @@ final class Task extends JournalModel implements
 
         $unique = array_values(array_unique($ids));
 
-        return self::query()->whereKey($unique)->readExactlyOf($unique)
+        return self::query()->whereKey($unique)
             ->get(['id', 'number', 'title', 'status'])->keyBy('id')->all();
     }
 
@@ -508,7 +508,7 @@ final class Task extends JournalModel implements
      */
     public static function resolveNumberOf(string $id): int
     {
-        return (int) self::query()->whereKey($id)->readExactly(1)->value('number');
+        return (int) self::query()->whereKey($id)->value('number');
     }
 
     /**
@@ -536,7 +536,7 @@ final class Task extends JournalModel implements
             PoolMembersType::Ordered => $query->whereKey($members->ids->ids)->inListedOrder($members->ids),
         };
 
-        return new OrderedRecordIds(array_values($ordered->readExactly($limit)->pluck('id')->all()));
+        return new OrderedRecordIds(array_values($ordered->limit($limit)->pluck('id')->all()));
     }
 
     // ----------[ Scopes ]----------

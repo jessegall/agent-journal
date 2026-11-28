@@ -143,7 +143,7 @@ final class Phase extends JournalModel implements Assignable, EventSource, Numbe
         return array_map(
             strval(...),
             array_values(
-                PhaseTask::query()->ofPhase($this->id)->inPositionOrder()->readAll('every task of the phase')
+                PhaseTask::query()->ofPhase($this->id)->inPositionOrder()
                     ->pluck('task_id')->all(),
             ),
         );
@@ -275,7 +275,6 @@ final class Phase extends JournalModel implements Assignable, EventSource, Numbe
                 'plan_id, coalesce(min(case when finished_tasks < total_tasks then number end), max(number)) as current',
             )
             ->perPlan()
-            ->readAll('one row of each listed plan')
             ->pluck('current', 'plan_id')
             ->map(fn (mixed $number) => (int) $number)
             ->all();
@@ -288,7 +287,7 @@ final class Phase extends JournalModel implements Assignable, EventSource, Numbe
      */
     public static function findHeadingsIn(string $planId, int $after, int $limit): EloquentCollection
     {
-        return self::query()->ofPlan($planId)->numberedAfter($after)->inNumberOrder()->readUpTo($limit)->get();
+        return self::query()->ofPlan($planId)->numberedAfter($after)->inNumberOrder()->limit($limit)->get();
     }
 
     // ----------[ Scopes ]----------

@@ -217,7 +217,7 @@ final class ActiveAccount extends JournalModel implements EventSource, ReadableM
      */
     public static function findListed(): array
     {
-        return array_values(self::query()->inDriverOrder()->readAll('one row per driver')->get()->all());
+        return array_values(self::query()->inDriverOrder()->get()->all());
     }
 
     // ----------[ Scopes ]----------
