@@ -21,7 +21,7 @@ final class ReflectedMethod
 {
     use ReadsDeclaredAttributes;
 
-    private readonly DeclarationAttributes $declaredAttributes;
+    private DeclarationAttributes $declaredAttributes;
 
     /**
      * @var list<ReflectedParameter>
