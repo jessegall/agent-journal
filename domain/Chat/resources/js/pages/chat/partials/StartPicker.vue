@@ -131,7 +131,7 @@ const optionClass =
           >
             <Avatar :participant="{ kind: 'agent', driver: driver.family }" />
             <span class="flex min-w-0 flex-col leading-[1.3]">
-              <b class="text-card font-medium">{{ driver.label }}</b>
+              <b class="text-card font-medium text-text" data-start-label>{{ driver.label }}</b>
               <small class="truncate text-meta text-text-3">{{ accountLabelOf(driver) }}</small>
             </span>
           </button>
@@ -161,7 +161,7 @@ const optionClass =
                 @click="pick('account', account.id)"
                 @keydown="press($event, 'account', choice.chosen.value.accounts.map((each) => each.id), choice.accountId.value)"
               >
-                <b class="text-card font-medium">{{ account.label }}</b>
+                <b class="text-card font-medium text-text" data-start-label>{{ account.label }}</b>
               </button>
             </template>
           </div>
@@ -182,7 +182,7 @@ const optionClass =
               @keydown="press($event, 'model', choice.chosen.value.models, choice.model.value)"
             >
               <span class="flex flex-col leading-[1.3]">
-                <b class="text-card font-medium">{{ each }}</b>
+                <b class="text-card font-medium text-text" data-start-label>{{ each }}</b>
                 <template v-if="each === choice.chosen.value.defaultModel">
                   <small class="text-meta text-text-3">Default</small>
                 </template>
@@ -197,7 +197,7 @@ const optionClass =
             <button
               type="button"
               role="radio"
-              :class="[optionClass, 'min-h-9 justify-center capitalize']"
+              :class="[optionClass, 'min-h-9 justify-center text-text capitalize']"
               :aria-checked="each === choice.effort.value"
               :tabindex="each === choice.effort.value ? 0 : -1"
               :disabled="isStarting"
