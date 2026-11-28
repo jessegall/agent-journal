@@ -47,16 +47,18 @@ final readonly class SharePreviewResolver implements PageResolver
 
         $saved = SharePreview::findOpenFor($this->actors->actor()->actorId(), $root);
 
-        return SharePreviewData::from([
-            'rootReference' => $this->request->rootReference(),
-            'rootTitle' => $candidates->root->title,
-            'candidates' => array_map(
-                fn (ShareLinkedCandidate $candidate) => ShareCandidateData::fromCandidate($candidate, $approved),
-                $candidates->linked,
-            ),
-            'savedPreview' => SavedSharePreviewData::optionalOrMissing($saved->getOrElse(null)),
-            'liveShare' => RootShareData::optionalOrMissing($live->getOrElse(null)),
-            'openProposals' => Share::findOpenProposalsFor($root),
-        ]);
+        return SharePreviewData::build()
+            ->rootReference($this->request->rootReference())
+            ->rootTitle($candidates->root->title)
+            ->candidates(
+                array_map(
+                    fn (ShareLinkedCandidate $candidate) => ShareCandidateData::fromCandidate($candidate, $approved),
+                    $candidates->linked,
+                ),
+            )
+            ->savedPreview(SavedSharePreviewData::optionalOrMissing($saved->getOrElse(null)))
+            ->liveShare(RootShareData::optionalOrMissing($live->getOrElse(null)))
+            ->openProposals(Share::findOpenProposalsFor($root))
+            ->finish();
     }
 }

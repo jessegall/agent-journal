@@ -17,6 +17,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class SharePreviewData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<SharePreviewDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = SharePreviewDataFields::class;
+
     /**
      * @param  list<ShareCandidateData>  $candidates
      * @param  list<RootShareData>  $openProposals
