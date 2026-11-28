@@ -3566,6 +3566,171 @@ const R7_NOTES=[['One chat bar (round 7)','The agent bar and its second row are 
   ['Starting a chat','A chat with no session, new or ended, has no composer: in its place a picker with big choices. Provider (only signed-in ones; the others are named with Add an account), Model, Effort, the defaults or the last run already chosen, then Start or Enter; ← → move within a group. A new chat centres it; an ended one keeps its history above it. A failed start keeps the choices, says why in red and offers Start again. With no account signed in it offers only Add an account. Effort is new: the driver holds no effort yet.']];
 NOTE_CARDS.push(...R7_NOTES);
 if(dn)dn.insertAdjacentHTML('beforeend',R7_NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join(''));
+
+/* =====================================================================================================================
+   Round 8: a chat's technical details (user 32033). Quiet debug lines in the chat's own flow, and a Technical details
+   panel with the full log of the agent's starts, processes, wakes, retries and failures, newest first.
+   ===================================================================================================================== */
+document.head.insertAdjacentHTML('beforeend',`<style>
+.dbg{display:flex;align-items:baseline;gap:7px;width:100%;font:inherit;font-size:var(--text-badge);line-height:1.45;color:var(--text-3);border:0;background:transparent;padding:0;cursor:pointer;text-align:left}
+.dbg:hover{color:var(--text-2)}
+.dbg:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:3px}
+.dbg .tm{flex:none;font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);font-variant-numeric:tabular-nums}
+.dbg .mk8{flex:none;width:12px;display:inline-flex;justify-content:center;align-self:center}
+.dbg .mk8 .dt{width:5px;height:5px;border-radius:50%;background:var(--text-4)}
+.dbg .mk8 .spin{width:9px;height:9px}
+.dbg .tx{min-width:0}
+.dbg .tx i{font-style:normal;color:var(--text-4)}
+.dbg.bad,.dbg.bad .tx i{color:var(--danger)}
+.dbg.bad .mk8 .dt{background:var(--danger)}
+.dbg .cd{font-variant-numeric:tabular-nums}
+.turn .dbg+.dbg{margin-top:-4px}
+.dbgend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:var(--text-small);color:var(--danger);padding:2px 0}
+.dbgend .lk8{font:inherit;color:var(--text-2);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.dbgend .lk8:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.ib.tech8.bad{color:var(--danger)}
+.tf8{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line);flex:none}
+.tf8 button{height:24px;padding:0 9px;border-radius:var(--radius-button);border:1px solid var(--line);background:transparent;font:inherit;font-size:var(--text-small);color:var(--text-2);cursor:pointer}
+.tf8 button[aria-pressed=true]{border-color:var(--border-3);color:var(--text);background:var(--sel)}
+.tf8 button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.tg8{padding:10px 14px 4px;display:flex;align-items:baseline;gap:8px;font-size:var(--text-small);color:var(--text-2);border-top:1px solid var(--line)}
+.tg8:first-child{border-top:0}
+.tg8 b{font-weight:500;color:var(--text)}
+.tg8 .s8{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:var(--text-meta);color:var(--text-3)}
+.tg8 .s8.bad{color:var(--danger)}
+.trow{display:grid;grid-template-columns:54px 14px 1fr;gap:0 7px;width:100%;text-align:left;border:0;background:transparent;font:inherit;color:var(--text-2);padding:5px 14px;font-size:var(--text-small);line-height:1.4;cursor:default}
+.trow.can{cursor:pointer}
+.trow.can:hover{background:var(--hover)}
+.trow:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.trow[data-hot]{background:var(--sel)}
+.trow .tm{font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);padding-top:2px;font-variant-numeric:tabular-nums}
+.trow .mk8{display:flex;justify-content:center;padding-top:5px}
+.trow .mk8 .dt{width:5px;height:5px;border-radius:50%;background:var(--text-4)}
+.trow.bad{color:var(--danger)}
+.trow.bad .mk8 .dt{background:var(--danger)}
+.trow small{display:block;color:var(--text-3);font-size:var(--text-meta)}
+.ex8{padding:2px 14px 10px 96px;font-size:var(--text-small);color:var(--text-2)}
+.ex8 .lab{font-size:var(--text-meta);color:var(--text-3);margin:6px 0 3px}
+.ex8 pre{margin:0;padding:8px 10px;background:var(--code-bg);border-radius:var(--radius-field);font-family:var(--font-mono);font-size:11px;line-height:1.5;color:var(--text);white-space:pre-wrap;word-break:break-word}
+.ex8 .acts8{display:flex;gap:6px;margin-top:8px}
+.tfoot8{flex:none;border-top:1px solid var(--line);padding:8px 14px;font-size:var(--text-meta);color:var(--text-3);display:flex;align-items:center;gap:8px}
+</style>`);
+
+/* One start of an agent: what the journal did to get it running, in order. The panel shows them newest first. */
+let TECH={},TSEL=null,TOPEN={},TFILT='all',TRUN=0,TID=0;
+const tnow=(s=0)=>{const d=new Date(2026,10,28,14,31,0);d.setSeconds(d.getSeconds()+s);return d.toTimeString().slice(0,8)};
+const PROOF={
+  wake:['$ journal-host wake agent-1 --turn 2291','→ wrote 1 message to the process input (pid 48219)','… no reply line in 30 s','process 48219: alive · CPU 0 % · last output 14:28:52','host: the turn opener timed out (wake.timeout=30s)'],
+  launch:n=>[`$ claude --resume 8c1f…e42 --output-format stream-json   (pid ${48230+n*14})`,'stderr: Invalid API key · Please run /login','exit status 1 after 2.3 s, before its first turn','container journal-agent-1 · image journal/claude-code:2.1.4','account Work (Max) · the journal\'s own check passed at 14:31:03']};
+function techSeed(){TECH={main:[
+  {n:1,day:'Yesterday',at:'17:02',end:'Ended by you at 18:40',tries:1,ev:[
+    {id:-1,t:'17:02:01',x:'Container started',d:'journal-agent-1 · 0.8 s'},{id:-2,t:'17:02:04',x:'Image pulled',d:'journal/claude-code:2.1.3 · 41 MB in 2.9 s'},
+    {id:-3,t:'17:02:05',x:'Sign-in checked',d:'Work (Max) · valid until 18 Dec'},{id:-4,t:'17:02:06',x:'Process started',d:'claude · pid 47102'},
+    {id:-5,t:'17:02:07',x:'Turn opened',d:'your message went in'},{id:-6,t:'17:40:12',x:'Woke for a message',d:'a reply from Worker 3 · 0.6 s'},{id:-7,t:'18:40:30',x:'Process ended',d:'exit 0 · you ended the session'}]},
+  {n:2,day:'Today',at:'09:12',end:'Asleep since 11:20',tries:1,ev:[
+    {id:-8,t:'09:12:00',x:'Container started',d:'journal-agent-1 · 0.9 s'},{id:-9,t:'09:12:01',x:'Image ready',d:'journal/claude-code:2.1.4 was already here'},
+    {id:-10,t:'09:12:02',x:'Sign-in checked',d:'Work (Max)'},{id:-11,t:'09:12:03',x:'Process started',d:'claude · pid 48019'},{id:-12,t:'09:12:04',x:'Turn opened',d:'your message went in'},
+    {id:-13,t:'11:20:41',x:'Process asleep',d:'no work for 20 min · the conversation is kept'}]}]};
+  TSEL=null;TOPEN={};TFILT='all'}
+const curStart=c=>{const s=TECH[c];return s&&s[s.length-1]};
+const startWord=s=>s.live?'Starting…':s.fail?`Failed after ${s.tries} tries`:s.end||(s.tries>1?`Started on attempt ${s.tries} of 3`:'Started');
+function techCount(c){return (TECH[c]||[]).reduce((n,s)=>n+s.ev.filter(e=>e.bad&&!e.end).length,0)}
+
+/* ---- The lines in the chat ---------------------------------------------------------------------------------------- */
+EXTRA_KIND.dbg=(c,m)=>{const s=(TECH[c]||[]).find(x=>x.n===m[1]),e=s&&s.ev.find(x=>x.id===m[2]);if(!e)return '';
+  if(e.end)return `<div class="dbgend" role="status">${I('alert','s14')}<span>${esc(e.x)}: ${esc(e.why)}</span><button class="lk8" data-techopen="${c}:${e.id}" data-fk="techend:${e.id}">Technical details</button><button class="lk8" data-techacct>Sign in again</button></div>`;
+  const mk=e.live?'<span class="spin" aria-hidden="true"></span>':'<span class="dt"></span>';
+  const wait=e.wait!=null?` · <span class="cd">next in ${e.wait} s</span>`:'';
+  return `<button class="dbg${e.bad?' bad':''}" data-techopen="${c}:${e.id}" data-fk="dbg:${e.id}" title="Open the technical details"${e.live||e.wait!=null?' role="status"':''}><span class="tm">${e.t.slice(0,5)}</span><span class="mk8">${mk}</span><span class="tx">${esc(e.live?e.pend:e.x)}${e.d&&!e.live?` <i>· ${esc(e.d)}</i>`:''}${wait}</span></button>`};
+const r8Turn=turnKey;turnKey=function(c,m){return m[0]==='dbg'?'ag':r8Turn(c,m)};
+
+/* ---- The panel ---------------------------------------------------------------------------------------------------- */
+const openTech=(c,id)=>{TSEL=id==null?null:id;if(id!=null){const e=(TECH[c]||[]).flatMap(s=>s.ev).find(x=>x.id===id);if(e&&e.end){const s=curStart(c),last=s.ev.filter(x=>x.bad&&!x.end).pop();if(last)TSEL=last.id}TOPEN[TSEL]=true}
+  TFILT='all';openPanel({kind:'tech',conv:c});
+  requestAnimationFrame(()=>{const r=$(`[data-trow="${TSEL}"]`);if(r){r.scrollIntoView({block:'nearest'});r.focus()}})};
+ABOVE_COMPOSER.push(c=>{if(!CPANEL||CPANEL.kind!=='tech'||CPANEL.conv!==c)return '';const nm=mainName(c),all=(TECH[c]||[]).slice().reverse(),bad=techCount(c);
+  const rows=all.map(s=>{const ev=s.ev.slice().reverse().filter(e=>!e.end&&(TFILT==='all'||e.bad));if(!ev.length)return '';
+    const st=`<span class="s8 ${s.fail?'bad':''}">${s.live?'<span class="spin" aria-hidden="true"></span>':s.fail?I('alert','s13'):''}${esc(startWord(s))}</span>`;
+    return `<div class="tg8"><b>Start ${s.n}</b><span>${s.day} ${s.at}</span>${st}</div>`+ev.map(e=>{const can=!!e.why,open=can&&TOPEN[e.id];
+      return `<button class="trow${e.bad?' bad':''}${can?' can':''}" data-trow="${e.id}" data-fk="trow:${e.id}" ${can?`aria-expanded="${!!open}"`:'tabindex="-1"'} ${TSEL===e.id?'data-hot':''}><span class="tm">${e.t}</span><span class="mk8">${e.live?'<span class="spin" aria-hidden="true"></span>':'<span class="dt"></span>'}</span><span>${esc(e.live?e.pend:e.x)}${e.d&&!e.live?`<small>${esc(e.d)}</small>`:''}${e.wait!=null?`<small>The next try in ${e.wait} s</small>`:''}</span></button>`
+        +(open?`<div class="ex8"><div class="lab">Reason</div>${esc(e.why)}<div class="lab">Evidence</div><pre>${e.proof.map(esc).join('\n')}</pre><div class="acts8"><button class="btn sm bordered" data-tcopy="${e.id}">${I('copy','s14')}Copy the evidence</button></div></div>`:'')}).join('')}).join('');
+  return `<aside class="cpanel" role="dialog" aria-label="${esc(nm)}'s technical details" data-cpanel data-tech><div class="cphead">${I('pulse','s14')}<b>Technical details</b><small style="color:var(--text-3);font-size:var(--text-meta)">${esc(nm)} · newest first</small><span style="flex:1"></span><button class="ib" data-cpclose data-fk="cpclose" aria-label="Close the technical details" title="Close · Esc">${I('close','s14')}</button></div>
+    <div class="tf8" role="group" aria-label="Show"><button data-tfilt="all" data-fk="tfilt:all" aria-pressed="${TFILT==='all'}">Everything</button><button data-tfilt="bad" data-fk="tfilt:bad" aria-pressed="${TFILT==='bad'}">Failures${bad?' '+bad:''}</button></div>
+    <div class="cpbody" data-keepscroll="cpbody">${rows||`<div class="empty"><b>No failures</b>Every start, process and wake of ${esc(nm)} went through.</div>`}</div>
+    <div class="tfoot8">Starts, processes, wakes and retries of the last 30 days<span style="flex:1"></span><button class="btn sm" data-tcopyall>${I('copy','s14')}Copy all</button></div></aside>`});
+
+/* The agent row gets a quiet button for it, red while the latest start failed; the chat list's foot names it too. */
+const r8Row=row7;row7=function(c){const h=r8Row(c);if(isGroup(c)||!TECH[c])return h;const s=curStart(c),bad=s&&s.fail,on=CPANEL&&CPANEL.kind==='tech'&&CPANEL.conv===c;
+  return h.replace('<button class="chip7"',`<button class="ib tech8${bad?' bad':''}" data-techopen="${c}:" data-fk="techbtn:${c}" aria-expanded="${!!on}" aria-label="Technical details of ${esc(mainName(c))}${bad?': the last start failed':''}" title="Technical details · starts, processes, wakes and retries">${I('pulse','s14')}</button><button class="chip7"`)};
+const r8Pick=pickHtml;pickHtml=function(){return r8Pick().replace('<button class="btn sm" data-pswitch','<button class="btn sm" data-ptech>'+I('pulse','s14')+'Technical details</button><button class="btn sm" data-pswitch')};
+const r8Draw=drawPick;drawPick=function(){r8Draw();const g=$('#cpick'),b=g&&$('[data-ptech]',g);if(b)b.onclick=()=>{const c=A.mainConv;closePick();openTech(c)}};
+
+WIRE_EXTRA.push(on=>{
+  on('[data-techopen]',b=>b.onclick=()=>{const [c,id]=b.dataset.techopen.split(':');if(!id&&CPANEL&&CPANEL.kind==='tech'&&CPANEL.conv===c){closePanel();return}openTech(c,id?+id:null)});
+  on('[data-techacct]',b=>b.onclick=()=>{page='accounts';render()});
+  on('[data-tfilt]',b=>b.onclick=()=>{TFILT=b.dataset.tfilt;render();focusFk('tfilt:'+TFILT)});
+  on('[data-trow]',b=>b.onclick=()=>{if(!b.classList.contains('can'))return;const id=+b.dataset.trow;TOPEN[id]=!TOPEN[id];TSEL=id;render();focusFk('trow:'+id)});
+  on('[data-tcopy]',b=>b.onclick=()=>toast('Copied the evidence'));
+  on('[data-tcopyall]',b=>b.onclick=()=>toast('Copied the whole log'));
+  on('[data-tech]',p=>p.addEventListener('keydown',ev=>{if(ev.key!=='ArrowDown'&&ev.key!=='ArrowUp')return;const rows=$$('.trow.can',p),i=rows.indexOf(document.activeElement);if(i<0)return;ev.preventDefault();rows[(i+(ev.key==='ArrowDown'?1:-1)+rows.length)%rows.length].focus()}))});
+
+/* ---- The three starts, played live -------------------------------------------------------------------------------- */
+/* A wait of 10 s counts down at four times the speed here, so the flow fits in a look. */
+const TECH_TICK=250;
+async function techPlay(c,plan){const my=++TRUN,cv=CONV[c],a=agentOf(c),all=TECH[c],s={n:all.length+1,day:'Today',at:tnow(plan.from||0).slice(0,5),live:true,tries:1,ev:[]};all.push(s);
+  const z=async ms=>{await sleep(ms);if(TRUN!==my)throw 'stopped'};let sec=plan.from||0;
+  const add=e=>{e.id=++TID;e.t=tnow(sec);s.ev.push(e);cv.msgs.push(['dbg',s.n,e.id]);render();return e};
+  const dl={s:'sent',to:[[a,'waiting']]};if(plan.msg)cv.msgs.push(['me',esc(plan.msg),undefined,{dl}]);STATE[c]='Starting the session…';render();
+  try{await z(500);
+    for(const st of plan.steps){
+      if(st.wait){const e=add({x:st.x,d:st.d,bad:true,why:st.why,proof:st.proof,wait:st.wait});
+        for(let w=st.wait;w>0;w--){e.wait=w;render();await z(TECH_TICK);sec++}e.wait=null;s.tries++;render();continue}
+      if(st.end){s.live=false;s.fail=true;add({x:st.x,why:st.why,end:true,bad:true});
+        dl.to=[[a,'failed','Agent 1 could not start']];dl.wake=true;STATE[c]='Start failed · Claude Code refused the sign-in';render();return}
+      const e=add({x:st.x,d:st.d,pend:st.pend,live:true,bad:st.bad,why:st.why,proof:st.proof});await z(st.ms||700);sec+=Math.ceil((st.ms||700)/500);e.live=false;e.t=tnow(sec);render()}
+    s.live=false;delete NOSESS[c];dl.to=[[a,'delivered']];STATE[c]='Working on your message';render();await z(1400);
+    cv.msgs.push(['ag',tnow(sec+3).slice(0,5),plan.reply]);STATE[c]='Idle · waits for you';render()}
+  catch(e){if(e!=='stopped')throw e}}
+const UP={pend:'Starting its container…',x:'Container started',d:'journal-agent-1 · 0.9 s'};
+const PULL={pend:'Pulling its image…',x:'Image pulled',d:'journal/claude-code:2.1.4 · 41 MB in 3.2 s',ms:1300};
+const CACHED={pend:'Looking for its image…',x:'Image ready',d:'journal/claude-code:2.1.4 was already here',ms:400};
+const SIGN={pend:'Checking the sign-in…',x:'Sign-in checked',d:'Work (Max) · valid until 18 Dec'};
+const PROC=(pid,n)=>({pend:'Starting Claude Code…',x:'Process started',d:`claude · pid ${pid}${n?` · attempt ${n} of 3`:''}`});
+const OPEN={pend:'Opening the turn…',x:'Turn opened',d:'your message went in',ms:500};
+const ASK='Check the bell toast on small screens.';
+const TECH_PLANS={
+  ok:{msg:ASK,reply:'On it. The toast is in resources/js/components/Toast.vue; I\'ll look at it at 360 px and tell you here.',steps:[UP,PULL,SIGN,PROC(48211),OPEN]},
+  retry:{msg:ASK,reply:'Back with you. Looking at the toast at 360 px now.',steps:[UP,CACHED,SIGN,PROC(48219),
+    {wait:10,x:'Wake failed',d:'no answer in 30 s · attempt 1 of 3',why:'Claude Code was running but did not answer the wake within 30 seconds, so the journal tries again.',proof:PROOF.wake},
+    {pend:'Waking it · attempt 2 of 3…',x:'Woke on attempt 2 of 3',d:'answered in 1.4 s',ms:1000},OPEN]},
+  fail:{msg:ASK,steps:[UP,PULL,SIGN,PROC(48230),
+    {wait:10,x:'Launch failed',d:'Claude Code exited with code 1 before its first turn · attempt 1 of 3',why:'Claude Code stopped at once: it says its sign-in is not valid and asks for /login.',proof:PROOF.launch(0)},PROC(48244,2),
+    {wait:20,x:'Launch failed',d:'exited with code 1 again · attempt 2 of 3',why:'The same refusal: Claude Code asks for /login.',proof:PROOF.launch(1)},PROC(48258,3),
+    {pend:'Waiting for its first turn…',x:'Launch failed',d:'exited with code 1 · attempt 3 of 3',bad:true,ms:900,why:'The third try ended the same way, so the journal stopped trying. The journal\'s own check of Work (Max) passed, but Claude Code refuses it: most likely it was signed out on another machine.',proof:PROOF.launch(2)},
+    {end:true,x:'Agent 1 did not start after 3 tries',why:'Claude Code refused the sign-in of Work (Max)'}]}};
+
+Object.assign(STEPS,{
+  tech1:['22 · A healthy start','Agent 1 is asleep; you send a message. Small lines in the chat\'s own quiet style say what the journal does around it, each with its time: container started, image pulled, sign-in checked, process started, turn opened. Then Agent 1 answers. Click a line, the pulse button beside the agent\'s name, or Technical details in its chat list: a panel shows the full log, newest first, with this start above the earlier ones.'],
+  tech2:['23 · A start that retries','The wake fails once: the line turns red, says why and counts down to the next try (attempt 1 of 3 · next in 10 s; the waits run four times faster here). The second try wakes it, the turn opens and Agent 1 answers. In Technical details the failed wake opens to its reason and evidence.'],
+  tech3:['24 · A start that fails','Claude Code exits at once on each of three tries, the waits growing (10 s, then 20 s). After the third the chat says so in one red line with the reason, Technical details and Sign in again; your message reads Not delivered, the agent\'s state Start failed with Try again, and the pulse button turns red. Failures in the panel shows only the three. Try again here goes through.']});
+['tech1','tech2','tech3'].forEach(k=>{Object.defineProperty(STEPS[k],2,{get:()=>`<button class="tbtn" data-techplay>▶ Play again</button>`});
+  const b=document.createElement('button');b.dataset.k=k;b.textContent=STEPS[k][0];b.onclick=()=>{step=k;page='home';load()};$('#steps').append(b)});
+const TECH_BASE=()=>[['day','Today'],['me','Plan the notifications bell.'],['ag','11:18','Plan 56 is filed: four tasks, the bell first. I\'ll wait for you.']];
+const techRun=()=>{TRUN++;CONV.main.msgs=TECH_BASE();techSeed();NOSESS.main='asleep';STATE.main='Not running · your next message wakes it';
+  if(CPANEL&&CPANEL.kind==='tech')CPANEL=null;render();techPlay('main',TECH_PLANS[{tech1:'ok',tech2:'retry',tech3:'fail'}[step]])};
+LOADERS.push(()=>{TRUN++;techSeed();if(!/^tech[123]$/.test(step))return;MC.open=['main'];A.mainConv='main';CONV.main.msgs=TECH_BASE();
+  NOSESS.main='asleep';STATE.main='Not running · your next message wakes it';setTimeout(()=>{if(/^tech[123]$/.test(step))techRun()},300)});
+AFTER_RENDER.push(()=>{const sl=$('#sLine'),b=sl&&$('[data-techplay]',sl);if(b)b.onclick=techRun});
+/* Try again on a failed start, or Retry on its message, starts it again; here that start goes through. */
+WIRE_EXTRA.push(on=>{if(step!=='tech3')return;
+  const again=()=>{const ms=CONV.main.msgs;for(let i=ms.length-1;i>=0;i--){const dl=ms[i][3]&&ms[i][3].dl;if(dl&&dl.wake){dl.wake=false;dl.to=[[agentOf('main'),'delivered']];break}}
+    techPlay('main',{from:150,reply:'I\'m running now. Looking at the toast at 360 px.',steps:[UP,CACHED,{...SIGN,d:'Work (Max) · signed in again at 14:33'},PROC(48302),OPEN]})};
+  on('[data-st7retry]',b=>b.onclick=again);on('[data-dlretry]',b=>b.onclick=again)});
+
+const R8_NOTES=[['Debug lines in the chat (round 8)','What the journal does around an agent sits in its chat as small lines in the activity style: the time in mono, a dot, then the event in plain words (Container started · journal-agent-1 · 0.9 s). A line in progress has a spinner; a failure is red and counts down to the next try (attempt 1 of 3 · next in 10 s). A start that gives up ends in one red line with its reason, Technical details and Sign in again. Every line opens the panel at its own entry.'],
+  ['Technical details','A panel inside the chat, like Memories: opened from the pulse button beside the agent\'s name (red while the last start failed), from Technical details at the chat list\'s foot, or from any debug line. Everything or Failures; the log grouped by start, newest first, each start with its outcome (Started, Started on attempt 2 of 3, Failed after 3 tries). A failure opens to its reason and its evidence (command, stderr, exit status, container, account), with Copy the evidence; Copy all copies the log. ↑ ↓ move between failures, Esc closes.']];
+NOTE_CARDS.push(...R8_NOTES);
+if(dn)dn.insertAdjacentHTML('beforeend',R8_NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join(''));
 load();
 })();
 </script>
