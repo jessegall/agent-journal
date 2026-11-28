@@ -115,11 +115,11 @@ type createdProgram struct {
 	Tty        bool     `json:"Tty"`
 }
 
-// Play starts a Docker daemon that plays the recorded scenario of the driver, closed when the test ends; a call the
+// Play starts a Docker daemon that plays the recorded scenario, closed when the test ends; a call the
 // recording does not hold fails the test naming it.
-func Play(t testing.TB, driver, name string) *Playing {
+func Play(t testing.TB, scenario recorded.Scenario) *Playing {
 	t.Helper()
-	playing, err := PlayScenario(t, recorded.MustLoad(t, driver, name))
+	playing, err := PlayScenario(t, scenario)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -351,16 +351,18 @@ func (playing *Playing) printRun(key string, connection net.Conn) {
 
 // isLongPoll answers whether the call waits on its container: a wait, or a log followed until the container ends.
 func isLongPoll(call recorded.Call) bool {
-	return strings.HasSuffix(call.Answered.Path, "/wait") ||
-		(strings.HasSuffix(call.Answered.Path, "/logs") && call.Answered.Query["follow"] == "1")
+	request := call.Request()
+	return strings.HasSuffix(request.Path, "/wait") ||
+		(strings.HasSuffix(request.Path, "/logs") && request.Query["follow"] == "1")
 }
 
 // containerCalledBy is the container a call is about: the one its path names, or the one a create names.
 func containerCalledBy(call recorded.Call) string {
-	if strings.HasSuffix(call.Answered.Path, "/containers/create") {
-		return call.Answered.Query["name"]
+	request := call.Request()
+	if strings.HasSuffix(request.Path, "/containers/create") {
+		return request.Query["name"]
 	}
-	return containerOf(call.Answered.Path)
+	return containerOf(request.Path)
 }
 
 // containerOf is the container a path of Docker's API names: /v1.x/containers/<id>/...

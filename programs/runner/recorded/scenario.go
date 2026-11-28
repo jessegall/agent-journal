@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"journal-runner/recording"
@@ -97,17 +98,41 @@ func Load(root, driver, name string) (Scenario, error) {
 }
 
 // MustLoad reads the recorded scenario from the repository the test runs in, failing the test by name when it cannot.
-func MustLoad(t testing.TB, driver, name string) Scenario {
+func MustLoad(t testing.TB, name string) Scenario {
 	t.Helper()
 	root, err := Root()
 	if err != nil {
 		t.Fatal(err)
 	}
-	scenario, err := Load(root, driver, name)
+	driver, scenarioName, err := testRecording(root, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	scenario, err := Load(root, driver, scenarioName)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return scenario
+}
+
+// testRecording resolves a test's name from the fixture list or a unique scenario definition.
+func testRecording(root, name string) (string, string, error) {
+	var names map[string]string
+	if err := readJSON(filepath.Join(root, "programs/runner/recorded/testdata/names.json"), &names); err != nil {
+		return "", "", err
+	}
+	if named, found := names[name]; found {
+		driver, recordingName, _ := strings.Cut(named, "/")
+		return driver, recordingName, nil
+	}
+	matches, err := filepath.Glob(filepath.Join(root, "resources/recordings/scenarios", "*", name+".json"))
+	if err != nil {
+		return "", "", err
+	}
+	if len(matches) != 1 {
+		return "", "", fmt.Errorf("expected one recording named %q, found %d scenario definitions", name, len(matches))
+	}
+	return filepath.Base(filepath.Dir(matches[0])), name, nil
 }
 
 // Exchange is the exchange of that name.
@@ -133,13 +158,17 @@ func (scenario Scenario) ExchangesOn(wire recording.Wire) []Exchange {
 
 // Calls are the calls that crossed the wire, in the order they were answered.
 func (scenario Scenario) Calls(wire recording.Wire) ([]Call, error) {
+	return scenario.calls(wire, false)
+}
+
+func (scenario Scenario) calls(wire recording.Wire, includeUnanswered bool) ([]Call, error) {
 	calls := []Call{}
 	for _, exchange := range scenario.ExchangesOn(wire) {
-		answered, err := exchange.calls()
+		recorded, err := exchange.calls(includeUnanswered)
 		if err != nil {
 			return nil, err
 		}
-		calls = append(calls, answered...)
+		calls = append(calls, recorded...)
 	}
 	return calls, nil
 }

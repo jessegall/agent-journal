@@ -33,10 +33,11 @@ type Journal struct {
 func Replay(t testing.TB, scenario recorded.Scenario) Journal {
 	t.Helper()
 	replay := recorded.MustCallReplay(t, scenario, recording.WireHost)
-	replay.IsLongPoll = func(call recorded.Call) bool { return call.Answered.Path == claimPath }
+	replay.IsLongPoll = func(call recorded.Call) bool { return call.Request().Path == claimPath }
 	replay.OrderGroup = func(recorded.Call) string { return "the journal" }
 	replay.IsStreamed = func(call recorded.Call) bool {
-		return strings.HasSuffix(call.Answered.Path, "/output") || call.Answered.Path == "/host/heartbeat"
+		path := call.Request().Path
+		return strings.HasSuffix(path, "/output") || path == "/host/heartbeat"
 	}
 	secret := hostapi.InstructionSecretOf(EnrollmentSecret)
 	replay.Answering = func(call recorded.Call, body []byte) []byte {
@@ -96,7 +97,7 @@ func ClaimedOf(call recorded.Call, body []byte) ([]hostapi.Instruction, map[stri
 // Connected loads the call exchange identified by a protocol 2 inventory from the named recording.
 func Connected(t testing.TB, name string) (recorded.Scenario, hostapi.Inventory) {
 	t.Helper()
-	scenario := recorded.MustLoad(t, "connected", name)
+	scenario := recorded.MustLoad(t, name)
 	calls, err := scenario.Calls(recording.WireHost)
 	if err != nil {
 		t.Fatal(err)

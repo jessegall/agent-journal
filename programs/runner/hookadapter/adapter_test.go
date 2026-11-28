@@ -69,14 +69,14 @@ func journalAway(context.Context, []byte) (Reply, error) {
 	return Reply{}, errors.New("unreachable")
 }
 
-func nativeHook(t *testing.T, driver, scenario string, wanted nativeCall) []byte {
+func nativeHook(t *testing.T, scenario string, wanted nativeCall) []byte {
 	t.Helper()
-	return decodedHookBody(t, recordedHook(t, driver, scenario, wanted, 1).Asked.Body)
+	return decodedHookBody(t, recordedHook(t, scenario, wanted, 1).Asked.Body)
 }
 
-func recordedHook(t *testing.T, driver, scenario string, wanted nativeCall, occurrence int) recorded.Call {
+func recordedHook(t *testing.T, scenario string, wanted nativeCall, occurrence int) recorded.Call {
 	t.Helper()
-	calls, err := recorded.MustLoad(t, driver, scenario).Calls(recording.WireHooks)
+	calls, err := recorded.MustLoad(t, scenario).Calls(recording.WireHooks)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +90,7 @@ func recordedHook(t *testing.T, driver, scenario string, wanted nativeCall, occu
 			return call
 		}
 	}
-	t.Fatalf("%s/%s has no recorded hook for %+v", driver, scenario, wanted)
+	t.Fatalf("%s has no recorded hook for %+v", scenario, wanted)
 	return recorded.Call{}
 }
 
@@ -105,17 +105,16 @@ func decodedHookBody(t *testing.T, body string) []byte {
 
 func TestTheNativeClearCompactAndWriteReachTheJournalWhole(t *testing.T) {
 	for _, hook := range []struct {
-		driver     string
 		scenario   string
 		call       nativeCall
 		occurrence int
 	}{
-		{"claude-code", "terminal-clear", nativeCall{Event: "SessionStart"}, 2},
-		{"claude-code", "terminal-compact", nativeCall{Event: "SessionStart"}, 2},
-		{"codex", "refused-write", nativeCall{Event: "PreToolUse", Tool: "Bash"}, 1},
+		{"terminal-clear", nativeCall{Event: "SessionStart"}, 2},
+		{"terminal-compact", nativeCall{Event: "SessionStart"}, 2},
+		{"refused-write", nativeCall{Event: "PreToolUse", Tool: "Bash"}, 1},
 	} {
 		t.Run(hook.scenario, func(t *testing.T) {
-			exchange := recordedHook(t, hook.driver, hook.scenario, hook.call, hook.occurrence)
+			exchange := recordedHook(t, hook.scenario, hook.call, hook.occurrence)
 			native := decodedHookBody(t, exchange.Asked.Body)
 			var reply Reply
 			if err := json.Unmarshal(decodedHookBody(t, exchange.Answered.Body), &reply); err != nil {
@@ -136,15 +135,15 @@ func TestTheNativeClearCompactAndWriteReachTheJournalWhole(t *testing.T) {
 }
 
 func TestAJournalAwayIsAnsweredFromTheFileForEachDriversShape(t *testing.T) {
-	for driver, spawnTool := range map[string]string{"claude-code": "Task", "codex": "spawn_agent"} {
-		path := writeReplies(t, spawnTool, driver+"-deny")
+	for scenario, spawnTool := range map[string]string{"terminal-turn": "Task", "second-terminal-turn": "spawn_agent"} {
+		path := writeReplies(t, spawnTool, scenario+"-deny")
 		adapter := preparedAdapter(t, path, journalAway)
 
-		tool := adapter.Answer(nativeHook(t, driver, "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
-		stop := adapter.Answer(nativeHook(t, driver, "terminal-turn", nativeCall{Event: "Stop"}))
+		tool := adapter.Answer(nativeHook(t, scenario, nativeCall{Event: "PreToolUse", Tool: "Bash"}))
+		stop := adapter.Answer(nativeHook(t, scenario, nativeCall{Event: "Stop"}))
 
-		if tool.Stdout != "away:"+driver+"-deny" || stop.Stdout != "{}" {
-			t.Fatalf("%s: got %+v and %+v", driver, tool, stop)
+		if tool.Stdout != "away:"+scenario+"-deny" || stop.Stdout != "{}" {
+			t.Fatalf("%s: got %+v and %+v", scenario, tool, stop)
 		}
 	}
 }
@@ -156,7 +155,7 @@ func TestASpawnToolIsRefusedWithoutAskingTheJournal(t *testing.T) {
 		return Reply{Stdout: "allowed"}, nil
 	})
 
-	reply := adapter.Answer(nativeHook(t, "claude-code", "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
+	reply := adapter.Answer(nativeHook(t, "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
 
 	if reply.Stdout != "spawn:deny" || asked {
 		t.Fatalf("got %+v, asked %v", reply, asked)
@@ -166,7 +165,7 @@ func TestASpawnToolIsRefusedWithoutAskingTheJournal(t *testing.T) {
 func TestAToolCallBeforeTheStartIsPreparedIsRefused(t *testing.T) {
 	adapter := Adapter{Ask: journalAway, RepliesFile: writeReplies(t, "Task", "deny"), PreparationFile: filepath.Join(t.TempDir(), "none")}
 
-	reply := adapter.Answer(nativeHook(t, "claude-code", "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
+	reply := adapter.Answer(nativeHook(t, "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
 
 	if reply.Stdout != "unprepared:deny" {
 		t.Fatalf("got %+v", reply)
@@ -178,8 +177,8 @@ func TestTheJournalsAnswerPassesAndAnUnknownEventIsRefused(t *testing.T) {
 		return Reply{Stdout: "from the journal"}, nil
 	})
 
-	answered := adapter.Answer(nativeHook(t, "claude-code", "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
-	unknown := adapter.Answer(nativeHook(t, "claude-code", "headless-turn", nativeCall{Event: "SessionEnd"}))
+	answered := adapter.Answer(nativeHook(t, "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
+	unknown := adapter.Answer(nativeHook(t, "headless-turn", nativeCall{Event: "SessionEnd"}))
 
 	if answered.Stdout != "from the journal" || unknown.ExitCode != 2 {
 		t.Fatalf("got %+v and %+v", answered, unknown)
@@ -195,7 +194,7 @@ func TestATamperedOrMissingFileRefusesEveryCall(t *testing.T) {
 	}
 	allow := func(context.Context, []byte) (Reply, error) { return Reply{Stdout: "allowed"}, nil }
 
-	stop := nativeHook(t, "claude-code", "terminal-turn", nativeCall{Event: "Stop"})
+	stop := nativeHook(t, "terminal-turn", nativeCall{Event: "Stop"})
 	tampered := preparedAdapter(t, path, allow).Answer(stop)
 	missing := preparedAdapter(t, filepath.Join(t.TempDir(), "hook-replies.json"), allow).Answer(stop)
 

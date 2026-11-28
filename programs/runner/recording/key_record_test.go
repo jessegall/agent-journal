@@ -2,6 +2,7 @@ package recording_test
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"journal-runner/recorded"
@@ -9,7 +10,7 @@ import (
 )
 
 func TestRecordKeysKeepsEveryByteAndDrawsOnlyWhatWasTyped(t *testing.T) {
-	_, fixture := recorded.MustTerminal(t, "claude-code", "change-model")
+	_, fixture := recorded.MustTerminal(t, "change-model")
 	var typed, record, screen bytes.Buffer
 	for _, input := range fixture.Inputs {
 		typed.Write(input.Bytes)
@@ -19,7 +20,7 @@ func TestRecordKeysKeepsEveryByteAndDrawsOnlyWhatWasTyped(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := "Check your pending journal work.\r\n/model claude-sonnet-5-5\r\n\r\nRun: ls.\r\n"
+	want := strings.NewReplacer("\x1b[200~", "", "\x1b[201~", "", "\r", "\r\n").Replace(typed.String())
 	if !bytes.Equal(record.Bytes(), typed.Bytes()) || screen.String() != want {
 		t.Fatalf("recorded %q and drew %q", record.String(), screen.String())
 	}

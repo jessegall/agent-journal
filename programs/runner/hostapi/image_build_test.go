@@ -13,7 +13,7 @@ import (
 	"journal-runner/host"
 )
 
-// buildInstruction is the build_image the journal handed out in the recorded Codex terminal turn, signed for the test.
+// buildInstruction is the build_image the journal handed out in the recorded terminal turn, signed for the test.
 func buildInstruction(t *testing.T) Instruction {
 	t.Helper()
 	instruction := recordedInstructions(t, "driver-image-build", "build_image")[0]

@@ -16,13 +16,17 @@ import (
 // A container that names its program in its entrypoint and its arguments in its command is answered as the program
 // was recorded, with the container's environment.
 func TestAContainerWhoseEntrypointNamesTheProgramPrintsItsSignIn(t *testing.T) {
-	signIn := recorded.MustProbe(t, "claude-code", "auth-status")
+	signIn := recorded.MustProbe(t, "auth-status")
+	const executable = "agent-program"
 	container := &dockermock.Container{}
-	container.Config.Entrypoint = []string{"/usr/local/bin/claude"}
+	container.Config.Entrypoint = []string{"/usr/local/bin/" + executable}
 	container.Config.Cmd = []string{"auth", "status", "--json"}
-	configDirectory := "/home/agent/.claude"
-	container.Config.Env = []string{"CLAUDE_CONFIG_DIR=" + configDirectory}
-	programs := programInContainer(mockProgram{"claude", recording.Fixture{}, signIn}, nil)
+	configDirectory := "/home/agent/config"
+	expected := signIn.Printed(func(name string) string {
+		container.Config.Env = append(container.Config.Env, name+"="+configDirectory)
+		return configDirectory
+	})
+	programs := programInContainer(mockProgram{executable, recording.Fixture{}, signIn}, nil)
 
 	program := programs(container)
 	if program == nil {
@@ -31,7 +35,7 @@ func TestAContainerWhoseEntrypointNamesTheProgramPrintsItsSignIn(t *testing.T) {
 	var printed bytes.Buffer
 	program(context.Background(), container, bytes.NewReader(nil), &printed)
 
-	if !strings.Contains(printed.String(), configDirectory) || printed.String() != signIn.Printed(variablesOf(container.Config.Env)) {
+	if !strings.Contains(printed.String(), configDirectory) || printed.String() != expected {
 		t.Fatalf("printed %q", printed.String())
 	}
 }
@@ -43,7 +47,7 @@ func TestAContainerWhoseShellRunsTheProgramPlaysTheSession(t *testing.T) {
 	container.Config.Cmd = []string{"/bin/sh", "-c",
 		`if find "$1" -name "$2" -print -quit | grep -q .; then exec 'agent-program' '--resume' 'a'; fi; exec 'agent-program' '--session-id' 'a'`,
 		"journal-session", "/home/agent/projects", "*a.jsonl"}
-	session := dockermock.RecordedProgramOf(t, "claude-code", "terminal-turn", "/bin/sh")
+	session := dockermock.RecordedProgramOf(t, "terminal-turn", "/bin/sh")
 	programs := programInContainer(mockProgram{"agent-program", recording.Fixture{}, recording.Fixture{}}, session.Run)
 
 	program := programs(container)

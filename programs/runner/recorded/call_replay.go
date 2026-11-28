@@ -59,7 +59,7 @@ type CallReplay struct {
 
 // NewCallReplay plays the scenario's calls on the wire, in the order they were answered.
 func NewCallReplay(failures Failures, scenario Scenario, wire recording.Wire) (*CallReplay, error) {
-	calls, err := scenario.Calls(wire)
+	calls, err := scenario.calls(wire, true)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +113,13 @@ func (replay *CallReplay) ServeHTTP(writer http.ResponseWriter, request *http.Re
 	if replay.Heard != nil {
 		replay.Heard(call, body)
 	}
+	if call.Answered.Status == nil {
+		select {
+		case <-request.Context().Done():
+		case <-replay.closed:
+		}
+		panic(http.ErrAbortHandler)
+	}
 	if call.Answered.IsUpgraded {
 		if replay.isOrdered(index) && !replay.awaitEarlier(request, index) {
 			return
@@ -147,18 +154,19 @@ func (replay *CallReplay) AssertPlayedWhole(t Failures) {
 	replay.mutex.Lock()
 	defer replay.mutex.Unlock()
 	for index, call := range replay.calls {
-		if !replay.played[index] && !replay.isStreamed(index) {
-			t.Errorf("the recorded call %s %s of exchange %s was never asked", call.Answered.Method, call.Answered.Path, call.Exchange)
+		if !replay.played[index] && replay.isRequired(index) {
+			request := call.Request()
+			t.Errorf("the recorded call %s %s of exchange %s was never asked", request.Method, request.Path, call.Exchange)
 		}
 	}
 }
 
-// IsPlayedWhole answers whether every recorded call that is not streamed was asked.
+// IsPlayedWhole answers whether every required recorded request has arrived.
 func (replay *CallReplay) IsPlayedWhole() bool {
 	replay.mutex.Lock()
 	defer replay.mutex.Unlock()
 	for index, played := range replay.played {
-		if !played && !replay.isStreamed(index) {
+		if !played && replay.isRequired(index) {
 			return false
 		}
 	}
@@ -170,7 +178,8 @@ func (replay *CallReplay) HasUnplayed(method, path string) bool {
 	replay.mutex.Lock()
 	defer replay.mutex.Unlock()
 	for index, call := range replay.calls {
-		if !replay.played[index] && call.Answered.Method == method && call.Answered.Path == path {
+		request := call.Request()
+		if !replay.played[index] && request.Method == method && request.Path == path {
 			return true
 		}
 	}
@@ -179,12 +188,21 @@ func (replay *CallReplay) HasUnplayed(method, path string) bool {
 
 func (replay *CallReplay) isOrdered(index int) bool {
 	call := replay.calls[index]
-	return replay.IsLongPoll != nil && replay.IsLongPoll(call) && replay.OrderGroup != nil && replay.OrderGroup(call) != "" &&
+	return replay.isLongPoll(call) && replay.OrderGroup != nil && replay.OrderGroup(call) != "" &&
 		!replay.isStreamed(index)
+}
+
+func (replay *CallReplay) isLongPoll(call Call) bool {
+	return replay.IsLongPoll != nil && replay.IsLongPoll(call)
 }
 
 func (replay *CallReplay) isStreamed(index int) bool {
 	return replay.IsStreamed != nil && replay.IsStreamed(replay.calls[index])
+}
+
+func (replay *CallReplay) isRequired(index int) bool {
+	call := replay.calls[index]
+	return !replay.isStreamed(index) && (call.Answered.Status != nil || !replay.isLongPoll(call))
 }
 
 // awaitEarlier waits until every call that was asked while the call waited for its answer, when recorded, was asked
@@ -215,7 +233,8 @@ func (replay *CallReplay) isEarlierPlayed(index int) bool {
 			continue
 		}
 		// A recording can overlap two hosts' polls on restart. The live host sends its next poll only after this one returns.
-		if call.Answered.Method == poll.Answered.Method && call.Answered.Path == poll.Answered.Path {
+		request := call.Request()
+		if request.Method == poll.Answered.Method && request.Path == poll.Answered.Path {
 			continue
 		}
 		if call.AskedAt > poll.AskedAt && call.AskedAt < answered {
@@ -285,12 +304,12 @@ func (replay *CallReplay) take(request *http.Request, body []byte) (int, error) 
 	if next < 0 {
 		return 0, fmt.Errorf("%s was asked after every recorded call was played", asked)
 	}
-	following := replay.calls[next]
+	following := replay.calls[next].Request()
 	if nearest != nil {
 		return 0, fmt.Errorf("%s was asked where the recording holds %s %s next, and %w", asked,
-			following.Answered.Method, following.Answered.Path, nearest)
+			following.Method, following.Path, nearest)
 	}
-	return 0, fmt.Errorf("%s was asked where the recording holds %s %s next", asked, following.Answered.Method, following.Answered.Path)
+	return 0, fmt.Errorf("%s was asked where the recording holds %s %s next", asked, following.Method, following.Path)
 }
 
 // playedRead is a read the host asks again, answered as the recording answered it the first time: a GET changes
@@ -313,12 +332,12 @@ func (replay *CallReplay) playedRead(request *http.Request) (int, bool) {
 // pathBound binds the request's live values in its path to the call's fakes on a copy of the bindings, which a
 // request of another method or path shape refuses.
 func (replay *CallReplay) pathBound(index int, request *http.Request) (*recording.Values, error) {
-	call := replay.calls[index]
+	call := replay.calls[index].Request()
 	tried := replay.values.Copy()
-	if call.Answered.Method != request.Method {
-		return nil, fmt.Errorf("%s is not %s", request.Method, call.Answered.Method)
+	if call.Method != request.Method {
+		return nil, fmt.Errorf("%s is not %s", request.Method, call.Method)
 	}
-	recordedPath, _ := json.Marshal(call.Answered.Path)
+	recordedPath, _ := json.Marshal(call.Path)
 	heardPath, _ := json.Marshal(request.URL.Path)
 	if err := tried.Hear(replay.placeOf(index).Within("path"), recordedPath, heardPath); err != nil {
 		return nil, err
@@ -351,8 +370,9 @@ type bodyRefusal struct {
 }
 
 func (refusal bodyRefusal) Error() string {
-	return fmt.Sprintf("the recorded %s %s of exchange %s differs in its body: %v", refusal.call.Answered.Method,
-		refusal.call.Answered.Path, refusal.call.Exchange, refusal.reason)
+	request := refusal.call.Request()
+	return fmt.Sprintf("the recorded %s %s of exchange %s differs in its body: %v", request.Method,
+		request.Path, refusal.call.Exchange, refusal.reason)
 }
 
 func (refusal bodyRefusal) Unwrap() error {

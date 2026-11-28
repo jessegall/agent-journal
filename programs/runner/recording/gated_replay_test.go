@@ -44,7 +44,7 @@ func assertNothingWritten(t *testing.T, written chunkWriter) {
 }
 
 func TestGatedReplayWritesEachGroupOnceItsInputIsTyped(t *testing.T) {
-	_, fixture := recorded.MustTerminal(t, "claude-code", "first-start")
+	_, fixture := recorded.MustTerminal(t, "first-start")
 	if len(fixture.Inputs) != 2 || len(fixture.Output) != 3 {
 		t.Fatal("first-start must have a screen at opening, after typing and after submitting")
 	}
@@ -78,7 +78,7 @@ func TestGatedReplayWritesEachGroupOnceItsInputIsTyped(t *testing.T) {
 }
 
 func TestGatedReplayStopsWithWhatItsListenerReturns(t *testing.T) {
-	_, fixture := recorded.MustTerminal(t, "claude-code", "first-start")
+	_, fixture := recorded.MustTerminal(t, "first-start")
 	stop := errors.New("stop at the first text input")
 	typed := strings.NewReader(string(fixture.Inputs[0].Bytes))
 	heard := func(piece recording.Typed) error {

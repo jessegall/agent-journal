@@ -12,7 +12,7 @@ import (
 // it reaches its program, closing it ends that input, and what the program printed is in its log.
 func TestAContainerThatTakesInputReadsWhatIsWrittenWithNoTerminal(t *testing.T) {
 	daemon := dockermock.Start(t, recordedImage)
-	turn := dockermock.RecordedProgramOf(t, "claude-code", "terminal-turn", "/bin/sh")
+	turn := dockermock.RecordedProgramOf(t, "terminal-turn", "/bin/sh")
 	daemon.Play(turn.Run)
 	containers, err := containersRecordedInto(daemon.Host(), ContainerRules{Arrangement: Local}, recordedRun(t, false))
 	if err != nil {
@@ -62,7 +62,7 @@ func TestAContainerThatTakesInputReadsWhatIsWrittenWithNoTerminal(t *testing.T) 
 // screen.
 func TestAnExitKeepsAtMostTheLastBytesAskedForOfItsLog(t *testing.T) {
 	daemon := dockermock.Start(t, recordedImage)
-	turn := dockermock.RecordedProgramOf(t, "claude-code", "headless-turn", "--settings")
+	turn := dockermock.RecordedProgramOf(t, "headless-turn", "--settings")
 	daemon.Play(turn.Run)
 	containers, err := containersRecordedInto(daemon.Host(), ContainerRules{Arrangement: Local}, recordedRun(t, false))
 	if err != nil {

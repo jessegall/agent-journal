@@ -19,12 +19,12 @@ import (
 	"journal-runner/recording"
 )
 
-// TestARecordedTerminalPlaysWhatItPrintedAsItIsTyped sends the recorded Docker calls of a Claude Code terminal turn as
+// TestARecordedTerminalPlaysWhatItPrintedAsItIsTyped sends the recorded Docker calls of a terminal turn as
 // the host sent them, in the order they were asked and each without waiting for the one before, up to the session
 // terminal's attach; it types there what was typed when it was recorded and reads back what the session printed.
 func TestARecordedTerminalPlaysWhatItPrintedAsItIsTyped(t *testing.T) {
-	playing := Play(t, "claude-code", "terminal-turn")
-	scenario := recorded.MustLoad(t, "claude-code", "terminal-turn")
+	scenario := recorded.MustLoad(t, "terminal-turn")
+	playing := Play(t, scenario)
 	calls, err := scenario.Calls(recording.WireDocker)
 	if err != nil {
 		t.Fatal(err)
@@ -70,7 +70,7 @@ func ask(address string, call recorded.Call) {
 
 func TestACallTheRecordingDoesNotHoldFailsNamingIt(t *testing.T) {
 	refused := &refusingTB{TB: t}
-	playing := Play(refused, "claude-code", "terminal-turn")
+	playing := Play(refused, recorded.MustLoad(t, "terminal-turn"))
 	response, err := http.Get(strings.Replace(playing.Host(), "tcp://", "http://", 1) + "/v1.51/plugins")
 	if err == nil {
 		_ = response.Body.Close()
