@@ -121,7 +121,8 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             ->keyBy('session_id');
 
         // The starts that wait for their host's driver image, read once for every agent shown.
-        $imageWaits = HostDriverImageWait::query()->ofStarts(array_values(array_map(strval(...), $starts->pluck('id')->all())))
+        $imageWaits = HostDriverImageWait::query()
+            ->ofStarts(array_values(array_map(strval(...), $starts->pluck('id')->all())))
             ->pluck('session_process_id')->all();
 
         $requests = DriverRequest::query()->ofAgentRuntimes($runtimes->pluck('id')->all())

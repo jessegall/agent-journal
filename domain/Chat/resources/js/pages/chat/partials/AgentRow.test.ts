@@ -33,7 +33,7 @@ function agentWith(facts: Partial<AgentOptionData> = {}): AgentOptionData {
 }
 
 function rowOf(agent: AgentOptionData) {
-  return mount(AgentRow, { props: { agent, agents: [agent], inboxId: "chat-1", seed: null } });
+  return mount(AgentRow, { props: { agent, agents: [agent], nextAgents: null, inboxId: "chat-1", seed: null } });
 }
 
 describe("AgentRow", () => {

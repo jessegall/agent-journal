@@ -89,6 +89,7 @@ function chatWith(inboxId: string, runningCommand: RunningCommandData | null = n
     agents: [{ id: "agent-1", name: "Main agent", status: { sessionState: "working", label: "working", actions: [] } }],
     selectedAgentId: "agent-1",
     isSetupRequired: false,
+    nextAgents: null,
     dockSections: [],
     chats: [],
     canCreateChats: false,

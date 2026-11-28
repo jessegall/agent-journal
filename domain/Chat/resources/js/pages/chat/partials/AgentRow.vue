@@ -4,7 +4,7 @@ import Icon from "@kit/Icon";
 import Status from "@kit/Status";
 import { useAppContext } from "@kit/appContext";
 import { computed } from "vue";
-import type { AgentOptionData } from "@generated/types/chat";
+import type { AgentOptionData, AgentPageCursorData } from "@generated/types/chat";
 import type { RunningCommandData } from "@generated/types/core";
 import { requestNewChat } from "../../../composables/useChatBarAsks";
 import { useOpenChats } from "../../../composables/useOpenChats";
@@ -21,6 +21,8 @@ import RunningCommand from "./RunningCommand.vue";
 const props = defineProps<{
   agent: AgentOptionData;
   agents: AgentOptionData[];
+  // Where the chat list's next page starts; none when the agents given are all there are.
+  nextAgents: AgentPageCursorData | null;
   inboxId: string;
   seed: RunningCommandData | null;
 }>();
@@ -66,6 +68,7 @@ function openBeside(other: AgentOptionData): void {
     <AgentSessionActions :key="`${agent.id}-${agent.sessionGeneration}`" :agent="agent" />
     <ConversationMenu
       :agents="agents"
+      :next-agents="nextAgents"
       :selected-agent-id="agent.id"
       :open-agent-ids="openChats.chats.agentIds"
       placement="above"

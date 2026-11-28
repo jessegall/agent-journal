@@ -379,6 +379,7 @@ watch(isShown, readOnOpen);
       <div class="border-b border-border py-2">
         <ConversationMenu
           :agents="chat.agents"
+          :next-agents="chat.nextAgents"
           :selected-agent-id="chat.selectedAgentId"
           :open-agent-ids="selected ? [selected.id] : []"
           @switch-driver="openSwitch"
@@ -472,6 +473,7 @@ watch(isShown, readOnOpen);
             <AgentRow
               :agent="selected"
               :agents="chat.agents"
+              :next-agents="chat.nextAgents"
               :inbox-id="conversation.inboxId"
               :seed="conversation.runningCommand"
               @switch-driver="openSwitch"
