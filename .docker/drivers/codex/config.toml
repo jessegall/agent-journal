@@ -4,3 +4,7 @@ args = ["codex", "/tmp/journal-session/hook-replies.json"]
 env_vars = ["JOURNAL_URL", "JOURNAL_START_TOKEN", "JOURNAL_PROFILE", "JOURNAL_PROFILE_REVISION"]
 startup_timeout_sec = 30
 tool_timeout_sec = 600
+
+[features]
+# The account folder is read-only to the agent, so Codex could not write its shell snapshot there.
+shell_snapshot = false

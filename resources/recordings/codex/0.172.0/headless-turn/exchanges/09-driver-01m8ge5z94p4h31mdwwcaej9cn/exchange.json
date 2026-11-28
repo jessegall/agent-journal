@@ -1,7 +1,7 @@
 {
     "opening": {
         "wire": "driver",
-        "exchange": "01m8gbz3dbf8egym5wa13v95j7",
+        "exchange": "01m8ge5z94p4h31mdwwcaej9cn",
         "mode": "process",
         "argv": [
             "codex",
@@ -12,13 +12,13 @@
         "folder": "/workspace",
         "columns": 0,
         "rows": 0,
-        "image": "sha256:3410274eba844d7361f36bb3b4d36b12d5a1841df4afa369baacfc6c494e14e0",
-        "openedAt": 1795845754324422
+        "image": "sha256:2b91945281a7e5bda7f6c6e59852b89f7b8423c2d4b70c82949a0d2b53a2897e",
+        "openedAt": 1795848076644425
     },
     "events": [
         {
             "type": "printed",
-            "at": 1795845754520642,
+            "at": 1795848076956167,
             "bytes": "V0FSTklORzogcHJvY2VlZGluZywgZXZlbiB0aG91Z2ggd2UgY291bGQgbm90IGNyZWF0ZSBQQVRIIGFsaWFzZXM6IFBlcm1pc3Npb24gZGVuaWVkIChvcyBlcnJvciAxMykK",
             "stream": "stderr",
             "secret": false,
@@ -28,7 +28,7 @@
         },
         {
             "type": "printed",
-            "at": 1795845754537035,
+            "at": 1795848076969433,
             "bytes": "Y29kZXgtY2xpIDAuMTcyLjAK",
             "stream": "stdout",
             "secret": false,

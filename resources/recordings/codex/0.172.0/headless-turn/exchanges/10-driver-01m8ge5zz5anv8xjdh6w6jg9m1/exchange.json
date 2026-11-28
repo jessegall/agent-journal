@@ -1,7 +1,7 @@
 {
     "opening": {
         "wire": "driver",
-        "exchange": "01m8gbz3yvvbde4fhv4h0b9es7",
+        "exchange": "01m8ge5zz5anv8xjdh6w6jg9m1",
         "mode": "process",
         "argv": [
             "--",
@@ -19,13 +19,13 @@
         "folder": "/workspace",
         "columns": 0,
         "rows": 0,
-        "image": "sha256:3410274eba844d7361f36bb3b4d36b12d5a1841df4afa369baacfc6c494e14e0",
-        "openedAt": 1795845754899791
+        "image": "sha256:2b91945281a7e5bda7f6c6e59852b89f7b8423c2d4b70c82949a0d2b53a2897e",
+        "openedAt": 1795848077342810
     },
     "events": [
         {
             "type": "printed",
-            "at": 1795845755558228,
+            "at": 1795848078161760,
             "bytes": "TG9nZ2VkIGluIHVzaW5nIENoYXRHUFQK",
             "stream": "stderr",
             "secret": false,
