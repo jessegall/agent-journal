@@ -96,4 +96,9 @@ final readonly class Driver implements DriverContract
     {
         return $this->handling->isWakeSettledByActivity();
     }
+
+    public function isRuntimeEndedBy(HostProcessEndEvent $fact): bool
+    {
+        return $this->handling->isRuntimeEndedBy($fact);
+    }
 }

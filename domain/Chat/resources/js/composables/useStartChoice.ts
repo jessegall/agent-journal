@@ -28,10 +28,8 @@ export type StartDriver = {
 export type StartState = "choosing" | "starting" | "refused";
 
 /**
- * The start picker's choices for a chat with no session, read from the app context so they show on its first paint:
- * the drivers with a signed-in account, then the account, the model and the effort, the chat's last run or the user's
- * last new chat preselected, and Start, which starts the session on them in this chat. A refused start keeps the
- * choices and may be sent again.
+ * The start picker's choices, from the app context so they show on its first paint: driver, account, model and effort,
+ * the chat's last run or the user's last new chat preselected, and Start. A refused start keeps them to send again.
  */
 export function useStartChoice(agent: () => AgentOptionData) {
   const { viewer, drivers: looks, startAccounts } = useAppContext();

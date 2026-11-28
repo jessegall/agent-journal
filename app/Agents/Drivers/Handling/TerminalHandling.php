@@ -66,4 +66,10 @@ final readonly class TerminalHandling implements RuntimeHandling
     {
         return true;
     }
+
+    public function isRuntimeEndedBy(HostProcessEndEvent $fact): bool
+    {
+        // A terminal lost with its host is opened again for the same start, so its runtime and session go on.
+        return ! $fact instanceof HostProcessLost;
+    }
 }

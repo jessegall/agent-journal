@@ -46,4 +46,9 @@ final readonly class HostHandling implements RuntimeHandling
     {
         return true;
     }
+
+    public function isRuntimeEndedBy(HostProcessEndEvent $fact): bool
+    {
+        return true;
+    }
 }

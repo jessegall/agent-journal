@@ -18,10 +18,9 @@ use App\Models\Projects\HostDriverImage;
 use App\Time\Contracts\ServerClock;
 
 /**
- * After a host started, keeps each process it still runs, loses each it no longer runs or no longer holds, removes
- * each container of its installation that no process the journal held live ran in, and refuses every input instruction
- * it had claimed, since keys meant for the screen before the restart must not land after it. A process opened after
- * the host built its inventory is left alone.
+ * After a host started: keeps the processes it still runs, loses the rest, removes containers no live process runs in,
+ * and refuses its claimed input instructions, so keys meant before the restart never land after it. A process opened
+ * after the host built its inventory is left alone.
  */
 final readonly class NotifyHostInventoryHandler implements CommandHandler
 {

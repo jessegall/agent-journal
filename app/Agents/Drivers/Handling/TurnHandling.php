@@ -55,4 +55,9 @@ final readonly class TurnHandling implements RuntimeHandling
     {
         return false;
     }
+
+    public function isRuntimeEndedBy(HostProcessEndEvent $fact): bool
+    {
+        return true;
+    }
 }

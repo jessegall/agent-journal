@@ -20,10 +20,8 @@ use Domain\Chat\Data\AgentLogStartData;
 use Domain\Chat\Enums\AgentLogLineType;
 
 /**
- * An agent's technical log, read from the journal's own records: each of its newest sessions as one start, with the
- * starts the host was asked for and their refusals, the host processes that ran for them and how they ended, and the
- * wakes and turns its driver was handed and how they went, in plain words: never a process id, a server path or a
- * request number. Evidence is masked as shell lines are.
+ * An agent's technical log from the journal's own records: each newest session as one start, with its refusals, its
+ * processes and how they ended, its wakes and turns, in plain words, never an id, a server path or a request number.
  */
 final readonly class AgentStartLog
 {
