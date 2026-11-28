@@ -136,8 +136,15 @@ function runningLine(line: string, changedAt: string): RunningCommandData {
 
 // The state the chat window sends while no account is signed in, as NoAccountsYet builds it.
 function noAccountsYet(): LayoutPartData {
-  const part = (fields: Partial<LayoutPartData>): LayoutPartData =>
-    ({ size: null, text: null, detail: null, rows: [], children: [], tabs: [], ...fields }) as LayoutPartData;
+  const part = (fields: Partial<LayoutPartData> & Pick<LayoutPartData, "tag" | "key" | "style">): LayoutPartData => ({
+    size: null,
+    text: null,
+    detail: null,
+    rows: [],
+    children: [],
+    tabs: [],
+    ...fields,
+  });
 
   return part({
     tag: "box",
@@ -157,8 +164,8 @@ function noAccountsYet(): LayoutPartData {
         key: "add",
         style: "primary",
         text: "Add account",
-        action: { href: "/accounts?add=1" },
-      } as Partial<LayoutPartData>),
+        action: { query: {}, submits: false, appends: false, href: "/accounts?add=1" },
+      }),
     ],
   });
 }
@@ -261,7 +268,7 @@ describe("ChatPane", () => {
     revealedProps.value = new Set(["window_chat_conversation"]);
     const pane = mount(ChatPane, {
       props: {
-        chat: { ...chatWith("conversation-1"), noAccounts: noAccountsYet() } as ChatData,
+        chat: { ...chatWith("conversation-1"), noAccounts: noAccountsYet() },
         offersChoice: false,
         agentUrl: () => "/chat",
         questionUrl: () => "/chat?question=1",

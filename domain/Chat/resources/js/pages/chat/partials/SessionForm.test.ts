@@ -3,7 +3,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import type { VueWrapper } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { reactive } from "vue";
-import type { AgentOptionData } from "@generated/types/chat";
+import type { AgentOptionData, AgentStatusData } from "@generated/types/chat";
 import { declaredLooks } from "@kit/testing/driverLooks";
 
 const posted: { url: string; body: Record<string, unknown> }[] = [];
@@ -80,6 +80,22 @@ vi.mock("@kit/sessionStarts", () => ({
 
 const { default: SessionForm } = await import("./SessionForm.vue");
 
+// An agent's status in its whole shape, as the chat sends it: idle and confirmed unless the test says otherwise.
+function statusOf(facts: Partial<AgentStatusData> = {}): AgentStatusData {
+  return {
+    sessionState: "idle",
+    isStartRefused: false,
+    label: "Idle",
+    reason: null,
+    remedy: null,
+    commandOutcome: null,
+    observationAgeSeconds: null,
+    actions: [],
+    isProcessConfirmed: true,
+    ...facts,
+  };
+}
+
 function agentOn(facts: Partial<AgentOptionData> = {}): AgentOptionData {
   return {
     id: "agent-1",
@@ -97,7 +113,7 @@ function agentOn(facts: Partial<AgentOptionData> = {}): AgentOptionData {
     sessionDriver: "claude-code",
     sessionDriverLabel: "Claude Code",
     sessionModel: "opus",
-    status: { sessionState: "idle", label: "Idle", actions: [] },
+    status: statusOf(),
     ...facts,
   } as unknown as AgentOptionData;
 }
@@ -183,8 +199,8 @@ describe("the Switch driver dialog", () => {
 
   it("waits for the current turn unless told to stop it now", async () => {
     const working = agentOn({
-      status: { sessionState: "working", label: "Working", actions: [{ type: "interrupt", label: "Interrupt" }] },
-    } as Partial<AgentOptionData>);
+      status: statusOf({ sessionState: "working", label: "Working", actions: [{ type: "interrupt", label: "Interrupt" }] }),
+    });
     const form = mount(SessionForm, { props: { agent: working } });
     await flushPromises();
 
@@ -196,7 +212,7 @@ describe("the Switch driver dialog", () => {
   });
 
   it("starts nothing for an agent with no session: the choice waits for its next message", async () => {
-    const stopped = agentOn({ sessionId: null, status: { sessionState: "stopped", label: "Stopped", actions: [] } } as Partial<AgentOptionData>);
+    const stopped = agentOn({ sessionId: null, status: statusOf({ sessionState: "stopped", label: "Stopped" }) });
     const form = mount(SessionForm, { props: { agent: stopped } });
     await flushPromises();
 

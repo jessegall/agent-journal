@@ -55,6 +55,7 @@ describe('a driver look', () => {
                 markUrl: '/images/drivers/acme.svg',
                 markTone: 'own',
                 signInCode: 'outgoing',
+                models: ['acme-large'],
             },
         ];
         const { driverLook } = useAppContext();

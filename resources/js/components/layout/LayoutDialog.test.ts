@@ -29,11 +29,9 @@ function part(fields: Partial<LayoutPartData> & Pick<LayoutPartData, 'tag' | 'ke
 }
 
 function dialog(dialogFields: Record<string, unknown>, href?: string): LayoutPartData {
-    const action: NonNullable<LayoutPartData['action']> = { query: {}, submits: false, appends: false };
-
-    if (href !== undefined) {
-        action.href = href;
-    }
+    const action: NonNullable<LayoutPartData['action']> = href === undefined
+        ? { query: {}, submits: false, appends: false }
+        : { query: {}, submits: false, appends: false, href };
 
     return part({
         tag: 'dialog',
