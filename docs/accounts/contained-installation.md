@@ -117,6 +117,10 @@ builds the agent image and the runner image, saves them under `images/`, and rec
 image into the server's Docker as well (`docker load -i images/runner-linux-amd64.tar`): the sign-in service and the
 agent host run from it. The agent daemon loads both from `images/` by itself when it starts, and keeps no other image.
 
+The runner image contains `journal-runner` for containers and pipe processes. To run your own terminal
+session, use the remote project release on your machine and run `journal-terminal claude` in a connected folder.
+Run `journal-terminal codex` when the connected project offers Codex with isolated hooks.
+
 ## 5. Secrets and workspaces
 
 - `secrets/journal_host_secret`: the agent host's enrollment secret from step 6, owned by uid 10001, mode 0600.

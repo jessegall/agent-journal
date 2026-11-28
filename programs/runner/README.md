@@ -1,24 +1,25 @@
 # journal-runner
 
-The journal's host for agent programs (doc 40). It runs on macOS and Linux: it serves the journal's driver requests,
-starts the pinned Claude Code and Codex builds on saved accounts through the protected host (task 258, doc 57) and
-records evidence sessions. How to install and run it, and why a start is refused, is in
-[docs/accounts/host-installation.md](../../docs/accounts/host-installation.md).
+The journal uses `journal-runner` to run pipe processes, manage containers and relay their output. The remote
+project release also ships `journal-terminal`. With that release's `bin` directory on PATH, run
+`journal-terminal claude` in the connected project folder. A driver with isolated hooks can run there too, for
+example `journal-terminal codex` when the journal offers Codex for that project.
 
 ## Recording a session
 
+Run the scenario recorder from the repository root. Terminal scenarios connect a scratch project and run
+`journal-terminal` inside a pseudo-terminal. Use the recording tools on an exchange folder containing
+`fixture.json`.
+
 ```sh
-cd programs/runner
-go build -o bin/journal-runner ./cmd/journal-runner
-bin/journal-runner record --driver claude --mode terminal --out ../../resources/recordings/claude-code/2.1.323/first-prompt -- claude
-bin/journal-runner record --driver codex --mode process --out testdata/recordings/codex/0.165.0/one-turn -- codex exec "say hi"
+sh scripts/record-scenarios.sh --owner=<email> claude-code/terminal-turn
+journal-terminal annotate <exchange-folder>
+journal-terminal screen <exchange-folder>
+journal-terminal render <recordings-folder>
 ```
 
-`--mode terminal` runs the program in a pseudo-terminal of your size and passes your keys and resizes through.
-`--mode process` runs it as one plain child with pipes. Both start it in its own process group.
-
-Press Ctrl-] to mark what you type next as secret, and again to end it. Secret input reaches the program but only
-its length is written. Never type a password, token or login code without marking it.
+`annotate` adds screen checkpoints after typed input. `screen` prints the final screen. `render` writes
+`frames.json` beside each fixture under the supplied folder.
 
 ## Where fixtures live
 
