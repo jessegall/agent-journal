@@ -26,12 +26,17 @@ import {
  * finds and opens any agent's chat: a search, filters, the chats on Home then the recent ones, retired agents behind a
  * toggle, and a bottom that stays. Shift+Enter opens a chat beside this one, and a dropped record is handed to that agent.
  */
-const props = defineProps<{
-  agents: AgentOptionData[];
-  selectedAgentId: string | undefined;
-  // The chats Home shows now, listed first under On Home.
-  openAgentIds: string[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    agents: AgentOptionData[];
+    selectedAgentId: string | undefined;
+    // The chats Home shows now, listed first under On Home.
+    openAgentIds: string[];
+    // Opened from above the composer, the list opens upward over the chat and moves nothing.
+    placement?: "below" | "above";
+  }>(),
+  { placement: "below" },
+);
 
 const emit = defineEmits<{
   newChat: [];
@@ -224,7 +229,7 @@ function askEnd(): void {
     >
       <slot name="trigger" />
     </button>
-    <Popover v-model:open="isOpen" label="Chats" :anchor="trigger" :width="384">
+    <Popover v-model:open="isOpen" label="Chats" :anchor="trigger" :width="384" :placement="placement" :align="placement === 'above' ? 'right' : 'left'">
       <div @keydown.capture="openActiveBeside">
         <SearchField
           v-model="search"

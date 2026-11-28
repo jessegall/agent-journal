@@ -52,6 +52,7 @@ function openBeside(other: AgentOptionData): void {
       :agents="agents"
       :selected-agent-id="agent.id"
       :open-agent-ids="openChats.chats.agentIds"
+      placement="above"
       @new-chat="requestNewChat()"
       @open-beside="openBeside"
       @switch-driver="emit('switchDriver')"

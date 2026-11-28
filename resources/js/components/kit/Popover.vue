@@ -3,8 +3,9 @@ import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from
 
 /**
  * An anchored surface that is not modal: a labelled dialog just below its anchor, aligned to one of its edges, kept
- * inside its frame and flipped above when it would pass the bottom. Escape or a press outside closes it and the focus
- * returns to the anchor. Measures: docs/designs/kit-components.md.
+ * inside its frame and flipped above when it would pass the bottom. Placed above, it opens upward from its anchor over
+ * the page, held inside the window with its own scroll, so nothing around it moves. Escape or a press outside closes
+ * it and the focus returns to the anchor. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{
@@ -13,8 +14,9 @@ const props = withDefaults(
         point?: { x: number; y: number };
         align?: 'left' | 'right';
         width?: number;
+        placement?: 'below' | 'above';
     }>(),
-    { anchor: null, point: undefined, align: 'left', width: undefined },
+    { anchor: null, point: undefined, align: 'left', width: undefined, placement: 'below' },
 );
 const open = defineModel<boolean>('open', { default: false });
 
@@ -22,6 +24,19 @@ const GAP = 4;
 const EDGE = 6;
 const panel = useTemplateRef<HTMLElement>('panel');
 const place = ref({ left: 0, top: 0 });
+// Above its anchor the panel is fixed to the window, with the room above the anchor as its most height.
+const above = ref({ left: 0, bottom: 0, maxHeight: 0 });
+
+function positionAbove(element: HTMLElement, box: DOMRect): void {
+    const width = element.offsetWidth;
+    const left = props.align === 'right' ? box.right - width : box.left;
+
+    above.value = {
+        left: Math.max(EDGE, Math.min(left, window.innerWidth - width - EDGE)),
+        bottom: window.innerHeight - box.top + GAP,
+        maxHeight: Math.max(0, box.top - GAP - EDGE),
+    };
+}
 
 function close(): void {
     open.value = false;
@@ -33,6 +48,18 @@ async function position(): Promise<void> {
     const element = panel.value;
 
     if (!element) {
+        return;
+    }
+
+    const anchorBox = props.anchor?.getBoundingClientRect();
+
+    if (props.placement === 'above' && anchorBox) {
+        positionAbove(element, anchorBox);
+
+        if (!element.contains(document.activeElement)) {
+            element.focus();
+        }
+
         return;
     }
 
@@ -98,16 +125,37 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', pressOutside, tr
 
 <template>
     <template v-if="open">
-        <div
-            ref="panel"
-            role="dialog"
-            tabindex="-1"
-            :aria-label="label"
-            class="absolute z-(--z-menu) overflow-hidden rounded-menu border border-border-2 bg-raised shadow-pop outline-none"
-            :style="{ left: `${place.left}px`, top: `${place.top}px`, width: width ? `${width}px` : undefined }"
-            @keydown="escape"
-        >
-            <slot />
-        </div>
+        <template v-if="placement === 'above'">
+            <div
+                ref="panel"
+                role="dialog"
+                tabindex="-1"
+                :aria-label="label"
+                class="fixed z-(--z-menu) overflow-y-auto rounded-menu border border-border-2 bg-raised shadow-pop outline-none"
+                :style="{
+                    left: `${above.left}px`,
+                    bottom: `${above.bottom}px`,
+                    maxHeight: `${above.maxHeight}px`,
+                    width: width ? `${width}px` : undefined,
+                }"
+                data-popover-above
+                @keydown="escape"
+            >
+                <slot />
+            </div>
+        </template>
+        <template v-else>
+            <div
+                ref="panel"
+                role="dialog"
+                tabindex="-1"
+                :aria-label="label"
+                class="absolute z-(--z-menu) overflow-hidden rounded-menu border border-border-2 bg-raised shadow-pop outline-none"
+                :style="{ left: `${place.left}px`, top: `${place.top}px`, width: width ? `${width}px` : undefined }"
+                @keydown="escape"
+            >
+                <slot />
+            </div>
+        </template>
     </template>
 </template>

@@ -335,4 +335,17 @@ describe("ChatPane", () => {
     expect(pane.get("[data-start-picker]").attributes("data-new")).toBe("false");
     expect(pane.find('[aria-label="Composer"]').exists()).toBe(false);
   });
+
+  it("opens the agent's menu upward over the chat from above the composer, leaving the composer where it was", async () => {
+    revealedProps.value = new Set(["window_chat_conversation"]);
+    const pane = mountPane();
+    await flushPromises();
+    const composer = pane.get('[aria-label="Composer"]').element;
+
+    await pane.get("[data-agent-row] [data-chat-list-trigger]").trigger("click");
+    await flushPromises();
+
+    expect(pane.find("[data-popover-above]").exists()).toBe(true);
+    expect(pane.get('[aria-label="Composer"]').element).toBe(composer);
+  });
 });
