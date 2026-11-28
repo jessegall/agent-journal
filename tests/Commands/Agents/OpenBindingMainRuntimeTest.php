@@ -9,13 +9,19 @@ use App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Enums\SessionProcessStatus;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\JournalCommands;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\HostProcessType;
 use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Hosts\HostInstruction;
+use App\Models\Hosts\HostProcess;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\ProjectBinding;
@@ -27,6 +33,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -53,6 +60,9 @@ final class OpenBindingMainRuntimeTest extends TestCase
         'agent_runtimes',
         'agent_sessions',
         'agents',
+        'host_instructions',
+        'host_processes',
+        'session_processes',
         'hosts',
         'settings_records',
         'users',
@@ -96,6 +106,76 @@ final class OpenBindingMainRuntimeTest extends TestCase
         $this->journal->assertResult(
             [DriverType::ofOwnTerminal(), $orders],
             [$runtime->driver_type, HostInstruction::query()->count()],
+        );
+    }
+
+    public function test_the_answer_records_an_ordered_terminal_and_grants_its_hooks_access(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $orders = HostInstruction::query()->count();
+
+        $opened = $this->start($binding, [])->assertCreated();
+
+        $process = HostProcess::query()->findOrFail($opened->json('process_id'));
+        $start = $this->journal->startOfSession($opened->json('session_id'));
+        $environment = $opened->json('plan.environment');
+        $this->journal->assertResult(
+            [$binding->host_id, $start->id, HostProcessPurpose::AgentTerminal, HostProcessType::Terminal,
+                HostProcessStatus::Ordered, $orders],
+            [$process->host_id, $process->session_process_id, $process->purpose, $process->type,
+                $process->status, HostInstruction::query()->count()],
+        );
+        $this->assertContains('JOURNAL_URL={host:JOURNAL_URL}', $environment);
+        $this->assertContains('JOURNAL_PROFILE=main-agent', $environment);
+        $this->assertMatchesRegularExpression('/^JOURNAL_START_TOKEN=.+$/m', implode("\n", $environment));
+        $this->assertMatchesRegularExpression('/^JOURNAL_PROFILE_REVISION=\d+$/m', implode("\n", $environment));
+    }
+
+    public function test_retrying_the_same_start_keeps_its_terminal(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $ask = ['startId' => (string) Str::uuid()];
+        $opened = $this->start($binding, $ask)->assertCreated();
+
+        $retried = $this->start($binding, $ask)->assertOk();
+
+        $this->journal->assertResult(
+            [$opened->json('runtime_id'), $opened->json('process_id'), 1],
+            [$retried->json('runtime_id'), $retried->json('process_id'), HostProcess::query()->count()],
+        );
+    }
+
+    public function test_the_terminal_that_ran_stops_its_start_on_exit(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $opened = $this->start($binding, [])->assertCreated();
+        $this->journal->nameHostProcess('terminal', $opened->json('process_id'));
+
+        $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+            ->report(HostProcessReportType::Running));
+        $start = $this->journal->startOfSession($opened->json('session_id'));
+        $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+            ->report(HostProcessReportType::Exited, 0));
+
+        $this->journal->assertResult(
+            [SessionProcessStatus::Running, SessionProcessStatus::Stopped],
+            [$start->status, $start->fresh()->status],
+        );
+    }
+
+    public function test_a_terminal_that_never_ran_refuses_its_start(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $opened = $this->start($binding, [])->assertCreated();
+
+        $this->journal->nameHostProcess('terminal', $opened->json('process_id'))
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+                ->report(HostProcessReportType::Exited, 1));
+
+        $start = $this->journal->startOfSession($opened->json('session_id'));
+        $this->journal->assertResult(
+            [SessionProcessStatus::Stopped, 'the process exited with 1'],
+            [$start->status, $start->refusal],
         );
     }
 

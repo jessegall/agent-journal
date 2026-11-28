@@ -5,9 +5,15 @@ declare(strict_types=1);
 namespace Tests\Routes\Agents;
 
 use App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
+use App\Agents\Drivers\Commands\RecordOwnTerminal\RecordedOwnTerminal;
+use App\Agents\Drivers\Commands\RecordOwnTerminal\RecordOwnTerminalCommand;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\EnrolledHost;
+use App\Hosts\Protocol\HostProcessType;
 use App\Projects\Commands\AssertBindingRuntime\AssertBindingRuntimeCommand;
+use App\Values\HostProcessPlan;
 use Illuminate\Support\Str;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Connections\ConnectsProjects;
@@ -38,6 +44,16 @@ final class HostBindingsRuntimesPostTest extends GuardedRouteEntryTestCase
                 ->openRuntime('Runtime host', '/work', driverType: DriverType::Terminal))
             ->openedRuntimeOf('Binding main');
 
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::AgentTerminal,
+            HostProcessType::Terminal,
+            RestartPolicy::Never,
+            ['claude'],
+            [],
+            '/work',
+        );
+        $terminal = new RecordedOwnTerminal(strtolower((string) Str::ulid()), $plan);
+
         return RouteCall::as(Caller::RelayHost, $relay)
             ->parameters([
                 'binding' => $bindingId,
@@ -51,6 +67,8 @@ final class HostBindingsRuntimesPostTest extends GuardedRouteEntryTestCase
                 'model' => 'claude-opus-5-5',
             ])
             ->reply(OpenBindingMainRuntimeCommand::class, $opened)
+            ->reply(RecordOwnTerminalCommand::class, $terminal)
+            ->expects(RecordOwnTerminalCommand::class, ['runtimeId' => $opened->runtimeId])
             ->expects(AssertBindingRuntimeCommand::class, [
                 'hostId' => $relay->hostId,
                 'bindingId' => $bindingId,
