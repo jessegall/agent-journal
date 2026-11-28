@@ -56,6 +56,7 @@ use Illuminate\Support\Facades\Process;
 use Tests\Fixtures\Drivers\ShownDriverArrangements;
 use Tests\Support\Assertions\Facts\MadeHostInstructions;
 use Tests\Support\Connections\PublicRelease;
+use Tests\Support\Hosts\MockHost;
 use Tests\Support\Hosts\RecordedTerminalHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
@@ -558,6 +559,18 @@ trait ArrangesHostProcesses
     public function recordedTerminalHost(Closure $scope): self
     {
         $scope($this->app->make(RecordedTerminalHost::class));
+
+        return $this;
+    }
+
+    /**
+     * The enrolled host's side of a recorded scenario, played to the journal by the test, handed to the scope.
+     *
+     * @param  Closure(MockHost): mixed  $scope
+     */
+    public function mockHost(string $host, Closure $scope): self
+    {
+        $scope(new MockHost($this, $host));
 
         return $this;
     }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Machinery\Seeding;
 
 use App\Hosts\Protocol\HostInstructionType;
+use App\Models\Accounts\Account;
+use App\Models\Projects\HostDriverImage;
 use App\Recordings\Recordings;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\OverTheWire;
@@ -60,6 +62,33 @@ final class JournalPlayedScenariosTest extends TestCase
                 ->assertHostWire(fn (WireAssert $host) => $host
                     ->ordered(HostInstructionType::Stop, fn (WireAssert $stop) => $stop->count(1)))
                 ->assertPlayedWhole());
+    }
+
+    public function test_the_journal_is_arranged_as_the_recorded_machine(): void
+    {
+        $playing = PlayedScenario::of(
+            'claude-code/terminal-turn',
+            $this->journal->service(Recordings::class)->scenario('claude-code', 'terminal-turn'),
+        );
+        $accounts = storage_path('framework/testing/played-accounts-'.bin2hex(random_bytes(4)));
+
+        $this->journal->owner()
+            ->arrangeContainedJournal()
+            ->enrollContainedHost('Recorded', [base_path()])
+            ->arrangeRecordedMachine($playing)
+            ->readyRecordedDriverImagesOn('Recorded', $playing->driverImages)
+            ->chooseActiveAccountsInIdFolders($accounts)
+            ->assertResult(
+                [$playing->agentImage, array_values($playing->driverImages), true],
+                [
+                    config('journal.agents.agent_image'),
+                    array_values(array_intersect(HostDriverImage::resolveReadyImages(), $playing->driverImages)),
+                    array_all(
+                        $this->journal->chosenAccounts(),
+                        fn (Account $account) => preg_match('#/[0-9a-z]{26}$#', (string) $account->directory) === 1,
+                    ),
+                ],
+            );
     }
 
     public function test_a_test_host_runs_against_a_played_daemon(): void

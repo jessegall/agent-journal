@@ -76,6 +76,13 @@ final class TestHost
     private const string CODEX_BUILD = '0.172.0';
 
     /**
+     * How long the mock Docker daemon gets to open its socket.
+     */
+    private const int DAEMON_START_SECONDS = 10;
+
+    public private(set) int $port = 0;
+
+    /**
      * @var list<InvokedProcess>
      */
     private array $running = [];
@@ -104,17 +111,10 @@ final class TestHost
      */
     private array $inputs = [];
 
-    public private(set) int $port = 0;
-
     /**
      * How many times the host binary was started again since the test host began.
      */
     private int $restarts = 0;
-
-    /**
-     * How long the mock Docker daemon gets to open its socket.
-     */
-    private const int DAEMON_START_SECONDS = 10;
 
     /**
      * The mock Docker daemon the host talks to.
@@ -292,8 +292,14 @@ final class TestHost
             self::end($process, SIGTERM);
         }
 
+        // Each wrapped process group ends once its input does, whatever the processes above did.
+        foreach ($this->inputs as $input) {
+            $input->close();
+        }
+
         $this->host = null;
         $this->running = [];
+        $this->inputs = [];
 
         return $this;
     }
@@ -540,12 +546,18 @@ final class TestHost
         // A claim's long poll and a request waiting for a host's answer each hold a worker, so the server keeps enough
         // that the answer they wait for always finds one.
         $environment = [...$this->sharedEnvironment(), 'PHP_CLI_SERVER_WORKERS' => '32'];
-        $this->servedJournal = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
+        $this->servedJournal = $this->processes->env($environment)->forever()->input($this->untilKilled())
+            ->start($command);
         usleep(200_000);
 
         // A played scenario runs the journal as a machine runs it: its driver workers read each process the host runs.
         if ($this->playing !== null) {
-            $supervise = [__DIR__.'/scripts/serve-until-input-ends.sh', 'php', base_path('artisan'), 'drivers:supervise'];
+            $supervise = [
+                __DIR__.'/scripts/serve-until-input-ends.sh',
+                'php',
+                base_path('artisan'),
+                'drivers:supervise',
+            ];
             $this->driverSupervisor = $this->processes->env($this->sharedEnvironment())->forever()
                 ->input($this->untilKilled())->start($supervise);
         }
@@ -601,9 +613,7 @@ final class TestHost
      */
     public function playedFailures(): array
     {
-        $failures = "{$this->folder}/played-failures";
-
-        return is_file($failures) ? array_values(array_filter(explode("\n", (string) file_get_contents($failures)))) : [];
+        return self::linesOf("{$this->folder}/played-failures");
     }
 
     /**
@@ -613,9 +623,17 @@ final class TestHost
      */
     public function playedTyped(): array
     {
-        $typed = "{$this->folder}/played-typed";
+        return self::linesOf("{$this->folder}/played-typed");
+    }
 
-        return is_file($typed) ? array_values(array_filter(explode("\n", (string) file_get_contents($typed)))) : [];
+    /**
+     * The lines a played daemon wrote to the file, none when it wrote none.
+     *
+     * @return list<string>
+     */
+    private static function linesOf(string $file): array
+    {
+        return is_file($file) ? array_values(array_filter(explode("\n", (string) file_get_contents($file)))) : [];
     }
 
     /**
@@ -926,7 +944,11 @@ final class TestHost
         ];
 
         if ($this->arrangement->isContained()) {
-            $command = [...$command, '--installation-name', $this->installationName(), '--data-folder', MountRules::DATA_FOLDER];
+            $command = [
+                ...$command,
+                '--installation-name', $this->installationName(),
+                '--data-folder', MountRules::DATA_FOLDER,
+            ];
         }
 
         // A played scenario's host checks the images the recorded host was installed with as it starts again, as the
@@ -942,9 +964,6 @@ final class TestHost
     }
 
     /**
-     * @param  list<string>  $command
-     */
-    /**
      * The mock Docker daemon, started and kept among the running processes.
      */
     private function startDaemon(): InvokedProcess
@@ -959,6 +978,9 @@ final class TestHost
         return $this->running[array_key_last($this->running)];
     }
 
+    /**
+     * @param  list<string>  $command
+     */
     private function run(array $command): void
     {
         $this->running[] = $this->processes->env(getenv())->forever()->input($this->untilKilled())->start($command);
