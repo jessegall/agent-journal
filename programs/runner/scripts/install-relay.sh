@@ -184,4 +184,22 @@ notify_connected() {
     echo "journal: in a new terminal run: journal status"
 }
 
+record_project() {
+    local scratch=$1 origin=$2 version=$3 helper=$4 target installation
+    umask 077
+    mkdir "$scratch/downloads" "$scratch/project" "$scratch/state" || return 1
+    fetch_file "$origin/releases/current/manifest.json" "$scratch/downloads/manifest.json" || return 1
+    fetch_file "$origin/releases/current/manifest.json.sig" "$scratch/downloads/manifest.json.sig" || return 1
+    target=$(target_name "$scratch/downloads") || return 1
+    installation=$(install_release "$origin" "$version" "$scratch/downloads" "$target" "$scratch/state") || return 1
+    python3 "$helper" connect "$scratch/project" \
+        "$installation/bin/journal-runner" connect --ticket-stdin --origin "$origin" --state "$scratch/state"
+}
+
+if [ "${1:-}" = --for-recording ]; then
+    shift
+    record_project "$@"
+    exit $?
+fi
+
 main "$@"

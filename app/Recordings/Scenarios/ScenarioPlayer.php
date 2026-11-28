@@ -13,8 +13,10 @@ use App\Bus\ConsoleOwner;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OwnerCommands;
 use App\Bus\RequestKey;
-use App\Connections\InstallLine;
+use App\Connections\PublishedReleases;
+use App\Connections\ServerOrigin;
 use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Messages\Commands\SendMessage\SendMessageCommand;
@@ -53,6 +55,8 @@ final readonly class ScenarioPlayer
     public const string MACHINE_CHANGE = RecordingDrafts::DRAFTS.'/machine-change.args';
 
     public const string MACHINE_CHANGE_DONE = RecordingDrafts::DRAFTS.'/machine-change.done';
+
+    public const string CONNECTION_TICKET = RecordingDrafts::DRAFTS.'/connection-ticket';
 
     /**
      * How long the player waits between two looks at a fact or a machine change.
@@ -104,7 +108,8 @@ final readonly class ScenarioPlayer
         private RequestKey $requestKey,
         private ConsoleOwner $owner,
         private AgentStartOnMessage $starts,
-        private InstallLine $installLine,
+        private ServerOrigin $origin,
+        private PublishedReleases $releases,
     ) {}
 
     /**
@@ -215,12 +220,7 @@ final readonly class ScenarioPlayer
             }
 
             if ($result instanceof IssuedInvitation) {
-                $line = $this->installLine->for($run->holdConnectionAttempt());
-                $askUser(new ScenarioPause(
-                    "Run this install line in a fresh project folder:\n{$line}",
-                    null,
-                    'Press Enter after the relay connects',
-                ));
+                $this->connectProject($run);
             }
 
             return;
@@ -267,6 +267,24 @@ final readonly class ScenarioPlayer
 
         $fact = $step->fact ?? throw ScenarioInvalid::at($run->scenario->name, $run->stepIndex(), 'waits for no fact');
         $this->waitFor($run, $fact, (int) $step->seconds);
+    }
+
+    private function connectProject(ScenarioRun $run): void
+    {
+        $ticket = $run->holdConnectionAttempt();
+        $file = FilePath::in(Place::Project, self::CONNECTION_TICKET);
+        $command = ['connect-recorded-project', $this->origin->canonical(), $this->releases->current()->version];
+        $this->files->write($file, $ticket->secret."\n", Permissions::OwnerOnly);
+
+        try {
+            $status = $this->changeMachine($command);
+        } finally {
+            $this->files->delete($file);
+        }
+
+        if ($status !== 0) {
+            throw ScenarioStuck::projectNotConnected($run->scenario->name, $status);
+        }
     }
 
     /**
