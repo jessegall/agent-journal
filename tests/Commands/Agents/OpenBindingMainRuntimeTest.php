@@ -8,11 +8,14 @@ use App\Accounts\Enums\CommandEntry;
 use App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\JournalCommands;
 use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Agents\Agent;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\ProjectBinding;
@@ -80,6 +83,20 @@ final class OpenBindingMainRuntimeTest extends TestCase
         $family = $this->app->make(DriverCatalogue::class)->family(DefaultDrivers::CLAUDE_CODE);
         $session = AgentSession::query()->findOrFail($started->json('session_id'));
         $this->assertSame($family->modelAt($profile->preferredTier), $session->model);
+    }
+
+    public function test_the_binding_opens_a_terminal_runtime_without_ordering_any_host_work(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $orders = HostInstruction::query()->count();
+
+        $opened = $this->start($binding, [])->assertCreated();
+
+        $runtime = AgentRuntime::query()->findOrFail($opened->json('runtime_id'));
+        $this->journal->assertResult(
+            [DriverType::ofOwnTerminal(), $orders],
+            [$runtime->driver_type, HostInstruction::query()->count()],
+        );
     }
 
     public function test_a_start_answers_the_plan_its_device_runs_on_the_owners_terminal(): void

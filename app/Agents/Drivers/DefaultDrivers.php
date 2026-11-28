@@ -14,7 +14,7 @@ use App\Agents\Drivers\Enums\DriverCapability;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\MarkTone;
 use App\Agents\Drivers\Enums\SignInCodeDirection;
-use App\Agents\Drivers\Handling\TerminalHandling;
+use App\Agents\Drivers\Handling\HostHandling;
 use App\Agents\Drivers\Handling\TurnHandling;
 use App\Agents\Values\ProviderKey;
 use App\Values\DriverFamily;
@@ -95,7 +95,7 @@ final readonly class DefaultDrivers
                 DriverType::Terminal,
                 'Claude Code',
                 TerminalCapabilities::class,
-                TerminalHandling::class,
+                HostHandling::class,
             ),
             self::registration(
                 'claude-code-headless',
@@ -111,7 +111,7 @@ final readonly class DefaultDrivers
                 DriverType::Terminal,
                 'Codex',
                 CodexTerminalCapabilities::class,
-                TerminalHandling::class,
+                HostHandling::class,
             ),
             self::registration(
                 'codex-headless',

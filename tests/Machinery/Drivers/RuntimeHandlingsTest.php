@@ -6,13 +6,12 @@ namespace Tests\Machinery\Drivers;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Drivers\Contracts\RuntimeHandling;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Handling\HostHandling;
-use App\Agents\Drivers\Handling\TerminalHandling;
 use App\Agents\Drivers\Handling\TurnHandling;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Events\Connections\HostProcessExited;
-use App\Events\Connections\HostProcessLost;
 use App\Hosts\Contracts\HostProcessEndEvent;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Protocol\HostProcessReportType;
@@ -20,6 +19,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
+use App\Values\DriverRegistration;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\TestEnrolledHost;
@@ -30,11 +30,9 @@ use Tests\TestCase;
 
 /**
  * Each driver's handling says what the end of one of its processes means for the start it ran for: a turn ends alone,
- * a terminal lost with its host leaves its start for the journal to open again, one that ended stops its start, a
- * process that never ran refuses it, and a host-run driver opens nothing of its own.
+ * a terminal that ends stops its start, and a process that never ran refuses it.
  */
 #[TestsMachinery(TurnHandling::class)]
-#[TestsMachinery(TerminalHandling::class)]
 #[TestsMachinery(HostHandling::class)]
 final class RuntimeHandlingsTest extends TestCase
 {
@@ -60,20 +58,24 @@ final class RuntimeHandlingsTest extends TestCase
         $this->journal->assertResult(SessionProcessStatus::Running, $start->refresh()->status);
     }
 
-    public function test_a_terminal_lost_with_its_host_leaves_its_start_running(): void
+    public function test_both_terminal_drivers_leave_opening_to_the_host(): void
     {
-        [$terminal, $start] = $this->ranProcess('terminal', HostProcessPurpose::AgentTerminal);
+        $terminals = array_filter(
+            DefaultDrivers::registrations(),
+            fn (DriverRegistration $driver) => $driver->driverType === DriverType::ofOwnTerminal(),
+        );
 
-        $this->endInsideHost(TerminalHandling::class, $terminal, $this->lossOf($terminal));
-
-        $this->journal->assertResult(SessionProcessStatus::Running, $start->refresh()->status);
+        $this->journal->assertResult(
+            [HostHandling::class, HostHandling::class],
+            array_values(array_map(fn (DriverRegistration $driver) => $driver->handling, $terminals)),
+        );
     }
 
     public function test_a_terminal_that_ended_stops_its_start(): void
     {
         [$terminal, $start] = $this->ranProcess('terminal', HostProcessPurpose::AgentTerminal);
 
-        $this->endInsideHost(TerminalHandling::class, $terminal, $this->exitOf($terminal));
+        $this->endInsideHost(HostHandling::class, $terminal, $this->exitOf($terminal));
 
         $this->journal->assertResult(SessionProcessStatus::Stopped, $start->refresh()->status);
     }
@@ -151,10 +153,5 @@ final class RuntimeHandlingsTest extends TestCase
     private function exitOf(HostProcess $process): HostProcessExited
     {
         return new HostProcessExited($process->id, $process->agent_runtime_id, null, 0, null, 'exited with 0');
-    }
-
-    private function lossOf(HostProcess $process): HostProcessLost
-    {
-        return new HostProcessLost($process->id, $process->agent_runtime_id, null, 'lost with its host');
     }
 }
