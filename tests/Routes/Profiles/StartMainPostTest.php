@@ -26,15 +26,66 @@ use Tests\Support\Seeding\TestJournal;
 #[TestsRoute('POST', 'profiles.start-main')]
 final class StartMainPostTest extends GuardedRouteEntryTestCase
 {
+    public function test_the_start_picker_starts_the_session_in_its_chat_at_the_effort_chosen(): void
+    {
+        $agent = $this->journal->owner()->idleAgent('Agent 4', 'main-agent')->agentCalled('Agent 4');
+        $requestId = strtolower((string) Str::ulid());
+        $accountId = strtolower((string) Str::ulid());
+        $this->journal->sinkCommands()->sinkReply(
+            StartProfileMainCommand::class,
+            self::receiptFor($requestId, $agent->id),
+        );
+
+        $this->journal->route('POST', 'profiles.start-main', ['profile' => 'main-agent'], payload: [
+            'requestId' => $requestId,
+            'agentId' => $agent->id,
+            'driver' => DefaultDrivers::CLAUDE_CODE,
+            'driverType' => 'terminal',
+            'model' => 'opus',
+            'effort' => 'high',
+            'accountId' => $accountId,
+            'accountRevision' => 3,
+        ], headers: ['Idempotency-Key' => $requestId])->assertRedirect();
+
+        $this->journal->assertDispatched(StartProfileMainCommand::class, [
+            'requestId' => $requestId,
+            'agentId' => $agent->id,
+            'requested' => ModelSelection::named('opus'),
+            'driverKey' => DefaultDrivers::CLAUDE_CODE,
+            'chosenAccount' => new ChosenAccount($accountId, 3),
+            'effort' => 'high',
+        ]);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $agent = $journal->owner()->idleAgent('Main', 'main-agent')->agentCalled('Main');
         $requestId = strtolower((string) Str::ulid());
         $accountId = strtolower((string) Str::ulid());
-        $receipt = new StartReceipt(
+
+        return RouteCall::recorded('session-start', [
+            'recorded-session-start' => $requestId,
+            '01JPAGEREQUESTAGENT0000000' => $agent->id,
+            '01JPAGEREQUESTACCOUNT00000' => $accountId,
+        ])
+            ->reply(StartProfileMainCommand::class, self::receiptFor($requestId, $agent->id))
+            ->expects(StartProfileMainCommand::class, [
+                'requestId' => $requestId,
+                'agentId' => $agent->id,
+                'profile' => ProfileKey::from('journal-main'),
+                'requested' => ModelSelection::named('opus'),
+                'driverKey' => DefaultDrivers::CLAUDE_CODE,
+                'chosenAccount' => new ChosenAccount($accountId, 4),
+                'previewRevision' => 4,
+            ]);
+    }
+
+    private static function receiptFor(string $requestId, string $agentId): StartReceipt
+    {
+        return new StartReceipt(
             $requestId,
             strtolower((string) Str::ulid()),
-            $agent->id,
+            $agentId,
             new SelectedDriver(
                 DefaultDrivers::CLAUDE_CODE,
                 'claude-opus-5-5',
@@ -47,21 +98,5 @@ final class StartMainPostTest extends GuardedRouteEntryTestCase
             'claude-opus-5-5',
             [],
         );
-
-        return RouteCall::recorded('session-start', [
-            'recorded-session-start' => $requestId,
-            '01JPAGEREQUESTAGENT0000000' => $agent->id,
-            '01JPAGEREQUESTACCOUNT00000' => $accountId,
-        ])
-            ->reply(StartProfileMainCommand::class, $receipt)
-            ->expects(StartProfileMainCommand::class, [
-                'requestId' => $requestId,
-                'agentId' => $agent->id,
-                'profile' => ProfileKey::from('journal-main'),
-                'requested' => ModelSelection::named('opus'),
-                'driverKey' => DefaultDrivers::CLAUDE_CODE,
-                'chosenAccount' => new ChosenAccount($accountId, 4),
-                'previewRevision' => 4,
-            ]);
     }
 }

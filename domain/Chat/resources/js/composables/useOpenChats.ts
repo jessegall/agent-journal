@@ -8,9 +8,11 @@ export type ChatViewMode = "one" | "side";
 
 /**
  * The chats one user keeps open on Home: the tabs in their order, the same chats the most recently used first, and
- * how they show.
+ * how they show. Only the tabs are kept across reloads: Home always opens one chat at a time.
  */
 export type OpenChats = { agentIds: string[]; recent: string[]; mode: ChatViewMode };
+
+type KeptChats = Pick<OpenChats, "agentIds" | "recent">;
 
 /**
  * The most chats shown beside the chosen one, as the chat window's query allows.
@@ -20,26 +22,27 @@ export const MOST_BESIDE = 3;
 const stores = new Map<string, OpenChats>();
 
 function readKept(key: string): OpenChats {
-  return (
-    readStoredJson<OpenChats>("local", key, (decoded) => {
-      const kept = decoded as Partial<OpenChats> | null;
+  const kept = readStoredJson<KeptChats>("local", key, (decoded) => {
+    const read = decoded as Partial<KeptChats> | null;
 
-      if (!Array.isArray(kept?.agentIds) || (kept.mode !== "one" && kept.mode !== "side")) {
-        return null;
-      }
+    if (!Array.isArray(read?.agentIds)) {
+      return null;
+    }
 
-      const agentIds = kept.agentIds.filter((id) => typeof id === "string");
-      const recent = (Array.isArray(kept.recent) ? kept.recent : []).filter((id) => agentIds.includes(id));
+    const agentIds = read.agentIds.filter((id) => typeof id === "string");
+    const recent = (Array.isArray(read.recent) ? read.recent : []).filter((id) => agentIds.includes(id));
 
-      return { agentIds, recent: [...recent, ...agentIds.filter((id) => !recent.includes(id))], mode: kept.mode };
-    }) ?? { agentIds: [], recent: [], mode: "one" }
-  );
+    return { agentIds, recent: [...recent, ...agentIds.filter((id) => !recent.includes(id))] };
+  }) ?? { agentIds: [], recent: [] };
+
+  // Side by side lasts only while the user keeps it on this page: a load of Home shows one chat.
+  return { ...kept, mode: "one" };
 }
 
 /**
- * The open chats of one user, kept in this browser across reloads: open one (a new tab goes last, and it becomes the
- * most recently used), close one, bring a closed one back, and switch the view mode. Every part of Home that reads
- * them shares the same store.
+ * The open chats of one user, their tabs kept in this browser across reloads: open one (a new tab goes last, and it
+ * becomes the most recently used), close one, bring a closed one back, and switch the view mode for this page. Every
+ * part of Home that reads them shares the same store.
  */
 export function useOpenChats(viewerId: string) {
   const key = `journal.open-chats.${viewerId}`;
@@ -48,7 +51,11 @@ export function useOpenChats(viewerId: string) {
 
   if (known === undefined) {
     stores.set(key, chats);
-    watch(chats, (changed) => keepStoredJson("local", key, changed), { deep: true });
+    watch(
+      () => ({ agentIds: chats.agentIds, recent: chats.recent }),
+      (tabs) => keepStoredJson("local", key, tabs),
+      { deep: true },
+    );
   }
 
   function open(agentId: string): void {

@@ -5,7 +5,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { arrivalAnnouncement } from "../../../composables/arrivalAnnouncement";
 import { useChatTimeline } from "../../../composables/useChatTimeline";
 import { openedRecordOf, recordKey } from "../../../recordPanel";
-import { useChosenAgent } from "../../../composables/useChosenAgent";
+import { useChosenAgent, useOpenSessionDialog } from "../../../composables/useChosenAgent";
 import { useConversationIntents } from "../../../composables/useConversationIntents";
 import { useHandOver } from "../../../composables/useHandOver";
 import { draftKey } from "../../../composables/useMessageDrafts";
@@ -24,6 +24,8 @@ import { newRequestId } from "@kit/requestId";
 import AgentSessionActions from "./AgentSessionActions.vue";
 import Composer from "./Composer.vue";
 import RunningCommand from "./RunningCommand.vue";
+import AgentRow from "./AgentRow.vue";
+import StartPicker from "./StartPicker.vue";
 import VerifyingSessionCard from "./VerifyingSessionCard.vue";
 import RecordPanel from "./RecordPanel.vue";
 import DockStack from "./DockStack.vue";
@@ -33,9 +35,9 @@ import { useChatListShortcut } from "../../../composables/useChatBarAsks";
 import SessionForm from "./SessionForm.vue";
 
 /**
- * The chat: the chosen agent's conversation, what other domains suggest in the dock slot, the sources
- * docked in the conversation and the composer. On Chat's own page it also offers the chat list and the session actions,
- * which Home's agent bar offers instead. Group chats are hidden for now: no members or add-someone buttons show.
+ * The chat: the chosen agent's conversation, what other domains suggest in the dock slot, the sources docked in the
+ * conversation and the composer, with the agent named above it. A chat with no session offers the start picker in the
+ * composer's place. On Chat's own page it offers the chat list itself. Group chats are hidden for now.
  */
 const props = defineProps<{
   chat: ChatData;
@@ -89,6 +91,12 @@ const selected = computed(() => {
 
   return props.chat.agents.find((agent) => agent.id === wanted);
 });
+// A chat whose agent runs no session, new or ended, offers the start picker in place of the composer; a new one, which
+// holds nothing yet, shows only the picker.
+const needsStart = computed(
+  () => selected.value !== undefined && selected.value.sessionId === null && !selected.value.isRetired,
+);
+const isNewChat = computed(() => needsStart.value && (conversation.value?.entries.length ?? 0) === 0);
 // On its own page the chat offers its own list, so Option+F opens it; on Home the chat bar's listener does.
 useChatListShortcut(() => (props.offersChoice ? selected.value?.id : undefined));
 // The chosen agent while its status offers to stop its turn: the composer then shows Stop beside Send.
@@ -139,8 +147,23 @@ const key = computed(() => {
     : draftKey(userId, conversation.value.inboxId);
 });
 const replyingTo = ref<ReplyTarget | null>(null);
-// The chosen agent's Switch driver dialog, opened from the chat list on Chat's own page.
-const isSwitchOpen = ref(false);
+// The chosen agent's Switch driver dialog, opened from its chat list; it comes back after a chat switch or a reload.
+const switchDialog = computed(() =>
+  selected.value === undefined || viewer.value.id === undefined
+    ? undefined
+    : useOpenSessionDialog(viewer.value.id, selected.value.id),
+);
+const isSwitchOpen = ref(switchDialog.value?.read() === "switch");
+
+function openSwitch(): void {
+  isSwitchOpen.value = true;
+  switchDialog.value?.keep("switch");
+}
+
+function closeSwitch(): void {
+  isSwitchOpen.value = false;
+  switchDialog.value?.forget();
+}
 
 /**
  * This view's own entries of the chat, merged by id in order, and paged back on request.
@@ -354,7 +377,7 @@ watch(isShown, readOnOpen);
           :agents="chat.agents"
           :selected-agent-id="chat.selectedAgentId"
           :open-agent-ids="selected ? [selected.id] : []"
-          @switch-driver="isSwitchOpen = true"
+          @switch-driver="openSwitch"
         >
           <template #trigger>
             <span class="text-body text-text">{{
@@ -364,9 +387,9 @@ watch(isShown, readOnOpen);
           </template>
         </ConversationMenu>
       </div>
-      <template v-if="isSwitchOpen && selected">
-        <SessionForm :agent="selected" @close="isSwitchOpen = false" />
-      </template>
+    </template>
+    <template v-if="isSwitchOpen && selected">
+      <SessionForm :key="selected.id" :agent="selected" @close="closeSwitch" />
     </template>
     <template v-if="offersChoice && chat.isSetupRequired">
       <p class="text-small text-text-3">
@@ -396,76 +419,97 @@ watch(isShown, readOnOpen);
         </p>
       </template>
       <template v-if="isShown">
-        <MessageList
-          :entries="timeline.entries.value"
-          :has-older="timeline.hasOlder.value"
-          :pending="pending"
-          :refused="refused"
-          :viewer="conversation.viewer"
-          :participants="conversation.participants"
-          :conversation-prop="protectedProp"
-          :inbox-id="conversation.inboxId"
-          :start-wait="startWait"
-          :addressee-name="selected?.name ?? 'the chat'"
-          @retry-delivery="retryDelivery"
-          @reply="(target) => (replyingTo = target)"
-          @older="timeline.loadOlder"
-          @check-again="(intent) => owner?.retry(intent, protectedProp)"
-          @restore="(intentKey) => owner?.restore(intentKey)"
-          @discard="(intentKey) => owner?.discardRecovery(intentKey)"
-          @open-record="openRecord"
-        />
-        <template v-if="retryRefusal">
-          <p class="text-small text-danger" role="alert">{{ retryRefusal }}</p>
+        <template v-if="isNewChat && selected">
+          <div class="flex min-h-0 flex-1 flex-col justify-center" data-new-chat>
+            <StartPicker :agent="selected" :is-new="true" />
+          </div>
         </template>
-        <template v-if="openedRecord !== null">
-          <RecordPanel :card="openedRecord" @close="closeRecord" />
-        </template>
-        <p role="status" aria-live="polite" class="sr-only">
-          {{ owner?.announcement.value }} {{ arrival }}
-        </p>
-        <template v-if="selected">
-          <RunningCommand
-            :agent="selected"
+        <template v-else>
+          <MessageList
+            :entries="timeline.entries.value"
+            :has-older="timeline.hasOlder.value"
+            :pending="pending"
+            :refused="refused"
+            :viewer="conversation.viewer"
+            :participants="conversation.participants"
+            :conversation-prop="protectedProp"
             :inbox-id="conversation.inboxId"
-            :seed="conversation.runningCommand"
+            :start-wait="startWait"
+            :addressee-name="selected?.name ?? 'the chat'"
+            @retry-delivery="retryDelivery"
+            @reply="(target) => (replyingTo = target)"
+            @older="timeline.loadOlder"
+            @check-again="(intent) => owner?.retry(intent, protectedProp)"
+            @restore="(intentKey) => owner?.restore(intentKey)"
+            @discard="(intentKey) => owner?.discardRecovery(intentKey)"
+            @open-record="openRecord"
           />
-        </template>
-        <SlotSections :sections="chat.dockSections" />
-        <DockStack
-          :key="conversation.inboxId"
-          :dock="conversation.dock"
-          :inbox-id="conversation.inboxId"
-          :load-more="loadMore"
-        />
-        <template v-if="selected">
-          <VerifyingSessionCard :agent="selected" />
-        </template>
-        <Composer
-          :draft-key="key"
-          :agent="agentIdsInChat.length === 1 ? (selected?.id ?? null) : null"
-          :addressee-name="selected?.name ?? null"
-          :session-id="conversation.sessionId"
-          :inbox-id="conversation.inboxId"
-          :replying-to="replyingTo"
-          :conversation-prop="protectedProp"
-          :working-agent="workingAgent"
-          @replied="replyingTo = null"
-          @cancel-reply="replyingTo = null"
-        />
-        <template v-if="liveStage === 'refused'">
-          <p
-            role="status"
-            class="flex items-center gap-2 text-small text-text-3"
-          >
-            Disconnected. The messages, your place and your draft are kept.
-            <Button
-              size="small"
-              variant="bordered"
-              @click="retryLiveConnection()"
-              >Reconnect</Button
-            >
+          <template v-if="retryRefusal">
+            <p class="text-small text-danger" role="alert">{{ retryRefusal }}</p>
+          </template>
+          <template v-if="openedRecord !== null">
+            <RecordPanel :card="openedRecord" @close="closeRecord" />
+          </template>
+          <p role="status" aria-live="polite" class="sr-only">
+            {{ owner?.announcement.value }} {{ arrival }}
           </p>
+          <template v-if="selected && !needsStart && !offersChoice">
+            <AgentRow
+              :agent="selected"
+              :agents="chat.agents"
+              :inbox-id="conversation.inboxId"
+              :seed="conversation.runningCommand"
+              @switch-driver="openSwitch"
+            />
+          </template>
+          <template v-else-if="selected && !needsStart">
+            <RunningCommand
+              :agent="selected"
+              :inbox-id="conversation.inboxId"
+              :seed="conversation.runningCommand"
+            />
+          </template>
+          <SlotSections :sections="chat.dockSections" />
+          <DockStack
+            :key="conversation.inboxId"
+            :dock="conversation.dock"
+            :inbox-id="conversation.inboxId"
+            :load-more="loadMore"
+          />
+          <template v-if="selected">
+            <VerifyingSessionCard :agent="selected" />
+          </template>
+          <template v-if="needsStart && selected">
+            <StartPicker :agent="selected" :is-new="false" />
+          </template>
+          <template v-else>
+            <Composer
+              :draft-key="key"
+              :agent="agentIdsInChat.length === 1 ? (selected?.id ?? null) : null"
+              :addressee-name="selected?.name ?? null"
+              :session-id="conversation.sessionId"
+              :inbox-id="conversation.inboxId"
+              :replying-to="replyingTo"
+              :conversation-prop="protectedProp"
+              :working-agent="workingAgent"
+              @replied="replyingTo = null"
+              @cancel-reply="replyingTo = null"
+            />
+          </template>
+          <template v-if="liveStage === 'refused'">
+            <p
+              role="status"
+              class="flex items-center gap-2 text-small text-text-3"
+            >
+              Disconnected. The messages, your place and your draft are kept.
+              <Button
+                size="small"
+                variant="bordered"
+                @click="retryLiveConnection()"
+                >Reconnect</Button
+              >
+            </p>
+          </template>
         </template>
       </template>
       <template v-else>

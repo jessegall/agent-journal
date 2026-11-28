@@ -168,10 +168,10 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
 
 <template>
   <div class="@container/bar flex h-full w-full min-w-0 items-stretch gap-1" data-chat-tabs>
-    <div class="flex min-w-0 items-stretch overflow-x-auto" role="tablist" aria-label="Open chats">
+    <div class="flex min-w-0 items-stretch overflow-x-auto [scrollbar-width:none]" role="tablist" aria-label="Open chats">
       <template v-for="agent in tabs" :key="agent.id">
         <div
-          class="group/tab flex items-center gap-1.5 border-r border-line px-2.5 text-small"
+          class="group/tab flex max-w-[220px] flex-none items-center gap-1.5 border-r border-line px-2.5 text-small"
           :class="agent.id === selectedAgentId ? 'bg-bg text-text' : 'text-text-2 hover:bg-hover'"
         >
           <button
@@ -181,13 +181,13 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
             :aria-selected="agent.id === selectedAgentId"
             :tabindex="agent.id === selectedAgentId ? 0 : -1"
             :data-chat-tab="agent.id"
-            class="flex items-center gap-1.5 whitespace-nowrap"
+            class="flex min-w-0 items-center gap-1.5 whitespace-nowrap"
             :class="columnAgentIds.includes(agent.id) && 'underline underline-offset-4'"
             @click="choose(agent)"
             @keydown="pressOnTab($event, agent)"
           >
             <Avatar :participant="{ kind: 'agent', driver: agent.sessionDriver ?? '' }" />
-            <span>{{ agent.isMain ? `${agent.name} · main` : agent.name }}</span>
+            <span class="min-w-0 truncate">{{ agent.isMain ? `${agent.name} · main` : agent.name }}</span>
             <Status :state="sessionLooks[agent.status.sessionState]" label="" />
             <template v-if="agent.unreadCount > 0">
               <span class="font-medium text-text" :aria-label="`${agent.unreadCount} unread`">{{
@@ -219,7 +219,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
     </div>
     <button
       type="button"
-      class="flex items-center gap-1.5 px-2.5 text-small text-text-2 hover:bg-hover"
+      class="flex flex-none items-center gap-1.5 px-2.5 text-small whitespace-nowrap text-text-2 hover:bg-hover"
       :aria-busy="isOpeningNewChat"
       title="New chat · ⌥N"
       data-new-chat-tab
@@ -230,7 +230,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
       <Kbd class="@max-[820px]/bar:hidden" variant="bare" decorative>⌥N</Kbd>
     </button>
     <span class="flex-1"></span>
-    <span class="flex items-center pr-1">
+    <span class="flex flex-none items-center pr-1">
       <SegmentedControl
         :model-value="openChats.chats.mode"
         label="How the open chats show"
