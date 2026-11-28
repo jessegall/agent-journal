@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace App\Support\Types;
 
 use App\Reflection\SourceNodeAttributes;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\Hidden as DataHidden;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\Transformers\DataClassTransformer;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 use Spatie\TypeScriptTransformer\PhpNodes\PhpClassNode;
 use Spatie\TypeScriptTransformer\PhpNodes\PhpPropertyNode;
+use Spatie\TypeScriptTransformer\TypeResolvers\Data\ParsedClass;
+use Spatie\TypeScriptTransformer\TypeResolvers\Data\ParsedNameAndType;
 use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptProperty;
 
 /**
@@ -22,6 +27,36 @@ final class HiddenAwareDataTransformer extends DataClassTransformer
     {
         return parent::shouldTransform($phpClassNode)
             && SourceNodeAttributes::current()->carries($phpClassNode, TypeScript::class);
+    }
+
+    /**
+     * @return array{ParsedNameAndType|null, PhpClassNode}
+     */
+    protected function resolvePropertyAnnotation(
+        PhpPropertyNode $phpPropertyNode,
+        PhpClassNode $phpClassNode,
+        ParsedClass|null $parsedClass,
+    ): array {
+        [$annotation, $source] = parent::resolvePropertyAnnotation($phpPropertyNode, $phpClassNode, $parsedClass);
+        $type = $annotation?->type;
+
+        if (! $type instanceof GenericTypeNode || ! in_array((string) $type->type, ['list', 'non-empty-list'], true)) {
+            return [$annotation, $source];
+        }
+
+        $collection = $phpPropertyNode->getAttributes(DataCollectionOf::class)[0] ?? null;
+
+        if ($collection === null) {
+            return [$annotation, $source];
+        }
+
+        $itemClass = $collection->getArgument('class');
+        assert(is_string($itemClass));
+
+        // The attribute resolves the class in the file that declares it, including when the property comes from a trait.
+        $list = new GenericTypeNode($type->type, [new IdentifierTypeNode($itemClass)]);
+
+        return [new ParsedNameAndType($phpPropertyNode->getName(), $list), $source];
     }
 
     protected function isPropertyHidden(
