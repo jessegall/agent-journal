@@ -1,4 +1,5 @@
-import { router } from "@inertiajs/vue3";
+import { useWindowReload } from "@kit/useWindowQuery";
+import { useHostProp } from "@kit/hostProp";
 import { ref } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
 import { keyedPost } from "@kit/keyedPost";
@@ -10,6 +11,8 @@ import { interruptTurn } from "@kit/sessionStarts";
  * Interrupting and then what the agent does. A refusal is kept to show beside the button.
  */
 export function useTurnInterrupt() {
+  const reload = useWindowReload();
+  const hostProp = useHostProp();
   const isPending = ref(false);
   const refusal = ref<string | null>(null);
 
@@ -28,9 +31,10 @@ export function useTurnInterrupt() {
       {
         onAccepted: () => undefined,
         onRefused: (reason) => (refusal.value = reason),
-        onUncertain: () => router.reload(),
+        onUncertain: () => reload({}),
         onFinish: () => (isPending.value = false),
       },
+      [hostProp],
     );
   }
 

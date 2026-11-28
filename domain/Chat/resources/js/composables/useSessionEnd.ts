@@ -1,4 +1,5 @@
-import { router } from "@inertiajs/vue3";
+import { useWindowReload } from "@kit/useWindowQuery";
+import { useHostProp } from "@kit/hostProp";
 import { ref } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
 import { keyedPost } from "@kit/keyedPost";
@@ -10,6 +11,8 @@ import { stopSession } from "@kit/sessionStarts";
  * it; the bar then follows the stop from the page, and the next message starts the agent again.
  */
 export function useSessionEnd() {
+  const reload = useWindowReload();
+  const hostProp = useHostProp();
   const isPending = ref(false);
   const refusal = ref<string | null>(null);
 
@@ -32,12 +35,13 @@ export function useSessionEnd() {
       {
         onAccepted: () => undefined,
         onRefused: (reason) => (refusal.value = reason),
-        onUncertain: () => router.reload(),
+        onUncertain: () => reload({}),
         onFinish: () => {
           isPending.value = false;
           onFinish();
         },
       },
+      [hostProp],
     );
   }
 

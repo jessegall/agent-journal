@@ -229,18 +229,6 @@ final class ChatMessage extends JournalModel implements EventSource, ReadableMod
         return self::query()->newestInInbox($inboxId)->lockForUpdate()->first();
     }
 
-    /** @return list<self> */
-    public static function previewOf(Inbox $inbox, int $limit): array
-    {
-        return array_values(self::query()
-            ->newestInInbox($inbox->id)
-            ->ofType(ChatMessageType::Message)
-            ->withSource()
-            ->limit($limit)
-            ->get()
-            ->all());
-    }
-
     // ----------[ Scopes ]----------
 
     /**

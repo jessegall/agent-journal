@@ -1,21 +1,22 @@
 import { onPurge } from "@kit/protectedView";
-import { reactive } from "vue";
-import type { ConversationData } from "@generated/types/chat";
+import { onScopeDispose, reactive, watch } from "vue";
+import type { AgentOptionData, ConversationData } from "@generated/types/chat";
 
 /**
- * The conversations Home's chat window has read in this tab, by agent: each request reads one, so side by side every
- * column shows the one its own reload read last. A denial forgets them all.
+ * Retains the conversations read by this chat window while the viewer is allowed to see them.
  */
-const read = reactive(new Map<string, ConversationData>());
+export function useReadConversations(viewerId: () => string | undefined) {
+  const conversations = reactive(new Map<string, { conversation: ConversationData; agent?: AgentOptionData }>());
+  const clear = () => conversations.clear();
+  onScopeDispose(onPurge(clear));
+  watch(viewerId, clear, { flush: "sync" });
 
-onPurge(() => read.clear());
-
-export function rememberConversation(conversation: ConversationData): void {
-  if (conversation.agentId !== null) {
-    read.set(conversation.agentId, conversation);
+  function remember(conversation: ConversationData, agents: AgentOptionData[]): void {
+    if (conversation.agentId !== null) {
+      const agent = agents.find((candidate) => candidate.id === conversation.agentId);
+      conversations.set(conversation.agentId, { conversation, agent });
+    }
   }
-}
 
-export function conversationOf(agentId: string): ConversationData | undefined {
-  return read.get(agentId);
+  return { remember, forAgent: (agentId: string) => conversations.get(agentId) };
 }

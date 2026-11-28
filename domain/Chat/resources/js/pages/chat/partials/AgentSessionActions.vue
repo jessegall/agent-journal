@@ -2,6 +2,7 @@
 import TextLink from "@kit/TextLink";
 import { router } from "@inertiajs/vue3";
 import { computed, onMounted, ref } from "vue";
+import { useWindowReload } from "@kit/useWindowQuery";
 import { newRequestId } from "@kit/requestId";
 import type { AgentOptionData, StatusActionData } from "@generated/types/chat";
 import {
@@ -27,12 +28,13 @@ const props = defineProps<{ agent: AgentOptionData }>();
 // The actions another part of the chat draws: the composer's Stop, the chat list's End session and Switch driver….
 type BarActionType = Exclude<StatusActionData["type"], "interrupt" | "stop" | "switch">;
 
+const reload = useWindowReload();
 const notice = ref<string | null>(null);
 const pendingType = ref<string | null>(null);
 const switching = useSwitchOperation(() => props.agent);
 const statusCheck = useStatusCheck(
   () => props.agent.status,
-  (done) => router.reload({ onFinish: done }),
+  (done) => reload({}, { onFinish: done }),
 );
 
 // A switch already under way for this agent is followed again, never sent again.
@@ -43,7 +45,7 @@ function settleSwitch(
   label: "Retrying" | "Checking",
 ): void {
   if (props.agent.switchId === null) {
-    router.reload();
+    reload({});
 
     return;
   }
@@ -52,7 +54,7 @@ function settleSwitch(
 }
 
 function readAgain(): void {
-  router.reload({ onFinish: () => (pendingType.value = null) });
+  reload({}, { onFinish: () => (pendingType.value = null) });
 }
 
 function dismiss(): void {
