@@ -57,7 +57,11 @@ final readonly class Word
         if (count($this->segments) === 1) {
             $segment = $this->segments[0];
 
-            return $segment->type === WordSegmentType::Expansion ? null : $segment->text;
+            if ($segment->type === WordSegmentType::Expansion) {
+                return null;
+            }
+
+            return $segment->text;
         }
 
         if ($this->hasExpansion()) {

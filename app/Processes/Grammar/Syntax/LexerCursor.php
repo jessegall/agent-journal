@@ -20,8 +20,14 @@ use App\Values\Word;
 final class LexerCursor
 {
     private const array OPERATORS = [
-        '&' => ['&&' => TokenType::AndIf, '&' => TokenType::Background],
-        '|' => ['||' => TokenType::OrIf, '|' => TokenType::Pipe],
+        '&' => [
+            '&&' => TokenType::AndIf,
+            '&' => TokenType::Background,
+        ],
+        '|' => [
+            '||' => TokenType::OrIf,
+            '|' => TokenType::Pipe,
+        ],
         ';' => [';' => TokenType::Semicolon],
         '!' => ['!' => TokenType::Bang],
         '(' => ['(' => TokenType::OpenParen],
@@ -29,7 +35,10 @@ final class LexerCursor
     ];
 
     private const array EXTENDED_OPERATORS = [
-        '&' => ['&>>' => TokenType::Redirect, '&>' => TokenType::Redirect],
+        '&' => [
+            '&>>' => TokenType::Redirect,
+            '&>' => TokenType::Redirect,
+        ],
         '|' => ['|&' => TokenType::PipeBoth],
     ];
 
