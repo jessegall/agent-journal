@@ -18,7 +18,7 @@ final readonly class StateType
     /**
      * @param  class-string<StateReferenceFactory>  $reference
      */
-    public function __construct(public string $reference, public int $schemaVersion) {}
+    public function __construct(public string $reference, public int $version) {}
 
     public function key(): string
     {

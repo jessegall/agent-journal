@@ -21,7 +21,7 @@ use Generator;
  * The agent's closing words, for the session's whole life: a stop that ends a turn with words the turn has not offered
  * yet is refused once with the offer to send them, and a stop that repeats the words it was offered keeps them private.
  */
-#[StateType(ClosingWordsStateReference::class, schemaVersion: 1)]
+#[StateType(ClosingWordsStateReference::class, version: 1)]
 final class ClosingWordsState extends AgentState implements BaseState
 {
     public function __construct(private readonly string $agentId, private readonly string $sessionId) {}

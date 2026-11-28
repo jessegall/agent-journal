@@ -26,7 +26,7 @@ use PhpOption\Some;
  * The agent owes a log line on the task it works on: it may use a few more tools, and then only reads and the
  * journal's own tools, until it logs on the task. It finishes the moment it receives the task logged.
  */
-#[StateType(LogDueStateReference::class, schemaVersion: 1)]
+#[StateType(LogDueStateReference::class, version: 1)]
 final class LogDueState extends AgentState implements UniqueSubjectState
 {
     /**

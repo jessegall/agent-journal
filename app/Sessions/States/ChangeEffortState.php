@@ -21,7 +21,7 @@ use App\Stacks\Attributes\StateType;
  * driver applied the request it records the effort on the session's runtime, so every later start runs at it. A
  * request cancelled, superseded or resolved as not applied ends it with nothing recorded.
  */
-#[StateType(ChangeEffortStateReference::class, schemaVersion: 1)]
+#[StateType(ChangeEffortStateReference::class, version: 1)]
 final class ChangeEffortState extends AgentState
 {
     private bool $isSettled = false;

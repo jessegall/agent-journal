@@ -43,7 +43,7 @@ final class StateTypeKeyTest extends TestCase
         $later = [];
 
         foreach ($this->stateClasses() as $class) {
-            $version = Reflector::of($class)->attribute(StateType::class)->schemaVersion;
+            $version = Reflector::of($class)->attribute(StateType::class)->version;
 
             if ($version !== 1) {
                 $later[] = "{$class} declares schema version {$version}";

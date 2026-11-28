@@ -23,7 +23,7 @@ use PhpOption\Some;
  * An agent that holds an ask's hop and has to answer it. The hop stays open until the state receives the ask closed or
  * handed on to another hop.
  */
-#[StateType(AnswerAskStateReference::class, schemaVersion: 1)]
+#[StateType(AnswerAskStateReference::class, version: 1)]
 final class AnswerAskState extends AgentState implements DurableState, UniqueSubjectState
 {
     private bool $isOpen = true;

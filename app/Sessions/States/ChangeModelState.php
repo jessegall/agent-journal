@@ -21,7 +21,7 @@ use App\Stacks\Attributes\StateType;
  * driver applied the request it records the model on the session's runtime, so every later start runs at it. A
  * request cancelled, superseded or resolved as not applied ends it with nothing recorded.
  */
-#[StateType(ChangeModelStateReference::class, schemaVersion: 1)]
+#[StateType(ChangeModelStateReference::class, version: 1)]
 final class ChangeModelState extends AgentState
 {
     private bool $isSettled = false;

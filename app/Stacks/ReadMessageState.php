@@ -34,7 +34,7 @@ use PhpOption\Some;
  * once the budget is spent it refuses every tool but the journal's and reads until the agent reads. Each read pushes
  * the answering state for that message; it finishes when nothing is unread.
  */
-#[StateType(ReadMessageStateReference::class, schemaVersion: 1)]
+#[StateType(ReadMessageStateReference::class, version: 1)]
 final class ReadMessageState extends AgentState implements DurableState, UniqueSubjectState
 {
     use ToolBudgetDecisions;
