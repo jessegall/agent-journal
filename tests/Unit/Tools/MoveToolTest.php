@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Tools;
 
+use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Name;
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassConst;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\UseItem;
+use PhpParser\NodeFinder;
+use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -166,15 +174,19 @@ final class MoveToolTest extends TestCase
             PHP);
 
         [$exit] = $this->move('--replace', 'App\\Values\\Old', 'App\\Values\\Kept');
-        $kept = (string) file_get_contents($this->tree.'/app/Values/Kept.php');
 
         $this->assertSame(0, $exit);
         $this->assertFileDoesNotExist($this->tree.'/app/Values/Old.php');
-        $this->assertStringContainsString('use App\\Contracts\\Hosts;', $kept);
-        $this->assertStringContainsString('class Kept implements \\App\\Contracts\\Hosts', $kept);
-        $this->assertStringContainsString("public const string LABEL = 'old';", $kept);
-        $this->assertStringContainsString("// The hosts it was handed.\n    public function hosts(Hosts \$hosts): Hosts", $kept);
-        $this->assertStringContainsString('return Kept::LABEL;', $kept);
+        $this->assertSame(
+            [
+                'imports' => ['App\\Contracts\\Hosts'],
+                'implements' => ['App\\Contracts\\Hosts'],
+                'members' => ['kept', 'LABEL', 'hosts'],
+                'comments' => ['hosts' => ['// The hosts it was handed.']],
+                'classes read' => ['Kept'],
+            ],
+            $this->shapeOfKept(),
+        );
     }
 
     public function test_a_merge_of_a_member_name_in_both_classes_is_refused_and_writes_nothing(): void
@@ -207,6 +219,47 @@ final class MoveToolTest extends TestCase
 
         $this->assertSame(1, $exit);
         $this->assertFileExists($this->tree.'/app/Values/Old.php');
+    }
+
+    /**
+     * What the merged Kept class holds, read from its syntax tree: its imports, the interfaces it implements, its
+     * members in order, the comments above each method, and the classes it reads a constant of.
+     *
+     * @return array{imports: list<string>, implements: list<string>, members: list<string>, comments: array<string, list<string>>, classes read: list<string>}
+     */
+    private function shapeOfKept(): array
+    {
+        $tree = new ParserFactory()->createForHostVersion()->parse(
+            (string) file_get_contents($this->tree.'/app/Values/Kept.php'),
+        ) ?? [];
+        $finder = new NodeFinder();
+        $class = $finder->findFirstInstanceOf($tree, Class_::class);
+        $members = [];
+        $comments = [];
+
+        foreach ($class?->stmts ?? [] as $member) {
+            $names = match (true) {
+                $member instanceof ClassMethod => [$member->name->toString()],
+                $member instanceof ClassConst => array_map(fn ($constant) => $constant->name->toString(), $member->consts),
+                default => [],
+            };
+            $members = [...$members, ...$names];
+
+            if ($member instanceof ClassMethod && $member->getComments() !== []) {
+                $comments[$member->name->toString()] = array_map(fn ($comment) => $comment->getText(), $member->getComments());
+            }
+        }
+
+        return [
+            'imports' => array_map(fn (UseItem $use) => $use->name->toString(), $finder->findInstanceOf($tree, UseItem::class)),
+            'implements' => array_map(fn (Name $name) => $name->toString(), $class?->implements ?? []),
+            'members' => $members,
+            'comments' => $comments,
+            'classes read' => array_map(
+                fn (ClassConstFetch $fetch) => $fetch->class instanceof Name ? $fetch->class->toString() : '',
+                $finder->findInstanceOf($tree, ClassConstFetch::class),
+            ),
+        ];
     }
 
     /**

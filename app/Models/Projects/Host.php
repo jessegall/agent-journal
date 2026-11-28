@@ -187,8 +187,8 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Keeps that the journal answered one of the host's calls: an answer on the failing route ends the failure, and a
-     * call the host reported failed on another route, such as one the journal stopped before it could answer, fails.
+     * Keeps that the journal answered a call: an answer on the failing route, ids left out, ends the failure, and a
+     * call the host reported failed on another route fails.
      *
      * @param  list<FailedHostCallData>  $reported
      */
@@ -196,14 +196,14 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     {
         $this->last_answered_at = $at;
 
-        if ($route === $this->failing_route) {
+        if ($this->failing_route !== null && self::routeWithoutIds($route) === self::routeWithoutIds($this->failing_route)) {
             $this->failing_since = null;
             $this->failing_route = null;
             $this->last_failure = null;
         }
 
         foreach ($reported as $call) {
-            if ($call->route === $route) {
+            if (self::routeWithoutIds($call->route) === self::routeWithoutIds($route)) {
                 continue;
             }
 
@@ -569,6 +569,16 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         return hash('sha256', $secret);
     }
 
+    /**
+     * A host route with each record id in its path left out and its query dropped, such as /host/instructions/{id}.
+     */
+    private static function routeWithoutIds(string $route): string
+    {
+        $path = explode('?', $route, 2)[0];
+
+        return (string) preg_replace('#/[0-9a-z]{26}(?=/|$)#', '/{id}', $path);
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -587,6 +597,16 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public static function findLockedEnrolledNamed(string $name): self|null
     {
         return self::query()->enrolled()->unrevoked()->withInstallationName($name)->lockForUpdate()->first();
+    }
+
+    /**
+     * Every host not yet revoked under the installation name, locked until the transaction ends.
+     *
+     * @return list<self>
+     */
+    public static function findLockedUnrevokedNamed(string $name): array
+    {
+        return array_values(self::query()->unrevoked()->withInstallationName($name)->lockForUpdate()->get()->all());
     }
 
     /**

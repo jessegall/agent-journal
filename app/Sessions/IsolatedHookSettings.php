@@ -52,10 +52,21 @@ final class IsolatedHookSettings
         return $this->hookCommands !== [];
     }
 
+    /**
+     * The file's text: each hook event runs one journal command, and the allowed and denied tools are listed.
+     */
     public function content(): string
     {
+        $hooks = array_map(
+            fn (string $command) => [['hooks' => [[
+                'type' => 'command',
+                'command' => $command,
+            ]]]],
+            $this->hookCommands,
+        );
+
         return (string) json_encode(
-            IsolatedSettingsFile::of($this->hookCommands, $this->allowedTools, $this->deniedTools),
+            ['hooks' => $hooks, 'permissions' => ['allow' => $this->allowedTools, 'deny' => $this->deniedTools]],
             JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
         );
     }

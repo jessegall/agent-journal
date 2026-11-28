@@ -20,7 +20,6 @@ use App\Sessions\Enums\SessionStatus;
 use App\Sessions\Enums\StartDisposition;
 use App\Sessions\Enums\StartReadiness;
 use App\Sessions\SessionStartOutcome;
-use App\Sessions\StartRemedyWords;
 use App\Support\AgentEvidence;
 use App\Support\AgentStatusDecision;
 use App\Support\HoldText;
@@ -177,7 +176,7 @@ final class AgentStatusTest extends TestCase
         string $label,
         array $actions,
     ): void {
-        $status = AgentStatusDecision::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::operators(false));
 
         $this->assertSame(
             [$activity, $label, $actions],
@@ -246,7 +245,7 @@ final class AgentStatusTest extends TestCase
             readiness: $readiness,
         );
 
-        $status = AgentStatusDecision::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::operators(false));
 
         $this->assertSame(
             [$activity, $activity->label(), $activity->reason(), $actions],
@@ -263,8 +262,8 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = self::stopped(self::startOutcome(StartDisposition::Refused, 'image-unverified'));
 
-        $member = AgentStatusDecision::of($evidence, self::words(false));
-        $operator = AgentStatusDecision::of($evidence, self::words(true));
+        $member = AgentStatusDecision::of($evidence, self::operators(false));
+        $operator = AgentStatusDecision::of($evidence, self::operators(true));
 
         $this->assertSame(
             [
@@ -280,7 +279,7 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired));
 
-        $status = AgentStatusDecision::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::operators(false));
 
         $this->assertSame(HoldText::of(HoldReason::OnboardingRequired, hasTerminal: false)->reason, $status->reason);
     }
@@ -295,11 +294,11 @@ final class AgentStatusTest extends TestCase
 
         $afterWake = AgentStatusDecision::of(
             self::live($idle, request: self::uncertain(DriverOperation::Wake)),
-            self::words(false),
+            self::operators(false),
         );
         $afterDelivery = AgentStatusDecision::of(
             self::live($idle, request: self::uncertain(DriverOperation::Deliver)),
-            self::words(false),
+            self::operators(false),
         );
 
         $this->assertSame([
@@ -331,7 +330,7 @@ final class AgentStatusTest extends TestCase
             true,
         );
 
-        $status = AgentStatusDecision::of($starting, self::words(false));
+        $status = AgentStatusDecision::of($starting, self::operators(false));
 
         $this->assertSame(SessionActivityStatus::Starting, $status->sessionState);
         $this->assertSame(
@@ -359,7 +358,7 @@ final class AgentStatusTest extends TestCase
             waitsForDriverImage: true,
         );
 
-        $status = AgentStatusDecision::of($waiting, self::words(false));
+        $status = AgentStatusDecision::of($waiting, self::operators(false));
 
         $this->assertSame(
             [SessionActivityStatus::Starting, 'Building its driver image'],
@@ -387,7 +386,7 @@ final class AgentStatusTest extends TestCase
             true,
         );
 
-        $status = AgentStatusDecision::of($unvouched, self::words(false));
+        $status = AgentStatusDecision::of($unvouched, self::operators(false));
 
         $this->assertSame(SessionActivityStatus::Unknown, $status->sessionState);
         $this->assertSame(
@@ -413,8 +412,8 @@ final class AgentStatusTest extends TestCase
             true,
         );
 
-        $status = AgentStatusDecision::of($allowed, self::words(false));
-        $refused = AgentStatusDecision::of(self::live(self::runtime(RuntimeActivity::Running)), self::words(false));
+        $status = AgentStatusDecision::of($allowed, self::operators(false));
+        $refused = AgentStatusDecision::of(self::live(self::runtime(RuntimeActivity::Running)), self::operators(false));
 
         $this->assertSame(
             [
@@ -448,7 +447,7 @@ final class AgentStatusTest extends TestCase
             canReconcile: true,
         );
 
-        $status = AgentStatusDecision::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::operators(false));
 
         $this->assertSame(
             ['Start could not be confirmed', 'If the host confirms this step, the approved switch can continue.'],
@@ -461,7 +460,7 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = new AgentEvidence(true, null, null, null, null, false, null, null, null, false);
 
-        $status = AgentStatusDecision::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::operators(false));
 
         $this->assertSame([SessionActivityStatus::Retired, []], [$status->sessionState, $status->actions]);
     }
@@ -470,7 +469,7 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = new AgentEvidence(false, null, null, null, null, false, null, null, null, false);
 
-        $status = AgentStatusDecision::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::operators(false));
 
         $this->assertSame([SessionActivityStatus::Stopped, []], [$status->sessionState, $status->actions]);
     }
@@ -552,9 +551,9 @@ final class AgentStatusTest extends TestCase
         );
     }
 
-    private static function words(bool $operates): StartRemedyWords
+    private static function operators(bool $operates): HostOperatorAccess
     {
-        return new StartRemedyWords(new readonly class($operates) implements HostOperatorAccess
+        return new readonly class($operates) implements HostOperatorAccess
         {
             public function __construct(private bool $operates) {}
 
@@ -562,6 +561,6 @@ final class AgentStatusTest extends TestCase
             {
                 return $this->operates;
             }
-        });
+        };
     }
 }

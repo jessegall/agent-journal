@@ -19,6 +19,7 @@ final class SystemEntryPolicies implements SystemEntryPoliciesContract
     private array $policies = [
         'host request' => [],
         'host enrolment' => [],
+        'host revocation' => [],
         'process reconcile' => [],
         'share read' => [],
         'sharing supervisor' => [],

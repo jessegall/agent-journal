@@ -11,6 +11,7 @@ use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Agents\Enums\StatusActionType;
+use App\Hosts\Contracts\HostOperatorAccess;
 use App\Processes\Enums\RuntimeActivity;
 use App\Sessions\Enums\SessionActivityStatus;
 use App\Sessions\Enums\SessionStatus;
@@ -18,7 +19,6 @@ use App\Sessions\Enums\StartDisposition;
 use App\Sessions\Enums\StartUnavailableReason;
 use App\Sessions\SessionStartOutcome;
 use App\Sessions\StartRefusalCodes;
-use App\Sessions\StartRemedyWords;
 
 /**
  * Decides an agent's status from its evidence: the state, the words that name it and the actions it offers. Core's
@@ -28,7 +28,7 @@ final class AgentStatusDecision
 {
     private const string BUILDING_IMAGE = 'Building its driver image';
 
-    public static function of(AgentEvidence $evidence, StartRemedyWords $words): AgentStatus
+    public static function of(AgentEvidence $evidence, HostOperatorAccess $operators): AgentStatus
     {
         if ($evidence->isRetired) {
             return new AgentStatus(
@@ -45,7 +45,7 @@ final class AgentStatusDecision
 
         return self::underWay($evidence)
             ?? self::held($evidence)
-            ?? ($evidence->hasLiveSession() ? self::live($evidence) : self::withoutSession($evidence, $words));
+            ?? ($evidence->hasLiveSession() ? self::live($evidence) : self::withoutSession($evidence, $operators));
     }
 
     // An accepted stop, an open switch or a delivery whose result is unknown decides the status before anything else.
@@ -303,7 +303,7 @@ final class AgentStatusDecision
     }
 
     // No live session: the latest start decides, else the agent is stopped, and the next message starts it.
-    private static function withoutSession(AgentEvidence $evidence, StartRemedyWords $words): AgentStatus
+    private static function withoutSession(AgentEvidence $evidence, HostOperatorAccess $operators): AgentStatus
     {
         $start = $evidence->start;
 
@@ -312,7 +312,7 @@ final class AgentStatusDecision
         }
 
         if ($start?->disposition === StartDisposition::Refused) {
-            return self::refused($start, $words);
+            return self::refused($start, $operators);
         }
 
         return self::plain(SessionActivityStatus::Stopped, $evidence, []);
@@ -346,7 +346,7 @@ final class AgentStatusDecision
         return self::plain(SessionActivityStatus::Starting, $evidence, $actions, $operation);
     }
 
-    private static function refused(SessionStartOutcome $start, StartRemedyWords $words): AgentStatus
+    private static function refused(SessionStartOutcome $start, HostOperatorAccess $operators): AgentStatus
     {
         $reason = StartRefusalCodes::reasonOf((string) $start->refusalReason);
         $remedy = $reason->remedy();
@@ -367,7 +367,7 @@ final class AgentStatusDecision
             $state,
             $state->label(),
             $reason->explanation(),
-            $words->textOf($remedy),
+            $remedy->textFor($operators),
             new StatusFollowedOperation($start->requestId, 'start', $start->version(), 1),
             null,
             null,

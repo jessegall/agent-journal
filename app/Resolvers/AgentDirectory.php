@@ -13,6 +13,7 @@ use App\Agents\Enums\AgentAction;
 use App\Agents\Enums\AgentPresence;
 use App\Agents\ResumableConversation;
 use App\Exceptions\StackTargetRefused;
+use App\Hosts\Contracts\HostOperatorAccess;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -28,7 +29,6 @@ use App\Policies\AgentPolicy;
 use App\Projects\Contracts\AgentProjects;
 use App\Sessions\Contracts\AgentDirectory as AgentDirectoryContract;
 use App\Sessions\SessionStartOutcome;
-use App\Sessions\StartRemedyWords;
 use App\Support\AgentFacts;
 use App\Support\AgentStatusDecision;
 use App\Support\HomeAgent;
@@ -59,7 +59,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
     public function __construct(
         private CurrentActor $actors,
         private AgentInspection $inspection,
-        private StartRemedyWords $remedyWords,
+        private HostOperatorAccess $operators,
         private ServerClock $clock,
         private CurrentAuthorizer $authorizer,
     ) {}
@@ -276,7 +276,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             $facts->startOutcome,
             AgentStatusDecision::of(
                 $facts->evidence($agent->isRetired(), $canStop, $now),
-                $this->remedyWords,
+                $this->operators,
             ),
             $session?->driver_key,
             $session?->driver_label,

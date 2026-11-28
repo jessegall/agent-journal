@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sessions;
 
+use App\Hosts\Contracts\HostOperatorAccess;
 use App\Sessions\Enums\StartRemedyType;
 
 /**
@@ -51,5 +52,18 @@ final readonly class StartRemedy
     public function isForOperators(): bool
     {
         return $this->isForOperators;
+    }
+
+    /**
+     * The step's words for whoever reads it: an actor who operates the hosts reads the operator's instruction, every
+     * other member reads it as a request to ask their host operator.
+     */
+    public function textFor(HostOperatorAccess $operators): string
+    {
+        if ($operators->isGranted()) {
+            return $this->operatorText();
+        }
+
+        return $this->memberText();
     }
 }

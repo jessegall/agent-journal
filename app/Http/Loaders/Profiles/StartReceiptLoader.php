@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Profiles;
 
+use App\Hosts\Contracts\HostOperatorAccess;
 use App\Models\Agents\AgentRuntime;
 use App\Profiles\Data\StartReceiptData;
 use App\Profiles\Data\StartReceiptInput;
@@ -12,7 +13,6 @@ use App\Sessions\Enums\StartDisposition;
 use App\Sessions\Exceptions\SessionRequestMissing;
 use App\Sessions\SessionRequestDetails;
 use App\Sessions\StartRefusalCodes;
-use App\Sessions\StartRemedyWords;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -23,7 +23,7 @@ final readonly class StartReceiptLoader
 {
     private const string UNAVAILABLE = 'This item is unavailable.';
 
-    public function __construct(private SessionRequestResolver $records, private StartRemedyWords $words) {}
+    public function __construct(private SessionRequestResolver $records, private HostOperatorAccess $operators) {}
 
     public function __invoke(StartReceiptInput $input): StartReceiptData
     {
@@ -53,7 +53,7 @@ final readonly class StartReceiptLoader
         return self::answer($receipt->requestId, 'refused', [
             'reasonCode' => $code,
             'explanation' => $reason->explanation(),
-            'remedy' => $this->words->textOf($reason->remedy()),
+            'remedy' => $reason->remedy()->textFor($this->operators),
         ]);
     }
 

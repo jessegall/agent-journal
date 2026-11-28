@@ -49,6 +49,9 @@ final class RecordHostCallAnsweredTest extends TestCase
         Route::post(self::FAILING_ROUTE_ANSWERED, fn () => [])->middleware(
             'journal.host:'.HostRouteRole::Shared->value,
         );
+        Route::post('/host/link-alarm-test/records/{record}', fn () => [])->middleware(
+            'journal.host:'.HostRouteRole::Shared->value,
+        );
     }
 
     public function test_a_host_failing_past_a_minute_shows_the_reason_and_an_answer_on_that_route_clears_it(): void
@@ -78,6 +81,27 @@ final class RecordHostCallAnsweredTest extends TestCase
         $this->journal->hostCall($host, 'POST', self::ANSWERED_ROUTE)->assertSuccessful();
 
         $this->assertCount(1, $this->app->make(HostLinkAlarms::class)->current());
+    }
+
+    public function test_a_failure_on_a_route_that_names_one_record_clears_on_an_answer_for_another_record(): void
+    {
+        $host = $this->journal->enrolledHost();
+        $since = CarbonImmutable::now()->toIso8601String();
+        $failed = '/host/link-alarm-test/records/01m8h3xety90hj842kd9rpgsq1';
+        $reported = [['route' => $failed, 'status' => 0, 'reason' => self::REASON, 'since' => $since]];
+        $this->journal->hostCall(
+            $host,
+            'POST',
+            self::FAILING_ROUTE_ANSWERED,
+            '{}',
+            headers: ['HTTP_X_JOURNAL_FAILED_CALLS' => json_encode($reported, JSON_THROW_ON_ERROR)],
+        )->assertSuccessful();
+        $this->travel(2)->minutes();
+        $this->assertCount(1, $this->app->make(HostLinkAlarms::class)->current());
+
+        $this->journal->hostCall($host, 'POST', '/host/link-alarm-test/records/01m8hc3dency2hby7hmjhybk01')->assertSuccessful();
+
+        $this->assertSame([], $this->app->make(HostLinkAlarms::class)->current());
     }
 
     public function test_a_failure_shorter_than_a_minute_raises_no_alarm(): void
