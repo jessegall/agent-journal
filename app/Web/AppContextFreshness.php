@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Web;
 
 use App\Attributes\Web\RefreshesAppContext;
+use App\Support\Reflector;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
-use ReflectionClass;
-use ReflectionMethod;
 
 /**
  * Whether the app context the browser keeps from its first page is out of date: a route marked as changing it went
@@ -44,17 +43,19 @@ final readonly class AppContextFreshness
 
         $class = $route->getControllerClass();
 
-        if ($class === null || ! class_exists($class)) {
+        if ($class === null) {
             return false;
         }
 
-        $controller = new ReflectionClass($class);
+        $controller = Reflector::find($class)->getOrElse(null);
+
+        if ($controller === null || ! $controller->isClass()) {
+            return false;
+        }
+
         $method = $route->getActionMethod();
 
-        $onMethod = $controller->hasMethod($method)
-            ? new ReflectionMethod($controller->getName(), $method)->getAttributes(RefreshesAppContext::class)
-            : [];
-
-        return $controller->getAttributes(RefreshesAppContext::class) !== [] || $onMethod !== [];
+        return $controller->hasAttribute(RefreshesAppContext::class)
+            || ($controller->hasMethod($method) && $controller->method($method)->hasAttribute(RefreshesAppContext::class));
     }
 }

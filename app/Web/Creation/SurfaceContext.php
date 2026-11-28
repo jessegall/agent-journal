@@ -27,6 +27,7 @@ use App\Web\RouteNumber;
 use App\Web\Values\WindowInstance;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -104,7 +105,13 @@ final readonly class SurfaceContext
 
     public function routeKey(string $parameter): string|null
     {
-        $key = $this->visit->route($parameter);
+        $route = $this->visit->route();
+
+        if (! $route instanceof Route) {
+            return null;
+        }
+
+        $key = $route->parameters()[$parameter] ?? null;
 
         if (is_string($key) || is_int($key)) {
             return (string) $key;

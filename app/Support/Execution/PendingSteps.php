@@ -60,13 +60,15 @@ final readonly class PendingSteps
 
     public function skippingNext(): self
     {
+        $this->state->skipEveryPart($this->remaining[0], $this->skipReason());
+
         return clone ($this, ['remaining' => array_slice($this->remaining, 1)]);
     }
 
     /**
      * Why the next step does not run, as its skipped record says.
      */
-    public function skipReason(): string
+    private function skipReason(): string
     {
         $operator = $this->runsOnSuccess ? '&&' : '||';
 

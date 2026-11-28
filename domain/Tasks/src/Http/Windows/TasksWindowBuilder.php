@@ -29,11 +29,11 @@ final readonly class TasksWindowBuilder implements WindowBuilder
         $policy = $this->policies->forType(TasksPaneData::class);
         $tasks = $this->tasks->preview($filters->toDomain(), $policy->limitFor('items'));
 
-        $items = $tasks->map(fn (Task $task) => LayoutRowData::build()
+        $items = array_values($tasks->map(fn (Task $task) => LayoutRowData::build()
             ->key($task->id)
             ->label($task->title)
             ->value($task->status->standingWord())
-            ->finish())->values()->all();
+            ->finish())->all());
 
         $query = array_filter($filters->toArray(), fn (mixed $value) => $value !== null && $value !== 1);
 

@@ -67,15 +67,20 @@ final readonly class AgentStartLog
 
     private function startOf(AgentSession $session): AgentLogStartData
     {
-        $starts = SessionProcess::query()->supervised()->ofSessions([$session->id])->limit(self::LINE_LIMIT)->get();
+        $starts = array_values(SessionProcess::query()
+            ->supervised()
+            ->ofSessions([$session->id])
+            ->limit(self::LINE_LIMIT)
+            ->get()
+            ->all());
         $attempts = RetryAttempt::query()->ofSession($session->id)->latest()->limit(self::LINE_LIMIT)->get();
 
-        $gaveUp = $attempts->filter(fn (RetryAttempt $attempt) => $attempt->outcome === RetryOutcome::GaveUp)
-            ->pluck('driver_request_id')->all();
+        $gaveUp = array_values($attempts->filter(fn (RetryAttempt $attempt) => $attempt->outcome === RetryOutcome::GaveUp)
+            ->map(fn (RetryAttempt $attempt) => $attempt->driver_request_id)->all());
 
         $lines = [
-            ...$this->startLinesOf($starts->all(), $this->runsOn($session)),
-            ...$this->processLinesOf($starts->pluck('id')->all()),
+            ...$this->startLinesOf($starts, $this->runsOn($session)),
+            ...$this->processLinesOf(array_map(fn (SessionProcess $start) => $start->id, $starts)),
             ...$this->requestLinesOf($session->id, $gaveUp),
             ...$this->retryLinesOf($attempts),
         ];
@@ -90,7 +95,7 @@ final readonly class AgentStartLog
         }
 
         usort($lines, fn (AgentLogLineData $first, AgentLogLineData $second) => strcmp($second->at, $first->at));
-        $hasFailed = $starts->contains(fn (SessionProcess $start) => $start->isRefused());
+        $hasFailed = array_any($starts, fn (SessionProcess $start) => $start->isRefused());
 
         return AgentLogStartData::from([
             'sessionId' => $session->id,

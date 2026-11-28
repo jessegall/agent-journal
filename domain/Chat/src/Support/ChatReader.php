@@ -100,7 +100,7 @@ final readonly class ChatReader
     {
         $chats = $this->chats->joined()->limit(InboxMember::ATTACHED_LIMIT)->get();
 
-        return $fields->agents($page->agents)
+        $fields->agents($page->agents)
             ->nextAgents($page->next)
             ->isSetupRequired($main->isEmpty())
             ->mainAgentId($main->getOrElse(Optional::create()))
@@ -108,6 +108,8 @@ final readonly class ChatReader
             ->chats($this->pages->summariesOf($chats))
             ->canCreateChats($this->chats->mayCreate())
             ->noAccounts($this->noAccounts());
+
+        return $fields;
     }
 
     /**

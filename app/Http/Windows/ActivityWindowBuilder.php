@@ -26,11 +26,11 @@ final readonly class ActivityWindowBuilder implements WindowBuilder
             ->limit($policy->limitFor('items'))
             ->get(['id', 'occurred_at', 'type', 'subject']);
 
-        $items = $entries->map(fn (ActivityEntry $entry) => LayoutRowData::build()
+        $items = array_values($entries->map(fn (ActivityEntry $entry) => LayoutRowData::build()
             ->key($entry->id)
             ->label(PaneExcerpt::of("{$entry->type->verb()} {$entry->subject}"))
             ->detail($entry->occurred_at->toIso8601String())
-            ->finish())->values()->all();
+            ->finish())->all());
 
         return ActivityPaneData::build()
             ->items($items)

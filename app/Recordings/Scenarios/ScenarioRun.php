@@ -218,8 +218,10 @@ final class ScenarioRun
             return $this->hostId();
         }
 
-        return $this->connectedBinding()?->host_id
+        $binding = $this->connectedBinding()
             ?? throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, 'the install line has no live binding');
+
+        return $binding->host_id;
     }
 
     public function readBindingId(): string

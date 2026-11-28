@@ -13,6 +13,7 @@ use App\Accounts\Data\AccountUsageData;
 use App\Accounts\Data\DriverMethodsData;
 use App\Accounts\Data\PendingAttemptCleanupData;
 use App\Accounts\Data\SignInAttemptData;
+use App\Accounts\Values\MonthCost;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;
@@ -22,6 +23,7 @@ use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Optional;
 
 final readonly class AccountList
 {
@@ -53,7 +55,7 @@ final readonly class AccountList
         $costs = AccountUsageCost::resolveMonthTotals(array_column($visible, 'id'), $now);
         $threads = AccountUsageTokens::findNewestOf($visible);
 
-        $row = function (Account $account, array $readings) use ($selections, $counts, $histories, $costs, $threads) {
+        $row = function (Account $account, AccountUsageData|Optional $usage) use ($selections, $counts, $histories) {
             $identity = $account->record_identity;
             $active = $selections[$account->account_protocol] ?? null;
 
@@ -62,15 +64,17 @@ final readonly class AccountList
                 ->isActive($active?->account_id === $account->id)
                 ->runningCount($counts->runningFor($identity))
                 ->recentStarts(array_map(Data\AccountStartData::fromUse(...), $histories->forAccount($identity)))
-                ->usage(AccountUsageData::build()->readings(
-                    $readings,
-                    $costs[$account->id] ?? null,
-                    $threads[$account->id] ?? null,
-                )->finish())
+                ->usage($usage)
                 ->finish();
         };
 
-        $rows = array_map(static fn (Account $account) => $row($account, $windows[$account->id] ?? []), $accounts);
+        $rows = array_map(
+            fn (Account $account) => $row(
+                $account,
+                $this->usageOf($account, $windows[$account->id] ?? [], $costs, $threads),
+            ),
+            $accounts,
+        );
 
         $fields = AccountListPageData::build()
             ->rows($rows)
@@ -81,7 +85,8 @@ final readonly class AccountList
         if ($selected !== null) {
             $usage = AccountUsageWindow::pageOf($selected, $usagePage);
 
-            $fields->selected($row($selected, array_values($usage->items())))
+            $selectedUsage = $this->usageOf($selected, array_values($usage->items()), $costs, $threads);
+            $fields->selected($row($selected, $selectedUsage))
                 ->usagePage($usage->currentPage())
                 ->usageLastPage($usage->lastPage());
         }
@@ -91,6 +96,20 @@ final readonly class AccountList
         }
 
         return $fields->finish();
+    }
+
+    /**
+     * @param  list<AccountUsageWindow>  $windows
+     * @param  array<string, MonthCost>  $costs
+     * @param  array<string, AccountUsageTokens>  $threads
+     */
+    private function usageOf(Account $account, array $windows, array $costs, array $threads): AccountUsageData|Optional
+    {
+        return AccountUsageData::build()->readings(
+            $windows,
+            $costs[$account->id] ?? null,
+            $threads[$account->id] ?? null,
+        )->finish();
     }
 
     /** @param list<Account> $accounts */

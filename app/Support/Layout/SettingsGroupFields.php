@@ -14,7 +14,7 @@ final class SettingsGroupFields
 
     private string|null $help = null;
 
-    /** @var list<LayoutPartData> */
+    /** @var list<SettingsRow> */
     private array $rows = [];
 
     private LayoutFormData|null $save = null;
@@ -46,7 +46,7 @@ final class SettingsGroupFields
         return $this;
     }
 
-    /** @param list<LayoutPartData> $rows */
+    /** @param list<SettingsRow> $rows */
     public function rows(array $rows): self
     {
         $this->rows = $rows;

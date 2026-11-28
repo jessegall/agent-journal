@@ -49,28 +49,28 @@ abstract class ChatFields
     }
 
     /** @param list<AgentOptionData> $agents */
-    public function agents(array $agents): self
+    public function agents(array $agents): static
     {
         $this->agents = $agents;
 
         return $this;
     }
 
-    public function isSetupRequired(bool $isSetupRequired): self
+    public function isSetupRequired(bool $isSetupRequired): static
     {
         $this->isSetupRequired = $isSetupRequired;
 
         return $this;
     }
 
-    public function mainAgentId(string|Optional $mainAgentId): self
+    public function mainAgentId(string|Optional $mainAgentId): static
     {
         $this->mainAgentId = $mainAgentId;
 
         return $this;
     }
 
-    public function selectedAgentId(string|Optional $selectedAgentId): self
+    public function selectedAgentId(string|Optional $selectedAgentId): static
     {
         $this->selectedAgentId = $selectedAgentId;
 
@@ -78,21 +78,21 @@ abstract class ChatFields
     }
 
     /** @param list<SlotSectionData> $dockSections */
-    public function dockSections(array $dockSections): self
+    public function dockSections(array $dockSections): static
     {
         $this->dockSections = $dockSections;
 
         return $this;
     }
 
-    public function conversation(ConversationData|Optional $conversation): self
+    public function conversation(ConversationData|Optional $conversation): static
     {
         $this->conversation = $conversation;
 
         return $this;
     }
 
-    public function setupNotice(string|Optional $setupNotice): self
+    public function setupNotice(string|Optional $setupNotice): static
     {
         $this->setupNotice = $setupNotice;
 
@@ -100,35 +100,35 @@ abstract class ChatFields
     }
 
     /** @param list<ChatSummaryData> $chats */
-    public function chats(array $chats): self
+    public function chats(array $chats): static
     {
         $this->chats = $chats;
 
         return $this;
     }
 
-    public function canCreateChats(bool $canCreateChats): self
+    public function canCreateChats(bool $canCreateChats): static
     {
         $this->canCreateChats = $canCreateChats;
 
         return $this;
     }
 
-    public function selectedInboxId(string|Optional $selectedInboxId): self
+    public function selectedInboxId(string|Optional $selectedInboxId): static
     {
         $this->selectedInboxId = $selectedInboxId;
 
         return $this;
     }
 
-    public function noAccounts(LayoutPartData|Optional $noAccounts): self
+    public function noAccounts(LayoutPartData|Optional $noAccounts): static
     {
         $this->noAccounts = $noAccounts;
 
         return $this;
     }
 
-    public function nextAgents(AgentPageCursorData|null $nextAgents): self
+    public function nextAgents(AgentPageCursorData|null $nextAgents): static
     {
         $this->nextAgents = $nextAgents;
 

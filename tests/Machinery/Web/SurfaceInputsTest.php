@@ -64,6 +64,18 @@ final class SurfaceInputsTest extends TestCase
         SurfaceVisitData::factory()->alwaysValidate()->from(new SurfacePayload($context, []));
     }
 
+    public function test_a_numeric_parameter_from_a_bound_route_remains_a_route_key(): void
+    {
+        $visit = $this->visit();
+        $route = $visit->route();
+        $this->assertInstanceOf(Route::class, $route);
+        $route->setParameter('agent', 42);
+
+        $context = $this->app->make(SurfaceContexts::class)->forVisit($visit);
+
+        $this->assertSame('42', $context->routeKey('agent'));
+    }
+
     public function test_form_request_uses_the_isolated_route_and_query_without_rebinding(): void
     {
         $original = $this->app->make(Request::class);

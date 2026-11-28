@@ -28,11 +28,11 @@ final readonly class PlansWindowBuilder implements WindowBuilder
         $policy = $this->policies->forType(PlansPaneData::class);
         $plans = $this->plans->preview($filters->toDomain(), $policy->limitFor('items'));
 
-        $items = $plans->map(fn (Plan $plan) => LayoutRowData::build()
+        $items = array_values($plans->map(fn (Plan $plan) => LayoutRowData::build()
             ->key($plan->id)
             ->label($plan->title)
             ->value(ucfirst($plan->status->value))
-            ->finish())->values()->all();
+            ->finish())->all());
 
         return PlansPaneData::build()
             ->items($items)

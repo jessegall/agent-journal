@@ -39,19 +39,14 @@ final class LayoutShape extends Data
     private function keepingNode(PaneNodeData $node, callable $available): PaneNodeData
     {
         if ($node instanceof SplitData) {
-            return clone ($node, [
-                'first' => $this->keepingNode($node->first, $available),
-                'second' => $this->keepingNode($node->second, $available),
-            ]);
+            return $node->withChildren(
+                $this->keepingNode($node->first, $available),
+                $this->keepingNode($node->second, $available),
+            );
         }
 
         if ($node instanceof PaneData) {
-            $keys = array_values(array_filter($node->windows, $available));
-
-            return clone ($node, [
-                'windows' => $keys,
-                'active' => in_array($node->active, $keys, true) ? $node->active : ($keys[0] ?? null),
-            ]);
+            return $node->keepingWindows($available);
         }
 
         return $node;

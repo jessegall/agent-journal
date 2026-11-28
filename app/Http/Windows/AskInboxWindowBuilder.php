@@ -22,12 +22,14 @@ final readonly class AskInboxWindowBuilder implements WindowBuilder
         $policy = $this->policies->forType(AskInboxPaneData::class);
         $asks = $this->asks->preview($policy->limitFor('items'));
 
+        $items = array_values($asks->map(fn (Ask $ask) => AskPreviewData::build()
+            ->id($ask->id)
+            ->excerpt(PaneExcerpt::of($ask->body))
+            ->isOpen($ask->open)
+            ->finish())->all());
+
         return AskInboxPaneData::build()
-            ->items($asks->map(fn (Ask $ask) => AskPreviewData::build()
-                ->id($ask->id)
-                ->excerpt(PaneExcerpt::of($ask->body))
-                ->isOpen($ask->open)
-                ->finish())->values()->all())
+            ->items($items)
             ->inboxUrl(route('web.asks', absolute: false))
             ->finish();
     }

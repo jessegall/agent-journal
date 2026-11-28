@@ -29,11 +29,11 @@ final readonly class RulesWindowBuilder implements WindowBuilder
         $policy = $this->policies->forType(RulesPaneData::class);
         $rules = $this->rules->preview($filters->toDomain(), $policy->limitFor('items'));
 
-        $items = $rules->map(fn (Rule $rule) => LayoutRowData::build()
+        $items = array_values($rules->map(fn (Rule $rule) => LayoutRowData::build()
             ->key($rule->id)
             ->label(PaneExcerpt::of($rule->text))
             ->value("Rule {$rule->number}")
-            ->finish())->values()->all();
+            ->finish())->all());
 
         $query = $filters->search === '' ? [] : ['q' => $filters->search];
 

@@ -178,6 +178,7 @@ final readonly class AppContext
         );
     }
 
+    /** @return list<DriverLookData> */
     private function driverLooks(): array
     {
         return array_map(

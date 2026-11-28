@@ -62,11 +62,13 @@ final class SurfaceAttributeMap
         $checks = [];
 
         foreach ($class->attributes(PermissionGated::class) as $guard) {
-            if (! is_subclass_of($guard->check, VisibilityCheck::class)) {
+            $check = Reflector::find($guard->check)->getOrElse(null);
+
+            if ($check === null || ! $check->isSubclassOf(VisibilityCheck::class)) {
                 throw InvalidSurfacePolicy::at($type, "{$guard->check} is not a visibility check.");
             }
 
-            $checks[] = $guard->check;
+            $checks[] = $check->name();
         }
 
         $bounds = [];
@@ -119,8 +121,12 @@ final class SurfaceAttributeMap
     {
         $live = $declaration->attributes(Live::class)->first()->getOrElse(null);
 
-        foreach ($live?->events ?? [] as $event) {
-            if (! is_subclass_of($event, WebEvent::class) || ! is_subclass_of($event, ShouldBroadcast::class)) {
+        foreach ($live->events ?? [] as $event) {
+            $type = Reflector::find($event)->getOrElse(null);
+
+            if ($type === null
+                || ! $type->isSubclassOf(WebEvent::class)
+                || ! $type->implements(ShouldBroadcast::class)) {
                 throw InvalidSurfacePolicy::at($location, "{$event} is not a web broadcast event.");
             }
         }
@@ -158,9 +164,9 @@ final class SurfaceAttributeMap
             return false;
         }
 
-        $class = Reflector::of($row);
+        $class = Reflector::find($row)->getOrElse(null);
 
-        if (! $class->hasProperty($append->key)) {
+        if ($class === null || ! $class->hasProperty($append->key)) {
             return false;
         }
 

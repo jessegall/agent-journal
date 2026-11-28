@@ -478,8 +478,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
             ->joinSub($pairs, 'account_links', 'account_links.subject_id', '=', "{$table}.id")
             ->select(["{$table}.*", 'account_links.linked_type', 'account_links.linked_id'])
             ->selectRaw(
-                "row_number() over (partition by linked_type, linked_id order by {$table}.created_at desc, "
-                    ."{$table}.id desc) as account_rank",
+                'row_number() over (partition by linked_type, linked_id order by created_at desc, id desc) as account_rank',
             );
 
         $sessions = self::query()

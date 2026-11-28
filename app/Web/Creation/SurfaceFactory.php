@@ -74,12 +74,16 @@ abstract class SurfaceFactory
 
     private function isConcreteData(string $type): bool
     {
-        return is_subclass_of($type, Data::class) && ! Reflector::of($type)->isAbstract();
+        $product = Reflector::find($type)->getOrElse(null);
+
+        return $product !== null && $product->isSubclassOf(Data::class) && ! $product->isAbstract();
     }
 
     /** @phpstan-assert-if-true class-string<TBuilder> $builder */
     private function isConcreteBuilder(string $builder): bool
     {
-        return is_subclass_of($builder, $this->contract) && Reflector::of($builder)->isInstantiable();
+        $class = Reflector::find($builder)->getOrElse(null);
+
+        return $class !== null && $class->implements($this->contract) && $class->isInstantiable();
     }
 }

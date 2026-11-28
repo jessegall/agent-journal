@@ -36,7 +36,7 @@ final readonly class RequestRetries
         }
 
         $previous = RetryAttempt::latestOf($request);
-        $retry = $previous?->retry ?? 0;
+        $retry = $previous->retry ?? 0;
 
         if ($previous !== null && RetrySchedule::isLast($retry)) {
             $previous->settle(RetryOutcome::GaveUp, $failure);
