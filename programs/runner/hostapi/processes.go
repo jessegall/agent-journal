@@ -37,8 +37,9 @@ type ProcessTable struct {
 	// allowed are the only programs a connected host opens; nil on a co-located host.
 	allowed *AllowedPrograms
 
-	mutex     sync.Mutex
-	processes map[string]*heldProcess
+	mutex               sync.Mutex
+	processes           map[string]*heldProcess
+	terminalGenerations map[string]int
 	// fences are the fences a run_fenced instruction closed, each until its deadline, so one left closed opens again.
 	fences map[string]time.Time
 }
@@ -46,9 +47,10 @@ type ProcessTable struct {
 // keptProcess is what the host keeps on disk of one process it holds that can outlive it: a container, or a native
 // process without a terminal, whose output goes to its spool and whose process group is named by its pid.
 type keptProcess struct {
-	Plan       OpenPlan `json:"plan"`
-	Generation int      `json:"generation"`
-	Pid        int      `json:"pid,omitempty"`
+	Plan              OpenPlan `json:"plan"`
+	Generation        int      `json:"generation"`
+	Pid               int      `json:"pid,omitempty"`
+	IsAdoptedTerminal bool     `json:"is_adopted_terminal,omitempty"`
 }
 
 // heldProcess is one process the host holds, contained or native.
@@ -61,6 +63,7 @@ type heldProcess struct {
 	generation int
 	identity   string
 	terminal   host.TerminalStream
+	adopted    *adoptedTerminal
 	input      io.WriteCloser
 	native     *exec.Cmd
 	// pid names the process group of a native process, a child of this host or one it adopted after a restart.
@@ -78,13 +81,14 @@ type heldProcess struct {
 // and keeps the plans of its containers in the state folder.
 func OpenProcessTable(stateFolder string, containers host.Containers, reports *ReportQueue, outputs *Outputs) *ProcessTable {
 	return &ProcessTable{
-		containers:  containers,
-		reports:     reports,
-		outputs:     outputs,
-		keptPath:    filepath.Join(stateFolder, "instructions", "processes.json"),
-		stateFolder: stateFolder,
-		processes:   map[string]*heldProcess{},
-		fences:      map[string]time.Time{},
+		containers:          containers,
+		reports:             reports,
+		outputs:             outputs,
+		keptPath:            filepath.Join(stateFolder, "instructions", "processes.json"),
+		stateFolder:         stateFolder,
+		processes:           map[string]*heldProcess{},
+		terminalGenerations: map[string]int{},
+		fences:              map[string]time.Time{},
 	}
 }
 
@@ -102,6 +106,10 @@ func (table *ProcessTable) Adopt(ctx context.Context) error {
 		return err
 	}
 	for id, container := range kept {
+		if container.IsAdoptedTerminal {
+			table.terminalGenerations[id] = container.Generation
+			continue
+		}
 		held := &heldProcess{id: id, plan: container.Plan, generation: container.Generation, exited: make(chan struct{})}
 		if err := table.outputs.Open(id, held.plan); err != nil {
 			return err
@@ -152,13 +160,17 @@ func (table *ProcessTable) Inventory() []InventoryProcess {
 			alive = false
 		default:
 		}
+		offset := table.outputs.SpoolOffset(id)
+		if held.adopted != nil {
+			offset = max(offset, held.adopted.spoolOffset)
+		}
 		inventory = append(inventory, InventoryProcess{
 			ProcessID:      id,
 			Identity:       held.currentIdentity(),
 			Container:      held.containerName(),
 			IsAlive:        alive,
-			IsTerminalHeld: held.terminal != nil,
-			SpoolOffset:    table.outputs.SpoolOffset(id),
+			IsTerminalHeld: held.terminal != nil || held.adopted != nil,
+			SpoolOffset:    offset,
 		})
 	}
 	return inventory
@@ -578,6 +590,9 @@ func (table *ProcessTable) saveKept() {
 // writeKept saves the live processes other than the one ending while the table holds its lock.
 func (table *ProcessTable) writeKept(ending *heldProcess) {
 	kept := map[string]keptProcess{}
+	for id, generation := range table.terminalGenerations {
+		kept[id] = keptProcess{Generation: generation, IsAdoptedTerminal: true}
+	}
 	for id, held := range table.processes {
 		select {
 		case <-held.exited:
@@ -585,7 +600,7 @@ func (table *ProcessTable) writeKept(ending *heldProcess) {
 		default:
 		}
 		// A native terminal cannot outlive the host, but is kept by its pid so a restart can end what is left of it.
-		if held == ending || (!held.canOutliveHost() && held.pid == 0) {
+		if held == ending || held.adopted != nil || (!held.canOutliveHost() && held.pid == 0) {
 			continue
 		}
 		_, generation := held.state()

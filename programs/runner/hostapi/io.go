@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +19,8 @@ import (
 
 // OutputLimit is the most bytes the host sends in one output post.
 const OutputLimit = 256 * 1024
+
+const adoptedSpoolByteLimit = 1 << 20
 
 // MarshalJSON sends a list the output has none of as an empty list, never as null, as the protocol fixes both.
 func (output Output) MarshalJSON() ([]byte, error) {
@@ -151,6 +155,35 @@ func (outputs *Outputs) Open(processID string, plan OpenPlan) error {
 		return err
 	}
 	outputs.spools[processID] = spool
+	return nil
+}
+
+func (outputs *Outputs) openAdopted(processID string) error {
+	spool, err := OpenSpool(filepath.Join(outputs.stateFolder, "spool", processID), adoptedSpoolByteLimit)
+	if err != nil {
+		return err
+	}
+	outputs.mutex.Lock()
+	outputs.spools[processID] = spool
+	outputs.mutex.Unlock()
+	return nil
+}
+
+// acceptAdopted keeps the bytes at the terminal's offsets and forwards its frames as recorded locally.
+func (outputs *Outputs) acceptAdopted(processID string, output LocalLinkOutput) error {
+	outputs.mutex.Lock()
+	spool := outputs.spools[processID]
+	outputs.mutex.Unlock()
+	for _, chunk := range output.Chunks {
+		printed, err := base64.StdEncoding.DecodeString(chunk.Bytes)
+		if err != nil {
+			return err
+		}
+		if err := spool.keepAt(chunk.Offset, printed); err != nil {
+			return err
+		}
+	}
+	outputs.send(processID, output)
 	return nil
 }
 
@@ -484,6 +517,26 @@ func (spool *Spool) Append(bytes []byte) (int64, error) {
 	defer file.Close()
 	_, err = file.Write(bytes[:min(len(bytes), int(spool.limit-start))])
 	return start, err
+}
+
+func (spool *Spool) keepAt(start int64, printed []byte) error {
+	if start < 0 || start > math.MaxInt64-int64(len(printed)) {
+		return errors.New("the terminal output has an invalid spool offset")
+	}
+	spool.mutex.Lock()
+	defer spool.mutex.Unlock()
+	if start < spool.limit && len(printed) > 0 {
+		file, err := os.OpenFile(spool.path, os.O_CREATE|os.O_WRONLY, 0o600)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		if _, err := file.WriteAt(printed[:min(len(printed), int(spool.limit-start))], start); err != nil {
+			return err
+		}
+	}
+	spool.offset = max(spool.offset, start+int64(len(printed)))
+	return nil
 }
 
 // From is what the spool kept from the offset on.

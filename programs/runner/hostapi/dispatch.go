@@ -19,11 +19,19 @@ type Dispatcher struct {
 	record    *AnsweredRecord
 	executors map[string]Executor
 	report    func(Instruction, Answer)
+	forward   func(context.Context, Instruction) (Answer, bool)
 
 	mutex    sync.Mutex
 	lanes    map[string]chan claimedInstruction
 	inFlight map[string]bool
 	running  sync.WaitGroup
+}
+
+// ForwardTerminals routes checked terminal instructions to the adopted process when the relay holds one.
+func (dispatcher *Dispatcher) ForwardTerminals(table *ProcessTable, pull PrivateValuePuller) {
+	dispatcher.forward = func(ctx context.Context, instruction Instruction) (Answer, bool) {
+		return table.forwardTerminal(ctx, instruction, pull)
+	}
 }
 
 type claimedInstruction struct {
@@ -137,6 +145,11 @@ func (dispatcher *Dispatcher) answerOf(ctx context.Context, claimed claimedInstr
 	}
 	if err := dispatcher.record.Start(instruction, dispatcher.verifier.Now()); err != nil {
 		return RefusedFor(instruction, Unsafe, "the host could not record the instruction: "+err.Error(), nil)
+	}
+	if dispatcher.forward != nil {
+		if answer, forwarded := dispatcher.forward(ctx, instruction); forwarded {
+			return answer
+		}
 	}
 	facts, err := executor(ctx, instruction)
 	if err != nil {
