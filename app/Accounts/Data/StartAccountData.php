@@ -11,7 +11,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The account one start ran with, as the owner sees it later: its label as it is now, kept after removal, its state,
+ * The account one start ran with, as the owner sees it later: its label as it is now, kept after removal, its status,
  * and when the start started and ended. No folder or other private reference is shown.
  */
 #[TypeScript]
@@ -27,7 +27,7 @@ final class StartAccountData extends Data
         public readonly string $driver,
         public readonly string $accountId,
         public readonly string $accountLabel,
-        public readonly AccountStatus $accountState,
+        public readonly AccountStatus $accountStatus,
         public readonly AccountProcessRole $role,
         public readonly string $startedAt,
         public readonly string|null $endedAt,

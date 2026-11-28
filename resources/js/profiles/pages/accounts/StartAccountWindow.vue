@@ -9,7 +9,7 @@ const { driverLabel } = useAppContext();
 
 /**
  * The account one start ran with, for the owner: its name as it is now, also after the account was removed, its
- * state, and when the start started and ended.
+ * status, and when the start started and ended.
  */
 defineProps<{ data: StartAccountData }>();
 </script>
@@ -23,8 +23,8 @@ defineProps<{ data: StartAccountData }>();
                 <dd class="flex items-center gap-2 text-text">
                     {{ data.accountLabel }}
                     <StateBadge
-                        :label="accountStateLook[data.accountState].label"
-                        :tone="accountStateLook[data.accountState].tone"
+                        :label="accountStateLook[data.accountStatus].label"
+                        :tone="accountStateLook[data.accountStatus].tone"
                     />
                 </dd>
             </div>

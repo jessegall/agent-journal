@@ -79,9 +79,9 @@ final class CreationDialogFields
         return $this;
     }
 
-    public function waysInHeader(bool $inHeader): self
+    public function waysInHeader(bool $isInHeader): self
     {
-        $this->waysInHeader = $inHeader;
+        $this->waysInHeader = $isInHeader;
 
         return $this;
     }
