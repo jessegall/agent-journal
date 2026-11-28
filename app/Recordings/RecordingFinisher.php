@@ -63,7 +63,7 @@ final readonly class RecordingFinisher
         $fakes = new RecordingFakes($run->environment(), $personal);
 
         $exchanges = array_map(
-            fn (CutExchange $exchange) => $this->resigned($exchange->fakedBy($fakes), $fakes),
+            fn (CutExchange $exchange) => $this->resigned(KeyGuards::hashedIn($exchange->fakedBy($fakes)), $fakes),
             $this->exchangesOf($run, $fakes),
         );
 

@@ -133,20 +133,53 @@ func (instructions hostInstructions) executors() map[string]hostapi.Executor {
 // startHostProtocol runs host protocol 1: process reports and output kept and sent, instructions claimed through the long
 // poll and carried out, the inventory sent once and a heartbeat every 30 s; idle keeps the idle window the claim
 // answers name, for a host that leaves when idle. It answers the table of the processes it runs.
-
 func startHostProtocol(ctx context.Context, journal *client.Client, enrollment device.Enrollment, stateFolder string,
 	names map[string]string, containers host.Containers, release string, options hostProtocolOptions,
 ) (*hostapi.ProcessTable, error) {
+	protocol, err := openHostProtocol(ctx, journal, enrollment, stateFolder, names, containers, release, options)
+	if err != nil {
+		return nil, err
+	}
+	if err := protocol.relay.SendInventory(ctx); err != nil {
+		log.Printf("the host's inventory was not sent: %v", err)
+	}
+	protocol.serve(ctx)
+	return protocol.table, nil
+}
+
+// hostProtocol is host protocol 1 opened: the table of the processes the host runs, the queue of their reports and the
+// relay that claims instructions and beats.
+type hostProtocol struct {
+	table   *hostapi.ProcessTable
+	reports *hostapi.ReportQueue
+	relay   hostapi.Relay
+}
+
+// serve sends the process reports, beats and claims instructions until the context ends.
+func (protocol hostProtocol) serve(ctx context.Context) {
+	go protocol.reports.Run(ctx.Done())
+	go protocol.relay.Beat(ctx)
+	go func() {
+		if err := protocol.relay.Claim(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			log.Printf("host protocol 1 stopped: %v", err)
+		}
+	}()
+}
+
+// openHostProtocol opens the host's state and adopts the processes it ran before, ready to serve.
+func openHostProtocol(ctx context.Context, journal *client.Client, enrollment device.Enrollment, stateFolder string,
+	names map[string]string, containers host.Containers, release string, options hostProtocolOptions,
+) (hostProtocol, error) {
 	calls := hostapi.Journal{Client: journal}
 	reports, err := hostapi.OpenReportQueue(stateFolder, func(report hostapi.ProcessReport) error {
 		return calls.NotifyProcessReport(ctx, report.ProcessID, report)
 	})
 	if err != nil {
-		return nil, err
+		return hostProtocol{}, err
 	}
 	record, err := hostapi.OpenAnsweredRecord(stateFolder)
 	if err != nil {
-		return nil, err
+		return hostProtocol{}, err
 	}
 	outputs := hostapi.NewOutputs(stateFolder, func(processID string, output hostapi.Output) error {
 		return calls.NotifyProcessOutput(ctx, processID, output)
@@ -157,7 +190,7 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment d
 		table.AllowOnly(options.Allowed)
 	}
 	if err := table.Adopt(ctx); err != nil {
-		return nil, err
+		return hostProtocol{}, err
 	}
 	instructions := hostInstructions{
 		ProcessTable: table,
@@ -177,17 +210,7 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment d
 	})
 	relay := hostapi.Relay{Journal: calls, Dispatcher: dispatcher, Record: record, Table: table, Release: release,
 		Heartbeat: hostapi.HeartbeatInterval, RetryAfter: time.Second, Clock: clock, Idle: options.Idle}
-	go reports.Run(ctx.Done())
-	if err := relay.SendInventory(ctx); err != nil {
-		log.Printf("the host's inventory was not sent: %v", err)
-	}
-	go relay.Beat(ctx)
-	go func() {
-		if err := relay.Claim(ctx); err != nil && !errors.Is(err, context.Canceled) {
-			log.Printf("host protocol 1 stopped: %v", err)
-		}
-	}()
-	return table, nil
+	return hostProtocol{table: table, reports: reports, relay: relay}, nil
 }
 
 // hostNamesOf are the names a plan may ask this host for: the journal's URL as this host reaches it, the host's own

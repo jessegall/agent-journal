@@ -29,13 +29,15 @@ run_in_go() {
     local root="$1"
     local command="$2"
     mkdir -p "$root/storage/framework/test-host"
+    # The whole checkout, as the recordings' reader finds its root by protocol/host.json and reads the drivers there,
+    # and the agent's seccomp profile where compose mounts it for the contained host, as recorded plans name it.
     docker run --rm \
-        -v "$root/programs/runner:/src" \
-        -v "$root/resources/recordings:/resources/recordings:ro" \
+        -v "$root:/repo" \
+        -v "$root/.docker/helper/seccomp-agent.json:/etc/journal/security/seccomp-agent.json:ro" \
         -v "$root/storage/framework/test-host:/out" \
         -v journal-go-cache:/root/.cache \
         -v journal-go-mod:/go/pkg/mod \
-        -w /src golang:1.26.4-bookworm \
+        -w /repo/programs/runner golang:1.26.4-bookworm \
         sh -c "$command"
 }
 

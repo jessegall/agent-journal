@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Recordings;
 
 use App\Recordings\Enums\RecordingMode;
+use Closure;
 
 /**
  * One driver program's exchange cut out of the host's: how it opened, what was typed and printed in order, and the
@@ -30,6 +31,23 @@ final readonly class CutExchange
         $events = array_map(fn (RecordedEvent $event) => $event->fakedBy($fakes), $this->events);
 
         return clone ($this, ['opening' => $this->opening->fakedBy($fakes), 'events' => $events]);
+    }
+
+    /**
+     * The exchange with each call's body changed by the change.
+     *
+     * @param  Closure(string): string  $change
+     */
+    public function withBodies(Closure $change): self
+    {
+        $events = array_map(
+            fn (RecordedEvent $event) => $event->call === null
+                ? $event
+                : $event->withCall($event->call->withBody($change($event->call->body))),
+            $this->events,
+        );
+
+        return clone ($this, ['events' => $events]);
     }
 
     /**

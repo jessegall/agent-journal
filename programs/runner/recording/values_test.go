@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"slices"
 	"strings"
 	"testing"
 
@@ -78,4 +79,58 @@ func TestAnAddressOfAnotherShapeIsRefused(t *testing.T) {
 	if !errors.Is(err, recording.ErrValueRefused) {
 		t.Fatalf("a URL where a path was recorded gave %v", err)
 	}
+}
+
+// recordedOutputPaths are the paths of two recorded processes' output calls of the Claude Code terminal turn, each
+// naming its own fake process.
+func recordedOutputPaths(t *testing.T) (string, string) {
+	t.Helper()
+	calls, err := recorded.MustLoad(t, "claude-code", "terminal-turn").Calls(recording.WireHost)
+	if err != nil {
+		t.Fatal(err)
+	}
+	paths := []string{}
+	for _, call := range calls {
+		if strings.HasSuffix(call.Answered.Path, "/output") && !slices.Contains(paths, call.Answered.Path) {
+			paths = append(paths, call.Answered.Path)
+		}
+	}
+	if len(paths) < 2 {
+		t.Fatal("the recording holds fewer than two processes' output")
+	}
+	return paths[0], paths[1]
+}
+
+func TestALiveValueOneFakeStandsForIsRefusedToAnother(t *testing.T) {
+	first, second := recordedOutputPaths(t)
+	values := recording.NewValues()
+	place := recording.Place{Exchange: "host", Field: "path"}
+	if err := values.Hear(place, quoted(first), quoted(first)); err != nil {
+		t.Fatal(err)
+	}
+
+	err := values.Hear(place, quoted(second), quoted(first))
+
+	if !errors.Is(err, recording.ErrValueRefused) || !strings.Contains(err.Error(), "already stands for") {
+		t.Fatalf("a second fake took the live value of the first: %v", err)
+	}
+}
+
+func TestAFakeInsideALongerFakeIsNotReplaced(t *testing.T) {
+	first, _ := recordedOutputPaths(t)
+	process := strings.Split(first, "/")[3]
+	digest := "sha256:" + strings.Repeat("0", 64-len(process)-1) + process + "0"
+	values := recording.NewValues()
+	if err := values.Hear(recording.Place{Exchange: "host"}, quoted(process), quoted(liveOrderID)); err != nil {
+		t.Fatal(err)
+	}
+
+	if live := values.Live(digest); live != digest {
+		t.Fatalf("the digest %s holding the fake %s is answered as %s", digest, process, live)
+	}
+}
+
+func quoted(text string) []byte {
+	encoded, _ := json.Marshal(text)
+	return encoded
 }

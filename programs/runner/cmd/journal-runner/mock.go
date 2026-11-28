@@ -47,7 +47,8 @@ var errCrashed = errors.New("crash typed")
 // recording in place of the program it was recorded from; "mock keys --record <file>" writes every byte typed on its
 // terminal into the file and draws the typed text on its screen; "mock script --script <file>" answers what is
 // written to it on pipes as the test's script says, in order; "mock print --recording <folder>" prints what a
-// recorded program printed and exits as it did.
+// recorded program printed and exits as it did; "mock scenario --scenario <driver>/<name> -- <arguments>" plays the
+// driver program of a recorded scenario with its hooks run as the start's settings configure them.
 func mock(arguments []string) error {
 	if len(arguments) > 0 && arguments[0] == "docker" {
 		return mockDocker(arguments[1:])
@@ -63,6 +64,9 @@ func mock(arguments []string) error {
 	}
 	if len(arguments) > 0 && arguments[0] == "print" {
 		return mockPrint(arguments[1:])
+	}
+	if len(arguments) > 0 && arguments[0] == "scenario" {
+		return mockScenario(arguments[1:])
 	}
 
 	return errors.New("usage: journal-runner mock docker --socket <path> --image <reference>... | mock recording ...")

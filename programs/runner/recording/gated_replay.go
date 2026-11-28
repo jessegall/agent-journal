@@ -99,10 +99,22 @@ func firstTextGate(gates []Typed) int {
 	return len(gates)
 }
 
+// MomentFollower is an output told each chunk's recorded moment before the chunk is written, as a mock that runs the
+// recorded hooks at their places.
+type MomentFollower interface {
+	Reached(offset time.Duration) error
+}
+
 func writeGroup(output io.Writer, group []OutputChunk, pause time.Duration) error {
+	follower, isFollowing := output.(MomentFollower)
 	for index, chunk := range group {
 		if index > 0 {
 			time.Sleep(min(chunk.Offset-group[index-1].Offset, pause))
+		}
+		if isFollowing {
+			if err := follower.Reached(chunk.Offset); err != nil {
+				return err
+			}
 		}
 		if _, err := output.Write(chunk.Bytes); err != nil {
 			return err

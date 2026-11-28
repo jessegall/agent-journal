@@ -1,12 +1,18 @@
 package hostapi
 
 import (
-	"fmt"
 	"context"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
 	"journal-runner/host"
+	"journal-runner/recorded"
+	"journal-runner/recording"
 )
 
 // A plan the journal records with its raw bytes names raw_bytes, which the strict reader takes.
@@ -86,10 +92,10 @@ func TestAnImageBuildIsReadStrictly(t *testing.T) {
 	}
 	deadline := fmt.Sprintf(`"deadline_ms":%d`, build.DeadlineMs)
 	cases := map[string]string{
-		strings.Replace(payload, `"dockerfile"`, `"dockerfiles"`, 1):                `the payload of build_image holds the field "dockerfiles", which the protocol does not know`,
-		strings.Replace(payload, `,"output_limit":65536`, ``, 1):                    `the payload of build_image misses its field output_limit`,
-		strings.Replace(payload, deadline, `"deadline_ms":"soon"`, 1):                `the payload of build_image holds deadline_ms as string, not int`,
-		strings.Replace(payload, `{"name":"VERSION",`, `{`, 1):                      `the payload of build_image misses its field build_arguments.0.name`,
+		strings.Replace(payload, `"dockerfile"`, `"dockerfiles"`, 1):  `the payload of build_image holds the field "dockerfiles", which the protocol does not know`,
+		strings.Replace(payload, `,"output_limit":65536`, ``, 1):      `the payload of build_image misses its field output_limit`,
+		strings.Replace(payload, deadline, `"deadline_ms":"soon"`, 1): `the payload of build_image holds deadline_ms as string, not int`,
+		strings.Replace(payload, `{"name":"VERSION",`, `{`, 1):        `the payload of build_image misses its field build_arguments.0.name`,
 	}
 	for changed, reason := range cases {
 		_, err := DecodePayload[host.ImageBuild](Instruction{Type: "build_image", Payload: changed})
@@ -98,4 +104,69 @@ func TestAnImageBuildIsReadStrictly(t *testing.T) {
 			t.Errorf("the payload %s was answered %v, not %q", changed, err, reason)
 		}
 	}
+}
+
+// Every instruction any recording's host claimed reads strictly into the payload its handler takes, as the dispatch
+// reads it: the recordings hold only what the protocol allows.
+func TestEveryRecordedInstructionReadsStrictly(t *testing.T) {
+	handlers := reflect.TypeOf((*InstructionHandlers)(nil)).Elem()
+	read := 0
+	for _, instruction := range everyRecordedInstruction(t) {
+		method, isKnown := handlers.MethodByName(handlerNameOf(instruction.Type))
+		if !isKnown {
+			t.Errorf("a recording holds the instruction type %s, which no handler takes", instruction.Type)
+			continue
+		}
+		into := any(&struct{}{})
+		if method.Type.NumIn() == 3 {
+			into = reflect.New(method.Type.In(2)).Interface()
+		}
+		if err := decodeStrictly([]byte(instruction.Payload), into); err != nil {
+			t.Errorf("the recorded %s %s does not read: %v", instruction.Type, instruction.ID, err)
+		}
+		read++
+	}
+	if read == 0 {
+		t.Fatal("no recording holds an instruction")
+	}
+}
+
+// everyRecordedInstruction is each instruction a claim answered in any scenario recorded so far.
+func everyRecordedInstruction(t *testing.T) []Instruction {
+	t.Helper()
+	root, err := recorded.Root()
+	if err != nil {
+		t.Fatal(err)
+	}
+	definitions, _ := filepath.Glob(filepath.Join(root, "resources/recordings/scenarios/*/*.json"))
+	instructions := []Instruction{}
+	for _, definition := range definitions {
+		driver := filepath.Base(filepath.Dir(definition))
+		scenario, err := recorded.Load(root, driver, strings.TrimSuffix(filepath.Base(definition), ".json"))
+		if err != nil {
+			continue
+		}
+		calls, _ := scenario.Calls(recording.WireHost)
+		for _, call := range calls {
+			if call.Answered.Path != "/host/instructions/claim" {
+				continue
+			}
+			body, _ := base64.StdEncoding.DecodeString(call.Answered.Body)
+			var claim struct {
+				Instructions []Instruction `json:"instructions"`
+			}
+			_ = json.Unmarshal(body, &claim)
+			instructions = append(instructions, claim.Instructions...)
+		}
+	}
+	return instructions
+}
+
+// handlerNameOf is the handler method an instruction type is carried out by: open_container is OpenContainer.
+func handlerNameOf(instructionType string) string {
+	words := strings.Split(instructionType, "_")
+	for index, word := range words {
+		words[index] = strings.ToUpper(word[:1]) + word[1:]
+	}
+	return strings.Join(words, "")
 }

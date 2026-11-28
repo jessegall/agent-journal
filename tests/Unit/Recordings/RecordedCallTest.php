@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Recordings;
 
+use App\Recordings\MultiplexedStream;
 use App\Recordings\RecordedCall;
+use App\Recordings\RecordingFakes;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Route;
@@ -40,6 +42,23 @@ final class RecordedCallTest extends TestCase
         $call = RecordedCall::askedBy($request);
 
         $this->assertSame([RecordedCall::BODY_BYTE_LIMIT, true], [strlen($call->body), $call->isCut]);
+    }
+
+    public function test_a_multiplexed_body_is_faked_frame_by_frame_with_each_length_written_anew(): void
+    {
+        $lines = ["  \"configDirectory\": \"/home/journal/.account\",\n", "}\n"];
+        $body = implode('', array_map(fn (string $line) => "\1\0\0\0".pack('N', strlen($line)).$line, $lines));
+        $request = Request::create('/v1.51/containers/journal-process-1/logs');
+        $answer = new Response($body, 200, ['Content-Type' => MultiplexedStream::CONTENT_TYPE]);
+
+        $faked = RecordedCall::answeredWith($answer, $request)->fakedBy(new RecordingFakes([], []));
+
+        $folder = RecordingFakes::USER_FOLDER;
+        $this->assertSame(
+            "\1\0\0\0".pack('N', strlen("  \"configDirectory\": \"{$folder}/.account\",\n"))
+                ."  \"configDirectory\": \"{$folder}/.account\",\n\1\0\0\0".pack('N', 2)."}\n",
+            $faked->body,
+        );
     }
 
     public function test_a_private_values_answer_keeps_only_that_a_value_was_sent(): void

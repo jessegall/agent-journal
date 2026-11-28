@@ -78,10 +78,17 @@ func (values *Values) Hear(place Place, recorded, heard []byte) error {
 
 // Live is the recorded text with each bound fake replaced by its live value; a fake never heard stays.
 func (values *Values) Live(recorded string) string {
-	for fake, live := range values.bound {
-		recorded = strings.ReplaceAll(recorded, fake, live)
+	live, from := "", 0
+	for _, span := range fakeSpans(recorded) {
+		fake := recorded[span.start:span.end]
+		bound, isBound := values.bound[fake]
+		if !isBound {
+			bound = fake
+		}
+		live += recorded[from:span.start] + bound
+		from = span.end
 	}
-	return recorded
+	return live + recorded[from:]
 }
 
 func (values *Values) pair(place Place, was, is any) error {
@@ -132,39 +139,63 @@ func (values *Values) bind(place Place, recorded, heard string) error {
 		if earlier, isBound := values.bound[fake]; isBound && earlier != live[index+1] {
 			return fmt.Errorf("%w: %s is %q where %s is already %q", ErrValueRefused, place, live[index+1], fake, earlier)
 		}
+		if other := values.fakeOf(live[index+1]); other != "" && other != fake {
+			return fmt.Errorf("%w: %s is %q, which %s already stands for", ErrValueRefused, place, live[index+1], other)
+		}
 		values.bound[fake] = live[index+1]
 	}
 	return nil
 }
 
-// fakesOf are the fakes of a recorded string in the order they stand, and a pattern that matches a live string of
-// its shape with one group in place of each fake.
-func fakesOf(recorded string) ([]string, *regexp.Regexp) {
-	type found struct {
-		start, end int
-		shape      *regexp.Regexp
-	}
-	all := []found{}
-	for _, shape := range fakeShapes {
-		for _, at := range shape.fake.FindAllStringIndex(recorded, -1) {
-			all = append(all, found{at[0], at[1], shape.shape})
+// fakeOf is the fake already bound to the live value, none when no fake is.
+func (values *Values) fakeOf(live string) string {
+	for fake, bound := range values.bound {
+		if bound == live {
+			return fake
 		}
 	}
-	// The earliest fake wins, the longest of those starting together; a fake inside one already taken is part of it.
+	return ""
+}
+
+// fakeSpan is where a fake stands in a recorded string, with the shape a live value in its place has.
+type fakeSpan struct {
+	start, end int
+	shape      *regexp.Regexp
+}
+
+// fakeSpans are the fakes of a recorded string in the order they stand: the earliest fake wins, the longest of those
+// starting together, and a fake inside one already taken is part of it.
+func fakeSpans(recorded string) []fakeSpan {
+	all := []fakeSpan{}
+	for _, shape := range fakeShapes {
+		for _, at := range shape.fake.FindAllStringIndex(recorded, -1) {
+			all = append(all, fakeSpan{at[0], at[1], shape.shape})
+		}
+	}
 	sort.Slice(all, func(left, right int) bool {
 		if all[left].start != all[right].start {
 			return all[left].start < all[right].start
 		}
 		return all[left].end > all[right].end
 	})
-	fakes, pattern, from := []string{}, "^", 0
-	for _, fake := range all {
-		if fake.start < from {
-			continue
+	spans, from := []fakeSpan{}, 0
+	for _, span := range all {
+		if span.start >= from {
+			spans = append(spans, span)
+			from = span.end
 		}
-		fakes = append(fakes, recorded[fake.start:fake.end])
-		pattern += regexp.QuoteMeta(recorded[from:fake.start]) + "(" + fake.shape.String() + ")"
-		from = fake.end
+	}
+	return spans
+}
+
+// fakesOf are the fakes of a recorded string in the order they stand, and a pattern that matches a live string of
+// its shape with one group in place of each fake.
+func fakesOf(recorded string) ([]string, *regexp.Regexp) {
+	fakes, pattern, from := []string{}, "^", 0
+	for _, span := range fakeSpans(recorded) {
+		fakes = append(fakes, recorded[span.start:span.end])
+		pattern += regexp.QuoteMeta(recorded[from:span.start]) + "(" + span.shape.String() + ")"
+		from = span.end
 	}
 	return fakes, regexp.MustCompile(pattern + regexp.QuoteMeta(recorded[from:]) + "$")
 }

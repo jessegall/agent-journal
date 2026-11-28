@@ -98,15 +98,25 @@ final readonly class RecordedCall implements JsonSerializable
     }
 
     /**
-     * The call with every real value of its path, query and body faked.
+     * The call with every real value of its path, query and body faked; a body in Docker's multiplexed stream is faked
+     * frame by frame, so each frame's head still names its length.
      */
     public function fakedBy(RecordingFakes $fakes): self
     {
+        $body = $this->isMultiplexed()
+            ? MultiplexedStream::of($this->body)->changed($fakes->replaceIn(...))->bytes()
+            : $fakes->replaceIn($this->body);
+
         return clone ($this, [
             'path' => $fakes->replaceIn($this->path),
             'query' => array_map($fakes->replaceIn(...), $this->query),
-            'body' => $fakes->replaceIn($this->body),
+            'body' => $body,
         ]);
+    }
+
+    public function isMultiplexed(): bool
+    {
+        return ($this->headers['Content-Type'] ?? '') === MultiplexedStream::CONTENT_TYPE;
     }
 
     public function withBody(string $body): self

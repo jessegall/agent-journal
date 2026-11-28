@@ -16,6 +16,9 @@ type Call struct {
 	Answered recording.Call
 	// Gap is how long the answer took after the asking, none for an answer whose asking was not kept.
 	Gap time.Duration
+	// AskedAt is when the call was asked, in microseconds since the epoch as the recording keeps its moments; none
+	// for an answer whose asking was not kept.
+	AskedAt int64
 }
 
 // calls pairs each answer with the asking of the same method and path before it.
@@ -43,6 +46,7 @@ func (exchange Exchange) calls() ([]Call, error) {
 			if asked.call.Method == call.Method && asked.call.Path == call.Path {
 				paired.Asked = asked.call
 				paired.Gap = time.Duration(event.At-asked.at) * time.Microsecond
+				paired.AskedAt = asked.at
 				waiting = append(waiting[:index], waiting[index+1:]...)
 				break
 			}
