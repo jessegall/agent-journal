@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hosts;
 
 use App\Models\Sessions\SessionProcess;
+use App\Support\Octane\GiveRequestItsTimeLimit;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Redis\Connections\Connection;
@@ -29,6 +30,7 @@ final readonly class HostWake
 
     public function __construct(
         private RedisFactory $redis,
+        private GiveRequestItsTimeLimit $timeLimit,
         #[Config('database.redis.default.read_timeout')]
         private int $readTimeoutSeconds,
     ) {}
@@ -42,11 +44,12 @@ final readonly class HostWake
 
     /**
      * Blocks until the host is woken or the seconds pass, and answers whether it was woken; the wakes waiting are taken
-     * together, as one claim answers every instruction made before it.
+     * together, as one claim answers every instruction made before it. The request gets the wait on top of its time.
      */
     public function waitForHost(string $hostId, int $seconds): bool
     {
         $key = self::hostKey($hostId);
+        $this->timeLimit->lendWait($seconds);
         $woken = $this->connection()->blpop([$key], $seconds);
         $this->connection()->del($key);
 

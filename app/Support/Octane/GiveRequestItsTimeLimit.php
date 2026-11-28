@@ -19,4 +19,13 @@ final readonly class GiveRequestItsTimeLimit
     {
         set_time_limit($this->seconds);
     }
+
+    /**
+     * Gives a request that is about to wait the wait on top of the whole time limit, from now: a long poll that waits
+     * near the limit would otherwise be stopped while it answers.
+     */
+    public function lendWait(int $waitSeconds): void
+    {
+        set_time_limit($waitSeconds + $this->seconds);
+    }
 }
