@@ -47,7 +47,7 @@ final class ConnectProjectWindowDataFields
         return $this;
     }
 
-    /** @param list<string> $holdReasons */
+    /** @param  list<string>  $reasons */
     public function holdReasons(array $reasons): self
     {
         $this->holdReasons = $reasons;

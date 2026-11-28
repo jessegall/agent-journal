@@ -51,7 +51,7 @@ final class LayoutFieldDataFields
         return $this;
     }
 
-    /** @param list<string> $optionLabels */
+    /** @param  list<string>  $labels */
     public function optionLabels(array $labels): self
     {
         $this->optionLabels = $labels;

@@ -159,7 +159,7 @@ final readonly class AgentStartLog
     }
 
     /**
-     * @param  list<string>  $startIds
+     * @param  list<string>  $ids
      * @return list<AgentLogLineData>
      */
     private function processLinesOf(array $ids): array
@@ -296,8 +296,6 @@ final readonly class AgentStartLog
         AgentLogLineType $type,
         string $detail,
     ): AgentLogLineData {
-        $shownReason = ShownShellLine::of($reason);
-
         return AgentLogLineData::from([
             'id' => $id,
             'at' => $this->timeOf($at),
@@ -317,6 +315,8 @@ final readonly class AgentStartLog
         string $reason,
         string $evidence,
     ): AgentLogLineData {
+        $shownReason = ShownShellLine::of($reason);
+
         return AgentLogLineData::from([
             'id' => $id,
             'at' => $this->timeOf($at),

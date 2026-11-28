@@ -47,7 +47,7 @@ final class AccountListDataFields
         return $this;
     }
 
-    /** @param list<PendingAttemptCleanupData> $pendingCleanups */
+    /** @param  list<PendingAttemptCleanupData>  $cleanups */
     public function pendingCleanups(array $cleanups): self
     {
         $this->pendingCleanups = $cleanups;

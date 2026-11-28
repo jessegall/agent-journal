@@ -581,11 +581,4 @@ return [
         'producers' => [],
         'sample' => fn () => new HostProtocolRecorded('host'),
     ],
-    DriverImageReplaced::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'HostDriverImage::retire',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new DriverImageReplaced('image', 'host', 'digest'),
-    ],
 ];

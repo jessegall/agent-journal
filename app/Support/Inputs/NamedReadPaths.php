@@ -16,7 +16,7 @@ final readonly class NamedReadPaths
     public function __construct(public array $paths) {}
 
     /**
-     * @param  list<string>  $namedPaths
+     * @param  list<string>  $paths
      */
     public static function inFolder(string $workFolder, array $paths): self
     {
