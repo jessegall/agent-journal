@@ -560,20 +560,16 @@ func (table *ProcessTable) held(processID string) (*heldProcess, error) {
 
 func (table *ProcessTable) end(held *heldProcess, report ProcessReport) {
 	report.Identity, report.Generation = held.state()
-	table.writeKept(held)
 	_ = table.reports.Add(report)
 	close(held.exited)
+	table.saveKept()
 }
 
 // saveKept writes the plans of the processes that still run, so a restart adopts those that can outlive the host and
 // ends what is left of the others.
 func (table *ProcessTable) saveKept() {
-	table.writeKept(nil)
-}
-
-// writeKept writes the plans of the processes that still run and can outlive the host but the one ending, if any.
-func (table *ProcessTable) writeKept(ending *heldProcess) {
 	table.mutex.Lock()
+	defer table.mutex.Unlock()
 	kept := map[string]keptProcess{}
 	for id, held := range table.processes {
 		select {
@@ -582,13 +578,12 @@ func (table *ProcessTable) writeKept(ending *heldProcess) {
 		default:
 		}
 		// A native terminal cannot outlive the host, but is kept by its pid so a restart can end what is left of it.
-		if held == ending || (!held.canOutliveHost() && held.pid == 0) {
+		if !held.canOutliveHost() && held.pid == 0 {
 			continue
 		}
 		_, generation := held.state()
 		kept[id] = keptProcess{Plan: held.plan, Generation: generation, Pid: held.pid}
 	}
-	table.mutex.Unlock()
 	content, err := json.Marshal(kept)
 	if err != nil {
 		return

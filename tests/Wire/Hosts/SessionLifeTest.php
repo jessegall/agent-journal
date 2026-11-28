@@ -114,6 +114,7 @@ final class SessionLifeTest extends TestCase
 
         $this->journal
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+                ->beginWorker()
                 ->driveUntil(fn (Assert $journal) => $this->pastesOf($journal, 'terminal') === 1)
                 ->beginWorker()
                 ->driveUntil($this->answeredOn('terminal'), seconds: 20))
@@ -245,7 +246,7 @@ final class SessionLifeTest extends TestCase
             ->showDriverArrangements()
             ->idleAgent('Terminal')
             ->enrollHost('Mac', [base_path()])
-            ->runTestHost('Mac', fn (TestHost $mac) => $mac->chooseActiveAccounts())
+            ->runTestHost('Mac', fn (TestHost $mac) => $mac->chooseActiveAccounts()->playSessionLifeTerminals())
             ->withAgent('Terminal', fn (TestAgent $terminal) => $terminal
                 ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal)
                 ->proveStart(HostProcessPurpose::AgentTerminal, 'terminal'))
@@ -360,7 +361,7 @@ final class SessionLifeTest extends TestCase
             ->idleAgent('Terminal')
             ->idleAgent('Codex')
             ->enrollHost('Mac', [base_path()])
-            ->runTestHost('Mac', fn (TestHost $mac) => $mac->chooseActiveAccounts());
+            ->runTestHost('Mac', fn (TestHost $mac) => $mac->chooseActiveAccounts()->playSessionLifeTerminals());
 
         return $this;
     }
@@ -542,14 +543,14 @@ final class SessionLifeTest extends TestCase
     }
 
     /**
-     * How many keys the journal ordered typed into the named terminal hold the first message.
+     * How many paste instructions the journal ordered for the named terminal's first message.
      */
     private function pastesOf(Assert $journal, string $name): int
     {
         return count(array_filter(
             $journal->value("hostProcesses.{$name}.instructions") ?? [],
             fn (HostInstructionFacts $instruction) => $instruction->facts()['type'] === HostInstructionType::WriteKeys
-                && str_contains(base64_decode($instruction->facts()['payload']()['bytes'], true) ?: '', self::FIRST_MESSAGE),
+                && $instruction->facts()['step'] === 'paste',
         ));
     }
 

@@ -58,19 +58,9 @@ final class TestHost
     public const string SESSION_JOURNAL_URL = 'http://journal.test:54700';
 
     /**
-     * The terminal recording the Claude Code mock plays by what is typed.
-     */
-    /**
      * The program a container of the mock Docker runs as the recorded Claude Code terminal turn.
      */
     private const string RECORDED_PROGRAM = 'claude';
-
-    private const string TERMINAL_TURN = 'resources/recordings/claude-code/2.1.323/turns/terminal-turn/fixture.json';
-
-    /**
-     * The terminal recording the Codex mock plays by what is typed.
-     */
-    private const string CODEX_TERMINAL_TURN = 'resources/recordings/codex/0.165.0/turns/terminal-turn/fixture.json';
 
     private const string CLAUDE_BUILD = '2.1.332';
 
@@ -80,6 +70,16 @@ final class TestHost
     private const string CLAUDE_EXCHANGES = 'resources/recordings/claude-code/'.self::CLAUDE_BUILD.'/exchanges';
 
     private const string CODEX_BUILD = '0.172.0';
+
+    private const string CLAUDE_TERMINAL = 'resources/recordings/claude-code/'.self::CLAUDE_BUILD
+        .'/terminal-turn/exchanges/07-driver-01m8h93nnk2bet2rn3r56139g4/fixture.json';
+
+    private const string CODEX_TERMINAL = 'resources/recordings/codex/'.self::CODEX_BUILD
+        .'/terminal-turn/exchanges/07-driver-01m8ghqjg0bceryb7gwcc3z42q/fixture.json';
+
+    private const string CLAUDE_RECORDED_TURNS = 'resources/recordings/claude-code/2.1.323/turns';
+
+    private const string CODEX_RECORDED_TURNS = 'resources/recordings/codex/0.165.0/turns';
 
     /**
      * How long the mock Docker daemon gets to open its socket.
@@ -155,7 +155,7 @@ final class TestHost
         bool $showsDriverArrangements,
         PlayedScenario|null $playing = null,
     ): self {
-        $folder = sys_get_temp_dir().'/journal-real-host-'.bin2hex(random_bytes(6));
+        $folder = sys_get_temp_dir().'/jh-'.bin2hex(random_bytes(6));
         mkdir($folder, 0o700, true);
         $real = new self(
             $journal,
@@ -718,12 +718,21 @@ final class TestHost
     }
 
     /**
-     * The Claude Code mock plays the named recorded terminal turn of its build in place of the one it played.
+     * The Claude Code mock plays the named session life recording in place of the default turn.
      */
     public function playClaudeTerminal(string $recording): self
     {
-        $turns = dirname(base_path(self::TERMINAL_TURN), 2);
+        $turns = base_path(self::CLAUDE_RECORDED_TURNS);
         copy("{$turns}/{$recording}/fixture.json", "{$this->installation()}/terminal-turn/fixture.json");
+
+        return $this;
+    }
+
+    public function playSessionLifeTerminals(): self
+    {
+        $this->playClaudeTerminal('terminal-turn');
+        $codex = base_path(self::CODEX_RECORDED_TURNS.'/terminal-turn/fixture.json');
+        copy($codex, "{$this->installation()}/codex-terminal-turn/fixture.json");
 
         return $this;
     }
@@ -812,12 +821,12 @@ final class TestHost
         copy(__DIR__.'/fixtures/claude-turn.jsonl', "{$this->installation()}/turn.jsonl");
         symlink(self::binary(), "{$this->installation()}/bin/journal-runner");
         mkdir("{$this->installation()}/terminal-turn", 0o700);
-        copy(base_path(self::TERMINAL_TURN), "{$this->installation()}/terminal-turn/fixture.json");
+        copy(base_path(self::CLAUDE_TERMINAL), "{$this->installation()}/terminal-turn/fixture.json");
         copy(__DIR__.'/scripts/codex-mock.sh', "{$this->installation()}/bin/codex");
         chmod("{$this->installation()}/bin/codex", 0o700);
         mkdir("{$this->installation()}/codex-terminal-turn", 0o700);
         mkdir($this->stepsRan(), 0o700, true);
-        copy(base_path(self::CODEX_TERMINAL_TURN), "{$this->installation()}/codex-terminal-turn/fixture.json");
+        copy(base_path(self::CODEX_TERMINAL), "{$this->installation()}/codex-terminal-turn/fixture.json");
         $this->installExchanges('claude-code', self::CLAUDE_BUILD);
         $this->installExchanges('codex', self::CODEX_BUILD);
     }
@@ -928,7 +937,7 @@ final class TestHost
 
         $command = [
             ...$command,
-            '--recording', dirname(base_path(self::TERMINAL_TURN)),
+            '--recording', dirname(base_path(self::CLAUDE_TERMINAL)),
             '--executable', self::RECORDED_PROGRAM,
             '--version-recording', base_path(self::CLAUDE_EXCHANGES.'/version'),
             '--sign-in-recording', base_path(self::CLAUDE_EXCHANGES.'/auth-status'),
@@ -972,6 +981,7 @@ final class TestHost
         $environment = [...getenv(), 'PATH' => "{$this->installation()}/bin:".getenv('PATH')];
         $this->host = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
+        Assert::assertTrue($this->host->running(), 'The test host stopped: '.$this->host->errorOutput());
     }
 
     /**
@@ -980,13 +990,17 @@ final class TestHost
     private function startDaemon(): InvokedProcess
     {
         $this->run($this->mockDocker());
+        $daemon = $this->running[array_key_last($this->running)];
+        $socket = "{$this->folder}/docker.sock";
         $deadline = microtime(true) + self::DAEMON_START_SECONDS;
 
-        while (! file_exists("{$this->folder}/docker.sock") && microtime(true) < $deadline) {
+        while (! file_exists($socket) && $daemon->running() && microtime(true) < $deadline) {
             usleep(50_000);
         }
 
-        return $this->running[array_key_last($this->running)];
+        Assert::assertFileExists($socket, 'The mock Docker daemon did not open its socket: '.$daemon->errorOutput());
+
+        return $daemon;
     }
 
     /**

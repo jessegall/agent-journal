@@ -21,6 +21,7 @@ final readonly class HostInstructionFacts implements Facts
             'status' => $this->instruction->status,
             'refusal' => $this->instruction->refusal,
             'request' => $this->instruction->driver_request_id,
+            'step' => $this->instruction->step,
             'payload' => fn () => json_decode($this->instruction->payload, true, flags: JSON_THROW_ON_ERROR),
         ];
     }
