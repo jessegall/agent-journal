@@ -25,6 +25,7 @@ final class HostProtocolData extends Data
      * @param  list<string>  $refusedAnswerNames  the fields a refused answer names, so the journal can say why
      * @param  array<string, list<string>>  $enums  each enum of the file with its values
      * @param  array<string, list<string>>  $goPackages  the Go packages other than hostapi, with the types they hold
+     * @param  array<string, array<string, string>|string>  $localLink  terminal socket messages by shape or wire type
      * @param  array<string, HostProgramData>  $programs  each shipped program by its name
      * @param  array<string, array<string, string>>  $types  each shape that crosses the wire, its fields by their types
      * @param  array<string, HostCallData>  $calls  each call the host makes to the journal
@@ -44,6 +45,7 @@ final class HostProtocolData extends Data
         public readonly HostContainedPlanData $containedPlan,
         public readonly array $enums,
         public readonly array $goPackages,
+        public readonly array $localLink,
         #[DataCollectionOf(HostProgramData::class)]
         public readonly array $programs,
         public readonly array $types,
