@@ -12,7 +12,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * How a page shows one driver family: its key, its name, the other names its records may hold, its mark as a
- * same-origin path with the way it is drawn, and which way its sign-in code travels.
+ * same-origin path with the way it is drawn, which way its sign-in code travels, and the models and efforts a start
+ * may choose, with the effort a start runs at when none is chosen.
  *
  * @method static static from(DriverFamily $family)
  */
@@ -22,6 +23,7 @@ final class DriverLookData extends Data
     /**
      * @param  list<string>  $aliases
      * @param  list<string>  $models
+     * @param  list<string>  $efforts
      */
     public function __construct(
         public readonly string $family,
@@ -31,6 +33,8 @@ final class DriverLookData extends Data
         public readonly MarkTone $markTone,
         public readonly SignInCodeDirection $signInCode,
         public readonly array $models,
+        public readonly array $efforts,
+        public readonly string $defaultEffort,
     ) {}
 
     public static function fromDriverFamily(DriverFamily $family): self
@@ -43,6 +47,8 @@ final class DriverLookData extends Data
             markTone: $family->markTone,
             signInCode: $family->signInCode,
             models: $family->models,
+            efforts: $family->effortChoices(),
+            defaultEffort: $family->defaultEffort,
         );
     }
 }

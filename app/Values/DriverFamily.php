@@ -55,6 +55,16 @@ final readonly class DriverFamily
     }
 
     /**
+     * Every effort a start of the family may run at, cheapest first: its tiers' efforts and its default, each once.
+     *
+     * @return list<string>
+     */
+    public function effortChoices(): array
+    {
+        return array_values(array_unique([...$this->efforts, $this->defaultEffort]));
+    }
+
+    /**
      * The family's effort for work of a tier: the default effort of a start whose profile prefers that tier.
      */
     public function effortAt(ModelTier $tier): string

@@ -29,16 +29,17 @@ function harness(child: ReturnType<typeof defineComponent>, afterProvide?: (stor
     });
 }
 
-describe('the agent bar', () => {
-    it('names its layouts, add and hide controls, and hides the domains sections but keeps a way back', async () => {
+describe('the one chat bar', () => {
+    it('ends in a divider, Layouts and Add a window on one 38 px line, and has no agent bar to hide', () => {
         const view = mount(harness(AgentBar));
+        const bar = view.get('[data-chat-bar]');
         const labels = view.findAll('button').map((button) => button.attributes('aria-label'));
 
-        expect(labels).toEqual(expect.arrayContaining(['Layouts', 'Add a window', 'Hide the agent bar']));
-
-        await view.get('[aria-label="Hide the agent bar"]').trigger('click');
-
-        expect(view.get('[aria-label="Show the agent bar"]').attributes('aria-pressed')).toBe('true');
+        expect(bar.classes()).toContain('h-[38px]');
+        expect(labels).toEqual(expect.arrayContaining(['Layouts', 'Add a window']));
+        expect(labels).not.toContain('Hide the agent bar');
+        expect(bar.find('[data-bar-divider]').exists()).toBe(true);
+        expect(view.text()).not.toContain('agent bar');
     });
 });
 
