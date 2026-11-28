@@ -41,6 +41,9 @@ const props = defineProps<{
   conversationProp: string;
   // The chat the entries are in, which a reaction names.
   inboxId: string;
+  // Whom the viewer's own messages go to, and what they wait for while only sent, such as the agent's start.
+  addresseeName: string;
+  startWait: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -50,6 +53,7 @@ const emit = defineEmits<{
   restore: [intentKey: string];
   discard: [intentKey: string];
   openRecord: [card: DockCardEnvelope];
+  retryDelivery: [messageId: string];
 }>();
 
 const dayFormat = new Intl.DateTimeFormat(undefined, {
@@ -244,7 +248,10 @@ const isEmpty = computed(
                 :viewer="viewer"
                 :inbox-id="inboxId"
                 :conversation-prop="conversationProp"
+                :addressee-name="addresseeName"
+                :start-wait="startWait"
                 @reply="entry.message && replyTo(entry.message)"
+                @retry="entry.message && emit('retryDelivery', entry.message.id)"
               />
             </div>
           </template>

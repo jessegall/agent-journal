@@ -38,10 +38,27 @@ vi.mock("../../../composables/useComposerHeight", () => ({
   useComposerHeight: () => undefined,
 }));
 
+const interrupted: string[] = [];
+
+vi.mock("../../../composables/useTurnInterrupt", async () => {
+  const { ref } = await import("vue");
+
+  return {
+    useTurnInterrupt: () => ({
+      isPending: ref(false),
+      refusal: ref(null),
+      interrupt: (agent: { id: string }) => interrupted.push(agent.id),
+    }),
+  };
+});
+
 const { useMessageDrafts } = await import("../../../composables/useMessageDrafts");
 const { default: Composer } = await import("./Composer.vue");
 
-function mountComposer(replyingTo: ReplyTarget | null = null) {
+function mountComposer(
+  replyingTo: ReplyTarget | null = null,
+  workingAgent: object | null = null,
+) {
   return mount(Composer, {
     props: {
       draftKey: "user-1/inbox-chat",
@@ -53,7 +70,8 @@ function mountComposer(replyingTo: ReplyTarget | null = null) {
       conversationProp: "window_chat_conversation",
       participants: [],
       viewer: "user:user-1",
-    },
+      workingAgent,
+    } as never,
   });
 }
 
@@ -95,5 +113,22 @@ describe("Composer", () => {
     await composer.get('button[aria-label="Stop replying"]').trigger("click");
 
     expect(composer.emitted("cancelReply")).toHaveLength(1);
+  });
+
+  it("offers no Stop while the agent does not work", () => {
+    const composer = mountComposer();
+
+    expect(composer.find("[data-stop-turn]").exists()).toBe(false);
+  });
+
+  it("shows Stop beside Send while the agent works, and Stop and Esc stop only its turn", async () => {
+    interrupted.length = 0;
+    const composer = mountComposer(null, { id: "agent-1", sessionId: "session-1" });
+
+    await composer.get("[data-stop-turn]").trigger("click");
+    await composer.find("textarea").trigger("keydown.esc");
+
+    expect(interrupted).toEqual(["agent-1", "agent-1"]);
+    expect(begun).not.toContain("");
   });
 });

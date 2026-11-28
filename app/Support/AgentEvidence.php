@@ -28,7 +28,6 @@ final readonly class AgentEvidence
         public SwitchEvidence|null $switch,
         public DriverRequestStatus|null $request,
         public SessionStartOutcome|null $start,
-        public bool $isResumable,
         public bool $canCancelStart,
         public bool $hasTerminal = false,
         public bool $canStop = false,

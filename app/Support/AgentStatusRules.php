@@ -304,7 +304,7 @@ final class AgentStatusRules
         );
     }
 
-    // No live session: the latest start decides, else the agent is stopped and may start.
+    // No live session: the latest start decides, else the agent is stopped, and the next message starts it.
     private static function withoutSession(AgentEvidence $evidence, StartRemedyWords $words): AgentStatus
     {
         $start = $evidence->start;
@@ -317,13 +317,7 @@ final class AgentStatusRules
             return self::refused($start, $words);
         }
 
-        $actions = [StatusAction::of(StatusActionType::Start)];
-
-        if ($evidence->isResumable) {
-            $actions[] = StatusAction::of(StatusActionType::Resume);
-        }
-
-        return self::plain(SessionActivityStatus::Stopped, $evidence, $actions);
+        return self::plain(SessionActivityStatus::Stopped, $evidence, []);
     }
 
     private static function starting(AgentEvidence $evidence): AgentStatus
@@ -365,11 +359,10 @@ final class AgentStatusRules
             default => SessionActivityStatus::Refused,
         };
 
-        $primary = match ($remedy->type) {
-            StartRemedyType::CheckCapacity => [StatusAction::of(StatusActionType::CheckCapacity)],
-            StartRemedyType::OperatorInstruction, StartRemedyType::ConnectHost => [],
-            default => [new StatusAction(StatusActionType::Start, $remedy->operatorText())],
-        };
+        // A start the next message may try again offers no button: the remedy's words say what to change first.
+        $primary = $remedy->type === StartRemedyType::CheckCapacity
+            ? [StatusAction::of(StatusActionType::CheckCapacity)]
+            : [];
 
         if ($reason === StartUnavailableReason::NeedsSignIn) {
             $primary = [StatusAction::of(StatusActionType::SignIn)];

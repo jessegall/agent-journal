@@ -242,7 +242,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             $startRefusal,
             $facts->startOutcome,
             AgentStatusRules::of(
-                $facts->evidence($agent->isRetired(), $resumable !== [], $canStop, $now),
+                $facts->evidence($agent->isRetired(), $canStop, $now),
                 $this->remedyWords,
             ),
             $session?->driver_key,

@@ -3,7 +3,10 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
 
-vi.mock("@inertiajs/vue3", () => ({ usePage: () => ({ url: "/", props: { drivers: [] } }) }));
+vi.mock("@inertiajs/vue3", () => ({
+  usePage: () => ({ url: "/", props: { drivers: [], viewer: { id: "user-1" } } }),
+  router: { visit: () => undefined },
+}));
 vi.mock("./partials/AgentSessionActions.vue", () => ({ default: { template: "<div />" } }));
 
 const { default: ChosenAgent } = await import("./ChosenAgent.vue");
@@ -18,7 +21,12 @@ function chatWith(agent: Partial<AgentOptionData>): ChatData {
         sessionDriver: null,
         sessionDriverLabel: null,
         sessionModel: null,
-        status: undefined,
+        status: { sessionState: "idle", label: "Idle", actions: [] },
+        isMain: false,
+        isRetired: false,
+        waitsOnYou: false,
+        unreadCount: 0,
+        lastActiveAt: null,
         ...agent,
       },
     ],
@@ -43,10 +51,20 @@ describe("ChosenAgent", () => {
     expect(bar.find("small").text()).toBe("Claude Code · opus");
   });
 
-  it("keeps a place right after the agent for the chat's members", () => {
+  it("names an agent whose role is main as main, and any other by its name alone", () => {
+    const main = mount(ChosenAgent, { props: { data: chatWith({ isMain: true }) } });
+    const helper = mount(ChosenAgent, { props: { data: chatWith({ name: "Reviewer" }) } });
+
+    expect(main.text()).toContain("Main agent · main");
+    expect(helper.text()).toContain("Reviewer");
+    expect(helper.text()).not.toContain("· main");
+  });
+
+  it("opens the one chat list from the agent's name, with no members or add-someone button", () => {
     const bar = mount(ChosenAgent, { props: { data: chatWith({}) } });
 
-    expect(bar.find("#agent-bar-members").exists()).toBe(true);
+    expect(bar.findAll("[data-chat-list-trigger]")).toHaveLength(1);
+    expect(bar.find("#agent-bar-members").exists()).toBe(false);
   });
 
   it("stays one line: an old report adds no Last report line under it", () => {

@@ -1,26 +1,25 @@
 <script setup lang="ts">
 import { useAppContext } from "@kit/appContext";
-import { router, usePage } from "@inertiajs/vue3";
-import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import { router } from "@inertiajs/vue3";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { arrivalAnnouncement } from "../../../composables/arrivalAnnouncement";
 import { useChatTimeline } from "../../../composables/useChatTimeline";
 import { openedRecordOf, recordKey } from "../../../recordPanel";
 import { useChosenAgent } from "../../../composables/useChosenAgent";
 import { useConversationIntents } from "../../../composables/useConversationIntents";
-import { handOverText, useHandOver } from "../../../composables/useHandOver";
+import { useHandOver } from "../../../composables/useHandOver";
 import { draftKey } from "../../../composables/useMessageDrafts";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
 import type { DockCardEnvelope } from "@kit/dockCards";
 import type { ReplyTarget } from "../../../composables/useConversationIntents";
-import AvatarStack from "@kit/AvatarStack";
 import Button from "@kit/Button";
-import IconButton from "@kit/IconButton";
-import Popover from "@kit/Popover";
+import Icon from "@kit/Icon";
 import { isRevealed } from "@kit/protectedView";
 import { liveStage, retryLiveConnection } from "@kit/liveConnection";
 import SlotSections from "@kit/SlotSections";
-import { read as readRoute } from "@generated/routes/chat";
-import AgentPicker from "./AgentPicker.vue";
+import { read as readRoute, retryDelivery as retryDeliveryRoute } from "@generated/routes/chat";
+import { keyedPost } from "@kit/keyedPost";
+import { newRequestId } from "@kit/requestId";
 import AgentSessionActions from "./AgentSessionActions.vue";
 import Composer from "./Composer.vue";
 import RunningCommand from "./RunningCommand.vue";
@@ -28,37 +27,24 @@ import VerifyingSessionCard from "./VerifyingSessionCard.vue";
 import RecordPanel from "./RecordPanel.vue";
 import DockStack from "./DockStack.vue";
 import MessageList from "./MessageList.vue";
-import ChatRoster from "./ChatRoster.vue";
-import { chatRoster } from "../../../composables/useChatRoster";
-import { AGENT_BAR_MEMBERS } from "../../../agentBarMembers";
-import InboxSelector from "./InboxSelector.vue";
+import ConversationMenu from "./ConversationMenu.vue";
+import SessionForm from "./SessionForm.vue";
 
 /**
  * The chat: the chosen agent's conversation, what other domains suggest in the dock slot, the sources
- * docked in the conversation and the composer. On Chat's own page it also offers the agents and their session actions, which
- * Home's agent bar offers instead.
+ * docked in the conversation and the composer. On Chat's own page it also offers the chat list and the session actions,
+ * which Home's agent bar offers instead. Group chats are hidden for now: no members or add-someone buttons show.
  */
 const props = defineProps<{
   chat: ChatData;
   offersChoice: boolean;
   agentUrl: (agent: AgentOptionData) => string;
-  chatUrl: (inboxId: string) => string;
   loadMore: (token: string) => void;
   protectedProp: string;
 }>();
 
-const page = usePage();
 const { viewer } = useAppContext();
 const conversation = computed(() => props.chat.conversation);
-// The members as their avatars: agents by their driver's mark, users by their initial.
-const members = computed(() =>
-  (conversation.value?.participants ?? []).map((member) => ({
-    kind: member.driver === null ? ("user" as const) : ("agent" as const),
-    driver: member.driver ?? undefined,
-    initials: member.label.slice(0, 1).toUpperCase(),
-    name: member.label,
-  })),
-);
 /**
  * The agent whose session controls show: the one chosen from the roster, else the chat's own agent, else the first
  * agent in it. Each agent keeps its own controls, keyed by its id and session generation; a chat with no agent has
@@ -93,10 +79,6 @@ watch(
   { immediate: true },
 );
 
-function chooseAgent(agentId: string): void {
-  chosenAgentId.value = agentId;
-  chosenStore.value?.keep(agentId);
-}
 const selected = computed(() => {
   const ids = agentIdsInChat.value;
   const wanted =
@@ -106,6 +88,46 @@ const selected = computed(() => {
 
   return props.chat.agents.find((agent) => agent.id === wanted);
 });
+// The chosen agent while its status offers to stop its turn: the composer then shows Stop beside Send.
+const workingAgent = computed(
+  () =>
+    selected.value?.status.actions.some(
+      (action) => action.type === "interrupt",
+    ) === true
+      ? selected.value
+      : null,
+);
+// While the chosen agent starts, the user's last messages wait under their bubble for it.
+const startWait = computed(() =>
+  selected.value?.status.sessionState === "starting"
+    ? `Waiting for ${selected.value.name} to start`
+    : null,
+);
+/**
+ * Queues one of the user's messages that was not delivered again, once under a new request id; a stopped agent is
+ * started for it, and its ticks walk again as the chat reads it.
+ */
+const retryRefusal = ref<string | null>(null);
+
+function retryDelivery(messageId: string): void {
+  const requestId = newRequestId();
+  retryRefusal.value = null;
+  keyedPost(
+    retryDeliveryRoute().url,
+    {
+      messageId,
+      agent: selected.value?.id ?? null,
+      expectedSessionId: conversation.value?.sessionId ?? null,
+    },
+    requestId,
+    {
+      onAccepted: () => undefined,
+      onRefused: (reason) => (retryRefusal.value = reason ?? "The message could not be queued again."),
+      onUncertain: () => (retryRefusal.value = "We could not confirm the retry; the chat shows where it stands."),
+    },
+    [props.protectedProp],
+  );
+}
 const key = computed(() => {
   const userId = viewer.value.id;
 
@@ -114,16 +136,20 @@ const key = computed(() => {
     : draftKey(userId, conversation.value.inboxId);
 });
 const replyingTo = ref<ReplyTarget | null>(null);
+// The chosen agent's Switch driver dialog, opened from the chat list on Chat's own page.
+const isSwitchOpen = ref(false);
 
 /**
  * This view's own entries of the chat, merged by id in order, and paged back on request.
  */
 const timeline = useChatTimeline(conversation);
 
-// A room the viewer lost takes the focus with it: the keyboard continues from the chat selector.
+// A room the viewer lost takes the focus with it: the keyboard continues from the chat list's trigger.
 watch(timeline.accessEnded, (ended) => {
   if (ended) {
-    void nextTick(() => document.getElementById("chat-selector")?.focus());
+    void nextTick(() =>
+      document.querySelector<HTMLElement>("[data-chat-list-trigger]")?.focus(),
+    );
   }
 });
 
@@ -177,7 +203,7 @@ function closeRecord(): void {
 // A read that returned the user's own sends settles them.
 watch(timeline.entries, () => owner.value?.settle());
 
-// A record let go on this chat's agent is sent here once the chat has opened, as the hand-over's message.
+// A message waiting for this chat's agent, a handed record or a new chat's first message, is sent once the chat opens.
 const handOver = useHandOver();
 watch(
   [owner, () => selected.value?.id ?? null],
@@ -201,7 +227,7 @@ watch(
     sender.submit(
       sender.beginSend({
         draftKey: key.value,
-        text: handOverText(handed),
+        text: handed.text,
         agent: handed.agentId,
         expectedSessionId: opened.sessionId,
         inboxId: opened.inboxId,
@@ -304,12 +330,6 @@ onUnmounted(() => {
   document.removeEventListener("visibilitychange", readWhenSeen);
 });
 
-// The members of this chat sit in Home's agent bar, right after the agent, while the bar shows; elsewhere above the chat.
-const isBarShown = ref(false);
-const membersRow = useTemplateRef<HTMLElement>("membersRow");
-onMounted(() => {
-  isBarShown.value = document.getElementById(AGENT_BAR_MEMBERS) !== null;
-});
 watch(
   () => conversation.value?.inboxId,
   () => {
@@ -326,19 +346,25 @@ watch(isShown, readOnOpen);
     aria-label="Chat"
   >
     <template v-if="offersChoice">
-      <InboxSelector
-        :chats="chat.chats"
-        :selected-inbox-id="conversation?.inboxId"
-        :can-create-chats="chat.canCreateChats"
-        :chat-url="chatUrl"
-      />
-    </template>
-    <template v-if="offersChoice">
-      <AgentPicker
-        :agents="chat.agents"
-        :selected-agent-id="chat.selectedAgentId"
-        :agent-url="agentUrl"
-      />
+      <div class="border-b border-border py-2">
+        <ConversationMenu
+          :agents="chat.agents"
+          :selected-agent-id="chat.selectedAgentId"
+          :open-agent-ids="selected ? [selected.id] : []"
+          :agent-url="agentUrl"
+          @switch-driver="isSwitchOpen = true"
+        >
+          <template #trigger>
+            <span class="text-body text-text">{{
+              selected?.name ?? "Choose an agent"
+            }}</span>
+            <Icon name="caret" :size="14" />
+          </template>
+        </ConversationMenu>
+      </div>
+      <template v-if="isSwitchOpen && selected">
+        <SessionForm :agent="selected" @close="isSwitchOpen = false" />
+      </template>
     </template>
     <template v-if="offersChoice && chat.isSetupRequired">
       <p class="text-small text-text-3">
@@ -364,49 +390,6 @@ watch(isShown, readOnOpen);
           Session controls for {{ selected.name }}
         </p>
       </template>
-      <Teleport :to="`#${AGENT_BAR_MEMBERS}`" :disabled="!isBarShown">
-        <div
-          ref="membersRow"
-          class="flex items-center justify-end gap-1.5"
-          aria-label="Who is in this chat"
-        >
-          <template v-if="conversation.participants.length > 2">
-            <Button
-              size="small"
-              variant="ghost"
-              :aria-expanded="chatRoster.isOpen"
-              aria-haspopup="dialog"
-              @click="chatRoster.isOpen = !chatRoster.isOpen"
-            >
-              <AvatarStack :members="members" />
-              {{ conversation.participants.length }} in this chat
-            </Button>
-          </template>
-          <IconButton
-            icon="userplus"
-            label="Add someone to this chat"
-            haspopup="dialog"
-            :expanded="chatRoster.isOpen"
-            @click="chatRoster.isOpen = !chatRoster.isOpen"
-          />
-          <Teleport to="body">
-            <Popover
-              v-model:open="chatRoster.isOpen"
-              label="Members of this chat"
-              :anchor="membersRow"
-              :align="isBarShown ? 'left' : 'right'"
-              :width="320"
-            >
-              <ChatRoster
-                :conversation="conversation"
-                :conversation-prop="protectedProp"
-                :chosen-agent-id="selected?.id ?? null"
-                @choose-agent="chooseAgent"
-              />
-            </Popover>
-          </Teleport>
-        </div>
-      </Teleport>
       <template v-if="isShown">
         <MessageList
           :entries="timeline.entries.value"
@@ -417,6 +400,9 @@ watch(isShown, readOnOpen);
           :participants="conversation.participants"
           :conversation-prop="protectedProp"
           :inbox-id="conversation.inboxId"
+          :start-wait="startWait"
+          :addressee-name="selected?.name ?? 'the chat'"
+          @retry-delivery="retryDelivery"
           @reply="(target) => (replyingTo = target)"
           @older="timeline.loadOlder"
           @check-again="(intent) => owner?.retry(intent, protectedProp)"
@@ -424,6 +410,9 @@ watch(isShown, readOnOpen);
           @discard="(intentKey) => owner?.discardRecovery(intentKey)"
           @open-record="openRecord"
         />
+        <template v-if="retryRefusal">
+          <p class="text-small text-danger" role="alert">{{ retryRefusal }}</p>
+        </template>
         <template v-if="openedRecord !== null">
           <RecordPanel :card="openedRecord" @close="closeRecord" />
         </template>
@@ -454,6 +443,7 @@ watch(isShown, readOnOpen);
           :inbox-id="conversation.inboxId"
           :replying-to="replyingTo"
           :conversation-prop="protectedProp"
+          :working-agent="workingAgent"
           @replied="replyingTo = null"
           @cancel-reply="replyingTo = null"
         />

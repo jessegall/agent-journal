@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Agents\CancelSessionStartController;
 use App\Http\Controllers\Agents\CheckStartStatusController;
 use App\Http\Controllers\Agents\ContinueStartController;
+use App\Http\Controllers\Agents\CreateMainAgentController;
 use App\Http\Controllers\Agents\DismissSessionStartOutcomeController;
 use App\Http\Controllers\Agents\InterruptAgentController;
 use App\Http\Controllers\Agents\RecheckDriverSwitchController;
@@ -20,6 +21,10 @@ use Illuminate\Support\Facades\Route;
 Route::post('/agents/retire', RetireAgentController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->name('agents.retire');
+
+Route::post('/agents/main', CreateMainAgentController::class)
+    ->middleware(['web', 'auth', 'journal.user'])
+    ->name('agents.create-main');
 
 Route::post('/agents/{agent}/start', StartAgentController::class)
     ->middleware(['web', 'auth', 'journal.user'])

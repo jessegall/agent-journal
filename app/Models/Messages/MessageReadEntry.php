@@ -129,6 +129,17 @@ final class MessageReadEntry extends JournalModel implements EventSource, Readab
     }
 
     /**
+     * The reads by anyone but the reader.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function notOfReader(Builder $query, MessageParticipant $reader): void
+    {
+        $query->whereNot(fn (Builder $read) => $read->ofReader($reader));
+    }
+
+    /**
      * The rows of any of the given messages.
      *
      * @param  Builder<self>  $query

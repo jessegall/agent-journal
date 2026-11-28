@@ -21,6 +21,7 @@ final class ChatData extends Data
      * @param  list<AgentOptionData>  $agents
      * @param  list<ChatSummaryData>  $chats
      * @param  list<SlotSectionData>  $dockSections
+     * @param  list<ConversationData>  $beside
      */
     public function __construct(
         #[DataCollectionOf(AgentOptionData::class)]
@@ -38,5 +39,8 @@ final class ChatData extends Data
         public readonly array $chats = [],
         public readonly bool $canCreateChats = false,
         public readonly string|Optional $selectedInboxId = new Optional(),
+        // The chats shown beside the chosen one, side by side, each with its own agent.
+        #[DataCollectionOf(ConversationData::class)]
+        public readonly array $beside = [],
     ) {}
 }

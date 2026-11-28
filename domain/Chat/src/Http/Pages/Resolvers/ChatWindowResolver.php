@@ -15,11 +15,13 @@ use App\Navigation\Contracts\SlotSections;
 use App\Sessions\Contracts\AgentDirectory;
 use App\Support\ActorReference;
 use App\Support\AgentOption;
+use Domain\Chat\Data\AgentOptionData;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Resolvers\Support\ChatPages;
+use Domain\Chat\Support\AgentListing;
 use Domain\Chat\Support\PairChats;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
@@ -41,11 +43,12 @@ final readonly class ChatWindowResolver implements PageResolver
         private ChatPages $pages,
         private PairChats $chats,
         private SlotSections $slots,
+        private AgentListing $listing,
     ) {}
 
     public function read(): ChatData
     {
-        $agents = $this->agents->visible();
+        $agents = $this->listing->visible();
         $main = $this->agents->mainAgentId();
         $chosenInbox = $this->request->chosenInbox();
 
@@ -65,14 +68,38 @@ final readonly class ChatWindowResolver implements PageResolver
             ...$chosen->map($this->conversationFields(...))->getOrElse([]),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->chatList(),
+            'beside' => $this->besideOf($chosen),
         ]);
+    }
+
+    /**
+     * The chats the query shows beside the chosen one, each agent once; one out of sight is left out.
+     *
+     * @param  Option<AgentOption>  $chosen
+     * @return list<ConversationData>
+     */
+    private function besideOf(Option $chosen): array
+    {
+        $chosenId = $chosen->map(fn (AgentOption $agent) => $agent->agentId)->getOrElse(null);
+        $visible = [];
+
+        foreach ($this->agents->visible() as $agent) {
+            $visible[$agent->agentId] = $agent;
+        }
+
+        $shown = array_filter(
+            array_unique($this->request->besideAgents()),
+            fn (string $agentId) => $agentId !== $chosenId && isset($visible[$agentId]),
+        );
+
+        return array_values(array_map(fn (string $agentId) => $this->conversationWith($visible[$agentId]), $shown));
     }
 
     /**
      * The chat window on a chat chosen by its inbox, with or without an agent in it; a chat the reader is not in is
      * refused like a missing one.
      *
-     * @param  list<AgentOption>  $agents
+     * @param  list<AgentOptionData>  $agents
      * @param  Option<string>  $main
      */
     private function readChat(array $agents, Option $main, string $inboxId): ChatData

@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { usePage } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
-import type { SessionActivityStatus } from "@kit/CoreTypes";
 import Avatar from "@kit/Avatar";
 import Icon from "@kit/Icon";
 import Status from "@kit/Status";
-import type { StatusState } from "@kit/Status";
-import { agentUrl } from "../../agentLinks";
-import Dialog from "@kit/Dialog";
-import CreateChatForm from "./partials/CreateChatForm.vue";
+import { useAppContext } from "@kit/appContext";
+import { agentUrl, newAgentUrl } from "../../agentLinks";
+import { useOpenChats } from "../../composables/useOpenChats";
+import ChatTabs from "./partials/ChatTabs.vue";
+import SessionForm from "./partials/SessionForm.vue";
+import { useOpenSessionDialog } from "../../composables/useChosenAgent";
+import { sessionLooks } from "../../sessionLooks";
 import ConversationMenu from "./partials/ConversationMenu.vue";
 import AgentSessionActions from "./partials/AgentSessionActions.vue";
-import { AGENT_BAR_MEMBERS } from "../../agentBarMembers";
 import { useStatusAnnouncement } from "../../composables/useStatusAnnouncement";
 
 /**
@@ -23,39 +24,48 @@ import { useStatusAnnouncement } from "../../composables/useStatusAnnouncement";
 const props = defineProps<{ data: ChatData }>();
 
 const page = usePage();
-const isNewGroupOpen = ref(false);
-const isDialogOpen = ref(false);
+const viewerId = useAppContext().viewer.value.id ?? "guest";
+const openChats = useOpenChats(viewerId);
+// The chosen agent's Switch driver dialog, opened from the chat list; it comes back after a chat switch or a reload.
+const switchDialog = computed(() =>
+  props.data.selectedAgentId === undefined ? undefined : useOpenSessionDialog(viewerId, props.data.selectedAgentId),
+);
+const isSwitchOpen = ref(switchDialog.value?.read() === "switch");
+
+function openSwitch(): void {
+  isSwitchOpen.value = true;
+  switchDialog.value?.keep("switch");
+}
+
+function closeSwitch(): void {
+  isSwitchOpen.value = false;
+  switchDialog.value?.forget();
+  document.querySelector<HTMLElement>("[data-chat-list-trigger]")?.focus();
+}
+const tabRow = useTemplateRef<InstanceType<typeof ChatTabs>>("tabRow");
+
+// Opening a chat beside this one opens its tab and shows the open chats side by side.
+function openBeside(agent: AgentOptionData): void {
+  openChats.open(agent.id);
+  openChats.open(props.data.selectedAgentId ?? agent.id);
+  openChats.show("side");
+}
+
+// The chats that have a column now: the chosen one, and side by side those beside it.
+const columnAgentIds = computed(() =>
+  openChats.chats.mode === "side" && props.data.selectedAgentId !== undefined
+    ? [props.data.selectedAgentId, ...openChats.besideOf(props.data.selectedAgentId)]
+    : [],
+);
 const selected = computed(() =>
   props.data.agents.find((agent) => agent.id === props.data.selectedAgentId),
 );
 const status = computed(() => selected.value?.status);
 const announcement = useStatusAnnouncement(
   () => status.value,
-  () => isDialogOpen.value,
+  () => isSwitchOpen.value,
 );
 
-// Each session state as the kit's Status shows it: a spinner while it moves, a hollow dot at rest, an alert when refused.
-const looks: Record<SessionActivityStatus, StatusState> = {
-  stopped: "stopped",
-  starting: "connecting",
-  working: "working",
-  idle: "open",
-  stopping: "running",
-  interrupting: "running",
-  failed: "failed",
-  refused: "failed",
-  "waiting-for-sign-in": "not-signed-in",
-  "no-capacity": "failed",
-  unknown: "open",
-  retired: "ended",
-  verifying: "connecting",
-  unverified: "open",
-};
-const isMain = computed(
-  () =>
-    selected.value !== undefined &&
-    selected.value.id === props.data.mainAgentId,
-);
 // The second line names what runs the agent: its driver and model while a session runs, else the profile it starts from.
 const subline = computed(() => {
   const agent = selected.value;
@@ -76,14 +86,23 @@ const subline = computed(() => {
 
 <template>
   <div class="relative z-90 flex flex-1 flex-wrap items-center gap-2">
+    <ChatTabs
+      ref="tabRow"
+      :agents="data.agents"
+      :selected-agent-id="data.selectedAgentId"
+      :column-agent-ids="columnAgentIds"
+      :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
+      :new-agent-url="(agentId: string) => newAgentUrl(page.url, agentId)"
+    />
     <div class="relative">
       <ConversationMenu
         :agents="data.agents"
-        :main-agent-id="data.mainAgentId"
         :selected-agent-id="data.selectedAgentId"
-        :can-create-chats="data.canCreateChats"
+        :open-agent-ids="openChats.chats.agentIds"
+        @new-chat="tabRow?.openNewChat()"
+        @open-beside="openBeside"
+        @switch-driver="openSwitch"
         :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
-        @new-group="isNewGroupOpen = true"
       >
         <template #trigger>
         <template v-if="selected">
@@ -96,7 +115,7 @@ const subline = computed(() => {
           />
           <span class="flex min-w-0 flex-col leading-[1.25] whitespace-nowrap">
             <span class="text-body text-text">{{
-              isMain ? `${selected.name} · main` : selected.name
+              selected.isMain ? `${selected.name} · main` : selected.name
             }}</span>
             <small class="max-w-[340px] truncate text-badge text-text-3">{{ subline }}</small>
           </span>
@@ -115,20 +134,11 @@ const subline = computed(() => {
           </template>
         </p>
       </template>
-      <Dialog
-        :open="isNewGroupOpen"
-        title="New group chat"
-        size="sm"
-        @close="isNewGroupOpen = false"
-      >
-        <CreateChatForm />
-      </Dialog>
     </div>
-    <span :id="AGENT_BAR_MEMBERS" class="flex items-center"></span>
     <template v-if="status">
       <Status
         class="ml-1"
-        :state="looks[status.sessionState]"
+        :state="sessionLooks[status.sessionState]"
         :label="status.label"
         secondary
       />
@@ -140,10 +150,10 @@ const subline = computed(() => {
     </template>
     <span class="flex-1"></span>
     <template v-if="selected">
-      <AgentSessionActions
-        :agent="selected"
-        @dialog="(isOpen: boolean) => (isDialogOpen = isOpen)"
-      />
+      <AgentSessionActions :agent="selected" />
+    </template>
+    <template v-if="selected && isSwitchOpen">
+      <SessionForm :key="selected.id" :agent="selected" @close="closeSwitch" />
     </template>
     <p class="sr-only" aria-live="polite">{{ announcement.polite.value }}</p>
     <p class="sr-only" role="alert">{{ announcement.alert.value }}</p>
