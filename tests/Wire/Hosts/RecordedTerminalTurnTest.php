@@ -56,8 +56,8 @@ final class RecordedTerminalTurnTest extends TestCase
                 ->play()
                 ->assertHostWire(fn (WireAssert $host) => $host
                     ->matchesRecording()
-                    ->ordered(HostInstructionType::OpenContainer, fn (WireAssert $open) => $open->matchesPayload())
-                    ->typed('Run: ls.'))
+                    ->ordered(HostInstructionType::OpenContainer, fn (WireAssert $open) => $open->matchesPayload()))
+                ->assertTyped('Run: ls.')
                 ->assertPlayedWhole());
     }
 }

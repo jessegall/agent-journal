@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Recordings;
 
+use App\Models\Sessions\SessionProcess;
+use App\Models\Hosts\HostProcess;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostRoute;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
-use App\Hosts\Protocol\Payloads\HostKeyWritePayload;
 use App\Models\Hosts\HostInstruction;
 use App\Recordings\Enums\Wire;
 use App\Recordings\ScenarioRecording;
@@ -25,20 +26,23 @@ final class WireAssert
     /**
      * @param  list<array{HostInstructionType, array<string, mixed>}>  $recorded  each recorded order, with its payload
      * @param  list<HostInstruction>  $live  each order the journal gave while the scenario played
+     * @param  array<string, string>  $machineFolders  each folder of the playing machine, by the recorded one it stands for
      */
     private function __construct(
         private readonly string $scenario,
         private readonly array $recorded,
         private readonly array $live,
         private readonly RecordingValues $values,
+        private readonly array $machineFolders,
     ) {}
 
     /**
      * The host wire of the recording against the orders the journal gave.
      *
      * @param  list<HostInstruction>  $live
+     * @param  array<string, string>  $machineFolders  each folder of the playing machine, by the recorded one it stands for
      */
-    public static function ofHost(string $scenario, ScenarioRecording $recording, array $live): self
+    public static function ofHost(string $scenario, ScenarioRecording $recording, array $live, array $machineFolders): self
     {
         $recorded = [];
 
@@ -52,7 +56,7 @@ final class WireAssert
             }
         }
 
-        return new self($scenario, $recorded, $live, new RecordingValues());
+        return new self($scenario, $recorded, $live, new RecordingValues(), $machineFolders);
     }
 
     /**
@@ -67,7 +71,22 @@ final class WireAssert
             Assert::assertSame(
                 $type,
                 $live[$index] ?? 'none',
-                "Order {$index} of {$this->scenario} is ".($live[$index] ?? 'missing').", where the recording gave {$type}.",
+                "Order {$index} of {$this->scenario} is ".($live[$index] ?? 'missing').", where the recording gave {$type}."
+                    ."\nRecorded: ".implode(' ', array_slice($recorded, 0, $index + 6))
+                    ."\nGiven:    ".implode(' ', array_slice($live, 0, $index + 6))
+                    ."\nGiven, each with what it names: ".implode(' ', array_map(
+                        fn (HostInstruction $order) => "{$order->type->value}(".substr($order->payload, 0, 90).')',
+                        $this->live,
+                    ))
+                    ."\n".implode("\n", array_map(
+                        fn (HostProcess $process) => "process {$process->id} {$process->purpose->value} "
+                            ."{$process->status->value} {$process->exit_evidence}",
+                        HostProcess::query()->orderBy('created_at')->get()->all(),
+                    ))
+                    ."\n".implode("\n", array_map(
+                        fn (SessionProcess $start) => "start {$start->status->value} {$start->refusal}",
+                        SessionProcess::query()->supervised()->get()->all(),
+                    )),
             );
         }
 
@@ -87,7 +106,7 @@ final class WireAssert
         $live = array_values(array_filter($this->live, fn (HostInstruction $order) => $order->type === $type));
         Assert::assertNotEmpty($recorded, "The {$this->scenario} recording holds no {$type->value} order.");
         Assert::assertNotEmpty($live, "The journal gave no {$type->value} order.");
-        $scope(new self($this->scenario, [$recorded[0]], [$live[0]], $this->values));
+        $scope(new self($this->scenario, [$recorded[0]], [$live[0]], $this->values, $this->machineFolders));
 
         return $this;
     }
@@ -100,6 +119,10 @@ final class WireAssert
     {
         foreach ($this->recorded as $index => [, $payload]) {
             $live = (array) json_decode($this->live[$index]->payload, true);
+            // A folder of the playing machine stands where the recorded machine named its own.
+            array_walk_recursive($live, function (mixed &$value): void {
+                $value = is_string($value) ? strtr($value, $this->machineFolders) : $value;
+            });
 
             try {
                 $this->values->hear("{$this->scenario}.{$index}", $payload, $live);
@@ -107,24 +130,6 @@ final class WireAssert
                 Assert::fail($refused->getMessage());
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * The journal typed the text into a process, in one write of keys.
-     */
-    public function typed(string $text): self
-    {
-        $typed = array_map(
-            fn (HostInstruction $order) => base64_decode(HostKeyWritePayload::from($order->payload)->bytes, true),
-            array_values(array_filter($this->live, fn (HostInstruction $order) => $order->type === HostInstructionType::WriteKeys)),
-        );
-
-        Assert::assertTrue(
-            array_any($typed, fn (string|false $bytes) => $bytes !== false && str_contains($bytes, $text)),
-            "The journal typed no {$text} while {$this->scenario} played.",
-        );
 
         return $this;
     }

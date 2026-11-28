@@ -425,11 +425,11 @@ trait ArrangesHostProcesses
      * The journal runs its agents as the recorded machine did from here on: in its agent image, with its folder of
      * program builds mounted over the image's own, as a played scenario's recording names them.
      */
-    public function arrangeRecordedMachine(string $agentImage, string $developmentPrograms): self
+    public function arrangeRecordedMachine(PlayedScenario $playing): self
     {
         $this->app->make(Repository::class)->set([
-            'journal.agents.agent_image' => $agentImage,
-            'journal.agents.development_programs' => $developmentPrograms,
+            'journal.agents.agent_image' => $playing->agentImage,
+            'journal.agents.development_programs' => $playing->developmentPrograms,
         ]);
         $this->app->forgetInstance(AgentImage::class);
         $this->app->forgetInstance(DriverImageChecks::class);

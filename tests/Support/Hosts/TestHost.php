@@ -607,6 +607,18 @@ final class TestHost
     }
 
     /**
+     * Each text the played driver programs read, one line each, as the journal typed it into their terminals.
+     *
+     * @return list<string>
+     */
+    public function playedTyped(): array
+    {
+        $typed = "{$this->folder}/played-typed";
+
+        return is_file($typed) ? array_values(array_filter(explode("\n", (string) file_get_contents($typed)))) : [];
+    }
+
+    /**
      * The journal's settings of a contained mock host: its arrangement, installation name, agent image, the
      * agent containers' security profiles and one workspace.
      *
@@ -880,7 +892,8 @@ final class TestHost
         if ($this->playing !== null) {
             return [
                 self::binary(), 'mock', 'playing', '--scenario', $this->playing->name, '--socket', "{$this->folder}/docker.sock",
-                '--failures', "{$this->folder}/played-failures", '--until-input-ends',
+                '--failures', "{$this->folder}/played-failures", '--typed', "{$this->folder}/played-typed",
+                '--until-input-ends',
             ];
         }
 

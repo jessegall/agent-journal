@@ -22,12 +22,13 @@ import (
 // answer, a session's terminal plays what its program printed, and the calls its program made to the journal are made
 // again; each call the recording does not hold is written to the failures file, one line each, for the test to read.
 //
-//	journal-runner mock playing --scenario <driver>/<name> --socket <path> --failures <file>
+//	journal-runner mock playing --scenario <driver>/<name> --socket <path> --failures <file> --typed <file>
 func mockPlaying(arguments []string) error {
 	flags := flag.NewFlagSet("mock playing", flag.ContinueOnError)
 	named := flags.String("scenario", "", "the recorded scenario to play, as <driver>/<name>")
 	socket := flags.String("socket", "", "the Unix socket the daemon listens on")
 	failuresPath := flags.String("failures", "", "the file each call the recording does not hold is added to")
+	typedPath := flags.String("typed", "", "the file each text a played driver program read is added to")
 	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends")
 	if err := flags.Parse(arguments); err != nil {
 		return err
@@ -48,6 +49,12 @@ func mockPlaying(arguments []string) error {
 	playing, err := dockermock.PlayScenario(failures, scenario)
 	if err != nil {
 		return err
+	}
+	var typedMutex sync.Mutex
+	playing.Typed = func(text []byte) {
+		typedMutex.Lock()
+		defer typedMutex.Unlock()
+		_ = appendLine(*typedPath, strings.ReplaceAll(string(text), "\n", " "))
 	}
 	listener, err := net.Listen("unix", *socket)
 	if err != nil {

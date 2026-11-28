@@ -30,6 +30,8 @@ const playedPause = 5 * time.Millisecond
 // attach plays what the driver exchange of its program printed, gated on what is typed into it as it was recorded, and
 // the calls its program made to the journal are made again as its output reaches their moments.
 type Playing struct {
+	// Typed is told each piece of text a played driver program read, as a test asks what the journal typed.
+	Typed    func(text []byte)
 	server   *httptest.Server
 	replay   *recorded.CallReplay
 	scenario recorded.Scenario
@@ -271,7 +273,7 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 		playing.replay.Values())
 	defer caller.finish()
 	written := &countedOutput{next: caller, left: recordedLength(fixture), played: ran.output.finish}
-	_ = recording.GatedReplay(fixture, buffered, written, playedPause, func(recording.Typed) error { return nil })
+	_ = recording.GatedReplay(fixture, buffered, written, playedPause, playing.heardTyped)
 }
 
 // answering holds a container's wait until its recorded output was played whole, as Docker answers a wait only once
@@ -291,6 +293,14 @@ func (playing *Playing) answering(call recorded.Call, body []byte) []byte {
 	case <-playing.replay.Closed():
 	}
 	return body
+}
+
+// heardTyped tells what a played driver program read as text; a key it read is no text the journal typed.
+func (playing *Playing) heardTyped(piece recording.Typed) error {
+	if playing.Typed != nil && piece.Type == recording.TypedText {
+		playing.Typed(piece.Bytes)
+	}
+	return nil
 }
 
 // keepHookReplies reads the tar of plan files a container was given on its input, as the host writes a process's plan

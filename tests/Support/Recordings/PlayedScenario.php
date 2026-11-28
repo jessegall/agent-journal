@@ -37,6 +37,7 @@ final readonly class PlayedScenario
         public array $driverImages,
         /** @var list<string> the images the recorded host was installed with, which it checked at its start */
         public array $pinnedImages,
+        public string $securityProfiles,
     ) {}
 
     public static function of(string $name, ScenarioRecording $recording): self
@@ -46,17 +47,37 @@ final readonly class PlayedScenario
         $agentImage = $pinned[0] ?? TestHost::IMAGE;
         $programs = self::developmentProgramsOf($calls);
         $driverImages = self::driverImagesOf($recording->calls(Wire::Host), $agentImage);
+        $profiles = self::securityProfilesOf($recording->calls(Wire::Host));
 
         foreach ($calls as $call) {
             $installation = self::installationOf($call);
 
             if ($installation !== '') {
-                return new self($name, $installation, $agentImage, $programs, $driverImages, $pinned);
+                return new self($name, $installation, $agentImage, $programs, $driverImages, $pinned, $profiles);
             }
         }
 
         // A scenario whose containers mount no volume names no installation, so the test host's own one serves.
-        return new self($name, TestHost::INSTALLATION_NAME, $agentImage, $programs, $driverImages, $pinned);
+        return new self($name, TestHost::INSTALLATION_NAME, $agentImage, $programs, $driverImages, $pinned, $profiles);
+    }
+
+    /**
+     * The folder of security profiles the recorded machine named its containers' profiles from; none when it named
+     * none. A playing machine names its own, as the host reads each profile it names.
+     *
+     * @param  list<RecordedCall>  $calls
+     */
+    private static function securityProfilesOf(array $calls): string
+    {
+        foreach (self::claimedOf($calls) as $instruction) {
+            $seccomp = (string) (((array) $instruction['payload'])['container']['securityOptions']['seccomp'] ?? '');
+
+            if ($instruction['type'] === 'open_container' && $seccomp !== '') {
+                return dirname($seccomp);
+            }
+        }
+
+        return '';
     }
 
     /**

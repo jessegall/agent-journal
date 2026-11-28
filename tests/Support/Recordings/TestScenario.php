@@ -100,8 +100,27 @@ final class TestScenario
         [$driver, $scenarioName] = explode('/', $this->name, 2);
         $recording = $this->journal->service(Recordings::class)->scenario($driver, $scenarioName);
         $host = $this->journal->hostCalled(self::HOST)->hostId;
-        $orders = HostInstruction::query()->where('host_id', $host)->orderBy('sequence')->get()->all();
-        $scope(WireAssert::ofHost($this->name, $recording, $orders));
+        // An order's sequence counts within its process, so the orders go in the order they were made, by their ids.
+        $orders = HostInstruction::query()->where('host_id', $host)->orderBy('id')->get()->all();
+        $playing = PlayedScenario::of($this->name, $recording);
+        // The playing host reads the profiles it names, so it names its own folder where the recorded machine named one.
+        $profiles = [TestHost::containedEnvironment()['AGENTS_SECURITY_PROFILES'] => $playing->securityProfiles];
+        $scope(WireAssert::ofHost($this->name, $recording, $orders, array_filter($profiles)));
+
+        return $this;
+    }
+
+    /**
+     * A played driver program read the text, as the journal typed it into its terminal: the journal keeps no typed
+     * bytes once the host took them, so the played program's own reading is the proof.
+     */
+    public function assertTyped(string $text): self
+    {
+        $this->journal->testHost(fn (TestHost $host) => Assert::assertTrue(
+            array_any($host->playedTyped(), fn (string $typed) => str_contains($typed, $text)),
+            "The journal typed no {$text} while {$this->name} played; the programs read: "
+                .implode(' | ', $host->playedTyped()),
+        ));
 
         return $this;
     }
@@ -136,7 +155,7 @@ final class TestScenario
 
         $this->journal->arrangeContainedJournal();
         $this->journal->service(Repository::class)->set('journal.agents.installation_name', $playing->installationName);
-        $this->journal->arrangeRecordedMachine($playing->agentImage, $playing->developmentPrograms);
+        $this->journal->arrangeRecordedMachine($playing);
         $this->journal->enrollContainedHost(self::HOST, [base_path()])
             ->runPlayingTestHost(self::HOST, $playing, fn (TestHost $host) => $host->chooseActiveAccounts())
             ->readyRecordedDriverImagesOn(self::HOST, $playing->driverImages);
