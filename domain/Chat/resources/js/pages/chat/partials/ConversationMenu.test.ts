@@ -2,6 +2,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import type { AgentOptionData } from "@generated/types/chat";
+import { chatAgent } from "../../../testing/chatAgent";
 
 const visited: string[] = [];
 
@@ -27,62 +28,15 @@ const { default: ConversationMenu } = await import("./ConversationMenu.vue");
 const { HANDED_RECORD_TYPE, useHandOver } =
   await import("../../../composables/useHandOver");
 
-function agent(
-  id: string,
-  name: string,
-  facts: Partial<AgentOptionData> = {},
-): AgentOptionData {
-  const retired = facts.isRetired === true;
-
-  return {
-    id,
-    name,
-    profileKey: "journal-main",
-    isRetired: retired,
-    presence: retired ? "retired" : "idle",
-    presenceLabel: retired ? "Retired" : "Idle",
-    sessionId: null,
-    sessionGeneration: 0,
-    hasTerminal: false,
-    switchId: null,
-    switchStage: null,
-    switchStageLabel: null,
-    isSwitchOver: true,
-    actions: [],
-    conversations: [],
-    startRefusal: null,
-    sessionDriver: null,
-    sessionDriverLabel: null,
-    sessionModel: null,
-    needsAttention: false,
-    isMain: false,
-    unreadCount: 0,
-    lastActiveAt: null,
-    waitsOnYou: false,
-    status: {
-      sessionState: retired ? "retired" : "idle",
-      isStartRefused: false,
-      label: retired ? "Retired" : "Idle",
-      reason: null,
-      remedy: null,
-      commandOutcome: null,
-      observationAgeSeconds: null,
-      actions: [],
-      isProcessConfirmed: false,
-    },
-    ...facts,
-  } as AgentOptionData;
-}
-
 const agents = [
-  agent("main", "Main agent", { isMain: true, lastActiveAt: "2026-11-28T09:00:00Z" }),
-  agent("reviewer", "Reviewer", {
+  chatAgent("main", "Main agent", { isMain: true, lastActiveAt: "2026-11-28T09:00:00Z" }),
+  chatAgent("reviewer", "Reviewer", {
     lastActiveAt: "2026-11-28T10:00:00Z",
     waitsOnYou: true,
     unreadCount: 3,
   }),
-  agent("writer", "Writer", { lastActiveAt: "2026-11-28T08:00:00Z" }),
-  agent("old", "Old writer", { isRetired: true }),
+  chatAgent("writer", "Writer", { lastActiveAt: "2026-11-28T08:00:00Z" }),
+  chatAgent("old", "Old writer", { isRetired: true }),
 ];
 
 async function openList(shown: AgentOptionData[] = agents) {
@@ -105,7 +59,7 @@ function rowIds(list: Awaited<ReturnType<typeof openList>>): string[] {
 
 describe("ConversationMenu", () => {
   it("reads the next page of chats from its cursor and lists it after the first, each agent once", async () => {
-    laterAgents.splice(0, laterAgents.length, agent("writer", "Writer"), agent("planner", "Planner"));
+    laterAgents.splice(0, laterAgents.length, chatAgent("writer", "Writer"), chatAgent("planner", "Planner"));
     const cursor = { afterAgentId: "writer", afterActiveAt: "2026-11-28 08:00:00" };
     const list = mount(ConversationMenu, {
       props: { agents, nextAgents: cursor, selectedAgentId: "main", openAgentIds: ["main"] },
@@ -224,7 +178,7 @@ describe("ConversationMenu", () => {
     expect(idle.get("[data-end-session]").attributes("disabled")).toBeDefined();
 
     const working = await openList([
-      agent("main", "Main agent", {
+      chatAgent("main", "Main agent", {
         sessionId: "session-1",
         status: { ...agents[0].status, actions: [{ type: "stop", label: "End session" }] },
       }),

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PaneRows from '@/components/panes/PaneRows.vue';
+import PaneRows from '@kit/PaneRows';
 import type { TasksPaneData } from '@generated/types/tasks';
 
 defineProps<TasksPaneData>();

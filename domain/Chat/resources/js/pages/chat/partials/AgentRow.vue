@@ -5,7 +5,7 @@ import Status from "@kit/Status";
 import { useAppContext } from "@kit/appContext";
 import { computed } from "vue";
 import type { AgentOptionData, AgentPageCursorData } from "@generated/types/chat";
-import type { RunningCommandData } from "@generated/types/core";
+import type { RunningCommandData } from "@kit/runningCommands";
 import { requestNewChat } from "../../../composables/useChatBarAsks";
 import { useOpenChats } from "../../../composables/useOpenChats";
 import { sessionLooks } from "../../../sessionLooks";
