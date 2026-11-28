@@ -36,16 +36,16 @@ final readonly class DeviceApprovalWindowResolver implements PageResolver
             throw PrivateRecordMissing::forReader($missing);
         }
 
-        return DeviceApprovalData::from([
-            'userCode' => $grant->user_code,
-            'projectLabel' => $grant->binding->project_label,
-            'machineLabel' => $grant->binding->machine_label,
-            'scopes' => $grant->scopes,
-            'expiresAt' => $grant->code_expires_at->toIso8601String(),
-            'journalOrigin' => $this->origin->canonical(),
-            'environmentLabel' => $grant->environment->label ?? 'no environment yet',
-            'state' => $grant->approvalStateAt(CarbonImmutable::now()),
-            'isBindingRevoked' => $grant->binding->readiness === BindingReadiness::Revoked,
-        ]);
+        return DeviceApprovalData::build()
+            ->userCode($grant->user_code)
+            ->projectLabel($grant->binding->project_label)
+            ->machineLabel($grant->binding->machine_label)
+            ->scopes($grant->scopes)
+            ->expiresAt($grant->code_expires_at->toIso8601String())
+            ->journalOrigin($this->origin->canonical())
+            ->environmentLabel($grant->environment->label ?? 'no environment yet')
+            ->state($grant->approvalStateAt(CarbonImmutable::now()))
+            ->isBindingRevoked($grant->binding->readiness === BindingReadiness::Revoked)
+            ->finish();
     }
 }

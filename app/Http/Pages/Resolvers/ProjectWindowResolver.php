@@ -72,13 +72,13 @@ final readonly class ProjectWindowResolver implements PageResolver
         string|null $machineLabel,
         array $entries = [],
     ): ProjectWindowData {
-        return ProjectWindowData::from([
-            'status' => $status,
-            'projectLabel' => $projectLabel,
-            'machineLabel' => $machineLabel,
-            'connectAddress' => route('connections.connect', absolute: false),
-            'entries' => $entries,
-        ]);
+        return ProjectWindowData::build()
+            ->status($status)
+            ->projectLabel($projectLabel)
+            ->machineLabel($machineLabel)
+            ->connectAddress(route('connections.connect', absolute: false))
+            ->entries($entries)
+            ->finish();
     }
 
     /**

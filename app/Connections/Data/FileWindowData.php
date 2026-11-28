@@ -19,6 +19,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class FileWindowData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<FileWindowDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = FileWindowDataFields::class;
+
     /**
      * @param  list<string>  $lines
      * @param  list<int>  $cutLineNumbers

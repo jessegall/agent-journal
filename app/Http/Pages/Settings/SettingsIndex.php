@@ -7,7 +7,8 @@ namespace App\Http\Pages\Settings;
 use App\Actors\Contracts\CurrentActor;
 use App\Connections\ConnectionsOwnerCheck;
 use App\Connections\Exceptions\ServerOriginInvalid;
-use App\Http\Pages\Resolvers\ConnectProjectWindowResolver;
+use App\Connections\ConnectedProjects;
+use App\Connections\ConnectionCursors;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\CoreSettings;
 use App\Settings\Data\SettingData;
@@ -58,10 +59,10 @@ final readonly class SettingsIndex extends SettingsPage
         private CurrentActor $actors,
         private ConnectionsOwnerCheck $connections,
         private CoreSettings $core,
-        private ConnectProjectWindowResolver $connectWindow,
+        private ConnectedProjects $projects,
     ) {}
 
-    public function layout(): DeclaredLayoutData
+    public function layout(ConnectionCursors $cursors): DeclaredLayoutData
     {
         $sections = [];
 
@@ -69,14 +70,17 @@ final readonly class SettingsIndex extends SettingsPage
             foreach ($owner->groups as $group) {
                 $sections[] = [
                     $this->rank($owner, $group),
-                    $this->sectionOf($owner, $group),
+                    $this->sectionOf($owner, $group, $cursors),
                 ];
             }
         }
 
         usort($sections, fn (array $first, array $second) => $first[0] <=> $second[0]);
 
-        return SettingsLayout::make(...array_map(fn (array $ranked) => $ranked[1], $sections))->layout();
+        return SettingsLayout::build()
+            ->groups(...array_map(fn (array $ranked) => $ranked[1], $sections))
+            ->finish()
+            ->layout();
     }
 
     /**
@@ -98,7 +102,7 @@ final readonly class SettingsIndex extends SettingsPage
         return 2 * ($position === false ? count(self::ORDER) : $position) + ($this->isSwitched($group) ? 0 : 1);
     }
 
-    private function sectionOf(SettingsCatalogueData $owner, SettingGroupData $group): SettingsGroup
+    private function sectionOf(SettingsCatalogueData $owner, SettingGroupData $group, ConnectionCursors $cursors): SettingsGroup
     {
         $fixed = ['owner' => $owner->owner, 'group' => $group->identity->key, 'revision' => $owner->revision];
 
@@ -112,7 +116,7 @@ final readonly class SettingsIndex extends SettingsPage
             ->title($group->label)
             ->help($group->description)
             ->finish()
-            ->withRows(...$this->rowsOf($rows, $isConnections));
+            ->withRows(...$this->rowsOf($rows, $isConnections, $cursors));
 
         $section = match (true) {
             $isConnections => $section->switchedBy(
@@ -171,7 +175,7 @@ final readonly class SettingsIndex extends SettingsPage
      * @param  list<SettingData>  $settings
      * @return list<SettingsRow>
      */
-    private function rowsOf(array $settings, bool $isConnections): array
+    private function rowsOf(array $settings, bool $isConnections, ConnectionCursors $cursors): array
     {
         $rows = array_map(fn (SettingData $setting) => $this->rowOf($setting), $settings);
 
@@ -181,7 +185,7 @@ final readonly class SettingsIndex extends SettingsPage
 
         return [
             ...$rows,
-            ...$this->connectionRows(),
+            ...$this->connectionRows($cursors),
         ];
     }
 
@@ -203,14 +207,14 @@ final readonly class SettingsIndex extends SettingsPage
      *
      * @return list<SettingsRow>
      */
-    private function connectionRows(): array
+    private function connectionRows(ConnectionCursors $cursors): array
     {
         if (! $this->connections->allows($this->actors->actor())) {
             return [];
         }
 
         try {
-            $connections = $this->connectWindow->read();
+            $connections = $this->projects->read($cursors);
         } catch (ServerOriginInvalid $invalid) {
             return [SettingsRow::build()
                 ->key('projects')

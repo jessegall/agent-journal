@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Pages\Resolvers;
 
 use App\Http\Pages\Settings\SettingsIndex;
+use App\Http\Requests\Connections\ConnectProjectRequest;
 use App\Navigation\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 
@@ -13,10 +14,10 @@ use App\Support\Layout\DeclaredLayoutData;
  */
 final readonly class SettingsWindowResolver implements PageResolver
 {
-    public function __construct(private SettingsIndex $layout) {}
+    public function __construct(private SettingsIndex $layout, private ConnectProjectRequest $request) {}
 
     public function read(): DeclaredLayoutData
     {
-        return $this->layout->layout();
+        return $this->layout->layout($this->request->cursors());
     }
 }

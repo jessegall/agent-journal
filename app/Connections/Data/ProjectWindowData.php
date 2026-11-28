@@ -17,6 +17,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class ProjectWindowData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<ProjectWindowDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = ProjectWindowDataFields::class;
+
     /**
      * @param  list<ProjectTreeEntryData>  $entries
      */

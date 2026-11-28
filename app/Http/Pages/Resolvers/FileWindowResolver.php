@@ -21,6 +21,7 @@ use App\Projects\Contracts\FileComments;
 use App\Projects\Enums\ProjectReadStatus;
 use App\Values\ProjectFileAnswer;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Optional;
 
 /**
  * A File window: the one file its query names, from the connected folder heard from last, read through its host and
@@ -101,41 +102,48 @@ final readonly class FileWindowResolver implements PageResolver
             $lines[] = mb_substr($line, 0, self::LINE_CHARACTER_LIMIT);
         }
 
-        return FileWindowData::from([
-            'status' => $isTruncated ? FileWindowStatus::TooLarge : FileWindowStatus::Ready,
-            'name' => basename($answer->path),
-            'path' => $answer->path,
-            'isMarkdown' => $this->isMarkdown($answer->path),
-            'lines' => $lines,
-            'cutLineNumbers' => $cutLineNumbers,
-            'isTruncated' => $isTruncated,
-            'digest' => $answer->digest,
-            'size' => $answer->size,
-            ...$this->markdownOf($answer->path, $lines),
-            ...$this->commentsOf($binding, $answer, $lines),
-            ...$this->recipientOf($binding),
-        ]);
+        $comments = $this->commentsOf($binding, $answer, $lines);
+        $agent = Agent::query()->whereKey($binding->main_agent_id)->firstOrFail();
+
+        return FileWindowData::build()
+            ->status($isTruncated ? FileWindowStatus::TooLarge : FileWindowStatus::Ready)
+            ->name(basename($answer->path))
+            ->path($answer->path)
+            ->isMarkdown($this->isMarkdown($answer->path))
+            ->lines($lines)
+            ->cutLineNumbers($cutLineNumbers)
+            ->isTruncated($isTruncated)
+            ->digest($answer->digest)
+            ->size($answer->size)
+            ->markdown($this->markdownOf($answer->path, $lines))
+            ->commentTarget($comments['commentTarget'])
+            ->threads($comments['threads'])
+            ->recipientId($agent->id)
+            ->recipientName($agent->name)
+            ->commentAddress($this->comments->commentAddress())
+            ->tellAddress($this->comments->tellAddress())
+            ->finish();
     }
 
     private function window(FileWindowStatus $status, string $path): FileWindowData
     {
-        return FileWindowData::from([
-            'status' => $status,
-            'name' => basename($path),
-            'path' => $path,
-            'isMarkdown' => $this->isMarkdown($path),
-            'lines' => [],
-            'cutLineNumbers' => [],
-            'isTruncated' => false,
-            'digest' => null,
-            'size' => null,
-            'commentTarget' => null,
-            'threads' => [],
-            'recipientId' => null,
-            'recipientName' => null,
-            'commentAddress' => $this->comments->commentAddress(),
-            'tellAddress' => $this->comments->tellAddress(),
-        ]);
+        return FileWindowData::build()
+            ->status($status)
+            ->name(basename($path))
+            ->path($path)
+            ->isMarkdown($this->isMarkdown($path))
+            ->lines([])
+            ->cutLineNumbers([])
+            ->isTruncated(false)
+            ->digest(null)
+            ->size(null)
+            ->commentTarget(null)
+            ->threads([])
+            ->recipientId(null)
+            ->recipientName(null)
+            ->commentAddress($this->comments->commentAddress())
+            ->tellAddress($this->comments->tellAddress())
+            ->finish();
     }
 
     /**
@@ -164,35 +172,17 @@ final readonly class FileWindowResolver implements PageResolver
     }
 
     /**
-     * The project's main agent, whom a comment on its files is sent to, and the address that tells it.
-     *
-     * @return array{recipientId: string, recipientName: string, commentAddress: string|null, tellAddress: string|null}
-     */
-    private function recipientOf(ProjectBinding $binding): array
-    {
-        $agent = Agent::query()->whereKey($binding->main_agent_id)->firstOrFail();
-
-        return [
-            'recipientId' => $agent->id,
-            'recipientName' => $agent->name,
-            'commentAddress' => $this->comments->commentAddress(),
-            'tellAddress' => $this->comments->tellAddress(),
-        ];
-    }
-
-    /**
      * A Markdown file's lines as the journal's safe HTML; nothing for any other file.
      *
      * @param  list<string>  $lines
-     * @return array{markdown?: LayoutBodyData}
      */
-    private function markdownOf(string $path, array $lines): array
+    private function markdownOf(string $path, array $lines): LayoutBodyData|Optional
     {
         if ($this->isMarkdown($path)) {
-            return ['markdown' => LayoutBodyData::fromMarkdown(implode("\n", $lines))];
+            return LayoutBodyData::fromMarkdown(implode("\n", $lines));
         }
 
-        return [];
+        return Optional::create();
     }
 
     private function isMarkdown(string $path): bool
