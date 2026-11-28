@@ -40,17 +40,22 @@ final class RecordingManifestTest extends TestCase
 
     public function test_the_programs_digest_follows_the_init_and_not_the_hosts_own_packages(): void
     {
-        $programs = $this->app->make(AgentImagePrograms::class);
-        $before = $programs->hash();
+        // The programs' hash is read once per process, so each reading is a process of its own.
+        $hash = function (): string {
+            $this->app->forgetInstance(AgentImagePrograms::class);
+
+            return $this->app->make(AgentImagePrograms::class)->hash();
+        };
+        $before = $hash();
 
         $init = base_path('programs/runner/bootstrap/agent_image_programs_probe.go');
         $host = base_path('programs/runner/hostapi/agent_image_programs_probe.go');
 
         try {
             file_put_contents($host, "package hostapi\n");
-            $afterHost = $programs->hash();
+            $afterHost = $hash();
             file_put_contents($init, "package bootstrap\n");
-            $afterInit = $programs->hash();
+            $afterInit = $hash();
         } finally {
             @unlink($host);
             @unlink($init);

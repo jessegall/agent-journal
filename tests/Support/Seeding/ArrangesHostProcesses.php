@@ -319,28 +319,6 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * Every JSON line the journal ordered written to the named pipe process's input, decoded, in order.
-     *
-     * @return list<array<string, mixed>>
-     */
-    public function pipeInputOf(string $name): array
-    {
-        $writes = array_filter(
-            $this->hostInstructionsOf($name),
-            fn (HostInstruction $instruction) => $instruction->type === HostInstructionType::WriteStdin,
-        );
-
-        return array_values(array_map(
-            fn (HostInstruction $instruction) => json_decode(
-                base64_decode($this->payloadOf($instruction)['bytes']),
-                true,
-                flags: JSON_THROW_ON_ERROR,
-            ),
-            $writes,
-        ));
-    }
-
-    /**
      * The instruction's payload as the host receives it, read back from its JSON.
      *
      * @return array<string, mixed>

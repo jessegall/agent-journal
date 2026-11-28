@@ -22,6 +22,8 @@ use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Mocks\Answer;
 use Tests\Support\Mocks\ClaudeMock;
 use Tests\Support\Mocks\CodexMock;
+use Tests\Support\Recordings\TestScenario;
+use Tests\Support\Recordings\WireAssert;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\Seeding\StateHandle;
 use Tests\Support\Seeding\TestJournal;

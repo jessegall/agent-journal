@@ -56,7 +56,9 @@ final class RecordingValuesTest extends TestCase
         $values = new RecordingValues();
         $values->hear('host', ['path' => $first], ['path' => $first]);
 
-        $this->expectExceptionObject(LiveValueRefused::standsFor('host.path', $first, explode('/', $first)[3]));
+        // The refusal names the live part that the other fake already stands for, as the Go twin does.
+        $process = explode('/', $first)[3];
+        $this->expectExceptionObject(LiveValueRefused::standsFor('host.path', $process, $process));
 
         $values->hear('host', ['path' => $second], ['path' => $first]);
     }
