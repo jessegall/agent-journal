@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Web;
 
 use App\Access\Contracts\SharePolicy;
+use App\Accounts\Contracts\StartAccounts;
+use App\Accounts\Data\EligibleAccountsData;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentUserResolver;
 use App\Actors\CurrentUser;
@@ -22,6 +24,7 @@ use App\Settings\Contracts\SettingsResolver;
 use App\Settings\CoreSettings;
 use App\Support\ActorReference;
 use App\Values\DriverFamily;
+use App\Values\ProfileBase;
 use App\Values\InboxMemberAuthority;
 use App\Web\Data\AppContextData;
 use App\Web\Data\InstallationData;
@@ -53,17 +56,40 @@ final readonly class AppContext
         private DriverCatalogue $drivers,
         private ProjectDirectory $projects,
         private CurrentProject $selection,
+        private AppContextFreshness $freshness,
+        private StartAccounts $starts,
     ) {}
 
     public function data(Request $request): AppContextData
     {
         $user = $this->users->currentUser();
         $type = $this->viewerType($user);
+        // What rarely changes is sent with the first page and kept by the browser, sent again once a route changed it.
+        $isStale = $this->freshness->isStale($request);
+        // Each viewer keeps its own copy: a sign-in or a sign-out never shows the one kept for another.
+        $viewerKey = $user->map(fn (CurrentUser $signedIn) => "{$type->value}.{$signedIn->id}")->getOrElse('guest');
 
         return AppContextData::from([
-            'installation' => ContextLazy::value(fn () => $this->installation($type)),
+            'installation' => ContextLazy::once(
+                fn () => $this->installation($type),
+                $isStale,
+                "installation.{$viewerKey}",
+            ),
             'viewer' => ContextLazy::always(fn () => $this->viewer($user, $type)),
-            'drivers' => ContextLazy::value(fn () => $type === ViewerType::Guest ? [] : $this->driverLooks()),
+            'drivers' => ContextLazy::once(
+                fn () => $type === ViewerType::Guest ? [] : $this->driverLooks(),
+                $isStale,
+                "drivers.{$viewerKey}",
+            ),
+            'startAccounts' => $user
+                ->filter(fn () => $type === ViewerType::Owner)
+                ->map(fn (CurrentUser $signedIn) => ContextLazy::onceLive(
+                    fn () => $this->startAccounts(),
+                    $isStale,
+                    "startAccounts.{$viewerKey}",
+                    LiveListeners::pageChanges($signedIn->id),
+                ))
+                ->getOrElse(Optional::create()),
             'refusalCode' => $this->refusalCodeOf($request),
             'navigation' => $user
                 ->map(fn (CurrentUser $signedIn) => ContextLazy::live(
@@ -138,6 +164,20 @@ final readonly class AppContext
      *
      * @return list<DriverLookData>
      */
+    /**
+     * For each driver family, the accounts a new main agent may start on, with the model it starts on by default: the
+     * start picker chooses from them on its first paint.
+     *
+     * @return list<EligibleAccountsData>
+     */
+    private function startAccounts(): array
+    {
+        return array_map(
+            fn (DriverFamily $family) => $this->starts->forProfileStart($family->key, ProfileBase::mainAgent()->key),
+            $this->drivers->families(),
+        );
+    }
+
     private function driverLooks(): array
     {
         return array_map(

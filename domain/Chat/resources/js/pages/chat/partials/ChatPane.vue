@@ -426,7 +426,7 @@ watch(isShown, readOnOpen);
       <template v-if="isShown">
         <template v-if="isNewChat && selected">
           <div class="flex min-h-0 flex-1 flex-col justify-center" data-new-chat>
-            <StartPicker :agent="selected" :is-new="true" />
+            <StartPicker :key="selected.id" :agent="selected" :is-new="true" />
           </div>
         </template>
         <template v-else>
@@ -496,7 +496,7 @@ watch(isShown, readOnOpen);
             <VerifyingSessionCard :agent="selected" />
           </template>
           <template v-if="needsStart && selected">
-            <StartPicker :agent="selected" :is-new="false" />
+            <StartPicker :key="selected.id" :agent="selected" :is-new="false" />
           </template>
           <template v-else>
             <Composer

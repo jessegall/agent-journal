@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Accounts\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
+use App\Attributes\Web\RefreshesAppContext;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SubmitSignInCodeRequest;
@@ -14,6 +15,7 @@ use Illuminate\Routing\Redirector;
 /**
  * Passes the code the owner typed to the running sign-in through the bus.
  */
+#[RefreshesAppContext]
 final readonly class SubmitSignInCodeController
 {
     #[Dispatches(SubmitSignInCodeCommand::class)]

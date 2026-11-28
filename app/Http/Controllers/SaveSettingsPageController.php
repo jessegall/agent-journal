@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Attributes\Web\RefreshesAppContext;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
@@ -27,6 +28,7 @@ use Illuminate\Http\RedirectResponse;
  * Saves the values changed on the settings page, one command each against the revision the page read, the next
  * command against the revision the last one made; a value the setting already holds is not sent.
  */
+#[RefreshesAppContext]
 final readonly class SaveSettingsPageController
 {
     #[Dispatches(SetStringChoiceCommand::class)]

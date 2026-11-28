@@ -93,7 +93,7 @@ const optionClass =
     aria-label="Start a session"
     data-start-picker
   >
-    <template v-if="choice.isRead.value && choice.startable.value.length === 0">
+    <template v-if="choice.startable.value.length === 0">
       <div class="flex items-center gap-2.5">
         <Icon name="users" :size="14" />
         <div>

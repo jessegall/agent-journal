@@ -7,6 +7,7 @@ namespace App\Http\Middleware\Web;
 use App\Actors\Contracts\CurrentUserResolver;
 use App\Http\Responses\LoaderProps;
 use App\Web\AppContext;
+use App\Web\AppContextFreshness;
 use Closure;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -32,6 +33,7 @@ class HandleInertiaRequests extends Middleware
         private readonly LoaderProps $loaders,
         private readonly CurrentUserResolver $users,
         private readonly ResponseFactory $inertia,
+        private readonly AppContextFreshness $freshness,
     ) {}
 
     /**
@@ -42,6 +44,7 @@ class HandleInertiaRequests extends Middleware
     public function handle(Request $request, Closure $next): Response
     {
         $this->inertia->encryptHistory($this->users->currentUser()->isDefined());
+        $this->freshness->noteChange($request);
         $response = parent::handle($request, $next);
 
         if (LoaderProps::isCall($request)) {

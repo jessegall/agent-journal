@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Data;
 
+use App\Accounts\Data\EligibleAccountsData;
 use App\Agents\Drivers\Data\DriverLookData;
 use App\Navigation\Data\NavigationCountsData;
 use App\Navigation\Data\NavigationData;
@@ -39,5 +40,11 @@ final class AppContextData extends Data
         public readonly array|Optional $projects = new Optional(),
         // The chosen project's id; null while All projects are shown.
         public readonly string|Optional|null $selectedProject = new Optional(),
+        /**
+         * For the owner, each driver family's accounts a new main agent may start on and its default model.
+         *
+         * @var Lazy|list<EligibleAccountsData>|Optional
+         */
+        public readonly Lazy|array|Optional $startAccounts = new Optional(),
     ) {}
 }

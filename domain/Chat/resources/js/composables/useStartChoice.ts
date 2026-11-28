@@ -1,12 +1,11 @@
 import { useAppContext } from "@kit/appContext";
 import { useHostProp } from "@kit/hostProp";
 import { keyedPost } from "@kit/keyedPost";
-import { accountsStartAccounts, chatStartDrivers, load } from "@kit/loaders";
 import { newRequestId } from "@kit/requestId";
 import { startMain } from "@kit/sessionStarts";
-import type { EligibleAccountData, EligibleAccountsData } from "@kit/sessionStarts";
-import { computed, reactive, ref, watch } from "vue";
-import type { AgentOptionData, DriverChoiceData } from "@generated/types/chat";
+import type { EligibleAccountData } from "@kit/sessionStarts";
+import { computed, ref } from "vue";
+import type { AgentOptionData } from "@generated/types/chat";
 import { keepNewChatChoice, readNewChatChoice, type NewChatChoice } from "../newChatChoice";
 
 /**
@@ -16,7 +15,6 @@ import { keepNewChatChoice, readNewChatChoice, type NewChatChoice } from "../new
 export type StartDriver = {
   family: string;
   label: string;
-  driverType: DriverChoiceData["driverType"];
   accounts: EligibleAccountData[];
   defaultModel: string;
   models: string[];
@@ -30,17 +28,15 @@ export type StartDriver = {
 export type StartState = "choosing" | "starting" | "refused";
 
 /**
- * The start picker's choices for a chat with no session: the drivers with a signed-in account, then the account, the
- * model and the effort, the chat's last run or the user's last new chat preselected, and Start, which starts the
- * session on them in this chat. A refused start keeps the choices and may be sent again.
+ * The start picker's choices for a chat with no session, read from the app context so they show on its first paint:
+ * the drivers with a signed-in account, then the account, the model and the effort, the chat's last run or the user's
+ * last new chat preselected, and Start, which starts the session on them in this chat. A refused start keeps the
+ * choices and may be sent again.
  */
 export function useStartChoice(agent: () => AgentOptionData) {
-  const { viewer, drivers: looks } = useAppContext();
+  const { viewer, drivers: looks, startAccounts } = useAppContext();
   const viewerId = viewer.value.id ?? "guest";
   const hostProp = useHostProp();
-  const programs = ref<DriverChoiceData[]>([]);
-  const accounts = reactive(new Map<string, EligibleAccountsData>());
-  const isRead = ref(false);
   const family = ref<string | null>(null);
   const accountId = ref<string | null>(null);
   const model = ref<string | null>(null);
@@ -49,25 +45,23 @@ export function useStartChoice(agent: () => AgentOptionData) {
   const refusal = ref<string | null>(null);
   let requestId = newRequestId();
 
-  // Each family once, in the catalogue's order, with what its look and its accounts' read say of it.
+  // Each driver family in the catalogue's order, with its look and the accounts the app context names for it.
   const allDrivers = computed<StartDriver[]>(() =>
-    [...new Map(programs.value.map((program) => [program.family, program])).values()].map((program) => {
-      const look = looks.value.find((candidate) => candidate.family === program.family);
-      const read = accounts.get(program.family);
+    looks.value.map((look) => {
+      const read = startAccounts.value.find((each) => each.driver === look.family);
       const signedIn = (read?.accounts ?? []).filter((account) => account.unavailableReason === null);
 
       return {
-        family: program.family,
-        label: program.label,
-        driverType: program.driverType,
+        family: look.family,
+        label: look.label,
         accounts: [
           ...signedIn.filter((account) => account.isDefault),
           ...signedIn.filter((account) => !account.isDefault),
         ],
-        defaultModel: read?.defaultModel ?? look?.models[0] ?? "default",
-        models: look?.models ?? [],
-        efforts: look?.efforts ?? [],
-        defaultEffort: look?.defaultEffort ?? "medium",
+        defaultModel: read?.defaultModel ?? look.models[0] ?? "default",
+        models: look.models,
+        efforts: look.efforts,
+        defaultEffort: look.defaultEffort,
       };
     }),
   );
@@ -95,36 +89,6 @@ export function useStartChoice(agent: () => AgentOptionData) {
     if (first !== undefined) {
       chooseDriver(first, kept ?? {});
     }
-  }
-
-  function readAccountsOf(families: string[]): Promise<void> {
-    return Promise.all(
-      families.map((each) =>
-        load(accountsStartAccounts, { agent: agent().id, family: each }).then((read) => {
-          if (read.status === "ok") {
-            accounts.set(each, read.value);
-          }
-        }),
-      ),
-    ).then(() => undefined);
-  }
-
-  function readDrivers(): void {
-    load(chatStartDrivers, { agent: agent().id }).then((answer) => {
-      if (answer.status !== "ok") {
-        isRead.value = true;
-
-        return;
-      }
-
-      programs.value = answer.value.drivers;
-      const families = answer.value.drivers.filter((program) => program.isAvailable).map((program) => program.family);
-
-      readAccountsOf([...new Set(families)]).finally(() => {
-        isRead.value = true;
-        preselect();
-      });
-    });
   }
 
   // A refused start keeps every choice; Start again sends a new start.
@@ -162,7 +126,6 @@ export function useStartChoice(agent: () => AgentOptionData) {
         requestId: key,
         agentId: agent().id,
         driver: choice.family,
-        driverType: driver.driverType,
         model: choice.model,
         effort: choice.effort,
         accountId: choice.accountId,
@@ -178,19 +141,9 @@ export function useStartChoice(agent: () => AgentOptionData) {
     );
   }
 
-  watch(
-    () => agent().id,
-    () => {
-      programs.value = [];
-      accounts.clear();
-      isRead.value = false;
-      readDrivers();
-    },
-    { immediate: true },
-  );
+  preselect();
 
   return {
-    isRead,
     startable,
     notSignedIn,
     chosen,
