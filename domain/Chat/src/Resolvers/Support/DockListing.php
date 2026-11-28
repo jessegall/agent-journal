@@ -32,7 +32,7 @@ final readonly class DockListing
         $placements = DockPlacement::query()
             ->inInbox($inbox)
             ->byAssignedAt()
-            ->readExactly($limit + 1)
+            ->limit($limit + 1)
             ->get();
 
         $listed = $placements->take($limit)->map(

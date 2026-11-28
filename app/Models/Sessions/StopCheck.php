@@ -281,7 +281,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
             ->inState(StopCheckStatus::Passed)
             ->uncertified()
             ->oldestFirst()
-            ->readExactly($limit)
+            ->limit($limit)
             ->get()
             ->all());
     }
@@ -298,7 +298,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
             ->ofSessions([$sessionId])
             ->settled()
             ->newestFirst()
-            ->readExactly($count)
+            ->limit($count)
             ->get()
             ->all());
     }

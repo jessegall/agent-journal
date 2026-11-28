@@ -155,7 +155,6 @@ final readonly class TaskLogSearchProvider implements SearchProvider
 
         $lines = $this->deadline->within($milliseconds, fn () => $this->lines($constraints)
             ->whereKey($entryIds)
-            ->readExactlyOf($entryIds)
             ->get(self::COLUMNS));
 
         $numbers = $this->taskNumbers($lines);
@@ -200,7 +199,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
             return [];
         }
 
-        return Task::query()->whereKey($taskIds)->readExactlyOf($taskIds)->pluck('number', 'id')->all();
+        return Task::query()->whereKey($taskIds)->pluck('number', 'id')->all();
     }
 
     private static function hitOf(TaskLogEntry $entry, int $number, ScoreTier $tier): SearchResult

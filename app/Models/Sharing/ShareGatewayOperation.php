@@ -212,7 +212,6 @@ final class ShareGatewayOperation extends JournalModel implements EventSource, R
             ->unfinished()
             ->ofConfigurations($ids)
             ->ofType(GatewayOperationType::Open)
-            ->readAll('one unfinished open at most per configuration a run reopens')
             ->pluck('share_gateway_configuration_id')
             ->all()));
     }

@@ -107,7 +107,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
         $startOutcomes = $this->startOutcomesOf(array_values(array_map(strval(...), $ids)));
 
         $conversations = DriverConversation::query()->ofAgents($ids)->newestCreatedFirst()
-            ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
+            ->limit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
 
         $now = $this->clock->now();
 

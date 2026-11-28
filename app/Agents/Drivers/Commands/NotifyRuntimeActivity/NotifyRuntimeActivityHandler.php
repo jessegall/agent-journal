@@ -48,7 +48,6 @@ final readonly class NotifyRuntimeActivityHandler implements CommandHandler
         // the idle screen that came after.
         if ($event?->followsGap === true && $command->activity === RuntimeActivity::Idle) {
             $applying = DriverRequest::query()->applyingOn($runtime)
-                ->readAll('the requests of one runtime\'s running turn')
                 ->get();
 
             foreach ($applying as $request) {

@@ -97,7 +97,7 @@ final class SkillReadEntry extends JournalModel implements EventSource, Readable
      */
     public static function findBatchOfAgent(string $agentId): Collection
     {
-        return self::query()->ofAgent($agentId)->readExactly(self::FORGET_BATCH)->get();
+        return self::query()->ofAgent($agentId)->limit(self::FORGET_BATCH)->get();
     }
 
     /**
@@ -107,7 +107,7 @@ final class SkillReadEntry extends JournalModel implements EventSource, Readable
      */
     public static function findLatestOfSession(string $sessionId, int $limit): array
     {
-        $entries = self::query()->ofSession($sessionId)->newestFirst()->readExactly($limit)->get();
+        $entries = self::query()->ofSession($sessionId)->newestFirst()->limit($limit)->get();
 
         return array_values($entries->all());
     }

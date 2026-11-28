@@ -48,7 +48,7 @@ final readonly class AccountUses implements AccountUsesContract
         $sessions = $this->sessions->all($account)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->readExactly($limit)
+            ->limit($limit)
             ->get();
 
         return array_values($sessions->map(fn (AgentSession $session) => $session->useOf($account))->all());

@@ -204,7 +204,6 @@ final class ShareGatewayConfiguration extends JournalModel implements EventSourc
             ->whereKey($ids)
             ->oldestFirst()
             ->lockForUpdate()
-            ->readExactlyOf($ids)
             ->get()
             ->all());
     }
@@ -218,7 +217,6 @@ final class ShareGatewayConfiguration extends JournalModel implements EventSourc
     {
         return array_values(
             self::query()->newestFirst()
-                ->readAll('an installation keeps a handful of gateway revisions')
                 ->get()
                 ->all(),
         );
@@ -234,7 +232,7 @@ final class ShareGatewayConfiguration extends JournalModel implements EventSourc
     {
         return array_map(
             strval(...),
-            self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->pluck('gateway_key', 'id')->all(),
+            self::query()->whereKey($ids)->pluck('gateway_key', 'id')->all(),
         );
     }
 

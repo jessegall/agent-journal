@@ -40,7 +40,7 @@ final readonly class RunWindowResolver implements PageResolver
 
         $snapshot = $this->snapshots->snapshot($this->page->runId());
         $run = ProcessRun::query()->forActor()->whereKey($snapshot->runId)->firstOrFail();
-        $parts = $run->parts()->readLimit(500)->get();
+        $parts = $run->parts()->limit(ProcessRun::PART_LIMIT)->get();
 
         $detail = new RunWindowData(
             $snapshot,

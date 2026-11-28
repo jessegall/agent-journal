@@ -296,7 +296,7 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
             ->withAnyStatus([HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
             ->expiredAt($now)
             ->lock('for update skip locked')
-            ->readExactly($limit)
+            ->limit($limit)
             ->get();
 
         return array_values($instructions->all());
@@ -392,7 +392,7 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
             ->holdingContainerOpensWhile($isAllowingImages)
             ->bySequence()
             ->lock('for update skip locked')
-            ->readExactly($limit)
+            ->limit($limit)
             ->get();
 
         return array_values($instructions->all());

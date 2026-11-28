@@ -23,13 +23,12 @@ final readonly class DriverConversationResolver implements DriverConversationRes
             ->limit(self::MOST_CONVERSATIONS)->get()->keyBy('id');
 
         $lastVisits = ConversationVisit::query()->ofConversations($conversations->keys()->all())->newestObservedFirst()
-            ->readAll('the visits of at most 20 conversations, to find each one\'s last')
             ->get()
             ->unique('conversation_id');
 
         $models = AgentSession::query()->withAnyId(
             $lastVisits->pluck('session_id')->all(),
-        )->readAll('the sessions of those last visits')->pluck('model', 'id');
+        )->pluck('model', 'id');
 
         return array_values($lastVisits->map(fn (ConversationVisit $visit) => new DriverConversationSummary(
             $visit->conversation_id,

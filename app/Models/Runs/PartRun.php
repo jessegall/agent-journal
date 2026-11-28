@@ -245,7 +245,7 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
     {
         $checksums = [];
 
-        foreach ($this->chunks()->inStreamOrder()->readLimit(100_000)->get() as $chunk) {
+        foreach ($this->chunks()->inStreamOrder()->limit(100_000)->get() as $chunk) {
             $checksums[$chunk->stream->value][] = $chunk->checksum;
         }
 

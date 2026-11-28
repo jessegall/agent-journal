@@ -141,7 +141,6 @@ final class ClaimAuthorization extends JournalModel implements ReadableModel
     {
         return self::query()
             ->forClaims($assignmentIds)
-            ->readExactlyOf($assignmentIds)
             ->get()
             ->keyBy('claim_assignment_id')
             ->all();

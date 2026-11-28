@@ -89,7 +89,7 @@ final class RefreshShareScopeTest extends SharingTestCase
 
         $this->assertSame(
             [[TestIds::of(102), Share::FIRST_SCOPE_VERSION + 1]],
-            ShareMember::query()->readAll('one member')->get()->map(
+            ShareMember::query()->get()->map(
                 fn (ShareMember $member) => [
                     $member->target_id,
                     $member->scope_version,
@@ -102,7 +102,7 @@ final class RefreshShareScopeTest extends SharingTestCase
         $this->assertEquals($share->expires_at, $refreshed->expires_at);
 
         $this->assertTrue(
-            ShareAudit::query()->readAll('two audits')->get()->contains(
+            ShareAudit::query()->get()->contains(
                 fn (ShareAudit $audit) => $audit->type === ShareAuditType::ScopeRefreshed,
             ),
         );

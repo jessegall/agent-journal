@@ -42,7 +42,6 @@ final class DriverSupervisor
         $needing = HostProcess::query()
             ->needingWorker($this->clock->now())
             ->ofPurposes($this->drivers->purposes())
-            ->readAll('every live process of a driven purpose that no worker holds gets one')
             ->pluck('id')
             ->all();
 

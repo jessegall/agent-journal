@@ -190,7 +190,7 @@ final class SequenceRun extends JournalModel implements AuthoredModel, EventSour
         $runs = self::query()
             ->acrossOwners()
             ->onePerFollower()
-            ->readUpTo(self::FOLLOWER_LIMIT)
+            ->limit(self::FOLLOWER_LIMIT)
             ->get();
 
         return array_values($runs->map(fn (self $run) => $run->owningActor())->all());

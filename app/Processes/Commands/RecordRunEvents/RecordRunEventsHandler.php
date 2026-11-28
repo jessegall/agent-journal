@@ -45,7 +45,7 @@ final readonly class RecordRunEventsHandler implements CommandHandler
         }
 
         if (array_any($batch, fn (RunEvent $event) => $event->type->isTerminal())) {
-            foreach ($processRun->parts()->readLimit(500)->get() as $part) {
+            foreach ($processRun->parts()->limit(ProcessRun::PART_LIMIT)->get() as $part) {
                 $this->updates->settled($part);
             }
         }

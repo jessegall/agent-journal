@@ -105,7 +105,6 @@ final class ShareMember extends JournalModel implements ReadableModel
                 ->ofScope($share)
                 ->stillApproved()
                 ->oldestFirst()
-                ->readAll('a share scope holds at most the preview limit of members')
                 ->get()
                 ->all(),
         );
@@ -124,7 +123,6 @@ final class ShareMember extends JournalModel implements ReadableModel
                 self::query()
                     ->ofScope($share)
                     ->stillApproved()
-                    ->readAll('a share scope holds at most the preview limit of members')
                     ->pluck('link_id')
                     ->all(),
             ),
@@ -176,7 +174,6 @@ final class ShareMember extends JournalModel implements ReadableModel
             ->ofScope($share)
             ->stillApproved()
             ->fromSource($source)
-            ->readAll('a share scope holds at most the preview limit of members')
             ->get(['target_type', 'target_id']);
 
         foreach ($members as $member) {

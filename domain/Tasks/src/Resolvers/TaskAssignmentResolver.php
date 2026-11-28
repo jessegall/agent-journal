@@ -60,9 +60,7 @@ final readonly class TaskAssignmentResolver implements TaskAssignmentResolverCon
         $this->actors->actor();
         $requestedTaskIds = array_values(array_unique($ids));
 
-        $states = Task::query()->whereKey($requestedTaskIds)->readExactly(
-            count($requestedTaskIds),
-        )->oldestFirst()->pluck('status', 'id')->all();
+        $states = Task::query()->whereKey($requestedTaskIds)->oldestFirst()->pluck('status', 'id')->all();
 
         foreach ($requestedTaskIds as $taskId) {
             if (! array_key_exists($taskId, $states)) {

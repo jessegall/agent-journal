@@ -150,7 +150,7 @@ final class TaskWait extends JournalModel implements EventSource, ReadableModel
         $ids = self::query()
             ->ofDependents($dependentIds)
             ->onePerPrerequisite()
-            ->readUpTo($limit)
+            ->limit($limit)
             ->pluck('prerequisite_task_id');
 
         return array_values(array_map(strval(...), $ids->all()));
@@ -167,7 +167,6 @@ final class TaskWait extends JournalModel implements EventSource, ReadableModel
         $waiting = self::query()
             ->ofDependents($ids)
             ->onePerDependent()
-            ->readAll('the waiting tasks among a page')
             ->pluck('dependent_task_id');
 
         return array_values(array_map(strval(...), $waiting->all()));
@@ -215,7 +214,7 @@ final class TaskWait extends JournalModel implements EventSource, ReadableModel
      */
     public static function findWaitsOfTasks(array $dependentIds): Collection
     {
-        return self::query()->ofDependents($dependentIds)->readAll('the direct waits of the tasks asked about')->get();
+        return self::query()->ofDependents($dependentIds)->get();
     }
 
     // ----------[ Scopes ]----------

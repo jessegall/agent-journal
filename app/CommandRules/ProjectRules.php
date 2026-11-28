@@ -30,7 +30,7 @@ final readonly class ProjectRules
             return array_values(ClassificationRule::query()
                 ->active()
                 ->withActiveRevision()
-                ->readLimit(1_000)
+                ->limit(1_000)
                 ->get()
                 ->map(fn (ClassificationRule $rule) => $rule->activeRevision)
                 ->all());
@@ -48,7 +48,7 @@ final readonly class ProjectRules
     {
         try {
             return array_values(
-                ModuleRuleBundle::query()->readLimit(500)->get()->all(),
+                ModuleRuleBundle::query()->limit(500)->get()->all(),
             );
         } catch (QueryException $failure) {
             throw ClassificationUnavailable::storeFailed($failure, $this->texts);

@@ -155,7 +155,7 @@ final class AutoAssignment extends JournalModel implements EventSource, Readable
     {
         $rows = $query
             ->pageAfter($page->afterId)
-            ->readExactly($page->limit + 1)
+            ->limit($page->limit + 1)
             ->get();
 
         $shown = $rows->take($page->limit);

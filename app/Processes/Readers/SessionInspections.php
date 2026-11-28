@@ -36,7 +36,7 @@ final readonly class SessionInspections
 
         return array_values(array_map(
             fn (StopConditionResult $result) => $result->line($labels[$result->condition_key]),
-            $attempts[0]->results()->readExactlyOf($labels)->get()->all(),
+            $attempts[0]->results()->get()->all(),
         ));
     }
 }

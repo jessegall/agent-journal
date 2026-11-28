@@ -26,7 +26,6 @@ final readonly class IdentityLinks implements IdentityLinksContract
     public function linkedOfType(Model $record, string $type): array
     {
         $links = Link::query()->fromRecordToType($record, $type)
-            ->readAll('a record links to few records of one type')
             ->get();
 
         $identities = $links->map(fn (Link $link) => new RecordIdentity(...$link->otherSideFrom($record)));

@@ -104,7 +104,7 @@ trait ProvidesModelRecords
     {
         $found = $this->readableRecords()->whereKey(
             array_map(fn (RecordIdentity $record) => $record->id, $records),
-        )->readExactlyOf($records)->get()->keyBy(fn (Model $model) => (string) $model->getKey());
+        )->get()->keyBy(fn (Model $model) => (string) $model->getKey());
 
         $cards = [];
 

@@ -99,7 +99,7 @@ final class SessionOutputGrant extends JournalModel implements ReadableModel
      */
     public static function resolveHeldBy(string $sessionId): array
     {
-        $grants = self::query()->ofSession($sessionId)->readLimit(self::MOST_GRANTS)->get();
+        $grants = self::query()->ofSession($sessionId)->limit(self::MOST_GRANTS)->get();
 
         return $grants->mapWithKeys(fn (self $grant) => [$grant->conversation_id => $grant->paths])->all();
     }
@@ -113,7 +113,7 @@ final class SessionOutputGrant extends JournalModel implements ReadableModel
     {
         $grants = self::query()
             ->currentMappingOf($start)
-            ->readLimit(self::MOST_GRANTS)
+            ->limit(self::MOST_GRANTS)
             ->get();
 
         return array_values($grants->map(fn (self $grant) => $grant->paths)->all());

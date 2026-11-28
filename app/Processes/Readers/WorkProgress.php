@@ -20,7 +20,7 @@ final readonly class WorkProgress implements WorkProgressContract
 
         $earliestEntry = null;
 
-        AgentStackRow::query()->historyOf($actor)->readInChunks(
+        AgentStackRow::query()->historyOf($actor)->chunkById(
             50,
             function ($stacks) use ($work, &$earliestEntry): void {
                 foreach ($stacks as $stack) {

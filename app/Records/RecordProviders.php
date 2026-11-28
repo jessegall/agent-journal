@@ -85,7 +85,7 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
 
     public function linkedCards(Model $record): array
     {
-        $links = Link::query()->touching($record)->readLimit(RecordProviders::MOST_LINKS_SHOWN)->get();
+        $links = Link::query()->touching($record)->limit(RecordProviders::MOST_LINKS_SHOWN)->get();
         $linked = [];
 
         foreach ($links as $link) {

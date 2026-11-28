@@ -177,13 +177,13 @@ final class CommandRequest extends JournalModel implements ProjectOwned, Readabl
      */
     public function hasReadEvidence(ProcessRun $run): bool
     {
-        $reads = EvidenceRead::query()->ofRunReadBy($run, $this->actor())->readLimit(1_000)->get();
+        $reads = EvidenceRead::query()->ofRunReadBy($run, $this->actor())->limit(1_000)->get();
 
         if (! $reads->contains(fn (EvidenceRead $read) => $read->source === EvidenceSource::Envelope)) {
             return false;
         }
 
-        return $run->parts()->readLimit(500)->get()->every(fn (PartRun $part) => array_all(
+        return $run->parts()->limit(ProcessRun::PART_LIMIT)->get()->every(fn (PartRun $part) => array_all(
             $part->recordedStreams(),
             fn (OutputStream $stream): bool => $reads->contains(
                 fn (EvidenceRead $read) => $read->part_run_id === $part->id
@@ -206,7 +206,7 @@ final class CommandRequest extends JournalModel implements ProjectOwned, Readabl
         $statuses = PartRun::query()
             ->ofRuns($runs)
             ->ofOperation($this->operation)
-            ->readLimit(500)
+            ->limit(500)
             ->get()
             ->filter(fn (PartRun $part): bool => $part->end->hasStatus())
             ->map(fn (PartRun $part): int => $part->end_code)

@@ -716,11 +716,11 @@ return [
     'reads' => [
         /*
         |--------------------------------------------------------------------------
-        | Default Limit
+        | Page Size
         |--------------------------------------------------------------------------
         |
-        | The rows a plain read returns, the largest page a list may ask for, and
-        | the keys one batch reads at once.
+        | The rows a list page shows unasked, the largest page a list may ask for,
+        | and the keys one batch reads at once.
         |
         */
 

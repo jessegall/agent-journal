@@ -66,7 +66,7 @@ final class SessionOutcomeDismissal extends JournalModel implements ReadableMode
         return array_values(self::query()
             ->dismissedBy($viewer)
             ->ofRequests($requestIds)
-            ->readExactly(count($requestIds) * count(StartDisposition::cases()))
+            ->limit(count($requestIds) * count(StartDisposition::cases()))
             ->get()
             ->map(
                 fn (self $dismissal) => SessionStartOutcome::keyOf($dismissal->request_id, $dismissal->outcome_version),

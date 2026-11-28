@@ -142,11 +142,11 @@ final class ApproveShareRequestTest extends SharingTestCase
 
         $this->assertSame(
             GatewayOperationType::Open,
-            ShareGatewayOperation::query()->readAll('one operation')->sole()->type,
+            ShareGatewayOperation::query()->sole()->type,
         );
 
         $this->assertTrue(
-            ShareAudit::query()->readAll('two audits')->get()->contains(
+            ShareAudit::query()->get()->contains(
                 fn (ShareAudit $audit) => $audit->type === ShareAuditType::Approved,
             ),
         );

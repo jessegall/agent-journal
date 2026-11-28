@@ -81,7 +81,7 @@ final class DisableShareGatewayTest extends SharingTestCase
             [ShareStatus::Revoked],
             array_values(
                 array_unique(
-                    Share::query()->readAll('three shares')->get()->map(fn (Share $share) => $share->status)->all(),
+                    Share::query()->get()->map(fn (Share $share) => $share->status)->all(),
                     SORT_REGULAR,
                 ),
             ),
@@ -91,7 +91,7 @@ final class DisableShareGatewayTest extends SharingTestCase
 
         $this->assertSame(
             [GatewayOperationType::Close],
-            ShareGatewayOperation::query()->readAll('one close')->get()->map(
+            ShareGatewayOperation::query()->get()->map(
                 fn (ShareGatewayOperation $operation) => $operation->type,
             )->all(),
         );

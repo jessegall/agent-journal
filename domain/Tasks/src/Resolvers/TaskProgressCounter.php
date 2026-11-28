@@ -35,7 +35,7 @@ final readonly class TaskProgressCounter implements TaskProgressCounterContract
      */
     public function progressOfPlaced(array $ids): TaskProgress
     {
-        $states = Task::query()->whereKey($ids)->readExactlyOf($ids)->pluck('status')->countBy(
+        $states = Task::query()->whereKey($ids)->pluck('status')->countBy(
             fn (TaskStatus $status) => $status->value,
         );
 
@@ -55,9 +55,7 @@ final readonly class TaskProgressCounter implements TaskProgressCounterContract
         $this->actors->actor();
         $allTaskIds = array_merge(...array_values($idGroups));
 
-        $stateOfTask = Task::query()->whereKey($allTaskIds)->readExactly(
-            count($allTaskIds),
-        )->pluck('status', 'id')->all();
+        $stateOfTask = Task::query()->whereKey($allTaskIds)->pluck('status', 'id')->all();
 
         return array_map(
             fn (array $taskIds) => self::progressOfStates(array_count_values(array_map(

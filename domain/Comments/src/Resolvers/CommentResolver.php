@@ -40,7 +40,7 @@ final readonly class CommentResolver implements CommentResolverContract
 
         $comments = self::commentsOf($record)
             ->when($page->afterId !== null, fn ($query) => $query->where('id', '>', $page->afterId))
-            ->readExactly($page->limit + 1)
+            ->limit($page->limit + 1)
             ->get();
 
         $shown = $comments->take($page->limit);

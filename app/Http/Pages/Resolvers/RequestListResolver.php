@@ -35,7 +35,7 @@ final readonly class RequestListResolver implements PageResolver
     public function read(): DeclaredLayoutData
     {
         $requests = CommandRequest::query()->limit(100)->get();
-        $rules = ClassificationRule::query()->readLimit(200)->get();
+        $rules = ClassificationRule::query()->limit(200)->get();
         $activated = $this->approved->approvedBundles();
 
         $waiting = array_filter(

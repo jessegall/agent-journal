@@ -252,7 +252,7 @@ final class TextUpload extends JournalModel implements EventSource, ProjectOwned
         $body = '';
         $chunks = TextUploadChunk::query()->ofUpload($this->id)->inPositionOrder();
 
-        foreach ($chunks->readExactly($this->next_index)->cursor() as $chunk) {
+        foreach ($chunks->limit($this->next_index)->cursor() as $chunk) {
             $body .= $chunk->text;
         }
 

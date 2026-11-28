@@ -208,7 +208,7 @@ final class AskHop extends JournalModel implements EventSource, ReadableModel
             return [];
         }
 
-        return self::query()->currentHops()->whereKey($hops)->readExactlyOf($hops)
+        return self::query()->currentHops()->whereKey($hops)
             ->pluck('ask_hops.version', 'ask_hops.id')->map(fn (mixed $version) => (int) $version)->all();
     }
 
@@ -231,7 +231,7 @@ final class AskHop extends JournalModel implements EventSource, ReadableModel
         $hops = self::query()->currentHops()
             ->unanswered()
             ->acceptedFirst()
-            ->readExactly($limit)
+            ->limit($limit)
             ->get();
 
         return array_values($hops->all());
@@ -247,7 +247,6 @@ final class AskHop extends JournalModel implements EventSource, ReadableModel
         $answered = self::query()
             ->answered()
             ->lastAnswerPerHolder()
-            ->readAll('one row per holder that ever answered, to start its queue clock')
             ->get();
 
         $times = [];

@@ -172,7 +172,7 @@ final class SkillRevision extends JournalModel implements ReadableModel
             return [];
         }
 
-        return self::query()->whereKey($ids)->readExactlyOf($ids)->get()->keyBy('skill_id')->all();
+        return self::query()->whereKey($ids)->get()->keyBy('skill_id')->all();
     }
 
     public static function findNumbered(Skill $skill, int $revision): self
@@ -187,7 +187,7 @@ final class SkillRevision extends JournalModel implements ReadableModel
      */
     public static function findHistoryOf(Skill $skill, int $limit): array
     {
-        return array_values(self::query()->ofSkill($skill)->newestRevisionFirst()->readExactly($limit)->get()->all());
+        return array_values(self::query()->ofSkill($skill)->newestRevisionFirst()->limit($limit)->get()->all());
     }
 
     /**

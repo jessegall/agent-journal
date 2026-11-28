@@ -8,7 +8,7 @@ use App\Exceptions\ReadLimitInvalid;
 use Illuminate\Container\Attributes\Config;
 
 /**
- * The configured bounds of a read: how many rows a plain read takes unasked, and the most rows a page holds.
+ * The configured bounds of a read: how many rows a page shows unasked, and the most rows a page holds.
  */
 final readonly class ReadSettings
 {

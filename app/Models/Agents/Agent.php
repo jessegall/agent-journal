@@ -243,7 +243,7 @@ final class Agent extends JournalModel implements
      */
     public static function findByIds(array $ids): array
     {
-        $agents = self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->get();
+        $agents = self::query()->whereKey($ids)->get();
 
         return $agents->keyBy('id')->all();
     }

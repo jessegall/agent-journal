@@ -602,7 +602,7 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
             ->live()
             ->expiredBy($now)
             ->soonestExpiringFirst()
-            ->readExactly($limit)
+            ->limit($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));
@@ -641,7 +641,6 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
             ->whereKeyNot($runningAttemptIds)
             ->oldestFirst()
             ->lockForUpdate()
-            ->readAll('a host reconciles the few sign-ins it took')
             ->get();
 
         return array_values($attempts->all());
@@ -704,7 +703,7 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
             ->waitingForUses()
             ->live()
             ->oldestFirst()
-            ->readExactly($limit)
+            ->limit($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));

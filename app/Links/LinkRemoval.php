@@ -48,7 +48,7 @@ final readonly class LinkRemoval
      */
     private function removeAll(ReadBuilder $query): array
     {
-        $links = $query->readAll('every removed link is announced by id')->get();
+        $links = $query->get();
 
         return array_values($links->map(function (Link $link): string {
             $link->remove();

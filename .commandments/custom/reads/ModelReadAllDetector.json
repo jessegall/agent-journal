@@ -4,7 +4,7 @@
     "sin": {
         "description": "Model::all() reads every row of a table with no bound.",
         "name": "model-read-all",
-        "rule": "Read a bounded page, a named readAll('reason') or readInChunks instead of Model::all().",
+        "rule": "Read a set bounded by its where, a page with limit(n) or a scan with chunkById instead of Model::all().",
         "skill": "bounded-reads"
     },
     "find": {

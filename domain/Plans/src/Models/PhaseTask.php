@@ -87,7 +87,6 @@ final class PhaseTask extends Pivot implements ReadableModel
     {
         return array_map(intval(...), self::query()
             ->inPlanOrder($planId)
-            ->readAll('the phase of every task of one plan')
             ->pluck('phases.number', 'phase_tasks.task_id')
             ->all());
     }
@@ -105,7 +104,6 @@ final class PhaseTask extends Pivot implements ReadableModel
         $phaseTasks = self::query()
             ->ofPhases($phaseIds)
             ->inPositionOrder()
-            ->readAll('every task of the phases a plan read shows')
             ->get(['phase_id', 'task_id']);
 
         foreach ($phaseTasks as $phaseTask) {
@@ -123,7 +121,7 @@ final class PhaseTask extends Pivot implements ReadableModel
      */
     public static function resolvePageOf(string $phaseId, int $afterPosition, int $limit): array
     {
-        return self::query()->ofPhase($phaseId)->placedAfter($afterPosition)->inPositionOrder()->readUpTo($limit)
+        return self::query()->ofPhase($phaseId)->placedAfter($afterPosition)->inPositionOrder()->limit($limit)
             ->pluck('task_id', 'position')
             ->map(fn (mixed $taskId) => (string) $taskId)
             ->all();

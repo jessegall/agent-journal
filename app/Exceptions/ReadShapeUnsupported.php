@@ -7,12 +7,12 @@ namespace App\Exceptions;
 use RuntimeException;
 
 /**
- * A way of reading rows the bounded read policy does not offer.
+ * A way of scanning rows that is not a metered scan by key.
  */
 final class ReadShapeUnsupported extends RuntimeException
 {
     public static function method(string $method): self
     {
-        return new self($method.'() is not a bounded read; use readInChunks($size, $each) instead.');
+        return new self($method.'() is not a metered scan by key; use chunkById($size, $each) instead.');
     }
 }

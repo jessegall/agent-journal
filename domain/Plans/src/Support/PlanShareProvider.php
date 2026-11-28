@@ -64,7 +64,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         );
 
         $cards = array_values(
-            Plan::query()->whereKey($ids)->readExactlyOf($ids)->get(self::SUMMARY_COLUMNS)->map(
+            Plan::query()->whereKey($ids)->get(self::SUMMARY_COLUMNS)->map(
                 fn (Plan $plan) => $plan->share_card,
             )->all(),
         );

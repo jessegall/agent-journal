@@ -33,7 +33,7 @@ final readonly class SequencesIndex extends SequencesPage
      */
     public function of(string $chosenId, array $reader): DeclaredLayoutData
     {
-        $sequences = array_values(Sequence::query()->newestCreatedFirst()->readUpTo(self::LIST_LIMIT)->get()->all());
+        $sequences = array_values(Sequence::query()->newestCreatedFirst()->limit(self::LIST_LIMIT)->get()->all());
 
         return ListPage::make(
             'Sequences',

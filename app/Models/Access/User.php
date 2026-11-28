@@ -220,7 +220,7 @@ class User extends Authenticatable implements
      */
     public static function resolvePersonalValues(): array
     {
-        $users = self::query()->readAll('an installation holds a handful of users')->get(['name', 'email']);
+        $users = self::query()->get(['name', 'email']);
 
         return array_merge(...$users->map(fn (self $user) => [$user->name, $user->email])->all());
     }

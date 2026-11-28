@@ -57,7 +57,7 @@ final readonly class SessionRequestResolver implements SessionRequestResolverCon
     {
         $this->actors->actor();
 
-        return array_values(SessionRequest::query()->forOwnerReference($reference)->newestFirst()->readExactly(
+        return array_values(SessionRequest::query()->forOwnerReference($reference)->newestFirst()->limit(
             self::MOST_PER_OWNER,
         )->get()
             ->map(fn (SessionRequest $record) => self::detailsOf($record))

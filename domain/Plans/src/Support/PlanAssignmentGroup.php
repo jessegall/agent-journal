@@ -38,7 +38,7 @@ final readonly class PlanAssignmentGroup
         $plan = Plan::findLockedStructure($root->id);
         self::assertWithinLimit(1 + $plan->phases()->count() + $plan->total_tasks);
 
-        $phases = Phase::query()->ofPlan($plan->id)->readAll('every phase of the plan is assigned')->byNumber()->get();
+        $phases = Phase::query()->ofPlan($plan->id)->byNumber()->get();
 
         return $this->group($root, $plan->id, [
             ...array_values($phases->map(fn (Phase $phase) => $phase->assignmentIdentity())->all()),
@@ -72,7 +72,7 @@ final readonly class PlanAssignmentGroup
         return array_map(
             strval(...),
             array_values(
-                PhaseTask::query()->ofPhases($phases->modelKeys())->readAll('every task of the plan is assigned')
+                PhaseTask::query()->ofPhases($phases->modelKeys())
                     ->byPhaseIdThenPosition()
                     ->pluck('task_id')
                     ->all(),

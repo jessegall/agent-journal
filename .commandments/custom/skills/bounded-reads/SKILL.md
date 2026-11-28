@@ -9,16 +9,15 @@ languages: [php]
 # Every read is bounded, goes through its model, and reads once
 
 A read that grows with the data, or runs once per item, is the slowest code in the journal and the hardest to see.
-The Reads area (app/Reads) caps plain reads at 50 rows and makes a larger read name itself; these rules keep code
-from stepping around it.
+Each read limits itself: plain Eloquent, bounded where the read is written.
 
-- **No Model::all().** Read a page with `limit(n)` (at most `reads.page_max`, 100), a known set with
-  `readExactlyOf($ids)`, a fixed number past a page with `readLimit(n)` (refused at 100 or less),
-  every row with `readAll('why every row')`, or a large set with `readInChunks(n)`.
+- **No Model::all().** Read a set bounded by its own where with `get()` (one host's images, `whereKey($ids)`),
+  a page or an endpoint with `limit(n)` where `n` is the page's own constant, and a large set with
+  `chunkById(n, $each)`.
 - **No DB facade reads.** A table is read through its model, its scopes and its readers (rule 25).
 - **No toBase() or getQuery().** They leave the bounded builder; only app/Reads may use them.
 - **No find, first or sole inside a loop.** Read every row the loop needs in one query before it (`whereKey($ids)`,
-  `whereIn`, `with`), or walk a large set with `readInChunks`.
+  `whereIn`, `with`), or walk a large set with `chunkById`.
 - **No query in an accessor.** An accessor computes from what is loaded; load the relation with `with()` first.
 - **No timing assertions in tests.** Assert counts, states and refusals; the ceiling on a test's run is
   `#[TimeLimit]`.
@@ -30,5 +29,5 @@ foreach ($ids as $id) {
 }
 
 // After: one query for all of them
-$titles = Task::query()->whereKey($ids)->readExactlyOf($ids)->pluck('title')->all();
+$titles = Task::query()->whereKey($ids)->pluck('title')->all();
 ```

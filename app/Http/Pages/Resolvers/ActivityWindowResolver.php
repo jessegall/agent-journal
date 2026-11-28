@@ -33,7 +33,7 @@ final readonly class ActivityWindowResolver implements PageResolver
 
         $read = ActivityEntry::query()
             ->newestBefore($environmentId, $cursor)
-            ->readUpTo(ActivityEntry::READ_ENTRY_LIMIT + 1)
+            ->limit(ActivityEntry::READ_ENTRY_LIMIT + 1)
             ->get()
             ->all();
 

@@ -105,7 +105,7 @@ final class Environment extends JournalModel implements EventSource, ProjectOwne
     public static function findListedOfProjects(array $ids): array
     {
         return array_values(self::query()->ofProjects($ids)->inLabelOrder()
-            ->readUpTo(self::LISTED_LIMIT * max(count($ids), 1))->get()->all());
+            ->limit(self::LISTED_LIMIT * max(count($ids), 1))->get()->all());
     }
 
     // ----------[ Scopes ]----------

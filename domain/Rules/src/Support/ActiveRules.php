@@ -31,7 +31,7 @@ final readonly class ActiveRules
     public function all(): array
     {
         return array_values(
-            Rule::query()->active()->oldestFirst()->readAll('every active rule holds for every agent')->get(
+            Rule::query()->active()->oldestFirst()->get(
                 ['id', 'number', 'text'],
             )->all(),
         );

@@ -326,7 +326,6 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
     {
         $taskIds = PhaseTask::query()
             ->inPlanOrder($this->id)
-            ->readAll('assignment and progress of a plan cover every task')
             ->pluck('phase_tasks.task_id')
             ->all();
 
@@ -348,7 +347,7 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
 
         $taskIds = PhaseTask::query()
             ->inPlanOrder($this->id)
-            ->readLimit(OrderedRecordIds::LARGEST + 1)
+            ->limit(OrderedRecordIds::LARGEST + 1)
             ->pluck('phase_tasks.task_id')
             ->all();
 

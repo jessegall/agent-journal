@@ -30,7 +30,7 @@ final readonly class ReportNotificationTarget implements NotificationTargetResol
     public function linksFor(array $ids): array
     {
         $numbers = array_map(intval(...), array_values(array_filter($ids, ctype_digit(...))));
-        $reports = Report::query()->sharedPublished()->withAnyNumber($numbers)->readExactlyOf($numbers)->get();
+        $reports = Report::query()->sharedPublished()->withAnyNumber($numbers)->get();
 
         $filers = $this->labels->labelsFor(array_values($reports->map(
             fn (Report $report) => ActorReference::fromStored($report->creator_type, $report->creator_id),

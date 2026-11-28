@@ -352,7 +352,6 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
         return self::query()
             ->ofAgents($agentIds)
             ->newestOfItsAgent()
-            ->readExactlyOf($agentIds)
             ->get()
             ->keyBy('agent_id');
     }
@@ -392,7 +391,6 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
         return self::query()
             ->ofSessions($ids)
             ->oldestFirst()
-            ->readAll('the start records of the sessions whose readiness is read together')
             ->get()
             ->keyBy('session_id')
             ->map(fn (self $record) => $record->readiness)
@@ -411,7 +409,6 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
             ->ofSessions($ids)
             ->inReadiness(StartReadiness::Accepted)
             ->lockForUpdate()
-            ->readAll('the accepted starts of the sessions whose bootstrap one claim took')
             ->get();
     }
 

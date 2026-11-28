@@ -7,7 +7,7 @@ namespace App\Exceptions;
 use RuntimeException;
 
 /**
- * Model::all() reads every row with no reason; the read must say how many rows it wants.
+ * Model::all() reads every row of a table; a read is bounded by its where, a page limit or a scan by key.
  */
 final class ModelReadAllRefused extends RuntimeException
 {
@@ -15,7 +15,7 @@ final class ModelReadAllRefused extends RuntimeException
     {
         return new self(
             sprintf(
-                "%s::all() reads every row; use query()->get() for the newest rows, readAll('<reason>') or readInChunks.",
+                "%s::all() reads every row; read through query() with a where that bounds the set, limit(n) for a page, or chunkById for a scan.",
                 $model,
             ),
         );

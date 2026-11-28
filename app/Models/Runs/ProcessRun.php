@@ -289,7 +289,7 @@ final class ProcessRun extends JournalModel implements EventSource, ProjectOwned
      */
     public function hasCompleteEvidence(): bool
     {
-        $parts = $this->parts()->readLimit(self::PART_LIMIT)->get();
+        $parts = $this->parts()->limit(self::PART_LIMIT)->get();
 
         return $parts->isNotEmpty() && $parts->every(
             fn (PartRun $part) => $part->lifecycle === LifecycleStatus::Ended
@@ -302,7 +302,7 @@ final class ProcessRun extends JournalModel implements EventSource, ProjectOwned
      */
     public function hasEnded(): bool
     {
-        return self::areAllPartsFinal($this->parts()->readLimit(self::PART_LIMIT)->get());
+        return self::areAllPartsFinal($this->parts()->limit(self::PART_LIMIT)->get());
     }
 
     /**

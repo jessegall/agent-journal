@@ -31,8 +31,7 @@ final readonly class StoredOutput implements StoredOutputContract
         OutputChunk::query()
             ->ofPartRun($part->id)
             ->withStream($stream)
-            ->byOffset()
-            ->readInChunks(200, function (Collection $chunks) use ($disk, &$bytes): void {
+            ->chunkById(200, function (Collection $chunks) use ($disk, &$bytes): void {
                 foreach ($chunks as $chunk) {
                     $bytes .= (string) $disk->get($chunk->storage_path);
                 }
@@ -56,8 +55,7 @@ final readonly class StoredOutput implements StoredOutputContract
             ->ofPartRun($part->id)
             ->withStream($stream)
             ->fromOffset($fromOffset)
-            ->byOffset()
-            ->readInChunks(200, function (Collection $chunks) use ($disk, $stream, &$frames): void {
+            ->chunkById(200, function (Collection $chunks) use ($disk, $stream, &$frames): void {
                 foreach ($chunks as $chunk) {
                     $frames[] = new OutputFrame($stream, $chunk->offset, (string) $disk->get($chunk->storage_path));
                 }

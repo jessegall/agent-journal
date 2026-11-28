@@ -43,7 +43,7 @@ final readonly class ReportSummaries implements SummaryProvider
 
     public function visibleSummaries(array $ids): array
     {
-        $reports = Report::query()->sharedPublished()->whereKey($ids)->readExactlyOf($ids)->get();
+        $reports = Report::query()->sharedPublished()->whereKey($ids)->get();
 
         return array_values($reports->map(self::summary(...))->all());
     }

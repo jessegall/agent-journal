@@ -77,7 +77,6 @@ final readonly class DriverRequestClaims
             ->withAnyOperation(DriverOperation::control())
             ->bySequence()
             ->lockForUpdate()
-            ->readAll('every waiting stop, interrupt and recording of one host is taken before other work')
             ->get();
 
         $now = CarbonImmutable::now();
@@ -118,7 +117,7 @@ final readonly class DriverRequestClaims
             ->excludingControl()
             ->bySequence()
             ->lockForUpdate()
-            ->readUpTo($limit * max(1, $runtimes->count()))
+            ->limit($limit * max(1, $runtimes->count()))
             ->get()
             ->groupBy('agent_runtime_id');
 

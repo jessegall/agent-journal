@@ -126,7 +126,7 @@ final class ConnectionAudit extends JournalModel implements ReadableModel
         return array_values(self::query()->fromSub($ranked, 'connection_audits')
             ->rankedWithinSupportLimit()
             ->newestFirst()
-            ->readExactly(count($ids) * self::SUPPORT_RECORD_LIMIT)->get()->all());
+            ->limit(count($ids) * self::SUPPORT_RECORD_LIMIT)->get()->all());
     }
 
     // ----------[ Scopes ]----------

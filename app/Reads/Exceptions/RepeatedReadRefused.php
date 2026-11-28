@@ -16,7 +16,7 @@ final class RepeatedReadRefused extends LogicException
     {
         return new self(
             sprintf(
-                '%s ran the same read more than ten times in this measurement, a loop reading one row per item: read every row it needs in one query, or run it inside a declared schedule such as readInChunks. Query: %s',
+                '%s ran the same read more than ten times in this measurement, a loop reading one row per item: read every row it needs in one query, or run it inside a declared schedule such as chunkById. Query: %s',
                 $callSite,
                 $query,
             ),

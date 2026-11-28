@@ -318,7 +318,7 @@ final class Ask extends JournalModel implements Assignable, EventSource, Readabl
             return [];
         }
 
-        $asks = self::query()->acrossActors()->whereKey($ids)->open()->readExactlyOf($ids)->get();
+        $asks = self::query()->acrossActors()->whereKey($ids)->open()->get();
 
         return $asks->keyBy('id')->all();
     }
@@ -335,7 +335,6 @@ final class Ask extends JournalModel implements Assignable, EventSource, Readabl
             ->aboutWork($work)
             ->open()
             ->lockForUpdate()
-            ->readAll('the open asks about one work, a review and a merge at most')
             ->get()
             ->all());
     }

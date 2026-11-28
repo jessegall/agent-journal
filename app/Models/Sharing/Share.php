@@ -498,7 +498,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     public static function findLockedPastDeadline(int $most): array
     {
         return array_values(
-            self::query()->pastDeadline()->oldestFirst()->lockForUpdate()->readExactly($most)->get()->all(),
+            self::query()->pastDeadline()->oldestFirst()->lockForUpdate()->limit($most)->get()->all(),
         );
     }
 
@@ -510,7 +510,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     public static function findLockedAwaitingGatewayOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->awaitingGateway()->oldestFirst()->lockForUpdate()->readExactly(
+            self::query()->servedBy($configurationId)->awaitingGateway()->oldestFirst()->lockForUpdate()->limit(
                 self::LIVE_LIMIT,
             )->get()->all(),
         );
@@ -528,7 +528,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
             array_unique(
                 array_map(
                     strval(...),
-                    self::query()->liveNow()->throughGateway()->readExactly(
+                    self::query()->liveNow()->throughGateway()->limit(
                         self::LIVE_LIMIT,
                     )->pluck('share_gateway_configuration_id')->all(),
                 ),
@@ -545,7 +545,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     public static function findUnendedOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->unended()->oldestFirst()->readExactly(
+            self::query()->servedBy($configurationId)->unended()->oldestFirst()->limit(
                 self::LIVE_LIMIT,
             )->get()->all(),
         );
@@ -559,7 +559,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     public static function findLockedUnendedOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->unended()->oldestFirst()->lockForUpdate()->readExactly(
+            self::query()->servedBy($configurationId)->unended()->oldestFirst()->lockForUpdate()->limit(
                 self::LIVE_LIMIT,
             )->get()->all(),
         );
@@ -641,7 +641,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
      */
     public static function resolveLiveScopeVersions(array $ids): array
     {
-        return self::query()->whereKey($ids)->liveNow()->readExactlyOf($ids)->pluck('scope_version', 'id')->map(
+        return self::query()->whereKey($ids)->liveNow()->pluck('scope_version', 'id')->map(
             fn (mixed $version) => (int) $version,
         )->all();
     }
@@ -663,7 +663,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
      */
     public static function findListPage(ShareListFilters $filters, int $rows): array
     {
-        $shares = self::query()->newestFirst()->filteredBy($filters)->readExactly($rows + 1)->get();
+        $shares = self::query()->newestFirst()->filteredBy($filters)->limit($rows + 1)->get();
 
         return array_values($shares->all());
     }
@@ -688,7 +688,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     public static function findOpenProposalsFor(RecordIdentity $root): array
     {
         return array_values(
-            self::query()->ofRoot($root)->proposedNow()->newestFirst()->readExactly(
+            self::query()->ofRoot($root)->proposedNow()->newestFirst()->limit(
                 self::PROPOSED_LIMIT,
             )->get()->all(),
         );

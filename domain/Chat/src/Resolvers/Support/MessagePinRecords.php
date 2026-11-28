@@ -29,7 +29,7 @@ final readonly class MessagePinRecords
         $pins = MessagePin::query()
             ->ownedBy($this->actors->actor())
             ->newestPinnedFirst()
-            ->readExactly(max(1, min($limit, MessagePin::LARGEST_LIMIT)))
+            ->limit(max(1, min($limit, MessagePin::LARGEST_LIMIT)))
             ->get();
 
         $views = [];

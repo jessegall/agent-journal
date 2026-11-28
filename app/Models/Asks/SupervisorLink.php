@@ -101,7 +101,7 @@ final class SupervisorLink extends JournalModel implements EventSource, Readable
     {
         $routes = [];
 
-        self::query()->acrossActors()->readInChunks(50, function ($links) use (&$routes): void {
+        self::query()->acrossActors()->chunkById(50, function ($links) use (&$routes): void {
             foreach ($links as $link) {
                 $routes[$link->actor_type.':'.strtolower($link->actor_id)] = $link->routes;
             }

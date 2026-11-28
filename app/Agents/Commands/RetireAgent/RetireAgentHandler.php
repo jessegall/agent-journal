@@ -93,7 +93,6 @@ final readonly class RetireAgentHandler implements CommandHandler
         $sessions = AgentSession::query()
             ->ofAgent($target->id)
             ->withSessionToken()
-            ->readAll('every session of the retiring agent ends')
             ->get();
 
         // The session row before its credential, the order every other ending and a heartbeat take. A session with a
@@ -127,7 +126,6 @@ final readonly class RetireAgentHandler implements CommandHandler
             ->ofAgents([$agentId])
             ->pending()
             ->lockForUpdate()
-            ->readAll('a retiring agent has few starts')
             ->get();
 
         $accounts = [];
