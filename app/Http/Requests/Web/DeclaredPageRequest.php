@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Web;
 
+use App\Web\Values\WindowInstance;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 
 /**
  * The query every declared page and Home share: the record open in the inspector (?inspect=<full page key> with the
@@ -76,6 +79,27 @@ final class DeclaredPageRequest extends FormRequest
         }
 
         return [];
+    }
+
+    /** @param array<string, mixed> $query */
+    public function visit(array $query, Route|null $route = null): Request
+    {
+        $visit = Request::createFrom($this);
+        $visit->query->replace($query);
+
+        if ($route !== null) {
+            $visit->setRouteResolver(fn () => $route);
+        }
+
+        return $visit;
+    }
+
+    public function windowVisit(WindowInstance $window): Request
+    {
+        $visit = $this->visit($this->windowQuery($window->name()));
+        $window->attachTo($visit);
+
+        return $visit;
     }
 
     /**

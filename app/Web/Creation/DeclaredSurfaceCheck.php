@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Web\Creation;
 
+use App\CorePages;
 use App\Navigation\Declarations\DomainClient;
+use App\Support\ClientDeclarations;
 use App\Support\DeclaredType;
 use App\Support\Reflector;
 use App\Web\Creation\Contracts\PageBuilder;
@@ -21,6 +23,19 @@ final class DeclaredSurfaceCheck
     private array $windowFiles = [];
 
     public function __construct(private readonly PageFactory $pages, private readonly WindowFactory $windows) {}
+
+    public function registerDeclarations(ClientDeclarations $declarations): void
+    {
+        $this->registerPage(CorePages::loginOwner(), 'login', CorePages::login());
+
+        foreach ($declarations->pages() as $page) {
+            $this->registerPage($page->owner, $page->key, $page->surface);
+
+            if ($page->window !== null) {
+                $this->registerWindow($page->owner, $page->key, $page->window);
+            }
+        }
+    }
 
     public function registerPage(DomainClient $owner, string $key, SurfaceDefinition $page): void
     {

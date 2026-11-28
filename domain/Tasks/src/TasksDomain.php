@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks;
 
+use Domain\Tasks\Data\TasksPaneData;
+use Domain\Tasks\Http\Pages\TaskPageBuilder;
+use Domain\Tasks\Http\Pages\TaskPageData;
+use Domain\Tasks\Http\Pages\TasksPageBuilder;
+use Domain\Tasks\Http\Pages\TasksPageData;
+use Domain\Tasks\Http\Windows\TasksWindowBuilder;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Drivers\Contracts\NativePartProvider;
@@ -75,8 +81,6 @@ use Domain\Tasks\Http\Controllers\CreateTaskPageController;
 use Domain\Tasks\Http\Controllers\RemoveTaskWaitPageController;
 use Domain\Tasks\Http\Controllers\StartTaskPageController;
 use Domain\Tasks\Http\Controllers\WaiveTaskWaitPageController;
-use Domain\Tasks\Http\Pages\Resolvers\TasksWindowResolver;
-use Domain\Tasks\Http\Pages\Resolvers\TaskWindowResolver;
 use Domain\Tasks\Mcp\Resources\TaskResource;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
@@ -176,12 +180,27 @@ final class TasksDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::layout('list', 'Tasks', Icon::Tasks, TasksWindowResolver::class)
+            Page::build()
+                ->key('list')
+                ->title('Tasks')
+                ->icon(Icon::Tasks)
+                ->pageType(TasksPageData::class)
+                ->pageBuilder(TasksPageBuilder::class)
+                ->declaredLayout()
+                ->withWindow(TasksPaneData::class, TasksWindowBuilder::class, 'TasksPane.vue')
+                ->finish()
                 ->at('')
                 ->onHome(25)
                 ->actions(fn (PageActions $actions) => $actions
                     ->post('create', CreateTaskPageController::class, 'create-task')),
-            Page::layout('task', 'Task', Icon::Tasks, TaskWindowResolver::class)
+            Page::build()
+                ->key('task')
+                ->title('Task')
+                ->icon(Icon::Tasks)
+                ->pageType(TaskPageData::class)
+                ->pageBuilder(TaskPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('{task}')
                 ->inInspector()
                 ->actions(fn (PageActions $actions) => $actions

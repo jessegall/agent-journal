@@ -4,6 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Sequences;
 
+use Domain\Sequences\Http\Pages\NewSequencePageBuilder;
+use Domain\Sequences\Http\Pages\NewSequencePageData;
+use Domain\Sequences\Http\Pages\SequenceEditorPageBuilder;
+use Domain\Sequences\Http\Pages\SequenceEditorPageData;
+use Domain\Sequences\Http\Pages\SequenceIndexPageBuilder;
+use Domain\Sequences\Http\Pages\SequenceIndexPageData;
+use Domain\Sequences\Http\Pages\SequencePageBuilder;
+use Domain\Sequences\Http\Pages\SequencePageData;
+use Domain\Sequences\Http\Pages\SequenceRunPageBuilder;
+use Domain\Sequences\Http\Pages\SequenceRunPageData;
+use Domain\Sequences\Http\Pages\SequenceRunsPageBuilder;
+use Domain\Sequences\Http\Pages\SequenceRunsPageData;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Drivers\Contracts\NativePartProvider;
@@ -23,12 +35,6 @@ use App\Support\Exports;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Http\Controllers\ChangeSequenceController;
 use Domain\Sequences\Http\Controllers\DefineSequenceController;
-use Domain\Sequences\Http\Pages\Resolvers\NewSequenceResolver;
-use Domain\Sequences\Http\Pages\Resolvers\SequenceEditorResolver;
-use Domain\Sequences\Http\Pages\Resolvers\SequenceIndexResolver;
-use Domain\Sequences\Http\Pages\Resolvers\SequenceRunsResolver;
-use Domain\Sequences\Http\Pages\Resolvers\SequenceRunWindowResolver;
-use Domain\Sequences\Http\Pages\Resolvers\SequenceWindowResolver;
 use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Support\SequenceDraftProducer;
@@ -99,18 +105,60 @@ final class SequencesDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::layout('index', 'Sequences', Icon::Sequence, SequenceIndexResolver::class)
+            Page::build()
+                ->key('index')
+                ->title('Sequences')
+                ->icon(Icon::Sequence)
+                ->pageType(SequenceIndexPageData::class)
+                ->pageBuilder(SequenceIndexPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('')
                 ->actions(fn (PageActions $actions) => $actions
                     ->post('create', DefineSequenceController::class, 'define-sequence')),
-            Page::layout('new', 'New sequence', Icon::Sequence, NewSequenceResolver::class)->at('new'),
-            Page::layout('runs', 'Runs', Icon::Activity, SequenceRunsResolver::class)->at('runs'),
-            Page::layout('edit', 'Edit steps', Icon::Sequence, SequenceEditorResolver::class)->at('{sequence}/edit'),
-            Page::layout('sequence', 'Sequence', Icon::Sequence, SequenceWindowResolver::class)
+            Page::build()
+                ->key('new')
+                ->title('New sequence')
+                ->icon(Icon::Sequence)
+                ->pageType(NewSequencePageData::class)
+                ->pageBuilder(NewSequencePageBuilder::class)
+                ->declaredLayout()
+                ->finish()->at('new'),
+            Page::build()
+                ->key('runs')
+                ->title('Runs')
+                ->icon(Icon::Activity)
+                ->pageType(SequenceRunsPageData::class)
+                ->pageBuilder(SequenceRunsPageBuilder::class)
+                ->declaredLayout()
+                ->finish()->at('runs'),
+            Page::build()
+                ->key('edit')
+                ->title('Edit steps')
+                ->icon(Icon::Sequence)
+                ->pageType(SequenceEditorPageData::class)
+                ->pageBuilder(SequenceEditorPageBuilder::class)
+                ->declaredLayout()
+                ->finish()->at('{sequence}/edit'),
+            Page::build()
+                ->key('sequence')
+                ->title('Sequence')
+                ->icon(Icon::Sequence)
+                ->pageType(SequencePageData::class)
+                ->pageBuilder(SequencePageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('{sequence}')
                 ->actions(fn (PageActions $actions) => $actions
                     ->patch('{sequence}', ChangeSequenceController::class, 'change-sequence')),
-            Page::layout('run', 'Sequence run', Icon::Activity, SequenceRunWindowResolver::class)->at('runs/{run}'),
+            Page::build()
+                ->key('run')
+                ->title('Sequence run')
+                ->icon(Icon::Activity)
+                ->pageType(SequenceRunPageData::class)
+                ->pageBuilder(SequenceRunPageBuilder::class)
+                ->declaredLayout()
+                ->finish()->at('runs/{run}'),
         ];
     }
 

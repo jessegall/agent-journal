@@ -27,6 +27,7 @@ use App\Navigation\Declarations\MenuItem;
 use App\Navigation\Declarations\NavigationItem;
 use App\Navigation\Declarations\SidebarGroup;
 use App\Navigation\Exceptions\InvalidNavigationDeclaration;
+use App\Web\Creation\SurfaceAttributeMap;
 use App\Web\Declarations\RegisteredPage;
 use App\Web\Declarations\RegisteredSection;
 use PhpOption\Option;
@@ -64,7 +65,7 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
     /**
      * @param  list<DomainClient>  $domains
      */
-    public static function check(array $domains): self
+    public static function check(array $domains, SurfaceAttributeMap|null $policies = null): self
     {
         $pages = [];
         $slotHosts = [];
@@ -93,7 +94,7 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
             }
 
             foreach ($owner->pages as $page) {
-                $registered = RegisteredPage::of($owner, $page);
+                $registered = RegisteredPage::of($owner, $page, $policies);
                 $pages[$registered->key] = $registered;
 
                 foreach (array_keys($registered->slots) as $slotKey) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Web\Values;
 
 use App\Web\Creation\Exceptions\InvalidSurfaceInput;
+use Illuminate\Http\Request;
 
 final readonly class WindowInstance
 {
@@ -22,6 +23,18 @@ final readonly class WindowInstance
         }
 
         return new self($declaration, $copyId);
+    }
+
+    public function attachTo(Request $visit): void
+    {
+        $visit->attributes->set(self::class, $this);
+    }
+
+    public static function ofVisit(Request $visit): self|null
+    {
+        $window = $visit->attributes->get(self::class);
+
+        return $window instanceof self ? $window : null;
     }
 
     public function name(): string

@@ -25,7 +25,12 @@ final class CorePages
 {
     public static function login(): SurfaceDefinition
     {
-        return new SurfaceDefinition(LoginPage::class, LoginPageBuilder::class, LoginPage::COMPONENT);
+        return new SurfaceDefinition(LoginPage::class, LoginPageBuilder::class, LoginPage::COMPONENT.'.vue');
+    }
+
+    public static function loginOwner(): DomainClient
+    {
+        return DomainClient::declaring('Login', __NAMESPACE__, dirname(__DIR__).'/resources/js');
     }
 
     /**

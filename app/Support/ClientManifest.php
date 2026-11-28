@@ -135,6 +135,11 @@ final readonly class ClientManifest
 
         foreach ($this->declarations->pages() as $page) {
             $components[$page->componentName()] = $this->fromRoot($root, $page->componentFile);
+            $window = $page->windowComponentName();
+
+            if ($window !== null && $page->windowFile !== null) {
+                $components[$window] = $this->fromRoot($root, $page->windowFile);
+            }
         }
 
         foreach ($this->declarations->sections() as $section) {

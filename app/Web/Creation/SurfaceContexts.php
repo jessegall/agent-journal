@@ -46,7 +46,7 @@ final readonly class SurfaceContexts
             $this->agents,
             $this->visibleSessions,
             $this->records,
-            $window,
+            $window ?? WindowInstance::ofVisit($visit),
             $slot,
             $inspector,
         );

@@ -21,6 +21,7 @@ use App\Navigation\Contracts\WindowResults as WindowResultsContract;
 use App\Navigation\Data\WindowOfferData;
 use App\Reads\ReadMeter;
 use App\Reflection\Contracts\ReflectorFactory;
+use App\Web\Creation\Exceptions\MissingBuilder;
 use App\Web\Data\Pages\UnavailableWindow;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
@@ -30,6 +31,7 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 use PhpOption\None;
 use Psr\Log\LoggerInterface;
+use App\Web\Creation\SurfaceDefinition;
 use Spatie\LaravelData\Data;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
@@ -57,16 +59,42 @@ final readonly class WindowResults implements WindowResultsContract
      */
     public function result(string $key, array $checks, ResolverDefinition $resolver, Closure $read): Data
     {
+        return $this->read($key, "window {$key}", $checks, $resolver->dataClass, $resolver->resolver, $read);
+    }
+
+    /**
+     * @param list<class-string<VisibilityCheck>> $checks
+     * @param Closure(): Data $read
+     */
+    public function surface(string $key, string $part, array $checks, SurfaceDefinition $surface, Closure $read): Data
+    {
+        return $this->read($key, $part, $checks, $surface->type, $surface->builder, $read);
+    }
+
+    /**
+     * @param list<class-string<VisibilityCheck>> $checks
+     * @param class-string<Data> $type
+     * @param class-string $reader
+     * @param Closure(): Data $read
+     */
+    private function read(
+        string $key,
+        string $part,
+        array $checks,
+        string $type,
+        string $reader,
+        Closure $read,
+    ): Data {
         if (! $this->visibility->allow($checks)) {
             return DeniedWindow::make();
         }
 
         try {
-            $windowContent = $this->meter->measureApart("window {$key}", fn () => $this->requestKey->forPart($key, $read))
+            $windowContent = $this->meter->measureApart($part, fn () => $this->requestKey->forPart($part, $read))
                 ->measuredAnswer;
 
-            if ($this->reflectors->make($resolver->dataClass)->asInstance($windowContent)->isEmpty()) {
-                throw ReaderDataMismatch::for($key, $resolver->dataClass, $windowContent::class);
+            if ($this->reflectors->make($type)->asInstance($windowContent)->isEmpty()) {
+                throw ReaderDataMismatch::for($key, $type, $windowContent::class);
             }
 
             $record = $windowContent instanceof RecordWindow ? $windowContent->shownRecord() : None::create();
@@ -80,7 +108,8 @@ final readonly class WindowResults implements WindowResultsContract
             return $offer->map(fn (WindowOfferData $made) => ReadyWindow::offering($shown, $made))
                 ->getOrCall(fn () => ReadyWindow::of($shown));
         } catch (
-            AuthenticationException
+            MissingBuilder
+            |AuthenticationException
             |TokenMismatchException
             |ValidationException
             |HttpResponseException
@@ -91,12 +120,12 @@ final readonly class WindowResults implements WindowResultsContract
             return DeniedWindow::make();
         } catch (CodedRefusal $refusal) {
             if ($refusal->refusalCode() !== RefusalCode::RecordUnavailable) {
-                return $this->failed($key, $resolver, $refusal);
+                return $this->failed($key, $part, $reader, $refusal);
             }
 
             return UnavailableWindow::make();
         } catch (Throwable $failure) {
-            return $this->failed($key, $resolver, $failure);
+            return $this->failed($key, $part, $reader, $failure);
         }
     }
 
@@ -104,11 +133,11 @@ final readonly class WindowResults implements WindowResultsContract
      * A neutral failure for the browser, with the error logged under the window's key and reader; where the
      * developer is reading (local and testing), the failure also names the error's class and message.
      */
-    private function failed(string $key, ResolverDefinition $resolver, Throwable $failure): FailedWindow
+    private function failed(string $key, string $part, string $reader, Throwable $failure): FailedWindow
     {
         $this->log->error(
-            "The window {$key} failed: ".$failure::class.": {$failure->getMessage()}",
-            ['key' => $key, 'reader' => $resolver->resolver, 'exception' => $failure],
+            "The {$part} failed: ".$failure::class.": {$failure->getMessage()}",
+            ['key' => $key, 'part' => $part, 'reader' => $reader, 'exception' => $failure],
         );
 
         if (! $this->app->environment('local', 'testing')) {

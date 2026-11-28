@@ -24,10 +24,12 @@ use App\Settings\SettingRegistry;
 use App\Skills\ConditionRegistry;
 use App\Skills\CoreSkills;
 use App\Skills\SkillRegistry;
+use App\Support\ClientDeclarations;
 use App\Support\CommandRegistry;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\Rules\CoreRules;
+use App\Web\Creation\DeclaredSurfaceCheck;
 use App\Web\Creation\PageFactory;
 use App\Web\Creation\SurfaceAttributeMap;
 use App\Web\Creation\WindowFactory;
@@ -53,7 +55,12 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PageFactory::class);
         $this->app->singleton(SurfaceAttributeMap::class);
         $this->app->singleton(WindowFactory::class);
-        $this->app->booting(fn () => $this->registerDomainProviders($registry));
+        $this->app->booting(function () use ($registry): void {
+            $this->registerDomainProviders($registry);
+            $this->app->make(DeclaredSurfaceCheck::class)->registerDeclarations(
+                $this->app->make(ClientDeclarations::class),
+            );
+        });
         $this->keepMigrationsOfUnbootedDomains($registry);
 
         $this->app->singleton(

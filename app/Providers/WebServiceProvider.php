@@ -56,6 +56,7 @@ use App\Support\RecordMenus;
 use App\Support\RefusalReason;
 use App\Support\WindowResults;
 use App\Values\FilePath;
+use App\Web\Creation\SurfaceAttributeMap;
 use App\Web\Contracts\ProtectedViews as ProtectedViewsContract;
 use App\Web\InstallationFaults;
 use App\Web\UserChannel;
@@ -114,7 +115,10 @@ final class WebServiceProvider extends ServiceProvider
 
         $this->app->singleton(
             ClientDeclarations::class,
-            fn ($app) => $app->make(DomainRegistry::class)->clientDeclarations(...CorePages::declarations()),
+            fn ($app) => ClientDeclarations::check(
+                $app->make(DomainRegistry::class)->clientOwners(...CorePages::declarations()),
+                $app->make(SurfaceAttributeMap::class),
+            ),
         );
 
         $this->app->bind(SlotSections::class, ClientDeclarations::class);

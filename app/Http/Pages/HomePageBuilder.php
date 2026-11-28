@@ -6,6 +6,7 @@ namespace App\Http\Pages;
 
 use App\Data\Pages\HomeData;
 use App\Data\Pages\HomeWindowData;
+use App\Navigation\Contracts\ClientOwnerAvailability;
 use App\Support\ClientDeclarations;
 use App\Support\Views\LayoutsView;
 use App\Web\Creation\Contracts\PageBuilder;
@@ -21,6 +22,7 @@ final readonly class HomePageBuilder implements PageBuilder
     public function __construct(
         private ClientDeclarations $declarations,
         private LayoutsView $layouts,
+        private ClientOwnerAvailability $owners,
     ) {}
 
     public function build(Request $visit): HomeData
@@ -45,19 +47,29 @@ final readonly class HomePageBuilder implements PageBuilder
 
         $owners = array_count_values(array_map(fn (RegisteredPage $page) => $page->owner->key, $windows));
 
-        return HomeData::build()
-            ->layouts($this->layouts->layouts())
-            ->windows(
-                array_map(fn (RegisteredPage $page) => HomeWindowData::build()
+        $panes = [];
+
+        foreach ($windows as $page) {
+            $component = $page->windowComponentName();
+
+            if ($component === null || ! $this->owners->isAvailable($page->owner)) {
+                continue;
+            }
+
+            $panes[] = HomeWindowData::build()
                 ->paneKey($owners[$page->owner->key] === 1 ? $page->owner->key : $page->key)
                 ->key($page->key)
                 ->propName($page->propName)
-                ->component($page->componentName())
+                ->component($component)
                 ->title($page->page->title)
                 ->icon($page->page->icon)
                 ->place($page->page->place)
-                ->finish(), $windows),
-            )
+                ->finish();
+        }
+
+        return HomeData::build()
+            ->layouts($this->layouts->layouts(array_map(fn (HomeWindowData $pane) => $pane->paneKey, $panes)))
+            ->windows($panes)
             ->barSections($this->declarations->sectionsIn(RegisteredPage::HOME, 'bar'))
             ->finish();
     }

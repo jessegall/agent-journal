@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
+use App\Http\Pages\AccountsPageBuilder;
+use App\Http\Pages\AccountsPageData;
+use App\Http\Pages\ProfilePageBuilder;
+use App\Http\Pages\ProfilePageData;
+use App\Http\Pages\ProfilesPageBuilder;
+use App\Http\Pages\ProfilesPageData;
+use App\Http\Pages\StartAccountPageBuilder;
 use App\Accounts\AccountOwnerCheck;
 use App\Accounts\Data\AccountListData;
 use App\Accounts\Data\AccountMonthCostData;
@@ -56,10 +63,6 @@ use App\Http\Controllers\SubmitSignInCodeController;
 use App\Http\Loaders\Accounts\StartAccountsLoader;
 use App\Http\Loaders\Profiles\SignInReceiptLoader;
 use App\Http\Pages\Resolvers\AccountNoticesSection;
-use App\Http\Pages\Resolvers\AccountsWindowResolver;
-use App\Http\Pages\Resolvers\ProfilesWindowResolver;
-use App\Http\Pages\Resolvers\ProfileWindowResolver;
-use App\Http\Pages\Resolvers\StartAccountWindowResolver;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Contracts\SectionProvider;
@@ -100,9 +103,15 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
     public function pages(): array
     {
         return [
-            Page::layout('accounts', 'Accounts', Icon::Accounts, AccountsWindowResolver::class)
+            Page::build()
+                ->key('accounts')
+                ->title('Accounts')
+                ->icon(Icon::Accounts)
+                ->pageType(AccountsPageData::class)
+                ->pageBuilder(AccountsPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('')
-                ->visibleWhen(AccountOwnerCheck::class)
                 ->loaders(fn (PageLoaders $loaders) => $loaders
                     ->add('sign-in-receipt', SignInReceiptLoader::class)
                     ->add('start-accounts', StartAccountsLoader::class))
@@ -123,19 +132,34 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
                     ->post('sign-ins/{attempt}/challenge', SignInChallengeController::class, 'challenge')
                     ->post('sign-ins/{attempt}/code', SubmitSignInCodeController::class, 'submit-code')
                     ->post('sign-ins/{attempt}/cancel', CancelSignInController::class, 'cancel-sign-in')),
-            Page::layout('profiles', 'Profiles', Icon::Accounts, ProfilesWindowResolver::class)
+            Page::build()
+                ->key('profiles')
+                ->title('Profiles')
+                ->icon(Icon::Accounts)
+                ->pageType(ProfilesPageData::class)
+                ->pageBuilder(ProfilesPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('profiles')
                 ->visibleWhen(AccountOwnerCheck::class),
-            Page::layout('profile', 'Profile', Icon::Accounts, ProfileWindowResolver::class)
+            Page::build()
+                ->key('profile')
+                ->title('Profile')
+                ->icon(Icon::Accounts)
+                ->pageType(ProfilePageData::class)
+                ->pageBuilder(ProfilePageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('profiles/{profile}')
                 ->visibleWhen(AccountOwnerCheck::class),
-            Page::make(
-                'account-start',
-                'Account of a start',
-                Icon::Accounts,
-                StartAccountWindowResolver::class,
-                'StartAccountWindow.vue',
-            )
+            Page::build()
+                ->key('account-start')
+                ->title('Account of a start')
+                ->icon(Icon::Accounts)
+                ->pageType(StartAccountData::class)
+                ->pageBuilder(StartAccountPageBuilder::class)
+                ->component('StartAccountWindow.vue')
+                ->finish()
                 ->at('starts/{session}')
                 ->visibleWhen(AccountOwnerCheck::class),
         ];

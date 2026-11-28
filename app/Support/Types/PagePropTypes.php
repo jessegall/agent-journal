@@ -7,6 +7,7 @@ namespace App\Support\Types;
 use App\Navigation\Contracts\PresentsLayout;
 use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\ClientDeclarations;
+use App\Support\Layout\DeclaredLayoutData;
 use App\Web\Declarations\RegisteredPage;
 use App\Web\Enums\PageDestination;
 use Illuminate\Support\Str;
@@ -42,7 +43,7 @@ final readonly class PagePropTypes
         );
 
         foreach ($this->declarations->pages() as $page) {
-            $members = ['page: WindowResult<'.$this->dataName($page->resolver->dataClass).'>'];
+            $members = ['page: WindowResult<'.$this->dataName($page->surface->type).'>'];
 
             foreach ($this->declarations->sections() as $section) {
                 if ($section->host->key === $page->key) {
@@ -69,15 +70,16 @@ final readonly class PagePropTypes
      */
     public function windowProps(): array
     {
-        return array_values(array_map(
-            fn (RegisteredPage $page) => "{$page->propName}?: WindowResult<".$this->dataName(
-                $page->resolver->dataClass,
-            ).'>',
-            array_filter(
-                $this->declarations->pages(),
-                fn (RegisteredPage $page) => $page->page->opensIn === PageDestination::Page,
-            ),
-        ));
+        $props = [];
+
+        foreach ($this->declarations->pages() as $page) {
+            if ($page->window !== null) {
+                $type = $this->dataName($page->window->type);
+                $props[] = "{$page->propName}?: WindowResult<{$type}>";
+            }
+        }
+
+        return $props;
     }
 
     /**
@@ -89,13 +91,25 @@ final readonly class PagePropTypes
     {
         $imports = [];
 
-        foreach ([
-            ...$this->declarations->pages(),
-            ...$this->declarations->sections(),
-        ] as $declaration) {
-            $imports[$this->owners->ownerOf(
-                $declaration->resolver->dataClass,
-            )][] = $this->dataName($declaration->resolver->dataClass);
+        $types = [];
+
+        foreach ($this->declarations->pages() as $page) {
+            $types[] = $page->surface->type;
+
+            if ($page->window !== null) {
+                $types[] = $page->window->type;
+            }
+        }
+
+        foreach ($this->declarations->sections() as $section) {
+            $types[] = $section->resolver->dataClass;
+        }
+
+        foreach ($types as $type) {
+            $owner = $this->reflector->make($type)->isSubclassOf(PresentsLayout::class)
+                ? $this->owners->ownerOf(DeclaredLayoutData::class)
+                : $this->owners->ownerOf($type);
+            $imports[$owner][] = $this->dataName($type);
         }
 
         ksort($imports);
@@ -108,7 +122,7 @@ final readonly class PagePropTypes
      */
     public function dataTypeOf(RegisteredPage $page): string
     {
-        return $this->dataName($page->resolver->dataClass);
+        return $this->dataName($page->surface->type);
     }
 
     public function typeName(RegisteredPage $page): string
@@ -134,7 +148,7 @@ final readonly class PagePropTypes
     private function resultOf(array $pages): string|null
     {
         $names = array_values(
-            array_unique(array_map(fn (RegisteredPage $page) => $this->dataName($page->resolver->dataClass), $pages)),
+            array_unique(array_map(fn (RegisteredPage $page) => $this->dataName($page->surface->type), $pages)),
         );
 
         if ($names === []) {

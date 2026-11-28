@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
+use App\Http\Pages\SettingsPageBuilder;
+use App\Http\Pages\SettingsPageData;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
 use App\Http\Controllers\ResetSettingsPageController;
 use App\Http\Controllers\SaveSettingsPageController;
 use App\Http\Controllers\SwitchSettingsGroupPageController;
-use App\Http\Pages\Resolvers\SettingsWindowResolver;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Declarations\DomainClient;
@@ -53,7 +54,14 @@ final class SettingsPages implements NavigationProvider, PageProvider, TypeProvi
     public function pages(): array
     {
         return [
-            Page::layout('settings', 'Settings', Icon::Rules, SettingsWindowResolver::class)
+            Page::build()
+                ->key('settings')
+                ->title('Settings')
+                ->icon(Icon::Rules)
+                ->pageType(SettingsPageData::class)
+                ->pageBuilder(SettingsPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('')
                 ->visibleWhen(SettingsOwnerCheck::class)
                 ->actions(fn (PageActions $actions) => $actions

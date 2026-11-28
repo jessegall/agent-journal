@@ -22,9 +22,4 @@ final class LoginPage extends Data
     public const string COMPONENT = 'Login';
 
     public function __construct(public readonly LoginInput $input) {}
-
-    public static function startingWith(LoginInput $input): self
-    {
-        return self::from(['input' => $input]);
-    }
 }

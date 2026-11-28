@@ -9,10 +9,15 @@ use App\Navigation\Contracts\ClientOwnerAvailability;
 use App\Navigation\Contracts\WindowResults;
 use App\Reads\Contracts\ReaderRequests;
 use App\Support\ClientDeclarations;
+use App\Web\Creation\PageFactory;
+use App\Web\Creation\SurfaceAttributeMap;
+use App\Web\Creation\SurfaceDefinition;
+use App\Web\Creation\WindowFactory;
 use App\Web\Data\Pages\UnavailableWindow;
 use App\Web\Declarations\RegisteredPage;
 use App\Web\Declarations\RegisteredSection;
 use App\Web\Enums\PageDestination;
+use App\Web\Values\WindowInstance;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use PhpOption\Option;
@@ -42,6 +47,9 @@ final readonly class PageProps
         private SlotContexts $contexts,
         private LiveProps $live,
         private ClientOwnerAvailability $owners,
+        private PageFactory $pages,
+        private WindowFactory $windows,
+        private SurfaceAttributeMap $policies,
     ) {}
 
     /**
@@ -96,23 +104,21 @@ final readonly class PageProps
         $props = [];
 
         foreach ($this->declarations->pages() as $page) {
-            if ($page->page->opensIn !== PageDestination::Page || ! $this->owners->isAvailable($page->owner)) {
+            if ($page->window === null || ! $this->owners->isAvailable($page->owner)) {
                 continue;
             }
 
+            $window = $page->window;
+            $original = WindowInstance::original($page->key);
             $props[$page->propName] = $this->live->optional(
-                fn () => $this->pageResult($page, $request, $request->windowQuery($page->key)),
+                fn () => $this->windowResult($page, $window, $request, $original),
             );
 
-            // A further copy of the window reads its own part of the query, window[<full page key>~<copy id>].
             foreach ($request->copiesAskedFor($page->propName) as $copyId) {
-                $props["{$page->propName}__{$copyId}"] = $this->live->optional(
-                    fn () => $this->pageResult($page, $request, $request->windowQuery("{$page->key}~{$copyId}")),
+                $copy = WindowInstance::copy($page->key, $copyId);
+                $props[$copy->prop($page->propName)] = $this->live->optional(
+                    fn () => $this->windowResult($page, $window, $request, $copy),
                 );
-            }
-
-            if ($page->isHome()) {
-                continue;
             }
 
             foreach ($this->sectionsOf($page) as $section) {
@@ -130,7 +136,7 @@ final readonly class PageProps
      */
     private function ownPageResult(RegisteredPage $page, DeclaredPageRequest $request): Data
     {
-        $result = $this->pageResult($page, $request, $request->plainQuery());
+        $result = $this->pageResult($page, 'page', fn () => $request->visit($request->plainQuery()));
 
         if ($result instanceof UnavailableWindow) {
             throw new NotFoundHttpException();
@@ -139,20 +145,37 @@ final readonly class PageProps
         return $result;
     }
 
-    /**
-     * @param  array<string, mixed>  $query
-     */
-    private function pageResult(
-        RegisteredPage $page,
-        DeclaredPageRequest $request,
-        array $query,
-        Route|null $route = null,
-    ): Data {
-        return $this->windowResults->result(
+    /** @param \Closure(): Request $visit */
+    private function pageResult(RegisteredPage $page, string $place, \Closure $visit): Data
+    {
+        return $this->windowResults->surface(
             $page->key,
+            "{$place} {$page->key}",
             $page->visibilityChecks(),
-            $page->resolver,
-            fn () => $this->readers->pageReader($page->key, $page->resolver, $request, $query, $route)->read(),
+            $page->surface,
+            fn () => $this->pages->create($page->surface->type, $visit()),
+        );
+    }
+
+    private function windowResult(
+        RegisteredPage $page,
+        SurfaceDefinition $window,
+        DeclaredPageRequest $request,
+        WindowInstance $instance,
+    ): Data {
+        $policy = $this->policies->forType($window->type);
+
+        return $this->windowResults->surface(
+            $page->key,
+            'window '.$instance->name(),
+            [...$page->visibilityChecks(), ...$policy->checks],
+            $window,
+            function () use ($window, $request, $instance, $policy): Data {
+                $made = $this->windows->create($window->type, $request->windowVisit($instance));
+                $policy->assertRows($made);
+
+                return $made;
+            },
         );
     }
 
@@ -169,7 +192,13 @@ final readonly class PageProps
             return null;
         }
 
-        return $this->pageResult($page->get(), $request, [], $this->inspectedRoute($page->get(), $request));
+        $record = $page->get();
+
+        return $this->pageResult(
+            $record,
+            'inspector',
+            fn () => $request->visit([], $this->inspectedRoute($record, $request)),
+        );
     }
 
     /**

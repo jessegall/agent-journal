@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
+use App\Http\Pages\RequestListPageBuilder;
+use App\Http\Pages\RequestListPageData;
+use App\Http\Pages\RequestPageBuilder;
+use App\Http\Pages\RequestPageData;
+use App\Http\Pages\RunListPageBuilder;
+use App\Http\Pages\RunListPageData;
+use App\Http\Pages\RunOutcomePageBuilder;
+use App\Http\Pages\RunPageBuilder;
+use App\Http\Pages\RunPageData;
 use App\Agents\Drivers\Contracts\NativePartProvider;
 use App\CommandRules\Enums\AdmissionRefusalCode;
 use App\CommandRules\Enums\AnalysisLimit;
@@ -51,11 +60,6 @@ use App\Http\Controllers\RestoreRulePageController;
 use App\Http\Controllers\RetireRulePageController;
 use App\Http\Controllers\StopRunPageController;
 use App\Http\Controllers\VerifyRestoredOutputPageController;
-use App\Http\Pages\Resolvers\RequestListResolver;
-use App\Http\Pages\Resolvers\RequestWindowResolver;
-use App\Http\Pages\Resolvers\RunListResolver;
-use App\Http\Pages\Resolvers\RunOutcomeWindowResolver;
-use App\Http\Pages\Resolvers\RunWindowResolver;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Declarations\DomainClient;
 use App\Navigation\Enums\Icon;
@@ -230,7 +234,14 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
 
     private function listPage(): Page
     {
-        return Page::layout('command-requests', 'Command review', Icon::Rules, RequestListResolver::class)
+        return Page::build()
+            ->key('command-requests')
+            ->title('Command review')
+            ->icon(Icon::Rules)
+            ->pageType(RequestListPageData::class)
+            ->pageBuilder(RequestListPageBuilder::class)
+            ->declaredLayout()
+            ->finish()
             ->at('')
             ->actions(fn (PageActions $actions) => $actions
                 ->post('bundles/approval', ApproveBundlePageController::class, 'approve-rule-bundle'));
@@ -238,7 +249,14 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
 
     private function requestPage(): Page
     {
-        return Page::layout('command-request', 'Command request', Icon::Rules, RequestWindowResolver::class)
+        return Page::build()
+            ->key('command-request')
+            ->title('Command request')
+            ->icon(Icon::Rules)
+            ->pageType(RequestPageData::class)
+            ->pageBuilder(RequestPageBuilder::class)
+            ->declaredLayout()
+            ->finish()
             ->at('requests/{request}')
             ->actions(fn (PageActions $actions) => $actions
                 ->post('requests/{request}/sample-approval', ApproveSamplePageController::class, 'approve-sample')
@@ -250,23 +268,38 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
 
     private function runsPage(): Page
     {
-        return Page::layout('runs', 'Runs', Icon::Rules, RunListResolver::class)->at('runs');
+        return Page::build()
+            ->key('runs')
+            ->title('Runs')
+            ->icon(Icon::Rules)
+            ->pageType(RunListPageData::class)
+            ->pageBuilder(RunListPageBuilder::class)
+            ->declaredLayout()
+            ->finish()->at('runs');
     }
 
     private function runOutcomePage(): Page
     {
-        return Page::make(
-            'run-outcome',
-            'Run outcome',
-            Icon::Rules,
-            RunOutcomeWindowResolver::class,
-            'RunOutcomeView.vue',
-        )->at('runs/{run}/outcome');
+        return Page::build()
+            ->key('run-outcome')
+            ->title('Run outcome')
+            ->icon(Icon::Rules)
+            ->pageType(RunOutcomePageData::class)
+            ->pageBuilder(RunOutcomePageBuilder::class)
+            ->component('RunOutcomeView.vue')
+            ->finish()->at('runs/{run}/outcome');
     }
 
     private function runPage(): Page
     {
-        return Page::layout('run', 'Run', Icon::Rules, RunWindowResolver::class)
+        return Page::build()
+            ->key('run')
+            ->title('Run')
+            ->icon(Icon::Rules)
+            ->pageType(RunPageData::class)
+            ->pageBuilder(RunPageBuilder::class)
+            ->declaredLayout()
+            ->finish()
             ->at('runs/{run}')
             ->actions(fn (PageActions $actions) => $actions
                 ->post('runs/{run}/stop', StopRunPageController::class, 'stop-run')
