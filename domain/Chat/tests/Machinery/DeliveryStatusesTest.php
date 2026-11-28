@@ -15,8 +15,8 @@ use Domain\Chat\Enums\DeliveryStatus;
 use Domain\Chat\Resolvers\Support\ChatPages;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
-use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 
 /**
  * Each of the user's messages shows how far it got: sent, arrived in the agent's session, read by the agent, or not

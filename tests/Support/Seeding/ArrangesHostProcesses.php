@@ -36,6 +36,7 @@ use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionProcess;
 use App\Providers\DriversServiceProvider;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Sessions\SessionContainers;
 use App\Support\AgentImage;
 use App\Support\Compatibility\PinnedBuilds;
@@ -472,7 +473,7 @@ trait ArrangesHostProcesses
         $this->service(DriverCatalogue::class)->registerFamily($family);
         $setups = DriversServiceProvider::setups(
             $this->service(Repository::class),
-            $this->service(\App\Reflection\Contracts\ReflectorFactory::class),
+            $this->service(ReflectorFactory::class),
         );
         $like = array_values(array_filter($setups, fn (DriverSetup $setup) => $setup->family === $runsLike))[0];
         $this->app->scoped(DriverProfiles::class, fn () => new DriverProfiles(

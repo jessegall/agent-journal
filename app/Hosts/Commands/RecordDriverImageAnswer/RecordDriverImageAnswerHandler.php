@@ -154,6 +154,7 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         }
 
         $image->checked();
+
         HostDriverImage::query()->replacedBy($image, $folder)->lockForUpdate()->chunkById(
             25,
             static function (iterable $replaced): void {

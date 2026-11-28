@@ -316,7 +316,11 @@ final class TerminalDriver implements ProcessDriver
             if ($this->awaitsRecoveredEcho) {
                 $recovery = $this->uncertain($this->delivery);
             } else {
-                $this->waiting = [$this->delivery, ...$this->waiting];
+                $this->waiting = [
+                    $this->delivery,
+                    ...$this->waiting,
+                ];
+
                 $this->delivery = null;
             }
         }

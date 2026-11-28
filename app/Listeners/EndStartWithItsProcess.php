@@ -30,6 +30,7 @@ final readonly class EndStartWithItsProcess implements Listener
         }
 
         $runtime = AgentRuntime::query()->whereKey($process->agent_runtime_id)->sole();
+
         if ($process->purpose->canRefuseStart()
             && $process->started_at === null && ! $runtime->hasProvenStart()) {
             SessionProcess::findLockedById($process->session_process_id)->refuse($fact->evidence);

@@ -22,6 +22,7 @@ final readonly class ScreenKeys
     public function send(HostProcess $process, HostFramePayload $frame, string $bytes, string $trustedEntry): string
     {
         $rows = new RowRange(0, count($frame->rows));
+
         $instruction = new SendHostKeysCommand(
             $process->id,
             $bytes,

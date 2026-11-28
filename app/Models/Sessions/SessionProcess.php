@@ -726,6 +726,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     protected function onAccounts(Builder $query, array $accounts): void
     {
         $groups = RecordIdentity::groupedByType($accounts);
+
         $query->where(static function (Builder $owners) use ($groups): void {
             foreach ($groups as $type => $records) {
                 $owners->orWhere(static fn (Builder $pair) => $pair

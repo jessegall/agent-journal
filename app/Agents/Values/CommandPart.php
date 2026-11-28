@@ -24,6 +24,7 @@ final readonly class CommandPart
         public CommandType $type,
         public PartJoin $join = PartJoin::End,
     ) {}
+
     /** @param list<string> $executables */
     public function hasExecutableIn(array $executables): bool
     {

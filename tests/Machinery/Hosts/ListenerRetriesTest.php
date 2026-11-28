@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Machinery\Hosts;
 
 use App\Agents\Drivers\Enums\RetryOutcome;
+use App\Bus\CommittedListenerFailures;
 use App\Bus\Exceptions\CommittedFactListenerFailed;
 use App\Bus\ListenerRetries;
-use App\Bus\CommittedListenerFailures;
 use App\Bus\Values\ListenerRun;
 use App\Events\Sessions\AgentRuntimeStartProven;
 use App\Jobs\RetryCommittedListener;

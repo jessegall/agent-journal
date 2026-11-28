@@ -13,7 +13,6 @@ return [
         'image_build_script' => 'scripts/agent-image-programs.sh',
     ],
 
-
     'sessions' => [
 
         /*

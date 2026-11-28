@@ -33,6 +33,7 @@ use App\Agents\SignInEgress;
 use App\Exceptions\PlanAdditionClash;
 use App\Files\Contracts\Files;
 use App\Hosts\Protocol\Payloads\HostRestartFilePayload;
+use App\Reflection\CatalogueReflectorFactory;
 use App\Support\Recordings\Recordings;
 use App\Values\PlanAddition;
 use Tests\Support\Recordings\RecordedProgram;
@@ -113,12 +114,12 @@ final class DriverSetupTest extends TestCase
         $this->journal
             ->assertRefused(
                 DriverSetupInvalid::class,
-                fn () => DefaultDriverSetup::for('lone')->build(new \App\Reflection\CatalogueReflectorFactory()),
+                fn () => DefaultDriverSetup::for('lone')->build(new CatalogueReflectorFactory()),
                 $naming('driver'),
             )
             ->assertRefused(
                 DriverSetupInvalid::class,
-                fn () => DefaultDriverSetup::for('lone')->driver('lone')->build(new \App\Reflection\CatalogueReflectorFactory()),
+                fn () => DefaultDriverSetup::for('lone')->driver('lone')->build(new CatalogueReflectorFactory()),
                 $naming('image'),
             );
     }
@@ -167,7 +168,7 @@ final class DriverSetupTest extends TestCase
      */
     private function codex(string $family): DriverSetup
     {
-        $setup = $this->partlyDeclared()->build(new \App\Reflection\CatalogueReflectorFactory());
+        $setup = $this->partlyDeclared()->build(new CatalogueReflectorFactory());
 
         return $setup->forFamily($family);
     }

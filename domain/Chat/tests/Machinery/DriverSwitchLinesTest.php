@@ -58,6 +58,7 @@ final class DriverSwitchLinesTest extends TestCase
             $this->journal->agentCalled(self::AGENT)->name,
             $this->linesIn($chat)[0],
         );
+
         $this->assertStringContainsString('history', $this->linesIn($chat)[0]);
         $this->assertStringContainsString('memories', $this->linesIn($chat)[0]);
     }

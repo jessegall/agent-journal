@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\HoldReason;
+use App\Agents\Drivers\Enums\RetryOutcome;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Events\Sessions\AccountUseChanged;
 use App\Events\Sessions\ActivityRecorded;
@@ -36,6 +37,7 @@ use App\Events\Sessions\AgentSessionEnded;
 use App\Events\Sessions\AgentSessionHeartbeatRecorded;
 use App\Events\Sessions\AgentSessionSelectionUsed;
 use App\Events\Sessions\AgentSessionSkillsGenerated;
+use App\Events\Sessions\AgentStartChoiceMade;
 use App\Events\Sessions\ClosingWordsKeptPrivate;
 use App\Events\Sessions\ClosingWordsOffered;
 use App\Events\Sessions\DriverBuildsApproved;
@@ -85,6 +87,7 @@ use App\Events\Sessions\NavigationRequestProven;
 use App\Events\Sessions\NavigationRequestSaved;
 use App\Events\Sessions\NavigationRequestScreenShown;
 use App\Events\Sessions\ProfileRevisionHoldReconciled;
+use App\Events\Sessions\RetryAttemptSettled;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
 use App\Events\Sessions\SessionProcessCancelled;
@@ -970,18 +973,18 @@ return [
         'producers' => [],
         'sample' => fn () => new SessionProcessRegistered('start', 'session'),
     ],
-    \App\Events\Sessions\AgentStartChoiceMade::class => [
+    AgentStartChoiceMade::class => [
         'role' => EventRole::RowFact,
         'owner' => 'AgentStartChoice::choose',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Sessions\AgentStartChoiceMade('agent'),
+        'sample' => fn () => new AgentStartChoiceMade('agent'),
     ],
-    \App\Events\Sessions\RetryAttemptSettled::class => [
+    RetryAttemptSettled::class => [
         'role' => EventRole::RowFact,
         'owner' => 'RetryAttempt::settle',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Sessions\RetryAttemptSettled('attempt', \App\Agents\Drivers\Enums\RetryOutcome::Succeeded),
+        'sample' => fn () => new RetryAttemptSettled('attempt', RetryOutcome::Succeeded),
     ],
 ];

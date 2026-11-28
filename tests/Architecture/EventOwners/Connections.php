@@ -21,9 +21,12 @@ use App\Events\Connections\DriverImageRefused;
 use App\Events\Connections\DriverImageReplaced;
 use App\Events\Connections\DriverImageWaitServed;
 use App\Events\Connections\EnvironmentOpened;
+use App\Events\Connections\HostAllowedImagesForgotten;
 use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
+use App\Events\Connections\HostCapabilitiesRecorded;
 use App\Events\Connections\HostHeartbeatRecorded;
+use App\Events\Connections\HostImagesAllowed;
 use App\Events\Connections\HostInstructionAnswered;
 use App\Events\Connections\HostInstructionClaimed;
 use App\Events\Connections\HostInstructionMade;
@@ -41,8 +44,13 @@ use App\Events\Connections\HostProcessSeenInHeartbeat;
 use App\Events\Connections\HostProcessStarted;
 use App\Events\Connections\HostProcessWorkerClaimed;
 use App\Events\Connections\HostProcessWorkerRenewed;
+use App\Events\Connections\HostProtocolRecorded;
 use App\Events\Connections\HostReenrolled;
+use App\Events\Connections\HostReleaseRecorded;
 use App\Events\Connections\HostRevoked;
+use App\Events\Connections\HostUpgradeAwaited;
+use App\Events\Connections\HostUpgradeFailed;
+use App\Events\Connections\HostUpgradeInstructed;
 use App\Events\Connections\InstallAttemptCancelled;
 use App\Events\Connections\InstallAttemptOpened;
 use App\Events\Connections\InstallAttemptReplaced;
@@ -517,67 +525,67 @@ return [
         'producers' => [],
         'sample' => fn () => new HostProcessLost('process', 'runtime', 'session', 'lost'),
     ],
-    \App\Events\Connections\HostCapabilitiesRecorded::class => [
+    HostCapabilitiesRecorded::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Host::recordCapabilities',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Connections\HostCapabilitiesRecorded('host'),
+        'sample' => fn () => new HostCapabilitiesRecorded('host'),
     ],
-    \App\Events\Connections\HostImagesAllowed::class => [
+    HostImagesAllowed::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Host::allowImages',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Connections\HostImagesAllowed('host'),
+        'sample' => fn () => new HostImagesAllowed('host'),
     ],
-    \App\Events\Connections\HostAllowedImagesForgotten::class => [
+    HostAllowedImagesForgotten::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Host::forgetAllowedImages',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Connections\HostAllowedImagesForgotten('host'),
+        'sample' => fn () => new HostAllowedImagesForgotten('host'),
     ],
-    \App\Events\Connections\HostReleaseRecorded::class => [
+    HostReleaseRecorded::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Host::recordRelease',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Connections\HostReleaseRecorded('host'),
+        'sample' => fn () => new HostReleaseRecorded('host'),
     ],
-    \App\Events\Connections\HostUpgradeAwaited::class => [
+    HostUpgradeAwaited::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Host::awaitUpgrade',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Connections\HostUpgradeAwaited('host'),
+        'sample' => fn () => new HostUpgradeAwaited('host'),
     ],
-    \App\Events\Connections\HostUpgradeInstructed::class => [
+    HostUpgradeInstructed::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Host::instructionUpgrade',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Connections\HostUpgradeInstructed('host'),
+        'sample' => fn () => new HostUpgradeInstructed('host'),
     ],
-    \App\Events\Connections\HostUpgradeFailed::class => [
+    HostUpgradeFailed::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Host::failUpgrade',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Connections\HostUpgradeFailed('host'),
+        'sample' => fn () => new HostUpgradeFailed('host'),
     ],
-    \App\Events\Connections\HostProtocolRecorded::class => [
+    HostProtocolRecorded::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Host::recordProtocol',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Connections\HostProtocolRecorded('host'),
+        'sample' => fn () => new HostProtocolRecorded('host'),
     ],
-    \App\Events\Connections\DriverImageReplaced::class => [
+    DriverImageReplaced::class => [
         'role' => EventRole::RowFact,
         'owner' => 'HostDriverImage::retire',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new \App\Events\Connections\DriverImageReplaced('image', 'host', 'digest'),
+        'sample' => fn () => new DriverImageReplaced('image', 'host', 'digest'),
     ],
 ];

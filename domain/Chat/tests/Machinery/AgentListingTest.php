@@ -12,8 +12,8 @@ use Domain\Chat\Support\AgentList;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 
 /**
  * The chat list shows each agent with the viewer's unread messages in its chat and when that chat last moved; an

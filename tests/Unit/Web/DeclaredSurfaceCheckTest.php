@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Web;
 
-use App\Reflection\CatalogueReflectorFactory;
 use App\Navigation\Declarations\DomainClient;
+use App\Reflection\CatalogueReflectorFactory;
 use App\Support\DomainEntry;
 use App\Web\Creation\DeclaredSurfaceCheck;
 use App\Web\Creation\Exceptions\InvalidSurface;

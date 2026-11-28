@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Reflection\CatalogueReflectorFactory;
 use App\Access\Contracts\VisibilityCheck;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
@@ -22,6 +21,7 @@ use App\Navigation\Exceptions\ClientKeyInvalid;
 use App\Navigation\Exceptions\ClientResolverInvalid;
 use App\Navigation\Exceptions\InvalidNavigationDeclaration;
 use App\Profiles\Enums\SlotContextType;
+use App\Reflection\CatalogueReflectorFactory;
 use App\Support\ClientDeclarations;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;

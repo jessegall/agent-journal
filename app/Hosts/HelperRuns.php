@@ -115,6 +115,7 @@ final readonly class HelperRuns
     public function accountFolderChecks(string $account, array $mountPoints, array $scratchPoints): array
     {
         $accountMount = ManifestMount::daemonBind(HelperMounts::accountFolder($account), self::ACCOUNT_TARGET, true);
+
         $scratchClear = $scratchPoints === [] ? [] : [
             $this->run('account-scratch-clear', [self::ACCOUNT_TARGET, ...$scratchPoints], [
                 'mounts' => [$accountMount],

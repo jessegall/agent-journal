@@ -14,6 +14,10 @@ final class ToolBudgetDecider implements HookDecider
     /** @param Closure(): AgentText $reason */
     public static function answer(bool $mustActNow, Closure $reason): Decision
     {
-        return $mustActNow ? Decision::deny($reason()) : Decision::delegate();
+        if ($mustActNow) {
+            return Decision::deny($reason());
+        }
+
+        return Decision::delegate();
     }
 }
