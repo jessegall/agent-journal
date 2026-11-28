@@ -12,7 +12,10 @@ export type LiveTraceStep =
     | 'chat access ended'
     | 'read started'
     | 'read applied'
-    | 'read failed';
+    | 'read failed'
+    | 'read timed out'
+    | 'read cancelled'
+    | 'read resumed';
 
 export type LiveTraceEntry = { at: string; step: LiveTraceStep };
 

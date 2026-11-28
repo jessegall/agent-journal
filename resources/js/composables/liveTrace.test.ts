@@ -21,6 +21,18 @@ describe('liveTrace', () => {
         expect(steps.every((entry) => !Number.isNaN(Date.parse(entry.at)))).toBe(true);
     });
 
+    it('names a read that timed out, one that was cancelled and one that resumed after failing', () => {
+        traceLive('read timed out');
+        traceLive('read cancelled');
+        traceLive('read resumed');
+
+        expect(liveTrace().slice(-3).map((entry) => entry.step)).toEqual([
+            'read timed out',
+            'read cancelled',
+            'read resumed',
+        ]);
+    });
+
     it('keeps only the last fifty steps', () => {
         for (let count = 0; count < 60; count++) {
             traceLive('signal received');
