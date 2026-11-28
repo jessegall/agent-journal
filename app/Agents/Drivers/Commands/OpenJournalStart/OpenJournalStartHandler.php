@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Commands\OpenHeadlessStart;
+namespace App\Agents\Drivers\Commands\OpenJournalStart;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Commands\ProbeClaimedStart\ProbeClaimedStartCommand;
-use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
 use App\Models\Agents\AgentRuntime;
@@ -15,24 +14,23 @@ use App\Sessions\StartClaims;
 use App\Sessions\StartHeartbeats;
 use Illuminate\Support\Str;
 
-final readonly class OpenHeadlessStartHandler implements CommandHandler
+final readonly class OpenJournalStartHandler implements CommandHandler
 {
     private const string TRUSTED_ENTRY = 'headless starts';
 
     private const string CHILD_UNCONFINED = "a connected child's headless turns cannot be confined to its checkout yet";
 
     public function __construct(
-        private HeadlessStarts $headless,
         private StartHeartbeats $heartbeats,
         private StartClaims $claims,
         private JournalCommands $commands,
     ) {}
 
-    public function handle(OpenHeadlessStartCommand $command): string|null
+    public function handle(OpenJournalStartCommand $command): string|null
     {
         $runtime = AgentRuntime::findForSession($command->sessionId);
 
-        if ($runtime === null || ! $this->headless->drives($runtime)) {
+        if ($runtime === null) {
             return null;
         }
 

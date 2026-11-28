@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Agents\Commands\OpenHeadlessStart\OpenHeadlessStartCommand;
+use App\Agents\Drivers\Commands\OpenJournalStart\OpenJournalStartCommand;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Hosts\Enums\HostProcessPurpose;
@@ -20,8 +20,8 @@ use Tests\TestCase;
  * its conversation chosen and its build probe ordered, with no host call; a terminal start is left to its host, and a
  * start taken already is not taken twice.
  */
-#[TestsCommand(OpenHeadlessStartCommand::class)]
-final class OpenHeadlessStartTest extends TestCase
+#[TestsCommand(OpenJournalStartCommand::class)]
+final class OpenJournalStartTest extends TestCase
 {
     use CommitsHookRows;
 
@@ -55,7 +55,7 @@ final class OpenHeadlessStartTest extends TestCase
             ],
             [$start->status, $start->host_id, $runtime->conversation_id !== null, $probe->purpose],
         );
-        $this->journal->assertResult(null, $this->journal->asSystem(new OpenHeadlessStartCommand($opened->sessionId)));
+        $this->journal->assertResult(null, $this->journal->asSystem(new OpenJournalStartCommand($opened->sessionId)));
     }
 
     public function test_a_claude_terminal_start_is_claimed_and_probed_by_the_journal_too(): void

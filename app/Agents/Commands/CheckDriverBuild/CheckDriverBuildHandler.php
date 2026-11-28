@@ -6,7 +6,7 @@ namespace App\Agents\Commands\CheckDriverBuild;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Drivers\Setup\DriverProfiles;
-use App\Agents\Drivers\Work\HeadlessStarts;
+use App\Agents\Drivers\Work\RuntimeStarts;
 use App\Agents\Exceptions\ProbeFailed;
 use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
@@ -22,7 +22,7 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
     public function __construct(
         private DriverProfiles $profiles,
         private StartHeartbeats $heartbeats,
-        private HeadlessStarts $headless,
+        private RuntimeStarts $headless,
         private JournalCommands $commands,
     ) {}
 

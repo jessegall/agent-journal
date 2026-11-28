@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Commands\OpenHeadlessStart;
+namespace App\Agents\Drivers\Commands\OpenJournalStart;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
@@ -16,7 +16,7 @@ use App\Support\Command;
  * @extends Command<string|null>
  */
 #[Entry(CommandEntry::DriverWorker)]
-final readonly class OpenHeadlessStartCommand extends Command
+final readonly class OpenJournalStartCommand extends Command
 {
     public function __construct(public string $sessionId) {}
 }

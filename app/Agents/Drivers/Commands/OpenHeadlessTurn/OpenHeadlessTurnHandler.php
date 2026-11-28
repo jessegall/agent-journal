@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Commands\OpenHeadlessTurn;
+namespace App\Agents\Drivers\Commands\OpenHeadlessTurn;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Work\DriverRequestClaims;
-use App\Agents\Drivers\Work\HeadlessStarts;
+use App\Agents\Drivers\Work\RuntimeStarts;
 use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
@@ -28,7 +28,7 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
 
     public function __construct(
         private DriverRequestClaims $claims,
-        private HeadlessStarts $headless,
+        private RuntimeStarts $headless,
         private DriverProfiles $profiles,
         private JournalCommands $commands,
     ) {}
@@ -37,8 +37,7 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
     {
         $runtime = AgentRuntime::query()->withSessionAgent()->whereKey($command->runtimeId)->lockForUpdate()->sole();
 
-        $isTurnDue = $this->headless->drives($runtime)
-            && $runtime->hasProvenStart()
+        $isTurnDue = $runtime->hasProvenStart()
             && ! $runtime->hasLiveProcess(HostProcessPurpose::AgentTurn);
 
         if (! $isTurnDue) {

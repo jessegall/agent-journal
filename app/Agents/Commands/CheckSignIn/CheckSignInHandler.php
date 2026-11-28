@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Commands\CheckSignIn;
 
 use App\Agents\Drivers\Setup\DriverProfiles;
-use App\Agents\Drivers\Work\HeadlessStarts;
+use App\Agents\Drivers\Work\RuntimeStarts;
 use App\Agents\Exceptions\ProbeFailed;
 use App\Bus\Contracts\CommandHandler;
 use App\Models\Hosts\HostProcess;
@@ -19,7 +19,7 @@ final readonly class CheckSignInHandler implements CommandHandler
         private DriverProfiles $profiles,
         private StartHeartbeats $heartbeats,
         private ServerClock $clock,
-        private HeadlessStarts $headless,
+        private RuntimeStarts $headless,
     ) {}
 
     public function handle(CheckSignInCommand $command): void

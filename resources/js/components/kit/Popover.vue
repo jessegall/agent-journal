@@ -2,10 +2,8 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 /**
- * An anchored surface that is not modal: a labelled dialog just below its anchor, aligned to one of its edges, kept
- * inside its frame and flipped above when it would pass the bottom. Placed above, it opens upward from its anchor over
- * the page, held inside the window with its own scroll, so nothing around it moves. Escape or a press outside closes
- * it and the focus returns to the anchor. Measures: docs/designs/kit-components.md.
+ * A labelled, non-modal dialog anchored below or above its anchor, kept inside the window with its own scroll, so
+ * nothing around it moves; Escape or a press outside closes it. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

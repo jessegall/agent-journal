@@ -6,10 +6,10 @@ namespace Tests\Commands\Agents;
 
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
-use App\Agents\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
+use App\Agents\Drivers\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverType;
-use App\Agents\Drivers\Work\HeadlessStarts;
+use App\Agents\Drivers\Work\RuntimeStarts;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\ContainedPlanFields;
@@ -202,7 +202,7 @@ final class OpenJournalTerminalTest extends TestCase
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->passBuildProbe('Driven'));
         $start = $this->journal->startOfSession($opened->sessionId);
         $runtime = AgentRuntime::query()->whereKey($opened->runtimeId)->sole();
-        $folder = $this->journal->service(HeadlessStarts::class)->accountFolderSeenBy($runtime, $start);
+        $folder = $this->journal->service(RuntimeStarts::class)->accountFolderSeenBy($runtime, $start);
         $signedIn = ['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => $folder];
 
         $this->journal->asSystem(new CheckSignInCommand(

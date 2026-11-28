@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Handling;
 
 use App\Accounts\Enums\CommandEntry;
-use App\Agents\Commands\OpenHeadlessStart\OpenHeadlessStartCommand;
-use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
+use App\Agents\Drivers\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
+use App\Agents\Drivers\Commands\OpenJournalStart\OpenJournalStartCommand;
 use App\Agents\Drivers\Contracts\RuntimeHandling;
 use App\Bus\Contracts\JournalCommands;
 use App\Hosts\Contracts\HostProcessEndEvent;
@@ -26,7 +26,7 @@ final readonly class TurnHandling implements RuntimeHandling
 
     public function openStart(AgentRuntime $runtime): void
     {
-        $open = new OpenHeadlessStartCommand($runtime->agent_session_id);
+        $open = new OpenJournalStartCommand($runtime->agent_session_id);
         $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $open);
     }
 

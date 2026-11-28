@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Commands\OpenJournalTerminal;
+namespace App\Agents\Drivers\Commands\OpenJournalTerminal;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Drivers\Setup\DriverProfiles;
-use App\Agents\Drivers\Work\HeadlessStarts;
+use App\Agents\Drivers\Work\RuntimeStarts;
 use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
@@ -21,7 +21,7 @@ final readonly class OpenJournalTerminalHandler implements CommandHandler
     private const string TRUSTED_ENTRY = 'journal terminals';
 
     public function __construct(
-        private HeadlessStarts $starts,
+        private RuntimeStarts $starts,
         private DriverProfiles $profiles,
         private JournalCommands $commands,
     ) {}
@@ -36,7 +36,7 @@ final readonly class OpenJournalTerminalHandler implements CommandHandler
 
         $isOpen = $runtime->hasLiveProcess(HostProcessPurpose::AgentTerminal);
 
-        if (! $this->starts->drives($runtime) || ! $runtime->hasProvenStart() || $isOpen) {
+        if (! $runtime->hasProvenStart() || $isOpen) {
             return null;
         }
 

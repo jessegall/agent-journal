@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Commands\OpenHeadlessTurn;
+namespace App\Agents\Drivers\Commands\OpenHeadlessTurn;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;

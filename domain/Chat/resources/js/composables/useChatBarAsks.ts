@@ -5,7 +5,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from "vue";
  * reach the bar's tabs; the list of one agent's chat opens from the caret on its tab or Option+F.
  */
 
-// Each ask is counted, so asking twice for the same thing answers twice.
+// Each ask is counted, so asking twice for the same chat list answers twice.
 const chatListAsks = ref<{ agentId: string; count: number } | null>(null);
 const newChatAsks = ref(0);
 const chatChoiceAsks = ref<{ agentId: string; sessionId: string | null; count: number } | null>(null);
