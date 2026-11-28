@@ -640,6 +640,22 @@
             "claude_code": "2.1.323",
             "codex": "0.165.0",
             "built_at": "2026-11-27T22:33:00+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:bb45b6befce9a738670a45e48628f72b2d1aae81438e5435b8c79b76290fed17",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-28T00:37:02+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:bb40f73a37602ba8bceb03d9189052144df43d4ae5f94d3c42a56b4b305ff456",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-28T00:38:42+00:00"
         }
     ]
 }
