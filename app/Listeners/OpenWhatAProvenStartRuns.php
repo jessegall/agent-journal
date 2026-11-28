@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Commands\RefuseProvenStart\RefuseProvenStartCommand;
-use App\Agents\Drivers\Work\HeadlessStarts;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Bus\Contracts\CommandRefusal;
 use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
@@ -21,14 +21,14 @@ final readonly class OpenWhatAProvenStartRuns implements Listener
 {
     private const string TRUSTED_ENTRY = 'headless starts';
 
-    public function __construct(private HeadlessStarts $headless, private JournalCommands $commands) {}
+    public function __construct(private DriverCatalogue $drivers, private JournalCommands $commands) {}
 
     public function handle(AgentRuntimeStartProven $fact): void
     {
         $runtime = AgentRuntime::query()->whereKey($fact->runtimeId)->sole();
 
         try {
-            $this->headless->openProven($runtime);
+            $this->drivers->forRuntime($runtime)->continueAgent($runtime);
         } catch (CommandRefusal $refusal) {
             $refuse = new RefuseProvenStartCommand($runtime->id, $refusal->getMessage());
             $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $refuse);
