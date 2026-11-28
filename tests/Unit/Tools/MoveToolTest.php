@@ -181,7 +181,7 @@ final class MoveToolTest extends TestCase
             [
                 'imports' => ['App\\Contracts\\Hosts'],
                 'implements' => ['App\\Contracts\\Hosts'],
-                'members' => ['kept', 'LABEL', 'hosts'],
+                'members' => ['LABEL', 'kept', 'hosts'],
                 'comments' => ['hosts' => ['// The hosts it was handed.']],
                 'classes read' => ['Kept'],
             ],

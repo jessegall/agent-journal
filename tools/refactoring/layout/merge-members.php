@@ -23,6 +23,7 @@ use PhpParser\NodeVisitor\NameResolver;
 
 require dirname(__DIR__, 3).'/vendor/autoload.php';
 require_once dirname(__DIR__).'/php-parse.php';
+require_once __DIR__.'/class-members.php';
 
 main($argv);
 
@@ -198,7 +199,8 @@ function promotedNames(ClassMethod $method): array
 }
 
 /**
- * The old class's members, with their comments, put before the kept class's closing brace.
+ * The kept class's body with the old class's members in it. A class laid out in sections gets them before its closing
+ * brace; any other is laid out again: trait uses, constants, properties, the constructor, public, then private methods.
  *
  * @return list<array{int, int, string}>
  */
@@ -208,19 +210,44 @@ function memberEdit(string $oldSource, Class_ $oldClass, string $keptSource, Cla
         return [];
     }
 
-    $first = $oldClass->stmts[0];
-    $start = $first->getComments() === [] ? $first->getStartFilePos() : $first->getComments()[0]->getStartFilePos();
-    $start = (int) strrpos(substr($oldSource, 0, $start), "\n") + 1;
-    $end = $oldClass->stmts[count($oldClass->stmts) - 1]->getEndFilePos() + 1;
-    $members = rtrim(substr($oldSource, $start, $end - $start));
     $brace = $keptClass->getEndFilePos();
-    $before = rtrim(substr($keptSource, 0, $brace));
-    $separator = $keptClass->stmts === [] ? "\n" : "\n\n";
+
+    if (str_contains(substr($keptSource, $keptClass->getStartFilePos(), $brace - $keptClass->getStartFilePos()), '// ----------[')) {
+        $before = rtrim(substr($keptSource, 0, $brace));
+        $members = implode("\n\n", array_map(fn (Node $member) => memberText($oldSource, $member), $oldClass->stmts));
+
+        return [[
+            strlen($before),
+            $brace,
+            "\n\n{$members}\n",
+        ]];
+    }
+
+    $members = [
+        ...array_map(fn (Node $member) => [
+            memberRank($member),
+            memberText($keptSource, $member),
+        ], $keptClass->stmts),
+        ...array_map(fn (Node $member) => [
+            memberRank($member),
+            memberText($oldSource, $member),
+        ], $oldClass->stmts),
+    ];
+    $ranked = array_keys($members);
+    usort($ranked, fn (int $left, int $right) => [
+        $members[$left][0],
+        $left,
+    ] <=> [
+        $members[$right][0],
+        $right,
+    ]);
+    $body = implode("\n\n", array_map(fn (int $index) => $members[$index][1], $ranked));
+    $open = (int) strpos($keptSource, '{', ($keptClass->name ?? $keptClass)->getEndFilePos()) + 1;
 
     return [[
-        strlen($before),
+        $open,
         $brace,
-        "{$separator}{$members}\n",
+        "\n{$body}\n",
     ]];
 }
 

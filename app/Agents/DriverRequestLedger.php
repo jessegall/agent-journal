@@ -20,12 +20,13 @@ use App\Values\DriverRequestPayload;
 use App\Values\StackTarget;
 
 /**
- * Appends driver requests to a runtime's one ordered ledger inside the caller's bus transaction, locking the session,
- * then the runtime, then its requests; it does no host I/O. A repeated key with the same content gives the same
- * receipt, other content conflicts; a stopping runtime takes nothing more.
+ * A runtime's one ordered ledger of driver requests, changed inside the caller's bus transaction with no host I/O: it
+ * appends requests, ends them with the navigation tied to them, and records an operator's recovery of one.
  */
 final readonly class DriverRequestLedger
 {
+    public function __construct(private CurrentActor $actors, private CommandFacts $facts) {}
+
     public function append(
         StackTarget $target,
         DriverOperation $operation,
@@ -130,23 +131,6 @@ final readonly class DriverRequestLedger
         return $this->lockedRuntime($target);
     }
 
-    private function lockedRuntime(StackTarget $target): AgentRuntime
-    {
-        $session = AgentSession::query()
-            ->whereKey($target->sessionId)
-            ->ofAgent($target->agentId)
-            ->lockForUpdate()
-            ->firstOr(DriverRequestRefused::throwing()->noRuntime($target));
-
-        if (! $session->isActive()) {
-            throw DriverRequestRefused::sessionEnded($target);
-        }
-
-        return AgentRuntime::query()->ofAgentSession($target->sessionId)->lockForUpdate()->firstOr(
-            DriverRequestRefused::throwing()->noRuntime($target),
-        );
-    }
-
     public function cancel(DriverRequest $request): void
     {
         $request->cancel();
@@ -205,6 +189,45 @@ final readonly class DriverRequestLedger
         $this->cancelQueuedRoundsOf($navigation);
     }
 
+    /**
+     * @throws DriverRequestRefused
+     */
+    public function lockedAt(string $requestId, int $expectedRowVersion): DriverRequest
+    {
+        $request = DriverRequest::findLockedById($requestId);
+
+        if (! $request->isAtRowVersion($expectedRowVersion)) {
+            throw DriverRequestRefused::changedSinceRead($requestId, $expectedRowVersion, $request->row_version);
+        }
+
+        return $request;
+    }
+
+    public function record(DriverRequest $request, RecoveryAction $action, string $reason): int
+    {
+        $actor = $this->actors->actor();
+        $this->facts->publishAfterCommit(new DriverRequestRecovered($request->id, $action, $actor, $reason));
+
+        return $request->row_version;
+    }
+
+    private function lockedRuntime(StackTarget $target): AgentRuntime
+    {
+        $session = AgentSession::query()
+            ->whereKey($target->sessionId)
+            ->ofAgent($target->agentId)
+            ->lockForUpdate()
+            ->firstOr(DriverRequestRefused::throwing()->noRuntime($target));
+
+        if (! $session->isActive()) {
+            throw DriverRequestRefused::sessionEnded($target);
+        }
+
+        return AgentRuntime::query()->ofAgentSession($target->sessionId)->lockForUpdate()->firstOr(
+            DriverRequestRefused::throwing()->noRuntime($target),
+        );
+    }
+
     private function cancelNavigationOf(DriverRequest $request): void
     {
         $open = NavigationRequest::query()
@@ -237,29 +260,5 @@ final readonly class DriverRequestLedger
         foreach ($queued as $round) {
             $this->cancel($round);
         }
-    }
-
-    public function __construct(private CurrentActor $actors, private CommandFacts $facts) {}
-
-    /**
-     * @throws DriverRequestRefused
-     */
-    public function lockedAt(string $requestId, int $expectedRowVersion): DriverRequest
-    {
-        $request = DriverRequest::findLockedById($requestId);
-
-        if (! $request->isAtRowVersion($expectedRowVersion)) {
-            throw DriverRequestRefused::changedSinceRead($requestId, $expectedRowVersion, $request->row_version);
-        }
-
-        return $request;
-    }
-
-    public function record(DriverRequest $request, RecoveryAction $action, string $reason): int
-    {
-        $actor = $this->actors->actor();
-        $this->facts->publishAfterCommit(new DriverRequestRecovered($request->id, $action, $actor, $reason));
-
-        return $request->row_version;
     }
 }
