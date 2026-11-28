@@ -15,7 +15,6 @@ import (
 	"slices"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -58,16 +57,45 @@ type program struct {
 	output   *playedOutput
 }
 
-// playedOutput closes once a container's recorded output was played whole on its attach; a container read by its
-// logs is never attached, and its wait holds for nothing.
+// playedOutput tracks the container's attachments and releases its recorded wait when it finishes or is stopped.
 type playedOutput struct {
-	done       chan struct{}
-	once       sync.Once
-	isAttached atomic.Bool
+	done        chan struct{}
+	once        sync.Once
+	mutex       sync.Mutex
+	attachments []net.Conn
+	stopped     bool
 }
 
 func (output *playedOutput) finish() {
 	output.once.Do(func() { close(output.done) })
+}
+
+func (output *playedOutput) attach(connection net.Conn) bool {
+	output.mutex.Lock()
+	defer output.mutex.Unlock()
+	if output.stopped {
+		return false
+	}
+	output.attachments = append(output.attachments, connection)
+	return true
+}
+
+func (output *playedOutput) isAttached() bool {
+	output.mutex.Lock()
+	defer output.mutex.Unlock()
+	return len(output.attachments) > 0
+}
+
+func (output *playedOutput) stop() {
+	output.mutex.Lock()
+	output.stopped = true
+	attachments := output.attachments
+	output.attachments = nil
+	output.mutex.Unlock()
+	for _, connection := range attachments {
+		_ = connection.Close()
+	}
+	output.finish()
 }
 
 // countedOutput passes the replay's output and its moments on and tells once the recorded output was written whole,
@@ -178,8 +206,14 @@ func (playing *Playing) IsPlayedWhole() bool {
 	return playing.replay.IsPlayedWhole()
 }
 
-// heard keeps the live environment of each container created, by the name and the id the recording gave it.
+// heard tracks the containers created and stopped by recorded Docker calls.
 func (playing *Playing) heard(call recorded.Call, body []byte) {
+	if strings.HasSuffix(call.Answered.Path, "/stop") && *call.Answered.Status == http.StatusNoContent {
+		if ran, found := playing.programs[containerOf(call.Answered.Path)]; found {
+			ran.output.stop()
+		}
+		return
+	}
 	if !strings.HasSuffix(call.Answered.Path, "/containers/create") {
 		return
 	}
@@ -257,7 +291,9 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 		playing.printRun(key, connection)
 		return
 	}
-	ran.output.isAttached.Store(true)
+	if !ran.output.attach(connection) {
+		return
+	}
 	defer ran.output.finish()
 	fixture, err := recording.Load(ran.exchange.Folder)
 	if err != nil {
@@ -282,8 +318,7 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 	_ = recording.GatedReplay(fixture, buffered, written, playedPause, playing.heardTyped)
 }
 
-// answering holds a container's wait until its recorded output was played whole, as Docker answers a wait only once
-// the container's output reached its attach; every other answer goes as it is.
+// answering holds a container's wait until its playback finishes or a stop ends its attachments.
 func (playing *Playing) answering(call recorded.Call, body []byte) []byte {
 	if !strings.HasSuffix(call.Answered.Path, "/wait") {
 		return body
@@ -291,7 +326,7 @@ func (playing *Playing) answering(call recorded.Call, body []byte) []byte {
 	playing.mutex.Lock()
 	ran, isDriver := playing.programs[containerOf(call.Answered.Path)]
 	playing.mutex.Unlock()
-	if !isDriver || !ran.output.isAttached.Load() {
+	if !isDriver || !ran.output.isAttached() {
 		return body
 	}
 	select {

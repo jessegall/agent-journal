@@ -3,7 +3,9 @@ package dockermock
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -77,6 +79,62 @@ func TestACallTheRecordingDoesNotHoldFailsNamingIt(t *testing.T) {
 	}
 	if !strings.Contains(refused.failure, "GET /v1.51/plugins") {
 		t.Fatalf("an unrecorded call failed with %q, not naming it", refused.failure)
+	}
+}
+
+func TestARecordedStopReleasesWaitBeforeAllTerminalInputArrives(t *testing.T) {
+	scenario := recorded.MustLoad(t, "terminal-turn")
+	playing := Play(t, scenario)
+	terminal := terminalExchange(t, scenario)
+	calls, err := scenario.Calls(recording.WireDocker)
+	if err != nil {
+		t.Fatal(err)
+	}
+	stopIndex := slices.IndexFunc(calls, func(call recorded.Call) bool {
+		return strings.HasSuffix(call.Asked.Path, "/stop") &&
+			playing.programs[containerOf(call.Asked.Path)].exchange.Name == terminal.Name
+	})
+	if stopIndex < 0 {
+		t.Fatal("the recording never stops its terminal container")
+	}
+	stop := calls[stopIndex].Asked
+	name := containerOf(stop.Path)
+	waitIndex := slices.IndexFunc(calls, func(call recorded.Call) bool {
+		return strings.HasSuffix(call.Asked.Path, "/wait") && containerOf(call.Asked.Path) == name
+	})
+	if waitIndex < 0 {
+		t.Fatal("the recording never waits for the terminal container to exit")
+	}
+	local, peer := net.Pipe()
+	defer local.Close()
+	defer peer.Close()
+	if !playing.programs[name].output.attach(local) {
+		t.Fatal("the terminal container was stopped before it was attached")
+	}
+	if err := send(strings.TrimPrefix(playing.Host(), "tcp://"), stop); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+	defer cancel()
+	wait := calls[waitIndex]
+	path := wait.Asked.Path + queryOf(wait.Asked.Query)
+	request, err := http.NewRequestWithContext(ctx, wait.Asked.Method, playing.server.URL+path, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := playing.server.Client().Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil || response.StatusCode != *wait.Answered.Status || !bytes.Equal(body, decoded(wait.Answered.Body)) {
+		t.Fatalf("the stopped container's wait returned %d and %q (%v)", response.StatusCode, body, err)
+	}
+	deadline, _ := ctx.Deadline()
+	_ = peer.SetReadDeadline(deadline)
+	if _, err := peer.Read(make([]byte, 1)); !errors.Is(err, io.EOF) {
+		t.Fatalf("a stopped container left its terminal attached: %v", err)
 	}
 }
 
