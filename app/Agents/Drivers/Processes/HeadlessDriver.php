@@ -14,7 +14,6 @@ use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityComma
 use App\Agents\Drivers\Contracts\ProcessDriver;
 use App\Agents\Drivers\Contracts\TurnResult;
 use App\Agents\Drivers\Enums\DriverOperation;
-use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Hosts\Commands\CloseHostInput\CloseHostInputCommand;
@@ -190,18 +189,19 @@ final class HeadlessDriver implements ProcessDriver
     }
 
     /**
-     * What the runtime does now, as its turn shows it: running while the turn runs, idle once it ended.
+     * What the runtime does now, as its turn shows it: running while the turn runs, idle once it ended; a hold the
+     * runtime has, such as an interrupt the user releases, stays.
      */
     private function activity(RuntimeActivity $activity): NotifyRuntimeActivityCommand
     {
-        $generation = AgentRuntime::query()->whereKey($this->process->agent_runtime_id)->value('process_generation');
+        $runtime = AgentRuntime::query()->whereKey($this->process->agent_runtime_id)->sole();
 
         return new NotifyRuntimeActivityCommand(
             $this->process->host_id,
-            (string) $this->process->agent_runtime_id,
+            $runtime->id,
             $activity,
-            HoldReason::None,
-            (int) $generation,
+            $runtime->hold_reason,
+            $runtime->process_generation,
         );
     }
 
