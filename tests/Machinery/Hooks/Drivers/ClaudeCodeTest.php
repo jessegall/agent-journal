@@ -7,6 +7,7 @@ namespace Tests\Machinery\Hooks\Drivers;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\Enums\DriverPermission;
 use App\Agents\Drivers\Hooks\DriverReply;
+use App\Agents\Drivers\Hooks\HookPayload;
 use App\Agents\Drivers\Hooks\JudgedCall;
 use App\Agents\Drivers\Hooks\NotificationCall;
 use App\CommandRules\Enums\CommandType;
@@ -23,6 +24,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\ChecksProgramAdapter;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Recordings\TestScenario;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -100,12 +102,14 @@ final class ClaudeCodeTest extends TestCase
 
     public function test_a_start_after_compaction_is_the_compaction_under_the_callback_id(): void
     {
-        $input = $this->inputOf(
-            $this->adapter()->callFor($this->payload('session resume after compaction'), $this->hook()),
-        );
+        $this->journal->scenario('claude-code/terminal-compact', function (TestScenario $turn): void {
+            $payload = HookPayload::from($turn->hookFields('SessionStart', 2));
+            $input = $this->inputOf($this->adapter()->callFor($payload, $this->hook()));
 
-        $this->assertInstanceOf(ContextCompacted::class, $input);
-        $this->assertSame('call-1', $input->compactionId());
+            $this->assertInstanceOf(ContextCompacted::class, $input);
+            $this->assertSame('call-1', $input->compactionId());
+            $this->assertTrue($this->adapter()->capabilities()->supports($input->methodName()));
+        });
     }
 
     public function test_a_journal_allow_answers_allow_so_no_user_is_asked(): void

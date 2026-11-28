@@ -292,15 +292,17 @@ final class ClaudeCodeHooksTest extends TestCase
 
     public function test_a_clear_keeps_the_journal_session_and_records_the_new_program_session(): void
     {
-        $startup = $this->recordedHookBody('claude-code/terminal-turn', 'SessionStart');
-        $clear = '{"session_id":"driver-session-2","hook_event_name":"SessionStart","source":"clear"}';
-        $this->hook('claude-code', $startup, 'call-1')->assertOk();
-        $this->hook('claude-code', $clear, 'call-2')->assertOk();
+        $this->journal->scenario('claude-code/terminal-clear', function (TestScenario $turn): void {
+            $turn->sendHook('SessionStart', 1, fn (string $body) => $this->hook('claude-code', $body, 'call-1')->assertOk())
+                ->sendHook('SessionStart', 2, fn (string $body) => $this->hook('claude-code', $body, 'call-2')->assertOk());
 
-        $this->assertSame(1, AgentSession::query()->count());
-        $conversation = $this->start->session->fresh(['currentConversation'])?->currentConversation;
-        $this->assertSame('driver-session-2', $conversation?->native_id);
-        $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
+            $this->assertSame(1, AgentSession::query()->count());
+            $conversation = $this->start->session->fresh(['currentConversation'])?->currentConversation;
+            $clear = $turn->hookFields('SessionStart', 2);
+            $this->assertSame('clear', $clear['source']);
+            $this->assertSame($clear['session_id'], $conversation?->native_id);
+            $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
+        });
     }
 
     public function test_an_unknown_program_has_no_endpoint(): void
