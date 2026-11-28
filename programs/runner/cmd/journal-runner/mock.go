@@ -41,7 +41,7 @@ const crashLine = "crash"
 var errCrashed = errors.New("crash typed")
 
 // mock runs a mock for a dependency the suite must not reach for real: "mock docker --socket <path>"
-// serves the Docker mock daemon on that socket, its containers running the echo program, until stopped;
+// serves the Docker mock daemon on that socket, its containers playing the recorded programs it is given, until stopped;
 // "mock recording --recording <folder> --started <file> --transcript <file> -- <arguments>" plays a terminal
 // recording in place of the program it was recorded from; "mock keys --record <file>" writes every byte typed on its
 // terminal into the file and draws the typed text on its screen; "mock print --recording <folder>" prints what a
@@ -79,7 +79,7 @@ func mockDocker(arguments []string) error {
 	socket := flags.String("socket", "", "the Unix socket the daemon listens on")
 	image := flags.String("image", "", "an image the daemon holds, by digest")
 	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends")
-	sessionRecording := flags.String("recording", "", "the terminal recording a session's container plays; echo without one")
+	sessionRecording := flags.String("recording", "", "the terminal recording a session's container plays")
 	program := flags.String("executable", "", "the executable a session's container runs, by its name")
 	versionRecording := flags.String("version-recording", "", "the exchange recording of what the program prints for --version")
 	signInRecording := flags.String("sign-in-recording", "", "the exchange recording of what the program prints for auth")
@@ -90,7 +90,7 @@ func mockDocker(arguments []string) error {
 		return err
 	}
 	// Every recording is read before the socket opens, so a bad one ends the mock before a socket nobody serves exists.
-	programs := func(*dockermock.Container) dockermock.Program { return dockermock.EchoProgram }
+	programs := func(*dockermock.Container) dockermock.Program { return nil }
 	if *sessionRecording != "" {
 		fixture, err := recording.Load(*sessionRecording)
 		if err != nil {

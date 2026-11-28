@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -149,28 +148,25 @@ func TestAnOpenContainerRunsAndIsReportedRunning(t *testing.T) {
 
 func TestACrashedContainerHealedOnACrashIsStartedAgainAndANeverContainerIsLeftDown(t *testing.T) {
 	daemon := dockermock.Start(t, mockImage)
-	var starts atomic.Int32
-	daemon.Programs = func(container *dockermock.Container) dockermock.Program {
-		return func(ctx context.Context, _ *dockermock.Container, _ io.Reader, _ io.Writer) int {
-			if starts.Add(1) == 1 {
-				return 1
-			}
-			<-ctx.Done()
-			return 0
-		}
-	}
+	daemon.Play(dockermock.RecordedProgramOf(t, "claude-code", "terminal-turn", "/bin/sh").Run)
+	killed := dockermock.RecordedProgramOf(t, "claude-code", "killed-mid-turn", "/bin/sh")
 	table, sent := mockTable(t, daemon)
 
 	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), openInstruction(t, "healed", "on_crash", mockImage)); err != nil {
 		t.Fatal(err)
 	}
+	sent.waitFor(t, "running")
+	healed, _ := daemon.Container("journal-process-healed")
+	healed.Exit(killed.ExitCode())
 	sent.waitFor(t, "running", "restarted")
 
-	starts.Store(0)
 	neverTable, neverSent := mockTable(t, daemon)
 	if _, err := carry(testInstructions{ProcessTable: neverTable}, "open_container")(context.Background(), openInstruction(t, "never", "never", mockImage)); err != nil {
 		t.Fatal(err)
 	}
+	neverSent.waitFor(t, "running")
+	never, _ := daemon.Container("journal-process-never")
+	never.Exit(killed.ExitCode())
 	neverSent.waitFor(t, "running", "exited")
 }
 
@@ -305,19 +301,8 @@ func TestReportsMadeWhileTheJournalIsAwayAreSentInOrderOnceItIsBack(t *testing.T
 
 func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *testing.T) {
 	daemon := dockermock.Start(t, mockImage)
-	printAgain := make(chan struct{})
-	daemon.Programs = func(container *dockermock.Container) dockermock.Program {
-		return func(ctx context.Context, _ *dockermock.Container, _ io.Reader, output io.Writer) int {
-			_, _ = output.Write([]byte("first\n"))
-			select {
-			case <-printAgain:
-			case <-ctx.Done():
-				return 1
-			}
-			_, _ = output.Write([]byte("second\n"))
-			return 0
-		}
-	}
+	turn := dockermock.RecordedProgramOf(t, "claude-code", "terminal-turn", "/bin/sh")
+	daemon.Play(turn.Run)
 	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
 		t.Fatal(err)
@@ -338,24 +323,24 @@ func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *t
 	if _, err := carry(testInstructions{ProcessTable: open(before)}, "open_container")(context.Background(), instruction); err != nil {
 		t.Fatal(err)
 	}
-	waitForText(t, before, "first\n")
+	waitForText(t, before, turn.PrintedBefore(0))
 
 	restarted := open(after)
 	if err := restarted.Adopt(context.Background()); err != nil {
 		t.Fatal(err)
 	}
-	close(printAgain)
+	running, _ := daemon.Container("journal-process-turn")
+	running.Type(turn.Input(0))
 
-	waitForText(t, after, "second\n")
+	waitForText(t, after, turn.PrintedAfter(0))
 	t.Cleanup(func() { stopAndWait(daemon, restarted) })
 }
 
 // A pipe container whose program prints and exits at once, as a sign-in probe does, has all it printed read.
 func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.T) {
 	daemon := dockermock.Start(t, mockImage)
-	daemon.Programs = func(*dockermock.Container) dockermock.Program {
-		return dockermock.Printing("{\"loggedIn\":true}\n", 0)
-	}
+	signIn := dockermock.RecordedProgramOf(t, "claude-code", "headless-turn", "auth")
+	daemon.Play(signIn.Run)
 	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
 		t.Fatal(err)
@@ -376,7 +361,7 @@ func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.
 		t.Fatal(err)
 	}
 
-	waitForText(t, sent, "{\"loggedIn\":true}\n")
+	waitForText(t, sent, signIn.Printed())
 	t.Cleanup(func() { stopAndWait(daemon, table) })
 }
 

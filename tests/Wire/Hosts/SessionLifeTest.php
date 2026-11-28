@@ -12,7 +12,6 @@ use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
 use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
-use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Hosts\HostInstruction;
@@ -23,8 +22,8 @@ use Tests\Support\Agents\TestAgent;
 use Tests\Support\Assertions\Assert;
 use Tests\Support\Assertions\Facts\HostInstructionFacts;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Drivers\HandTypedProcessDriver;
 use Tests\Support\Entries\Attributes\OverTheWire;
-use Tests\Support\Hosts\EchoProcessDriver;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Seeding\TestJournal;
@@ -57,6 +56,11 @@ final class SessionLifeTest extends TestCase
     /**
      * The row of the recorded Codex terminal that shows it took the first message.
      */
+    /**
+     * The first message the Claude Code terminal is opened with, as its recorded turn was.
+     */
+    private const string FIRST_MESSAGE = 'Count slowly from 1 to 300, then say done.';
+
     private const string CODEX_ANSWER = '• I’ll run ls, then write a 600-word essay about terminals.';
 
     private const array TABLES = [
@@ -81,65 +85,57 @@ final class SessionLifeTest extends TestCase
         'users',
     ];
 
-    public function test_a_session_starts_answers_survives_a_host_restart_and_stops(): void
+    public function test_a_container_survives_a_host_restart_and_stops(): void
     {
-        $this->startEchoSession()
-            ->hostProcess('echo', fn (TestHostProcess $echo) => $echo->driveUntil($this->echoed('hello')))
-            ->testHost(fn (TestHost $mac) => $mac->restartHost())
-            ->hostProcess('echo', fn (TestHostProcess $echo) => $echo
+        $this->journal
+            ->driveProcessesWith(HostProcessPurpose::Probe, HandTypedProcessDriver::class)
+            ->enrollHost('Mac', [base_path()])
+            ->runTestHost('Mac', fn (TestHost $mac) => $mac
+                ->openRecordedTerminal('recorded')
+                ->process('recorded', fn (TestHostProcess $recorded) => $recorded
+                    ->waitFor(HostProcessStatus::Running)
+                    ->driveUntil(fn (Assert $journal) => $journal->has('hostProcesses.recorded.rows')))
+                ->restartHost())
+            ->hostProcess('recorded', fn (TestHostProcess $recorded) => $recorded
                 ->beginWorker()
-                ->driveUntil($this->ordered('echo', HostInstructionType::Snapshot, 2)))
-            ->asSystem($this->stopOf('echo'));
+                ->driveUntil($this->ordered('recorded', HostInstructionType::Snapshot, 2)))
+            ->asSystem($this->stopOf('recorded'));
 
         $this->journal
-            ->hostProcess('echo', fn (TestHostProcess $echo) => $echo->waitFor(HostProcessStatus::Exited))
-            ->assertJournal(fn (Assert $journal) => $journal->has('hostProcesses.echo', fn (Assert $echo) => $echo
-                ->where('instructionCounts.'.HostInstructionType::WriteKeys->value, 1)
+            ->hostProcess('recorded', fn (TestHostProcess $recorded) => $recorded->waitFor(HostProcessStatus::Exited))
+            ->assertJournal(fn (Assert $journal) => $journal->has('hostProcesses.recorded', fn (Assert $recorded) => $recorded
                 ->where('workerGeneration', fn (int $generation) => $generation >= 1)
                 ->etc()));
     }
 
     public function test_a_worker_that_dies_after_ordering_the_paste_is_replaced_without_a_second_paste(): void
     {
-        $this->startEchoSession()
-            ->hostProcess('echo', fn (TestHostProcess $echo) => $echo
-                ->driveUntil($this->ordered('echo', HostInstructionType::WriteKeys, 1))
+        $this->arrangeTerminalHost()->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5');
+
+        $this->journal
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+                ->driveUntil(fn (Assert $journal) => $this->pastesOf($journal, 'terminal') === 1)
                 ->beginWorker()
-                ->driveUntil($this->echoed('hello')))
-            ->assertJournal(fn (Assert $journal) => $journal->has('hostProcesses.echo', fn (Assert $echo) => $echo
-                ->where('instructionCounts.'.HostInstructionType::WriteKeys->value, 1)
-                ->where('workerGeneration', 2)
-                ->etc()));
+                ->driveUntil($this->answeredOn('terminal'), seconds: 20))
+            ->assertJournal(fn (Assert $journal) => $journal
+                ->where('hostProcesses.terminal.workerGeneration', 2)
+                ->where('hostProcesses.terminal.instructions', fn () => $this->pastesOf($journal, 'terminal') === 1));
     }
 
     public function test_a_journal_that_dies_mid_delivery_has_the_message_typed_and_answered_once_it_is_back(): void
     {
-        $this->startEchoSession()
-            ->hostProcess('echo', fn (TestHostProcess $echo) => $echo
-                ->driveUntil($this->ordered('echo', HostInstructionType::WriteKeys, 1)))
-            ->testHost(fn (TestHost $mac) => $mac->restartJournal())
-            ->hostProcess('echo', fn (TestHostProcess $echo) => $echo
-                ->driveUntil($this->echoed('hello'), HostInstruction::CLAIM_SECONDS * 2))
-            ->assertJournal(fn (Assert $journal) => $journal->where(
-                'hostProcesses.echo.rows',
-                fn (array $rows) => count(array_keys($rows, 'echo: hello', true)) === 1,
-            ));
-    }
+        $this->arrangeTerminalHost()->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5');
 
-    public function test_a_crashed_container_healed_on_a_crash_runs_again(): void
-    {
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
-            ->enrollHost('Mac', [base_path()])
-            ->runTestHost('Mac', fn (TestHost $mac) => $mac
-                ->openEchoContainer('echo', restart: RestartPolicy::OnCrash)
-                ->process('echo', fn (TestHostProcess $echo) => $echo
-                    ->waitFor(HostProcessStatus::Running)
-                    ->driveUntil(fn (Assert $journal) => $journal->has('hostProcesses.echo.rows'))
-                    ->type("crash\r")
-                    ->driveUntil(fn (Assert $journal) => $journal->where('hostProcesses.echo.generation', 1))))
-            ->assertJournal(fn (Assert $journal) => $journal
-                ->where('hostProcesses.echo.status', HostProcessStatus::Running));
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+                ->driveUntil(fn (Assert $journal) => $this->pastesOf($journal, 'terminal') === 1))
+            ->testHost(fn (TestHost $mac) => $mac->restartJournal())
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+                ->driveUntil($this->answeredOn('terminal'), HostInstruction::CLAIM_SECONDS * 2))
+            ->assertJournal(fn (Assert $journal) => $journal->where(
+                'hostProcesses.terminal.instructions',
+                fn () => $this->pastesOf($journal, 'terminal') === 1,
+            ));
     }
 
     public function test_a_headless_turn_is_opened_driven_and_finished_by_the_journal(): void
@@ -294,7 +290,7 @@ final class SessionLifeTest extends TestCase
             );
 
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, HandTypedProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
             ->runTestHost('Mac', fn (TestHost $mac) => $mac
                 ->openKeyRecorder('keys')
@@ -407,7 +403,7 @@ final class SessionLifeTest extends TestCase
                 model: $model,
                 firstMessage: $driver === 'codex'
                     ? 'Run the shell command: ls. Then write a 600 word essay about terminals.'
-                    : 'Count slowly from 1 to 300, then say done.',
+                    : self::FIRST_MESSAGE,
             )
             ->proveStart(HostProcessPurpose::AgentTerminal, $name));
 
@@ -535,12 +531,26 @@ final class SessionLifeTest extends TestCase
     }
 
     /**
-     * The echo program's screen shows the text echoed back.
+     * A row of the named terminal's screen is the answer of the recorded turn.
      */
-    private function echoed(string $text): Closure
+    private function answeredOn(string $name): Closure
     {
-        return fn (Assert $journal) => $journal
-            ->where('hostProcesses.echo.rows', fn (array|null $rows) => in_array("echo: {$text}", $rows ?? [], true));
+        return fn (Assert $journal) => $journal->where(
+            "hostProcesses.{$name}.rows",
+            fn (array|null $rows) => in_array('done', array_map(trim(...), $rows ?? []), true),
+        );
+    }
+
+    /**
+     * How many keys the journal ordered typed into the named terminal hold the first message.
+     */
+    private function pastesOf(Assert $journal, string $name): int
+    {
+        return count(array_filter(
+            $journal->value("hostProcesses.{$name}.instructions") ?? [],
+            fn (HostInstructionFacts $instruction) => $instruction->facts()['type'] === HostInstructionType::WriteKeys
+                && str_contains(base64_decode($instruction->facts()['payload']()['bytes'], true) ?: '', self::FIRST_MESSAGE),
+        ));
     }
 
     /**
@@ -574,26 +584,5 @@ final class SessionLifeTest extends TestCase
             1000,
             HostInstructionSource::fromJournal(),
         );
-    }
-
-    /**
-     * The echo program runs on the test host for a runtime whose first message is hello.
-     */
-    private function startEchoSession(): TestJournal
-    {
-        $this->chooseActiveAccounts();
-
-        return $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
-            ->owner()
-            ->showDriverArrangements()
-            ->idleAgent('Echo')
-            ->enrollHost('Mac', [base_path()])
-            ->runTestHost('Mac', fn (TestHost $mac) => $mac)
-            ->withAgent('Echo', fn (TestAgent $echo) => $echo
-                ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal, firstMessage: 'hello'))
-            ->testHost(fn (TestHost $mac) => $mac
-                ->openEchoContainer('echo', $this->journal->openedRuntimeOf('Echo')->runtimeId)
-                ->process('echo', fn (TestHostProcess $echo) => $echo->waitFor(HostProcessStatus::Running)));
     }
 }

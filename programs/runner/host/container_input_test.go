@@ -2,7 +2,6 @@ package host
 
 import (
 	"context"
-	"io"
 	"strings"
 	"testing"
 
@@ -13,13 +12,8 @@ import (
 // it reaches its program, closing it ends that input, and what the program printed is in its log.
 func TestAContainerThatTakesInputReadsWhatIsWrittenWithNoTerminal(t *testing.T) {
 	daemon := dockermock.Start(t, recordedImage)
-	daemon.Programs = func(*dockermock.Container) dockermock.Program {
-		return func(_ context.Context, _ *dockermock.Container, input io.Reader, output io.Writer) int {
-			_, _ = io.Copy(output, input)
-
-			return 0
-		}
-	}
+	turn := dockermock.RecordedProgramOf(t, "claude-code", "terminal-turn", "/bin/sh")
+	daemon.Play(turn.Run)
 	containers, err := containersRecordedInto(daemon.Host(), ContainerRules{Arrangement: Local}, recordedRun(t, false))
 	if err != nil {
 		t.Fatal(err)
@@ -36,7 +30,7 @@ func TestAContainerThatTakesInputReadsWhatIsWrittenWithNoTerminal(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := input.Write([]byte("{\"method\":\"initialize\"}\n")); err != nil {
+	if _, err := input.Write(turn.Inputs()); err != nil {
 		t.Fatal(err)
 	}
 	if err := input.Close(); err != nil {
@@ -50,11 +44,17 @@ func TestAContainerThatTakesInputReadsWhatIsWrittenWithNoTerminal(t *testing.T) 
 		t.Fatal(err)
 	}
 	defer printed.Close()
-	piece, err := NextPrinted(printed)
+	read := ""
+	for !strings.Contains(read, turn.PrintedAfter(0)) {
+		piece, err := NextPrinted(printed)
+		if err != nil {
+			t.Fatalf("the server printed %q, without its answer to what was written (%v)", read, err)
+		}
+		read += string(piece.Bytes)
+	}
 	created, _ := daemon.Container("server")
-	if err != nil || !strings.Contains(string(piece.Bytes), "initialize") || created.Config.Tty || !created.Config.OpenStdin {
-		t.Fatalf("the server printed %q (%v); terminal %v, input open %v", piece.Bytes, err, created.Config.Tty,
-			created.Config.OpenStdin)
+	if created.Config.Tty || !created.Config.OpenStdin {
+		t.Fatalf("the server ran with terminal %v, input open %v", created.Config.Tty, created.Config.OpenStdin)
 	}
 }
 
@@ -62,13 +62,8 @@ func TestAContainerThatTakesInputReadsWhatIsWrittenWithNoTerminal(t *testing.T) 
 // screen.
 func TestAnExitKeepsAtMostTheLastBytesAskedForOfItsLog(t *testing.T) {
 	daemon := dockermock.Start(t, recordedImage)
-	daemon.Programs = func(*dockermock.Container) dockermock.Program {
-		return func(_ context.Context, _ *dockermock.Container, _ io.Reader, output io.Writer) int {
-			_, _ = io.WriteString(output, strings.Repeat("x", 10000)+"end")
-
-			return 0
-		}
-	}
+	turn := dockermock.RecordedProgramOf(t, "claude-code", "headless-turn", "--settings")
+	daemon.Play(turn.Run)
 	containers, err := containersRecordedInto(daemon.Host(), ContainerRules{Arrangement: Local}, recordedRun(t, false))
 	if err != nil {
 		t.Fatal(err)
@@ -82,7 +77,7 @@ func TestAnExitKeepsAtMostTheLastBytesAskedForOfItsLog(t *testing.T) {
 		t.Fatal(err)
 	}
 	exit, err := containers.ExitOf(ctx, "screen", 20, 100)
-	if err != nil || len(exit.LastPrinted) != 100 || !strings.HasSuffix(exit.LastPrinted, "end") {
+	if err != nil || len(exit.LastPrinted) != 100 || !strings.HasSuffix(turn.Printed(), exit.LastPrinted) {
 		t.Fatalf("the exit kept %d bytes ending %q (%v)", len(exit.LastPrinted), exit.LastPrinted[max(0, len(exit.LastPrinted)-5):], err)
 	}
 }

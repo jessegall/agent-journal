@@ -60,6 +60,11 @@ final class TestHost
     /**
      * The terminal recording the Claude Code mock plays by what is typed.
      */
+    /**
+     * The program a container of the mock Docker runs as the recorded Claude Code terminal turn.
+     */
+    private const string RECORDED_PROGRAM = 'claude';
+
     private const string TERMINAL_TURN = 'resources/recordings/claude-code/2.1.323/turns/terminal-turn/fixture.json';
 
     /**
@@ -361,9 +366,9 @@ final class TestHost
     }
 
     /**
-     * Opens a container of the mock's echo program on this host.
+     * Opens a container on this host whose program the mock Docker plays from the recorded Claude Code terminal turn.
      */
-    public function openEchoContainer(
+    public function openRecordedTerminal(
         string $name,
         string|null $runtimeId = null,
         RestartPolicy $restart = RestartPolicy::Never,
@@ -381,7 +386,7 @@ final class TestHost
             HostProcessPurpose::Probe,
             HostProcessType::Terminal,
             $restart,
-            ['echo-program'],
+            [self::RECORDED_PROGRAM],
             [],
             '/workspace',
             $manifest,
@@ -921,6 +926,14 @@ final class TestHost
             '--containers', "{$this->folder}/containers.jsonl", '--until-input-ends',
         ];
 
+        $command = [
+            ...$command,
+            '--recording', dirname(base_path(self::TERMINAL_TURN)),
+            '--executable', self::RECORDED_PROGRAM,
+            '--version-recording', base_path(self::CLAUDE_EXCHANGES.'/version'),
+            '--sign-in-recording', base_path(self::CLAUDE_EXCHANGES.'/auth-status'),
+        ];
+
         if (! $this->arrangement->isContained()) {
             return $command;
         }
@@ -928,14 +941,7 @@ final class TestHost
         // A contained host's daemon holds its own folder and the folders compose.yaml gives the agent daemon, no more.
         $folders = [$this->folder, ...AgentDaemonFolders::of(base_path('compose.yaml'))];
 
-        return [
-            ...$command,
-            ...array_merge(...array_map(fn (string $folder) => ['--folder', $folder], $folders)),
-            '--recording', dirname(base_path(self::TERMINAL_TURN)),
-            '--executable', 'claude',
-            '--version-recording', base_path(self::CLAUDE_EXCHANGES.'/version'),
-            '--sign-in-recording', base_path(self::CLAUDE_EXCHANGES.'/auth-status'),
-        ];
+        return [...$command, ...array_merge(...array_map(fn (string $folder) => ['--folder', $folder], $folders))];
     }
 
     private function startHost(): void

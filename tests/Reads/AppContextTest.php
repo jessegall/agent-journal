@@ -12,6 +12,7 @@ use App\Events\Web\ProtectedViewInvalidated;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
+use App\Support\InstalledVersion;
 use App\Support\NavigationRecords;
 use App\Values\FilePath;
 use App\Web\AppContext;
@@ -20,10 +21,11 @@ use App\Web\UserChannel;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Session\Store;
-use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Cache;
 use Inertia\AlwaysProp;
 use Inertia\DeferProp;
 use Inertia\LiveProp;
+use Inertia\OnceProp;
 use Inertia\SupportsLiveUpdates;
 use Mockery;
 use Spatie\LaravelData\Data;
@@ -47,7 +49,6 @@ final class AppContextTest extends TestCase
     {
         parent::setUp();
 
-        Process::fake(['*' => Process::result("0123456789abcdef0123456789abcdef01234567\n")]);
         $faults = FilePath::in(Place::Temporary, 'app-context-test/faults');
         $files = $this->app->make(Files::class);
 
@@ -68,7 +69,10 @@ final class AppContextTest extends TestCase
         $this->assertSame('guest', $this->resolved($props['viewer'])['type']);
         $this->assertSame(['type', 'canShare'], array_keys($this->resolved($props['viewer'])));
         $this->assertFalse($this->resolved($props['viewer'])['canShare']);
-        $this->assertSame('012345678', $this->resolved($props['installation'])['version']);
+        $this->assertSame(
+            $this->app->make(InstalledVersion::class)->label(),
+            $this->resolved($props['installation'])['version'],
+        );
         $this->assertSame([], $this->resolved($props['installation'])['faults']);
         $this->assertArrayNotHasKey('navigation', $props);
         $this->assertArrayNotHasKey('navigationCounts', $props);
@@ -219,10 +223,10 @@ final class AppContextTest extends TestCase
 
         $props = $this->props();
 
-        Process::assertNothingRan();
-        $this->assertInstanceOf(Closure::class, $props['installation']);
+        $this->assertFalse(Cache::has(InstalledVersion::CACHE_KEY));
+        $this->assertInstanceOf(OnceProp::class, $props['installation']);
         $this->resolved($props['installation']);
-        Process::assertRan(fn () => true);
+        $this->assertTrue(Cache::has(InstalledVersion::CACHE_KEY));
     }
 
     /**
@@ -266,19 +270,20 @@ final class AppContextTest extends TestCase
      */
     private function resolvedList(mixed $prop): array
     {
-        $this->assertInstanceOf(Closure::class, $prop);
+        $this->assertInstanceOf(OnceProp::class, $prop);
 
         return array_map(fn (Data $item) => $item->toArray(), $prop());
     }
 
     /**
-     * The value Inertia sends for a prop: an always prop or a closure is called, and a Data becomes its array.
+     * The value Inertia sends for a prop: an always prop, a once prop or a closure is called, and a Data becomes its
+     * array.
      *
      * @return array<string, mixed>
      */
     private function resolved(mixed $prop): array
     {
-        $value = $prop instanceof AlwaysProp || $prop instanceof Closure ? $prop() : $prop;
+        $value = $prop instanceof AlwaysProp || $prop instanceof OnceProp || $prop instanceof Closure ? $prop() : $prop;
 
         return $value->toArray();
     }

@@ -352,6 +352,16 @@ func (container *Container) KillForMemory() {
 	container.end(killedCode)
 }
 
+// Play makes every container the daemon starts run the program, as a daemon whose image holds that one program.
+func (daemon *Daemon) Play(program Program) {
+	daemon.Programs = func(*Container) Program { return program }
+}
+
+// Type writes the text into the container's program, as a person types into its terminal.
+func (container *Container) Type(text []byte) {
+	_, _ = container.currentInput().Write(text)
+}
+
 // Exit ends the container's program with the exit code, as a program that ends by itself.
 func (container *Container) Exit(code int) {
 	container.end(code)
