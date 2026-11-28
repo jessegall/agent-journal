@@ -18,7 +18,7 @@ use App\Sessions\SessionOfflineReplies;
 use App\Sessions\SessionTokens;
 use App\Sessions\StartClaims;
 use App\Skills\StartSkillFiles;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use Illuminate\Container\Attributes\Config;
@@ -84,7 +84,7 @@ final readonly class RuntimeStarts
     public function accountFolderSeenBy(AgentRuntime $runtime, SessionProcess $start): string
     {
         if ($runtime->executablePlace() === ExecutablePlace::Image) {
-            return MountRules::ACCOUNT_TARGET;
+            return HelperMounts::ACCOUNT_TARGET;
         }
 
         return $start->directory;

@@ -12,9 +12,9 @@ use App\Scripts\ScriptObjectRegistration;
 use App\Scripts\Values\ProfileRevisionReference;
 use App\Scripts\Values\ScriptContext;
 use App\Support\ActorReference;
-use App\Support\Bootstrappers\RegisterScriptDefinitions;
+use App\Support\Bootstrappers\ScriptDefinitionsBootstrapper;
 use App\Support\DomainEntry;
-use App\Support\Objects\WorkspaceObject;
+use App\Support\Objects\WorkspaceScriptObject;
 use App\Values\ProfileKey;
 use App\Values\WorkReference;
 use App\Values\WorkspaceReadReference;
@@ -35,15 +35,15 @@ final class ScriptDefinitionsTest extends TestCase
         $this->assertSame(['available', 'clean', 'dirty'], $names);
         $this->assertSame('workspace.status', $workspace->members['dirty']->read->key);
         $this->assertFalse($this->app->resolved(WorkspaceReader::class));
-        $this->assertThrows(fn () => $objects->register(WorkspaceObject::class), ScriptDefinitionRefused::class);
+        $this->assertThrows(fn () => $objects->register(WorkspaceScriptObject::class), ScriptDefinitionRefused::class);
         $this->assertThrows(fn () => $objects->register(InvalidScriptObject::class), ScriptDefinitionRefused::class);
     }
 
     public function test_disabled_domains_keep_their_definition_metadata_without_allowing_evaluation(): void
     {
         $domain = DomainEntry::fromClass(ScriptFixtureDomain::class);
-        $this->assertContains(RegisterScriptDefinitions::class, $domain->domain->bootSteps());
-        $this->app->make(RegisterScriptDefinitions::class)($domain);
+        $this->assertContains(ScriptDefinitionsBootstrapper::class, $domain->domain->bootSteps());
+        $this->app->make(ScriptDefinitionsBootstrapper::class)($domain);
         $this->mock(DomainAvailability::class)->shouldReceive('isEnabled')->with($domain->name)->andReturn(false);
         $objects = $this->app->make(ScriptObjectRegistration::class);
         $keywords = $this->app->make(ScriptKeywordRegistration::class);

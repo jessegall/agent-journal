@@ -9,7 +9,7 @@ use App\Reads\PageFormRequests;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPaging;
 use App\Web\Creation\Contracts\PageBuilder;
 use Domain\Reminders\Http\Requests\RemindersRequest;
@@ -47,7 +47,7 @@ final readonly class RemindersPageBuilder implements PageBuilder
         }
 
         if ($page->cards === []) {
-            return $this->window(ListEmpty::build()
+            return $this->window(EmptyListState::build()
                 ->title('No reminders yet')
                 ->detail('A reminder brings something back to you or an agent at the time you choose.')
                 ->icon('bell')

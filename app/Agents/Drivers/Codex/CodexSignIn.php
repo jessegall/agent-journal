@@ -13,7 +13,7 @@ use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\SignInDriver;
 use App\Agents\Exceptions\SignInChallengeUnreadable;
 use App\Agents\Values\SecretHandover;
-use App\Support\PrivateAccountProcess;
+use App\Support\SignInProcess;
 use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
@@ -39,7 +39,7 @@ final readonly class CodexSignIn implements SignInProtocol
         return SignInHosts::openAi();
     }
 
-    public function begin(SignInDriver $driver, string $directory): PrivateAccountProcess
+    public function begin(SignInDriver $driver, string $directory): SignInProcess
     {
         $process = $driver->start(['app-server'], $directory, SecretHandover::none());
 
@@ -60,7 +60,7 @@ final readonly class CodexSignIn implements SignInProtocol
         return $process;
     }
 
-    public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null
+    public function challengeFrom(SignInProcess $process): SignInChallenge|null
     {
         $deviceCode = $this->deviceCodeFrom($process);
 
@@ -79,13 +79,13 @@ final readonly class CodexSignIn implements SignInProtocol
     /**
      * A device sign-in's code goes out to the user only; nothing typed is ever given to the driver.
      */
-    public function acceptCode(PrivateAccountProcess $process, string $code): void {}
+    public function acceptCode(SignInProcess $process, string $code): void {}
 
     /**
      * Over once the driver exits or announces the completion of its own login; another login's completion and other
      * notifications are ignored.
      */
-    public function hasFinished(PrivateAccountProcess $process): bool
+    public function hasFinished(SignInProcess $process): bool
     {
         return ! $process->isRunning() || self::completionIn($process->output()) !== null;
     }
@@ -94,7 +94,7 @@ final readonly class CodexSignIn implements SignInProtocol
      * Signed in only when the driver's own login completed with success, account/read on the same app-server then
      * answers a ChatGPT account, and the folder's status check agrees; the email is shown to the user only.
      */
-    public function prove(SignInDriver $driver, PrivateAccountProcess $process, string $directory): SignInVerification
+    public function prove(SignInDriver $driver, SignInProcess $process, string $directory): SignInVerification
     {
         $completion = self::completionIn($process->output());
 
@@ -135,7 +135,7 @@ final readonly class CodexSignIn implements SignInProtocol
      *
      * @return array{address: string, code: string}|null
      */
-    public function deviceCodeFrom(PrivateAccountProcess $process): array|null
+    public function deviceCodeFrom(SignInProcess $process): array|null
     {
         $start = self::loginStartIn($process->output());
 

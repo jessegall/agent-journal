@@ -42,8 +42,8 @@ use App\Stacks\References\SubjectReference;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\Octane\GiveRequestItsTimeLimit;
-use App\Support\OperationDeadline;
+use App\Support\Octane\RequestTimeLimit;
+use App\Support\StackOperationDeadline;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Support\Storage\RecordedAnswer;
@@ -195,7 +195,7 @@ final class ClaudeCodeHooksTest extends TestCase
     public function test_a_stack_another_connection_holds_past_the_deadline_is_unavailable(): void
     {
         config(['journal.hooks.operation_deadline_milliseconds' => 300]);
-        $this->app->forgetInstance(OperationDeadline::class);
+        $this->app->forgetInstance(StackOperationDeadline::class);
         config(['database.connections.lock_holder' => config('database.connections.'.config('database.default'))]);
         $holder = $this->app->make(DatabaseManager::class)->connection('lock_holder');
         $holder->beginTransaction();
@@ -364,7 +364,7 @@ final class ClaudeCodeHooksTest extends TestCase
         $limitBefore = (int) ini_get('max_execution_time');
         set_time_limit(7);
 
-        $this->app->make(GiveRequestItsTimeLimit::class)->handle();
+        $this->app->make(RequestTimeLimit::class)->handle();
 
         $limit = (int) ini_get('max_execution_time');
         set_time_limit($limitBefore);

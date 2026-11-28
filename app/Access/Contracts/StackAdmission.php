@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Access\Contracts;
 
 use App\Access\Exceptions\StackLockTimedOut;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Closure;
 
 /**
@@ -25,7 +25,7 @@ interface StackAdmission
      *
      * @throws StackLockTimedOut when the stack stays held past the deadline's lock wait
      */
-    public function admit(string $sessionId, OperationDeadline $deadline, Closure $work): mixed;
+    public function admit(string $sessionId, StackOperationDeadline $deadline, Closure $work): mixed;
 
     /**
      * Runs the work admitted to the calling agent session's stack; work of any other caller runs as it is.
@@ -37,5 +37,5 @@ interface StackAdmission
      *
      * @throws StackLockTimedOut
      */
-    public function admitCaller(OperationDeadline $deadline, Closure $work): mixed;
+    public function admitCaller(StackOperationDeadline $deadline, Closure $work): mixed;
 }

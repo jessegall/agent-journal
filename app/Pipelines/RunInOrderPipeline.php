@@ -11,7 +11,7 @@ use App\Pipes\Supervision\RunNextInOrder;
 use App\Pipes\Supervision\StartInOrder;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\StepsInOrder;
+use App\Support\Execution\PendingSteps;
 
 /**
  * Runs a step's children one after another, each in the context the one before it left.
@@ -28,7 +28,7 @@ final readonly class RunInOrderPipeline implements PipelineDefinition
     {
         return [
             StartInOrder::class,
-            Step::repeated(RunNextInOrder::class, while: fn (StepsInOrder $steps) => $steps->hasNext()),
+            Step::repeated(RunNextInOrder::class, while: fn (PendingSteps $steps) => $steps->hasNext()),
             EndInOrder::class,
         ];
     }

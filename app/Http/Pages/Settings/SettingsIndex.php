@@ -30,7 +30,6 @@ use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\SettingsGroup;
-use App\Support\Layout\SettingsPage as SettingsLayout;
 use App\Support\Layout\SettingsRow;
 
 /**
@@ -77,10 +76,7 @@ final readonly class SettingsIndex extends SettingsPage
 
         usort($sections, fn (array $first, array $second) => $first[0] <=> $second[0]);
 
-        return SettingsLayout::build()
-            ->groups(...array_map(fn (array $ranked) => $ranked[1], $sections))
-            ->finish()
-            ->layout();
+        return SettingsGroup::page(...array_map(fn (array $ranked) => $ranked[1], $sections));
     }
 
     /**

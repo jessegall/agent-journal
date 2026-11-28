@@ -6,13 +6,13 @@ namespace App\Records\Contracts;
 
 use App\Exceptions\RecordUnavailable;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
+use App\Support\ShareContentRequest;
 use App\Support\SharedContent;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecords;
-use App\Support\ShareRelationRead;
+use App\Support\ShareRelationRequest;
 use App\Support\ShareSelection;
-use App\Support\ShareTargetRead;
+use App\Support\ShareTargetRequest;
 use App\Values\ProjectOwner;
 
 /**
@@ -42,15 +42,15 @@ interface ShareRecordProvider
     /**
      * The records the read names, within the budget.
      */
-    public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords;
+    public function readTargets(ShareTargetRequest $read, ShareBudget $budget): ShareRecords;
 
     /**
      * The records linked to the shared ones that the read asks for, within the budget.
      */
-    public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords;
+    public function readRelated(ShareRelationRequest $read, ShareBudget $budget): ShareRecords;
 
     /**
      * What a shared record shows to someone outside, within the budget.
      */
-    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent;
+    public function content(ShareContentRequest $read, ShareBudget $budget): SharedContent;
 }

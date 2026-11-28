@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hosts;
 
-use App\Support\Octane\GiveRequestItsTimeLimit;
+use App\Support\Octane\RequestTimeLimit;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Redis\Connections\Connection;
@@ -29,7 +29,7 @@ final readonly class HostWake
 
     public function __construct(
         private RedisFactory $redis,
-        private GiveRequestItsTimeLimit $timeLimit,
+        private RequestTimeLimit $timeLimit,
         #[Config('database.redis.default.read_timeout')]
         private int $readTimeoutSeconds,
     ) {}

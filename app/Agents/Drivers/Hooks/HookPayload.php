@@ -11,7 +11,7 @@ use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\ToolOutcome;
 use App\Sessions\Enums\SessionEndReason;
-use App\Support\Inputs\ProtectedFileRead;
+use App\Support\Inputs\NamedReadPaths;
 use App\Support\Inputs\Values\DriverToolInput;
 use PhpOption\Option;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -122,19 +122,19 @@ final class HookPayload extends Data
      * The files a native read, list or search tool names: its file or folder and, for a search, where its pattern
      * starts.
      */
-    public function fileRead(): ProtectedFileRead
+    public function fileRead(): NamedReadPaths
     {
         $arguments = $this->toolArguments();
         $folder = $this->workFolder();
         $named = $arguments->presentTexts('file_path', 'path');
-        $searched = ProtectedFileRead::resolve($folder, $named[0] ?? '.');
+        $searched = NamedReadPaths::resolve($folder, $named[0] ?? '.');
         $pattern = $arguments->textArgument('pattern');
 
         $patternFolder = is_string($pattern) && strcspn($pattern, '*?[{') < strlen($pattern)
-            ? [ProtectedFileRead::patternFolder($searched, $pattern)]
+            ? [NamedReadPaths::patternFolder($searched, $pattern)]
             : [];
 
-        return ProtectedFileRead::inFolder($folder, [$searched, ...$patternFolder]);
+        return NamedReadPaths::inFolder($folder, [$searched, ...$patternFolder]);
     }
 
     public function isSessionStart(): bool

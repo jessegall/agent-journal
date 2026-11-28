@@ -60,14 +60,14 @@ final readonly class AutoAssignmentTrigger implements AutoAssignmentTriggerContr
             min($budget->factLimit, self::FACT_LIMIT),
         ));
 
-        if ($page->facts === []) {
+        if ($page->items === []) {
             return new AutoAssignmentRun(0, 0, 0, 0, null);
         }
 
-        $nextAfterId = $page->facts[array_key_last($page->facts)]->id;
+        $nextAfterId = $page->items[array_key_last($page->items)]->id;
 
         $ready = array_values(
-            array_filter($page->facts, fn (AutoAssignmentFact $fact) => $this->mayTakeTurn($fact, $stop)),
+            array_filter($page->items, fn (AutoAssignmentFact $fact) => $this->mayTakeTurn($fact, $stop)),
         );
 
         usort($ready, static fn (AutoAssignmentFact $one, AutoAssignmentFact $other) => $one->compareTurn($other));
@@ -96,7 +96,7 @@ final readonly class AutoAssignmentTrigger implements AutoAssignmentTriggerContr
             }
         }
 
-        return new AutoAssignmentRun(count($page->facts), $started, $assigned, $failed, $nextAfterId);
+        return new AutoAssignmentRun(count($page->items), $started, $assigned, $failed, $nextAfterId);
     }
 
     private function mayTakeTurn(AutoAssignmentFact $fact, StopTime $stop): bool

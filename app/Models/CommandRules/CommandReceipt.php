@@ -22,7 +22,7 @@ use App\Events\Engine\CommandReceiptRefused;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
-use App\Support\Operation;
+use App\Support\ReceiptedWrite;
 use App\Support\PlainValue;
 use App\Support\ReceiptRetention;
 use App\Values\RecoveryCall;
@@ -198,11 +198,11 @@ final class CommandReceipt extends JournalModel implements EventSource, Readable
     // ----------[ Accessors ]----------
 
     /**
-     * @return Attribute<Operation, never>
+     * @return Attribute<ReceiptedWrite, never>
      */
     protected function toOperation(): Attribute
     {
-        return Accessor::get(fn () => new Operation(
+        return Accessor::get(fn () => new ReceiptedWrite(
             $this->request_key,
             CommandName::of($this->command),
             $this->status,

@@ -210,7 +210,7 @@ each break of it refused by name:
 ## The transaction
 
 The bus opens one transaction per command: read committed unless the command is `#[RepeatableRead]`, with lock and
-statement limits always set (`App\Support\OperationDeadline`). A serialization failure or a deadlock reruns the
+statement limits always set (`App\Support\StackOperationDeadline`). A serialization failure or a deadlock reruns the
 whole command, three attempts at most, then `App\Bus\Exceptions\CommandRetryExhausted`; a lock or statement timeout is
 `App\Access\Exceptions\StackLockTimedOut`. A command run by a handler joins the open transaction when its isolation matches,
 and is refused with `App\Bus\Exceptions\CommandTransactionMismatch` otherwise, as it is for a transaction the bus did not

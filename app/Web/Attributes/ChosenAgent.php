@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Attributes;
 
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use App\Web\Attributes\Concerns\InjectsSurfaceValue;
 use App\Web\Creation\SurfaceContext;
 use Attribute;
@@ -18,7 +18,7 @@ final readonly class ChosenAgent implements InjectsPropertyValue
 
     public function __construct(private string $key) {}
 
-    private function read(SurfaceContext $context, DataProperty $property): AgentOption|null
+    private function read(SurfaceContext $context, DataProperty $property): HomeAgent|null
     {
         return $context->chosenAgent($this->key);
     }

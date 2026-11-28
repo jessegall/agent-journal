@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Delivery;
 
 use App\Access\StateEvents\StateEventDispatch;
+use App\Access\StateEvents\StateEventScope;
 use App\Accounts\Enums\CommandEntry;
 use App\Bus\Contracts\Command;
 use App\Bus\Exceptions\CommandNotRegistered;
@@ -27,7 +28,6 @@ use App\Support\CommandRegistry;
 use App\Support\Decisions\Decision;
 use App\Support\StackTransaction;
 use App\Support\StateEvents\Exceptions\StateEventAfterCommitFailed;
-use App\Support\StateEvents\ListeningStacks;
 use App\Support\StateEvents\StateEventEffects;
 use App\Support\StateEvents\StateEventResult;
 use App\Support\StateEvents\StateEventResults;
@@ -47,6 +47,11 @@ final readonly class StateEventDelivery
      */
     public const int EFFECT_LIMIT = 10;
 
+    public const array LISTENER = [
+        self::class,
+        'receive',
+    ];
+
     public function __construct(
         private StackTransaction $transaction,
         private StateEventStacks $stacks,
@@ -57,12 +62,23 @@ final readonly class StateEventDelivery
         private StateEventEffects $effects,
         private StateEventActivity $activity,
         private LoggerInterface $log,
-        private ListeningStacks $listening,
+        private StateEventScope $scope,
     ) {}
+
+    public function receive(Event $event): void
+    {
+        $dispatch = $this->scope->currentDispatch()->filter(
+            fn (StateEventDispatch $current) => $current->event === $event,
+        );
+
+        if ($dispatch->isDefined()) {
+            $this->deliver($dispatch->get());
+        }
+    }
 
     public function deliver(StateEventDispatch $admitted): void
     {
-        $dispatch = $admitted->withListening($this->listening->of($admitted->event));
+        $dispatch = $admitted->withListening($this->stacks->listeningTo($admitted->event));
 
         if ($dispatch->targets() === []) {
             return;

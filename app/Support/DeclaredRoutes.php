@@ -69,7 +69,7 @@ final readonly class DeclaredRoutes
             }
         }
 
-        $code = CodeFiles::ofProcess();
+        $code = ProjectCode::ofProcess();
 
         $publicNames = array_map(
             fn (FolderEntry $entry) => $entry->name(),

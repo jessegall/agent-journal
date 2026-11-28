@@ -1,0 +1,77 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support;
+
+use App\Accounts\Data\SignInReceiptData;
+use App\Accounts\Enums\SignInReceiptStatus;
+use App\Bus\Contracts\CallerReceipts;
+use App\CommandRules\Enums\ReceiptStatus;
+use App\Models\Accounts\SignInAttempt;
+use App\Profiles\Data\SignInReceiptInput;
+
+/**
+ * Tells the owner what became of a sign-in start under its request key. It reads only the owner's receipt of that
+ * start for that driver or account, and names the attempt only while the owner may still read it.
+ */
+final readonly class SignInReceiptLookup
+{
+    public function __construct(private CallerReceipts $receipts) {}
+
+    public function of(SignInReceiptInput $input): SignInReceiptData
+    {
+        $answers = $this->receipts->answerFor($input->command(), $input->key, $input->target());
+
+        if ($answers === []) {
+            return SignInReceiptData::without(SignInReceiptStatus::Unknown);
+        }
+
+        $receipt = $answers[0];
+        $state = $receipt->isExpired ? ReceiptStatus::Expired : $receipt->status;
+
+        return match ($state) {
+            ReceiptStatus::Completed => $this->startedFrom($receipt->fields),
+            ReceiptStatus::Refused => SignInReceiptData::without(SignInReceiptStatus::Refused, $receipt->refusalMessage),
+            ReceiptStatus::Taken => SignInReceiptData::without(SignInReceiptStatus::Pending),
+            ReceiptStatus::Expired => SignInReceiptData::without(SignInReceiptStatus::Expired),
+        };
+    }
+
+    /**
+     * The attempt a completed receipt names; a receipt that names none is unknown.
+     *
+     * @param  array<string, mixed>  $fields
+     */
+    private function startedFrom(array $fields): SignInReceiptData
+    {
+        $attemptId = $fields['attemptId'] ?? null;
+
+        if (is_string($attemptId)) {
+            return $this->started($attemptId);
+        }
+
+        return SignInReceiptData::without(
+            SignInReceiptStatus::Unknown,
+        );
+    }
+
+    private function started(string $attemptId): SignInReceiptData
+    {
+        $attempt = SignInAttempt::findReadableByOwner($attemptId);
+
+        if ($attempt === null) {
+            return SignInReceiptData::without(SignInReceiptStatus::Unknown);
+        }
+
+        return new SignInReceiptData(
+            SignInReceiptStatus::Started,
+            $attempt->id,
+            $attempt->type,
+            $attempt->resultAccount?->id,
+            $attempt->method,
+            $attempt->status,
+            null,
+        );
+    }
+}

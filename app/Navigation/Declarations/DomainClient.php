@@ -24,7 +24,7 @@ use App\Navigation\Exceptions\FolderClosed;
 use App\Navigation\Exceptions\LinkLeavesPlace;
 use App\Navigation\Exceptions\LinkLoop;
 use App\Records\Contracts\TypeProvider;
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 use App\Support\DeclaredType;
 use App\Support\Reflector;
 use App\Text\Declarations\Section;
@@ -178,7 +178,7 @@ final readonly class DomainClient
             return $this->componentFile($declaration, $component);
         }
 
-        return CodeFiles::ofProcess()->realPathOf(
+        return ProjectCode::ofProcess()->realPathOf(
             FilePath::in(Place::Project, 'resources/js/pages/layout/'.self::DECLARED_LAYOUT),
         );
     }
@@ -203,7 +203,7 @@ final readonly class DomainClient
             throw ClientComponentMissing::outsideOwner($declaration, $component);
         }
 
-        $code = CodeFiles::ofProcess();
+        $code = ProjectCode::ofProcess();
 
         try {
             $folder = $code->projectPathOf($this->pageFolder());

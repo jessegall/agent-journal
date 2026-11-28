@@ -23,10 +23,10 @@ The provider implements `App\Records\Contracts\ShareRecordProvider`:
 
 - `mayDisclose(RecordIdentity)`: whether the record may be public now, by the type's own policy.
 - `preview(ShareSelection, ShareBudget)`: the root's `ShareRecordCard` (identity, safe title, published version).
-- `readTargets(ShareTargetRead, ShareBudget)`: one batch of linked targets of this type, as `ShareRecords` with the
+- `readTargets(ShareTargetRequest, ShareBudget)`: one batch of linked targets of this type, as `ShareRecords` with the
   eligible cards apart from the ineligible identities. Never a body, never a count of what is hidden.
-- `readRelated(ShareRelationRead, ShareBudget)`: one page of an owned relation, at most 100, with a continuation.
-- `content(ShareContentRead, ShareBudget)`: the published content, as `SharedContent`.
+- `readRelated(ShareRelationRequest, ShareBudget)`: one page of an owned relation, at most 100, with a continuation.
+- `content(ShareContentRequest, ShareBudget)`: the published content, as `SharedContent`.
 
 Every call gets an `App\Records\Contracts\ShareBudget`. Core runs each call inside it and counts its queries; the
 provider charges what it loads: `chargeText` for bodies, `chargeMetadata` for titles and excerpts, and

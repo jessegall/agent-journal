@@ -7,7 +7,7 @@ namespace App\Links;
 use App\Bus\Contracts\CommandFacts;
 use App\Events\Links\LinksRemoved;
 use App\Models\Records\Link;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -43,10 +43,10 @@ final readonly class LinkRemoval
     }
 
     /**
-     * @param  ReadBuilder<Link>  $query
+     * @param  BoundedReadBuilder<Link>  $query
      * @return list<string>
      */
-    private function removeAll(ReadBuilder $query): array
+    private function removeAll(BoundedReadBuilder $query): array
     {
         $links = $query->get();
 

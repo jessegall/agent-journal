@@ -9,7 +9,7 @@ use App\Search\Exceptions\SearchableMissing;
 use App\Search\Values\DeclaredSearchable;
 use App\Search\Values\SearchWords;
 use App\Support\Registry;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 
 /**
  * Every searchable the domains declare, by qualified key: the lower-case owner, a dot and the local key, as in
@@ -33,7 +33,7 @@ final class SearchablesRegistry
     }
 
     /**
-     * @param  array<string, list<Searchable>>  $declarationsByOwner
+     * @param  array<string, list<SearchSource>>  $declarationsByOwner
      *
      * @throws SearchableInvalid
      */
@@ -48,7 +48,7 @@ final class SearchablesRegistry
     /**
      * Replaces the catalogue with these declarations, or throws and keeps the catalogue it had.
      *
-     * @param  array<string, list<Searchable>>  $declarationsByOwner
+     * @param  array<string, list<SearchSource>>  $declarationsByOwner
      *
      * @throws SearchableInvalid
      */
@@ -107,7 +107,7 @@ final class SearchablesRegistry
     /**
      * @throws SearchableInvalid
      */
-    private static function declared(string $owner, Searchable $searchable): DeclaredSearchable
+    private static function declared(string $owner, SearchSource $searchable): DeclaredSearchable
     {
         $qualifiedKey = strtolower($owner).'.'.$searchable->localKey;
 

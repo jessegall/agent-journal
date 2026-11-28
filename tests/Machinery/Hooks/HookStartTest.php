@@ -26,7 +26,7 @@ use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
@@ -188,7 +188,7 @@ final class HookStartTest extends TestCase
             return $this->app->make(AgentStateMachine::class)->answer(
                 $stop,
                 $capabilities,
-                new OperationDeadline(3000),
+                new StackOperationDeadline(3000),
                 fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts),
             )->stdout;
         }, $callId);

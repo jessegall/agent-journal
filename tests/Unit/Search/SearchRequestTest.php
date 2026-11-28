@@ -18,7 +18,7 @@ use App\Search\Values\SearchRequest;
 use App\Search\Values\SearchWords;
 use App\Support\ActorReference;
 use App\Support\DomainRegistry;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use Closure;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
@@ -161,7 +161,7 @@ final class SearchRequestTest extends TestCase
     private function eligibility(): SearchSources
     {
         $declarations = DomainRegistry::from([TasksDomain::class, LogsDomain::class])->searchableDeclarations();
-        $plans = Searchable::make('plan', 'Plans', OpenSearchAccess::class, $this->countingProvider());
+        $plans = SearchSource::make('plan', 'Plans', OpenSearchAccess::class, $this->countingProvider());
         $declarations['Plans'] = [$plans];
 
         return new SearchSources(

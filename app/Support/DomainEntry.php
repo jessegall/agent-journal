@@ -249,7 +249,7 @@ final readonly class DomainEntry
      */
     public function providers(): array
     {
-        return Codebase::in($this->folder.'/Providers', ServiceProvider::class);
+        return ProjectCode::in($this->folder.'/Providers', ServiceProvider::class);
     }
 
     public function listenerFolder(): string
@@ -565,7 +565,7 @@ final readonly class DomainEntry
     /**
      * The sources this domain offers to search, as its Domain class declares them.
      *
-     * @return list<Searchable>
+     * @return list<SearchSource>
      */
     public function searchables(): array
     {
@@ -669,7 +669,7 @@ final readonly class DomainEntry
             ->map(fn (CommandProvider $domain) => $domain->commands())
             ->getOrElse([]);
 
-        return array_values(array_unique([...Codebase::in($this->folder.'/Commands/*', Command::class), ...$provided]));
+        return array_values(array_unique([...ProjectCode::in($this->folder.'/Commands/*', Command::class), ...$provided]));
     }
 
     /**

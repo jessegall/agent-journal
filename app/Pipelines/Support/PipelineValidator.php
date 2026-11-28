@@ -7,7 +7,7 @@ namespace App\Pipelines\Support;
 use App\Bus\Contracts\Pipe;
 use App\Bus\Contracts\PipelineDefinition;
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Support\Codebase;
+use App\Support\ProjectCode;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use Illuminate\Container\Attributes\Config;
@@ -44,7 +44,7 @@ final readonly class PipelineValidator
             ...array_map(fn (DomainEntry $entry) => "{$entry->folder}/Pipelines", $this->domains->all()),
         ];
 
-        return array_map(fn (string $folder) => Codebase::in($folder, PipelineDefinition::class), $folders)
+        return array_map(fn (string $folder) => ProjectCode::in($folder, PipelineDefinition::class), $folders)
                 |> (fn ($x) => array_merge([], ...$x))
                 |> array_unique(...)
                 |> array_values(...);

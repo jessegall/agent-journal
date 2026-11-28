@@ -34,7 +34,7 @@ use App\Support\Inputs\ToolRequested;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\ToolResult;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Values\Operation;
 use App\Values\ResourceRequest;
 use Closure;
@@ -177,7 +177,7 @@ final class RunningToolTest extends TestCase
         $this->machine()->answer(
             $input,
             $this->allCapabilities(),
-            new OperationDeadline(3000),
+            new StackOperationDeadline(3000),
             $render ?? fn (HookAnswer $answer, AgentTexts $texts) => $this->reply($input, $answer, $texts),
         );
     }

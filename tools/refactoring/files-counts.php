@@ -20,7 +20,7 @@ use App\Files\PathConfinement;
 use App\Files\PlaceRoots;
 use App\Files\PlaceRootSettings;
 use App\Files\Values\Depth;
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 use App\Support\Files;
 use App\Values\FilePath;
 use Illuminate\Config\Repository;
@@ -56,7 +56,7 @@ $closed = new ClosedFolders($roots);
 $confinement = new PathConfinement($roots, $closed);
 $contents = new FileContents(CACHED_BYTES, LARGEST_CACHED_FILE);
 $walker = new FolderWalker($roots, $closed, $confinement);
-$files = new Files($roots, $confinement, $contents, $walker, CodeFiles::over($folder), new FileWriter());
+$files = new Files($roots, $confinement, $contents, $walker, ProjectCode::over($folder), new FileWriter());
 
 $unchanged = FilePath::in(Place::Project, 'unchanged.json');
 

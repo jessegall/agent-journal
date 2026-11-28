@@ -11,11 +11,11 @@ use App\Mcp\Tools\JournalTool;
 use App\Navigation\Contracts\DraftProducerProvider;
 use App\Scripts\Contracts\ScriptKeywordProvider;
 use App\Scripts\Contracts\ScriptObjectProvider;
-use App\Support\Bootstrappers\LoadMigrations;
-use App\Support\Bootstrappers\RegisterDraftProducers;
-use App\Support\Bootstrappers\RegisterEngineListeners;
-use App\Support\Bootstrappers\RegisterMorphAliases;
-use App\Support\Bootstrappers\RegisterScriptDefinitions;
+use App\Support\Bootstrappers\MigrationsBootstrapper;
+use App\Support\Bootstrappers\DraftProducersBootstrapper;
+use App\Support\Bootstrappers\EngineListenersBootstrapper;
+use App\Support\Bootstrappers\MorphAliasesBootstrapper;
+use App\Support\Bootstrappers\ScriptDefinitionsBootstrapper;
 
 /**
  * One domain of the application: what it owns, the domains it may use, and the steps its boot runs. Every domain loads
@@ -55,7 +55,7 @@ abstract class Domain
      * The sources this domain offers to search, each with a local key the registry qualifies with the domain name;
      * none unless it overrides this.
      *
-     * @return list<Searchable>
+     * @return list<SearchSource>
      */
     public function searchables(): array
     {
@@ -99,15 +99,15 @@ abstract class Domain
         }
 
         $scripts = $this instanceof ScriptObjectProvider || $this instanceof ScriptKeywordProvider
-            ? [RegisterScriptDefinitions::class]
+            ? [ScriptDefinitionsBootstrapper::class]
             : [];
 
-        $drafts = $this instanceof DraftProducerProvider ? [RegisterDraftProducers::class] : [];
-        $engine = $this instanceof EngineListenerProvider ? [RegisterEngineListeners::class] : [];
+        $drafts = $this instanceof DraftProducerProvider ? [DraftProducersBootstrapper::class] : [];
+        $engine = $this instanceof EngineListenerProvider ? [EngineListenersBootstrapper::class] : [];
 
         return array_values(array_unique([
-            LoadMigrations::class,
-            RegisterMorphAliases::class,
+            MigrationsBootstrapper::class,
+            MorphAliasesBootstrapper::class,
             ...$fromTraits,
             ...$scripts,
             ...$drafts,

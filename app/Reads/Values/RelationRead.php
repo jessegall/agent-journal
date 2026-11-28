@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reads\Values;
 
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Closure;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -30,7 +30,7 @@ final readonly class RelationRead
         return function (Relation $relation): void {
             $query = $relation->getQuery();
 
-            if ($query instanceof ReadBuilder) {
+            if ($query instanceof BoundedReadBuilder) {
                 $query->readRelationCompletely($this->max);
             }
         };

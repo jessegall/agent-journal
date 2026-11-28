@@ -9,7 +9,7 @@ use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\SignInDriver;
 use App\Agents\Values\SecretHandover;
 use App\Exceptions\SignInCodeInvalid;
-use App\Support\PrivateAccountProcess;
+use App\Support\SignInProcess;
 use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInCode;
@@ -29,12 +29,12 @@ final readonly class ClaudeSignIn implements SignInProtocol
         return SignInHosts::anthropic();
     }
 
-    public function begin(SignInDriver $driver, string $directory): PrivateAccountProcess
+    public function begin(SignInDriver $driver, string $directory): SignInProcess
     {
         return $driver->start(['auth', 'login', '--claudeai'], $directory, SecretHandover::none());
     }
 
-    public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null
+    public function challengeFrom(SignInProcess $process): SignInChallenge|null
     {
         $address = $this->addressFrom($process);
 
@@ -50,12 +50,12 @@ final readonly class ClaudeSignIn implements SignInProtocol
         return true;
     }
 
-    public function acceptCode(PrivateAccountProcess $process, string $code): void
+    public function acceptCode(SignInProcess $process, string $code): void
     {
         $this->submitCode($process, $code);
     }
 
-    public function hasFinished(PrivateAccountProcess $process): bool
+    public function hasFinished(SignInProcess $process): bool
     {
         return ! $process->isRunning();
     }
@@ -64,7 +64,7 @@ final readonly class ClaudeSignIn implements SignInProtocol
      * Signed in only when the login itself exited cleanly and the status then names a claude.ai login in exactly this
      * folder; the email is shown to the user and is never the account's subject.
      */
-    public function prove(SignInDriver $driver, PrivateAccountProcess $process, string $directory): SignInVerification
+    public function prove(SignInDriver $driver, SignInProcess $process, string $directory): SignInVerification
     {
         $verification = $this->verify($driver, $directory);
 
@@ -97,7 +97,7 @@ final readonly class ClaudeSignIn implements SignInProtocol
     /**
      * The address the user opens to approve the sign-in, as the driver printed it; none until it did.
      */
-    public function addressFrom(PrivateAccountProcess $process): string|null
+    public function addressFrom(SignInProcess $process): string|null
     {
         if (preg_match('~https://\S+~', $process->output(), $match) === 1) {
             return $match[0];
@@ -112,7 +112,7 @@ final readonly class ClaudeSignIn implements SignInProtocol
      *
      * @throws SignInCodeInvalid
      */
-    public function submitCode(PrivateAccountProcess $process, string $code): void
+    public function submitCode(SignInProcess $process, string $code): void
     {
         $process->send(SignInCode::from($code)->code);
     }

@@ -10,7 +10,7 @@ use App\Agents\Values\SignInFolder;
 use App\Agents\Values\SignInReport;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
-use App\Support\PrivateAccountProcess;
+use App\Support\SignInProcess;
 use App\Values\FilePath;
 use Illuminate\Contracts\Container\Container;
 
@@ -37,7 +37,7 @@ final readonly class SignInDriver
     /**
      * @param  list<string>  $arguments
      */
-    public function start(array $arguments, string $directory, SecretHandover $handover): PrivateAccountProcess
+    public function start(array $arguments, string $directory, SecretHandover $handover): SignInProcess
     {
         foreach ($this->setup->preparations as $preparation) {
             $this->container->make($preparation)($directory);
@@ -54,7 +54,7 @@ final readonly class SignInDriver
             ...$arguments,
         ];
 
-        return PrivateAccountProcess::start($command, $environment, $directory, $handover->readFiles);
+        return SignInProcess::start($command, $environment, $directory, $handover->readFiles);
     }
 
     public function status(string $directory, SecretHandover $handover): SignInReport

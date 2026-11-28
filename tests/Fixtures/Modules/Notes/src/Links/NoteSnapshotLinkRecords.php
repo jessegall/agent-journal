@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Modules\Notes\Links;
 use App\Data\Pages\RecordCard;
 use App\Links\Concerns\ProvidesModelRecords;
 use App\Records\Contracts\RecordProvider;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
@@ -33,7 +33,7 @@ final readonly class NoteSnapshotLinkRecords implements RecordProvider
         return NoteSnapshot::linkType();
     }
 
-    protected function readableRecords(): ReadBuilder
+    protected function readableRecords(): BoundedReadBuilder
     {
         return NoteSnapshot::query();
     }

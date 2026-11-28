@@ -23,7 +23,7 @@ use App\Sessions\Values\StopConditions;
 use App\Stacks\HookAnswer;
 use App\Stacks\References\StateReference;
 use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Values\ExecutionBudgets;
 use App\Values\ProfileBase;
 use App\Values\ProfileStartPolicy;
@@ -178,7 +178,7 @@ final class MandatoryAdmissionTest extends TestCase
 
             return $this->reply($line, $rewrites)($answer, $texts);
         };
-        $deadline = new OperationDeadline(3000);
+        $deadline = new StackOperationDeadline(3000);
         $this->machine()->answer($this->shell($line), $this->capabilities($rewrites), $deadline, $render);
 
         $this->assertInstanceOf(HookAnswer::class, $answered);
@@ -187,7 +187,7 @@ final class MandatoryAdmissionTest extends TestCase
     }
 
     /**
-     * @return array{0: mixed, 1: mixed, 2: OperationDeadline, 3: Closure(HookAnswer, AgentTexts): DriverReply}
+     * @return array{0: mixed, 1: mixed, 2: StackOperationDeadline, 3: Closure(HookAnswer, AgentTexts): DriverReply}
      */
     private function shellCall(string $line): array
     {
@@ -196,7 +196,7 @@ final class MandatoryAdmissionTest extends TestCase
         return [
             $this->shell($line),
             $this->capabilities($rewrites),
-            new OperationDeadline(3000),
+            new StackOperationDeadline(3000),
             $this->reply($line, $rewrites),
         ];
     }

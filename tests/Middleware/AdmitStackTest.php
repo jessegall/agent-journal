@@ -9,7 +9,7 @@ use App\Access\StackAdmission;
 use App\Bus\CommandMiddleware\AdmitStack;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandRefused;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
@@ -46,7 +46,7 @@ final class AdmitStackTest extends TestCase
         parent::setUp();
 
         $this->installCommandModules();
-        $this->app->instance(OperationDeadline::class, new OperationDeadline(300));
+        $this->app->instance(StackOperationDeadline::class, new StackOperationDeadline(300));
         $databases = $this->app->make(DatabaseManager::class);
         $this->holder = $databases->connectUsing(
             'stack-holder',

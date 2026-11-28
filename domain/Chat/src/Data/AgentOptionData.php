@@ -7,7 +7,7 @@ namespace Domain\Chat\Data;
 use App\Agents\Drivers\Enums\DriverSwitchStage;
 use App\Agents\Enums\AgentAction;
 use App\Agents\Enums\AgentPresence;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use Domain\Chat\Support\AgentChatActivity;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -17,7 +17,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * An agent Home lists, live or idle, with the actions it offers now and its chat with the viewer as the chat list shows
  * it.
  *
- * @method static static from(array<string, mixed>|AgentOption $agent, AgentChatActivity ...$activity)
+ * @method static static from(array<string, mixed>|HomeAgent $agent, AgentChatActivity ...$activity)
  */
 #[TypeScript]
 final class AgentOptionData extends Data
@@ -66,7 +66,7 @@ final class AgentOptionData extends Data
         public readonly bool $waitsOnYou,
     ) {}
 
-    public static function fromAgentOption(AgentOption $agent, AgentChatActivity $activity): self
+    public static function fromAgentOption(HomeAgent $agent, AgentChatActivity $activity): self
     {
         return self::from([
             'id' => $agent->agentId,

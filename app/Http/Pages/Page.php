@@ -8,7 +8,7 @@ use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutDialogData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 
 /**
  * What every page of the app builds the same way: a creation dialog, written by hand or with an agent, and the empty
@@ -59,9 +59,9 @@ abstract readonly class Page
      *
      * @param  array<string, string>  $cleared  each filter and the value that clears it
      */
-    protected function nothingMatches(string $message, string $clearLabel, array $cleared): ListEmpty
+    protected function nothingMatches(string $message, string $clearLabel, array $cleared): EmptyListState
     {
-        return ListEmpty::build()
+        return EmptyListState::build()
             ->title($message)
             ->actions(
                 [LayoutPartData::build()

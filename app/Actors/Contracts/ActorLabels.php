@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actors\Contracts;
 
-use App\Support\ActorLabelSet;
+use App\Support\ActorNames;
 use App\Support\ActorReference;
 
 /**
@@ -16,5 +16,5 @@ interface ActorLabels
     /**
      * @param  list<ActorReference>  $actors
      */
-    public function labelsFor(array $actors): ActorLabelSet;
+    public function labelsFor(array $actors): ActorNames;
 }

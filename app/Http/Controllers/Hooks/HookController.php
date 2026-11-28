@@ -23,7 +23,7 @@ use App\Stacks\Exceptions\HookIdentityExpired;
 use App\Stacks\Exceptions\IncomingWorkFailed;
 use App\Stacks\StackAccess;
 use App\Support\Inputs\Contracts\HookInput;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Values\AgentText;
 use Closure;
 use Illuminate\Http\JsonResponse;
@@ -38,7 +38,7 @@ final readonly class HookController
 {
     public function __construct(
         private DriverAdapters $adapters,
-        private OperationDeadline $deadline,
+        private StackOperationDeadline $deadline,
         private NativeTurnRecords $turns,
         private AgentTexts $texts,
     ) {}

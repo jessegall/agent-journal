@@ -42,7 +42,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Support/ProtectedViews.php',
+            'app/Support/ViewInvalidation.php',
         ],
     ],
     LayoutSaved::class => [

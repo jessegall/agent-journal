@@ -10,7 +10,7 @@ use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use Domain\Sequences\Enums\SequenceRunStatus;
@@ -44,7 +44,7 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
         return ListPage::build()
             ->title('Runs')
             ->rows($runs->runs, fn (SequenceRun $run) => $this->rowOf($run, $query, $chosenRunId))
-            ->empty(ListEmpty::build()->title(self::EMPTY_TEXT)->finish())
+            ->empty(EmptyListState::build()->title(self::EMPTY_TEXT)->finish())
             ->counting($runs->total)
             ->withViews(...$this->views->of(true))
             ->filteredBy($this->choicesOf($followers, $follower))
@@ -64,7 +64,7 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
         return ListPage::build()
             ->title('Runs')
             ->rows([], static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title(self::EMPTY_TEXT)->finish())
+            ->empty(EmptyListState::build()->title(self::EMPTY_TEXT)->finish())
             ->counting(0)
             ->withViews(...$this->views->of(true))
             ->withReader(LayoutBackData::build()

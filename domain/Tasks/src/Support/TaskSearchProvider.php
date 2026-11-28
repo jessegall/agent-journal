@@ -18,7 +18,7 @@ use App\Search\Values\SearchQuery;
 use App\Search\Values\SearchResult;
 use App\Search\Values\SearchWords;
 use App\Search\Values\TieredSearchSource;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Values\TaskBriefPassage;
@@ -68,9 +68,9 @@ final readonly class TaskSearchProvider implements SearchProvider
     /**
      * The tasks the reader may search: those of the served environment, limited to the admitted ids.
      *
-     * @return ReadBuilder<Task>
+     * @return BoundedReadBuilder<Task>
      */
-    private function admitted(AdmittedConstraints $constraints): ReadBuilder
+    private function admitted(AdmittedConstraints $constraints): BoundedReadBuilder
     {
         return $constraints->narrow(Task::query()->inEnvironments($this->environment->environmentIds()));
     }

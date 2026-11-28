@@ -29,7 +29,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
 
     public function __construct(
         private ConnectionInterface $database,
-        private OperationDeadline $deadline,
+        private StackOperationDeadline $deadline,
         private StackAdmission $admission,
         private StateEventScope $eventScope,
         private UnitOfWork $lifecycle,
@@ -61,7 +61,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
      * @param  Closure(): TResult  $work
      * @return TResult
      */
-    public function runAdmitted(string $sessionId, OperationDeadline $deadline, Closure $work): mixed
+    public function runAdmitted(string $sessionId, StackOperationDeadline $deadline, Closure $work): mixed
     {
         return $this->admission->admit($sessionId, $deadline, fn () => $this->runWithin($deadline, $work));
     }
@@ -72,7 +72,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
      * @param  Closure(): TResult  $work
      * @return TResult
      */
-    public function runAdmittedForTarget(StackTarget $target, OperationDeadline $deadline, Closure $work): mixed
+    public function runAdmittedForTarget(StackTarget $target, StackOperationDeadline $deadline, Closure $work): mixed
     {
         return $this->runAdmitted(
             $target->sessionId,
@@ -106,7 +106,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
      * @param  Closure(): TResult  $work
      * @return TResult
      */
-    public function runWithin(OperationDeadline $deadline, Closure $work): mixed
+    public function runWithin(StackOperationDeadline $deadline, Closure $work): mixed
     {
         // Inside a unit already open the work joins it; a transaction with no unit, such as a test's own, still
         // gets one of its own, so every stack write belongs to a unit.

@@ -15,7 +15,7 @@ use App\Sharing\Exceptions\UnknownShareRecordType;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordCard;
 use App\Support\ShareSelection;
-use App\Support\ShareTargetRead;
+use App\Support\ShareTargetRequest;
 use App\Values\ProjectSelection;
 
 /**
@@ -182,7 +182,7 @@ final readonly class ShareScope
         $continuation = null;
 
         do {
-            $read = new ShareTargetRead([$source], $targets, $continuation);
+            $read = new ShareTargetRequest([$source], $targets, $continuation);
             $page = $budget->run(fn () => $provider->readTargets($read, $budget));
             array_push($cards, ...$page->eligible);
             $continuation = $page->continuation;

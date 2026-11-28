@@ -64,7 +64,7 @@ final class BindingRulesTest extends TestCase
         'app/Providers/AccessServiceProvider.php',
         'app/Providers/CommunicationServiceProvider.php',
         'app/Providers/CoreServiceProvider.php',
-        'app/Support/Bootstrappers/RegisterAssignables.php',
+        'app/Support/Bootstrappers/AssignablesBootstrapper.php',
     ];
 
     public function test_every_stated_binding_of_the_app_is_sound(): void

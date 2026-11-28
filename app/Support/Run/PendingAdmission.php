@@ -12,6 +12,11 @@ use App\Support\CallKey;
  */
 final readonly class PendingAdmission
 {
+    private const array SECRET_VARIABLES = [
+        'JOURNAL_START_TOKEN',
+        'JOURNAL_EVENT_KEY',
+    ];
+
     /**
      * @param  array<string, string>  $environment
      */
@@ -20,6 +25,14 @@ final readonly class PendingAdmission
         public CallKey $requestKey,
         public array $environment,
     ) {}
+
+    /**
+     * @return array<string, string>
+     */
+    public static function childEnvironment(): array
+    {
+        return array_diff_key(getenv(), array_flip(self::SECRET_VARIABLES));
+    }
 
     public function isNamed(): bool
     {

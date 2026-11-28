@@ -15,7 +15,7 @@ use App\Bus\Contracts\GuardedCommandBus;
 use App\Contracts\Events\Event;
 use App\Engine\Enums\CommandOriginStatus;
 use App\Sessions\Contracts\AgentCallContext;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Closure;
 use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
@@ -30,7 +30,7 @@ final readonly class StateEventEffects
         private GuardedCommandBus $bus,
         private StateEventOriginGuard $guard,
         private StackAdmission $admission,
-        private OperationDeadline $deadline,
+        private StackOperationDeadline $deadline,
         private ActorRunner $actors,
         private AgentCallContext $session,
         private EngineTargetAccess $engine,

@@ -7,7 +7,7 @@ namespace Domain\Chat\Http\Pages\Resolvers;
 use App\Declarations\SlotContext;
 use App\Navigation\Contracts\SectionResolver;
 use App\Sessions\Contracts\AgentDirectory;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Support\AgentListing;
@@ -30,7 +30,7 @@ final readonly class ChosenAgentSection implements SectionResolver
         $main = $this->agents->mainAgentId();
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->agents->visibleAgent(...));
         $page = $this->listing->firstPageWith(
-            $chosen->map(fn (AgentOption $agent) => [$agent->agentId])->getOrElse([]),
+            $chosen->map(fn (HomeAgent $agent) => [$agent->agentId])->getOrElse([]),
         );
 
         return ChatData::build()
@@ -40,7 +40,7 @@ final readonly class ChosenAgentSection implements SectionResolver
             ->mainAgentId($main->getOrElse(Optional::create()))
             ->selectedAgentId(
                 $chosen
-                ->map(fn (AgentOption $agent) => $agent->agentId)
+                ->map(fn (HomeAgent $agent) => $agent->agentId)
                 ->getOrElse(Optional::create()),
             )
             ->finish();

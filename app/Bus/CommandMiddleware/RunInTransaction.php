@@ -16,7 +16,7 @@ use App\Bus\OuterTransactionOwner;
 use App\Bus\RunningCommand;
 use App\Reads\ReadMeter;
 use App\Support\ActiveEventUnits;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
@@ -46,7 +46,7 @@ final readonly class RunInTransaction implements CommandMiddleware
 
     public function __construct(
         private ConnectionInterface $database,
-        private OperationDeadline $deadline,
+        private StackOperationDeadline $deadline,
         private RunningCommand $running,
         private CommandStops $stops,
         private EventUnitLifecycle $lifecycle,
@@ -110,7 +110,7 @@ final readonly class RunInTransaction implements CommandMiddleware
     /**
      * One attempt, its lock and statement limits set from the time this attempt has.
      */
-    private function attempt(CommandCall $call, Closure $next, OperationDeadline $deadline): mixed
+    private function attempt(CommandCall $call, Closure $next, StackOperationDeadline $deadline): mixed
     {
         $isolation = $call->isRepeatableReadNeeded() ? self::REPEATABLE_READ : self::READ_COMMITTED;
         $this->database->beginTransaction();

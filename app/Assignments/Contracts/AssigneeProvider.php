@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Contracts;
 
 use App\Support\AssigneeIdentity;
-use App\Support\AssigneeList;
+use App\Support\CursorPage;
 use App\Support\AssigneeName;
 use App\Support\IdListPage;
 
@@ -33,6 +33,8 @@ interface AssigneeProvider
 
     /**
      * One page of the assignees of the provider's type that may be given work.
+     *
+     * @return CursorPage<AssigneeName>
      */
-    public function eligible(IdListPage $page): AssigneeList;
+    public function eligible(IdListPage $page): CursorPage;
 }

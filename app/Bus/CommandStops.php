@@ -6,7 +6,7 @@ namespace App\Bus;
 
 use App\Bus\Contracts\CommandStops as CommandStopsContract;
 use App\Processes\Contracts\StopTime;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 use Psr\Log\LoggerInterface;
@@ -53,7 +53,7 @@ final class CommandStops implements CommandStopsContract
     /**
      * The deadline cut to the time left until the nearest stop, or the deadline itself outside every stop.
      */
-    public function limit(OperationDeadline $deadline): OperationDeadline
+    public function limit(StackOperationDeadline $deadline): StackOperationDeadline
     {
         $left = array_reduce(
             $this->stops,
@@ -65,6 +65,6 @@ final class CommandStops implements CommandStopsContract
             return $deadline;
         }
 
-        return new OperationDeadline($left);
+        return new StackOperationDeadline($left);
     }
 }

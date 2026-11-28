@@ -7,13 +7,13 @@ namespace Tests\Fixtures\Domains\Binders;
 use App\Records\Contracts\ShareBudget;
 use App\Records\Contracts\ShareRecordProvider;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
+use App\Support\ShareContentRequest;
 use App\Support\SharedContent;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecords;
-use App\Support\ShareRelationRead;
+use App\Support\ShareRelationRequest;
 use App\Support\ShareSelection;
-use App\Support\ShareTargetRead;
+use App\Support\ShareTargetRequest;
 use App\Values\ProjectOwner;
 use Illuminate\Support\Facades\DB;
 
@@ -44,7 +44,7 @@ final class BinderShareProvider implements ShareRecordProvider
         return $this->card($selection->root);
     }
 
-    public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
+    public function readTargets(ShareTargetRequest $read, ShareBudget $budget): ShareRecords
     {
         DB::select('select 1');
         $eligible = array_values(
@@ -57,12 +57,12 @@ final class BinderShareProvider implements ShareRecordProvider
         return new ShareRecords(array_map($this->card(...), $eligible), $ineligible, null);
     }
 
-    public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords
+    public function readRelated(ShareRelationRequest $read, ShareBudget $budget): ShareRecords
     {
         return new ShareRecords([], [], null);
     }
 
-    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
+    public function content(ShareContentRequest $read, ShareBudget $budget): SharedContent
     {
         return new SharedContent($this->card($read->record), 'A binder page.');
     }

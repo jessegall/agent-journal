@@ -11,7 +11,7 @@ use App\Links\Concerns\ProvidesModelRecords;
 use App\Models\Projects\ProjectFile;
 use App\Policies\ProjectFilesPolicy;
 use App\Records\Contracts\RecordProvider;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -36,7 +36,7 @@ final readonly class ProjectFileLinkRecords implements RecordProvider
         return ProjectFile::linkType();
     }
 
-    protected function readableRecords(): ReadBuilder
+    protected function readableRecords(): BoundedReadBuilder
     {
         $granted = $this->authorizer->filterActions(ProjectFilesPolicy::class, ProjectFile::class, [AccessType::Read]);
 

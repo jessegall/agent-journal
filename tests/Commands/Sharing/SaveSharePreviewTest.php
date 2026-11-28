@@ -24,7 +24,7 @@ use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareScope;
 use App\Sharing\Support\ShareSelectedTarget;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
+use App\Support\ShareContentRequest;
 use App\Values\ProjectOwner;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
@@ -207,7 +207,7 @@ final class SaveSharePreviewTest extends SharingTestCase
         $candidates = $this->app->make(ShareScope::class)->discover($plan->shareIdentity(), $this->budget());
 
         $content = $this->app->make(ShareRecordRegistry::class)->provider(Plan::linkType())->content(
-            new ShareContentRead($plan->shareIdentity()),
+            new ShareContentRequest($plan->shareIdentity()),
             $this->budget(),
         );
 

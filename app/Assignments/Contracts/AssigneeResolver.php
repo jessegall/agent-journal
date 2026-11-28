@@ -6,7 +6,7 @@ namespace App\Assignments\Contracts;
 
 use App\Assignments\AssignmentSet;
 use App\Support\AssigneeIdentity;
-use App\Support\AssigneeList;
+use App\Support\CursorPage;
 use App\Support\AssigneeName;
 use App\Support\AssignmentHolders;
 use App\Support\IdListPage;
@@ -25,8 +25,10 @@ interface AssigneeResolver
 
     /**
      * One page of the assignees of the type that may be given work.
+     *
+     * @return CursorPage<AssigneeName>
      */
-    public function eligible(string $type, IdListPage $page): AssigneeList;
+    public function eligible(string $type, IdListPage $page): CursorPage;
 
     /**
      * The holders of a set of assignments with their names, read with one call per actor type.

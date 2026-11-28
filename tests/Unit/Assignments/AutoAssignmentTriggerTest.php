@@ -25,7 +25,7 @@ use App\Processes\Contracts\StopTimes;
 use App\Support\ActorReference;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentKey;
-use App\Support\AutoAssignmentPage;
+use App\Support\CursorPage;
 use App\Support\IdListPage;
 use App\Support\PoolReference;
 use App\Values\TrustedEntryAuthority;
@@ -73,13 +73,13 @@ final class AutoAssignmentTriggerTest extends TestCase
         $assignments = $this->mock(AutoAssignmentResolver::class);
         $assignments->shouldReceive('enabled')->once()->withArgs(
             fn (IdListPage $page): bool => $page->limit === 20 && $page->afterId === null,
-        )->andReturn(new AutoAssignmentPage(array_map($this->fact(...), range(1, 20)), TestIds::of(20)));
+        )->andReturn(new CursorPage(array_map($this->fact(...), range(1, 20)), TestIds::of(20)));
         $assignments->shouldReceive('enabled')->once()->withArgs(
             fn (IdListPage $page): bool => $page->limit === 20 && $page->afterId === TestIds::of(20),
-        )->andReturn(new AutoAssignmentPage(array_map($this->fact(...), range(21, 25)), null));
+        )->andReturn(new CursorPage(array_map($this->fact(...), range(21, 25)), null));
         $assignments->shouldReceive('enabled')->once()->withArgs(
             fn (IdListPage $page): bool => $page->afterId === TestIds::of(25),
-        )->andReturn(new AutoAssignmentPage([], null));
+        )->andReturn(new CursorPage([], null));
         $this->mock(AssignedWorkResolver::class)->shouldReceive('count')->andReturn(0);
         $this->mock(CommandBus::class)->shouldReceive('run')->times(9)->andReturn(AutoAssignmentOutcome::noCandidate());
 
@@ -92,7 +92,7 @@ final class AutoAssignmentTriggerTest extends TestCase
     {
         $older = CarbonImmutable::parse('2026-11-19 00:00:00 UTC');
         $this->mock(AutoAssignmentResolver::class)->shouldReceive('enabled')->once()->andReturn(
-            new AutoAssignmentPage([$this->fact(1, $older), $this->fact(2), $this->fact(3), $this->fact(25)], null),
+            new CursorPage([$this->fact(1, $older), $this->fact(2), $this->fact(3), $this->fact(25)], null),
         );
         $this->mock(AssignedWorkResolver::class)->shouldReceive('count')->andReturn(0, 0, 1);
         $bus = $this->mock(CommandBus::class);

@@ -9,7 +9,7 @@ use App\Data\Pages\RecordCard;
 use App\Exceptions\RecordUnavailable;
 use App\Links\Concerns\ProvidesModelRecords;
 use App\Records\Contracts\RecordProvider;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 use Domain\Plans\Models\Phase;
 use Illuminate\Container\Attributes\Scoped;
@@ -44,7 +44,7 @@ final readonly class PhaseRecords implements RecordProvider
         return Phase::linkType();
     }
 
-    protected function readableRecords(): ReadBuilder
+    protected function readableRecords(): BoundedReadBuilder
     {
         $this->actors->actor();
 

@@ -9,7 +9,7 @@ use App\Navigation\Contracts\ClientOwnerAvailability;
 use App\Navigation\Contracts\WindowResults;
 use App\Reads\Contracts\ReaderRequests;
 use App\Support\ClientDeclarations;
-use App\Support\VisibilityChecks;
+use App\Support\VisibilityCheckRunner;
 use App\Web\Attributes\Live;
 use App\Web\Creation\PageFactory;
 use App\Web\Creation\SurfaceAttributeMap;
@@ -60,7 +60,7 @@ final readonly class PageProps
         private WindowFactory $windows,
         private SurfaceAttributeMap $policies,
         private ResponseFactory $inertia,
-        private VisibilityChecks $visibility,
+        private VisibilityCheckRunner $visibility,
     ) {}
 
     /**

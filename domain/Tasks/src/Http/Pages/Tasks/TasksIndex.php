@@ -16,7 +16,7 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use Domain\Tasks\Contracts\TaskListResolver;
@@ -137,7 +137,7 @@ final readonly class TasksIndex extends TasksPage
         return LayoutPartData::build()->asCollection()->key('states')->style('choices')->rows($rows)->finish();
     }
 
-    private function emptyFor(TaskFiltersData $filters): ListEmpty
+    private function emptyFor(TaskFiltersData $filters): EmptyListState
     {
         if ($filters->state instanceof TaskStateGroup || $filters->search !== null) {
             return $this->nothingMatches(
@@ -147,7 +147,7 @@ final readonly class TasksIndex extends TasksPage
             );
         }
 
-        return ListEmpty::build()
+        return EmptyListState::build()
             ->title('No tasks yet')
             ->detail('A task is one piece of work an agent takes on, from start until it is tested.')
             ->icon('todos')

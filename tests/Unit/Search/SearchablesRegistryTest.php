@@ -10,7 +10,7 @@ use App\Search\Values\RefreshCandidates;
 use App\Search\Values\SearchBatch;
 use App\Search\Values\SearchQuery;
 use App\Support\DomainRegistry;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\Searching\Tasks\TasksDomain;
 use Tests\Fixtures\Domains\Tasks\TasksDomain as PlainTasksDomain;
@@ -110,9 +110,9 @@ final class SearchablesRegistryTest extends TestCase
         );
     }
 
-    private static function searchable(string $key, string $label): Searchable
+    private static function searchable(string $key, string $label): SearchSource
     {
-        return Searchable::make(
+        return SearchSource::make(
             $key,
             $label,
             OpenSearchAccess::class,

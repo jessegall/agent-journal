@@ -13,7 +13,7 @@ use App\Stacks\Declarations\StateMethods;
 use App\Stacks\StateListenerDeclarations;
 use App\Stacks\StateTypes;
 use App\Support\DomainRegistry;
-use App\Support\Registration\ListenerPolicy;
+use App\Support\Registration\ListenerRegistration;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\EventCallScan;
@@ -84,7 +84,7 @@ final class DomainEventRulesTest extends TestCase
         $registry = DomainRegistry::from([TasksDomain::class, PlansDomain::class]);
         $ownership = new ListenerOwnership($registry, CoreListenerFolders::all(), new CatalogueReflectorFactory(), app_path());
         $states = new StateListenerDeclarations($ownership, new CatalogueReflectorFactory());
-        $policy = new ListenerPolicy($this->app->make(PipelineRunner::class), $ownership);
+        $policy = new ListenerRegistration($this->app->make(PipelineRunner::class), $ownership);
         $declaration = new StateMethods()->forState(PlanState::class)[self::TASK_CLOSED];
 
         $this->assertSame('Plans', $states->ownerOf(self::TASK_CLOSED, $declaration));

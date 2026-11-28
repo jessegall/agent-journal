@@ -28,7 +28,7 @@ use App\Listeners\ReleaseSignInWriter;
 use App\Providers\DomainEventServiceProvider;
 use App\Reflection\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
-use App\Support\Registration\ListenerPolicy;
+use App\Support\Registration\ListenerRegistration;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Events\PlanStarted;
@@ -179,9 +179,9 @@ final class TransactionListenerLaneTest extends TestCase
         $policy->registerDiscovered([TaskClosed::class => [$undeclared]]);
     }
 
-    private function policyFor(DomainRegistry $registry): ListenerPolicy
+    private function policyFor(DomainRegistry $registry): ListenerRegistration
     {
-        return new ListenerPolicy(
+        return new ListenerRegistration(
             $this->app->make(PipelineRunner::class),
             new ListenerOwnership($registry, [...CoreListenerFolders::all(), base_path('tests/Fixtures/Listeners')], new CatalogueReflectorFactory(), app_path()),
         );

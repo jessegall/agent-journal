@@ -13,7 +13,7 @@ use App\Agents\Values\SecretHandover;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
-use App\Support\PrivateAccountProcess;
+use App\Support\SignInProcess;
 use App\Values\FilePath;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
@@ -37,12 +37,12 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
      */
     public function __construct(protected Files $files) {}
 
-    public function begin(SignInDriver $driver, string $directory): PrivateAccountProcess
+    public function begin(SignInDriver $driver, string $directory): SignInProcess
     {
-        return PrivateAccountProcess::holding($directory);
+        return SignInProcess::holding($directory);
     }
 
-    public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null
+    public function challengeFrom(SignInProcess $process): SignInChallenge|null
     {
         return null;
     }
@@ -55,7 +55,7 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
     /**
      * Keeps the value in its own file, created only for the owner, lets the driver find it, and ends the wait.
      */
-    public function acceptCode(PrivateAccountProcess $process, string $code): void
+    public function acceptCode(SignInProcess $process, string $code): void
     {
         $directory = $process->workingDirectory();
 
@@ -69,12 +69,12 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
         $process->release();
     }
 
-    public function hasFinished(PrivateAccountProcess $process): bool
+    public function hasFinished(SignInProcess $process): bool
     {
         return ! $process->isRunning();
     }
 
-    public function prove(SignInDriver $driver, PrivateAccountProcess $process, string $directory): SignInVerification
+    public function prove(SignInDriver $driver, SignInProcess $process, string $directory): SignInVerification
     {
         $verification = $this->verify($driver, $directory);
 

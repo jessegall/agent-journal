@@ -9,7 +9,7 @@ use App\Assignments\Contracts\AssigneeResolver as AssigneeResolverContract;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Support\AssigneeIdentity;
-use App\Support\AssigneeList;
+use App\Support\CursorPage;
 use App\Support\AssigneeName;
 use App\Support\Assignment;
 use App\Support\AssignmentHolder;
@@ -47,7 +47,8 @@ final readonly class AssigneeResolver implements AssigneeResolverContract
         return $names;
     }
 
-    public function eligible(string $type, IdListPage $page): AssigneeList
+    /** @return CursorPage<AssigneeName> */
+    public function eligible(string $type, IdListPage $page): CursorPage
     {
         return $this->providers->assigneeProvider($type)->eligible($page);
     }

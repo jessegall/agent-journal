@@ -14,7 +14,7 @@ use App\Hosts\ArrangementSetting;
 use App\Hosts\HostSecret;
 use App\Support\HostAccountFolders;
 use App\Support\LocalAccountFolders;
-use App\Support\PrivateSignInProcesses;
+use App\Support\SignInRunner;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\Factory;
 
@@ -43,7 +43,7 @@ final class RunSignInsCommand extends Command
         $pause = static fn () => usleep(500_000);
         $wait = new FolderInstructionWait($host, $pause);
 
-        $runner = new PrivateSignInProcesses(
+        $runner = new SignInRunner(
             $host,
             $protocols,
             $pause,

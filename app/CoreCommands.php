@@ -17,7 +17,7 @@ use App\CommandMiddleware\CommitHeldStartRefusals;
 use App\CommandMiddleware\GuardTickOrigin;
 use App\CommandMiddleware\KeepStartReceipt;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
-use App\Support\Codebase;
+use App\Support\ProjectCode;
 use App\Support\Exports;
 
 /**
@@ -32,8 +32,8 @@ final class CoreCommands
     {
         // Each subject keeps its commands in its own Commands folder, one or two levels down (app/Agents/Drivers).
         return [
-            ...Codebase::in(__DIR__.'/*/Commands/*', Command::class),
-            ...Codebase::in(__DIR__.'/*/*/Commands/*', Command::class),
+            ...ProjectCode::in(__DIR__.'/*/Commands/*', Command::class),
+            ...ProjectCode::in(__DIR__.'/*/*/Commands/*', Command::class),
         ];
     }
 

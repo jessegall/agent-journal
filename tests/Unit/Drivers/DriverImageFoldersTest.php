@@ -8,7 +8,7 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeHooks;
 use App\Agents\Drivers\Codex\CodexHomeFiles;
 use App\Agents\Drivers\Hooks\HookReplies;
 use App\Hosts\Protocol\ContainedPlanFields;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use ReflectionClassConstant;
 use Tests\TestCase;
 
@@ -25,7 +25,7 @@ final class DriverImageFoldersTest extends TestCase
     {
         $hooks = json_decode(str_replace(
             '{folder:files}',
-            MountRules::SESSION_TARGET,
+            HelperMounts::SESSION_TARGET,
             (string) json_encode(ClaudeCodeHooks::running(self::IMAGE_HOOK_COMMAND), JSON_UNESCAPED_SLASHES),
         ), true);
 
@@ -59,7 +59,7 @@ final class DriverImageFoldersTest extends TestCase
     public function test_codexs_journal_server_answers_its_hooks_with_journal_hooks_arguments(): void
     {
         $config = (string) file_get_contents(base_path('.docker/drivers/codex/config.toml'));
-        $replies = MountRules::SESSION_TARGET.'/'.HookReplies::REPLY_FILE;
+        $replies = HelperMounts::SESSION_TARGET.'/'.HookReplies::REPLY_FILE;
 
         $this->assertMatchesRegularExpression(
             self::settingLine('args', json_encode(['codex', $replies], JSON_UNESCAPED_SLASHES)),

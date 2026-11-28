@@ -331,7 +331,7 @@ final readonly class BoundaryChecker
      */
     private static function isCheckedRegistrationSite(string $file): bool
     {
-        return str_ends_with($file, 'app/Support/Bootstrappers/RegisterStates.php')
+        return str_ends_with($file, 'app/Support/Bootstrappers/StatesBootstrapper.php')
             || str_ends_with($file, 'app/Providers/DomainEventServiceProvider.php');
     }
 

@@ -10,7 +10,7 @@ use App\Access\StateEvents\StateEventScope;
 use App\Actors\Contracts\CurrentActor;
 use App\Bus\SessionAdvisoryLocks;
 use App\Contracts\Work\ActorStackSessions;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Values\StackTarget;
 use Closure;
 use Illuminate\Database\DatabaseManager;
@@ -41,7 +41,7 @@ final class StackAdmission implements StackAdmissionContract
         private readonly StateEventScope $eventScope,
     ) {}
 
-    public function admit(string $sessionId, OperationDeadline $deadline, Closure $work): mixed
+    public function admit(string $sessionId, StackOperationDeadline $deadline, Closure $work): mixed
     {
         $connection = $this->databases->connection();
 
@@ -64,7 +64,7 @@ final class StackAdmission implements StackAdmissionContract
      * Admits the operation to the stacks its actor works on, in sorted order, before its transaction opens; an
      * actor that works on no stack runs as it is.
      */
-    public function admitCaller(OperationDeadline $deadline, Closure $work): mixed
+    public function admitCaller(StackOperationDeadline $deadline, Closure $work): mixed
     {
         $sessions = $this->stackSessions->admittableSessions();
         $admitted = fn () => $this->withEventTargets($sessions, $work);

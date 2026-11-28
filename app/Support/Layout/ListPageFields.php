@@ -15,7 +15,7 @@ final class ListPageFields
 
     private LayoutTableData $table;
 
-    private ListEmpty $empty;
+    private EmptyListState $empty;
 
     private int|null $total = null;
 
@@ -58,7 +58,7 @@ final class ListPageFields
         return clone ($this, ['table' => LayoutTableData::build()->rows($records, $map)->finish()]);
     }
 
-    public function empty(ListEmpty $empty): self
+    public function empty(EmptyListState $empty): self
     {
         return clone ($this, ['empty' => $empty]);
     }

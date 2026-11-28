@@ -7,12 +7,12 @@ namespace Domain\Documents\Concerns;
 use App\Exceptions\RecordUnavailable;
 use App\Records\Contracts\ShareBudget;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
+use App\Support\ShareContentRequest;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecords;
-use App\Support\ShareRelationRead;
+use App\Support\ShareRelationRequest;
 use App\Support\ShareSelection;
-use App\Support\ShareTargetRead;
+use App\Support\ShareTargetRequest;
 use Domain\Comments\Support\PublicComment;
 use Domain\Documents\Models\Document;
 
@@ -34,7 +34,7 @@ trait SharesPublishedRecords
         )[0] ?? throw RecordUnavailable::forActor($selection->root);
     }
 
-    public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
+    public function readTargets(ShareTargetRequest $read, ShareBudget $budget): ShareRecords
     {
         $cards = $this->publishedCards($read->targets, $budget);
         $eligible = array_map(fn (ShareRecordCard $card) => $card->record, $cards);
@@ -50,7 +50,7 @@ trait SharesPublishedRecords
      * A page of the parent's comments, live: an excerpt of each, and its quote only while the exact quoted text is
      * still in the parent's published body.
      */
-    public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords
+    public function readRelated(ShareRelationRequest $read, ShareBudget $budget): ShareRecords
     {
         if ($read->relation !== Document::SHARED_COMMENTS) {
             return new ShareRecords([], [], null);
@@ -58,7 +58,7 @@ trait SharesPublishedRecords
 
         $page = $this->comments->pageOf($read->parent, $read->limit, $read->continuation);
         $quoted = array_filter($page->comments, fn (PublicComment $comment) => $comment->quote !== null);
-        $body = $quoted === [] ? '' : $this->content(new ShareContentRead($read->parent), $budget)->body;
+        $body = $quoted === [] ? '' : $this->content(new ShareContentRequest($read->parent), $budget)->body;
         $cards = [];
 
         foreach ($page->comments as $comment) {

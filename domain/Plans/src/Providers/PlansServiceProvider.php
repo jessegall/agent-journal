@@ -7,7 +7,7 @@ namespace Domain\Plans\Providers;
 use App\Access\Contracts\ReadEntitlements;
 use App\Access\Values\ReadEntitlement;
 use App\Records\Contracts\RecordSummaries;
-use App\Support\Codebase;
+use App\Support\ProjectCode;
 use App\Time\Contracts\VerificationTiming;
 use Domain\Plans\Contracts\PlanDetailsResolver as PlanDetailsResolverContract;
 use Domain\Plans\Contracts\PlanResolver as PlanResolverContract;
@@ -63,7 +63,7 @@ final class PlansServiceProvider extends ServiceProvider
         }
 
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
-        $this->commands(Codebase::consoleCommandsIn(dirname(__DIR__)));
+        $this->commands(ProjectCode::consoleCommandsIn(dirname(__DIR__)));
 
     }
 }

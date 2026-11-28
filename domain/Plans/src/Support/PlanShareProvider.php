@@ -8,13 +8,13 @@ use App\Exceptions\RecordUnavailable;
 use App\Records\Contracts\ShareBudget;
 use App\Records\Contracts\ShareRecordProvider;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
+use App\Support\ShareContentRequest;
 use App\Support\SharedContent;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecords;
-use App\Support\ShareRelationRead;
+use App\Support\ShareRelationRequest;
 use App\Support\ShareSelection;
-use App\Support\ShareTargetRead;
+use App\Support\ShareTargetRequest;
 use App\Values\ProjectOwner;
 use Domain\Plans\Models\Plan;
 
@@ -54,7 +54,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         return $this->summaryOf($selection->root, $budget)->shareCard;
     }
 
-    public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
+    public function readTargets(ShareTargetRequest $read, ShareBudget $budget): ShareRecords
     {
         $ids = array_values(
             array_map(
@@ -87,7 +87,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         );
     }
 
-    public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords
+    public function readRelated(ShareRelationRequest $read, ShareBudget $budget): ShareRecords
     {
         return new ShareRecords([], [], null);
     }
@@ -95,7 +95,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
     /**
      * @throws RecordUnavailable when the plan is missing
      */
-    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
+    public function content(ShareContentRequest $read, ShareBudget $budget): SharedContent
     {
         $plan = $this->summaryOf($read->record, $budget);
         $summary = $plan->shareSummary;

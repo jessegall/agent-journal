@@ -16,7 +16,7 @@ use App\Navigation\Contracts\NavigationReader as NavigationReaderContract;
 use App\Navigation\Enums\MenuEntryStatus;
 use App\Navigation\Exceptions\MenuEntryRefused;
 use App\Support\ActorReference;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -161,9 +161,9 @@ final readonly class NavigationReader implements NavigationReaderContract
     }
 
     /**
-     * @return ReadBuilder<MenuEntry>
+     * @return BoundedReadBuilder<MenuEntry>
      */
-    private function menuQuery(ActorReference $owner, string|null $driver, MenuEntryStatus|null $status): ReadBuilder
+    private function menuQuery(ActorReference $owner, string|null $driver, MenuEntryStatus|null $status): BoundedReadBuilder
     {
         return MenuEntry::query()
             ->ownedBy($owner)

@@ -13,7 +13,7 @@ use App\Search\Values\SearchQuery;
 use App\Search\Values\SearchResult;
 use App\Search\Values\TieredSearchSource;
 use App\Support\ActorReference;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 use Domain\Memory\Models\Memory;
 
@@ -42,9 +42,9 @@ final readonly class MemorySearchProvider implements SearchProvider
     }
 
     /**
-     * @return ReadBuilder<Memory>
+     * @return BoundedReadBuilder<Memory>
      */
-    private static function ownedBy(ActorReference $owner): ReadBuilder
+    private static function ownedBy(ActorReference $owner): BoundedReadBuilder
     {
         return Memory::query()->ownedBy($owner);
     }

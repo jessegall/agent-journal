@@ -6,7 +6,7 @@ namespace App\Agents;
 
 use App\Accounts\ProtectedAccounts;
 use App\Reads\Contracts\SessionOutputAccess;
-use App\Support\Inputs\ProtectedFileRead;
+use App\Support\Inputs\NamedReadPaths;
 
 /**
  * Checks a session's native file and shell tools against the saved accounts' folders: a read inside them passes only
@@ -20,7 +20,7 @@ final readonly class CheckProtectedResources
         private SessionOutputAccess $outputs,
     ) {}
 
-    public function refusesRead(string $sessionId, ProtectedFileRead $read): bool
+    public function refusesRead(string $sessionId, NamedReadPaths $read): bool
     {
         foreach ($read->paths as $path) {
             if ($this->accounts->covers($path) && ! $this->outputs->mayRead($sessionId, $path)) {
@@ -42,7 +42,7 @@ final readonly class CheckProtectedResources
             return true;
         }
 
-        $named = ProtectedFileRead::inFolder($workFolder, $this->accounts->pathsNamedIn($command));
+        $named = NamedReadPaths::inFolder($workFolder, $this->accounts->pathsNamedIn($command));
 
         return $this->refusesRead($sessionId, $named);
     }

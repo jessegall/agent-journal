@@ -13,7 +13,7 @@ use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\ExecutionBudgets;
 use App\Values\HostInstructionSource;
 use App\Values\HostProcessPlan;
@@ -63,9 +63,9 @@ final readonly class TestEnrolledHost
         $manifest = ContainerManifest::make(
             TestHost::IMAGE,
             "journal-net-{$name}",
-            [MountRules::local()->workspaceMount(base_path('storage/framework'), WorkspaceUse::Shared, $name)],
+            [HelperMounts::local()->workspaceMount(base_path('storage/framework'), WorkspaceUse::Shared, $name)],
             ExecutionBudgets::defaults(),
-            MountRules::local(),
+            HelperMounts::local(),
             SecurityOptions::none(),
             true,
         );

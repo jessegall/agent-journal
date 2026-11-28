@@ -8,12 +8,12 @@ use App\Pipelines\ExecuteStepPipeline;
 use App\Pipelines\Support\PipelineAdapter;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\StepsInOrder;
+use App\Support\Execution\PendingSteps;
 
 /**
  * Runs the next step of a sequence in the context the step before it left.
  *
- * @extends PipelineAdapter<StepsInOrder, StepOutcome>
+ * @extends PipelineAdapter<PendingSteps, StepOutcome>
  */
 final readonly class RunNextInOrder extends PipelineAdapter
 {
@@ -32,7 +32,7 @@ final readonly class RunNextInOrder extends PipelineAdapter
         return $input->next();
     }
 
-    protected function back(object $outcome, object $input): StepsInOrder
+    protected function back(object $outcome, object $input): PendingSteps
     {
         return $input->after($outcome);
     }

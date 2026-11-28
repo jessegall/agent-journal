@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Data\Pages\RecordCard;
 use App\Links\Concerns\ProvidesModelRecords;
 use App\Records\Contracts\RecordProvider;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Domain\Rules\Models\Rule;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
@@ -36,7 +36,7 @@ final readonly class RuleLinkRecords implements RecordProvider
         return Rule::linkType();
     }
 
-    protected function readableRecords(): ReadBuilder
+    protected function readableRecords(): BoundedReadBuilder
     {
         $this->actors->actor();
 

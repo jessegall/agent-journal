@@ -7,7 +7,7 @@ namespace App\Asks;
 use App\Actors\Contracts\CurrentActor;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Asks\Ask;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\AskReference;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,9 +27,9 @@ final readonly class AskRecords
     }
 
     /**
-     * @return ReadBuilder<Ask>
+     * @return BoundedReadBuilder<Ask>
      */
-    public function visible(): ReadBuilder
+    public function visible(): BoundedReadBuilder
     {
         return Ask::query()->visibleToParticipant($this->current->actor(), $this->owner->resolve());
     }
@@ -43,9 +43,9 @@ final readonly class AskRecords
     /**
      * The ask the reference names among the query's rows; unavailable when it is not there.
      *
-     * @param  ReadBuilder<Ask>  $query
+     * @param  BoundedReadBuilder<Ask>  $query
      */
-    private function foundIn(ReadBuilder $query, AskReference $reference): Ask
+    private function foundIn(BoundedReadBuilder $query, AskReference $reference): Ask
     {
         return $query->whereKey($reference->id)->firstOr(
             RecordUnavailable::throwing()->for(new RecordIdentity(Ask::linkType(), $reference->id)),

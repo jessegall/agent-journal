@@ -8,7 +8,7 @@ use App\Engine\Enums\RefusalCode;
 use App\Mcp\Data\JsonRpcIdData;
 use App\Sessions\Contracts\AgentCallContext;
 use App\Sessions\Exceptions\AgentContextMissing;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Container\Container;
@@ -43,19 +43,19 @@ final readonly class SetCallDeadline
             false,
         );
 
-        $deadline = new OperationDeadline(min(self::ENTRY_MILLISECONDS, $signedLeft));
+        $deadline = new StackOperationDeadline(min(self::ENTRY_MILLISECONDS, $signedLeft));
 
         if ($deadline->hasRunOut()) {
             return $this->expired($request);
         }
 
-        $default = $this->container->make(OperationDeadline::class);
-        $this->container->instance(OperationDeadline::class, $deadline);
+        $default = $this->container->make(StackOperationDeadline::class);
+        $this->container->instance(StackOperationDeadline::class, $deadline);
 
         try {
             return $next($request);
         } finally {
-            $this->container->instance(OperationDeadline::class, $default);
+            $this->container->instance(StackOperationDeadline::class, $default);
         }
     }
 

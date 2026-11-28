@@ -15,7 +15,7 @@ use App\Hosts\Protocol\Payloads\HostContainerRunPayload;
 use App\Hosts\Protocol\Payloads\HostContainerTmpfsPayload;
 use App\Hosts\Protocol\Payloads\HostContainerVolumePayload;
 use App\Sessions\Values\ExecutionPolicy;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\ExecutionBudgets;
 
 /**
@@ -161,7 +161,7 @@ final readonly class ContainerManifest
     {
         $inside = array_filter(
             $this->mounts,
-            fn (ManifestMount $mount) => dirname($mount->target) === MountRules::ACCOUNT_TARGET,
+            fn (ManifestMount $mount) => dirname($mount->target) === HelperMounts::ACCOUNT_TARGET,
         );
 
         return array_values(array_map(fn (ManifestMount $mount) => basename($mount->target), $inside));
@@ -217,7 +217,7 @@ final readonly class ContainerManifest
         WorkspaceUse $use,
         ExecutionPolicy $policy,
         string $network,
-        MountRules $rules,
+        HelperMounts $rules,
         string|null $resumedSessionId,
         SecurityOptions $security,
         StartProfileType $startProfile = StartProfileType::Standard,
@@ -258,7 +258,7 @@ final readonly class ContainerManifest
         string $network,
         array $mounts,
         ExecutionBudgets $budgets,
-        MountRules $rules,
+        HelperMounts $rules,
         SecurityOptions $security,
         bool $isAttachable = false,
         StartProfileType $startProfile = StartProfileType::Standard,

@@ -6,7 +6,7 @@ namespace App\Accounts;
 
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 
 /**
  * The No accounts yet state, in the design's words, with the action that opens the account wizard: the Accounts page
@@ -19,9 +19,9 @@ final readonly class NoAccountsYet
     public const string SENTENCE = 'Agents run on an account. Add a Claude Code or Codex account so they can start '
         .'work.';
 
-    public static function addingWith(LayoutActionData $adding): ListEmpty
+    public static function addingWith(LayoutActionData $adding): EmptyListState
     {
-        return ListEmpty::build()
+        return EmptyListState::build()
             ->title(self::TITLE)
             ->detail(self::SENTENCE)
             ->icon('account')

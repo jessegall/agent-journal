@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\Logging\RedactInstallSecrets;
+use App\Support\Logging\InstallSecretRedactionTap;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -63,7 +63,7 @@ return [
 
         'single' => [
             'driver' => 'single',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
@@ -71,7 +71,7 @@ return [
 
         'search' => [
             'driver' => 'daily',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'path' => storage_path('logs/search.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => env('LOG_DAILY_DAYS', 14),
@@ -79,7 +79,7 @@ return [
 
         'daily' => [
             'driver' => 'daily',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => env('LOG_DAILY_DAYS', 14),
@@ -88,7 +88,7 @@ return [
 
         'monthly' => [
             'driver' => 'monthly',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => 3,
@@ -97,7 +97,7 @@ return [
 
         'slack' => [
             'driver' => 'slack',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
             'username' => env('LOG_SLACK_USERNAME', env('APP_NAME', 'Laravel')),
             'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
@@ -107,7 +107,7 @@ return [
 
         'papertrail' => [
             'driver' => 'monolog',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => env('LOG_PAPERTRAIL_HANDLER', SyslogUdpHandler::class),
             'handler_with' => [
@@ -120,7 +120,7 @@ return [
 
         'stderr' => [
             'driver' => 'monolog',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => StreamHandler::class,
             'handler_with' => [
@@ -132,7 +132,7 @@ return [
 
         'syslog' => [
             'driver' => 'syslog',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'facility' => env('LOG_SYSLOG_FACILITY', LOG_USER),
             'replace_placeholders' => true,
@@ -140,14 +140,14 @@ return [
 
         'errorlog' => [
             'driver' => 'errorlog',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
 
         'null' => [
             'driver' => 'monolog',
-            'tap' => [RedactInstallSecrets::class],
+            'tap' => [InstallSecretRedactionTap::class],
             'handler' => NullHandler::class,
         ],
 

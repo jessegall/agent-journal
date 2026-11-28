@@ -10,7 +10,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Sessions\Contracts\BuiltInStartProfiles;
 use App\Sessions\Exceptions\AgentNotAvailable;
-use App\Support\Lifecycle\AgentLifecycle;
+use App\Support\Lifecycle\AgentLocks;
 use App\Values\SelectedDriver;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\DatabaseManager;
@@ -25,7 +25,7 @@ final readonly class AgentSessions
     private const int START_RESERVATION_LOCKS = 7_304_211;
 
     public function __construct(
-        private AgentLifecycle $lifecycle,
+        private AgentLocks $lifecycle,
         private BuiltInStartProfiles $builtInProfiles,
         private DatabaseManager $databases,
     ) {}

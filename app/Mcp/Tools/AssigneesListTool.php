@@ -80,7 +80,7 @@ final class AssigneesListTool extends JournalReadTool
 
         return ToolResult::ok([
             'type' => $type,
-            'assignees' => array_map(fn (AssigneeName $assignee) => $assignee->listing(), $assigneePage->assignees),
+            'assignees' => array_map(fn (AssigneeName $assignee) => $assignee->listing(), $assigneePage->items),
         ], $nextActions);
     }
 }

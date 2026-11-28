@@ -13,7 +13,7 @@ use App\Models\Records\GlobalGroup;
 use App\Models\Records\NumberGroup;
 use App\Numbers\LockingNumberAllocator;
 use App\Records\Exceptions\NumberLimitReached;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Domain\Rules\RulesDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -114,7 +114,7 @@ final class NumberAllocationTest extends TestCase
 
     public function test_a_held_group_lock_ends_in_the_bus_lock_timeout(): void
     {
-        $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
+        $this->app->instance(StackOperationDeadline::class, new StackOperationDeadline(500));
         $ledger = $this->commands->run(new OpenLedgerCommand('ledger'));
         $this->commands->run(new WriteEntryCommand($ledger, 'first'));
         config(['database.connections.second_writer' => config('database.connections.'.config('database.default'))]);

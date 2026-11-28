@@ -9,17 +9,17 @@ use App\Pipes\StateLoading\CastConstructorValues;
 use App\Pipes\StateLoading\CastPropertyValues;
 use App\Pipes\StateLoading\MakeState;
 use App\Stacks\AgentState;
-use App\Support\StateLoading\SavedState;
+use App\Support\StateLoading\StateArguments;
 
 /**
  * Builds a state from its saved values: cast them, then make the state with its collaborators and constructor values
  * and write its own values into it.
  *
- * @implements PipelineDefinition<SavedState, AgentState>
+ * @implements PipelineDefinition<StateArguments, AgentState>
  */
 final readonly class BuildStatePipeline implements PipelineDefinition
 {
-    public string $input = SavedState::class;
+    public string $input = StateArguments::class;
 
     public string $output = AgentState::class;
 

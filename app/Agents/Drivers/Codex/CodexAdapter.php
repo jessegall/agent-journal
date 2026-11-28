@@ -36,7 +36,7 @@ use App\Stacks\HookAnswer;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\PromptSubmitted;
-use App\Support\Inputs\ProtectedFileRead;
+use App\Support\Inputs\NamedReadPaths;
 use App\Support\Inputs\SessionEnded;
 use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\ShellCommandRequested;
@@ -258,7 +258,7 @@ final readonly class CodexAdapter implements DriverAdapter
         $changes = FileChanges::fromPatch($hookInput->argument('command'));
 
         foreach ($changes->paths() as $path) {
-            if ($this->protection->refusesChange(ProtectedFileRead::resolve($folder, $path))) {
+            if ($this->protection->refusesChange(NamedReadPaths::resolve($folder, $path))) {
                 return $this->protectedRefusal();
             }
         }

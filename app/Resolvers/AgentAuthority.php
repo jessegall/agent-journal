@@ -13,14 +13,14 @@ use App\Models\Records\AssignmentRecord;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Sessions\Exceptions\AgentNotAvailable;
 use App\Support\ActorReference;
-use App\Support\Lifecycle\AgentLifecycle;
+use App\Support\Lifecycle\AgentLocks;
 
 /**
  * Reads an agent's authority to give out work: a main agent that is not retired has it.
  */
 final readonly class AgentAuthority implements AgentAuthorityContract
 {
-    public function __construct(private AgentLifecycle $lifecycle, private TargetAuthorizer $authorizer) {}
+    public function __construct(private AgentLocks $lifecycle, private TargetAuthorizer $authorizer) {}
 
     public function requireDispatcher(string $agentId): void
     {

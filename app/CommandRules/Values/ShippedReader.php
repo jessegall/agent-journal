@@ -6,7 +6,7 @@ namespace App\CommandRules\Values;
 
 use App\Processes\Data\ProofManifestData;
 use App\Processes\Values\ProofSample;
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 use App\Values\OutputContract;
 use App\Values\ReaderDefinition;
 
@@ -58,7 +58,7 @@ final readonly class ShippedReader
      */
     private function proofFile(string $name): string
     {
-        $code = CodeFiles::ofProcess();
+        $code = ProjectCode::ofProcess();
 
         return $code->file($code->projectPathOf("{$this->proofFolder()}/{$name}"));
     }

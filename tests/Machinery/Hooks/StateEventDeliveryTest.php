@@ -23,8 +23,8 @@ use App\Stacks\References\SubjectReference;
 use App\Stacks\StackRestorer;
 use App\Stacks\StateTypes;
 use App\Support\ActorReference;
-use App\Support\Delivery\StateEventBridge;
-use App\Support\OperationDeadline;
+use App\Support\Delivery\StateEventDelivery;
+use App\Support\StackOperationDeadline;
 use App\Support\StackTransaction;
 use App\Support\StateEvents\Exceptions\StateEventAfterCommitFailed;
 use App\Values\ProfileBase;
@@ -46,7 +46,7 @@ use Tests\Support\TestStartAuthority;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
-#[TestsMachinery(StateEventBridge::class)]
+#[TestsMachinery(StateEventDelivery::class)]
 final class StateEventDeliveryTest extends TestCase
 {
     /**
@@ -258,7 +258,7 @@ final class StateEventDeliveryTest extends TestCase
         $reply = $this->machine()->answer(
             $this->stop(),
             $this->capabilities(),
-            new OperationDeadline(),
+            new StackOperationDeadline(),
             function (HookAnswer $answer): DriverReply {
                 $this->dispatch(new NoteWritten());
 

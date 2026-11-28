@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Accounts;
 
-use App\Support\Inputs\ProtectedFileRead;
+use App\Support\Inputs\NamedReadPaths;
 
 /**
  * The folders of saved driver accounts that model tools never reach on their own: every account's credentials,
@@ -82,7 +82,7 @@ final readonly class ProtectedAccounts
             $isTouched = match (true) {
                 is_array($toolArgument) => $this->isTouchedByToolCall($toolArgument, $workFolder),
                 is_string($toolArgument) => $this->isTouchedBy($toolArgument)
-                    || $this->covers(ProtectedFileRead::resolve($workFolder, $toolArgument)),
+                    || $this->covers(NamedReadPaths::resolve($workFolder, $toolArgument)),
                 default => false,
             };
 

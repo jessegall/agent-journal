@@ -6,7 +6,7 @@ namespace App\Providers;
 
 use App\Files\Contracts\Files as FilesContract;
 use App\Files\Files;
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -17,7 +17,7 @@ final class FilesServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(CodeFiles::class, fn () => CodeFiles::ofProcess());
+        $this->app->singleton(ProjectCode::class, fn () => ProjectCode::ofProcess());
         $this->app->singleton(FilesContract::class, Files::class);
     }
 }

@@ -26,7 +26,7 @@ use App\Search\Contracts\MessageSearch;
 use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use App\Text\Declarations\Section;
 use Domain\Chat\Contracts\PairChats;
 use Domain\Chat\Events\ChatMessageChanged;
@@ -179,6 +179,6 @@ final class ChatDomain extends Domain implements
      */
     public function searchables(): array
     {
-        return [Searchable::make('message', 'Messages', MessageSearchAccess::class, MessageSearch::class)];
+        return [SearchSource::make('message', 'Messages', MessageSearchAccess::class, MessageSearch::class)];
     }
 }

@@ -19,7 +19,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Sessions\Contracts\SessionPolicyReader;
 use App\Sessions\Values\SessionContainer;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\SelectedAccount;
 use Illuminate\Container\Attributes\Config;
 
@@ -103,7 +103,7 @@ final readonly class SessionContainers
      *
      * @return list<HostContainerRunPayload>
      */
-    private function workspacePreparations(MountRules $rules, WorkspaceUse $use, string $sessionId): array
+    private function workspacePreparations(HelperMounts $rules, WorkspaceUse $use, string $sessionId): array
     {
         $source = $rules->workspaceSource;
 

@@ -6,7 +6,7 @@ namespace App\Search\Values;
 
 use App\Records\Contracts\ReferenceRecognizer;
 use App\Search\Contracts\SearchProvider;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -18,7 +18,7 @@ final readonly class DeclaredSearchable
     public function __construct(
         public string $owner,
         public string $qualifiedKey,
-        public Searchable $searchable,
+        public SearchSource $searchable,
     ) {}
 
     /**

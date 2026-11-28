@@ -14,7 +14,7 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use Domain\Sequences\Models\Sequence;
 
@@ -48,7 +48,7 @@ final readonly class SequencesIndex extends SequencesPage
                 ->finish(),
             )
             ->empty(
-                ListEmpty::build()
+                EmptyListState::build()
                 ->title('No sequences yet')
                 ->detail('A sequence is a list of steps an agent follows the same way each time.')
                 ->icon('sequence')

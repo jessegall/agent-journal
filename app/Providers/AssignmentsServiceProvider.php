@@ -44,7 +44,7 @@ use App\Resolvers\AssignedWorkResolver;
 use App\Resolvers\AssigneeResolver;
 use App\Resolvers\AssignmentResolver;
 use App\Support\AutoAssignmentTrigger;
-use App\Support\ClosedAutoAssignmentAccess;
+use App\Support\DenyAllAutoAssignmentAccess;
 use App\Support\Registry\AssignmentRegistry;
 use App\Support\Storage\AssignmentQuery;
 use Illuminate\Support\ServiceProvider;
@@ -61,7 +61,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(AssignmentRegistry::class);
-        $this->app->bindIf(AutoAssignmentAccess::class, ClosedAutoAssignmentAccess::class);
+        $this->app->bindIf(AutoAssignmentAccess::class, DenyAllAutoAssignmentAccess::class);
         $this->app->bind(AssignmentRegistration::class, AssignmentRegistry::class);
         $this->app->bind(AssignmentProviders::class, AssignmentRegistry::class);
         $this->app->bind(AssignmentTransactionContract::class, AssignmentTransaction::class);

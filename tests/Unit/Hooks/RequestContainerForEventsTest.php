@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Bus\RunningCommand;
-use App\Support\Octane\GiveRequestContainerToEvents;
+use App\Support\Octane\RequestEventContainer;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Hooks\Octane\ContainerRecordingListener;
 use Tests\TestCase;
@@ -24,7 +24,7 @@ final class RequestContainerForEventsTest extends TestCase
         $sandbox = clone $this->app;
         $sandbox->forgetScopedInstances();
 
-        new GiveRequestContainerToEvents()->handle((object) ['sandbox' => $sandbox]);
+        new RequestEventContainer()->handle((object) ['sandbox' => $sandbox]);
         $events->dispatch('octane.sandbox-check');
 
         $this->assertSame($sandbox->make(RunningCommand::class), ContainerRecordingListener::$running);

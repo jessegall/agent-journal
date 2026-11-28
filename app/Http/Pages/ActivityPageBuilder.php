@@ -11,7 +11,7 @@ use App\Hosts\Contracts\ServedEnvironment;
 use App\Http\Requests\ActivityWindowRequest;
 use App\Models\Agents\ActivityEntry;
 use App\Reads\PageFormRequests;
-use App\Support\ActorLabelSet;
+use App\Support\ActorNames;
 use App\Web\Creation\Contracts\PageBuilder;
 use Illuminate\Http\Request;
 
@@ -50,7 +50,7 @@ final readonly class ActivityPageBuilder implements PageBuilder
             ->finish();
     }
 
-    private function event(ActivityEntry $entry, ActorLabelSet $labels): ActivityEventData
+    private function event(ActivityEntry $entry, ActorNames $labels): ActivityEventData
     {
         return ActivityEventData::from([
             'id' => $entry->id,

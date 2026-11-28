@@ -15,7 +15,7 @@ use App\Events\Hooks\StateCommandAnswered;
 use App\Models\Agents\AgentStackRow;
 use App\Stacks\Exceptions\StateAnswerRefused;
 use App\Support\CommandRegistry;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -28,7 +28,7 @@ final readonly class RunStateCommand implements Listener
     public function __construct(
         private GuardedCommandBus $bus,
         private StackAdmission $admission,
-        private OperationDeadline $deadline,
+        private StackOperationDeadline $deadline,
         private CommandRegistry $commands,
         private ActorRunner $actors,
         private LoggerInterface $log,

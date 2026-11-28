@@ -7,7 +7,7 @@ namespace App\Api;
 use App\Api\Exceptions\EndpointDeclarationInvalid;
 use App\Contracts\Domains\ApiPayload;
 use App\Support\CallKey;
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
@@ -117,7 +117,7 @@ final class ApiGroups
     {
         $payloads = [];
 
-        $code = CodeFiles::ofProcess();
+        $code = ProjectCode::ofProcess();
 
         foreach ($code->folder($code->projectPathOf("{$folder}/*Payload.php")) as $entry) {
             $class = $namespace.'\\'.basename($entry->name(), '.php');
@@ -259,7 +259,7 @@ final class ApiGroups
      */
     private static function importsOf(Reflector $call): array
     {
-        $code = CodeFiles::ofProcess();
+        $code = ProjectCode::ofProcess();
 
         preg_match_all(
             '/^use\s+([\w\\\\]+)(?:\s+as\s+(\w+))?;/m',

@@ -19,7 +19,7 @@ use App\Files\ManifestMount;
 use App\Processes\ArgumentBuilder;
 use App\Processes\Contracts\Condition;
 use App\Skills\Contracts\DriverSkills;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\DriverStart;
 use Closure;
 
@@ -212,7 +212,7 @@ final readonly class DefaultDriverSetup
      */
     public function keepsScratchIn(string $accountFolder): self
     {
-        $scratch = ManifestMount::scratch(MountRules::ACCOUNT_TARGET.'/'.$accountFolder);
+        $scratch = ManifestMount::scratch(HelperMounts::ACCOUNT_TARGET.'/'.$accountFolder);
 
         return clone ($this, ['containerMounts' => [...$this->containerMounts, $scratch]]);
     }

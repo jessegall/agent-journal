@@ -7,7 +7,7 @@ namespace App\Bus;
 use App\Bus\Exceptions\InvalidListener;
 use App\Contracts\Events\Event;
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Support\Codebase;
+use App\Support\ProjectCode;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\Reflector;
@@ -184,7 +184,7 @@ final readonly class ListenerOwnership
         ];
 
         return array_merge([], ...array_map(
-            fn (string $folder) => Codebase::in($folder, Event::class),
+            fn (string $folder) => ProjectCode::in($folder, Event::class),
             $folders,
         ));
     }

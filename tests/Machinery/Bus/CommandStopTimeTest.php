@@ -9,7 +9,7 @@ use App\Bus\CommandCall;
 use App\Bus\CommandMiddleware\RunInTransaction;
 use App\Bus\CommandStops;
 use App\Processes\Contracts\StopTime as StopTimeContract;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Support\Reflector;
 use App\Time\MonotonicClock;
 use App\Time\StopTime;
@@ -106,7 +106,7 @@ final class CommandStopTimeTest extends TestCase
     public function test_the_outer_deadline_and_limits_hold_again_after_the_stop(): void
     {
         $stops = $this->app->make(CommandStops::class);
-        $deadline = new OperationDeadline(5000);
+        $deadline = new StackOperationDeadline(5000);
         $near = new class implements StopTimeContract
         {
             public function remainingMilliseconds(): int
@@ -126,7 +126,7 @@ final class CommandStopTimeTest extends TestCase
 
     private function transaction(): RunInTransaction
     {
-        $this->app->instance(OperationDeadline::class, new OperationDeadline(5000));
+        $this->app->instance(StackOperationDeadline::class, new StackOperationDeadline(5000));
 
         return $this->app->make(RunInTransaction::class);
     }

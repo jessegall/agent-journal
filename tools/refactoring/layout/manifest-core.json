@@ -71974,10 +71974,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3e3f8992866406a6d002d09a2dedd36322b061b5",
-        "old_path": "app/Support/ActorLabelSet.php",
-        "old_class": "App\\Support\\ActorLabelSet",
-        "final_path": "app/Support/ActorLabelSet.php",
-        "final_class": "App\\Support\\ActorLabelSet",
+        "old_path": "app/Support/ActorNames.php",
+        "old_class": "App\\Support\\ActorNames",
+        "final_path": "app/Support/ActorNames.php",
+        "final_class": "App\\Support\\ActorNames",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -72620,10 +72620,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "493ab853633e3fda470bf9a3bbe38e1376e330d0",
-        "old_path": "app/Support/AgentOption.php",
-        "old_class": "App\\Support\\AgentOption",
-        "final_path": "app/Support/AgentOption.php",
-        "final_class": "App\\Support\\AgentOption",
+        "old_path": "app/Support/HomeAgent.php",
+        "old_class": "App\\Support\\HomeAgent",
+        "final_path": "app/Support/HomeAgent.php",
+        "final_class": "App\\Support\\HomeAgent",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -72753,10 +72753,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c4ff754db4ef22da9e620a7bfff8873f7d79e54e",
-        "old_path": "app/Support/AgentStatusRules.php",
-        "old_class": "App\\Support\\AgentStatusRules",
-        "final_path": "app/Support/AgentStatusRules.php",
-        "final_class": "App\\Support\\AgentStatusRules",
+        "old_path": "app/Support/AgentStatusDecision.php",
+        "old_class": "App\\Support\\AgentStatusDecision",
+        "final_path": "app/Support/AgentStatusDecision.php",
+        "final_class": "App\\Support\\AgentStatusDecision",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -73057,10 +73057,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f620099a4e0cce36c1862e66fc4fd33db7ce7a1a",
-        "old_path": "app/Support/AssigneeList.php",
-        "old_class": "App\\Support\\AssigneeList",
-        "final_path": "app/Support/AssigneeList.php",
-        "final_class": "App\\Support\\AssigneeList",
+        "old_path": "app/Support/CursorPage.php",
+        "old_class": "App\\Support\\CursorPage",
+        "final_path": "app/Support/CursorPage.php",
+        "final_class": "App\\Support\\CursorPage",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -73684,10 +73684,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c93c42cd26b2bfa515152706cfc48f7f53869e3b",
-        "old_path": "app/Support/AutoAssignmentPage.php",
-        "old_class": "App\\Support\\AutoAssignmentPage",
-        "final_path": "app/Support/AutoAssignmentPage.php",
-        "final_class": "App\\Support\\AutoAssignmentPage",
+        "old_path": "app/Support/CursorPage.php",
+        "old_class": "App\\Support\\CursorPage",
+        "final_path": "app/Support/CursorPage.php",
+        "final_class": "App\\Support\\CursorPage",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -73836,10 +73836,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d5e8dd4d9231619298fe250768d5b575e22a21c5",
-        "old_path": "app/Support/Bootstrappers/LoadMigrations.php",
-        "old_class": "App\\Support\\Bootstrappers\\LoadMigrations",
-        "final_path": "app/Support/Bootstrappers/LoadMigrations.php",
-        "final_class": "App\\Support\\Bootstrappers\\LoadMigrations",
+        "old_path": "app/Support/Bootstrappers/MigrationsBootstrapper.php",
+        "old_class": "App\\Support\\Bootstrappers\\MigrationsBootstrapper",
+        "final_path": "app/Support/Bootstrappers/MigrationsBootstrapper.php",
+        "final_class": "App\\Support\\Bootstrappers\\MigrationsBootstrapper",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -73855,10 +73855,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1476d58901619f9d26382eeede9065a4093eebea",
-        "old_path": "app/Support/Bootstrappers/RegisterAssignables.php",
-        "old_class": "App\\Support\\Bootstrappers\\RegisterAssignables",
-        "final_path": "app/Support/Bootstrappers/RegisterAssignables.php",
-        "final_class": "App\\Support\\Bootstrappers\\RegisterAssignables",
+        "old_path": "app/Support/Bootstrappers/AssignablesBootstrapper.php",
+        "old_class": "App\\Support\\Bootstrappers\\AssignablesBootstrapper",
+        "final_path": "app/Support/Bootstrappers/AssignablesBootstrapper.php",
+        "final_class": "App\\Support\\Bootstrappers\\AssignablesBootstrapper",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -73874,10 +73874,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "533ce8c416c95eea446756809a3158251377b33b",
-        "old_path": "app/Support/Bootstrappers/RegisterIncomingWork.php",
-        "old_class": "App\\Support\\Bootstrappers\\RegisterIncomingWork",
-        "final_path": "app/Support/Bootstrappers/RegisterIncomingWork.php",
-        "final_class": "App\\Support\\Bootstrappers\\RegisterIncomingWork",
+        "old_path": "app/Support/Bootstrappers/IncomingWorkBootstrapper.php",
+        "old_class": "App\\Support\\Bootstrappers\\IncomingWorkBootstrapper",
+        "final_path": "app/Support/Bootstrappers/IncomingWorkBootstrapper.php",
+        "final_class": "App\\Support\\Bootstrappers\\IncomingWorkBootstrapper",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -73893,10 +73893,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "93618d7c5452559e4357ed3b82fab5eecf4246aa",
-        "old_path": "app/Support/Bootstrappers/RegisterLinkRecords.php",
-        "old_class": "App\\Support\\Bootstrappers\\RegisterLinkRecords",
-        "final_path": "app/Support/Bootstrappers/RegisterLinkRecords.php",
-        "final_class": "App\\Support\\Bootstrappers\\RegisterLinkRecords",
+        "old_path": "app/Support/Bootstrappers/LinkRecordsBootstrapper.php",
+        "old_class": "App\\Support\\Bootstrappers\\LinkRecordsBootstrapper",
+        "final_path": "app/Support/Bootstrappers/LinkRecordsBootstrapper.php",
+        "final_class": "App\\Support\\Bootstrappers\\LinkRecordsBootstrapper",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -73912,10 +73912,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d99fa7cdc8837b2ad5c5c0080a0f7c7542f510ea",
-        "old_path": "app/Support/Bootstrappers/RegisterScriptDefinitions.php",
-        "old_class": "App\\Support\\Bootstrappers\\RegisterScriptDefinitions",
-        "final_path": "app/Support/Bootstrappers/RegisterScriptDefinitions.php",
-        "final_class": "App\\Support\\Bootstrappers\\RegisterScriptDefinitions",
+        "old_path": "app/Support/Bootstrappers/ScriptDefinitionsBootstrapper.php",
+        "old_class": "App\\Support\\Bootstrappers\\ScriptDefinitionsBootstrapper",
+        "final_path": "app/Support/Bootstrappers/ScriptDefinitionsBootstrapper.php",
+        "final_class": "App\\Support\\Bootstrappers\\ScriptDefinitionsBootstrapper",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -73931,10 +73931,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5981d45d4e5d280012d32211d434e55342570e81",
-        "old_path": "app/Support/Bootstrappers/RegisterStates.php",
-        "old_class": "App\\Support\\Bootstrappers\\RegisterStates",
-        "final_path": "app/Support/Bootstrappers/RegisterStates.php",
-        "final_class": "App\\Support\\Bootstrappers\\RegisterStates",
+        "old_path": "app/Support/Bootstrappers/StatesBootstrapper.php",
+        "old_class": "App\\Support\\Bootstrappers\\StatesBootstrapper",
+        "final_path": "app/Support/Bootstrappers/StatesBootstrapper.php",
+        "final_class": "App\\Support\\Bootstrappers\\StatesBootstrapper",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -74843,10 +74843,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "63a2d429a983e250c8482cc350287b7803d6104a",
-        "old_path": "app/Support/CertifyPassedStopsOnTick.php",
-        "old_class": "App\\Support\\CertifyPassedStopsOnTick",
-        "final_path": "app/Support/CertifyPassedStopsOnTick.php",
-        "final_class": "App\\Support\\CertifyPassedStopsOnTick",
+        "old_path": "app/Support/PassedStopCertifier.php",
+        "old_class": "App\\Support\\PassedStopCertifier",
+        "final_path": "app/Support/PassedStopCertifier.php",
+        "final_class": "App\\Support\\PassedStopCertifier",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -75147,10 +75147,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "76e7268320fed1abdb3570529832d036fbdfd075",
-        "old_path": "app/Support/Classification/ChildCommand.php",
-        "old_class": "App\\Support\\Classification\\ChildCommand",
-        "final_path": "app/Support/Classification/ChildCommand.php",
-        "final_class": "App\\Support\\Classification\\ChildCommand",
+        "old_path": "app/Support/Classification/WrapperChildFacts.php",
+        "old_class": "App\\Support\\Classification\\WrapperChildFacts",
+        "final_path": "app/Support/Classification/WrapperChildFacts.php",
+        "final_class": "App\\Support\\Classification\\WrapperChildFacts",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -75299,10 +75299,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "29401668c9c24af58a4ce9e63fbcccb0fb431110",
-        "old_path": "app/Support/ClosedAutoAssignmentAccess.php",
-        "old_class": "App\\Support\\ClosedAutoAssignmentAccess",
-        "final_path": "app/Support/ClosedAutoAssignmentAccess.php",
-        "final_class": "App\\Support\\ClosedAutoAssignmentAccess",
+        "old_path": "app/Support/DenyAllAutoAssignmentAccess.php",
+        "old_class": "App\\Support\\DenyAllAutoAssignmentAccess",
+        "final_path": "app/Support/DenyAllAutoAssignmentAccess.php",
+        "final_class": "App\\Support\\DenyAllAutoAssignmentAccess",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -75356,10 +75356,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9e95669f8351231c58ca270972046863ec18c543",
-        "old_path": "app/Support/CodeFiles.php",
-        "old_class": "App\\Support\\CodeFiles",
-        "final_path": "app/Support/CodeFiles.php",
-        "final_class": "App\\Support\\CodeFiles",
+        "old_path": "app/Support/ProjectCode.php",
+        "old_class": "App\\Support\\ProjectCode",
+        "final_path": "app/Support/ProjectCode.php",
+        "final_class": "App\\Support\\ProjectCode",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -77161,10 +77161,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7590ceb76681e6979ade1c55f38d64eaabc4d5a3",
-        "old_path": "app/Support/Delivery/StateEventBridge.php",
-        "old_class": "App\\Support\\Delivery\\StateEventBridge",
-        "final_path": "app/Support/Delivery/StateEventBridge.php",
-        "final_class": "App\\Support\\Delivery\\StateEventBridge",
+        "old_path": "app/Support/Delivery/StateEventDelivery.php",
+        "old_class": "App\\Support\\Delivery\\StateEventDelivery",
+        "final_path": "app/Support/Delivery/StateEventDelivery.php",
+        "final_class": "App\\Support\\Delivery\\StateEventDelivery",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -79422,10 +79422,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "eafc0ae96bdd2bcb963e0de4b2e67fb5dd34c4d5",
-        "old_path": "app/Support/ExpiredReceipts.php",
-        "old_class": "App\\Support\\ExpiredReceipts",
-        "final_path": "app/Support/ExpiredReceipts.php",
-        "final_class": "App\\Support\\ExpiredReceipts",
+        "old_path": "app/Support/ReceiptExpiry.php",
+        "old_class": "App\\Support\\ReceiptExpiry",
+        "final_path": "app/Support/ReceiptExpiry.php",
+        "final_class": "App\\Support\\ReceiptExpiry",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -79593,10 +79593,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "91f60f9b133d93a5f04a337513fe66ad6f5d6962",
-        "old_path": "app/Support/Codebase.php",
-        "old_class": "App\\Support\\Codebase",
-        "final_path": "app/Support/Codebase.php",
-        "final_class": "App\\Support\\Codebase",
+        "old_path": "app/Support/ProjectCode.php",
+        "old_class": "App\\Support\\ProjectCode",
+        "final_path": "app/Support/ProjectCode.php",
+        "final_class": "App\\Support\\ProjectCode",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -80695,10 +80695,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7da21bb8105fe03e4260c1cda3101dc02b4710d5",
-        "old_path": "app/Support/HoldCopy.php",
-        "old_class": "App\\Support\\HoldCopy",
-        "final_path": "app/Support/HoldCopy.php",
-        "final_class": "App\\Support\\HoldCopy",
+        "old_path": "app/Support/HoldWording.php",
+        "old_class": "App\\Support\\HoldWording",
+        "final_path": "app/Support/HoldWording.php",
+        "final_class": "App\\Support\\HoldWording",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -81265,10 +81265,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "75480116018d06b50f641ec837b5c771e618f151",
-        "old_path": "app/Support/Inputs/ProtectedFileRead.php",
-        "old_class": "App\\Support\\Inputs\\ProtectedFileRead",
-        "final_path": "app/Support/Inputs/ProtectedFileRead.php",
-        "final_class": "App\\Support\\Inputs\\ProtectedFileRead",
+        "old_path": "app/Support/Inputs/NamedReadPaths.php",
+        "old_class": "App\\Support\\Inputs\\NamedReadPaths",
+        "final_path": "app/Support/Inputs/NamedReadPaths.php",
+        "final_class": "App\\Support\\Inputs\\NamedReadPaths",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -81683,10 +81683,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "661e1c6331e9efaf30a82b5aa65253fae8683eaf",
-        "old_path": "app/Support/Inspection/Queries/StackInspectionQuery.php",
-        "old_class": "App\\Support\\Inspection\\Queries\\StackInspectionQuery",
-        "final_path": "app/Support/Inspection/Queries/StackInspectionQuery.php",
-        "final_class": "App\\Support\\Inspection\\Queries\\StackInspectionQuery",
+        "old_path": "app/Support/Inspection/Queries/AnyAgentStackInspection.php",
+        "old_class": "App\\Support\\Inspection\\Queries\\AnyAgentStackInspection",
+        "final_path": "app/Support/Inspection/Queries/AnyAgentStackInspection.php",
+        "final_class": "App\\Support\\Inspection\\Queries\\AnyAgentStackInspection",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -82576,10 +82576,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "64a5828ab194553bd549a742ce6467a2f10e7987",
-        "old_path": "app/Support/Layout/ListEmpty.php",
-        "old_class": "App\\Support\\Layout\\ListEmpty",
-        "final_path": "app/Support/Layout/ListEmpty.php",
-        "final_class": "App\\Support\\Layout\\ListEmpty",
+        "old_path": "app/Support/Layout/EmptyListState.php",
+        "old_class": "App\\Support\\Layout\\EmptyListState",
+        "final_path": "app/Support/Layout/EmptyListState.php",
+        "final_class": "App\\Support\\Layout\\EmptyListState",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -82747,10 +82747,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e0590eebd347929041a7466a96a31f325e51d2dd",
-        "old_path": "app/Support/Lifecycle/AgentLifecycle.php",
-        "old_class": "App\\Support\\Lifecycle\\AgentLifecycle",
-        "final_path": "app/Support/Lifecycle/AgentLifecycle.php",
-        "final_class": "App\\Support\\Lifecycle\\AgentLifecycle",
+        "old_path": "app/Support/Lifecycle/AgentLocks.php",
+        "old_class": "App\\Support\\Lifecycle\\AgentLocks",
+        "final_path": "app/Support/Lifecycle/AgentLocks.php",
+        "final_class": "App\\Support\\Lifecycle\\AgentLocks",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -83051,10 +83051,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "25800b41d3a5c403144dc57b5e6bfb1064b7b84e",
-        "old_path": "app/Support/Logging/RedactInstallSecrets.php",
-        "old_class": "App\\Support\\Logging\\RedactInstallSecrets",
-        "final_path": "app/Support/Logging/RedactInstallSecrets.php",
-        "final_class": "App\\Support\\Logging\\RedactInstallSecrets",
+        "old_path": "app/Support/Logging/InstallSecretRedactionTap.php",
+        "old_class": "App\\Support\\Logging\\InstallSecretRedactionTap",
+        "final_path": "app/Support/Logging/InstallSecretRedactionTap.php",
+        "final_class": "App\\Support\\Logging\\InstallSecretRedactionTap",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -83526,10 +83526,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "edcb21f9543f7c6eec042eff40de4c9d60ae908e",
-        "old_path": "app/Support/MountRules.php",
-        "old_class": "App\\Support\\MountRules",
-        "final_path": "app/Support/MountRules.php",
-        "final_class": "App\\Support\\MountRules",
+        "old_path": "app/Support/HelperMounts.php",
+        "old_class": "App\\Support\\HelperMounts",
+        "final_path": "app/Support/HelperMounts.php",
+        "final_class": "App\\Support\\HelperMounts",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -83697,10 +83697,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b3519c25c10eebc92f1ea6df894f271f3823f8e5",
-        "old_path": "app/Support/NavigationMerge.php",
-        "old_class": "App\\Support\\NavigationMerge",
-        "final_path": "app/Support/NavigationMerge.php",
-        "final_class": "App\\Support\\NavigationMerge",
+        "old_path": "app/Support/NavigationIndexBuilder.php",
+        "old_class": "App\\Support\\NavigationIndexBuilder",
+        "final_path": "app/Support/NavigationIndexBuilder.php",
+        "final_class": "App\\Support\\NavigationIndexBuilder",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -84115,10 +84115,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "40ddb277fe393f24bc4d3ab164c40129f436c207",
-        "old_path": "app/Support/Objects/WorkspaceObject.php",
-        "old_class": "App\\Support\\Objects\\WorkspaceObject",
-        "final_path": "app/Support/Objects/WorkspaceObject.php",
-        "final_class": "App\\Support\\Objects\\WorkspaceObject",
+        "old_path": "app/Support/Objects/WorkspaceScriptObject.php",
+        "old_class": "App\\Support\\Objects\\WorkspaceScriptObject",
+        "final_path": "app/Support/Objects/WorkspaceScriptObject.php",
+        "final_class": "App\\Support\\Objects\\WorkspaceScriptObject",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -84191,10 +84191,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "21fdd9380157b71d9751a49f3ec02c549c17d9a7",
-        "old_path": "app/Support/Octane/GiveRequestContainerToEvents.php",
-        "old_class": "App\\Support\\Octane\\GiveRequestContainerToEvents",
-        "final_path": "app/Support/Octane/GiveRequestContainerToEvents.php",
-        "final_class": "App\\Support\\Octane\\GiveRequestContainerToEvents",
+        "old_path": "app/Support/Octane/RequestEventContainer.php",
+        "old_class": "App\\Support\\Octane\\RequestEventContainer",
+        "final_path": "app/Support/Octane/RequestEventContainer.php",
+        "final_class": "App\\Support\\Octane\\RequestEventContainer",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -84286,10 +84286,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bb8d0e0d756ef472e37c5a603f1e3252585a4140",
-        "old_path": "app/Support/Operation.php",
-        "old_class": "App\\Support\\Operation",
-        "final_path": "app/Support/Operation.php",
-        "final_class": "App\\Support\\Operation",
+        "old_path": "app/Support/ReceiptedWrite.php",
+        "old_class": "App\\Support\\ReceiptedWrite",
+        "final_path": "app/Support/ReceiptedWrite.php",
+        "final_class": "App\\Support\\ReceiptedWrite",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -84305,10 +84305,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "21cfd35e4a88071c8675e7b750ab838ec58b03f6",
-        "old_path": "app/Support/OperationDeadline.php",
-        "old_class": "App\\Support\\OperationDeadline",
-        "final_path": "app/Support/OperationDeadline.php",
-        "final_class": "App\\Support\\OperationDeadline",
+        "old_path": "app/Support/StackOperationDeadline.php",
+        "old_class": "App\\Support\\StackOperationDeadline",
+        "final_path": "app/Support/StackOperationDeadline.php",
+        "final_class": "App\\Support\\StackOperationDeadline",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -85217,10 +85217,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b8fb12209b7d2acb9d4a5344c20c3c4919574876",
-        "old_path": "app/Support/PrivateAccountProcess.php",
-        "old_class": "App\\Support\\PrivateAccountProcess",
-        "final_path": "app/Support/PrivateAccountProcess.php",
-        "final_class": "App\\Support\\PrivateAccountProcess",
+        "old_path": "app/Support/SignInProcess.php",
+        "old_class": "App\\Support\\SignInProcess",
+        "final_path": "app/Support/SignInProcess.php",
+        "final_class": "App\\Support\\SignInProcess",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -85236,10 +85236,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "204d602a0ee4db80e2242df4494cbf0f589acebe",
-        "old_path": "app/Support/PrivateSignInProcesses.php",
-        "old_class": "App\\Support\\PrivateSignInProcesses",
-        "final_path": "app/Support/PrivateSignInProcesses.php",
-        "final_class": "App\\Support\\PrivateSignInProcesses",
+        "old_path": "app/Support/SignInRunner.php",
+        "old_class": "App\\Support\\SignInRunner",
+        "final_path": "app/Support/SignInRunner.php",
+        "final_class": "App\\Support\\SignInRunner",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -85996,10 +85996,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "398a773f84ccc7e631820df25253c71a80c883b4",
-        "old_path": "app/Support/ReadBuilder.php",
-        "old_class": "App\\Support\\ReadBuilder",
-        "final_path": "app/Support/ReadBuilder.php",
-        "final_class": "App\\Support\\ReadBuilder",
+        "old_path": "app/Support/BoundedReadBuilder.php",
+        "old_class": "App\\Support\\BoundedReadBuilder",
+        "final_path": "app/Support/BoundedReadBuilder.php",
+        "final_class": "App\\Support\\BoundedReadBuilder",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -86490,10 +86490,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "163a3e23ac5a123189c6783c8a9dc8204b8f0df7",
-        "old_path": "app/Support/RecordMenus.php",
-        "old_class": "App\\Support\\RecordMenus",
-        "final_path": "app/Support/RecordMenus.php",
-        "final_class": "App\\Support\\RecordMenus",
+        "old_path": "app/Support/MenuBuilder.php",
+        "old_class": "App\\Support\\MenuBuilder",
+        "final_path": "app/Support/MenuBuilder.php",
+        "final_class": "App\\Support\\MenuBuilder",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -87060,10 +87060,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "eef9141737a5fd2525f08efd3fc3921a6ad92e9f",
-        "old_path": "app/Support/Registration/ListenerPolicy.php",
-        "old_class": "App\\Support\\Registration\\ListenerPolicy",
-        "final_path": "app/Support/Registration/ListenerPolicy.php",
-        "final_class": "App\\Support\\Registration\\ListenerPolicy",
+        "old_path": "app/Support/Registration/ListenerRegistration.php",
+        "old_class": "App\\Support\\Registration\\ListenerRegistration",
+        "final_path": "app/Support/Registration/ListenerRegistration.php",
+        "final_class": "App\\Support\\Registration\\ListenerRegistration",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -88276,10 +88276,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "191649ee0ec3bf682b2585068cb6bad0b80f45ba",
-        "old_path": "app/Support/RuntimeStatuses.php",
-        "old_class": "App\\Support\\RuntimeStatuses",
-        "final_path": "app/Support/RuntimeStatuses.php",
-        "final_class": "App\\Support\\RuntimeStatuses",
+        "old_path": "app/Support/RuntimeStatusMapping.php",
+        "old_class": "App\\Support\\RuntimeStatusMapping",
+        "final_path": "app/Support/RuntimeStatusMapping.php",
+        "final_class": "App\\Support\\RuntimeStatusMapping",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -89131,10 +89131,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c5c5c4b0aa7e7f11ea5c3002b439f99be7cbef04",
-        "old_path": "app/Support/ShareContentRead.php",
-        "old_class": "App\\Support\\ShareContentRead",
-        "final_path": "app/Support/ShareContentRead.php",
-        "final_class": "App\\Support\\ShareContentRead",
+        "old_path": "app/Support/ShareContentRequest.php",
+        "old_class": "App\\Support\\ShareContentRequest",
+        "final_path": "app/Support/ShareContentRequest.php",
+        "final_class": "App\\Support\\ShareContentRequest",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -89587,10 +89587,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3199f970694f813e5a05c3429578213d956b9f5c",
-        "old_path": "app/Support/ShareRelationRead.php",
-        "old_class": "App\\Support\\ShareRelationRead",
-        "final_path": "app/Support/ShareRelationRead.php",
-        "final_class": "App\\Support\\ShareRelationRead",
+        "old_path": "app/Support/ShareRelationRequest.php",
+        "old_class": "App\\Support\\ShareRelationRequest",
+        "final_path": "app/Support/ShareRelationRequest.php",
+        "final_class": "App\\Support\\ShareRelationRequest",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -89701,10 +89701,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e728efb50475a35750c7d3c91255da1480bb9b92",
-        "old_path": "app/Support/ShareTargetRead.php",
-        "old_class": "App\\Support\\ShareTargetRead",
-        "final_path": "app/Support/ShareTargetRead.php",
-        "final_class": "App\\Support\\ShareTargetRead",
+        "old_path": "app/Support/ShareTargetRequest.php",
+        "old_class": "App\\Support\\ShareTargetRequest",
+        "final_path": "app/Support/ShareTargetRequest.php",
+        "final_class": "App\\Support\\ShareTargetRequest",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -90062,10 +90062,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ebd40a1d3367d86bf404813710cb1216cc221194",
-        "old_path": "app/Support/SignInReceipts.php",
-        "old_class": "App\\Support\\SignInReceipts",
-        "final_path": "app/Support/SignInReceipts.php",
-        "final_class": "App\\Support\\SignInReceipts",
+        "old_path": "app/Support/SignInReceiptLookup.php",
+        "old_class": "App\\Support\\SignInReceiptLookup",
+        "final_path": "app/Support/SignInReceiptLookup.php",
+        "final_class": "App\\Support\\SignInReceiptLookup",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -92133,10 +92133,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "14fa687f5e8dc5301638591247a561f423f37336",
-        "old_path": "app/Support/StatusOperation.php",
-        "old_class": "App\\Support\\StatusOperation",
-        "final_path": "app/Support/StatusOperation.php",
-        "final_class": "App\\Support\\StatusOperation",
+        "old_path": "app/Support/StatusFollowedOperation.php",
+        "old_class": "App\\Support\\StatusFollowedOperation",
+        "final_path": "app/Support/StatusFollowedOperation.php",
+        "final_class": "App\\Support\\StatusFollowedOperation",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -94736,10 +94736,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1fe85321aa3b93cb1d7e0b646fe4bdbdb6c95515",
-        "old_path": "app/Support/Views/LayoutsView.php",
-        "old_class": "App\\Support\\Views\\LayoutsView",
-        "final_path": "app/Support/Views/LayoutsView.php",
-        "final_class": "App\\Support\\Views\\LayoutsView",
+        "old_path": "app/Support/Views/SavedLayouts.php",
+        "old_class": "App\\Support\\Views\\SavedLayouts",
+        "final_path": "app/Support/Views/SavedLayouts.php",
+        "final_class": "App\\Support\\Views\\SavedLayouts",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -94755,10 +94755,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c702053f2fd2e16532c95923dc7ba975e07dad12",
-        "old_path": "app/Support/VisibilityChecks.php",
-        "old_class": "App\\Support\\VisibilityChecks",
-        "final_path": "app/Support/VisibilityChecks.php",
-        "final_class": "App\\Support\\VisibilityChecks",
+        "old_path": "app/Support/VisibilityCheckRunner.php",
+        "old_class": "App\\Support\\VisibilityCheckRunner",
+        "final_path": "app/Support/VisibilityCheckRunner.php",
+        "final_class": "App\\Support\\VisibilityCheckRunner",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -94926,10 +94926,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c610ff01f616ad366b4b51273c00d586fba37514",
-        "old_path": "app/Support/WindowResults.php",
-        "old_class": "App\\Support\\WindowResults",
-        "final_path": "app/Support/WindowResults.php",
-        "final_class": "App\\Support\\WindowResults",
+        "old_path": "app/Support/WindowResultBuilder.php",
+        "old_class": "App\\Support\\WindowResultBuilder",
+        "final_path": "app/Support/WindowResultBuilder.php",
+        "final_class": "App\\Support\\WindowResultBuilder",
         "status": "stay",
         "kind": "class",
         "generator": {

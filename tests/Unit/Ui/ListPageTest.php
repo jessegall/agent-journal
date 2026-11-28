@@ -10,7 +10,7 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\LayoutTabData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use App\Terminals\Enums\LayoutTag;
@@ -31,7 +31,7 @@ final class ListPageTest extends TestCase
             $root = ListPage::build()
                 ->title('Sequences')
                 ->rows($this->rows($size), static fn (LayoutRowData $row): LayoutRowData => $row)
-                ->empty(ListEmpty::build()->title('Empty')->finish())
+                ->empty(EmptyListState::build()->title('Empty')->finish())
                 ->finish()
                 ->root;
             $parts = $root->children[1]->children;
@@ -46,7 +46,7 @@ final class ListPageTest extends TestCase
         $root = ListPage::build()
             ->title('Library')
             ->rows([], static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->fillsPage(true)->finish())
+            ->empty(EmptyListState::build()->title('Empty')->fillsPage(true)->finish())
             ->paged(ListPaging::build()->after(null)->isAppend(true)->finish())
             ->finish()
             ->root;
@@ -61,12 +61,12 @@ final class ListPageTest extends TestCase
         $alone = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(2), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())->finish()->root;
+            ->empty(EmptyListState::build()->title('Empty')->finish())->finish()->root;
 
         $split = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(2), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->withReader(LayoutBackData::build()->href('/tasks')->label('Tasks')->finish())
             ->finish()->root;
 
@@ -78,11 +78,11 @@ final class ListPageTest extends TestCase
         $without = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(2), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())->finish()->root;
+            ->empty(EmptyListState::build()->title('Empty')->finish())->finish()->root;
         $with = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(2), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())->counting(9)->finish()->root;
+            ->empty(EmptyListState::build()->title('Empty')->finish())->counting(9)->finish()->root;
 
         $this->assertSame(['title'], $this->keysOf($without->children[0]->children));
         $this->assertSame(['title', 'count'], $this->keysOf($with->children[0]->children));
@@ -94,7 +94,7 @@ final class ListPageTest extends TestCase
         $root = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(1), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->creating('Create', LayoutActionData::build()->href('/tasks/new')->finish())
             ->withTabs(LayoutTabData::build()->key('open')->label('Open')->isChosen(true)->finish(), LayoutTabData::build()
                 ->key('all')
@@ -132,7 +132,7 @@ final class ListPageTest extends TestCase
         $content = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(1), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->paged(ListPaging::build()->page(1)->lastPage(1)->finish())
             ->finish()->root->children[1];
 
@@ -144,7 +144,7 @@ final class ListPageTest extends TestCase
         $content = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(1), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->paged(ListPaging::build()->after('abc')->finish())
             ->finish()->root->children[1];
 
@@ -157,7 +157,7 @@ final class ListPageTest extends TestCase
         $last = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(1), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->paged(ListPaging::build()->after(null)->finish())
             ->finish()->root->children[1];
 
@@ -176,11 +176,11 @@ final class ListPageTest extends TestCase
         $offered = ListPage::build()
             ->title('Tasks')
             ->rows([], static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('None')->actions([$clear])->finish())->finish()->root->children[1];
+            ->empty(EmptyListState::build()->title('None')->actions([$clear])->finish())->finish()->root->children[1];
         $informed = ListPage::build()
             ->title('Tasks')
             ->rows([], static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('None')->finish())->finish()->root->children[1];
+            ->empty(EmptyListState::build()->title('None')->finish())->finish()->root->children[1];
 
         $this->assertSame(['empty', 'empty-actions'], $this->keysOf($offered->children));
         $this->assertSame('clear', $offered->children[1]->children[0]->key);
@@ -203,7 +203,7 @@ final class ListPageTest extends TestCase
             ->title('Tasks')
             ->rows([], static fn (LayoutRowData $row): LayoutRowData => $row)
             ->empty(
-                ListEmpty::build()
+                EmptyListState::build()
                 ->title('No tasks yet')
                 ->detail('What a task is.')
                 ->icon('todos')
@@ -227,7 +227,7 @@ final class ListPageTest extends TestCase
         $header = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(1), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->counting(4)
             ->withViews(LayoutRowData::build()
                 ->key('list')
@@ -260,14 +260,14 @@ final class ListPageTest extends TestCase
         $split = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(1), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->withReader($back)
             ->finish()->root->children[1];
 
         $empty = ListPage::build()
             ->title('Tasks')
             ->rows([], static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->withReader($back)
             ->finish()->root->children[1];
 
@@ -283,14 +283,14 @@ final class ListPageTest extends TestCase
         $index = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(1), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->withReader($back)
             ->finish()->root->children[1];
 
         $record = ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(1), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->withReader($back, LayoutPartData::build()->asText()->key('facts')->value('x')->finish())
             ->withReaderWidth(ReaderWidth::Settings)
             ->finish()->root->children[1];
@@ -319,7 +319,7 @@ final class ListPageTest extends TestCase
         return ListPage::build()
             ->title('Tasks')
             ->rows($this->rows(1), static fn (LayoutRowData $row): LayoutRowData => $row)
-            ->empty(ListEmpty::build()->title('Empty')->finish())
+            ->empty(EmptyListState::build()->title('Empty')->finish())
             ->paged($paging)
             ->finish()->root->children[1]->children[1];
     }

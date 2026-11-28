@@ -17,7 +17,7 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use App\Values\ProjectOwner;
@@ -117,7 +117,7 @@ final readonly class DocumentsIndex extends DocumentsPage
      * The empty state: a search or attention filter that matched nothing offers to clear it; a fresh library offers to
      * file its first document.
      */
-    private function emptyFor(DocumentFilters $filters): ListEmpty
+    private function emptyFor(DocumentFilters $filters): EmptyListState
     {
         if ($filters->searches() || $filters->attention !== AttentionFilter::Active) {
             return $this->nothingMatches(
@@ -128,7 +128,7 @@ final readonly class DocumentsIndex extends DocumentsPage
             );
         }
 
-        return ListEmpty::build()
+        return EmptyListState::build()
             ->title('No documents yet')
             ->detail('Designs, plans and notes that you and the agents write are kept here.')
             ->icon('docs')

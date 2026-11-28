@@ -30,6 +30,40 @@ final readonly class SettingsGroup
         private bool $isLeading = false,
     ) {}
 
+    public static function page(self ...$groups): DeclaredLayoutData
+    {
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('settings')
+                ->style('page')
+                ->children(
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('header')
+                    ->style('page-head')
+                    ->children(
+                        LayoutPartData::build()
+                        ->asText()
+                        ->key('title')
+                        ->value('Settings')
+                        ->style('heading')
+                        ->finish(),
+                    )
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('settings-page')
+                    ->style('settings-page')
+                    ->children(...array_map(fn (self $group) => $group->part(), $groups))
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
+    }
+
     /**
      * The first group of a reader, which stands right under the reader's title: its own title names the region for a
      * screen reader and is not drawn.

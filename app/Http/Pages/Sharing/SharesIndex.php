@@ -12,7 +12,7 @@ use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use Carbon\CarbonImmutable;
@@ -143,10 +143,10 @@ final readonly class SharesIndex extends SharingPage
      * A filter that emptied the list offers to clear every filter; shares are made from a record's own page, so an
      * unfiltered empty list only says so.
      */
-    private function emptyFor(ShareFiltersData $filters): ListEmpty
+    private function emptyFor(ShareFiltersData $filters): EmptyListState
     {
         if (! $this->isFiltered($filters)) {
-            return ListEmpty::build()->title('No shares yet.')->finish();
+            return EmptyListState::build()->title('No shares yet.')->finish();
         }
 
         return $this->nothingMatches(

@@ -11,7 +11,7 @@ use App\Records\Contracts\Commentable;
 use App\Records\Contracts\RecordResolver;
 use App\Support\IdListPage;
 use App\Support\MarkdownText;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
 use Domain\Comments\Contracts\CommentResolver as CommentResolverContract;
@@ -94,9 +94,9 @@ final readonly class CommentResolver implements CommentResolverContract
     /**
      * The comments on one record, oldest first.
      *
-     * @return ReadBuilder<Comment>
+     * @return BoundedReadBuilder<Comment>
      */
-    private static function commentsOf(Model $record): ReadBuilder
+    private static function commentsOf(Model $record): BoundedReadBuilder
     {
         return Comment::query()->onTarget($record->getMorphClass(), (string) $record->getKey())->withAnchor();
     }

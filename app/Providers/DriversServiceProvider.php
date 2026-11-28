@@ -71,7 +71,7 @@ use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\SignInEgress;
 use App\Files\Contracts\Files;
 use App\Processes\AnyContext;
-use App\Support\PrivateAccountProcess;
+use App\Support\SignInProcess;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -237,7 +237,7 @@ final class DriversServiceProvider extends ServiceProvider
                     '--no-session-persistence',
                 ],
                 ClaudeCodeModelAnswer::class,
-                PrivateAccountProcess::CHECK_SECONDS_LIMIT,
+                SignInProcess::CHECK_SECONDS_LIMIT,
             ),
             signOut: ['auth', 'logout'],
             methods: [ClaudeSignIn::class, ClaudeTokenSignIn::class, ClaudeKeySignIn::class],

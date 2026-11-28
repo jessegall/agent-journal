@@ -20,7 +20,7 @@ use App\Sharing\Support\SharedPage;
 use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareToken;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
@@ -235,7 +235,7 @@ final class ReadShareTest extends SharingTestCase
 
         try {
             $revoker->table('shares')->where('id', $shareId)->lockForUpdate()->sole();
-            $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
+            $this->app->instance(StackOperationDeadline::class, new StackOperationDeadline(500));
 
             $this->assertThrows(fn () => $this->read($token), StackLockTimedOut::class);
 

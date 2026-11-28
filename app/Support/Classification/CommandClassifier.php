@@ -426,7 +426,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
             );
         }
 
-        return ChildCommand::join($node, $program, [], [], $children);
+        return WrapperChildFacts::join($node, $program, [], [], $children);
     }
 
     /**
@@ -640,7 +640,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
             );
         }
 
-        return ChildCommand::join(
+        return WrapperChildFacts::join(
             $node,
             $program,
             $own,
@@ -666,12 +666,12 @@ final readonly class CommandClassifier implements CommandClassifierContract
         ExecutionContext $context,
     ): PartClassification {
         if ($wrapper->family !== 'xargs') {
-            return ChildCommand::join($node, $program, $own, $unresolved, []);
+            return WrapperChildFacts::join($node, $program, $own, $unresolved, []);
         }
 
         $echo = new Word([new WordSegment(WordSegmentType::Literal, 'echo', $programWord->range)], $programWord->range);
 
-        return ChildCommand::join(
+        return WrapperChildFacts::join(
             $node,
             $program,
             $own,
@@ -733,7 +733,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
             $program,
         );
 
-        return ChildCommand::join($node, $program, [], [], [$source]);
+        return WrapperChildFacts::join($node, $program, [], [], [$source]);
     }
 
     /**
@@ -783,7 +783,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
             $own = [...$own, ...$this->findActionFacts($text, $node, $origin)];
         }
 
-        return ChildCommand::join($node, $program, $own, [], $children);
+        return WrapperChildFacts::join($node, $program, $own, [], $children);
     }
 
     /**

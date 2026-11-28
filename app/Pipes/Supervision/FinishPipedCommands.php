@@ -7,7 +7,7 @@ namespace App\Pipes\Supervision;
 use App\Bus\Contracts\Pipe;
 use App\Processes\Execution\SpawnedPart;
 use App\Processes\Execution\StepStatus;
-use App\Support\Execution\PumpedCommands;
+use App\Support\Execution\PipedCommands;
 use App\Support\Execution\StepOutcome;
 
 /**
@@ -16,10 +16,10 @@ use App\Support\Execution\StepOutcome;
  */
 final readonly class FinishPipedCommands implements Pipe
 {
-    public function handle(PumpedCommands $pumped): StepOutcome
+    public function handle(PipedCommands $pumped): StepOutcome
     {
-        $toRun = $pumped->commands->toRun;
-        $statuses = array_map(fn (SpawnedPart $part) => $part->end(true), $pumped->commands->started);
+        $toRun = $pumped->toRun;
+        $statuses = array_map(fn (SpawnedPart $part) => $part->end(true), $pumped->started);
 
         $status = StepStatus::ofPipeline($statuses, $toRun->context->isPipefail);
 

@@ -6,7 +6,7 @@ namespace App\Accounts\Contracts;
 
 use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\SignInDriver;
-use App\Support\PrivateAccountProcess;
+use App\Support\SignInProcess;
 use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
@@ -36,12 +36,12 @@ interface SignInProtocol
     /**
      * Starts the driver's sign-in for the folder and answers its private process.
      */
-    public function begin(SignInDriver $driver, string $directory): PrivateAccountProcess;
+    public function begin(SignInDriver $driver, string $directory): SignInProcess;
 
     /**
      * What the user needs to approve the sign-in, once the driver printed it; none before.
      */
-    public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null;
+    public function challengeFrom(SignInProcess $process): SignInChallenge|null;
 
     /**
      * Whether the sign-in asks the user for an answer, a code or a key; one approved on the provider's page takes none.
@@ -51,18 +51,18 @@ interface SignInProtocol
     /**
      * Gives the driver the code the user typed, for a sign-in that asks for one; others ignore it.
      */
-    public function acceptCode(PrivateAccountProcess $process, string $code): void;
+    public function acceptCode(SignInProcess $process, string $code): void;
 
     /**
      * Whether the driver's sign-in is over, approved or not; a process that serves on after it says so itself.
      */
-    public function hasFinished(PrivateAccountProcess $process): bool;
+    public function hasFinished(SignInProcess $process): bool;
 
     /**
      * The driver's own proof that the sign-in it just ran succeeded in this folder, asked while its process is
      * still open.
      */
-    public function prove(SignInDriver $driver, PrivateAccountProcess $process, string $directory): SignInVerification;
+    public function prove(SignInDriver $driver, SignInProcess $process, string $directory): SignInVerification;
 
     /**
      * The driver's plain status check of the folder, for account checks and cleanup.

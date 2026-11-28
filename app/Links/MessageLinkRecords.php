@@ -10,7 +10,7 @@ use App\Links\Concerns\ProvidesModelRecords;
 use App\Models\Messages\Message;
 use App\Records\Contracts\RecordProvider;
 use App\Support\ActorReference;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
 
@@ -39,7 +39,7 @@ final readonly class MessageLinkRecords implements RecordProvider
         return Message::linkType();
     }
 
-    protected function readableRecords(): ReadBuilder
+    protected function readableRecords(): BoundedReadBuilder
     {
         $reader = $this->actors->actor();
 

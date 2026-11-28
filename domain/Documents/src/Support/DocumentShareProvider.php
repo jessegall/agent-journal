@@ -9,9 +9,9 @@ use App\Records\Contracts\ShareBudget;
 use App\Records\Contracts\ShareRecordProvider;
 use App\Skills\Exceptions\ContentTooLarge;
 use App\Support\MarkdownText;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
+use App\Support\ShareContentRequest;
 use App\Support\SharedContent;
 use App\Values\ProjectOwner;
 use Domain\Comments\Contracts\PublicCommentResolver;
@@ -51,7 +51,7 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
      * @throws RecordUnavailable
      * @throws ContentTooLarge when the stored body is larger than a body may be
      */
-    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
+    public function content(ShareContentRequest $read, ShareBudget $budget): SharedContent
     {
         $document = $this->cardQuery([$read->record->id])->firstOr(
             RecordUnavailable::throwing()->forActor($read->record),
@@ -88,9 +88,9 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
      * The published documents of these ids with the card columns of their current closed revision.
      *
      * @param  list<string>  $ids
-     * @return ReadBuilder<Document>
+     * @return BoundedReadBuilder<Document>
      */
-    private function cardQuery(array $ids): ReadBuilder
+    private function cardQuery(array $ids): BoundedReadBuilder
     {
         return Document::query()->sharedPublished()->withCurrentRevisionCard()->whereKey($ids);
     }

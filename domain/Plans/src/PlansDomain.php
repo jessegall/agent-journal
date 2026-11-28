@@ -42,7 +42,7 @@ use App\Records\Values\ShareRecordDefinition;
 use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use App\Text\Declarations\Section;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
 use Domain\Plans\Commands\ReassignPlanWork\ReassignPlanWorkCommand;
@@ -377,7 +377,7 @@ final class PlansDomain extends Domain implements
     public function searchables(): array
     {
         return [
-            Searchable::make(
+            SearchSource::make(
                 'plan',
                 'Plans',
                 PlanSearchAccess::class,

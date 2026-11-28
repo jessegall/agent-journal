@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Mcp\Tools\JournalTool;
-use App\Support\Codebase;
+use App\Support\ProjectCode;
 
 /**
  * Discovers concrete tools in a domain's MCP directory in filename order; a missing directory holds none.
@@ -25,6 +25,6 @@ final readonly class McpToolDirectory
      */
     public static function classesIn(string $folder): array
     {
-        return Codebase::in($folder, JournalTool::class);
+        return ProjectCode::in($folder, JournalTool::class);
     }
 }

@@ -32,8 +32,8 @@ final readonly class SwitchEvidence
         return ! $this->stage->isFinal() || $this->stage === DriverSwitchStage::StartFailed;
     }
 
-    public function operation(): StatusOperation
+    public function operation(): StatusFollowedOperation
     {
-        return new StatusOperation($this->id, 'switch', $this->stage->value, $this->version);
+        return new StatusFollowedOperation($this->id, 'switch', $this->stage->value, $this->version);
     }
 }

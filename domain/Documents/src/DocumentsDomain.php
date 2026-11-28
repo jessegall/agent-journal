@@ -38,10 +38,10 @@ use App\Profiles\Enums\SlotContextType;
 use App\Records\Contracts\LinkRecordProvider;
 use App\Records\Contracts\ShareRecordContributor;
 use App\Records\Values\ShareRecordDefinition;
-use App\Support\Codebase;
+use App\Support\ProjectCode;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use App\Text\Declarations\Section;
 use Domain\Chat\ChatDomain;
 use Domain\Comments\CommentsDomain;
@@ -289,12 +289,12 @@ final class DocumentsDomain extends Domain implements
 
     public function mcpTools(): array
     {
-        return Codebase::in($this->mcpRoot('Tools'), JournalTool::class);
+        return ProjectCode::in($this->mcpRoot('Tools'), JournalTool::class);
     }
 
     public function mcpResources(): array
     {
-        return Codebase::in($this->mcpRoot('Resources'), JournalResource::class);
+        return ProjectCode::in($this->mcpRoot('Resources'), JournalResource::class);
     }
 
     public function overviewContributions(): array
@@ -305,14 +305,14 @@ final class DocumentsDomain extends Domain implements
     public function searchables(): array
     {
         return [
-            Searchable::make(
+            SearchSource::make(
                 'document',
                 'Documents',
                 DocumentSearchAccess::class,
                 DocumentSearchProvider::class,
                 DocumentReferenceRecognizer::class,
             ),
-            Searchable::make(
+            SearchSource::make(
                 'report',
                 'Reports',
                 ReportSearchAccess::class,

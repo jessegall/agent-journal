@@ -11,7 +11,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Processes\Data\RuntimeStatus;
 use App\Sessions\Contracts\RuntimeResolver as RuntimeResolverContract;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Carbon\CarbonImmutable;
 
 final readonly class RuntimeResolver implements RuntimeResolverContract
@@ -65,9 +65,9 @@ final readonly class RuntimeResolver implements RuntimeResolverContract
      * A caller that inspects agents sees every runtime; any other sees only the runtimes of its own sessions, as
      * SessionResolver decides.
      *
-     * @return ReadBuilder<AgentRuntime>
+     * @return BoundedReadBuilder<AgentRuntime>
      */
-    private function visibleRuntimes(): ReadBuilder
+    private function visibleRuntimes(): BoundedReadBuilder
     {
         $actor = $this->actors->actor();
         $query = AgentRuntime::query();

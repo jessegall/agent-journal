@@ -11,7 +11,7 @@ use App\Files\Contracts\Files;
 use App\Jobs\SignInDeadline;
 use App\Projects\Enums\ArrangementType;
 use App\Support\LocalAccountFolders;
-use App\Support\PrivateSignInProcesses;
+use App\Support\SignInRunner;
 use Illuminate\Support\Facades\Bus;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -34,7 +34,7 @@ final class SignInRestartTest extends TestCase
     {
         $host = new RecordingSignInHost(null);
 
-        new PrivateSignInProcesses(
+        new SignInRunner(
             $host,
             $this->app->make(SignInProtocols::class),
             static fn () => null,

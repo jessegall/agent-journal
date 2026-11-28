@@ -16,7 +16,7 @@ use App\Hosts\Exceptions\AccountFolderInvalid;
 use App\Hosts\FolderWorkspace;
 use App\Models\Accounts\Account;
 use App\Sessions\Values\ExecutionPolicy;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Support\RecordIdentity;
 use App\Values\ExecutionBudgets;
 use App\Values\SelectedAccount;
@@ -67,7 +67,7 @@ final class ContainerManifestTest extends TestCase
             WorkspaceUse::Shared,
             $this->policy(),
             'journal-start-1',
-            MountRules::local(),
+            HelperMounts::local(),
             null,
             SecurityOptions::none(),
         );
@@ -100,7 +100,7 @@ final class ContainerManifestTest extends TestCase
                 WorkspaceUse::ReadOnly,
                 $this->policy(),
                 'journal-start-1',
-                MountRules::local(),
+                HelperMounts::local(),
                 null,
                 SecurityOptions::none(),
             )->mounts[0]->isWritable,
@@ -176,7 +176,7 @@ final class ContainerManifestTest extends TestCase
             array_map(fn (array $volume) => [$volume['name'], $volume['isAlreadyMade']], $wire['volumes']),
         );
         $this->assertTrue(
-            MountRules::local()->workspaceMount('/workspaces/writer-1', WorkspaceUse::OwnCheckout, 'writer-1')->isWritable,
+            HelperMounts::local()->workspaceMount('/workspaces/writer-1', WorkspaceUse::OwnCheckout, 'writer-1')->isWritable,
         );
     }
 
@@ -190,7 +190,7 @@ final class ContainerManifestTest extends TestCase
                 'net',
                 [ManifestMount::bind('/workspaces/helper-7/..', '/workspace', true)],
                 ExecutionBudgets::defaults(),
-                MountRules::local(),
+                HelperMounts::local(),
                 SecurityOptions::none(),
             ),
         );
@@ -200,7 +200,7 @@ final class ContainerManifestTest extends TestCase
                 'net',
                 [ManifestMount::bind('/Users/me/.claude', '/workspace', true)],
                 ExecutionBudgets::defaults(),
-                MountRules::local(),
+                HelperMounts::local(),
                 SecurityOptions::none(),
             ),
         );
@@ -210,7 +210,7 @@ final class ContainerManifestTest extends TestCase
                 'net',
                 [...$workspace, ManifestMount::bind('/var/run/docker.sock', '/var/run/docker.sock', true)],
                 ExecutionBudgets::defaults(),
-                MountRules::local(),
+                HelperMounts::local(),
                 SecurityOptions::none(),
             ),
         );
@@ -220,7 +220,7 @@ final class ContainerManifestTest extends TestCase
                 'net',
                 $workspace,
                 ExecutionBudgets::defaults(),
-                MountRules::local(),
+                HelperMounts::local(),
                 SecurityOptions::none(),
             ),
         );
@@ -230,7 +230,7 @@ final class ContainerManifestTest extends TestCase
                 'host',
                 $workspace,
                 ExecutionBudgets::defaults(),
-                MountRules::local(),
+                HelperMounts::local(),
                 SecurityOptions::none(),
             ),
         );
@@ -284,7 +284,7 @@ final class ContainerManifestTest extends TestCase
             WorkspaceUse::Shared,
             $this->policy(),
             'journal-start-1',
-            MountRules::local(),
+            HelperMounts::local(),
             null,
             SecurityOptions::none(),
         );
@@ -308,7 +308,7 @@ final class ContainerManifestTest extends TestCase
             'acme-s1',
             $this->containedMounts(),
             ExecutionBudgets::defaults(),
-            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), self::claudeMounts()),
+            HelperMounts::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), self::claudeMounts()),
             SecurityOptions::none(),
         );
 
@@ -378,7 +378,7 @@ final class ContainerManifestTest extends TestCase
             $this->assertThrows(fn () => $setting->mountRules($account, 'main', self::claudeMounts()), AccountFolderInvalid::class);
         }
 
-        $this->assertEquals(MountRules::local(), ArrangementSetting::fromConfig('local', '', '{}')->mountRules(
+        $this->assertEquals(HelperMounts::local(), ArrangementSetting::fromConfig('local', '', '{}')->mountRules(
             new SelectedAccount(
                 new RecordIdentity(Account::linkType(), '01m7y41pesrb3jvbxmhd5ssfer'),
                 'claude-code',
@@ -392,9 +392,9 @@ final class ContainerManifestTest extends TestCase
 
     public function test_a_contained_session_gets_its_own_history_and_a_resume_the_history_it_resumes(): void
     {
-        $contained = MountRules::contained('acme', null, new FolderWorkspace('main'), self::claudeMounts());
+        $contained = HelperMounts::contained('acme', null, new FolderWorkspace('main'), self::claudeMounts());
 
-        $this->assertSame([], MountRules::local()->sessionMounts('s1', null));
+        $this->assertSame([], HelperMounts::local()->sessionMounts('s1', null));
         $this->assertEquals(
             [
                 ManifestMount::volume('acme-history-s1', '/home/journal/.account/projects', true),
@@ -508,7 +508,7 @@ final class ContainerManifestTest extends TestCase
             'acme-s1',
             $mounts,
             ExecutionBudgets::defaults(),
-            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), self::claudeMounts()),
+            HelperMounts::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), self::claudeMounts()),
             SecurityOptions::none(),
             false,
             StartProfileType::ProtectedAccount,
@@ -537,7 +537,7 @@ final class ContainerManifestTest extends TestCase
             'acme-s1',
             $mounts,
             ExecutionBudgets::defaults(),
-            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), self::claudeMounts()),
+            HelperMounts::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), self::claudeMounts()),
             $securityOptions,
         );
     }
@@ -560,7 +560,7 @@ final class ContainerManifestTest extends TestCase
 
     public function test_a_contained_codex_session_mounts_no_plan_file_of_another_driver(): void
     {
-        $codex = MountRules::contained('acme', null, new FolderWorkspace('main'), []);
+        $codex = HelperMounts::contained('acme', null, new FolderWorkspace('main'), []);
 
         $this->assertSame(
             [],

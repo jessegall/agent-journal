@@ -12,7 +12,7 @@ use App\Notifications\Contracts\NotificationTargets;
 use App\Records\Contracts\RecordSummaries;
 use App\Sessions\Contracts\CurrentSession;
 use App\Sessions\Contracts\SessionProvenance;
-use App\Support\Codebase;
+use App\Support\ProjectCode;
 use Domain\Documents\Contracts\Attachments\AttachmentReader as AttachmentReaderContract;
 use Domain\Documents\Contracts\Documents\DocumentReader as DocumentReaderContract;
 use Domain\Documents\Contracts\Documents\DocumentResolver as DocumentResolverContract;
@@ -84,7 +84,7 @@ final class DocumentsServiceProvider extends ServiceProvider
         );
 
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
-        $this->commands(Codebase::consoleCommandsIn(dirname(__DIR__)));
+        $this->commands(ProjectCode::consoleCommandsIn(dirname(__DIR__)));
     }
 
     /**
