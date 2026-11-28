@@ -133,7 +133,6 @@ final readonly class AssignmentResolver implements AssignmentResolverContract
         return $ids;
     }
 
-
     /**
      * The owner's visible subset of records of one type, kept to the records asked about.
      *

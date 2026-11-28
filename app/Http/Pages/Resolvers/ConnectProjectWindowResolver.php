@@ -169,5 +169,4 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
 
         return $name ?? 'An account that is gone';
     }
-
 }

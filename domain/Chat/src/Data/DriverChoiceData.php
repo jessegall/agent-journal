@@ -49,8 +49,7 @@ final class DriverChoiceData extends Data
         DriverCatalogue $drivers,
         DriverRegistration $registration,
         array $familiesWithAccounts,
-    ): self
-    {
+    ): self {
         $run = $drivers->forKey($registration->key)
             ->capabilities(BoundTarget::beforePlacement())
             ->supportOf(DriverCapability::Run);

@@ -102,7 +102,6 @@ final readonly class SettingCodec
         throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
-
     /**
      * @throws SettingStorageInvalid
      */

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Recordings\Scenarios;
 
-use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -14,6 +13,7 @@ use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
 use App\Models\Projects\ProjectBinding;
+use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use Carbon\CarbonImmutable;
 
@@ -337,7 +337,7 @@ final class ScenarioRun
         return null;
     }
 
-        public function isPlayedWhole(): bool
+    public function isPlayedWhole(): bool
     {
         return $this->stepsRun >= count($this->scenario->steps);
     }

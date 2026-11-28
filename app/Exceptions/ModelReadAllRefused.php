@@ -15,7 +15,7 @@ final class ModelReadAllRefused extends RuntimeException
     {
         return new self(
             sprintf(
-                "%s::all() reads every row; read through query() with a where that bounds the set, limit(n) for a page, or chunkById for a scan.",
+                '%s::all() reads every row; read through query() with a where that bounds the set, limit(n) for a page, or chunkById for a scan.',
                 $model,
             ),
         );

@@ -6,7 +6,7 @@ namespace Tests\Support\Hosts;
 
 use App\Agents\ContainerManifest;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Agents\Drivers\Work\HeadlessStarts;
+use App\Agents\Drivers\Work\RuntimeStarts;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\SecurityOptions;
 use App\Hosts\EnrolledHost;
@@ -418,7 +418,7 @@ final class TestHost
     public function openWithStartCredentials(string $name, string $runtimeId, array $argv): self
     {
         $runtime = AgentRuntime::query()->whereKey($runtimeId)->sole();
-        $handed = $this->journal->service(HeadlessStarts::class)->clientSettingsOf($runtime);
+        $handed = $this->journal->service(RuntimeStarts::class)->clientSettingsOf($runtime);
         $credentials = new AgentClientSettings($this->journalUrl(), $handed->token, $handed->profile);
         $plan = new HostProcessPlan(
             HostProcessPurpose::Probe,

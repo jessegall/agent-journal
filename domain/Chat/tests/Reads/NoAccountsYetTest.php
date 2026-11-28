@@ -11,8 +11,8 @@ use Domain\Chat\Data\ChatData;
 use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Tests\TestCase;
-use Tests\Support\RefreshHookDatabase;
 use Spatie\LaravelData\Optional;
+use Tests\Support\RefreshHookDatabase;
 
 /**
  * Home's chat shows the No accounts yet state, with its action to the account wizard, while no account is signed in,

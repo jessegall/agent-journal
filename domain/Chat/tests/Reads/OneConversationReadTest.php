@@ -11,8 +11,8 @@ use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Support\PairChats;
 use Domain\Chat\Tests\TestCase;
-use Tests\Support\RefreshHookDatabase;
 use Illuminate\Support\Str;
+use Tests\Support\RefreshHookDatabase;
 
 /**
  * The chat window reads one conversation per request: the chosen agent's, or the one a column's own reload names,

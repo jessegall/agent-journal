@@ -347,7 +347,6 @@ final class DockSourceTest extends TestCase
         }
     }
 
-
     /**
      * @return list<string>
      */

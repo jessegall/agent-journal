@@ -94,7 +94,6 @@ final class ReassignPlanWorkTest extends TestCase
         $this->assertSame([$reviewer->id, $reviewer->id], AssignmentRecord::query()->pluck('holder_id')->all());
     }
 
-
     private function assignWork(RecordIdentity $root, AssigneeIdentity $recipient): AssignmentResult
     {
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
