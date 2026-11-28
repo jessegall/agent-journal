@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Routes;
 
+use App\Web\Creation\PageFactory;
+use Domain\Rules\Http\Pages\RulesPageBuilder;
+use Domain\Rules\Http\Pages\RulesPageData;
+use Illuminate\Http\Request;
 use Domain\Rules\RulesDomain;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
@@ -18,6 +22,16 @@ use Tests\Support\Seeding\TestJournal;
 #[TestsRoute('GET', 'rules.list')]
 final class ListGetTest extends GuardedRouteEntryTestCase
 {
+    public function test_the_rules_builder_returns_its_checked_layout(): void
+    {
+        $this->journal->owner();
+        $factory = new PageFactory($this->app);
+        $factory->register(RulesPageData::class, RulesPageBuilder::class);
+        $result = $factory->create(RulesPageData::class, Request::create('/rules?q=example'));
+
+        $this->assertSame('rules', $result->layout()->root->key);
+    }
+
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(RulesDomain::class);
