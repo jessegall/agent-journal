@@ -107,6 +107,13 @@
         "host": ["mount_type", "restart_file", "container_manifest", "container_mount", "container_budgets", "security_options", "container_tmpfs", "container_volume", "container_label", "container_run", "container_run_result", "image_build", "build_argument", "image_built"],
         "client": ["project_read", "project_read_report", "project_entry", "project_read_failure"]
     },
+    "local_link": {
+        "adopt": { "process_id": "string", "generation": "int", "size": "terminal_size", "spool_offset": "int64" },
+        "instruction": "instruction",
+        "answer": "answer",
+        "output": "output",
+        "exit": { "code": "int", "evidence": "string" }
+    },
     "programs": {
         "journal-init": {
             "about": "The agent image's init: it starts the executor and the program and prints nothing on the program's streams, so a probe's output is the program's own.",
@@ -133,6 +140,16 @@
                     "secrets-folder"
                 ]
             }
+        },
+        "journal-terminal": {
+            "about": "Starts a person's local driver session as journal-terminal <driver> [program arguments].",
+            "commands": {
+                "start": [],
+                "annotate": [],
+                "screen": [],
+                "render": []
+            },
+            "arguments": ["driver", "program arguments"]
         },
         "claude-code": {
             "about": "Claude Code as the journal runs it: every word, option and its values a start, probe or sign-in names, and the prompt last.",

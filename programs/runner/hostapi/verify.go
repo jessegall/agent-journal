@@ -73,3 +73,12 @@ func InstructionSecretOf(credential string) []byte {
 	mac.Write([]byte(InstructionSecretContext))
 	return []byte(hex.EncodeToString(mac.Sum(nil)))
 }
+
+// verifyOpenPlan refuses a plan that would give the host a terminal of its own.
+func verifyOpenPlan(plan OpenPlan) error {
+	if plan.Type == "terminal" {
+		return RefusalError{Refusal: Unsafe, Reason: "the host opens no terminal"}
+	}
+
+	return nil
+}

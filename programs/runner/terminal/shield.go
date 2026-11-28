@@ -1,9 +1,13 @@
-package hostapi
+package terminal
 
-import "strings"
+import (
+	"strings"
 
-// matches is whether enough of the rule's keywords appear on the rows.
-func (rule ShieldRule) matches(rows []string) bool {
+	"journal-runner/hostapi"
+)
+
+// matchesShield is whether enough of the rule's keywords appear on the rows.
+func matchesShield(rule hostapi.ShieldRule, rows []string) bool {
 	text := strings.ToLower(strings.Join(rows, "\n"))
 	present := 0
 	for _, keyword := range rule.Keywords {
@@ -15,9 +19,9 @@ func (rule ShieldRule) matches(rows []string) bool {
 }
 
 // isShielded is whether any of the rules matches the rows.
-func isShielded(rules []ShieldRule, rows []string) bool {
+func isShielded(rules []hostapi.ShieldRule, rows []string) bool {
 	for _, rule := range rules {
-		if rule.matches(rows) {
+		if matchesShield(rule, rows) {
 			return true
 		}
 	}

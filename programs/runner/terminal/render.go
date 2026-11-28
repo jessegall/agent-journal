@@ -1,4 +1,4 @@
-package hostapi
+package terminal
 
 import (
 	"encoding/json"
@@ -8,8 +8,8 @@ import (
 	"slices"
 	"time"
 
+	"journal-runner/hostapi"
 	"journal-runner/recording"
-	"journal-runner/screen"
 )
 
 // FramesFileName is the file beside a recording's fixture that holds the frames its output draws.
@@ -18,7 +18,7 @@ const FramesFileName = "frames.json"
 // RenderedFrame is one frame of a recording, at its offset from the recording's start.
 type RenderedFrame struct {
 	Offset time.Duration `json:"offset"`
-	Frame  Frame         `json:"frame"`
+	Frame  hostapi.Frame `json:"frame"`
 }
 
 // RenderFixture is the frame the screen shows after each output chunk that changed it, timed by the chunks' offsets.
@@ -83,12 +83,4 @@ func RenderedFramesOf(recordingFolder string) ([]byte, error) {
 		return nil, err
 	}
 	return append(encoded, '\n'), nil
-}
-
-func newScreen(columns, rows int, shields []ShieldRule) (*Screen, error) {
-	reader, err := screen.NewEmulatorReader(columns, rows, screen.DefaultLimits, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &Screen{reader: reader, shields: shields}, nil
 }

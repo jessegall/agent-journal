@@ -7,7 +7,9 @@ from pathlib import Path
 import pty
 import select
 import signal
+import struct
 import sys
+import termios
 import time
 
 
@@ -65,6 +67,38 @@ def connect(folder, command):
     return 0 if exit_code == 2 else exit_code
 
 
+def run_terminal(folder, pid_file, command):
+    child, terminal = pty.fork()
+    if child == 0:
+        os.chdir(folder)
+        fcntl.ioctl(sys.stdin.fileno(), termios.TIOCSWINSZ, struct.pack("HHHH", 40, 120, 0, 0))
+        os.environ.setdefault("TERM", "xterm-256color")
+        os.execv(command[0], command)
+
+    def stop_terminal(signum, _frame):
+        os.kill(child, signum)
+
+    signal.signal(signal.SIGTERM, stop_terminal)
+    pid_file.write_text(str(os.getpid()))
+    try:
+        while True:
+            try:
+                output = os.read(terminal, 4096)
+            except OSError as error:
+                if error.errno == errno.EIO:
+                    break
+                raise
+            if not output:
+                break
+            sys.stdout.buffer.write(output)
+            sys.stdout.buffer.flush()
+    finally:
+        os.close(terminal)
+        _, status = os.waitpid(child, 0)
+        pid_file.unlink(missing_ok=True)
+    return os.waitstatus_to_exitcode(status)
+
+
 def stop(state):
     for connection in state.glob("connections/*"):
         # The relay stops by itself once its scratch binding is gone.
@@ -90,6 +124,9 @@ if __name__ == "__main__":
     if action == "connect":
         folder, *command = arguments
         sys.exit(connect(folder, command))
+    if action == "terminal":
+        folder, pid_file, *command = arguments
+        sys.exit(run_terminal(folder, Path(pid_file), command))
     if action == "stop":
         sys.exit(stop(Path(arguments[0])))
     sys.exit("The recording relay needs a connect or stop operation.")

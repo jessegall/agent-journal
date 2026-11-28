@@ -28,6 +28,7 @@ final readonly class OwnTerminalPlans
         private DriverProfiles $profiles,
         private SessionOfflineReplies $offlineReplies,
         private StartSkillFiles $skills,
+        private RuntimeStarts $starts,
     ) {}
 
     public function of(AgentRuntime $runtime): HostProcessPlan
@@ -44,6 +45,8 @@ final readonly class OwnTerminalPlans
             skillFiles: $this->skills->of($runtime->agent_session_id),
         );
 
-        return $this->profiles->of($runtime)->startPlan($start);
+        $settings = $this->starts->clientSettingsOf($runtime);
+
+        return $this->profiles->of($runtime)->startPlan($start)->withEnvironment($settings->environment());
     }
 }

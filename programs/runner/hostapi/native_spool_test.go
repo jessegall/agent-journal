@@ -19,7 +19,7 @@ func TestRestartInventoryIncludesAnAdoptedNativeProcessWithoutAContainer(t *test
 		t.Fatal(err)
 	}
 	openTable := func() *ProcessTable {
-		outputs := NewOutputs(state, func(string, Output) error { return nil }, time.Now)
+		outputs := NewOutputs(state, func(string, Output) error { return nil })
 		return OpenProcessTable(state, host.Containers{}, queue, outputs)
 	}
 	restarted := openTable()

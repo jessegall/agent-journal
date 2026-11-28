@@ -12,8 +12,11 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
+	"path/filepath"
 	"slices"
 	"strings"
+	"syscall"
 	"time"
 
 	"journal-runner/recorded"
@@ -29,10 +32,13 @@ var errNoModel = errors.New("the start names no model")
 // recorded command ends with this start's arguments, played by what is typed into it, with each recorded hook run
 // at its place as the start's settings configure it, on the native body the driver sent.
 //
-//	journal-runner mock scenario --scenario <driver>/<name> -- <the driver's arguments>
+//	journal-terminal mock scenario --scenario <driver>/<name> -- <the driver's arguments>
 func mockScenario(arguments []string) error {
 	flags := flag.NewFlagSet("mock scenario", flag.ContinueOnError)
 	named := flags.String("scenario", "", "the recorded scenario to play, as <driver>/<name>")
+	repository := flags.String("repo", "", "the repository whose recording to play")
+	typed := flags.String("typed", "", "a file that keeps the text the mock is given")
+	hold := flags.Bool("hold-for-stop", false, "leave the terminal alive until the journal stops it")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -44,12 +50,24 @@ func mockScenario(arguments []string) error {
 	if err := assertModelNamed(argv); err != nil {
 		return err
 	}
+	folder, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	if *repository != "" {
+		if err := os.Chdir(*repository); err != nil {
+			return err
+		}
+	}
 	root, err := recorded.Root()
 	if err != nil {
 		return err
 	}
 	scenario, err := recorded.Load(root, driver, name)
 	if err != nil {
+		return err
+	}
+	if err := os.Chdir(folder); err != nil {
 		return err
 	}
 	exchange, err := exchangeRunning(scenario, argv)
@@ -60,16 +78,28 @@ func mockScenario(arguments []string) error {
 	if err != nil {
 		return err
 	}
-	if !term.IsTerminal(int(os.Stdin.Fd())) {
-		return playExchange(exchange, os.Stdin, os.Stdout, hooks)
-	}
-	// Raw, as the program it stands in for: the terminal echoes nothing and hands each key on as it was typed.
-	previous, err := term.MakeRaw(int(os.Stdin.Fd()))
-	if err != nil {
+	if err := placeHooks(hooks, argv, folder); err != nil {
 		return err
 	}
-	defer func() { _ = term.Restore(int(os.Stdin.Fd()), previous) }()
-	return playExchange(exchange, os.Stdin, os.Stdout, hooks)
+	if term.IsTerminal(int(os.Stdin.Fd())) {
+		previous, err := term.MakeRaw(int(os.Stdin.Fd()))
+		if err != nil {
+			return err
+		}
+		defer func() { _ = term.Restore(int(os.Stdin.Fd()), previous) }()
+	}
+	stopped := make(chan os.Signal, 1)
+	if *hold {
+		signal.Notify(stopped, syscall.SIGTERM, syscall.SIGHUP)
+		defer signal.Stop(stopped)
+	}
+	if err := playExchangeWithKeys(exchange, os.Stdin, os.Stdout, hooks, *typed); err != nil {
+		return err
+	}
+	if *hold {
+		<-stopped
+	}
+	return nil
 }
 
 // assertModelNamed refuses a start whose arguments name no model, naming what is missing.
@@ -91,17 +121,34 @@ func exchangeRunning(scenario recorded.Scenario, argv []string) (recorded.Exchan
 			return exchange, nil
 		}
 	}
+	for _, exchange := range scenario.ExchangesOn(recording.WireDriver) {
+		if exchange.Opening.Mode == string(recording.TerminalMode) {
+			return exchange, nil
+		}
+	}
 	return recorded.Exchange{}, fmt.Errorf("the scenario %s ran no driver program as %s", scenario.Name, strings.Join(argv, " "))
 }
 
 // playExchange plays the exchange's recorded output by what is typed into it, running each hook at its place.
 func playExchange(exchange recorded.Exchange, input io.Reader, output io.Writer, hooks []recordedHook) error {
+	return playExchangeWithKeys(exchange, input, output, hooks, "")
+}
+
+func playExchangeWithKeys(
+	exchange recorded.Exchange, input io.Reader, output io.Writer, hooks []recordedHook, typed string,
+) error {
 	fixture, err := recording.Load(exchange.Folder)
 	if err != nil {
 		return err
 	}
 	following := &hookedOutput{output: output, hooks: hooks}
-	if err := recording.GatedReplay(fixture, input, following, mockPause, func(recording.Typed) error { return nil }); err != nil {
+	heard := func(piece recording.Typed) error {
+		if typed == "" || piece.Type != recording.TypedText {
+			return nil
+		}
+		return recorded.AppendLine(typed, strings.TrimSpace(string(piece.Bytes)))
+	}
+	if err := recording.GatedReplay(fixture, input, following, mockPause, heard); err != nil {
 		return err
 	}
 	return following.runUpTo(time.Duration(1 << 62))
@@ -180,6 +227,33 @@ func recordedHooksOf(scenario recorded.Scenario, exchange recorded.Exchange, set
 		hooks = append(hooks, recordedHook{offset: asked - opened, command: commands[native.Event], body: body})
 	}
 	return hooks, nil
+}
+
+// placeHooks gives the recorded hook the live conversation and directory it is about.
+func placeHooks(hooks []recordedHook, argv []string, folder string) error {
+	at := slices.Index(argv, "--session-id")
+	if at < 0 || at+1 >= len(argv) {
+		return nil
+	}
+	conversation := argv[at+1]
+	transcript := filepath.Join(os.Getenv("CLAUDE_CONFIG_DIR"), "projects", "journal", conversation+".jsonl")
+	for index := range hooks {
+		var native map[string]json.RawMessage
+		if err := json.Unmarshal(hooks[index].body, &native); err != nil {
+			return err
+		}
+		for key, value := range map[string]string{"session_id": conversation, "cwd": folder, "transcript_path": transcript} {
+			if _, known := native[key]; known {
+				native[key], _ = json.Marshal(value)
+			}
+		}
+		body, err := json.Marshal(native)
+		if err != nil {
+			return err
+		}
+		hooks[index].body = body
+	}
+	return nil
 }
 
 // hookCommands are the commands the settings file runs for each hook event, the first command of each.

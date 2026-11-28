@@ -28,6 +28,11 @@ final class SessionProcessUnknown extends RuntimeException implements CodedRefus
         return new self("This host claimed no process start {$startKey}.");
     }
 
+    public static function forSession(string $sessionId): self
+    {
+        return new self("Session {$sessionId} has no current start.");
+    }
+
     protected function status(): int
     {
         return 404;

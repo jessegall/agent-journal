@@ -22,6 +22,19 @@ enum DriverType: string
     }
 
     /**
+     * The type of a session its owner runs in their own terminal.
+     */
+    public static function ofOwnTerminal(): self
+    {
+        return self::Terminal;
+    }
+
+    public function isOwnTerminal(): bool
+    {
+        return $this === self::Terminal;
+    }
+
+    /**
      * The mode a headless choice names: headless when asked for, else the terminal.
      */
     public static function ofHeadless(bool $isHeadless): self

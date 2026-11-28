@@ -36,6 +36,10 @@ final readonly class ScenarioProcesses
         $opened = [];
 
         foreach ($exchanges as $exchange) {
+            if ($exchange->opening->wire === Wire::Driver) {
+                $opened[] = $exchange->opening->exchange;
+            }
+
             foreach ($exchange->opening->wire === Wire::Host ? $exchange->events : [] as $event) {
                 $call = $event->call;
 

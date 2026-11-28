@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
+use App\Agents\Drivers\Commands\RecordOwnTerminal\RecordOwnTerminalCommand;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
-use App\Agents\Drivers\Work\OwnTerminalPlans;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Connections\Data\BindingRuntimeRequestData;
@@ -28,13 +28,13 @@ final readonly class BindingRuntimeController
     #[Dispatches(AssertBindingRuntimeCommand::class)]
     #[Dispatches(RecordBindingRuntimeCommand::class)]
     #[Dispatches(OpenBindingMainRuntimeCommand::class)]
+    #[Dispatches(RecordOwnTerminalCommand::class)]
     public function __invoke(
         string $binding,
         BindingRuntimeRequestData $request,
         HostContext $host,
         CommandBus $commands,
         PinnedBuilds $pins,
-        OwnTerminalPlans $plans,
     ): JsonResponse {
         $commands->run($request->asBindingRuntime($host->hostId, $binding));
 
@@ -44,7 +44,7 @@ final readonly class BindingRuntimeController
             : BindingRuntime::resolveRuntimeForBinding($binding, $request->startId);
 
         foreach ($earlier as $runtime) {
-            return $this->answer($binding, $runtime, $plans, JsonResponse::HTTP_OK);
+            return $this->answer($binding, $runtime, $commands, JsonResponse::HTTP_OK);
         }
 
         $opened = $commands->run($request->asMainRuntime($host->hostId, $pins->versionOf($request->driver)));
@@ -57,20 +57,23 @@ final readonly class BindingRuntimeController
 
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
 
-        return $this->answer($binding, $runtime, $plans, JsonResponse::HTTP_CREATED);
+        return $this->answer($binding, $runtime, $commands, JsonResponse::HTTP_CREATED);
     }
 
     /**
      * The runtime with the plan its device runs on the owner's terminal.
      */
-    private function answer(string $binding, AgentRuntime $runtime, OwnTerminalPlans $plans, int $status): JsonResponse
+    private function answer(string $binding, AgentRuntime $runtime, CommandBus $commands, int $status): JsonResponse
     {
+        $terminal = $commands->run(new RecordOwnTerminalCommand($runtime->id));
+
         return new JsonResponse(
             [
                 'session_id' => $runtime->agent_session_id,
                 'runtime_id' => $runtime->id,
                 'authority_generation' => ProjectBinding::resolveAuthorityGenerationOf($binding),
-                'plan' => $plans->of($runtime)->payload(),
+                'process_id' => $terminal->processId,
+                'plan' => $terminal->plan->payload(),
             ],
             $status,
         );

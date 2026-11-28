@@ -179,10 +179,6 @@ func (manifest ContainerManifest) CreateOptions(rules ContainerRules, process Co
 		hostConfig.Ulimits = []*container.Ulimit{{Name: "nofile", Soft: openFiles, Hard: openFiles}}
 	}
 
-	if manifest.IsAttachable {
-		config.Tty, config.OpenStdin = true, true
-		config.AttachStdin, config.AttachStdout, config.AttachStderr = true, true, true
-	}
 	if manifest.TakesInput {
 		config.OpenStdin, config.AttachStdin = true, true
 	}

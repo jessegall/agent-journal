@@ -54,7 +54,7 @@ func TestWhatASideSocketTakesArrivesAsChunksOfItsStream(t *testing.T) {
 		t.Fatal(err)
 	}
 	runQueue(t, queue)
-	table := OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
+	table := OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send))
 	t.Cleanup(func() { stopAndWait(daemon, table) })
 	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "pipe", Restart: "never", Argv: []string{"sleep", "5"}, Folder: t.TempDir(), SideSockets: []string{"status"}})
 	if err != nil {

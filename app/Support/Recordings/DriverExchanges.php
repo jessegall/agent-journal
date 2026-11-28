@@ -28,11 +28,16 @@ final readonly class DriverExchanges
      * Every driver exchange of the host exchange, by its process, in the order each opened.
      *
      * @param  list<RecordedEvent>  $hostEvents
+     * @param  list<CutExchange>  $terminals
      * @return array<string, CutExchange>
      */
-    public function cutFrom(array $hostEvents, RecordingFakes $fakes): array
+    public function cutFrom(array $hostEvents, RecordingFakes $fakes, array $terminals = []): array
     {
         $exchanges = [];
+
+        foreach ($terminals as $terminal) {
+            $exchanges[$terminal->opening->exchange] = $terminal;
+        }
 
         foreach ($hostEvents as $event) {
             $exchanges = $this->withCall($exchanges, $event, $fakes);

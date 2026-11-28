@@ -159,7 +159,7 @@ check_mcp_relay() {
 
 check_absent_programs() {
     local program
-    for program in docker journal-runner; do
+    for program in docker journal-runner journal-terminal; do
         if run_in_image sh -c "command -v $program" >/dev/null 2>&1; then
             echo "The agent image holds $program: it is refused." >&2
             exit 1
@@ -177,6 +177,10 @@ check_runner_image() {
     run_in_image --workdir=/app php artisan list >/dev/null
     run_in_image --workdir=/app php artisan accounts:run-sign-ins --help >/dev/null
     run_in_image sh -c "journal-runner 2>&1 | grep -q 'usage: journal-runner'"
+    if run_in_image sh -c 'command -v journal-terminal' >/dev/null 2>&1; then
+        echo "The runner image holds journal-terminal: it is refused." >&2
+        exit 1
+    fi
     if run_in_image test -e /app/.env; then
         echo "The runner image holds a .env: it is refused." >&2
         exit 1

@@ -13,6 +13,8 @@ use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
 use App\Models\Sessions\SessionProcess;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Values\SettingReference;
 use App\Support\Recordings\Enums\Wire;
 use App\Support\Recordings\Recordings;
 use App\Support\Recordings\Scenarios\Enums\ScenarioStepType;
@@ -26,6 +28,7 @@ use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Config\Repository;
 use PHPUnit\Framework\Assert;
+use Tests\Support\Connections\PublicRelease;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\Seeding\TestJournal;
 
@@ -167,7 +170,8 @@ final class TestScenario
     {
         [$driver, $scenarioName] = explode('/', $this->name, 2);
         $recording = $this->journal->service(Recordings::class)->scenario($driver, $scenarioName);
-        $host = $this->journal->hostCalled(self::HOST)->hostId;
+        $run = $this->run();
+        $host = $run->scenario->usesOwnTerminal() ? $run->instructedHostId() : $this->journal->hostCalled(self::HOST)->hostId;
         // An order's sequence counts within its process, so the orders go in the order they were made, by their ids.
         $orders = array_values(HostInstruction::query()->where('host_id', $host)->orderBy('id')->get()->all());
         $playing = PlayedScenario::of($this->name, $recording);
@@ -253,8 +257,14 @@ final class TestScenario
         $this->journal->arrangeContainedJournal();
         $this->journal->service(Repository::class)->set('journal.agents.installation_name', $playing->installationName);
         $this->journal->arrangeRecordedMachine($playing);
+        $terminal = $scenario->usesOwnTerminal() ? $scenario : null;
+
+        if ($terminal !== null) {
+            $this->enableConnections();
+        }
+
         $this->journal->enrollContainedHost(self::HOST, [base_path()])
-            ->runPlayingTestHost(self::HOST, $playing, fn (TestHost $host) => $host->chooseActiveAccounts())
+            ->runPlayingTestHost(self::HOST, $playing, fn (TestHost $host) => $host->chooseActiveAccounts(), $terminal)
             ->readyRecordedDriverImagesOn(self::HOST, $playing->driverImages);
         $agents = [];
 
@@ -275,7 +285,8 @@ final class TestScenario
         $step = $run->nextStep();
 
         // The played daemon answers as the changed machine did, so a played run changes no machine of its own.
-        if ($step->stepType->isMachineChange()) {
+        if ($step->stepType->isMachineChange()
+            || ($step->stepType === ScenarioStepType::RestartHost && $run->scenario->usesOwnTerminal())) {
             $run->stepRan();
 
             return $step;
@@ -283,7 +294,7 @@ final class TestScenario
 
         if ($step->stepType !== ScenarioStepType::RestartHost) {
             try {
-                return $this->player()->playNext($run, $this->refuseAskingTheUser(...));
+                return $this->player()->playNext($run, $this->refuseAskingTheUser(...), $this->changeMachine(...));
             } catch (ScenarioStuck $stuck) {
                 // The played daemon's own record says which call the host made that the recording does not hold.
                 $this->journal->testHost(fn (TestHost $host) => Assert::fail(
@@ -343,6 +354,36 @@ final class TestScenario
                 $requests,
             ),
         ];
+    }
+
+    /**
+     * @param  list<string>  $arguments
+     */
+    private function changeMachine(array $arguments): int
+    {
+        $status = 1;
+        $this->journal->testHost(function (TestHost $host) use ($arguments, &$status): void {
+            $status = $host->changeTerminalMachine($arguments);
+        });
+
+        return $status;
+    }
+
+    private function enableConnections(): void
+    {
+        $release = '1.0.0';
+        $releases = sys_get_temp_dir().'/scenario-releases-'.bin2hex(random_bytes(5));
+        mkdir("{$releases}/{$release}", 0o700, true);
+        file_put_contents(
+            "{$releases}/{$release}/manifest.json",
+            json_encode(PublicRelease::manifest($release), JSON_THROW_ON_ERROR),
+        );
+        $this->journal->service(Repository::class)->set([
+            'journal.files.places.releases' => $releases,
+            'journal.agents.release' => $release,
+            'journal.agents.server_origin' => 'https://journal.example.com',
+        ]);
+        $this->journal->asOwner(new SetBooleanSettingCommand(new SettingReference('Core', 'remote_projects'), true, 0));
     }
 
     private function player(): ScenarioPlayer

@@ -28,7 +28,12 @@ refuse_start() {
 play_terminal() {
     local installation="$1"
     shift
-    exec "$installation/bin/journal-runner" mock recording --recording "$installation/codex-terminal-turn" \
+    if [ -f "$installation/scenario" ]; then
+        exec "$installation/bin/journal-terminal" mock scenario \
+            --scenario "$(cat "$installation/scenario")" --repo "$(cat "$installation/repository")" \
+            --typed "$installation/../played-typed" --hold-for-stop -- "$@"
+    fi
+    exec "$installation/bin/journal-terminal" mock recording --recording "$installation/codex-terminal-turn" \
         --started "$installation/codex-started" --transcript "$CODEX_HOME/prompt-sent" -- "$@"
 }
 

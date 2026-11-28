@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
+use App\Agents\Drivers\Commands\RecordOwnTerminal\RecordOwnTerminalCommand;
+use App\Agents\Drivers\Enums\DriverType;
 use App\CommandMiddleware\AskRawBytes;
 use App\Files\Enums\Place;
 use App\Hosts\Protocol\HostProcessType;
+use App\Support\Recordings\Enums\RecordingMode;
+use App\Support\Recordings\RecordingDrafts;
+use App\Support\Recordings\Scenarios\Scenario;
+use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\Support\Hosts\TestEnrolledHost;
@@ -40,5 +46,31 @@ final class AskRawBytesTest extends TestCase
                 $this->journal->payloadOf($this->journal->hostInstructionsOf('piped')[0])['raw_bytes'],
             ],
         );
+    }
+
+    public function test_the_recorded_terminal_opening_keeps_its_size_and_omits_its_grant_value(): void
+    {
+        $this->placeInTemporaryFolder(Place::Project);
+        $this->journal->switchRecordingOn();
+        $drafts = $this->journal->service(RecordingDrafts::class);
+        $drafts->openRun(Scenario::read('claude-code/terminal-turn', '{"description":"terminal","steps":[]}'));
+        $opened = $this->journal->owner()
+            ->showDriverArrangements()
+            ->chooseActiveAccounts()
+            ->enrollHost('Mac', [base_path()])
+            ->idleAgent('Driver')
+            ->withAgent('Driver', fn (TestAgent $agent) => $agent
+                ->openRuntime('Mac', base_path(), driverType: DriverType::ofOwnTerminal()))
+            ->openedRuntimeOf('Driver');
+
+        $recorded = $this->journal->asSystem(new RecordOwnTerminalCommand($opened->runtimeId));
+        $drafts->closeRun();
+        [$terminal] = $drafts->run()->exchanges;
+        $this->journal->assertResult(
+            [$recorded->processId, RecordingMode::Terminal, $recorded->plan->columns, $recorded->plan->rows, true],
+            [$terminal->opening->exchange, $terminal->opening->mode, $terminal->opening->columns,
+                $terminal->opening->rows, $recorded->plan->isRawBytes],
+        );
+        $this->assertSame('{env:JOURNAL_START_TOKEN}', $terminal->opening->environment['JOURNAL_START_TOKEN']);
     }
 }

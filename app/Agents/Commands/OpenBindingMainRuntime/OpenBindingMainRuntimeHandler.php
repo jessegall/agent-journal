@@ -22,7 +22,7 @@ final readonly class OpenBindingMainRuntimeHandler implements CommandHandler
      */
     public function handle(OpenBindingMainRuntimeCommand $command): OpenedRuntime
     {
-        $runtime = $command->asAgentRuntime(DriverType::ofJournalStart());
+        $runtime = $command->asAgentRuntime(DriverType::ofOwnTerminal());
 
         return $this->runtimes->handle($runtime->withDispatcher($command->dispatchedBy()));
     }

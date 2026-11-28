@@ -318,14 +318,15 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     // ----------[ Predicates ]----------
 
     /**
-     * Whether the host had answered the order that opened the process when it built a report through that instruction:
-     * a process opened after it is not missing from the report, only newer than it.
+     * Whether the host answered the open order by that instruction, or already reported running a process it opened.
      */
     public function isOpenedBy(string|null $answeredThrough): bool
     {
-        return $this->open_instruction_id !== null
-            && $answeredThrough !== null
-            && $this->open_instruction_id <= $answeredThrough;
+        if ($this->open_instruction_id === null) {
+            return $this->started_at !== null;
+        }
+
+        return $answeredThrough !== null && $this->open_instruction_id <= $answeredThrough;
     }
 
     public function isLive(): bool

@@ -82,6 +82,8 @@ final readonly class GoProtocolSources
             $sources["{$folder}/protocol_gen.go"] = $this->packageSource($package);
         }
 
+        $sources[self::PACKAGES['hostapi'].'/local_link_gen.go'] = $this->localLinkSource();
+
         return $sources;
     }
 
@@ -106,13 +108,37 @@ final readonly class GoProtocolSources
         );
 
         foreach ($types as $type => $fields) {
-            $parts[] = $this->struct($type, $fields, $package);
+            $parts[] = $this->struct($this->goName($type), $fields, $package, "the {$type} of host protocol 1");
         }
 
         $body = implode("\n\n", $parts);
         $header = self::HEADER;
 
         return "{$header}\n\npackage {$package}\n\n{$this->imports($body)}{$body}\n";
+    }
+
+    private function localLinkSource(): string
+    {
+        $package = 'hostapi';
+        $parts = [];
+
+        foreach ($this->protocol->localLink as $message => $shape) {
+            $name = $this->goName("local_link_{$message}");
+            $meaning = "the {$message} message on the local terminal link";
+            $parts[] = is_string($shape)
+                ? "// {$name} is {$meaning}.\ntype {$name} = {$this->goName($shape, $package)}"
+                : $this->struct($name, $shape, $package, $meaning);
+            $parts[] = <<<GO
+                // Read{$name} reads {$meaning} and refuses invalid fields.
+                func Read{$name}(body []byte) ({$name}, error) {
+                	return ReadWirePayload[{$name}](body)
+                }
+                GO;
+        }
+
+        $body = implode("\n\n", $parts);
+
+        return self::HEADER."\n\npackage {$package}\n\n".$this->imports($body)."{$body}\n";
     }
 
     /**
@@ -225,12 +251,10 @@ final readonly class GoProtocolSources
     /**
      * @param  array<string, string>  $fields
      */
-    private function struct(string $type, array $fields, string $package): string
+    private function struct(string $name, array $fields, string $package, string $meaning): string
     {
-        $name = $this->goName($type);
-
         if ($fields === []) {
-            return "// {$name} is the {$type} of host protocol 1.\ntype {$name} struct{}";
+            return "// {$name} is {$meaning}.\ntype {$name} struct{}";
         }
 
         $names = array_map($this->goName(...), array_keys($fields));
@@ -252,7 +276,7 @@ final readonly class GoProtocolSources
         ));
 
         return <<<GO
-            // {$name} is the {$type} of host protocol 1.
+            // {$name} is {$meaning}.
             type {$name} struct {
             {$lines}
             }

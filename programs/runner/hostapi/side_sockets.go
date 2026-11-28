@@ -79,7 +79,7 @@ func (table *ProcessTable) readSide(processID, name string, connection net.Conn,
 	for {
 		count, err := connection.Read(buffer)
 		if count > 0 {
-			table.outputs.send(processID, Output{Chunks: chunksOf(name, offset, buffer[:count])})
+			table.outputs.send(processID, Output{Chunks: ChunksOf(name, offset, buffer[:count])})
 			offset += int64(count)
 		}
 		if err != nil {

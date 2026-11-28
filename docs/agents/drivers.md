@@ -10,7 +10,7 @@ How a running agent program is driven, for a reader of the code. The design is d
 | Driver ledger | `app/Models/Drivers/DriverRequest.php`, `app/Agents/DriverRequestLedger.php` | Every operation asked of a runtime is a request with a sequence, an attempt and a progress; nothing reaches a program any other way |
 | Owner commands | `app/Agents/Commands` (`DeliverAgent`, `WakeAgent`, `ChangeAgentModel`, `ChangeAgentEffort`, `InterruptAgent`, `StopAgent`) | Append a request; the recovery commands need the owner-only `AgentMaintenancePolicy` |
 | Driver setups | `app/Agents/Drivers/Setup` (`DriverSetup`, `DriverProfile`, `DriverProfiles`), `app/Providers/DriversServiceProvider.php` | One setup per driver family: its arguments, probes, sign-in, layout, key scripts, skills, hook adapter, refusals, environment and plan parts. `DriverProfile::startPlan` turns a `DriverStart` into the `HostProcessPlan` the host opens |
-| Driver workers | `app/Agents/Drivers/Work` (`DriverSupervisor`, `DriverWorkers`, `HeadlessStarts`, `OwnTerminalPlans`) | The journal opens and drives every process itself: the supervisor starts a worker for each live process a process driver drives, and the worker hands its driver (`app/Agents/Drivers/Processes`) each output, request and order answer as it arrives |
+| Driver workers | `app/Agents/Drivers/Work` (`DriverSupervisor`, `DriverWorkers`, `HeadlessStarts`, `OwnTerminalPlans`) | The supervisor starts a worker for each live process a process driver drives, and the worker hands its driver (`app/Agents/Drivers/Processes`) each output, request and order answer as it arrives |
 | Host orders | `app/Hosts/HostOrderPlacement.php`, `routes/agents/host.php` | What the journal wants a host to do (open, write, stop a process) is an order the host claims (`POST /host/orders/claim`) and answers; the host reports a process's output and state on `/host/processes/{process}` |
 | Host | `programs/runner` | A fixed relay: it opens the processes and containers the plans describe, streams their output and runs no program decision of its own |
 | Hook adapter | `programs/runner/hookadapter`, `app/Agents/Drivers/Hooks/HookReplies.php` | Answers a driver's native hook call by asking the journal, and from the start's sealed reply file when the journal is away |
@@ -23,19 +23,19 @@ How a running agent program is driven, for a reader of the code. The design is d
 2. The runtime's driver worker claims its waiting requests; stops, interrupts and recordings come first.
 3. A start's first process is planned by its driver profile from the `DriverStart` (`HeadlessStarts::startOf`,
    `OwnTerminalPlans::of`): argv, environment, the files of its files folder (settings, the sealed hook replies, the
-   skills it was handed) and its container, if any. The host opens it from that plan as an order.
+   skills it was handed) and its container, if any. The host opens pipe processes from its orders. A connected
+   terminal starts from the plan returned by the binding's runtime opening.
 4. The worker drives each request on the process and records every result with its attempt; a result of an older
    attempt is refused.
 5. A turn's end settles its requests, or marks them uncertain when the program failed; an interrupt ends with its turn.
 6. A proven stop ends the session, revokes its credential and settles every open request.
 
-## A terminal in a container
+## A terminal in a connected folder
 
-In the contained arrangement a terminal runs as the container's own process (`programs/runner/host/container.go`,
-`container_terminal.go`). The plan's container manifest names the image, the mounts and the budgets; the host creates
-the container on the agent daemon under the name the journal gave it, starts it and holds its terminal. After a
-restart of the host it attaches to the container that still runs under that name, so nothing starts anew. A proven
-stop removes the container; the session's volumes stay.
+Run `journal-terminal claude` in the connected folder. `journal-terminal codex` starts a Codex session when
+the connected project offers isolated Codex hooks. The command owns the PTY and screen and the relay
+adopts its socket. The relay forwards signed instructions and reports output and process state. After a
+relay restart, the new relay adopts held terminals before sending inventory.
 
 ## Watching a terminal
 
@@ -105,6 +105,6 @@ unreadable screen, navigation_needed, needs attention. A user releases only an i
 
 ## Adding a program build
 
-Record its screens with `journal-runner record` into `resources/recordings/<driver>/<build>/screens`, pin the new
-build in its driver's compatibility (`app/Support/Compatibility/DriverCompatibility.php`), and run the driver and
-screen tests. A build that is not pinned never starts.
+Pin the build in its driver's compatibility. Use `scripts/record-scenarios.sh` to record terminal scenarios into
+`resources/recordings/<driver>/<build>`. Use `journal-terminal screen` to inspect a recorded exchange and
+`journal-terminal render` to write its frames.

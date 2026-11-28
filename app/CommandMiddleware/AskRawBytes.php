@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
+use App\Agents\Drivers\Commands\RecordOwnTerminal\RecordOwnTerminalCommand;
 use App\Bus\CommandCall;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Protocol\HostProcessType;
+use App\Support\Recordings\Enums\Wire;
 use App\Support\Recordings\RecordingDrafts;
+use App\Support\Recordings\RecordingOpening;
 use Closure;
 
 /**
@@ -23,11 +26,27 @@ final readonly class AskRawBytes implements CommandMiddleware
     {
         $command = $call->command();
 
+        if (! $this->drafts->isOn()) {
+            return $next($call);
+        }
+
+        if ($command instanceof RecordOwnTerminalCommand) {
+            $terminal = $next($call->replacedBy($command->askingRawBytes()));
+            $opening = RecordingOpening::ofProcess(
+                $terminal->processId,
+                $terminal->plan->payload(),
+                RecordingDrafts::moment(),
+            );
+            $this->drafts->begin(Wire::Driver, $terminal->processId, $opening->withEnvironmentNames());
+
+            return $terminal;
+        }
+
         if (! $command instanceof OpenHostProcessCommand) {
             return $next($call);
         }
 
-        if ($command->plan->type !== HostProcessType::Terminal || ! $this->drafts->isOn()) {
+        if ($command->plan->type !== HostProcessType::Terminal) {
             return $next($call);
         }
 

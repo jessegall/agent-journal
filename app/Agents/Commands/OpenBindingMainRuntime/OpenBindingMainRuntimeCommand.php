@@ -29,6 +29,7 @@ final readonly class OpenBindingMainRuntimeCommand extends Command
         public string $driverBuild,
         public string $profile,
         public string|null $model,
+        public string|null $effort = null,
     ) {}
 
     /**
@@ -45,6 +46,7 @@ final readonly class OpenBindingMainRuntimeCommand extends Command
             $this->profile,
             $driverType,
             $this->model,
+            $this->effort,
         );
     }
 }

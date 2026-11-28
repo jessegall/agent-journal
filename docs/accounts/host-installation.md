@@ -30,13 +30,18 @@ below.
 2. `journal-runner serve --installation <folder> --hook-command "<installed relay>"` verifies the installation, sends
    the start reports queued before a restart, reconciles the starts the journal counts as possibly running and carries
    out the orders it claims from the journal.
-3. `journal-runner attach --installation <folder> --agent <id> --folder <work folder> --program claude` opens an
-   agent's main Claude Code runtime on a terminal. Codex has no terminal to attach to: its runtimes are threads on
-   the account's shared app-server.
+## Open a connected folder's terminal
 
-## How a start runs
+Use the journal's install line to connect the folder. Put the remote project release's `bin` directory on PATH
+and run `journal-terminal claude` from that folder. Use `journal-terminal codex` when the journal offers
+Codex with isolated hooks for the connected project.
 
-Every start, whether a claimed request or a local start, goes the same way, each stage saved in the state folder
+The command starts the pinned program in your terminal and keeps the sign-in with the connected folder.
+The relay lets the journal watch the screen and send guarded keys.
+
+## How a journal-run start runs
+
+The host saves each stage of a journal-run start in the state folder
 before the next step (`starts/<runtime>.json`):
 
 1. The runtime's one-use grant is saved; then the account claim is sent and its answer saved. A claim whose answer
@@ -61,7 +66,7 @@ the account's Codex owner and every execution on it; an account the host cannot 
 
 | Refusal | What it means | What to do |
 |---|---|---|
-| no protected installation | serve or attach ran without `--installation` | install, then pass the folder |
+| no protected installation | serve ran without `--installation` | install, then pass the folder |
 | the installation changed | an artifact's digest, mode or place differs | install anew into a new folder |
 | the driver image was refused | its build, its allow set or its start checks failed, and the refusal names why | fix the driver folder or the host's daemon; a missing base or a lost image is built again |
 | the account claim may have been taken | a claim's answer was lost | the host's reconciliation settles it; nothing to retry |

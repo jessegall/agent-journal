@@ -13,7 +13,7 @@ use Tests\Architecture\Support\DomainFiles;
 final class OldCodeWordsTest extends TestCase
 {
     private const string OLD_NAME = '/^(?:Legacy|Old|Deprecated)[A-Z_]|[a-z](?:Legacy|Deprecated)(?:[A-Z_]|$)'
-        .'|^(?:legacy|deprecated)[A-Z_]/';
+        .'|^(?:legacy|deprecated)[A-Z_]|^(?:TerminalHandling|OpenJournalTerminal(?:Command|Handler)?)$/';
 
     private const string OLD_COMMENT = '/\b(?:legacy|deprecated|the old (?:parser|code|way|version)|kept for now'
         .'|until the cutover|stays until a cutover)\b/i';

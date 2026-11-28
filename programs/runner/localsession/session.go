@@ -42,6 +42,7 @@ type Session struct {
 	RuntimeID    string
 	SessionID    string
 	Installation string
+	JournalURL   string
 	// Programs are the programs the installation sealed, by the names plans call them.
 	Programs map[string]string
 	// Plan is what the journal decided the session runs: its argv, files, folders and environment.
@@ -103,6 +104,7 @@ func (session Session) hostNames() map[string]string {
 	names := map[string]string{
 		"INSTALLATION": session.Installation,
 		"HOOK_COMMAND": filepath.Join(session.Installation, "bin", "journal-hook"),
+		"JOURNAL_URL":   session.JournalURL,
 	}
 	maps.Copy(names, session.Programs)
 

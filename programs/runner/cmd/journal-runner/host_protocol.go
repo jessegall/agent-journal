@@ -94,10 +94,10 @@ func stopWhenInputEnds(stop func()) {
 // open.
 type hostProtocolOptions struct {
 	Protocol int
-	Reads   *hostapi.ProjectReads
-	Upgrade *bindingUpgrade
-	Idle    *hostapi.IdleWindow
-	Allowed *hostapi.AllowedPrograms
+	Reads    *hostapi.ProjectReads
+	Upgrade  *bindingUpgrade
+	Idle     *hostapi.IdleWindow
+	Allowed  *hostapi.AllowedPrograms
 }
 
 // hostInstructions carry out every instruction of host protocol 1 on this host: the process table's, the processes' input and
@@ -158,15 +158,19 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment d
 // hostProtocol is host protocol 1 opened: the table of the processes the host runs, the queue of their reports and the
 // relay that claims instructions and beats.
 type hostProtocol struct {
-	table   *hostapi.ProcessTable
-	reports *hostapi.ReportQueue
-	relay   hostapi.Relay
+	table           *hostapi.ProcessTable
+	reports         *hostapi.ReportQueue
+	relay           hostapi.Relay
+	adoptsTerminals bool
 }
 
 // serve sends the process reports, beats and claims instructions until the context ends.
 func (protocol hostProtocol) serve(ctx context.Context) {
 	go protocol.reports.Run(ctx.Done())
 	go protocol.relay.Beat(ctx)
+	if protocol.adoptsTerminals {
+		go protocol.table.WatchTerminals(ctx)
+	}
 	go func() {
 		if err := protocol.relay.Claim(ctx); err != nil && !errors.Is(err, context.Canceled) {
 			log.Printf("host protocol 1 stopped: %v", err)
@@ -191,7 +195,7 @@ func openHostProtocol(ctx context.Context, journal *client.Client, enrollment de
 	}
 	outputs := hostapi.NewOutputs(stateFolder, func(processID string, output hostapi.Output) error {
 		return calls.NotifyProcessOutput(ctx, processID, output)
-	}, time.Now)
+	})
 	table := hostapi.OpenProcessTable(stateFolder, containers, reports, outputs)
 	table.NameHost(names)
 	if options.Allowed != nil {
@@ -199,6 +203,12 @@ func openHostProtocol(ctx context.Context, journal *client.Client, enrollment de
 	}
 	if err := table.Adopt(ctx); err != nil {
 		return hostProtocol{}, err
+	}
+	adoptsTerminals := options.Protocol == hostapi.RelayProtocolVersion
+	if adoptsTerminals {
+		if err := table.AdoptTerminals(ctx); err != nil {
+			return hostProtocol{}, err
+		}
 	}
 	instructions := hostInstructions{
 		ProcessTable: table,
@@ -216,9 +226,12 @@ func openHostProtocol(ctx context.Context, journal *client.Client, enrollment de
 			}
 		}()
 	})
+	if adoptsTerminals {
+		dispatcher.ForwardTerminals(table, calls.PullPrivateValue)
+	}
 	relay := hostapi.Relay{Journal: calls, Dispatcher: dispatcher, Record: record, Table: table, Release: release, Protocol: options.Protocol,
 		Heartbeat: hostapi.HeartbeatInterval, RetryAfter: time.Second, Clock: clock, Idle: options.Idle}
-	return hostProtocol{table: table, reports: reports, relay: relay}, nil
+	return hostProtocol{table: table, reports: reports, relay: relay, adoptsTerminals: adoptsTerminals}, nil
 }
 
 // hostNamesOf are the names a plan may ask this host for: the journal's URL as this host reaches it, the host's own

@@ -24,7 +24,11 @@ build_test_host() {
         -w /src golang:1.26.4-bookworm \
         sh -c 'hash=$(find . -name "*.go" -o -name go.mod -o -name go.sum | LC_ALL=C sort | xargs cat | sha256sum | cut -c1-16)
             test -x "/out/journal-runner-$hash" || go build -tags mock -o "/out/journal-runner-$hash" ./cmd/journal-runner
+            test -x "/out/journal-terminal-$hash" || go build -tags mock -o "/out/journal-terminal-$hash" ./cmd/journal-terminal
+            test -x "/out/journal-hook-$hash" || go build -o "/out/journal-hook-$hash" ./cmd/journal-hook
             find /out -name "journal-runner-*" ! -name "journal-runner-$hash" -delete
+            find /out -name "journal-terminal-*" ! -name "journal-terminal-$hash" -delete
+            find /out -name "journal-hook-*" ! -name "journal-hook-$hash" -delete
             echo "test host $hash"'
 }
 

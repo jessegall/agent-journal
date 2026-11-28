@@ -129,6 +129,7 @@ type BindingRuntimeRequest struct {
 	Profile string `json:"profile"`
 	// Model is the model the session runs on; "default" asks for the profile's default.
 	Model string `json:"model"`
+	Effort string `json:"effort,omitempty"`
 	// StartID names this start before anything starts, so asking again after a lost reply opens nothing new.
 	StartID string `json:"startId"`
 }
@@ -138,9 +139,26 @@ type BindingRuntimeRequest struct {
 type OpenedBindingRuntime struct {
 	SessionID           string `json:"session_id"`
 	RuntimeID           string `json:"runtime_id"`
+	ProcessID           string `json:"process_id"`
 	AuthorityGeneration int    `json:"authority_generation"`
 	// Plan is the process the journal decided the owner's terminal runs, as an open instruction carries it.
 	Plan json.RawMessage `json:"plan"`
+}
+
+// UnmarshalJSON requires the process the local terminal must adopt.
+func (opened *OpenedBindingRuntime) UnmarshalJSON(body []byte) error {
+	type bindingRuntime OpenedBindingRuntime
+	var answer bindingRuntime
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&answer); err != nil {
+		return err
+	}
+	if answer.ProcessID == "" {
+		return errors.New("the opened binding runtime has no process_id")
+	}
+	*opened = OpenedBindingRuntime(answer)
+	return nil
 }
 
 // OpenBindingRuntime asks the journal to open the binding's main runtime in its own root.

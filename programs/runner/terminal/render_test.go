@@ -1,4 +1,4 @@
-package hostapi
+package terminal
 
 import (
 	"bytes"
@@ -32,7 +32,7 @@ func assertFramesOf(t *testing.T, recordings string) {
 		}
 		committed, err := os.ReadFile(filepath.Join(folder, FramesFileName))
 		if err != nil || !bytes.Equal(rendered, committed) {
-			t.Errorf("%s: its frames.json differs from what it renders; run journal-runner recording render", folder)
+			t.Errorf("%s: its frames.json differs from what it renders; run journal-terminal render", folder)
 		}
 		return nil
 	})

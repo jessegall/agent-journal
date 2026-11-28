@@ -192,6 +192,7 @@ record_project() {
     fetch_file "$origin/releases/current/manifest.json.sig" "$scratch/downloads/manifest.json.sig" || return 1
     target=$(target_name "$scratch/downloads") || return 1
     installation=$(install_release "$origin" "$version" "$scratch/downloads" "$target" "$scratch/state") || return 1
+    printf "%s\n" "$installation" > "$scratch/installation" || return 1
     python3 "$helper" connect "$scratch/project" \
         "$installation/bin/journal-runner" connect --ticket-stdin --origin "$origin" --state "$scratch/state"
 }

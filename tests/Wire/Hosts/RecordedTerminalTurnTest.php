@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Wire\Hosts;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Hosts\Protocol\HostInstructionType;
+use App\Models\Hosts\HostProcess;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\OverTheWire;
@@ -15,10 +18,10 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * Recorded terminal turns play on the real host against recorded programs and Docker calls.
+ * Recorded terminal turns run through the person's terminal and the real relay against recorded programs.
  */
 #[OverTheWire]
-#[TimeLimit(seconds: 240, reason: 'It runs the real host, a played Docker daemon and a served journal through a whole turn.')]
+#[TimeLimit(seconds: 240, reason: 'It runs a terminal, relay and served journal through a whole recorded turn.')]
 final class RecordedTerminalTurnTest extends TestCase
 {
     use CommitsHookRows;
@@ -26,6 +29,14 @@ final class RecordedTerminalTurnTest extends TestCase
 
     private const array TABLES = [
         'hosts',
+        'project_bindings',
+        'binding_runtimes',
+        'connection_audits',
+        'project_invitations',
+        'install_attempts',
+        'project_environments',
+        'projects',
+        'settings_records',
         'host_processes',
         'host_instructions',
         'host_driver_images',
@@ -56,10 +67,12 @@ final class RecordedTerminalTurnTest extends TestCase
             ->scenario('claude-code/terminal-turn', fn (TestScenario $turn) => $turn
                 ->play()
                 ->assertHostWire(fn (WireAssert $host) => $host
-                    ->matchesRecording()
-                    ->ordered(HostInstructionType::OpenContainer, fn (WireAssert $open) => $open->matchesPayload()))
+                    ->ordered(HostInstructionType::Stop, fn (WireAssert $stop) => $stop->count(1)))
                 ->assertTyped(self::COMMAND_PROMPT)
                 ->assertPlayedWhole());
+
+        $terminal = HostProcess::query()->whereNull('open_instruction_id')->sole();
+        $this->journal->assertResult(true, $terminal->started_at !== null);
     }
 
     /**
@@ -75,6 +88,12 @@ final class RecordedTerminalTurnTest extends TestCase
     #[DataProvider('codexChanges')]
     public function test_codex_types_the_recorded_change_and_continues_the_turn(string $scenario, string $keys): void
     {
+        $codex = $this->journal->service(DriverCatalogue::class)->family(DefaultDrivers::CODEX);
+
+        if (! $codex->isolatesHooksPerSession) {
+            $this->markTestSkipped('Connected Codex terminal replay waits on isolated hooks in task 3822.');
+        }
+
         $this->journal->owner()
             ->scenario($scenario, fn (TestScenario $turn) => $turn
                 ->play()

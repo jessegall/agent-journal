@@ -1,12 +1,15 @@
-package host
+package terminal
 
 import (
 	"os"
+	"os/exec"
 
 	"github.com/creack/pty"
+
+	"journal-runner/hostapi"
 )
 
-// TerminalStream is the terminal of a program the host runs or attaches to: what the program prints is read from
+// TerminalStream is the terminal of a running program: what the program prints is read from
 // it, what is typed is written to it, and it has the size of the window that shows it. Closing it hangs up.
 type TerminalStream interface {
 	Read(buffer []byte) (int, error)
@@ -16,7 +19,7 @@ type TerminalStream interface {
 	Size() (rows, columns uint16, err error)
 }
 
-// ptyTerminal is the terminal of a program the host runs itself as a child, on a PTY the host owns.
+// ptyTerminal is the terminal of a program the session opened as a child.
 type ptyTerminal struct {
 	*os.File
 }
@@ -37,4 +40,12 @@ func (terminal ptyTerminal) Size() (uint16, uint16, error) {
 	}
 
 	return size.Rows, size.Cols, nil
+}
+
+func OpenPTY(command *exec.Cmd, size hostapi.TerminalSize) (TerminalStream, error) {
+	file, err := pty.StartWithSize(command, &pty.Winsize{Rows: size.Rows, Cols: size.Columns})
+	if err != nil {
+		return nil, err
+	}
+	return PtyTerminal(file), nil
 }
