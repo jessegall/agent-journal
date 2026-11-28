@@ -304,9 +304,9 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
      * @param  list<string>  $inboxIds
      */
     #[Scope]
-    protected function inInboxes(Builder $query, array $inboxIds): void
+    protected function inInboxes(Builder $query, array $ids): void
     {
-        $query->whereIn('inbox_id', $inboxIds);
+        $query->whereIn('inbox_id', $ids);
     }
 
     /**

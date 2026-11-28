@@ -9,6 +9,7 @@ use App\Navigation\Declarations\DomainClient;
 use App\Support\ClientDeclarations;
 use App\Support\DeclaredType;
 use App\Support\Reflector;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Web\Creation\Contracts\PageBuilder;
 use App\Web\Creation\Contracts\WindowBuilder;
 use App\Web\Creation\Exceptions\InvalidSurface;
@@ -22,7 +23,11 @@ final class DeclaredSurfaceCheck
     /** @var array<string, true> */
     private array $windowFiles = [];
 
-    public function __construct(private readonly PageFactory $pages, private readonly WindowFactory $windows) {}
+    public function __construct(
+        private readonly PageFactory $pages,
+        private readonly WindowFactory $windows,
+        private readonly ReflectorFactory $reflectors,
+    ) {}
 
     public function registerDeclarations(ClientDeclarations $declarations, SurfaceAttributeMap $policies): void
     {
@@ -59,7 +64,7 @@ final class DeclaredSurfaceCheck
         $this->assertProduct($owner, $key, $window);
         $this->assertBuilder($key, $window, PageBuilder::class);
 
-        $type = Reflector::find($window->type)->getOrCall(
+        $type = $this->reflectors->find($window->type)->getOrCall(
             static fn () => throw InvalidSurface::windowType($key, $window->type),
         );
 
@@ -97,7 +102,7 @@ final class DeclaredSurfaceCheck
     /** @param class-string<PageBuilder>|class-string<WindowBuilder> $otherContract */
     private function assertBuilder(string $key, SurfaceDefinition $surface, string $otherContract): void
     {
-        $builder = Reflector::find($surface->builder)->getOrCall(
+        $builder = $this->reflectors->find($surface->builder)->getOrCall(
             static fn () => throw InvalidSurface::builder($key, $surface->builder, $surface->type),
         );
 

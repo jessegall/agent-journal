@@ -24,13 +24,13 @@ final readonly class RequestTimeLimit
      * Gives a request that is about to wait the wait on top of the whole time limit, from now: a long poll that waits
      * near the limit would otherwise be stopped while it answers.
      */
-    public function lendWait(int $waitSeconds): void
+    public function lendWait(int $seconds): void
     {
         // A process with no limit, such as a console command or a test run, keeps none: a wait never sets one on it.
         if ((int) ini_get('max_execution_time') === 0) {
             return;
         }
 
-        set_time_limit($waitSeconds + $this->seconds);
+        set_time_limit($seconds + $this->seconds);
     }
 }

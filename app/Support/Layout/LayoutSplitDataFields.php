@@ -24,23 +24,23 @@ final class LayoutSplitDataFields
         $this->back = new Optional();
     }
 
-    public function listWidth(int $listWidth): self
+    public function listWidth(int $width): self
     {
-        $this->listWidth = $listWidth;
+        $this->listWidth = $width;
 
         return $this;
     }
 
-    public function narrowShows(NarrowView $narrowShows): self
+    public function narrowShows(NarrowView $shows): self
     {
-        $this->narrowShows = $narrowShows;
+        $this->narrowShows = $shows;
 
         return $this;
     }
 
-    public function readerWidth(ReaderWidth $readerWidth): self
+    public function readerWidth(ReaderWidth $width): self
     {
-        $this->readerWidth = $readerWidth;
+        $this->readerWidth = $width;
 
         return $this;
     }

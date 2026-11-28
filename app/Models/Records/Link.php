@@ -231,7 +231,7 @@ final class Link extends MorphPivot implements EventSource, ProjectOwned, Readab
      * @param  list<RecordIdentity>  $linked
      * @return Builder<self>
      */
-    public static function resolvePairsFor(string $subjectType, array $linked): Builder
+    public static function findPairsFor(string $subjectType, array $linked): Builder
     {
         $groups = RecordIdentity::groupedByType($linked);
 

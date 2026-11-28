@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Chat\Tests\Unit;
+namespace Domain\Chat\Tests\Machinery;
 
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
@@ -19,12 +19,14 @@ use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 
 /**
  * A driver switch writes one line in the chat of the user who asked for it: where the agent moved and what its new
  * session reads, or why the switch failed and that the agent stays on its old driver.
  */
+#[TestsMachinery(DriverSwitchLines::class)]
 final class DriverSwitchLinesTest extends TestCase
 {
     use RefreshHookDatabase;

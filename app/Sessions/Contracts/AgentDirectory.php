@@ -22,10 +22,10 @@ interface AgentDirectory
     /**
      * The agents among those ids the actor may see, in the order of the ids; one out of sight is left out.
      *
-     * @param  list<string>  $agentIds
+     * @param  list<string>  $ids
      * @return list<HomeAgent>
      */
-    public function visibleAmong(array $agentIds): array;
+    public function visibleAmong(array $ids): array;
 
     /**
      * One agent the actor may see, refused like a missing one when it is out of sight.

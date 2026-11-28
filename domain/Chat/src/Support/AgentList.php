@@ -29,7 +29,7 @@ use Illuminate\Support\Collection;
  * The chat list a page at a time: the agents the viewer may see, newest chat activity first, each with its status,
  * unread messages, last activity and waiting question, read for the page at once.
  */
-final readonly class AgentListing
+final readonly class AgentList
 {
     /**
      * How many of the newest questions in the viewer's agent chats are looked at for one still waiting.

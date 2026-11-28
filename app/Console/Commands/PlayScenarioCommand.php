@@ -68,6 +68,7 @@ final class PlayScenarioCommand extends Command
         string $agentImage,
     ): int {
         $name = (string) $this->argument('scenario');
+        $failureFile = FilePath::in(Place::Project, self::LAST_FAILURE);
         $run = null;
 
         try {
@@ -94,7 +95,7 @@ final class PlayScenarioCommand extends Command
         } catch (RecordingSwitchedOff|ScenarioInvalid|ScenarioStuck|RecordingUnfinished|RecordedEnvironmentRefused
             |RecordingOutsideContainer|RecordingBreaksProtocol|RecordingLeaks|HostProtocolDrifted $refused) {
                 $this->stopAgentsOf($run, $commands);
-                $files->write(FilePath::in(Place::Project, self::LAST_FAILURE), $refused->getMessage()."\n");
+                $files->write($failureFile, $refused->getMessage()."\n");
                 $this->error($refused->getMessage());
 
                 return self::FAILURE;
@@ -103,7 +104,7 @@ final class PlayScenarioCommand extends Command
                 $this->stopAgentsOf($run, $commands);
                 $drafts->clear();
                 $why = $this->failureLine($name, $run, $failed);
-                $files->write(FilePath::in(Place::Project, self::LAST_FAILURE), "{$why}\n");
+                $files->write($failureFile, "{$why}\n");
                 $this->error($why);
 
                 return self::FAILURE;

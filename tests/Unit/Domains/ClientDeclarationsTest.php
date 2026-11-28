@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
+use App\Reflection\CatalogueReflectorFactory;
 use App\Access\Contracts\VisibilityCheck;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
@@ -189,7 +190,7 @@ final class ClientDeclarationsTest extends TestCase
     {
         $owner = DomainEntry::fromClass(LibraryDomain::class)->declaring();
         $surface = new SurfaceDefinition(ShelfPageData::class, ShelfPageBuilder::class, 'Books.vue');
-        $check = new DeclaredSurfaceCheck(new PageFactory(), new WindowFactory());
+        $check = new DeclaredSurfaceCheck(new PageFactory(), new WindowFactory(), new CatalogueReflectorFactory());
 
         $this->expectExceptionObject(InvalidSurface::unowned(
             'library.books',

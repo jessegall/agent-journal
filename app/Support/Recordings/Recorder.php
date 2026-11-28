@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Recordings;
 
-use App\Support\Recordings\Contracts\Recorder;
+use App\Support\Recordings\Contracts\Recorder as RecorderContract;
 use App\Support\Recordings\Enums\Wire;
 use Illuminate\Http\Request;
 
@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
  * The recorder of one wire of calls: each caller's calls are one exchange, opened by its first call, every call one
  * asked and one answered line of its draft, a long poll among them.
  */
-final readonly class CallRecorder implements Recorder
+final readonly class Recorder implements RecorderContract
 {
     public function __construct(private Wire $wire, private RecordingDrafts $drafts) {}
 

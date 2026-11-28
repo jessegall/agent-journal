@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 /**
- * A shell line as the journal shows it to people: a line that looks like it carries a secret keeps only its first
+ * A shell line as the journal shows it to users: a line that looks like it carries a secret keeps only its first
  * word, followed by "with a private value".
  */
 final readonly class ShownShellLine

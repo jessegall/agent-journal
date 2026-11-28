@@ -28,6 +28,7 @@ check_owner() {
 }
 
 check_links() {
+    local link
     find "$1" -maxdepth 2 -type l | while read -r link; do
         case "$(readlink -f "$link")" in "$1"/*) ;; *) echo symlink-out; exit 1;; esac
     done || exit 1

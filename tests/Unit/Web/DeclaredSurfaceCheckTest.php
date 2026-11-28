@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Web;
 
+use App\Reflection\CatalogueReflectorFactory;
 use App\Navigation\Declarations\DomainClient;
 use App\Support\DomainEntry;
 use App\Web\Creation\DeclaredSurfaceCheck;
@@ -31,7 +32,7 @@ final class DeclaredSurfaceCheckTest extends TestCase
     public function test_registration_reads_the_concrete_return_without_resolving_the_builder(): void
     {
         $pages = new PageFactory();
-        $check = new DeclaredSurfaceCheck($pages, new WindowFactory());
+        $check = new DeclaredSurfaceCheck($pages, new WindowFactory(), new CatalogueReflectorFactory());
 
         $check->registerPage($this->library(), 'library.book', $this->book());
 
@@ -73,7 +74,7 @@ final class DeclaredSurfaceCheckTest extends TestCase
 
     private function collector(): DeclaredSurfaceCheck
     {
-        return new DeclaredSurfaceCheck(new PageFactory(), new WindowFactory());
+        return new DeclaredSurfaceCheck(new PageFactory(), new WindowFactory(), new CatalogueReflectorFactory());
     }
 
     private function library(): DomainClient

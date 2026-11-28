@@ -10,7 +10,7 @@ use App\Inboxes\Contracts\InboxMemberPolicies;
 use App\Inboxes\Contracts\InboxMemberRoutes;
 use App\Inboxes\Contracts\InboxParticipationEnding;
 use App\Inboxes\Contracts\InboxRegistration;
-use App\Inboxes\CoreInboxes;
+use App\Inboxes\InboxProvider;
 use App\Navigation\Contracts\WindowOffers;
 use App\Notifications\Contracts\NotificationTargets;
 use App\Providers\TypeScriptServiceProvider;
@@ -74,8 +74,8 @@ final class ChatServiceProvider extends ServiceProvider
         $members->allow(MessagePinPolicy::class);
         $memberRoutes->open('chat.');
         $notificationTargets->register(QuestionNotificationKeys::target(), QuestionNotificationTarget::class);
-        $inboxes->register(PairChats::PAIR_PROVIDER, CoreInboxes::class);
-        $inboxes->register(PairChats::GROUP_PROVIDER, CoreInboxes::class);
+        $inboxes->register(PairChats::PAIR_PROVIDER, InboxProvider::class);
+        $inboxes->register(PairChats::GROUP_PROVIDER, InboxProvider::class);
 
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');

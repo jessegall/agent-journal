@@ -8,7 +8,7 @@ use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Agents\Agent;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Data\AgentOptionData;
-use Domain\Chat\Support\AgentListing;
+use Domain\Chat\Support\AgentList;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,7 @@ use Tests\Support\CommitsHookRows;
  * agent the viewer has no chat with shows none of either. It is read a page at a time, the most recently moved chats
  * first, each page in the same few grouped reads.
  */
-#[TestsMachinery(AgentListing::class)]
+#[TestsMachinery(AgentList::class)]
 final class AgentListingTest extends TestCase
 {
     use CommitsHookRows;
@@ -72,7 +72,7 @@ final class AgentListingTest extends TestCase
         $this->journal->owner();
         $chats = $this->journal->fixtures(ChatFixtures::class);
 
-        foreach (range(1, AgentListing::PAGE_SIZE + 2) as $number) {
+        foreach (range(1, AgentList::PAGE_SIZE + 2) as $number) {
             $name = sprintf('Agent %02d', $number);
             $this->journal->idleAgent($name);
             $chats->pairChatBetween('Owner', $name);
@@ -90,7 +90,7 @@ final class AgentListingTest extends TestCase
         }
 
         $this->journal->actAs('Owner');
-        $listing = $this->app->make(AgentListing::class);
+        $listing = $this->app->make(AgentList::class);
 
         DB::enableQueryLog();
         $first = $listing->firstPageWith([]);
@@ -111,12 +111,12 @@ final class AgentListingTest extends TestCase
                     fn (string $name) => $this->journal->actorCalled($name)->id,
                     ['Agent 17', 'Agent 09', 'Agent 05'],
                 ),
-                AgentListing::PAGE_SIZE,
+                AgentList::PAGE_SIZE,
                 [],
                 Agent::query()->count(),
                 null,
                 $firstReads,
-                [AgentListing::PAGE_SIZE + 1, $secondIds[0]],
+                [AgentList::PAGE_SIZE + 1, $secondIds[0]],
             ],
             [
                 array_slice($firstIds, 0, 3),
@@ -143,7 +143,7 @@ final class AgentListingTest extends TestCase
     {
         $id = $this->journal->actorCalled($name)->id;
 
-        foreach ($this->app->make(AgentListing::class)->firstPageWith([])->agents as $agent) {
+        foreach ($this->app->make(AgentList::class)->firstPageWith([])->agents as $agent) {
             if ($agent->id === $id) {
                 return $agent;
             }

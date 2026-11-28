@@ -47,9 +47,9 @@ final class LayoutDialogDataFields
         return $this;
     }
 
-    public function guidedNoun(string|Optional $guidedNoun): self
+    public function guidedNoun(string|Optional $noun): self
     {
-        $this->guidedNoun = $guidedNoun;
+        $this->guidedNoun = $noun;
 
         return $this;
     }

@@ -29,16 +29,16 @@ final class SharePreviewDataFields
         $this->liveShare = new Optional();
     }
 
-    public function rootReference(string $rootReference): self
+    public function rootReference(string $reference): self
     {
-        $this->rootReference = $rootReference;
+        $this->rootReference = $reference;
 
         return $this;
     }
 
-    public function rootTitle(string $rootTitle): self
+    public function rootTitle(string $title): self
     {
-        $this->rootTitle = $rootTitle;
+        $this->rootTitle = $title;
 
         return $this;
     }
@@ -52,23 +52,23 @@ final class SharePreviewDataFields
     }
 
     /** @param list<RootShareData> $openProposals */
-    public function openProposals(array $openProposals): self
+    public function openProposals(array $proposals): self
     {
-        $this->openProposals = $openProposals;
+        $this->openProposals = $proposals;
 
         return $this;
     }
 
-    public function savedPreview(SavedSharePreviewData|Optional $savedPreview): self
+    public function savedPreview(SavedSharePreviewData|Optional $preview): self
     {
-        $this->savedPreview = $savedPreview;
+        $this->savedPreview = $preview;
 
         return $this;
     }
 
-    public function liveShare(RootShareData|Optional $liveShare): self
+    public function liveShare(RootShareData|Optional $share): self
     {
-        $this->liveShare = $liveShare;
+        $this->liveShare = $share;
 
         return $this;
     }

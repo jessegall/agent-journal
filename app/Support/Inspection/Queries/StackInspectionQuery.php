@@ -16,7 +16,7 @@ use App\Values\StackTarget;
  * The named read a signed-in user makes of any agent's stack: an explicit authorized query, never the calling agent's
  * own scope.
  */
-final readonly class AnyAgentStackInspection implements StackInspectionQueryContract
+final readonly class StackInspectionQuery implements StackInspectionQueryContract
 {
     public function __construct(private StackRestorer $restorer) {}
 

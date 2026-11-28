@@ -41,9 +41,9 @@ final class EmptyListStateFields
         return $this;
     }
 
-    public function fillsPage(bool $fillsPage): self
+    public function fillsPage(bool $isFullPage): self
     {
-        $this->fillsPage = $fillsPage;
+        $this->fillsPage = $isFullPage;
 
         return $this;
     }

@@ -27,23 +27,23 @@ final class DeviceApprovalDataFields
 
     private bool $isBindingRevoked;
 
-    public function userCode(string $userCode): self
+    public function userCode(string $code): self
     {
-        $this->userCode = $userCode;
+        $this->userCode = $code;
 
         return $this;
     }
 
-    public function projectLabel(string $projectLabel): self
+    public function projectLabel(string $label): self
     {
-        $this->projectLabel = $projectLabel;
+        $this->projectLabel = $label;
 
         return $this;
     }
 
-    public function machineLabel(string $machineLabel): self
+    public function machineLabel(string $label): self
     {
-        $this->machineLabel = $machineLabel;
+        $this->machineLabel = $label;
 
         return $this;
     }
@@ -63,16 +63,16 @@ final class DeviceApprovalDataFields
         return $this;
     }
 
-    public function journalOrigin(string $journalOrigin): self
+    public function journalOrigin(string $origin): self
     {
-        $this->journalOrigin = $journalOrigin;
+        $this->journalOrigin = $origin;
 
         return $this;
     }
 
-    public function environmentLabel(string $environmentLabel): self
+    public function environmentLabel(string $label): self
     {
-        $this->environmentLabel = $environmentLabel;
+        $this->environmentLabel = $label;
 
         return $this;
     }

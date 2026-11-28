@@ -162,11 +162,11 @@ final readonly class AgentStartLog
      * @param  list<string>  $startIds
      * @return list<AgentLogLineData>
      */
-    private function processLinesOf(array $startIds): array
+    private function processLinesOf(array $ids): array
     {
         $lines = [];
 
-        foreach (HostProcess::query()->ofStarts($startIds)->limit(self::LINE_LIMIT)->get() as $process) {
+        foreach (HostProcess::query()->ofStarts($ids)->limit(self::LINE_LIMIT)->get() as $process) {
             $detail = ucfirst($process->purpose->label()).$this->tookOf($process->created_at, $process->started_at);
 
             $lines[] = $this->line(
@@ -296,6 +296,8 @@ final readonly class AgentStartLog
         AgentLogLineType $type,
         string $detail,
     ): AgentLogLineData {
+        $shownReason = ShownShellLine::of($reason);
+
         return AgentLogLineData::from([
             'id' => $id,
             'at' => $this->timeOf($at),
@@ -320,9 +322,9 @@ final readonly class AgentStartLog
             'at' => $this->timeOf($at),
             'type' => $type,
             'title' => $type->title(),
-            'detail' => ShownShellLine::of($reason),
+            'detail' => $shownReason,
             'isFailure' => true,
-            'reason' => ShownShellLine::of($reason),
+            'reason' => $shownReason,
             'evidence' => ShownShellLine::of($evidence),
         ]);
     }

@@ -111,10 +111,14 @@ final class DriverSetupTest extends TestCase
         );
 
         $this->journal
-            ->assertRefused(DriverSetupInvalid::class, fn () => DefaultDriverSetup::for('lone')->build(), $naming('driver'))
             ->assertRefused(
                 DriverSetupInvalid::class,
-                fn () => DefaultDriverSetup::for('lone')->driver('lone')->build(),
+                fn () => DefaultDriverSetup::for('lone')->build(new \App\Reflection\CatalogueReflectorFactory()),
+                $naming('driver'),
+            )
+            ->assertRefused(
+                DriverSetupInvalid::class,
+                fn () => DefaultDriverSetup::for('lone')->driver('lone')->build(new \App\Reflection\CatalogueReflectorFactory()),
                 $naming('image'),
             );
     }
@@ -163,6 +167,8 @@ final class DriverSetupTest extends TestCase
      */
     private function codex(string $family): DriverSetup
     {
-        return $this->partlyDeclared()->build()->forFamily($family);
+        $setup = $this->partlyDeclared()->build(new \App\Reflection\CatalogueReflectorFactory());
+
+        return $setup->forFamily($family);
     }
 }

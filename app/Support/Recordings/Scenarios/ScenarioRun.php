@@ -367,9 +367,9 @@ final class ScenarioRun
         return $this->startRequest ?? throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, $missing);
     }
 
-    public function holdInstallerExit(int $exitCode): void
+    public function holdInstallerExit(int $code): void
     {
-        $this->installerExit = $exitCode;
+        $this->installerExit = $code;
     }
 
     public function installerExit(): int|null
@@ -447,7 +447,7 @@ final class ScenarioRun
     }
 
     /**
-     * The person signed the sign-in in on the journal's own page, so no code of the play's is submitted for it.
+     * The user signed the sign-in in on the journal's own page, so no code of the play's is submitted for it.
      */
     public function holdSignedInOnPage(): void
     {

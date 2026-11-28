@@ -18,7 +18,7 @@ use App\Bus\Contracts\CommandEnd as CommandEndContract;
 use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandStops as CommandStopsContract;
 use App\Bus\Contracts\CommandTransaction as CommandTransactionContract;
-use App\Bus\Contracts\CommittedListenerFailures;
+use App\Bus\Contracts\CommittedListenerFailures as CommittedListenerFailuresContract;
 use App\Bus\Contracts\Events\FactStaging;
 use App\Bus\Contracts\GuardedCommandBus;
 use App\Bus\Contracts\JournalCommands as JournalCommandsContract;
@@ -36,7 +36,7 @@ use App\Bus\OutsideCommandAllowance;
 use App\Bus\OwnerCommands;
 use App\Bus\Publication;
 use App\Bus\RefusalMapper;
-use App\Bus\ReportedListenerFailures;
+use App\Bus\CommittedListenerFailures;
 use App\Bus\RequestKey;
 use App\Bus\RowCapture;
 use App\Bus\RunningCommand;
@@ -82,7 +82,7 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->app->bind(JournalCommandsContract::class, JournalCommands::class);
         $this->app->bind(UnitOfWork::class, EventUnitLifecycle::class);
         $this->app->scoped(Publication::class);
-        $this->app->scoped(CommittedListenerFailures::class, ReportedListenerFailures::class);
+        $this->app->scoped(CommittedListenerFailuresContract::class, CommittedListenerFailures::class);
         $this->app->scoped(CommandTransactionContract::class, CommandTransaction::class);
         $this->app->alias(CommandStops::class, CommandStopsContract::class);
 

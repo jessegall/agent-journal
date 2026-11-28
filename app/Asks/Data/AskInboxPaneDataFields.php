@@ -21,9 +21,9 @@ final class AskInboxPaneDataFields
         return $this;
     }
 
-    public function inboxUrl(string $inboxUrl): self
+    public function inboxUrl(string $url): self
     {
-        $this->inboxUrl = $inboxUrl;
+        $this->inboxUrl = $url;
 
         return $this;
     }

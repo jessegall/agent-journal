@@ -7,6 +7,7 @@ namespace App\Web\Creation;
 use App\Access\Contracts\VisibilityCheck;
 use App\Events\Web\WebEvent;
 use App\Reflection\ReflectedProperty;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\Reflector;
 use App\Web\Attributes\AppendBy;
 use App\Web\Attributes\Bounded;
@@ -31,12 +32,15 @@ final class SurfaceAttributeMap
     /** @var array<class-string<Data>, SurfacePolicy> */
     private array $policies = [];
 
-    public function __construct(private readonly DataConfig $data) {}
+    public function __construct(
+        private readonly DataConfig $data,
+        private readonly ReflectorFactory $reflectors,
+    ) {}
 
     /** @param class-string<Data> $type */
     public function forPage(string $type): SurfacePolicy
     {
-        if (Reflector::of($type)->hasAttribute(WindowOnly::class)) {
+        if ($this->reflectors->make($type)->hasAttribute(WindowOnly::class)) {
             throw InvalidSurfacePolicy::at($type, 'A window-only type cannot be registered as a page.');
         }
 
@@ -52,7 +56,7 @@ final class SurfaceAttributeMap
     /** @param class-string<Data> $type */
     private function compile(string $type): SurfacePolicy
     {
-        $class = Reflector::of($type);
+        $class = $this->reflectors->make($type);
         $paging = $class->attributes(Paged::class)->first()->getOrElse(null);
 
         if ($paging !== null && ($paging->size < 1 || trim($paging->parameter) === '')) {
@@ -62,7 +66,7 @@ final class SurfaceAttributeMap
         $checks = [];
 
         foreach ($class->attributes(PermissionGated::class) as $guard) {
-            $check = Reflector::find($guard->check)->getOrElse(null);
+            $check = $this->reflectors->find($guard->check)->getOrElse(null);
 
             if ($check === null || ! $check->isSubclassOf(VisibilityCheck::class)) {
                 throw InvalidSurfacePolicy::at($type, "{$guard->check} is not a visibility check.");
@@ -122,7 +126,7 @@ final class SurfaceAttributeMap
         $live = $declaration->attributes(Live::class)->first()->getOrElse(null);
 
         foreach ($live->events ?? [] as $event) {
-            $type = Reflector::find($event)->getOrElse(null);
+            $type = $this->reflectors->find($event)->getOrElse(null);
 
             if ($type === null
                 || ! $type->isSubclassOf(WebEvent::class)
@@ -164,7 +168,7 @@ final class SurfaceAttributeMap
             return false;
         }
 
-        $class = Reflector::find($row)->getOrElse(null);
+        $class = $this->reflectors->find($row)->getOrElse(null);
 
         if ($class === null || ! $class->hasProperty($append->key)) {
             return false;

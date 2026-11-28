@@ -10,7 +10,7 @@ use App\Sessions\Contracts\AgentDirectory;
 use App\Support\HomeAgent;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Http\Requests\ConversationRequest;
-use Domain\Chat\Support\AgentListing;
+use Domain\Chat\Support\AgentList;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -22,7 +22,7 @@ final readonly class ChosenAgentSection implements SectionResolver
     public function __construct(
         private ConversationRequest $request,
         private AgentDirectory $agents,
-        private AgentListing $listing,
+        private AgentList $listing,
     ) {}
 
     public function read(SlotContext $context): ChatData

@@ -6,14 +6,14 @@ namespace Domain\Chat\Http\Loaders;
 
 use Domain\Chat\Data\AgentPageCursorData;
 use Domain\Chat\Data\AgentPageData;
-use Domain\Chat\Support\AgentListing;
+use Domain\Chat\Support\AgentList;
 
 /**
  * The chat list's next page, read as the list scrolls to its end: the agents after the one the cursor names.
  */
 final readonly class AgentPageLoader
 {
-    public function __construct(private AgentListing $listing) {}
+    public function __construct(private AgentList $listing) {}
 
     public function __invoke(AgentPageCursorData $input): AgentPageData
     {

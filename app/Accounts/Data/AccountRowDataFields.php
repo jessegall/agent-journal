@@ -81,16 +81,16 @@ final class AccountRowDataFields
         return $this;
     }
 
-    public function nameRevision(int $nameRevision): self
+    public function nameRevision(int $revision): self
     {
-        $this->nameRevision = $nameRevision;
+        $this->nameRevision = $revision;
 
         return $this;
     }
 
-    public function signIn(SignInMethodData $signIn): self
+    public function signIn(SignInMethodData $method): self
     {
-        $this->signIn = $signIn;
+        $this->signIn = $method;
 
         return $this;
     }
@@ -125,9 +125,9 @@ final class AccountRowDataFields
         return $this;
     }
 
-    public function runningCount(int $runningCount): self
+    public function runningCount(int $count): self
     {
-        $this->runningCount = $runningCount;
+        $this->runningCount = $count;
 
         return $this;
     }
@@ -148,17 +148,17 @@ final class AccountRowDataFields
         return $this;
     }
 
-    public function cleanupProblem(CleanupProblem|null $cleanupProblem): self
+    public function cleanupProblem(CleanupProblem|null $problem): self
     {
-        $this->cleanupProblem = $cleanupProblem;
+        $this->cleanupProblem = $problem;
         $this->hasCleanupProblem = true;
 
         return $this;
     }
 
-    public function awaitsCleanupRetry(bool $awaitsCleanupRetry): self
+    public function awaitsCleanupRetry(bool $cleanupRetry): self
     {
-        $this->awaitsCleanupRetry = $awaitsCleanupRetry;
+        $this->awaitsCleanupRetry = $cleanupRetry;
 
         return $this;
     }
@@ -178,9 +178,9 @@ final class AccountRowDataFields
     }
 
     /** @param list<AccountStartData> $recentStarts */
-    public function recentStarts(array $recentStarts): self
+    public function recentStarts(array $starts): self
     {
-        $this->recentStarts = $recentStarts;
+        $this->recentStarts = $starts;
 
         return $this;
     }

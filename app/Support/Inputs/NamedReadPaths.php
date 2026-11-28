@@ -18,9 +18,9 @@ final readonly class NamedReadPaths
     /**
      * @param  list<string>  $namedPaths
      */
-    public static function inFolder(string $workFolder, array $namedPaths): self
+    public static function inFolder(string $workFolder, array $paths): self
     {
-        return new self(array_map(fn (string $path) => self::resolve($workFolder, $path), $namedPaths));
+        return new self(array_map(fn (string $path) => self::resolve($workFolder, $path), $paths));
     }
 
     /**

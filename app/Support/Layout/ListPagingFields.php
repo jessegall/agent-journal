@@ -25,9 +25,9 @@ final class ListPagingFields
         return $this;
     }
 
-    public function lastPage(int $lastPage): self
+    public function lastPage(int $page): self
     {
-        $this->lastPage = $lastPage;
+        $this->lastPage = $page;
 
         return $this;
     }

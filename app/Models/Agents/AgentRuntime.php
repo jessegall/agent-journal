@@ -38,7 +38,7 @@ use App\Models\Support\JournalModel;
 use App\Processes\Data\RuntimeStatus;
 use App\Processes\Enums\RuntimeActivity;
 use App\Records\Contracts\ReadableModel;
-use App\Support\RuntimeStatusMapping;
+use App\Support\RuntimeStates;
 use App\Values\PinnedDriver;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -430,7 +430,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
      */
     public function status(CarbonImmutable $now): RuntimeStatus
     {
-        return RuntimeStatusMapping::ofRuntime($this, $now);
+        return RuntimeStates::ofRuntime($this, $now);
     }
 
     /**

@@ -27,16 +27,16 @@ final class AccountUsageDataFields
         return $this;
     }
 
-    public function monthCost(AccountMonthCostData|Optional $monthCost): self
+    public function monthCost(AccountMonthCostData|Optional $cost): self
     {
-        $this->monthCost = $monthCost;
+        $this->monthCost = $cost;
 
         return $this;
     }
 
-    public function latestThread(AccountThreadTokensData|Optional $latestThread): self
+    public function latestThread(AccountThreadTokensData|Optional $thread): self
     {
-        $this->latestThread = $latestThread;
+        $this->latestThread = $thread;
 
         return $this;
     }

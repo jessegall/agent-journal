@@ -36,6 +36,11 @@ final readonly class CatalogueReflectorFactory implements ReflectorFactory, Type
         return $this->found($subject)->filter(fn (Reflector $found) => $found->isSubclassOf($type))->isDefined();
     }
 
+    public function find(string $name): Option
+    {
+        return Reflector::find($name);
+    }
+
     public function is(string|object $subject, string $type): bool
     {
         return $this->found($subject)->filter(fn (Reflector $found) => $found->is($type))->isDefined();
@@ -52,7 +57,7 @@ final readonly class CatalogueReflectorFactory implements ReflectorFactory, Type
             return new Some(Reflector::of($subject));
         }
 
-        return Reflector::find($subject);
+        return $this->find($subject);
     }
 
     /**

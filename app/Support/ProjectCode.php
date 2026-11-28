@@ -152,14 +152,14 @@ final class ProjectCode
     /**
      * Code reads over a project root of their own, kept by the object alone.
      */
-    public static function over(string $projectRoot): self
+    public static function over(string $root): self
     {
-        $config = new Repository(['journal' => ['files' => ['places' => ['project' => $projectRoot]]]]);
+        $config = new Repository(['journal' => ['files' => ['places' => ['project' => $root]]]]);
         $roots = new PlaceRoots(new PlaceRootSettings($config));
         $closed = new ClosedFolders($roots);
         $confinement = new PathConfinement($roots, $closed);
 
-        return new self(rtrim($projectRoot, '/'), $confinement, new FolderWalker($roots, $closed, $confinement));
+        return new self(rtrim($root, '/'), $confinement, new FolderWalker($roots, $closed, $confinement));
     }
 
     /**

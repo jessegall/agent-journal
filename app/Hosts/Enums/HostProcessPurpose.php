@@ -37,6 +37,14 @@ enum HostProcessPurpose: string
     }
 
     /**
+     * Whether a process that never ran can cause its unproven start to be refused.
+     */
+    public function canRefuseStart(): bool
+    {
+        return $this !== self::AgentTurn;
+    }
+
+    /**
      * Whether the process is its runtime's own: it takes the runtime's work and its end is the runtime's end. A turn
      * the journal opened for a runtime takes only stops and interrupts, a probe none, and both end alone.
      */

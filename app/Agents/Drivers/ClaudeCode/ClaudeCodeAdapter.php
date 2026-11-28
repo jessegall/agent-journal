@@ -254,8 +254,10 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
     private function toolCall(HookPayload $hookInput, HookIdentity $hook): DriverCall
     {
+        $journalCall = JournalToolCall::starting(self::ALLOWANCE);
+
         if ($this->journalTools->names($hookInput->toolNameText())) {
-            return JournalToolCall::starting(self::ALLOWANCE);
+            return $journalCall;
         }
 
         $tool = ClaudeCodeTool::named($hookInput->toolNameText());
@@ -265,7 +267,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         }
 
         if ($tool->discoversJournalTools()) {
-            return JournalToolCall::starting(self::ALLOWANCE);
+            return $journalCall;
         }
 
         if ($tool->isFileReader()) {

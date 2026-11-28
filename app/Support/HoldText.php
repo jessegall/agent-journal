@@ -12,7 +12,7 @@ use App\Agents\Enums\StatusActionType;
  * made, the running driver's terminal when the agent has one, else the host operator. A hold only a fresh report
  * clears offers no release here.
  */
-final readonly class HoldWording
+final readonly class HoldText
 {
     /**
      * @param  list<StatusAction>  $actions

@@ -24,6 +24,7 @@ use App\Hosts\Protocol\Payloads\HostInstructionPayload;
 use App\Hosts\Values\HostInstructionBody;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
+use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
@@ -263,11 +264,12 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
 
     // ----------[ Accessors ]----------
 
+    /** @return Attribute<CarbonImmutable, never> */
     protected function answerDeadline(): Attribute
     {
-        return Attribute::get(fn (): CarbonImmutable => $this->type->isOpening() && $this->hasBeenClaimed()
+        return Accessor::get(fn (): CarbonImmutable => $this->type->isOpening() && $this->hasBeenClaimed()
             ? $this->expires_at->addSeconds(self::OPEN_ANSWER_GRACE_SECONDS)
-            : $this->expires_at)->withoutObjectCaching();
+            : $this->expires_at);
     }
 
     // ----------[ Asserts ]----------

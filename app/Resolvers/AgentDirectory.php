@@ -69,10 +69,10 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
         return $this->optionsOf($this->seen()->byCreatedAt()->limit(self::AGENTS_SHOWN)->get());
     }
 
-    public function visibleAmong(array $agentIds): array
+    public function visibleAmong(array $ids): array
     {
-        $positions = array_flip($agentIds);
-        $found = $this->seen()->whereKey($agentIds)->limit(count($agentIds))->get();
+        $positions = array_flip($ids);
+        $found = $this->seen()->whereKey($ids)->limit(count($ids))->get();
 
         return $this->optionsOf($found->sortBy(fn (Agent $agent) => $positions[$agent->id])->values());
     }
