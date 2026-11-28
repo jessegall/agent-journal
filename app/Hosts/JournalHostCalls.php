@@ -77,7 +77,7 @@ final readonly class JournalHostCalls implements HostCalls
     #[Dispatches(NotifyHostInstructionCommand::class)]
     public function answerInstruction(HostContext $host, string $instruction, HostAnswerPayload $body): void
     {
-        $this->report(new NotifyHostInstructionCommand($host->hostId, $instruction, $body->toJson()));
+        $this->runReport(new NotifyHostInstructionCommand($host->hostId, $instruction, $body->toJson()));
     }
 
     #[Dispatches(PullHostPrivateValueCommand::class)]
@@ -91,13 +91,13 @@ final readonly class JournalHostCalls implements HostCalls
     #[Dispatches(NotifyHostOutputCommand::class)]
     public function notifyProcessOutput(HostContext $host, string $process, HostOutputPayload $body): void
     {
-        $this->report(new NotifyHostOutputCommand($host->hostId, $process, $body));
+        $this->runReport(new NotifyHostOutputCommand($host->hostId, $process, $body));
     }
 
     #[Dispatches(NotifyHostProcessCommand::class)]
     public function notifyProcessReport(HostContext $host, string $process, HostProcessReportPayload $body): void
     {
-        $this->report(new NotifyHostProcessCommand($host->hostId, $process, $body));
+        $this->runReport(new NotifyHostProcessCommand($host->hostId, $process, $body));
     }
 
     /**
@@ -107,20 +107,20 @@ final readonly class JournalHostCalls implements HostCalls
     public function notifyInventory(HostContext $host, HostInventoryPayload $body): void
     {
         $this->slots->endEarlierClaims($host->hostId);
-        $this->report(new NotifyHostInventoryCommand($host->hostId, $body));
+        $this->runReport(new NotifyHostInventoryCommand($host->hostId, $body));
     }
 
     #[Dispatches(NotifyHostHeartbeatCommand::class)]
     public function notifyHeartbeat(HostContext $host, HostHeartbeatPayload $body): void
     {
         $heartbeat = new NotifyHostHeartbeatCommand($host->hostId, $body->liveProcesses, $body->answeredThrough);
-        $this->report($heartbeat);
+        $this->runReport($heartbeat);
     }
 
     #[Dispatches(NotifyProjectReadCommand::class)]
     public function notifyProjectRead(HostContext $host, string $read, HostProjectReadReportPayload $body): void
     {
-        $this->report(new NotifyProjectReadCommand(
+        $this->runReport(new NotifyProjectReadCommand(
             $host->hostId,
             $read,
             $body->entries,
@@ -137,7 +137,7 @@ final readonly class JournalHostCalls implements HostCalls
      *
      * @param  Command<mixed>  $report
      */
-    private function report(Command $report): void
+    private function runReport(Command $report): void
     {
         try {
             $this->commands->run($report);

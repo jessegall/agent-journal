@@ -14,7 +14,7 @@ use App\Hosts\Commands\RemoveHostImage\RemoveHostImageCommand;
  * A dropped driver image is removed from its host's Docker daemon after the drop commits, so old images never pile up
  * on a host; the image a live session still runs is never dropped, so it is never removed here.
  */
-final readonly class RemoveReplacedDriverImage implements Listener
+final readonly class RemoveDriverImageWhenReplaced implements Listener
 {
     private const string TRUSTED_ENTRY = 'removing a replaced driver image';
 
