@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Wire\Hosts;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Hosts\HostProcess;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -86,6 +88,12 @@ final class RecordedTerminalTurnTest extends TestCase
     #[DataProvider('codexChanges')]
     public function test_codex_types_the_recorded_change_and_continues_the_turn(string $scenario, string $keys): void
     {
+        $codex = $this->journal->service(DriverCatalogue::class)->family(DefaultDrivers::CODEX);
+
+        if (! $codex->isolatesHooksPerSession) {
+            $this->markTestSkipped('Connected Codex terminal replay waits on isolated hooks in task 3822.');
+        }
+
         $this->journal->owner()
             ->scenario($scenario, fn (TestScenario $turn) => $turn
                 ->play()

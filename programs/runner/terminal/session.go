@@ -39,7 +39,7 @@ func Start(command *exec.Cmd, plan hostapi.OpenPlan, display io.Writer, post fun
 	if err != nil {
 		return nil, err
 	}
-	terminal, err := openPTY(command, plan.Size)
+	terminal, err := OpenPTY(command, plan.Size)
 	if err != nil {
 		return nil, err
 	}

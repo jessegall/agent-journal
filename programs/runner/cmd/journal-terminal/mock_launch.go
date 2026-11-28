@@ -10,7 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/creack/pty"
+	"journal-runner/hostapi"
+	"journal-runner/terminal"
 )
 
 func launchMockTerminal(arguments []string) error {
@@ -18,7 +19,7 @@ func launchMockTerminal(arguments []string) error {
 		return errors.New("name the terminal command to run")
 	}
 	command := exec.Command(arguments[0], arguments[1:]...)
-	tty, err := pty.StartWithSize(command, &pty.Winsize{Rows: 40, Cols: 120})
+	tty, err := terminal.OpenPTY(command, hostapi.TerminalSize{Rows: 40, Columns: 120})
 	if err != nil {
 		return err
 	}

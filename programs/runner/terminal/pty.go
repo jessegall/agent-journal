@@ -42,7 +42,7 @@ func (terminal ptyTerminal) Size() (uint16, uint16, error) {
 	return size.Rows, size.Cols, nil
 }
 
-func openPTY(command *exec.Cmd, size hostapi.TerminalSize) (TerminalStream, error) {
+func OpenPTY(command *exec.Cmd, size hostapi.TerminalSize) (TerminalStream, error) {
 	file, err := pty.StartWithSize(command, &pty.Winsize{Rows: size.Rows, Cols: size.Columns})
 	if err != nil {
 		return nil, err
