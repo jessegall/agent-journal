@@ -2960,6 +2960,14 @@ const dn=$('[data-slot="notes"]');if(dn)dn.insertAdjacentHTML('beforeend',NEW_NO
 .swchk input{margin-top:2px;accent-color:var(--brand)}
 .swchk small{display:block;color:var(--text-3);font-size:var(--text-badge)}
 .swnote{margin:12px 0 0;font-size:var(--text-small);color:var(--text-3)}
+
+/* Delivery ticks: version 5's two-tick mark in the house's stone. Sent and arrived in --text-4; read filled in --text. */
+.dl.ticked{gap:6px;align-items:center}
+.ticks{display:inline-flex;color:var(--text-4);line-height:0}
+.ticks svg{width:16px;height:10px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ticks.read{color:var(--text)}
+.ticks.read svg{stroke-width:2.2}
+.tkbad{display:inline-flex;color:var(--danger);margin-right:-2px}
 </style>
 <script>
 (function(){
@@ -3185,6 +3193,25 @@ AFTER_RENDER.push(()=>{if(!SW)return;if(page!=='home'){SW=null;return}
   g.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}})});
 LOADERS.push(()=>{CUR={};SW=null;SWING={};MEM.a1.prog='claude';MEM.a1.role='Claude Code · main agent'});
 
+/* ---- Delivery ticks under your own messages, as version 5 has them. ----------------------------------------------- */
+/* One tick: sent, the journal has it. Two ticks: arrived, it is in the agent's session. Two filled ticks: read, the
+   agent took it in (it read or answered it). Not delivered shows the alert mark, the reason and Retry, and no tick.
+   Sending… (before the journal has it) and Waiting for Agent 3 to start keep their words beside the ticks. */
+const tickSvg=n=>`<svg viewBox="0 0 19 12" aria-hidden="true"><path d="M1.5 6.6 4.4 9.5 10 2.8"/>${n>1?'<path d="M8 6.6 10.9 9.5 16.5 2.8"/>':''}</svg>`;
+const TICK={sent:[1,'Sent · not yet with {n}'],arrived:[2,'Arrived at {n}'],read:[2,'Read by {n}']};
+const answeredAfter=(c,i,a)=>CONV[c].msgs.slice(i+1).some(m=>m[0]==='ag'||(m[0]==='say'&&m[1]===a));
+const baseDl=dlHtml;
+dlHtml=function(c,i,d,latest){if(isGroup(c)||d.s==='sending')return baseDl(c,i,d,latest);
+  const x=(d.to||[[agentOf(c),d.s,d.why]])[0],st=x[1],nm=MEM[x[0]].name;
+  if(st==='failed')return baseDl(c,i,d,latest).replace('<span class="no">',`<span class="tkbad" aria-hidden="true">${I('alert','s13')}</span><span class="no">`);
+  const k=st==='read'||(st==='delivered'&&answeredAfter(c,i,x[0]))?'read':st==='delivered'&&!(d.arriveAt>Date.now())?'arrived':'sent',label=TICK[k][1].replace('{n}',nm);
+  const words=st==='waiting'?`<span><span class="spin"></span> ${DL_WAIT.waiting.replace('{n}',nm)}</span>`:st==='delivering'?'<span><span class="spin"></span> Delivering…</span>':'';
+  return `<div class="dl ticked"${words?' role="status"':''}>${words}<span class="ticks ${k}" role="img" aria-label="${label}" title="${label}">${tickSvg(TICK[k][0])}</span></div>`};
+/* A message you send now walks the states: Sending…, one tick, two ticks, then filled once the agent answers. */
+const tkSend=sendMessage;
+sendMessage=function(c,t,extra){const before=CONV[c]?CONV[c].msgs.length:0;tkSend(c,t,extra);
+  const m=CONV[c]&&CONV[c].msgs[before],dl=m&&m[0]==='me'&&m[3]&&m[3].dl;if(dl&&!isGroup(c)){dl.arriveAt=Date.now()+650;setTimeout(render,700)}};
+
 /* The composer: Stop beside Send while the agent works; a retired agent's chat is read-only. */
 const mcComposer=composer;
 composer=function(c){if(isRetired(c))return `<div class="mc-ro">${esc(mainName(c))} is retired. Its chat stays here to read.</div>`;
@@ -3307,16 +3334,25 @@ STEPS.many=['16 · Several chats','Agent 1, Agent 2 and Agent 3 are main agents,
 STEPS.side=['17 · Side by side','Three chats as columns, each with its own composer. The agent bar follows the column you work in, and the tab row underlines the chats that have a column. A chat with no column takes the place of the one used longest ago. One at a time brings back your own layout.',''];
 STEPS.session=['18 · Sending starts the session','No Start session and no Resume. Agent 3 has had no session since the host restarted: send it a message and the journal resumes it by itself (“Resuming the session…”, then the answer). Agent 1 works: Stop sits beside Send (or press Esc in the composer) and stops only its current turn. End session and Switch driver stay deliberate, in the chat list.',''];
 STEPS.sw=['19 · Switch driver','Agent 1 works on Claude Code and is being moved to Codex. The dialog shows what runs it now, then the program, account and model to switch to, and what happens to the conversation: Codex cannot take over the Claude Code session, so it starts a new one that reads this chat and the memories (or only the memories). The same program keeps its session. Agent 1 finishes its turn first unless you untick it; the chat gets one line for the switch, and messages written meanwhile wait and go out on the new driver.',''];
-['many','side','session','sw'].forEach(k=>Object.defineProperty(STEPS[k],2,{get:failTool}));
+STEPS.ticks=['20 · Delivery ticks','Under each of your own messages, right-aligned under the bubble, the ticks version 5 has. One tick: sent, the journal has it, and Agent 1 takes it in when its current turn ends. Two ticks: arrived in Agent 1\'s session. Two filled ticks: read, Agent 1 took it in. Not delivered shows the alert mark, the reason and Retry, and no tick. Agent 3\'s tab holds a message that waits for its start. Hover the ticks for their words; send a message to watch it walk the states.',''];
+['many','side','session','sw','ticks'].forEach(k=>Object.defineProperty(STEPS[k],2,{get:failTool}));
 LOADERS.push(()=>{baseInfo();NOSESS={};MAINS.clear();MAINS.add('a1');Object.assign(MC,{view:'one',open:[A.mainConv],seen:[A.mainConv],pick:null,nw:null,prevGrid:null,next:2,kick:false,failNext:false});
   if(/^Stopped|^Idle|^Working on your/.test(STATE.main||''))STATE.main='Working on task 1702';
-  if(!['many','side','session','sw'].includes(step))return;
+  if(!['many','side','session','sw','ticks'].includes(step))return;
   seed();
+  if(step==='ticks'){MC.open=['main','m3'];MC.seen=['main','m3'];const D=s=>({dl:{s:'sent',to:[['a1',s[0],s[1]]]}});
+    CONV.main.msgs=[['day','Today'],['me','Can you tidy up the account settings dialog? The Save button is in the way.',undefined,D(['delivered'])],
+      ['ag','13:42','I\'ve asked a designer; the work is <a class="lk">task 1702</a>.'],
+      ['me','Inside the field, Enter saves. Go.',undefined,D(['read'])],['ag','13:47','Done. Worker 3 is on it.'],
+      ['me','Also check the dialog in dark mode.',undefined,D(['delivered'])],
+      ['me','And tell Sam once it is ready to test.',undefined,D(['sent'])],
+      ['me','Attach the screenshot from this morning.',undefined,D(['failed','the session ended before it took the message in'])]];
+    CONV.m3.msgs.push(['me','Are the stray shells gone for good?',undefined,{dl:{s:'sent',to:[['a3','waiting']]}}])}
   if(step==='sw'){MC.open=['main','m2'];MC.seen=['main','m2'];const now=swDrv('main');SW={c:'main',trigger:'convmenu',now,prog:'codex',acct:'Codex team key',model:'GPT-5',carry:'read',wait:true}}
   if(step==='many'){MC.open=['main','m2','m3'];MC.seen=['main','m2','m3']}
   if(step==='side'){MC.open=['main','m2','h262','m3'];MC.seen=['main','m2','h262','m3'];MC.prevGrid=A.grid;MC.view='side';layoutSide()}
   if(step==='session'){MC.open=['main','m3'];A.mainConv='m3';MC.seen=['m3','main']}});
-['many','side','session','sw'].forEach(k=>{const b=document.createElement('button');b.dataset.k=k;b.textContent=STEPS[k][0];b.onclick=()=>{step=k;page='home';load()};$('#steps').append(b)});
+['many','side','session','sw','ticks'].forEach(k=>{const b=document.createElement('button');b.dataset.k=k;b.textContent=STEPS[k][0];b.onclick=()=>{step=k;page='home';load()};$('#steps').append(b)});
 /* Group chats are hidden for now, so their steps leave the selector. */
 $$('#steps button').forEach(b=>{if(['group','grpdl'].includes(b.dataset.k))b.hidden=true});
 const NEW_NOTES=[['Several chats','Main agent is a role. Any number of agents hold it, each with its own chat. The open chats are tabs in one row above the agent bar (34 px, the pane strip\'s look): the program\'s mark, the name, a spinner while it works or a hollow dot while idle, the unread count, and × on hover, which closes the tab only: the agent keeps working and the chat list finds it. The agent bar under the row belongs to the chosen tab. ← → move between tabs, Delete closes one.'],
@@ -3324,7 +3360,8 @@ const NEW_NOTES=[['Several chats','Main agent is a role. Any number of agents ho
   ['Side by side','One at a time shows the chosen chat; Side by side shows the open chats as framed columns, as many as fit at 400 px each (three at 1440 px), the most recently used first. Choosing a tab without a column swaps out the column used longest ago. The agent bar follows the column you type in. One at a time brings back the layout you had.'],
   ['The chat list','One control opens it: the agent\'s name in the agent bar (or ⌥F); there is no second All chats button. A search on top (name, what it does, a task number; the match is underlined), filters (All, Main agents, Helpers, Waits on you with its count), then On Home and Recent, the most recent first, each row with its time and state. Group chats are hidden for now: no Groups filter, no group rows or tabs, no New group chat and no add-someone; a group will later start as a new chat that people are added to. Retired agents are hidden behind “Show 12 retired agents”; a retired chat opens to read only. The list is capped at 336 px and scrolls; the foot stays: New chat, and the chosen chat\'s Memories, Switch driver… and End session. ↑ ↓ and Enter open, ⇧Enter or the row\'s button opens beside. No match says so and offers New chat.'],
   ['Sending starts the session','The chat never asks to start or resume. A message to an agent with no session waits under its bubble (“Waiting for Agent 3 to start”) while the bar says “Resuming the session…” or “Starting the session…”; then it is delivered and answered. If the start fails, the message says Not delivered with the reason and Retry. While the agent works, Stop sits beside Send (Esc in the composer does the same) and stops only the current turn; the bar has no Stop. A session ends only when you ask: End session, or Switch driver.'],
-  ['Switch driver','Opened from Switch driver… at the chat list\'s foot (or ⌘K). A dialog over Home: Now (the program, model and account that run the agent, and its state), then Program, Account (only signed-in ones; none connected links to Accounts) and Model. The conversation box says what happens: the same program keeps its session and conversation and runs the next turn on the new account or model; another program cannot take the session over, so it starts a new one that first reads this chat and the memories (Carry the conversation over, the default) or only the memories (Start clean). The chat never changes. If the agent works, the switch waits for its turn to end unless you untick that; with no session running, it only records the choice and the next message starts there. Switch is off until something differs. While it switches the bar says “Switching to Codex · GPT-5…”, messages wait, then one line marks the switch; a failure leaves the agent on its old driver and says why.']];
+  ['Switch driver','Opened from Switch driver… at the chat list\'s foot (or ⌘K). A dialog over Home: Now (the program, model and account that run the agent, and its state), then Program, Account (only signed-in ones; none connected links to Accounts) and Model. The conversation box says what happens: the same program keeps its session and conversation and runs the next turn on the new account or model; another program cannot take the session over, so it starts a new one that first reads this chat and the memories (Carry the conversation over, the default) or only the memories (Start clean). The chat never changes. If the agent works, the switch waits for its turn to end unless you untick that; with no session running, it only records the choice and the next message starts there. Switch is off until something differs. While it switches the bar says “Switching to Codex · GPT-5…”, messages wait, then one line marks the switch; a failure leaves the agent on its old driver and says why.'],
+  ['Delivery ticks','Version 5\'s mark, in the house\'s stone: a 16 × 10 px tick drawn in a 1.6 px line, right-aligned under each of your own bubbles, always shown, the line 11 px in --text-4. One tick, sent: the journal stored it. Two ticks, arrived: it is in the agent\'s session. Two filled ticks (--text, a 2.2 px line), read: the agent took it in. The words show on hover and to a screen reader (“Sent · not yet with Agent 1”, “Arrived at Agent 1”, “Read by Agent 1”). Sending… keeps its spinner and no tick, since the journal does not have it yet; Waiting for Agent 3 to start shows its words with one tick. Not delivered shows the alert mark and the word in --danger, the reason in --text-3 and Retry, and no tick; Retry walks the states again. Ticks never go backwards.']];
 NOTE_CARDS.push(...NEW_NOTES);
 const dn=$('[data-slot="notes"]');if(dn)dn.insertAdjacentHTML('beforeend',NEW_NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join(''));
 load();
