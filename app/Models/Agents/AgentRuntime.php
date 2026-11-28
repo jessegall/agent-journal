@@ -453,7 +453,8 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     {
         $age = $this->observationAge($now);
 
-        return $age === null || $age > self::FRESH_SECONDS;
+        // An idle agent has nothing new to report, so its idle report holds until its process reports a change.
+        return $age === null || ($this->activity !== RuntimeActivity::Idle && $age > self::FRESH_SECONDS);
     }
 
     /**

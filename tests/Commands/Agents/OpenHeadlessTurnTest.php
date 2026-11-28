@@ -19,7 +19,9 @@ use App\Messages\Data\MessageTextData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostProcess;
+use App\Processes\Enums\RuntimeActivity;
 use App\Sessions\OpenedRuntime;
+use Carbon\CarbonImmutable;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -171,6 +173,27 @@ final class OpenHeadlessTurnTest extends TestCase
                 $this->turnCount($opened->runtimeId),
                 $this->promptOf('second'),
             ],
+        );
+    }
+
+    /**
+     * The turn's driver tells what the agent does: working while the turn runs, idle once it ended, and an idle agent
+     * stays idle, not unknown, however long it waits for the next message.
+     */
+    public function test_a_turn_shows_its_agent_working_then_idle_and_idle_holds(): void
+    {
+        $opened = $this->runtimeOnItsFirstTurn();
+        $this->journal->hostProcess('first', fn (TestHostProcess $first) => $first
+            ->report(HostProcessReportType::Running)->beginWorker());
+        $working = AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->activity;
+
+        $this->journal->hostProcess('first', fn (TestHostProcess $first) => $first
+            ->report(HostProcessReportType::Exited, 0)->drive());
+        $idle = AgentRuntime::query()->whereKey($opened->runtimeId)->sole();
+
+        $this->journal->assertResult(
+            [RuntimeActivity::Running, RuntimeActivity::Idle, false],
+            [$working, $idle->activity, $idle->isStale(CarbonImmutable::now()->addHour())],
         );
     }
 

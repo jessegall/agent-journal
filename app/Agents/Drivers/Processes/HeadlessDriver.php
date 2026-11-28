@@ -10,9 +10,11 @@ use App\Accounts\Commands\RecordUsageWindow\RecordUsageWindowCommand;
 use App\Agents\Commands\ChooseRuntimeConversation\ChooseRuntimeConversationCommand;
 use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Agents\Drivers\Contracts\ProcessDriver;
 use App\Agents\Drivers\Contracts\TurnResult;
 use App\Agents\Drivers\Enums\DriverOperation;
+use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Hosts\Commands\CloseHostInput\CloseHostInputCommand;
@@ -23,6 +25,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
+use App\Processes\Enums\RuntimeActivity;
 use App\Support\Command;
 use App\Time\Contracts\ServerClock;
 use App\Values\ClaimedRequest;
@@ -78,7 +81,7 @@ final class HeadlessDriver implements ProcessDriver
             $this->isInputClosed = $this->isInputClosed || $instruction->type === HostInstructionType::CloseStdin;
         }
 
-        return $this->closeInput();
+        return DriverActions::of($this->activity(RuntimeActivity::Running))->then($this->closeInput());
     }
 
     public function onOutput(FeedEntry $entry): DriverActions
@@ -141,6 +144,7 @@ final class HeadlessDriver implements ProcessDriver
 
         return DriverActions::of(...[
             ...$this->namedConversation(),
+            $this->activity(RuntimeActivity::Idle),
             ...$reports,
             new OpenHeadlessTurnCommand((string) $process->agent_runtime_id),
         ]);
@@ -183,6 +187,22 @@ final class HeadlessDriver implements ProcessDriver
         $this->interrupts[$request->requestId] = $request->attempt;
 
         return DriverActions::of(new SignalHostProcessCommand($this->process->id, 'SIGINT', $source));
+    }
+
+    /**
+     * What the runtime does now, as its turn shows it: running while the turn runs, idle once it ended.
+     */
+    private function activity(RuntimeActivity $activity): NotifyRuntimeActivityCommand
+    {
+        $generation = AgentRuntime::query()->whereKey($this->process->agent_runtime_id)->value('process_generation');
+
+        return new NotifyRuntimeActivityCommand(
+            $this->process->host_id,
+            (string) $this->process->agent_runtime_id,
+            $activity,
+            HoldReason::None,
+            (int) $generation,
+        );
     }
 
     private function endReport(string $requestId, int $attempt, TurnEnd $end): NotifyRequestProgressCommand
