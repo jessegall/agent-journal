@@ -139,7 +139,7 @@ final class HeadlessDriver implements ProcessDriver
         $reports = [];
         $turn = $this->turnRequest();
 
-        if ($turn !== null && ! $this->openingExpired($process)) {
+        if ($turn !== null && ! $this->isOpeningExpired($process)) {
             $reports[] = $this->endReport($turn->id, $turn->attempt_version, $end);
         }
 
@@ -253,7 +253,7 @@ final class HeadlessDriver implements ProcessDriver
         return DriverRequest::query()->whereKey($requestId)->first();
     }
 
-    private function openingExpired(HostProcess $process): bool
+    private function isOpeningExpired(HostProcess $process): bool
     {
         $opening = HostInstruction::query()->whereKey($process->open_instruction_id)->first();
 

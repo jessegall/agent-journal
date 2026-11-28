@@ -12,6 +12,9 @@ import (
 // ProtocolVersion is the version of the host protocol this binary speaks.
 const ProtocolVersion = 1
 
+// RelayProtocolVersion is the version spoken by a connected project's relay.
+const RelayProtocolVersion = 2
+
 // Status is one of the values host protocol 1 gives it.
 type Status string
 
@@ -431,4 +434,28 @@ type NetworkRemoval struct {
 // ImageRemoval is the image_removal of host protocol 1.
 type ImageRemoval struct {
 	Image string `json:"image"`
+}
+
+// WorkspaceReads is the workspace_reads of host protocol 1.
+type WorkspaceReads struct {
+	Pending []WorkspaceRead `json:"pending"`
+}
+
+// WorkspaceRead is the workspace_read of host protocol 1.
+type WorkspaceRead struct {
+	Reference string `json:"reference"`
+	ActorID   string `json:"actor_id"`
+	Work      string `json:"work"`
+}
+
+// WorkspaceReadReport is the workspace_read_report of host protocol 1.
+type WorkspaceReadReport struct {
+	Available  bool   `json:"available"`
+	Dirty      bool   `json:"dirty"`
+	Clean      bool   `json:"clean"`
+	Generation uint64 `json:"generation"`
+	Binding    string `json:"binding,omitempty"`
+	Checkout   string `json:"checkout,omitempty"`
+	Head       string `json:"head,omitempty"`
+	Reason     string `json:"reason,omitempty"`
 }

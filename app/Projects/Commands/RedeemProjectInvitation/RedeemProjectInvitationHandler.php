@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Projects\Commands\RedeemProjectInvitation;
 
+use App\Hosts\Protocol\HostProtocol;
 use App\Access\Contracts\JournalAdmission;
 use App\Actors\Contracts\ActorProvisioning;
 use App\Bus\Contracts\CommandHandler;
@@ -60,6 +61,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
             $command->hostCredential,
             [$folder->canonicalRoot],
             ArrangementType::Local,
+            HostProtocol::RELAY,
         );
 
         $mainAgent = Agent::create("{$project->label} main agent", self::MAIN_AGENT_PROFILE, $project);

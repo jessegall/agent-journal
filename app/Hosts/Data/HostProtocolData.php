@@ -28,6 +28,7 @@ final class HostProtocolData extends Data
      * @param  array<string, HostProgramData>  $programs  each shipped program by its name
      * @param  array<string, array<string, string>>  $types  each shape that crosses the wire, its fields by their types
      * @param  array<string, HostCallData>  $calls  each call the host makes to the journal
+     * @param  array<int, RelayProtocolData>  $protocols
      */
     public function __construct(
         public readonly string $about,
@@ -48,6 +49,8 @@ final class HostProtocolData extends Data
         public readonly array $types,
         #[DataCollectionOf(HostCallData::class)]
         public readonly array $calls,
+        #[DataCollectionOf(RelayProtocolData::class)]
+        public readonly array $protocols,
     ) {}
 
     /**
@@ -75,5 +78,28 @@ final class HostProtocolData extends Data
     public function hook(): HostProgramData
     {
         return $this->programs['journal-hook'];
+    }
+
+    public function relayVersion(): int
+    {
+        return array_key_first($this->protocols);
+    }
+
+    /**
+     * @return array<string, HostCallData>
+     */
+    public function relayCalls(): array
+    {
+        $relay = $this->protocols[$this->relayVersion()];
+
+        return [...array_intersect_key($this->calls, array_fill_keys($relay->sharedCalls, true)), ...$relay->calls];
+    }
+
+    /**
+     * @return array<string, array<string, string>>
+     */
+    public function wireTypes(): array
+    {
+        return [...$this->types, ...$this->protocols[$this->relayVersion()]->types];
     }
 }

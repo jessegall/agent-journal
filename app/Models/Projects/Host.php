@@ -22,6 +22,7 @@ use App\Exceptions\StartRefused;
 use App\Hosts\Data\FailedHostCallData;
 use App\Hosts\InstructionSignature;
 use App\Hosts\Protocol\HostInstructionType;
+use App\Hosts\Protocol\HostProtocol;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
@@ -113,12 +114,14 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         string $secret,
         array $startRoots,
         ArrangementType $arrangement,
+        int $protocol = HostProtocol::ENROLLED,
     ): self {
         $host = new self();
         $host->installation_name = $installationName;
         $host->credential_hash = self::hashOf($secret);
         $host->start_roots = $startRoots;
         $host->arrangement = $arrangement;
+        $host->protocol = $protocol;
         $host->instruction_secret = self::resolveInstructionSecretOf($secret);
         $host->saveAndAssert();
 
@@ -396,6 +399,17 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function acceptsProtocol(int $protocol): bool
     {
         return $this->protocol === $protocol;
+    }
+
+    public function expectedProtocol(): int
+    {
+        return $this->isConnectedFolderRelay() ? HostProtocol::RELAY : HostProtocol::ENROLLED;
+    }
+
+    public function recordProtocol(int $protocol): void
+    {
+        $this->protocol = $protocol;
+        $this->saveAndAssert();
     }
 
     public function isRevoked(): bool

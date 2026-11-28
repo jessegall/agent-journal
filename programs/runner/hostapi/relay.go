@@ -28,6 +28,7 @@ type Relay struct {
 	Record     *AnsweredRecord
 	Table      *ProcessTable
 	Release    string
+	Protocol   int
 	Heartbeat  time.Duration
 	RetryAfter time.Duration
 	// Clock is the journal's time the dispatcher's verifier judges expiry by; each claim answer sets its offset.
@@ -64,8 +65,12 @@ func (relay Relay) SendInventory(ctx context.Context) error {
 	if listed != nil {
 		listed = fmt.Errorf("the inventory names no containers, as the daemon could not list them: %w", listed)
 	}
+	protocol := relay.Protocol
+	if protocol == 0 {
+		protocol = ProtocolVersion
+	}
 	sent := relay.Journal.NotifyInventory(ctx, Inventory{
-		Protocol:        ProtocolVersion,
+		Protocol:        protocol,
 		Release:         relay.Release,
 		AnsweredThrough: relay.Record.AnsweredThrough(),
 		Capabilities:    relay.Dispatcher.Capabilities(),

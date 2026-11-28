@@ -4,12 +4,31 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"journal-runner/client"
 )
+
+func TestARelayClaimRefusesAnUnknownReplyField(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.Header().Set("Content-Type", "application/json")
+		_, _ = writer.Write([]byte(`{"instructions":[],"idle_window_seconds":30,"now":"2026-11-28T13:00:00Z","extra":true}`))
+	}))
+	defer server.Close()
+	transport := client.New(client.Enrollment{JournalURL: server.URL, HostID: "h", Secret: "s"})
+	relay := Journal{Client: transport, Protocol: RelayProtocolVersion}
+	enrolled := Journal{Client: transport, Protocol: ProtocolVersion}
+
+	if _, err := relay.ClaimInstruction(t.Context(), 1, 0); err == nil || !strings.Contains(err.Error(), "extra") {
+		t.Fatalf("relay protocol error: %v", err)
+	}
+	if _, err := enrolled.ClaimInstruction(t.Context(), 1, 0); err != nil {
+		t.Fatalf("enrolled protocol changed: %v", err)
+	}
+}
 
 func TestAnAnswerTheJournalMayNotHaveReceivedIsSentAgainUntilItIsTaken(t *testing.T) {
 	var calls atomic.Int32

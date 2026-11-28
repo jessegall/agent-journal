@@ -8,6 +8,7 @@ use App\Bus\Contracts\CommandRefusal;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Engine\Enums\RefusalCode;
+use App\Hosts\Protocol\HostProtocol;
 use RuntimeException;
 
 /**
@@ -17,9 +18,9 @@ final class HostProtocolUnsupported extends RuntimeException implements CodedRef
 {
     use RendersRefusal;
 
-    public static function forHost(string $hostId, int $protocol): self
+    public static function forHost(string $hostId, int $protocol, int $expected = HostProtocol::ENROLLED): self
     {
-        return new self("Host {$hostId} speaks host protocol {$protocol}; update the host to protocol 1.");
+        return new self("Host {$hostId} speaks host protocol {$protocol}; update the host to protocol {$expected}.");
     }
 
     protected function status(): int

@@ -93,6 +93,7 @@ func stopWhenInputEnds(stop func()) {
 // connected host alone carries out, the idle window that ends a relay, and the programs a connected host alone may
 // open.
 type hostProtocolOptions struct {
+	Protocol int
 	Reads   *hostapi.ProjectReads
 	Upgrade *bindingUpgrade
 	Idle    *hostapi.IdleWindow
@@ -177,7 +178,7 @@ func (protocol hostProtocol) serve(ctx context.Context) {
 func openHostProtocol(ctx context.Context, journal *client.Client, enrollment device.Enrollment, stateFolder string,
 	names map[string]string, containers host.Containers, release string, options hostProtocolOptions,
 ) (hostProtocol, error) {
-	calls := hostapi.Journal{Client: journal}
+	calls := hostapi.Journal{Client: journal, Protocol: options.Protocol}
 	reports, err := hostapi.OpenReportQueue(stateFolder, func(report hostapi.ProcessReport) error {
 		return calls.NotifyProcessReport(ctx, report.ProcessID, report)
 	})
@@ -215,7 +216,7 @@ func openHostProtocol(ctx context.Context, journal *client.Client, enrollment de
 			}
 		}()
 	})
-	relay := hostapi.Relay{Journal: calls, Dispatcher: dispatcher, Record: record, Table: table, Release: release,
+	relay := hostapi.Relay{Journal: calls, Dispatcher: dispatcher, Record: record, Table: table, Release: release, Protocol: options.Protocol,
 		Heartbeat: hostapi.HeartbeatInterval, RetryAfter: time.Second, Clock: clock, Idle: options.Idle}
 	return hostProtocol{table: table, reports: reports, relay: relay}, nil
 }
