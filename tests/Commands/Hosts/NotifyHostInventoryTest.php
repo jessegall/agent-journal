@@ -162,4 +162,27 @@ final class NotifyHostInventoryTest extends TestCase
         $image->refresh();
         $this->journal->assertResult([DriverImageStatus::Allowing, null], [$image->status, $image->allow_instruction_id]);
     }
+
+    public function test_a_restarted_host_allows_again_an_image_whose_checks_it_held_when_it_stopped(): void
+    {
+        $this->journal->enrollContainedHost('Box', [base_path()]);
+        $hostId = $this->journal->hostCalled('Box')->hostId;
+        $this->journal->asSystem(new ReserveHostDriverImagesCommand($hostId));
+        $image = HostDriverImage::query()->where('host_id', $hostId)->firstOrFail();
+        $image->startAttempt('build-1');
+        $image->built('sha256:'.str_repeat('3', 64));
+        $image->orderedIn('allow-1');
+        $image->acknowledged();
+        $image->markChecksSent('check-1');
+
+        $this->journal->asSystem(new NotifyHostInventoryCommand($hostId, HostInventoryPayload::from([
+            'protocol' => HostProtocolVersion::CURRENT,
+            'release' => '6.0.0',
+            'capabilities' => [],
+            'processes' => [],
+        ])));
+
+        $image->refresh();
+        $this->journal->assertResult([DriverImageStatus::Allowing, null], [$image->status, $image->allow_instruction_id]);
+    }
 }

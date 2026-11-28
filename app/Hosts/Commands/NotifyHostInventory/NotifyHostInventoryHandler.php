@@ -49,7 +49,8 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
         $host->recordCapabilities($inventory->capabilities);
         $host->forgetAllowedImages();
 
-        foreach (HostDriverImage::findReadyOn($host->id) as $image) {
+        // A restarted host holds no allow and no check it had in flight, so every image of it is allowed again.
+        foreach (HostDriverImage::findAdmittedOn($host->id) as $image) {
             $image->reallow();
         }
         $host->recordRelease($inventory->release);

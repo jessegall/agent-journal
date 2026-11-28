@@ -365,13 +365,27 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
     }
 
     /**
-     * The host's ready images, locked, so a restart sends each to be allowed again.
+     * Whether the host has an image still being allowed or checked, as each is again after the host restarted.
+     */
+    public static function isAdmittingOn(string $hostId): bool
+    {
+        return self::query()->onHost($hostId)->inStatuses([DriverImageStatus::Allowing, DriverImageStatus::Checking])->exists();
+    }
+
+    /**
+     * The host's images it was allowed, or was being allowed or checked for, locked: a host that restarted holds none
+     * of them any more, so each is allowed again.
      *
      * @return list<self>
      */
-    public static function findReadyOn(string $hostId): array
+    public static function findAdmittedOn(string $hostId): array
     {
-        return self::findLockedOn($hostId, DriverImageStatus::Ready);
+        return array_values(self::query()
+            ->onHost($hostId)
+            ->inStatuses([DriverImageStatus::Allowing, DriverImageStatus::Checking, DriverImageStatus::Ready])
+            ->lockForUpdate()
+            ->get()
+            ->all());
     }
 
     /**
