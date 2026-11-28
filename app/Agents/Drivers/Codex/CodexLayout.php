@@ -39,7 +39,7 @@ final readonly class CodexLayout implements DriverLayout
             emptyCursorColumn: CodexComposer::EMPTY_CURSOR_COLUMN,
             composerStillMs: self::STILL_MS,
             menus: [
-                // Recorded in keyscripts/model-choice: its user ran without the daemon, two rows up from Cancel.
+                // The model-choice capture shows its user ran without the daemon, two rows up from Cancel.
                 $menu(
                     'background-server',
                     HoldReason::DriverInput,

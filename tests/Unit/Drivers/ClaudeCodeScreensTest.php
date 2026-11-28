@@ -6,6 +6,7 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\HoldReason;
+use App\Files\Contracts\Files;
 use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\KeyScripts\KeyScriptCatalogue;
 use App\Terminals\KeyScripts\KeyScriptRun;
@@ -15,6 +16,7 @@ use App\Terminals\Screens\Enums\ScreenType;
 use App\Terminals\Screens\ScreenClassifier;
 use App\Terminals\Screens\ScreenHolds;
 use App\Terminals\Screens\ScreenReading;
+use Tests\Support\Recordings\TerminalCapture;
 use Tests\TestCase;
 
 /**
@@ -24,8 +26,6 @@ use Tests\TestCase;
  */
 final class ClaudeCodeScreensTest extends TestCase
 {
-    private const string SCREENS = __DIR__.'/../../../resources/recordings/claude-code/2.1.323/screens';
-
     private const int COLUMNS = 120;
 
     private const int ROWS = 24;
@@ -149,7 +149,8 @@ final class ClaudeCodeScreensTest extends TestCase
 
     private function lastFrameOf(string $name): HostFramePayload
     {
-        $frames = json_decode((string) file_get_contents(self::SCREENS."/{$name}/frames.json"), true, flags: JSON_THROW_ON_ERROR);
+        $path = TerminalCapture::folderOf(DefaultDrivers::CLAUDE_CODE, $name)->child('frames.json');
+        $frames = $this->journal->service(Files::class)->readJson($path);
 
         return HostFramePayload::from($frames[array_key_last($frames)]['frame']);
     }

@@ -28,6 +28,7 @@ use App\Values\DriverStart;
 use App\Values\FilePath;
 use App\Values\HostProcessPlan;
 use Tests\Support\Recordings\RecordedProgram;
+use Tests\Support\Recordings\TerminalCapture;
 use Tests\TestCase;
 
 /**
@@ -205,7 +206,7 @@ final class ClaudeCodeProfileTest extends TestCase
 
     public function test_a_terminal_is_planned_as_the_recorded_terminal_ran(): void
     {
-        $recorded = $this->recordedStart('turns/terminal-turn');
+        $recorded = $this->recordedStart('terminal-turn');
         $arguments = $recorded['arguments'];
         $start = new DriverStart(
             sessionId: $arguments[array_search('--session-id', $arguments, true) + 1],
@@ -333,7 +334,7 @@ final class ClaudeCodeProfileTest extends TestCase
     /** @return array{working_folder: string, arguments: list<string>, environment_names: list<string>} */
     private function recordedStart(string $name): array
     {
-        $path = FilePath::in(Place::Project, "resources/recordings/claude-code/2.1.323/{$name}/fixture.json");
+        $path = TerminalCapture::folderOf(DefaultDrivers::CLAUDE_CODE, $name)->child('fixture.json');
 
         return $this->journal->service(Files::class)->readJson($path)['initial_state'];
     }

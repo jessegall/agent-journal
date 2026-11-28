@@ -10,10 +10,12 @@ use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Exceptions\BuildNotPinned;
+use App\Files\Contracts\Files;
 use App\Hosts\Protocol\HostProcessType;
 use App\Sessions\Enums\TransportProfileType;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
+use Tests\Support\Recordings\TerminalCapture;
 use Tests\TestCase;
 
 /**
@@ -26,8 +28,6 @@ final class CodexProfileTest extends TestCase
     private const string MODEL = 'chosen-model';
 
     private const string EFFORT = 'high';
-
-    private const string RECORDINGS = __DIR__.'/../../../resources/recordings/codex/0.165.0';
 
     private const string CONVERSATION = '019a0000-0000-7000-8000-000000000001';
 
@@ -58,9 +58,9 @@ final class CodexProfileTest extends TestCase
         $expected = [];
 
         foreach ([
-            'turns/terminal-turn',
-            'keyscripts/model-choice',
-            'screens/first-start',
+            'terminal-turn',
+            'model-choice',
+            'first-start',
         ] as $name) {
             $recorded = $this->recordedStart($name);
             $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, $recorded['working_folder'], model: self::MODEL, effort: self::EFFORT);
@@ -144,7 +144,8 @@ final class CodexProfileTest extends TestCase
      */
     private function recordedStart(string $name): array
     {
-        $fixture = json_decode((string) file_get_contents(self::RECORDINGS."/{$name}/fixture.json"), true, flags: JSON_THROW_ON_ERROR);
+        $path = TerminalCapture::folderOf(DefaultDrivers::CODEX, $name)->child('fixture.json');
+        $fixture = $this->journal->service(Files::class)->readJson($path);
         $state = $fixture['initial_state'];
         // The recorded argv starts with the program it ran; the plan's does too.
         $state['arguments'][0] = CodexArguments::EXECUTABLE;

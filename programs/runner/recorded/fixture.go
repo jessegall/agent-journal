@@ -31,16 +31,6 @@ func MustProbe(t testing.TB, driver, name string) recording.Fixture {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return MustProbeAt(t, driver, build, name)
-}
-
-// MustProbeAt reads a program's recorded probe under the given build.
-func MustProbeAt(t testing.TB, driver, build, name string) recording.Fixture {
-	t.Helper()
-	root, err := Root()
-	if err != nil {
-		t.Fatal(err)
-	}
 	return mustFixture(t, filepath.Join(root, "resources/recordings", driver, build, "exchanges", name))
 }
 

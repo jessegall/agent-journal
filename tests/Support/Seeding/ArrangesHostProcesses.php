@@ -525,13 +525,12 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The host channel is a mock host that plays the committed recording in the folder, relative to the journal's
-     * recordings; service(RecordedTerminalHost::class) reaches the same mock.
+     * The host channel plays a terminal capture with the named driver's recorded host answers.
      */
-    public function playRecording(string $recording, string $driver): self
+    public function playTerminal(FilePath $folder, string $driver): self
     {
         $answers = RecordedHostAnswers::terminalTurn($this->service(Recordings::class), $driver);
-        $host = RecordedTerminalHost::playing(resource_path("recordings/{$recording}"), $answers);
+        $host = RecordedTerminalHost::playing($this->service(Files::class), $folder, $answers);
         $this->app->instance(HostChannel::class, $host);
         $this->app->instance(RecordedTerminalHost::class, $host);
 

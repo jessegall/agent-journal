@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Accounts\Data\ClaudeStatusData;
+use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Values\SecretHandover;
 use App\Agents\Values\SignInReport;
@@ -19,8 +21,6 @@ use Tests\TestCase;
  */
 final class SignInProgramsTest extends TestCase
 {
-    private const string FIXTURE = __DIR__.'/../../Fixtures/Drivers/sign-in-programs.json';
-
     /**
      * The mock program: it writes each call's argv and the variables a program reads, then answers as the real
      * program would for that command.
@@ -71,17 +71,45 @@ final class SignInProgramsTest extends TestCase
 
     public function test_every_sign_in_program_runs_as_recorded(): void
     {
-        $runs = [...$this->claudeRuns(), ...$this->codexRuns()];
+        $claude = $this->claudeRuns();
+        $codex = $this->codexRuns();
 
-        $this->assertSame($this->recorded($runs), $runs);
+        $this->assertSame([
+            'claude start' => ['calls' => $this->claudeCalls('[--version]')],
+            'claude status' => [
+                'calls' => $this->claudeCalls('[auth] [status] [--json]'),
+                'answer' => $this->recordedClaudeStatus(),
+            ],
+            'claude model check' => [
+                'calls' => $this->claudeCalls(
+                    '[-p] [Reply with OK.] [--output-format] [json] [--max-turns] [1] [--tools] []',
+                    '[--no-session-persistence]',
+                ),
+                'answer' => null,
+            ],
+        ], $claude);
+        $this->assertSame([
+            'codex start' => [
+                'calls' => $this->codexCalls('[--version]'),
+                'config.toml' => 'cli_auth_credentials_store = "file"'.PHP_EOL,
+            ],
+            'codex status' => [
+                'calls' => $this->codexCalls('[login] [status]'),
+                'answer' => $this->reportOf(new SignInReport(true, false, null)),
+            ],
+            'codex model check' => [
+                'calls' => $this->codexCalls('[exec] [--json] [--skip-git-repo-check] [Reply with OK.]'),
+                'answer' => null,
+            ],
+            'codex sign-out' => ['calls' => $this->codexCalls('[logout]')],
+        ], $codex);
     }
 
     private function arrangeProgramOutput(): void
     {
         $recordings = $this->journal->service(Recordings::class);
-        $claude = $recordings->scenario(DefaultDrivers::CLAUDE_CODE, 'first-start');
         $codex = $recordings->scenario(DefaultDrivers::CODEX, 'first-start');
-        $auth = RecordedProgram::from($claude, ['claude', 'auth', 'status'])->printedOn('stdout');
+        $auth = $this->claudeStatusOutput($recordings);
         $claudeTurn = RecordedProgram::from(
             $recordings->scenario(DefaultDrivers::CLAUDE_CODE, 'headless-turn'),
             ['claude', '--settings'],
@@ -191,19 +219,50 @@ final class SignInProgramsTest extends TestCase
         ];
     }
 
-    /**
-     * The recorded runs; the first run records today's and stops, so every later run compares against them.
-     *
-     * @param  array<string, mixed>  $runs
-     * @return array<string, mixed>
-     */
-    private function recorded(array $runs): array
+    private function claudeStatusOutput(Recordings $recordings): string
     {
-        if (! is_file(self::FIXTURE)) {
-            file_put_contents(self::FIXTURE, json_encode($runs, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
-            $this->markTestIncomplete('Recorded today\'s sign-in programs; run the test again to compare against them.');
-        }
+        $scenario = $recordings->scenario(DefaultDrivers::CLAUDE_CODE, 'first-start');
 
-        return json_decode((string) file_get_contents(self::FIXTURE), true, flags: JSON_THROW_ON_ERROR);
+        return RecordedProgram::from($scenario, ['claude', 'auth', 'status'])->printedOn('stdout');
+    }
+
+    /** @return array<string, mixed> */
+    private function recordedClaudeStatus(): array
+    {
+        $printed = $this->claudeStatusOutput($this->journal->service(Recordings::class));
+        $status = ClaudeStatusData::from(json_decode($printed, true, flags: JSON_THROW_ON_ERROR));
+
+        return $this->reportOf(new SignInReport(
+            true,
+            true,
+            SignInMethod::OAuth,
+            $status->email,
+            $status->loginExpiresAt,
+            $status->organization,
+        ));
+    }
+
+    /** @return list<string> */
+    private function claudeCalls(string ...$arguments): array
+    {
+        return [
+            'argv: '.implode(' ', $arguments),
+            'HOME={folder}',
+            'CLAUDE_CONFIG_DIR={folder}',
+            'CODEX_HOME=',
+            'PATH_FIRST={base}/programs/accounts/no-keychain',
+        ];
+    }
+
+    /** @return list<string> */
+    private function codexCalls(string $arguments): array
+    {
+        return [
+            "argv: {$arguments}",
+            'HOME={folder}',
+            'CLAUDE_CONFIG_DIR=',
+            'CODEX_HOME={folder}',
+            'PATH_FIRST={base}/vendor/bin',
+        ];
     }
 }
