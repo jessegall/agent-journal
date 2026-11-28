@@ -7,8 +7,7 @@ namespace App\Actors;
 use App\Actors\Contracts\StoredActor;
 
 /**
- * The journal itself as an actor: a service principal with no row and no inbox, which sends no messages. Trusted
- * Core code acts as it, in an engine pass or through ActorStore::actAsSystem.
+ * The journal itself as an actor, with no row or inbox. It acts through a trusted entry or during an engine pass.
  */
 final readonly class SystemActor implements StoredActor
 {

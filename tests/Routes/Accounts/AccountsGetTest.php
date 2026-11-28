@@ -41,9 +41,9 @@ final class AccountsGetTest extends GuardedRouteEntryTestCase
             ->assertInertia(fn (AssertableInertia $inertia) => $inertia
                 ->where('page.status', 'ready')
                 ->where('page.data.root.children.0.children.1.text', '26')
-                ->has('page.data.root.children.1.children.0.children.1.children.0.rows', 1)
-                ->where('page.data.root.children.1.children.0.children.1.children.0.rows.0.label', 'Account 26')
-                ->where('page.data.root.children.1.children.1.children.0.children.0.text', 'Account 01'));
+                ->has('page.data.root.children.1.children.0.children.0.children.0.rows', 1)
+                ->where('page.data.root.children.1.children.0.children.0.children.0.rows.0.label', 'Account 26')
+                ->where('page.data.root.children.1.children.1.children.0.text', 'Account 01'));
     }
 
     public function test_the_add_query_is_validated_before_cast(): void

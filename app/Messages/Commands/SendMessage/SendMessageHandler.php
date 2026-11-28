@@ -31,14 +31,8 @@ final readonly class SendMessageHandler implements CommandHandler
      */
     public function handle(SendMessageCommand $command): string
     {
-        $sender = $this->participants->sender($command->dispatchedBy());
-
-        if (! InboxMember::isAttached($command->inboxId, ActorReference::of($sender))) {
-            throw InboxUnavailable::forActor($command->inboxId);
-        }
-
-        $inbox = Inbox::findLockedById($command->inboxId);
-        $this->assertSameProjectAsOwner($sender, $inbox);
+        $sender = $command->dispatchedBy();
+        $inbox = $this->inboxFor($command->inboxId, $sender);
 
         $target = $command->targetMessageNumber === null
             ? null
@@ -47,6 +41,24 @@ final readonly class SendMessageHandler implements CommandHandler
         $number = $inbox->takeMessageNumber();
 
         return Message::create(new InboxReceiver($inbox), $number, $sender, $command->body, $target)->getKey();
+    }
+
+    private function inboxFor(string $inboxId, ActorReference $actor): Inbox
+    {
+        if ($actor->isSameAs(ActorReference::system())) {
+            return Inbox::findLockedById($inboxId);
+        }
+
+        $sender = $this->participants->sender($actor);
+
+        if (! InboxMember::isAttached($inboxId, $actor)) {
+            throw InboxUnavailable::forActor($inboxId);
+        }
+
+        $inbox = Inbox::findLockedById($inboxId);
+        $this->assertSameProjectAsOwner($sender, $inbox);
+
+        return $inbox;
     }
 
     /**

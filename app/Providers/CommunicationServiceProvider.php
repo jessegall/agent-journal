@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Access\Contracts\PolicyCatalogue;
 use App\Access\Contracts\ReadEntitlements;
+use App\Access\Contracts\SystemEntryPolicies;
 use App\Access\Values\PolicyDefinition;
 use App\Access\Values\ReadEntitlement;
 use App\Actors\ActorProvisioning;
@@ -100,9 +101,11 @@ final class CommunicationServiceProvider extends ServiceProvider
         InboxMemberRoutes $memberRoutes,
         EngineListenerSet $engineListeners,
         ActorTypes $actorTypes,
+        SystemEntryPolicies $systemEntries,
     ): void {
         $memberRoutes->open('communication.');
         $inboxMembers->allow(MessagePolicy::class);
+        $systemEntries->allow('driver switch', MessagePolicy::class);
         $readGrant = ReadEntitlement::grant(MessagePolicy::class);
 
         $reads->declare('messages_read', $readGrant);

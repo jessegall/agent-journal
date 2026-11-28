@@ -61,7 +61,7 @@ final readonly class FixtureInboxes
         $locked = Inbox::findLockedById($inbox->id);
         $number = $locked->takeMessageNumber();
 
-        return Message::create(new InboxReceiver($locked), $number, $sender, $body);
+        return Message::create(new InboxReceiver($locked), $number, ActorReference::of($sender), $body);
     }
 
     /**
