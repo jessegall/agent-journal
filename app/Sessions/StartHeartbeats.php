@@ -219,7 +219,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
             ], true);
 
             // A start that waits for its host's driver image ends only on the image's bounded outcome or a cancel.
-            if (! $isUntaken || HostDriverImageWait::query()->where('session_process_id', $start->id)->exists()) {
+            if (! $isUntaken || HostDriverImageWait::hasOfStart($start->id)) {
                 return;
             }
 

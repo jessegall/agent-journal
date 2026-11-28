@@ -10,7 +10,7 @@ use Tests\Support\Entries\Attributes\OverTheWire;
 use Tests\TestCase;
 
 /**
- * .docker/helper/checks/driver-image.sh run for real against stand-in programs, as a driver image runs it as its last
+ * .docker/helper/checks/driver-image.sh run for real against mock programs, as a driver image runs it as its last
  * build step: a sound image passes, and each fault fails the check by name.
  */
 #[OverTheWire]

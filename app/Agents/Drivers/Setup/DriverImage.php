@@ -10,11 +10,20 @@ namespace App\Agents\Drivers\Setup;
  */
 final readonly class DriverImage
 {
-    private function __construct(public string $folder) {}
+    private function __construct(public string $folder, public bool $runsCommandsInLoginShell) {}
 
     public static function at(string $folder): self
     {
-        return new self($folder);
+        return new self($folder, false);
+    }
+
+    /**
+     * The driver runs the model's commands in its user's login shell, so its built image is checked through that
+     * shell too.
+     */
+    public function runningCommandsInLoginShell(): self
+    {
+        return new self($this->folder, true);
     }
 
     /**

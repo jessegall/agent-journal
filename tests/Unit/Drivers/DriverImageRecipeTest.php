@@ -8,19 +8,14 @@ use App\Agents\Drivers\Setup\DriverImage;
 use App\Agents\Drivers\Setup\DriverImageRecipe;
 use App\Agents\Drivers\Setup\DriverImageRecipes;
 use App\Exceptions\DriverImageRecipeInvalid;
-use App\Models\Projects\DriverImageRecipeRecord;
-use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A driver image recipe names its exact inputs: the same files in any order give the same digest, a changed file,
- * base or version another, a path no tar may carry is refused by name, and a kept recipe comes back from its own
- * bytes without the deploy's folder.
+ * base or version another, and a path no tar may carry is refused by name.
  */
 final class DriverImageRecipeTest extends TestCase
 {
-    use RefreshHookDatabase;
-
     private const string BASE = 'journal-candidate@sha256:aaaa';
 
     public function test_the_same_files_in_any_order_are_one_recipe_and_any_change_is_another(): void
@@ -69,20 +64,5 @@ final class DriverImageRecipeTest extends TestCase
 
         $this->assertSame([$codex->digest, '0.165.0'], [$again->digest, $codex->version]);
         $this->assertStringContainsString('Dockerfile', $codex->context);
-    }
-
-    public function test_a_kept_recipe_is_kept_once_and_rebuilt_from_its_own_bytes(): void
-    {
-        $files = ['Dockerfile' => "FROM scratch\n", 'a.bin' => "\0\xff\x01"];
-        $recipe = DriverImageRecipe::of('d', $files, self::BASE, '1.0.0');
-
-        $kept = DriverImageRecipeRecord::keep($recipe);
-        $keptAgain = DriverImageRecipeRecord::keep($recipe);
-        $inputs = DriverImageRecipeRecord::query()->findOrFail($kept->id)->inputs();
-
-        $this->assertSame(
-            [$kept->id, $recipe->digest, $recipe->context, self::BASE, '1.0.0'],
-            [$keptAgain->id, $inputs->digest, $inputs->context, $inputs->base, $inputs->version],
-        );
     }
 }

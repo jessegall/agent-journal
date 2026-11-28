@@ -22,7 +22,7 @@ final readonly class AddMcpInstructions implements Listener
 
     public function handle(ContextStarted $event): void
     {
-        if (SessionProcess::transportOfSession($event->target->sessionId) === TransportProfileType::Cli) {
+        if (SessionProcess::resolveTransportOfSession($event->target->sessionId) === TransportProfileType::Cli) {
             return;
         }
 

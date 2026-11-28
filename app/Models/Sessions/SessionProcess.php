@@ -337,7 +337,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
      * The transport the session's latest supervised start runs on: how its agent reaches the journal's tools. A
      * session the journal does not supervise runs on MCP, as every start does unless its account chose the CLI.
      */
-    public static function transportOfSession(string $sessionId): TransportProfileType
+    public static function resolveTransportOfSession(string $sessionId): TransportProfileType
     {
         $start = self::findLatestOfSession($sessionId);
 
@@ -462,13 +462,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     #[Scope]
     protected function ofSessionsInImage(Builder $query, string|null $image): void
     {
-        $sessions = AgentSession::query()->select('id')->where('driver_image', $image);
-
-        if ($image === null) {
-            $sessions = AgentSession::query()->select('id')->whereNull('driver_image');
-        }
-
-        $query->whereIn('session_id', $sessions);
+        $query->whereIn('session_id', AgentSession::query()->inDriverImage($image)->ids());
     }
 
     // ----------[ Scopes ]----------

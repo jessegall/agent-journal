@@ -99,7 +99,7 @@ final class ContainedSessionLifeTest extends TestCase
             'testHost.containers',
             fn (array $containers) => $this->isSessionContainer(
                 $this->containerCalled($containers, $process->container_name),
-                AgentRuntime::query()->findOrFail($process->agent_runtime_id)->session()->sole()->driverImage(),
+                AgentRuntime::query()->findOrFail($process->agent_runtime_id)->session()->sole()->frozenDriverImage(),
             ),
         ));
         $this->journal->assertResult(true, in_array($process->container_name, $removed, true));

@@ -12,8 +12,8 @@ use LogicException;
  */
 final class HostDriverImageUnbuilt extends LogicException
 {
-    public static function of(string $hostDriverImageId): self
+    public static function of(string $imageId): self
     {
-        return new self("The host's driver image {$hostDriverImageId} holds no built image yet.");
+        return new self("The host's driver image {$imageId} holds no built image yet.");
     }
 }

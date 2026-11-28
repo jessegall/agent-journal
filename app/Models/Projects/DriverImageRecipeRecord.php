@@ -6,11 +6,18 @@ namespace App\Models\Projects;
 
 use App\Agents\Drivers\Setup\DriverImageRecipe;
 use App\Concerns\BoundedReads;
+use App\Concerns\InsertsAbsentRows;
+use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Models\Agents\AgentSession;
-use App\Models\Sessions\SessionProcess;
+use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * A driver image recipe as the journal kept it, once: the exact tar bytes, base and version a host builds from, so a
@@ -23,42 +30,57 @@ use Illuminate\Database\Eloquent\Attributes\Table;
  * @property string $version
  * @property string $context the canonical tar, base64
  * @property CarbonImmutable $created_at
+ * @property-read DriverImageRecipe $recipe
  */
 #[Table('driver_image_recipes')]
-final class DriverImageRecipeRecord extends JournalModel
+final class DriverImageRecipeRecord extends JournalModel implements ReadableModel
 {
     use BoundedReads;
+    use InsertsAbsentRows;
+    use Linkable;
+    use OrdersById;
 
     public const null UPDATED_AT = null;
 
-    protected function casts(): array
-    {
-        return [
-            'created_at' => 'immutable_datetime',
-        ];
-    }
+    // ----------[ Constructors ]----------
 
     /**
-     * The kept row of the recipe: stored the first time, found by its digest every time after, never changed.
+     * The kept row of the recipe: stored the first time, found by its digest every time after, never changed; the
+     * unique digest keeps two hosts that keep it at once to one row.
      */
-    public static function keep(DriverImageRecipe $recipe): self
+    public static function create(DriverImageRecipe $recipe): self
     {
-        $kept = self::query()->where('recipe_digest', $recipe->digest)->first();
-
-        if ($kept !== null) {
-            return $kept;
-        }
-
         $record = new self();
         $record->recipe_digest = $recipe->digest;
         $record->folder = $recipe->folder;
         $record->base_image = $recipe->base;
         $record->version = $recipe->version;
         $record->context = base64_encode($recipe->context);
-        $record->save();
+        $record->setAttribute($record->getKeyName(), $record->newUniqueId());
+        $record->insertIfAbsent();
 
-        return $record;
+        return self::findForDigest($recipe->digest);
     }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The recipe this row keeps, from its own bytes.
+     *
+     * @return Attribute<DriverImageRecipe, never>
+     */
+    protected function recipe(): Attribute
+    {
+        return Accessor::get(fn () => DriverImageRecipe::kept(
+            $this->folder,
+            $this->base_image,
+            $this->version,
+            (string) base64_decode($this->context, true),
+            $this->recipe_digest,
+        ));
+    }
+
+    // ----------[ Queries ]----------
 
     /**
      * The recipes that sessions started on the host froze and that have not ended, as each may resume there.
@@ -67,49 +89,27 @@ final class DriverImageRecipeRecord extends JournalModel
      */
     public static function findFrozenOn(string $hostId): array
     {
-        $digests = AgentSession::query()
-            ->liveOnFrozenRecipe()
-            ->whereIn('id', SessionProcess::query()->supervised()->where('host_id', $hostId)->select('session_id'))
-            ->pluck('driver_recipe_digest')
-            ->unique();
+        $digests = AgentSession::resolveFrozenRecipeDigestsOn($hostId);
 
-        return array_values(self::query()->whereIn('recipe_digest', $digests)->orderBy('id')->get()->all());
+        return array_values(self::query()->withDigests($digests)->oldestFirst()->get()->all());
     }
 
-    public static function findByDigest(string $digest): self
+    public static function findForDigest(string $digest): self
     {
-        return self::query()->where('recipe_digest', $digest)->firstOrFail();
+        return self::query()->withDigests([$digest])->firstOrFail();
     }
+
+    // ----------[ Scopes ]----------
 
     /**
-     * Whether a host still keeps an image of the recipe, or a session that has not ended froze it and may resume on
-     * it, so the recipe may not be pruned.
+     * The recipes of the digests.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $digests
      */
-    public function isDemanded(): bool
+    #[Scope]
+    protected function withDigests(Builder $query, array $digests): void
     {
-        $isKept = HostDriverImage::query()->where('driver_image_recipe_id', $this->id)->exists();
-
-        $isFrozen = AgentSession::query()
-            ->liveOnFrozenRecipe()
-            ->where('driver_recipe_digest', $this->recipe_digest)
-            ->exists();
-
-        return $isKept || $isFrozen;
-    }
-
-    /**
-     * The recipe this row keeps, from its own bytes.
-     */
-    public function inputs(): DriverImageRecipe
-    {
-        $context = (string) base64_decode($this->context, true);
-
-        return DriverImageRecipe::kept(
-            $this->folder,
-            $this->base_image,
-            $this->version,
-            $context,
-            $this->recipe_digest,
-        );
+        $query->whereIn('recipe_digest', $digests);
     }
 }

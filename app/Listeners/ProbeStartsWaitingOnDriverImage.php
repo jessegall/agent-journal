@@ -8,7 +8,7 @@ use App\Accounts\Enums\CommandEntry;
 use App\Agents\Commands\ProbeClaimedStart\ProbeClaimedStartCommand;
 use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Events\Connections\DriverImageEvent;
+use App\Hosts\Contracts\DriverImageOutcome;
 use App\Models\Projects\HostDriverImage;
 use App\Models\Projects\HostDriverImageWait;
 
@@ -22,7 +22,7 @@ final readonly class ProbeStartsWaitingOnDriverImage implements Listener
 
     public function __construct(private JournalCommands $commands) {}
 
-    public function handle(DriverImageEvent $fact): void
+    public function handle(DriverImageOutcome $fact): void
     {
         $image = HostDriverImage::query()->findOrFail($fact->hostDriverImageId);
 

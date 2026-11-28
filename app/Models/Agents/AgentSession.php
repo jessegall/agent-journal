@@ -17,6 +17,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Sessions\AgentSessionConversationEntered;
+use App\Events\Sessions\AgentSessionDriverImageFrozen;
 use App\Events\Sessions\AgentSessionDriverLabelKept;
 use App\Events\Sessions\AgentSessionEnded;
 use App\Events\Sessions\AgentSessionHeartbeatRecorded;
@@ -248,14 +249,12 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     public function freezeDriverImage(HostDriverImage $image, DriverImageRecipeRecord $recipe): void
     {
         $built = $image->builtImage();
-
-        if ($this->driver_image !== null && $this->driver_image !== $built) {
-            throw DriverImageMismatch::of($this->id, $this->driver_image, $built);
-        }
+        $this->assertFreezable($built);
 
         $this->driver_image = $built;
         $this->driver_recipe_digest = $recipe->recipe_digest;
         $this->saveAndAssert();
+        $this->raise(new AgentSessionDriverImageFrozen($this->id, $built));
     }
 
     // ----------[ Predicates ]----------
@@ -329,6 +328,31 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         return array_values(array_filter($profile->requiredSkills(), $this->hasSkill(...)));
     }
 
+    // ----------[ Calculations ]----------
+
+    /**
+     * The driver image the session froze, which its starts and resumes run.
+     */
+    public function frozenDriverImage(): string
+    {
+        $this->assertImageFrozen();
+
+        return (string) $this->driver_image;
+    }
+
+    /**
+     * The driver build the session runs: the version of the recipe it froze, so a resume after a deploy of a new
+     * version runs the version it began on; a session that froze none runs the driver's current pin.
+     */
+    public function pinnedBuildOf(DriverProfile $driver): string
+    {
+        if ($this->driver_recipe_digest === null) {
+            return $driver->build();
+        }
+
+        return DriverImageRecipeRecord::findForDigest($this->driver_recipe_digest)->version;
+    }
+
     // ----------[ Accessors ]----------
 
     /**
@@ -359,29 +383,6 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     protected function target(): Attribute
     {
         return Accessor::get(fn () => new StackTarget($this->agent_id, $this->id));
-    }
-
-    /**
-     * The driver image the session froze, which its starts and resumes run.
-     *
-     * @throws DriverImageUnfrozen for a session that froze no driver image
-     */
-    public function driverImage(): string
-    {
-        return $this->driver_image ?? throw DriverImageUnfrozen::of($this->id);
-    }
-
-    /**
-     * The driver build the session runs: the version of the recipe it froze, so a resume after a deploy of a new
-     * version runs the version it began on; a session that froze none runs the driver's current pin.
-     */
-    public function pinnedBuildOf(DriverProfile $driver): string
-    {
-        if ($this->driver_recipe_digest === null) {
-            return $driver->build();
-        }
-
-        return DriverImageRecipeRecord::findByDigest($this->driver_recipe_digest)->version;
     }
 
     // ----------[ Relations ]----------
@@ -421,6 +422,30 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     // ----------[ Asserts ]----------
 
     /**
+     * Refuses a driver image other than the one the session froze before.
+     *
+     * @throws DriverImageMismatch
+     */
+    private function assertFreezable(string $image): void
+    {
+        if ($this->driver_image !== null && $this->driver_image !== $image) {
+            throw DriverImageMismatch::of($this->id, $this->driver_image, $image);
+        }
+    }
+
+    /**
+     * Refuses a read of the frozen image on a session that froze none.
+     *
+     * @throws DriverImageUnfrozen
+     */
+    private function assertImageFrozen(): void
+    {
+        if ($this->driver_image === null) {
+            throw DriverImageUnfrozen::of($this->id);
+        }
+    }
+
+    /**
      * Refuses a selection for a session whose model is already fixed.
      *
      * @throws SessionSelectionFixed
@@ -433,6 +458,21 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The recipes that sessions started on the host froze and that have not ended, by digest.
+     *
+     * @return list<string>
+     */
+    public static function resolveFrozenRecipeDigestsOn(string $hostId): array
+    {
+        $startedThere = SessionProcess::query()->supervised()->onHost($hostId)->sessionIds();
+
+        return array_values(array_unique(array_map(
+            strval(...),
+            self::query()->liveOnFrozenRecipe()->withAnyId($startedThere)->pluck('driver_recipe_digest')->all(),
+        )));
+    }
 
     /**
      * Whether the session still runs and acts for this agent: it is one of the agent's own sessions, or a child the
@@ -599,6 +639,28 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     // ----------[ Scopes ]----------
+
+    /**
+     * The sessions that froze the driver image; with none, the sessions that froze none.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inDriverImage(Builder $query, string|null $image): void
+    {
+        $query->where('driver_image', $image);
+    }
+
+    /**
+     * Only the id of each session, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ids(Builder $query): void
+    {
+        $query->select('id');
+    }
 
     /**
      * The sessions that have not ended and froze a driver recipe, as each may resume on it.

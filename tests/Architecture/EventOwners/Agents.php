@@ -30,6 +30,7 @@ use App\Events\Sessions\AgentRuntimeStartGrantHeld;
 use App\Events\Sessions\AgentRuntimeStartProven;
 use App\Events\Sessions\AgentRuntimeStopRequested;
 use App\Events\Sessions\AgentSessionConversationEntered;
+use App\Events\Sessions\AgentSessionDriverImageFrozen;
 use App\Events\Sessions\AgentSessionDriverLabelKept;
 use App\Events\Sessions\AgentSessionEnded;
 use App\Events\Sessions\AgentSessionHeartbeatRecorded;
@@ -611,6 +612,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new AgentSessionDriverLabelKept('session', 'label'),
+    ],
+    AgentSessionDriverImageFrozen::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentSession::freezeDriverImage',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentSessionDriverImageFrozen('session', 'image'),
     ],
     AgentSessionEnded::class => [
         'role' => EventRole::RowFact,

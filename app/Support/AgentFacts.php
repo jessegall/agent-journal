@@ -73,6 +73,6 @@ final readonly class AgentFacts
     private function waitsForDriverImage(): bool
     {
         return $this->start !== null
-            && HostDriverImageWait::query()->where('session_process_id', $this->start->id)->exists();
+            && HostDriverImageWait::hasOfStart($this->start->id);
     }
 }

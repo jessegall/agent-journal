@@ -13,7 +13,6 @@ use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Contracts\HostDriverImages;
-use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Hosts\HostProcess;
@@ -43,10 +42,7 @@ final readonly class ProbeClaimedStartHandler implements CommandHandler
         $start = SessionProcess::findLockedById($command->startId);
 
         // A cancelled start wins over its image, and a start already probed is not probed twice.
-        $isProbed = HostProcess::query()
-            ->where('session_process_id', $start->id)
-            ->where('purpose', HostProcessPurpose::BuildProbe)
-            ->exists();
+        $isProbed = HostProcess::hasBuildProbeOf($start->id);
 
         if (! $start->isStarting() || $isProbed) {
             return;
@@ -86,7 +82,7 @@ final readonly class ProbeClaimedStartHandler implements CommandHandler
         DriverProfile $driver,
     ): HostProcessPlan|null {
         $host = Host::findLocked((string) $start->host_id);
-        $wait = HostDriverImageWait::query()->where('session_process_id', $start->id)->first();
+        $wait = HostDriverImageWait::findOfStart($start->id);
         $image = $this->imageOf($wait, $host, $session, $driver);
 
         if ($image->isRefused()) {
@@ -122,13 +118,13 @@ final readonly class ProbeClaimedStartHandler implements CommandHandler
         DriverProfile $driver,
     ): HostDriverImage {
         if ($wait !== null) {
-            return HostDriverImage::query()->whereKey($wait->host_driver_image_id)->lockForUpdate()->firstOrFail();
+            return HostDriverImage::findLocked($wait->host_driver_image_id);
         }
 
         if ($session->driver_recipe_digest !== null) {
-            $frozen = DriverImageRecipeRecord::findByDigest($session->driver_recipe_digest);
+            $frozen = DriverImageRecipeRecord::findForDigest($session->driver_recipe_digest);
 
-            return HostDriverImage::reserve($host, $frozen);
+            return HostDriverImage::create($host, $frozen);
         }
 
         return $this->images->imageFor($host, $driver);

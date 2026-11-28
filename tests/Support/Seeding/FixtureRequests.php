@@ -219,7 +219,7 @@ final class FixtureRequests
             $target->sessionId,
             new SignedCall($callId, CarbonImmutable::now(), str_repeat('a', 64)),
             null,
-            SessionProcess::transportOfSession($target->sessionId),
+            SessionProcess::resolveTransportOfSession($target->sessionId),
         ));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorReference::forAgent($target->agentId),

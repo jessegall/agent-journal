@@ -19,8 +19,8 @@ use Tests\TestCase;
 
 /**
  * A session freezes the driver image it first ran and the recipe it was built from, once: it keeps that recipe's
- * version after the deploy moves the pin, keeps the recipe from being pruned while it lives, and refuses a rebuilt
- * image of another digest; a session that froze none runs the driver's current pin.
+ * version after the deploy moves the pin, keeps its recipe among those its host reserves again, and refuses a
+ * rebuilt image of another digest; a session that froze none runs the driver's current pin.
  */
 #[TestsMachinery(AgentSession::class)]
 final class FrozenDriverImageTest extends TestCase
@@ -41,12 +41,11 @@ final class FrozenDriverImageTest extends TestCase
         $session->freezeDriverImage($image, $recipe);
 
         $this->journal->assertResult(
-            [$profile->build(), '2.1.200', self::IMAGE, true, [$recipe->id]],
+            [$profile->build(), '2.1.200', self::IMAGE, [$recipe->id]],
             [
                 $beforeFreeze,
                 $session->refresh()->pinnedBuildOf($profile),
-                $session->driverImage(),
-                $recipe->isDemanded(),
+                $session->frozenDriverImage(),
                 array_column(DriverImageRecipeRecord::findFrozenOn($host->hostId), 'id'),
             ],
         );
@@ -72,7 +71,7 @@ final class FrozenDriverImageTest extends TestCase
 
         $this->journal->assertRefused(
             DriverImageUnfrozen::class,
-            fn () => AgentSession::query()->findOrFail($opened->sessionId)->driverImage(),
+            fn () => AgentSession::query()->findOrFail($opened->sessionId)->frozenDriverImage(),
         );
     }
 
@@ -82,8 +81,8 @@ final class FrozenDriverImageTest extends TestCase
     private function readyImageOn(string $hostId, string $version): array
     {
         $files = ['Dockerfile' => 'FROM x'];
-        $recipe = DriverImageRecipeRecord::keep(DriverImageRecipe::of('d', $files, 'base@sha256:a', $version));
-        $image = HostDriverImage::reserve(Host::query()->findOrFail($hostId), $recipe);
+        $recipe = DriverImageRecipeRecord::create(DriverImageRecipe::of('d', $files, 'base@sha256:a', $version));
+        $image = HostDriverImage::create(Host::query()->findOrFail($hostId), $recipe);
         $image->startAttempt('build-1');
         $image->built(self::IMAGE);
 

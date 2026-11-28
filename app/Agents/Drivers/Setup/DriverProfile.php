@@ -72,6 +72,14 @@ final readonly class DriverProfile
     }
 
     /**
+     * Whether the driver runs the model's commands in its user's login shell, so its built image is checked there too.
+     */
+    public function runsCommandsInLoginShell(): bool
+    {
+        return $this->setup->image->runsCommandsInLoginShell;
+    }
+
+    /**
      * Refuses a printed version line that does not name the build the start runs: the session's frozen version, or
      * the driver's current pin for a session that froze none.
      *

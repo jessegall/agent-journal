@@ -31,7 +31,7 @@ final readonly class AgentContext implements Actor
      */
     public static function ofSession(AgentSession $session, SignedCall $call): self
     {
-        $transport = SessionProcess::transportOfSession($session->id);
+        $transport = SessionProcess::resolveTransportOfSession($session->id);
 
         return new self($session->agent_id, $session->id, $call, $session->last_heartbeat_at, $transport);
     }

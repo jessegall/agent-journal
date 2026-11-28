@@ -32,13 +32,13 @@ final readonly class BuildHostDriverImageHandler implements CommandHandler
     public function handle(BuildHostDriverImageCommand $command): string
     {
         Host::findLocked($command->hostId);
-        $image = HostDriverImage::query()->whereKey($command->hostDriverImageId)->lockForUpdate()->firstOrFail();
+        $image = HostDriverImage::findLocked($command->hostDriverImageId);
 
         if (! $image->isPending()) {
             return $image->id;
         }
 
-        $recipe = DriverImageRecipeRecord::query()->findOrFail($image->driver_image_recipe_id)->inputs();
+        $recipe = DriverImageRecipeRecord::query()->findOrFail($image->driver_image_recipe_id)->recipe;
         $instruction = $this->instructions->buildImage(
             $command->hostId,
             HostInstructionSource::keyed("driver-image:{$image->id}:".($image->attempt + 1)),

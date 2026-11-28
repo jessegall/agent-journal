@@ -32,7 +32,7 @@ final readonly class HostDriverImages implements HostDriverImagesContract
         $ids = array_map(fn (DriverProfile $driver) => $this->imageFor($host, $driver)->id, $this->profiles->all());
 
         foreach (DriverImageRecipeRecord::findFrozenOn($host->id) as $frozen) {
-            $ids[] = HostDriverImage::reserve($host, $frozen)->id;
+            $ids[] = HostDriverImage::create($host, $frozen)->id;
         }
 
         return array_values(array_unique($ids));
@@ -42,7 +42,7 @@ final readonly class HostDriverImages implements HostDriverImagesContract
     {
         $recipe = $this->recipes->of($driver->image(), $this->base->reference);
 
-        return HostDriverImage::reserve($host, DriverImageRecipeRecord::keep($recipe));
+        return HostDriverImage::create($host, DriverImageRecipeRecord::create($recipe));
     }
 
     public function allowSetOf(Host $host): array
@@ -57,8 +57,8 @@ final readonly class HostDriverImages implements HostDriverImagesContract
 
     public function awaitFor(HostDriverImage $image, SessionProcess $start): bool
     {
-        $locked = HostDriverImage::query()->whereKey($image->id)->lockForUpdate()->firstOrFail();
-        HostDriverImageWait::for($locked, $start);
+        $locked = HostDriverImage::findLocked($image->id);
+        HostDriverImageWait::create($locked, $start);
 
         return $locked->isReady();
     }

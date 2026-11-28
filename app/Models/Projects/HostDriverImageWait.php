@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace App\Models\Projects;
 
 use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Events\Connections\DriverImageWaitServed;
 use App\Models\Sessions\SessionProcess;
-use App\Models\Support\JournalModel;
+use App\Models\Support\HasUlidKey;
+use App\Records\Concerns\CountsPivotLoads;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
  * A start that waits for its host's driver image: one per start, registered under the image row's lock, and gone in
@@ -24,19 +30,23 @@ use Illuminate\Database\Eloquent\Builder;
  * @property CarbonImmutable $created_at
  */
 #[Table('host_driver_image_waits')]
-final class HostDriverImageWait extends JournalModel implements EventSource
+final class HostDriverImageWait extends Pivot implements EventSource, ReadableModel
 {
     use BoundedReads;
+    use CountsPivotLoads;
+    use HasUlidKey;
+    use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const null UPDATED_AT = null;
 
-    protected function casts(): array
-    {
-        return [
-            'created_at' => 'immutable_datetime',
-        ];
-    }
+    /**
+     * A pivot opens every attribute by default; this one stays closed, as every model writes its columns as properties.
+     *
+     * @var list<string>
+     */
+    protected $guarded = ['*'];
 
     // ----------[ Constructors ]----------
 
@@ -44,7 +54,7 @@ final class HostDriverImageWait extends JournalModel implements EventSource
      * The start's wait for the image, which the caller registers holding the image row's lock; a start already
      * waiting cannot wait a second time.
      */
-    public static function for(HostDriverImage $image, SessionProcess $start): self
+    public static function create(HostDriverImage $image, SessionProcess $start): self
     {
         $wait = new self();
         $wait->host_driver_image_id = $image->id;
@@ -54,21 +64,7 @@ final class HostDriverImageWait extends JournalModel implements EventSource
         return $wait;
     }
 
-    /**
-     * Ends every wait of the session's starts, as when the session's start was cancelled.
-     */
-    public static function consumeAllOfSession(string $sessionId): void
-    {
-        $starts = SessionProcess::query()->supervised()->where('session_id', $sessionId)->select('id');
-
-        self::query()
-            ->whereIn('session_process_id', $starts)
-            ->lockForUpdate()
-            ->get()
-            ->each(fn (self $wait) => $wait->consume());
-    }
-
-    // ----------[ Changes ]----------
+    // ----------[ Mutations ]----------
 
     /**
      * The wait is served: it goes with the outcome it waited for.
@@ -76,6 +72,37 @@ final class HostDriverImageWait extends JournalModel implements EventSource
     public function consume(): void
     {
         $this->deleteAndAssert();
+        $this->raise(new DriverImageWaitServed($this->host_driver_image_id, $this->session_process_id));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The start's wait; none for a start that waits for no image.
+     */
+    public static function findOfStart(string $startId): self|null
+    {
+        return self::query()->ofStarts([$startId])->first();
+    }
+
+    /**
+     * Whether the start waits for its host's driver image.
+     */
+    public static function hasOfStart(string $startId): bool
+    {
+        return self::query()->ofStarts([$startId])->exists();
+    }
+
+    /**
+     * The waits of the session's starts, locked.
+     *
+     * @return list<self>
+     */
+    public static function findLockedOfSession(string $sessionId): array
+    {
+        $starts = SessionProcess::query()->supervised()->ofSessions([$sessionId])->ids();
+
+        return array_values(self::query()->ofStarts($starts)->lockForUpdate()->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -89,5 +116,17 @@ final class HostDriverImageWait extends JournalModel implements EventSource
     protected function of(Builder $query, HostDriverImage $image): void
     {
         $query->where('host_driver_image_id', $image->id);
+    }
+
+    /**
+     * The waits of the starts.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>|Builder<SessionProcess>  $starts
+     */
+    #[Scope]
+    protected function ofStarts(Builder $query, array|Builder $starts): void
+    {
+        $query->whereIn('session_process_id', $starts);
     }
 }

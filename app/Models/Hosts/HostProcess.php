@@ -503,6 +503,14 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
+     * Whether the start was given its build probe, so it is not probed twice.
+     */
+    public static function hasBuildProbeOf(string $startId): bool
+    {
+        return self::query()->ofStarts([$startId])->ofPurposes([HostProcessPurpose::BuildProbe])->exists();
+    }
+
+    /**
      * Whether a live owner on the host runs the headless turns of the start's account and sign-in generation in the
      * driver image the start's session froze: an owner serves one image only.
      */
@@ -515,7 +523,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
             ->ofPurposes([HostProcessPurpose::AccountOwner])
             ->live()
             ->openedForAccountGenerationOf($start)
-            ->whereIn('session_process_id', SessionProcess::query()->supervised()->ofSessionsInImage($image)->ids())
+            ->ofStarts(SessionProcess::query()->supervised()->ofSessionsInImage($image)->ids())
             ->exists();
     }
 
@@ -668,10 +676,10 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
      * The processes opened for these starts.
      *
      * @param  Builder<self>  $query
-     * @param  Builder<SessionProcess>  $ids
+     * @param  list<string>|Builder<SessionProcess>  $ids
      */
     #[Scope]
-    protected function ofStarts(Builder $query, Builder $ids): void
+    protected function ofStarts(Builder $query, array|Builder $ids): void
     {
         $query->whereIn('session_process_id', $ids);
     }

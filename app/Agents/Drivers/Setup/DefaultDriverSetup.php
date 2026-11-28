@@ -25,7 +25,7 @@ use App\Values\DriverStart;
 use Closure;
 
 /**
- * A driver declared one part to a call, starting from what every driver shares (user 29686, 29793): its account's
+ * A driver declared one part to a call, starting from what every driver shares: its account's
  * home and its start's reference in a contained start. build() refuses a declaration that misses a part every driver
  * needs, naming it.
  */
@@ -40,7 +40,7 @@ final readonly class DefaultDriverSetup
      * @param  class-string<AccountSettingsFiller>|null  $accountSettings
      * @param  class-string<DriverSkills>|null  $skills
      * @param  class-string<DriverAdapter>|null  $hookAdapter
-     * @param  list<ConditionalPart>  $journalServer  the part that gives the program the journal's server, when it has one
+     * @param  list<ConditionalPart>  $journalServer  the part that gives the driver the journal's server, when it has one
      * @param  class-string<DriverIsolation>|null  $isolation
      * @param  list<StartRefusal>  $refusals
      * @param  list<StartRefusal>  $signInRefusals
@@ -131,9 +131,9 @@ final readonly class DefaultDriverSetup
         return clone ($this, ['headlessTurns' => $turns]);
     }
 
-    public function signIn(SignInSetup $signIn): self
+    public function signIn(SignInSetup $setup): self
     {
-        return clone ($this, ['signIn' => $signIn]);
+        return clone ($this, ['signIn' => $setup]);
     }
 
     /**
@@ -169,7 +169,7 @@ final readonly class DefaultDriverSetup
     }
 
     /**
-     * How the program is given the journal's MCP server on a start; a driver whose image holds its server's
+     * How the driver is given the journal's MCP server on a start; a driver whose image holds its server's
      * configuration declares none.
      */
     public function journalServer(ConditionalPart $part): self

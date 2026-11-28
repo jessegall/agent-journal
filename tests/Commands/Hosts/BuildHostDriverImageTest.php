@@ -29,7 +29,7 @@ final class BuildHostDriverImageTest extends TestCase
         $box = $this->journal->hostCalled('Box')->hostId;
         $this->journal->asSystem(new ReserveHostDriverImagesCommand($box));
         $image = HostDriverImage::query()->where('host_id', $box)->firstOrFail();
-        $recipe = DriverImageRecipeRecord::query()->findOrFail($image->driver_image_recipe_id)->inputs();
+        $recipe = DriverImageRecipeRecord::query()->findOrFail($image->driver_image_recipe_id)->recipe;
 
         $this->journal->asSystem(new BuildHostDriverImageCommand($box, $image->id));
         $this->journal->asSystem(new BuildHostDriverImageCommand($box, $image->id));

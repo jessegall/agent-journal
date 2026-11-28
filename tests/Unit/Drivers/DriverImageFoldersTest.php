@@ -61,15 +61,18 @@ final class DriverImageFoldersTest extends TestCase
         $config = (string) file_get_contents(base_path('.docker/drivers/codex/config.toml'));
         $replies = MountRules::SESSION_TARGET.'/'.HookReplies::REPLY_FILE;
 
-        $this->assertStringContainsString('args = '.json_encode(['codex', $replies], JSON_UNESCAPED_SLASHES), str_replace('", "', '","', $config));
+        $this->assertMatchesRegularExpression(
+            self::settingLine('args', json_encode(['codex', $replies], JSON_UNESCAPED_SLASHES)),
+            str_replace('", "', '","', $config),
+        );
     }
 
     public function test_codexs_journal_server_takes_the_start_grants_variables(): void
     {
         $config = (string) file_get_contents(base_path('.docker/drivers/codex/config.toml'));
 
-        $this->assertStringContainsString(
-            'env_vars = '.json_encode(ContainedPlanFields::START_GRANT_ENVIRONMENT),
+        $this->assertMatchesRegularExpression(
+            self::settingLine('env_vars', json_encode(ContainedPlanFields::START_GRANT_ENVIRONMENT)),
             str_replace('", "', '","', $config),
         );
     }
@@ -80,5 +83,13 @@ final class DriverImageFoldersTest extends TestCase
     private function jsonFile(string $path): array
     {
         return json_decode((string) file_get_contents(base_path($path)), true, flags: JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * A pattern of the TOML line that sets the key to exactly the value.
+     */
+    private static function settingLine(string $key, string $value): string
+    {
+        return '/^'.preg_quote($key, '/').'\h*=\h*'.preg_quote($value, '/').'$/m';
     }
 }

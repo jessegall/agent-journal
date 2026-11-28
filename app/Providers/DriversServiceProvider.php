@@ -122,7 +122,7 @@ final class DriversServiceProvider extends ServiceProvider
 
         return DefaultDriverSetup::for(DefaultDrivers::CODEX)
             ->driver($driver)
-            ->image(DriverImage::at('.docker/drivers/codex'))
+            ->image(DriverImage::at('.docker/drivers/codex')->runningCommandsInLoginShell())
             ->arguments(CodexArguments::class)
             ->version(new VersionProbe(
                 argv: [$driver, '--version'],
@@ -221,10 +221,10 @@ final class DriversServiceProvider extends ServiceProvider
             ->build();
     }
 
-    private static function claudeSignIn(string $signInExecutable): SignInSetup
+    private static function claudeSignIn(string $executable): SignInSetup
     {
         return new SignInSetup(
-            executable: $signInExecutable,
+            executable: $executable,
             environment: ClaudeCodeSignInEnvironment::class,
             modelCheck: new ModelCheck(
                 [

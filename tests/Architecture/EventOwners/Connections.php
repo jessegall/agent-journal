@@ -10,6 +10,15 @@ use App\Events\Connections\DeviceGrantIssued;
 use App\Events\Connections\DeviceGrantPolled;
 use App\Events\Connections\DeviceGrantRestarted;
 use App\Events\Connections\DeviceGrantRevoked;
+use App\Events\Connections\DriverImageAdmitted;
+use App\Events\Connections\DriverImageAllowed;
+use App\Events\Connections\DriverImageAllowReset;
+use App\Events\Connections\DriverImageAllowSetSent;
+use App\Events\Connections\DriverImageBuildFinished;
+use App\Events\Connections\DriverImageBuildSent;
+use App\Events\Connections\DriverImageChecksSent;
+use App\Events\Connections\DriverImageRefused;
+use App\Events\Connections\DriverImageWaitServed;
 use App\Events\Connections\EnvironmentOpened;
 use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
@@ -69,6 +78,69 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    DriverImageBuildSent::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImage::startAttempt',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageBuildSent('image', 'instruction'),
+    ],
+    DriverImageBuildFinished::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImage::built',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageBuildFinished('image', 'sha256:a'),
+    ],
+    DriverImageAllowSetSent::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImage::orderedIn',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageAllowSetSent('image', 'instruction'),
+    ],
+    DriverImageAllowed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImage::acknowledged',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageAllowed('image'),
+    ],
+    DriverImageChecksSent::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImage::markChecksSent',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageChecksSent('image', 'instruction'),
+    ],
+    DriverImageAllowReset::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImage::reallow',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageAllowReset('image'),
+    ],
+    DriverImageWaitServed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImageWait::consume',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageWaitServed('image', 'start'),
+    ],
+    DriverImageAdmitted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImage::checked',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageAdmitted('image'),
+    ],
+    DriverImageRefused::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImage::refuse',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageRefused('image'),
+    ],
     BindingRuntimeRecorded::class => [
         'role' => EventRole::RowFact,
         'owner' => 'BindingRuntime::create',

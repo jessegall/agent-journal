@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Hosts;
 
-use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Hosts\Protocol\Payloads\HostContainerRunPayload;
 use App\Hosts\Protocol\Payloads\HostContainerRunResultPayload;
 
 /**
  * The checks a built driver image passes before any start runs on it, as build.sh's protected start check: a command
  * through the shell bridge, started by journal-init, runs as the executor's user. A Codex image is also checked
- * through its program user's login shell, the shell Codex runs the model's commands in.
+ * through its driver user's login shell when its driver runs the model's commands there, as Codex does.
  */
 final readonly class DriverImageChecks
 {
@@ -24,7 +24,7 @@ final readonly class DriverImageChecks
 
     private const string BRIDGE = '/opt/journal/shell/bash';
 
-    private const string LOGIN_SHELL_OF_PROGRAM_USER = 'exec "$(getent passwd 10001 | cut -d: -f7)" -c "id -u"';
+    private const string LOGIN_SHELL_OF_DRIVER_USER = 'exec "$(getent passwd 10001 | cut -d: -f7)" -c "id -u"';
 
     private const int OUTPUT_LIMIT = 256;
 
@@ -38,6 +38,8 @@ final readonly class DriverImageChecks
         'openFiles' => 0,
     ];
 
+    public function __construct(private DriverProfiles $profiles) {}
+
     /**
      * The checks of the image built from the driver folder, one result expected for each, in order.
      *
@@ -47,8 +49,8 @@ final readonly class DriverImageChecks
     {
         $checks = [$this->run($image, [self::BRIDGE, '-c', 'id -u'])];
 
-        if (basename($folder) === DefaultDrivers::CODEX) {
-            $checks[] = $this->run($image, ['/bin/sh', '-c', self::LOGIN_SHELL_OF_PROGRAM_USER]);
+        if ($this->profiles->ofFamily(basename($folder))->runsCommandsInLoginShell()) {
+            $checks[] = $this->run($image, ['/bin/sh', '-c', self::LOGIN_SHELL_OF_DRIVER_USER]);
         }
 
         return $checks;

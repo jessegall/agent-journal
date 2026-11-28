@@ -41,7 +41,9 @@ final readonly class CancelSessionStartHandler implements CommandHandler
         }
 
         // A start that waited for its driver image waits no more, so the image's outcome finds nothing to probe.
-        HostDriverImageWait::consumeAllOfSession($command->sessionId);
+        foreach (HostDriverImageWait::findLockedOfSession($command->sessionId) as $wait) {
+            $wait->consume();
+        }
 
         if ($isRunning) {
             $this->requests->stop($command->target(), $command->idempotencyKey);
