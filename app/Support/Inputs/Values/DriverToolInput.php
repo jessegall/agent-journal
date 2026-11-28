@@ -54,6 +54,14 @@ final readonly class DriverToolInput
         return array_values(array_filter(array_map($this->textArgument(...), $names), is_string(...)));
     }
 
+    /**
+     * Whether the call set the argument of this name to true; one left out or set to anything else is not.
+     */
+    public function isSet(string $name): bool
+    {
+        return ($this->arguments[$name] ?? null) === true;
+    }
+
     public function hasArgument(string $name): bool
     {
         return array_key_exists($name, $this->arguments) && $this->arguments[$name] !== null;

@@ -22,6 +22,10 @@ return [
         'refused_held' => '{code}: {reason} {notice} Correction: {correction} Request {request}. Next: {next}',
         'runner_unavailable' => "{code}: The journal's runner cannot run this line, so nothing started. {limit}",
         'needs_approval' => 'This driver cannot take a rewritten command line without asking first.',
+        'native_background' => 'Nothing started: every process runs through the journal, so a command is never sent '
+            .'to the background with &, nohup, setsid, disown or the tool\'s own background run. Run it in the '
+            .'foreground: the journal moves a long run to its own background, gives you its output number and tells '
+            .'you when it ends.',
         'no_runtime' => 'This session has no runtime to run it in.',
         'unreadable' => 'The line could not be read whole.',
         'rewrite' => 'Rewrite the line.',
