@@ -24,25 +24,39 @@ final class DetailPageTest extends TestCase
         $reads = [];
 
         $root = DetailPage::make('Task 7')
-            ->above(LayoutPartData::action('plan', 'Plan 2', LayoutActionData::to('/plans/2')))
+            ->above(LayoutPartData::build()
+                ->asAction()
+                ->key('plan')
+                ->label('Plan 2')
+                ->action(LayoutActionData::build()->href('/plans/2')->finish())
+                ->finish())
             ->summarising('Done when it ships')
-            ->withActions(LayoutPartData::action('open', 'Open', LayoutActionData::to('/tasks/7/open')))
-            ->withFacts(new LayoutRowData(
-                'waits',
-                'Waits for',
-                fact: LayoutFactValueData::of([['Task 3', '/tasks/3'], ['Task 4', null]]),
-            ))
-            ->withStanding(LayoutPartData::text('note', 'Standing'))
+            ->withActions(LayoutPartData::build()
+                ->asAction()
+                ->key('open')
+                ->label('Open')
+                ->action(LayoutActionData::build()->href('/tasks/7/open')->finish())
+                ->finish())
+            ->withFacts(LayoutRowData::build()
+                ->key('waits')
+                ->label('Waits for')
+                ->fact(
+                    LayoutFactValueData::build()
+                    ->linkedPieces([['Task 3', '/tasks/3'], ['Task 4', null]])
+                    ->finish(),
+                )
+                ->finish())
+            ->withStanding(LayoutPartData::build()->asText()->key('note')->value('Standing')->finish())
             ->withTabs(
                 PublicationTab::deferred('logs', 'Logs', function () use (&$reads): LayoutPartData {
                     $reads[] = 'logs';
 
-                    return LayoutPartData::text('logs', 'Logs');
+                    return LayoutPartData::build()->asText()->key('logs')->value('Logs')->finish();
                 }),
                 PublicationTab::deferred('proofs', 'Proofs', function () use (&$reads): LayoutPartData {
                     $reads[] = 'proofs';
 
-                    return LayoutPartData::text('proofs', 'Proofs');
+                    return LayoutPartData::build()->asText()->key('proofs')->value('Proofs')->finish();
                 }),
             )
             ->layout('proofs')->root;
@@ -60,7 +74,10 @@ final class DetailPageTest extends TestCase
 
     public function test_a_removed_record_is_a_notice_with_back_to_its_list(): void
     {
-        $root = DetailPage::removed('task', new LayoutBackData('/tasks?state=open&page=2', 'Tasks'))->root;
+        $root = DetailPage::removed('task', LayoutBackData::build()
+            ->href('/tasks?state=open&page=2')
+            ->label('Tasks')
+            ->finish())->root;
 
         $this->assertSame('removed', $root->key);
         $this->assertSame('empty', $root->children[0]->style);

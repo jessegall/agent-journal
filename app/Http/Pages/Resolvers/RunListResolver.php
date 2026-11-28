@@ -35,24 +35,47 @@ final readonly class RunListResolver implements PageResolver
         ))->all());
 
         $list = $rows === []
-            ? LayoutPartData::notice('empty', 'empty', 'No run yet.')
-            : LayoutPartData::collection('runs', 'list', array_map(fn (RunRowData $run) => LayoutRowData::from([
-                'key' => $run->id,
-                'label' => "Run {$run->id}",
-                'value' => $run->lifecycle,
-                'detail' => implode(' · ', [
-                    implode(', ', $run->operations),
-                    $run->mode === 'evidence' ? 'evidence only' : 'normal',
-                    "started {$run->startedAt}",
-                ]),
-                'href' => "/processes/runs/{$run->id}",
-            ]), $rows));
+            ? LayoutPartData::build()->asNotice()->key('empty')->style('empty')->title('No run yet.')->finish()
+            : LayoutPartData::build()
+                ->asCollection()
+                ->key('runs')
+                ->style('list')
+                ->rows(
+                    array_map(fn (RunRowData $run) => LayoutRowData::build()
+                        ->key($run->id)
+                        ->label("Run {$run->id}")
+                        ->value($run->lifecycle)
+                        ->detail(
+                            implode(' · ', [
+                                implode(', ', $run->operations),
+                                $run->mode === 'evidence' ? 'evidence only' : 'normal',
+                                "started {$run->startedAt}",
+                            ]),
+                        )
+                        ->href("/processes/runs/{$run->id}")
+                        ->finish(), $rows),
+                )
+                ->finish();
 
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'runs-page',
-            'stack',
-            LayoutPartData::box('header', 'header', LayoutPartData::text('title', 'Runs', 'heading')),
-            $list,
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('runs-page')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('header')
+                    ->style('header')
+                    ->children(
+                        LayoutPartData::build()->asText()->key('title')->value('Runs')->style('heading')->finish(),
+                    )
+                    ->finish(),
+                    $list,
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 }

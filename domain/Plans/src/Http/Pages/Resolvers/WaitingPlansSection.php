@@ -35,24 +35,42 @@ final readonly class WaitingPlansSection implements SectionResolver
         $cards = array_map(PlanCardData::fromPlanCard(...), $this->records->list($filters)->cards);
 
         if ($cards === []) {
-            return DeclaredLayoutData::of(LayoutPartData::box('waiting', 'stack'));
+            return DeclaredLayoutData::build()
+                ->root(LayoutPartData::build()->asBox()->key('waiting')->style('stack')->finish())
+                ->finish();
         }
 
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'waiting',
-            'stack',
-            LayoutPartData::collection('plans', 'list', array_map(fn (
-                PlanCardData $card,
-            ) => LayoutRowData::from([
-                'key' => $card->id,
-                'label' => "plan {$card->number} · {$card->title}",
-                'value' => $card->status->value,
-                'detail' => implode(' · ', array_filter([
-                    $card->holder instanceof AssignmentData ? "held by {$card->holder->name}" : null,
-                    "{$card->finishedTasks} of {$card->totalTasks} tasks",
-                ])),
-                'href' => route('plans.plan', ['plan' => $card->id], false),
-            ]), $cards)),
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('waiting')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asCollection()
+                    ->key('plans')
+                    ->style('list')
+                    ->rows(
+                        array_map(fn (
+                            PlanCardData $card,
+                        ) => LayoutRowData::build()
+                            ->key($card->id)
+                            ->label("plan {$card->number} · {$card->title}")
+                            ->value($card->status->value)
+                            ->detail(
+                                implode(' · ', array_filter([
+                                    $card->holder instanceof AssignmentData ? "held by {$card->holder->name}" : null,
+                                    "{$card->finishedTasks} of {$card->totalTasks} tasks",
+                                ])),
+                            )
+                            ->href(route('plans.plan', ['plan' => $card->id], false))
+                            ->finish(), $cards),
+                    )
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 }

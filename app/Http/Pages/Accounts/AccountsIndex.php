@@ -50,10 +50,16 @@ final readonly class AccountsIndex extends AccountsPage
     public function of(AccountListData $accounts, string $chosen, bool $isAdding): DeclaredLayoutData
     {
         $reader = $isAdding
-            ? [LayoutPartData::native('sign-in', LayoutNativeData::of('accounts/AddAccountPart', $accounts))]
+            ? [LayoutPartData::build()
+                ->asNative()
+                ->key('sign-in')
+                ->native(
+                    LayoutNativeData::build()->component('accounts/AddAccountPart')->props($accounts)->finish(),
+                )
+                ->finish()]
             : $this->readerOf($accounts, $chosen);
 
-        $adding = LayoutActionData::changing(['add' => '1', 'account' => '']);
+        $adding = LayoutActionData::build()->query(['add' => '1', 'account' => ''])->finish();
 
         return ListPage::make(
             'Accounts',
@@ -62,25 +68,42 @@ final readonly class AccountsIndex extends AccountsPage
         )
             ->countingRows()
             ->creating('Add account', $adding)
-            ->withReader(new LayoutBackData(route('accounts.accounts', [], false), 'Accounts'), ...$reader)
+            ->withReader(LayoutBackData::build()
+                ->href(route('accounts.accounts', [], false))
+                ->label('Accounts')
+                ->finish(), ...$reader)
             ->layout();
     }
 
     private function rowOf(AccountRowData $row, string $chosen): LayoutRowData
     {
-        return LayoutRowData::from([
-            'key' => $row->id,
-            'label' => $row->label,
-            'detail' => $this->detailOf($row),
-            'query' => ['account' => $row->id, 'add' => ''],
-            'isCurrent' => $row->id === $chosen,
-            'hasColumns' => true,
-            'leading' => [LayoutPartData::text('driver', $row->driver, 'driver')],
-            'trailing' => [
-                ...$this->usageMeterOf($row),
-                LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateToneOf($row)),
-            ],
-        ]);
+        return LayoutRowData::build()
+            ->key($row->id)
+            ->label($row->label)
+            ->detail($this->detailOf($row))
+            ->query(['account' => $row->id, 'add' => ''])
+            ->isCurrent($row->id === $chosen)
+            ->hasColumns(true)
+            ->leading(
+                [LayoutPartData::build()
+                ->asText()
+                ->key('driver')
+                ->value($row->driver)
+                ->style('driver')
+                ->finish()],
+            )
+            ->trailing(
+                [
+                    ...$this->usageMeterOf($row),
+                    LayoutPartData::build()
+                        ->asBadge()
+                        ->key('state')
+                        ->text($this->stateWordOf($row))
+                        ->tone($this->stateToneOf($row))
+                        ->finish(),
+                ],
+            )
+            ->finish();
     }
 
     /**
@@ -152,12 +175,21 @@ final readonly class AccountsIndex extends AccountsPage
         ));
 
         return [
-            LayoutPartData::usage(
-                'usage',
-                max(array_map(fn (AccountUsageWindowData $window) => (float) $window->usedPercent, $measuredWindows)),
-                'Usage',
-                $readings,
-            ),
+            LayoutPartData::build()
+                ->asUsage()
+                ->key('usage')
+                ->progress(
+                    LayoutProgressData::build()
+                    ->value(
+                        max(array_map(fn (AccountUsageWindowData $window) => (float) $window->usedPercent, $measuredWindows)),
+                    )
+                    ->max(100)
+                    ->label('Usage')
+                    ->unit('percent')
+                    ->finish(),
+                )
+                ->tip($readings)
+                ->finish(),
         ];
     }
 
@@ -203,7 +235,12 @@ final readonly class AccountsIndex extends AccountsPage
             'Sign-in',
             $row->status === AccountStatus::Unauthenticated
                 ? $this->form('sign-in-again', 'accounts.sign-in-again', $row->id, 'Sign in again')
-                : LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateToneOf($row)),
+                : LayoutPartData::build()
+                    ->asBadge()
+                    ->key('state')
+                    ->text($this->stateWordOf($row))
+                    ->tone($this->stateToneOf($row))
+                    ->finish(),
             $this->signInHelp($row),
         );
 
@@ -212,22 +249,31 @@ final readonly class AccountsIndex extends AccountsPage
 
     private function nameRow(AccountRowData $row): SettingsRow
     {
-        $rename = LayoutFormData::from([
-            'method' => ActionMethod::Patch,
-            'href' => route('accounts.rename', ['account' => $row->id], false),
-            'fixed' => ['seenRevision' => $row->nameRevision],
-            'isKeyed' => true,
-        ]);
+        $rename = LayoutFormData::build()
+            ->method(ActionMethod::Patch)
+            ->href(route('accounts.rename', ['account' => $row->id], false))
+            ->fixed(['seenRevision' => $row->nameRevision])
+            ->isKeyed(true)
+            ->finish();
 
         return SettingsRow::control(
             'name',
             'Name',
-            LayoutPartData::form(
-                'rename',
-                $rename,
-                'live',
-                LayoutPartData::field('label', 'Name', new LayoutFieldData('label', $row->label), 'text'),
-            ),
+            LayoutPartData::build()
+                ->asForm()
+                ->key('rename')
+                ->form($rename)
+                ->style('live')
+                ->children(
+                    LayoutPartData::build()
+                    ->asField()
+                    ->key('label')
+                    ->label('Name')
+                    ->field(LayoutFieldData::build()->name('label')->value($row->label)->finish())
+                    ->style('text')
+                    ->finish(),
+                )
+                ->finish(),
             'Shown in the account list and the agent bar.',
         );
     }
@@ -236,26 +282,32 @@ final readonly class AccountsIndex extends AccountsPage
     {
         $help = 'Agents use this account when no other is named.';
 
-        $activate = LayoutFormData::from([
-            'method' => ActionMethod::Post,
-            'href' => route('accounts.activate', ['account' => $row->id], false),
-            'isKeyed' => true,
-        ]);
+        $activate = LayoutFormData::build()
+            ->method(ActionMethod::Post)
+            ->href(route('accounts.activate', ['account' => $row->id], false))
+            ->isKeyed(true)
+            ->finish();
 
         return SettingsRow::control(
             'default',
             'Make default',
-            LayoutPartData::form(
-                'activate',
-                $activate,
-                'live',
-                LayoutPartData::field(
-                    'isDefault',
-                    'Make default',
-                    new LayoutFieldData('isDefault', $row->isActive ? '1' : '0'),
-                    'toggle',
-                ),
-            ),
+            LayoutPartData::build()
+                ->asForm()
+                ->key('activate')
+                ->form($activate)
+                ->style('live')
+                ->children(
+                    LayoutPartData::build()
+                    ->asField()
+                    ->key('isDefault')
+                    ->label('Make default')
+                    ->field(
+                        LayoutFieldData::build()->name('isDefault')->value($row->isActive ? '1' : '0')->finish(),
+                    )
+                    ->style('toggle')
+                    ->finish(),
+                )
+                ->finish(),
             $help,
         );
     }
@@ -299,7 +351,18 @@ final readonly class AccountsIndex extends AccountsPage
         return SettingsRow::reading(
             $key,
             $label,
-            LayoutPartData::usage('meter', $window->usedPercent, "{$label} used"),
+            LayoutPartData::build()
+                ->asUsage()
+                ->key('meter')
+                ->progress(
+                    LayoutProgressData::build()
+                    ->value($window->usedPercent)
+                    ->max(100)
+                    ->label("{$label} used")
+                    ->unit('percent')
+                    ->finish(),
+                )
+                ->finish(),
             $reset,
         );
     }
@@ -342,18 +405,26 @@ final readonly class AccountsIndex extends AccountsPage
 
     private function form(string $key, string $route, string $account, string $label): LayoutPartData
     {
-        return LayoutPartData::form(
-            $key,
-            LayoutFormData::from(
-                [
-                    'method' => ActionMethod::Post,
-                    'href' => route($route, ['account' => $account], false),
-                    'isKeyed' => true,
-                ],
-            ),
-            'inline',
-            LayoutPartData::action("{$key}-send", $label, LayoutActionData::submitting()),
-        );
+        return LayoutPartData::build()
+            ->asForm()
+            ->key($key)
+            ->form(
+                LayoutFormData::build()
+                    ->method(ActionMethod::Post)
+                    ->href(route($route, ['account' => $account], false))
+                    ->isKeyed(true)
+                    ->finish(),
+            )
+            ->style('inline')
+            ->children(
+                LayoutPartData::build()
+                ->asAction()
+                ->key("{$key}-send")
+                ->label($label)
+                ->action(LayoutActionData::build()->submits(true)->finish())
+                ->finish(),
+            )
+            ->finish();
     }
 
     /**

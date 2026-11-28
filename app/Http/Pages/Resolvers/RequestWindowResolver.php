@@ -67,16 +67,37 @@ final readonly class RequestWindowResolver implements PageResolver
             'lineDigest' => $request->source_digest,
         ]);
 
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'request',
-            'stack',
-            LayoutPartData::box(
-                'header',
-                'header',
-                LayoutPartData::text('title', "Request: {$request->operation}", 'heading'),
-            ),
-            LayoutPartData::native('detail', LayoutNativeData::of('processes/RequestWindow', $detail)),
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('request')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('header')
+                    ->style('header')
+                    ->children(
+                        LayoutPartData::build()
+                        ->asText()
+                        ->key('title')
+                        ->value("Request: {$request->operation}")
+                        ->style('heading')
+                        ->finish(),
+                    )
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asNative()
+                    ->key('detail')
+                    ->native(
+                        LayoutNativeData::build()->component('processes/RequestWindow')->props($detail)->finish(),
+                    )
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     private function activeRule(CommandRequest $request, CommandRule|null $declared): ClassificationRule|null

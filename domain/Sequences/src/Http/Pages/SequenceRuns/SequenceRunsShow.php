@@ -40,35 +40,67 @@ final readonly class SequenceRunsShow extends SequenceRunsPage
             $position = $index + 1;
             $isCurrent = $isRunning && $position === $run->current_step;
 
-            $steps[] = LayoutRowData::from([
-                'key' => (string) $position,
-                'label' => $title,
-                'isCurrent' => $isCurrent,
-                'leading' => [LayoutPartData::text('position', (string) $position, 'muted')],
-                'trailing' => [$this->markOf($position, $run->current_step, $run->status)],
-            ]);
+            $steps[] = LayoutRowData::build()
+                ->key((string) $position)
+                ->label($title)
+                ->isCurrent($isCurrent)
+                ->leading(
+                    [LayoutPartData::build()
+                    ->asText()
+                    ->key('position')
+                    ->value((string) $position)
+                    ->style('muted')
+                    ->finish()],
+                )
+                ->trailing([$this->markOf($position, $run->current_step, $run->status)])
+                ->finish();
         }
 
         return DetailPage::make($run->name)
-            ->above(LayoutPartData::text('label', "sequence run {$run->number}", 'code'))
-            ->withFacts(LayoutRowData::from([
-                'key' => 'state',
-                'label' => 'State',
-                'value' => ucfirst($run->status->value),
-            ]))
-            ->withStanding(LayoutPartData::collection('steps', 'list', $steps));
+            ->above(LayoutPartData::build()
+                ->asText()
+                ->key('label')
+                ->value("sequence run {$run->number}")
+                ->style('code')
+                ->finish())
+            ->withFacts(LayoutRowData::build()
+                ->key('state')
+                ->label('State')
+                ->value(ucfirst($run->status->value))
+                ->finish())
+            ->withStanding(LayoutPartData::build()
+                ->asCollection()
+                ->key('steps')
+                ->style('list')
+                ->rows($steps)
+                ->finish());
     }
 
     private function markOf(int $position, int $current, SequenceRunStatus $status): LayoutPartData
     {
         if ($status !== SequenceRunStatus::Running) {
-            return LayoutPartData::text('mark', $status === SequenceRunStatus::Finished ? 'Done' : 'Not done', 'muted');
+            return LayoutPartData::build()
+                ->asText()
+                ->key('mark')
+                ->value($status === SequenceRunStatus::Finished ? 'Done' : 'Not done')
+                ->style('muted')
+                ->finish();
         }
 
         return match (true) {
-            $position === $current => LayoutPartData::text('mark', 'Current', 'chip'),
-            $position < $current => LayoutPartData::text('mark', 'Done', 'muted'),
-            default => LayoutPartData::text('mark', 'Waiting', 'muted'),
+            $position === $current => LayoutPartData::build()
+                ->asText()
+                ->key('mark')
+                ->value('Current')
+                ->style('chip')
+                ->finish(),
+            $position < $current => LayoutPartData::build()
+                ->asText()
+                ->key('mark')
+                ->value('Done')
+                ->style('muted')
+                ->finish(),
+            default => LayoutPartData::build()->asText()->key('mark')->value('Waiting')->style('muted')->finish(),
         };
     }
 }

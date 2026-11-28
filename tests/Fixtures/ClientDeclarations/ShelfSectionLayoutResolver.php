@@ -16,6 +16,8 @@ final readonly class ShelfSectionLayoutResolver implements SectionResolver
 {
     public function read(SlotContext $context): DeclaredLayoutData
     {
-        return DeclaredLayoutData::of(LayoutPartData::text('lent', 'Two books lent'));
+        return DeclaredLayoutData::build()
+            ->root(LayoutPartData::build()->asText()->key('lent')->value('Two books lent')->finish())
+            ->finish();
     }
 }

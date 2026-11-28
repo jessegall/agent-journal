@@ -14,6 +14,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutFactValueData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutFactValueDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutFactValueDataFields::class;
+
     /**
      * @param  list<LayoutFactPieceData>  $pieces
      */
@@ -21,19 +26,4 @@ final class LayoutFactValueData extends Data
         #[DataCollectionOf(LayoutFactPieceData::class)]
         public readonly array $pieces,
     ) {}
-
-    /**
-     * A fact value of pieces, each a label and, when the viewer may open it, its address.
-     *
-     * @param  list<array{string, string|null}>  $pieces  each label with its address or none
-     */
-    public static function of(array $pieces): self
-    {
-        return new self(array_map(
-            fn (array $piece) => $piece[1] === null
-                ? new LayoutFactPieceData($piece[0])
-                : new LayoutFactPieceData($piece[0], $piece[1]),
-            $pieces,
-        ));
-    }
 }

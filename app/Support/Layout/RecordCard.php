@@ -72,24 +72,39 @@ final class RecordCard
     public function part(): LayoutPartData
     {
         $head = [
-            LayoutPartData::text('icon', $this->icon->value, 'icon'),
-            LayoutPartData::text('title', $this->title),
+            LayoutPartData::build()->asText()->key('icon')->value($this->icon->value)->style('icon')->finish(),
+            LayoutPartData::build()->asText()->key('title')->value($this->title)->finish(),
         ];
 
         if ($this->badgeWord !== null) {
-            $head[] = LayoutPartData::badge('badge', $this->badgeWord, $this->badgeTone);
+            $head[] = LayoutPartData::build()
+                ->asBadge()
+                ->key('badge')
+                ->text($this->badgeWord)
+                ->tone($this->badgeTone)
+                ->finish();
         }
 
-        $parts = [LayoutPartData::box('head', 'row', ...$head)];
+        $parts = [LayoutPartData::build()->asBox()->key('head')->style('row')->children(...$head)->finish()];
 
         if ($this->momentLabel !== null && $this->moment !== null) {
-            $parts[] = LayoutPartData::time('time', $this->momentLabel, $this->moment);
+            $parts[] = LayoutPartData::build()
+                ->asTime()
+                ->key('time')
+                ->label($this->momentLabel)
+                ->detail($this->moment)
+                ->finish();
         }
 
         if ($this->actions !== []) {
-            $parts[] = LayoutPartData::box('actions', 'row', ...$this->actions);
+            $parts[] = LayoutPartData::build()
+                ->asBox()
+                ->key('actions')
+                ->style('row')
+                ->children(...$this->actions)
+                ->finish();
         }
 
-        return LayoutPartData::box($this->key, 'card', ...$parts);
+        return LayoutPartData::build()->asBox()->key($this->key)->style('card')->children(...$parts)->finish();
     }
 }

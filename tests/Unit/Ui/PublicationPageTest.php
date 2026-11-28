@@ -57,7 +57,16 @@ final class PublicationPageTest extends TestCase
 
     public function test_a_native_part_carries_its_component_and_typed_props(): void
     {
-        $part = LayoutPartData::native('comments', LayoutNativeData::of('documents/Comments', new RecentNotesData(['a'])));
+        $part = LayoutPartData::build()
+            ->asNative()
+            ->key('comments')
+            ->native(
+                LayoutNativeData::build()
+                ->component('documents/Comments')
+                ->props(new RecentNotesData(['a']))
+                ->finish(),
+            )
+            ->finish();
 
         $this->assertSame(1, $part->assertWithinCatalogue());
         $this->assertInstanceOf(LayoutNativeData::class, $part->native);
@@ -67,12 +76,26 @@ final class PublicationPageTest extends TestCase
 
     private function page(): PublicationPage
     {
-        return PublicationPage::make('Entry 7', [LayoutPartData::text('edition', 'Second edition', 'muted')], 'Its summary', $this->body(...), [
-            PublicationTab::deferred('text', 'Text', fn () => LayoutPartData::body('text', $this->body())),
+        return PublicationPage::make('Entry 7', [LayoutPartData::build()
+            ->asText()
+            ->key('edition')
+            ->value('Second edition')
+            ->style('muted')
+            ->finish()], 'Its summary', $this->body(...), [
+            PublicationTab::deferred('text', 'Text', fn () => LayoutPartData::build()
+                ->asBody()
+                ->key('text')
+                ->body($this->body())
+                ->finish()),
             PublicationTab::deferred('references', 'References', function (): LayoutPartData {
                 $this->reads['references']++;
 
-                return LayoutPartData::notice('references', 'empty', 'No references.');
+                return LayoutPartData::build()
+                    ->asNotice()
+                    ->key('references')
+                    ->style('empty')
+                    ->title('No references.')
+                    ->finish();
             }),
         ]);
     }

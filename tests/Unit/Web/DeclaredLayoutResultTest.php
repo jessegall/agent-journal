@@ -24,7 +24,9 @@ final class DeclaredLayoutResultTest extends TestCase
 {
     public function test_a_layout_that_does_not_dock_asks_for_no_offer(): void
     {
-        $result = $this->resultOf(fn () => DeclaredLayoutData::of(LayoutPartData::text('title', 'Shelf')));
+        $result = $this->resultOf(fn () => DeclaredLayoutData::build()
+            ->root(LayoutPartData::build()->asText()->key('title')->value('Shelf')->finish())
+            ->finish());
 
         $this->assertArrayNotHasKey('offer', $result->toArray());
     }

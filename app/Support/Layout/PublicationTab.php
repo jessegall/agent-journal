@@ -37,11 +37,15 @@ final readonly class PublicationTab
         }
 
         $choices = array_map(
-            fn (self $tab) => new LayoutTabData($tab->key, $tab->label, $tab->key === $shown->key),
+            fn (self $tab) => LayoutTabData::build()
+                ->key($tab->key)
+                ->label($tab->label)
+                ->isChosen($tab->key === $shown->key)
+                ->finish(),
             $tabs,
         );
 
-        return LayoutPartData::tabs('tabs', $choices, ($shown->read)());
+        return LayoutPartData::build()->asTabs()->key('tabs')->tabs($choices)->shown(($shown->read)())->finish();
     }
 
     /**

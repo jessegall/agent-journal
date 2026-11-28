@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Layout;
 
 use App\Navigation\Layout\LayoutMenuData;
+use App\Web\Attributes\RowIdentity;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -18,13 +19,18 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutRowData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutRowDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutRowDataFields::class;
+
     /**
      * @param  array<string, string>  $query
      * @param  list<LayoutPartData>|Optional  $leading
      * @param  list<LayoutPartData>|Optional  $trailing
      */
     public function __construct(
-        public readonly string $key,
+        #[RowIdentity] public readonly string $key,
         public readonly string $label,
         public readonly string $value = '',
         public readonly array $query = [],

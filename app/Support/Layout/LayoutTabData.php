@@ -13,6 +13,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutTabData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutTabDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutTabDataFields::class;
+
     public function __construct(
         public readonly string $key,
         public readonly string $label,

@@ -11,24 +11,17 @@ namespace App\Support\Layout;
  */
 final readonly class ListPaging
 {
-    private function __construct(
+    /** @use \App\Web\Creation\Buildable<ListPagingFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = ListPagingFields::class;
+
+    public function __construct(
         public int $page,
         public int $lastPage,
         public string|null $after,
+        public bool $isAppend = false,
     ) {}
-
-    public static function numbered(int $page, int $lastPage): self
-    {
-        return new self($page, $lastPage, null);
-    }
-
-    /**
-     * The paging of a cursor list: the id the next rows start after, or none when the rows shown are the last.
-     */
-    public static function cursor(string|null $after): self
-    {
-        return new self(1, 1, $after);
-    }
 
     /**
      * @return list<LayoutPartData>
@@ -36,9 +29,14 @@ final readonly class ListPaging
     public function parts(): array
     {
         if ($this->after !== null) {
-            $more = LayoutActionData::appending(['after' => $this->after]);
+            $more = LayoutActionData::build()->query(['after' => $this->after])->appends(true)->finish();
 
-            return [LayoutPartData::action('more', 'Show more', $more)];
+            return [LayoutPartData::build()
+                ->asAction()
+                ->key('more')
+                ->label('Show more')
+                ->action($more)
+                ->finish()];
         }
 
         if ($this->lastPage <= 1) {
@@ -46,15 +44,23 @@ final readonly class ListPaging
         }
 
         return [
-            LayoutPartData::box(
-                'paging',
-                'row',
-                $this->control('first', 'First', 1, 'You are on the first page.'),
-                $this->control('previous', 'Previous', $this->page - 1, 'You are on the first page.'),
-                LayoutPartData::text('position', "Page {$this->page} of {$this->lastPage}", 'muted'),
-                $this->control('next', 'Next', $this->page + 1, 'You are on the last page.'),
-                $this->control('last', 'Last', $this->lastPage, 'You are on the last page.'),
-            ),
+            LayoutPartData::build()
+                ->asBox()
+                ->key('paging')
+                ->style('row')
+                ->children(
+                    $this->control('first', 'First', 1, 'You are on the first page.'),
+                    $this->control('previous', 'Previous', $this->page - 1, 'You are on the first page.'),
+                    LayoutPartData::build()
+                    ->asText()
+                    ->key('position')
+                    ->value("Page {$this->page} of {$this->lastPage}")
+                    ->style('muted')
+                    ->finish(),
+                    $this->control('next', 'Next', $this->page + 1, 'You are on the last page.'),
+                    $this->control('last', 'Last', $this->lastPage, 'You are on the last page.'),
+                )
+                ->finish(),
         ];
     }
 
@@ -63,9 +69,9 @@ final readonly class ListPaging
         $isOutside = $target < 1 || $target > $this->lastPage || $target === $this->page;
 
         $action = $isOutside
-            ? LayoutActionData::unavailable($reason)
-            : LayoutActionData::changing(['page' => (string) $target]);
+            ? LayoutActionData::build()->reason($reason)->finish()
+            : LayoutActionData::build()->query(['page' => (string) $target])->finish();
 
-        return LayoutPartData::action($key, $label, $action);
+        return LayoutPartData::build()->asAction()->key($key)->label($label)->action($action)->finish();
     }
 }

@@ -14,19 +14,16 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutNativeData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutNativeDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutNativeDataFields::class;
+
     /**
      * @param  array<string, mixed>  $props
      */
-    private function __construct(
+    public function __construct(
         public readonly string $component,
         public readonly array $props,
     ) {}
-
-    /**
-     * The registered component and its props, read from the typed data its reader built.
-     */
-    public static function of(string $component, Data $props): self
-    {
-        return new self($component, $props->toArray());
-    }
 }

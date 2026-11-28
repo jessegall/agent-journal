@@ -113,15 +113,18 @@ final readonly class SettingsIndex extends SettingsPage
         $section = match (true) {
             $isConnections => $section->switchedBy(
                 $this->saving($fixed),
-                new LayoutFieldData($this->core->remoteProjects->key, $this->switchTextOf($group->settings)),
+                LayoutFieldData::build()
+                    ->name($this->core->remoteProjects->key)
+                    ->value($this->switchTextOf($group->settings))
+                    ->finish(),
             ),
             $this->isSwitched($group) => $section->switchedBy(
-                LayoutFormData::from([
-                    'method' => ActionMethod::Post,
-                    'href' => route('settings.switch', [], false),
-                    'fixed' => $fixed,
-                ]),
-                new LayoutFieldData('enabled', $this->isOn($group) ? '1' : '0'),
+                LayoutFormData::build()
+                    ->method(ActionMethod::Post)
+                    ->href(route('settings.switch', [], false))
+                    ->fixed($fixed)
+                    ->finish(),
+                LayoutFieldData::build()->name('enabled')->value($this->isOn($group) ? '1' : '0')->finish(),
             ),
             default => $section,
         };
@@ -131,12 +134,12 @@ final readonly class SettingsIndex extends SettingsPage
             : $section;
 
         if (array_any($rows, fn (SettingData $setting) => $setting->source === SettingSource::Override)) {
-            return $section->resettableBy(LayoutFormData::from([
-                'method' => ActionMethod::Post,
-                'href' => route('settings.reset', [], false),
-                'fixed' => $fixed,
-                'confirmed' => "{$group->label} settings reset",
-            ]));
+            return $section->resettableBy(LayoutFormData::build()
+                ->method(ActionMethod::Post)
+                ->href(route('settings.reset', [], false))
+                ->fixed($fixed)
+                ->confirmed("{$group->label} settings reset")
+                ->finish());
         }
 
         return $section;
@@ -183,11 +186,11 @@ final readonly class SettingsIndex extends SettingsPage
      */
     private function saving(array $fixed): LayoutFormData
     {
-        return LayoutFormData::from([
-            'method' => ActionMethod::Post,
-            'href' => route('settings.save', [], false),
-            'fixed' => $fixed,
-        ]);
+        return LayoutFormData::build()
+            ->method(ActionMethod::Post)
+            ->href(route('settings.save', [], false))
+            ->fixed($fixed)
+            ->finish();
     }
 
     /**
@@ -208,10 +211,16 @@ final readonly class SettingsIndex extends SettingsPage
             return [SettingsRow::value('projects', 'Connect a project', $invalid->getMessage())->inBlock()];
         }
 
-        $panel = LayoutPartData::native(
-            'projects',
-            LayoutNativeData::of('connections/ConnectedProjectsPart', $connections),
-        );
+        $panel = LayoutPartData::build()
+            ->asNative()
+            ->key('projects')
+            ->native(
+                LayoutNativeData::build()
+                ->component('connections/ConnectedProjectsPart')
+                ->props($connections)
+                ->finish(),
+            )
+            ->finish();
 
         return [SettingsRow::reading('projects', 'Connect a project', $panel)];
     }
@@ -254,21 +263,26 @@ final readonly class SettingsIndex extends SettingsPage
             $setting->default instanceof StringChoiceValueData => SettingsRow::field(
                 $key,
                 $setting->label,
-                new LayoutFieldData($key, $text, [], $this->optionsOf($setting)),
+                LayoutFieldData::build()
+                    ->name($key)
+                    ->value($text)
+                    ->clears([])
+                    ->options($this->optionsOf($setting))
+                    ->finish(),
                 'choice',
                 $setting->description,
             ),
             $setting->type === SettingType::Boolean => SettingsRow::field(
                 $key,
                 $setting->label,
-                new LayoutFieldData($key, $text),
+                LayoutFieldData::build()->name($key)->value($text)->finish(),
                 'toggle',
                 $setting->description,
             ),
             default => SettingsRow::field(
                 $key,
                 $setting->label,
-                new LayoutFieldData($key, $text),
+                LayoutFieldData::build()->name($key)->value($text)->finish(),
                 'text',
                 $setting->description,
             ),

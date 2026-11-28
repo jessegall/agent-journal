@@ -53,15 +53,45 @@ final readonly class RequestListResolver implements PageResolver
             'bundles' => array_values(array_map(BundleRowData::fromBundle(...), $waiting)),
         ]);
 
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'review',
-            'stack',
-            LayoutPartData::box('header', 'header', LayoutPartData::text('title', 'Command review', 'heading')),
-            LayoutPartData::text('kinds', 'Sorting a command into kinds does not allow it to run.', 'muted'),
-            $this->requestsOf($requestRows),
-            $this->rulesOf($ruleRows),
-            LayoutPartData::native('bundles', LayoutNativeData::of('processes/BundleApprovals', $bundles)),
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('review')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('header')
+                    ->style('header')
+                    ->children(
+                        LayoutPartData::build()
+                        ->asText()
+                        ->key('title')
+                        ->value('Command review')
+                        ->style('heading')
+                        ->finish(),
+                    )
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asText()
+                    ->key('kinds')
+                    ->value('Sorting a command into kinds does not allow it to run.')
+                    ->style('muted')
+                    ->finish(),
+                    $this->requestsOf($requestRows),
+                    $this->rulesOf($ruleRows),
+                    LayoutPartData::build()
+                    ->asNative()
+                    ->key('bundles')
+                    ->native(
+                        LayoutNativeData::build()->component('processes/BundleApprovals')->props($bundles)->finish(),
+                    )
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     /**
@@ -69,33 +99,55 @@ final readonly class RequestListResolver implements PageResolver
      */
     private function requestsOf(array $requests): LayoutPartData
     {
-        $heading = LayoutPartData::text('heading', 'Requests', 'heading');
+        $heading = LayoutPartData::build()
+            ->asText()
+            ->key('heading')
+            ->value('Requests')
+            ->style('heading')
+            ->finish();
 
         if ($requests === []) {
-            return LayoutPartData::box(
-                'requests',
-                'section',
-                $heading,
-                LayoutPartData::notice('empty', 'empty', 'No command request is waiting.'),
-            );
+            return LayoutPartData::build()
+                ->asBox()
+                ->key('requests')
+                ->style('section')
+                ->children(
+                    $heading,
+                    LayoutPartData::build()
+                    ->asNotice()
+                    ->key('empty')
+                    ->style('empty')
+                    ->title('No command request is waiting.')
+                    ->finish(),
+                )
+                ->finish();
         }
 
-        return LayoutPartData::box('requests', 'section', $heading, LayoutPartData::collection(
-            'rows',
-            'list',
-            array_map(
-                fn (RequestRowData $request) => LayoutRowData::from(
-                    [
-                        'key' => $request->id,
-                        'label' => $request->operation,
-                        'value' => $request->state,
-                        'detail' => "{$request->line} · {$request->holdReason} · next: {$request->next}",
-                        'href' => "/processes/requests/{$request->id}",
-                    ],
-                ),
-                $requests,
-            ),
-        ));
+        return LayoutPartData::build()
+            ->asBox()
+            ->key('requests')
+            ->style('section')
+            ->children(
+                $heading,
+                LayoutPartData::build()
+                ->asCollection()
+                ->key('rows')
+                ->style('list')
+                ->rows(
+                    array_map(
+                        fn (RequestRowData $request) => LayoutRowData::build()
+                            ->key($request->id)
+                            ->label($request->operation)
+                            ->value($request->state)
+                            ->detail("{$request->line} · {$request->holdReason} · next: {$request->next}")
+                            ->href("/processes/requests/{$request->id}")
+                            ->finish(),
+                        $requests,
+                    ),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     /**
@@ -103,31 +155,48 @@ final readonly class RequestListResolver implements PageResolver
      */
     private function rulesOf(array $rules): LayoutPartData
     {
-        $heading = LayoutPartData::text('heading', 'Rules', 'heading');
+        $heading = LayoutPartData::build()->asText()->key('heading')->value('Rules')->style('heading')->finish();
 
         if ($rules === []) {
-            return LayoutPartData::box(
-                'rules',
-                'section',
-                $heading,
-                LayoutPartData::notice('empty', 'empty', 'The project has no rule of its own yet.'),
-            );
+            return LayoutPartData::build()
+                ->asBox()
+                ->key('rules')
+                ->style('section')
+                ->children(
+                    $heading,
+                    LayoutPartData::build()
+                    ->asNotice()
+                    ->key('empty')
+                    ->style('empty')
+                    ->title('The project has no rule of its own yet.')
+                    ->finish(),
+                )
+                ->finish();
         }
 
-        return LayoutPartData::box('rules', 'section', $heading, LayoutPartData::collection(
-            'rows',
-            'list',
-            array_map(
-                fn (ClassificationRuleRowData $rule) => LayoutRowData::from(
-                    [
-                        'key' => $rule->id,
-                        'label' => "{$rule->ruleId} ({$rule->owner}) revision {$rule->revision}",
-                        'value' => $rule->state,
-                        'detail' => $rule->reason,
-                    ],
-                ),
-                $rules,
-            ),
-        ));
+        return LayoutPartData::build()
+            ->asBox()
+            ->key('rules')
+            ->style('section')
+            ->children(
+                $heading,
+                LayoutPartData::build()
+                ->asCollection()
+                ->key('rows')
+                ->style('list')
+                ->rows(
+                    array_map(
+                        fn (ClassificationRuleRowData $rule) => LayoutRowData::build()
+                            ->key($rule->id)
+                            ->label("{$rule->ruleId} ({$rule->owner}) revision {$rule->revision}")
+                            ->value($rule->state)
+                            ->detail($rule->reason)
+                            ->finish(),
+                        $rules,
+                    ),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 }

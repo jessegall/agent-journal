@@ -40,7 +40,9 @@ final class WindowResultKindsTest extends TestCase
 
     public function test_an_authorized_empty_read_is_ready(): void
     {
-        $result = $this->resultOf(fn () => DeclaredLayoutData::of(LayoutPartData::collection('loans', 'list', [])));
+        $result = $this->resultOf(fn () => DeclaredLayoutData::build()
+            ->root(LayoutPartData::build()->asCollection()->key('loans')->style('list')->rows([])->finish())
+            ->finish());
 
         $this->assertSame('ready', $result->toArray()['status']);
     }
@@ -82,7 +84,9 @@ final class WindowResultKindsTest extends TestCase
     public function test_a_part_with_an_unknown_style_names_the_styles_allowed(): void
     {
         $result = $this->resultOf(
-            fn () => DeclaredLayoutData::of(LayoutPartData::text('when', 'Now', 'clock')),
+            fn () => DeclaredLayoutData::build()
+                ->root(LayoutPartData::build()->asText()->key('when')->value('Now')->style('clock')->finish())
+                ->finish(),
         );
 
         $this->assertSame('failed', $result->toArray()['status']);

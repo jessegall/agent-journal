@@ -52,23 +52,38 @@ final readonly class PublicationPage
      */
     public function layout(string $chosen): DeclaredLayoutData
     {
-        $header = LayoutPartData::box(
-            'header',
-            'header',
-            LayoutPartData::text('title', $this->title, 'heading'),
-            LayoutPartData::box('metadata', 'row', ...$this->metadata),
-            LayoutPartData::text('summary', $this->summary, 'muted'),
-        );
+        $header = LayoutPartData::build()
+            ->asBox()
+            ->key('header')
+            ->style('header')
+            ->children(
+                LayoutPartData::build()->asText()->key('title')->value($this->title)->style('heading')->finish(),
+                LayoutPartData::build()
+                ->asBox()
+                ->key('metadata')
+                ->style('row')
+                ->children(...$this->metadata)
+                ->finish(),
+                LayoutPartData::build()->asText()->key('summary')->value($this->summary)->style('muted')->finish(),
+            )
+            ->finish();
 
-        return DeclaredLayoutData::of(
-            LayoutPartData::box('publication', 'stack', $header, ...[...$this->standing, $this->content($chosen)]),
-        );
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('publication')
+                ->style('stack')
+                ->children($header, ...[...$this->standing, $this->content($chosen)])
+                ->finish(),
+            )
+            ->finish();
     }
 
     private function content(string $chosen): LayoutPartData
     {
         if ($this->tabs === []) {
-            return LayoutPartData::body('body', ($this->body)());
+            return LayoutPartData::build()->asBody()->key('body')->body(($this->body)())->finish();
         }
 
         return PublicationTab::setOf($this->tabs, $chosen);

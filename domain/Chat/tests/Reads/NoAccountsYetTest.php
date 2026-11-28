@@ -35,7 +35,7 @@ final class NoAccountsYetTest extends TestCase
             [NoAccountsYet::TITLE, NoAccountsYet::SENTENCE, 'Add account'],
             [$notice->text, $notice->detail, $action->text],
         );
-        $this->assertEquals(LayoutActionData::to('/accounts?add=1'), $action->action);
+        $this->assertEquals(LayoutActionData::build()->href('/accounts?add=1')->finish(), $action->action);
     }
 
     public function test_the_chat_shows_no_such_state_once_an_account_is_signed_in(): void

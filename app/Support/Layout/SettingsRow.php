@@ -31,7 +31,13 @@ final readonly class SettingsRow
         string $style = 'text',
         string|null $help = null,
     ): self {
-        return new self($key, $label, $help, LayoutPartData::field($key, $label, $field, $style));
+        return new self($key, $label, $help, LayoutPartData::build()
+            ->asField()
+            ->key($key)
+            ->label($label)
+            ->field($field)
+            ->style($style)
+            ->finish());
     }
 
     /**
@@ -39,7 +45,11 @@ final readonly class SettingsRow
      */
     public static function value(string $key, string $label, string $value, string|null $help = null): self
     {
-        return new self($key, $label, $help, LayoutPartData::text($key, $value));
+        return new self($key, $label, $help, LayoutPartData::build()
+            ->asText()
+            ->key($key)
+            ->value($value)
+            ->finish());
     }
 
     /**
@@ -47,7 +57,12 @@ final readonly class SettingsRow
      */
     public static function code(string $key, string $label, string $value, string|null $help = null): self
     {
-        return new self($key, $label, $help, LayoutPartData::text($key, $value, 'code'), true);
+        return new self($key, $label, $help, LayoutPartData::build()
+            ->asText()
+            ->key($key)
+            ->value($value)
+            ->style('code')
+            ->finish(), true);
     }
 
     /**
@@ -74,11 +89,21 @@ final readonly class SettingsRow
     public static function chips(string $key, string $label, array $chips, string|null $help = null): self
     {
         $parts = array_map(
-            fn (int $index) => LayoutPartData::text("chip-{$index}", $chips[$index], 'chip'),
+            fn (int $index) => LayoutPartData::build()
+                ->asText()
+                ->key("chip-{$index}")
+                ->value($chips[$index])
+                ->style('chip')
+                ->finish(),
             array_keys($chips),
         );
 
-        return new self($key, $label, $help, LayoutPartData::box($key, 'row', ...$parts), true);
+        return new self($key, $label, $help, LayoutPartData::build()
+            ->asBox()
+            ->key($key)
+            ->style('row')
+            ->children(...$parts)
+            ->finish(), true);
     }
 
     public function inBlock(): self
@@ -93,18 +118,28 @@ final readonly class SettingsRow
 
     public function part(): LayoutPartData
     {
-        $parts = [LayoutPartData::text('title', $this->label)];
+        $parts = [LayoutPartData::build()->asText()->key('title')->value($this->label)->finish()];
 
         if ($this->help !== null) {
-            $parts[] = LayoutPartData::text('hint', $this->help, 'muted');
+            $parts[] = LayoutPartData::build()
+                ->asText()
+                ->key('hint')
+                ->value($this->help)
+                ->style('muted')
+                ->finish();
         }
 
         $parts[] = $this->control;
 
         if ($this->isChanged) {
-            $parts[] = LayoutPartData::badge('changed', 'Not the default');
+            $parts[] = LayoutPartData::build()->asBadge()->key('changed')->text('Not the default')->finish();
         }
 
-        return LayoutPartData::box("row-{$this->key}", $this->isBlock ? 'setting-block' : 'setting', ...$parts);
+        return LayoutPartData::build()
+            ->asBox()
+            ->key("row-{$this->key}")
+            ->style($this->isBlock ? 'setting-block' : 'setting')
+            ->children(...$parts)
+            ->finish();
     }
 }

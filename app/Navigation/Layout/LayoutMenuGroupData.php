@@ -14,6 +14,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutMenuGroupData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutMenuGroupDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutMenuGroupDataFields::class;
+
     /**
      * @param  list<LayoutMenuItemData>  $items
      */

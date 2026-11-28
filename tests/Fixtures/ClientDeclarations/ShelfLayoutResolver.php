@@ -16,15 +16,34 @@ final readonly class ShelfLayoutResolver implements PageResolver
 {
     public function read(): DeclaredLayoutData
     {
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'shelf',
-            'stack',
-            LayoutPartData::text('title', 'Shelf', 'heading'),
-            LayoutPartData::collection('books', 'list', [
-                new LayoutRowData('book-1', 'Dune', 'read'),
-                new LayoutRowData('book-2', 'Emma', 'unread'),
-            ]),
-            LayoutPartData::notice('none-lent', 'empty', 'No book is lent out'),
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('shelf')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()->asText()->key('title')->value('Shelf')->style('heading')->finish(),
+                    LayoutPartData::build()
+                    ->asCollection()
+                    ->key('books')
+                    ->style('list')
+                    ->rows(
+                        [
+                            LayoutRowData::build()->key('book-1')->label('Dune')->value('read')->finish(),
+                            LayoutRowData::build()->key('book-2')->label('Emma')->value('unread')->finish(),
+                        ],
+                    )
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asNotice()
+                    ->key('none-lent')
+                    ->style('empty')
+                    ->title('No book is lent out')
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 }

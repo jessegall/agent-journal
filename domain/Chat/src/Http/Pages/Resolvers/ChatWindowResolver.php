@@ -112,7 +112,7 @@ final readonly class ChatWindowResolver implements PageResolver
             return Optional::create();
         }
 
-        $wizard = LayoutActionData::to(route('accounts.accounts', ['add' => '1'], false));
+        $wizard = LayoutActionData::build()->href(route('accounts.accounts', ['add' => '1'], false))->finish();
 
         return NoAccountsYet::addingWith($wizard)->page();
     }

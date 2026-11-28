@@ -45,7 +45,12 @@ final readonly class ProfilesShow extends ProfilesPage
         }
 
         if ($profile->isRetired()) {
-            return $page->withStanding(LayoutPartData::notice('retired', 'info', 'This profile is retired.'))->part();
+            return $page->withStanding(LayoutPartData::build()
+                ->asNotice()
+                ->key('retired')
+                ->style('info')
+                ->title('This profile is retired.')
+                ->finish())->part();
         }
 
         $snapshot = $this->profiles->snapshotFor($key);
@@ -129,15 +134,29 @@ final readonly class ProfilesShow extends ProfilesPage
             "rules-{$place}",
             $group->label,
             $group->rules === []
-                ? LayoutPartData::text('none', 'No rules', 'muted')
-                : LayoutPartData::collection('rules', 'list', array_map(
-                    fn (ProfileRule $rule) => LayoutRowData::from([
-                        'key' => (string) $rule->number,
-                        'label' => $rule->text,
-                        'leading' => [LayoutPartData::text('number', (string) $rule->number, 'muted')],
-                    ]),
-                    $group->rules,
-                )),
+                ? LayoutPartData::build()->asText()->key('none')->value('No rules')->style('muted')->finish()
+                : LayoutPartData::build()
+                    ->asCollection()
+                    ->key('rules')
+                    ->style('list')
+                    ->rows(
+                        array_map(
+                            fn (ProfileRule $rule) => LayoutRowData::build()
+                                ->key((string) $rule->number)
+                                ->label($rule->text)
+                                ->leading(
+                                    [LayoutPartData::build()
+                                    ->asText()
+                                    ->key('number')
+                                    ->value((string) $rule->number)
+                                    ->style('muted')
+                                    ->finish()],
+                                )
+                                ->finish(),
+                            $group->rules,
+                        ),
+                    )
+                    ->finish(),
         )->inBlock(), $groups->groups, array_keys($groups->groups));
     }
 }

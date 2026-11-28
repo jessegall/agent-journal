@@ -63,6 +63,6 @@ final class LayoutTableDataTest extends TestCase
 
     private static function row(string $label): LayoutRowData
     {
-        return LayoutRowData::from(['key' => $label, 'label' => $label]);
+        return LayoutRowData::build()->key($label)->label($label)->finish();
     }
 }

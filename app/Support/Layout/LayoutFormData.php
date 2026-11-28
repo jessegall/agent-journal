@@ -17,6 +17,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutFormData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutFormDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutFormDataFields::class;
+
     /**
      * @param  array<string, string|int>  $fixed
      */

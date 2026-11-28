@@ -87,7 +87,12 @@ final readonly class ListPage
      */
     public function searching(string $label, LayoutFieldData $field): self
     {
-        return clone ($this, ['search' => LayoutPartData::field('search', $label, $field)]);
+        return clone ($this, ['search' => LayoutPartData::build()
+            ->asField()
+            ->key('search')
+            ->label($label)
+            ->field($field)
+            ->finish()]);
     }
 
     /**
@@ -95,7 +100,12 @@ final readonly class ListPage
      */
     public function creating(string $label, LayoutActionData $action): self
     {
-        return clone ($this, ['creation' => LayoutPartData::creation('creation', $label, $action)]);
+        return clone ($this, ['creation' => LayoutPartData::build()
+            ->asCreation()
+            ->key('creation')
+            ->label($label)
+            ->action($action)
+            ->finish()]);
     }
 
     /**
@@ -106,7 +116,7 @@ final readonly class ListPage
     {
         return clone ($this, ['creation' => count($creations) === 1
             ? $creations[0]
-            : LayoutPartData::box('creation', 'row', ...$creations)]);
+            : LayoutPartData::build()->asBox()->key('creation')->style('row')->children(...$creations)->finish()]);
     }
 
     /**
@@ -114,7 +124,11 @@ final readonly class ListPage
      */
     public function creatingFromMenu(LayoutMenuData $menu): self
     {
-        return clone ($this, ['creation' => LayoutPartData::menu('creation', $menu)]);
+        return clone ($this, ['creation' => LayoutPartData::build()
+            ->asMenu()
+            ->key('creation')
+            ->menu($menu)
+            ->finish()]);
     }
 
     public function paged(ListPaging $paging): self
@@ -139,7 +153,16 @@ final readonly class ListPage
     public function layout(): DeclaredLayoutData
     {
         if ($this->rows === [] && $this->reader === [] && $this->empty->fillsPage) {
-            return DeclaredLayoutData::of(LayoutPartData::box('index', 'page', $this->header(), $this->empty->page()));
+            return DeclaredLayoutData::build()
+                ->root(
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('index')
+                    ->style('page')
+                    ->children($this->header(), $this->empty->page())
+                    ->finish(),
+                )
+                ->finish();
         }
 
         $parts = [
@@ -148,36 +171,79 @@ final readonly class ListPage
         ];
 
         if (! $this->back instanceof LayoutBackData) {
-            return DeclaredLayoutData::of(LayoutPartData::box('list', 'page', $this->header(), ...$parts));
+            return DeclaredLayoutData::build()
+                ->root(
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('list')
+                    ->style('page')
+                    ->children($this->header(), ...$parts)
+                    ->finish(),
+                )
+                ->finish();
         }
 
         $split = $this->reader === []
-            ? LayoutSplitData::showingList($this->readerWidth)
-            : LayoutSplitData::showingReader($this->back, $this->readerWidth);
+            ? LayoutSplitData::build()->asShowingList()->readerWidth($this->readerWidth)->finish()
+            : LayoutSplitData::build()
+                ->asShowingReader()
+                ->back($this->back)
+                ->readerWidth($this->readerWidth)
+                ->finish();
 
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'index',
-            'page',
-            $this->header(),
-            LayoutPartData::split(
-                'split',
-                $split,
-                LayoutPartData::box('list', 'page-list', ...$parts),
-                ...$this->readerParts(),
-            ),
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('index')
+                ->style('page')
+                ->children(
+                    $this->header(),
+                    LayoutPartData::build()
+                    ->asSplit()
+                    ->key('split')
+                    ->split($split)
+                    ->list(
+                        LayoutPartData::build()
+                        ->asBox()
+                        ->key('list')
+                        ->style('page-list')
+                        ->children(...$parts)
+                        ->finish(),
+                    )
+                    ->reader(...$this->readerParts())
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     private function header(): LayoutPartData
     {
-        $parts = [LayoutPartData::text('title', $this->title, 'heading')];
+        $parts = [LayoutPartData::build()
+            ->asText()
+            ->key('title')
+            ->value($this->title)
+            ->style('heading')
+            ->finish()];
 
         if ($this->total !== null) {
-            $parts[] = LayoutPartData::text('count', (string) $this->total, 'muted');
+            $parts[] = LayoutPartData::build()
+                ->asText()
+                ->key('count')
+                ->value((string) $this->total)
+                ->style('muted')
+                ->finish();
         }
 
         if ($this->views !== []) {
-            $parts[] = LayoutPartData::collection('views', 'choices', $this->views);
+            $parts[] = LayoutPartData::build()
+                ->asCollection()
+                ->key('views')
+                ->style('choices')
+                ->rows($this->views)
+                ->finish();
         }
 
         foreach ([
@@ -189,18 +255,23 @@ final readonly class ListPage
             }
         }
 
-        return LayoutPartData::box('header', 'page-head', ...$parts);
+        return LayoutPartData::build()->asBox()->key('header')->style('page-head')->children(...$parts)->finish();
     }
 
     private function content(): LayoutPartData
     {
-        $shown = LayoutPartData::box('content', 'stack', ...$this->shownParts());
+        $shown = LayoutPartData::build()
+            ->asBox()
+            ->key('content')
+            ->style('stack')
+            ->children(...$this->shownParts())
+            ->finish();
 
         if ($this->tabs === []) {
             return $shown;
         }
 
-        return LayoutPartData::tabs('tabs', $this->tabs, $shown);
+        return LayoutPartData::build()->asTabs()->key('tabs')->tabs($this->tabs)->shown($shown)->finish();
     }
 
     /**
@@ -212,7 +283,12 @@ final readonly class ListPage
             return $this->empty->parts();
         }
 
-        $parts = [LayoutPartData::collection('rows', 'list', $this->rows)];
+        $parts = [LayoutPartData::build()
+            ->asCollection()
+            ->key('rows')
+            ->style('list')
+            ->rows($this->rows)
+            ->finish()];
 
         if ($this->paging instanceof ListPaging) {
             $parts = [
@@ -233,6 +309,11 @@ final readonly class ListPage
             return $this->reader;
         }
 
-        return [LayoutPartData::notice('nothing-selected', 'empty', 'Nothing selected')];
+        return [LayoutPartData::build()
+            ->asNotice()
+            ->key('nothing-selected')
+            ->style('empty')
+            ->title('Nothing selected')
+            ->finish()];
     }
 }

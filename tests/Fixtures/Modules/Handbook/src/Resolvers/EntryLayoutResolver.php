@@ -43,7 +43,7 @@ final readonly class EntryLayoutResolver implements PageResolver
 
         return PublicationPage::make(
             $entry->title,
-            [LayoutPartData::text('edition', $entry->edition, 'muted')],
+            [LayoutPartData::build()->asText()->key('edition')->value($entry->edition)->style('muted')->finish()],
             $entry->summary,
             $text,
             $this->tabsOf($entry, $text),
@@ -60,7 +60,11 @@ final readonly class EntryLayoutResolver implements PageResolver
             return [];
         }
 
-        $tabs = [PublicationTab::deferred('text', 'Text', fn () => LayoutPartData::body('text', $text()))];
+        $tabs = [PublicationTab::deferred('text', 'Text', fn () => LayoutPartData::build()
+            ->asBody()
+            ->key('text')
+            ->body($text())
+            ->finish())];
 
         if ($entry->sharesReferences) {
             $tabs[] = PublicationTab::deferred('references', 'References', fn () => $this->referencesOf($entry));
@@ -79,26 +83,48 @@ final readonly class EntryLayoutResolver implements PageResolver
         $page = $this->entries->referencePage($entry, $cursor, self::REFERENCE_PAGE_SIZE);
 
         if ($page === [] && $cursor === 0) {
-            return LayoutPartData::notice('references', 'info', 'No references.');
+            return LayoutPartData::build()
+                ->asNotice()
+                ->key('references')
+                ->style('info')
+                ->title('No references.')
+                ->finish();
         }
 
-        $parts = [LayoutPartData::collection('references', 'list', array_map(
-            fn (HandbookEntry $reference) => new LayoutRowData(
-                (string) $reference->number,
-                $reference->title,
-                $reference->edition,
-                href: "/handbook/entries/{$reference->number}",
-            ),
-            $page,
-        ))];
+        $parts = [LayoutPartData::build()
+            ->asCollection()
+            ->key('references')
+            ->style('list')
+            ->rows(
+                array_map(
+                    fn (HandbookEntry $reference) => LayoutRowData::build()
+                        ->key((string) $reference->number)
+                        ->label($reference->title)
+                        ->value($reference->edition)
+                        ->href("/handbook/entries/{$reference->number}")
+                        ->finish(),
+                    $page,
+                ),
+            )
+            ->finish()];
 
         $next = $cursor + self::REFERENCE_PAGE_SIZE;
 
         if ($next < $this->entries->referenceCount($entry)) {
-            $nextPage = LayoutActionData::changing(['cursor' => (string) $next]);
-            $parts[] = LayoutPartData::action('next', 'Next page', $nextPage);
+            $nextPage = LayoutActionData::build()->query(['cursor' => (string) $next])->finish();
+            $parts[] = LayoutPartData::build()
+                ->asAction()
+                ->key('next')
+                ->label('Next page')
+                ->action($nextPage)
+                ->finish();
         }
 
-        return LayoutPartData::box('references-page', 'stack', ...$parts);
+        return LayoutPartData::build()
+            ->asBox()
+            ->key('references-page')
+            ->style('stack')
+            ->children(...$parts)
+            ->finish();
     }
 }

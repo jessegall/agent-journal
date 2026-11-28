@@ -35,22 +35,44 @@ final readonly class RuntimeStatusResolver implements PageResolver
         ]), $this->runtimes->page(1, self::RUNTIMES));
 
         $parts = [
-            LayoutPartData::box('header', 'header', LayoutPartData::text('title', 'Runtimes', 'heading')),
-            LayoutPartData::native(
-                'refusal',
-                LayoutNativeData::of('web/RuntimeRefusal', RecoveryRefusalPartData::from(['errorKey' => 'review'])),
-            ),
+            LayoutPartData::build()
+                ->asBox()
+                ->key('header')
+                ->style('header')
+                ->children(
+                    LayoutPartData::build()->asText()->key('title')->value('Runtimes')->style('heading')->finish(),
+                )
+                ->finish(),
+            LayoutPartData::build()
+                ->asNative()
+                ->key('refusal')
+                ->native(
+                    LayoutNativeData::build()
+                    ->component('web/RuntimeRefusal')
+                    ->props(RecoveryRefusalPartData::from(['errorKey' => 'review']))
+                    ->finish(),
+                )
+                ->finish(),
         ];
 
         if ($runtimeEntries === []) {
-            $parts[] = LayoutPartData::notice('empty', 'empty', 'No active runtimes.');
+            $parts[] = LayoutPartData::build()
+                ->asNotice()
+                ->key('empty')
+                ->style('empty')
+                ->title('No active runtimes.')
+                ->finish();
         }
 
         foreach ($runtimeEntries as $entry) {
             $parts[] = $this->cardOf($entry);
         }
 
-        return DeclaredLayoutData::of(LayoutPartData::box('runtimes', 'stack', ...$parts));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()->asBox()->key('runtimes')->style('stack')->children(...$parts)->finish(),
+            )
+            ->finish();
     }
 
     private function cardOf(RuntimeEntryData $entry): LayoutPartData
@@ -62,30 +84,61 @@ final readonly class RuntimeStatusResolver implements PageResolver
             : "observed {$status->observationAgeSeconds}s ago";
 
         $summary = [
-            LayoutPartData::text('driver', $status->driver, 'code'),
-            LayoutPartData::text('activity', $status->activity->value),
-            LayoutPartData::text('hold', "hold: {$status->hold->value}", 'muted'),
-            $status->isStale ? LayoutPartData::badge('observed', "{$age}, stale", 'warn') : LayoutPartData::text(
-                'observed',
-                $age,
-                'muted',
-            ),
+            LayoutPartData::build()->asText()->key('driver')->value($status->driver)->style('code')->finish(),
+            LayoutPartData::build()->asText()->key('activity')->value($status->activity->value)->finish(),
+            LayoutPartData::build()
+                ->asText()
+                ->key('hold')
+                ->value("hold: {$status->hold->value}")
+                ->style('muted')
+                ->finish(),
+            $status->isStale ? LayoutPartData::build()
+                ->asBadge()
+                ->key('observed')
+                ->text("{$age}, stale")
+                ->tone('warn')
+                ->finish() : LayoutPartData::build()
+                ->asText()
+                ->key('observed')
+                ->value($age)
+                ->style('muted')
+                ->finish(),
         ];
 
         if ($status->hasScreen) {
-            $terminal = LayoutActionData::to(route('web.terminal', ['agent' => $status->agentId], false));
-            $summary[] = LayoutPartData::action('terminal', 'Watch terminal', $terminal, 'ghost');
+            $terminal = LayoutActionData::build()
+                ->href(route('web.terminal', ['agent' => $status->agentId], false))
+                ->finish();
+            $summary[] = LayoutPartData::build()
+                ->asAction()
+                ->key('terminal')
+                ->label('Watch terminal')
+                ->action($terminal)
+                ->style('ghost')
+                ->finish();
         }
 
         if ($status->watchers > 0) {
-            $summary[] = LayoutPartData::text('watchers', "{$status->watchers} watching", 'muted');
+            $summary[] = LayoutPartData::build()
+                ->asText()
+                ->key('watchers')
+                ->value("{$status->watchers} watching")
+                ->style('muted')
+                ->finish();
         }
 
-        return LayoutPartData::box(
-            $status->runtimeId,
-            'card',
-            LayoutPartData::box('summary', 'row', ...$summary),
-            LayoutPartData::native('live', LayoutNativeData::of('web/RuntimeCard', $entry)),
-        );
+        return LayoutPartData::build()
+            ->asBox()
+            ->key($status->runtimeId)
+            ->style('card')
+            ->children(
+                LayoutPartData::build()->asBox()->key('summary')->style('row')->children(...$summary)->finish(),
+                LayoutPartData::build()
+                ->asNative()
+                ->key('live')
+                ->native(LayoutNativeData::build()->component('web/RuntimeCard')->props($entry)->finish())
+                ->finish(),
+            )
+            ->finish();
     }
 }

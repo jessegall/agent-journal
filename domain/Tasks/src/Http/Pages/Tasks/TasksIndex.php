@@ -56,11 +56,11 @@ final readonly class TasksIndex extends TasksPage
             ->counting($page->total)
             ->filteredBy($this->choicesOf($settled))
             ->creatingWith($this->creation())
-            ->paged(ListPaging::numbered(
-                $page->page->number,
-                max(1, (int) ceil($page->total / $page->page->size)),
-            ))
-            ->withReader(new LayoutBackData($this->addressOf($settled), 'Tasks'), ...$reader);
+            ->paged(ListPaging::build()
+                ->page($page->page->number)
+                ->lastPage(max(1, (int) ceil($page->total / $page->page->size)))
+                ->finish())
+            ->withReader(LayoutBackData::build()->href($this->addressOf($settled))->label('Tasks')->finish(), ...$reader);
 
         return $list->layout();
     }
@@ -69,20 +69,27 @@ final readonly class TasksIndex extends TasksPage
     {
         [$word, $tone] = $card->status->badge();
 
-        return LayoutRowData::from(
-            [
-                'key' => $card->id,
-                'label' => $card->title,
-                'href' => route('tasks.task', ['task' => $card->number, ...$this->queryOf($filters)], false),
-                'isCurrent' => $filters->task === (string) $card->number,
-                'leading' => [LayoutPartData::text('number', (string) $card->number, 'muted')],
-                'trailing' => [
+        return LayoutRowData::build()
+            ->key($card->id)
+            ->label($card->title)
+            ->href(route('tasks.task', ['task' => $card->number, ...$this->queryOf($filters)], false))
+            ->isCurrent($filters->task === (string) $card->number)
+            ->leading(
+                [LayoutPartData::build()
+                ->asText()
+                ->key('number')
+                ->value((string) $card->number)
+                ->style('muted')
+                ->finish()],
+            )
+            ->trailing(
+                [
                     ...$this->focusBadgeOf($card),
                     ...$this->projectLabel->partsFor($card->owner),
-                    LayoutPartData::badge('state', $word, $tone),
+                    LayoutPartData::build()->asBadge()->key('state')->text($word)->tone($tone)->finish(),
                 ],
-            ],
-        );
+            )
+            ->finish();
     }
 
     /**
@@ -97,7 +104,12 @@ final readonly class TasksIndex extends TasksPage
         }
 
         return $card->execution->focusedBy
-            ->map(fn (string $agent) => [LayoutPartData::badge('focus', "In focus of {$agent}", 'quiet')])
+            ->map(fn (string $agent) => [LayoutPartData::build()
+                ->asBadge()
+                ->key('focus')
+                ->text("In focus of {$agent}")
+                ->tone('quiet')
+                ->finish()])
             ->getOrElse([]);
     }
 
@@ -107,27 +119,23 @@ final readonly class TasksIndex extends TasksPage
 
         $rows = [
             ...array_map(
-                fn (TaskStateGroup $group) => LayoutRowData::from(
-                    [
-                        'key' => $group->value,
-                        'label' => ucfirst($group->value),
-                        'query' => ['state' => $group->value, 'page' => ''],
-                        'isCurrent' => $chosen === $group->value,
-                    ],
-                ),
+                fn (TaskStateGroup $group) => LayoutRowData::build()
+                    ->key($group->value)
+                    ->label(ucfirst($group->value))
+                    ->query(['state' => $group->value, 'page' => ''])
+                    ->isCurrent($chosen === $group->value)
+                    ->finish(),
                 TaskStateGroup::cases(),
             ),
-            LayoutRowData::from(
-                [
-                    'key' => 'all',
-                    'label' => 'All',
-                    'query' => ['state' => '', 'page' => ''],
-                    'isCurrent' => $chosen === '',
-                ],
-            ),
+            LayoutRowData::build()
+                ->key('all')
+                ->label('All')
+                ->query(['state' => '', 'page' => ''])
+                ->isCurrent($chosen === '')
+                ->finish(),
         ];
 
-        return LayoutPartData::collection('states', 'choices', $rows);
+        return LayoutPartData::build()->asCollection()->key('states')->style('choices')->rows($rows)->finish();
     }
 
     private function emptyFor(TaskFiltersData $filters): ListEmpty
@@ -140,12 +148,13 @@ final readonly class TasksIndex extends TasksPage
             );
         }
 
-        return ListEmpty::nothingYet(
-            'No tasks yet',
-            'A task is one piece of work an agent takes on, from start until it is tested.',
-            'todos',
-            $this->creation('first', 'primary'),
-        );
+        return ListEmpty::build()
+            ->title('No tasks yet')
+            ->detail('A task is one piece of work an agent takes on, from start until it is tested.')
+            ->icon('todos')
+            ->actions([$this->creation('first', 'primary')])
+            ->fillsPage(true)
+            ->finish();
     }
 
     /**
@@ -154,25 +163,45 @@ final readonly class TasksIndex extends TasksPage
      */
     private function creation(string $key = 'creation', string $openerStyle = 'bordered'): LayoutPartData
     {
-        $creation = new CreationDialog(
-            $key,
-            'New task',
-            'Task created',
-            'Create task',
-            $this->producers->offersGuided('task') ? 'task' : Optional::create(),
-            guidedWay: 'Plan it with an agent',
-            waysInHeader: $key === 'creation',
-        );
+        $creation = CreationDialog::build()
+            ->key($key)
+            ->title('New task')
+            ->confirmation('Task created')
+            ->sendLabel('Create task')
+            ->guidedNoun($this->producers->offersGuided('task') ? 'task' : Optional::create())
+            ->guidedWay('Plan it with an agent')
+            ->waysInHeader($key === 'creation')
+            ->finish();
 
         return $this->creationDialog(
             $creation,
-            LayoutPartData::action('open', 'New task', LayoutActionData::changing([]), $openerStyle),
-            LayoutFormData::from(
-                ['method' => ActionMethod::Post, 'href' => route('tasks.create-task', [], false), 'isKeyed' => true],
-            ),
+            LayoutPartData::build()
+                ->asAction()
+                ->key('open')
+                ->label('New task')
+                ->action(LayoutActionData::build()->query([])->finish())
+                ->style($openerStyle)
+                ->finish(),
+            LayoutFormData::build()
+                ->method(ActionMethod::Post)
+                ->href(route('tasks.create-task', [], false))
+                ->isKeyed(true)
+                ->finish(),
             [
-                LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text'),
-                LayoutPartData::field('brief', 'Done when', new LayoutFieldData('brief'), 'area'),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('title')
+                    ->label('Title')
+                    ->field(LayoutFieldData::build()->name('title')->finish())
+                    ->style('text')
+                    ->finish(),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('brief')
+                    ->label('Done when')
+                    ->field(LayoutFieldData::build()->name('brief')->finish())
+                    ->style('area')
+                    ->finish(),
                 ...$this->projectField->forProject(),
             ],
         );

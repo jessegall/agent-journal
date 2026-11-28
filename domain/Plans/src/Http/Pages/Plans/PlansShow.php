@@ -37,18 +37,35 @@ final readonly class PlansShow extends PlansPage
         Closure $graph,
     ): DeclaredLayoutData {
         $detail = DetailPage::make($card->title)
-            ->above(LayoutPartData::text('label', "Plan {$card->number} · {$this->percentOf($card)}%", 'code'))
+            ->above(LayoutPartData::build()
+                ->asText()
+                ->key('label')
+                ->value("Plan {$card->number} · {$this->percentOf($card)}%")
+                ->style('code')
+                ->finish())
             ->withFacts(...$this->factsOf($card))
             ->withTabs(
                 PublicationTab::deferred(
                     'tasks',
                     'Tasks',
-                    fn () => LayoutPartData::native('reader', LayoutNativeData::of('plans/PlanWindow', $reader())),
+                    fn () => LayoutPartData::build()
+                        ->asNative()
+                        ->key('reader')
+                        ->native(
+                            LayoutNativeData::build()->component('plans/PlanWindow')->props($reader())->finish(),
+                        )
+                        ->finish(),
                 ),
                 PublicationTab::deferred(
                     'graph',
                     'Graph',
-                    fn () => LayoutPartData::native('graph', LayoutNativeData::of('tasks/TaskGraph', $graph())),
+                    fn () => LayoutPartData::build()
+                        ->asNative()
+                        ->key('graph')
+                        ->native(
+                            LayoutNativeData::build()->component('tasks/TaskGraph')->props($graph())->finish(),
+                        )
+                        ->finish(),
                 ),
             );
 
@@ -72,22 +89,28 @@ final readonly class PlansShow extends PlansPage
     private function factsOf(PlanCardData $card): array
     {
         $rows = [
-            LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => $card->status->value]),
-            LayoutRowData::from([
-                'key' => 'tasks',
-                'label' => 'Tasks',
-                'value' => $card->totalTasks === 0
+            LayoutRowData::build()->key('state')->label('State')->value($card->status->value)->finish(),
+            LayoutRowData::build()
+                ->key('tasks')
+                ->label('Tasks')
+                ->value(
+                    $card->totalTasks === 0
                     ? 'No tasks'
                     : "{$card->finishedTasks} of {$card->totalTasks} finished, {$card->cancelledTasks} cancelled",
-            ]),
+                )
+                ->finish(),
         ];
 
         if (is_string($card->phase)) {
-            $rows[] = LayoutRowData::from(['key' => 'phase', 'label' => 'Current phase', 'value' => $card->phase]);
+            $rows[] = LayoutRowData::build()->key('phase')->label('Current phase')->value($card->phase)->finish();
         }
 
         if ($card->holder instanceof AssignmentData) {
-            $rows[] = LayoutRowData::from(['key' => 'holder', 'label' => 'Held by', 'value' => $card->holder->name]);
+            $rows[] = LayoutRowData::build()
+                ->key('holder')
+                ->label('Held by')
+                ->value($card->holder->name)
+                ->finish();
         }
 
         return $rows;

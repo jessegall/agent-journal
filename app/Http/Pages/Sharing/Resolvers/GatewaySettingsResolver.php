@@ -38,77 +38,133 @@ final readonly class GatewaySettingsResolver implements PageResolver
             ShareGatewayConfiguration::findAllRevisions(),
         );
 
-        $parts = [LayoutPartData::box('header', 'header', LayoutPartData::text('title', 'Share gateways', 'heading'))];
+        $parts = [LayoutPartData::build()
+            ->asBox()
+            ->key('header')
+            ->style('header')
+            ->children(
+                LayoutPartData::build()->asText()->key('title')->value('Share gateways')->style('heading')->finish(),
+            )
+            ->finish()];
 
         if (! ShareInstallation::hasLiveRun()) {
-            $parts[] = LayoutPartData::notice('offline', 'warning', 'Offline: start the sharing service.');
+            $parts[] = LayoutPartData::build()
+                ->asNotice()
+                ->key('offline')
+                ->style('warning')
+                ->title('Offline: start the sharing service.')
+                ->finish();
         }
 
-        $parts[] = LayoutPartData::box(
-            'provider',
-            'section',
-            LayoutPartData::text(
-                'sees',
-                'The gateway provider can see the public address and everything a share shows.',
-                'paragraph',
-            ),
-            LayoutPartData::text(
-                'inspection',
-                'Turning off traffic inspection does not hide the content from the provider.',
-                'paragraph',
-            ),
-        );
+        $parts[] = LayoutPartData::build()
+            ->asBox()
+            ->key('provider')
+            ->style('section')
+            ->children(
+                LayoutPartData::build()
+                ->asText()
+                ->key('sees')
+                ->value('The gateway provider can see the public address and everything a share shows.')
+                ->style('paragraph')
+                ->finish(),
+                LayoutPartData::build()
+                ->asText()
+                ->key('inspection')
+                ->value('Turning off traffic inspection does not hide the content from the provider.')
+                ->style('paragraph')
+                ->finish(),
+            )
+            ->finish();
 
         $parts[] = $revisions === []
-            ? LayoutPartData::notice('revisions', 'empty', 'No gateway is configured yet.')
-            : LayoutPartData::box(
-                'revisions',
-                'stack',
-                ...array_map(fn (GatewayRevisionData $revision) => $this->rowOf($revision), $revisions),
-            );
+            ? LayoutPartData::build()
+                ->asNotice()
+                ->key('revisions')
+                ->style('empty')
+                ->title('No gateway is configured yet.')
+                ->finish()
+            : LayoutPartData::build()
+                ->asBox()
+                ->key('revisions')
+                ->style('stack')
+                ->children(
+                    ...array_map(fn (GatewayRevisionData $revision) => $this->rowOf($revision), $revisions),
+                )
+                ->finish();
 
         $configure = GatewayConfigurePartData::from(['gatewayKeys' => $this->gateways->keys()]);
 
-        $parts[] = LayoutPartData::native(
-            'configure',
-            LayoutNativeData::of('sharing/GatewayConfigureForm', $configure),
-        );
+        $parts[] = LayoutPartData::build()
+            ->asNative()
+            ->key('configure')
+            ->native(
+                LayoutNativeData::build()->component('sharing/GatewayConfigureForm')->props($configure)->finish(),
+            )
+            ->finish();
 
-        return DeclaredLayoutData::of(LayoutPartData::box('gateways', 'stack', ...$parts));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()->asBox()->key('gateways')->style('stack')->children(...$parts)->finish(),
+            )
+            ->finish();
     }
 
     private function rowOf(GatewayRevisionData $revision): LayoutPartData
     {
-        $heading = [LayoutPartData::text('label', "{$revision->gatewayKey} version {$revision->version}", 'heading')];
+        $heading = [LayoutPartData::build()
+            ->asText()
+            ->key('label')
+            ->value("{$revision->gatewayKey} version {$revision->version}")
+            ->style('heading')
+            ->finish()];
 
         if ($revision->isDefault) {
-            $heading[] = LayoutPartData::badge('default', 'Default', 'good');
+            $heading[] = LayoutPartData::build()
+                ->asBadge()
+                ->key('default')
+                ->text('Default')
+                ->tone('good')
+                ->finish();
         }
 
         if ($revision->isDisabled) {
-            $heading[] = LayoutPartData::badge('disabled', 'Disabled', 'quiet');
+            $heading[] = LayoutPartData::build()
+                ->asBadge()
+                ->key('disabled')
+                ->text('Disabled')
+                ->tone('quiet')
+                ->finish();
         }
 
         $parts = [
-            LayoutPartData::box('heading', 'row', ...$heading),
-            LayoutPartData::text(
-                'source',
-                "{$revision->publicOrigin} through {$revision->providerHost}, program {$revision->executableVersion}",
-                'muted',
-            ),
+            LayoutPartData::build()->asBox()->key('heading')->style('row')->children(...$heading)->finish(),
+            LayoutPartData::build()
+                ->asText()
+                ->key('source')
+                ->value(
+                    "{$revision->publicOrigin} through {$revision->providerHost}, program {$revision->executableVersion}",
+                )
+                ->style('muted')
+                ->finish(),
         ];
 
         if ($revision->secretReferences !== []) {
-            $parts[] = LayoutPartData::text('secrets', 'Secrets: '.implode(', ', $revision->secretReferences), 'muted');
+            $parts[] = LayoutPartData::build()
+                ->asText()
+                ->key('secrets')
+                ->value('Secrets: '.implode(', ', $revision->secretReferences))
+                ->style('muted')
+                ->finish();
         }
 
         $parts[] = $this->readinessOf($revision);
 
         if ($revision->isHealthy !== null) {
-            $parts[] = LayoutPartData::text(
-                'health',
-                $revision->isHealthy ? 'Answering.' : 'Not answering health checks.',
-            );
+            $parts[] = LayoutPartData::build()
+                ->asText()
+                ->key('health')
+                ->value($revision->isHealthy ? 'Answering.' : 'Not answering health checks.')
+                ->finish();
         }
 
         $parts[] = $this->dependentsOf($revision);
@@ -117,38 +173,74 @@ final readonly class GatewaySettingsResolver implements PageResolver
             $parts[] = $this->actionsOf($revision);
         }
 
-        return LayoutPartData::box($revision->id, 'card', ...$parts);
+        return LayoutPartData::build()->asBox()->key($revision->id)->style('card')->children(...$parts)->finish();
     }
 
     private function readinessOf(GatewayRevisionData $revision): LayoutPartData
     {
         if ($revision->setupProblems !== []) {
-            return LayoutPartData::collection('needed', 'list', array_map(
-                fn (string $problem) => LayoutRowData::from(['key' => md5($problem), 'label' => $problem]),
-                $revision->setupProblems,
-            ));
+            return LayoutPartData::build()
+                ->asCollection()
+                ->key('needed')
+                ->style('list')
+                ->rows(
+                    array_map(
+                        fn (string $problem) => LayoutRowData::build()
+                            ->key(md5($problem))
+                            ->label($problem)
+                            ->finish(),
+                        $revision->setupProblems,
+                    ),
+                )
+                ->finish();
         }
 
-        return LayoutPartData::text('ready', $revision->isDisabled ? 'Disabled.' : 'Ready.');
+        return LayoutPartData::build()
+            ->asText()
+            ->key('ready')
+            ->value($revision->isDisabled ? 'Disabled.' : 'Ready.')
+            ->finish();
     }
 
     private function dependentsOf(GatewayRevisionData $revision): LayoutPartData
     {
         if ($revision->dependentShares === []) {
-            return LayoutPartData::text('dependents', 'No share uses this gateway.', 'muted');
+            return LayoutPartData::build()
+                ->asText()
+                ->key('dependents')
+                ->value('No share uses this gateway.')
+                ->style('muted')
+                ->finish();
         }
 
-        return LayoutPartData::box(
-            'dependents',
-            'section',
-            LayoutPartData::text('heading', 'Disabling revokes these shares:', 'muted'),
-            LayoutPartData::collection('shares', 'list', array_map(
-                fn (RootShareData $share) => LayoutRowData::from(
-                    ['key' => $share->id, 'label' => "Share {$share->number}", 'value' => $share->status->value],
-                ),
-                $revision->dependentShares,
-            )),
-        );
+        return LayoutPartData::build()
+            ->asBox()
+            ->key('dependents')
+            ->style('section')
+            ->children(
+                LayoutPartData::build()
+                ->asText()
+                ->key('heading')
+                ->value('Disabling revokes these shares:')
+                ->style('muted')
+                ->finish(),
+                LayoutPartData::build()
+                ->asCollection()
+                ->key('shares')
+                ->style('list')
+                ->rows(
+                    array_map(
+                        fn (RootShareData $share) => LayoutRowData::build()
+                            ->key($share->id)
+                            ->label("Share {$share->number}")
+                            ->value($share->status->value)
+                            ->finish(),
+                        $revision->dependentShares,
+                    ),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     /**
@@ -160,16 +252,28 @@ final readonly class GatewaySettingsResolver implements PageResolver
         $actions = [];
 
         if (! $revision->isDefault) {
-            $actions[] = LayoutPartData::form(
-                'make-default',
-                LayoutFormData::from([
-                    'method' => ActionMethod::Post,
-                    'href' => route('sharing.make-share-gateway-default', ['configuration' => $revision->id], false),
-                    'isKeyed' => true,
-                ]),
-                'inline',
-                LayoutPartData::action('send', 'Make default', LayoutActionData::submitting()),
-            );
+            $actions[] = LayoutPartData::build()
+                ->asForm()
+                ->key('make-default')
+                ->form(
+                    LayoutFormData::build()
+                        ->method(ActionMethod::Post)
+                        ->href(
+                            route('sharing.make-share-gateway-default', ['configuration' => $revision->id], false),
+                        )
+                        ->isKeyed(true)
+                        ->finish(),
+                )
+                ->style('inline')
+                ->children(
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('send')
+                    ->label('Make default')
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->finish(),
+                )
+                ->finish();
         }
 
         $revoked = count($revision->dependentShares);
@@ -178,18 +282,29 @@ final readonly class GatewaySettingsResolver implements PageResolver
             ? 'Disable this gateway? No share uses it.'
             : "Disable this gateway and revoke the {$revoked} shares that use it?";
 
-        $actions[] = LayoutPartData::form(
-            'disable',
-            LayoutFormData::from([
-                'method' => ActionMethod::Delete,
-                'href' => route('sharing.disable-share-gateway', ['configuration' => $revision->id], false),
-                'isKeyed' => true,
-                'confirmation' => $question,
-            ]),
-            'inline',
-            LayoutPartData::action('send', 'Disable', LayoutActionData::submitting(), 'danger'),
-        );
+        $actions[] = LayoutPartData::build()
+            ->asForm()
+            ->key('disable')
+            ->form(
+                LayoutFormData::build()
+                    ->method(ActionMethod::Delete)
+                    ->href(route('sharing.disable-share-gateway', ['configuration' => $revision->id], false))
+                    ->isKeyed(true)
+                    ->confirmation($question)
+                    ->finish(),
+            )
+            ->style('inline')
+            ->children(
+                LayoutPartData::build()
+                ->asAction()
+                ->key('send')
+                ->label('Disable')
+                ->action(LayoutActionData::build()->submits(true)->finish())
+                ->style('danger')
+                ->finish(),
+            )
+            ->finish();
 
-        return LayoutPartData::box('actions', 'row', ...$actions);
+        return LayoutPartData::build()->asBox()->key('actions')->style('row')->children(...$actions)->finish();
     }
 }

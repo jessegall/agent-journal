@@ -31,22 +31,28 @@ final readonly class ProfilesIndex extends ProfilesPage
 
         return ListPage::make(
             'Profiles',
-            array_map(fn (Profile $profile) => LayoutRowData::from([
-                'key' => $profile->id,
-                'label' => $profile->label,
-                'detail' => $profile->description === '' ? Optional::create() : $profile->description,
-                'href' => route('accounts.profile', ['profile' => $profile->key], false),
-                'isCurrent' => $profile->key === $selectedKey,
-            ]), $profiles),
-            ListEmpty::nothingYet(
-                'No profiles yet',
-                'A profile is a kind of helper: the program it runs, its models, its rules and whom it answers to.',
-                'users',
-            ),
+            array_map(fn (Profile $profile) => LayoutRowData::build()
+                ->key($profile->id)
+                ->label($profile->label)
+                ->detail($profile->description === '' ? Optional::create() : $profile->description)
+                ->href(route('accounts.profile', ['profile' => $profile->key], false))
+                ->isCurrent($profile->key === $selectedKey)
+                ->finish(), $profiles),
+            ListEmpty::build()
+                ->title('No profiles yet')
+                ->detail(
+                    'A profile is a kind of helper: the program it runs, its models, its rules and whom it answers to.',
+                )
+                ->icon('users')
+                ->fillsPage(true)
+                ->finish(),
         )
             ->countingRows()
             ->withReader(
-                LayoutBackData::from(['href' => route('accounts.profiles', [], false), 'label' => 'Profiles']),
+                LayoutBackData::build()
+                    ->href(route('accounts.profiles', [], false))
+                    ->label('Profiles')
+                    ->finish(),
                 ...$reader,
             )
             ->layout();

@@ -18,17 +18,17 @@ use Spatie\LaravelData\Data;
  */
 final class RecordLayoutData extends Data implements PresentsLayout, RecordWindow
 {
-    private function __construct(
+    /** @use \App\Web\Creation\Buildable<RecordLayoutDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = RecordLayoutDataFields::class;
+
+    public function __construct(
         #[Hidden]
         public readonly DeclaredLayoutData $shown,
         #[Hidden]
         public readonly RecordIdentity $record,
     ) {}
-
-    public static function of(DeclaredLayoutData $layout, RecordIdentity $record): self
-    {
-        return new self($layout, $record);
-    }
 
     public function layout(): DeclaredLayoutData
     {

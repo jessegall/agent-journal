@@ -28,21 +28,30 @@ abstract readonly class Page
         LayoutFormData $form,
         array $fields,
     ): LayoutPartData {
-        $dialog = LayoutDialogData::from([
-            'title' => $creation->title,
-            'confirmation' => $creation->confirmation,
-            'guidedNoun' => $creation->guidedNoun,
-            'ways' => $creation->ways(),
-        ]);
+        $dialog = LayoutDialogData::build()
+            ->title($creation->title)
+            ->confirmation($creation->confirmation)
+            ->guidedNoun($creation->guidedNoun)
+            ->ways($creation->ways())
+            ->finish();
 
-        return LayoutPartData::dialog(
-            $creation->key,
-            $dialog,
-            $opener,
-            $form,
-            $fields,
-            [LayoutPartData::action('send', $creation->sendLabel, LayoutActionData::submitting(), 'primary')],
-        );
+        return LayoutPartData::build()
+            ->asDialog()
+            ->key($creation->key)
+            ->dialog($dialog)
+            ->opener($opener)
+            ->sheet(
+                $form,
+                $fields,
+                [LayoutPartData::build()
+                ->asAction()
+                ->key('send')
+                ->label($creation->sendLabel)
+                ->action(LayoutActionData::build()->submits(true)->finish())
+                ->style('primary')
+                ->finish()],
+            )
+            ->finish();
     }
 
     /**
@@ -52,9 +61,16 @@ abstract readonly class Page
      */
     protected function nothingMatches(string $message, string $clearLabel, array $cleared): ListEmpty
     {
-        return ListEmpty::offering(
-            $message,
-            LayoutPartData::action('clear', $clearLabel, LayoutActionData::changing($cleared)),
-        );
+        return ListEmpty::build()
+            ->title($message)
+            ->actions(
+                [LayoutPartData::build()
+                ->asAction()
+                ->key('clear')
+                ->label($clearLabel)
+                ->action(LayoutActionData::build()->query($cleared)->finish())
+                ->finish()],
+            )
+            ->finish();
     }
 }

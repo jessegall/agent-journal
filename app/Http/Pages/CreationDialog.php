@@ -13,6 +13,11 @@ use Spatie\LaravelData\Optional;
  */
 final readonly class CreationDialog
 {
+    /** @use \App\Web\Creation\Buildable<CreationDialogFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = CreationDialogFields::class;
+
     public function __construct(
         public string $key,
         public string $title,
@@ -33,6 +38,10 @@ final readonly class CreationDialog
             return Optional::create();
         }
 
-        return new LayoutWaysData($this->plainWay, $this->guidedWay, $this->waysInHeader);
+        return LayoutWaysData::build()
+            ->plain($this->plainWay)
+            ->guided($this->guidedWay)
+            ->isInHeader($this->waysInHeader)
+            ->finish();
     }
 }

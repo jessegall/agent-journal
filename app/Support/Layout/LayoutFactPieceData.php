@@ -14,6 +14,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutFactPieceData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutFactPieceDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutFactPieceDataFields::class;
+
     public function __construct(
         public readonly string $label,
         public readonly string|Optional $href = new Optional(),

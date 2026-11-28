@@ -22,15 +22,35 @@ final readonly class SettingsPage
 
     public function layout(): DeclaredLayoutData
     {
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'settings',
-            'page',
-            LayoutPartData::box('header', 'page-head', LayoutPartData::text('title', 'Settings', 'heading')),
-            LayoutPartData::box(
-                'settings-page',
-                'settings-page',
-                ...array_map(fn (SettingsGroup $group) => $group->part(), $this->groups),
-            ),
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('settings')
+                ->style('page')
+                ->children(
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('header')
+                    ->style('page-head')
+                    ->children(
+                        LayoutPartData::build()
+                        ->asText()
+                        ->key('title')
+                        ->value('Settings')
+                        ->style('heading')
+                        ->finish(),
+                    )
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('settings-page')
+                    ->style('settings-page')
+                    ->children(...array_map(fn (SettingsGroup $group) => $group->part(), $this->groups))
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 }

@@ -14,6 +14,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutProgressData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutProgressDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutProgressDataFields::class;
+
     public function __construct(
         public readonly float $value,
         public readonly float $max,

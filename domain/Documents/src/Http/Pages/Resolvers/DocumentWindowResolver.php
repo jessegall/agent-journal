@@ -56,9 +56,9 @@ final readonly class DocumentWindowResolver implements PageResolver
             fn () => $this->documents->revisions($number, 1),
         );
 
-        return RecordLayoutData::of(
-            $this->library->layout($reader),
-            new RecordIdentity(Document::linkType(), $document->id),
-        );
+        return RecordLayoutData::build()
+            ->shown($this->library->layout($reader))
+            ->record(new RecordIdentity(Document::linkType(), $document->id))
+            ->finish();
     }
 }

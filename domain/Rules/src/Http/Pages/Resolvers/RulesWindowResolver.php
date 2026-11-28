@@ -35,26 +35,51 @@ final readonly class RulesWindowResolver implements PageResolver
         $page = $this->records->list($filters->toDomain());
         $selected = $filters->onPage($page->page)->rule;
 
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'rules',
-            'stack',
-            LayoutPartData::box(
-                'top',
-                'header',
-                LayoutPartData::text('title', "Rules ({$page->total})", 'heading'),
-                LayoutPartData::field(
-                    'search',
-                    'Search rules',
-                    new LayoutFieldData('q', $filters->search, ['page', 'rule']),
-                ),
-            ),
-            LayoutPartData::box(
-                'split',
-                'split',
-                $this->listOf($page, is_string($selected) ? $selected : '', $filters->search),
-                $this->readerOf($page),
-            ),
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('rules')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('top')
+                    ->style('header')
+                    ->children(
+                        LayoutPartData::build()
+                        ->asText()
+                        ->key('title')
+                        ->value("Rules ({$page->total})")
+                        ->style('heading')
+                        ->finish(),
+                        LayoutPartData::build()
+                        ->asField()
+                        ->key('search')
+                        ->label('Search rules')
+                        ->field(
+                            LayoutFieldData::build()
+                            ->name('q')
+                            ->value($filters->search)
+                            ->clears(['page', 'rule'])
+                            ->finish(),
+                        )
+                        ->finish(),
+                    )
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('split')
+                    ->style('split')
+                    ->children(
+                        $this->listOf($page, is_string($selected) ? $selected : '', $filters->search),
+                        $this->readerOf($page),
+                    )
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     /**
@@ -64,70 +89,99 @@ final readonly class RulesWindowResolver implements PageResolver
     private function listOf(RuleList $page, string $selected, string $search): LayoutPartData
     {
         if ($page->rules === [] && trim($search) === '') {
-            return LayoutPartData::notice('list', 'empty', 'No rules yet.');
+            return LayoutPartData::build()
+                ->asNotice()
+                ->key('list')
+                ->style('empty')
+                ->title('No rules yet.')
+                ->finish();
         }
 
         if ($page->rules === []) {
-            return LayoutPartData::box(
-                'list',
-                'stack',
-                LayoutPartData::notice('notice', 'empty', "No rules match \"{$search}\"."),
-                LayoutPartData::action(
-                    'clear',
-                    'Clear search',
-                    LayoutActionData::changing(['q' => '', 'page' => '', 'rule' => '']),
-                ),
-            );
+            return LayoutPartData::build()
+                ->asBox()
+                ->key('list')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asNotice()
+                    ->key('notice')
+                    ->style('empty')
+                    ->title("No rules match \"{$search}\".")
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('clear')
+                    ->label('Clear search')
+                    ->action(
+                        LayoutActionData::build()->query(['q' => '', 'page' => '', 'rule' => ''])->finish(),
+                    )
+                    ->finish(),
+                )
+                ->finish();
         }
 
         $isAwaitingReview = array_any($page->rules, fn (RuleView $rule) => $rule->status === RuleStatus::Proposed);
 
         $rows = array_map(
-            fn (RuleView $rule) => LayoutRowData::from(
-                [
-                    'key' => $rule->id,
-                    'label' => $rule->text,
-                    'value' => "{$rule->number} · {$rule->status->label()}",
-                    'query' => ['rule' => $rule->id],
-                    'isCurrent' => $rule->id === $selected,
-                ],
-            ),
+            fn (RuleView $rule) => LayoutRowData::build()
+                ->key($rule->id)
+                ->label($rule->text)
+                ->value("{$rule->number} · {$rule->status->label()}")
+                ->query(['rule' => $rule->id])
+                ->isCurrent($rule->id === $selected)
+                ->finish(),
             $page->rules,
         );
 
         $review = $isAwaitingReview
             ? []
-            : [LayoutPartData::text('review', 'No rules awaiting review', 'muted')];
+            : [LayoutPartData::build()
+                ->asText()
+                ->key('review')
+                ->value('No rules awaiting review')
+                ->style('muted')
+                ->finish()];
 
-        return LayoutPartData::box(
-            'list',
-            'stack',
-            ...$review,
-            ...[LayoutPartData::collection('rows', 'list', $rows), $this->pagerOf($page)],
-        );
+        return LayoutPartData::build()
+            ->asBox()
+            ->key('list')
+            ->style('stack')
+            ->children(
+                ...$review,
+                ...[LayoutPartData::build()->asCollection()->key('rows')->style('list')->rows($rows)->finish(), $this->pagerOf($page)],
+            )
+            ->finish();
     }
 
     private function pagerOf(RuleList $page): LayoutPartData
     {
-        $controls = [LayoutPartData::text('page', "Page {$page->page} of {$page->lastPage}", 'muted')];
+        $controls = [LayoutPartData::build()
+            ->asText()
+            ->key('page')
+            ->value("Page {$page->page} of {$page->lastPage}")
+            ->style('muted')
+            ->finish()];
 
         if ($page->page > 1) {
-            $controls[] = LayoutPartData::action(
-                'previous',
-                'Previous',
-                LayoutActionData::changing(['page' => (string) ($page->page - 1)]),
-            );
+            $controls[] = LayoutPartData::build()
+                ->asAction()
+                ->key('previous')
+                ->label('Previous')
+                ->action(LayoutActionData::build()->query(['page' => (string) ($page->page - 1)])->finish())
+                ->finish();
         }
 
         if ($page->page < $page->lastPage) {
-            $controls[] = LayoutPartData::action(
-                'next',
-                'Next',
-                LayoutActionData::changing(['page' => (string) ($page->page + 1)]),
-            );
+            $controls[] = LayoutPartData::build()
+                ->asAction()
+                ->key('next')
+                ->label('Next')
+                ->action(LayoutActionData::build()->query(['page' => (string) ($page->page + 1)])->finish())
+                ->finish();
         }
 
-        return LayoutPartData::box('pager', 'row', ...$controls);
+        return LayoutPartData::build()->asBox()->key('pager')->style('row')->children(...$controls)->finish();
     }
 
     private function readerOf(RuleList $page): LayoutPartData
@@ -136,29 +190,52 @@ final readonly class RulesWindowResolver implements PageResolver
 
         if ($rule->isEmpty()) {
             if ($page->isSelectionMissing) {
-                return LayoutPartData::notice('reader', 'empty', 'This rule does not exist.');
+                return LayoutPartData::build()
+                    ->asNotice()
+                    ->key('reader')
+                    ->style('empty')
+                    ->title('This rule does not exist.')
+                    ->finish();
             }
 
-            return LayoutPartData::notice('reader', 'empty', 'Choose a rule to read it.');
+            return LayoutPartData::build()
+                ->asNotice()
+                ->key('reader')
+                ->style('empty')
+                ->title('Choose a rule to read it.')
+                ->finish();
         }
 
         $shown = $rule->get();
 
         $parts = [
-            LayoutPartData::box(
-                'meta',
-                'row',
-                LayoutPartData::text('title', "Rule {$shown->number}", 'heading'),
-                LayoutPartData::badge('state', $shown->status->label(), $shown->status->tone()),
-            ),
-            LayoutPartData::text('text', $shown->text, 'paragraph'),
+            LayoutPartData::build()
+                ->asBox()
+                ->key('meta')
+                ->style('row')
+                ->children(
+                    LayoutPartData::build()
+                    ->asText()
+                    ->key('title')
+                    ->value("Rule {$shown->number}")
+                    ->style('heading')
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asBadge()
+                    ->key('state')
+                    ->text($shown->status->label())
+                    ->tone($shown->status->tone())
+                    ->finish(),
+                )
+                ->finish(),
+            LayoutPartData::build()->asText()->key('text')->value($shown->text)->style('paragraph')->finish(),
         ];
 
         if ($shown->canReview) {
             $parts[] = $this->reviewOf($shown);
         }
 
-        return LayoutPartData::box('reader', 'section', ...$parts);
+        return LayoutPartData::build()->asBox()->key('reader')->style('section')->children(...$parts)->finish();
     }
 
     /**
@@ -167,20 +244,35 @@ final readonly class RulesWindowResolver implements PageResolver
      */
     private function reviewOf(RuleView $rule): LayoutPartData
     {
-        $review = fn (string $key, string $route, string $label, string $style) => LayoutPartData::form(
-            $key,
-            LayoutFormData::from(
-                ['method' => ActionMethod::Patch, 'href' => route($route, ['rule' => $rule->number], false)],
-            ),
-            'inline',
-            LayoutPartData::action('send', $label, LayoutActionData::submitting(), $style),
-        );
+        $review = fn (string $key, string $route, string $label, string $style) => LayoutPartData::build()
+            ->asForm()
+            ->key($key)
+            ->form(
+                LayoutFormData::build()
+                    ->method(ActionMethod::Patch)
+                    ->href(route($route, ['rule' => $rule->number], false))
+                    ->finish(),
+            )
+            ->style('inline')
+            ->children(
+                LayoutPartData::build()
+                ->asAction()
+                ->key('send')
+                ->label($label)
+                ->action(LayoutActionData::build()->submits(true)->finish())
+                ->style($style)
+                ->finish(),
+            )
+            ->finish();
 
-        return LayoutPartData::box(
-            'review',
-            'row',
-            $review('deny', 'rules.deny', 'Deny', 'bordered'),
-            $review('approve', 'rules.approve', 'Approve', 'primary'),
-        );
+        return LayoutPartData::build()
+            ->asBox()
+            ->key('review')
+            ->style('row')
+            ->children(
+                $review('deny', 'rules.deny', 'Deny', 'bordered'),
+                $review('approve', 'rules.approve', 'Approve', 'primary'),
+            )
+            ->finish();
     }
 }

@@ -38,14 +38,18 @@ final class ProjectRowLabel implements ProjectRowLabelContract
     public function partsFor(ProjectOwner $owner): array
     {
         if ($owner->isGlobal()) {
-            return [LayoutPartData::badge(self::KEY, self::GLOBAL_LABEL)];
+            return [LayoutPartData::build()->asBadge()->key(self::KEY)->text(self::GLOBAL_LABEL)->finish()];
         }
 
         if ($this->projects->selection()->type !== ProjectSelectionType::All) {
             return [];
         }
 
-        return [LayoutPartData::badge(self::KEY, $this->labels()[$owner->projectId()])];
+        return [LayoutPartData::build()
+            ->asBadge()
+            ->key(self::KEY)
+            ->text($this->labels()[$owner->projectId()])
+            ->finish()];
     }
 
     /**

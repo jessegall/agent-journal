@@ -28,45 +28,72 @@ final readonly class RemindersWindowResolver implements PageResolver
         try {
             $page = $this->reminders->own($this->request->pageNumber());
         } catch (ActorNotAllowed) {
-            return $this->window(LayoutPartData::notice(
-                'unavailable',
-                'empty',
-                'Reminders unavailable',
-                'You may not read reminders here.',
-            ));
+            return $this->window(LayoutPartData::build()
+                ->asNotice()
+                ->key('unavailable')
+                ->style('empty')
+                ->title('Reminders unavailable')
+                ->detail('You may not read reminders here.')
+                ->finish());
         }
 
         if ($page->cards === []) {
-            return $this->window(ListEmpty::nothingYet(
-                'No reminders yet',
-                'A reminder brings something back to you or an agent at the time you choose.',
-                'bell',
-            )->page());
+            return $this->window(ListEmpty::build()
+                ->title('No reminders yet')
+                ->detail('A reminder brings something back to you or an agent at the time you choose.')
+                ->icon('bell')
+                ->fillsPage(true)
+                ->finish()->page());
         }
 
         return $this->window(
-            LayoutPartData::collection('reminders', 'list', array_map(
-                fn (ReminderCard $card) => LayoutRowData::from([
-                    'key' => $card->id,
-                    'label' => $card->title,
-                    'trailing' => [
-                        LayoutPartData::time('due', 'Due', $card->dueAt->toIso8601String()),
-                        LayoutPartData::badge('status', $card->status->label()),
-                    ],
-                ]),
-                $page->cards,
-            )),
-            ...ListPaging::numbered($page->page, $page->lastPage())->parts(),
+            LayoutPartData::build()
+                ->asCollection()
+                ->key('reminders')
+                ->style('list')
+                ->rows(
+                    array_map(
+                        fn (ReminderCard $card) => LayoutRowData::build()
+                            ->key($card->id)
+                            ->label($card->title)
+                            ->trailing(
+                                [
+                                    LayoutPartData::build()
+                                        ->asTime()
+                                        ->key('due')
+                                        ->label('Due')
+                                        ->detail($card->dueAt->toIso8601String())
+                                        ->finish(),
+                                    LayoutPartData::build()
+                                        ->asBadge()
+                                        ->key('status')
+                                        ->text($card->status->label())
+                                        ->finish(),
+                                ],
+                            )
+                            ->finish(),
+                        $page->cards,
+                    ),
+                )
+                ->finish(),
+            ...ListPaging::build()->page($page->page)->lastPage($page->lastPage())->finish()->parts(),
         );
     }
 
     private function window(LayoutPartData ...$parts): DeclaredLayoutData
     {
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'reminders',
-            'stack',
-            LayoutPartData::text('title', 'Reminders', 'heading'),
-            ...$parts,
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('reminders')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()->asText()->key('title')->value('Reminders')->style('heading')->finish(),
+                    ...$parts,
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 }

@@ -56,6 +56,9 @@ final readonly class ReportWindowResolver implements PageResolver
             fn () => $this->reports->inspect($number),
         );
 
-        return RecordLayoutData::of($layout, new RecordIdentity(Report::linkType(), $report->id));
+        return RecordLayoutData::build()
+            ->shown($layout)
+            ->record(new RecordIdentity(Report::linkType(), $report->id))
+            ->finish();
     }
 }

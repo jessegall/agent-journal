@@ -39,7 +39,13 @@ final readonly class NewSequenceResolver implements PageResolver
 
         return $this->index->of(
             '',
-            [LayoutPartData::native('editor', LayoutNativeData::of('sequences/SequenceEditor', $editor))],
+            [LayoutPartData::build()
+                ->asNative()
+                ->key('editor')
+                ->native(
+                    LayoutNativeData::build()->component('sequences/SequenceEditor')->props($editor)->finish(),
+                )
+                ->finish()],
         );
     }
 }

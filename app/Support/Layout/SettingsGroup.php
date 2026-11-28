@@ -66,26 +66,56 @@ final readonly class SettingsGroup
      */
     public function switchedBy(LayoutFormData $form, LayoutFieldData $field): self
     {
-        $toggle = LayoutPartData::field($field->name, $this->title, $field, 'toggle');
+        $toggle = LayoutPartData::build()
+            ->asField()
+            ->key($field->name)
+            ->label($this->title)
+            ->field($field)
+            ->style('toggle')
+            ->finish();
 
-        return clone ($this, ['switch' => LayoutPartData::form('switch', $form, 'live', $toggle)]);
+        return clone ($this, ['switch' => LayoutPartData::build()
+            ->asForm()
+            ->key('switch')
+            ->form($form)
+            ->style('live')
+            ->children($toggle)
+            ->finish()]);
     }
 
     public function part(): LayoutPartData
     {
-        $parts = [LayoutPartData::text('title', $this->title, $this->isLeading ? 'spoken' : 'heading')];
+        $parts = [LayoutPartData::build()
+            ->asText()
+            ->key('title')
+            ->value($this->title)
+            ->style($this->isLeading ? 'spoken' : 'heading')
+            ->finish()];
 
         if ($this->help !== null) {
-            $parts[] = LayoutPartData::text('help', $this->help, 'muted');
+            $parts[] = LayoutPartData::build()
+                ->asText()
+                ->key('help')
+                ->value($this->help)
+                ->style('muted')
+                ->finish();
         }
 
         if ($this->reset instanceof LayoutFormData) {
-            $parts[] = LayoutPartData::form(
-                'reset',
-                $this->reset,
-                'inline',
-                LayoutPartData::action('reset-send', 'Reset', LayoutActionData::submitting()),
-            );
+            $parts[] = LayoutPartData::build()
+                ->asForm()
+                ->key('reset')
+                ->form($this->reset)
+                ->style('inline')
+                ->children(
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('reset-send')
+                    ->label('Reset')
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->finish(),
+                )
+                ->finish();
         }
 
         if ($this->switch instanceof LayoutPartData) {
@@ -94,10 +124,20 @@ final readonly class SettingsGroup
 
         if ($this->rows !== []) {
             $rows = array_map(fn (SettingsRow $row) => $row->part(), $this->rows);
-            $parts[] = LayoutPartData::box('rows', 'settings-group', ...$this->editable($rows));
+            $parts[] = LayoutPartData::build()
+                ->asBox()
+                ->key('rows')
+                ->style('settings-group')
+                ->children(...$this->editable($rows))
+                ->finish();
         }
 
-        return LayoutPartData::box($this->key, 'settings', ...$parts);
+        return LayoutPartData::build()
+            ->asBox()
+            ->key($this->key)
+            ->style('settings')
+            ->children(...$parts)
+            ->finish();
     }
 
     /**
@@ -110,6 +150,12 @@ final readonly class SettingsGroup
             return $rows;
         }
 
-        return [LayoutPartData::form('form', $this->save, 'live', ...$rows)];
+        return [LayoutPartData::build()
+            ->asForm()
+            ->key('form')
+            ->form($this->save)
+            ->style('live')
+            ->children(...$rows)
+            ->finish()];
     }
 }
