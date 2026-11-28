@@ -9,7 +9,6 @@ use App\Agents\Drivers\Codex\CodexAdapter;
 use App\Agents\Drivers\Codex\CodexArguments;
 use App\Agents\Drivers\Codex\CodexChangeEffort;
 use App\Agents\Drivers\Codex\CodexChangeModel;
-use App\Agents\Drivers\Codex\CodexIsolation;
 use App\Agents\Drivers\Codex\CodexLayout;
 use App\Agents\Drivers\Codex\CodexModelAnswer;
 use App\Agents\Drivers\Codex\CodexSignInEnvironment;
@@ -119,8 +118,7 @@ final class DriverSetupTest extends TestCase
             ))
             ->accountSettings(CodexAccountSettings::class)
             ->skills(CodexSkills::class)
-            ->hookAdapter(CodexAdapter::class)
-            ->isolation(CodexIsolation::class);
+            ->hookAdapter(CodexAdapter::class);
     }
 
     private function profiles(array $setups): DriverProfiles

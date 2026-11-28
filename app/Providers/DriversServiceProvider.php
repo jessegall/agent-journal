@@ -11,7 +11,6 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeChangeEffort;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeChangeModel;
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeIsolation;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeJournalServer;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeKeptSignIn;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeLayout;
@@ -37,7 +36,6 @@ use App\Agents\Drivers\Codex\CodexChangeModel;
 use App\Agents\Drivers\Codex\CodexFileCredentialStore;
 use App\Agents\Drivers\Codex\CodexHome;
 use App\Agents\Drivers\Codex\CodexHomeFiles;
-use App\Agents\Drivers\Codex\CodexIsolation;
 use App\Agents\Drivers\Codex\CodexKeySignIn;
 use App\Agents\Drivers\Codex\CodexLayout;
 use App\Agents\Drivers\Codex\CodexModelAnswer;
@@ -149,7 +147,6 @@ final class DriversServiceProvider extends ServiceProvider
             ->accountSettings(CodexAccountSettings::class)
             ->skills(CodexSkills::class)
             ->hookAdapter(CodexAdapter::class)
-            ->isolation(CodexIsolation::class)
             ->local(
                 ConditionalPart::for(new AnyContext(), CodexHome::class),
                 ConditionalPart::for(new AnyContext(), HostHomeAndPath::class),
@@ -205,7 +202,6 @@ final class DriversServiceProvider extends ServiceProvider
             ->accountSettings(ClaudeAccountSettings::class)
             ->skills(ClaudeCodeSkills::class)
             ->hookAdapter(ClaudeCodeAdapter::class)
-            ->isolation(ClaudeCodeIsolation::class)
             ->journalServer(ConditionalPart::forAccount(new JournalServerAccount(), ClaudeCodeJournalServer::class))
             ->local(ConditionalPart::forAccount(new AnyContext(), ClaudeCodeAccountHome::class))
             ->perStart(

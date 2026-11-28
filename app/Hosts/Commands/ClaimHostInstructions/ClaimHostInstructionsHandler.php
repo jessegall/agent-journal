@@ -9,7 +9,6 @@ use App\Bus\Contracts\CommandHandler;
 use App\Bus\Contracts\JournalCommands;
 use App\Hosts\Commands\AllowHostImages\AllowHostImagesCommand;
 use App\Hosts\Commands\BuildHostDriverImage\BuildHostDriverImageCommand;
-use App\Hosts\Commands\RequestHostProtection\RequestHostProtectionCommand;
 use App\Hosts\Commands\ReserveHostDriverImages\ReserveHostDriverImagesCommand;
 use App\Hosts\Contracts\HostDriverImages;
 use App\Hosts\HostInstructionPlacement;
@@ -43,11 +42,6 @@ final readonly class ClaimHostInstructionsHandler implements CommandHandler
         $host = $this->placement->orderingHost($command->hostId);
         $this->buildDriverImagesOn($host);
         $this->allowAgentImageOn($host);
-
-        if ($host->arrangement->isContained()) {
-            $protection = new RequestHostProtectionCommand($host->id);
-            $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $protection);
-        }
 
         $now = $this->clock->now();
         $claimed = [];

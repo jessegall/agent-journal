@@ -21,7 +21,6 @@ enum ScenarioStepType: string
     case MakeFolder = 'make-folder';
     case ReadFolderUse = 'read-folder-use';
     case RemoveFolder = 'remove-folder';
-    case ProtectHost = 'protect-host';
     case ReadProject = 'read-project';
     case UpgradeHost = 'upgrade-host';
     case AllowImages = 'allow-images';
@@ -53,7 +52,6 @@ enum ScenarioStepType: string
             self::MakeFolder,
             self::ReadFolderUse,
             self::RemoveFolder,
-            self::ProtectHost,
             self::ReadProject,
             self::UpgradeHost,
             self::AllowImages,
@@ -69,7 +67,6 @@ enum ScenarioStepType: string
             self::MakeFolder,
             self::ReadFolderUse,
             self::RemoveFolder,
-            self::ProtectHost,
             self::ReadProject,
             self::UpgradeHost,
             self::AllowImages,
@@ -127,7 +124,7 @@ enum ScenarioStepType: string
             self::MakeFolder, self::ReadFolderUse, self::RemoveFolder => ['folder'],
             self::ReadProject => ['path'],
             self::AllowImages => ['images'],
-            self::ProtectHost, self::UpgradeHost => [],
+            self::UpgradeHost => [],
             self::SubmitCode => ['from'],
             self::AskUser => ['text'],
             self::RemoveImage => ['image'],

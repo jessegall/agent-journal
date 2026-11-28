@@ -37,11 +37,6 @@ final class DriverArrangementUnproven extends RuntimeException implements
         );
     }
 
-    public static function inContainer(string $driver, string $version, string $shortfall): self
-    {
-        return new self("{$driver} {$version} cannot start in a container: {$shortfall}.");
-    }
-
     protected function status(): int
     {
         return 409;

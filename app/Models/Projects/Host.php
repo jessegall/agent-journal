@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use App\Agents\Drivers\Enums\BoundaryItem;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Enums\ExecutionModeType;
@@ -15,8 +14,6 @@ use App\Contracts\Events\EventSource;
 use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
 use App\Events\Connections\HostHeartbeatRecorded;
-use App\Events\Connections\HostProtectionRecorded;
-use App\Events\Connections\HostProtectionRunsRecorded;
 use App\Events\Connections\HostReenrolled;
 use App\Events\Connections\HostRevoked;
 use App\Exceptions\HostCredentialRejected;
@@ -28,15 +25,11 @@ use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
-use App\Profiles\Data\ProtectionReportData;
-use App\Profiles\Data\ProtectionRunData;
 use App\Projects\Enums\ArrangementType;
 use App\Projects\Exceptions\HostArrangementRefused;
-use App\Projects\Values\ProtectionEvidence;
 use App\Projects\Values\StartPlace;
 use App\Records\Contracts\ReadableModel;
 use App\Terminals\Enums\TerminalInputType;
-use App\Values\ProtectionReport;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -50,8 +43,6 @@ use Spatie\LaravelData\DataCollection;
  * @property string $installation_name
  * @property string $credential_hash
  * @property list<string> $start_roots
- * @property DataCollection<int, ProtectionReportData> $protection
- * @property DataCollection<int, ProtectionRunData> $protection_runs
  * @property ArrangementType $arrangement
  * @property int $protocol
  * @property string|null $instruction_secret
@@ -71,7 +62,6 @@ use Spatie\LaravelData\DataCollection;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read string $link_alarm
- * @property-read ProtectionEvidence $protection_evidence
  *
  * @mixin \Eloquent
  */
@@ -102,8 +92,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             'capabilities' => 'array',
             'allowed_images' => 'array',
             'start_roots' => 'array',
-            'protection' => DataCollection::class.':'.ProtectionReportData::class,
-            'protection_runs' => DataCollection::class.':'.ProtectionRunData::class,
             'revoked_at' => 'immutable_datetime',
             'last_answered_at' => 'immutable_datetime',
             'failing_since' => 'immutable_datetime',
@@ -138,36 +126,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     // ----------[ Mutations ]----------
-
-    /**
-     * The host keeps the protection report given, in place of its earlier report of the same item.
-     */
-    public function recordProtection(ProtectionReport $report): void
-    {
-        $reports = $this->protection->items();
-        $reports[$report->key()] = $report->data();
-        $this->protection = ProtectionReportData::collect($reports, DataCollection::class);
-        $this->saveAndAssert();
-        $this->raise(new HostProtectionRecorded($this->id));
-    }
-
-    /**
-     * The operator recorded a run that showed each item hold under the report key.
-     *
-     * @param  list<BoundaryItem>  $items
-     */
-    public function recordProtectionRuns(string $key, array $items, string $run): void
-    {
-        $runs = $this->protection_runs->items();
-
-        foreach ($items as $item) {
-            $runs[] = new ProtectionRunData($key, $item->value, $run);
-        }
-
-        $this->protection_runs = ProtectionRunData::collect($runs, DataCollection::class);
-        $this->saveAndAssert();
-        $this->raise(new HostProtectionRunsRecorded($this->id));
-    }
 
     /**
      * The installation enrolled this host again: it takes the new secret and roots and starts with no failure, no
@@ -341,14 +299,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     // ----------[ Predicates ]----------
 
     /**
-     * Whether the journal judged the protection kept under the report's key.
-     */
-    public function hasProtectionOf(ProtectionReport $unreported): bool
-    {
-        return array_key_exists($unreported->key(), $this->protection->items());
-    }
-
-    /**
      * Whether the host runs starts of this placement: a contained host in containers, a local one on the host.
      */
     public function runsPlacement(ExecutionModeType $placement): bool
@@ -472,22 +422,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         return ExecutablePlace::Host;
     }
 
-    /**
-     * The protection this host reported for the build the unreported report names, or that report when it has none.
-     */
-    public function protectionOf(ProtectionReport $unreported): ProtectionReport
-    {
-        $key = $unreported->key();
-
-        $reports = $this->protection->items();
-
-        if (! array_key_exists($key, $reports)) {
-            return $unreported;
-        }
-
-        return $reports[$key]->report();
-    }
-
     // ----------[ Calculations ]----------
 
     /**
@@ -532,24 +466,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     // ----------[ Accessors ]----------
-
-    /**
-     * The runs recorded on this host, by report key and item; a later run of an item replaces an earlier one.
-     *
-     * @return Attribute<ProtectionEvidence, never>
-     */
-    protected function protectionEvidence(): Attribute
-    {
-        return Accessor::get(function () {
-            $runs = [];
-
-            foreach ($this->protection_runs->items() as $recorded) {
-                $runs[$recorded->key][$recorded->item] = $recorded->run;
-            }
-
-            return new ProtectionEvidence($runs);
-        });
-    }
 
     /**
      * The sentence a broken link of this host shows: since when its calls fail and why the latest did, or since when
@@ -682,25 +598,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $host->assertNotRevoked();
 
         return $host;
-    }
-
-    /**
-     * The protection a contained host of this installation last reported for the driver's build on the platform a
-     * start profile names, or the unreported one asked for when no contained host has.
-     */
-    public static function resolveContainedProtectionOf(ProtectionReport $unreported): ProtectionReport
-    {
-        $host = self::query()
-            ->contained()
-            ->unrevoked()
-            ->recentlyUpdatedFirst()
-            ->first();
-
-        if ($host === null) {
-            return $unreported;
-        }
-
-        return $host->protectionOf($unreported);
     }
 
     /**

@@ -45,18 +45,6 @@ enum StartProfileType: string
     }
 
     /**
-     * The platform a contained host's protection report names for starts of this profile: a protected start keeps
-     * the account by its two users and the managed policy, so it has its own report.
-     */
-    public function protectionPlatform(): IsolationPlatform
-    {
-        return match ($this) {
-            self::Standard => IsolationPlatform::Container,
-            self::ProtectedAccount => IsolationPlatform::ProtectedContainer,
-        };
-    }
-
-    /**
      * The program the container starts before its command: none for a standard start, the init that drops to its users
      * for a protected one, which takes the command after a --.
      *

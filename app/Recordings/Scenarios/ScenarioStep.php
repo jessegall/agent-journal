@@ -22,7 +22,6 @@ use App\Hosts\Commands\InstructHostUpgrade\InstructHostUpgradeCommand;
 use App\Hosts\Commands\MakeHostFolder\MakeHostFolderCommand;
 use App\Hosts\Commands\ReadFolderUse\ReadFolderUseCommand;
 use App\Hosts\Commands\RemoveHostFolder\RemoveHostFolderCommand;
-use App\Hosts\Commands\RequestHostProtection\RequestHostProtectionCommand;
 use App\Projects\Commands\RequestProjectRead\RequestProjectReadCommand;
 use App\Projects\Enums\ProjectReadType;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
@@ -196,7 +195,6 @@ final class ScenarioStep extends Data
             ScenarioStepType::MakeFolder => new MakeHostFolderCommand($host, (string) $this->folder, $key),
             ScenarioStepType::ReadFolderUse => new ReadFolderUseCommand($host, (string) $this->folder, $key),
             ScenarioStepType::RemoveFolder => new RemoveHostFolderCommand($host, (string) $this->folder, $key),
-            ScenarioStepType::ProtectHost => new RequestHostProtectionCommand($host),
             ScenarioStepType::ReadProject => new RequestProjectReadCommand(
                 $run->bindingIdOn($host),
                 ProjectReadType::Directory,

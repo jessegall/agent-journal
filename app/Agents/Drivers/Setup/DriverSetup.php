@@ -6,7 +6,6 @@ namespace App\Agents\Drivers\Setup;
 
 use App\Accounts\Contracts\AccountSettingsFiller;
 use App\Agents\Drivers\Contracts\DriverAdapter;
-use App\Agents\Drivers\Contracts\DriverIsolation;
 use App\Agents\Drivers\Contracts\DriverKeyScript;
 use App\Agents\Drivers\Contracts\DriverLayout;
 use App\Agents\Drivers\Setup\Contracts\SignInReader;
@@ -30,7 +29,6 @@ final readonly class DriverSetup
      * @param  class-string<AccountSettingsFiller>  $accountSettings
      * @param  class-string<DriverSkills>  $skills
      * @param  class-string<DriverAdapter>  $hookAdapter
-     * @param  class-string<DriverIsolation>  $isolation
      * @param  list<StartRefusal>  $refusals
      * @param  list<StartRefusal>  $signInRefusals
      * @param  list<ConditionalPart>  $environment
@@ -52,7 +50,6 @@ final readonly class DriverSetup
         public string $accountSettings,
         public string $skills,
         public string $hookAdapter,
-        public string $isolation,
         public array $refusals,
         public array $signInRefusals,
         public array $environment,

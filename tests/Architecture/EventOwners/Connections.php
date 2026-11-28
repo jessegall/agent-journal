@@ -40,8 +40,6 @@ use App\Events\Connections\HostProcessSeenInHeartbeat;
 use App\Events\Connections\HostProcessStarted;
 use App\Events\Connections\HostProcessWorkerClaimed;
 use App\Events\Connections\HostProcessWorkerRenewed;
-use App\Events\Connections\HostProtectionRecorded;
-use App\Events\Connections\HostProtectionRunsRecorded;
 use App\Events\Connections\HostReenrolled;
 use App\Events\Connections\HostRevoked;
 use App\Events\Connections\InstallAttemptCancelled;
@@ -287,20 +285,6 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DeviceGrantRevoked('grant'),
-    ],
-    HostProtectionRecorded::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Host::recordProtection',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new HostProtectionRecorded('host'),
-    ],
-    HostProtectionRunsRecorded::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Host::recordProtectionRuns',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new HostProtectionRunsRecorded('host'),
     ],
     HostCallFailed::class => [
         'role' => EventRole::RowFact,

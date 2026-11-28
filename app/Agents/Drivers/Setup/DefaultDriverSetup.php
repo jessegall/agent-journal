@@ -6,7 +6,6 @@ namespace App\Agents\Drivers\Setup;
 
 use App\Accounts\Contracts\AccountSettingsFiller;
 use App\Agents\Drivers\Contracts\DriverAdapter;
-use App\Agents\Drivers\Contracts\DriverIsolation;
 use App\Agents\Drivers\Contracts\DriverKeyScript;
 use App\Agents\Drivers\Contracts\DriverLayout;
 use App\Agents\Drivers\Parts\ContainerAccountHome;
@@ -41,7 +40,6 @@ final readonly class DefaultDriverSetup
      * @param  class-string<DriverSkills>|null  $skills
      * @param  class-string<DriverAdapter>|null  $hookAdapter
      * @param  list<ConditionalPart>  $journalServer  the part that gives the driver the journal's server, when it has one
-     * @param  class-string<DriverIsolation>|null  $isolation
      * @param  list<StartRefusal>  $refusals
      * @param  list<StartRefusal>  $signInRefusals
      * @param  list<ConditionalPart>  $parts
@@ -62,7 +60,6 @@ final readonly class DefaultDriverSetup
         private string|null $accountSettings = null,
         private string|null $skills = null,
         private string|null $hookAdapter = null,
-        private string|null $isolation = null,
         private array $journalServer = [],
         private array $refusals = [],
         private array $signInRefusals = [],
@@ -161,14 +158,6 @@ final readonly class DefaultDriverSetup
     }
 
     /**
-     * @param  class-string<DriverIsolation>  $isolation
-     */
-    public function isolation(string $isolation): self
-    {
-        return clone ($this, ['isolation' => $isolation]);
-    }
-
-    /**
      * How the driver is given the journal's MCP server on a start; a driver whose image holds its server's
      * configuration declares none.
      */
@@ -254,7 +243,6 @@ final readonly class DefaultDriverSetup
             $this->required($this->accountSettings, 'accountSettings'),
             $this->required($this->skills, 'skills'),
             $this->required($this->hookAdapter, 'hookAdapter'),
-            $this->required($this->isolation, 'isolation'),
             $this->refusals,
             $this->signInRefusals,
             $environment,

@@ -15,10 +15,6 @@ return new class extends Migration
             $table->string('installation_name');
             $table->char('credential_hash', 64)->unique();
             $table->jsonb('start_roots');
-            // The latest protection report per driver, build and platform, as the journal judged it for a contained host.
-            $table->jsonb('protection')->default('{}');
-            // The recorded runs that showed each boundary item hold, as the operator recorded them.
-            $table->jsonb('protection_runs')->default('[]');
             $table->string('arrangement')->default('local');
             // The host protocol the host speaks, and the secret every instruction to it is signed with.
             $table->unsignedSmallInteger('protocol')->default(1);

@@ -9,7 +9,6 @@ use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverEvidence;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
-use App\Support\Compatibility\Exceptions\DriverUnstartableInContainer;
 
 /**
  * What start preparation may rely on for one pinned driver: its version and binary digest, the flags and
@@ -21,9 +20,6 @@ final readonly class DriverCompatibility
     /**
      * @param  list<string>  $startFlags  the checked flags every account start passes
      * @param  array<string, string>  $settings  the checked settings each account's own configuration holds
-     * @param  string|null  $containedShortfall  what keeps a contained start back; null where starts are not contained
-     * @param  bool  $awaitsContainedReport  whether the shortfall is only that no contained host reported yet, which
-     *                                       a later report may lift, rather than a report this build fails
      */
     public function __construct(
         public string $driver,
@@ -34,8 +30,6 @@ final readonly class DriverCompatibility
         public AuthenticationArrangement $arrangement,
         public DriverEvidence $arrangementEvidence,
         public string $evidenceOwner,
-        public string|null $containedShortfall = null,
-        public bool $awaitsContainedReport = false,
     ) {}
 
     /**
@@ -79,45 +73,12 @@ final readonly class DriverCompatibility
     }
 
     /**
-     * The same compatibility held back in a container until a contained host reports its protection: a wait, not a
-     * refusal of the build.
-     */
-    public function awaitingContainedReport(string $shortfall): self
-    {
-        return clone ($this->withContainedShortfall($shortfall), ['awaitsContainedReport' => true]);
-    }
-
-    /**
-     * The same compatibility held back in a container by what its protection report lacks there.
-     */
-    public function withContainedShortfall(string $shortfall): self
-    {
-        return clone ($this, [
-            'arrangementEvidence' => DriverEvidence::PrerequisiteMissing,
-            'evidenceOwner' => "a contained host's protection report with every item enforced",
-            'containedShortfall' => $shortfall,
-        ]);
-    }
-
-    /**
      * Refuses an account start whose way of sharing the sign-in the real driver has not shown.
      *
      * @throws DriverArrangementUnproven
      */
     public function assertStartable(): void
     {
-        if ($this->containedShortfall !== null && ! $this->awaitsContainedReport) {
-            throw DriverUnstartableInContainer::for($this->driver, $this->version, $this->containedShortfall);
-        }
-
-        if ($this->containedShortfall !== null) {
-            throw DriverArrangementUnproven::inContainer(
-                $this->driver,
-                $this->version,
-                $this->containedShortfall,
-            );
-        }
-
         if (! $this->arrangementEvidence->isNativeShown()) {
             throw DriverArrangementUnproven::for(
                 $this->driver,
