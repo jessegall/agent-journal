@@ -52,7 +52,7 @@ final class RecordedTerminalHost implements HostChannel
         private readonly RecordedHostAnswers $recordedAnswers,
     ) {}
 
-    public static function playing(string $recordingFolder): self
+    public static function playing(string $recordingFolder, RecordedHostAnswers $answers): self
     {
         $fixture = json_decode(
             (string) file_get_contents($recordingFolder.'/'.self::FIXTURE),
@@ -71,7 +71,7 @@ final class RecordedTerminalHost implements HostChannel
             array_map(fn (array $input) => (string) base64_decode($input['bytes'] ?? '', true), $inputs),
             array_map(fn (array $input) => (int) $input['offset'], $inputs),
             new FakeMonotonicClock(),
-            RecordedHostAnswers::beside($recordingFolder),
+            $answers,
         );
     }
 

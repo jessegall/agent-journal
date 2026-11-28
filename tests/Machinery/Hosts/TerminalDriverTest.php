@@ -502,7 +502,7 @@ final class TerminalDriverTest extends TestCase
         $this->journal
             ->driveProcessesWith(HostProcessPurpose::AgentTerminal, TerminalDriver::class)
             ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcessForStart('agent', $opened->sessionId))
-            ->playRecording($recording);
+            ->playRecording($recording, $driver);
 
         return $this->journal->processDriverOf('agent');
     }

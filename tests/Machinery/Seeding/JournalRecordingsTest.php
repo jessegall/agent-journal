@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Files\Enums\Place;
 use App\Hosts\Contracts\HostChannel;
 use App\Recordings\RecordingDrafts;
@@ -36,10 +37,10 @@ final class JournalRecordingsTest extends TestCase
 
     public function test_a_driver_typing_the_recorded_inputs_passes_every_checkpoint_in_one_or_two_writes(): void
     {
-        $this->journal->playRecording(self::RECORDING);
+        $this->journal->playRecording(self::RECORDING, DefaultDrivers::CLAUDE_CODE);
 
         $this->typeRecordedInputs(fn (string $input) => [$input]);
-        $this->journal->playRecording(self::RECORDING);
+        $this->journal->playRecording(self::RECORDING, DefaultDrivers::CLAUDE_CODE);
         $this->typeRecordedInputs(fn (string $input) => str_split($input, max(1, intdiv(strlen($input), 2))));
 
         $this->journal->recordedTerminalHost(fn (RecordedTerminalHost $host) => $this->assertNotSame([], $host->recordedInputs()));
@@ -57,7 +58,7 @@ final class JournalRecordingsTest extends TestCase
 
     public function test_one_wrong_byte_fails_naming_its_checkpoint(): void
     {
-        $this->journal->playRecording(self::RECORDING);
+        $this->journal->playRecording(self::RECORDING, DefaultDrivers::CLAUDE_CODE);
 
         $this->journal->assertRefused(
             RecordingDiverged::class,
@@ -78,7 +79,14 @@ final class JournalRecordingsTest extends TestCase
             $host->advanceToInput($number);
 
             foreach ($split($input) as $write) {
-                $channel->keys('process', $write, $host->guardFor(0, 1), 0, HostInstructionSource::fromJournal());
+                $instruction = $channel->keys(
+                    'process',
+                    $write,
+                    $host->guardFor(0, 1),
+                    0,
+                    HostInstructionSource::fromJournal(),
+                );
+                $this->assertSame('done', $host->answerOf($instruction)['status']);
             }
 
             $host->assertTypedThrough($number);

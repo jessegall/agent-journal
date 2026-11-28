@@ -77,7 +77,7 @@ final class ClaudeCodeKeyScriptsTest extends TestCase
      */
     private function played(string $recording, string $script, array $values): KeyMove
     {
-        $this->journal->playRecording(self::KEY_SCRIPTS."/{$recording}");
+        $this->journal->playRecording(self::KEY_SCRIPTS."/{$recording}", DefaultDrivers::CLAUDE_CODE);
         $host = $this->journal->service(RecordedTerminalHost::class);
         $runner = $this->journal->service(KeyScriptRunner::class);
         $layout = $this->profile()->layout();
