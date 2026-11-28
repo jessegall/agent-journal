@@ -17,6 +17,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class HomeWindowData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<HomeWindowDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = HomeWindowDataFields::class;
+
     public function __construct(
         public readonly string $paneKey,
         public readonly string $key,

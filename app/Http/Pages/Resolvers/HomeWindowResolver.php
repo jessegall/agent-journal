@@ -44,19 +44,20 @@ final readonly class HomeWindowResolver implements PageResolver
 
         $owners = array_count_values(array_map(fn (RegisteredPage $page) => $page->owner->key, $windows));
 
-        return HomeData::from([
-            'layouts' => $this->layouts->layouts(),
-            'windows' => array_map(fn (RegisteredPage $page) => HomeWindowData::from([
-                // A domain with one window on Home keeps its short pane key, so saved layouts keep their panes.
-                'paneKey' => $owners[$page->owner->key] === 1 ? $page->owner->key : $page->key,
-                'key' => $page->key,
-                'propName' => $page->propName,
-                'component' => $page->componentName(),
-                'title' => $page->page->title,
-                'icon' => $page->page->icon,
-                'place' => $page->page->place,
-            ]), $windows),
-            'barSections' => $this->declarations->sectionsIn(RegisteredPage::HOME, 'bar'),
-        ]);
+        return HomeData::build()
+            ->layouts($this->layouts->layouts())
+            ->windows(
+                array_map(fn (RegisteredPage $page) => HomeWindowData::build()
+                ->paneKey($owners[$page->owner->key] === 1 ? $page->owner->key : $page->key)
+                ->key($page->key)
+                ->propName($page->propName)
+                ->component($page->componentName())
+                ->title($page->page->title)
+                ->icon($page->page->icon)
+                ->place($page->page->place)
+                ->finish(), $windows),
+            )
+            ->barSections($this->declarations->sectionsIn(RegisteredPage::HOME, 'bar'))
+            ->finish();
     }
 }

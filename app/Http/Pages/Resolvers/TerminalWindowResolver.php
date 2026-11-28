@@ -18,6 +18,6 @@ final readonly class TerminalWindowResolver implements PageResolver
 
     public function read(): TerminalWindowData
     {
-        return new TerminalWindowData($this->request->agentId());
+        return TerminalWindowData::build()->agentId($this->request->agentId())->finish();
     }
 }

@@ -40,10 +40,10 @@ final readonly class ActivityWindowResolver implements PageResolver
         $page = array_reverse(array_slice($read, 0, ActivityEntry::READ_ENTRY_LIMIT));
         $labels = $this->labels->labelsFor(array_map(fn (ActivityEntry $entry) => $entry->actor(), $page));
 
-        return ActivityWindowData::from([
-            'events' => array_map(fn (ActivityEntry $entry) => $this->event($entry, $labels), $page),
-            'hasOlder' => count($read) > ActivityEntry::READ_ENTRY_LIMIT,
-        ]);
+        return ActivityWindowData::build()
+            ->events(array_map(fn (ActivityEntry $entry) => $this->event($entry, $labels), $page))
+            ->hasOlder(count($read) > ActivityEntry::READ_ENTRY_LIMIT)
+            ->finish();
     }
 
     private function event(ActivityEntry $entry, ActorLabelSet $labels): ActivityEventData

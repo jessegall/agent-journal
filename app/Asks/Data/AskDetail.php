@@ -15,6 +15,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AskDetail extends Data
 {
+    /** @use \App\Web\Creation\Buildable<AskDetailFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = AskDetailFields::class;
+
     public function __construct(
         public readonly AskCard $card,
         public readonly int $version,

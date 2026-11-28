@@ -16,6 +16,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class HomeData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<HomeDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = HomeDataFields::class;
+
     /**
      * @param  list<LayoutData>  $layouts
      * @param  list<HomeWindowData>  $windows
