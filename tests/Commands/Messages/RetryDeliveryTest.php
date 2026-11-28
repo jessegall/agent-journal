@@ -20,18 +20,21 @@ final class RetryDeliveryTest extends TestCase
 
     public function test_only_the_sender_can_queue_a_failed_message_again(): void
     {
-        $this->journal->owner()->user('Reader')->sharedInbox('Owner', 'Reader');
+        $this->journal->owner()
+            ->user('Reader')
+            ->admitInboxMember('Reader')
+            ->sharedInbox('Owner', 'Reader');
         $chat = $this->journal->sharedInboxOf('Owner', 'Reader');
         $message = $this->journal->post('Owner', $chat, 'Run the build.');
         $message->failDelivery('The start was refused.', CarbonImmutable::now());
 
-        $this->assertThrows(
-            fn () => $this->journal->runAs('Reader', new RetryDeliveryCommand($message->id)),
+        $this->journal->actAsInboxMember('Reader')->assertRefused(
             InboxUnavailable::class,
+            fn () => $this->journal->run(new RetryDeliveryCommand($message->id)),
         );
         $this->assertNotNull($message->refresh()->delivery_failed_at);
 
-        $this->journal->runAs('Owner', new RetryDeliveryCommand($message->id));
+        $this->journal->actAs('Owner')->run(new RetryDeliveryCommand($message->id));
 
         $message->refresh();
         $this->assertNull($message->delivery_failed_at);

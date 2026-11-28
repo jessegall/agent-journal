@@ -6,6 +6,7 @@ namespace Domain\Chat\Support;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Bus\Contracts\JournalCommands;
+use App\Bus\Contracts\RequestKey;
 use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -22,7 +23,11 @@ final readonly class DriverSwitchLines
 {
     private const string TRUSTED_ENTRY = 'driver switch';
 
-    public function __construct(private PairChats $chats, private JournalCommands $journal) {}
+    public function __construct(
+        private PairChats $chats,
+        private JournalCommands $journal,
+        private RequestKey $requestKey,
+    ) {}
 
     public function switched(DriverSwitch $switch): void
     {
@@ -72,10 +77,13 @@ final readonly class DriverSwitchLines
             return;
         }
 
-        $this->journal->runAsJournal(
-            CommandEntry::Application,
-            self::TRUSTED_ENTRY,
-            new SendMessageCommand($chat->id, $text),
+        $this->requestKey->independently(
+            "driver-switch-{$switch->id}",
+            fn () => $this->journal->runAsJournal(
+                CommandEntry::Application,
+                self::TRUSTED_ENTRY,
+                new SendMessageCommand($chat->id, $text),
+            ),
         );
     }
 }
