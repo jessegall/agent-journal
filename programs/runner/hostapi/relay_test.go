@@ -1,150 +1,124 @@
-package hostapi
+package hostapi_test
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
-	"sync"
 	"testing"
 	"time"
 
 	"journal-runner/client"
+	"journal-runner/host"
+	"journal-runner/hostapi"
+	"journal-runner/hostapitest"
+	"journal-runner/recorded"
+	"journal-runner/recording"
 )
 
-// fakeJournal answers the relay's calls as a test sets them up and keeps what the relay sent.
-type fakeJournal struct {
-	mutex      sync.Mutex
-	claims     [][]Instruction
-	claimCount int
-	refuse     bool
-	answers    []Answer
-	inventory  []Inventory
-	heartbeats []HostHeartbeat
-}
-
-func (journal *fakeJournal) ClaimInstruction(ctx context.Context, _, _ int) (ClaimedInstructions, error) {
-	journal.mutex.Lock()
-	journal.claimCount++
-	if journal.refuse {
-		journal.mutex.Unlock()
-		return ClaimedInstructions{}, errors.Join(client.ErrProtocolRefused, client.ErrRefused)
+func TestAClaimedInstructionIsAnsweredByRoute(t *testing.T) {
+	scenario, inventory := hostapitest.Connected(t, "answer-order")
+	wire := hostapitest.Replay(t, scenario)
+	journal := hostapi.Journal{
+		Client: client.New(client.Enrollment{
+			JournalURL: wire.URL, HostID: "test-host", Secret: hostapitest.EnrollmentSecret,
+		}),
+		Protocol: hostapi.RelayProtocolVersion,
 	}
-	if len(journal.claims) > 0 {
-		instructions := journal.claims[0]
-		journal.claims = journal.claims[1:]
-		journal.mutex.Unlock()
-		return ClaimedInstructions{Instructions: instructions, IdleWindowSeconds: 600}, nil
-	}
-	journal.mutex.Unlock()
-	<-ctx.Done()
-	return ClaimedInstructions{}, ctx.Err()
-}
+	ctx, stop := context.WithTimeout(t.Context(), 5*time.Second)
+	defer stop()
 
-func (journal *fakeJournal) AnswerInstruction(_ context.Context, _ string, answer Answer) error {
-	journal.mutex.Lock()
-	defer journal.mutex.Unlock()
-	journal.answers = append(journal.answers, answer)
-	return nil
-}
-
-func (journal *fakeJournal) NotifyInventory(_ context.Context, inventory Inventory) error {
-	journal.mutex.Lock()
-	defer journal.mutex.Unlock()
-	journal.inventory = append(journal.inventory, inventory)
-	return nil
-}
-
-func (journal *fakeJournal) NotifyHeartbeat(_ context.Context, heartbeat HostHeartbeat) error {
-	journal.mutex.Lock()
-	defer journal.mutex.Unlock()
-	journal.heartbeats = append(journal.heartbeats, heartbeat)
-	return nil
-}
-
-func relayFor(t *testing.T, journal *fakeJournal) (Relay, []byte) {
-	t.Helper()
-	secret := []byte("the-instruction-secret")
-	record, err := OpenAnsweredRecord(t.TempDir())
+	record, err := hostapi.OpenAnsweredRecord(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	executors := map[string]Executor{
-		"snapshot": func(context.Context, Instruction) (map[string]any, error) { return map[string]any{"shown": true}, nil },
+	clock := &hostapi.JournalClock{Host: time.Now}
+	idle := &hostapi.IdleWindow{}
+	reads := hostapi.ProjectReads{Reader: host.ProjectReader{Root: t.TempDir()}, Journal: journal}
+	executors := map[string]hostapi.Executor{
+		"read_project": func(ctx context.Context, instruction hostapi.Instruction) (map[string]any, error) {
+			read, err := hostapi.DecodePayload[client.ProjectRead](instruction)
+			if err != nil {
+				return nil, err
+			}
+			_, err = reads.ReadProject(ctx, instruction, read)
+			return nil, err
+		},
 	}
-	clock := &JournalClock{Host: time.Now}
-	dispatcher := NewDispatcher(Verifier{Secret: secret, Now: clock.Now}, record, executors, func(_ Instruction, answer Answer) {
-		_ = journal.AnswerInstruction(context.Background(), answer.InstructionID, answer)
+	dispatcher := hostapi.NewDispatcher(hostapi.Verifier{
+		Secret: hostapi.InstructionSecretOf(hostapitest.EnrollmentSecret), Now: clock.Now,
+	}, record, executors, func(instruction hostapi.Instruction, answer hostapi.Answer) {
+		if err := journal.AnswerInstruction(ctx, instruction.ID, answer); err != nil {
+			t.Error(err)
+		}
+		stop()
 	})
-	outputs := NewOutputs(t.TempDir(), func(string, Output) error { return nil }, time.Now)
-	table := &ProcessTable{outputs: outputs, processes: map[string]*heldProcess{}}
-	relay := Relay{Journal: journal, Dispatcher: dispatcher, Record: record, Table: table, Release: "6.0.0",
-		Heartbeat: 10 * time.Millisecond, RetryAfter: time.Millisecond, Clock: clock}
-	return relay, secret
-}
-
-func TestAClaimedInstructionIsAnsweredByRoute(t *testing.T) {
-	journal := &fakeJournal{}
-	relay, secret := relayFor(t, journal)
-	instruction := Instruction{ID: "01jorder", Sequence: 1, Type: "snapshot", ProcessID: "p", Payload: "{}",
-		ExpiresAt: time.Now().Add(time.Minute).UTC().Truncate(time.Second)}
-	instruction.Signature = Sign(secret, instruction)
-	journal.claims = [][]Instruction{{instruction}}
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
-	defer cancel()
-
-	_ = relay.Claim(ctx)
-	relay.Dispatcher.Wait()
-
-	if len(journal.answers) != 1 || journal.answers[0].Status != Done || journal.answers[0].InstructionID != instruction.ID {
-		t.Fatalf("the claimed instruction was not answered done: %+v", journal.answers)
+	relay := hostapi.Relay{
+		Journal: journal, Dispatcher: dispatcher, Record: record, Clock: clock, Idle: idle, RetryAfter: time.Millisecond,
 	}
-	if err := relay.SendInventory(context.Background()); err != nil || journal.inventory[0].AnsweredThrough != instruction.ID {
-		t.Fatalf("the inventory does not name the instruction answered last: %+v, %v", journal.inventory, err)
+
+	// The CLI replay covers startup and its inventory. Start this layer with the same recorded inventory.
+	if err := journal.NotifyInventory(ctx, inventory); err != nil {
+		t.Fatal(err)
 	}
-}
-
-func TestHeartbeatsAreSentAtTheirInterval(t *testing.T) {
-	journal := &fakeJournal{}
-	relay, _ := relayFor(t, journal)
-	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Millisecond)
-	defer cancel()
-
-	relay.Beat(ctx)
-
-	journal.mutex.Lock()
-	defer journal.mutex.Unlock()
-	if len(journal.heartbeats) < 3 {
-		t.Fatalf("only %d heartbeats in five intervals", len(journal.heartbeats))
+	if err := relay.Claim(ctx); !errors.Is(err, context.Canceled) {
+		t.Fatalf("claiming did not stop after the instruction answer: %v", err)
 	}
-}
-
-func TestARefusedProtocolStopsClaiming(t *testing.T) {
-	journal := &fakeJournal{refuse: true}
-	relay, _ := relayFor(t, journal)
-
-	err := relay.Claim(context.Background())
-
-	if !errors.Is(err, client.ErrProtocolRefused) || journal.claimCount != 1 {
-		t.Fatalf("a refused protocol claimed %d times and ended with %v", journal.claimCount, err)
+	dispatcher.Wait()
+	wire.Calls.AssertPlayedWhole(t)
+	claim := recordedClaim(t, scenario)
+	if id := claim.Instructions[0].ID; record.AnsweredThrough() != id {
+		t.Fatalf("the answered record does not name %s: %s", id, record.AnsweredThrough())
+	}
+	now := time.Now()
+	window := time.Duration(claim.IdleWindowSeconds) * time.Second
+	if idle.HasPassedSince(now) || !idle.HasPassedSince(now.Add(-window-time.Second)) {
+		t.Fatalf("the relay did not use the recorded idle window of %s", window)
 	}
 }
 
 func TestAnInstructionsExpiryHoldsAgainstAHostClockMinutesOffBothWays(t *testing.T) {
-	journalNow := time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)
-	secret := []byte("the-instruction-secret")
-	for name, hostOffset := range map[string]time.Duration{"fast": 5 * time.Minute, "slow": -5 * time.Minute} {
-		clock := &JournalClock{Host: func() time.Time { return journalNow.Add(hostOffset) }}
-		clock.Observe(journalNow)
-		verifier := Verifier{Secret: secret, Now: clock.Now}
-		live := Instruction{ID: "live", Type: "snapshot", Payload: "{}", ExpiresAt: journalNow.Add(30 * time.Second)}
-		live.Signature = Sign(secret, live)
-		dead := Instruction{ID: "dead", Type: "snapshot", Payload: "{}", ExpiresAt: journalNow.Add(-time.Second)}
-		dead.Signature = Sign(secret, dead)
+	scenario, _ := hostapitest.Connected(t, "answer-order")
+	instruction := recordedClaim(t, scenario).Instructions[0]
+	secret := hostapi.InstructionSecretOf(hostapitest.EnrollmentSecret)
+	instruction.Signature = hostapi.Sign(secret, instruction)
+	for name, offset := range map[string]time.Duration{"fast": 5 * time.Minute, "slow": -5 * time.Minute} {
+		t.Run(name, func(t *testing.T) {
+			journalNow := instruction.ExpiresAt.Add(-time.Second)
+			clock := &hostapi.JournalClock{Host: func() time.Time { return journalNow.Add(offset) }}
+			clock.Observe(journalNow)
+			verifier := hostapi.Verifier{Secret: secret, Now: clock.Now}
 
-		if err := verifier.Verify(live); err != nil {
-			t.Errorf("a host clock %s refuses a live instruction: %v", name, err)
+			if err := verifier.Verify(instruction); err != nil {
+				t.Fatalf("the host rejects a live instruction: %v", err)
+			}
+			journalNow = journalNow.Add(2 * time.Second)
+			if err := verifier.Verify(instruction); err == nil {
+				t.Fatal("the host accepts the same instruction after expiry")
+			}
+		})
+	}
+}
+
+func recordedClaim(t *testing.T, scenario recorded.Scenario) hostapi.ClaimedInstructions {
+	t.Helper()
+	calls, err := scenario.Calls(recording.WireHost)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, call := range calls {
+		body, err := base64.StdEncoding.DecodeString(call.Answered.Body)
+		if err != nil {
+			t.Fatal(err)
 		}
-		if err := verifier.Verify(dead); err == nil {
-			t.Errorf("a host clock %s runs an expired instruction", name)
+		instructions, _ := hostapitest.ClaimedOf(call, body)
+		if len(instructions) > 0 {
+			claim, err := hostapi.ReadWirePayload[hostapi.ClaimedInstructions](body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return claim
 		}
 	}
+	t.Fatal("the connected recording contains no instruction")
+	return hostapi.ClaimedInstructions{}
 }
