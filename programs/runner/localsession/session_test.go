@@ -18,7 +18,10 @@ func plannedSession(t *testing.T, argv []string) Session {
 		Programs: map[string]string{"PROGRAM_EXECUTABLE": filepath.Join(installation, "bin", "program")},
 		Plan: hostapi.OpenPlan{
 			Argv:        argv,
-			Environment: []string{"HOME={folder:home}", "PATH={host:INSTALLATION}/bin"},
+			Environment: []string{
+				"HOME={folder:home}", "PATH={host:INSTALLATION}/bin",
+				"HOOK={host:HOOK_COMMAND}", "RUNNER={host:JOURNAL_RUNNER}",
+			},
 			Folders:     []string{"home", "account"},
 			KeptFiles:   []string{"{folder:account}/credential.json"},
 		},
@@ -38,6 +41,8 @@ func TestASessionRunsTheSealedProgramWithThePlansEnvironmentAndKeptFiles(t *test
 	if prepared.Command.Path != session.Programs["PROGRAM_EXECUTABLE"] ||
 		!slices.Equal(prepared.Command.Args[1:], []string{"--session-id", "session1", "--verbose"}) ||
 		!strings.Contains(environment, "HOME="+filepath.Join(plan, "home")) ||
+		!strings.Contains(environment, "HOOK="+filepath.Join(session.Installation, "bin", "journal-hook")) ||
+		!strings.Contains(environment, "RUNNER="+filepath.Join(session.Installation, "bin", "journal-runner")) ||
 		!strings.Contains(environment, "JOURNAL_SESSION_RUN="+session.RunFolder()) ||
 		!slices.Equal(prepared.KeptFiles, []string{filepath.Join(plan, "account", "credential.json")}) {
 		t.Fatalf("the session was prepared as %v %v, keeping %v", prepared.Command.Args, prepared.Command.Env, prepared.KeptFiles)

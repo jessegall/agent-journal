@@ -238,15 +238,6 @@ func openHostProtocol(ctx context.Context, journal *client.Client, enrollment de
 // binary, which a driver's status line runs as its reader, the protected installation account starts run from and the
 // hook relay command the drivers call.
 func hostNamesOf(journal *client.Client, installation, hookCommand string) map[string]string {
-	names := map[string]string{"JOURNAL_URL": journal.JournalURL()}
-	if installation != "" {
-		names["INSTALLATION"] = installation
-	}
-	if hookCommand != "" {
-		names["HOOK_COMMAND"] = hookCommand
-	}
-	if executable, err := os.Executable(); err == nil {
-		names["JOURNAL_RUNNER"] = executable
-	}
-	return names
+	executable, _ := os.Executable()
+	return device.PlanNames(journal.JournalURL(), installation, hookCommand, executable)
 }
