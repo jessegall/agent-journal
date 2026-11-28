@@ -20,6 +20,7 @@ use App\Models\Agents\MainAgentDesignation;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\DriverSwitch;
+use App\Models\Projects\HostDriverImageWait;
 use App\Models\Sessions\SessionOutcomeDismissal;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
@@ -83,6 +84,10 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             ->newestFirst()->limit(self::AGENTS_SHOWN * 2)->get()->unique('session_id')
             ->keyBy('session_id');
 
+        // The starts that wait for their host's driver image, read once for every agent shown.
+        $imageWaits = HostDriverImageWait::query()->ofStarts(array_values(array_map(strval(...), $starts->pluck('id')->all())))
+            ->pluck('session_process_id')->all();
+
         $requests = DriverRequest::query()->ofAgentRuntimes($runtimes->pluck('id')->all())
             ->bySequenceDescending()->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_runtime_id')
             ->keyBy('agent_runtime_id');
@@ -124,6 +129,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             $waitingOnHelpers,
             $readiness,
             $canStop,
+            $imageWaits,
         ): AgentOption {
             $session = $sessions->get($agent->id);
             $runtime = $runtimes->get((string) $session?->id);
@@ -139,6 +145,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
                     $startOutcomes[$agent->id] ?? null,
                     in_array($session?->id, $waitingOnHelpers, true),
                     $readiness[(string) $session?->id] ?? null,
+                    in_array($starts->get((string) $session?->id)?->id, $imageWaits, true),
                 ),
                 $conversations->get($agent->id, new Collection()),
                 $refusals[$agent->id] ?? null,
