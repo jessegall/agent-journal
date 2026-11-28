@@ -100,13 +100,13 @@ final class Task extends JournalModel implements
 {
     use AssignableListing;
     use BoundedReads;
+
     /**
      * @use HasFactory<TaskFactory>
      */
     use HasFactory;
 
     use HasNumber;
-
     use Linkable;
     use OrdersById;
     use ProjectMembership;

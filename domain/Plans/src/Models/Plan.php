@@ -96,13 +96,13 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
 {
     use AssignableListing;
     use BoundedReads;
+
     /**
      * @use HasFactory<PlanFactory>
      */
     use HasFactory;
 
     use HasNumber;
-
     use Linkable;
     use OrdersById;
     use ProjectMembership;
