@@ -7,11 +7,15 @@ namespace Tests\Unit\Drivers;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Values\SecretHandover;
 use App\Agents\Values\SignInReport;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Recordings\Recordings;
+use Tests\Support\Recordings\RecordedProgram;
 use Tests\TestCase;
 
 /**
  * Pins what the sign-in runner runs for each driver: the argv, the environment it names and what it reads from each
- * answer, for start, status, model check and sign-out, recorded from a mock the first time and compared after.
+ * answer, for start, status, model check and sign-out.
  */
 final class SignInProgramsTest extends TestCase
 {
@@ -28,10 +32,14 @@ final class SignInProgramsTest extends TestCase
           printf 'HOME=%s\nCLAUDE_CONFIG_DIR=%s\nCODEX_HOME=%s\nPATH_FIRST=%s\n' "$HOME" "$CLAUDE_CONFIG_DIR" "$CODEX_HOME" "${PATH%%:*}"
         } >> "$HOME/calls"
         case "$1" in
-          auth) printf '{"loggedIn":true,"authMethod":"claude.ai","configDirectory":"%s","email":"owner@example.test"}' "$HOME" ;;
-          -p) printf '{"type":"result","is_error":false,"result":"OK"}' ;;
-          exec) printf '{"type":"turn.completed"}\n' ;;
-          login) printf 'Logged in using ChatGPT\n' ;;
+          auth|-p|exec|login) cat "$HOME/$1.out" ;;
+          --version)
+            if [ -n "$CLAUDE_CONFIG_DIR" ]; then
+              cat "$HOME/claude-version.out"
+            else
+              cat "$HOME/codex-version.out"
+            fi
+            ;;
         esac
         SH;
 
@@ -46,6 +54,7 @@ final class SignInProgramsTest extends TestCase
         mkdir($this->folder, 0o700);
         file_put_contents($this->folder.'/program', self::PROGRAM);
         chmod($this->folder.'/program', 0o700);
+        $this->arrangeProgramOutput();
         config([
             'journal.accounts.claude_program' => $this->folder.'/program',
             'journal.accounts.codex_program' => $this->folder.'/program',
@@ -65,6 +74,40 @@ final class SignInProgramsTest extends TestCase
         $runs = [...$this->claudeRuns(), ...$this->codexRuns()];
 
         $this->assertSame($this->recorded($runs), $runs);
+    }
+
+    private function arrangeProgramOutput(): void
+    {
+        $recordings = $this->journal->service(Recordings::class);
+        $claude = $recordings->scenario(DefaultDrivers::CLAUDE_CODE, 'first-start');
+        $codex = $recordings->scenario(DefaultDrivers::CODEX, 'first-start');
+        $auth = RecordedProgram::from($claude, ['claude', 'auth', 'status'])->printedOn('stdout');
+        $claudeTurn = RecordedProgram::from(
+            $recordings->scenario(DefaultDrivers::CLAUDE_CODE, 'headless-turn'),
+            ['claude', '--settings'],
+        );
+        $result = array_find(
+            explode("\n", $claudeTurn->printedOn('stdout')),
+            fn (string $line) => (json_decode($line, true)['type'] ?? '') === 'result',
+        );
+        $this->assertIsString($result);
+        $codexTurn = RecordedProgram::from(
+            $recordings->scenario(DefaultDrivers::CODEX, 'headless-turn'),
+            ['codex', 'exec', '--json'],
+        );
+
+        $files = $this->journal->service(Files::class);
+        $folder = $files->pathIn(Place::Temporary, $this->folder);
+        $files->write($folder->child('auth.out'), str_replace('/home/journal/.account', $this->folder, $auth));
+        $files->write($folder->child('-p.out'), $result);
+        $files->write($folder->child('exec.out'), $codexTurn->printedOn('stdout'));
+        $login = RecordedProgram::from($codex, ['codex', 'login', 'status'])->printedOn('stderr');
+        $files->write($folder->child('login.out'), $login);
+
+        $claudeVersion = RecordedProgram::versionOf($recordings, DefaultDrivers::CLAUDE_CODE, 'claude');
+        $codexVersion = RecordedProgram::versionOf($recordings, DefaultDrivers::CODEX, 'codex');
+        $files->write($folder->child('claude-version.out'), $claudeVersion);
+        $files->write($folder->child('codex-version.out'), $codexVersion);
     }
 
     /**

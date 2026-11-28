@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Accounts;
 
-use PHPUnit\Framework\TestCase;
+use App\Agents\Drivers\DefaultDrivers;
+use App\Recordings\Recordings;
+use Tests\Support\Recordings\RecordedProgram;
+use Tests\TestCase;
 
 /**
  * The Codex native evidence procedure, run against a mock program: the trusted empty working root keeps a work
@@ -13,8 +16,6 @@ use PHPUnit\Framework\TestCase;
  */
 final class CodexNativeEvidenceTest extends TestCase
 {
-    private const string LOGIN_ANNOUNCEMENT = 'Logged in using';
-
     private const string FAKE_PROGRAM = __DIR__.'/../../Fixtures/Accounts/Codex/fake/codex';
 
     private string $accounts;
@@ -67,7 +68,9 @@ final class CodexNativeEvidenceTest extends TestCase
         $this->assertSame('pass', $results['sign-in-survives-restart']);
         $this->assertSame('missing', $results['account-b-signed-in']);
         $this->assertStringNotContainsString('fake-secret-token', $output);
-        $this->assertStringNotContainsString(self::LOGIN_ANNOUNCEMENT, $output);
+        $recording = $this->journal->service(Recordings::class)->scenario(DefaultDrivers::CODEX, 'first-start');
+        $login = RecordedProgram::from($recording, ['codex', 'login', 'status'])->printedOn('stderr');
+        $this->assertStringNotContainsString(trim($login), $output);
     }
 
     /**
