@@ -23,7 +23,7 @@ use Domain\Chat\Data\AgentPageData;
 use Domain\Chat\Data\ChatFields;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Http\Requests\ConversationRequest;
-use Domain\Chat\Resolvers\Support\ChatPages;
+use Domain\Chat\Resolvers\Support\ChatWindowReader;
 use Illuminate\Http\Request;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
@@ -38,7 +38,7 @@ final readonly class ChatReader
     public function __construct(
         private PageFormRequests $requests,
         private AgentDirectory $agents,
-        private ChatPages $pages,
+        private ChatWindowReader $pages,
         private ChatDirectory $chats,
         private SlotSections $slots,
         private AgentList $listing,

@@ -104,7 +104,7 @@ function mergedSource(string $oldSource, string $keptSource, string $old, string
     }
 
     $edits = [
-        ...memberEdit($oldSource, $oldClass, $keptSource, $keptClass),
+        ...memberEdit($oldSource, $oldClass, $keptSource, $keptClass, $old),
         ...interfaceEdit($oldClass, $keptClass, $kept),
         ...importEdits($oldTree, $keptTree, $keptSource, $old, $kept),
     ];
@@ -149,12 +149,27 @@ function soleClass(array $tree): Class_|null
  */
 function clashesBetween(Class_ $oldClass, Class_ $keptClass, string $old, string $kept): array
 {
-    $keptNames = memberNames($keptClass);
+    $keptNames = memberNames($keptClass, $kept);
     $clashes = [];
 
-    foreach (memberNames($oldClass) as $name) {
-        if (in_array($name, $keptNames, true)) {
+    $shared = sharedDependencies(constructorOf($oldClass), constructorOf($keptClass));
+
+    foreach (memberNames($oldClass, $kept) as $name) {
+        if (in_array($name, $keptNames, true) && ! in_array($name, $shared, true)) {
             $clashes[] = "{$old} and {$kept} both declare {$name}: rename one before the merge.";
+        }
+    }
+
+    foreach ([
+        $oldClass,
+        $keptClass,
+    ] as $class) {
+        $constructor = constructorOf($class);
+
+        if ($constructor !== null && $constructor->stmts !== [] && constructorOf($oldClass) !== null && constructorOf($keptClass) !== null) {
+            $clashes[] = "{$old} and {$kept} both have a constructor and one has a body: merge them by hand.";
+
+            break;
         }
     }
 
@@ -166,7 +181,7 @@ function clashesBetween(Class_ $oldClass, Class_ $keptClass, string $old, string
  *
  * @return list<string>
  */
-function memberNames(Class_ $class): array
+function memberNames(Class_ $class, string $kept): array
 {
     $names = [];
 
@@ -176,10 +191,8 @@ function memberNames(Class_ $class): array
             ...match (true) {
                 $member instanceof ClassConst => array_map(fn ($constant) => "constant {$constant->name}", $member->consts),
                 $member instanceof Property => array_map(fn ($property) => "property \${$property->name}", $member->props),
-                $member instanceof ClassMethod => [
-                    "method {$member->name}()",
-                    ...promotedNames($member),
-                ],
+                $member instanceof ClassMethod && $member->name->toLowerString() === '__construct' => promotedNames($member, $kept),
+                $member instanceof ClassMethod => ["method {$member->name}()"],
                 default => [],
             },
         ];
@@ -189,13 +202,77 @@ function memberNames(Class_ $class): array
 }
 
 /**
+ * The constructor's promoted properties, but for one that injects the kept class, which the merge drops.
+ *
  * @return list<string>
  */
-function promotedNames(ClassMethod $method): array
+function promotedNames(ClassMethod $method, string $kept): array
 {
-    $promoted = array_filter($method->params, fn (Node\Param $param) => $param->flags !== 0);
+    $promoted = array_filter(
+        $method->params,
+        fn (Node\Param $param) => $param->flags !== 0 && ! injectsClass($param, $kept),
+    );
 
     return array_values(array_map(fn (Node\Param $param) => "property \${$param->var->name}", $promoted));
+}
+
+/**
+ * The promoted properties both constructors inject under the same name and type: one dependency the merge keeps once.
+ *
+ * @return list<string>
+ */
+function sharedDependencies(ClassMethod|null $old, ClassMethod|null $kept): array
+{
+    if ($old === null || $kept === null) {
+        return [];
+    }
+
+    $keptTypes = [];
+
+    foreach ($kept->params as $param) {
+        $keptTypes[(string) $param->var->name] = $param->type instanceof Name ? resolved($param->type) : null;
+    }
+
+    $shared = [];
+
+    foreach ($old->params as $param) {
+        $name = (string) $param->var->name;
+        $type = $param->type instanceof Name ? resolved($param->type) : null;
+
+        if ($type !== null && ($keptTypes[$name] ?? null) === $type) {
+            $shared[] = "property \${$name}";
+        }
+    }
+
+    return $shared;
+}
+
+function constructorOf(Class_ $class): ClassMethod|null
+{
+    foreach ($class->stmts as $member) {
+        if ($member instanceof ClassMethod && $member->name->toLowerString() === '__construct') {
+            return $member;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * The names of a constructor's parameters that inject the class.
+ *
+ * @return list<string>
+ */
+function injectedNames(ClassMethod|null $constructor, string $class): array
+{
+    $injecting = array_filter($constructor->params ?? [], fn (Node\Param $param) => injectsClass($param, $class));
+
+    return array_values(array_map(fn (Node\Param $param) => (string) $param->var->name, $injecting));
+}
+
+function injectsClass(Node\Param $param, string $class): bool
+{
+    return $param->type instanceof Name && resolved($param->type) === $class;
 }
 
 /**
@@ -204,7 +281,7 @@ function promotedNames(ClassMethod $method): array
  *
  * @return list<array{int, int, string}>
  */
-function memberEdit(string $oldSource, Class_ $oldClass, string $keptSource, Class_ $keptClass): array
+function memberEdit(string $oldSource, Class_ $oldClass, string $keptSource, Class_ $keptClass, string $old): array
 {
     if ($oldClass->stmts === []) {
         return [];
@@ -223,16 +300,38 @@ function memberEdit(string $oldSource, Class_ $oldClass, string $keptSource, Cla
         ]];
     }
 
+    $keptConstructor = constructorOf($keptClass);
+    $oldConstructor = constructorOf($oldClass);
+    $kept = (string) $keptClass->namespacedName;
+    // Each class's injection of the other becomes $this once they are one class.
+    $dropped = [
+        ...injectedNames($oldConstructor, $kept),
+        ...injectedNames($keptConstructor, $old),
+    ];
+    $selfReads = fn (string $text) => array_reduce(
+        $dropped,
+        fn (string $carry, string $name) => str_replace("\$this->{$name}->", '$this->', $carry),
+        $text,
+    );
     $members = [
         ...array_map(fn (Node $member) => [
             memberRank($member),
-            memberText($keptSource, $member),
-        ], $keptClass->stmts),
+            $selfReads(memberText($keptSource, $member)),
+        ], array_filter($keptClass->stmts, fn (Node $member) => $member !== $keptConstructor)),
         ...array_map(fn (Node $member) => [
             memberRank($member),
-            memberText($oldSource, $member),
-        ], $oldClass->stmts),
+            $selfReads(memberText($oldSource, $member)),
+        ], array_filter($oldClass->stmts, fn (Node $member) => $member !== $oldConstructor)),
     ];
+    $constructor = mergedConstructor($keptSource, $keptConstructor, $oldSource, $oldConstructor, $kept, $old);
+
+    if ($constructor !== null) {
+        $members[] = [
+            memberRank($keptConstructor ?? $oldConstructor),
+            $constructor,
+        ];
+    }
+
     $ranked = array_keys($members);
     usort($ranked, fn (int $left, int $right) => [
         $members[$left][0],
@@ -249,6 +348,56 @@ function memberEdit(string $oldSource, Class_ $oldClass, string $keptSource, Cla
         $brace,
         "\n{$body}\n",
     ]];
+}
+
+/**
+ * One constructor of the two: the kept one's parameters, then the old one's but any that injects the kept class.
+ */
+function mergedConstructor(
+    string $keptSource,
+    ClassMethod|null $keptConstructor,
+    string $oldSource,
+    ClassMethod|null $oldConstructor,
+    string $kept,
+    string $old,
+): string|null {
+    if ($oldConstructor === null && injectedNames($keptConstructor, $old) === []) {
+        if ($keptConstructor === null) {
+            return null;
+        }
+
+        return memberText($keptSource, $keptConstructor);
+    }
+
+    $shared = sharedDependencies($oldConstructor, $keptConstructor);
+    $parameters = [
+        ...array_map(
+            fn (Node\Param $param) => nodeText($keptSource, $param),
+            array_filter($keptConstructor->params ?? [], fn (Node\Param $param) => ! injectsClass($param, $old)),
+        ),
+        ...array_map(
+            fn (Node\Param $param) => nodeText($oldSource, $param),
+            array_filter(
+                $oldConstructor->params ?? [],
+                fn (Node\Param $param) => ! injectsClass($param, $kept) && ! in_array("property \${$param->var->name}", $shared, true),
+            ),
+        ),
+    ];
+
+    if ($parameters === []) {
+        return null;
+    }
+
+    $comments = $keptConstructor ?? $oldConstructor;
+    $doc = $comments->getComments() === [] ? '' : '    '.implode("\n", array_map(fn ($comment) => $comment->getText(), $comments->getComments()))."\n";
+    $list = implode('', array_map(fn (string $parameter) => "        {$parameter},\n", $parameters));
+
+    return "{$doc}    public function __construct(\n{$list}    ) {}";
+}
+
+function nodeText(string $source, Node $node): string
+{
+    return substr($source, $node->getStartFilePos(), $node->getEndFilePos() + 1 - $node->getStartFilePos());
 }
 
 /**

@@ -8,7 +8,7 @@ use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\ApiPayload;
 use App\Processes\Enums\ApiEffect;
 use Domain\Chat\Data\DockListData;
-use Domain\Chat\Support\DockProjection;
+use Domain\Chat\Support\DockPageReader;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Data;
@@ -22,8 +22,8 @@ use Spatie\LaravelData\Data;
 final class DockListPayload extends Data implements ApiPayload
 {
     public function __construct(
-        #[Min(1), Max(DockProjection::LARGEST_CARD_LIMIT)]
-        public readonly int $limit = DockProjection::LARGEST_CARD_LIMIT,
+        #[Min(1), Max(DockPageReader::LARGEST_CARD_LIMIT)]
+        public readonly int $limit = DockPageReader::LARGEST_CARD_LIMIT,
         public readonly string|null $chat = null,
     ) {}
 }

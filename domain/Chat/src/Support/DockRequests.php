@@ -12,7 +12,7 @@ use App\Sessions\Contracts\AgentDirectory;
 use App\Support\ActorReference;
 use App\Values\ProjectOwner;
 use Domain\Chat\Contracts\Docking\DockableProvider;
-use Domain\Chat\Contracts\Docking\DockRegistration;
+use Domain\Chat\Contracts\Docking\DockRegistry;
 use Domain\Chat\Exceptions\ChatUnavailable;
 use Domain\Chat\Exceptions\DockDefinitionInvalid;
 use Domain\Chat\Exceptions\DockSourceUnavailable;
@@ -30,7 +30,7 @@ final readonly class DockRequests
     public function __construct(
         private AgentDirectory $agents,
         private ChatDirectory $chats,
-        private DockRegistration $registry,
+        private DockRegistry $registry,
         private Container $container,
     ) {}
 

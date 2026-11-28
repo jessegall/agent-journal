@@ -8,7 +8,7 @@ use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\Registry;
 use Domain\Chat\Contracts\Docking\Dockable;
 use Domain\Chat\Contracts\Docking\DockableProvider;
-use Domain\Chat\Contracts\Docking\DockRegistration as DockRegistrationContract;
+use Domain\Chat\Contracts\Docking\DockRegistry as DockRegistrationContract;
 use Domain\Chat\Contracts\Docking\FallbackDocks;
 use Domain\Chat\Exceptions\DockDefinitionInvalid;
 use Domain\Chat\Values\DockDefinition;
@@ -19,7 +19,7 @@ use Illuminate\Container\Attributes\Singleton;
  * when asked so an owner's registration wins in whichever order the two were made.
  */
 #[Singleton]
-final class DockRegistration implements DockRegistrationContract
+final class DockRegistry implements DockRegistrationContract
 {
     /**
      * @var Registry<DockDefinition>

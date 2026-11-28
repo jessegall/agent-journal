@@ -143,7 +143,7 @@ final readonly class AgentList
         ): AgentOptionData {
             $row = $byAgent[$agent->agentId];
 
-            return AgentOptionData::from($agent, new AgentChatActivity(
+            return AgentOptionData::from($agent, new AgentChatSummary(
                 $agent->agentId === $designated || in_array($agent->profileKey, $mainProfiles, true),
                 $unread[$row->inboxId] ?? 0,
                 $row->lastActiveAt === null ? null : CarbonImmutable::parse($row->lastActiveAt),

@@ -10,8 +10,11 @@ use Domain\Chat\Contracts\Docking\CardContext;
 use Domain\Chat\Contracts\Docking\CardEncoder;
 use Domain\Chat\Contracts\Docking\DestinationGate;
 use Domain\Chat\Contracts\Docking\DockableProvider;
-use Domain\Chat\Contracts\Docking\DockRegistration;
+use Domain\Chat\Contracts\Docking\DockRegistry;
+use Domain\Chat\Data\DockedSourceData;
+use Domain\Chat\Data\DockListData;
 use Domain\Chat\Data\DockPageData;
+use Domain\Chat\Enums\DockedStatus;
 use Domain\Chat\Exceptions\DockCardInvalid;
 use Domain\Chat\Exceptions\DockDefinitionInvalid;
 use Domain\Chat\Exceptions\PartMapInvalid;
@@ -28,7 +31,7 @@ use Illuminate\Database\Eloquent\Collection;
  * batches, each type's cards composed by its owner in one batch, then put back in placement order. A page stops at its
  * card limit, its scan limit or its byte budget, and never says what it left out or why.
  */
-final readonly class DockProjection
+final readonly class DockPageReader
 {
     public const int CARD_LIMIT = 50;
 
@@ -46,7 +49,7 @@ final readonly class DockProjection
 
     public function __construct(
         private CurrentActor $actors,
-        private DockRegistration $registry,
+        private DockRegistry $registry,
         private CardEncoder $encoder,
         private DestinationGate $gate,
         private Encrypter $encrypter,
@@ -144,6 +147,32 @@ final readonly class DockProjection
         return $cards;
     }
 
+    public function of(Inbox $inbox, int $limit): DockListData
+    {
+        $page = $this->page($inbox, null, $limit);
+        $shown = [];
+
+        foreach ($page->cards as $card) {
+            $shown[$card->placementId] = $card;
+        }
+
+        $placements = DockPlacement::query()
+            ->inInbox($inbox)
+            ->byAssignedAt()
+            ->limit($limit + 1)
+            ->get();
+
+        $listed = $placements->take($limit)->map(
+            fn (DockPlacement $placement) => self::listed($placement, $shown[$placement->id] ?? null),
+        );
+
+        return DockListData::from([
+            'inboxId' => $inbox->id,
+            'placements' => array_values($listed->all()),
+            'hasMore' => $placements->count() > $limit,
+        ]);
+    }
+
     /**
      * @return Collection<int, DockPlacement>
      */
@@ -207,5 +236,16 @@ final readonly class DockProjection
         } catch (PartMapInvalid) {
             return new EncodedCard($placement->id, $placement->source, $summary, $summary, null, null);
         }
+    }
+
+    private static function listed(DockPlacement $placement, EncodedCard|null $card): DockedSourceData
+    {
+        return DockedSourceData::from([
+            'placementId' => $placement->id,
+            'type' => $placement->dockable_type,
+            'sourceId' => $placement->dockable_id,
+            'title' => $card === null ? '' : $card->accessibleName,
+            'status' => $card === null ? DockedStatus::Unavailable : DockedStatus::Shown,
+        ]);
     }
 }

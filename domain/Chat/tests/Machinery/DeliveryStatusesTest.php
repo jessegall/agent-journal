@@ -12,7 +12,7 @@ use App\Sessions\Contracts\AgentDirectory;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Data\MessageEntryData;
 use Domain\Chat\Enums\DeliveryStatus;
-use Domain\Chat\Resolvers\Support\ChatPages;
+use Domain\Chat\Resolvers\Support\ChatWindowReader;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
@@ -22,7 +22,7 @@ use Tests\Support\Entries\Attributes\TestsMachinery;
  * Each of the user's messages shows how far it got: sent, arrived in the agent's session, read by the agent, or not
  * delivered with its reason; it only moves forward.
  */
-#[TestsMachinery(ChatPages::class)]
+#[TestsMachinery(ChatWindowReader::class)]
 final class DeliveryStatusesTest extends TestCase
 {
     use CommitsHookRows;
@@ -85,7 +85,7 @@ final class DeliveryStatusesTest extends TestCase
     {
         $planner = $this->journal->agentCalled('Planner')->id;
         $agent = $this->app->make(AgentDirectory::class)->visibleAgent($planner);
-        $entries = $this->app->make(ChatPages::class)->pageFor($agent, $chat, null)->entries;
+        $entries = $this->app->make(ChatWindowReader::class)->pageFor($agent, $chat, null)->entries;
 
         return $entries[array_key_last($entries)]->message;
     }

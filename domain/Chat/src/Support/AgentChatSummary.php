@@ -10,7 +10,7 @@ use Carbon\CarbonImmutable;
  * What the chat list shows of one agent beside its status: whether it is a main agent, how many of its messages the
  * viewer has not read, when its chat with the viewer last moved, and whether a question of it waits for the viewer.
  */
-final readonly class AgentChatActivity
+final readonly class AgentChatSummary
 {
     public function __construct(
         public bool $isMain,

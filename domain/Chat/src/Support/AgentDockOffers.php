@@ -7,7 +7,7 @@ namespace Domain\Chat\Support;
 use App\Navigation\Contracts\WindowOffers;
 use App\Navigation\Data\WindowOfferData;
 use App\Support\RecordIdentity;
-use Domain\Chat\Contracts\Docking\DockRegistration;
+use Domain\Chat\Contracts\Docking\DockRegistry;
 use Domain\Chat\Exceptions\DockSourceUnavailable;
 use Domain\Chat\Support\Cards\DockIdentity;
 use PhpOption\None;
@@ -21,7 +21,7 @@ use PhpOption\Some;
 final readonly class AgentDockOffers implements WindowOffers
 {
     public function __construct(
-        private DockRegistration $registry,
+        private DockRegistry $registry,
         private DockRequests $requests,
     ) {}
 

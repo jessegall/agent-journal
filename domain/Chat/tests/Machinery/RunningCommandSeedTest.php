@@ -10,7 +10,7 @@ use App\Sessions\Contracts\AgentDirectory;
 use App\Support\HomeAgent;
 use App\Values\ToolLine;
 use App\Web\Data\RunningCommandData;
-use Domain\Chat\Resolvers\Support\ChatPages;
+use Domain\Chat\Resolvers\Support\ChatWindowReader;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -20,7 +20,7 @@ use Tests\Support\RefreshHookDatabase;
  * The chat page seeds its line above the composer with the agent's running tool call as its row holds it, the same
  * shape the pushed changes carry, and with none before the agent's first call.
  */
-#[TestsMachinery(ChatPages::class)]
+#[TestsMachinery(ChatWindowReader::class)]
 final class RunningCommandSeedTest extends TestCase
 {
     use RefreshHookDatabase;
@@ -75,6 +75,6 @@ final class RunningCommandSeedTest extends TestCase
 
         $agent = reset($agents);
 
-        return $this->app->make(ChatPages::class)->pageFor($agent, $chat, null)->runningCommand;
+        return $this->app->make(ChatWindowReader::class)->pageFor($agent, $chat, null)->runningCommand;
     }
 }

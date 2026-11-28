@@ -6,7 +6,7 @@ namespace Domain\Chat\Http\Loaders;
 
 use Domain\Chat\Data\ChatRowsInput;
 use Domain\Chat\Data\ChatRowsPageData;
-use Domain\Chat\Resolvers\Support\ChatPages;
+use Domain\Chat\Resolvers\Support\ChatWindowReader;
 use Domain\Chat\Support\ChatDirectory;
 
 /**
@@ -15,7 +15,7 @@ use Domain\Chat\Support\ChatDirectory;
  */
 final readonly class ChatRowsLoader
 {
-    public function __construct(private ChatDirectory $chats, private ChatPages $pages) {}
+    public function __construct(private ChatDirectory $chats, private ChatWindowReader $pages) {}
 
     public function __invoke(ChatRowsInput $input): ChatRowsPageData
     {

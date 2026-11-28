@@ -17,7 +17,7 @@ use Domain\Chat\Values\DockDefinition;
  * Reads process runs to dock through the actor-scoped query alone: a run belongs to the actor that started it, so
  * another actor's run is not found, and inbox membership grants nothing. Parts load with the batch.
  */
-final readonly class RunDocking implements DockableProvider
+final readonly class RunDockableProvider implements DockableProvider
 {
     /**
      * The type a run docks under.

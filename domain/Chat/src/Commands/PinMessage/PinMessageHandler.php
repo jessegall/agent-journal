@@ -7,12 +7,12 @@ namespace Domain\Chat\Commands\PinMessage;
 use App\Exceptions\MessageMissing;
 use Domain\Chat\Commands\Support\ChatCommandHandler;
 use Domain\Chat\Models\MessagePin;
-use Domain\Chat\Support\PinnableMessages;
+use Domain\Chat\Resolvers\Support\MessagePinReader;
 
 final readonly class PinMessageHandler extends ChatCommandHandler
 {
     public function __construct(
-        private PinnableMessages $pinnable,
+        private MessagePinReader $pinnable,
     ) {}
 
     /**

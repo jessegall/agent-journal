@@ -6,7 +6,7 @@ namespace Domain\Chat\Http\Controllers\Api;
 
 use Domain\Chat\Api\DockListPayload;
 use Domain\Chat\Data\DockListData;
-use Domain\Chat\Resolvers\Support\DockListing;
+use Domain\Chat\Support\DockPageReader;
 use Domain\Chat\Support\DockRequests;
 
 /**
@@ -14,7 +14,7 @@ use Domain\Chat\Support\DockRequests;
  */
 final readonly class DockListController
 {
-    public function __invoke(DockListPayload $call, DockRequests $requests, DockListing $listing): DockListData
+    public function __invoke(DockListPayload $call, DockRequests $requests, DockPageReader $listing): DockListData
     {
         $inbox = $requests->chosenInbox($call->chat);
 

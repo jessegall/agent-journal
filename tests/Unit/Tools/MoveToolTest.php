@@ -212,6 +212,70 @@ final class MoveToolTest extends TestCase
         $this->assertSame([0, ['App\\Values\\Kept']], [$exit, $imports[1]]);
     }
 
+    public function test_a_merge_joins_the_constructors_and_drops_the_old_class_s_injection_of_the_kept_one(): void
+    {
+        file_put_contents($this->tree.'/app/Values/Kept.php', <<<'PHP'
+            <?php
+
+            namespace App\Values;
+
+            use App\Contracts\Stacks;
+
+            final readonly class Kept
+            {
+                public function __construct(private Stacks $stacks) {}
+
+                public function page(): int
+                {
+                    return 1;
+                }
+            }
+
+            PHP);
+        file_put_contents($this->tree.'/app/Values/Old.php', <<<'PHP'
+            <?php
+
+            namespace App\Values;
+
+            use App\Contracts\Hosts;
+
+            final readonly class Old
+            {
+                public function __construct(private Kept $reader, private Hosts $hosts) {}
+
+                public function listed(): int
+                {
+                    return $this->reader->page() + 1;
+                }
+            }
+
+            PHP);
+
+        [$exit] = $this->move('--replace', 'App\\Values\\Old', 'App\\Values\\Kept');
+        $kept = (string) file_get_contents($this->tree.'/app/Values/Kept.php');
+        preg_match('/function __construct\((.*?)\)/s', $kept, $constructor);
+        preg_match_all('/private \w+ \$(\w+)/', $constructor[1], $parameters);
+
+        $this->assertSame(
+            [0, ['stacks', 'hosts'], 1],
+            [$exit, $parameters[1], substr_count($kept, 'return $this->page() + 1;')],
+        );
+    }
+
+    public function test_a_kept_class_that_injects_the_old_one_calls_its_own_methods_after_the_merge(): void
+    {
+        file_put_contents($this->tree.'/app/Values/Old.php', "<?php\n\nnamespace App\\Values;\n\nfinal readonly class Old\n{\n    public function size(): int\n    {\n        return 1;\n    }\n}\n");
+        file_put_contents($this->tree.'/app/Values/Kept.php', "<?php\n\nnamespace App\\Values;\n\nfinal readonly class Kept\n{\n    public function __construct(private Old \$old) {}\n\n    public function twice(): int\n    {\n        return \$this->old->size() * 2;\n    }\n}\n");
+
+        [$exit] = $this->move('--replace', 'App\\Values\\Old', 'App\\Values\\Kept');
+        $kept = (string) file_get_contents($this->tree.'/app/Values/Kept.php');
+
+        $this->assertSame(
+            [0, 0, 1],
+            [$exit, substr_count($kept, '__construct'), substr_count($kept, 'return $this->size() * 2;')],
+        );
+    }
+
     public function test_a_merge_of_a_member_name_in_both_classes_is_refused_and_writes_nothing(): void
     {
         $method = "\n    public function label(): string\n    {\n        return '%s';\n    }\n";

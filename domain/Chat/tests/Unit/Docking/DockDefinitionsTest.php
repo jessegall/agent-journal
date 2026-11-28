@@ -17,9 +17,9 @@ use App\Records\Values\SummaryPeriod;
 use App\Records\Values\SummaryProgress;
 use App\Support\ActorReference;
 use DateTimeImmutable;
-use Domain\Chat\Contracts\Docking\DockRegistration as DockRegistrationContract;
+use Domain\Chat\Contracts\Docking\DockRegistry as DockRegistrationContract;
 use Domain\Chat\Exceptions\DockDefinitionInvalid;
-use Domain\Chat\Support\Docking\DockRegistration;
+use Domain\Chat\Support\Docking\DockRegistry;
 use Domain\Chat\Support\Docking\LinkCardDockable;
 use Domain\Chat\Support\Docking\LinkCardDockableProvider;
 use Domain\Chat\Support\Docking\SummaryDockable;
@@ -143,6 +143,6 @@ final class DockDefinitionsTest extends TestCase
 
     private function definitions(): DockRegistrationContract
     {
-        return $this->app->make(DockRegistration::class);
+        return $this->app->make(DockRegistry::class);
     }
 }

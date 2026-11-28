@@ -27,7 +27,7 @@ use PhpOption\Some;
  * bytes. Each key names a run, a part and a stream; the latest attempt of the part is read, and nothing is recorded
  * as evidence read.
  */
-final readonly class OutputDocking implements DockableProvider
+final readonly class OutputDockableProvider implements DockableProvider
 {
     /**
      * The type docked output goes under.

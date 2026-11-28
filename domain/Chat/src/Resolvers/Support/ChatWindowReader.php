@@ -35,7 +35,7 @@ use Domain\Chat\Models\ChatMessage;
 use Domain\Chat\Support\AgentStartLog;
 use Domain\Chat\Support\Cards\DockIdentity;
 use Domain\Chat\Support\ChatDirectory;
-use Domain\Chat\Support\DockProjection;
+use Domain\Chat\Support\DockPageReader;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Support\ShownQuestion;
 use Illuminate\Database\Eloquent\Collection as ModelCollection;
@@ -46,13 +46,13 @@ use Illuminate\Support\Collection;
  * What a chat window reads: one chat's members, capabilities and newest entries, a page of older entries, and the
  * chats the viewer is in. Reading changes no read state.
  */
-final readonly class ChatPages
+final readonly class ChatWindowReader
 {
     public function __construct(
         private CurrentActor $actors,
         private ActorLabels $labels,
         private AgentDrivers $agentDrivers,
-        private DockProjection $dock,
+        private DockPageReader $dock,
         private InboxEligibility $eligibility,
         private MessageParticipants $participants,
         private QuestionSummaryReader $questions,

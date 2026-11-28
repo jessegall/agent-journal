@@ -19,7 +19,7 @@ use Domain\Chat\Contracts\ChatDirectory as ChatDirectoryContract;
 use Domain\Chat\Contracts\Docking\CardEncoder as CardEncoderContract;
 use Domain\Chat\Contracts\Docking\DestinationGate as DestinationGateContract;
 use Domain\Chat\Contracts\Docking\DockedSources as DockedSourcesContract;
-use Domain\Chat\Contracts\Docking\DockRegistration as DockRegistrationContract;
+use Domain\Chat\Contracts\Docking\DockRegistry as DockRegistrationContract;
 use Domain\Chat\Contracts\Docking\FallbackDocks as FallbackDocksContract;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Resolvers\QuestionNotificationTarget;
@@ -29,10 +29,10 @@ use Domain\Chat\Support\ChatDirectory;
 use Domain\Chat\Support\DockedSources;
 use Domain\Chat\Support\Docking\DestinationGate;
 use Domain\Chat\Support\Docking\DockedRun;
-use Domain\Chat\Support\Docking\DockRegistration;
+use Domain\Chat\Support\Docking\DockRegistry;
 use Domain\Chat\Support\Docking\FallbackDocks;
-use Domain\Chat\Support\Docking\OutputDocking;
-use Domain\Chat\Support\Docking\RunDocking;
+use Domain\Chat\Support\Docking\OutputDockableProvider;
+use Domain\Chat\Support\Docking\RunDockableProvider;
 use Domain\Chat\Support\Wire\CardEncoder;
 use Domain\Chat\Support\Wire\DockNodeTypes;
 use Domain\Chat\Support\Wire\PartMap;
@@ -51,7 +51,7 @@ final class ChatServiceProvider extends ServiceProvider
     {
         $this->app->bind(WindowOffers::class, AgentDockOffers::class);
         $this->app->bind(DockedSourcesContract::class, DockedSources::class);
-        $this->app->bind(DockRegistrationContract::class, DockRegistration::class);
+        $this->app->bind(DockRegistrationContract::class, DockRegistry::class);
         $this->app->bind(DestinationGateContract::class, DestinationGate::class);
         $this->app->bind(CardEncoderContract::class, CardEncoder::class);
         $this->app->bind(FallbackDocksContract::class, FallbackDocks::class);
@@ -69,8 +69,8 @@ final class ChatServiceProvider extends ServiceProvider
         NotificationTargets $notificationTargets,
         DockRegistrationContract $docks,
     ): void {
-        $docks->register(RunDocking::DOCK_TYPE, DockedRun::class, RunDocking::class);
-        $docks->register(OutputDocking::DOCK_TYPE, DockedOutput::class, OutputDocking::class);
+        $docks->register(RunDockableProvider::DOCK_TYPE, DockedRun::class, RunDockableProvider::class);
+        $docks->register(OutputDockableProvider::DOCK_TYPE, DockedOutput::class, OutputDockableProvider::class);
         $members->allow(MessagePinPolicy::class);
         $memberRoutes->open('chat.');
         $notificationTargets->register(QuestionNotificationKeys::target(), QuestionNotificationTarget::class);

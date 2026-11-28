@@ -7,7 +7,7 @@ namespace Domain\Chat\Tests\Commands;
 use App\Exceptions\MessageMissing;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Models\MessagePin;
-use Domain\Chat\Resolvers\Support\MessagePinRecords;
+use Domain\Chat\Resolvers\Support\MessagePinReader;
 use Domain\Chat\Tests\Support\OpensTeamInboxMessage;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
@@ -83,6 +83,6 @@ final class PinMessageTest extends TestCase
      */
     private function pinned(): array
     {
-        return array_map(fn ($view) => $view->toArray(), $this->app->make(MessagePinRecords::class)->pinned());
+        return array_map(fn ($view) => $view->toArray(), $this->app->make(MessagePinReader::class)->pinned());
     }
 }

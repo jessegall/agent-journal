@@ -18,8 +18,7 @@ use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Enums\DockOutcome;
 use Domain\Chat\Exceptions\ChatUnavailable;
 use Domain\Chat\Models\DockPlacement;
-use Domain\Chat\Resolvers\Support\DockListing;
-use Domain\Chat\Support\DockProjection;
+use Domain\Chat\Support\DockPageReader;
 use Domain\Chat\Support\DockRequests;
 use Domain\Chat\Support\Wire\EncodedCard;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
@@ -305,8 +304,8 @@ final class DockSourceTest extends TestCase
 
         $this->agent->startRequest($this->app);
 
-        $listed = $this->app->make(DockListing::class)
-            ->of(Inbox::query()->findOrFail($this->chatInboxId), DockProjection::LARGEST_CARD_LIMIT)
+        $listed = $this->app->make(DockPageReader::class)
+            ->of(Inbox::query()->findOrFail($this->chatInboxId), DockPageReader::LARGEST_CARD_LIMIT)
             ->toArray();
 
         $this->assertSame(
@@ -352,7 +351,7 @@ final class DockSourceTest extends TestCase
      */
     private function dockedTitles(Inbox $inbox): array
     {
-        $cards = $this->journal->service(DockProjection::class)->page($inbox, null)->cards;
+        $cards = $this->journal->service(DockPageReader::class)->page($inbox, null)->cards;
 
         return array_map(fn (EncodedCard $card) => $card->accessibleName, $cards);
     }
