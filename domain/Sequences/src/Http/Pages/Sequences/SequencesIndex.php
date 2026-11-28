@@ -35,16 +35,20 @@ final readonly class SequencesIndex extends SequencesPage
     {
         $sequences = array_values(Sequence::query()->newestCreatedFirst()->limit(self::LIST_LIMIT)->get()->all());
 
-        return ListPage::make(
-            'Sequences',
-            array_map(fn (Sequence $sequence) => LayoutRowData::build()
+        return ListPage::build()
+            ->title('Sequences')
+            ->rows(
+                $sequences,
+                fn (Sequence $sequence) => LayoutRowData::build()
                 ->key($sequence->id)
                 ->label($sequence->name)
                 ->detail($this->detailOf($sequence))
                 ->href(route('sequences.sequence', ['sequence' => $sequence->id], false))
                 ->isCurrent($sequence->id === $chosenId)
-                ->finish(), $sequences),
-            ListEmpty::build()
+                ->finish(),
+            )
+            ->empty(
+                ListEmpty::build()
                 ->title('No sequences yet')
                 ->detail('A sequence is a list of steps an agent follows the same way each time.')
                 ->icon('sequence')
@@ -59,14 +63,14 @@ final readonly class SequencesIndex extends SequencesPage
                 )
                 ->fillsPage(true)
                 ->finish(),
-        )
+            )
             ->countingRows()
             ->creatingWith($this->creation())
             ->withReader(
                 LayoutBackData::build()->href(route('sequences.index', [], false))->label('Sequences')->finish(),
                 ...$reader,
             )
-            ->layout();
+            ->finish();
     }
 
     /**

@@ -14,6 +14,8 @@ final class ListPagingFields
 
     private bool $isAppend = false;
 
+    private bool $isCursor = false;
+
     public function page(int $page): self
     {
         $this->page = $page;
@@ -31,6 +33,7 @@ final class ListPagingFields
     public function after(string|null $after): self
     {
         $this->after = $after;
+        $this->isCursor = true;
 
         return $this;
     }
@@ -38,6 +41,7 @@ final class ListPagingFields
     public function isAppend(bool $isAppend): self
     {
         $this->isAppend = $isAppend;
+        $this->isCursor = true;
 
         return $this;
     }
@@ -49,6 +53,7 @@ final class ListPagingFields
             lastPage: $this->lastPage,
             after: $this->after,
             isAppend: $this->isAppend,
+            isCursor: $this->isCursor,
         );
     }
 }

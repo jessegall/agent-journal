@@ -29,16 +29,20 @@ final readonly class ProfilesIndex extends ProfilesPage
     {
         $profiles = Profile::findListed(self::ROWS);
 
-        return ListPage::make(
-            'Profiles',
-            array_map(fn (Profile $profile) => LayoutRowData::build()
+        return ListPage::build()
+            ->title('Profiles')
+            ->rows(
+                $profiles,
+                fn (Profile $profile) => LayoutRowData::build()
                 ->key($profile->id)
                 ->label($profile->label)
                 ->detail($profile->description === '' ? Optional::create() : $profile->description)
                 ->href(route('accounts.profile', ['profile' => $profile->key], false))
                 ->isCurrent($profile->key === $selectedKey)
-                ->finish(), $profiles),
-            ListEmpty::build()
+                ->finish(),
+            )
+            ->empty(
+                ListEmpty::build()
                 ->title('No profiles yet')
                 ->detail(
                     'A profile is a kind of helper: the program it runs, its models, its rules and whom it answers to.',
@@ -46,7 +50,7 @@ final readonly class ProfilesIndex extends ProfilesPage
                 ->icon('users')
                 ->fillsPage(true)
                 ->finish(),
-        )
+            )
             ->countingRows()
             ->withReader(
                 LayoutBackData::build()
@@ -55,6 +59,6 @@ final readonly class ProfilesIndex extends ProfilesPage
                     ->finish(),
                 ...$reader,
             )
-            ->layout();
+            ->finish();
     }
 }

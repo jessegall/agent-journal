@@ -30,16 +30,19 @@ final readonly class SharesIndex extends SharingPage
      */
     public function of(ShareFiltersData $filters, array $shown, string|null $after): DeclaredLayoutData
     {
-        $page = ListPage::make('Shares', $this->rowsOf($shown), $this->emptyFor($filters))
+        $page = ListPage::build()
+            ->title('Shares')
+            ->rows($this->rowsOf($shown), static fn (LayoutRowData $row): LayoutRowData => $row)
+            ->empty($this->emptyFor($filters))
             ->filteredBy($this->filtersOf($filters))
-            ->paged(ListPaging::build()->after($after)->finish())
+            ->paged(ListPaging::build()->after($after)->isAppend($filters->after !== null)->finish())
             ->withReader(LayoutBackData::build()->href('/sharing')->label('Shares')->finish());
 
         if ($filters->after === null && $after === null) {
             $page = $page->countingRows();
         }
 
-        return $page->layout();
+        return $page->finish();
     }
 
     private function filtersOf(ShareFiltersData $filters): LayoutPartData

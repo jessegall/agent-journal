@@ -20,4 +20,17 @@ final class LayoutTableData extends Data
         #[DataCollectionOf(LayoutRowData::class)]
         public readonly array $rows,
     ) {}
+
+    /** @return list<LayoutPartData> */
+    public function parts(): array
+    {
+        $parts = [];
+
+        foreach (array_chunk($this->rows, LayoutPartData::ROW_LIMIT) as $index => $rows) {
+            $key = $index === 0 ? 'rows' : "rows-{$index}";
+            $parts[] = LayoutPartData::build()->asCollection()->key($key)->style('list')->rows($rows)->finish();
+        }
+
+        return $parts;
+    }
 }

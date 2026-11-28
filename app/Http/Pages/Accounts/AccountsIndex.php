@@ -61,18 +61,17 @@ final readonly class AccountsIndex extends AccountsPage
 
         $adding = LayoutActionData::build()->query(['add' => '1', 'account' => ''])->finish();
 
-        return ListPage::make(
-            'Accounts',
-            array_map(fn (AccountRowData $row) => $this->rowOf($row, $chosen), $accounts->rows),
-            NoAccountsYet::addingWith($adding),
-        )
+        return ListPage::build()
+            ->title('Accounts')
+            ->rows($accounts->rows, fn (AccountRowData $row) => $this->rowOf($row, $chosen))
+            ->empty(NoAccountsYet::addingWith($adding))
             ->countingRows()
             ->creating('Add account', $adding)
             ->withReader(LayoutBackData::build()
                 ->href(route('accounts.accounts', [], false))
                 ->label('Accounts')
                 ->finish(), ...$reader)
-            ->layout();
+            ->finish();
     }
 
     private function rowOf(AccountRowData $row, string $chosen): LayoutRowData

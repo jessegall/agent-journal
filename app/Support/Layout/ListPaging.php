@@ -21,6 +21,7 @@ final readonly class ListPaging
         public int $lastPage,
         public string|null $after,
         public bool $isAppend = false,
+        public bool $isCursor = false,
     ) {}
 
     /**

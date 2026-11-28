@@ -63,7 +63,10 @@ final readonly class DocumentsIndex extends DocumentsPage
             ];
         }
 
-        return ListPage::make('Documents', $rows, $this->emptyFor($filters))
+        $page = ListPage::build()
+            ->title('Documents')
+            ->rows($rows, static fn (LayoutRowData $row): LayoutRowData => $row)
+            ->empty($this->emptyFor($filters))
             ->searching(
                 'Search documents',
                 LayoutFieldData::build()
@@ -73,11 +76,16 @@ final readonly class DocumentsIndex extends DocumentsPage
                     ->finish(),
             )
             ->creatingWith($this->creation('doc', 'New document'), $this->creation('report', 'New report'))
-            ->paged(ListPaging::build()
-                ->after($type === LibraryTypeFilter::All ? null : $this->nextOf($documents ?? $reports))
-                ->finish())
-            ->withReader(LayoutBackData::build()->href('/documents')->label('Documents')->finish(), ...$reader)
-            ->layout();
+            ->withReader(LayoutBackData::build()->href('/documents')->label('Documents')->finish(), ...$reader);
+
+        if ($type === LibraryTypeFilter::All) {
+            return $page->finish();
+        }
+
+        return $page->paged(ListPaging::build()
+            ->after($this->nextOf($documents ?? $reports))
+            ->isAppend($filters->after !== null)
+            ->finish())->finish();
     }
 
     /**

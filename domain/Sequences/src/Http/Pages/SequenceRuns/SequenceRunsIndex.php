@@ -41,11 +41,10 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
     ): DeclaredLayoutData {
         $query = ['actor' => $follower->text(), 'page' => $runs->page->number];
 
-        return ListPage::make(
-            'Runs',
-            array_map(fn (SequenceRun $run) => $this->rowOf($run, $query, $chosenRunId), $runs->runs),
-            ListEmpty::build()->title(self::EMPTY_TEXT)->finish(),
-        )
+        return ListPage::build()
+            ->title('Runs')
+            ->rows($runs->runs, fn (SequenceRun $run) => $this->rowOf($run, $query, $chosenRunId))
+            ->empty(ListEmpty::build()->title(self::EMPTY_TEXT)->finish())
             ->counting($runs->total)
             ->withViews(...$this->views->of(true))
             ->filteredBy($this->choicesOf($followers, $follower))
@@ -54,7 +53,7 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
                 ->href(route('sequences.runs', $query, false))
                 ->label('Runs')
                 ->finish(), ...$reader)
-            ->layout();
+            ->finish();
     }
 
     /**
@@ -62,14 +61,17 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
      */
     public function none(): DeclaredLayoutData
     {
-        return ListPage::make('Runs', [], ListEmpty::build()->title(self::EMPTY_TEXT)->finish())
+        return ListPage::build()
+            ->title('Runs')
+            ->rows([], static fn (LayoutRowData $row): LayoutRowData => $row)
+            ->empty(ListEmpty::build()->title(self::EMPTY_TEXT)->finish())
             ->counting(0)
             ->withViews(...$this->views->of(true))
             ->withReader(LayoutBackData::build()
                 ->href(route('sequences.runs', [], false))
                 ->label('Runs')
                 ->finish())
-            ->layout();
+            ->finish();
     }
 
     /**

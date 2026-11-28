@@ -48,11 +48,10 @@ final readonly class TasksIndex extends TasksPage
         $page = $this->tasks->list($filters->toDomain());
         $settled = $filters->onPage($page->page->number);
 
-        $list = ListPage::make(
-            'Tasks',
-            array_map(fn (TaskCard $card) => $this->rowOf($card, $settled), $page->cards),
-            $this->emptyFor($settled),
-        )
+        $list = ListPage::build()
+            ->title('Tasks')
+            ->rows($page->cards, fn (TaskCard $card) => $this->rowOf($card, $settled))
+            ->empty($this->emptyFor($settled))
             ->counting($page->total)
             ->filteredBy($this->choicesOf($settled))
             ->creatingWith($this->creation())
@@ -62,7 +61,7 @@ final readonly class TasksIndex extends TasksPage
                 ->finish())
             ->withReader(LayoutBackData::build()->href($this->addressOf($settled))->label('Tasks')->finish(), ...$reader);
 
-        return $list->layout();
+        return $list->finish();
     }
 
     private function rowOf(TaskCard $card, TaskFiltersData $filters): LayoutRowData

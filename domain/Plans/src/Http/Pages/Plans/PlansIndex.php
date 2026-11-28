@@ -51,11 +51,10 @@ final readonly class PlansIndex extends PlansPage
         $page = $this->plans->list($filters->toDomain());
         $settled = $filters->onPage($page->page);
 
-        return ListPage::make(
-            'Plans',
-            array_map(fn (PlanCard $card) => $this->rowOf($card, $settled), $page->cards),
-            $this->emptyFor($settled),
-        )
+        return ListPage::build()
+            ->title('Plans')
+            ->rows($page->cards, fn (PlanCard $card) => $this->rowOf($card, $settled))
+            ->empty($this->emptyFor($settled))
             ->counting($page->total)
             ->creatingWith($this->creation())
             ->paged(ListPaging::build()->page($page->page)->lastPage(max(1, $page->lastPage))->finish())
@@ -64,7 +63,7 @@ final readonly class PlansIndex extends PlansPage
                 ->label('Plans')
                 ->finish(), ...$reader)
             ->withReaderWidth(ReaderWidth::Unrestricted)
-            ->layout();
+            ->finish();
     }
 
     private function rowOf(PlanCard $plan, PlanFiltersData $filters): LayoutRowData
