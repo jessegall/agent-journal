@@ -28,7 +28,6 @@ Add another
 Add as tab
 Add it as a new account
 Add it yourself
-Agent
 Agent terminal, read only
 Alias
 All caught up
@@ -61,8 +60,8 @@ Cancel start
 Cancelled
 Cancelling the sign-in…
 Change the last answer
+Chats
 Check and switch
-Check capacity
 Check output restored to the disk
 Check screen
 Check status
@@ -246,7 +245,6 @@ New notifications
 Next
 Next option
 No
-No capacity
 No connected host runs agents in this place.
 No endpoint is serving this share.
 No file is open
