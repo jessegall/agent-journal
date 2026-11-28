@@ -18,6 +18,12 @@ import (
 	"journal-runner/recording"
 )
 
+// The sealed hook reply file a start's plan files hold, and its key beside it (App\Agents\Drivers\Hooks\HookReplies).
+const (
+	hookRepliesFile = "hook-replies.json"
+	hookRepliesKey  = "hook-replies.key"
+)
+
 // journalCall is a call a played container's program made to the journal while it was recorded: a hook its driver ran
 // or a frame its MCP server sent, at its moment after the program started.
 type journalCall struct {
@@ -58,20 +64,30 @@ type journalCaller struct {
 	values *recording.Values
 	frames io.WriteCloser
 	grant  client.StartGrant
-	made   int
-	mutex  sync.Mutex
+	// repliesFolder holds the sealed hook reply files the start's plan files gave the container.
+	repliesFolder string
+	made          int
+	mutex         sync.Mutex
 }
 
 // newJournalCaller starts the MCP relay of a container whose live environment holds the start's grant; a container
 // without one makes no calls.
-func newJournalCaller(calls []journalCall, driver string, environment []string, output io.Writer,
-	values *recording.Values) *journalCaller {
+func newJournalCaller(calls []journalCall, driver string, environment []string, replies map[string][]byte,
+	output io.Writer, values *recording.Values) *journalCaller {
 	grant, isGranted := client.StartGrantFrom(lookupIn(environment))
 	if !isGranted {
 		return &journalCaller{output: output}
 	}
+	repliesFolder, err := os.MkdirTemp("", "journal-played-replies-")
+	if err != nil {
+		return &journalCaller{output: output}
+	}
+	for name, content := range replies {
+		_ = os.WriteFile(filepath.Join(repliesFolder, name), content, 0o600)
+	}
 	frames, relayInput := io.Pipe()
-	caller := &journalCaller{calls: calls, driver: driver, output: output, values: values, frames: relayInput, grant: grant}
+	caller := &journalCaller{calls: calls, driver: driver, output: output, values: values, frames: relayInput, grant: grant,
+		repliesFolder: repliesFolder}
 	relay := mcprelay.Relay{Send: sendAsAgent(grant), Output: io.Discard, Errors: io.Discard}
 	go relay.Run(context.Background(), frames)
 	return caller
@@ -98,6 +114,9 @@ func (caller *journalCaller) finish() {
 	if caller.frames != nil {
 		_ = caller.frames.Close()
 	}
+	if caller.repliesFolder != "" {
+		_ = os.RemoveAll(caller.repliesFolder)
+	}
 }
 
 func (caller *journalCaller) make(call journalCall) {
@@ -106,7 +125,7 @@ func (caller *journalCaller) make(call journalCall) {
 		_, _ = caller.frames.Write(append(body, '\n'))
 		return
 	}
-	repliesFile := filepath.Join(os.TempDir(), "journal-played-replies-"+caller.grant.ProfileKey)
+	repliesFile := filepath.Join(caller.repliesFolder, hookRepliesFile)
 	hookadapter.InContainer(caller.grant, caller.driver, repliesFile).Answer(body)
 }
 

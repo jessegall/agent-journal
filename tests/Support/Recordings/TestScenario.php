@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Recordings;
 
+use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Hosts\HostProcess;
 use App\Files\Contracts\Files;
@@ -202,6 +203,7 @@ final class TestScenario
     {
         $processes = HostProcess::query()->orderBy('created_at')->get()->all();
         $starts = SessionProcess::query()->supervised()->orderBy('created_at')->get()->all();
+        $requests = DriverRequest::query()->orderBy('sequence')->get()->all();
 
         return [
             ...array_map(
@@ -211,6 +213,11 @@ final class TestScenario
                 $processes,
             ),
             ...array_map(fn (SessionProcess $start) => "start {$start->status->value} {$start->refusal}", $starts),
+            ...array_map(
+                fn (DriverRequest $request) => "request {$request->operation->value} {$request->progress->value} "
+                    ."{$request->outcome?->value} {$request->refusal_reason?->value}",
+                $requests,
+            ),
         ];
     }
 

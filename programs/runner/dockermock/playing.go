@@ -1,14 +1,17 @@
 package dockermock
 
 import (
+	"archive/tar"
 	"bufio"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"io"
+	"maps"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"path"
 	"slices"
 	"strings"
 	"sync"
@@ -38,7 +41,11 @@ type Playing struct {
 	runKeys map[string]string
 	// outputs are what each recorded run printed, as the host answered its run_containers order.
 	outputs runOutputs
-	mutex   sync.Mutex
+	// takesInput names the containers created to read their input, by their id and their name.
+	takesInput map[string]bool
+	// hookReplies are the sealed hook reply files of the plan files the host wrote last, by their names.
+	hookReplies map[string][]byte
+	mutex       sync.Mutex
 }
 
 // program is the driver exchange a container ran, whether the container had a terminal, and when its output was
@@ -93,6 +100,7 @@ func recordedLength(fixture recording.Fixture) int {
 
 // createdProgram is what a recorded container create names of the program it runs.
 type createdProgram struct {
+	OpenStdin  bool     `json:"OpenStdin"`
 	Image      string   `json:"Image"`
 	Entrypoint []string `json:"Entrypoint"`
 	Cmd        []string `json:"Cmd"`
@@ -131,7 +139,8 @@ func PlayScenario(failures recorded.Failures, scenario recorded.Scenario) (*Play
 		return nil, err
 	}
 	playing := &Playing{replay: replay, scenario: scenario, programs: programs,
-		environments: map[string][]string{}, runKeys: map[string]string{}, outputs: outputs}
+		environments: map[string][]string{}, runKeys: map[string]string{}, outputs: outputs,
+		takesInput: map[string]bool{}, hookReplies: map[string][]byte{}}
 	replay.Upgraded = playing.attached
 	replay.Heard = playing.heard
 	replay.Answering = playing.answering
@@ -177,9 +186,11 @@ func (playing *Playing) heard(call recorded.Call, body []byte) {
 	_ = json.Unmarshal(decoded(call.Asked.Body), &created)
 	key := runKey(created.Image, append(slices.Clone(created.Entrypoint), created.Cmd...))
 	playing.runKeys[answered.ID] = key
+	playing.takesInput[answered.ID] = created.OpenStdin
 	if name := call.Asked.Query["name"]; name != "" {
 		playing.environments[name] = createdEnvironment(body)
 		playing.runKeys[name] = key
+		playing.takesInput[name] = created.OpenStdin
 	}
 }
 
@@ -229,8 +240,12 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 	playing.mutex.Lock()
 	ran, isDriver := playing.programs[containerOf(call.Answered.Path)]
 	key := playing.runKeys[containerOf(call.Answered.Path)]
+	takesInput := playing.takesInput[containerOf(call.Answered.Path)]
 	playing.mutex.Unlock()
 	if !isDriver {
+		if takesInput {
+			playing.keepHookReplies(buffered)
+		}
 		playing.printRun(key, connection)
 		return
 	}
@@ -250,8 +265,10 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 	}
 	playing.mutex.Lock()
 	environment := playing.environments[containerOf(call.Answered.Path)]
+	replies := maps.Clone(playing.hookReplies)
 	playing.mutex.Unlock()
-	caller := newJournalCaller(calls, playing.scenario.Manifest.Driver, environment, output, playing.replay.Values())
+	caller := newJournalCaller(calls, playing.scenario.Manifest.Driver, environment, replies, output,
+		playing.replay.Values())
 	defer caller.finish()
 	written := &countedOutput{next: caller, left: recordedLength(fixture), played: ran.output.finish}
 	_ = recording.GatedReplay(fixture, buffered, written, playedPause, func(recording.Typed) error { return nil })
@@ -274,6 +291,29 @@ func (playing *Playing) answering(call recorded.Call, body []byte) []byte {
 	case <-playing.replay.Closed():
 	}
 	return body
+}
+
+// keepHookReplies reads the tar of plan files a container was given on its input, as the host writes a process's plan
+// files, and keeps its sealed hook reply files for the driver container that runs next.
+func (playing *Playing) keepHookReplies(input io.Reader) {
+	files := tar.NewReader(input)
+	for {
+		header, err := files.Next()
+		if err != nil {
+			return
+		}
+		name := path.Base(header.Name)
+		if name != hookRepliesFile && name != hookRepliesKey {
+			continue
+		}
+		content, err := io.ReadAll(files)
+		if err != nil {
+			return
+		}
+		playing.mutex.Lock()
+		playing.hookReplies[name] = content
+		playing.mutex.Unlock()
+	}
 }
 
 // printRun writes what the recorded run of the image and command printed, as Docker streams a container that ran no

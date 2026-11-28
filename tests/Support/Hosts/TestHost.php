@@ -578,6 +578,10 @@ final class TestHost
             'AGENTS_INSTALLATION_NAME' => $this->installationName(),
             'AGENT_IMAGE' => $this->playing === null ? self::IMAGE : $this->playing->agentImage,
             'AGENTS_DEVELOPMENT_PROGRAMS' => $this->playing === null ? '' : $this->playing->developmentPrograms,
+            // A played container's programs run in the test beside the served journal, and reach it where it listens.
+            'AGENTS_SESSION_JOURNAL_URL' => $this->playing === null
+                ? self::SESSION_JOURNAL_URL
+                : "http://127.0.0.1:{$this->port}",
         ];
     }
 
