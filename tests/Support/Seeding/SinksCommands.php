@@ -133,7 +133,7 @@ trait SinksCommands
 
         foreach ($this->dispatched() as $sunk) {
             if ($sunk->name() === $command) {
-                Assert::assertSame($expected, $sunk->trail, "{$command} skipped middleware of its frame.");
+                Assert::assertSame($expected, $sunk->passedMiddleware, "{$command} skipped middleware of its frame.");
             }
         }
 

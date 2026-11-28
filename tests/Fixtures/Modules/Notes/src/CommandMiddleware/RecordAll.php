@@ -7,18 +7,18 @@ namespace Tests\Fixtures\Modules\Notes\CommandMiddleware;
 use App\Bus\CommandCall;
 use App\Bus\Contracts\CommandMiddleware;
 use Closure;
-use Tests\Fixtures\Modules\Notes\Support\CommandTrail;
+use Tests\Fixtures\Modules\Notes\Support\CommandStepLog;
 
 /**
  * Records every command before its transaction.
  */
 final readonly class RecordAll implements CommandMiddleware
 {
-    public function __construct(private CommandTrail $trail) {}
+    public function __construct(private CommandStepLog $steps) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
     {
-        $this->trail->add('notes around all');
+        $this->steps->add('notes around all');
 
         return $next($call);
     }

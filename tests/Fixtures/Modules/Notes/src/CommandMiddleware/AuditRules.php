@@ -11,7 +11,7 @@ use Tests\Fixtures\Modules\Notes\Support\AuditCommands;
  */
 final readonly class AuditRules extends AuditCommands
 {
-    protected function trailLine(): string
+    protected function stepLine(): string
     {
         return 'notes audits rules';
     }

@@ -48,7 +48,7 @@ final class BindDispatcherTest extends TestCase
 
     public function test_the_command_passed_on_reports_the_requests_actor_and_the_callers_object_stays_unbound(): void
     {
-        $trail = $this->installCommandModules(
+        $steps = $this->installCommandModules(
             MiddlewareDeclaration::inside(RecordDispatcher::class, CommandScope::command(WriteNoteCommand::class)),
         );
         $this->journal->actAsUserId(TestIds::of(1));
@@ -56,14 +56,14 @@ final class BindDispatcherTest extends TestCase
 
         $this->app->make(CommandBus::class)->run($note);
 
-        $this->assertContains(sprintf(self::DISPATCH_STEP, TestIds::of(1)), $trail->steps);
+        $this->assertContains(sprintf(self::DISPATCH_STEP, TestIds::of(1)), $steps->steps);
         $this->expectException(CommandDispatcherMissing::class);
         $note->dispatchedBy();
     }
 
     public function test_a_replaced_command_is_bound_to_the_calls_actor(): void
     {
-        $trail = $this->installCommandModules(
+        $steps = $this->installCommandModules(
             MiddlewareDeclaration::around(UppercasesText::class, CommandScope::command(WriteNoteCommand::class)),
             MiddlewareDeclaration::inside(RecordDispatcher::class, CommandScope::command(WriteNoteCommand::class)),
         );
@@ -71,7 +71,7 @@ final class BindDispatcherTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('loud'));
 
-        $this->assertContains(sprintf(self::DISPATCH_STEP, TestIds::of(1)), $trail->steps);
+        $this->assertContains(sprintf(self::DISPATCH_STEP, TestIds::of(1)), $steps->steps);
     }
 
     public function test_a_call_without_an_actor_is_refused_where_the_dispatcher_is_bound_before_the_stack(): void

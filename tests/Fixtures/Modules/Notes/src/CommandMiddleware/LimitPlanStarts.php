@@ -8,18 +8,18 @@ use App\Bus\CommandCall;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Exceptions\CommandRefused;
 use Closure;
-use Tests\Fixtures\Modules\Notes\Support\CommandTrail;
+use Tests\Fixtures\Modules\Notes\Support\CommandStepLog;
 
 /**
  * A quota a module puts on another owner's exported command: refuses StartPlan before it runs.
  */
 final readonly class LimitPlanStarts implements CommandMiddleware
 {
-    public function __construct(private CommandTrail $trail) {}
+    public function __construct(private CommandStepLog $steps) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
     {
-        $this->trail->add('notes limits plan starts');
+        $this->steps->add('notes limits plan starts');
 
         throw CommandRefused::because('This journal has started all the plans its quota allows today.');
     }

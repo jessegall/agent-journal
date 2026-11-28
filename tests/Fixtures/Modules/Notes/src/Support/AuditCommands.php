@@ -11,22 +11,22 @@ use Closure;
 use Illuminate\Database\ConnectionInterface;
 
 /**
- * Writes an audit row for each command it watches inside the command's transaction, and adds its own line to the trail.
+ * Writes an audit row for each command it watches inside the command's transaction, and adds its own line to the step log.
  */
 abstract readonly class AuditCommands implements CommandMiddleware
 {
-    public function __construct(private CommandTrail $trail, private ConnectionInterface $database) {}
+    public function __construct(private CommandStepLog $steps, private ConnectionInterface $database) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
     {
-        $this->trail->add($this->trailLine());
+        $this->steps->add($this->stepLine());
         $this->database->table('module_command_rows')->insert(['text' => 'audit '.CommandName::of($call->name())]);
 
         return $next($call);
     }
 
     /**
-     * The line the trail records for each command this middleware audits.
+     * The line the step log records for each command this middleware audits.
      */
-    abstract protected function trailLine(): string;
+    abstract protected function stepLine(): string;
 }

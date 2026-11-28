@@ -19,7 +19,7 @@ final readonly class CommandCall
      * @param  Command<mixed>  $command
      * @param  Command<mixed>  $original
      * @param  list<array{Command<mixed>, object|string}>  $authorized  the command and the subject it was authorized on
-     * @param  list<class-string>  $trail  the middleware the call passed, in order
+     * @param  list<class-string>  $passedMiddleware  the middleware the call passed, in order
      */
     private function __construct(
         public Command $command,
@@ -29,7 +29,7 @@ final readonly class CommandCall
         public bool $isRepeatableRead,
         public ActorReference|null $actor,
         public array $authorized = [],
-        public array $trail = [],
+        public array $passedMiddleware = [],
     ) {}
 
     /**
@@ -111,9 +111,9 @@ final readonly class CommandCall
      *
      * @return list<class-string>
      */
-    public function trail(): array
+    public function passedMiddleware(): array
     {
-        return $this->trail;
+        return $this->passedMiddleware;
     }
 
     /**
@@ -123,7 +123,7 @@ final readonly class CommandCall
      */
     public function passedThrough(string $middleware): self
     {
-        return clone ($this, ['trail' => [...$this->trail, $middleware]]);
+        return clone ($this, ['passedMiddleware' => [...$this->passedMiddleware, $middleware]]);
     }
 
     /**
@@ -171,7 +171,7 @@ final readonly class CommandCall
             $repeatableRead,
             $this->actor,
             [$authorized],
-            $this->trail,
+            $this->passedMiddleware,
         );
     }
 

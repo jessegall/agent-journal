@@ -20,7 +20,7 @@ use Illuminate\Contracts\Container\Container;
 
 /**
  * The one pipe on the bus's dispatcher: it builds the command's call, walks Core's steps and the module middleware in
- * their stages, marks each on the call's trail, and hands the command to its end. The steps inside the transaction are
+ * their stages, marks each on the call's passed middleware, and hands the command to its end. The steps inside the transaction are
  * built afresh for each attempt.
  */
 final readonly class MiddlewareRunner
@@ -113,7 +113,7 @@ final readonly class MiddlewareRunner
 
     /**
      * Runs the call through the steps in order and then the last continuation; a middleware is marked on the call's
-     * trail before it runs, a closure of the frame is not.
+     * passed middleware before it runs, a closure of the frame is not.
      *
      * @param  list<CommandMiddleware|MiddlewareStep|Closure(CommandCall, Closure): mixed>  $steps
      * @param  Closure(CommandCall): mixed  $last

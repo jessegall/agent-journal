@@ -108,14 +108,14 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
     public function test_module_middleware_runs_by_stage_then_owner_then_declaration(): void
     {
-        $trail = $this->installCommandModules();
+        $steps = $this->installCommandModules();
         $this->journal->actAsUserId(TestIds::of(1));
 
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('ordered'));
 
         $this->assertSame(
             ['cards around all', 'notes around all', 'notes around write', 'notes inside'],
-            $trail->steps,
+            $steps->steps,
         );
     }
 
@@ -150,7 +150,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             CommandFrame::TRANSACTION,
             ...CommandFrame::INSIDE,
             ...$this->moduleMiddleware(MiddlewareStage::InsideTransaction),
-        ], $ends->calls[0]->trail());
+        ], $ends->calls[0]->passedMiddleware());
     }
 
     public function test_a_replacement_reaches_the_handler_and_a_refusal_writes_nothing(): void
@@ -216,7 +216,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
     public function test_notes_audits_the_rules_commands_and_not_its_own_writes(): void
     {
-        $trail = $this->installCommandModules();
+        $steps = $this->installCommandModules();
         $this->journal->actAsUserId(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
@@ -241,7 +241,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
                 'audit ApproveRule',
             )->count(),
         );
-        $this->assertSame(1, count(array_keys($trail->steps, 'notes audits rules', true)));
+        $this->assertSame(1, count(array_keys($steps->steps, 'notes audits rules', true)));
     }
 
     public function test_the_audit_row_rolls_back_with_a_refused_rules_command(): void
@@ -273,7 +273,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
     public function test_notes_limits_plan_starts_and_nothing_is_written(): void
     {
-        $trail = $this->installCommandModulesRequiring(
+        $steps = $this->installCommandModulesRequiring(
             ['Plans'],
             MiddlewareDeclaration::around(LimitPlanStarts::class, CommandScope::command(StartPlanCommand::class)),
         );
@@ -288,7 +288,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         }
 
         $this->app->make(CommandBus::class)->run(new WriteNoteCommand('not a plan start'));
-        $this->assertSame(1, count(array_keys($trail->steps, 'notes limits plan starts', true)));
+        $this->assertSame(1, count(array_keys($steps->steps, 'notes limits plan starts', true)));
     }
 
     public function test_the_send_handler_gets_the_trimmed_body(): void

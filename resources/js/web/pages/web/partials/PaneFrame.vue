@@ -5,9 +5,9 @@ import Icon from '@/components/kit/Icon.vue';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import { useWindowDrag } from '@/components/panes/useWindowDrag';
 import { detachWindow, dropWindow, showWindow } from '@/components/panes/arrangement';
-import DropCompass from '@/components/kit/DropCompass.vue';
+import DropZones from '@/components/kit/DropZones.vue';
 import DropPreview from '@/components/kit/DropPreview.vue';
-import type { CompassTarget } from '@/components/kit/compassTargets';
+import type { DropZoneTarget } from '@/components/kit/dropZoneTargets';
 import AddWindowPopover from './AddWindowPopover.vue';
 import PaneTabs from '@/components/kit/PaneTabs.vue';
 import SplitOffer from './SplitOffer.vue';
@@ -27,7 +27,7 @@ import type { DropZone, MenuEntry, Pane, SplitSide } from '@/components/panes/pa
 /**
  * One pane of the grid, as version 5's pane stage draws it: the tab strip with + (the add bar) and ⋮ (the pane menu),
  * then the open window, or "Nothing is open in this pane." The window itself comes from the grid's window slot. While
- * a window is dragged over it, it shows the drop compass or the place among its tabs.
+ * a window is dragged over it, it shows the drop zones or the place among its tabs.
  */
 const props = defineProps<{ pane: Pane }>();
 
@@ -127,14 +127,14 @@ const aimedHere = computed(() => {
         : null;
 });
 
-const compassZone = computed<DropZone | null>(() =>
+const aimedZone = computed<DropZone | null>(() =>
     aimedHere.value && aimedHere.value.zone !== 'tabs'
         ? aimedHere.value.zone
         : null,
 );
 
-/** A drop zone as the kit's compass and preview name it. */
-const compassTargets: Record<DropZone, CompassTarget> = {
+/** A drop zone as the kit's drop zones and preview name it. */
+const dropZoneTargets: Record<DropZone, DropZoneTarget> = {
     centre: 'center',
     left: 'left',
     right: 'right',
@@ -142,12 +142,12 @@ const compassTargets: Record<DropZone, CompassTarget> = {
     below: 'down',
 };
 
-/** The pane's own box, which the preview shades and whose middle holds the compass, while a drag aims here. */
+/** The pane's own box, which the preview shades and whose middle holds the drop zones, while a drag aims here. */
 const paneArea = computed(() => ({
     x: 0,
     y: 0,
-    width: compassZone.value === null ? 0 : (frame.value?.clientWidth ?? 0),
-    height: compassZone.value === null ? 0 : (frame.value?.clientHeight ?? 0),
+    width: aimedZone.value === null ? 0 : (frame.value?.clientWidth ?? 0),
+    height: aimedZone.value === null ? 0 : (frame.value?.clientHeight ?? 0),
 }));
 
 const insertAt = computed(() =>
@@ -309,11 +309,11 @@ const paneEntries = computed<MenuEntry[]>(() => {
                 {{ refusal }}
             </p>
         </template>
-        <template v-if="compassZone">
-            <DropPreview :area="paneArea" :target="compassTargets[compassZone]" />
-            <DropCompass
+        <template v-if="aimedZone">
+            <DropPreview :area="paneArea" :target="dropZoneTargets[aimedZone]" />
+            <DropZones
                 :center="{ x: paneArea.width / 2, y: paneArea.height / 2 }"
-                :aimed="compassTargets[compassZone]"
+                :aimed="dropZoneTargets[aimedZone]"
             />
         </template>
         <template v-if="offeredTitle !== null">

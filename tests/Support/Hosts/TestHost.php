@@ -787,7 +787,7 @@ final class TestHost
      *
      * @param  HostStep|class-string<HostStep>  ...$steps
      */
-    public function story(HostStep|string ...$steps): self
+    public function scenario(HostStep|string ...$steps): self
     {
         foreach ($steps as $step) {
             $running = is_string($step) ? new $step() : $step;

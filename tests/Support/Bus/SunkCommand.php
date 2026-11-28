@@ -15,11 +15,11 @@ final readonly class SunkCommand
 {
     /**
      * @param  Command<mixed>  $command
-     * @param  list<class-string>  $trail
+     * @param  list<class-string>  $passedMiddleware
      */
     public function __construct(
         public Command $command,
-        public array $trail,
+        public array $passedMiddleware,
         public string|null $actor,
         public string|null $requestKey,
     ) {}

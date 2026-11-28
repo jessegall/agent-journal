@@ -10,7 +10,7 @@ use Illuminate\Container\Attributes\Scoped;
  * The order the fixture middleware ran in, for the bus tests to read.
  */
 #[Scoped]
-final class CommandTrail
+final class CommandStepLog
 {
     /**
      * @var list<string>

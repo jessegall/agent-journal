@@ -46,7 +46,7 @@ final class BuiltInRulesTest extends TestCase
 
         yield 'id reads the user' => ['id -u', [CommandClass::Read]];
 
-        yield 'test reads a file\'s state' => ['test -r /home/journal/.account/canary', [CommandClass::Read]];
+        yield 'test reads a file\'s state' => ['test -r /home/journal/.account/planted', [CommandClass::Read]];
 
         yield 'rm -f deletes' => ['rm -f old.log', [CommandClass::Delete]];
 

@@ -36,7 +36,7 @@ final class DatabaseUsedWithoutHookDatabaseTest extends TestCase
         $refusal = $this->refusalOf(fn () => $connection->table('refused_write_sentinel')->update(['value' => 2]));
 
         $this->assertSame(DatabaseUsedWithoutHookDatabase::by(self::class)->getMessage(), $refusal->getMessage());
-        $this->assertSame(1, $this->sentinelValue($pdo));
+        $this->assertSame(1, $this->markerValue($pdo));
     }
 
     private function refusalOf(callable $query): DatabaseUsedWithoutHookDatabase
@@ -50,7 +50,7 @@ final class DatabaseUsedWithoutHookDatabaseTest extends TestCase
         $this->fail('The query ran without RefreshHookDatabase.');
     }
 
-    private function sentinelValue(PDO $pdo): int
+    private function markerValue(PDO $pdo): int
     {
         $statement = $pdo->query('SELECT value FROM refused_write_sentinel');
         $this->assertNotFalse($statement);

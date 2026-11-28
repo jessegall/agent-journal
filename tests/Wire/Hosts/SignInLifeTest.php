@@ -72,7 +72,7 @@ final class SignInLifeTest extends TestCase
             ->runTestHost('Mac', fn (TestHost $mac) => $mac
                 ->mocks($claude)
                 ->shareSignIns()
-                ->story(
+                ->scenario(
                     StartsSignIn::of('claude-code'),
                     ShowsChallenge::class,
                     TypesCode::of('claude-code', 'mock-code', 'code-1'),
@@ -103,7 +103,7 @@ final class SignInLifeTest extends TestCase
             ->runTestHost('Mac', fn (TestHost $mac) => $mac
                 ->mocks($codex)
                 ->shareSignIns()
-                ->story(
+                ->scenario(
                     StartsSignIn::of('codex'),
                     ShowsChallenge::class,
                     CompletesBrowserSignIn::class,
@@ -132,7 +132,7 @@ final class SignInLifeTest extends TestCase
             ->runTestHost('Mac', fn (TestHost $mac) => $mac
                 ->mocks($claude)
                 ->shareSignIns()
-                ->story(
+                ->scenario(
                     StartsSignIn::of('claude-code', 'first'),
                     ShowsChallenge::class,
                     TypesCode::of('first', 'mock-code', 'code-1'),
@@ -149,7 +149,7 @@ final class SignInLifeTest extends TestCase
         $this->artisan('accounts:reconcile')->assertSuccessful();
 
         $this->journal
-            ->testHost(fn (TestHost $mac) => $mac->startSignIns()->story(
+            ->testHost(fn (TestHost $mac) => $mac->startSignIns()->scenario(
                 ShowsChallenge::of('again'),
                 TypesCode::of('again', 'mock-code', 'code-2'),
                 SignsIn::class,

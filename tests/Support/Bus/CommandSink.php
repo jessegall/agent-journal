@@ -42,7 +42,7 @@ final class CommandSink implements CommandEnd
     public function finish(CommandCall $call, Closure $handler): mixed
     {
         $this->subjects->authorized($call);
-        $this->sunk[] = new SunkCommand($call->command(), $call->trail(), $call->actorText(), $this->requestKey->key());
+        $this->sunk[] = new SunkCommand($call->command(), $call->passedMiddleware(), $call->actorText(), $this->requestKey->key());
 
         if (array_key_exists($call->name(), $this->replies)) {
             return $this->replies[$call->name()];

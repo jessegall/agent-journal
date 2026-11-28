@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import { type CompassTarget, type Point, compassSize, compassTargetAt, compassTargets } from './compassTargets';
+import { type DropZoneTarget, type Point, dropZonesSize, dropZoneTargetAt, dropZoneTargets } from './dropZoneTargets';
 
 /**
  * Five drop targets (centre, left, right, up, down) in a 3 by 3 grid centred on a pane while a window is dragged over
  * it; the one the pointer aims at fills and is sent through aim. It has no keyboard path: each target is also a window
  * menu item. Measures: docs/designs/kit-components.md.
  */
-const props = defineProps<{ center: Point; pointer?: Point; aimed?: CompassTarget | null }>();
+const props = defineProps<{ center: Point; pointer?: Point; aimed?: DropZoneTarget | null }>();
 
-const emit = defineEmits<{ aim: [target: CompassTarget | null] }>();
+const emit = defineEmits<{ aim: [target: DropZoneTarget | null] }>();
 
 // A drag that already knows its target names it; else the pointer aims, within 14px of a cell.
 const aimed = computed(() => {
@@ -17,13 +17,13 @@ const aimed = computed(() => {
         return props.aimed;
     }
 
-    return props.pointer ? compassTargetAt(props.pointer, props.center) : null;
+    return props.pointer ? dropZoneTargetAt(props.pointer, props.center) : null;
 });
 const place = computed(() => ({
-    left: `${props.center.x - compassSize / 2}px`,
-    top: `${props.center.y - compassSize / 2}px`,
+    left: `${props.center.x - dropZonesSize / 2}px`,
+    top: `${props.center.y - dropZonesSize / 2}px`,
 }));
-const cells = Object.entries(compassTargets) as [CompassTarget, (typeof compassTargets)[CompassTarget]][];
+const cells = Object.entries(dropZoneTargets) as [DropZoneTarget, (typeof dropZoneTargets)[DropZoneTarget]][];
 
 watch(aimed, (target) => emit('aim', target), { immediate: true });
 </script>
@@ -31,7 +31,7 @@ watch(aimed, (target) => emit('aim', target), { immediate: true });
 <template>
     <div
         aria-hidden="true"
-        class="pointer-events-none absolute z-(--z-drop-compass) grid grid-cols-[repeat(3,26px)] grid-rows-[repeat(3,26px)] gap-0.75"
+        class="pointer-events-none absolute z-(--z-drop-drop zones) grid grid-cols-[repeat(3,26px)] grid-rows-[repeat(3,26px)] gap-0.75"
         :style="place"
     >
         <template v-for="[name, cell] in cells" :key="name">

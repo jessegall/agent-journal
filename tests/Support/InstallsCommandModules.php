@@ -21,7 +21,7 @@ use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Ledger\LedgerDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
-use Tests\Fixtures\Modules\Notes\Support\CommandTrail;
+use Tests\Fixtures\Modules\Notes\Support\CommandStepLog;
 
 /**
  * Installs the Cards and Notes test modules on the command bus, optionally with extra middleware on Notes, as a
@@ -50,7 +50,7 @@ trait InstallsCommandModules
         return array_values(array_diff(DomainBoot::withRequirements(...$required), self::MODULES));
     }
 
-    protected function installCommandModules(MiddlewareDeclaration ...$extraNotesMiddleware): CommandTrail
+    protected function installCommandModules(MiddlewareDeclaration ...$extraNotesMiddleware): CommandStepLog
     {
         return $this->installCommandModulesRequiring([], ...$extraNotesMiddleware);
     }
@@ -64,11 +64,11 @@ trait InstallsCommandModules
     protected function installCommandModulesRequiring(
         array $alsoRequired,
         MiddlewareDeclaration ...$extraNotesMiddleware,
-    ): CommandTrail {
+    ): CommandStepLog {
         $this->installCommandRegistry($alsoRequired, ...$extraNotesMiddleware);
         $this->createModuleRows();
 
-        return $this->app->make(CommandTrail::class);
+        return $this->app->make(CommandStepLog::class);
     }
 
     /**
