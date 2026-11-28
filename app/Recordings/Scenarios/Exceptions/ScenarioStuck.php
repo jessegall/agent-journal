@@ -25,6 +25,11 @@ final class ScenarioStuck extends RuntimeException
         return new self("The local host could not be restarted for {$scenario}: the restart ended with code {$exitCode}.");
     }
 
+    public static function projectNotConnected(string $scenario, int $status): self
+    {
+        return new self("The local installer could not connect the project for {$scenario}. It exited with code {$status}.");
+    }
+
     public static function hostNotBack(string $scenario, int $seconds): self
     {
         return new self("The local host restarted for {$scenario} did not allow and check its images again within {$seconds} seconds.");

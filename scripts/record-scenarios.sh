@@ -86,12 +86,18 @@ switch_recording_off() {
 
 # The play runs in the journal's container, which holds no Docker, so the machine changes it asks for run here.
 play_scenario() {
-    local watcher status=0
-    run_machine_changes &
+    local watcher status=0 connection_scratch=""
+    case "$2" in
+        connected/*) connection_scratch=$(mktemp -d) || return 1 ;;
+    esac
+    run_machine_changes "$connection_scratch" &
     watcher=$!
     docker compose exec $(read_terminal_flag) app php -d memory_limit="$PLAY_MEMORY" artisan recordings:play "$2" \
         --owner="$1" || status=$?
     kill "$watcher" 2>/dev/null || true
+    if [ -n "$connection_scratch" ]; then
+        stop_recorded_project "$connection_scratch" || status=1
+    fi
     restore_daemon
     return "$status"
 }
@@ -110,7 +116,7 @@ run_machine_changes() {
     local request=storage/recordings/drafts/machine-change.args
     while true; do
         if [ -f "$request" ]; then
-            run_machine_change "$request"
+            run_machine_change "$request" "$1"
         fi
         sleep 1
     done
@@ -118,15 +124,31 @@ run_machine_changes() {
 
 # The change's program line is one argument to a line of its request file.
 run_machine_change() {
-    local status=0 argument
+    local status=0 argument connection_scratch=$2
     set -- "$1"
     while IFS= read -r argument; do
         set -- "$@" "$argument"
     done < "$1"
     rm -f "$1"
     shift
-    "$@" || status=$?
+    case "$1" in
+        connect-recorded-project)
+            connect_recorded_project "$connection_scratch" "$2" "$3" || status=$?
+            ;;
+        *) "$@" || status=$? ;;
+    esac
     printf '%s\n' "$status" > storage/recordings/drafts/machine-change.done
+}
+
+connect_recorded_project() {
+    [ -n "$1" ] || return 1
+    docker compose exec -T app cat /app/storage/recordings/drafts/connection-ticket |
+        sh programs/runner/scripts/install-relay.sh --for-recording "$1" "$2" "$3" "$PWD/scripts/record-project-relay.py"
+}
+
+stop_recorded_project() {
+    python3 scripts/record-project-relay.py stop "$1/state" || return 1
+    rm -rf "$1"
 }
 
 main "$@"
