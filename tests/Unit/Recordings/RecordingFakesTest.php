@@ -48,6 +48,8 @@ final class RecordingFakesTest extends TestCase
                 '{"orgName":"'.RecordingFakes::ORGANIZATION.'"}',
                 RecordingFakes::USER_FOLDER.'/projects',
                 '-home-user-projects',
+                '/home/journal/.account',
+                '-home-journal-workspace-',
             ],
             [
                 $fakes->replaceIn('someone@company.example'),
@@ -58,6 +60,8 @@ final class RecordingFakesTest extends TestCase
                 $fakes->replaceIn('{"orgName":"Someone\'s Organization"}'),
                 $fakes->replaceIn('/Users/someone/projects'),
                 $fakes->replaceIn('-Users-someone-projects'),
+                $fakes->replaceIn('/home/journal/.account'),
+                $fakes->replaceIn('-home-journal-workspace-'),
             ],
         );
     }

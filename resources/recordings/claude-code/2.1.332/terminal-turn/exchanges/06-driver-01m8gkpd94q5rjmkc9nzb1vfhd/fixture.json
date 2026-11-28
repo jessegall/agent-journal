@@ -7,7 +7,7 @@
         "columns": 0,
         "rows": 0
     },
-    "recorded_at": "2026-11-28T07:37:33.226971+00:00",
+    "recorded_at": "2026-11-28T08:17:38.142314+00:00",
     "initial_state": {
         "working_folder": "/workspace",
         "arguments": [
@@ -30,9 +30,9 @@
     },
     "output": [
         {
-            "offset": 638769000,
+            "offset": 737413000,
             "stream": "stdout",
-            "bytes": "ewogICJsb2dnZWRJbiI6IHRydWUsCiAgImF1dGhNZXRob2QiOiAiY2xhdWRlLmFpIiwKICAiYXBpUHJvdmlkZXIiOiAiZmlyc3RQYXJ0eSIsCiAgImFuYWx5dGljc0Rpc2FibGVkIjogZmFsc2UsCiAgInByb2plY3RzRGlyZWN0b3J5IjogIi9ob21lL3VzZXIvLmFjY291bnQvcHJvamVjdHMiLAogICJjb25maWdEaXJlY3RvcnkiOiAiL2hvbWUvdXNlci8uYWNjb3VudCIsCiAgImxvZ2luRXhwaXJlc0F0IjogIjIwMjYtMTItMjVUMjE6MTc6NTcuMzc5WiIsCiAgImNvbnNvbGVQcm9maWxlU2lnbkluT2ZmZXJlZCI6IHRydWUsCiAgImVtYWlsIjogInVzZXJAZXhhbXBsZS5jb20iLAogICJvcmdJZCI6ICIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLAogICJvcmdOYW1lIjogIkV4YW1wbGUgT3JnYW5pemF0aW9uIiwKICAic3Vic2NyaXB0aW9uVHlwZSI6ICJtYXgiLAogICJzdG9yZWRDbGF1ZGVBaUxvZ2luIjogdHJ1ZSwKICAicGxhblRpZXIiOiAibWF4XzIweCIKfQo="
+            "bytes": "ewogICJsb2dnZWRJbiI6IHRydWUsCiAgImF1dGhNZXRob2QiOiAiY2xhdWRlLmFpIiwKICAiYXBpUHJvdmlkZXIiOiAiZmlyc3RQYXJ0eSIsCiAgImFuYWx5dGljc0Rpc2FibGVkIjogZmFsc2UsCiAgInByb2plY3RzRGlyZWN0b3J5IjogIi9ob21lL2pvdXJuYWwvLmFjY291bnQvcHJvamVjdHMiLAogICJjb25maWdEaXJlY3RvcnkiOiAiL2hvbWUvam91cm5hbC8uYWNjb3VudCIsCiAgImxvZ2luRXhwaXJlc0F0IjogIjIwMjYtMTItMjVUMjE6MTc6NTcuMzc5WiIsCiAgImNvbnNvbGVQcm9maWxlU2lnbkluT2ZmZXJlZCI6IHRydWUsCiAgImVtYWlsIjogInVzZXJAZXhhbXBsZS5jb20iLAogICJvcmdJZCI6ICIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLAogICJvcmdOYW1lIjogIkV4YW1wbGUgT3JnYW5pemF0aW9uIiwKICAic3Vic2NyaXB0aW9uVHlwZSI6ICJtYXgiLAogICJzdG9yZWRDbGF1ZGVBaUxvZ2luIjogdHJ1ZSwKICAicGxhblRpZXIiOiAibWF4XzIweCIKfQo="
         }
     ],
     "inputs": [],

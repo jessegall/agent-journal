@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Recordings;
 
+use App\Models\Sessions\SessionProcess;
+use App\Models\Hosts\HostProcess;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Models\Hosts\HostInstruction;
@@ -161,7 +163,11 @@ final class TestScenario
             } catch (ScenarioStuck $stuck) {
                 // The played daemon's own record says which call the host made that the recording does not hold.
                 $this->journal->testHost(fn (TestHost $host) => Assert::fail(
-                    $stuck->getMessage()."\n".implode("\n", [...$host->playedFailures(), $host->printed()]),
+                    $stuck->getMessage()."\n".implode("\n", [
+                        ...$host->playedFailures(),
+                        ...$this->startState(),
+                        $host->printed(),
+                    ]),
                 ));
             }
         }
@@ -184,6 +190,28 @@ final class TestScenario
         $run->stepRan();
 
         return $step;
+    }
+
+    /**
+     * What the journal holds of the run's start: each process the host was ordered to run and the start's own state,
+     * one line each, for a stuck step to show where the start stopped.
+     *
+     * @return list<string>
+     */
+    private function startState(): array
+    {
+        $processes = HostProcess::query()->orderBy('created_at')->get()->all();
+        $starts = SessionProcess::query()->supervised()->orderBy('created_at')->get()->all();
+
+        return [
+            ...array_map(
+                fn (HostProcess $process) => "process {$process->id} {$process->created_at?->format('H:i:s.v')} "
+                    ."{$process->purpose->value} {$process->status->value} output {$process->output_offset} "
+                    ."workers {$process->worker_generation} {$process->exit_evidence}",
+                $processes,
+            ),
+            ...array_map(fn (SessionProcess $start) => "start {$start->status->value} {$start->refusal}", $starts),
+        ];
     }
 
     private function player(): ScenarioPlayer

@@ -81,7 +81,7 @@
         {
             "type": "printed",
             "at": 1795851199192433,
-            "bytes": "ICAicHJvamVjdHNEaXJlY3RvcnkiOiAiL2hvbWUvdXNlci8uYWNjb3VudC9wcm9qZWN0cyIsCg==",
+            "bytes": "ICAicHJvamVjdHNEaXJlY3RvcnkiOiAiL2hvbWUvam91cm5hbC8uYWNjb3VudC9wcm9qZWN0cyIsCg==",
             "stream": "stdout",
             "secret": false,
             "columns": 0,
@@ -91,7 +91,7 @@
         {
             "type": "printed",
             "at": 1795851199199809,
-            "bytes": "ICAiY29uZmlnRGlyZWN0b3J5IjogIi9ob21lL3VzZXIvLmFjY291bnQiLAo=",
+            "bytes": "ICAiY29uZmlnRGlyZWN0b3J5IjogIi9ob21lL2pvdXJuYWwvLmFjY291bnQiLAo=",
             "stream": "stdout",
             "secret": false,
             "columns": 0,

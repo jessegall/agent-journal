@@ -16,7 +16,7 @@
             "-c",
             "if find \"$1\" -name \"$2\" -print -quit 2>/dev/null | grep -q .; then exec 'claude' '--settings' '/tmp/journal-session/settings.json' '--setting-sources' '' '--strict-mcp-config' '--agents' '{}' '--tools' 'Bash,Read,Edit,Write,NotebookEdit,WebFetch,WebSearch,ToolSearch' '--disallowedTools' 'Agent' 'Task' 'Workflow' 'SendMessage' 'ListAgents' 'RemoteTrigger' 'Skill' '--mcp-config' '/tmp/journal-session/mcp.json' '--model' 'claude-haiku-5-5' '--resume' '00000000-0000-4000-8000-000000000027'; fi; exec 'claude' '--settings' '/tmp/journal-session/settings.json' '--setting-sources' '' '--strict-mcp-config' '--agents' '{}' '--tools' 'Bash,Read,Edit,Write,NotebookEdit,WebFetch,WebSearch,ToolSearch' '--disallowedTools' 'Agent' 'Task' 'Workflow' 'SendMessage' 'ListAgents' 'RemoteTrigger' 'Skill' '--mcp-config' '/tmp/journal-session/mcp.json' '--model' 'claude-haiku-5-5' '--session-id' '00000000-0000-4000-8000-000000000027'",
             "journal-session",
-            "/home/user/.account/projects",
+            "/home/journal/.account/projects",
             "*00000000-0000-4000-8000-000000000027.jsonl"
         ],
         "environment_names": [

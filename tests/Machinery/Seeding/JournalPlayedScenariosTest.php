@@ -72,7 +72,7 @@ final class JournalPlayedScenariosTest extends TestCase
             ->runPlayingTestHost(
                 'Recorded',
                 PlayedScenario::of('claude-code/terminal-turn', $recording),
-                fn (TestHost $host) => $this->assertSame([], $host->playedFailures()),
+                fn (TestHost $host) => $host->assertPlayedNoFailure()->assertStopsWholly(),
             );
     }
 }

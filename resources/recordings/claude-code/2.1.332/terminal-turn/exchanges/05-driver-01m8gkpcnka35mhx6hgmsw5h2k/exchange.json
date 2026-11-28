@@ -1,7 +1,7 @@
 {
     "opening": {
         "wire": "driver",
-        "exchange": "01m8ghd08pqt220f4bdzvgb1sv",
+        "exchange": "01m8gkpcnka35mhx6hgmsw5h2k",
         "mode": "process",
         "argv": [
             "claude",
@@ -13,12 +13,12 @@
         "columns": 0,
         "rows": 0,
         "image": "sha256:b49ca185d967c29dd7e772647cf7c9777ee6e723c79a4a0274b296cff7bb4a45",
-        "openedAt": 1795851452731674
+        "openedAt": 1795853857509484
     },
     "events": [
         {
             "type": "printed",
-            "at": 1795851452883663,
+            "at": 1795853857696525,
             "bytes": "Mi4xLjMzMiAoQ2xhdWRlIENvZGUpCg==",
             "stream": "stdout",
             "secret": false,

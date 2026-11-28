@@ -220,6 +220,21 @@ trait OpensRuntimes
     }
 
     /**
+     * The owner's active account of every driver family, each in a folder of its own named by an id, as the journal
+     * names the folder of an account it signs in, so a played scenario's recorded folders match.
+     */
+    public function chooseActiveAccountsInIdFolders(string $folder): self
+    {
+        foreach (DefaultDrivers::familyKeys() as $family) {
+            $accountFolder = "{$folder}/".strtolower((string) Str::ulid());
+            mkdir($accountFolder, 0o700, true);
+            $this->chooseAccountIn($family, 'Test account', $accountFolder);
+        }
+
+        return $this;
+    }
+
+    /**
      * The folder a test saves the family's account in: plain letters and digits, as an account folder's name is.
      */
     public static function accountFolderOf(string $folder, string $family): string
@@ -229,7 +244,12 @@ trait OpensRuntimes
 
     private function chooseAccountOf(string $family, string $label, string $folder): void
     {
-        $account = Account::create($family, AccountLabel::from($label), self::accountFolderOf($folder, $family));
+        $this->chooseAccountIn($family, $label, self::accountFolderOf($folder, $family));
+    }
+
+    private function chooseAccountIn(string $family, string $label, string $accountFolder): void
+    {
+        $account = Account::create($family, AccountLabel::from($label), $accountFolder);
         ActiveAccount::findLockedFor($family)->select($account);
         $this->chosenAccounts[$family] = $account;
     }

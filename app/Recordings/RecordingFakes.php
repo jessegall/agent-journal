@@ -116,11 +116,12 @@ final class RecordingFakes
         $faked = strtr($text, $this->environmentFolders());
         $faked = strtr($faked, array_fill_keys($this->distinctivePersonalValues(), self::USER_NAME));
 
+        // A home folder is a person's, except the fake's own and the containers' user's, which every machine shares.
         $faked = (string) preg_replace(
             [
-                '#/(?:Users|home)/(?!user\b)[^/\s"\'\\\\]+#',
-                '#\\\\/(?:Users|home)\\\\/(?!user\b)[^/\s"\'\\\\]+#',
-                '#-(?:Users|home)-(?!user-)[A-Za-z0-9._]+-#',
+                '#/(?:Users|home)/(?!(?:user|journal)\b)[^/\s"\'\\\\]+#',
+                '#\\\\/(?:Users|home)\\\\/(?!(?:user|journal)\b)[^/\s"\'\\\\]+#',
+                '#-(?:Users|home)-(?!(?:user|journal)-)[A-Za-z0-9._]+-#',
             ],
             [self::USER_FOLDER, str_replace('/', '\\/', self::USER_FOLDER), '-home-user-'],
             $faked,

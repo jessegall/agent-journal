@@ -89,6 +89,11 @@ final class TestHost
 
     private InvokedProcess|null $servedJournal = null;
 
+    /**
+     * The served journal's driver worker supervisor, which a played scenario runs as a machine runs it.
+     */
+    private InvokedProcess|null $driverSupervisor = null;
+
     private InvokedProcess|null $signIns = null;
 
     /**
@@ -294,12 +299,23 @@ final class TestHost
     }
 
     /**
-     * The host stops, and no process of the journal it was served on runs any more, server or worker.
+     * The played Docker daemon answered every call the host made from its recording.
+     */
+    public function assertPlayedNoFailure(): self
+    {
+        Assert::assertSame([], $this->playedFailures());
+
+        return $this;
+    }
+
+    /**
+     * The host stops, and no process of the journal it was served on runs any more: server, driver supervisor or worker.
      */
     public function assertStopsWholly(): self
     {
         $this->stop();
         Assert::assertSame([], self::journalProcessesOn($this->port));
+        Assert::assertSame([], self::driverProcesses());
 
         return $this;
     }
@@ -310,6 +326,13 @@ final class TestHost
      */
     public function chooseActiveAccounts(): self
     {
+        // A played scenario's accounts sit in folders named as the journal names them, as its recording holds them.
+        if ($this->playing !== null) {
+            $this->journal->chooseActiveAccountsInIdFolders($this->accountsFolder());
+
+            return $this;
+        }
+
         foreach (DefaultDrivers::familyKeys() as $driver) {
             mkdir(TestJournal::accountFolderOf($this->accountsFolder(), $driver), 0o700, true);
         }
@@ -443,7 +466,9 @@ final class TestHost
             posix_kill($processId, SIGKILL);
         }
 
+        self::end($this->driverSupervisor, SIGTERM);
         $this->servedJournal = null;
+        $this->driverSupervisor = null;
     }
 
     /**
@@ -459,6 +484,28 @@ final class TestHost
 
         foreach (glob('/proc/[0-9]*/cmdline') ?: [] as $commandLine) {
             if (str_starts_with(self::commandLineOf($commandLine), $server)) {
+                $processIds[] = (int) basename(dirname($commandLine));
+            }
+        }
+
+        return $processIds;
+    }
+
+    /**
+     * The ids of the journal's driver processes, its supervisor and every worker it started, by their command line.
+     *
+     * @return list<int>
+     */
+    public static function driverProcesses(): array
+    {
+        $processIds = [];
+
+        foreach (glob('/proc/[0-9]*/cmdline') ?: [] as $commandLine) {
+            $words = explode("\x00", self::commandLineOf($commandLine));
+
+            $isArtisan = $words[0] === 'php' && str_ends_with($words[1] ?? '', 'artisan');
+
+            if ($isArtisan && str_starts_with($words[2] ?? '', 'drivers:')) {
                 $processIds[] = (int) basename(dirname($commandLine));
             }
         }
@@ -495,6 +542,13 @@ final class TestHost
         $environment = [...$this->sharedEnvironment(), 'PHP_CLI_SERVER_WORKERS' => '32'];
         $this->servedJournal = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
+
+        // A played scenario runs the journal as a machine runs it: its driver workers read each process the host runs.
+        if ($this->playing !== null) {
+            $supervise = [__DIR__.'/scripts/serve-until-input-ends.sh', 'php', base_path('artisan'), 'drivers:supervise'];
+            $this->driverSupervisor = $this->processes->env($this->sharedEnvironment())->forever()
+                ->input($this->untilKilled())->start($supervise);
+        }
     }
 
     /**
@@ -523,6 +577,7 @@ final class TestHost
             ...self::containedEnvironment(),
             'AGENTS_INSTALLATION_NAME' => $this->installationName(),
             'AGENT_IMAGE' => $this->playing === null ? self::IMAGE : $this->playing->agentImage,
+            'AGENTS_DEVELOPMENT_PROGRAMS' => $this->playing === null ? '' : $this->playing->developmentPrograms,
         ];
     }
 

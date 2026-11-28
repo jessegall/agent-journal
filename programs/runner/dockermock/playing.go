@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -40,10 +41,54 @@ type Playing struct {
 	mutex   sync.Mutex
 }
 
-// program is the driver exchange a container ran, and whether the container had a terminal.
+// program is the driver exchange a container ran, whether the container had a terminal, and when its output was
+// played, shared by the container's id and its name.
 type program struct {
 	exchange recorded.Exchange
 	hasTTY   bool
+	output   *playedOutput
+}
+
+// playedOutput closes once a container's recorded output was played whole on its attach; a container read by its
+// logs is never attached, and its wait holds for nothing.
+type playedOutput struct {
+	done       chan struct{}
+	once       sync.Once
+	isAttached atomic.Bool
+}
+
+func (output *playedOutput) finish() {
+	output.once.Do(func() { close(output.done) })
+}
+
+// countedOutput passes the replay's output and its moments on and tells once the recorded output was written whole,
+// as the replay itself goes on reading the program's input until it ends.
+type countedOutput struct {
+	next   *journalCaller
+	left   int
+	played func()
+}
+
+func (output *countedOutput) Reached(offset time.Duration) error {
+	return output.next.Reached(offset)
+}
+
+func (output *countedOutput) Write(piece []byte) (int, error) {
+	written, err := output.next.Write(piece)
+	output.left -= written
+	if output.left <= 0 {
+		output.played()
+	}
+	return written, err
+}
+
+// recordedLength is how many bytes the fixture's program printed.
+func recordedLength(fixture recording.Fixture) int {
+	length := 0
+	for _, chunk := range fixture.Output {
+		length += len(chunk.Bytes)
+	}
+	return length
 }
 
 // createdProgram is what a recorded container create names of the program it runs.
@@ -89,6 +134,7 @@ func PlayScenario(failures recorded.Failures, scenario recorded.Scenario) (*Play
 		environments: map[string][]string{}, runKeys: map[string]string{}, outputs: outputs}
 	replay.Upgraded = playing.attached
 	replay.Heard = playing.heard
+	replay.Answering = playing.answering
 	// A container's wait or followed log answers only once what was asked of it while it waited was asked here too.
 	replay.IsLongPoll = isLongPoll
 	replay.OrderGroup = containerCalledBy
@@ -165,7 +211,7 @@ func programsOf(scenario recorded.Scenario) (map[string]program, error) {
 		for _, exchange := range drivers {
 			argv := exchange.Opening.Argv
 			if len(argv) > 0 && len(argv) <= len(command) && slices.Equal(command[len(command)-len(argv):], argv) {
-				ran := program{exchange: exchange, hasTTY: asked.Tty}
+				ran := program{exchange: exchange, hasTTY: asked.Tty, output: &playedOutput{done: make(chan struct{})}}
 				programs[answered.ID] = ran
 				if name := call.Asked.Query["name"]; name != "" {
 					programs[name] = ran
@@ -188,6 +234,8 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 		playing.printRun(key, connection)
 		return
 	}
+	ran.output.isAttached.Store(true)
+	defer ran.output.finish()
 	fixture, err := recording.Load(ran.exchange.Folder)
 	if err != nil {
 		return
@@ -205,7 +253,27 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 	playing.mutex.Unlock()
 	caller := newJournalCaller(calls, playing.scenario.Manifest.Driver, environment, output, playing.replay.Values())
 	defer caller.finish()
-	_ = recording.GatedReplay(fixture, buffered, caller, playedPause, func(recording.Typed) error { return nil })
+	written := &countedOutput{next: caller, left: recordedLength(fixture), played: ran.output.finish}
+	_ = recording.GatedReplay(fixture, buffered, written, playedPause, func(recording.Typed) error { return nil })
+}
+
+// answering holds a container's wait until its recorded output was played whole, as Docker answers a wait only once
+// the container's output reached its attach; every other answer goes as it is.
+func (playing *Playing) answering(call recorded.Call, body []byte) []byte {
+	if !strings.HasSuffix(call.Answered.Path, "/wait") {
+		return body
+	}
+	playing.mutex.Lock()
+	ran, isDriver := playing.programs[containerOf(call.Answered.Path)]
+	playing.mutex.Unlock()
+	if !isDriver || !ran.output.isAttached.Load() {
+		return body
+	}
+	select {
+	case <-ran.output.done:
+	case <-playing.replay.Closed():
+	}
+	return body
 }
 
 // printRun writes what the recorded run of the image and command printed, as Docker streams a container that ran no
