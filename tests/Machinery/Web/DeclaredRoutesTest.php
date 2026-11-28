@@ -48,7 +48,7 @@ final class DeclaredRoutesTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = $this->journal->owner()->ownerUser();
+        $this->owner = $this->journal->owner()->installProfiles()->ownerUser();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
 
         $declarations = $this->declarations();

@@ -7,6 +7,6 @@ namespace App\Messages\Contracts;
 use App\Actors\Contracts\Actor;
 
 /**
- * An actor that sends messages: an agent or a user. The journal itself sends none.
+ * An agent or user who sends messages as an inbox participant.
  */
 interface MessageSender extends Actor, MessageParticipant {}

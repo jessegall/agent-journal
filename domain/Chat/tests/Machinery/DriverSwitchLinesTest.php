@@ -12,6 +12,7 @@ use App\Models\Drivers\DriverSwitch;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Sessions\StartSessions;
+use App\Support\ActorReference;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use Domain\Chat\Support\DriverSwitchLines;
@@ -42,7 +43,9 @@ final class DriverSwitchLinesTest extends TestCase
         $reason = 'Its account must sign in again.';
         $this->app->make(DriverSwitchLines::class)->failed($switch, $reason);
 
-        $line = $this->linesIn($chat)[0];
+        $message = Message::query()->inInbox($chat->id)->sole();
+        $this->assertEquals(ActorReference::system(), $message->author());
+        $line = $message->body;
         $this->assertStringContainsString($switch->target_family, $line);
         $this->assertStringContainsString($reason, $line);
         $this->assertStringContainsString($this->journal->agentCalled(self::AGENT)->name, $line);

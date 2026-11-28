@@ -12,7 +12,6 @@ use App\Events\Messages\MessageDeliveryChanged;
 use App\Events\Messages\MessageSent;
 use App\Messages\Contracts\MessageParticipant;
 use App\Messages\Contracts\MessageReceiver;
-use App\Messages\Contracts\MessageSender;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
@@ -76,7 +75,7 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
     public static function create(
         MessageReceiver $to,
         int $number,
-        MessageSender $from,
+        ActorReference $from,
         string $body,
         self|null $target = null,
     ): self {
@@ -85,14 +84,14 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
         $message = new self();
         $message->inbox_id = $inbox->id;
         $message->number = $number;
-        $message->sender_type = $from->participantType();
-        $message->sender_id = $from->participantId();
+        $message->sender_type = $from->type;
+        $message->sender_id = $from->id;
         $message->body = $body;
         $message->target_message_id = $target?->id;
         $message->saveAndAssert();
 
         $message->raise(
-            new MessageSent($message->id, $inbox->id, $message->number, $target?->id, ActorReference::of($from)),
+            new MessageSent($message->id, $inbox->id, $message->number, $target?->id, $from),
         );
 
         return $message;

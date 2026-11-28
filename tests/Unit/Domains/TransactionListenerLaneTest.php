@@ -23,10 +23,12 @@ use App\Events\Messages\MessageSent;
 use App\Events\Processes\OutputChunkCommitted;
 use App\Events\Processes\RunOutcomeRecorded;
 use App\Events\Sessions\AgentSessionEnded;
+use App\Events\Sessions\DriverRequestApplied;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
 use App\Listeners\BroadcastPageChange;
 use App\Listeners\ReleaseSignInWriter;
+use App\Listeners\SettleAppliedRequestRetry;
 use App\Providers\DomainEventServiceProvider;
 use App\Reflection\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
@@ -92,7 +94,7 @@ final class TransactionListenerLaneTest extends TestCase
         }
     }
 
-    public function test_the_transaction_lane_holds_only_the_listeners_plan_40_moved_so_far(): void
+    public function test_the_transaction_lane_keeps_required_writes_with_their_events(): void
     {
         $registry = $this->app->make(ListenerRegistry::class);
 
@@ -122,6 +124,7 @@ final class TransactionListenerLaneTest extends TestCase
                 PlanReviewRequested::class,
                 TaskDescribed::class,
                 RunOutcomeRecorded::class,
+                DriverRequestApplied::class,
             ],
             array_keys($registry->byEvent(ListenerLane::InCommandTransaction)),
         );
@@ -138,6 +141,10 @@ final class TransactionListenerLaneTest extends TestCase
             ),
         );
         $this->assertSame([ReleaseSignInWriter::class.'@handle'], $registry->listenersOf(SignInAttemptFinished::class, ListenerLane::InCommandTransaction));
+        $this->assertSame(
+            [SettleAppliedRequestRetry::class.'@handle'],
+            $registry->listenersOf(DriverRequestApplied::class, ListenerLane::InCommandTransaction),
+        );
         $public = new DomainEventServiceProvider($this->app)->getEvents()[SignInAttemptFinished::class] ?? [];
         $this->assertNotContains(ReleaseSignInWriter::class.'@handle', $public);
     }
