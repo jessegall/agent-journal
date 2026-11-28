@@ -35,6 +35,7 @@ use Domain\Chat\Support\PairChats;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Support\ShownQuestion;
 use Illuminate\Database\Eloquent\Collection as ModelCollection;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
 
 /**
@@ -143,7 +144,7 @@ final readonly class ChatPages
         $viewer = $this->actors->actor();
         $readIds = $this->readIdsAmong($rows);
         $questions = $this->questionsAmong($rows);
-        $rows->loadMorph('source', [Message::class => ['target']]);
+        $rows->load(['source' => fn (MorphTo $source) => $source->morphWith([Message::class => ['target']])]);
 
         return array_values($rows->map(function (
             ChatMessage $row,

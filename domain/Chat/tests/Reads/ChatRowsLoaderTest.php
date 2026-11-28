@@ -27,7 +27,7 @@ final class ChatRowsLoaderTest extends TestCase
      */
     protected const array TABLES = [];
 
-    public function test_a_member_of_the_chat_reads_its_rows(): void
+    public function test_a_member_of_the_chat_reads_its_rows_with_their_messages(): void
     {
         $this->journal->owner()->agent('Planner');
 
@@ -40,7 +40,8 @@ final class ChatRowsLoaderTest extends TestCase
 
         $page = $this->read($chat->id);
 
-        $this->assertNotSame([], $page->toArray()['entries']);
+        // Each row carries its message: the row's source is loaded with it.
+        $this->assertSame(['Ready.'], array_column(array_column($page->toArray()['entries'], 'message'), 'body'));
     }
 
     public function test_an_admitted_inbox_member_in_the_chat_reads_its_rows(): void

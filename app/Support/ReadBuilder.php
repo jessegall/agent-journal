@@ -315,13 +315,15 @@ class ReadBuilder extends Builder
             throw RelationReadUndeclared::for($name);
         }
 
+        // The relation is set empty on every parent before it is read, as a morph relation sets its models while read.
+        $parents = $relation->initRelation($models, $name);
         $relatedModels = $relation->getEager();
 
         if ($query instanceof self && $query->holdsMoreThanDeclared($relatedModels->count())) {
             throw ReadLimitExceeded::forRelation($name, (int) $query->completeRelationMax);
         }
 
-        return $relation->match($relation->initRelation($models, $name), $relatedModels, $name);
+        return $relation->match($parents, $relatedModels, $name);
     }
 
     /**

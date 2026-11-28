@@ -34,9 +34,12 @@ final readonly class AttentionOrigin
         public string $sourceId,
     ) {}
 
-    public static function message(string $messageId, string $receiptId): self
+    /**
+     * A message sent into an inbox the agent is attached to.
+     */
+    public static function message(string $messageId): self
     {
-        return new self(self::MESSAGE, $messageId, $receiptId);
+        return new self(self::MESSAGE, $messageId, $messageId);
     }
 
     /**
