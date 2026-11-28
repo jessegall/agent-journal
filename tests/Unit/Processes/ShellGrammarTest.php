@@ -75,6 +75,16 @@ final class ShellGrammarTest extends TestCase
         $this->assertSame(['rm a'], array_slice($this->texts($tree, $tree->executableParts()), 1));
     }
 
+    public function test_a_shell_test_word_keeps_its_nested_command(): void
+    {
+        $tree = $this->parse('[[ $(true) = yes ]]');
+        $parts = $tree->executableParts();
+
+        $this->assertSame(ParseOutcome::Complete, $tree->outcome);
+        $this->assertCount(2, $parts);
+        $this->assertSame('true', $parts[1]->range->slice($tree->source));
+    }
+
     public function test_a_background_job_is_its_own_node(): void
     {
         $tree = $this->parse('sleep 5 & echo done');

@@ -13,7 +13,6 @@ use App\Processes\Grammar\Lines\ShellSource;
 use App\Processes\Grammar\PendingSegment;
 use App\Processes\Grammar\SubstitutionQueue;
 use App\Processes\Grammar\Syntax\ShellLexer;
-use App\Processes\Grammar\Values\WordSegment;
 use App\Values\AgentText;
 
 /**
@@ -67,7 +66,7 @@ final readonly class FindNextSubstitution implements Pipe
         $segment = $next->segment;
         $start = $segment->range->start;
 
-        if ($this->isTest($segment)) {
+        if ($segment->isShellTest()) {
             return $this->wordsInside($next, substr($segment->text, 3, -2), $start + 3);
         }
 
@@ -86,16 +85,6 @@ final readonly class FindNextSubstitution implements Pipe
         }
 
         return null;
-    }
-
-    /**
-     * Whether the segment is a [[ ]] test, whose inside is searched for substitutions.
-     */
-    private function isTest(WordSegment $segment): bool
-    {
-        return $segment->type === WordSegmentType::Literal
-            && str_starts_with($segment->text, '[[ ')
-            && str_ends_with($segment->text, ']]');
     }
 
     /**

@@ -52,13 +52,26 @@ final readonly class UnparsedWord
         return $this->place === WordPlace::ArrayAssignment;
     }
 
+    public function canContainSubstitution(): bool
+    {
+        if ($this->isArrayAssignment()) {
+            return false;
+        }
+
+        foreach ($this->word->segments as $segment) {
+            if ($segment->canContainSubstitution()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
-     * The word's substitutions, read as children of its command; an array assignment's are not read.
+     * The word whose substitutions are read as children of its command.
      */
     public function substitutions(): UnparsedSubstitutions
     {
-        $word = $this->isArrayAssignment() ? new Word([], $this->word->range) : $this->word;
-
-        return new UnparsedSubstitutions($this->context, $word, $this->command, $this->depth);
+        return new UnparsedSubstitutions($this->context, $this->word, $this->command, $this->depth);
     }
 }
