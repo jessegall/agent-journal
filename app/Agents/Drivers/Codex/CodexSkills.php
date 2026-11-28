@@ -14,10 +14,8 @@ use App\Values\SkillDelivery;
 use App\Values\SkillKey;
 
 /**
- * Codex 0.165.0 finds a session's skills in the skills folder of its isolated CODEX_HOME, which is the start's settings
- * folder, so the host writes them there and adds no argument. It lists them when a turn's process starts. It has no
- * skill tool and reads files through its shell, so a shell cat or sed -n of a whole SKILL.md, or skill:show, proves a
- * skill read; sed -n of a range of lines or head proves none.
+ * Codex finds a session's skills in the skills folder of its CODEX_HOME, the start's settings folder, at each turn's
+ * start. It reads through its shell: a cat or sed -n of a whole SKILL.md, or skill:show, proves a read; a range does not.
  */
 final readonly class CodexSkills implements DriverSkills
 {

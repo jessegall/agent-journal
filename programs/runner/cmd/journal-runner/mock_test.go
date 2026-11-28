@@ -40,8 +40,8 @@ func TestAContainerWhoseShellRunsTheProgramPlaysTheSession(t *testing.T) {
 	container.Config.Cmd = []string{"/bin/sh", "-c",
 		`if find "$1" -name "$2" -print -quit | grep -q .; then exec 'agent-program' '--resume' 'a'; fi; exec 'agent-program' '--session-id' 'a'`,
 		"journal-session", "/home/agent/projects", "*a.jsonl"}
-	session := dockermock.Printing("session", 0)
-	programs := programInContainer(mockProgram{"agent-program", recording.Fixture{}, recording.Fixture{}}, session)
+	session := dockermock.RecordedProgramOf(t, "claude-code", "terminal-turn", "/bin/sh")
+	programs := programInContainer(mockProgram{"agent-program", recording.Fixture{}, recording.Fixture{}}, session.Run)
 
 	program := programs(container)
 	if program == nil {
@@ -50,7 +50,7 @@ func TestAContainerWhoseShellRunsTheProgramPlaysTheSession(t *testing.T) {
 	var printed bytes.Buffer
 	program(context.Background(), container, bytes.NewReader(nil), &printed)
 
-	if printed.String() != "session" {
+	if printed.String() != session.PrintedBefore(0) {
 		t.Fatalf("printed %q", printed.String())
 	}
 }

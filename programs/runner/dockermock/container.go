@@ -73,17 +73,6 @@ func Printing(text string, code int) Program {
 	}
 }
 
-// ReadingInput is a program that reads everything typed into it to the end, prints the text and ends with the exit
-// code, as a program fed on its standard input does.
-func ReadingInput(text string, code int) Program {
-	return func(_ context.Context, _ *Container, input io.Reader, output io.Writer) int {
-		_, _ = io.Copy(io.Discard, input)
-		_, _ = io.WriteString(output, text)
-
-		return code
-	}
-}
-
 // defaultProgram is what a container runs when a test gave it no program: with a terminal it reads what is typed
 // until it is stopped, without one it ends at once.
 func defaultProgram(container *Container) Program {

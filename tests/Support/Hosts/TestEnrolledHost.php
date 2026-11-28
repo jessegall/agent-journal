@@ -73,7 +73,7 @@ final readonly class TestEnrolledHost
             HostProcessPurpose::Probe,
             HostProcessType::Terminal,
             RestartPolicy::Never,
-            ['echo-program'],
+            ['claude'],
             $environment,
             '/workspace',
             $manifest,

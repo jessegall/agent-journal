@@ -7,10 +7,8 @@ namespace App\Values;
 use App\Skills\Enums\ReadEvidence;
 
 /**
- * A read of one skill whole that a driver's finished tool call proves; which calls prove one is each driver's to say.
- * What every driver shares is read here: a SKILL.md of the session's own runtime folder, a shell line that prints such
- * a file whole, and a successful php artisan skill:show of the key. A listing, a partial read or a file of another
- * folder proves nothing.
+ * A read of one skill whole that a driver's finished tool call proves: a SKILL.md of the session's runtime folder, a
+ * shell line printing it whole, or a successful skill:show of the key. A listing or a partial read proves nothing.
  */
 final readonly class ProvenSkillRead
 {

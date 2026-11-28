@@ -11,8 +11,8 @@ use PHPUnit\Framework\AssertionFailedError;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Assertions\Assert;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Drivers\HandTypedProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
-use Tests\Support\Hosts\EchoProcessDriver;
 use Tests\Support\Hosts\Steps\CompletesBrowserSignIn;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostProcess;
@@ -26,12 +26,17 @@ use Tests\TestCase;
 
 /**
  * The test journal runs a host for real in the scope runTestHost() opens, and every verb of the running host acts on
- * it there: it opens the mock's echo program, proves starts, runs sign-ins and holds turns.
+ * it there: it opens a container of a recorded program, proves starts, runs sign-ins and holds turns.
  */
 #[TestsMachinery(TestJournal::class)]
 #[TimeLimit(seconds: 60, reason: 'It runs the test host, the Docker mock and a served journal.')]
 final class JournalTestHostTest extends TestCase
 {
+    /**
+     * What was typed into the recorded Claude Code terminal turn the mock Docker's containers play.
+     */
+    private const string RECORDED_PROMPT = 'Count slowly from 1 to 300, one number per line, then say done.';
+
     use CommitsHookRows;
     use WithActiveAccount;
 
@@ -81,41 +86,41 @@ final class JournalTestHostTest extends TestCase
             ->stopRunningHost();
     }
 
-    public function test_a_real_host_opens_the_echo_program_the_journal_instructions(): void
+    public function test_a_real_host_opens_the_recorded_program_the_journal_instructions(): void
     {
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, HandTypedProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
             ->runTestHost('Mac', fn (TestHost $mac) => $mac
-                ->openEchoContainer('echo')
-                ->process('echo', fn (TestHostProcess $echo) => $echo
+                ->openRecordedTerminal('terminal')
+                ->process('terminal', fn (TestHostProcess $terminal) => $terminal
                     ->waitFor(HostProcessStatus::Running)
-                    ->driveUntil(fn (Assert $journal) => $journal->has('hostProcesses.echo.rows')))
+                    ->driveUntil(fn (Assert $journal) => $journal->has('hostProcesses.terminal.rows')))
                 ->restartHost()
-                ->process('echo', fn (TestHostProcess $echo) => $echo->waitFor(HostProcessStatus::Running)));
+                ->process('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Running)));
 
-        $this->assertNotSame('', $this->journal->hostProcessCalled('echo')->execution_identity);
+        $this->assertNotSame('', $this->journal->hostProcessCalled('terminal')->execution_identity);
     }
 
     public function test_a_drive_that_never_holds_fails_with_the_last_miss_and_what_the_process_showed(): void
     {
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, HandTypedProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
             ->runTestHost('Mac', fn (TestHost $mac) => $mac
-                ->openEchoContainer('echo')
-                ->process('echo', fn (TestHostProcess $echo) => $echo->waitFor(HostProcessStatus::Running)))
+                ->openRecordedTerminal('terminal')
+                ->process('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Running)))
             ->assertRefused(
                 AssertionFailedError::class,
-                fn () => $this->journal->hostProcess('echo', fn (TestHostProcess $echo) => $echo
+                fn () => $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
                     ->driveUntil(fn (Assert $journal) => $journal
-                        ->where('hostProcesses.echo.generation', 9), seconds: 1)),
+                        ->where('hostProcesses.terminal.generation', 9), seconds: 1)),
                 fn (AssertionFailedError $failure) => $this->assertStringContainsString(
-                    'hostProcesses.echo.generation',
+                    'hostProcesses.terminal.generation',
                     $failure->getMessage(),
                 ),
             )
-            ->assertResult(true, str_contains($this->journal->processReport('echo'), 'echo'))
+            ->assertResult(true, str_contains($this->journal->processReport('terminal'), 'terminal'))
             ->stopRunningHost();
     }
 
@@ -123,8 +128,8 @@ final class JournalTestHostTest extends TestCase
     {
         $this->journal->enrollHost('Mac', [base_path()])->runTestHost('Mac', fn (TestHost $mac) => $mac
             ->restartJournal()
-            ->openEchoContainer('echo')
-            ->process('echo', fn (TestHostProcess $echo) => $echo->waitFor(HostProcessStatus::Running))
+            ->openRecordedTerminal('terminal')
+            ->process('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Running))
             ->stop());
     }
 
@@ -229,7 +234,7 @@ final class JournalTestHostTest extends TestCase
     public function test_the_key_recorder_on_a_real_host_records_what_was_typed(): void
     {
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, HandTypedProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
             ->runTestHost('Mac', fn (TestHost $mac) => $mac
                 ->openKeyRecorder('keys')
@@ -244,18 +249,20 @@ final class JournalTestHostTest extends TestCase
 
     public function test_keys_typed_on_a_real_hosts_process_reach_its_program(): void
     {
-        $typed = fn (Assert $journal) => $journal
-            ->where('hostProcesses.echo.rows', fn (array|null $rows) => in_array('echo: typed', $rows ?? [], true));
+        $typed = fn (Assert $journal) => $journal->where(
+            'hostProcesses.terminal.rows',
+            fn (array|null $rows) => str_contains(implode("\n", $rows ?? []), self::RECORDED_PROMPT),
+        );
 
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, HandTypedProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
             ->runTestHost('Mac', fn (TestHost $mac) => $mac
-                ->openEchoContainer('echo')
-                ->process('echo', fn (TestHostProcess $echo) => $echo
+                ->openRecordedTerminal('terminal')
+                ->process('terminal', fn (TestHostProcess $terminal) => $terminal
                     ->waitFor(HostProcessStatus::Running)
-                    ->driveUntil(fn (Assert $journal) => $journal->has('hostProcesses.echo.rows'))
-                    ->type("typed\r")
+                    ->driveUntil(fn (Assert $journal) => $journal->has('hostProcesses.terminal.rows'))
+                    ->type(self::RECORDED_PROMPT)
                     ->driveUntil($typed)))
             ->assertJournal($typed)
             ->stopRunningHost();

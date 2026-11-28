@@ -73,9 +73,15 @@ func (output *playedOutput) finish() {
 // countedOutput passes the replay's output and its moments on and tells once the recorded output was written whole,
 // as the replay itself goes on reading the program's input until it ends.
 type countedOutput struct {
-	next   *journalCaller
+	next   momentWriter
 	left   int
 	played func()
+}
+
+// momentWriter is an output that is told each chunk's recorded moment before it is written.
+type momentWriter interface {
+	io.Writer
+	recording.MomentFollower
 }
 
 func (output *countedOutput) Reached(offset time.Duration) error {

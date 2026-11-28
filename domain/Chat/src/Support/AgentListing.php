@@ -26,10 +26,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
- * The chat list, one page at a time: the agents the viewer may see, those whose chat with the viewer moved most
- * recently first and those it never moved last, each with its status and that chat's unread messages, last activity
- * and a question waiting for the viewer, read for the page's agents at once; a main agent is one the designation
- * names or whose profile coordinates the journal's work.
+ * The chat list a page at a time: the agents the viewer may see, newest chat activity first, each with its status,
+ * unread messages, last activity and waiting question, read for the page at once.
  */
 final readonly class AgentListing
 {

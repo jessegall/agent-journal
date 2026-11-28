@@ -2,6 +2,7 @@ package recording
 
 import (
 	"bytes"
+	"cmp"
 	"errors"
 	"io"
 	"time"
@@ -136,7 +137,8 @@ func awaitGate(gate Typed, pieces <-chan Typed, failure <-chan error, heard func
 				return nil
 			}
 		case err := <-failure:
-			return err
+			// An input that ended before its gate opened ends the replay: the gate never opens.
+			return cmp.Or(err, io.EOF)
 		}
 	}
 }
