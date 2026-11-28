@@ -31,11 +31,6 @@ final class TestAgentApi
      */
     private const int START_SECONDS = 10;
 
-    /**
-     * The path every agent frame of the recordings is sent to.
-     */
-    private const string MCP_PATH = '/agent/mcp/v1';
-
     private InvokedProcess|null $player = null;
 
     private InputStream|null $input = null;
@@ -83,12 +78,25 @@ final class TestAgentApi
      */
     public function assertAnswersFrame(int $nth, Closure $send): self
     {
+        return $this->withFrame($nth, function (
+            AgentClientSettings $settings,
+            RecordedCall $asked,
+            RecordedCall $answered,
+        ) use ($send): void {
+            $response = $send($settings, $asked->path, $asked->body);
+
+            Assert::assertSame([$answered->status, $answered->body], [$response->status(), $response->body()]);
+        });
+    }
+
+    /**
+     * @param  Closure(AgentClientSettings, RecordedCall, RecordedCall): mixed  $scope
+     */
+    public function withFrame(int $nth, Closure $scope): self
+    {
         [$asked, $answered] = $this->recordedFrame($nth);
         $settings = new AgentClientSettings($this->address, 'start-token', new StartProfilePin('journal-worker', 1));
-
-        $response = $send($settings, self::MCP_PATH, $asked->body);
-
-        Assert::assertSame([$answered->status, $answered->body], [$response->status(), $response->body()]);
+        $scope($settings, $asked, $answered);
 
         return $this;
     }
