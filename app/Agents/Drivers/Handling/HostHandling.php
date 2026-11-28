@@ -19,7 +19,7 @@ use App\Models\Sessions\SessionProcess;
  */
 final readonly class HostHandling implements RuntimeHandling
 {
-    public function __construct(private CommandBus $bus, private StartRefusals $refusals) {}
+    public function __construct(private CommandBus $bus) {}
 
     public function openStart(AgentRuntime $runtime): void {}
 
@@ -27,7 +27,7 @@ final readonly class HostHandling implements RuntimeHandling
 
     public function endWith(HostProcess $process, HostProcessEndEvent $fact): void
     {
-        if ($process->purpose === HostProcessPurpose::AgentTurn || $this->refusals->refuseUnstarted($process, $fact)) {
+        if ($process->purpose === HostProcessPurpose::AgentTurn) {
             return;
         }
 

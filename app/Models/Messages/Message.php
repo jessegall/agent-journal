@@ -213,9 +213,7 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
     public static function unreadCountsIn(array $inboxIds, MessageParticipant $reader): array
     {
         return self::query()->inInboxes($inboxIds)->unreadBy($reader)
-            ->reorder()
-            ->groupBy('inbox_id')
-            ->selectRaw('inbox_id, count(*) as unread_count')
+            ->countUnreadPerInbox()
             ->limit(count($inboxIds))
             ->toBase()
             ->pluck('unread_count', 'inbox_id')
@@ -379,5 +377,12 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
     protected function withNumber(Builder $query, int $number): void
     {
         $query->where('number', $number);
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function countUnreadPerInbox(Builder $query): void
+    {
+        $query->reorder()->groupBy('inbox_id')->selectRaw('inbox_id, count(*) as unread_count');
     }
 }

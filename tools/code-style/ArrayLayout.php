@@ -20,7 +20,7 @@ use PhpParser\ParserFactory;
 use PhpParser\Token;
 
 /**
- * Lays arrays out as rule 111 says: two or more entries go one to a line when returned, assigned or too wide for 120
+ * Lays arrays out two or more entries go one to a line when returned, assigned or too wide for 120
  * characters; an argument that fits stays on one line, and a split one that fits is joined. Commented arrays,
  * arrays containing multiline literals, array() and destructuring are left as they are.
  */

@@ -14,7 +14,7 @@ use SplFileInfo;
 
 /**
  * A domain that adds boot steps of its own says what it is and what its boot runs first: bootstrappers() is moved
- * to the place right below description() (rule 35), with its docblock and attributes.
+ * to the place right below description(), with its docblock and attributes.
  */
 final class DomainBootstrapperOrderFixer implements FixerInterface
 {

@@ -12,7 +12,7 @@ use Tests\Fixtures\StatePublicMethods\DataLeakingState;
 
 /**
  * A state hands out none of its data: its public methods are only its on* hooks, listeners and lifecycle and the
- * methods AgentState or a contract it implements declares; any other public or static method is refused (user 29111).
+ * methods AgentState or a contract it implements declares; any other public or static method is refused.
  */
 final class StatePublicMethodsTest extends TestCase
 {

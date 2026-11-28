@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\DataConfig;
 
 /**
- * Reads the body of a host's call into its Data strictly, as host protocol 1 says (rule 117): a field the Data does
+ * Reads the body of a host's call into its Data strictly, as host protocol 1 says: a field the Data does
  * not have, or one it needs that is missing, refuses the call by the field's name, at every depth, and a value its
  * validation does not take refuses it with every field's error.
  */

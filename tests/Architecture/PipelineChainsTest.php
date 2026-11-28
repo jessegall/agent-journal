@@ -10,7 +10,7 @@ use Tests\Fixtures\Pipelines\CountTextPipeline;
 
 /**
  * Every pipeline's steps chain from its input to its output, read from their declarations without running them
- * (user 29256); the validator is the one php artisan journal:pipelines runs.
+ *; the validator is the one php artisan journal:pipelines runs.
  */
 final class PipelineChainsTest extends TestCase
 {

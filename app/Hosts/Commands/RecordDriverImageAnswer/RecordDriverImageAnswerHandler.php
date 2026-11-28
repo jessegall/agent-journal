@@ -50,10 +50,9 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         $images = HostDriverImage::findWaitingOn($instruction->id);
 
         // Every waiting image's recipe in one read, as a host holds many images at once.
-        $folders = DriverImageRecipeRecord::query()
-            ->whereIn('id', array_map(fn (HostDriverImage $image) => $image->driver_image_recipe_id, $images))
-            ->pluck('folder', 'id')
-            ->all();
+        $folders = DriverImageRecipeRecord::resolveFoldersOf(
+            array_map(fn (HostDriverImage $image) => $image->driver_image_recipe_id, $images),
+        );
 
         foreach ($images as $image) {
             $folder = (string) $folders[$image->driver_image_recipe_id];
@@ -155,7 +154,14 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         }
 
         $image->checked();
-        $image->retireReplaced($folder);
+        HostDriverImage::query()->replacedBy($image, $folder)->lockForUpdate()->chunkById(
+            25,
+            static function (iterable $replaced): void {
+                foreach ($replaced as $dropped) {
+                    $dropped->retire();
+                }
+            },
+        );
     }
 
     /**

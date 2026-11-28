@@ -49,7 +49,7 @@ final class RunningCommandSeedTest extends TestCase
         AgentRunningTool::startFor($plannerId, ToolLine::shell('npm test'));
 
         $this->assertSame(
-            AgentRunningTool::shownOf($plannerId)->get()->changedAtText(),
+            AgentRunningTool::findShownOf($plannerId)->get()->changedAtText(),
             $this->runningCommand($chat)?->changedAt,
         );
     }

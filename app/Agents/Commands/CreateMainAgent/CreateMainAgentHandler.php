@@ -30,7 +30,7 @@ final readonly class CreateMainAgentHandler implements CommandHandler
             $command->projectId,
         ));
 
-        AgentStartChoice::keep($actor->id, $command->driver, $command->model, $command->account);
+        AgentStartChoice::create($actor->id, $command->driver, $command->model, $command->account);
 
         return $actor;
     }

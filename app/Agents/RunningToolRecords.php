@@ -16,16 +16,16 @@ final readonly class RunningToolRecords implements RunningTools
 {
     public function started(StackTarget $target, ToolLine $line): void
     {
-        AgentRunningTool::startFor($target->agentId, $line);
+        AgentRunningTool::findOrPrepareLockedFor($target->agentId)->start($line);
     }
 
     public function finished(StackTarget $target): void
     {
-        AgentRunningTool::finishFor($target->agentId);
+        AgentRunningTool::findOrPrepareLockedFor($target->agentId)->finish();
     }
 
     public function cleared(StackTarget $target): void
     {
-        AgentRunningTool::clearFor($target->agentId);
+        AgentRunningTool::findOrPrepareLockedFor($target->agentId)->clear();
     }
 }

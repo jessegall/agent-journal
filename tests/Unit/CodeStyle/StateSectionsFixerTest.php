@@ -11,7 +11,7 @@ use SplFileInfo;
 use Tools\CodeStyle\StateSectionsFixer;
 
 /**
- * An agent state's methods sit in the sections of rule 94, and the formatter places them itself.
+ * An agent state's methods sit in the sections, and the formatter places them itself.
  */
 final class StateSectionsFixerTest extends TestCase
 {

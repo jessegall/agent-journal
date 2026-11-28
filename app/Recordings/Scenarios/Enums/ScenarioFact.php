@@ -64,12 +64,12 @@ enum ScenarioFact: string
             ),
             self::Stopped => AgentSession::query()->find($run->lastAgent()->current_session_id)?->hasEnded() !== false,
             self::ChallengeShown => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isWaiting() === true,
-            self::SignedIn => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isSignedIn() === true,
+            self::SignedIn => SignInAttempt::findForJournal((string) $run->signInAttempt())?->hasSucceeded() === true,
             self::SignInFailed => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isFailed() === true,
             self::Installed => $run->installerExit() === 0 && Host::query()->exists(),
             self::Connected => $run->isConnected(),
             self::RelayHeartbeat => $run->hasRelayHeartbeat(),
-            self::InstructionsAnswered => HostInstruction::areAllAnsweredSince($run->startedAt),
+            self::InstructionsAnswered => HostInstruction::hasAnsweredAllSince($run->startedAt),
         };
     }
 

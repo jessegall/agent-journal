@@ -105,7 +105,7 @@ const optionClass =
         <Icon name="users" :size="14" />
         <div>
           <b class="block text-title font-medium text-text">No account is signed in</b>
-          <small class="block text-small text-text-3">A session runs on a signed-in Claude Code or Codex account.</small>
+          <small class="block text-small text-text-3">A session needs a signed-in driver account.</small>
         </div>
       </div>
       <div class="mt-3.5 flex items-center gap-2.5 border-t border-line pt-3">

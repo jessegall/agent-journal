@@ -162,12 +162,11 @@ final readonly class AgentListing
     private function ranked(array $pairIds): Builder
     {
         $members = InboxMember::query()->ofInboxes($pairIds)->ofActorType(Agent::storedType())->active()
-            ->select(['actor_id', 'inbox_id'])
+            ->agentInboxIds()
             ->limit(InboxMember::ATTACHED_LIMIT);
 
         $activity = ChatMessage::query()->ofInboxes($pairIds)
-            ->groupBy('inbox_id')
-            ->selectRaw('inbox_id, max(created_at) as last_active_at')
+            ->latestActivityPerInbox()
             ->limit(count($pairIds));
 
         return $this->inspection->agentsSeenBy($this->actors->actor())
@@ -226,7 +225,7 @@ final readonly class AgentListing
 
         $questionIds = array_values(array_map(strval(...), ChatMessage::query()->ofInboxes($inboxIds)
             ->ofType(ChatMessageType::Question)
-            ->latest('created_at')
+            ->newestCreatedFirst()
             ->limit(self::QUESTIONS_READ)
             ->pluck('source_id')
             ->all()));

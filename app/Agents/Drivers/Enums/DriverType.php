@@ -13,7 +13,7 @@ enum DriverType: string
     case Terminal = 'terminal';
 
     /**
-     * The mode every start the journal makes runs in (user 30893): the terminal driver is for a person running the
+     * The mode every start the journal makes runs in: the terminal driver is for a person running the
      * driver on their own machine, never a start of the journal's.
      */
     public static function ofJournalStart(): self

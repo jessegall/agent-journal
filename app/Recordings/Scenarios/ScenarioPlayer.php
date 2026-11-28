@@ -442,7 +442,7 @@ final readonly class ScenarioPlayer
                 throw ScenarioStuck::ended($run->scenario->name, $run->stepIndex(), $fact, $endReason);
             }
 
-            // A session that shows no life for a while waits for nothing more: the play ends at once (user 28825).
+            // A session that shows no life for a while waits for nothing more: the play ends at once.
             $life = $run->lastLifeAt();
             $quietSeconds = $life === null ? 0 : max($life, $began)->diffInSeconds(CarbonImmutable::now());
             $isQuiet = $quietSeconds > self::QUIET_SECOND_LIMIT;

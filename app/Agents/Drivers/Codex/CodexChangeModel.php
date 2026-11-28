@@ -11,7 +11,7 @@ use App\Terminals\KeyScripts\KeyScript;
 use App\Terminals\KeyScripts\KeyStep;
 
 /**
- * Changes Codex's model by naming it on the /model command line, so no picker is walked (user 28775, 28786), for
+ * Changes Codex's model by naming it on the /model command line, so no picker is walked, for
  * Codex's pinned build.
  */
 final readonly class CodexChangeModel implements DriverKeyScript

@@ -881,6 +881,13 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $query->select('agent_session_id');
     }
 
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function runtimeIds(Builder $query): void
+    {
+        $query->select('id');
+    }
+
     /**
      * The runtimes with a request accepted and waiting.
      *

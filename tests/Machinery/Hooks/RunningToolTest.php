@@ -163,7 +163,7 @@ final class RunningToolTest extends TestCase
 
     private function assertLine(string|null $line, bool $isRunning): void
     {
-        $tool = AgentRunningTool::shownOf($this->target->agentId)->get();
+        $tool = AgentRunningTool::findShownOf($this->target->agentId)->get();
 
         $this->assertSame([$line, $isRunning], [$tool->line, $tool->is_running]);
     }

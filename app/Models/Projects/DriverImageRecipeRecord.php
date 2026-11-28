@@ -99,6 +99,17 @@ final class DriverImageRecipeRecord extends JournalModel implements ReadableMode
         return self::query()->withDigests([$digest])->firstOrFail();
     }
 
+    /**
+     * The folders of the named recipes, keyed by recipe id.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, string>
+     */
+    public static function resolveFoldersOf(array $ids): array
+    {
+        return self::query()->ofRecipeIds($ids)->pluck('folder', 'id')->all();
+    }
+
     // ----------[ Scopes ]----------
 
     /**
@@ -111,5 +122,39 @@ final class DriverImageRecipeRecord extends JournalModel implements ReadableMode
     protected function withDigests(Builder $query, array $digests): void
     {
         $query->whereIn('recipe_digest', $digests);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function ofRecipeIds(Builder $query, array $ids): void
+    {
+        $query->whereIn('id', $ids);
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function inFolder(Builder $query, string $folder): void
+    {
+        $query->where('folder', $folder);
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function notFrozen(Builder $query): void
+    {
+        $query->whereNotIn(
+            'recipe_digest',
+            AgentSession::query()->liveOnFrozenRecipe()->frozenRecipeDigests(),
+        );
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function recipeIds(Builder $query): void
+    {
+        $query->select('id');
     }
 }

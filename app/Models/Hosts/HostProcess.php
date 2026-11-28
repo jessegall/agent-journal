@@ -490,7 +490,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
      */
     public static function findNewestOfSession(string $sessionId): self|null
     {
-        return self::query()->withoutGlobalScopes()->ofSession($sessionId)->latest('created_at')->first();
+        return self::query()->withoutGlobalScopes()->ofSession($sessionId)->mostRecentlyCreated()->first();
     }
 
     /**
@@ -673,5 +673,12 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     protected function ofStarts(Builder $query, array|Builder $ids): void
     {
         $query->whereIn('session_process_id', $ids);
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function mostRecentlyCreated(Builder $query): void
+    {
+        $query->latest('created_at');
     }
 }

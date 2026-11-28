@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Stacks\Concerns;
 
+use App\Hooks\ToolBudgetDecider;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
@@ -18,25 +19,17 @@ trait ToolBudgetDecisions
 {
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        if ($input->isReadOnly()) {
-            return Decision::delegate();
-        }
-
-        return $this->decide();
+        return ToolBudgetDecider::answer(! $input->isReadOnly() && $this->mustActNow(), $this->actNowText(...));
     }
 
     public function onToolRequested(ToolRequested $input): Decision
     {
-        if ($input->isReadOnly()) {
-            return Decision::delegate();
-        }
-
-        return $this->decide();
+        return ToolBudgetDecider::answer(! $input->isReadOnly() && $this->mustActNow(), $this->actNowText(...));
     }
 
     public function onFileEdit(FileEditRequested $input): Decision
     {
-        return $this->decide();
+        return ToolBudgetDecider::answer($this->mustActNow(), $this->actNowText(...));
     }
 
     /**
@@ -48,13 +41,4 @@ trait ToolBudgetDecisions
      * The words that tell the agent to act now.
      */
     abstract private function actNowText(): AgentText;
-
-    private function decide(): Decision
-    {
-        if ($this->mustActNow()) {
-            return Decision::deny($this->actNowText());
-        }
-
-        return Decision::delegate();
-    }
 }

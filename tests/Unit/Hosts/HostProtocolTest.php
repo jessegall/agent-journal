@@ -20,7 +20,7 @@ use Tests\TestCase;
 /**
  * The journal's side of host protocol 1 is generated from protocol/host.json and follows it: the generated files are
  * current and name their source, a hand edit of one fails the check, and the hook command the journal writes carries exactly journal-hook's
- * arguments (rule 117, doc 143).
+ * arguments.
  */
 #[TimeLimit(seconds: 20, reason: 'The check formats every generated PHP file with Pint.')]
 final class HostProtocolTest extends TestCase

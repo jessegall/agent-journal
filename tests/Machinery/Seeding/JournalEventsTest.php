@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
+use App\Bus\Contracts\CommittedListenerFailures;
+use App\Bus\Exceptions\CommittedFactListenerFailed;
 use App\Events\Links\LinkEvent;
 use App\Events\Links\LinkRemoved;
 use App\Links\Commands\LinkRecords\LinkRecordsCommand;
@@ -86,6 +88,19 @@ final class JournalEventsTest extends TestCase
         $this->journal->assertEventCount(LinkRemoved::class, 0);
         $this->journal->run(new UnlinkRecordsCommand($second, $first));
         $this->journal->assertEventCount(LinkRemoved::class, 1);
+    }
+
+    public function test_an_expected_committed_listener_failure_is_accepted(): void
+    {
+        $recorded = $this->journal->service(CommittedListenerFailures::class);
+
+        $recorded->take(CommittedFactListenerFailed::of(
+            LinkRemoved::class,
+            self::class,
+            new RuntimeException(),
+        ));
+
+        $this->assertSame($this->journal, $this->journal->expectListenerFailure(self::class));
     }
 
     /**

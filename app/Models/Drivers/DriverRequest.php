@@ -11,7 +11,6 @@ use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\HostWakeRefusal;
 use App\Agents\Drivers\Enums\RequestOutcome;
 use App\Agents\Drivers\Enums\RequestProgress;
-use App\Agents\Drivers\Enums\RetryOutcome;
 use App\Agents\Drivers\Values\ScriptGoal;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -239,7 +238,6 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->actual_binding = $actualBinding;
         $this->outcome = $outcome;
         $this->saveAndAssert();
-        RetryAttempt::ofVersion($this)?->settle(RetryOutcome::Succeeded);
         $this->raise(new DriverRequestApplied($this->id));
     }
 
@@ -253,6 +251,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->retry();
     }
 
+    /** Makes a fresh attempt available at the retained offer time. */
     public function retryAfter(CarbonImmutable $offerAfter): void
     {
         $this->offer_after = $offerAfter;
@@ -757,7 +756,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
             return null;
         }
 
-        return self::query()->ofRuntime($runtime)->orderByDesc('sequence')->first();
+        return self::query()->ofRuntime($runtime)->highestSequenceFirst()->first();
     }
 
     /**
@@ -1063,5 +1062,12 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     protected function before(Builder $query, int $sequence): void
     {
         $query->where('sequence', '<', $sequence);
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function highestSequenceFirst(Builder $query): void
+    {
+        $query->orderByDesc('sequence');
     }
 }

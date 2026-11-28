@@ -36,7 +36,7 @@ final readonly class GreetInNewChat implements Listener
 
         $chats = Inbox::query()
             ->withProviderKey(PairChats::PAIR_PROVIDER)
-            ->whereIn('id', InboxMember::query()->active()->ofActor($agent)->inboxIds())
+            ->ofActiveMemberships($agent)
             ->limit(InboxMember::ATTACHED_LIMIT)
             ->get();
 

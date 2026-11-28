@@ -674,4 +674,11 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
     {
         $query->whereHas('host', fn (Builder $host) => $host->where('arrangement', ArrangementType::Local));
     }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function withHost(Builder $query): void
+    {
+        $query->with('host');
+    }
 }

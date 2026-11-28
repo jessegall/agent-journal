@@ -38,6 +38,7 @@ abstract class ChatFields
 
     private AgentPageCursorData|null $nextAgents = null;
 
+    /** Starts with optional selection and conversation data absent. */
     public function __construct()
     {
         $this->mainAgentId = new Optional();
@@ -56,6 +57,7 @@ abstract class ChatFields
         return $this;
     }
 
+    /** Whether the page still needs its main agent. */
     public function isSetupRequired(bool $isSetupRequired): static
     {
         $this->isSetupRequired = $isSetupRequired;
@@ -63,6 +65,7 @@ abstract class ChatFields
         return $this;
     }
 
+    /** The project's main agent, when one has been created. */
     public function mainAgentId(string|Optional $mainAgentId): static
     {
         $this->mainAgentId = $mainAgentId;
@@ -70,6 +73,7 @@ abstract class ChatFields
         return $this;
     }
 
+    /** The agent selected in the current visit. */
     public function selectedAgentId(string|Optional $selectedAgentId): static
     {
         $this->selectedAgentId = $selectedAgentId;
@@ -85,6 +89,7 @@ abstract class ChatFields
         return $this;
     }
 
+    /** The conversation selected for the current visit. */
     public function conversation(ConversationData|Optional $conversation): static
     {
         $this->conversation = $conversation;
@@ -92,6 +97,7 @@ abstract class ChatFields
         return $this;
     }
 
+    /** The instruction shown when the selected conversation needs setup. */
     public function setupNotice(string|Optional $setupNotice): static
     {
         $this->setupNotice = $setupNotice;
@@ -107,6 +113,7 @@ abstract class ChatFields
         return $this;
     }
 
+    /** Whether the viewer can open another conversation. */
     public function canCreateChats(bool $canCreateChats): static
     {
         $this->canCreateChats = $canCreateChats;
@@ -114,6 +121,7 @@ abstract class ChatFields
         return $this;
     }
 
+    /** The inbox selected in the current visit. */
     public function selectedInboxId(string|Optional $selectedInboxId): static
     {
         $this->selectedInboxId = $selectedInboxId;
@@ -121,6 +129,7 @@ abstract class ChatFields
         return $this;
     }
 
+    /** The setup action shown while no account can start a session. */
     public function noAccounts(LayoutPartData|Optional $noAccounts): static
     {
         $this->noAccounts = $noAccounts;
@@ -128,6 +137,7 @@ abstract class ChatFields
         return $this;
     }
 
+    /** The cursor available when more agent choices remain. */
     public function nextAgents(AgentPageCursorData|null $nextAgents): static
     {
         $this->nextAgents = $nextAgents;

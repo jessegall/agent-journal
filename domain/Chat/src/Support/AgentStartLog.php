@@ -74,7 +74,7 @@ final readonly class AgentStartLog
             ->get()
             ->all());
 
-        $attempts = RetryAttempt::query()->ofSession($session->id)->latest()->limit(self::LINE_LIMIT)->get();
+        $attempts = RetryAttempt::query()->ofSession($session->id)->limit(self::LINE_LIMIT)->get();
 
         $gaveUp = array_values($attempts->filter(fn (RetryAttempt $attempt) => $attempt->outcome === RetryOutcome::GaveUp)
             ->map(fn (RetryAttempt $attempt) => $attempt->driver_request_id)->all());
@@ -205,7 +205,7 @@ final readonly class AgentStartLog
     private function requestLinesOf(string $sessionId, array $gaveUp): array
     {
         $requests = DriverRequest::query()
-            ->ofAgentRuntimes(AgentRuntime::query()->ofSessions([$sessionId])->select('id'))
+            ->ofAgentRuntimes(AgentRuntime::query()->ofSessions([$sessionId])->runtimeIds())
             ->withAnyOperation([DriverOperation::Wake, DriverOperation::Deliver])
             ->limit(self::LINE_LIMIT)
             ->get();

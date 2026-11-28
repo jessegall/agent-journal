@@ -34,7 +34,7 @@ final readonly class AccountUses implements AccountUsesContract
     {
         $this->authorizeRead();
 
-        return new AccountUseCounts(SessionProcess::countUnresolvedByAccount($accounts));
+        return new AccountUseCounts(SessionProcess::resolveUnresolvedCountsByAccount($accounts));
     }
 
     public function histories(array $accounts, int $limit): AccountUseHistories

@@ -22,6 +22,10 @@ final readonly class RemoveDriverImageWhenReplaced implements Listener
 
     public function handle(DriverImageReplaced $replaced): void
     {
+        if ($replaced->image === null) {
+            return;
+        }
+
         $this->commands->runAsJournal(
             CommandEntry::HostControl,
             self::TRUSTED_ENTRY,

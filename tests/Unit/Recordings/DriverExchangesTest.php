@@ -20,7 +20,7 @@ use Tests\TestCase;
 /**
  * Each driver program's exchange is cut whole out of the host's: its opening, what was typed (a private value only as
  * typed), what it printed, and its exit; a probe is an exchange of its own. The host exchange is built here by hand
- * until phase 7 records one.
+ * to isolate the recorded driver stream.
  */
 final class DriverExchangesTest extends TestCase
 {

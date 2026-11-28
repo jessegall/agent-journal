@@ -10,7 +10,7 @@ use Tests\Fixtures\FluentChains\SampleJournal;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A fluent chain keeps one subject (rule 115): no public method of a fluent class in tests/Support or app hands back
+ * A fluent chain keeps one subject: no public method of a fluent class in tests/Support or app hands back
  * another fluent class, unless it is a getter that ends the chain, and no verb names an inner subject.
  */
 #[TimeLimit(seconds: 60, reason: 'It reflects every class of app and tests/Support.')]

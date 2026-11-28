@@ -216,7 +216,7 @@ final class ActiveAccount extends JournalModel implements EventSource, ReadableM
      * @param  list<string>  $families
      * @return array<string, self>
      */
-    public static function forListedFamilies(array $families): array
+    public static function findForListedFamilies(array $families): array
     {
         return self::query()
             ->inFamilies($families)

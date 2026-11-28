@@ -1,0 +1,11 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Events\Connections;
+
+/** The host was sent the upgrade instruction. */
+final readonly class HostUpgradeInstructed implements ConnectionEvent
+{
+    public function __construct(public string $hostId) {}
+}

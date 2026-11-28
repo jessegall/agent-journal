@@ -520,7 +520,7 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     /**
      * Whether the sign-in finished signed in: as a new account, or as one the journal already held.
      */
-    public function isSignedIn(): bool
+    public function hasSucceeded(): bool
     {
         return in_array($this->status, [SignInStatus::Complete, SignInStatus::AlreadyAdded], true);
     }

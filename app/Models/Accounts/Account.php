@@ -759,7 +759,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     /**
      * Whether any account of the journal is signed in, so an agent can start on it.
      */
-    public static function existsSignedIn(): bool
+    public static function hasSignedInAccount(): bool
     {
         return self::query()->signedIn()->exists();
     }
@@ -780,7 +780,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     }
 
     /** @return LengthAwarePaginator<int, self> */
-    public static function pageListed(int $page, int $size): LengthAwarePaginator
+    public static function findListedPage(int $page, int $size): LengthAwarePaginator
     {
         $query = self::query()->kept()->inListOrder();
         $total = $query->count();

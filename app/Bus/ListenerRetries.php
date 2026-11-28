@@ -85,7 +85,7 @@ final readonly class ListenerRetries
         $runtimeId = $this->runtimeOf($run->event);
         $now = $this->clock->now();
 
-        $attempt = $runtimeId === null ? null : $this->transaction->run(fn () => RetryAttempt::record(
+        $attempt = $runtimeId === null ? null : $this->transaction->run(fn () => RetryAttempt::create(
             $runtimeId,
             RetriedAction::Listener,
             $retry,

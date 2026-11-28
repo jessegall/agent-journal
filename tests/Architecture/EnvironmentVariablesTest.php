@@ -9,7 +9,7 @@ use Tests\TestCase;
 /**
  * Every variable the setup writes (.env.example and scripts/local-host.sh) is read by something: the journal's config,
  * compose.yaml, the frontend, the Go programs or a script. A variable written and read by nothing, such as the address
- * a session container reaches the journal at once the host stopped reading it, fails here (user 28090).
+ * a session container reaches the journal at once the host stopped reading it, fails here.
  */
 final class EnvironmentVariablesTest extends TestCase
 {

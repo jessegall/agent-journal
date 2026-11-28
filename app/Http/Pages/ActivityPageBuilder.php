@@ -45,8 +45,8 @@ final readonly class ActivityPageBuilder implements PageBuilder
         $labels = $this->labels->labelsFor(array_map(fn (ActivityEntry $entry) => $entry->actor(), $page));
 
         return ActivityWindowData::build()
-            ->events(array_map(fn (ActivityEntry $entry) => $this->event($entry, $labels), $page))
             ->hasOlder(count($read) > ActivityEntry::READ_ENTRY_LIMIT)
+            ->events(array_map(fn (ActivityEntry $entry) => $this->event($entry, $labels), $page))
             ->finish();
     }
 

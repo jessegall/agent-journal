@@ -30,7 +30,6 @@ final readonly class TerminalHandling implements RuntimeHandling
     public function __construct(
         private JournalCommands $commands,
         private CommandBus $bus,
-        private StartRefusals $refusals,
     ) {}
 
     public function openStart(AgentRuntime $runtime): void
@@ -47,7 +46,7 @@ final readonly class TerminalHandling implements RuntimeHandling
 
     public function endWith(HostProcess $process, HostProcessEndEvent $fact): void
     {
-        if ($this->refusals->refuseUnstarted($process, $fact) || $fact instanceof HostProcessLost) {
+        if ($fact instanceof HostProcessLost) {
             return;
         }
 

@@ -22,6 +22,7 @@ use App\Sessions\RegisterPendingStart;
 use App\Sessions\StartSessions;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
+use App\Support\StackTransaction;
 use App\Values\SelectedAccount;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
@@ -95,7 +96,7 @@ final class SettleAccountUsesTest extends TestCase
             $this->fail('An account with a claimed start was settled.');
         } catch (AccountInUse) {
             // An ending session ends its claimed start with it, so the account is free to settle.
-            $claimed->endAt(CarbonImmutable::now());
+            $this->app->make(StackTransaction::class)->run(fn () => $claimed->endAt(CarbonImmutable::now()));
             $this->assertSame(0, $this->uses()->counts([$account])->runningFor($account));
         }
 

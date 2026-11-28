@@ -31,6 +31,7 @@ abstract class SurfaceFactory
         );
     }
 
+    /** Associates one concrete result with its builder for subsequent visits. */
     public function register(string $type, string $builder): void
     {
         if (! $this->isConcreteData($type) || ! $this->isConcreteBuilder($builder)) {
@@ -46,6 +47,7 @@ abstract class SurfaceFactory
         return $this->builders->get($type);
     }
 
+    /** Whether the declaration already has a builder for this exact type. */
     public function hasBuilderFor(string $type): bool
     {
         return $this->builders->has($type);

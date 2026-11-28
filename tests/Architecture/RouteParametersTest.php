@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Every call that builds a named route's address, route() or a wrapper handing it a name and its parameters, supplies
- * each parameter the route's path declares, so a renamed parameter fails here and not on the wire (user 29430).
+ * each parameter the route's path declares, so a renamed parameter fails here and not on the wire.
  */
 #[TimeLimit(seconds: 15, reason: 'It reads every PHP file of app and the domains.')]
 final class RouteParametersTest extends TestCase
