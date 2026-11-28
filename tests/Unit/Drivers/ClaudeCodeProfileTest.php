@@ -17,10 +17,12 @@ use App\Agents\Values\JournalServer;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
+use App\Recordings\Recordings;
 use App\Sessions\Enums\TransportProfileType;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\HostProcessPlan;
+use Tests\Support\Recordings\RecordedProgram;
 use Tests\TestCase;
 
 /**
@@ -35,9 +37,6 @@ final class ClaudeCodeProfileTest extends TestCase
     private const string EFFORT = 'high';
 
     private const string RECORDINGS = __DIR__.'/../../../resources/recordings/claude-code/2.1.323';
-
-    /** How the driver prints its version, as its version probe shows it. */
-    private const string PRINTED_VERSION = '%s (Claude Code)';
 
     public function test_a_headless_turn_is_planned_as_each_recorded_turn_ran(): void
     {
@@ -91,11 +90,13 @@ final class ClaudeCodeProfileTest extends TestCase
     public function test_only_the_pinned_build_is_accepted(): void
     {
         $profile = $this->profile();
-        $profile->assertPinnedBuild(sprintf(self::PRINTED_VERSION, $profile->build())."\n", $profile->build());
+        $recordings = $this->journal->service(Recordings::class);
+        $version = RecordedProgram::versionOf($recordings, DefaultDrivers::CLAUDE_CODE, 'claude');
+        $profile->assertPinnedBuild($version, $profile->build());
 
         $this->journal->assertRefused(
             BuildNotPinned::class,
-            fn () => $profile->assertPinnedBuild(sprintf(self::PRINTED_VERSION, '2.1.400'), $profile->build()),
+            fn () => $profile->assertPinnedBuild(str_replace($profile->build(), '2.1.400', $version), $profile->build()),
         );
         $this->journal->assertResult(
             [[

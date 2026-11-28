@@ -20,9 +20,9 @@
             "isReadable": true,
             "isSignedIn": true,
             "method": "oauth",
-            "email": "owner@example.test",
-            "expiresAt": null,
-            "organization": null
+            "email": "user@example.com",
+            "expiresAt": "2026-12-25T21:17:57.379Z",
+            "organization": "00000000-0000-4000-8000-000000000001"
         }
     },
     "claude model check": {
