@@ -37,7 +37,10 @@ final readonly class DocumentsWindowBuilder implements WindowBuilder
 
         $documents = $type->isForDocuments() ? $this->documents->preview($filters, $limit)->all() : [];
         $reports = $type->isForReports() ? $this->reports->preview($filters, $limit)->all() : [];
-        $recent = [...$documents, ...$reports];
+        $recent = [
+            ...$documents,
+            ...$reports,
+        ];
         usort($recent, fn (Document|Report $left, Document|Report $right) => strcmp($right->id, $left->id));
         $items = array_map($this->row(...), array_slice($recent, 0, $limit));
 

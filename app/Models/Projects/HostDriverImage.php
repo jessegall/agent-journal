@@ -416,7 +416,10 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
      */
     public static function isAdmittingOn(string $hostId): bool
     {
-        return self::query()->onHost($hostId)->inStatuses([DriverImageStatus::Allowing, DriverImageStatus::Checking])->exists();
+        return self::query()->onHost($hostId)->inStatuses([
+            DriverImageStatus::Allowing,
+            DriverImageStatus::Checking,
+        ])->exists();
     }
 
     /**

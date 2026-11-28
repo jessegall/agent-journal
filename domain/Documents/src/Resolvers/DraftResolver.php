@@ -49,7 +49,10 @@ final readonly class DraftResolver implements DraftResolverContract
         }
 
         if (! $this->editors->isEditing($draft)) {
-            $held = ['status' => EditingStatus::Held, 'holder' => $draft->holderLabel];
+            $held = [
+                'status' => EditingStatus::Held,
+                'holder' => $draft->holderLabel,
+            ];
 
             $administrativeAccesses = [AccessType::Edit];
 

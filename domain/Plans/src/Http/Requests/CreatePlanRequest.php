@@ -23,9 +23,20 @@ final class CreatePlanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:'.Plan::TITLE_CHARACTER_LIMIT],
-            'brief' => ['required', 'string', 'max:'.Plan::BRIEF_CHARACTER_LIMIT],
-            'type' => ['required', Rule::enum(PlanType::class)],
+            'title' => [
+                'required',
+                'string',
+                'max:'.Plan::TITLE_CHARACTER_LIMIT,
+            ],
+            'brief' => [
+                'required',
+                'string',
+                'max:'.Plan::BRIEF_CHARACTER_LIMIT,
+            ],
+            'type' => [
+                'required',
+                Rule::enum(PlanType::class),
+            ],
             ...$this->projectRules(),
         ];
     }

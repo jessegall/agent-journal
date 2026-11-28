@@ -124,10 +124,7 @@ final class WorkOnTaskStateTest extends TestCase
                 $this->claimed($this->agent(), ['claim-1', 'seat-1', 'work-1']),
                 SessionHook::stop('turn-1'),
             ], fn (StateAssert $state) => $state->answers(AnswerType::Deny))
-            ->steps([
-                new AssignmentsEnded(['seat-1']),
-                SessionHook::stop('turn-2'),
-            ], fn (StateAssert $state) => $state
+            ->steps([new AssignmentsEnded(['seat-1']), SessionHook::stop('turn-2')], fn (StateAssert $state) => $state
                 ->answers(AnswerType::Delegate)
                 ->isFinished()));
     }

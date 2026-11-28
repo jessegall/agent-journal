@@ -36,7 +36,10 @@ final readonly class CardEncoder implements CardEncoderContract
     private function node(DockPart $part): array
     {
         $descriptor = $this->parts->descriptorOf($part);
-        $node = ['type' => $descriptor->type->value, 'key' => $part->key()];
+        $node = [
+            'type' => $descriptor->type->value,
+            'key' => $part->key(),
+        ];
 
         foreach ($descriptor->fields as $field) {
             $node[$field->name()] = $field->encode($part, $this->destinations);

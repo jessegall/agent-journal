@@ -145,7 +145,10 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
                 }
             }
 
-            $navigation = [...$navigation, ...$roots];
+            $navigation = [
+                ...$navigation,
+                ...$roots,
+            ];
         }
 
         $actions = self::actionsOf($pages, $sections);

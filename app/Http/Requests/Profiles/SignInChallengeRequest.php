@@ -20,8 +20,17 @@ final class SignInChallengeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'address' => ['required', 'string', 'max:2000', 'starts_with:https://'],
-            'code' => ['nullable', 'string', 'max:64'],
+            'address' => [
+                'required',
+                'string',
+                'max:2000',
+                'starts_with:https://',
+            ],
+            'code' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
         ];
     }
 

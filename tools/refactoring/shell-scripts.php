@@ -194,7 +194,10 @@ final class ShellScript
             foreach ($body as $line) {
                 if (preg_match('/^\s*local\s+(.*)$/', $line, $declared) === 1) {
                     preg_match_all('/(?:^|\s)('.self::NAME.')(?==|\s|$)/', $declared[1], $found);
-                    $local = [...$local, ...$found[1]];
+                    $local = [
+                        ...$local,
+                        ...$found[1],
+                    ];
 
                     continue;
                 }
@@ -256,10 +259,16 @@ final class ShellScript
         $names = [];
         preg_match_all('/'.self::STATEMENT_START.'(?:local\s+|export\s+|readonly\s+)?('.self::NAME.')=/', $line, $assigned);
         preg_match_all('/\bfor\s+('.self::NAME.')\b/', $line, $looped);
-        $names = [...$assigned[1], ...$looped[1]];
+        $names = [
+            ...$assigned[1],
+            ...$looped[1],
+        ];
 
         if (preg_match('/\bread\s+(?:-[a-z]+\s+)*((?:'.self::NAME.'\s*)+);?\s*(?:do)?$/', $line, $read) === 1) {
-            $names = [...$names, ...preg_split('/\s+/', trim($read[1])) ?: []];
+            $names = [
+                ...$names,
+                ...preg_split('/\s+/', trim($read[1])) ?: [],
+            ];
         }
 
         return array_values(array_unique(array_diff($names, ['do', 'IFS'])));
@@ -305,7 +314,10 @@ final class ShellScript
                 continue;
             }
 
-            $files = [...$files, ...self::filesUnder("{$path}/{$entry}")];
+            $files = [
+                ...$files,
+                ...self::filesUnder("{$path}/{$entry}"),
+            ];
         }
 
         return $files;
@@ -370,7 +382,10 @@ function shellFaults(array $arguments): int
         }
 
         if (! $isAwaited) {
-            $found = [...$found, ...array_map(fn (string $fault): string => "{$script->path}: {$fault}", $faults)];
+            $found = [
+                ...$found,
+                ...array_map(fn (string $fault): string => "{$script->path}: {$fault}", $faults),
+            ];
         }
     }
 

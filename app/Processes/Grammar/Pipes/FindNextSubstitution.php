@@ -37,7 +37,10 @@ final readonly class FindNextSubstitution implements Pipe
             $inside = $this->insideOf($next);
 
             if ($inside !== null) {
-                $pending = [...$inside, ...$pending];
+                $pending = [
+                    ...$inside,
+                    ...$pending,
+                ];
 
                 continue;
             }
@@ -116,7 +119,10 @@ final readonly class FindNextSubstitution implements Pipe
             }
 
             $word = $next->toParse->inside($token->word->shiftedBy($offset));
-            $inside = [...$inside, ...PendingSegment::allOf($word)];
+            $inside = [
+                ...$inside,
+                ...PendingSegment::allOf($word),
+            ];
         }
 
         return $inside;

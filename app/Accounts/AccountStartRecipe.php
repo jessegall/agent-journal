@@ -43,7 +43,10 @@ final readonly class AccountStartRecipe
      */
     public function variablesAfter(array $variables): array
     {
-        $all = [...$variables, ...array_map(fn (StartSetting $setting) => "{$setting->name}={$setting->settingText}", $this->environment)];
+        $all = [
+            ...$variables,
+            ...array_map(fn (StartSetting $setting) => "{$setting->name}={$setting->settingText}", $this->environment),
+        ];
 
         return array_values(array_filter(
             $all,

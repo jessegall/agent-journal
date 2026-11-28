@@ -669,7 +669,10 @@ final readonly class DomainEntry
             ->map(fn (CommandProvider $domain) => $domain->commands())
             ->getOrElse([]);
 
-        return array_values(array_unique([...ProjectCode::in($this->folder.'/Commands/*', Command::class), ...$provided]));
+        return array_values(array_unique([
+            ...ProjectCode::in($this->folder.'/Commands/*', Command::class),
+            ...$provided,
+        ]));
     }
 
     /**

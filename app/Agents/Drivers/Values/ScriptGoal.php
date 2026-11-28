@@ -37,7 +37,11 @@ final readonly class ScriptGoal
      */
     public function key(): string
     {
-        $goal = [$this->script, $this->version, $this->sortedParameters()];
+        $goal = [
+            $this->script,
+            $this->version,
+            $this->sortedParameters(),
+        ];
 
         return hash('sha256', json_encode($goal, JSON_THROW_ON_ERROR));
     }

@@ -100,7 +100,10 @@ final class AssignPlanWorkTest extends TestCase
         $this->plan = $plans->planCalled('Release');
         $this->open = $tasks->taskCalled('Open');
 
-        [$this->working, $this->empty] = [$plans->phaseCalled('Working'), $plans->phaseCalled('Empty')];
+        [$this->working, $this->empty] = [
+            $plans->phaseCalled('Working'),
+            $plans->phaseCalled('Empty'),
+        ];
     }
 
     public function test_a_plan_cascade_gives_its_unfinished_phases_and_tasks_and_skips_a_finished_phase(): void

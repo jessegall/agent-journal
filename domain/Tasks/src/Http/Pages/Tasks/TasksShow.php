@@ -104,7 +104,10 @@ final readonly class TasksShow extends TasksPage
      */
     private function actionsOf(TaskReaderData $reader): array
     {
-        $fixed = ['revision' => $reader->revision, 'run' => $reader->actions->runNumber];
+        $fixed = [
+            'revision' => $reader->revision,
+            'run' => $reader->actions->runNumber,
+        ];
         $address = fn (string $name) => route("tasks.{$name}", ['task' => $reader->number], false);
 
         $post = fn (string $name) => LayoutFormData::build()

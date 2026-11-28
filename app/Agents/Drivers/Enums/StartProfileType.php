@@ -68,7 +68,10 @@ enum StartProfileType: string
     {
         return match ($this) {
             self::Standard => $command,
-            self::ProtectedAccount => ['--', ...$command],
+            self::ProtectedAccount => [
+                '--',
+                ...$command,
+            ],
         };
     }
 

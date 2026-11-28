@@ -16,7 +16,11 @@ final class RemindersRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['page' => ['nullable', 'integer', 'min:1']];
+        return ['page' => [
+            'nullable',
+            'integer',
+            'min:1',
+        ]];
     }
 
     public function pageNumber(): int

@@ -124,7 +124,11 @@ final readonly class NavigationReader implements NavigationRecordsContract
                 continue;
             }
 
-            $rank = [$score, $candidate->depth(), $candidate->key()];
+            $rank = [
+                $score,
+                $candidate->depth(),
+                $candidate->key(),
+            ];
 
             if ($bestRank === null || $this->outranks($rank, $bestRank)) {
                 [$best, $bestRank] = [
@@ -170,8 +174,14 @@ final readonly class NavigationReader implements NavigationRecordsContract
             return -1;
         }
 
-        $routeArguments = [...$navigation->navigationItem->routeValues, ...$navigation->navigationItem->queryValues];
-        $actual = [...$request->query->all(), ...$request->route()->parameters()];
+        $routeArguments = [
+            ...$navigation->navigationItem->routeValues,
+            ...$navigation->navigationItem->queryValues,
+        ];
+        $actual = [
+            ...$request->query->all(),
+            ...$request->route()->parameters(),
+        ];
 
         foreach ($routeArguments as $name => $optionalField) {
             if ((string) ($actual[$name] ?? '') !== $optionalField) {

@@ -229,7 +229,12 @@ function moveClasses(string $root, array $rows): string|null
         fn (array $row) => "{$row['old_class']} {$row['final_class']} {$row['old_path']} {$row['final_path']}",
         $rows,
     ))."\n");
-    $command = [PHP_BINARY, __DIR__.'/batch-move.php', $list, "--root={$root}"];
+    $command = [
+        PHP_BINARY,
+        __DIR__.'/batch-move.php',
+        $list,
+        "--root={$root}",
+    ];
     exec(implode(' ', array_map('escapeshellarg', $command)).' 2>&1', $output, $exit);
     unlink($list);
     echo implode("\n", $output)."\n";
@@ -252,7 +257,10 @@ function moveClasses(string $root, array $rows): string|null
  */
 function recordEdits(array &$state, array $before, array $after, array $rows): void
 {
-    $moved = [...array_column($rows, 'old_path'), ...array_column($rows, 'final_path')];
+    $moved = [
+        ...array_column($rows, 'old_path'),
+        ...array_column($rows, 'final_path'),
+    ];
 
     foreach (array_keys($after + $before) as $file) {
         if (($before[$file] ?? null) !== ($after[$file] ?? null) && ! in_array($file, $moved, true)) {
@@ -327,7 +335,13 @@ function rehearse(string $root, array $argv): int
     }
 
     $arguments = array_filter(array_slice($argv, 1), fn (string $argument) => $argument !== '--rehearse' && ! str_starts_with($argument, '--root=') && ! str_starts_with($argument, '--state='));
-    $command = [PHP_BINARY, __FILE__, ...$arguments, '--root='.$checkout, '--state='.$checkout.'/rehearsal-state.json'];
+    $command = [
+        PHP_BINARY,
+        __FILE__,
+        ...$arguments,
+        '--root='.$checkout,
+        '--state='.$checkout.'/rehearsal-state.json',
+    ];
     passthru(implode(' ', array_map('escapeshellarg', $command)), $result);
     exec('cd '.escapeshellarg($root).' && git worktree remove --force '.escapeshellarg($checkout));
 

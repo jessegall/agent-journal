@@ -129,7 +129,10 @@ final class ArgumentGrammar extends Data
                     return [new UnresolvedFact(UnresolvedType::UnknownOption, $node, $problem)];
                 }
 
-                $seen = [...$seen, ...$options];
+                $seen = [
+                    ...$seen,
+                    ...$options,
+                ];
                 $last = $options[array_key_last($options)];
                 $index += $last->takesNextWord((string) $text) ? 1 : 0;
 

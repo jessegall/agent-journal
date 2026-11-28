@@ -14,7 +14,13 @@ final class SwitchSettingsGroupRequest extends SettingsGroupRequest
      */
     public function rules(): array
     {
-        return [...parent::rules(), 'enabled' => ['required', 'boolean']];
+        return [
+            ...parent::rules(),
+            'enabled' => [
+                'required',
+                'boolean',
+            ],
+        ];
     }
 
     public function isOn(): bool

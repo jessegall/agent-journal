@@ -19,10 +19,28 @@ final class ReadTextRequest extends RecordTargetRequest
     {
         return [
             'target' => $this->targetRules(),
-            'version' => ['required', 'string', 'max:64'],
-            'section' => ['nullable', 'string', 'max:200', 'prohibits:first_line,last_line'],
-            'first_line' => ['nullable', 'integer', 'min:1'],
-            'last_line' => ['nullable', 'integer', 'min:1', 'gte:first_line'],
+            'version' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'section' => [
+                'nullable',
+                'string',
+                'max:200',
+                'prohibits:first_line,last_line',
+            ],
+            'first_line' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'last_line' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'gte:first_line',
+            ],
             'all' => ['prohibited'],
             'bullets' => ['prohibited'],
             'grep' => ['prohibited'],

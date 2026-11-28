@@ -29,14 +29,46 @@ final class TaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'section' => ['nullable', 'string', 'in:logs,proofs,waits'],
-            'tab' => ['nullable', 'string', 'in:logs,proofs,waits,comments,brief'],
-            'passage' => ['nullable', 'string', 'max:64'],
-            'entry' => ['nullable', 'string', 'max:26'],
-            'logs_before' => ['nullable', 'string', 'regex:/^(n|[0-9]{1,10}),(n|[0-9]{1,10})$/'],
-            'proofs_after' => ['nullable', 'string', 'max:26'],
-            'commentsAfter' => ['nullable', 'string', 'max:26'],
-            'prerequisite_q' => ['nullable', 'string', 'max:200'],
+            'section' => [
+                'nullable',
+                'string',
+                'in:logs,proofs,waits',
+            ],
+            'tab' => [
+                'nullable',
+                'string',
+                'in:logs,proofs,waits,comments,brief',
+            ],
+            'passage' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+            'entry' => [
+                'nullable',
+                'string',
+                'max:26',
+            ],
+            'logs_before' => [
+                'nullable',
+                'string',
+                'regex:/^(n|[0-9]{1,10}),(n|[0-9]{1,10})$/',
+            ],
+            'proofs_after' => [
+                'nullable',
+                'string',
+                'max:26',
+            ],
+            'commentsAfter' => [
+                'nullable',
+                'string',
+                'max:26',
+            ],
+            'prerequisite_q' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
             ...$this->filterRules(),
         ];
     }

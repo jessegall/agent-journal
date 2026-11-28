@@ -15,8 +15,16 @@ final class MarkTargetNotificationReadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'targetKey' => ['required', 'string', 'max:64'],
-            'targetId' => ['required', 'string', 'max:64'],
+            'targetKey' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'targetId' => [
+                'required',
+                'string',
+                'max:64',
+            ],
         ];
     }
 

@@ -21,7 +21,15 @@ final class PlanTaskRequest extends FormRequest
     use ReadsRouteNumber;
 
     private const array RETURN_KEYS = [
-        'tab', 'node', 'phase', 'phases_after', 'tasks_after', 'revision', 'q', 'page', 'state',
+        'tab',
+        'node',
+        'phase',
+        'phases_after',
+        'tasks_after',
+        'revision',
+        'q',
+        'page',
+        'state',
     ];
 
     /**

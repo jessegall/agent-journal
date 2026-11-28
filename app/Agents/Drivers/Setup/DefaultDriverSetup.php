@@ -246,10 +246,7 @@ final readonly class DefaultDriverSetup
             $this->refusals,
             $this->signInRefusals,
             $environment,
-            [
-                ...$this->journalServer,
-                ...$plan,
-            ],
+            [...$this->journalServer, ...$plan],
             $this->containerMounts,
         );
     }

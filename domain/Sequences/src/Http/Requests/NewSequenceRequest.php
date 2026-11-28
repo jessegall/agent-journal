@@ -20,11 +20,19 @@ final class NewSequenceRequest extends FormRequest
      */
     public function rules(): array
     {
-        $text = ['nullable', 'string', 'max:'.SaveSequenceRequest::TEXT_CHARACTER_LIMIT];
+        $text = [
+            'nullable',
+            'string',
+            'max:'.SaveSequenceRequest::TEXT_CHARACTER_LIMIT,
+        ];
 
         return [
             'name' => $text,
-            'steps' => ['nullable', 'string', 'max:'.self::STEPS_CHARACTER_LIMIT],
+            'steps' => [
+                'nullable',
+                'string',
+                'max:'.self::STEPS_CHARACTER_LIMIT,
+            ],
             'doneWhen' => $text,
             'draftedBy' => $text,
         ];

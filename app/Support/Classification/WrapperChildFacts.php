@@ -34,7 +34,10 @@ final readonly class WrapperChildFacts
         $contracts = [];
 
         foreach ($children as $child) {
-            $contracts = [...$contracts, ...$child->contracts];
+            $contracts = [
+                ...$contracts,
+                ...$child->contracts,
+            ];
 
             $facts = [
                 ...$facts,

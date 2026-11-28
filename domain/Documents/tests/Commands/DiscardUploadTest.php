@@ -42,7 +42,12 @@ final class DiscardUploadTest extends TestCase
         $author = $this->journal->signedStart('Test agent');
         $other = $this->journal->signedStart('Test agent 2');
         $author->startRequest($this->app);
-        $ids = [$this->begin('a'), $this->begin('b'), $this->begin('c'), $this->begin('d')];
+        $ids = [
+            $this->begin('a'),
+            $this->begin('b'),
+            $this->begin('c'),
+            $this->begin('d'),
+        ];
         $bus = $this->app->make(CommandBus::class);
 
         $this->assertThrows(fn () => $this->begin('e'), UploadLimitReached::class);

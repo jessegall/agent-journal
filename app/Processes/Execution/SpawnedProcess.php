@@ -42,7 +42,10 @@ final class SpawnedProcess
      */
     public static function start(array $argv, array $descriptors, string $folder, array $environment): self|string
     {
-        $command = ['setsid', ...$argv];
+        $command = [
+            'setsid',
+            ...$argv,
+        ];
         $error = '';
 
         set_error_handler(function (int $level, string $message) use (&$error): bool {
@@ -95,7 +98,10 @@ final class SpawnedProcess
         /**
          * @var array<int, string> $gathered
          */
-        $gathered = [1 => '', 2 => ''];
+        $gathered = [
+            1 => '',
+            2 => '',
+        ];
 
         $emitOutput = function (int $descriptor, int $atLeast) use (&$gathered, $onOutput): void {
             if ($gathered[$descriptor] !== '' && strlen($gathered[$descriptor]) >= $atLeast) {

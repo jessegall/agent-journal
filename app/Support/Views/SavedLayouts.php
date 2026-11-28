@@ -23,7 +23,11 @@ final readonly class SavedLayouts
             ->get()
             ->map(
                 fn (Layout $layout) => LayoutData::from(
-                    ['id' => (string) $layout->id, 'name' => $layout->name, 'shape' => $layout->shape->keepingWindows($panes)],
+                    [
+                        'id' => (string) $layout->id,
+                        'name' => $layout->name,
+                        'shape' => $layout->shape->keepingWindows($panes),
+                    ],
                 ),
             )
             ->all());

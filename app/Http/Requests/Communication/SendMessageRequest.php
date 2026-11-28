@@ -15,9 +15,20 @@ final class SendMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'inboxId' => ['required', 'string', 'size:26'],
-            'body' => ['required', 'string'],
-            'targetMessageNumber' => ['nullable', 'integer', 'min:1'],
+            'inboxId' => [
+                'required',
+                'string',
+                'size:26',
+            ],
+            'body' => [
+                'required',
+                'string',
+            ],
+            'targetMessageNumber' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
         ];
     }
 

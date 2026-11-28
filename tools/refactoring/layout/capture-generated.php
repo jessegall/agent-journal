@@ -97,7 +97,12 @@ if ($failures !== []) {
 }
 
 is_dir($output) || mkdir($output, 0777, true);
-$snapshots = ['generated-files' => $files, 'generated-exports' => $exports, 'generated-client' => $client, 'type-owners' => $typeOwners];
+$snapshots = [
+    'generated-files' => $files,
+    'generated-exports' => $exports,
+    'generated-client' => $client,
+    'type-owners' => $typeOwners,
+];
 
 foreach ($snapshots as $name => $snapshot) {
     file_put_contents("{$output}/{$name}.json", json_encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");

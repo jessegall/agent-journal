@@ -19,8 +19,15 @@ final class AccountCheckRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'generation' => ['required', 'integer', 'min:0'],
-            'result' => ['required', Rule::enum(AccountCheckResult::class)],
+            'generation' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+            'result' => [
+                'required',
+                Rule::enum(AccountCheckResult::class),
+            ],
         ];
     }
 

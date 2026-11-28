@@ -98,7 +98,10 @@ exit($status);
 function psr4Prefixes(string $root): array
 {
     $composer = json_decode((string) file_get_contents("{$root}/composer.json"), true, flags: JSON_THROW_ON_ERROR);
-    $prefixes = [...($composer['autoload']['psr-4'] ?? []), ...($composer['autoload-dev']['psr-4'] ?? [])];
+    $prefixes = [
+        ...($composer['autoload']['psr-4'] ?? []),
+        ...($composer['autoload-dev']['psr-4'] ?? []),
+    ];
     uksort($prefixes, fn (string $left, string $right) => strlen($right) <=> strlen($left));
 
     return $prefixes;

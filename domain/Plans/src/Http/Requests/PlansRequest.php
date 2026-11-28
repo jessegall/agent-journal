@@ -22,7 +22,10 @@ final class PlansRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [...$this->planFilterRules(), ...$this->outlinePageRules()];
+        return [
+            ...$this->planFilterRules(),
+            ...$this->outlinePageRules(),
+        ];
     }
 
     public function filters(): PlanFiltersData

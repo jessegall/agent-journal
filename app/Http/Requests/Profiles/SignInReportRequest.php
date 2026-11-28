@@ -22,13 +22,39 @@ final class SignInReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'outcome' => ['required', Rule::enum(SignInOutcome::class)],
-            'generation' => ['required', 'integer', 'min:0'],
-            'display' => ['nullable', 'string', 'max:200'],
-            'subject' => ['nullable', 'string', 'max:200'],
-            'workspace' => ['nullable', 'string', 'max:200'],
-            'expires_at' => ['nullable', 'date'],
-            'refusal' => ['nullable', 'string', 'max:300'],
+            'outcome' => [
+                'required',
+                Rule::enum(SignInOutcome::class),
+            ],
+            'generation' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+            'display' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+            'subject' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+            'workspace' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+            'expires_at' => [
+                'nullable',
+                'date',
+            ],
+            'refusal' => [
+                'nullable',
+                'string',
+                'max:300',
+            ],
         ];
     }
 

@@ -22,7 +22,10 @@ enum HostProcessPurpose: string
      */
     public static function agentPurposes(): array
     {
-        return [self::AgentTerminal, self::AgentTurn];
+        return [
+            self::AgentTerminal,
+            self::AgentTurn,
+        ];
     }
 
     /**
@@ -39,7 +42,11 @@ enum HostProcessPurpose: string
      */
     public function isRuntimeProcess(): bool
     {
-        $ownedByNoRuntime = [self::AgentTurn, self::BuildProbe, self::SignInProbe];
+        $ownedByNoRuntime = [
+            self::AgentTurn,
+            self::BuildProbe,
+            self::SignInProbe,
+        ];
 
         return ! in_array($this, $ownedByNoRuntime, true);
     }

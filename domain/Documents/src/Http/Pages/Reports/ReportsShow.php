@@ -81,10 +81,7 @@ final readonly class ReportsShow extends ReportsPage
                             LayoutNativeData::build()
                             ->component('documents/RecordLinks')
                             ->props(
-                                RecordLinksPartData::from([
-                                    'source' => $label,
-                                    'links' => $links(),
-                                ]),
+                                RecordLinksPartData::from(['source' => $label, 'links' => $links()]),
                             )
                             ->finish(),
                         )

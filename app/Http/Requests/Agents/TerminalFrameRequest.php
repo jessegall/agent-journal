@@ -19,10 +19,26 @@ final class TerminalFrameRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'epoch' => ['sometimes', 'string', 'max:64'],
-            'after' => ['sometimes', 'integer', 'min:0'],
-            'stream' => ['sometimes', 'string', 'max:64'],
-            'interest' => ['sometimes', 'string', 'max:64'],
+            'epoch' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
+            'after' => [
+                'sometimes',
+                'integer',
+                'min:0',
+            ],
+            'stream' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
+            'interest' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
         ];
     }
 

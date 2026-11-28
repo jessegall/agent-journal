@@ -17,7 +17,11 @@ final readonly class RecordDriverImageRefusalHandler implements CommandHandler
     /**
      * The refusals that only interrupted the image's instruction, so the image is built again within its recoveries.
      */
-    private const array INTERRUPTIONS = [HostRefusal::HostRestarted, HostRefusal::Expired, HostRefusal::NotRunning];
+    private const array INTERRUPTIONS = [
+        HostRefusal::HostRestarted,
+        HostRefusal::Expired,
+        HostRefusal::NotRunning,
+    ];
 
     public function handle(RecordDriverImageRefusalCommand $command): void
     {

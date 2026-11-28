@@ -242,7 +242,10 @@ final readonly class HelperMounts
         $targets = array_map(static fn (ManifestMount $mount) => $mount->target, $mounts);
 
         $driverTargets = array_map(fn (ManifestMount $mount) => $mount->target, $this->driverMounts);
-        $allowed = [...self::CONTAINED_TARGETS, ...$driverTargets];
+        $allowed = [
+            ...self::CONTAINED_TARGETS,
+            ...$driverTargets,
+        ];
 
         if (array_diff($targets, $allowed) !== [] || count(array_unique($targets)) !== count($targets)) {
             throw ManifestRefused::because(

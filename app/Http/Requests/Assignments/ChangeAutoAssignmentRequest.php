@@ -23,7 +23,11 @@ final class ChangeAutoAssignmentRequest extends FormRequest
      */
     public function rules(ActorTypes $actorTypes): array
     {
-        return [...$this->keyRules($actorTypes), ...$this->poolRules(), ...$this->revisionRules()];
+        return [
+            ...$this->keyRules($actorTypes),
+            ...$this->poolRules(),
+            ...$this->revisionRules(),
+        ];
     }
 
     public function enableCommand(RecordResolver $records): EnableAutoAssignmentCommand

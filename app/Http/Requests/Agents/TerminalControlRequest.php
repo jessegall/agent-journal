@@ -45,20 +45,74 @@ final class TerminalControlRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'interest' => ['sometimes', 'string', 'max:64'],
-            'takeId' => ['sometimes', 'string', 'max:64'],
-            'grantId' => ['sometimes', 'string', 'max:64'],
-            'text' => ['sometimes', 'string', 'max:'.self::TEXT_LIMIT],
-            'enter' => ['sometimes', 'boolean'],
-            'type' => ['sometimes', Rule::enum(TerminalInputType::class)],
-            'key' => ['required_if:type,key', Rule::enum(TerminalNamedKey::class)],
-            'rows' => ['required_if:type,resize', 'integer', 'min:1', 'max:1000'],
-            'columns' => ['required_if:type,resize', 'integer', 'min:1', 'max:1000'],
-            'sequence' => ['sometimes', 'integer', 'min:1'],
-            'screenRevision' => ['sometimes', 'integer', 'min:0'],
-            'choice' => ['sometimes', Rule::enum(TerminalDraftChoice::class)],
-            'submissionId' => ['sometimes', 'string', 'max:64'],
-            'value' => ['sometimes', 'string', 'max:'.self::PRIVATE_VALUE_LIMIT],
+            'interest' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
+            'takeId' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
+            'grantId' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
+            'text' => [
+                'sometimes',
+                'string',
+                'max:'.self::TEXT_LIMIT,
+            ],
+            'enter' => [
+                'sometimes',
+                'boolean',
+            ],
+            'type' => [
+                'sometimes',
+                Rule::enum(TerminalInputType::class),
+            ],
+            'key' => [
+                'required_if:type,key',
+                Rule::enum(TerminalNamedKey::class),
+            ],
+            'rows' => [
+                'required_if:type,resize',
+                'integer',
+                'min:1',
+                'max:1000',
+            ],
+            'columns' => [
+                'required_if:type,resize',
+                'integer',
+                'min:1',
+                'max:1000',
+            ],
+            'sequence' => [
+                'sometimes',
+                'integer',
+                'min:1',
+            ],
+            'screenRevision' => [
+                'sometimes',
+                'integer',
+                'min:0',
+            ],
+            'choice' => [
+                'sometimes',
+                Rule::enum(TerminalDraftChoice::class),
+            ],
+            'submissionId' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
+            'value' => [
+                'sometimes',
+                'string',
+                'max:'.self::PRIVATE_VALUE_LIMIT,
+            ],
             'actor' => ['prohibited'],
             'session' => ['prohibited'],
         ];

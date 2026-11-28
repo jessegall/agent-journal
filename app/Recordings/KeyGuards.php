@@ -45,7 +45,10 @@ final readonly class KeyGuards
 
             if ($event->type === RecordedEventType::Answered && HostRoute::ClaimInstruction->matchesPath($call->path)) {
                 $claim = HostClaimedInstructionsPayload::from($call->body);
-                $hashes = [...$hashes, ...self::guardHashes($claim, $shownRows)];
+                $hashes = [
+                    ...$hashes,
+                    ...self::guardHashes($claim, $shownRows),
+                ];
             }
         }
 

@@ -15,7 +15,11 @@ final class MarkAllNotificationsReadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'through' => ['required', 'integer', 'min:0'],
+            'through' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 

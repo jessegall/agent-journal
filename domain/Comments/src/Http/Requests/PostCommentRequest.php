@@ -33,9 +33,23 @@ final class PostCommentRequest extends RecordTargetRequest
      * The exact anchor fields each kind of place is given with.
      */
     private const array FIELDS_OF_TYPE = [
-        'section' => ['version', 'section'],
-        'lines' => ['version', 'first_line', 'last_line'],
-        'quote' => ['version', 'first_line', 'last_line', 'quote', 'start_offset', 'end_offset'],
+        'section' => [
+            'version',
+            'section',
+        ],
+        'lines' => [
+            'version',
+            'first_line',
+            'last_line',
+        ],
+        'quote' => [
+            'version',
+            'first_line',
+            'last_line',
+            'quote',
+            'start_offset',
+            'end_offset',
+        ],
     ];
 
     /**
@@ -45,18 +59,51 @@ final class PostCommentRequest extends RecordTargetRequest
     {
         return [
             'target' => $this->targetRules(),
-            'body' => ['required', 'string'],
-            'submission_key' => ['required', 'uuid'],
+            'body' => [
+                'required',
+                'string',
+            ],
+            'submission_key' => [
+                'required',
+                'uuid',
+            ],
             'author' => ['prohibited'],
             'author_id' => ['prohibited'],
             'session' => ['prohibited'],
-            'version' => ['nullable', 'string', 'max:64'],
-            'section' => ['nullable', 'integer', 'min:1'],
-            'first_line' => ['nullable', 'integer', 'min:1'],
-            'last_line' => ['nullable', 'integer', 'min:1'],
-            'quote' => ['nullable', 'string'],
-            'start_offset' => ['nullable', 'integer', 'min:0'],
-            'end_offset' => ['nullable', 'integer', 'min:0'],
+            'version' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+            'section' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'first_line' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'last_line' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'quote' => [
+                'nullable',
+                'string',
+            ],
+            'start_offset' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'end_offset' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 

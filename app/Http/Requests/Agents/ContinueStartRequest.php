@@ -17,7 +17,11 @@ final class ContinueStartRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['agent_id' => ['required', 'string', 'max:64']];
+        return ['agent_id' => [
+            'required',
+            'string',
+            'max:64',
+        ]];
     }
 
     public function command(): ContinueStartCommand

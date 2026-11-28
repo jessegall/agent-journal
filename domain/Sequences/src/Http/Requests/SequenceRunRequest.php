@@ -21,7 +21,17 @@ final class SequenceRunRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['actor' => ['nullable', 'string'], 'page' => ['nullable', 'integer', 'min:1']];
+        return [
+            'actor' => [
+                'nullable',
+                'string',
+            ],
+            'page' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+        ];
     }
 
     public function runNumber(): int

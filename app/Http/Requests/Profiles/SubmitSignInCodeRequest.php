@@ -20,8 +20,16 @@ final class SubmitSignInCodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'max:4200'],
-            'submission_key' => ['required', 'string', 'max:128'],
+            'code' => [
+                'required',
+                'string',
+                'max:4200',
+            ],
+            'submission_key' => [
+                'required',
+                'string',
+                'max:128',
+            ],
         ];
     }
 

@@ -744,7 +744,12 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     public static function resolvePersonalValues(): array
     {
         $values = array_map(
-            fn (self $account) => [$account->label, $account->identity, $account->subject, $account->workspace],
+            fn (self $account) => [
+                $account->label,
+                $account->identity,
+                $account->subject,
+                $account->workspace,
+            ],
             self::findListed(),
         );
 

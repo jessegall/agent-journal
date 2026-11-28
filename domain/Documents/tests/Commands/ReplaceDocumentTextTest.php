@@ -89,7 +89,10 @@ final class ReplaceDocumentTextTest extends TestCase
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));
 
         $refusals = [
-            [new ReplaceDocumentTextCommand($draft->target(), '.', '!'), TextMatchInvalid::class],
+            [
+                new ReplaceDocumentTextCommand($draft->target(), '.', '!'),
+                TextMatchInvalid::class,
+            ],
             [
                 new EditDocumentCommand($draft->target(), 'Missing', <<<'TEXT'
                 ## Missing

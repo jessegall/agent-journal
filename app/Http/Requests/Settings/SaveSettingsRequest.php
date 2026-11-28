@@ -12,7 +12,11 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class SaveSettingsRequest extends FormRequest
 {
-    private const array RESERVED = ['owner', 'group', 'revision'];
+    private const array RESERVED = [
+        'owner',
+        'group',
+        'revision',
+    ];
 
     /**
      * @return array<string, list<string>>
@@ -20,8 +24,16 @@ final class SaveSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'owner' => ['required', 'string', 'max:64'],
-            'revision' => ['required', 'integer', 'min:0'],
+            'owner' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'revision' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 

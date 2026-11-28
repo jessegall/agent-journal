@@ -14,7 +14,11 @@ final class InboxCountsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'inboxId' => ['required', 'string', 'size:26'],
+            'inboxId' => [
+                'required',
+                'string',
+                'size:26',
+            ],
         ];
     }
 

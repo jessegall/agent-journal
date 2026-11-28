@@ -64,7 +64,10 @@ final class DomainEventServiceProvider extends EventServiceProvider
      */
     public function discoverEvents(): array
     {
-        $events = [...$this->discoverOrdinaryEvents(), self::LANES => [self::LANES_VERSION]];
+        $events = [
+            ...$this->discoverOrdinaryEvents(),
+            self::LANES => [self::LANES_VERSION],
+        ];
 
         if (! $this->app->isBooted()) {
             return $events;

@@ -33,7 +33,10 @@ final readonly class SimpleCommandParts
 
     public function withRedirect(Redirect $redirect): self
     {
-        $redirects = [...$this->redirects, $redirect];
+        $redirects = [
+            ...$this->redirects,
+            $redirect,
+        ];
 
         return new self($this->node, $this->start, $redirect->range->end, $this->arguments, $redirects);
     }

@@ -40,7 +40,10 @@ final readonly class MultiplexedStream
                 break;
             }
 
-            $frames[] = [$body[$at], substr($body, $at + self::HEAD_BYTES, $length)];
+            $frames[] = [
+                $body[$at],
+                substr($body, $at + self::HEAD_BYTES, $length),
+            ];
             $at += self::HEAD_BYTES + $length;
         }
 
@@ -56,7 +59,10 @@ final readonly class MultiplexedStream
     public function changed(Closure $change): self
     {
         return new self(
-            array_map(fn (array $frame) => [$frame[0], $change($frame[1])], $this->frames),
+            array_map(fn (array $frame) => [
+                $frame[0],
+                $change($frame[1]),
+            ], $this->frames),
             $change($this->rest),
         );
     }

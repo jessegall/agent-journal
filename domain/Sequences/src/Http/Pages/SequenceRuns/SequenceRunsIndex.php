@@ -39,7 +39,10 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
         string $chosenRunId = '',
         array $reader = [],
     ): DeclaredLayoutData {
-        $query = ['actor' => $follower->text(), 'page' => $runs->page->number];
+        $query = [
+            'actor' => $follower->text(),
+            'page' => $runs->page->number,
+        ];
 
         return ListPage::build()
             ->title('Runs')

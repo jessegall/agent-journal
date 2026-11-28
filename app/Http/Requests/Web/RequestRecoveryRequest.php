@@ -18,10 +18,25 @@ final class RequestRecoveryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reason' => ['required', 'string', 'max:500', 'regex:/\S/'],
-            'rowVersion' => ['required', 'integer', 'min:0'],
-            'applied' => ['sometimes', 'boolean'],
-            'confirmsPossibleDuplicate' => ['sometimes', 'boolean'],
+            'reason' => [
+                'required',
+                'string',
+                'max:500',
+                'regex:/\S/',
+            ],
+            'rowVersion' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+            'applied' => [
+                'sometimes',
+                'boolean',
+            ],
+            'confirmsPossibleDuplicate' => [
+                'sometimes',
+                'boolean',
+            ],
         ];
     }
 

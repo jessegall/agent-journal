@@ -21,11 +21,31 @@ final class CreateMainAgentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'requestId' => ['required', 'ulid'],
-            'driver' => ['required', 'string', 'max:32'],
-            'model' => ['required', 'string', 'max:100'],
-            'accountId' => ['nullable', 'ulid', 'required_with:accountRevision'],
-            'accountRevision' => ['nullable', 'integer', 'min:0', 'required_with:accountId'],
+            'requestId' => [
+                'required',
+                'ulid',
+            ],
+            'driver' => [
+                'required',
+                'string',
+                'max:32',
+            ],
+            'model' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+            'accountId' => [
+                'nullable',
+                'ulid',
+                'required_with:accountRevision',
+            ],
+            'accountRevision' => [
+                'nullable',
+                'integer',
+                'min:0',
+                'required_with:accountId',
+            ],
             'actor' => ['prohibited'],
         ];
     }

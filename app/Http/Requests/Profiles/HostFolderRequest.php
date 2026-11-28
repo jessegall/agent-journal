@@ -18,8 +18,16 @@ final class HostFolderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'folder' => ['required', 'string', 'regex:/^[a-z0-9]+$/'],
-            'operation' => ['required', 'string', 'regex:/^[A-Za-z0-9-]{8,64}$/'],
+            'folder' => [
+                'required',
+                'string',
+                'regex:/^[a-z0-9]+$/',
+            ],
+            'operation' => [
+                'required',
+                'string',
+                'regex:/^[A-Za-z0-9-]{8,64}$/',
+            ],
         ];
     }
 

@@ -94,7 +94,13 @@ final readonly class CommentWriter
                 $subject->endOffset,
             ];
 
-        $fields = ['comment', $subjectFields, $targetIdentity->type, $targetIdentity->id, $body];
+        $fields = [
+            'comment',
+            $subjectFields,
+            $targetIdentity->type,
+            $targetIdentity->id,
+            $body,
+        ];
 
         return hash('sha256', (string) json_encode($fields));
     }

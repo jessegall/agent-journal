@@ -120,7 +120,10 @@ final readonly class AgentListing
      */
     private function optionsOf(array $rows): array
     {
-        $byAgent = array_column(array_map(fn (RankedAgent $row) => [$row->agentId, $row], $rows), 1, 0);
+        $byAgent = array_column(array_map(fn (RankedAgent $row) => [
+            $row->agentId,
+            $row,
+        ], $rows), 1, 0);
         $agents = $this->agents->visibleAmong(array_keys($byAgent));
         $inboxIds = array_values(array_filter(array_map(fn (RankedAgent $row) => $row->inboxId, $rows)));
         $unread = $this->unreadIn($inboxIds);

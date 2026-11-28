@@ -18,10 +18,23 @@ final class CleanupReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'generation' => ['required', 'integer', 'min:0'],
-            'store_removed' => ['required', 'boolean'],
-            'directory_removed' => ['required', 'boolean'],
-            'still_bound' => ['sometimes', 'boolean'],
+            'generation' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+            'store_removed' => [
+                'required',
+                'boolean',
+            ],
+            'directory_removed' => [
+                'required',
+                'boolean',
+            ],
+            'still_bound' => [
+                'sometimes',
+                'boolean',
+            ],
         ];
     }
 

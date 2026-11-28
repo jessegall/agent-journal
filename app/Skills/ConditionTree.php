@@ -109,7 +109,10 @@ final readonly class ConditionTree
         $depth = 0;
         $nodes = 0;
         $parameterBytes = 0;
-        $pending = [[$wire, 1]];
+        $pending = [[
+            $wire,
+            1,
+        ]];
 
         while ($pending !== []) {
             [$node, $level] = array_pop($pending);

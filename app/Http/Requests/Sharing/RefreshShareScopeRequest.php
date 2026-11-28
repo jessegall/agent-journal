@@ -25,7 +25,10 @@ final class RefreshShareScopeRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [...$this->confirmedPreviewRules(), ...$this->idempotencyKeyRules()];
+        return [
+            ...$this->confirmedPreviewRules(),
+            ...$this->idempotencyKeyRules(),
+        ];
     }
 
     public function command(): RefreshShareScopeCommand

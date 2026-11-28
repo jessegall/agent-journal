@@ -117,6 +117,9 @@ final readonly class SessionContainers
             return $prepared;
         }
 
-        return [...$prepared, ...$this->runs->writerCheckout($source->mount(false), $rules->checkoutVolume($sessionId))];
+        return [
+            ...$prepared,
+            ...$this->runs->writerCheckout($source->mount(false), $rules->checkoutVolume($sessionId)),
+        ];
     }
 }

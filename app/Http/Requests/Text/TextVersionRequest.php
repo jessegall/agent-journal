@@ -19,7 +19,14 @@ final class TextVersionRequest extends RecordTargetRequest
      */
     public function rules(): array
     {
-        return ['target' => $this->targetRules(), 'version' => ['nullable', 'string', 'max:64']];
+        return [
+            'target' => $this->targetRules(),
+            'version' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+        ];
     }
 
     public function version(): string|null

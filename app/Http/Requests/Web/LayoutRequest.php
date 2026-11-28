@@ -30,10 +30,25 @@ final class LayoutRequest extends FormRequest
         }
 
         return [
-            'name' => ['required', 'string', 'max:80', 'regex:/\S/', $unique],
-            'shape' => ['required', 'array'],
-            'shape.grid' => ['required', 'array'],
-            'shape.detached' => ['present', 'array'],
+            'name' => [
+                'required',
+                'string',
+                'max:80',
+                'regex:/\S/',
+                $unique,
+            ],
+            'shape' => [
+                'required',
+                'array',
+            ],
+            'shape.grid' => [
+                'required',
+                'array',
+            ],
+            'shape.detached' => [
+                'present',
+                'array',
+            ],
         ];
     }
 

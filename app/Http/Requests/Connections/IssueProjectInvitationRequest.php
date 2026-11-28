@@ -24,11 +24,34 @@ final class IssueProjectInvitationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'issuanceKey' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
-            'projectId' => ['nullable', 'string', 'ulid'],
-            'environmentId' => ['nullable', 'required_with:projectId', 'string', 'ulid'],
-            'attemptReference' => ['nullable', 'string', 'max:32', 'regex:/^IA-[A-Z0-9]+$/'],
-            'seenVersion' => ['nullable', 'integer', 'min:0'],
+            'issuanceKey' => [
+                'required',
+                'string',
+                'max:64',
+                'regex:/^[A-Za-z0-9_-]+$/',
+            ],
+            'projectId' => [
+                'nullable',
+                'string',
+                'ulid',
+            ],
+            'environmentId' => [
+                'nullable',
+                'required_with:projectId',
+                'string',
+                'ulid',
+            ],
+            'attemptReference' => [
+                'nullable',
+                'string',
+                'max:32',
+                'regex:/^IA-[A-Z0-9]+$/',
+            ],
+            'seenVersion' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 

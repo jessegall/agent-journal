@@ -17,7 +17,10 @@ final class CancelSessionStartRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'requestId' => ['required', 'ulid'],
+            'requestId' => [
+                'required',
+                'ulid',
+            ],
             'actor' => ['prohibited'],
         ];
     }

@@ -20,7 +20,11 @@ final class ReadShareRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cursor' => ['nullable', 'string', 'max:2000'],
+            'cursor' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
         ];
     }
 

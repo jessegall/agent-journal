@@ -152,8 +152,15 @@ final readonly class CommandClassifier implements CommandClassifierContract
         $syntaxFacts = [];
 
         foreach ($tree->nodes as $node) {
-            $syntaxFacts = [...$syntaxFacts, ...$this->redirects->factsOf($node), ...$this->backgroundFacts($node)];
-            $parts = [...$parts, ...$this->partOf($tree, $node, $depth, $context)];
+            $syntaxFacts = [
+                ...$syntaxFacts,
+                ...$this->redirects->factsOf($node),
+                ...$this->backgroundFacts($node),
+            ];
+            $parts = [
+                ...$parts,
+                ...$this->partOf($tree, $node, $depth, $context),
+            ];
         }
 
         return new Classification($tree, $parts, $syntaxFacts);
@@ -205,7 +212,10 @@ final readonly class CommandClassifier implements CommandClassifierContract
         int $depth,
         ExecutionContext $context,
     ): PartClassification {
-        $unresolved = [...$this->assignmentFacts($tree, $node), ...$unresolvedRedirects];
+        $unresolved = [
+            ...$this->assignmentFacts($tree, $node),
+            ...$unresolvedRedirects,
+        ];
 
         if ($node->words === []) {
             return new PartClassification(
@@ -601,7 +611,10 @@ final readonly class CommandClassifier implements CommandClassifierContract
             if ($wrapper->takesAssignments
                 && $text !== null
                 && preg_match('/^([A-Za-z_][A-Za-z0-9_]*)=/', $text, $match) === 1) {
-                $unresolved = [...$unresolved, ...$this->contextAssignment($match[1], $node)];
+                $unresolved = [
+                    ...$unresolved,
+                    ...$this->contextAssignment($match[1], $node),
+                ];
                 $index++;
 
                 continue;
@@ -780,7 +793,10 @@ final readonly class CommandClassifier implements CommandClassifierContract
                 continue;
             }
 
-            $own = [...$own, ...$this->findActionFacts($text, $node, $origin)];
+            $own = [
+                ...$own,
+                ...$this->findActionFacts($text, $node, $origin),
+            ];
         }
 
         return WrapperChildFacts::join($node, $program, $own, [], $children);

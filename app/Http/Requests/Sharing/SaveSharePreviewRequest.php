@@ -20,8 +20,15 @@ final class SaveSharePreviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'selected' => ['present', 'array', 'max:1000'],
-            'selected.*' => ['string', 'ulid'],
+            'selected' => [
+                'present',
+                'array',
+                'max:1000',
+            ],
+            'selected.*' => [
+                'string',
+                'ulid',
+            ],
         ];
     }
 

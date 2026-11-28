@@ -188,7 +188,10 @@ final class LexerCursor
      */
     private function operators(bool $isExtended): array
     {
-        $operators = ['&&' => TokenType::AndIf, '||' => TokenType::OrIf];
+        $operators = [
+            '&&' => TokenType::AndIf,
+            '||' => TokenType::OrIf,
+        ];
 
         if ($isExtended) {
             $operators += [

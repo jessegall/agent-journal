@@ -72,6 +72,9 @@ final class CoreMcpTools
      */
     private static function orientationFirst(array $found, array $orientation): array
     {
-        return [...$orientation, ...array_values(array_diff($found, $orientation))];
+        return [
+            ...$orientation,
+            ...array_values(array_diff($found, $orientation)),
+        ];
     }
 }

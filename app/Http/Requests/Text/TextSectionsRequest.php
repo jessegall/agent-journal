@@ -19,9 +19,21 @@ final class TextSectionsRequest extends RecordTargetRequest
     {
         return [
             'target' => $this->targetRules(),
-            'version' => ['required', 'string', 'max:64'],
-            'after_section' => ['nullable', 'integer', 'min:0'],
-            'per_page' => ['nullable', 'integer', 'min:1'],
+            'version' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'after_section' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'per_page' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
         ];
     }
 

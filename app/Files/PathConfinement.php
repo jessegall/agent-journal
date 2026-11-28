@@ -214,7 +214,10 @@ final readonly class PathConfinement
             if (is_link($next)) {
                 $links++;
                 $target = (string) readlink($next);
-                $names = [...explode('/', $target), ...$names];
+                $names = [
+                    ...explode('/', $target),
+                    ...$names,
+                ];
                 $current = str_starts_with($target, '/') ? '' : $current;
 
                 continue;

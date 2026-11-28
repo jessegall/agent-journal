@@ -22,9 +22,20 @@ final class TerminalViewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'intervalMs' => ['sometimes', 'integer'],
-            'requestId' => ['required_without:interest', 'string', 'max:64'],
-            'interest' => ['required_without:requestId', 'string', 'max:64'],
+            'intervalMs' => [
+                'sometimes',
+                'integer',
+            ],
+            'requestId' => [
+                'required_without:interest',
+                'string',
+                'max:64',
+            ],
+            'interest' => [
+                'required_without:requestId',
+                'string',
+                'max:64',
+            ],
             'actor' => ['prohibited'],
             'session' => ['prohibited'],
         ];

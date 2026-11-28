@@ -150,7 +150,20 @@ function localNamesOf(array $statements, string $path): array
     }
 
     $variables = [];
-    $ignored = ['this', 'GLOBALS', '_SERVER', '_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_REQUEST', '_ENV', 'argv', 'argc'];
+    $ignored = [
+        'this',
+        'GLOBALS',
+        '_SERVER',
+        '_GET',
+        '_POST',
+        '_FILES',
+        '_COOKIE',
+        '_SESSION',
+        '_REQUEST',
+        '_ENV',
+        'argv',
+        'argc',
+    ];
 
     foreach ($finder->findInstanceOf($statements, Node\Expr\Variable::class) as $variable) {
         $name = $variable->name;

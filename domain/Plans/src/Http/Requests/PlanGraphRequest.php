@@ -22,9 +22,21 @@ final class PlanGraphRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'planId' => ['nullable', 'string', 'max:26'],
-            'version' => ['nullable', 'string', 'max:64'],
-            'baseVersion' => ['nullable', 'string', 'max:64'],
+            'planId' => [
+                'nullable',
+                'string',
+                'max:26',
+            ],
+            'version' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+            'baseVersion' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
         ];
     }
 

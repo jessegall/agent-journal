@@ -21,9 +21,20 @@ final class DocumentFeedbackRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'agent' => ['required', 'ulid'],
-            'first_line' => ['required_with:last_line', 'integer', 'min:1'],
-            'last_line' => ['required_with:first_line', 'integer', 'gte:first_line'],
+            'agent' => [
+                'required',
+                'ulid',
+            ],
+            'first_line' => [
+                'required_with:last_line',
+                'integer',
+                'min:1',
+            ],
+            'last_line' => [
+                'required_with:first_line',
+                'integer',
+                'gte:first_line',
+            ],
         ];
     }
 

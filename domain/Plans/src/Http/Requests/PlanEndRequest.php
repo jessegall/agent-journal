@@ -25,9 +25,20 @@ final class PlanEndRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'revision' => ['required', 'integer', 'min:1'],
-            'state' => ['required', Rule::enum(PlanStatus::class)],
-            'text' => ['required', 'string', 'max:'.Plan::NOTE_CHARACTER_LIMIT],
+            'revision' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+            'state' => [
+                'required',
+                Rule::enum(PlanStatus::class),
+            ],
+            'text' => [
+                'required',
+                'string',
+                'max:'.Plan::NOTE_CHARACTER_LIMIT,
+            ],
         ];
     }
 

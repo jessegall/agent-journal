@@ -33,10 +33,18 @@ $families = [];
 
 foreach ($cases as $id => $case) {
     $reading = $readings[$id] ?? fail("The oracle gave no reading for {$id}");
-    $expected = ['evidence' => ORACLE_EVIDENCE, 'outcome' => $reading['outcome'], 'unsupported' => $reading['unsupported'] ?? null, 'parts' => $reading['parts']];
+    $expected = [
+        'evidence' => ORACLE_EVIDENCE,
+        'outcome' => $reading['outcome'],
+        'unsupported' => $reading['unsupported'] ?? null,
+        'parts' => $reading['parts'],
+    ];
 
     if (isset($decisions[$id])) {
-        $expected = ['evidence' => 'decisions.jsonl', ...$decisions[$id]['intended_outcome']];
+        $expected = [
+            'evidence' => 'decisions.jsonl',
+            ...$decisions[$id]['intended_outcome'],
+        ];
     }
 
     if ($expected['outcome'] === 'unsupported') {

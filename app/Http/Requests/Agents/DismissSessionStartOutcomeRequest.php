@@ -20,8 +20,14 @@ final class DismissSessionStartOutcomeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'requestId' => ['required', 'ulid'],
-            'version' => ['required', Rule::enum(StartDisposition::class)],
+            'requestId' => [
+                'required',
+                'ulid',
+            ],
+            'version' => [
+                'required',
+                Rule::enum(StartDisposition::class),
+            ],
             'actor' => ['prohibited'],
         ];
     }

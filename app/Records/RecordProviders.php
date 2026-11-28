@@ -77,7 +77,10 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
         $cards = [];
 
         foreach (RecordIdentity::groupedByType($records) as $type => $ofType) {
-            $cards = [...$cards, ...$this->providerOf($type)->visibleCards($ofType)];
+            $cards = [
+                ...$cards,
+                ...$this->providerOf($type)->visibleCards($ofType),
+            ];
         }
 
         return $cards;

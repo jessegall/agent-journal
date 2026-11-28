@@ -22,9 +22,19 @@ final class SettleRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'number' => ['sometimes', 'string'],
-            'reason' => ['required', 'string'],
-            'revision' => ['required', 'integer', 'min:1'],
+            'number' => [
+                'sometimes',
+                'string',
+            ],
+            'reason' => [
+                'required',
+                'string',
+            ],
+            'revision' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
         ];
     }
 
