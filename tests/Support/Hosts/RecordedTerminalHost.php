@@ -19,7 +19,7 @@ use Tests\Support\Hosts\Exceptions\RecordingDiverged;
  * offsets, answers each instruction with the recorded host's answer to one of its type, and keeps every byte a driver types, which each checkpoint compares
  * with the bytes the recording's user typed up to it, however the driver split them into writes.
  */
-final class MockHost implements HostChannel
+final class RecordedTerminalHost implements HostChannel
 {
     private const string FRAMES = 'frames.json';
 

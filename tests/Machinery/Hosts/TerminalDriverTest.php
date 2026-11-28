@@ -39,7 +39,7 @@ use App\Values\NavigationRound;
 use App\Values\ScriptParameter;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsMachinery;
-use Tests\Support\Hosts\MockHost;
+use Tests\Support\Hosts\RecordedTerminalHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
@@ -91,7 +91,7 @@ final class TerminalDriverTest extends TestCase
     public function test_a_turn_with_an_interrupt_and_a_second_prompt_types_what_the_recording_typed(): void
     {
         $driver = $this->drivenTerminal();
-        $host = $this->journal->service(MockHost::class);
+        $host = $this->journal->service(RecordedTerminalHost::class);
         $inputs = $host->recordedInputs();
         $events = [
             0 => fn () => $this->typeAsUser(0),
@@ -143,7 +143,7 @@ final class TerminalDriverTest extends TestCase
     public function test_an_interrupt_whose_escape_the_host_refused_presses_it_again_on_the_next_frame(): void
     {
         $driver = $this->drivenTerminal();
-        $inputs = $this->journal->service(MockHost::class)->recordedInputs();
+        $inputs = $this->journal->service(RecordedTerminalHost::class)->recordedInputs();
         $events = [
             0 => fn () => $this->typeAsUser(0),
             1 => fn () => $this->typeAsUser(1),
@@ -187,7 +187,7 @@ final class TerminalDriverTest extends TestCase
     {
         // The Codex terminal opens to users once its starts go through the journal; its profile is the family's.
         $driver = $this->drivenTerminal(self::CODEX_TURN, DefaultDrivers::CODEX, DriverType::Headless);
-        $host = $this->journal->service(MockHost::class);
+        $host = $this->journal->service(RecordedTerminalHost::class);
         $inputs = $host->recordedInputs();
         $events = [
             0 => fn () => $driver->onRequest($this->claim('deliver-1', DriverOperation::Deliver, $inputs[0])),
@@ -516,7 +516,7 @@ final class TerminalDriverTest extends TestCase
      */
     private function stream(ProcessDriver $driver, array $events, callable|null $everyFrame = null): void
     {
-        $host = $this->journal->service(MockHost::class);
+        $host = $this->journal->service(RecordedTerminalHost::class);
 
         foreach ($host->streamTimes(self::STREAM_MS) as $time) {
             $host->clock->set($time);
@@ -557,7 +557,7 @@ final class TerminalDriverTest extends TestCase
 
             if ($command instanceof SendHostKeysCommand) {
                 $typed = $this->typedOf($command->bytes);
-                $this->journal->mockHost(fn (MockHost $host) => $host
+                $this->journal->recordedTerminalHost(fn (RecordedTerminalHost $host) => $host
                     ->keys($command->processId, $typed, $command->rows, 0, $command->source));
             }
         }
@@ -565,7 +565,7 @@ final class TerminalDriverTest extends TestCase
 
     private function typeAsUser(int $input): null
     {
-        $host = $this->journal->service(MockHost::class);
+        $host = $this->journal->service(RecordedTerminalHost::class);
         $host->advanceToInput($input);
         $guard = $host->guardFor(0, count($host->rows()) - 1);
         $host->keys('agent', $host->recordedInputs()[$input], $guard, 0, HostInstructionSource::fromJournal());

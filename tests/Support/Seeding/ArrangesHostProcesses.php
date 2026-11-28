@@ -56,7 +56,7 @@ use Illuminate\Support\Facades\Process;
 use Tests\Fixtures\Drivers\ShownDriverArrangements;
 use Tests\Support\Assertions\Facts\MadeHostInstructions;
 use Tests\Support\Connections\PublicRelease;
-use Tests\Support\Hosts\MockHost;
+use Tests\Support\Hosts\RecordedTerminalHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostInstruction;
@@ -510,13 +510,13 @@ trait ArrangesHostProcesses
 
     /**
      * The host channel is a mock host that plays the committed recording in the folder, relative to the journal's
-     * recordings; service(MockHost::class) reaches the same mock.
+     * recordings; service(RecordedTerminalHost::class) reaches the same mock.
      */
     public function playRecording(string $recording): self
     {
-        $host = MockHost::playing(resource_path("recordings/{$recording}"));
+        $host = RecordedTerminalHost::playing(resource_path("recordings/{$recording}"));
         $this->app->instance(HostChannel::class, $host);
-        $this->app->instance(MockHost::class, $host);
+        $this->app->instance(RecordedTerminalHost::class, $host);
 
         return $this;
     }
@@ -553,11 +553,11 @@ trait ArrangesHostProcesses
     /**
      * The mock host the journal's host channel is, handed to the scope.
      *
-     * @param  Closure(MockHost): mixed  $scope
+     * @param  Closure(RecordedTerminalHost): mixed  $scope
      */
-    public function mockHost(Closure $scope): self
+    public function recordedTerminalHost(Closure $scope): self
     {
-        $scope($this->app->make(MockHost::class));
+        $scope($this->app->make(RecordedTerminalHost::class));
 
         return $this;
     }

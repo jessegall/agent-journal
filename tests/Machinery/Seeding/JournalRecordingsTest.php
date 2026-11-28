@@ -11,7 +11,7 @@ use App\Values\HostInstructionSource;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\Support\Hosts\Exceptions\RecordingDiverged;
-use Tests\Support\Hosts\MockHost;
+use Tests\Support\Hosts\RecordedTerminalHost;
 use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
@@ -42,7 +42,7 @@ final class JournalRecordingsTest extends TestCase
         $this->journal->playRecording(self::RECORDING);
         $this->typeRecordedInputs(fn (string $input) => str_split($input, max(1, intdiv(strlen($input), 2))));
 
-        $this->journal->mockHost(fn (MockHost $host) => $this->assertNotSame([], $host->recordedInputs()));
+        $this->journal->recordedTerminalHost(fn (RecordedTerminalHost $host) => $this->assertNotSame([], $host->recordedInputs()));
     }
 
     public function test_the_hosts_recorded_answers_read_as_it_wrote_them(): void
@@ -71,7 +71,7 @@ final class JournalRecordingsTest extends TestCase
      */
     private function typeRecordedInputs(callable $split): void
     {
-        $host = $this->journal->service(MockHost::class);
+        $host = $this->journal->service(RecordedTerminalHost::class);
         $channel = $this->journal->service(HostChannel::class);
 
         foreach ($host->recordedInputs() as $number => $input) {
