@@ -101,10 +101,10 @@ final class FileWindowDataFields
         return $this;
     }
 
-    /** @param list<int> $cutLineNumbers */
-    public function cutLineNumbers(array $lineNumbers): self
+    /** @param  list<int>  $numbers */
+    public function cutLineNumbers(array $numbers): self
     {
-        $this->cutLineNumbers = $lineNumbers;
+        $this->cutLineNumbers = $numbers;
 
         return $this;
     }

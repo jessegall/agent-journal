@@ -156,9 +156,9 @@ final class AccountRowDataFields
         return $this;
     }
 
-    public function awaitsCleanupRetry(bool $cleanupRetry): self
+    public function awaitsCleanupRetry(bool $hasRetry): self
     {
-        $this->awaitsCleanupRetry = $cleanupRetry;
+        $this->awaitsCleanupRetry = $hasRetry;
 
         return $this;
     }

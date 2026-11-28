@@ -20,7 +20,7 @@ final class StartAccountDataFields
 
     private string $accountLabel;
 
-    private AccountStatus $accountState;
+    private AccountStatus $accountStatus;
 
     private AccountProcessRole $role;
 
@@ -58,9 +58,9 @@ final class StartAccountDataFields
         return $this;
     }
 
-    public function accountState(AccountStatus $state): self
+    public function accountStatus(AccountStatus $status): self
     {
-        $this->accountState = $state;
+        $this->accountStatus = $status;
 
         return $this;
     }
@@ -93,7 +93,7 @@ final class StartAccountDataFields
             ->driver($use->driver)
             ->accountId($account->id)
             ->accountLabel($account->label)
-            ->accountState($account->status)
+            ->accountStatus($account->status)
             ->role($use->role)
             ->startedAt($use->startedAt->toIso8601String())
             ->endedAt($use->endedAt?->toIso8601String());
@@ -117,8 +117,8 @@ final class StartAccountDataFields
             throw MissingFields::forType(StartAccountData::class, 'accountLabel');
         }
 
-        if (! isset($this->accountState)) {
-            throw MissingFields::forType(StartAccountData::class, 'accountState');
+        if (! isset($this->accountStatus)) {
+            throw MissingFields::forType(StartAccountData::class, 'accountStatus');
         }
 
         if (! isset($this->role)) {
@@ -138,7 +138,7 @@ final class StartAccountDataFields
             driver: $this->driver,
             accountId: $this->accountId,
             accountLabel: $this->accountLabel,
-            accountState: $this->accountState,
+            accountStatus: $this->accountStatus,
             role: $this->role,
             startedAt: $this->startedAt,
             endedAt: $this->endedAt,
