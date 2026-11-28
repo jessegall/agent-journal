@@ -1,0 +1,12 @@
+{
+    "format": 2,
+    "protocol": 2,
+    "scenario_hash": "0396e43d084019fa78bc92e2088c4acf7c8f0d1e185664cd71969c9e8bfc6e4c",
+    "driver": "connected",
+    "build": "",
+    "image_programs": "908ced22532353035a5bde7f2ce821419d4c2e2e4eb2e6691d077b14fc2f0f2b",
+    "recorded_at": "2026-11-28T15:08:31+00:00",
+    "exchanges": [
+        "01-host-caller-28346400d6feba1a"
+    ]
+}
