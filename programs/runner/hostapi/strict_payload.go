@@ -49,11 +49,19 @@ func factsOf[R any](reply R, refusal error) (map[string]any, error) {
 // DecodePayload reads an instruction's payload into its shape, strictly: a field the shape does not have, a field it needs
 // that is missing, or a value of the wrong type is refused as unsafe, by the field's name and the instruction's type.
 func DecodePayload[T any](instruction Instruction) (T, error) {
-	var decoded T
-	if err := decodeStrictly([]byte(instruction.Payload), &decoded); err != nil {
+	decoded, err := ReadWirePayload[T]([]byte(instruction.Payload))
+	if err != nil {
 		return decoded, RefusalError{Refusal: Unsafe, Reason: "the payload of " + instruction.Type + " " + err.Error()}
 	}
 	return decoded, nil
+}
+
+// ReadWirePayload reads a JSON object into its generated protocol shape.
+func ReadWirePayload[T any](body []byte) (T, error) {
+	var decoded T
+	err := decodeStrictly(body, &decoded)
+
+	return decoded, err
 }
 
 func decodeStrictly(text []byte, into any) error {

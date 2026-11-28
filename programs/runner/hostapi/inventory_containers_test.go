@@ -44,14 +44,12 @@ func TestAContainerLeftByACrashIsNamedAtTheRestartAndRemovedWhileTheOwnedOneStay
 	if err := restarted.Adopt(context.Background()); err != nil {
 		t.Fatal(err)
 	}
-	journal := &fakeJournal{}
-	relay, _ := relayFor(t, journal)
-	relay.Table = restarted
-	if err := relay.SendInventory(context.Background()); err != nil {
+	installation, err := restarted.InstallationContainers(context.Background())
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	named := slices.Sorted(slices.Values(journal.inventory[0].Containers))
+	named := slices.Sorted(slices.Values(installation))
 	if !slices.Equal(named, []string{"journal-process-crashed", "journal-process-owned"}) {
 		t.Fatalf("the inventory does not name every container of the installation: %v", named)
 	}

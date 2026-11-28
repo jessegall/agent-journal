@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -16,75 +15,13 @@ import (
 	"journal-runner/dockermock"
 	"journal-runner/host"
 	"journal-runner/hostapi"
+	"journal-runner/hostapitest"
 	"journal-runner/recorded"
 	"journal-runner/recording"
 )
 
-// replayEnrollmentSecret is the test host's enrollment secret, which the replay signs every recorded instruction with.
-const replayEnrollmentSecret = "the-test-host-enrollment-secret"
-
 // replayDeadline is the longest a recorded scenario may take to play through the host whole.
 const replayDeadline = 30 * time.Second
-
-// journalReplay serves the journal's side of the scenario's host exchange on a local address: each recorded answer
-// with its fakes bound and in the order the journal gave it, every instruction of a claim signed again with the secret
-// the test host derives from its enrollment, so the host accepts it. A process's output and the heartbeat are streams
-// the host cuts by its own timing, played by their path; a claim once every recorded one was given waits, as the
-// journal holds a long poll with nothing to give.
-func journalReplay(t *testing.T, scenario recorded.Scenario) (*recorded.CallReplay, string) {
-	t.Helper()
-	replay := recorded.MustCallReplay(t, scenario, recording.WireHost)
-	replay.IsLongPoll = func(call recorded.Call) bool { return call.Answered.Path == claimPath }
-	replay.OrderGroup = func(recorded.Call) string { return "the journal" }
-	replay.IsStreamed = func(call recorded.Call) bool {
-		return strings.HasSuffix(call.Answered.Path, "/output") || call.Answered.Path == "/host/heartbeat"
-	}
-	secret := hostapi.InstructionSecretOf(replayEnrollmentSecret)
-	replay.Answering = func(call recorded.Call, body []byte) []byte {
-		instructions, claim := claimedOf(call, body)
-		if claim == nil {
-			return body
-		}
-		for index := range instructions {
-			instructions[index].Signature = hostapi.Sign(secret, instructions[index])
-		}
-		claim["instructions"], _ = json.Marshal(instructions)
-		signed, _ := json.Marshal(claim)
-		return signed
-	}
-	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.URL.Path == claimPath && !replay.HasUnplayed(http.MethodPost, claimPath) {
-			select {
-			case <-request.Context().Done():
-			case <-replay.Closed():
-			}
-			return
-		}
-		replay.ServeHTTP(writer, request)
-	}))
-	// Closing the replay first ends a call still held in its order, which the server's close would wait for.
-	t.Cleanup(func() {
-		replay.Close()
-		server.Close()
-	})
-	return replay, server.URL
-}
-
-// claimPath is the long poll the host claims its instructions on.
-const claimPath = "/host/instructions/claim"
-
-// claimedOf are the instructions of a claim's answer, with the answer as fields; none for another call.
-func claimedOf(call recorded.Call, body []byte) ([]hostapi.Instruction, map[string]json.RawMessage) {
-	if call.Answered.Path != claimPath {
-		return nil, nil
-	}
-	var claim map[string]json.RawMessage
-	var instructions []hostapi.Instruction
-	if json.Unmarshal(body, &claim) != nil || json.Unmarshal(claim["instructions"], &instructions) != nil {
-		return nil, nil
-	}
-	return instructions, claim
-}
 
 // recordedRules are the container rules of the host the scenario was recorded on, as its recorded plans show them: the
 // data folder every daemon bind comes from and the installation name every volume starts with; the images it may run
@@ -118,7 +55,7 @@ func recordedManifests(t *testing.T, scenario recorded.Scenario) []host.Containe
 	manifests := []host.ContainerManifest{}
 	for _, call := range calls {
 		body, _ := base64.StdEncoding.DecodeString(call.Answered.Body)
-		instructions, _ := claimedOf(call, body)
+		instructions, _ := hostapitest.ClaimedOf(call, body)
 		for _, instruction := range instructions {
 			var plan hostapi.OpenPlan
 			if instruction.Type != "open_container" || json.Unmarshal([]byte(instruction.Payload), &plan) != nil || plan.Container == nil {
@@ -178,7 +115,7 @@ func recordedStartupImages(t *testing.T, scenario recorded.Scenario) host.Pinned
 // answered.
 func TestARecordedTerminalTurnPlaysThroughTheHostWhole(t *testing.T) {
 	scenario := recorded.MustLoad(t, "claude-code", "terminal-turn")
-	replay, address := journalReplay(t, scenario)
+	journalWire := hostapitest.Replay(t, scenario)
 	docker := dockermock.Play(t, "claude-code", "terminal-turn")
 	if err := verifyArrangement(host.Contained, recordedStartupImages(t, scenario), docker.Host(), ""); err != nil {
 		t.Fatal(err)
@@ -187,7 +124,7 @@ func TestARecordedTerminalTurnPlaysThroughTheHostWhole(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	enrollment := client.Enrollment{JournalURL: address, HostID: "host", Secret: replayEnrollmentSecret}
+	enrollment := client.Enrollment{JournalURL: journalWire.URL, HostID: "host", Secret: hostapitest.EnrollmentSecret}
 	journal := client.New(enrollment).WithArrangement(string(host.Contained))
 	ctx, stop := context.WithTimeout(t.Context(), replayDeadline)
 	defer stop()
@@ -197,10 +134,10 @@ func TestARecordedTerminalTurnPlaysThroughTheHostWhole(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for !replay.IsPlayedWhole() {
+	for !journalWire.Calls.IsPlayedWhole() {
 		select {
 		case <-ctx.Done():
-			replay.AssertPlayedWhole(t)
+			journalWire.Calls.AssertPlayedWhole(t)
 			return
 		case <-time.After(100 * time.Millisecond):
 		}
