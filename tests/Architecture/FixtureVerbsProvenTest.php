@@ -15,6 +15,8 @@ use Tests\Support\Agents\TestAgent;
 use Tests\Support\Agents\TestSession;
 use Tests\Support\Assertions\Assert;
 use Tests\Support\Assertions\StateAssert;
+use Tests\Support\Hosts\MockHost;
+use Tests\Support\Hosts\RecordedTerminalHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostInstruction;
@@ -22,6 +24,7 @@ use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Mocks\Answer;
 use Tests\Support\Mocks\ClaudeMock;
 use Tests\Support\Mocks\CodexMock;
+use Tests\Support\Recordings\TestAgentApi;
 use Tests\Support\Recordings\TestScenario;
 use Tests\Support\Recordings\WireAssert;
 use Tests\Support\ScanCache\ScanCache;
@@ -59,6 +62,9 @@ final class FixtureVerbsProvenTest extends TestCase
         Answer::class,
         TestScenario::class,
         WireAssert::class,
+        MockHost::class,
+        TestAgentApi::class,
+        RecordedTerminalHost::class,
     ];
 
     public function test_every_fixture_verb_is_called_by_a_test_of_its_fixture(): void
