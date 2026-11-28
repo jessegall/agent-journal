@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands\CheckStartStatus;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Bus\Contracts\CommandHandler;
 use App\Models\Agents\AgentRuntime;
@@ -12,7 +12,7 @@ use App\Values\DriverRequestPayload;
 
 final readonly class CheckStartStatusHandler implements CommandHandler
 {
-    public function __construct(private DriverRequests $requests) {}
+    public function __construct(private DriverRequestLedger $requests) {}
 
     /**
      * Answers whether the host was asked: a session with a runtime has a host to ask, which answers with its report,

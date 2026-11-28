@@ -32,7 +32,7 @@ final readonly class DriverSettings
         'max',
     ];
 
-    public function __construct(private DriverRequests $requests, private AgentStacks $stacks) {}
+    public function __construct(private DriverRequestLedger $requests, private AgentStacks $stacks) {}
 
     public function acceptModel(StackTarget $target, string $idempotencyKey, string $model): DriverRequest
     {

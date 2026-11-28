@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Commands\RetryDriverRequest;
 
-use App\Agents\DriverRequestRecovery;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\RecoveryAction;
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\DriverRequestRefused;
@@ -12,7 +12,7 @@ use App\Models\Drivers\DriverRequest;
 
 final readonly class RetryDriverRequestHandler implements CommandHandler
 {
-    public function __construct(private DriverRequestRecovery $recovery) {}
+    public function __construct(private DriverRequestLedger $recovery) {}
 
     public function handle(RetryDriverRequestCommand $command): int
     {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Navigation;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
@@ -19,7 +19,7 @@ use App\Values\StackTarget;
  */
 final readonly class NavigationRounds
 {
-    public function __construct(private DriverRequests $requests) {}
+    public function __construct(private DriverRequestLedger $requests) {}
 
     /**
      * The idempotency key of the round that answers the request at the row version.

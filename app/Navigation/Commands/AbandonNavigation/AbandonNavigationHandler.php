@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Navigation\Commands\AbandonNavigation;
 
-use App\Agents\DriverRequestEndings;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\RequestOutcome;
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\NavigationRaiseRefused;
@@ -19,7 +19,7 @@ use App\Navigation\NavigationAnswerCheck;
  */
 final readonly class AbandonNavigationHandler implements CommandHandler
 {
-    public function __construct(private NavigationAnswerCheck $answering, private DriverRequestEndings $endings) {}
+    public function __construct(private NavigationAnswerCheck $answering, private DriverRequestLedger $endings) {}
 
     /**
      * @throws NavigationAnswerRefused

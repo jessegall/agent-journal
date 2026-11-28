@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Commands\InterruptStuckTurns;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Bus\Contracts\CommandHandler;
@@ -23,7 +23,7 @@ final readonly class InterruptStuckTurnsHandler implements CommandHandler
 
     private const int PASS_LIMIT = 20;
 
-    public function __construct(private EngineAccess $access, private DriverRequests $requests) {}
+    public function __construct(private EngineAccess $access, private DriverRequestLedger $requests) {}
 
     /**
      * Each delivery or wake still applying past the limit gets one interrupt of its runtime, named by the request, and

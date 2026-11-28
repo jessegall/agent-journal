@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Terminals;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Agents\DriverRequestEndings;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ActorNotAllowed;
@@ -76,7 +76,7 @@ final class OpenTerminalViewTest extends TestCase
     {
         $runtime = $this->runtimeOn('host-1');
         $this->travelTo(CarbonImmutable::parse('2026-11-19 14:02:00'));
-        $this->app->make(DriverRequestEndings::class)->closeAfterExit($runtime);
+        $this->app->make(DriverRequestLedger::class)->closeAfterExit($runtime);
 
         $this->assertRefused(
             $this->open($runtime),

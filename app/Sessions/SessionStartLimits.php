@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sessions;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Profiles\ProfileRevisionHold;
@@ -24,7 +24,7 @@ final readonly class SessionStartLimits
     private const int PASS_LIMIT = 50;
 
     public function __construct(
-        private DriverRequests $requests,
+        private DriverRequestLedger $requests,
         private ServerClock $clock,
     ) {}
 

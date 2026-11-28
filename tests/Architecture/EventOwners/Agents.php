@@ -192,7 +192,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Agents/DriverRequestRecovery.php',
+            'app/Agents/DriverRequestLedger.php',
         ],
     ],
     DriverSwitchStopped::class => [

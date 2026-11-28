@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands\StopAgent;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Exceptions\StopOutdated;
 use App\Bus\Contracts\CommandHandler;
 use App\Terminals\TerminalControls;
@@ -14,7 +14,7 @@ use App\Values\DriverReceipt;
 final readonly class StopAgentHandler implements CommandHandler
 {
     public function __construct(
-        private DriverRequests $requests,
+        private DriverRequestLedger $requests,
         private TerminalControls $controls,
         private ServerClock $clock,
     ) {}

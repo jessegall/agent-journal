@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sessions;
 
 use App\Actors\PresenceWindow;
-use App\Agents\DriverRequestEndings;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Bus\Contracts\CommandFacts;
@@ -57,7 +57,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
         private PresenceWindow $window,
         private ServerClock $clock,
         private CommandFacts $facts,
-        private DriverRequestEndings $endings,
+        private DriverRequestLedger $endings,
         private DriverCatalogue $drivers,
     ) {}
 

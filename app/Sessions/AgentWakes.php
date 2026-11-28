@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sessions;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Values\DriverReceipt;
 use App\Values\DriverRequestPayload;
@@ -16,7 +16,7 @@ use App\Values\StackTarget;
  */
 final readonly class AgentWakes
 {
-    public function __construct(private DriverRequests $requests) {}
+    public function __construct(private DriverRequestLedger $requests) {}
 
     public function wake(StackTarget $target, string $idempotencyKey): DriverReceipt
     {

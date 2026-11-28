@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Commands\RunKeyScript;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Bus\Contracts\CommandHandler;
 use App\Terminals\Exceptions\KeyScriptRefused;
@@ -24,7 +24,7 @@ final readonly class RunKeyScriptHandler implements CommandHandler
      * @param  array<string, array{version: int, parameters: array<string, string>}>  $scripts
      */
     public function __construct(
-        private DriverRequests $requests,
+        private DriverRequestLedger $requests,
         private ValidatorFactory $validators,
         #[Config('journal.agents.key_scripts')]
         private array $scripts,

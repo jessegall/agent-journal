@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Resolvers;
 
 use App\Access\Contracts\CurrentAuthorizer;
-use App\Accounts\AccountSessions;
 use App\Accounts\AccountUseCounts;
 use App\Accounts\AccountUseHistories;
 use App\Accounts\Contracts\AccountUses as AccountUsesContract;
@@ -25,7 +24,6 @@ use App\Support\RecordIdentity;
 final readonly class AccountUses implements AccountUsesContract
 {
     public function __construct(
-        private AccountSessions $sessions,
         private IdentityLinks $links,
         private CurrentAuthorizer $authorizer,
     ) {}
@@ -41,14 +39,14 @@ final readonly class AccountUses implements AccountUsesContract
     {
         $this->authorizeRead();
 
-        return $this->sessions->histories($accounts, $limit);
+        return new AccountUseHistories(AgentSession::resolveRecentUsesOf($accounts, $limit));
     }
 
     public function history(RecordIdentity $account, int $limit): array
     {
         $this->authorizeRead();
 
-        $sessions = $this->sessions->all($account)
+        $sessions = $this->links->among(AgentSession::query(), $account)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->limit($limit)

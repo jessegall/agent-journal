@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Commands\DeliverAgent;
 
 use App\Agents\DriverBudgets;
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Contracts\AttachmentReferences;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Bus\Contracts\CommandHandler;
@@ -17,7 +17,7 @@ use App\Values\DriverRequestPayload;
 final readonly class DeliverAgentHandler implements CommandHandler
 {
     public function __construct(
-        private DriverRequests $requests,
+        private DriverRequestLedger $requests,
         private DriverBudgets $budgets,
         private AttachmentReferences $attachments,
     ) {}

@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Terminals\Commands\CancelKeyScript;
 
-use App\Agents\DriverRequestEndings;
-use App\Agents\DriverRequestRecovery;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\RecoveryAction;
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\DriverRequestRefused;
 
 final readonly class CancelKeyScriptHandler implements CommandHandler
 {
-    public function __construct(private DriverRequestRecovery $recovery, private DriverRequestEndings $endings) {}
+    public function __construct(private DriverRequestLedger $recovery, private DriverRequestLedger $endings) {}
 
     public function handle(CancelKeyScriptCommand $command): int
     {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Navigation;
 
-use App\Agents\DriverRequestEndings;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestOutcome;
 use App\Models\Drivers\NavigationRequest;
@@ -23,7 +23,7 @@ final readonly class NavigationExpiry implements NavigationExpiryContract
      */
     private const int SWEEP_LIMIT = 100;
 
-    public function __construct(private DriverRequestEndings $endings) {}
+    public function __construct(private DriverRequestLedger $endings) {}
 
     public function expireDue(): void
     {

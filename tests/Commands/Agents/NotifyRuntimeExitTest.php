@@ -8,7 +8,7 @@ use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Agents\Commands\StopAgent\StopAgentCommand;
-use App\Agents\DriverRequestEndings;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Hosts\EnrolledHost;
@@ -129,7 +129,7 @@ final class NotifyRuntimeExitTest extends TestCase
         $stalled = $this->stalledScript();
         $navigation = $this->raise($stalled, 'raise-1');
 
-        $this->app->make(DriverRequestEndings::class)->closeAfterExit(
+        $this->app->make(DriverRequestLedger::class)->closeAfterExit(
             AgentRuntime::query()->findOrFail($stalled->agent_runtime_id),
         );
 

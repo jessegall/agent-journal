@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Terminals;
 
 use App\Access\Contracts\CurrentAuthorizer;
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Enums\AccessType;
 use App\Messages\Data\PrivateInputMessageData;
@@ -39,7 +39,7 @@ final readonly class TerminalControls
     public function __construct(
         private CurrentAuthorizer $authorizer,
         private CurrentRuntimes $runtimes,
-        private DriverRequests $requests,
+        private DriverRequestLedger $requests,
     ) {}
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands\InterruptAgent;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Bus\Contracts\CommandHandler;
@@ -13,7 +13,7 @@ use App\Values\DriverRequestPayload;
 
 final readonly class InterruptAgentHandler implements CommandHandler
 {
-    public function __construct(private DriverRequests $requests) {}
+    public function __construct(private DriverRequestLedger $requests) {}
 
     public function handle(InterruptAgentCommand $command): DriverReceipt
     {

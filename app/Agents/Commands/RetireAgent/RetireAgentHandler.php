@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Commands\RetireAgent;
 
 use App\Access\Contracts\CurrentAuthorizer;
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Enums\AccessType;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Assignments\Contracts\AssignmentFactPublisher;
@@ -43,7 +43,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         private SessionTokens $credentials,
         private AssignmentStorage $store,
         private AssignmentFactPublisher $facts,
-        private DriverRequests $requests,
+        private DriverRequestLedger $requests,
         private CommandFacts $commandFacts,
         private InboxParticipationEnding $inboxes,
     ) {}

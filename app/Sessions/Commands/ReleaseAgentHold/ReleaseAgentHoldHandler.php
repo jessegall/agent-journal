@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sessions\Commands\ReleaseAgentHold;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandHandler;
 use App\Events\Sessions\AgentHoldReleased;
@@ -13,7 +13,7 @@ use App\Exceptions\DriverRequestRefused;
 final readonly class ReleaseAgentHoldHandler implements CommandHandler
 {
     public function __construct(
-        private DriverRequests $requests,
+        private DriverRequestLedger $requests,
         private CommandFacts $facts,
     ) {}
 

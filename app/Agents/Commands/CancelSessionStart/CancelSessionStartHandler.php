@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands\CancelSessionStart;
 
-use App\Agents\DriverRequests;
+use App\Agents\DriverRequestLedger;
 use App\Bus\Contracts\CommandHandler;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -19,7 +19,7 @@ final readonly class CancelSessionStartHandler implements CommandHandler
     private const string CANCELLED = 'the start was cancelled before its driver ran';
 
     public function __construct(
-        private DriverRequests $requests,
+        private DriverRequestLedger $requests,
         private StartHeartbeats $heartbeats,
     ) {}
 

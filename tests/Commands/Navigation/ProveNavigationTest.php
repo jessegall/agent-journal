@@ -8,7 +8,7 @@ use App\Access\AccessSettings;
 use App\Access\Values\OwnerAuthority;
 use App\Actors\Contracts\ActorAttention;
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Agents\DriverRequestEndings;
+use App\Agents\DriverRequestLedger;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
@@ -207,7 +207,7 @@ final class ProveNavigationTest extends TestCase
         $this->journal->claimRequestsOnHost($host->hostId);
         $queued = $this->append($navigation, NavigationRound::keys($navigation->id, 3, 7, [NavigationKey::Esc]));
 
-        $this->app->make(DriverRequestEndings::class)->cancelNavigation($navigation);
+        $this->app->make(DriverRequestLedger::class)->cancelNavigation($navigation);
 
         $this->assertSame(RequestProgress::Cancelled, $queued->fresh()?->progress);
         $this->assertThrows(fn () => $this->notify($host, $reported, isProofSeen: false));
