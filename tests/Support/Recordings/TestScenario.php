@@ -7,11 +7,17 @@ namespace Tests\Support\Recordings;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Models\Hosts\HostInstruction;
+use App\Models\Projects\Host;
+use App\Models\Projects\HostDriverImage;
 use App\Recordings\Recordings;
+use App\Recordings\Scenarios\Enums\ScenarioStepType;
+use App\Recordings\Scenarios\Exceptions\ScenarioStuck;
 use App\Recordings\Scenarios\Scenario;
 use App\Recordings\Scenarios\ScenarioPlayer;
 use App\Recordings\Scenarios\ScenarioRun;
+use App\Recordings\Scenarios\ScenarioStep;
 use App\Values\FilePath;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Config\Repository;
 use PHPUnit\Framework\Assert;
@@ -37,6 +43,11 @@ final class TestScenario
 
     private ScenarioRun|null $run = null;
 
+    /**
+     * How long the restarted test host gets to allow its images again.
+     */
+    private const int HOST_RESTART_SECONDS = 60;
+
     public function __construct(private readonly TestJournal $journal, private readonly string $name) {}
 
     /**
@@ -56,7 +67,7 @@ final class TestScenario
 
         do {
             Assert::assertFalse($run->isPlayedWhole(), "The scenario {$this->name} holds no {$step} step left to play.");
-            $played = $this->player()->playNext($run, $this->refuseAskingTheUser(...));
+            $played = $this->playNext($run);
         } while ($played->stepType->value !== $step);
 
         return $this;
@@ -70,7 +81,7 @@ final class TestScenario
         $run = $this->run();
 
         while (! $run->isPlayedWhole()) {
-            $this->player()->playNext($run, $this->refuseAskingTheUser(...));
+            $this->playNext($run);
         }
 
         return $this;
@@ -122,9 +133,10 @@ final class TestScenario
 
         $this->journal->arrangeContainedJournal();
         $this->journal->service(Repository::class)->set('journal.agents.installation_name', $playing->installationName);
+        $this->journal->arrangeRecordedMachine($playing->agentImage, $playing->developmentPrograms);
         $this->journal->enrollContainedHost(self::HOST, [base_path()])
             ->runPlayingTestHost(self::HOST, $playing, fn (TestHost $host) => $host->chooseActiveAccounts())
-            ->readyDriverImagesOn(self::HOST);
+            ->readyRecordedDriverImagesOn(self::HOST, $playing->driverImages);
         $agents = [];
 
         foreach (array_unique(array_filter(array_map(fn ($step) => $step->agent, $scenario->steps))) as $agent) {
@@ -132,7 +144,46 @@ final class TestScenario
             $agents[$agent] = $this->journal->agentCalled($agent)->id;
         }
 
-        return $this->run = new ScenarioRun($scenario, $this->journal->ownerUser(), $agents, TestHost::IMAGE);
+        return $this->run = new ScenarioRun($scenario, $this->journal->ownerUser(), $agents, $playing->agentImage);
+    }
+
+    /**
+     * Plays the run's next step: a host restart restarts the playing test host and waits until it allowed its images
+     * again, as the player restarts a machine's host; every other step the player plays.
+     */
+    private function playNext(ScenarioRun $run): ScenarioStep
+    {
+        $step = $run->nextStep();
+
+        if ($step->stepType !== ScenarioStepType::RestartHost) {
+            try {
+                return $this->player()->playNext($run, $this->refuseAskingTheUser(...));
+            } catch (ScenarioStuck $stuck) {
+                // The played daemon's own record says which call the host made that the recording does not hold.
+                $this->journal->testHost(fn (TestHost $host) => Assert::fail(
+                    $stuck->getMessage()."\n".implode("\n", $host->playedFailures()),
+                ));
+            }
+        }
+
+        $restartedAt = CarbonImmutable::now();
+        $this->journal->testHost(fn (TestHost $host) => $host->restartHost());
+        $host = Host::query()->findOrFail($run->hostId());
+        $deadline = microtime(true) + self::HOST_RESTART_SECONDS;
+
+        while (! HostInstruction::hasAllowedSince($host, $restartedAt) || HostDriverImage::isAdmittingOn($host->id)) {
+            if (microtime(true) > $deadline) {
+                $this->journal->testHost(fn (TestHost $host) => Assert::fail(
+                    'The test host did not allow its images again within '.self::HOST_RESTART_SECONDS." seconds:\n"
+                    .implode("\n", [...$host->playedFailures(), $host->printed()]),
+                ));
+            }
+            usleep(100_000);
+        }
+
+        $run->stepRan();
+
+        return $step;
     }
 
     private function player(): ScenarioPlayer

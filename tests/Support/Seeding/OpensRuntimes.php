@@ -14,6 +14,7 @@ use App\Hosts\EnrolledHost;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\AgentSession;
+use App\Models\Projects\DriverImageRecipeRecord;
 use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
 use App\Models\Sessions\SessionProcess;
@@ -23,6 +24,7 @@ use App\Projects\Enums\ArrangementType;
 use App\Sessions\AgentRuntimes;
 use App\Sessions\OpenedRuntime;
 use Closure;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\VerifiedTestHostImage;
 use Tests\Support\Agents\TestAgent;
@@ -90,7 +92,7 @@ trait OpensRuntimes
 
         $this->hosts[$name] = $this->asSystem(new EnrollHostCommand($name, $folders, ArrangementType::Contained));
         // A contained host runs the mock agent image, which this journal's image record verifies.
-        $this->app->instance(DockerImageVerifier::class, new VerifiedTestHostImage());
+        $this->app->instance(DockerImageVerifier::class, new VerifiedTestHostImage($this->app->make(Repository::class)));
 
         return $this;
     }
@@ -111,6 +113,30 @@ trait OpensRuntimes
             $image->orderedIn("ready-allow-{$number}");
             $image->acknowledged();
             $image->markChecksSent("ready-checks-{$number}");
+            $image->checked();
+        }
+
+        return $this;
+    }
+
+    /**
+     * The contained host's driver images readied as the recorded machine had them: each recipe's image is the one the
+     * recording names for its folder, so the host's played daemon is asked about the images it recorded.
+     *
+     * @param  array<string, string>  $imagesByFolder
+     */
+    public function readyRecordedDriverImagesOn(string $host, array $imagesByFolder): self
+    {
+        $box = Host::query()->findOrFail($this->hostCalled($host)->hostId);
+        $this->service(HostDriverImages::class)->reserveAll($box);
+
+        foreach (HostDriverImage::findPendingOn($box->id) as $number => $image) {
+            $folder = DriverImageRecipeRecord::query()->findOrFail($image->driver_image_recipe_id)->folder;
+            $image->startAttempt("recorded-build-{$number}");
+            $image->built($imagesByFolder[$folder] ?? throw FixtureRefused::missingAlias('recorded image', $folder, 'The recording'));
+            $image->orderedIn("recorded-allow-{$number}");
+            $image->acknowledged();
+            $image->markChecksSent("recorded-checks-{$number}");
             $image->checked();
         }
 

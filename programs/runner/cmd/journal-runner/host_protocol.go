@@ -31,6 +31,7 @@ func protocolOnly(arguments []string) error {
 	arrangementFlag := flags.String("arrangement", string(host.Local), "where its processes run: local or contained")
 	installationName := flags.String("installation-name", "", "the prefix of a contained host's containers")
 	dataFolder := flags.String("data-folder", "", "the Docker daemon's folder every daemon bind of a contained host comes from")
+	pinnedImages := flags.String("pinned-images", "", "the images a contained host was installed with, by digest, split by commas; checked at the start as the host command checks them")
 	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends, as when the process that started it died")
 	if err := flags.Parse(arguments); err != nil {
 		return err
@@ -42,6 +43,12 @@ func protocolOnly(arguments []string) error {
 	installationPrefix, err := host.ParseInstallationName(*installationName)
 	if err != nil {
 		return err
+	}
+	// Pinned images are checked as the host command checks them, through a daemon client of their own.
+	if pinned := host.PinnedImages(splitList(*pinnedImages)); len(pinned) > 0 {
+		if err := verifyArrangement(arrangement, pinned, *dockerSocket, *installation); err != nil {
+			return err
+		}
 	}
 	enrollment, err := (device.State{Folder: *stateFolder}).Load()
 	if err != nil {

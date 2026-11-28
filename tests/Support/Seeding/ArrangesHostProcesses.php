@@ -24,10 +24,10 @@ use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Hosts\Commands\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Contracts\HostChannel;
+use App\Hosts\DriverImageChecks;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
-use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\HostRoute;
 use App\Models\Agents\AgentRuntime;
@@ -40,6 +40,7 @@ use App\Recordings\Enums\Wire;
 use App\Recordings\RecordedCall;
 use App\Recordings\RecordingDrafts;
 use App\Recordings\Recordings;
+use App\Sessions\SessionContainers;
 use App\Support\AgentImage;
 use App\Support\Compatibility\PinnedBuilds;
 use App\Values\ClaimedRequest;
@@ -416,6 +417,23 @@ trait ArrangesHostProcesses
         $this->app->make(Repository::class)->set(array_map(fn (string $name) => $environment[$name], $settings));
         $this->app->forgetInstance(ArrangementSetting::class);
         $this->app->forgetInstance(AgentImage::class);
+
+        return $this;
+    }
+
+    /**
+     * The journal runs its agents as the recorded machine did from here on: in its agent image, with its folder of
+     * program builds mounted over the image's own, as a played scenario's recording names them.
+     */
+    public function arrangeRecordedMachine(string $agentImage, string $developmentPrograms): self
+    {
+        $this->app->make(Repository::class)->set([
+            'journal.agents.agent_image' => $agentImage,
+            'journal.agents.development_programs' => $developmentPrograms,
+        ]);
+        $this->app->forgetInstance(AgentImage::class);
+        $this->app->forgetInstance(DriverImageChecks::class);
+        $this->app->forgetInstance(SessionContainers::class);
 
         return $this;
     }

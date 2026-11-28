@@ -101,6 +101,11 @@ final class TestHost
 
     public private(set) int $port = 0;
 
+    /**
+     * How many times the host binary was started again since the test host began.
+     */
+    private int $restarts = 0;
+
     private function __construct(
         private readonly TestJournal $journal,
         public readonly string $name,
@@ -232,6 +237,7 @@ final class TestHost
      */
     public function restartHost(): self
     {
+        $this->restarts++;
         self::end($this->host, SIGTERM);
         $this->startHost();
 
@@ -493,7 +499,12 @@ final class TestHost
             return $environment;
         }
 
-        return [...$environment, ...self::containedEnvironment(), 'AGENTS_INSTALLATION_NAME' => $this->installationName()];
+        return [
+            ...$environment,
+            ...self::containedEnvironment(),
+            'AGENTS_INSTALLATION_NAME' => $this->installationName(),
+            'AGENT_IMAGE' => $this->playing === null ? self::IMAGE : $this->playing->agentImage,
+        ];
     }
 
     /**
@@ -825,6 +836,12 @@ final class TestHost
 
         if ($this->arrangement->isContained()) {
             $command = [...$command, '--installation-name', $this->installationName(), '--data-folder', MountRules::DATA_FOLDER];
+        }
+
+        // A played scenario's host checks the images the recorded host was installed with as it starts again, as the
+        // recording begins with that start; the host ran before the recording, as the test host's first start does.
+        if ($this->playing !== null && $this->playing->pinnedImages !== [] && $this->restarts > 0) {
+            $command = [...$command, '--pinned-images', implode(',', $this->playing->pinnedImages)];
         }
 
         // The installation's programs come first on the host's path, so a program started by name runs its mock.
