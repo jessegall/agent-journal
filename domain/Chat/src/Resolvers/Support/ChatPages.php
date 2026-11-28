@@ -69,7 +69,8 @@ final readonly class ChatPages
         $names = $this->labels->labelsFor($members);
         $drivers = $this->agentDrivers->driversOf($members);
         $capabilities = $this->capabilitiesOf($viewer, $inbox, count($members));
-        $page = $this->entriesBefore($inbox->id, null);
+        $reader = $this->viewerModel();
+        $page = $this->entriesOfPage($inbox->id, null, $reader);
 
         return ConversationData::from([
             'inboxId' => $inbox->id,
@@ -85,7 +86,7 @@ final readonly class ChatPages
             ]), $members),
             'canManageParticipants' => $capabilities->canAdd || $capabilities->canRemove,
             'capabilities' => $capabilities,
-            'unreadCount' => Message::query()->inInbox($inbox->id)->unreadBy($this->viewerModel())->count(),
+            'unreadCount' => Message::query()->inInbox($inbox->id)->unreadBy($reader)->count(),
             'hasOlder' => $page->hasOlder,
             'entries' => $page->entries,
             'dock' => $this->dock->page($inbox, $dockToken),
@@ -108,6 +109,14 @@ final readonly class ChatPages
      */
     public function entriesBefore(string $inboxId, string|null $beforeId): ChatRowsPageData
     {
+        return $this->entriesOfPage($inboxId, $beforeId, $this->viewerModel());
+    }
+
+    /**
+     * Up to a page of entries before the entry named, as the reader sees them.
+     */
+    private function entriesOfPage(string $inboxId, string|null $beforeId, MessageParticipant $reader): ChatRowsPageData
+    {
         $cursor = $beforeId === null ? null : ChatMessage::query()->ofInbox($inboxId)->findOrFail($beforeId);
 
         $rows = ChatMessage::query()
@@ -119,7 +128,7 @@ final readonly class ChatPages
         $shown = $rows->take(ChatMessage::PAGE_SIZE)->reverse()->values();
 
         return ChatRowsPageData::from([
-            'entries' => $this->entriesOf($shown),
+            'entries' => $this->entriesOf($shown, $reader),
             'hasOlder' => $rows->count() > ChatMessage::PAGE_SIZE,
         ]);
     }
@@ -145,7 +154,7 @@ final readonly class ChatPages
      * @param  ModelCollection<int, ChatMessage>  $rows
      * @return list<ChatEntryData>
      */
-    private function entriesOf(ModelCollection $rows): array
+    private function entriesOf(ModelCollection $rows, MessageParticipant $reader): array
     {
         $authors = array_values($rows->map(fn (ChatMessage $row) => $row->author)->all());
         $names = $this->labels->labelsFor($authors);
@@ -156,8 +165,8 @@ final readonly class ChatPages
             ->all());
 
         $viewer = $this->actors->actor();
-        $readIds = $this->readIdsAmong($rows);
-        $readByOthers = $this->readByOthersAmong($rows);
+        $readIds = $this->readIdsAmong($rows, $reader);
+        $readByOthers = $this->readByOthersAmong($rows, $reader);
         $questions = $this->questionsAmong($rows);
         $rows->load(['source' => fn (MorphTo $source) => $source->morphWith([Message::class => ['target']])]);
 
@@ -270,12 +279,12 @@ final readonly class ChatPages
      * @param  Collection<int, ChatMessage>  $rows
      * @return list<string>
      */
-    private function readIdsAmong(Collection $rows): array
+    private function readIdsAmong(Collection $rows, MessageParticipant $reader): array
     {
         $messageIds = $rows->where('source_type', Message::linkType())->pluck('source_id')->all();
 
         return array_values(array_map(strval(...), MessageReadEntry::query()
-            ->ofReader($this->viewerModel())
+            ->ofReader($reader)
             ->ofMessages($messageIds)
             ->pluck('message_id')
             ->all()));
@@ -287,16 +296,15 @@ final readonly class ChatPages
      * @param  Collection<int, ChatMessage>  $rows
      * @return list<string>
      */
-    private function readByOthersAmong(Collection $rows): array
+    private function readByOthersAmong(Collection $rows, MessageParticipant $reader): array
     {
         $messageIds = array_values(array_map(
             strval(...),
             $rows->where('source_type', Message::linkType())->pluck('source_id')->all(),
         ));
-        $viewer = $this->viewerModel();
 
-        $read = MessageReadEntry::query()->ofMessages($messageIds)->notOfReader($viewer)->pluck('message_id')->all();
-        $answered = Message::query()->answering($messageIds)->whereNotSender($viewer)->pluck('target_message_id')->all();
+        $read = MessageReadEntry::query()->ofMessages($messageIds)->notOfReader($reader)->pluck('message_id')->all();
+        $answered = Message::query()->answering($messageIds)->whereNotSender($reader)->pluck('target_message_id')->all();
 
         return array_values(array_unique(array_map(strval(...), [...$read, ...$answered])));
     }
