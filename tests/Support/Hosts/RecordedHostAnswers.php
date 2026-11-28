@@ -25,21 +25,17 @@ final readonly class RecordedHostAnswers
     /**
      * @param  array<string, array{status: string, facts: array<string, mixed>}>  $answers  by order type
      */
-    private function __construct(private string $scenario, private array $answers) {}
+    private function __construct(private string $driver, private array $answers) {}
 
     /**
-     * The answers of the scenario a driver exchange folder lies in:
-     * resources/recordings/<driver>/<build>/<scenario>/exchanges/<exchange>.
+     * The pinned terminal turn's protocol answers, independently of the screens the mock plays.
      */
-    public static function beside(string $exchangeFolder): self
+    public static function terminalTurn(Recordings $recordings, string $driver): self
     {
-        $scenarioFolder = dirname($exchangeFolder, 2);
-        $driver = basename(dirname($scenarioFolder, 2));
-        $scenario = basename($scenarioFolder);
         $types = [];
         $answers = [];
 
-        foreach (app(Recordings::class)->scenario($driver, $scenario)->calls(Wire::Host) as $call) {
+        foreach ($recordings->scenario($driver, 'terminal-turn')->calls(Wire::Host) as $call) {
             if ($call->status !== null && HostRoute::ClaimInstruction->matchesPath($call->path)) {
                 foreach (HostClaimedInstructionsPayload::from($call->body)->instructions as $instruction) {
                     $types[$instruction->id] = $instruction->type;
@@ -57,7 +53,7 @@ final readonly class RecordedHostAnswers
             }
         }
 
-        return new self("{$driver}/{$scenario}", $answers);
+        return new self($driver, $answers);
     }
 
     /**
@@ -68,6 +64,6 @@ final readonly class RecordedHostAnswers
     public function to(HostInstructionType $type): array
     {
         return $this->answers[$type->value]
-            ?? Assert::fail("The {$this->scenario} recording holds no answer to a {$type->value} order.");
+            ?? Assert::fail("The {$this->driver} terminal turn holds no answer to a {$type->value} order.");
     }
 }

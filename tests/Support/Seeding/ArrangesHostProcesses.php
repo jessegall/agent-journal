@@ -57,6 +57,7 @@ use Tests\Fixtures\Drivers\ShownDriverArrangements;
 use Tests\Support\Assertions\Facts\MadeHostInstructions;
 use Tests\Support\Connections\PublicRelease;
 use Tests\Support\Hosts\MockHost;
+use Tests\Support\Hosts\RecordedHostAnswers;
 use Tests\Support\Hosts\RecordedTerminalHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
@@ -527,9 +528,10 @@ trait ArrangesHostProcesses
      * The host channel is a mock host that plays the committed recording in the folder, relative to the journal's
      * recordings; service(RecordedTerminalHost::class) reaches the same mock.
      */
-    public function playRecording(string $recording): self
+    public function playRecording(string $recording, string $driver): self
     {
-        $host = RecordedTerminalHost::playing(resource_path("recordings/{$recording}"));
+        $answers = RecordedHostAnswers::terminalTurn($this->service(Recordings::class), $driver);
+        $host = RecordedTerminalHost::playing(resource_path("recordings/{$recording}"), $answers);
         $this->app->instance(HostChannel::class, $host);
         $this->app->instance(RecordedTerminalHost::class, $host);
 

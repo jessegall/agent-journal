@@ -34,12 +34,11 @@ final class AgentLogLoaderTest extends TestCase
 
     public function test_the_log_lists_a_failed_start_with_its_reason(): void
     {
-        $this->journal->idleAgent('Planner')->startSession('Planner', 'Planner');
-        $session = $this->journal->sessionCalled('Planner');
-        $start = $this->journal->startOfSession($session->id);
+        [, $opened] = $this->openRuntime();
+        $start = $this->journal->startOfSession($opened->sessionId);
         $start->refuse(self::REFUSAL);
 
-        $log = $this->read($this->journal->agentCalled('Planner')->id);
+        $log = $this->read($this->agentIdOf($opened));
         $shown = $log->starts[0];
         $refused = array_values(array_filter(
             $shown->lines,
@@ -52,7 +51,7 @@ final class AgentLogLoaderTest extends TestCase
         ));
 
         $this->assertSame(
-            [$session->id, 'Failed', true, 1, self::REFUSAL, true, false, false],
+            [$opened->sessionId, 'Failed', true, 1, self::REFUSAL, true, false, false],
             [
                 $shown->sessionId,
                 $shown->outcome,
