@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Modules\Handbook\Resolvers;
+namespace Tests\Fixtures\Modules\Handbook\Http\Pages;
 
 use App\Connections\Layout\LayoutBodyData;
-use App\Navigation\Contracts\PageResolver;
-use App\Support\Layout\DeclaredLayoutData;
+use App\Reads\PageFormRequests;
+use App\Web\Creation\Contracts\PageBuilder;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
@@ -14,6 +14,7 @@ use App\Support\Layout\PublicationPage;
 use App\Support\Layout\PublicationTab;
 use Closure;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Http\Request;
 use Tests\Fixtures\Modules\Handbook\Http\Requests\EntryRequest;
 use Tests\Fixtures\Modules\Handbook\Support\HandbookEntries;
 use Tests\Fixtures\Modules\Handbook\Values\HandbookEntry;
@@ -23,40 +24,43 @@ use Tests\Fixtures\Modules\Handbook\Values\HandbookEntry;
  * alone. Text renders a bounded slice of the entry's text safely, the same reader the page shows without tabs; and
  * References, while the entry shares them, shows one page of them from the window's cursor, with no text read.
  */
-final readonly class EntryLayoutResolver implements PageResolver
+final readonly class EntryPageBuilder implements PageBuilder
 {
     private const int TEXT_BYTE_LIMIT = 16384;
 
     private const int REFERENCE_PAGE_SIZE = 50;
 
     public function __construct(
-        private EntryRequest $request,
+        private PageFormRequests $requests,
         private HandbookEntries $entries,
         private Guard $auth,
     ) {}
 
-    public function read(): DeclaredLayoutData
+    public function build(Request $visit): EntryPageData
     {
+        $request = $this->requests->from(EntryRequest::class, $visit);
         $ownerId = (string) $this->auth->id();
-        $entry = $this->entries->visibleTo($ownerId, $this->request->entryNumber());
+        $entry = $this->entries->visibleTo($ownerId, $request->entryNumber());
         $text = fn () => LayoutBodyData::fromMarkdown($this->entries->textSlice($entry, self::TEXT_BYTE_LIMIT));
 
-        return PublicationPage::build()
+        $layout = PublicationPage::build()
             ->title($entry->title)
             ->metadata(
                 [LayoutPartData::build()->asText()->key('edition')->value($entry->edition)->style('muted')->finish()],
             )
             ->summary($entry->summary)
             ->body($text)
-            ->tabs($this->tabsOf($entry, $text))
-            ->finish()->layout($this->request->chosenTab());
+            ->tabs($this->tabsOf($entry, $request, $text))
+            ->finish()->layout($request->chosenTab());
+
+        return EntryPageData::build()->shown($layout)->finish();
     }
 
     /**
      * @param  Closure(): LayoutBodyData  $text
      * @return list<PublicationTab>
      */
-    private function tabsOf(HandbookEntry $entry, Closure $text): array
+    private function tabsOf(HandbookEntry $entry, EntryRequest $request, Closure $text): array
     {
         if (! $entry->hasTabs) {
             return [];
@@ -69,7 +73,7 @@ final readonly class EntryLayoutResolver implements PageResolver
             ->finish())];
 
         if ($entry->sharesReferences) {
-            $tabs[] = PublicationTab::deferred('references', 'References', fn () => $this->referencesOf($entry));
+            $tabs[] = PublicationTab::deferred('references', 'References', fn () => $this->referencesOf($entry, $request));
         }
 
         return $tabs;
@@ -79,9 +83,9 @@ final readonly class EntryLayoutResolver implements PageResolver
      * One page of the entry's references from the window's cursor, each linking to its own entry, and a link to the
      * next page while there is one; a notice when there are none.
      */
-    private function referencesOf(HandbookEntry $entry): LayoutPartData
+    private function referencesOf(HandbookEntry $entry, EntryRequest $request): LayoutPartData
     {
-        $cursor = $this->request->cursor();
+        $cursor = $request->cursor();
         $page = $this->entries->referencePage($entry, $cursor, self::REFERENCE_PAGE_SIZE);
 
         if ($page === [] && $cursor === 0) {

@@ -9,6 +9,7 @@ use App\Support\DomainRegistry;
 use App\Web\Creation\PageFactory;
 use App\Web\Creation\WindowFactory;
 use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Http\Windows\PlansWindowBuilder;
 use Domain\Plans\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
@@ -51,6 +52,21 @@ final class DomainSwitchPagesTest extends TestCase
         $this->inertia('/plans')->assertNotFound();
         $this->actingAs($this->journal->ownerUser())->post("/plans/{$plan->number}/start")->assertNotFound();
         $this->inertia('/rules')->assertOk();
+    }
+
+    public function test_a_disabled_pane_does_not_resolve_its_builder_when_named_in_a_partial(): void
+    {
+        $resolved = 0;
+        $this->app->resolving(PlansWindowBuilder::class, function () use (&$resolved): void {
+            $resolved++;
+        });
+        $this->switchDomainOff('plans');
+
+        $this->inertia('/', [
+            'X-Inertia-Partial-Component' => 'web/Home',
+            'X-Inertia-Partial-Data' => 'window_plans_list',
+        ])->assertOk()->assertJsonMissingPath('props.window_plans_list');
+        $this->assertSame(0, $resolved);
     }
 
     public function test_unbooted_modules_have_no_registration_in_either_factory(): void

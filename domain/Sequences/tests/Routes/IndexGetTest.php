@@ -9,6 +9,7 @@ use Domain\Sequences\Http\Pages\SequenceIndexPageBuilder;
 use Domain\Sequences\Http\Pages\SequenceIndexPageData;
 use Domain\Sequences\SequencesDomain;
 use Illuminate\Http\Request;
+use Inertia\Testing\AssertableInertia;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
@@ -30,6 +31,19 @@ final class IndexGetTest extends GuardedRouteEntryTestCase
         $index = $factory->create(SequenceIndexPageData::class, Request::create('/sequences'));
 
         $this->assertSame('Sequences', $index->layout()->root->children[0]->children[0]->text);
+    }
+
+    public function test_the_full_index_exposes_the_projected_layout(): void
+    {
+        $journal = $this->journal->owner();
+
+        $this->actingAs($journal->ownerUser())->get(route('sequences.index'))->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->component('layout/DeclaredLayout')
+                ->where('page.status', 'ready')
+                ->where('page.data.root.children.0.children.0.text', 'Sequences')
+                ->missing('page.data.shown'),
+        );
     }
 
     protected static function bootedDomains(): array

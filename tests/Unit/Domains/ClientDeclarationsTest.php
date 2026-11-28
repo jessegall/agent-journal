@@ -25,19 +25,27 @@ use App\Support\ClientDeclarations;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Text\Declarations\Section;
+use App\Web\Creation\DeclaredSurfaceCheck;
+use App\Web\Creation\Exceptions\InvalidSurface;
+use App\Web\Creation\PageFactory;
+use App\Web\Creation\SurfaceDefinition;
+use App\Web\Creation\WindowFactory;
 use App\Web\Declarations\RegisteredPage;
 use App\Web\Exceptions\ClientSlotMismatch;
+use App\Web\Exceptions\InvalidPageDeclaration;
+use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\ClientDeclarations\Desk\DeskDomain;
 use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\ClientDeclarations\Library\AddBook;
 use Tests\Fixtures\ClientDeclarations\Library\BookCount;
-use Tests\Fixtures\ClientDeclarations\Library\BooksRequest;
-use Tests\Fixtures\ClientDeclarations\Library\BooksResolver;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPageData;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BooksPageBuilder;
 use Tests\Fixtures\ClientDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\ClientDeclarations\Library\ShelfItems;
-use Tests\Fixtures\ClientDeclarations\Library\TwoRequestsResolver;
-use Tests\Fixtures\ClientDeclarations\RecentNotesData;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPaneData;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfPageBuilder;
+use Tests\Fixtures\ClientDeclarations\Shelf\ShelfPageData;
 use Tests\Fixtures\Domains\Books\BooksDomain;
 
 /**
@@ -61,8 +69,8 @@ final class ClientDeclarationsTest extends TestCase
             [$book->key, $book->uri, $book->path->parameters],
         );
         $this->assertSame(
-            [BooksResolver::class, RecentNotesData::class, BooksRequest::class],
-            [$books->resolver->resolver, $books->resolver->dataClass, $books->resolver->request],
+            [BooksPageBuilder::class, BooksPageData::class, BooksPaneData::class],
+            [$books->surface->builder, $books->surface->type, $books->window?->type],
         );
         $this->assertStringEndsWith('Library/Resources/js/pages/library/Book/Reader.vue', $book->componentFile);
 
@@ -152,13 +160,14 @@ final class ClientDeclarationsTest extends TestCase
 
         $this->check(
             pages: [
-                Page::make(
-                    'books',
-                    'Books',
-                    Icon::Docs,
-                    BooksResolver::class,
-                    '../../../../Desk/Resources/js/pages/desk/Notes.vue',
-                ),
+                Page::build()
+                    ->key('books')
+                    ->title('Books')
+                    ->icon(Icon::Docs)
+                    ->pageType(BooksPageData::class)
+                    ->pageBuilder(BooksPageBuilder::class)
+                    ->component('../../../../Desk/Resources/js/pages/desk/Notes.vue')
+                    ->finish(),
             ],
         );
     }
@@ -167,14 +176,37 @@ final class ClientDeclarationsTest extends TestCase
     {
         $this->expectException(ClientComponentMissing::class);
 
-        $this->check(pages: [Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Missing.vue')]);
+        $this->check(pages: [Page::build()
+            ->key('books')
+            ->title('Books')
+            ->icon(Icon::Docs)
+            ->pageType(BooksPageData::class)
+            ->pageBuilder(BooksPageBuilder::class)
+            ->component('Missing.vue')
+            ->finish()]);
     }
 
-    public function test_a_reader_with_two_requests_is_refused(): void
+    public function test_a_page_cannot_use_another_owners_registered_pair(): void
     {
-        $this->expectExceptionObject(ClientResolverInvalid::manyRequests('library.books', TwoRequestsResolver::class));
+        $owner = DomainEntry::fromClass(LibraryDomain::class)->declaring();
+        $surface = new SurfaceDefinition(ShelfPageData::class, ShelfPageBuilder::class, 'Books.vue');
+        $container = new Container();
+        $check = new DeclaredSurfaceCheck(new PageFactory($container), new WindowFactory($container));
 
-        $this->check(pages: [Page::make('books', 'Books', Icon::Docs, TwoRequestsResolver::class, 'Books.vue')]);
+        $this->expectExceptionObject(InvalidSurface::unowned(
+            'library.books',
+            ShelfPageData::class,
+            ShelfPageBuilder::class,
+        ));
+
+        $check->registerPage($owner, 'library.books', $surface);
+    }
+
+    public function test_a_home_position_requires_a_window_pair(): void
+    {
+        $this->expectExceptionObject(InvalidPageDeclaration::missingWindow('library.books'));
+
+        $this->check(pages: [$this->page('books')->onHome(10)]);
     }
 
     public function test_a_visibility_check_that_is_no_check_is_refused(): void
@@ -271,7 +303,14 @@ final class ClientDeclarationsTest extends TestCase
 
     private function page(string $key): Page
     {
-        return Page::make($key, 'Books', Icon::Docs, BooksResolver::class, 'Books.vue');
+        return Page::build()
+            ->key($key)
+            ->title('Books')
+            ->icon(Icon::Docs)
+            ->pageType(BooksPageData::class)
+            ->pageBuilder(BooksPageBuilder::class)
+            ->component('Books.vue')
+            ->finish();
     }
 
     /**

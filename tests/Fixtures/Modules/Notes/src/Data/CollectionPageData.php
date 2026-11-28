@@ -11,6 +11,11 @@ use Spatie\LaravelData\Data;
  */
 final class CollectionPageData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<CollectionPageDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = CollectionPageDataFields::class;
+
     /**
      * @param  list<string>  $texts
      */

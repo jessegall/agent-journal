@@ -9,8 +9,9 @@ use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Enums\Icon;
 use App\Support\Domain;
 use App\Support\Exports;
+use Tests\Fixtures\Modules\Handbook\Http\Pages\EntryPageBuilder;
+use Tests\Fixtures\Modules\Handbook\Http\Pages\EntryPageData;
 use Tests\Fixtures\Modules\Handbook\Policies\ReadHandbook;
-use Tests\Fixtures\Modules\Handbook\Resolvers\EntryLayoutResolver;
 
 /**
  * An installable package an author writes with no Vue file and no Documents dependency: one entry page declared as a
@@ -37,7 +38,14 @@ final class HandbookDomain extends Domain implements PageProvider
     public function pages(): array
     {
         return [
-            Page::layout('entry', 'Handbook entry', Icon::Docs, EntryLayoutResolver::class)
+            Page::build()
+                ->key('entry')
+                ->title('Handbook entry')
+                ->icon(Icon::Docs)
+                ->pageType(EntryPageData::class)
+                ->pageBuilder(EntryPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('entries/{entry}')
                 ->inInspector()
                 ->visibleWhen(ReadHandbook::class),

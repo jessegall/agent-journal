@@ -15,12 +15,17 @@ use App\Support\ClientDeclarations;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainEntry;
 use App\Text\Declarations\Section;
+use App\Web\Creation\DeclaredSurfaceCheck;
 use Illuminate\Routing\Router;
+use LogicException;
 use Tests\Fixtures\ClientDeclarations\Desk\DeskDomain;
 use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\ClientDeclarations\Desk\SaveDraft;
 use Tests\Fixtures\ClientDeclarations\Library\AddBook;
-use Tests\Fixtures\ClientDeclarations\Library\BooksResolver;
+use Tests\Fixtures\ClientDeclarations\Library\BookPageData;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPageData;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BookPageBuilder;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BooksPageBuilder;
 use Tests\Fixtures\ClientDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\ClientDeclarations\Library\NobodySees;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -47,6 +52,14 @@ final class DeclaredRoutesTest extends TestCase
 
         $declarations = $this->declarations();
         $this->app->instance(ClientDeclarations::class, $declarations);
+        $surfaces = $this->app->make(DeclaredSurfaceCheck::class);
+
+        foreach ($declarations->pages() as $page) {
+            $surfaces->registerPage($page->owner, $page->key, $page->surface);
+        }
+
+        $this->app->bind(BookPageBuilder::class, static fn () => throw new LogicException('Hidden builder resolved.'));
+
         $router = $this->app->make(Router::class);
         new DeclaredRoutes($declarations)->register($router);
         $router->getRoutes()->refreshNameLookups();
@@ -74,11 +87,25 @@ final class DeclaredRoutesTest extends TestCase
     private function declarations(): ClientDeclarations
     {
         $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
-            Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')
+            Page::build()
+                ->key('books')
+                ->title('Books')
+                ->icon(Icon::Docs)
+                ->pageType(BooksPageData::class)
+                ->pageBuilder(BooksPageBuilder::class)
+                ->component('Books.vue')
+                ->finish()
                 ->at('')
                 ->slots(fn (PageSlots $slots) => $slots->add('aside', SlotContextType::Nothing))
                 ->actions(fn (PageActions $actions) => $actions->post('books', AddBook::class, 'add')),
-            Page::make('hidden', 'Hidden', Icon::Docs, BooksResolver::class, 'Books.vue')
+            Page::build()
+                ->key('hidden')
+                ->title('Hidden')
+                ->icon(Icon::Docs)
+                ->pageType(BookPageData::class)
+                ->pageBuilder(BookPageBuilder::class)
+                ->component('Books.vue')
+                ->finish()
                 ->at('hidden')
                 ->visibleWhen(NobodySees::class)
                 ->actions(fn (PageActions $actions) => $actions->post('hidden/books', AddBook::class, 'add-hidden')),

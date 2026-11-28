@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Reads;
 
+use App\Actors\ActorStore;
+use App\Bus\RequestKey;
 use App\Events\Web\InboxAccessEnded;
 use App\Events\Web\PageChanged;
 use App\Events\Web\ProtectedViewInvalidated;
+use App\Support\WindowResults;
+use App\Web\Creation\SurfaceDefinition;
 use App\Web\LiveProps;
 use App\Web\PageProps;
 use App\Web\UserChannel;
 use Closure;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPaneData;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Windows\BooksWindowBuilder;
 use Tests\Support\Entries\Attributes\TestsRead;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -67,6 +73,38 @@ final class PagePropsTest extends TestCase
                 fn (AssertableInertia $reload) => $reload->where('inspector', null),
             ),
         );
+    }
+
+    public function test_a_surface_and_each_copy_have_their_own_receipt_key(): void
+    {
+        $keys = $this->app->make(RequestKey::class);
+        $results = $this->app->make(WindowResults::class);
+        $surface = new SurfaceDefinition(BooksPaneData::class, BooksWindowBuilder::class, 'BooksPane.vue');
+        $keys->set('one-outer-visit');
+
+        $this->app->make(ActorStore::class)->actAsSystem('fixture', function () use ($keys, $results, $surface): void {
+            $seen = [];
+
+            $read = function () use ($keys, &$seen): BooksPaneData {
+                $seen[] = $keys->key();
+
+                return BooksPaneData::build()->titles([])->finish();
+            };
+
+            $parts = [
+                'page library.books',
+                'inspector library.books',
+                'window library.books~abcdef123456',
+                'window library.books~123456abcdef',
+            ];
+
+            foreach ($parts as $part) {
+                $results->surface('library.books', $part, [], $surface, $read);
+            }
+
+            $this->assertCount(4, array_unique($seen));
+            $this->assertSame('one-outer-visit', $keys->key());
+        });
     }
 
     /**

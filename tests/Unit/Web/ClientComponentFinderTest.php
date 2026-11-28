@@ -9,7 +9,8 @@ use App\Navigation\Enums\Icon;
 use App\Support\ClientDeclarations;
 use App\Support\DomainEntry;
 use InvalidArgumentException;
-use Tests\Fixtures\ClientDeclarations\Library\BooksResolver;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPageData;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BooksPageBuilder;
 use Tests\Fixtures\ClientDeclarations\Library\LibraryDomain;
 use Tests\TestCase;
 
@@ -25,7 +26,14 @@ final class ClientComponentFinderTest extends TestCase
 
         $this->app->instance(ClientDeclarations::class, ClientDeclarations::check([
             DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
-                Page::make('index', 'Library', Icon::Docs, BooksResolver::class, 'Index.vue')->at(''),
+                Page::build()
+                    ->key('index')
+                    ->title('Library')
+                    ->icon(Icon::Docs)
+                    ->pageType(BooksPageData::class)
+                    ->pageBuilder(BooksPageBuilder::class)
+                    ->component('Index.vue')
+                    ->finish()->at(''),
             ]),
         ]));
     }

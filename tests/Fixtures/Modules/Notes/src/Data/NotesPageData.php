@@ -11,8 +11,15 @@ use Spatie\LaravelData\Data;
  */
 final class NotesPageData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<NotesPageDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = NotesPageDataFields::class;
+
     /**
      * @param  list<string>  $texts
      */
-    public function __construct(public readonly array $texts) {}
+    public function __construct(
+        public readonly array $texts,
+    ) {}
 }

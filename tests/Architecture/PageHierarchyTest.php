@@ -8,7 +8,7 @@ use App\Http\Pages\Page;
 use App\Support\Reflector;
 
 /**
- * Every page class under a subject folder of Http/Pages extends that subject's page, named after the folder, and
+ * Every recipe under a subject folder of Http/Pages extends that subject's page, named after the folder, and
  * every subject's page extends the one base Page, so what pages share is written once.
  */
 final class PageHierarchyTest extends TestCase
@@ -21,9 +21,17 @@ final class PageHierarchyTest extends TestCase
             $subject = basename($folder).'Page';
 
             foreach (glob("{$folder}/*.php") ?: [] as $file) {
+                $name = basename($file, '.php');
+
+                if (str_ends_with($name, 'PageBuilder')
+                    || str_ends_with($name, 'PageData')
+                    || str_ends_with($name, 'PageDataFields')) {
+                    continue;
+                }
+
                 $namespace = $this->namespaceOf($file);
                 $class = $namespace.'\\'.basename($file, '.php');
-                $expected = basename($file, '.php') === $subject ? Page::class : "{$namespace}\\{$subject}";
+                $expected = $name === $subject ? Page::class : "{$namespace}\\{$subject}";
 
                 if (! Reflector::exists($class)) {
                     $faults[] = "{$file} declares no class {$class}";
@@ -43,7 +51,7 @@ final class PageHierarchyTest extends TestCase
     }
 
     /**
-     * The subject folders of Core's and every domain's Http/Pages, without the resolvers.
+     * The subject folders of Core's and every domain's Http/Pages, without the support and resolver folders.
      *
      * @return list<string>
      */
@@ -54,7 +62,7 @@ final class PageHierarchyTest extends TestCase
             ...glob(base_path('domain/*/src/Http/Pages/*'), GLOB_ONLYDIR) ?: [],
         ];
 
-        return array_values(array_filter($folders, fn (string $folder) => basename($folder) !== 'Resolvers'));
+        return array_values(array_filter($folders, fn (string $folder) => ! in_array(basename($folder), ['Support', 'Resolvers'], true)));
     }
 
     private function namespaceOf(string $file): string

@@ -26,9 +26,12 @@ use App\Web\Exceptions\InvalidPageDeclaration;
 use PHPUnit\Framework\TestCase;
 use Spatie\LaravelData\Optional;
 use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;
-use Tests\Fixtures\ClientDeclarations\RecentNotesResolver;
-use Tests\Fixtures\ClientDeclarations\ShelfLayoutResolver;
+use Illuminate\Http\Request;
+use Tests\Fixtures\ClientDeclarations\RecentNotesData;
+use Tests\Fixtures\ClientDeclarations\RecentNotesPageBuilder;
 use Tests\Fixtures\ClientDeclarations\ShelfSectionLayoutResolver;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageBuilder;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageData;
 
 /**
  * A page a domain declares as a layout: its reader must return a layout, and a layout that breaks the catalogue of
@@ -58,16 +61,25 @@ final class DeclaredLayoutTest extends TestCase
 
     public function test_a_layout_page_is_drawn_by_the_shared_renderer_from_its_readers_layout(): void
     {
-        $page = Page::layout('shelf', 'Shelf', Icon::Docs, ShelfLayoutResolver::class)->at('shelf');
+        $page = Page::build()
+            ->key('shelf')
+            ->title('Shelf')
+            ->icon(Icon::Docs)
+            ->pageType(ShelfLayoutPageData::class)
+            ->pageBuilder(ShelfLayoutPageBuilder::class)
+            ->declaredLayout()
+            ->finish()->at('shelf');
 
         $this->assertTrue($page->isDeclared);
-        $this->assertSame(DeclaredLayoutData::class, $page->dataClass);
-        $this->assertSame(DomainClient::DECLARED_LAYOUT, $page->component);
+        $this->assertSame(ShelfLayoutPageData::class, $page->surface->type);
+        $this->assertSame(DomainClient::DECLARED_LAYOUT, $page->surface->component);
         $this->assertSame('shelf', $page->path);
+
+        $layout = new ShelfLayoutPageBuilder()->build(Request::create('/shelf'))->layout();
 
         $this->assertSame(
             ['title', 'books', 'none-lent'],
-            array_map(fn (LayoutPartData $part) => $part->key, new ShelfLayoutResolver()->read()->root->children),
+            array_map(fn (LayoutPartData $part) => $part->key, $layout->root->children),
         );
     }
 
@@ -76,10 +88,17 @@ final class DeclaredLayoutTest extends TestCase
         $this->expectException(InvalidPageDeclaration::class);
 
         $this->expectExceptionMessage(
-            InvalidPageDeclaration::readerReturnsNoLayout('notes', RecentNotesResolver::class)->getMessage(),
+            InvalidPageDeclaration::typePresentsNoLayout('notes', RecentNotesData::class)->getMessage(),
         );
 
-        Page::layout('notes', 'Notes', Icon::Docs, RecentNotesResolver::class);
+        Page::build()
+            ->key('notes')
+            ->title('Notes')
+            ->icon(Icon::Docs)
+            ->pageType(RecentNotesData::class)
+            ->pageBuilder(RecentNotesPageBuilder::class)
+            ->declaredLayout()
+            ->finish();
     }
 
     public function test_a_layout_section_is_drawn_by_the_shared_renderer_and_refuses_other_data(): void

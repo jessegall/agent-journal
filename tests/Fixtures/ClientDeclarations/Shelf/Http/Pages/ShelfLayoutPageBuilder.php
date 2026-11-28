@@ -2,19 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\ClientDeclarations;
+namespace Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages;
 
-use App\Navigation\Contracts\PageResolver;
+use App\Web\Creation\Contracts\PageBuilder;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
+use Illuminate\Http\Request;
 
 /**
  * A declared page's reader: a header, a list of two books and an empty notice.
  */
-final readonly class ShelfLayoutResolver implements PageResolver
+final readonly class ShelfLayoutPageBuilder implements PageBuilder
 {
-    public function read(): DeclaredLayoutData
+    public function build(Request $visit): ShelfLayoutPageData
+    {
+        return ShelfLayoutPageData::build()->shown($this->layout())->finish();
+    }
+
+    private function layout(): DeclaredLayoutData
     {
         return DeclaredLayoutData::build()
             ->root(
