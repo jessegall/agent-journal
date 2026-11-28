@@ -1,0 +1,38 @@
+{
+    "driver": "driver",
+    "driver_version": "sha256:8204b26bef28c59c9fbd0dae125cb1dd58c2eb075c2213ab3282b587015ca866",
+    "profile": "",
+    "mode": "process",
+    "geometry": {
+        "columns": 0,
+        "rows": 0
+    },
+    "recorded_at": "2026-11-28T01:24:20.082596+00:00",
+    "initial_state": {
+        "working_folder": "/workspace",
+        "arguments": [
+            "codex",
+            "--version"
+        ],
+        "environment_names": []
+    },
+    "output": [
+        {
+            "offset": 198443000,
+            "stream": "stderr",
+            "bytes": "V0FSTklORzogcHJvY2VlZGluZywgZXZlbiB0aG91Z2ggd2UgY291bGQgbm90IGNyZWF0ZSBQQVRIIGFsaWFzZXM6IFBlcm1pc3Npb24gZGVuaWVkIChvcyBlcnJvciAxMykK"
+        },
+        {
+            "offset": 213462000,
+            "stream": "stdout",
+            "bytes": "Y29kZXgtY2xpIDAuMTY1LjAK"
+        }
+    ],
+    "inputs": [],
+    "resizes": [],
+    "exit_code": 0,
+    "checkpoints": [],
+    "script_parameters": [],
+    "expected_keys": [],
+    "expected_transitions": []
+}
