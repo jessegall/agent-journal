@@ -28,7 +28,7 @@ use PhpOption\Option;
  * @property string|null $line
  * @property bool $is_running
  * @property CarbonImmutable $changed_at
- * @property-read string $changed_at_text
+ * @property-read non-falsy-string $changed_at_text
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  *
@@ -117,7 +117,7 @@ final class AgentRunningTool extends JournalModel implements EventSource, Readab
     /**
      * When the line last changed, in UTC with microseconds, as the browser orders the changes it receives.
      *
-     * @return Attribute<string, never>
+     * @return Attribute<non-falsy-string, never>
      */
     protected function changedAtText(): Attribute
     {

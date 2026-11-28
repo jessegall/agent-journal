@@ -301,7 +301,7 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
      * Messages stored in any of the inboxes.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $inboxIds
+     * @param  list<string>  $ids
      */
     #[Scope]
     protected function inInboxes(Builder $query, array $ids): void

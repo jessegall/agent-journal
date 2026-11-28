@@ -62,11 +62,11 @@ final readonly class RuleResolver implements RuleResolverContract
     {
         $records = $this->matching($filters)->orderByDesc('id')->limit($limit)->get(['id', 'number', 'text']);
 
-        return $records->map(fn (Rule $rule) => LayoutRowData::build()
+        return array_values($records->map(fn (Rule $rule) => LayoutRowData::build()
             ->key($rule->id)
             ->label(PaneExcerpt::of($rule->text))
             ->value("Rule {$rule->number}")
-            ->finish())->values()->all();
+            ->finish())->all());
     }
 
     /** @return Builder<Rule> */

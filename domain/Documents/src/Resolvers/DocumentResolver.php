@@ -83,12 +83,12 @@ final readonly class DocumentResolver implements DocumentResolverContract
             ->with('currentRevision:id,title')
             ->get(['id', 'number', 'current_revision_id']);
 
-        return $records->map(fn (Document $record) => LayoutRowData::build()
+        return array_values($records->map(fn (Document $record) => LayoutRowData::build()
             ->key($record->id)
             ->label($record->currentRevision->title)
             ->value('Document')
             ->href(route('documents.document', ['document' => $record->number], false))
-            ->finish())->values()->all();
+            ->finish())->all());
     }
 
     /** @return Builder<Document> */

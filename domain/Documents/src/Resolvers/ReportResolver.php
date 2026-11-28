@@ -66,12 +66,12 @@ final readonly class ReportResolver implements ReportResolverContract
             ->limit($limit)
             ->get(['id', 'number', 'title']);
 
-        return $records->map(fn (Report $record) => LayoutRowData::build()
+        return array_values($records->map(fn (Report $record) => LayoutRowData::build()
             ->key($record->id)
             ->label($record->title)
             ->value('Report')
             ->href(route('documents.report', ['report' => $record->number], false))
-            ->finish())->values()->all();
+            ->finish())->all());
     }
 
     /** @return Builder<Report> */

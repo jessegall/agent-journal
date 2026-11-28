@@ -81,7 +81,7 @@ abstract class ChatFields
         return $this;
     }
 
-    /** @param list<SlotSectionData> $dockSections */
+    /** @param  list<SlotSectionData>  $sections */
     public function dockSections(array $sections): static
     {
         $this->dockSections = $sections;

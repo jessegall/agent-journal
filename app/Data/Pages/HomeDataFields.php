@@ -34,7 +34,7 @@ final class HomeDataFields
         return $this;
     }
 
-    /** @param list<SlotSectionData> $barSections */
+    /** @param  list<SlotSectionData>  $sections */
     public function barSections(array $sections): self
     {
         $this->barSections = $sections;

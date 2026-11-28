@@ -29,7 +29,9 @@ use PhpOption\Some;
 #[StateType(ReadSkillStateReference::class, schemaVersion: 1)]
 final class ReadSkillState extends AgentState implements UniqueState
 {
-    use ToolBudgetDecisions;
+    use ToolBudgetDecisions {
+        onShellCommand as private answerShellCommand;
+    }
 
     private const int MOST_TOOL_USES = 5;
 
@@ -75,11 +77,11 @@ final class ReadSkillState extends AgentState implements UniqueState
 
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        if ($input->isReadOnly() || $this->showsASkill($input)) {
+        if ($this->showsASkill($input)) {
             return Decision::delegate();
         }
 
-        return $this->decide();
+        return $this->answerShellCommand($input);
     }
 
     public function onStop(StopRequested $input): Decision

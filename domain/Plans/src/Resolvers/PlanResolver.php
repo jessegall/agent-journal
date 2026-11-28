@@ -77,11 +77,11 @@ final readonly class PlanResolver implements PlanResolverContract
             ->limit($limit)
             ->get(['id', 'title', 'status']);
 
-        return $records->map(fn (Plan $plan) => LayoutRowData::build()
+        return array_values($records->map(fn (Plan $plan) => LayoutRowData::build()
             ->key($plan->id)
             ->label($plan->title)
             ->value(ucfirst($plan->status->value))
-            ->finish())->values()->all();
+            ->finish())->all());
     }
 
     /**

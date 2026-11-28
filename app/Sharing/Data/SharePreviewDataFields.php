@@ -51,7 +51,7 @@ final class SharePreviewDataFields
         return $this;
     }
 
-    /** @param list<RootShareData> $openProposals */
+    /** @param  list<RootShareData>  $proposals */
     public function openProposals(array $proposals): self
     {
         $this->openProposals = $proposals;

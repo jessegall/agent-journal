@@ -62,11 +62,11 @@ final readonly class TaskListResolver implements TaskListResolverContract
     {
         $records = $this->matching($filters)->orderBy('id')->limit($limit)->get(['id', 'title', 'status']);
 
-        return $records->map(fn (Task $task) => LayoutRowData::build()
+        return array_values($records->map(fn (Task $task) => LayoutRowData::build()
             ->key($task->id)
             ->label($task->title)
             ->value($task->status->standingWord())
-            ->finish())->values()->all();
+            ->finish())->all());
     }
 
     /** @return Builder<Task> */

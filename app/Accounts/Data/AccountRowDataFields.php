@@ -177,7 +177,7 @@ final class AccountRowDataFields
         return $this;
     }
 
-    /** @param list<AccountStartData> $recentStarts */
+    /** @param  list<AccountStartData>  $starts */
     public function recentStarts(array $starts): self
     {
         $this->recentStarts = $starts;
