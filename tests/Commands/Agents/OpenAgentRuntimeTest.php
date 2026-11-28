@@ -133,7 +133,7 @@ final class OpenAgentRuntimeTest extends TestCase
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
 
         $this->assertSame(
-            ['claude-code-headless', 'claude-code', 'Claude Code headless', '2.1.332'],
+            ['claude-code-headless', 'claude-code', 'Claude Code', '2.1.332'],
             [$runtime->driver_key, $runtime->family, $runtime->driver_label, $runtime->driver_build],
         );
         $this->assertSame($runtime->driver_label, AgentSession::query()->findOrFail($opened->sessionId)->driver_label);

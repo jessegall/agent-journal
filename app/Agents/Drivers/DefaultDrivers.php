@@ -9,10 +9,13 @@ use App\Agents\Drivers\Capabilities\CodexTerminalCapabilities;
 use App\Agents\Drivers\Capabilities\HeadlessCapabilities;
 use App\Agents\Drivers\Capabilities\TerminalCapabilities;
 use App\Agents\Drivers\Contracts\DriverCapabilities;
+use App\Agents\Drivers\Contracts\RuntimeHandling;
 use App\Agents\Drivers\Enums\DriverCapability;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\MarkTone;
 use App\Agents\Drivers\Enums\SignInCodeDirection;
+use App\Agents\Drivers\Handling\TerminalHandling;
+use App\Agents\Drivers\Handling\TurnHandling;
 use App\Agents\Values\ProviderKey;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
@@ -92,6 +95,7 @@ final readonly class DefaultDrivers
                 DriverType::Terminal,
                 'Claude Code',
                 TerminalCapabilities::class,
+                TerminalHandling::class,
             ),
             self::registration(
                 'claude-code-headless',
@@ -99,6 +103,7 @@ final readonly class DefaultDrivers
                 DriverType::Headless,
                 'Claude Code',
                 HeadlessCapabilities::class,
+                TurnHandling::class,
             ),
             self::registration(
                 'codex',
@@ -106,6 +111,7 @@ final readonly class DefaultDrivers
                 DriverType::Terminal,
                 'Codex',
                 CodexTerminalCapabilities::class,
+                TerminalHandling::class,
             ),
             self::registration(
                 'codex-headless',
@@ -113,12 +119,14 @@ final readonly class DefaultDrivers
                 DriverType::Headless,
                 'Codex',
                 CodexHeadlessCapabilities::class,
+                TurnHandling::class,
             ),
         ];
     }
 
     /**
      * @param  class-string<DriverCapabilities>  $capabilities
+     * @param  class-string<RuntimeHandling>  $handling
      */
     private static function registration(
         string $key,
@@ -126,6 +134,7 @@ final readonly class DefaultDrivers
         DriverType $driverType,
         string $label,
         string $capabilities,
+        string $handling,
     ): DriverRegistration {
         return new DriverRegistration(
             DriverKey::from($key),
@@ -138,7 +147,7 @@ final readonly class DefaultDrivers
             $family,
             $capabilities,
             [DriverCapability::Run, DriverCapability::HookMethods],
-            true,
+            $handling,
         );
     }
 }

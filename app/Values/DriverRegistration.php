@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Agents\Drivers\Contracts\DriverCapabilities;
+use App\Agents\Drivers\Contracts\RuntimeHandling;
 use App\Agents\Drivers\Enums\DriverCapability;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Drivers\Handling\HostHandling;
 
 /**
  * One registered driver: its opaque key, the family and driver type it is chosen by, the label the user reads, the protocols it
@@ -22,8 +24,8 @@ final readonly class DriverRegistration
      * @param  string  $skillProtocol  the key of the skill format and installer the driver reads, one per family
      * @param  class-string<DriverCapabilities>  $capabilities
      * @param  list<DriverCapability>  $profileRequirements  the operations every profile on the driver needs
-     * @param  bool  $isDrivenByJournal  whether the journal opens and drives the driver's runtimes itself, one turn
-     *                                   at a time, instead of its host
+     * @param  class-string<RuntimeHandling>  $handling  how the driver's runtimes open, go on and end: the journal's
+     *                                                   turns, its terminals, or its host's
      */
     public function __construct(
         public DriverKey $key,
@@ -36,7 +38,7 @@ final readonly class DriverRegistration
         public string $skillProtocol,
         public string $capabilities,
         public array $profileRequirements,
-        public bool $isDrivenByJournal = false,
+        public string $handling = HostHandling::class,
     ) {}
 
     /**

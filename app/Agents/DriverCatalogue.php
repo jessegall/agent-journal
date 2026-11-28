@@ -7,6 +7,7 @@ namespace App\Agents;
 use App\Agents\Drivers\Contracts\Driver as DriverContract;
 use App\Agents\Drivers\Contracts\DriverCapabilities;
 use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
+use App\Agents\Drivers\Contracts\RuntimeHandling;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Exceptions\DriverFamilyRegisteredTwice;
 use App\Agents\Exceptions\DriverRegisteredTwice;
@@ -178,10 +179,15 @@ final class DriverCatalogue implements DriverCatalogueContract
     {
         $driven = array_filter(
             $this->catalogue(),
-            fn (DriverRegistration $registration) => $registration->isDrivenByJournal,
+            fn (DriverRegistration $registration) => $this->handlingOf($registration)->isRunByJournal(),
         );
 
         return array_values(array_map(fn (DriverRegistration $registration) => $registration->key->key, $driven));
+    }
+
+    private function handlingOf(DriverRegistration $registration): RuntimeHandling
+    {
+        return $this->container->make($registration->handling);
     }
 
     public function registrationOfFamily(string $family): DriverRegistration

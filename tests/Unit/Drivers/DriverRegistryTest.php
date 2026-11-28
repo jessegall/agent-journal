@@ -31,9 +31,9 @@ final class DriverRegistryTest extends TestCase
 {
     private const array LABELS = [
         'Claude Code',
-        'Claude Code headless',
+        'Claude Code',
         'Codex',
-        'Codex headless',
+        'Codex',
     ];
 
     public function test_the_registry_lists_the_four_default_labels(): void
