@@ -129,7 +129,10 @@ func (server Server) run(peer *peerConn, conn *net.UnixConn, request Frame, fold
 		peer.follow(conn, input, group, finished)
 	}()
 
-	waitErr := command.Wait()
+	// The process is waited for without command.Wait, which closes the output pipes the moment it exits: its last
+	// output would be lost unread. The group ends, the output is read to its end, and only then the exit goes out.
+	state, waitErr := command.Process.Wait()
+	command.ProcessState = state
 	close(finished)
 	_ = syscall.Kill(-group, syscall.SIGKILL)
 	streams.Wait()
