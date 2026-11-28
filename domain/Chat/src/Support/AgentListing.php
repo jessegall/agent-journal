@@ -108,7 +108,7 @@ final readonly class AgentListing
             ->limit(count($inboxIds))
             ->toBase()
             ->pluck('unread_count', 'inbox_id')
-            ->map(intval(...))
+            ->map(fn (mixed $count): int => intval($count))
             ->all();
     }
 
