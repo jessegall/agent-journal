@@ -12,6 +12,7 @@ use App\Events\Web\ProtectedViewInvalidated;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
+use App\Support\NavigationRecords;
 use App\Values\FilePath;
 use App\Web\AppContext;
 use App\Web\InstallationFaults;
@@ -87,6 +88,15 @@ final class AppContextTest extends TestCase
         $this->assertInstanceOf(LiveProp::class, $props['navigation']);
         $this->assertInstanceOf(DeferProp::class, $props['navigationCounts']);
         $this->assertSame('navigation-counts', $props['navigationCounts']->group());
+    }
+
+    public function test_the_owners_navigation_names_only_the_groups_its_items_sit_in(): void
+    {
+        $this->journal->owner();
+
+        $groups = $this->app->make(NavigationRecords::class)->tree($this->request())->toArray()['groups'];
+
+        $this->assertNotContains('', array_column($groups, 'key'));
     }
 
     public function test_the_owners_navigation_and_counts_are_read_again_on_the_page_events(): void

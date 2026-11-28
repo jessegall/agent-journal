@@ -53,6 +53,14 @@ final readonly class NavigationCandidate
         return (string) $this->navigation->navigationItem->group;
     }
 
+    /**
+     * Whether the root sits in a sidebar group, which the menu then names.
+     */
+    public function isGrouped(): bool
+    {
+        return $this->navigation->navigationItem->group !== null;
+    }
+
     public function isHome(): bool
     {
         return $this->navigation->page?->key === 'web.home';

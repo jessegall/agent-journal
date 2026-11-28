@@ -45,8 +45,8 @@ final readonly class NavigationIndex
      */
     public function groupKeys(): array
     {
-        $groups = array_map(fn (NavigationCandidate $root) => $root->group(), $this->roots);
+        $grouped = array_filter($this->roots, fn (NavigationCandidate $root) => $root->isGrouped());
 
-        return array_values(array_unique(array_filter($groups, fn (string|null $group) => $group !== null)));
+        return array_values(array_unique(array_map(fn (NavigationCandidate $root) => $root->group(), $grouped)));
     }
 }
