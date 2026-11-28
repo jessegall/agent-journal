@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Work;
 
 use App\Agents\Drivers\Processes\ProcessDrivers;
+use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Bus\Contracts\JournalCommands;
 use App\Exceptions\WorkerFenced;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
@@ -56,6 +58,7 @@ final readonly class DriverWorkers
         private DriverRestartSignal $restart,
         private CommandRegistry $registry,
         private WorkerLease $lease,
+        private WorkerReportRetries $retries,
     ) {}
 
     /**
@@ -193,13 +196,22 @@ final readonly class DriverWorkers
 
         $this->lease->hold($work->processId, $work->generation, function () use ($actions, $work, &$answered): void {
             foreach ($actions->commands as $command) {
-                $answered = $answered->then($work->driver->onAnswered($command, $this->run($command)));
+                $answer = $command instanceof NotifyRequestProgressCommand || $command instanceof NotifyRuntimeActivityCommand
+                    ? $this->retries->run($work, fn () => $this->run($command), fn () => $this->renew($work))
+                    : $this->run($command);
+                $answered = $answered->then($work->driver->onAnswered($command, $answer));
             }
         });
 
         if ($answered->commands !== []) {
             $this->perform($work, $answered);
         }
+    }
+
+    private function renew(DriverWork $work): void
+    {
+        $this->run(new RenewHostWorkerCommand($work->processId, $work->generation));
+        $work->renew($this->monotonic->nanoseconds());
     }
 
     /**

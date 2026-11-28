@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Bus\Attributes\RetriedWhenItFails;
 use App\Contracts\Events\Listener;
 use App\Events\Connections\HostProcessLost;
 use App\Models\Agents\AgentRuntime;
@@ -15,6 +16,7 @@ use App\Models\Hosts\HostProcess;
  * journal terminal opens again for the same start, a lost turn is followed by the next one for the work that waits,
  * and a host-run driver continues nothing of its own.
  */
+#[RetriedWhenItFails]
 final readonly class OpenLostAgentProcess implements Listener
 {
     public function __construct(private DriverCatalogue $drivers) {}

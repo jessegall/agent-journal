@@ -8,6 +8,7 @@ use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestOutcome;
 use App\Agents\Drivers\Enums\RequestProgress;
+use App\Agents\Drivers\Work\RequestRetries;
 use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandHandler;
 use App\Events\Sessions\SessionStateChanged;
@@ -22,6 +23,7 @@ use App\Processes\Enums\RuntimeEventType;
 use App\Sessions\InitialWakeSettlement;
 use App\Sessions\StartIdentity;
 use App\Terminals\TerminalGrantReports;
+use App\Time\Contracts\ServerClock;
 use Carbon\CarbonImmutable;
 
 final readonly class NotifyRequestProgressHandler implements CommandHandler
@@ -39,6 +41,8 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
         private TerminalGrantReports $terminalGrants,
         private StartIdentity $startIdentity,
         private CommandFacts $facts,
+        private RequestRetries $retries,
+        private ServerClock $clock,
     ) {}
 
     public function handle(NotifyRequestProgressCommand $command): void
@@ -78,10 +82,6 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
             ),
         };
 
-        if ($this->needsAttention($command, $request)) {
-            $runtime->holdFor(HoldReason::NeedsAttention);
-        }
-
         if ($request->operation->isTerminalControl()) {
             $this->terminalGrants->settle($request, $command);
         }
@@ -96,6 +96,26 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
 
         if ($command->navigation !== null) {
             $this->navigationReports->apply($request, $command->navigation);
+        }
+
+        $failure = $command->refusal?->startReason()->explanation() ?? 'The request did not complete.';
+
+        $safeWake = $request->operation === DriverOperation::Wake
+            && $command->hasCreatedNoProcess
+            && $command->refusal?->needsAttention() === false;
+
+        if ($safeWake && $this->retries->retryIfSafe($request, $failure)) {
+            $this->facts->publishAfterCommit(new SessionStateChanged($runtime->agent_session_id));
+
+            return;
+        }
+
+        if (! $safeWake) {
+            $this->retries->finishWithoutRetry($request, $failure);
+        }
+
+        if ($this->needsAttention($command, $request)) {
+            $runtime->holdFor(HoldReason::NeedsAttention);
         }
 
         // Only the request that starts the session's process, proved never to have made one, settles its start; any
@@ -144,7 +164,7 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
             return;
         }
 
-        $request->giveBack(CarbonImmutable::now()->addMilliseconds(self::OFFER_AGAIN_WAIT_MS));
+        $request->giveBack($this->clock->now()->addMilliseconds(self::OFFER_AGAIN_WAIT_MS));
     }
 
     /**

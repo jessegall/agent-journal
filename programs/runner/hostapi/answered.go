@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// AnsweredRecord keeps the answer of every instruction the host answered until the instruction expires, in
+// AnsweredRecord keeps answers until their retention ends, in
 // <state>/instructions/answered.json, so an instruction handed out again is answered from it and never carried out twice, across
 // a restart of the host too. An instruction is marked started on disk before it is carried out, so one the host stopped in
 // the middle of is known after a restart. Expiry is read on the journal's clock, so a skewed host clock keeps no entry
@@ -27,6 +27,8 @@ type answeredEntry struct {
 	// IsStarted is an instruction the host started to carry out and has not answered yet.
 	IsStarted bool `json:"is_started,omitempty"`
 }
+
+const openingRecordTime = time.Hour
 
 // OpenAnsweredRecord reads the record the host kept in its state folder, or starts an empty one.
 func OpenAnsweredRecord(stateFolder string) (*AnsweredRecord, error) {
@@ -64,12 +66,19 @@ func (record *AnsweredRecord) IsInterrupted(instructionID string) bool {
 
 // Start writes to disk that the instruction is being carried out, before its executor runs.
 func (record *AnsweredRecord) Start(instruction Instruction, now time.Time) error {
-	return record.write(instruction, answeredEntry{ExpiresAt: instruction.ExpiresAt, IsStarted: true}, now)
+	return record.write(instruction, answeredEntry{ExpiresAt: keptUntil(instruction, now), IsStarted: true}, now)
 }
 
-// Keep writes the instruction's answer to disk before the host reports it, and drops the answers of instructions that expired.
+// Keep writes the answer to disk before the host reports it and drops records past their retention.
 func (record *AnsweredRecord) Keep(instruction Instruction, answer Answer, now time.Time) error {
-	return record.write(instruction, answeredEntry{Answer: answer, ExpiresAt: instruction.ExpiresAt}, now)
+	return record.write(instruction, answeredEntry{Answer: answer, ExpiresAt: keptUntil(instruction, now)}, now)
+}
+
+func keptUntil(instruction Instruction, now time.Time) time.Time {
+	if InstructionTypes[instruction.Type].Opens {
+		return now.Add(openingRecordTime)
+	}
+	return instruction.ExpiresAt
 }
 
 func (record *AnsweredRecord) write(instruction Instruction, entry answeredEntry, now time.Time) error {

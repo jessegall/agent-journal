@@ -154,10 +154,11 @@ final readonly class GoProtocolSources
         $keyWidth = max(0, ...array_map(fn (string $type) => strlen($type) + 3, $this->protocol->instructionTypes()));
 
         $traits = implode("\n", array_map(fn (string $type) => sprintf(
-            "\t%s {HostWide: %s, Repeatable: %s},",
+            "\t%s {HostWide: %s, Repeatable: %s, Opens: %s},",
             str_pad("\"{$type}\":", $keyWidth),
             $this->goBool($this->protocol->instructions[$type]->isHostWide()),
             $this->goBool($this->protocol->instructions[$type]->isRepeatable),
+            $this->goBool($this->protocol->instructions[$type]->opens),
         ), $this->protocol->instructionTypes()));
 
         return <<<GO
@@ -169,10 +170,11 @@ final readonly class GoProtocolSources
             {$refusals}
 
             // InstructionTraits are what the protocol says of an instruction type: whether it is about the host as a whole, and
-            // whether it leaves the same result when carried out twice.
+            // whether it can be repeated and whether it opens a process.
             type InstructionTraits struct {
             	HostWide   bool
             	Repeatable bool
+            	Opens      bool
             }
 
             // InstructionTypes are every instruction type of the protocol with its traits.

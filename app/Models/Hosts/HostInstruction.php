@@ -64,6 +64,8 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
      */
     public const int CLAIM_SECONDS = 10;
 
+    private const int OPEN_ANSWER_GRACE_SECONDS = 600;
+
     /**
      * @return array<string, string>
      */
@@ -150,7 +152,6 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     public function offerAgain(): void
     {
         $this->status = HostInstructionStatus::Pending;
-        $this->claimed_at = null;
         $this->saveAndAssert();
         $this->raise(new HostInstructionOfferedAgain($this->id, $this->host_process_id));
     }
@@ -242,6 +243,29 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
         return $this->status->isOpen();
     }
 
+    public function hasExpired(): bool
+    {
+        return $this->refusal === HostRefusal::Expired;
+    }
+
+    public function hasBeenClaimed(): bool
+    {
+        return $this->claimed_at !== null;
+    }
+
+    public function answerDeadline(): CarbonImmutable
+    {
+        return $this->type->isOpening() && $this->hasBeenClaimed()
+            ? $this->expires_at->addSeconds(self::OPEN_ANSWER_GRACE_SECONDS)
+            : $this->expires_at;
+    }
+
+    public function isForAttemptOf(DriverRequest $request): bool
+    {
+        return $this->driver_request_id === $request->id
+            && $this->idempotency_key === "{$request->id}:{$this->step}:{$request->attempt_version}";
+    }
+
     // ----------[ Asserts ]----------
 
     /**
@@ -286,7 +310,7 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     }
 
     /**
-     * The open instructions whose expiry passed, locked so a claim beside this sweep skips them.
+     * Unanswered instructions past their deadline, locked so a claim beside this sweep skips them.
      *
      * @return list<self>
      */
@@ -294,7 +318,7 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     {
         $instructions = self::query()
             ->withAnyStatus([HostInstructionStatus::Pending, HostInstructionStatus::Claimed])
-            ->expiredAt($now)
+            ->answerExpiredAt($now)
             ->lock('for update skip locked')
             ->limit($limit)
             ->get();
@@ -448,14 +472,19 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     }
 
     /**
-     * The instructions whose expiry passed at the moment.
+     * Claimed openings have a separate time to answer. Their claim still uses the original expiry.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function expiredAt(Builder $query, CarbonImmutable $now): void
+    protected function answerExpiredAt(Builder $query, CarbonImmutable $now): void
     {
-        $query->where('expires_at', '<=', $now);
+        $openings = array_filter(HostInstructionType::cases(), fn (HostInstructionType $type) => $type->isOpening());
+
+        $query->where('expires_at', '<=', $now)->where(fn (Builder $expired) => $expired
+            ->whereNull('claimed_at')
+            ->orWhereNotIn('type', $openings)
+            ->orWhere('expires_at', '<=', $now->subSeconds(self::OPEN_ANSWER_GRACE_SECONDS)));
     }
 
     /**

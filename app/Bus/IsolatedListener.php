@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus;
 
 use App\Bus\Exceptions\CommittedFactListenerFailed;
+use App\Bus\Values\ListenerRun;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Throwable;
@@ -32,9 +33,11 @@ final readonly class IsolatedListener
             return ($this->listener)(...$eventArguments);
         } catch (Throwable $failure) {
             $listener = is_string($this->listener) ? $this->listener : $this->listener->listener;
+            $event = $eventArguments[0] ?? null;
+            $run = is_object($event) ? new ListenerRun($listener, $event) : null;
 
             $container->make(Publication::class)->fail(
-                CommittedFactListenerFailed::of($this->event, $listener, $failure),
+                CommittedFactListenerFailed::of($this->event, $listener, $failure, $run),
             );
 
             return null;

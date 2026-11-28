@@ -6,12 +6,16 @@ namespace Domain\Chat\Support;
 
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\RequestProgress;
+use App\Agents\Drivers\Enums\RetriedAction;
+use App\Agents\Drivers\Enums\RetryOutcome;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\RetryAttempt;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
+use App\Values\RetrySchedule;
 use App\Values\ShownShellLine;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Data\AgentLogData;
@@ -60,10 +64,14 @@ final readonly class AgentStartLog
     private function startOf(AgentSession $session): AgentLogStartData
     {
         $starts = SessionProcess::query()->supervised()->ofSessions([$session->id])->limit(self::LINE_LIMIT)->get();
+        $attempts = RetryAttempt::query()->ofSession($session->id)->latest()->limit(self::LINE_LIMIT)->get();
+        $gaveUp = $attempts->filter(fn (RetryAttempt $attempt) => $attempt->outcome === RetryOutcome::GaveUp)
+            ->pluck('driver_request_id')->all();
         $lines = [
             ...$this->startLinesOf($starts->all(), $this->runsOn($session)),
             ...$this->processLinesOf($starts->pluck('id')->all()),
-            ...$this->requestLinesOf($session->id),
+            ...$this->requestLinesOf($session->id, $gaveUp),
+            ...$this->retryLinesOf($attempts),
         ];
 
         if ($session->hasEnded()) {
@@ -178,9 +186,10 @@ final readonly class AgentStartLog
     }
 
     /**
+     * @param  list<string|null>  $gaveUp
      * @return list<AgentLogLineData>
      */
-    private function requestLinesOf(string $sessionId): array
+    private function requestLinesOf(string $sessionId, array $gaveUp): array
     {
         $requests = DriverRequest::query()
             ->ofAgentRuntimes(AgentRuntime::query()->ofSessions([$sessionId])->select('id'))
@@ -194,6 +203,10 @@ final readonly class AgentStartLog
             $failed = in_array($request->progress, [RequestProgress::Failed, RequestProgress::Unavailable], true);
 
             if ($failed) {
+                if (in_array($request->id, $gaveUp, true)) {
+                    continue;
+                }
+
                 $lines[] = $this->failure(
                     $request->id,
                     $request->updated_at,
@@ -224,6 +237,39 @@ final readonly class AgentStartLog
                         AgentLogLineType::TurnOpened,
                         'your message went in',
                     );
+            }
+        }
+
+        return $lines;
+    }
+
+    /**
+     * @param  iterable<RetryAttempt>  $attempts
+     * @return list<AgentLogLineData>
+     */
+    private function retryLinesOf(iterable $attempts): array
+    {
+        $lines = [];
+
+        foreach ($attempts as $attempt) {
+            $action = $attempt->action->label();
+            $number = "{$attempt->retry} of ".RetrySchedule::RETRY_LIMIT;
+            $detail = "{$action} failed · {$attempt->failure} · attempt {$number} · wait {$attempt->wait_seconds} s";
+            $lines[] = $this->line($attempt->id.'-retry', $attempt->created_at, AgentLogLineType::Retrying, $detail);
+
+            if ($attempt->outcome === RetryOutcome::GaveUp) {
+                $lines[] = $this->failure(
+                    $attempt->id,
+                    $attempt->updated_at,
+                    AgentLogLineType::GaveUp,
+                    "{$action} failed after {$attempt->retry} retries.",
+                    $attempt->evidence ?? $attempt->failure,
+                );
+            }
+
+            if ($attempt->outcome === RetryOutcome::Succeeded) {
+                $type = $attempt->action === RetriedAction::Wake ? AgentLogLineType::Woke : AgentLogLineType::TurnOpened;
+                $lines[] = $this->line($attempt->id, $attempt->updated_at, $type, "Succeeded on attempt {$number}");
             }
         }
 

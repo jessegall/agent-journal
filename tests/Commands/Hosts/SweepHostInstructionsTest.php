@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
+use App\Hosts\Commands\ClaimHostInstructions\ClaimHostInstructionsCommand;
 use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Commands\SweepHostInstructions\SweepHostInstructionsCommand;
 use App\Hosts\Enums\HostInstructionStatus;
@@ -50,5 +51,30 @@ final class SweepHostInstructionsTest extends TestCase
             [[], [HostInstructionStatus::Refused, HostRefusal::Expired], []],
             [$erased, $afterExpiry, $this->journal->hostInstructionsOf('shell')],
         );
+    }
+
+    public function test_an_open_claimed_in_time_can_answer_after_the_claim_deadline(): void
+    {
+        $placed = CarbonImmutable::parse('2026-11-26 10:00:00');
+        $this->journal
+            ->useServerClockAt($placed)
+            ->enrollHost('Mac', [base_path()])
+            ->enrollHost('Spare', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $host) => $host->openProcess('timely'))
+            ->host('Spare', fn (TestEnrolledHost $host) => $host->openProcess('unclaimed'));
+        [$timely] = $this->journal->hostInstructionsOf('timely');
+        [$unclaimed] = $this->journal->hostInstructionsOf('unclaimed');
+        $this->journal->moveServerClockTo($placed->addSeconds(23))
+            ->asSystem(new ClaimHostInstructionsCommand($timely->host_id, 1));
+
+        $this->assertNotNull($timely->refresh()->claimed_at);
+        $this->assertNull($unclaimed->refresh()->claimed_at);
+        $this->journal->moveServerClockTo($placed->addSeconds(33))
+            ->asSystem(new SweepHostInstructionsCommand());
+
+        $this->assertSame(HostInstructionStatus::Claimed, $timely->refresh()->status);
+        $this->assertSame(HostRefusal::Expired, $unclaimed->refresh()->refusal);
+        $this->journal->hostInstruction($timely, fn (TestHostInstruction $open) => $open->answer());
+        $this->assertSame(HostInstructionStatus::Done, $timely->refresh()->status);
     }
 }

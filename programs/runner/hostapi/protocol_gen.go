@@ -45,37 +45,38 @@ func (value Refusal) IsKnown() bool {
 }
 
 // InstructionTraits are what the protocol says of an instruction type: whether it is about the host as a whole, and
-// whether it leaves the same result when carried out twice.
+// whether it can be repeated and whether it opens a process.
 type InstructionTraits struct {
 	HostWide   bool
 	Repeatable bool
+	Opens      bool
 }
 
 // InstructionTypes are every instruction type of the protocol with its traits.
 var InstructionTypes = map[string]InstructionTraits{
-	"open_container":  {HostWide: false, Repeatable: false},
-	"open_process":    {HostWide: false, Repeatable: false},
-	"write_keys":      {HostWide: false, Repeatable: false},
-	"write_stdin":     {HostWide: false, Repeatable: false},
-	"close_stdin":     {HostWide: false, Repeatable: true},
-	"open_private":    {HostWide: false, Repeatable: false},
-	"write_private":   {HostWide: false, Repeatable: false},
-	"close_private":   {HostWide: false, Repeatable: false},
-	"resize":          {HostWide: false, Repeatable: true},
-	"signal":          {HostWide: false, Repeatable: false},
-	"stop":            {HostWide: false, Repeatable: true},
-	"stream":          {HostWide: false, Repeatable: true},
-	"snapshot":        {HostWide: false, Repeatable: true},
-	"run_fenced":      {HostWide: true, Repeatable: false},
-	"allow_images":    {HostWide: true, Repeatable: false},
-	"run_containers":  {HostWide: true, Repeatable: true},
-	"list_containers": {HostWide: true, Repeatable: true},
-	"remove_network":  {HostWide: true, Repeatable: true},
-	"remove_image":    {HostWide: true, Repeatable: true},
-	"remove":          {HostWide: true, Repeatable: true},
-	"read_project":    {HostWide: true, Repeatable: true},
-	"upgrade":         {HostWide: true, Repeatable: false},
-	"build_image":     {HostWide: true, Repeatable: false},
+	"open_container":  {HostWide: false, Repeatable: false, Opens: true},
+	"open_process":    {HostWide: false, Repeatable: false, Opens: true},
+	"write_keys":      {HostWide: false, Repeatable: false, Opens: false},
+	"write_stdin":     {HostWide: false, Repeatable: false, Opens: false},
+	"close_stdin":     {HostWide: false, Repeatable: true, Opens: false},
+	"open_private":    {HostWide: false, Repeatable: false, Opens: false},
+	"write_private":   {HostWide: false, Repeatable: false, Opens: false},
+	"close_private":   {HostWide: false, Repeatable: false, Opens: false},
+	"resize":          {HostWide: false, Repeatable: true, Opens: false},
+	"signal":          {HostWide: false, Repeatable: false, Opens: false},
+	"stop":            {HostWide: false, Repeatable: true, Opens: false},
+	"stream":          {HostWide: false, Repeatable: true, Opens: false},
+	"snapshot":        {HostWide: false, Repeatable: true, Opens: false},
+	"run_fenced":      {HostWide: true, Repeatable: false, Opens: false},
+	"allow_images":    {HostWide: true, Repeatable: false, Opens: false},
+	"run_containers":  {HostWide: true, Repeatable: true, Opens: false},
+	"list_containers": {HostWide: true, Repeatable: true, Opens: false},
+	"remove_network":  {HostWide: true, Repeatable: true, Opens: false},
+	"remove_image":    {HostWide: true, Repeatable: true, Opens: false},
+	"remove":          {HostWide: true, Repeatable: true, Opens: false},
+	"read_project":    {HostWide: true, Repeatable: true, Opens: false},
+	"upgrade":         {HostWide: true, Repeatable: false, Opens: false},
+	"build_image":     {HostWide: true, Repeatable: false, Opens: false},
 }
 
 // ProcessType is one of the values host protocol 1 gives it.

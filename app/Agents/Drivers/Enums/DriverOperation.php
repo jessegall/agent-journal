@@ -88,4 +88,9 @@ enum DriverOperation: string
     {
         return in_array($this, [self::Deliver, self::Wake, self::KeyScript], true);
     }
+
+    public function opensTurn(): bool
+    {
+        return in_array($this, [self::Wake, self::Deliver], true);
+    }
 }

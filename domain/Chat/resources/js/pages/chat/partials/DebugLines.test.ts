@@ -15,6 +15,8 @@ const KINDS: Array<[AgentLogLineData["type"], string, boolean]> = [
   ["wake-failed", "Wake failed", true],
   ["turn-opened", "Turn opened", false],
   ["turn-failed", "Turn failed", true],
+  ["retrying", "Retrying", false],
+  ["gave-up", "Gave up", true],
 ];
 
 function lineOf(type: AgentLogLineData["type"], title: string, isFailure: boolean): AgentLogLineData {

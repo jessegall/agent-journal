@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Agents\Drivers\Exceptions\WorkerReportFailed;
 use App\Agents\Drivers\Work\DriverWorkers;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Console\Command;
 
 /**
@@ -21,7 +23,19 @@ final class DriverWorkCommand extends Command
 
     protected $description = 'Drive one host process with its process driver';
 
-    public function handle(DriverWorkers $workers): int
+    public function handle(DriverWorkers $workers, ExceptionHandler $exceptions): int
+    {
+        try {
+            return $this->drive($workers);
+        } catch (WorkerReportFailed $failure) {
+            $exceptions->report($failure);
+            $this->error($failure->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    private function drive(DriverWorkers $workers): int
     {
         $work = $workers->begin((string) $this->argument('process'));
 
