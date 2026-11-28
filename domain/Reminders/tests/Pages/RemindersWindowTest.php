@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Reminders\Tests\Pages;
 
-use Domain\Reminders\Http\Pages\Resolvers\RemindersWindowResolver;
+use App\Web\Creation\PageFactory;
+use Domain\Reminders\Http\Pages\RemindersPageBuilder;
+use Domain\Reminders\Http\Pages\RemindersPageData;
 use Domain\Reminders\Tests\TestCase;
+use Illuminate\Http\Request;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -20,7 +23,9 @@ final class RemindersWindowTest extends TestCase
     {
         $this->journal->owner();
 
-        $window = $this->app->make(RemindersWindowResolver::class)->read()->root;
+        $factory = new PageFactory($this->app);
+        $factory->register(RemindersPageData::class, RemindersPageBuilder::class);
+        $window = $factory->create(RemindersPageData::class, Request::create('/reminders'))->layout()->root;
         $empty = $window->children[1];
 
         $this->assertSame(['title', 'empty-page'], array_map(fn ($part) => $part->key, $window->children));
