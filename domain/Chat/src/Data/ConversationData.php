@@ -19,6 +19,7 @@ final class ConversationData extends Data
     /**
      * @param  list<ParticipantData>  $participants
      * @param  list<ChatEntryData>  $entries
+     * @param  list<AgentLogLineData>  $debugLines
      */
     public function __construct(
         public readonly string $inboxId,
@@ -38,5 +39,8 @@ final class ConversationData extends Data
         public readonly DockPageData $dock,
         // The tool call the chat's agent runs or ran last, as its line above the composer; none before its first call.
         public readonly RunningCommandData|null $runningCommand,
+        // What happened around the chat's agent in its newest start, oldest first, as quiet lines in the chat.
+        #[DataCollectionOf(AgentLogLineData::class)]
+        public readonly array $debugLines = [],
     ) {}
 }

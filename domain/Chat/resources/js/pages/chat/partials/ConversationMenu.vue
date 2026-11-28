@@ -42,6 +42,7 @@ const emit = defineEmits<{
   newChat: [];
   openBeside: [agent: AgentOptionData];
   switchDriver: [];
+  technicalDetails: [];
 }>();
 
 defineSlots<{ trigger(): unknown }>();
@@ -155,6 +156,11 @@ function openBeside(agent: AgentOptionData): void {
 function newChat(): void {
   isOpen.value = false;
   emit("newChat");
+}
+
+function openTechnicalDetails(): void {
+  isOpen.value = false;
+  emit("technicalDetails");
 }
 
 function switchDriver(): void {
@@ -324,6 +330,7 @@ function askEnd(): void {
         :endable-agent="endableAgent"
         :working-agent="workingAgent"
         @stop-turn="stopTurn"
+        @technical-details="openTechnicalDetails"
         @new-chat="newChat"
         @switch-driver="switchDriver"
         @end-session="askEnd"

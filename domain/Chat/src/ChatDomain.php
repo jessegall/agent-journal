@@ -40,6 +40,7 @@ use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\RetryDeliveryController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\UndockController;
+use Domain\Chat\Http\Loaders\AgentLogLoader;
 use Domain\Chat\Http\Loaders\ChatCandidatesLoader;
 use Domain\Chat\Http\Loaders\ChatRowsLoader;
 use Domain\Chat\Http\Loaders\StartDriversLoader;
@@ -126,7 +127,8 @@ final class ChatDomain extends Domain implements
                 ->loaders(fn (PageLoaders $loaders) => $loaders
                     ->add('rows', ChatRowsLoader::class)
                     ->add('candidates', ChatCandidatesLoader::class)
-                    ->add('start-drivers', StartDriversLoader::class)),
+                    ->add('start-drivers', StartDriversLoader::class)
+                    ->add('agent-log', AgentLogLoader::class)),
         ];
     }
 

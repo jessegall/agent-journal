@@ -26,6 +26,8 @@ import Composer from "./Composer.vue";
 import RunningCommand from "./RunningCommand.vue";
 import AgentRow from "./AgentRow.vue";
 import StartPicker from "./StartPicker.vue";
+import AgentLogPanel from "./AgentLogPanel.vue";
+import DebugLines from "./DebugLines.vue";
 import VerifyingSessionCard from "./VerifyingSessionCard.vue";
 import RecordPanel from "./RecordPanel.vue";
 import DockStack from "./DockStack.vue";
@@ -153,6 +155,8 @@ const switchDialog = computed(() =>
     ? undefined
     : useOpenSessionDialog(viewer.value.id, selected.value.id),
 );
+// Technical details, open at a line or at its top; the panel reads the agent's log only once it opens.
+const agentLogAt = ref<{ lineId: string | null } | null>(null);
 const isSwitchOpen = ref(switchDialog.value?.read() === "switch");
 
 function openSwitch(): void {
@@ -378,6 +382,7 @@ watch(isShown, readOnOpen);
           :selected-agent-id="chat.selectedAgentId"
           :open-agent-ids="selected ? [selected.id] : []"
           @switch-driver="openSwitch"
+          @technical-details="agentLogAt = { lineId: null }"
         >
           <template #trigger>
             <span class="text-body text-text">{{
@@ -447,6 +452,16 @@ watch(isShown, readOnOpen);
           <template v-if="retryRefusal">
             <p class="text-small text-danger" role="alert">{{ retryRefusal }}</p>
           </template>
+          <DebugLines :lines="conversation.debugLines" @open="(lineId) => (agentLogAt = { lineId })" />
+          <template v-if="agentLogAt !== null && selected">
+            <AgentLogPanel
+              :key="selected.id"
+              :agent-id="selected.id"
+              :agent-name="selected.name"
+              :opened-at="agentLogAt.lineId"
+              @close="agentLogAt = null"
+            />
+          </template>
           <template v-if="openedRecord !== null">
             <RecordPanel :card="openedRecord" @close="closeRecord" />
           </template>
@@ -460,6 +475,7 @@ watch(isShown, readOnOpen);
               :inbox-id="conversation.inboxId"
               :seed="conversation.runningCommand"
               @switch-driver="openSwitch"
+              @technical-details="agentLogAt = { lineId: null }"
             />
           </template>
           <template v-else-if="selected && !needsStart">

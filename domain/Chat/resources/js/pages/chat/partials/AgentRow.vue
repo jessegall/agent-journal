@@ -25,8 +25,10 @@ const props = defineProps<{
   seed: RunningCommandData | null;
 }>();
 
-const emit = defineEmits<{ switchDriver: [] }>();
+const emit = defineEmits<{ switchDriver: []; technicalDetails: [] }>();
 
+// The pulse turns red while the agent's last start failed.
+const hasFailedStart = computed(() => ["failed", "refused"].includes(props.agent.status.sessionState));
 const openChats = useOpenChats(useAppContext().viewer.value.id ?? "guest");
 const name = computed(() => (props.agent.isMain ? `${props.agent.name} · main` : props.agent.name));
 // The model and effort in quiet text; an agent with no session names none.
@@ -47,6 +49,20 @@ function openBeside(other: AgentOptionData): void {
     <div class="min-w-0 flex-1">
       <RunningCommand :agent="agent" :inbox-id="inboxId" :seed="seed" />
     </div>
+    <button
+      type="button"
+      class="flex size-6 flex-none items-center justify-center rounded-control hover:bg-hover"
+      :class="hasFailedStart ? 'text-danger' : 'text-text-4'"
+      :aria-label="`Technical details of ${agent.name}`"
+      title="Technical details"
+      data-agent-pulse
+      :data-failed="hasFailedStart"
+      @click="emit('technicalDetails')"
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M1 7.5h2.5L5 3.5l2.5 7L9 6l1 1.5h3" />
+      </svg>
+    </button>
     <AgentSessionActions :key="`${agent.id}-${agent.sessionGeneration}`" :agent="agent" />
     <ConversationMenu
       :agents="agents"
@@ -56,6 +72,7 @@ function openBeside(other: AgentOptionData): void {
       @new-chat="requestNewChat()"
       @open-beside="openBeside"
       @switch-driver="emit('switchDriver')"
+      @technical-details="emit('technicalDetails')"
     >
       <template #trigger>
         <span class="flex min-w-0 items-center gap-[7px]" :data-agent-chip="agent.id">
