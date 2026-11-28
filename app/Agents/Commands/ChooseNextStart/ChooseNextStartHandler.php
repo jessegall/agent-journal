@@ -14,6 +14,14 @@ final readonly class ChooseNextStartHandler implements CommandHandler
 {
     public function handle(ChooseNextStartCommand $command): void
     {
-        AgentStartChoice::keep($command->agentId, $command->driver, $command->model, $command->account);
+        $choice = AgentStartChoice::findFor($command->agentId);
+
+        if ($choice === null) {
+            AgentStartChoice::create($command->agentId, $command->driver, $command->model, $command->account);
+
+            return;
+        }
+
+        $choice->choose($command->driver, $command->model, $command->account);
     }
 }

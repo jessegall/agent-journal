@@ -12,7 +12,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 /**
  * A small pipeline that only one other pipeline runs is merged into it, so a reader need not open it to see its steps:
  * a pipeline with fewer than four pipes that is a step of exactly one pipeline and is named nowhere else is refused,
- * read from the syntax tree, with the pipeline to merge it into (user 29200).
+ * read from the syntax tree, with the pipeline to merge it into.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app and the domains.')]
 final class PipelineMergeTest extends TestCase

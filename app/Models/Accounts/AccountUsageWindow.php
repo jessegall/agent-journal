@@ -143,7 +143,7 @@ final class AccountUsageWindow extends JournalModel implements EventSource, Read
 
         $windows = self::query()
             ->fromSub($ranked, $table)
-            ->where('window_rank', '<=', self::DETAIL_LIMIT)
+            ->withinCurrentWindowRank()
             ->inWindowOrder()
             ->limit(count($accounts) * self::DETAIL_LIMIT)
             ->get();
@@ -158,7 +158,7 @@ final class AccountUsageWindow extends JournalModel implements EventSource, Read
     }
 
     /** @return LengthAwarePaginator<int, self> */
-    public static function pageOf(Account $account, int $page): LengthAwarePaginator
+    public static function findPageOf(Account $account, int $page): LengthAwarePaginator
     {
         $query = self::query()->inCurrentGenerationOf([$account])->inWindowOrder();
         $total = $query->count();
@@ -189,5 +189,12 @@ final class AccountUsageWindow extends JournalModel implements EventSource, Read
     protected function inWindowOrder(Builder $query): void
     {
         $query->orderBy('account_id')->orderBy('limit_id')->orderBy('slot');
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function withinCurrentWindowRank(Builder $query): void
+    {
+        $query->where('window_rank', '<=', self::DETAIL_LIMIT);
     }
 }

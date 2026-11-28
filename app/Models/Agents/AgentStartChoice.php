@@ -6,6 +6,9 @@ namespace App\Models\Agents;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
+use App\Events\Sessions\AgentStartChoiceMade;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
 use App\Values\ChosenAccount;
@@ -15,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * The program, model and account an agent's next start runs on, chosen while no session ran: a new chat's choice, or
+ * The driver, model and account an agent's next start runs on, chosen for a new agent or
  * a switch asked of a stopped agent. The message that starts the agent starts it on this choice.
  *
  * @property string $id
@@ -30,10 +33,36 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
-final class AgentStartChoice extends JournalModel implements ReadableModel
+final class AgentStartChoice extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
     use Linkable;
+    use RaisesEvents;
+
+    // ----------[ Constructors ]----------
+
+    /** Makes a row for the agent's first selected start. */
+    public static function create(string $agentId, string $driver, string $model, ChosenAccount|null $account): self
+    {
+        $choice = new self();
+        $choice->agent_id = $agentId;
+        $choice->choose($driver, $model, $account);
+
+        return $choice;
+    }
+
+    // ----------[ Mutations ]----------
+
+    /** Replaces the driver, model and account of the agent's next start. */
+    public function choose(string $driver, string $model, ChosenAccount|null $account): void
+    {
+        $this->driver = $driver;
+        $this->model = $model;
+        $this->account_id = $account?->accountId;
+        $this->account_revision = $account?->reviewedSignIn;
+        $this->saveAndAssert();
+        $this->raise(new AgentStartChoiceMade($this->agent_id));
+    }
 
     // ----------[ Relations ]----------
 
@@ -46,22 +75,6 @@ final class AgentStartChoice extends JournalModel implements ReadableModel
     }
 
     // ----------[ Queries ]----------
-
-    /**
-     * Keeps the agent's next start on the driver, model and account, in place of the one it kept before.
-     */
-    public static function keep(string $agentId, string $driver, string $model, ChosenAccount|null $account): self
-    {
-        $choice = self::findFor($agentId) ?? new self();
-        $choice->agent_id = $agentId;
-        $choice->driver = $driver;
-        $choice->model = $model;
-        $choice->account_id = $account?->accountId;
-        $choice->account_revision = $account?->reviewedSignIn;
-        $choice->save();
-
-        return $choice;
-    }
 
     /**
      * The choice the agent's next start runs on; none while nothing was chosen.

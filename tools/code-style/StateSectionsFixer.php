@@ -19,7 +19,7 @@ use PhpParser\ParserFactory;
 use SplFileInfo;
 
 /**
- * Lays out an agent state's methods as rule 94 says: constructor, reference makers and own answers unmarked, then
+ * Lays out an agent state's methods constructor, reference makers and own answers unmarked, then
  * Lifecycle, Hooks (in HookHandler's order, then the tick), Events and Internals, each opened by its marker. A state
  * with a member below its first method is left for its author.
  */

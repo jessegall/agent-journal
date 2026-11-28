@@ -13,7 +13,7 @@ import { useSwitchOperation } from "../../../composables/useSwitchOperation";
 import DriverChoiceFields from "./DriverChoiceFields.vue";
 
 /**
- * The Switch driver dialog, so the user moves an agent to another program, account or model: the same program keeps the
+ * The Switch driver dialog, so the user moves an agent to another driver, account or model: the same driver keeps the
  * conversation, another carries the chat over or starts clean, and a working agent may finish its turn first. Without a
  * session it keeps the choice for the next message.
  */
@@ -47,9 +47,9 @@ watch(
 
 const hasSession = computed(() => props.agent.sessionId !== null);
 const isWorking = computed(() => props.agent.status.actions.some((action) => action.type === "interrupt"));
-const isSameProgram = computed(() => picker.family.value === currentFamily);
+const isSameDriver = computed(() => picker.family.value === currentFamily);
 const nowLabel = computed(() =>
-  [props.agent.sessionDriverLabel ?? currentFamily ?? "No program yet", props.agent.sessionModel]
+  [props.agent.sessionDriverLabel ?? currentFamily ?? "No driver yet", props.agent.sessionModel]
     .filter((part) => part !== null && part !== "")
     .join(" · "),
 );
@@ -62,12 +62,12 @@ const differs = computed(() => {
     (first === null || choice.family !== first.family || choice.model !== first.model || choice.accountId !== first.accountId)
   );
 });
-const switchLabel = computed(() => (isSameProgram.value ? "Switch" : `Switch to ${picker.programLabel.value}`));
+const switchLabel = computed(() => (isSameDriver.value ? "Switch" : `Switch to ${picker.driverLabel.value}`));
 const isSending = computed(() => switching.isOut());
 
-// The same program resumes the conversation it runs now; another program begins a new one.
+// The same driver resumes the conversation it runs now; another driver begins a new one.
 const resumedConversationId = computed(() =>
-  isSameProgram.value
+  isSameDriver.value
     ? (props.agent.conversations.find((conversation) => conversation.driver === picker.family.value)?.id ?? null)
     : null,
 );
@@ -93,7 +93,7 @@ function chooseNextStart(choice: DriverChoice): void {
     { requestId: key, ...choiceFields(choice) },
     key,
     {
-      onAccepted: () => (noteAfterChoice.value = `Saved: the next message starts ${props.agent.name} on ${picker.programLabel.value}.`),
+      onAccepted: () => (noteAfterChoice.value = `Saved: the next message starts ${props.agent.name} on ${picker.driverLabel.value}.`),
       onRefused: (reason) => (refusal.value = reason),
       onUncertain: () => (refusal.value = "We could not confirm the choice was saved; open the dialog again."),
     },
@@ -121,7 +121,7 @@ function submit(): void {
     expectedSessionId: props.agent.sessionId,
     expectedGeneration: props.agent.sessionGeneration,
     conversationId: resumedConversationId.value,
-    carryConversation: !isSameProgram.value && carriesConversation.value,
+    carryConversation: !isSameDriver.value && carriesConversation.value,
     stopsTurn: isWorking.value && !waitsForTurn.value,
   });
 }
@@ -155,13 +155,13 @@ switching.resume();
       <DriverChoiceFields :picker="picker" />
       <div class="flex flex-col gap-1.5 rounded-field border border-line p-3 text-small text-text-2" data-conversation>
         <b class="text-text">The conversation</b>
-        <template v-if="isSameProgram">
-          <p data-same-program>
+        <template v-if="isSameDriver">
+          <p data-same-driver>
             {{ agent.name }} keeps its session and conversation; its next turn runs on the new model or account.
           </p>
         </template>
         <template v-else>
-          <p>{{ picker.programLabel.value }} cannot take this session over, so a new session starts.</p>
+          <p>{{ picker.driverLabel.value }} cannot take this session over, so a new session starts.</p>
           <label class="flex items-start gap-2">
             <Input choice="radio" :checked="carriesConversation" name="conversation" data-carry-over @change="carriesConversation = true" />
             <span>Carry the conversation over: the new session first reads this chat and the memories.</span>

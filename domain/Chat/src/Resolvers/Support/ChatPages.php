@@ -102,7 +102,7 @@ final readonly class ChatPages
      */
     private function runningCommandOf(HomeAgent $agent): RunningCommandData|null
     {
-        return AgentRunningTool::shownOf($agent->agentId)
+        return AgentRunningTool::findShownOf($agent->agentId)
             ->map(fn (AgentRunningTool $tool) => RunningCommandData::from($tool))
             ->getOrElse(null);
     }

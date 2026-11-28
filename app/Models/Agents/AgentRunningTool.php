@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Models\Agents;
 
 use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Hooks\RunningToolChanged;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Values\ToolLine;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -17,7 +19,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use PhpOption\Option;
 
 /**
- * The tool call an agent's chat line names: the newest one its hooks let run, whether it still runs, and when that
+ * The tool call an agent's activity line names: the newest one its hooks let run, whether it still runs, and when that
  * last changed. One row per agent, which a new turn clears.
  *
  * @property string $id
@@ -31,9 +33,10 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class AgentRunningTool extends JournalModel implements EventSource
+final class AgentRunningTool extends JournalModel implements EventSource, ReadableModel
 {
     use BoundedReads;
+    use Linkable;
     use RaisesEvents;
 
     public const string CHANGED_AT_FORMAT = 'Y-m-d\TH:i:s.u\Z';
@@ -59,37 +62,33 @@ final class AgentRunningTool extends JournalModel implements EventSource
     /**
      * The agent's hooks let a tool call run: its line is the one shown, running from now.
      */
-    public static function startFor(string $agentId, ToolLine $line): void
+    public function start(ToolLine $line): void
     {
-        self::lockedOf($agentId)->change($line->text, true);
+        $this->change($line->text, true);
     }
 
     /**
      * The agent's running call finished: its line stays, no longer running. With no line held nothing changes.
      */
-    public static function finishFor(string $agentId): void
+    public function finish(): void
     {
-        $tool = self::lockedOf($agentId);
-
-        if (! $tool->exists || $tool->line === null || ! $tool->is_running) {
+        if (! $this->exists || $this->line === null || ! $this->is_running) {
             return;
         }
 
-        $tool->change($tool->line, false);
+        $this->change($this->line, false);
     }
 
     /**
      * A new turn of the agent began: no line is shown. A row already clear changes nothing.
      */
-    public static function clearFor(string $agentId): void
+    public function clear(): void
     {
-        $tool = self::lockedOf($agentId);
-
-        if (! $tool->exists || $tool->line === null) {
+        if (! $this->exists || $this->line === null) {
             return;
         }
 
-        $tool->change(null, false);
+        $this->change(null, false);
     }
 
     private function change(string|null $line, bool $isRunning): void
@@ -118,7 +117,7 @@ final class AgentRunningTool extends JournalModel implements EventSource
      *
      * @return Option<self>
      */
-    public static function shownOf(string $agentId): Option
+    public static function findShownOf(string $agentId): Option
     {
         $tool = self::query()->ofAgent($agentId)->first();
 
@@ -128,7 +127,7 @@ final class AgentRunningTool extends JournalModel implements EventSource
     /**
      * The agent's row, locked; a new, unsaved one before its first tool call.
      */
-    private static function lockedOf(string $agentId): self
+    public static function findOrPrepareLockedFor(string $agentId): self
     {
         $tool = self::query()->ofAgent($agentId)->lockForUpdate()->first();
 

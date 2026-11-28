@@ -29,7 +29,7 @@ final readonly class Recordings
         private Files $files,
         private PinnedBuilds $builds,
         private DriverCatalogue $drivers,
-        private AgentImagePrograms $imagePrograms,
+        private AgentImageBuild $imageBuild,
     ) {}
 
     /**
@@ -51,7 +51,7 @@ final readonly class Recordings
         }
 
         $manifest = RecordingManifest::fromFile($this->files->readJson($folder->child('scenario.json')));
-        $reason = $manifest->staleReasonFor($this->files->digest($definition), $this->imagePrograms->hash());
+        $reason = $manifest->staleReasonFor($this->files->digest($definition), $this->imageBuild->hash());
 
         if ($reason !== null) {
             throw RecordingStale::of($scenario, $reason);

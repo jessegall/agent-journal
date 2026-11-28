@@ -12,8 +12,8 @@ use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * Opens a new chat with another main agent: the page's form returns to the page with the new agent's id flashed, so
- * the page opens its chat as a tab and sends the first message there.
+ * Adds another main agent: the page's form returns to the page with the new agent's id flashed, so
+ * the page opens its conversation as a tab and sends the first message there.
  */
 final readonly class CreateMainAgentController
 {

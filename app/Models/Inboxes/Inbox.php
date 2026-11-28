@@ -282,4 +282,11 @@ final class Inbox extends JournalModel implements Assignee, EventSource, Labeled
     {
         $query->whereIn('provider_key', $keys);
     }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function ofActiveMemberships(Builder $query, ActorReference $actor): void
+    {
+        $query->whereIn('id', InboxMember::query()->active()->ofActor($actor)->inboxIds());
+    }
 }

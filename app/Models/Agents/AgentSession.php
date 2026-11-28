@@ -190,8 +190,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The session ends at the time given, and so does every start of it that had not ended yet: a start outliving its
-     * session would keep its account held for a session that no longer runs.
+     * Ends the session at the given time, so its start records can release their account use.
      */
     public function endAt(CarbonImmutable $time): void
     {
@@ -199,13 +198,6 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $this->ended_at = $time;
         $this->saveAndAssert();
         $this->raise(new AgentSessionEnded($this->id));
-
-        $starts = SessionProcess::query()->supervised()->ofSessions([$this->id])->unresolved()
-            ->get();
-
-        foreach ($starts as $start) {
-            $start->endWithSession($time);
-        }
     }
 
     /**
@@ -465,14 +457,14 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
      * @param  list<RecordIdentity>  $accounts
      * @return list<AccountUse>
      */
-    public static function recentUsesOf(array $accounts, int $limit): array
+    public static function resolveRecentUsesOf(array $accounts, int $limit): array
     {
         if ($accounts === [] || $limit < 1) {
             return [];
         }
 
         $table = self::query()->getModel()->getTable();
-        $pairs = Link::pairsFor(self::linkType(), $accounts);
+        $pairs = Link::resolvePairsFor(self::linkType(), $accounts);
 
         $ranked = self::query()
             ->joinSub($pairs, 'account_links', 'account_links.subject_id', '=', "{$table}.id")
@@ -483,8 +475,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
 
         $sessions = self::query()
             ->fromSub($ranked, $table)
-            ->where('account_rank', '<=', $limit)
-            ->orderBy('account_rank')
+            ->inAccountRank($limit)
             ->limit(count($accounts) * $limit)
             ->get();
 
@@ -1029,5 +1020,19 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $query->where(
             fn (Builder $older) => $older->whereNull('discovered_at')->orWhere('discovered_at', '<', $moment),
         );
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function frozenRecipeDigests(Builder $query): void
+    {
+        $query->select('driver_recipe_digest');
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function inAccountRank(Builder $query, int $limit): void
+    {
+        $query->where('account_rank', '<=', $limit)->orderBy('account_rank');
     }
 }

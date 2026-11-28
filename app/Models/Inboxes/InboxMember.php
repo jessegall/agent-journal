@@ -230,4 +230,11 @@ final class InboxMember extends JournalModel implements EventSource, ReadableMod
     {
         $query->select('inbox_id');
     }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function agentInboxIds(Builder $query): void
+    {
+        $query->select(['actor_id', 'inbox_id']);
+    }
 }

@@ -326,4 +326,18 @@ final class ChatMessage extends JournalModel implements EventSource, ReadableMod
     {
         $query->with('source');
     }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function latestActivityPerInbox(Builder $query): void
+    {
+        $query->groupBy('inbox_id')->selectRaw('inbox_id, max(created_at) as last_active_at');
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function newestCreatedFirst(Builder $query): void
+    {
+        $query->latest('created_at');
+    }
 }

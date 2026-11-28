@@ -45,7 +45,7 @@ final readonly class ProfilesIndex extends ProfilesPage
                 EmptyListState::build()
                     ->title('No profiles yet')
                     ->detail(
-                        'A profile is a kind of helper: the program it runs, its models, its rules and whom it answers to.',
+                        'A profile is a kind of helper: the driver it runs, its models, its rules and whom it answers to.',
                     )
                     ->icon('users')
                     ->fillsPage(true)

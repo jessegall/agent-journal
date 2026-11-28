@@ -17,7 +17,7 @@ final class DriverImageChecksTest extends TestCase
 {
     public function test_on_a_development_machine_each_check_mounts_the_checkouts_program_builds(): void
     {
-        $this->app->make(Repository::class)->set('journal.agents.development_programs', '/srv/journal/development');
+        $this->app->make(Repository::class)->set('journal.agents.development_binaries', '/srv/journal/development');
         $this->app->forgetInstance(DriverImageChecks::class);
 
         $checks = $this->app->make(DriverImageChecks::class)->of('sha256:'.str_repeat('1', 64), 'claude-code');
@@ -29,7 +29,7 @@ final class DriverImageChecksTest extends TestCase
 
     public function test_elsewhere_a_check_runs_the_images_own_programs(): void
     {
-        $this->app->make(Repository::class)->set('journal.agents.development_programs', '');
+        $this->app->make(Repository::class)->set('journal.agents.development_binaries', '');
         $this->app->forgetInstance(DriverImageChecks::class);
 
         $checks = $this->app->make(DriverImageChecks::class)->of('sha256:'.str_repeat('1', 64), 'claude-code');

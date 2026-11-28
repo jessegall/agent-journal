@@ -10,7 +10,7 @@ use SplFileInfo;
 use Tools\CodeStyle\ModelSectionsFixer;
 
 /**
- * A model's methods are sorted into the marked sections of rule 50, and a model already sorted stays as it is.
+ * A model's methods are sorted into the marked sections, and a model already sorted stays as it is.
  */
 final class ModelSectionsFixerTest extends TestCase
 {

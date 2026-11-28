@@ -13,6 +13,7 @@ use App\Support\ActorReference;
 use App\Values\SupervisorTarget;
 use App\Values\WorkReference;
 use App\Web\Creation\WindowFactory;
+use App\Web\Values\PaneExcerpt;
 use Illuminate\Http\Request;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\Entries\Attributes\TestsRoute;
@@ -52,7 +53,7 @@ final class AsksGetTest extends GuardedRouteEntryTestCase
         $pane = $factory->create(AskInboxPaneData::class, Request::create('/'));
 
         $this->assertCount(5, $pane->items);
-        $this->assertStringStartsWith('Can you check this? Question ', $pane->items[0]->excerpt);
+        $this->assertSame(PaneExcerpt::of("Can you check this?\nQuestion 6"), $pane->items[0]->excerpt);
         $this->assertSame(['id', 'excerpt', 'isOpen'], array_keys($pane->items[0]->toArray()));
         $this->assertSame(route('web.asks', absolute: false), $pane->inboxUrl);
         $this->actingAs($journal->ownerUser())->get(route('web.asks'))->assertInertia(

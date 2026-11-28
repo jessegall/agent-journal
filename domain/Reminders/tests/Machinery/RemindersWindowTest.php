@@ -33,10 +33,10 @@ final class RemindersWindowTest extends TestCase
         $this->assertSame(['title', 'empty-page'], array_map(fn ($part) => $part->key, $window->children));
         $this->assertSame('page-empty', $empty->style);
         $this->assertSame('bell', $empty->children[0]->text);
-        $this->assertSame('No reminders yet', $empty->children[1]->text);
+        $this->assertSame(RemindersPageBuilder::EMPTY_TITLE, $empty->children[1]->text);
 
         $this->assertSame(
-            'A reminder brings something back to you or an agent at the time you choose.',
+            RemindersPageBuilder::EMPTY_DETAIL,
             $empty->children[1]->detail,
         );
     }

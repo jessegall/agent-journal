@@ -13,7 +13,7 @@ use PhpCsFixer\Tokenizer\Tokens;
 use SplFileInfo;
 
 /**
- * Arrays are laid out as rule 111 says, by ArrayLayout: split one entry a line when returned, assigned or too wide,
+ * Arrays are laid out by ArrayLayout: split one entry a line when returned, assigned or too wide,
  * and kept on one line, or joined, when they are an argument that fits.
  */
 final class ArrayLinesFixer implements FixerInterface

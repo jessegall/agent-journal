@@ -21,7 +21,7 @@ use SplFileInfo;
 require_once dirname(__DIR__).'/refactoring/model-sections.php';
 
 /**
- * An Eloquent model's methods sit in their marked sections, in the order of rule 50, as model-sections.php sorts
+ * An Eloquent model's methods sit in their marked sections, in the order, as model-sections.php sorts
  * them: a method stays in the section it sits in, an accessor goes to Accessors, and a method without a section goes
  * where its looks put it. A model with a member below its first method is left for its author.
  */

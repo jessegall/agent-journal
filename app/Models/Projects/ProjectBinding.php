@@ -484,7 +484,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
 
     public static function findServingInstall(string $id): self|null
     {
-        return self::query()->acrossProjects()->unrevoked()->with('host')->find($id);
+        return self::query()->acrossProjects()->unrevoked()->withHost()->find($id);
     }
 
     /**
@@ -678,5 +678,12 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
     protected function onLocalHost(Builder $query): void
     {
         $query->whereHas('host', fn (Builder $host) => $host->where('arrangement', ArrangementType::Local));
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function withHost(Builder $query): void
+    {
+        $query->with('host');
     }
 }

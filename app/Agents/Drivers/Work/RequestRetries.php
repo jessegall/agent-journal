@@ -35,7 +35,7 @@ final readonly class RequestRetries
             return false;
         }
 
-        $previous = RetryAttempt::latestOf($request);
+        $previous = RetryAttempt::findLatestOf($request);
         $retry = $previous->retry ?? 0;
 
         if ($previous !== null && RetrySchedule::isLast($retry)) {
@@ -67,7 +67,7 @@ final readonly class RequestRetries
     public function finishWithoutRetry(DriverRequest $request, string $failure): void
     {
         if ($request->progress->isFinal()) {
-            $attempt = RetryAttempt::ofVersion($request);
+            $attempt = RetryAttempt::findForVersion($request);
 
             if ($attempt !== null && $attempt->outcome === null) {
                 $attempt->settle(RetryOutcome::Failed, $failure);

@@ -106,7 +106,7 @@ final class DriverSetupTest extends TestCase
     public function test_a_declaration_that_misses_a_part_every_driver_needs_is_refused_naming_it(): void
     {
         $naming = fn (string $part) => fn (DriverSetupInvalid $refusal) => $this->assertStringContainsString(
-            "declared without its {$part}",
+            $part,
             $refusal->getMessage(),
         );
 

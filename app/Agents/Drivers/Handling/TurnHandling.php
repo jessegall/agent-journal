@@ -10,7 +10,6 @@ use App\Agents\Drivers\Commands\OpenJournalStart\OpenJournalStartCommand;
 use App\Agents\Drivers\Contracts\RuntimeHandling;
 use App\Bus\Contracts\JournalCommands;
 use App\Hosts\Contracts\HostProcessEndEvent;
-use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 
@@ -22,7 +21,7 @@ final readonly class TurnHandling implements RuntimeHandling
 {
     private const string TRUSTED_ENTRY = 'headless starts';
 
-    public function __construct(private JournalCommands $commands, private StartRefusals $refusals) {}
+    public function __construct(private JournalCommands $commands) {}
 
     public function openStart(AgentRuntime $runtime): void
     {
@@ -36,15 +35,7 @@ final readonly class TurnHandling implements RuntimeHandling
         $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $open);
     }
 
-    public function endWith(HostProcess $process, HostProcessEndEvent $fact): void
-    {
-        // A turn ends alone: the start it ran for goes on, and its next turn opens for the work that waits.
-        if ($process->purpose === HostProcessPurpose::AgentTurn) {
-            return;
-        }
-
-        $this->refusals->refuseUnstarted($process, $fact);
-    }
+    public function endWith(HostProcess $process, HostProcessEndEvent $fact): void {}
 
     public function isRunByJournal(): bool
     {

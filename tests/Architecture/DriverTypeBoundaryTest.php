@@ -8,7 +8,7 @@ use Symfony\Component\Finder\Finder;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * Rule 120: nothing outside the drivers decides by which driver an agent runs. Other code may carry a driver's type,
+ * Nothing outside the drivers decides by which driver an agent runs. Other code may carry a driver's type,
  * key or family through, record it or look a registration up by it, but never compares or matches on one, nor on the
  * turn or terminal a driver runs; it asks the driver, through its interface.
  */

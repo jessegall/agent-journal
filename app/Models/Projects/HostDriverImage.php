@@ -21,14 +21,12 @@ use App\Events\Connections\DriverImageReplaced;
 use App\Exceptions\HostDriverImageUnbuilt;
 use App\Hosts\Enums\DriverImagePhase;
 use App\Hosts\Enums\DriverImageStatus;
-use App\Models\Agents\AgentSession;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * One driver image recipe on one host, from its reservation to ready or refused: the one row each host keeps per
@@ -168,16 +166,11 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
         $this->raise(new DriverImageAdmitted($this->id));
     }
 
-    /**
-     * Removes this image's row and reports the built image for removal from Docker after commit.
-     */
+    /** Drops this replaced image. Its dependent waits leave with it. */
     public function retire(): void
     {
         $this->deleteAndAssert();
-
-        if ($this->image !== null) {
-            $this->raise(new DriverImageReplaced($this->id, $this->host_id, $this->image));
-        }
+        $this->raise(new DriverImageReplaced($this->id, $this->host_id, $this->image));
     }
 
     /**
@@ -308,27 +301,6 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
     // ----------[ Queries ]----------
 
     /**
-     * The images this ready recipe replaces on its host, excluding recipes still frozen by a live session.
-     *
-     * @return Collection<int, self>
-     */
-    public static function findReplacedBy(self $image, string $folder): Collection
-    {
-        $frozen = AgentSession::query()->liveOnFrozenRecipe()->select('driver_recipe_digest');
-        $recipes = DriverImageRecipeRecord::query()
-            ->where('folder', $folder)
-            ->whereNotIn('recipe_digest', $frozen)
-            ->select('id');
-
-        return self::query()
-            ->onHost($image->host_id)
-            ->whereKeyNot($image->id)
-            ->whereIn('driver_image_recipe_id', $recipes)
-            ->lockForUpdate()
-            ->get();
-    }
-
-    /**
      * The image row, locked until the transaction ends.
      */
     public static function findLocked(string $id): self
@@ -382,7 +354,7 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
             self::query()
                 ->onHost($hostId)
                 ->inStatuses([DriverImageStatus::Ready])
-                ->whereIn('driver_image_recipe_id', DriverImageRecipeRecord::query()->where('folder', $folder)->select('id'))
+                ->fromRecipeFolder($folder)
                 ->get()
                 ->all(),
         ));
@@ -534,5 +506,22 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
         $query->where(fn (Builder $sent) => $sent->where('build_instruction_id', $instructionId)
             ->orWhere('allow_instruction_id', $instructionId)
             ->orWhere('check_instruction_id', $instructionId));
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function fromRecipeFolder(Builder $query, string $folder): void
+    {
+        $query->whereIn('driver_image_recipe_id', DriverImageRecipeRecord::query()->inFolder($folder)->recipeIds());
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function replacedBy(Builder $query, self $ready, string $folder): void
+    {
+        $query->onHost($ready->host_id)->whereKeyNot($ready->id)->whereIn(
+            'driver_image_recipe_id',
+            DriverImageRecipeRecord::query()->inFolder($folder)->notFrozen()->recipeIds(),
+        );
     }
 }

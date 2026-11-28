@@ -12,7 +12,7 @@ use App\Values\HostInstructionSource;
 final readonly class RemoveHostContainerHandler implements CommandHandler
 {
     /**
-     * How long the container's program has to stop before Docker kills it, when its container is removed.
+     * How long the container's process has to stop before Docker kills it, when its container is removed.
      */
     private const int STOP_SECONDS = 10;
 

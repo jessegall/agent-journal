@@ -6,8 +6,8 @@ import { accountsPage } from "@kit/sessionStarts";
 import type { DriverChoiceState } from "../../../composables/useDriverChoice";
 
 /**
- * The Program, Account and Model rows a new chat and a driver switch share. Only a signed-in account can be picked,
- * another shows as needing sign-in; with none of the program connected the row says so and links to Accounts.
+ * The Driver, Account and Model rows a new chat and a driver switch share. Only a signed-in account can be picked,
+ * another shows as needing sign-in; with none of the driver connected the row says so and links to Accounts.
  */
 defineProps<{ picker: DriverChoiceState }>();
 </script>
@@ -15,12 +15,12 @@ defineProps<{ picker: DriverChoiceState }>();
 <template>
   <div class="flex flex-col gap-2.5">
     <div class="flex items-center gap-3">
-      <span class="w-24 text-small text-text-3">Program</span>
+      <span class="w-24 text-small text-text-3">Driver</span>
       <SegmentedControl
         :model-value="picker.family.value ?? ''"
-        label="Program"
-        :items="picker.programOptions.value"
-        data-program
+        label="Driver"
+        :items="picker.driverOptions.value"
+        data-driver
         @update:model-value="(family: string) => (picker.family.value = family)"
       />
     </div>
@@ -38,7 +38,7 @@ defineProps<{ picker: DriverChoiceState }>();
       </template>
       <template v-else>
         <span class="text-small text-text-2" data-no-account
-          >No {{ picker.programLabel.value }} account is connected.
+          >No {{ picker.driverLabel.value }} account is connected.
           <Link :href="accountsPage.url()" class="underline">Add one on Accounts</Link></span
         >
       </template>

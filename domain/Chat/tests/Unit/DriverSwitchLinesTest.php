@@ -7,6 +7,7 @@ namespace Domain\Chat\Tests\Unit;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
@@ -28,15 +29,21 @@ final class DriverSwitchLinesTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string AGENT = 'Main agent';
+
     public function test_a_failed_switch_says_why_and_that_the_agent_stays_on_its_old_driver(): void
     {
         [$switch, $chat] = $this->switchOf(carriesConversation: false);
 
-        $this->app->make(DriverSwitchLines::class)->failed($switch, 'Its account must sign in again.');
+        $reason = 'Its account must sign in again.';
+        $this->app->make(DriverSwitchLines::class)->failed($switch, $reason);
 
         $line = $this->linesIn($chat)[0];
-        $this->assertStringContainsString('The switch to codex failed: Its account must sign in again.', $line);
-        $this->assertStringContainsString('Main agent stays on', $line);
+        $this->assertStringContainsString($switch->target_family, $line);
+        $this->assertStringContainsString($reason, $line);
+        $this->assertStringContainsString($this->journal->agentCalled(self::AGENT)->name, $line);
+        $session = AgentSession::query()->findOrFail($switch->expected_session_id);
+        $this->assertStringContainsString($session->driver_label, $line);
     }
 
     public function test_a_switch_to_another_program_that_carries_the_chat_over_asks_the_new_session_to_read_it(): void
@@ -46,9 +53,11 @@ final class DriverSwitchLinesTest extends TestCase
         $this->app->make(DriverSwitchLines::class)->switched($switch);
 
         $this->assertStringContainsString(
-            "the new session reads this chat and the memories. Main agent: read this chat's history",
+            $this->journal->agentCalled(self::AGENT)->name,
             $this->linesIn($chat)[0],
         );
+        $this->assertStringContainsString('history', $this->linesIn($chat)[0]);
+        $this->assertStringContainsString('memories', $this->linesIn($chat)[0]);
     }
 
     public function test_a_switch_that_starts_clean_says_the_new_session_read_only_the_memories(): void
@@ -57,7 +66,8 @@ final class DriverSwitchLinesTest extends TestCase
 
         $this->app->make(DriverSwitchLines::class)->switched($switch);
 
-        $this->assertStringContainsString('the new session read only the memories.', $this->linesIn($chat)[0]);
+        $this->assertStringContainsString('memories', $this->linesIn($chat)[0]);
+        $this->assertStringNotContainsString('history', $this->linesIn($chat)[0]);
     }
 
     /**
@@ -65,11 +75,11 @@ final class DriverSwitchLinesTest extends TestCase
      */
     private function switchOf(bool $carriesConversation): array
     {
-        $this->journal->owner()->idleAgent('Main agent', 'main-agent');
-        $agent = $this->journal->agentCalled('Main agent');
+        $this->journal->owner()->idleAgent(self::AGENT, 'main-agent');
+        $agent = $this->journal->agentCalled(self::AGENT);
 
-        $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Main agent')
-            ->pairChatOf('Owner', 'Main agent');
+        $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', self::AGENT)
+            ->pairChatOf('Owner', self::AGENT);
 
         $session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())

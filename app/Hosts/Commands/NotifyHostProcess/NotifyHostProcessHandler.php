@@ -18,7 +18,7 @@ use App\Time\Contracts\ServerClock;
 final readonly class NotifyHostProcessHandler implements CommandHandler
 {
     /**
-     * How many of the last characters a program printed the evidence of its exit keeps.
+     * How many of the last characters a process printed the evidence of its exit keeps.
      */
     private const int EVIDENCE_CHARACTERS = 1000;
 
@@ -67,8 +67,8 @@ final readonly class NotifyHostProcessHandler implements CommandHandler
         }
 
         $evidence = $report->signal === null
-            ? "the program exited with {$report->exitCode}"
-            : "the program was ended by {$report->signal}";
+            ? "the process exited with {$report->exitCode}"
+            : "the process was ended by {$report->signal}";
 
         $printed = trim((string) preg_replace('/\e\[[0-9;?]*[ -\/]*[@-~]/', '', $report->lastPrinted ?? ''));
 

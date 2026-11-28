@@ -67,7 +67,7 @@ final class HookRepliesTest extends TestCase
             OfflineReplyMode::Refuse,
         );
 
-        $this->assertSame([false, true], [$replyFile->isProgramOnly, $keyFile->isProgramOnly]);
+        $this->assertSame([false, true], [$replyFile->isDriverOnly, $keyFile->isDriverOnly]);
     }
 
     public function test_a_start_granted_the_neutral_reply_is_answered_neutrally_while_the_journal_is_away(): void

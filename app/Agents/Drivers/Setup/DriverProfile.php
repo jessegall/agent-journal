@@ -194,7 +194,7 @@ final readonly class DriverProfile
     }
 
     /**
-     * This driver's driver as the sign-in runner runs it, by the program its setup names; its status command
+     * The driver's sign-in runner uses the executable its setup names. Its status command
      * is the host probe's sign-in command without its driver.
      */
     public function signInDriver(): SignInDriver

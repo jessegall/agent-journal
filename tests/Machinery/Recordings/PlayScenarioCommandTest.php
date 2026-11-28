@@ -12,11 +12,11 @@ use App\Hosts\HostProtocolCheck;
 use App\Hosts\HostProtocolSources;
 use App\Models\Projects\ProjectInvitation;
 use App\Settings\CoreSettings;
-use App\Support\Recordings\AgentImagePrograms;
 use App\Support\Recordings\RecordingDrafts;
 use App\Support\Recordings\Recordings;
 use App\Support\Recordings\Scenarios\ScenarioPlayer;
 use App\Time\Contracts\Sleeper;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Testing\PendingCommand;
@@ -46,7 +46,7 @@ final class PlayScenarioCommandTest extends TestCase
         $this->journal->owner();
         $sources = array_keys($this->app->make(HostProtocolCheck::class)->sources());
         $this->project = $this->placeInTemporaryFolder(Place::Project);
-        Process::fake(['*'.AgentImagePrograms::SCRIPT.'*' => Process::result('image-programs-digest')]);
+        Process::fake(['*'.Config::string('journal.recordings.image_build_script').'*' => Process::result('image-programs-digest')]);
 
         foreach ([HostProtocolSources::PROTOCOL_FILE, ...$sources] as $relative) {
             File::ensureDirectoryExists(dirname("{$this->project}/{$relative}"));
@@ -112,7 +112,7 @@ final class PlayScenarioCommandTest extends TestCase
         $sleeper->expects($this->once())->method('sleep')->willReturnCallback(
             function () use ($arguments, $ticketFile, $done, $origin, $release): void {
                 $ticket = trim(File::get($ticketFile));
-                $this->assertSame("connect-recorded-project\n{$origin}\n{$release}\n", File::get($arguments));
+                $this->assertSame([ScenarioPlayer::CONNECT_PROJECT, $origin, $release], explode("\n", trim(File::get($arguments))));
                 $this->assertNotNull(ProjectInvitation::findRedeemableFor($ticket)->id);
                 File::put($done, "7\n");
             },

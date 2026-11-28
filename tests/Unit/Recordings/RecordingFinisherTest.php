@@ -8,7 +8,6 @@ use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Files\Enums\Place;
 use App\Hosts\HostProtocolCheck;
 use App\Hosts\HostProtocolSources;
-use App\Support\Recordings\AgentImagePrograms;
 use App\Support\Recordings\CutExchange;
 use App\Support\Recordings\Enums\Wire;
 use App\Support\Recordings\Exceptions\HostProtocolDrifted;
@@ -25,6 +24,7 @@ use App\Support\Recordings\Recordings;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Tests\Support\Files\UsesTemporaryPlaces;
@@ -58,7 +58,7 @@ final class RecordingFinisherTest extends TestCase
         config(['journal.agents.agent_image' => 'journal-runner@sha256:1']);
         // The agent image's digest is fixed for the test, so a test of another process changing the checkout meanwhile
         // never makes the run's own recording read as stale.
-        Process::fake(['*'.AgentImagePrograms::SCRIPT.'*' => Process::result('image-programs-digest')]);
+        Process::fake(['*'.Config::string('journal.recordings.image_build_script').'*' => Process::result('image-programs-digest')]);
 
         foreach ([HostProtocolSources::PROTOCOL_FILE, ...$sources] as $relative) {
             File::ensureDirectoryExists(dirname("{$this->project}/{$relative}"));

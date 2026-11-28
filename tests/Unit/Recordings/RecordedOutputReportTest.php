@@ -24,11 +24,12 @@ final class RecordedOutputReportTest extends TestCase
 
     public function test_a_chunk_is_faked_as_the_bytes_it_carries(): void
     {
-        $call = $this->outputReport(self::PROCESS, [[0, "  \"email\": \"someone@company.example\",\n"]]);
+        $original = "  \"email\": \"someone@company.example\",\n";
+        $call = $this->outputReport(self::PROCESS, [[0, $original]]);
 
         $faked = RecordedOutputReport::askedBy($call->fakedBy(new RecordingFakes([], [])));
 
-        $this->assertSame('  "email": "'.RecordingFakes::EMAIL."\",\n", $faked?->printed());
+        $this->assertSame(str_replace('someone@company.example', RecordingFakes::EMAIL, $original), $faked?->printed());
     }
 
     public function test_a_faked_chunk_moves_the_later_chunks_of_its_process_by_its_change_of_length(): void

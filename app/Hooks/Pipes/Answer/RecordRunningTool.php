@@ -9,7 +9,7 @@ use App\Bus\Contracts\Pipe;
 use App\Hooks\CallStages\WalkedCall;
 
 /**
- * Keeps the tool call the agent's chat line names, by the walked hook and the decision its answer shows. It runs
+ * Keeps the tool call the agent's activity line names, by the walked hook and the decision its answer shows. It runs
  * inside the hook's transaction after the replay check, so a replay and a hook that fails change nothing.
  */
 final readonly class RecordRunningTool implements Pipe

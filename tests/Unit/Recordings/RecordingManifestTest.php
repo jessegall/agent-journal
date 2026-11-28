@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Recordings;
 
 use App\Hosts\Protocol\HostProtocolVersion;
-use App\Support\Recordings\AgentImagePrograms;
+use App\Support\Recordings\AgentImageBuild;
 use App\Support\Recordings\Enums\StaleReason;
 use App\Support\Recordings\RecordingManifest;
 use Tests\TestCase;
@@ -26,7 +26,7 @@ final class RecordingManifestTest extends TestCase
         $otherFormat = RecordingManifest::fromFile([...$written, 'format' => RecordingManifest::FORMAT - 1]);
 
         $this->assertSame(
-            [null, StaleReason::Scenario, StaleReason::ImagePrograms, StaleReason::Protocol, StaleReason::Format],
+            [null, StaleReason::Scenario, StaleReason::ImageBuild, StaleReason::Protocol, StaleReason::Format],
             [
                 $manifest->staleReasonFor('scenario-1', 'programs-1'),
                 $manifest->staleReasonFor('scenario-2', 'programs-1'),
@@ -35,16 +35,15 @@ final class RecordingManifestTest extends TestCase
                 $otherFormat->staleReasonFor('scenario-1', 'programs-1'),
             ],
         );
-        $this->assertSame("the agent image's programs changed", StaleReason::ImagePrograms->value);
     }
 
     public function test_the_programs_digest_follows_the_init_and_not_the_hosts_own_packages(): void
     {
         // The programs' hash is read once per process, so each reading is a process of its own.
         $hash = function (): string {
-            $this->app->forgetInstance(AgentImagePrograms::class);
+            $this->app->forgetInstance(AgentImageBuild::class);
 
-            return $this->app->make(AgentImagePrograms::class)->hash();
+            return $this->app->make(AgentImageBuild::class)->hash();
         };
         $before = $hash();
 

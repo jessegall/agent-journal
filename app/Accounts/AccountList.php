@@ -33,7 +33,7 @@ final readonly class AccountList
 
     public function page(int $page, int $size, string $chosen, int $usagePage, bool $isAdding): AccountListPageData
     {
-        $listed = Account::pageListed($page, $size);
+        $listed = Account::findListedPage($page, $size);
         $accounts = array_values($listed->items());
         $selected = $isAdding ? null : $this->selected($accounts, $chosen);
         $visible = $accounts;
@@ -46,7 +46,7 @@ final readonly class AccountList
             ? DefaultDrivers::familyKeys()
             : array_values(array_unique(array_column($visible, 'account_protocol')));
 
-        $selections = ActiveAccount::forListedFamilies($families);
+        $selections = ActiveAccount::findForListedFamilies($families);
         $identities = array_map(static fn (Account $account): RecordIdentity => $account->record_identity, $visible);
         $counts = $this->uses->counts($identities);
         $histories = $this->uses->histories($identities, self::RECENT_START_LIMIT);
@@ -83,7 +83,7 @@ final readonly class AccountList
             ->lastPage($listed->lastPage());
 
         if ($selected !== null) {
-            $usage = AccountUsageWindow::pageOf($selected, $usagePage);
+            $usage = AccountUsageWindow::findPageOf($selected, $usagePage);
 
             $selectedUsage = $this->usageOf($selected, array_values($usage->items()), $costs, $threads);
 

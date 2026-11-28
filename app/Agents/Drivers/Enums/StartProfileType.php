@@ -45,7 +45,7 @@ enum StartProfileType: string
     }
 
     /**
-     * The program the container starts before its command: none for a standard start, the init that drops to its users
+     * The executable the container starts before its command: none for a standard start, the init that drops to its users
      * for a protected one, which takes the command after a --.
      *
      * @return list<string>

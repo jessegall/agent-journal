@@ -48,6 +48,8 @@ final class RecordedTerminalTurnTest extends TestCase
         'users',
     ];
 
+    private const string COMMAND_PROMPT = 'Run: ls.';
+
     public function test_a_terminal_session_answers_one_message_and_stops_as_recorded(): void
     {
         $this->journal->owner()
@@ -56,7 +58,7 @@ final class RecordedTerminalTurnTest extends TestCase
                 ->assertHostWire(fn (WireAssert $host) => $host
                     ->matchesRecording()
                     ->ordered(HostInstructionType::OpenContainer, fn (WireAssert $open) => $open->matchesPayload()))
-                ->assertTyped('Run: ls.')
+                ->assertTyped(self::COMMAND_PROMPT)
                 ->assertPlayedWhole());
     }
 
@@ -77,7 +79,7 @@ final class RecordedTerminalTurnTest extends TestCase
             ->scenario($scenario, fn (TestScenario $turn) => $turn
                 ->play()
                 ->assertTyped($keys)
-                ->assertTyped('Run: ls.')
+                ->assertTyped(self::COMMAND_PROMPT)
                 ->assertPlayedWhole());
     }
 }

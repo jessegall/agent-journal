@@ -70,6 +70,6 @@ final readonly class StartAccounts implements StartAccountsContract
 
     public function hasSignedInAccount(): bool
     {
-        return Account::existsSignedIn();
+        return Account::hasSignedInAccount();
     }
 }

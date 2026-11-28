@@ -11,7 +11,7 @@ use JsonSerializable;
 
 /**
  * What a recorded scenario was made of: the recording format and host protocol, the scenario's digest, the driver
- * and its build, the digest of the agent image's programs, when it was recorded and its exchanges. A recording is
+ * and its build, the agent image's build digest, when it was recorded and its exchanges. A recording is
  * stale once any of them no longer holds for the code as it is.
  */
 final readonly class RecordingManifest implements JsonSerializable
@@ -30,7 +30,7 @@ final readonly class RecordingManifest implements JsonSerializable
         public string $scenarioHash,
         public string $driver,
         public string $build,
-        public string $imagePrograms,
+        public string $imageBuild,
         public string $recordedAt,
         public array $exchanges,
     ) {}
@@ -44,7 +44,7 @@ final readonly class RecordingManifest implements JsonSerializable
         string $scenarioHash,
         string $driver,
         string $build,
-        string $imagePrograms,
+        string $imageBuild,
         string $recordedAt,
         array $exchanges,
     ): self {
@@ -54,7 +54,7 @@ final readonly class RecordingManifest implements JsonSerializable
             $scenarioHash,
             $driver,
             $build,
-            $imagePrograms,
+            $imageBuild,
             $recordedAt,
             $exchanges,
         );
@@ -81,13 +81,13 @@ final readonly class RecordingManifest implements JsonSerializable
      * The first reason the recording no longer stands for the scenario and the agent image as they are now; none
      * while it does.
      */
-    public function staleReasonFor(string $scenarioHash, string $imagePrograms): StaleReason|null
+    public function staleReasonFor(string $scenarioHash, string $imageBuild): StaleReason|null
     {
         return match (true) {
             $this->format !== self::FORMAT => StaleReason::Format,
             $this->protocol < self::protocolOf($this->driver) => StaleReason::Protocol,
             $this->scenarioHash !== $scenarioHash => StaleReason::Scenario,
-            $this->imagePrograms !== $imagePrograms => StaleReason::ImagePrograms,
+            $this->imageBuild !== $imageBuild => StaleReason::ImageBuild,
             default => null,
         };
     }
@@ -112,7 +112,7 @@ final readonly class RecordingManifest implements JsonSerializable
             'scenario_hash' => $this->scenarioHash,
             'driver' => $this->driver,
             'build' => $this->build,
-            'image_programs' => $this->imagePrograms,
+            'image_programs' => $this->imageBuild,
             'recorded_at' => $this->recordedAt,
             'exchanges' => $this->exchanges,
         ];

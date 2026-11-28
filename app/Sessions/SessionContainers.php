@@ -35,8 +35,8 @@ final readonly class SessionContainers
         private ArrangementSetting $arrangement,
         private DriverProfiles $drivers,
         private HelperRuns $runs,
-        #[Config('journal.agents.development_programs')]
-        private string $developmentPrograms,
+        #[Config('journal.agents.development_binaries')]
+        private string $developmentBinaries,
         #[Config('journal.agents.security_profiles')]
         private string $securityProfiles,
     ) {}
@@ -93,7 +93,7 @@ final readonly class SessionContainers
             $this->arrangement->labelsFor($sessionId, $account),
         );
 
-        return new SessionContainer($manifest->withDevelopmentPrograms($this->developmentPrograms)->preparedBy([
+        return new SessionContainer($manifest->withDevelopmentBinaries($this->developmentBinaries)->preparedBy([
             ...$this->workspacePreparations($rules, $use, $sessionId),
             ...$this->runs->accountFolderChecks(
                 $account->folder(),

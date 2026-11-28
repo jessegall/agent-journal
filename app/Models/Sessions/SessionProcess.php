@@ -426,27 +426,17 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
      * @param  list<RecordIdentity>  $accounts
      * @return array<string, int>
      */
-    public static function countUnresolvedByAccount(array $accounts): array
+    public static function resolveUnresolvedCountsByAccount(array $accounts): array
     {
         if ($accounts === []) {
             return [];
         }
 
-        $groups = RecordIdentity::groupedByType($accounts);
-
         $counts = self::query()
             ->supervised()
             ->unresolved()
-            ->where(static function (Builder $query) use ($groups): void {
-                foreach ($groups as $type => $records) {
-                    $query->orWhere(static fn (Builder $pair) => $pair
-                        ->where('account_type', $type)
-                        ->whereIn('account_id', array_column($records, 'id')));
-                }
-            })
-            ->select(['account_type', 'account_id'])
-            ->selectRaw('count(*) as running_count')
-            ->groupBy('account_type', 'account_id')
+            ->onAccounts($accounts)
+            ->unresolvedCounts()
             ->limit(count($accounts))
             ->get();
 
@@ -489,6 +479,16 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
             ->pluck('session_id');
 
         return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
+    }
+
+    /**
+     * The session's supervised starts still holding account use.
+     *
+     * @return list<self>
+     */
+    public static function findUnresolvedOfSession(string $sessionId): array
+    {
+        return array_values(self::query()->supervised()->ofSessions([$sessionId])->unresolved()->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -716,5 +716,31 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     protected function sessionIds(Builder $query): void
     {
         $query->select('session_id');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @param  list<RecordIdentity>  $accounts
+     */
+    #[Scope]
+    protected function onAccounts(Builder $query, array $accounts): void
+    {
+        $groups = RecordIdentity::groupedByType($accounts);
+        $query->where(static function (Builder $owners) use ($groups): void {
+            foreach ($groups as $type => $records) {
+                $owners->orWhere(static fn (Builder $pair) => $pair
+                    ->where('account_type', $type)
+                    ->whereIn('account_id', array_column($records, 'id')));
+            }
+        });
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function unresolvedCounts(Builder $query): void
+    {
+        $query->select(['account_type', 'account_id'])
+            ->selectRaw('count(*) as running_count')
+            ->groupBy('account_type', 'account_id');
     }
 }

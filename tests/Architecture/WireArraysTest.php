@@ -11,7 +11,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * A Data goes over the wire as it is: a JSON response and an MCP tool result turn it into an array themselves, so no
- * code calls toArray() to hand it to them (user 27775, 27777).
+ * code calls toArray() to hand it to them.
  */
 #[TimeLimit(seconds: 20, reason: 'It parses every PHP file of the app and the domains.')]
 final class WireArraysTest extends TestCase

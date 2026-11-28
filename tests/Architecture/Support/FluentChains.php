@@ -13,7 +13,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
- * The faults of rule 115: a public method of a fluent class that hands back another fluent class switches the chain's
+ * A public method of a fluent class that hands back another fluent class switches the chain's
  * subject, and a verb naming an inner subject flattens it. A fluent class, neither a model nor a readonly value,
  * declares a public method returning itself; a getter that ends a chain is named for what it gives back.
  */

@@ -43,8 +43,8 @@ final readonly class DriverImageChecks
 
     public function __construct(
         private DriverProfiles $profiles,
-        #[Config('journal.agents.development_programs')]
-        private string $developmentPrograms,
+        #[Config('journal.agents.development_binaries')]
+        private string $developmentBinaries,
     ) {}
 
     /**
@@ -104,10 +104,10 @@ final readonly class DriverImageChecks
                 'blocksNewPrivileges' => false,
                 'network' => 'none',
                 'networkLabels' => [],
-                // A check runs the programs a session runs, the checkout's builds on a development machine too.
+                // A check runs the executables a session runs, the checkout's builds on a development machine too.
                 'mounts' => array_map(
                     fn (ManifestMount $mount) => $mount->protocolData(),
-                    ContainerManifest::developmentProgramMounts($this->developmentPrograms),
+                    ContainerManifest::developmentBinaryMounts($this->developmentBinaries),
                 ),
                 'tmpfs' => [['target' => '/run/journal-exec', 'options' => 'uid=10002,gid=10001,mode=0750,size=1m']],
                 'volumes' => [],

@@ -9,7 +9,7 @@ use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * No image holds an agent's instructions or skills, and only a driver's own image holds configuration, copied from its
- * own folder under .docker/drivers (rule 119): every other image holds programs and packages only. Every Dockerfile and
+ * own folder under .docker/drivers: every other image holds programs and packages only. Every Dockerfile and
  * build script under .docker is read, so a new one is judged without being listed.
  */
 final class ImageInstructionsTest extends TestCase

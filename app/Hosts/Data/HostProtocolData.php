@@ -10,7 +10,7 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
- * Host protocol 1 as protocol/host.json writes it, the one source of both sides' code (rule 117, doc 143).
+ * Host protocol 1 as protocol/host.json writes it, the one source of both sides' code.
  */
 #[MapInputName(SnakeCaseMapper::class)]
 final class HostProtocolData extends Data

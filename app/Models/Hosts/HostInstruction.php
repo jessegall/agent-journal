@@ -287,7 +287,7 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     /**
      * Whether every instruction placed since the moment has its answer.
      */
-    public static function areAllAnsweredSince(CarbonImmutable $since): bool
+    public static function hasAnsweredAllSince(CarbonImmutable $since): bool
     {
         return self::query()->placedSince($since)->unanswered()->doesntExist();
     }

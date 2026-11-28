@@ -11,11 +11,19 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Events\Connections\HostAllowedImagesForgotten;
 use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
+use App\Events\Connections\HostCapabilitiesRecorded;
 use App\Events\Connections\HostHeartbeatRecorded;
+use App\Events\Connections\HostImagesAllowed;
+use App\Events\Connections\HostProtocolRecorded;
 use App\Events\Connections\HostReenrolled;
+use App\Events\Connections\HostReleaseRecorded;
 use App\Events\Connections\HostRevoked;
+use App\Events\Connections\HostUpgradeAwaited;
+use App\Events\Connections\HostUpgradeFailed;
+use App\Events\Connections\HostUpgradeInstructed;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
 use App\Exceptions\StartRefused;
@@ -131,9 +139,8 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * The installation enrolled this host again: it takes the new secret and roots and starts with no failure, no
-     * answer and no allowed image, as nothing answers for what the host was before; its processes and instructions
-     * stay its.
+     * Renews credentials and roots and clears the previous inventory and failure state.
+     * The host keeps its existing processes and instructions.
      *
      * @param  list<string>  $startRoots
      */
@@ -232,6 +239,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     {
         $this->capabilities = $capabilities;
         $this->saveAndAssert();
+        $this->raise(new HostCapabilitiesRecorded($this->id));
     }
 
     /**
@@ -243,6 +251,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     {
         $this->allowed_images = $images;
         $this->saveAndAssert();
+        $this->raise(new HostImagesAllowed($this->id));
     }
 
     /**
@@ -250,7 +259,9 @@ final class Host extends JournalModel implements EventSource, ReadableModel
      */
     public function forgetAllowedImages(): void
     {
-        $this->allowImages([]);
+        $this->allowed_images = [];
+        $this->saveAndAssert();
+        $this->raise(new HostAllowedImagesForgotten($this->id));
     }
 
     /**
@@ -266,6 +277,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         }
 
         $this->saveAndAssert();
+        $this->raise(new HostReleaseRecorded($this->id));
     }
 
     /**
@@ -277,6 +289,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->upgrade_instruction_id = null;
         $this->upgrade_failure = null;
         $this->saveAndAssert();
+        $this->raise(new HostUpgradeAwaited($this->id));
     }
 
     /**
@@ -286,6 +299,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     {
         $this->upgrade_instruction_id = $instructionId;
         $this->saveAndAssert();
+        $this->raise(new HostUpgradeInstructed($this->id));
     }
 
     /**
@@ -297,12 +311,15 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->upgrade_instruction_id = null;
         $this->upgrade_failure = $reason;
         $this->saveAndAssert();
+        $this->raise(new HostUpgradeFailed($this->id));
     }
 
+    /** Keeps the host protocol version named by its inventory. */
     public function recordProtocol(int $protocol): void
     {
         $this->protocol = $protocol;
         $this->saveAndAssert();
+        $this->raise(new HostProtocolRecorded($this->id));
     }
 
     // ----------[ Predicates ]----------

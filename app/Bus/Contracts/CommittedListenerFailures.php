@@ -11,5 +11,6 @@ use App\Bus\Exceptions\CommittedFactListenerFailed;
  */
 interface CommittedListenerFailures
 {
+    /** Reports a failed listener after the command commits. */
     public function take(CommittedFactListenerFailed $failure): void;
 }

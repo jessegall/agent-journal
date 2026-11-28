@@ -19,7 +19,7 @@ use App\Hosts\Protocol\Payloads\HostTerminalSizePayload;
 use App\Support\Recordings\Enums\RecordedEventType;
 
 /**
- * Cuts each driver program's exchange out of a run's host exchange: an opening instruction opens it, the instructions to it are
+ * Cuts each driver's exchange out of a run's host exchange: an opening instruction opens it, the instructions to it are
  * what was typed (a private value only as typed) or resized, its relayed output what it printed, its report its end.
  */
 final readonly class DriverExchanges

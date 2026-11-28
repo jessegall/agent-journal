@@ -31,8 +31,8 @@ final class PageFactoryTest extends TestCase
         $second = $factory->create(BookData::class, Request::create('/second'));
 
         $this->assertSame(BookData::class, $first::class);
-        $this->assertSame('/first #1', $first->title);
-        $this->assertSame('/second #1', $second->title);
+        $this->assertSame(['/first', '#1'], explode(' ', $first->title));
+        $this->assertSame(['/second', '#1'], explode(' ', $second->title));
     }
 
     public function test_a_builder_is_made_in_the_container_of_the_request_it_serves(): void
@@ -51,7 +51,7 @@ final class PageFactoryTest extends TestCase
             Container::setInstance($application);
         }
 
-        $this->assertSame('/second #2', $second->title);
+        $this->assertSame(['/second', '#2'], explode(' ', $second->title));
     }
 
     public function test_an_unregistered_type_names_the_page_and_requested_class(): void

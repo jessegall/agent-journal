@@ -18,9 +18,9 @@ use App\Values\ShellCommand;
 final readonly class NativeBackgrounding
 {
     /**
-     * The programs that detach a command from the shell that started it.
+     * The executables that detach a command from the shell that started it.
      */
-    private const array DETACHING_PROGRAMS = [
+    private const array DETACHING_EXECUTABLES = [
         'nohup',
         'setsid',
         'disown',
@@ -35,7 +35,7 @@ final readonly class NativeBackgrounding
     {
         return $command->hasBackgroundJob || array_any(
             $command->parts,
-            fn (CommandPart $part) => in_array(basename($part->program), self::DETACHING_PROGRAMS, true),
+            fn (CommandPart $part) => $part->hasExecutableIn(self::DETACHING_EXECUTABLES),
         );
     }
 

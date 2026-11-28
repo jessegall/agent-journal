@@ -27,6 +27,6 @@ final readonly class AccountSessions
     /** @param list<RecordIdentity> $accounts */
     public function histories(array $accounts, int $limit): AccountUseHistories
     {
-        return new AccountUseHistories(AgentSession::recentUsesOf($accounts, $limit));
+        return new AccountUseHistories(AgentSession::resolveRecentUsesOf($accounts, $limit));
     }
 }

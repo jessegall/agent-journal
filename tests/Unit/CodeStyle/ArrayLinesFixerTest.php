@@ -11,7 +11,7 @@ use SplFileInfo;
 use Tools\CodeStyle\ArrayLinesFixer;
 
 /**
- * Arrays are laid out as rule 111 says, and the formatter lays them out itself.
+ * The formatter lays arrays out by their use and line width.
  */
 final class ArrayLinesFixerTest extends TestCase
 {

@@ -14,8 +14,8 @@ use App\Web\Data\RunningCommandData;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Sends each change of an agent's chat line to the users who share a chat with the agent, one message per user
- * however many chats they share; an agent in no chat with a user sends nothing.
+ * Sends each change of an agent's activity line to the users who share an inbox with the agent, one message per user
+ * however many inboxes they share; an agent in no inbox with a user sends nothing.
  */
 final readonly class BroadcastRunningCommand implements Listener
 {

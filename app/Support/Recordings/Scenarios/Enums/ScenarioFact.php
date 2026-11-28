@@ -67,7 +67,7 @@ enum ScenarioFact: string
             self::Installed => $run->installerExit() === 0 && Host::query()->exists(),
             self::Connected => $run->isConnected(),
             self::RelayHeartbeat => $run->hasRelayHeartbeat(),
-            self::InstructionsAnswered => HostInstruction::areAllAnsweredSince($run->startedAt),
+            self::InstructionsAnswered => HostInstruction::hasAnsweredAllSince($run->startedAt),
         };
     }
 
@@ -88,7 +88,7 @@ enum ScenarioFact: string
 
         return match ($this) {
             self::ChallengeShown => $attempt->isWaiting(),
-            self::SignedIn => $attempt->isSignedIn(),
+            self::SignedIn => $attempt->hasSucceeded(),
             self::SignInFailed => $attempt->isFailed(),
             default => false,
         };

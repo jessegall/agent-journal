@@ -26,11 +26,11 @@ use App\Values\ExecutionBudgets;
 final readonly class ContainerManifest
 {
     /**
-     * The user a driver program runs as, which alone reads the sign-in and the files only the program may read.
+     * The driver user, which alone reads the sign-in and the driver's private files.
      */
-    public const string PROGRAM_USER = '10001';
+    public const string DRIVER_USER = '10001';
 
-    public const string USER = self::PROGRAM_USER.':'.self::PROGRAM_USER;
+    public const string USER = self::DRIVER_USER.':'.self::DRIVER_USER;
 
     public const string WORKDIR = '/workspace';
 
@@ -104,27 +104,27 @@ final readonly class ContainerManifest
     }
 
     /**
-     * The same container with the checkout's own builds of the image's programs bound read-only over the image's
+     * The same container with the checkout's own builds of the image's tools bound read-only over the image's
      * copies, from the agent daemon's folder of them; local development only, none when no folder is named.
      */
-    public function withDevelopmentPrograms(string $folder): self
+    public function withDevelopmentBinaries(string $folder): self
     {
-        return clone ($this, ['mounts' => [...$this->mounts, ...self::developmentProgramMounts($folder)]]);
+        return clone ($this, ['mounts' => [...$this->mounts, ...self::developmentBinaryMounts($folder)]]);
     }
 
     /**
-     * The checkout's builds of the agent image's programs, mounted over the image's own where a development machine
-     * builds them (AGENTS_DEVELOPMENT_PROGRAMS); none where it builds none.
+     * The checkout's builds of the agent image's tools, mounted over the image's own where a development machine
+     * builds them; none where it builds none.
      *
      * @return list<ManifestMount>
      */
-    public static function developmentProgramMounts(string $folder): array
+    public static function developmentBinaryMounts(string $folder): array
     {
         if ($folder === '') {
             return [];
         }
 
-        $programs = [
+        $binarys = [
             'journal-init',
             'journal-exec',
             'journal-shell',
@@ -134,8 +134,8 @@ final readonly class ContainerManifest
         ];
 
         $mounts = array_map(
-            fn (string $program) => ManifestMount::daemonBind("{$folder}/{$program}", "/opt/journal/bin/{$program}", false),
-            $programs,
+            fn (string $binary) => ManifestMount::daemonBind("{$folder}/{$binary}", "/opt/journal/bin/{$binary}", false),
+            $binarys,
         );
 
         return [
@@ -180,7 +180,7 @@ final readonly class ContainerManifest
 
     /**
      * The folders right inside the account mount that the container mounts something else over, which must exist as
-     * the program's user's before Docker mounts there.
+     * the driver's before Docker mounts there.
      *
      * @return list<string>
      */
