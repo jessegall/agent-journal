@@ -50,7 +50,7 @@ final class SwitchAgentDriverRequest extends FormRequest
     /**
      * Whether the owner saw the agent run a session, which the switch then replaces.
      */
-    public function hasSession(): bool
+    public function replacesSession(): bool
     {
         return $this->filled('expectedSessionId');
     }

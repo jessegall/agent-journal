@@ -28,7 +28,7 @@ final readonly class SwitchAgentDriverController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        if (! $request->hasSession()) {
+        if (! $request->replacesSession()) {
             $commands->run($request->nextStart());
 
             return $redirect->back(303);
