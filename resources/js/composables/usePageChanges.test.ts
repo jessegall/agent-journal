@@ -114,6 +114,13 @@ describe('usePageChanges', () => {
         expect(reloads).toHaveLength(0);
     });
 
+    it('lets a window ask for a live prop the page does not hold yet, so a page arriving again fills its window', async () => {
+        await changes();
+
+        expect(fireBefore(liveVisit(['navigationCounts']))).toBeUndefined();
+        expect(reloads).toHaveLength(0);
+    });
+
     it('takes over a reconnect or tab-shown reload the same way, as an async read', async () => {
         await changes();
 
