@@ -153,4 +153,14 @@ describe("StartPicker", () => {
     expect(picker.find("[data-add-account]").exists()).toBe(true);
     expect(picker.find("[data-start]").exists()).toBe(false);
   });
+
+  it("reads every choice's main label in the bright text colour, chosen or not", async () => {
+    signedIn = { "claude-code": [{ id: "acct-work", label: "Work (Max)", isDefault: true }, { id: "acct-home", label: "Home", isDefault: false }] };
+    const picker = await pickerFor(agentWith());
+    const labels = picker.findAll("[data-start-label]");
+
+    expect(labels.length).toBeGreaterThan(3);
+    labels.forEach((label) => expect(label.classes()).toContain("text-text"));
+    expect(picker.get('[data-start-option="effort:low"]').classes()).toContain("text-text");
+  });
 });
