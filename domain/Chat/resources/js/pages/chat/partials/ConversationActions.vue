@@ -6,9 +6,8 @@ import type { AgentOptionData } from "@generated/types/chat";
 import { openAgentTerminal } from "../../../composables/useTerminalModal";
 
 /**
- * The chat list's foot, which stays while the list scrolls: New chat, which starts another main agent, then what the
- * chosen chat offers: its terminal while it runs in one, Switch driver… and End session while its status offers it.
- * Nothing here starts or resumes a session: the next message does.
+ * The bottom of the chat list, which stays while the list scrolls: New chat, and what the chosen chat offers, its
+ * terminal, Switch driver… and End session. Nothing here starts a session: the next message does.
  */
 defineProps<{
   chosenAgent: AgentOptionData | undefined;

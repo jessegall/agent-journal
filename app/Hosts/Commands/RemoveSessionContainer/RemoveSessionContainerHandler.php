@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Hosts\Commands\RemoveSessionContainer;
 
+use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandHandler;
-use App\Hosts\ArrangementSetting;
+use App\Hosts\Commands\RemoveSessionNetwork\RemoveSessionNetworkCommand;
 use App\Hosts\HelperRuns;
 use App\Hosts\Protocol\HostInstructions;
 use App\Hosts\Protocol\Payloads\HostContainerRunsPayload;
-use App\Hosts\Protocol\Payloads\HostNetworkRemovalPayload;
 use App\Values\HostInstructionSource;
 
 final readonly class RemoveSessionContainerHandler implements CommandHandler
 {
     public function __construct(
         private HostInstructions $instructions,
-        private ArrangementSetting $arrangement,
         private HelperRuns $runs,
+        private CommandBus $commands,
     ) {}
 
     public function handle(RemoveSessionContainerCommand $command): string
@@ -28,10 +28,6 @@ final readonly class RemoveSessionContainerHandler implements CommandHandler
             HostContainerRunsPayload::from(['runs' => [$this->runs->sessionFilesRemove($command->sessionId)]]),
         );
 
-        return $this->instructions->removeNetwork(
-            $command->hostId,
-            HostInstructionSource::fromJournal(),
-            HostNetworkRemovalPayload::from(['network' => $this->arrangement->sessionContainerName($command->sessionId)]),
-        )->getKey();
+        return $this->commands->run(new RemoveSessionNetworkCommand($command->hostId, $command->sessionId));
     }
 }

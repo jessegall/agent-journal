@@ -17,10 +17,8 @@ import { useTurnInterrupt } from "../../../composables/useTurnInterrupt";
 import type { AgentOptionData } from "@generated/types/chat";
 
 /**
- * Posts in the chat with the chosen agent, at the chat's own inbox. The text is the draft of this chat,
- * so browsing other chats, a switch or a reload keeps it; a send names the session the user saw the agent run, is
- * refused when the agent runs another one by then, and clears only its own draft, only if it was not typed on since.
- * While the agent works, Stop beside Send, or Esc in the field, stops only its current turn.
+ * Writes and sends the user's message to the chosen agent, keeping a draft per chat across chats and reloads, and sends it
+ * only to the session the user saw. While the agent works, Stop beside Send, or Esc, ends only its current turn.
  */
 const props = defineProps<{
   draftKey: string;

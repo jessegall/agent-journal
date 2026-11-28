@@ -240,7 +240,7 @@ return [
         'owner' => 'SessionProcess::refuse',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StartRefused('agent', 'session', 'it cannot start here', new DateTimeImmutable('2026-01-01')),
+        'sample' => fn () => new StartRefused('agent', 'session', 'it cannot start here', new DateTimeImmutable('2026-01-01'), 'start'),
     ],
     StartRefusedWithoutAccount::class => [
         'role' => EventRole::CommandFact,

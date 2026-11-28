@@ -21,10 +21,8 @@ import { openAgentTerminal } from "../../../composables/useTerminalModal";
 import SessionAction from "./SessionAction.vue";
 
 /**
- * What the chosen agent's status offers now in the agent bar, each action mapped to its route: Retry and Check and
- * switch settle a switch, Check status and Check capacity read, Sign in opens Accounts, Dismiss hides the outcome and
- * Cancel start cancels. A message starts a stopped agent, the composer stops a turn, and the chat list ends a session
- * and opens Switch driver…, so the bar draws none of those.
+ * The agent bar's buttons for what the chosen agent's status offers now, such as Check status, Cancel start or Retry
+ * switch, each sent to its route. Starting, stopping a turn, ending and switching are offered elsewhere.
  */
 const props = defineProps<{ agent: AgentOptionData }>();
 

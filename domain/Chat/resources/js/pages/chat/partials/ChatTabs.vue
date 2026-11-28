@@ -16,10 +16,9 @@ import { useHandOver } from "../../../composables/useHandOver";
 import CreateChatForm from "./CreateChatForm.vue";
 
 /**
- * Home's row of chat tabs above the agent bar: one tab per open chat with the program's mark, the name (a main agent
- * says so), a spinner while it works, a hollow dot at rest or the alert when its start failed, and its unread count;
- * × closes only the tab, and the agent keeps working. Left and Right move between tabs and Delete closes one. New chat
- * (also Option+N) opens the New chat form, and One at a time or Side by side sets how the open chats show.
+ * Home's row of open chats above the agent bar, so the user moves between several agents: each tab shows the agent, its
+ * state and unread count, and closing one leaves the agent working. It opens New chat (Option+N) and switches between
+ * one chat at a time and side by side.
  */
 const props = defineProps<{
   agents: AgentOptionData[];

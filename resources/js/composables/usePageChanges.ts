@@ -7,10 +7,9 @@ import { traceLive } from './liveTrace';
 import { purge, trackProtectedRead } from './protectedView';
 
 /**
- * Keeps the page on screen up to date: every reload the Inertia live client starts runs as this tab's own async reload,
- * never cancelling a form or a navigation. Changes during a read make one trailing read, a form being sent makes it
- * wait, and a failed read retries after 1, 2 and 4 seconds, then on its own at a growing pause, and at once on a new live
- * signal. A read that gets no answer within its deadline counts as failed.
+ * Keeps the page on screen up to date with the live changes, as this tab's own reloads that never cancel a form or a
+ * visit: changes during a read make one more read, a form being sent makes it wait, and a failed read retries with a
+ * growing pause, giving up a read with no answer by its deadline.
  */
 export type PageReadStatus = 'idle' | 'reading' | 'retrying' | 'failed';
 

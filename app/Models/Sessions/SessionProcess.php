@@ -203,7 +203,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
         $this->ended_at = CarbonImmutable::now();
         $this->refusal = $refusal;
         $this->saveAndAssert();
-        $this->raise(new StartRefused($this->agent_id, $this->session_id, $refusal, $this->ended_at));
+        $this->raise(new StartRefused($this->agent_id, $this->session_id, $refusal, $this->ended_at, $this->id));
     }
 
     /**
