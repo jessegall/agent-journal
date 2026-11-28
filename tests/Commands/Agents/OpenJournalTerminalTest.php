@@ -10,10 +10,14 @@ use App\Agents\Drivers\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Work\RuntimeStarts;
+use App\Agents\Enums\SessionProcessStatus;
+use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\ContainedPlanFields;
 use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Messages\Data\MessageTextData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
@@ -25,6 +29,7 @@ use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestHost;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
 
@@ -101,6 +106,37 @@ final class OpenJournalTerminalTest extends TestCase
                 ->where('session_process_id', $start->id)
                 ->where('purpose', HostProcessPurpose::AgentTerminal)
                 ->count(),
+        );
+    }
+
+    public function test_a_journal_terminal_its_host_lost_opens_again_for_the_same_start_which_goes_on(): void
+    {
+        [, $start] = $this->provenTerminal();
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
+        [$open] = $this->journal->hostInstructionsOf('terminal');
+        $this->journal->hostInstruction($open, fn (TestHostInstruction $instruction) => $instruction->answer())
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->report(HostProcessReportType::Running));
+        $inventory = HostInventoryPayload::from([
+            'protocol' => 1,
+            'release' => '6.0.0',
+            'answered_through' => $open->id,
+            'capabilities' => [],
+            'processes' => [],
+        ]);
+
+        $this->journal->asSystem(new NotifyHostInventoryCommand($this->journal->hostCalled('Mac')->hostId, $inventory));
+
+        $this->journal->assertResult(
+            [HostProcessStatus::Lost, 2, SessionProcessStatus::Running],
+            [
+                $this->journal->hostProcessCalled('terminal')->status,
+                HostProcess::query()
+                    ->where('session_process_id', $start->id)
+                    ->where('purpose', HostProcessPurpose::AgentTerminal)
+                    ->count(),
+                $start->refresh()->status,
+            ],
         );
     }
 

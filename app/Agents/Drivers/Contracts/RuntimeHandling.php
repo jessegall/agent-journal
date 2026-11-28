@@ -38,4 +38,9 @@ interface RuntimeHandling
      * Whether any activity of the woken agent settles its wake, rather than the end of the turn the wake opened.
      */
     public function isWakeSettledByActivity(): bool;
+
+    /**
+     * Whether the end of the runtime's own process ends the runtime, rather than leaving it to its driver to go on.
+     */
+    public function isRuntimeEndedBy(HostProcessEndEvent $fact): bool;
 }

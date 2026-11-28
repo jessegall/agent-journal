@@ -89,10 +89,7 @@ func mockDocker(arguments []string) error {
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
-	listener, err := net.Listen("unix", *socket)
-	if err != nil {
-		return err
-	}
+	// Every recording is read before the socket opens, so a bad one ends the mock before a socket nobody serves exists.
 	programs := func(*dockermock.Container) dockermock.Program { return dockermock.EchoProgram }
 	if *sessionRecording != "" {
 		fixture, err := recording.Load(*sessionRecording)
@@ -108,6 +105,10 @@ func mockDocker(arguments []string) error {
 			return err
 		}
 		programs = programInContainer(mockProgram{*program, version, signIn}, replayProgram(fixture))
+	}
+	listener, err := net.Listen("unix", *socket)
+	if err != nil {
+		return err
 	}
 	daemon := dockermock.Serve(listener, *image)
 	daemon.Folders = folders.held()
