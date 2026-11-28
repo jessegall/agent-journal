@@ -8,15 +8,6 @@
             "hook_event_name": "SessionStart",
             "source": "startup"
         },
-        "session resume after compaction": {
-            "session_id": "session-redacted",
-            "transcript_path": "/redacted/transcript.jsonl",
-            "cwd": "/redacted",
-            "prompt_id": "prompt-redacted",
-            "hook_event_name": "SessionStart",
-            "source": "compact",
-            "model": "claude-haiku-5-5"
-        },
         "prompt": {
             "session_id": "session-redacted",
             "transcript_path": "/redacted/transcript.jsonl",

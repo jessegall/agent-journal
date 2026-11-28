@@ -2,7 +2,6 @@
     "driver": "Claude Code",
     "mapping": {
         "session start": "onSessionStart",
-        "session resume after compaction": "onCompaction",
         "prompt": "onPrompt",
         "shell command": "onShellCommand",
         "file edit": "onFileEdit",

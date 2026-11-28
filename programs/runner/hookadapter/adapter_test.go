@@ -1,6 +1,7 @@
 package hookadapter
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -70,21 +71,68 @@ func journalAway(context.Context, []byte) (Reply, error) {
 
 func nativeHook(t *testing.T, driver, scenario string, wanted nativeCall) []byte {
 	t.Helper()
+	return decodedHookBody(t, recordedHook(t, driver, scenario, wanted, 1).Asked.Body)
+}
+
+func recordedHook(t *testing.T, driver, scenario string, wanted nativeCall, occurrence int) recorded.Call {
+	t.Helper()
 	calls, err := recorded.MustLoad(t, driver, scenario).Calls(recording.WireHooks)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, call := range calls {
-		body, err := base64.StdEncoding.DecodeString(call.Asked.Body)
-		if err != nil {
-			t.Fatal(err)
+		body := decodedHookBody(t, call.Asked.Body)
+		if callOf(body) != wanted {
+			continue
 		}
-		if callOf(body) == wanted {
-			return body
+		occurrence--
+		if occurrence == 0 {
+			return call
 		}
 	}
 	t.Fatalf("%s/%s has no recorded hook for %+v", driver, scenario, wanted)
-	return nil
+	return recorded.Call{}
+}
+
+func decodedHookBody(t *testing.T, body string) []byte {
+	t.Helper()
+	decoded, err := base64.StdEncoding.DecodeString(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return decoded
+}
+
+func TestTheNativeClearCompactAndWriteReachTheJournalWhole(t *testing.T) {
+	for _, hook := range []struct {
+		driver     string
+		scenario   string
+		call       nativeCall
+		occurrence int
+	}{
+		{"claude-code", "terminal-clear", nativeCall{Event: "SessionStart"}, 2},
+		{"claude-code", "terminal-compact", nativeCall{Event: "SessionStart"}, 2},
+		{"codex", "refused-write", nativeCall{Event: "PreToolUse", Tool: "Bash"}, 1},
+	} {
+		t.Run(hook.scenario, func(t *testing.T) {
+			exchange := recordedHook(t, hook.driver, hook.scenario, hook.call, hook.occurrence)
+			native := decodedHookBody(t, exchange.Asked.Body)
+			var reply Reply
+			if err := json.Unmarshal(decodedHookBody(t, exchange.Answered.Body), &reply); err != nil {
+				t.Fatal(err)
+			}
+			adapter := preparedAdapter(t, writeReplies(t, "Task", "deny"), func(_ context.Context, body []byte) (Reply, error) {
+				if !bytes.Equal(body, native) {
+					return Reply{}, errors.New("the native hook changed on its way to the journal")
+				}
+				return reply, nil
+			})
+
+			if got := adapter.Answer(native); got != reply {
+				t.Fatalf("the adapter did not pass the recorded journal reply: %+v", got)
+			}
+		})
+	}
 }
 
 func TestAJournalAwayIsAnsweredFromTheFileForEachDriversShape(t *testing.T) {

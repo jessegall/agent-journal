@@ -112,16 +112,12 @@ final class CodexHooksTest extends TestCase
 
     public function test_a_write_answers_through_codexs_own_adapter(): void
     {
-        $body = (string) json_encode([
-            'session_id' => 'session-redacted',
-            'hook_event_name' => 'PreToolUse',
-            'tool_name' => 'Bash',
-            'tool_input' => ['command' => 'composer test'],
-        ]);
+        $this->journal->scenario('codex/refused-write', fn (TestScenario $turn) => $turn
+            ->sendHook('PreToolUse', 2, function (string $body): void {
+                $stdout = $this->hookOutput(DefaultDrivers::CODEX, $body);
 
-        $stdout = $this->hookOutput(DefaultDrivers::CODEX, $body);
-
-        $this->assertSame('deny', $stdout['hookSpecificOutput']['permissionDecision']);
+                $this->assertSame('deny', $stdout['hookSpecificOutput']['permissionDecision']);
+            }));
     }
 
     public function test_a_call_to_one_of_codexs_own_subagent_tools_is_refused_before_the_stack(): void
