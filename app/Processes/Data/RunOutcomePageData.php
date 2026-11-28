@@ -14,6 +14,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class RunOutcomePageData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<RunOutcomePageDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = RunOutcomePageDataFields::class;
+
     public function __construct(
         public readonly string $runId,
         public readonly RunOutcomeSummaryData|Optional $summary = new Optional(),
