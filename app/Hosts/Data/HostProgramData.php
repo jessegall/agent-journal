@@ -22,7 +22,7 @@ final class HostProgramData extends Data
      * @param  array<string, list<string>>  $commands  the host program's commands, each with the flags it takes
      */
     public function __construct(
-        public readonly string $about,
+        public readonly string $description,
         public readonly array $arguments = [],
         public readonly string|null $executable = null,
         public readonly array $words = [],

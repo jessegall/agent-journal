@@ -32,7 +32,7 @@ final class HostProtocolData extends Data
      * @param  array<int, RelayProtocolData>  $protocols
      */
     public function __construct(
-        public readonly string $about,
+        public readonly string $description,
         public readonly int $version,
         public readonly array $statuses,
         public readonly array $refusals,

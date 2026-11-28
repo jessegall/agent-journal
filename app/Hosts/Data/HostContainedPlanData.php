@@ -19,9 +19,9 @@ final class HostContainedPlanData extends Data
      * @param  list<string>  $startGrantEnvironment  the variables of the start grant, which it carries whole or not at all
      */
     public function __construct(
-        public readonly string $about,
+        public readonly string $description,
         public readonly array $refusedFields,
-        public readonly string $startGrantAbout,
+        public readonly string $startGrantDescription,
         public readonly array $startGrantEnvironment,
     ) {}
 }

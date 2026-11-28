@@ -1,5 +1,5 @@
 {
-    "about": "Host protocol 1 between the Go host and the PHP journal, written once. php artisan journal:host-protocol generates the Go and PHP code from this file; never edit the generated files.",
+    "description": "Host protocol 1 between the Go host and the PHP journal, written once. php artisan journal:host-protocol generates the Go and PHP code from this file; never edit the generated files.",
     "version": 1,
     "protocols": {
         "2": {
@@ -76,14 +76,14 @@
         "JOURNAL_RUNNER"
     ],
     "contained_plan": {
-        "about": "A contained plan names nothing of the host it runs on: no host placeholder and none of these fields.",
+        "description": "A contained plan names nothing of the host it runs on: no host placeholder and none of these fields.",
         "refused_fields": [
             "folders",
             "side_sockets",
             "read_files",
             "inherit"
         ],
-        "start_grant_about": "A contained program signs in with its start grant, read whole from these variables at the session address, so a contained plan carries all of them or none.",
+        "start_grant_description": "A contained program signs in with its start grant, read whole from these variables at the session address, so a contained plan carries all of them or none.",
         "start_grant_environment": [
             "JOURNAL_URL",
             "JOURNAL_START_TOKEN",
@@ -116,11 +116,11 @@
     },
     "programs": {
         "journal-init": {
-            "about": "The agent image's init: it starts the executor and the program and prints nothing on the program's streams, so a probe's output is the program's own.",
+            "description": "The agent image's init: it starts the executor and the program and prints nothing on the program's streams, so a probe's output is the program's own.",
             "prints_on_program_streams": false
         },
         "journal-runner": {
-            "about": "The host program: the flags of each command an installation runs it with.",
+            "description": "The host program: the flags of each command an installation runs it with.",
             "commands": {
                 "enroll": [
                     "journal",
@@ -142,7 +142,7 @@
             }
         },
         "journal-terminal": {
-            "about": "Starts a person's local driver session as journal-terminal <driver> [program arguments].",
+            "description": "Starts a person's local driver session as journal-terminal <driver> [program arguments].",
             "commands": {
                 "start": [],
                 "annotate": [],
@@ -152,7 +152,7 @@
             "arguments": ["driver", "program arguments"]
         },
         "claude-code": {
-            "about": "Claude Code as the journal runs it: every word, option and its values a start, probe or sign-in names, and the prompt last.",
+            "description": "Claude Code as the journal runs it: every word, option and its values a start, probe or sign-in names, and the prompt last.",
             "executable": "claude",
             "words": {
                 "auth": "none",
@@ -185,7 +185,7 @@
             "takes_prompt": true
         },
         "codex": {
-            "about": "Codex as the journal runs it: every word, option and its values a start, probe or sign-in names, and the prompt last.",
+            "description": "Codex as the journal runs it: every word, option and its values a start, probe or sign-in names, and the prompt last.",
             "executable": "codex",
             "words": {
                 "resume": "one",
@@ -207,7 +207,7 @@
             "takes_prompt": true
         },
         "journal-hook": {
-            "about": "The native hook adapter a driver runs on every hook event.",
+            "description": "The native hook adapter a driver runs on every hook event.",
             "arguments": [
                 "driver",
                 "reply file"
