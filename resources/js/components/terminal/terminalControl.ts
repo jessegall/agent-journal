@@ -305,14 +305,16 @@ export class TerminalControl {
      * Sends the value once under a fresh submission id; the caller drops it at once, and nothing here keeps it.
      */
     async submitPrivate(value: string): Promise<void> {
-        if (this.current.state !== 'private') {
+        const grantId = this.grantId;
+
+        if (grantId === null || this.current.state !== 'private') {
             return;
         }
         const sequence = this.nextSequence;
         this.publish({ state: 'controlling', notice: 'The screen stays shielded until the terminal redraws.' });
 
         try {
-            this.nextSequence = (await this.client.submitPrivate(this.grantId, this.newTakeId(), value, sequence))
+            this.nextSequence = (await this.client.submitPrivate(grantId, this.newTakeId(), value, sequence))
                 .nextSequence;
             await this.followReceipt(sequence);
         } catch (failure) {
@@ -321,11 +323,13 @@ export class TerminalControl {
     }
 
     async cancelPrivate(): Promise<void> {
-        if (this.current.state !== 'private' && this.current.state !== 'private_opening') {
+        const grantId = this.grantId;
+
+        if (grantId === null || (this.current.state !== 'private' && this.current.state !== 'private_opening')) {
             return;
         }
         this.publish({ state: 'controlling', notice: '' });
-        await this.client.cancelPrivate(this.grantId).catch(() => undefined);
+        await this.client.cancelPrivate(grantId).catch(() => undefined);
     }
 
     deleteSavedDraft(index: number): void {
