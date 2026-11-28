@@ -15,16 +15,17 @@ use App\Navigation\Contracts\WindowOffers;
 use App\Notifications\Contracts\NotificationTargets;
 use App\Providers\TypeScriptServiceProvider;
 use App\Support\ProjectCode;
+use Domain\Chat\Contracts\ChatDirectory as ChatDirectoryContract;
 use Domain\Chat\Contracts\Docking\CardEncoder as CardEncoderContract;
 use Domain\Chat\Contracts\Docking\DestinationGate as DestinationGateContract;
 use Domain\Chat\Contracts\Docking\DockedSources as DockedSourcesContract;
 use Domain\Chat\Contracts\Docking\DockRegistration as DockRegistrationContract;
 use Domain\Chat\Contracts\Docking\FallbackDocks as FallbackDocksContract;
-use Domain\Chat\Contracts\PairChats as PairChatsContract;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Resolvers\QuestionNotificationTarget;
 use Domain\Chat\Support\AgentDockOffers;
 use Domain\Chat\Support\ChatDepartures;
+use Domain\Chat\Support\ChatDirectory;
 use Domain\Chat\Support\DockedSources;
 use Domain\Chat\Support\Docking\DestinationGate;
 use Domain\Chat\Support\Docking\DockedRun;
@@ -32,7 +33,6 @@ use Domain\Chat\Support\Docking\DockRegistration;
 use Domain\Chat\Support\Docking\FallbackDocks;
 use Domain\Chat\Support\Docking\OutputDocking;
 use Domain\Chat\Support\Docking\RunDocking;
-use Domain\Chat\Support\PairChats;
 use Domain\Chat\Support\Wire\CardEncoder;
 use Domain\Chat\Support\Wire\DockNodeTypes;
 use Domain\Chat\Support\Wire\PartMap;
@@ -57,7 +57,7 @@ final class ChatServiceProvider extends ServiceProvider
         $this->app->bind(FallbackDocksContract::class, FallbackDocks::class);
         $this->app->singleton(PartMap::class, PartMap::standard(...));
         $this->app->tag([DockNodeTypes::class], TypeScriptServiceProvider::PROVIDER_TAG);
-        $this->app->bind(PairChatsContract::class, PairChats::class);
+        $this->app->bind(ChatDirectoryContract::class, ChatDirectory::class);
         $this->app->bind(InboxParticipationEnding::class, ChatDepartures::class);
     }
 
@@ -74,8 +74,8 @@ final class ChatServiceProvider extends ServiceProvider
         $members->allow(MessagePinPolicy::class);
         $memberRoutes->open('chat.');
         $notificationTargets->register(QuestionNotificationKeys::target(), QuestionNotificationTarget::class);
-        $inboxes->register(PairChats::PAIR_PROVIDER, InboxProvider::class);
-        $inboxes->register(PairChats::GROUP_PROVIDER, InboxProvider::class);
+        $inboxes->register(ChatDirectory::PAIR_PROVIDER, InboxProvider::class);
+        $inboxes->register(ChatDirectory::GROUP_PROVIDER, InboxProvider::class);
 
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');

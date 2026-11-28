@@ -8,7 +8,7 @@ use App\Bus\Contracts\RequestKey;
 use App\Models\Inboxes\Inbox;
 use Domain\Chat\Data\ChatWindowData;
 use Domain\Chat\Http\Windows\ChatWindowBuilder;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -47,7 +47,7 @@ final class OneConversationReadTest extends TestCase
             [
                 $window->selectedAgentId,
                 $window->conversation->agentId,
-                Inbox::query()->withProviderKey(PairChats::PAIR_PROVIDER)->count(),
+                Inbox::query()->withProviderKey(ChatDirectory::PAIR_PROVIDER)->count(),
             ],
         );
     }
@@ -65,7 +65,7 @@ final class OneConversationReadTest extends TestCase
             [
                 $window->selectedAgentId,
                 $window->conversation->agentId,
-                Inbox::query()->withProviderKey(PairChats::PAIR_PROVIDER)->count(),
+                Inbox::query()->withProviderKey(ChatDirectory::PAIR_PROVIDER)->count(),
             ],
         );
     }

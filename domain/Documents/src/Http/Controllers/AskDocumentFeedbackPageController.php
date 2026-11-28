@@ -11,7 +11,7 @@ use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Agents\Agent;
 use App\Sessions\Contracts\AgentDirectory;
 use App\Support\ActorReference;
-use Domain\Chat\Contracts\PairChats;
+use Domain\Chat\Contracts\ChatDirectory;
 use Domain\Documents\Http\Requests\DocumentFeedbackRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -27,7 +27,7 @@ final readonly class AskDocumentFeedbackPageController
         DocumentFeedbackRequest $request,
         AgentDirectory $agents,
         CommandBus $commands,
-        PairChats $chats,
+        ChatDirectory $chats,
         Redirector $redirect,
     ): RedirectResponse {
         $agent = $agents->visibleAgent($request->agentId());

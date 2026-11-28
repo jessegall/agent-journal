@@ -6,7 +6,7 @@ namespace Domain\Documents\Tests\Routes;
 
 use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Messages\Commands\SendMessage\SendMessageCommand;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\DocumentsDomain;
 use Illuminate\Support\Str;
@@ -60,7 +60,7 @@ final class AskFeedbackPostTest extends GuardedRouteEntryTestCase
             ->payload(['agent' => $journal->agentCalled('Reviewer')->id, ...$lines])
             ->reply(OpenInboxCommand::class, $inboxId)
             ->reply(SendMessageCommand::class, Str::ulid())
-            ->expects(OpenInboxCommand::class, ['providerKey' => PairChats::PAIR_PROVIDER])
+            ->expects(OpenInboxCommand::class, ['providerKey' => ChatDirectory::PAIR_PROVIDER])
             ->expects(SendMessageCommand::class, [
                 'inboxId' => $inboxId,
                 'body' => "Please give me feedback on {$subject}.",

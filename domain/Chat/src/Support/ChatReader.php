@@ -39,7 +39,7 @@ final readonly class ChatReader
         private PageFormRequests $requests,
         private AgentDirectory $agents,
         private ChatPages $pages,
-        private PairChats $chats,
+        private ChatDirectory $chats,
         private SlotSections $slots,
         private AgentList $listing,
         private StartAccounts $startAccounts,

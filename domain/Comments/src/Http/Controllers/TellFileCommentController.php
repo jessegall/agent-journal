@@ -10,7 +10,7 @@ use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Agents\Agent;
 use App\Support\ActorReference;
-use Domain\Chat\Contracts\PairChats;
+use Domain\Chat\Contracts\ChatDirectory;
 use Domain\Comments\Http\Requests\TellFileCommentRequest;
 use Illuminate\Http\RedirectResponse;
 
@@ -23,7 +23,7 @@ final readonly class TellFileCommentController
     #[Dispatches(SendMessageCommand::class)]
     public function __invoke(
         TellFileCommentRequest $request,
-        PairChats $chats,
+        ChatDirectory $chats,
         CommandBus $commands,
     ): RedirectResponse {
         $agent = ActorReference::ofClass(Agent::class, $request->agentId());

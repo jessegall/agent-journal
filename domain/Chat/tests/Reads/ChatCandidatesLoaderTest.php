@@ -8,7 +8,7 @@ use Domain\Chat\Data\ChatCandidatesData;
 use Domain\Chat\Data\ChatInput;
 use Domain\Chat\Exceptions\ChatUnavailable;
 use Domain\Chat\Http\Loaders\ChatCandidatesLoader;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\Entries\Attributes\TestsRead;
@@ -26,7 +26,7 @@ final class ChatCandidatesLoaderTest extends TestCase
     public function test_the_manager_of_a_group_chat_reads_who_may_join_it(): void
     {
         $this->journal->owner()->user('Sam')->admitInboxMember('Sam')->actAs('Owner');
-        $group = $this->app->make(PairChats::class)->openGroup('Team', [$this->journal->actorCalled('Sam')]);
+        $group = $this->app->make(ChatDirectory::class)->openGroup('Team', [$this->journal->actorCalled('Sam')]);
 
         $candidates = $this->read($group)->toArray()['candidates'];
 
@@ -51,7 +51,7 @@ final class ChatCandidatesLoaderTest extends TestCase
     public function test_an_inbox_member_who_does_not_manage_the_group_is_refused(): void
     {
         $this->journal->owner()->user('Sam')->admitInboxMember('Sam')->actAs('Owner');
-        $group = $this->app->make(PairChats::class)->openGroup('Team', [$this->journal->actorCalled('Sam')]);
+        $group = $this->app->make(ChatDirectory::class)->openGroup('Team', [$this->journal->actorCalled('Sam')]);
         $this->journal->actAsInboxMember('Sam');
 
         $this->expectException(ChatUnavailable::class);

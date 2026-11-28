@@ -29,7 +29,7 @@ final readonly class DockRequests
 {
     public function __construct(
         private AgentDirectory $agents,
-        private PairChats $chats,
+        private ChatDirectory $chats,
         private DockRegistration $registry,
         private Container $container,
     ) {}

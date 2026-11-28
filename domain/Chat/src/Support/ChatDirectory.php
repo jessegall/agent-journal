@@ -14,7 +14,7 @@ use App\Messages\Enums\InboxPermission;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorReference;
-use Domain\Chat\Contracts\PairChats as PairChatsContract;
+use Domain\Chat\Contracts\ChatDirectory as ChatDirectoryContract;
 use Domain\Chat\Exceptions\ChatUnavailable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
  * The chats as the chat domain sees them: a pair chat between a user and an agent, a group chat of users, each a core
  * inbox, and the ones the current actor is attached to.
  */
-final readonly class PairChats implements PairChatsContract
+final readonly class ChatDirectory implements ChatDirectoryContract
 {
     public const string PAIR_PROVIDER = 'chat.pair';
 

@@ -16,7 +16,7 @@ use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Support\ActorReference;
 use App\Values\AgentText;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 
 /**
  * A new chat is never silent: when an agent's session starts and a chat of it with a user holds nothing yet, its first
@@ -35,7 +35,7 @@ final readonly class GreetInNewChat implements Listener
         $agent = $event->target->actorReference();
 
         $chats = Inbox::query()
-            ->withProviderKey(PairChats::PAIR_PROVIDER)
+            ->withProviderKey(ChatDirectory::PAIR_PROVIDER)
             ->ofActiveMemberships($agent)
             ->limit(InboxMember::ATTACHED_LIMIT)
             ->get();

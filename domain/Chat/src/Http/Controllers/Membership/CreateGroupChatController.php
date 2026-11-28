@@ -9,7 +9,7 @@ use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Models\Access\User;
 use App\Support\ActorReference;
 use Domain\Chat\Data\CreateGroupInput;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Illuminate\Http\RedirectResponse;
 use Inertia\ResponseFactory;
 
@@ -24,7 +24,7 @@ final readonly class CreateGroupChatController
     public const string CREATED_CHAT = 'createdInboxId';
 
     #[Dispatches(OpenInboxCommand::class)]
-    public function __invoke(CreateGroupInput $input, PairChats $chats, ResponseFactory $inertia): RedirectResponse
+    public function __invoke(CreateGroupInput $input, ChatDirectory $chats, ResponseFactory $inertia): RedirectResponse
     {
         $chats->assertMayCreate();
 

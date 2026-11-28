@@ -6,7 +6,7 @@ namespace Domain\Comments\Tests\Routes;
 
 use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Messages\Commands\SendMessage\SendMessageCommand;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Domain\Comments\CommentsDomain;
 use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
@@ -42,7 +42,7 @@ final class FileTellPostTest extends GuardedRouteEntryTestCase
             ])
             ->reply(OpenInboxCommand::class, $inboxId)
             ->reply(SendMessageCommand::class, Str::ulid())
-            ->expects(OpenInboxCommand::class, ['providerKey' => PairChats::PAIR_PROVIDER])
+            ->expects(OpenInboxCommand::class, ['providerKey' => ChatDirectory::PAIR_PROVIDER])
             ->expects(SendMessageCommand::class, ['inboxId' => $inboxId]);
     }
 }

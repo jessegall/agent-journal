@@ -24,7 +24,7 @@ final readonly class DriverSwitchLines
     private const string TRUSTED_ENTRY = 'driver switch';
 
     public function __construct(
-        private PairChats $chats,
+        private ChatDirectory $chats,
         private JournalCommands $journal,
         private RequestKey $requestKey,
     ) {}

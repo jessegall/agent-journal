@@ -35,7 +35,7 @@ final readonly class ChatDepartures implements InboxParticipationEnding
     private function leaveAll(ActorReference $actor): void
     {
         $chats = Inbox::query()
-            ->withAnyProviderKey([PairChats::PAIR_PROVIDER, PairChats::GROUP_PROVIDER])
+            ->withAnyProviderKey([ChatDirectory::PAIR_PROVIDER, ChatDirectory::GROUP_PROVIDER])
             ->attachedTo($actor)
             ->limit(InboxMember::ATTACHED_LIMIT)
             ->pluck('id');

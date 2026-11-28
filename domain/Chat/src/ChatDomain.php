@@ -24,7 +24,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\SearchSource;
 use App\Text\Declarations\Section;
-use Domain\Chat\Contracts\PairChats;
+use Domain\Chat\Contracts\ChatDirectory;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatWindowData;
 use Domain\Chat\Events\ChatMessageChanged;
@@ -84,7 +84,7 @@ final class ChatDomain extends Domain implements
     {
         return Exports::make()
             ->events(DockChanged::class, ChatMessageChanged::class)
-            ->contracts(PairChats::class)
+            ->contracts(ChatDirectory::class)
             ->build();
     }
 

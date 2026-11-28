@@ -9,7 +9,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Inboxes\Commands\JoinInbox\JoinInboxCommand;
 use App\Support\ActorReference;
 use Domain\Chat\Data\ParticipantInput;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -21,7 +21,7 @@ final readonly class AddParticipantController
     #[Dispatches(JoinInboxCommand::class)]
     public function __invoke(
         ParticipantInput $input,
-        PairChats $chats,
+        ChatDirectory $chats,
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {

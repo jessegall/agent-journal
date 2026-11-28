@@ -6,7 +6,7 @@ namespace Domain\Chat\Tests\Fixtures;
 
 use App\Models\Inboxes\InboxMember;
 use Domain\Chat\Commands\UnpinMessage\UnpinMessageCommand;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
@@ -26,7 +26,7 @@ final class ChatFixturesTest extends TestCase
         $chat = $chats->pairChat($this->journal->actorCalled('Owner'), $this->journal->actorCalled('Planner'));
 
         $this->assertSame(
-            [PairChats::PAIR_PROVIDER, $chat->id],
+            [ChatDirectory::PAIR_PROVIDER, $chat->id],
             [$chat->provider_key, $chats->pairChatOf('Owner', 'Planner')->id],
         );
 

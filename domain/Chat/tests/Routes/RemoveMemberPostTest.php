@@ -7,7 +7,7 @@ namespace Domain\Chat\Tests\Routes;
 use App\Inboxes\Commands\LeaveInbox\LeaveInboxCommand;
 use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use Domain\Chat\ChatDomain;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
@@ -53,7 +53,7 @@ final class RemoveMemberPostTest extends GuardedRouteEntryTestCase
     {
         $journal->owner()->user('Sam');
 
-        return $journal->run(new OpenInboxCommand(PairChats::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
+        return $journal->run(new OpenInboxCommand(ChatDirectory::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
             $journal->actorCalled('Owner'),
             $journal->actorCalled('Sam'),
         ]));

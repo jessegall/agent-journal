@@ -8,7 +8,7 @@ use App\Inboxes\Commands\HandOverInbox\HandOverInboxCommand;
 use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Support\ActorReference;
 use Domain\Chat\ChatDomain;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
@@ -32,7 +32,7 @@ final class TransferPostTest extends GuardedRouteEntryTestCase
     {
         $journal->owner()->user('Sam');
 
-        $group = $journal->run(new OpenInboxCommand(PairChats::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
+        $group = $journal->run(new OpenInboxCommand(ChatDirectory::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
             $journal->actorCalled('Owner'),
             $journal->actorCalled('Sam'),
         ]));

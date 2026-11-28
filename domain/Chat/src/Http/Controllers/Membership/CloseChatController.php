@@ -12,7 +12,7 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\InboxMember;
 use Domain\Chat\Data\ChatInput;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -24,7 +24,7 @@ final readonly class CloseChatController
     #[Dispatches(LeaveInboxCommand::class)]
     public function __invoke(
         ChatInput $input,
-        PairChats $chats,
+        ChatDirectory $chats,
         CurrentActor $actors,
         CommandBus $commands,
         Redirector $redirect,

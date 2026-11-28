@@ -9,7 +9,7 @@ use App\Support\ActorReference;
 /**
  * The pair chat of the current actor and another actor, such as the agent a user asks for feedback.
  */
-interface PairChats
+interface ChatDirectory
 {
     /**
      * The inbox id of the pair chat of the current actor and the actor, opened the first time.

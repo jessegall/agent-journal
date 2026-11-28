@@ -11,7 +11,7 @@ use App\Models\Inboxes\InboxMember;
 use App\Support\ActorReference;
 use Domain\Chat\Data\ChatCandidatesData;
 use Domain\Chat\Data\ChatInput;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 
 /**
  * The users the viewer may add to a group chat it manages: those who may be invited and are not in it yet, at most
@@ -22,7 +22,7 @@ final readonly class ChatCandidatesLoader
     public const int CANDIDATE_LIMIT = 50;
 
     public function __construct(
-        private PairChats $chats,
+        private ChatDirectory $chats,
         private InboxEligibility $eligibility,
         private ActorLabels $labels,
     ) {}

@@ -34,8 +34,8 @@ use Domain\Chat\Enums\DeliveryStatus;
 use Domain\Chat\Models\ChatMessage;
 use Domain\Chat\Support\AgentStartLog;
 use Domain\Chat\Support\Cards\DockIdentity;
+use Domain\Chat\Support\ChatDirectory;
 use Domain\Chat\Support\DockProjection;
-use Domain\Chat\Support\PairChats;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Support\ShownQuestion;
 use Illuminate\Database\Eloquent\Collection as ModelCollection;
@@ -318,7 +318,7 @@ final readonly class ChatPages
      */
     private function capabilitiesOf(ActorReference $viewer, Inbox $inbox, int $memberCount): ChatCapabilitiesData
     {
-        $isGroup = $inbox->provider_key === PairChats::GROUP_PROVIDER;
+        $isGroup = $inbox->provider_key === ChatDirectory::GROUP_PROVIDER;
         $manages = $isGroup && $this->eligibility->holds($viewer, InboxPermission::ManageMembers);
 
         return ChatCapabilitiesData::from([

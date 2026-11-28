@@ -133,7 +133,7 @@ final class DomainClassesTest extends TestCase
             'PhaseMissing',
         ]];
 
-        yield 'Chat' => [ChatDomain::class, [SequencesDomain::class, QuestionsDomain::class], ['ChatMessageChanged', 'DockChanged', 'PairChats']];
+        yield 'Chat' => [ChatDomain::class, [SequencesDomain::class, QuestionsDomain::class], ['ChatMessageChanged', 'DockChanged', 'ChatDirectory']];
 
         yield 'Memory' => [MemoryDomain::class, [], [
             'MemoryResolver',

@@ -44,7 +44,7 @@ final readonly class AgentList
     public function __construct(
         private AgentDirectory $agents,
         private AgentInspection $inspection,
-        private PairChats $chats,
+        private ChatDirectory $chats,
         private CurrentActor $actors,
         private MessageParticipants $participants,
         private ProfileResolver $profiles,
@@ -198,7 +198,7 @@ final readonly class AgentList
     private function pairChatIds(): array
     {
         return array_values(array_map(strval(...), $this->chats->joined()
-            ->withProviderKey(PairChats::PAIR_PROVIDER)
+            ->withProviderKey(ChatDirectory::PAIR_PROVIDER)
             ->limit(InboxMember::ATTACHED_LIMIT)
             ->pluck('id')
             ->all()));

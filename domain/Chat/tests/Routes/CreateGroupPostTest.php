@@ -6,7 +6,7 @@ namespace Domain\Chat\Tests\Routes;
 
 use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use Domain\Chat\ChatDomain;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
@@ -31,6 +31,6 @@ final class CreateGroupPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::recorded('chat-create-group', [])
             ->reply(OpenInboxCommand::class, Str::ulid())
-            ->expects(OpenInboxCommand::class, ['providerKey' => PairChats::GROUP_PROVIDER, 'label' => 'Design']);
+            ->expects(OpenInboxCommand::class, ['providerKey' => ChatDirectory::GROUP_PROVIDER, 'label' => 'Design']);
     }
 }

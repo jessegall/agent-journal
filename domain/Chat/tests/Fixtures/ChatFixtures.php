@@ -9,7 +9,7 @@ use App\Models\Messages\Message;
 use App\Support\ActorReference;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Models\MessagePin;
-use Domain\Chat\Support\PairChats;
+use Domain\Chat\Support\ChatDirectory;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureInboxes;
 use Tests\Support\Seeding\TestJournal;
@@ -27,7 +27,7 @@ final readonly class ChatFixtures
      */
     public function pairChat(ActorReference $first, ActorReference $second): Inbox
     {
-        return $this->journal->inboxes()->shared($first, $second, PairChats::PAIR_PROVIDER);
+        return $this->journal->inboxes()->shared($first, $second, ChatDirectory::PAIR_PROVIDER);
     }
 
     /**
@@ -44,7 +44,7 @@ final readonly class ChatFixtures
     {
         $key = FixtureInboxes::pairKey($this->journal->actorCalled($first), $this->journal->actorCalled($second));
 
-        return Inbox::query()->withProviderKey(PairChats::PAIR_PROVIDER)->ofProvider($key)->sole();
+        return Inbox::query()->withProviderKey(ChatDirectory::PAIR_PROVIDER)->ofProvider($key)->sole();
     }
 
     /**
