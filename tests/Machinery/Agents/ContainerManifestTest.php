@@ -474,6 +474,26 @@ final class ContainerManifestTest extends TestCase
         $this->assertSame(['projects'], $this->protected($this->containedMounts())->accountMountPoints());
     }
 
+    public function test_the_account_scratch_points_are_the_folders_inside_the_account_held_in_memory(): void
+    {
+        $scratch = ManifestMount::scratch('/home/journal/.account/tmp');
+        $manifest = ContainerManifest::make(
+            self::IMAGE,
+            'acme-s1',
+            [...$this->containedMounts(), $scratch],
+            ExecutionBudgets::defaults(),
+            HelperMounts::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main'), [...self::claudeMounts(), $scratch]),
+            SecurityOptions::none(),
+            false,
+            StartProfileType::ProtectedAccount,
+        );
+
+        $this->assertSame(
+            [['projects', 'tmp'], ['tmp']],
+            [$manifest->accountMountPoints(), $manifest->accountScratchPoints()],
+        );
+    }
+
     public function test_the_plan_file_mounts_bind_the_folder_their_process_files_are_written_to(): void
     {
         $setting = ArrangementSetting::fromConfig('contained', 'acme', self::GIT_SOURCE);

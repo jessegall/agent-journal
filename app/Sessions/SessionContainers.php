@@ -93,7 +93,11 @@ final readonly class SessionContainers
 
         return new SessionContainer($manifest->withDevelopmentPrograms($this->developmentPrograms)->preparedBy([
             ...$this->workspacePreparations($rules, $use, $sessionId),
-            ...$this->runs->accountFolderChecks($account->folder(), $manifest->accountMountPoints()),
+            ...$this->runs->accountFolderChecks(
+                $account->folder(),
+                $manifest->accountMountPoints(),
+                $manifest->accountScratchPoints(),
+            ),
         ]));
     }
 

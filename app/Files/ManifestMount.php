@@ -91,6 +91,14 @@ final readonly class ManifestMount
     }
 
     /**
+     * Whether the mount is a folder in the container's memory, as a driver keeps its scratch.
+     */
+    public function isScratch(): bool
+    {
+        return $this->type === HostMountType::Scratch;
+    }
+
+    /**
      * The same source seen read-only at another target, as a helper reads a workspace it checks or clones from.
      */
     public function readOnlyAt(string $target): self

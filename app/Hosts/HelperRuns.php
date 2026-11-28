@@ -105,15 +105,23 @@ final readonly class HelperRuns
     }
 
     /**
-     * The runs before a protected start: the account's mount points made and its files kept private as the program's
-     * user, then the check that the folder and those above it are private to that user.
+     * The runs before a protected start: the account's scratch folders emptied, its mount points made and its files
+     * kept private as the program's user, then the check that the folder and those above it are private to that user.
      *
      * @param  list<string>  $mountPoints  the folders right inside the account that the start mounts something over
+     * @param  list<string>  $scratchPoints  those of them the start holds in memory, whose disk copy no start reads
      * @return list<HostContainerRunPayload>
      */
-    public function accountFolderChecks(string $account, array $mountPoints): array
+    public function accountFolderChecks(string $account, array $mountPoints, array $scratchPoints): array
     {
+        $scratchClear = $scratchPoints === [] ? [] : [
+            $this->run('account-scratch-clear', [self::ACCOUNT_TARGET, ...$scratchPoints], [
+                'mounts' => [ManifestMount::daemonBind(HelperMounts::accountFolder($account), self::ACCOUNT_TARGET, true)],
+            ]),
+        ];
+
         return [
+            ...$scratchClear,
             $this->run('account-folder-prepare', [self::ACCOUNT_TARGET, ...$mountPoints], [
                 'mounts' => [ManifestMount::daemonBind(HelperMounts::accountFolder($account), self::ACCOUNT_TARGET, true)],
             ]),

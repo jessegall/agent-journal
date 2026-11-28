@@ -162,6 +162,22 @@ final readonly class ContainerManifest
     }
 
     /**
+     * The folders right inside the account mount that the container holds in its memory instead, so whatever a run
+     * outside a start left in them on disk is never read.
+     *
+     * @return list<string>
+     */
+    public function accountScratchPoints(): array
+    {
+        $scratch = array_filter(
+            $this->mounts,
+            fn (ManifestMount $mount) => $mount->isScratch() && dirname($mount->target) === HelperMounts::ACCOUNT_TARGET,
+        );
+
+        return array_values(array_map(fn (ManifestMount $mount) => basename($mount->target), $scratch));
+    }
+
+    /**
      * The folders right inside the account mount that the container mounts something else over, which must exist as
      * the program's user's before Docker mounts there.
      *
