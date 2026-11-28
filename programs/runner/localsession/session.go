@@ -13,6 +13,7 @@ import (
 	"slices"
 	"strings"
 
+	"journal-runner/device"
 	"journal-runner/hostapi"
 )
 
@@ -80,7 +81,8 @@ func (session Session) Prepare(extra []string) (Prepared, error) {
 		}
 	}
 
-	plan, err := hostapi.PrepareOpenPlan(filepath.Join(session.Folder(), "plan"), session.Plan, session.hostNames())
+	names := device.InstalledPlanNames(session.JournalURL, session.Installation, session.Programs)
+	plan, err := hostapi.PrepareOpenPlan(filepath.Join(session.Folder(), "plan"), session.Plan, names)
 	if err != nil {
 		return Prepared{}, err
 	}
@@ -96,19 +98,6 @@ func (session Session) Prepare(extra []string) (Prepared, error) {
 	command.Env = append(platformEnvironment(), append(plan.Environment, "JOURNAL_SESSION_RUN="+session.RunFolder())...)
 
 	return Prepared{Command: command, KeptFiles: plan.KeptFiles}, nil
-}
-
-// hostNames are the names a journal's plan may use for this machine: the installation, its hook adapter and the
-// programs it sealed.
-func (session Session) hostNames() map[string]string {
-	names := map[string]string{
-		"INSTALLATION": session.Installation,
-		"HOOK_COMMAND": filepath.Join(session.Installation, "bin", "journal-hook"),
-		"JOURNAL_URL":   session.JournalURL,
-	}
-	maps.Copy(names, session.Programs)
-
-	return names
 }
 
 // platformEnvironment is the terminal's platform variables, the one part of the user's environment a session keeps.

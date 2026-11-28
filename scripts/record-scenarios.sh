@@ -95,6 +95,11 @@ play_scenario() {
     kill "$watcher" 2>/dev/null || true
     if [ -n "$connection_scratch" ]; then
         stop_recorded_project "$connection_scratch" || status=1
+        if [ "$status" -eq 0 ]; then
+            remove_recorded_project "$connection_scratch" || status=1
+        else
+            printf 'The failed recording kept its scratch folder at %s.\n' "$connection_scratch" >&2
+        fi
     fi
     restore_daemon
     return "$status"
@@ -160,7 +165,10 @@ stop_recorded_project() {
     if [ -f "$1/terminal.pid" ]; then
         kill "$(cat "$1/terminal.pid")" 2>/dev/null || true
     fi
-    python3 scripts/record-project-relay.py stop "$1/state" || return 1
+    python3 scripts/record-project-relay.py stop "$1/state"
+}
+
+remove_recorded_project() {
     # An installed release is read-only, as the installer leaves it.
     chmod -R u+w "$1" && rm -rf "$1"
 }

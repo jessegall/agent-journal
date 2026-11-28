@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"maps"
 	"net/http"
 	"os"
 	"os/signal"
@@ -142,9 +141,6 @@ func (binder bindingRelay) serveInstructions(
 	if err := os.MkdirAll(folder, 0o700); err != nil {
 		return nil, err
 	}
-	hookCommand := filepath.Join(binder.installation.Folder, "bin", "journal-hook")
-	names := hostNamesOf(journal, binder.installation.Folder, hookCommand)
-
 	reads := hostapi.ProjectReads{
 		Reader:  host.ProjectReader{Root: binder.binding.CanonicalRoot},
 		Journal: hostapi.Journal{Client: journal},
@@ -163,7 +159,7 @@ func (binder bindingRelay) serveInstructions(
 	if err != nil {
 		return nil, err
 	}
-	maps.Copy(names, allowed.Programs)
+	names := device.InstalledPlanNames(journal.JournalURL(), binder.installation.Folder, allowed.Programs)
 	started, err := startHostProtocol(ctx, journal, binder.binding.Enrollment, folder, names, host.Containers{},
 		binder.release, hostProtocolOptions{
 			Protocol: hostapi.RelayProtocolVersion, Reads: &reads, Upgrade: &upgrade, Idle: binder.idle, Allowed: allowed,
