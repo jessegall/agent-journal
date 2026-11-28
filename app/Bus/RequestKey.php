@@ -19,6 +19,13 @@ final class RequestKey implements RequestKeyContract
 {
     private const string FORM = '/^[A-Za-z0-9-]+$/';
 
+    /**
+     * The most characters of the request's key a part's own key keeps, leaving room for the part's hash.
+     */
+    private const int PART_KEY_PREFIX = 100;
+
+    private const int PART_HASH_LENGTH = 16;
+
     private string|null $key = null;
 
     private int $depth = 0;
@@ -116,6 +123,26 @@ final class RequestKey implements RequestKeyContract
         } finally {
             [$this->key, $this->depth, $this->isReceiptTaken] = $before;
         }
+    }
+
+    /**
+     * Runs the work under a key of its own, made from the request's key and the part, so each part of one request runs
+     * its write once and never takes another part's receipt; a request without a key runs it as it is.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function forPart(string $part, Closure $work): mixed
+    {
+        if ($this->key === null) {
+            return $work();
+        }
+
+        $hash = substr(hash('sha256', $this->key.$part), 0, self::PART_HASH_LENGTH);
+
+        return $this->independently(substr($this->key, 0, self::PART_KEY_PREFIX).'-'.$hash, $work);
     }
 
     /**

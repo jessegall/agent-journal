@@ -7,6 +7,7 @@ namespace Domain\Chat\Support;
 use App\Actors\Contracts\ActorLabels;
 use App\Actors\Contracts\CurrentActor;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Inboxes\Contracts\InboxEligibility;
 use App\Messages\Enums\InboxPermission;
@@ -33,23 +34,26 @@ final readonly class PairChats implements PairChatsContract
         private CommandBus $commands,
         private ActorLabels $labels,
         private InboxEligibility $eligibility,
+        private RequestKey $requestKey,
     ) {}
 
     /**
-     * The pair chat of the current actor and the actor, opened the first time; returns its inbox id.
+     * The pair chat of the current actor and the actor, opened the first time under a key of its own, so one read that
+     * shows several chats opens each once; returns its inbox id.
      */
     public function pairWith(ActorReference $actor): string
     {
         $viewer = $this->actors->actor();
         $members = [$viewer, $actor];
         $key = implode('|', array_map(fn (ActorReference $member) => $member->text(), $members));
-
-        return $this->commands->run(new OpenInboxCommand(
+        $open = new OpenInboxCommand(
             self::PAIR_PROVIDER,
             self::pairKeyOf($members),
             $this->labels->labelsFor([$actor])->nameOf($actor) ?? $key,
             $members,
-        ));
+        );
+
+        return $this->requestKey->forPart($open->providerId, fn (): string => $this->commands->run($open));
     }
 
     /**
