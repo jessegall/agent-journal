@@ -24,6 +24,8 @@ use App\Sessions\Enums\SessionStatus;
 use App\Sessions\InitialWakeSettlement;
 use App\Sessions\OpenedRuntime;
 use App\Values\ClaimedRequest;
+use App\Values\RetrySchedule;
+use Carbon\CarbonImmutable;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -39,8 +41,6 @@ final class WakeAgentTest extends TestCase
 {
     use CommitsHookRows;
     use OpensLedgerRuntimes;
-
-    private const string NO_CONTAINER = 'The host cannot provide a container.';
 
     private const array TABLES = [
         'agents',
@@ -86,7 +86,7 @@ final class WakeAgentTest extends TestCase
         $wake = $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'message-wake'));
         $claimed = $this->journal->claimedRequestOnHost($host->hostId, $wake->requestId);
 
-        $this->notifyWakeRefused($host, $claimed, HostWakeRefusal::ContainerUnavailable, true);
+        $this->notifyWakeRefused($host, $claimed, HostWakeRefusal::ContainerUnavailable, false);
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $this->assertSame(SessionStatus::Active, $session->status);
@@ -96,6 +96,8 @@ final class WakeAgentTest extends TestCase
 
     public function test_a_proved_unstarted_initial_wake_ends_the_start_once_with_its_reason(): void
     {
+        $now = CarbonImmutable::now();
+        $this->journal->useServerClockAt($now);
         [$host, $opened] = $this->openRuntime();
         $wake = $this->asOwner(new WakeAgentCommand(
             $this->agentIdOf($opened),
@@ -104,13 +106,22 @@ final class WakeAgentTest extends TestCase
         ));
         $claimed = $this->journal->claimedRequestOnHost($host->hostId, $wake->requestId);
 
-        $this->notifyWakeRefused($host, $claimed, HostWakeRefusal::ContainerUnavailable, true);
-        $this->notifyWakeRefused($host, $claimed, HostWakeRefusal::ContainerUnavailable, true);
+        $reason = HostWakeRefusal::ContainerUnavailable;
+
+        for ($retry = 1; $retry <= RetrySchedule::RETRY_LIMIT; $retry++) {
+            $this->notifyWakeRefused($host, $claimed, $reason, true);
+            $now = $now->addSeconds(RetrySchedule::waitBefore($retry));
+            $this->journal->moveServerClockTo($now);
+            $claimed = $this->journal->claimedRequestOnHost($host->hostId, $wake->requestId);
+        }
+
+        $this->notifyWakeRefused($host, $claimed, $reason, true);
+        $this->notifyWakeRefused($host, $claimed, $reason, true);
 
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $start = SessionProcess::findLatestOfSession($opened->sessionId);
         $this->assertSame(SessionStatus::Ended, $session->status);
-        $this->assertSame(self::NO_CONTAINER, $start?->refusal);
+        $this->assertSame($reason->startReason()->explanation(), $start?->refusal);
     }
 
     public function test_a_generic_refusal_of_the_initial_wake_keeps_the_start_for_reconciliation(): void

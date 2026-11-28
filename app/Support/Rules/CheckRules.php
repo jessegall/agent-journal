@@ -95,6 +95,20 @@ final readonly class CheckRules
                 $this->phpCsFixer(),
                 $fix,
             ),
+            $this->check(
+                'core.php.php-cs-fixer.check',
+                $php,
+                ['-d', 'memory_limit=1G', 'vendor/bin/php-cs-fixer', 'check'],
+                $this->phpCsFixer(),
+                $read,
+            ),
+            $this->check(
+                'core.php.php-cs-fixer.fix',
+                $php,
+                ['-d', 'memory_limit=1G', 'vendor/bin/php-cs-fixer', 'fix'],
+                $this->phpCsFixer(),
+                $fix,
+            ),
             $this->check('core.commandments.judge', ProgramSpellings::from([
                 'family' => 'commandments',
                 'spellings' => ['commandments-release', 'commandments-go'],

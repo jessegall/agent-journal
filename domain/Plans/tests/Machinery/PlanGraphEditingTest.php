@@ -42,7 +42,7 @@ final class PlanGraphEditingTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = $this->journal->owner()->ownerUser();
+        $this->owner = $this->journal->installProfiles()->owner()->ownerUser();
 
         $made = $this->journal->fixtures(TaskFixtures::class)
             ->task('Design the graph')

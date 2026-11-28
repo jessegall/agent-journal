@@ -31,7 +31,7 @@ final readonly class ParsedFile
         return self::fromCode($path, $code);
     }
 
-    private static function fromCode(string $path, string $code): self
+    public static function fromCode(string $path, string $code): self
     {
         return new self($path, $code, ParsedTrees::of($path, $code));
     }

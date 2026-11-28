@@ -24,6 +24,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class DomainBoundaryTest extends TestCase
 {
+    #[TimeLimit(seconds: 45, reason: 'A cold cache resolves names in code, strings and docblocks across domains.')]
     public function test_no_domain_crosses_its_boundary(): void
     {
         $registry = $this->app->make(DomainRegistry::class);

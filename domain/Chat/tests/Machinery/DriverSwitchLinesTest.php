@@ -20,7 +20,7 @@ use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Entries\Attributes\TestsMachinery;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 
 /**
  * A driver switch writes one line in the chat of the user who asked for it: where the agent moved and what its new
@@ -29,7 +29,9 @@ use Tests\Support\RefreshHookDatabase;
 #[TestsMachinery(DriverSwitchLines::class)]
 final class DriverSwitchLinesTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    private const array TABLES = [];
 
     private const string AGENT = 'Main agent';
 

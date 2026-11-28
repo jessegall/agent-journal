@@ -17,6 +17,7 @@ use App\Support\Layout\LayoutFactValueData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutProgressData;
 use App\Support\Layout\LayoutRowData;
 use App\Terminals\Enums\LayoutTag;
 use App\Text\Declarations\Section;

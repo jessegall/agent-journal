@@ -21,11 +21,11 @@ final class StoredRuleShapeTest extends TestCase
 
     private const string CHECK_RULE = 'core.php.artisan-test';
 
-    private const string RULE_DIGEST = '627b545e94cfaa9c371d43ddcffa01846243c4a6e1a8167807b94d5fae4a13e5';
+    private const string RULE_DIGEST = 'ce78b2ec1cc0119ea6dd6c72bb7def50cdf2df1e8370f0948f7900f0d2e35d3d';
 
-    private const string CONTRACT_DIGEST = 'f1fe2a9b4ccef52df1ba969be6c3cc506fb8400fcc4cf9a962622c9a48e47cce';
+    private const string CONTRACT_DIGEST = '92af1389e389ff69c4f634bdba8ab6c38ca0e20b692b386787de57bcb4ffac97';
 
-    private const string REPLACING_DIGEST = '79ee205952956ad6ce52252d98264e8ce119a71a84350bbaec53685312351e84';
+    private const string REPLACING_DIGEST = '29252d033dc892cf763cad5a099f611bbb2d66c36251a967a99ef0fe80324775';
 
     public function test_a_check_rule_and_its_contract_keep_their_stored_digests(): void
     {

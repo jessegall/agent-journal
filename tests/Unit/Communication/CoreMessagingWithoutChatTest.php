@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Communication;
 
+use App\Bus\Contracts\CommandProvider;
 use App\CoreCommands;
 use App\Links\LinkTypeRegistry;
 use App\Messages\Commands\SendMessage\SendMessageCommand;
@@ -38,10 +39,7 @@ final class CoreMessagingWithoutChatTest extends TestCase
     {
         $chat = new ChatDomain();
 
-        $this->assertSame([], array_values(array_filter(
-            $chat->commands(),
-            fn (string $command) => str_starts_with($command, 'App\\Communication\\'),
-        )));
+        $this->assertNotInstanceOf(CommandProvider::class, $chat);
         $this->assertNotInstanceOf(StateProvider::class, $chat);
         $this->assertNotInstanceOf(LinkRecordProvider::class, $chat);
     }

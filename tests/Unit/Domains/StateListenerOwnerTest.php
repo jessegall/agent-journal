@@ -12,7 +12,9 @@ use App\Stacks\StateCatalog\StateRegistration;
 use App\Stacks\StateListenerDeclarations;
 use App\Stacks\StateLoading\RegisteredStateType;
 use App\Support\DomainRegistry;
+use Domain\Plans\PlansDomain;
 use Tests\Fixtures\Hooks\Declarations\OwnerlessState;
+use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
 /**
@@ -21,6 +23,11 @@ use Tests\TestCase;
  */
 final class StateListenerOwnerTest extends TestCase
 {
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class);
+    }
+
     public function test_a_state_listener_outside_every_domain_is_refused_naming_it(): void
     {
         $types = new StateRegistration();

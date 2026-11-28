@@ -25,6 +25,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class DomainTableBoundaryTest extends TestCase
 {
+    #[TimeLimit(seconds: 45, reason: 'A cold cache reads the full tree for model declarations and table calls.')]
     public function test_no_domain_uses_a_table_it_may_not(): void
     {
         $registry = $this->app->make(DomainRegistry::class);

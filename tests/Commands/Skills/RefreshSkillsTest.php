@@ -82,8 +82,8 @@ final class RefreshSkillsTest extends TestCase
 
         $failed = $this->refresh();
 
-        $this->assertTrue($failed->hasFailed);
-        $this->assertStringContainsString(self::INVALID_SKILL, $failed->reason);
+        $this->assertNotNull($failed->failure);
+        $this->assertStringContainsString(self::INVALID_SKILL, $failed->failure);
         $this->assertSame(
             GenerationStatus::Failed,
             SkillGeneration::query()->whereKey($failed->generationId)->firstOrFail()->status,

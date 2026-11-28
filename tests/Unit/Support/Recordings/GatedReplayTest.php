@@ -6,6 +6,7 @@ namespace Tests\Unit\Support\Recordings;
 
 use App\Support\Recordings\CutExchange;
 use App\Support\Recordings\Enums\RecordedEventType;
+use App\Support\Recordings\Enums\RecordingMode;
 use App\Support\Recordings\Enums\Wire;
 use App\Support\Recordings\RecordedEvent;
 use App\Support\Recordings\Recordings;
@@ -44,7 +45,10 @@ final class GatedReplayTest extends TestCase
     private function terminalTurn(): CutExchange
     {
         $recording = $this->app->make(Recordings::class)->scenario('claude-code', 'terminal-turn');
+        $exchanges = array_map($recording->exchange(...), $recording->exchangesOn(Wire::Driver));
+        $terminal = array_find($exchanges, fn (CutExchange $exchange) => $exchange->opening->mode === RecordingMode::Terminal);
+        $this->assertNotNull($terminal);
 
-        return $recording->exchange($recording->exchangesOn(Wire::Driver)[0]);
+        return $terminal;
     }
 }

@@ -110,6 +110,7 @@ final class BindingRulesTest extends TestCase
         $this->assertInstanceOf(ShellCommandParser::class, $this->app->make(ShellCommandParserContract::class));
     }
 
+    #[TimeLimit(seconds: 45, reason: 'A cold cache reads Core code, strings and docblocks for references.')]
     public function test_only_the_authentication_sites_name_the_actor_store_or_set_the_actor(): void
     {
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));

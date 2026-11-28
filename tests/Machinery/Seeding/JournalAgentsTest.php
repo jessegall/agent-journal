@@ -30,7 +30,7 @@ final class JournalAgentsTest extends TestCase
     public function test_a_session_falls_silent_and_a_beat_makes_it_active_again(): void
     {
         $this->journal->owner()
-            ->agent('Writer')
+            ->idleAgent('Writer')->startSession('Writer', 'Writer')
             ->withAgent('Writer', fn (TestAgent $writer) => $writer->session(
                 fn (TestSession $session) => $session->silentFor(121),
             ))

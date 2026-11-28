@@ -17,6 +17,10 @@ use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
  */
 final readonly class DriverCompatibility
 {
+    private const string CLAUDE_CAPTURE_BUILD = '2.1.323';
+
+    private const string CODEX_CAPTURE_BUILD = '0.165.0';
+
     /**
      * @param  list<string>  $startFlags  the checked flags every account start passes
      * @param  array<string, string>  $settings  the checked settings each account's own configuration holds
@@ -43,7 +47,9 @@ final readonly class DriverCompatibility
             DefaultDrivers::CLAUDE_CODE => new self(
                 $driver,
                 $version,
-                '5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7',
+                $version === self::CLAUDE_CAPTURE_BUILD
+                    ? '5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7'
+                    : '',
                 ['--strict-mcp-config', '--mcp-config', '--settings', '--tools'],
                 [],
                 AuthenticationArrangement::DirectProcesses,
@@ -53,7 +59,9 @@ final readonly class DriverCompatibility
             DefaultDrivers::CODEX => new self(
                 $driver,
                 $version,
-                'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a',
+                $version === self::CODEX_CAPTURE_BUILD
+                    ? 'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a'
+                    : '',
                 ['app-server', '--add-dir'],
                 ['cli_auth_credentials_store' => 'file'],
                 AuthenticationArrangement::SharedOwner,
@@ -95,6 +103,6 @@ final readonly class DriverCompatibility
      */
     public function isPinnedBinary(string $digest): bool
     {
-        return hash_equals($this->binaryDigest, $digest);
+        return $this->binaryDigest !== '' && hash_equals($this->binaryDigest, $digest);
     }
 }

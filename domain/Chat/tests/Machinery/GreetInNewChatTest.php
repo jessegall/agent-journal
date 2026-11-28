@@ -7,7 +7,6 @@ namespace Domain\Chat\Tests\Machinery;
 use App\Events\Hooks\ContextStarted;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\ReminderContribution;
-use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Inboxes\Inbox;
 use App\Values\StackTarget;
 use Domain\Chat\Listeners\GreetInNewChat;
@@ -45,7 +44,7 @@ final class GreetInNewChatTest extends TestCase
         $chat = $this->chatOfOwnerAndAgent();
         $this->assertSame([], $this->remindersAt(ContextStartType::Compact));
 
-        $this->journal->runAs('Owner', new SendMessageCommand($chat->id, 'Run the checks.'));
+        $this->journal->post('Owner', $chat, 'Run the checks.');
 
         $this->assertSame([], $this->remindersAt(ContextStartType::Start));
     }
@@ -63,7 +62,7 @@ final class GreetInNewChatTest extends TestCase
      */
     private function remindersAt(ContextStartType $type): array
     {
-        $this->app->forgetScopedInstances();
+        $this->journal->actAs('Owner');
         $reminders = $this->app->make(ReminderContribution::class);
 
         $this->app->make(GreetInNewChat::class)->handle(new ContextStarted(

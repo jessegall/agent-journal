@@ -34,7 +34,7 @@ final class CreateMainPostTest extends GuardedRouteEntryTestCase
                 'requestId' => strtolower((string) Str::ulid()),
                 'driver' => DefaultDrivers::CLAUDE_CODE,
                 'model' => $model,
-            ])->assertRedirect()->assertSessionHas(CreateMainAgentController::CREATED_AGENT);
+            ])->assertRedirect()->assertInertiaFlash(CreateMainAgentController::CREATED_AGENT);
         }
 
         $made = Agent::query()->where('profile_key', ProfileBase::mainAgent()->key)->where('name', 'like', 'Agent %')
