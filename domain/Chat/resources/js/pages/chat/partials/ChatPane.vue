@@ -14,6 +14,7 @@ import type { DockCardEnvelope } from "@kit/dockCards";
 import type { ReplyTarget } from "../../../composables/useConversationIntents";
 import Button from "@kit/Button";
 import Icon from "@kit/Icon";
+import LayoutEmptyPage from "@kit/LayoutEmptyPage";
 import { isRevealed } from "@kit/protectedView";
 import { liveStage, retryLiveConnection } from "@kit/liveConnection";
 import SlotSections from "@kit/SlotSections";
@@ -375,7 +376,10 @@ watch(isShown, readOnOpen);
     <template v-if="chat.setupNotice">
       <p class="text-small text-text-2">{{ chat.setupNotice }}</p>
     </template>
-    <template v-if="conversation && key">
+    <template v-if="chat.noAccounts">
+      <LayoutEmptyPage :part="chat.noAccounts" />
+    </template>
+    <template v-else-if="conversation && key">
       <template v-if="offersChoice && selected">
         <section
           id="chosen-agent-controls"

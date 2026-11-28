@@ -29,4 +29,9 @@ interface StartAccounts
      * @return list<string>
      */
     public function familiesWithAccounts(): array;
+
+    /**
+     * Whether any account of the journal is signed in; it names none.
+     */
+    public function hasSignedInAccount(): bool;
 }

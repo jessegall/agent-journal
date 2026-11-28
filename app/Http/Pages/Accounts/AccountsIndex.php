@@ -10,6 +10,7 @@ use App\Accounts\Data\AccountUsageData;
 use App\Accounts\Data\AccountUsageWindowData;
 use App\Accounts\Enums\AccountStatus;
 use App\Accounts\Enums\UsageWindowSlot;
+use App\Accounts\NoAccountsYet;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
@@ -21,7 +22,6 @@ use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\SettingsGroup;
 use App\Support\Layout\SettingsRow;
@@ -58,12 +58,7 @@ final readonly class AccountsIndex extends AccountsPage
         return ListPage::make(
             'Accounts',
             array_map(fn (AccountRowData $row) => $this->rowOf($row, $chosen), $accounts->rows),
-            ListEmpty::nothingYet(
-                'No accounts yet',
-                'Agents run on an account. Add a Claude Code or Codex account so they can start work.',
-                'account',
-                LayoutPartData::action('add', 'Add account', $adding, 'primary'),
-            ),
+            NoAccountsYet::addingWith($adding),
         )
             ->countingRows()
             ->creating('Add account', $adding)
