@@ -35,7 +35,19 @@ func main() {
 func run(arguments []string, input *os.File, stdout, stderr io.Writer) int {
 	if len(arguments) == 0 {
 		fmt.Fprintln(stderr, errStartUsage)
+		fmt.Fprintln(stderr, "       journal-terminal <annotate|screen|render> <folder>")
 		return 2
+	}
+	if tool, found := recordingTools[arguments[0]]; found {
+		if len(arguments) != 2 {
+			fmt.Fprintf(stderr, "usage: journal-terminal %s <folder>\n", arguments[0])
+			return 2
+		}
+		if err := tool(arguments[1], stdout); err != nil {
+			fmt.Fprintln(stderr, "journal-terminal:", err)
+			return 1
+		}
+		return 0
 	}
 	folder, err := os.Getwd()
 	if err != nil {

@@ -11,44 +11,11 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"journal-runner/recording"
-	"journal-runner/screen"
-	"journal-runner/terminal"
 )
-
-// secretToggle is the key (Ctrl-]) that turns secret marking of typed input on and off; it is never forwarded.
-const secretToggle = 0x1d
 
 func main() {
 	if len(os.Args) == 3 && os.Args[1] == "capture-hook" {
 		if err := captureHook(os.Args[2]); err != nil {
-			fmt.Fprintln(os.Stderr, "journal-runner:", err)
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	if len(os.Args) == 3 && os.Args[1] == "annotate" {
-		if err := annotate(os.Args[2]); err != nil {
-			fmt.Fprintln(os.Stderr, "journal-runner:", err)
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	if len(os.Args) == 4 && os.Args[1] == "recording" && os.Args[2] == "render" {
-		rendered, err := terminal.RenderFolder(os.Args[3])
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "journal-runner:", err)
-			os.Exit(1)
-		}
-		fmt.Printf("rendered %d recordings\n", len(rendered))
-		os.Exit(0)
-	}
-
-	if len(os.Args) == 3 && os.Args[1] == "screen" {
-		if err := printScreen(os.Args[2]); err != nil {
 			fmt.Fprintln(os.Stderr, "journal-runner:", err)
 			os.Exit(1)
 		}
@@ -74,7 +41,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	fmt.Fprintln(os.Stderr, "usage: journal-runner enroll --journal <url> --host <id> < secret | serve | install --manifest <file> --into <dir> | installation --folder <dir>")
+	fmt.Fprintln(os.Stderr, "usage: journal-runner <enroll|serve|relay|install|installation|connect> [options]")
 	os.Exit(2)
 }
 
@@ -103,52 +70,4 @@ func captureHook(capture string) error {
 	fmt.Print("{}")
 
 	return nil
-}
-
-// printScreen replays a terminal recording through the screen reader and prints the screen it ends on.
-func printScreen(folder string) error {
-	fixture, err := recording.Load(folder)
-	if err != nil {
-		return err
-	}
-
-	geometry := fixture.StartGeometry()
-	reader, err := screen.NewEmulatorReader(int(geometry.Columns), int(geometry.Rows), screen.DefaultLimits, nil)
-	if err != nil {
-		return err
-	}
-	if err := fixture.FeedScreen(reader); err != nil {
-		return err
-	}
-
-	snapshot := reader.Snapshot()
-	for _, row := range snapshot.Rows {
-		fmt.Println(row)
-	}
-	fmt.Printf("-- %s, exit %d\n", snapshot.Status(), fixture.ExitCode)
-
-	return nil
-}
-
-// settleTime is how long after a key a screen checkpoint is read, so the program has drawn its answer.
-const settleTime = 1500 * time.Millisecond
-
-// annotate replays a terminal recording through the screen reader and stores, after each typed input, the screen
-// it settled on as a checkpoint of the fixture: the evidence of what each key did.
-func annotate(folder string) error {
-	fixture, err := recording.Load(folder)
-	if err != nil {
-		return err
-	}
-
-	geometry := fixture.StartGeometry()
-	reader, err := screen.NewEmulatorReader(int(geometry.Columns), int(geometry.Rows), screen.DefaultLimits, nil)
-	if err != nil {
-		return err
-	}
-	if err := fixture.MarkCheckpoints(reader, settleTime); err != nil {
-		return err
-	}
-
-	return fixture.Save(folder)
 }

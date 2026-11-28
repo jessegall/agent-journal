@@ -143,7 +143,12 @@
         },
         "journal-terminal": {
             "about": "Starts a person's local driver session as journal-terminal <driver> [program arguments].",
-            "commands": { "start": [] },
+            "commands": {
+                "start": [],
+                "annotate": [],
+                "screen": [],
+                "render": []
+            },
             "arguments": ["driver", "program arguments"]
         },
         "claude-code": {
