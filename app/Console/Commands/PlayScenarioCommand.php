@@ -164,8 +164,12 @@ final class PlayScenarioCommand extends Command
     {
         $this->line($pause->text);
 
-        if ($pause->signInLink !== null) {
-            $this->line("Sign in at {$pause->signInLink}");
+        if ($pause->signIn !== null) {
+            $this->line("Sign in at {$pause->signIn->address}");
+        }
+
+        if ($pause->signIn?->code !== null) {
+            $this->line("Enter the code {$pause->signIn->code}");
         }
 
         return (string) $this->ask('Type the code the page shows, or press Enter', '');

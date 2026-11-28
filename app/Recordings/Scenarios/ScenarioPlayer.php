@@ -20,6 +20,7 @@ use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Recordings\Scenarios\Exceptions\ScenarioStuck;
 use App\Time\Contracts\Sleeper;
 use App\Values\FilePath;
+use App\Values\SignInChallenge;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Support\Str;
@@ -139,7 +140,7 @@ final readonly class ScenarioPlayer
         }
 
         if ($step->stepType === ScenarioStepType::AskUser) {
-            $typed = trim($askUser($step->pause($this->signInLinkOf($run))));
+            $typed = trim($askUser($step->pause($this->signInChallengeOf($run))));
 
             if ($typed !== '') {
                 $run->holdSignInCode($typed);
@@ -218,9 +219,10 @@ final readonly class ScenarioPlayer
     }
 
     /**
-     * The link of the run's sign-in, waited for a moment: the attempt shows as waiting just before its link is kept.
+     * The challenge of the run's sign-in, waited for a moment: the attempt shows as waiting just before its challenge
+     * is kept.
      */
-    private function signInLinkOf(ScenarioRun $run): string|null
+    private function signInChallengeOf(ScenarioRun $run): SignInChallenge|null
     {
         $attempt = $run->signInAttempt();
 
@@ -232,7 +234,7 @@ final readonly class ScenarioPlayer
             $challenge = $this->challenges->challengeOf($attempt);
 
             if ($challenge !== null) {
-                return $challenge->address;
+                return $challenge;
             }
 
             $this->sleeper->sleep(self::LOOK_NANOSECONDS);

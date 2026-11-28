@@ -16,6 +16,7 @@ use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Recordings\Scenarios\Scenario;
 use App\Recordings\Scenarios\ScenarioRun;
 use App\Sessions\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
+use App\Values\SignInChallenge;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -101,7 +102,7 @@ final class ScenarioStepTest extends TestCase
 
         $begin = $scenario->steps[0]->commandFor($run, $drivers);
         $run->stepRan();
-        $pause = $scenario->steps[1]->pause('https://example.test/sign-in');
+        $pause = $scenario->steps[1]->pause(new SignInChallenge('https://example.test/sign-in', 'ABCD-EFGH'));
         $run->holdSignInAttempt('attempt-1');
         $run->holdSignInCode('code-1');
         $run->stepRan();
@@ -114,10 +115,11 @@ final class ScenarioStepTest extends TestCase
                 'claude-code',
                 'Sign in on the page and paste the code.',
                 'https://example.test/sign-in',
+                'ABCD-EFGH',
                 'attempt-1',
                 'code-1',
             ],
-            [$begin->driver, $pause->text, $pause->signInLink, $submit->attemptId, $submit->code],
+            [$begin->driver, $pause->text, $pause->signIn?->address, $pause->signIn?->code, $submit->attemptId, $submit->code],
         );
     }
 

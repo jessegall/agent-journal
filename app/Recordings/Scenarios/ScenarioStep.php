@@ -33,6 +33,7 @@ use App\Sessions\Values\StartPolicy;
 use App\Support\Command;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
+use App\Values\SignInChallenge;
 use App\Values\StartRequest;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -223,11 +224,11 @@ final class ScenarioStep extends Data
     }
 
     /**
-     * The pause of an ask-user step: its words and the sign-in link the run's challenge showed.
+     * The pause of an ask-user step: its words and the challenge the run's sign-in showed.
      */
-    public function pause(string|null $signInLink): ScenarioPause
+    public function pause(SignInChallenge|null $signIn): ScenarioPause
     {
-        return new ScenarioPause((string) $this->text, $signInLink);
+        return new ScenarioPause((string) $this->text, $signIn);
     }
 
     /**
