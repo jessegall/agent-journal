@@ -41,22 +41,31 @@ final class HiddenAwareDataTransformer extends DataClassTransformer
         $type = $annotation?->type;
 
         if (! $type instanceof GenericTypeNode || ! in_array((string) $type->type, ['list', 'non-empty-list'], true)) {
-            return [$annotation, $source];
+            return [
+                $annotation,
+                $source,
+            ];
         }
 
-        $collection = $phpPropertyNode->getAttributes(DataCollectionOf::class)[0] ?? null;
+        $attributes = SourceNodeAttributes::current();
 
-        if ($collection === null) {
-            return [$annotation, $source];
+        if (! $attributes->carries($phpPropertyNode, DataCollectionOf::class)) {
+            return [
+                $annotation,
+                $source,
+            ];
         }
 
-        $itemClass = $collection->getArgument('class');
+        $itemClass = $attributes->argument($phpPropertyNode, DataCollectionOf::class, 'class');
         assert(is_string($itemClass));
 
         // The attribute resolves the class in the file that declares it, including when the property comes from a trait.
         $list = new GenericTypeNode($type->type, [new IdentifierTypeNode($itemClass)]);
 
-        return [new ParsedNameAndType($phpPropertyNode->getName(), $list), $source];
+        return [
+            new ParsedNameAndType($phpPropertyNode->getName(), $list),
+            $source,
+        ];
     }
 
     protected function isPropertyHidden(

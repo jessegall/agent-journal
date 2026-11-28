@@ -50,4 +50,14 @@ final class SourceNodeAttributes
 
         return $answers[$attribute];
     }
+
+    /**
+     * The named argument of the first attribute of this class the node carries; ask carries() first.
+     *
+     * @param  class-string  $attribute
+     */
+    public function argument(PhpClassNode|PhpPropertyNode $node, string $attribute, string $name): mixed
+    {
+        return $node->getAttributes($attribute)[0]->getArgument($name);
+    }
 }
