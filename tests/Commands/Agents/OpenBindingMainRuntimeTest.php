@@ -12,10 +12,14 @@ use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\JournalCommands;
+use App\Hosts\Commands\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
+use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostProcessType;
+use App\Hosts\Protocol\HostProtocol;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
@@ -176,6 +180,64 @@ final class OpenBindingMainRuntimeTest extends TestCase
         $this->journal->assertResult(
             [SessionProcessStatus::Stopped, 'the process exited with 1'],
             [$start->status, $start->refusal],
+        );
+    }
+
+    public function test_two_missing_heartbeats_lose_the_terminal_after_it_ran(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $opened = $this->start($binding, [])->assertCreated();
+        $this->journal->nameHostProcess('terminal', $opened->json('process_id'));
+        $process = $this->journal->hostProcessCalled('terminal');
+        $beat = new NotifyHostHeartbeatCommand($binding->host_id, [], null);
+
+        $this->journal->asSystem($beat);
+        $this->journal->asSystem($beat);
+        $beforeRunning = $process->refresh()->status;
+        $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+            ->report(HostProcessReportType::Running));
+        $this->journal->asSystem($beat);
+        $afterOneMiss = $process->refresh()->status;
+        $this->journal->asSystem($beat);
+
+        $this->journal->assertResult(
+            [null, HostProcessStatus::Ordered, HostProcessStatus::Running, HostProcessStatus::Lost,
+                SessionProcessStatus::Stopped],
+            [$process->open_instruction_id, $beforeRunning, $afterOneMiss, $process->refresh()->status,
+                $this->journal->startOfSession($opened->json('session_id'))->status],
+        );
+    }
+
+    public function test_the_restarted_relay_keeps_a_held_terminal_and_loses_it_if_absent(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $opened = $this->start($binding, [])->assertCreated();
+        $this->journal->nameHostProcess('terminal', $opened->json('process_id'))
+            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+                ->report(HostProcessReportType::Running));
+        $process = $this->journal->hostProcessCalled('terminal');
+
+        $inventory = [
+            'protocol' => HostProtocol::RELAY,
+            'release' => '6.0.0',
+            'capabilities' => [],
+        ];
+        $held = HostInventoryPayload::from([...$inventory, 'processes' => [[
+            'process_id' => $process->id,
+            'identity' => 'pid:terminal',
+            'is_alive' => true,
+            'is_terminal_held' => true,
+            'spool_offset' => 0,
+        ]]]);
+        $this->journal->asSystem(new NotifyHostInventoryCommand($binding->host_id, $held));
+        $whenHeld = $process->refresh()->status;
+
+        $empty = HostInventoryPayload::from([...$inventory, 'processes' => []]);
+        $this->journal->asSystem(new NotifyHostInventoryCommand($binding->host_id, $empty));
+
+        $this->journal->assertResult(
+            [HostProcessStatus::Running, HostProcessStatus::Lost, 'the host restarted without it'],
+            [$whenHeld, $process->refresh()->status, $process->exit_evidence],
         );
     }
 
