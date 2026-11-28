@@ -56,7 +56,7 @@ func (posted *postedOutputs) post(_ string, output Output) error {
 
 func firstStart(t *testing.T) (recording.Fixture, []RenderedFrame) {
 	t.Helper()
-	exchange, fixture := recorded.MustTerminal(t, "claude-code", "first-start")
+	exchange, fixture := recorded.MustTerminal(t, "first-start")
 	content, err := os.ReadFile(filepath.Join(exchange.Folder, FramesFileName))
 	if err != nil {
 		t.Fatal(err)
@@ -169,7 +169,7 @@ func TestAPipeReattachesAtItsSpoolOffset(t *testing.T) {
 	if err := outputs.Open("pipe", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "pipe"}); err != nil {
 		t.Fatal(err)
 	}
-	probe := recorded.MustProbe(t, "codex", "version")
+	probe := recorded.MustProbe(t, "second-version")
 	first, second := probe.Output[0].Bytes, probe.Output[1].Bytes
 	outputs.Printed("pipe", first)
 	outputs.Printed("pipe", second)
@@ -192,8 +192,8 @@ func TestAContainersLogReachesTheJournalUnderTheNameOfEachStream(t *testing.T) {
 		t.Fatal(err)
 	}
 	table := &ProcessTable{outputs: outputs}
-	version := recorded.MustProbe(t, "claude-code", "version")
-	login := recorded.MustProbe(t, "codex", "login-status")
+	version := recorded.MustProbe(t, "version")
+	login := recorded.MustProbe(t, "login-status")
 	log := bytes.NewReader(append(framed(1, string(version.Output[0].Bytes)), framed(2, string(login.Output[0].Bytes))...))
 
 	table.copyLog("pipe", log, 0)

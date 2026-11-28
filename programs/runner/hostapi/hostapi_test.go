@@ -32,7 +32,7 @@ func testVerifier() Verifier {
 }
 
 func TestTheJournalsSignatureOfAFixedInstructionIsAccepted(t *testing.T) {
-	fixed := recordedInstructions(t, "terminal-turn", "write_keys")[0]
+	fixed := recordedInstructions(t, "second-terminal-turn", "write_keys")[0]
 	if Sign([]byte(recordedSecret), fixed) != fixed.Signature {
 		t.Fatalf("the recorded instruction signs to %s, not the one the journal made", Sign([]byte(recordedSecret), fixed))
 	}

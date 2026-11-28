@@ -1,0 +1,11 @@
+{
+    "terminal-turn": "claude-code/terminal-turn",
+    "second-terminal-turn": "codex/terminal-turn",
+    "headless-turn": "claude-code/headless-turn",
+    "first-start": "claude-code/first-start",
+    "change-model": "claude-code/change-model",
+    "version": "claude-code/version",
+    "second-version": "codex/version",
+    "auth-status": "claude-code/auth-status",
+    "login-status": "codex/login-status"
+}

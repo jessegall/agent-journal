@@ -11,7 +11,7 @@ import (
 )
 
 func TestARecordedScenarioLoadsWithItsExchangesAndCalls(t *testing.T) {
-	scenario := MustLoad(t, "host", "folders")
+	scenario := MustLoad(t, "folders")
 
 	if scenario.Manifest.Driver != "host" || len(scenario.Exchanges) != len(scenario.Manifest.Exchanges) {
 		t.Fatalf("loaded %s with %d exchanges of %v", scenario.Manifest.Driver, len(scenario.Exchanges), scenario.Manifest.Exchanges)

@@ -82,8 +82,7 @@ func TestTheHostRefusesTheRemovedRecordInstructionsAsUnknown(t *testing.T) {
 	}
 }
 
-// A build_image payload, as the journal handed it out when the recorded Codex image was built again, is read strictly: an unknown, a missing and a mistyped
-// field of it, a build argument's too, are each refused as unsafe by name.
+// A recorded build_image instruction refuses unknown, missing and mistyped fields by name, including build arguments.
 func TestAnImageBuildIsReadStrictly(t *testing.T) {
 	payload := recordedInstructions(t, "driver-image-build", "build_image")[0].Payload
 	build, err := DecodePayload[host.ImageBuild](Instruction{Type: "build_image", Payload: payload})

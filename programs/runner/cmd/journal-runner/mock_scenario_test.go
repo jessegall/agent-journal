@@ -14,10 +14,10 @@ import (
 	"journal-runner/recording"
 )
 
-// terminalTurn is the recorded Claude Code terminal of the terminal-turn scenario, with its fixture.
+// terminalTurn is the recorded terminal of the terminal-turn scenario, with its fixture.
 func terminalTurn(t *testing.T) (recorded.Scenario, recorded.Exchange, recording.Fixture) {
 	t.Helper()
-	scenario := recorded.MustLoad(t, "claude-code", "terminal-turn")
+	scenario := recorded.MustLoad(t, "terminal-turn")
 	for _, exchange := range scenario.ExchangesOn(recording.WireDriver) {
 		if exchange.Opening.Mode == "terminal" {
 			fixture, err := recording.Load(exchange.Folder)
@@ -76,7 +76,7 @@ func TestEachRecordedHookRunsAsTheStartsSettingsConfigureIt(t *testing.T) {
 
 	ran, _ := os.ReadFile(heard)
 	if !strings.Contains(string(ran), `"hook_event_name":"SessionStart"`) {
-		t.Fatalf("the SessionStart hook ran with %q, not the body Claude Code sent", ran)
+		t.Fatalf("the SessionStart hook ran with %q, not the recorded native body", ran)
 	}
 }
 
@@ -84,7 +84,7 @@ func TestAStartThatNamesNoModelIsRefused(t *testing.T) {
 	if err := assertModelNamed([]string{"--settings", "/tmp/journal-session/settings.json"}); !errors.Is(err, errNoModel) {
 		t.Fatalf("a start without a model was answered %v", err)
 	}
-	if err := assertModelNamed([]string{"claude", "--version"}); err != nil {
+	if err := assertModelNamed([]string{"--version"}); err != nil {
 		t.Fatalf("the version probe was refused: %v", err)
 	}
 }
