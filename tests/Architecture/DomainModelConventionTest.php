@@ -68,6 +68,7 @@ final class DomainModelConventionTest extends TestCase
         );
     }
 
+    #[TimeLimit(seconds: 45, reason: 'A cold cache reads the full tree and resolves each model through Laravel.')]
     public function test_the_models_of_the_domains_and_the_core_follow_rule_six(): void
     {
         $files = DomainFiles::in([

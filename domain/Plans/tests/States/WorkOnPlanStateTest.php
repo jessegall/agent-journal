@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\States;
 
 use App\Models\Agents\AgentSession;
+use App\Stacks\References\StateReference;
 use App\Values\AgentText;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
@@ -102,7 +103,7 @@ final class WorkOnPlanStateTest extends TestCase
 
     public function test_placing_a_task_tells_the_plans_new_counts(): void
     {
-        $phase = $this->plans->phase(self::PLAN, 'Work')->phaseCalled('Work');
+        $phase = $this->plans->addPhaseTo(self::PLAN, 'Work')->phaseCalled('Work');
         $task = $this->journal->fixtures(TaskFixtures::class)->createTask('Write it');
         $this->journal->observeEvents(PlanProgressChanged::class);
 
@@ -123,7 +124,7 @@ final class WorkOnPlanStateTest extends TestCase
     /**
      * The work state a started plan puts on its planner's stack.
      */
-    private function working(): WorkOnPlanStateReference
+    private function working(): StateReference
     {
         return WorkOnPlanStateReference::forPlan($this->planId());
     }

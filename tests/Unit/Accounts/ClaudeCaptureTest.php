@@ -23,7 +23,7 @@ final class ClaudeCaptureTest extends TestCase
     {
         $capture = self::fixture('capture.json');
 
-        $this->assertSame('2.1.332', $capture['version']);
+        $this->assertSame('2.1.323', $capture['version']);
         $this->assertContains('--restricted', $capture['start_invocation']);
         $this->assertContains('--strict-mcp-config', $capture['start_invocation']);
         $this->assertContains('--settings', $capture['start_invocation']);
@@ -47,7 +47,7 @@ final class ClaudeCaptureTest extends TestCase
         $this->assertStringStartsWith(self::SIGNED_OUT_REPLY, $run['result']);
     }
 
-    public function test_the_document_names_the_pinned_version_and_digest(): void
+    public function test_the_document_names_the_captured_version_and_digest(): void
     {
         $capture = self::fixture('capture.json');
         $document = (string) file_get_contents(__DIR__.'/../../../docs/accounts/claude-integration.md');

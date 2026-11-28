@@ -73,7 +73,7 @@ final readonly class DriverSwitchLines
         }
 
         $this->journal->runAsJournal(
-            CommandEntry::DriverWorker,
+            CommandEntry::Application,
             self::TRUSTED_ENTRY,
             new SendMessageCommand($chat->id, $text),
         );

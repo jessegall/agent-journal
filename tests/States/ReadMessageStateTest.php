@@ -89,18 +89,22 @@ final class ReadMessageStateTest extends TestCase
     {
         $this->journal
             ->pushState('Writer', $this->reading())
-            ->stateOn('Writer', $this->reading(), fn (StateHandle $reading) => $reading
-                ->event(
-                    new MessageSent('sent-1', $this->inbox->id, 3, null, $this->agent()),
+            ->stateOn('Writer', $this->reading(), function (StateHandle $reading): void {
+                $own = $this->journal->post('Writer', $this->inbox, 'My own message.');
+                $reading->event(
+                    new MessageSent($own->id, $this->inbox->id, $own->number, null, $own->author()),
                     fn (StateAssert $state) => $state->where('unreadIds', [$this->first->id, $this->second->id]),
-                )
-                ->event(
-                    new MessageSent('sent-2', $this->inbox->id, 4, null, $this->journal->actorCalled('Owner')),
+                );
+
+                $sent = $this->journal->post('Owner', $this->inbox, 'Another message.');
+                $reading->event(
+                    new MessageSent($sent->id, $this->inbox->id, $sent->number, null, $sent->author()),
                     fn (StateAssert $state) => $state->where(
                         'unreadIds',
-                        [$this->first->id, $this->second->id, 'sent-2'],
+                        [$this->first->id, $this->second->id, $sent->id],
                     ),
-                ));
+                );
+            });
     }
 
     public function test_each_read_pushes_the_answer_for_that_message_and_the_last_ends_it(): void
@@ -187,13 +191,16 @@ final class ReadMessageStateTest extends TestCase
 
         $this->journal
             ->pushState('Writer', $this->reading())
-            ->stateOn('Writer', $this->reading(), fn (StateHandle $reading) => $reading->event(
-                new MessageSent('sent-3', $this->inbox->id, 3, null, $this->journal->actorCalled('Owner')),
-                fn (StateAssert $state) => $state->where(
-                    'unreadIds',
-                    [$this->first->id, $this->second->id, 'sent-3'],
-                ),
-            ));
+            ->stateOn('Writer', $this->reading(), function (StateHandle $reading): void {
+                $sent = $this->journal->post('Owner', $this->inbox, 'A message from another project.');
+                $reading->event(
+                    new MessageSent($sent->id, $this->inbox->id, $sent->number, null, $sent->author()),
+                    fn (StateAssert $state) => $state->where(
+                        'unreadIds',
+                        [$this->first->id, $this->second->id, $sent->id],
+                    ),
+                );
+            });
 
         $this->assertContains($this->writerId(), $asked->askedAgentIds);
         $this->assertEquals($chosen, $this->app->make(CurrentProjectContract::class)->selection());

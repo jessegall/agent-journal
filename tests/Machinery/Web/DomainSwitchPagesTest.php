@@ -46,7 +46,7 @@ final class DomainSwitchPagesTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner();
+        $this->journal->installProfiles()->owner();
     }
 
     public function test_pages_and_actions_of_a_switched_off_domain_answer_not_found_and_others_stay(): void

@@ -6,6 +6,7 @@ namespace Domain\Tasks\Tests\States;
 
 use App\Hooks\Enums\AnswerType;
 use App\Processes\Contracts\ShellCommandParser;
+use App\Stacks\References\StateReference;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Support\States\LogDueState;
 use Domain\Tasks\Support\States\Support\LogDueStateReference;
@@ -72,7 +73,7 @@ final class LogDueStateTest extends TestCase
             ));
     }
 
-    private function logDue(): LogDueStateReference
+    private function logDue(): StateReference
     {
         return LogDueStateReference::forTask(TestIds::of(42), 42);
     }

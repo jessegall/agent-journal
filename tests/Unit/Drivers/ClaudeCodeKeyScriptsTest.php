@@ -83,8 +83,6 @@ final class ClaudeCodeKeyScriptsTest extends TestCase
     }
 
     /**
-     * Streams the recording's frames to the script until it finishes or stops, sending each key it decides on.
-     *
      * @param  array<string, string>  $values
      */
     private function played(string $recording, string $script, array $values): KeyMove

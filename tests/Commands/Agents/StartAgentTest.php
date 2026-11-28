@@ -259,7 +259,7 @@ final class StartAgentTest extends TestCase
         $this->assertNotSame($receipt->sessionId, $this->start($this->request())->sessionId);
     }
 
-    public function test_a_start_a_host_took_up_stays_running_when_it_falls_silent(): void
+    public function test_a_journal_driven_start_a_host_took_up_stays_active_without_session_heartbeats(): void
     {
         $receipt = $this->start($this->request());
         $probe = HostProcess::query()
@@ -272,7 +272,7 @@ final class StartAgentTest extends TestCase
 
         $this->app->make(StartHeartbeats::class)->markSilentStarts();
 
-        $this->assertSame(SessionStatus::Silent, AgentSession::query()->findOrFail($receipt->sessionId)->status);
+        $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($receipt->sessionId)->status);
     }
 
     public function test_a_start_previewed_before_the_drivers_changed_is_refused_and_keeps_nothing(): void

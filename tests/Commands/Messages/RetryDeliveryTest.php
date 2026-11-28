@@ -7,7 +7,6 @@ namespace Tests\Commands\Messages;
 use App\Exceptions\InboxUnavailable;
 use App\Messages\Commands\RetryDelivery\RetryDeliveryCommand;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
@@ -21,9 +20,8 @@ final class RetryDeliveryTest extends TestCase
 
     public function test_only_the_sender_can_queue_a_failed_message_again(): void
     {
-        $this->journal->owner()->idleAgent('Planner');
-        $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner')
-            ->pairChatOf('Owner', 'Planner');
+        $this->journal->owner()->idleAgent('Planner')->sharedInbox('Owner', 'Planner');
+        $chat = $this->journal->sharedInboxOf('Owner', 'Planner');
         $message = $this->journal->post('Owner', $chat, 'Run the build.');
         $message->failDelivery('The start was refused.', CarbonImmutable::now());
 

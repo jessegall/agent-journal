@@ -117,7 +117,8 @@ A driver that exits or is killed without an end hook is handled by `StartHeartbe
 
 | Evidence | State |
 |---|---|
-| Driver and pinned version | Claude Code 2.1.323, captured 2026-11-17 with `claude -p --settings <file> --setting-sources local` |
+| Driver and pinned version | Claude Code 2.1.332, used by the recorded `claude-code/terminal-turn` and `claude-code/headless-turn` scenarios |
+| Capture for the rows below | Claude Code 2.1.323, captured 2026-11-17 with `claude -p --settings <file> --setting-sources local` |
 | Native callbacks and schema | captured: SessionStart (`source` startup, resume or compact; resume adds `seconds_since_last_response` and `context_tokens`, compact adds `model`), UserPromptSubmit (`prompt`, `prompt_id`, `permission_mode`), PreToolUse and PostToolUse (`tool_name`, `tool_input`, `tool_use_id`; PostToolUse adds `tool_response` as an object and `duration_ms`), Stop (`stop_hook_active`, `last_assistant_message`), SessionEnd (`reason` other), PreCompact (`trigger`, `custom_instructions`), SubagentStop. Notification: a headless run raises none, so its fixture keeps the documented shape |
 | Agent, start, vendor session and child identity | the vendor session id is kept on session start. A child starts through the `Agent` tool; its tool calls and its SubagentStop carry `agent_id` and `agent_type` on the parent's `session_id`. Native children are never started (rule 36): the isolated settings deny `Agent`, `Task`, `Workflow`, `SendMessage`, `ListAgents`, `RemoteTrigger` and `Skill` for 2.1.323, and the hook endpoint refuses any call carrying `agent_id` and any of those tools |
 | Tool coverage | captured: Bash, Read, Edit, Write and Agent; any other tool, MCP tools included, is refused |
@@ -147,7 +148,8 @@ A driver that exits or is killed without an end hook is handled by `StartHeartbe
 
 | Evidence | State |
 |---|---|
-| Driver and pinned version | codex-cli 0.165.0, captured 2026-11-17 with `codex exec` under an isolated `CODEX_HOME` |
+| Driver and pinned version | codex-cli 0.172.0, used by the recorded `codex/terminal-turn` and `codex/headless-turn` scenarios |
+| Capture for the rows below | codex-cli 0.165.0, captured 2026-11-17 with `codex exec` under an isolated `CODEX_HOME` |
 | Native callbacks and schema | captured: SessionStart (`source` startup, `model`, `permission_mode`), UserPromptSubmit (`turn_id`, `prompt`), PreToolUse and PostToolUse (`tool_name`, `tool_input`, `tool_use_id`; PostToolUse adds `tool_response` as the tool's text, which starts with `Exit code: N` for apply_patch), Stop (`stop_hook_active`, `last_assistant_message`), SessionEnd (`reason` other). PreCompact: `codex exec` raises none, so its fixture keeps the documented shape |
 | Settings file shape | `hooks.json` in `CODEX_HOME`, shaped as Claude Code's: each event holds `[{"matcher": "*", "hooks": [{"type": "command", "command": "..."}]}]`, with no matcher on UserPromptSubmit and Stop. Codex runs a hook only when `config.toml` holds `[hooks.state."<hooks.json path>:<event_key>:<group>:<index>"]` with `enabled = true` and `trusted_hash`, the sha256 of the hook's normalized definition, and the work folder has `trust_level = "trusted"`; an untrusted hook is skipped without a word |
 | Agent, start, vendor session and child identity | the vendor session id is kept on session start. Native children are never started (rule 36): with every agent feature off, 0.165.0 still offers `collaboration.spawn_agent`, `wait_agent`, `send_message`, `followup_task`, `interrupt_agent` and `list_agents` (plan 26 task 888), so the hook endpoint refuses every call to them, as version 5 does |

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Tests\States;
 
 use App\Hooks\Enums\AnswerType;
+use App\Stacks\References\StateReference;
 use App\Support\ActorReference;
 use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Events\SequenceEnded;
@@ -91,7 +92,7 @@ final class FollowSequenceStateTest extends TestCase
     /**
      * A run of three steps at its first, held in memory only: the state keeps what it needs of it in its own values.
      */
-    private function following(): FollowSequenceStateReference
+    private function following(): StateReference
     {
         $run = new SequenceRun();
         $run->id = self::RUN;

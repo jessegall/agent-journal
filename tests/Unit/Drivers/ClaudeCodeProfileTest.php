@@ -7,6 +7,8 @@ namespace Tests\Unit\Drivers;
 use App\Accounts\AccountStartRecipe;
 use App\Accounts\StartSetting;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeJournalServer;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeSettingsFile;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Drivers\Hooks\HookReplies;
@@ -14,6 +16,7 @@ use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Exceptions\BuildNotPinned;
 use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\Values\JournalServer;
+use App\Agents\Values\PlanFile;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Hosts\Enums\HostProcessPurpose;
@@ -150,7 +153,7 @@ final class ClaudeCodeProfileTest extends TestCase
     {
         $plan = $this->profile()->startPlan($this->turn($this->account()));
         $settings = $this->settingsOf($plan);
-        $descriptor = json_decode($plan->files[1]->content, true, flags: JSON_THROW_ON_ERROR);
+        $descriptor = $this->planJson($plan, ClaudeCodeJournalServer::NAME);
 
         $this->journal->assertResult(
             [
@@ -352,7 +355,18 @@ final class ClaudeCodeProfileTest extends TestCase
      */
     private function settingsOf(HostProcessPlan $plan): array
     {
-        return json_decode($plan->files[0]->content, true, flags: JSON_THROW_ON_ERROR);
+        return $this->planJson($plan, ClaudeCodeSettingsFile::NAME);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function planJson(HostProcessPlan $plan, string $name): array
+    {
+        $file = array_find($plan->files, fn (PlanFile $file) => $file->name === $name);
+        $this->assertNotNull($file);
+
+        return json_decode($file->content, true, flags: JSON_THROW_ON_ERROR);
     }
 
     /**

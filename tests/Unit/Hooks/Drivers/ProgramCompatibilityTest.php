@@ -10,6 +10,7 @@ use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverEvidence;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
+use App\Support\Recordings\Recordings;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -35,15 +36,24 @@ final class ProgramCompatibilityTest extends TestCase
     }
 
     #[DataProvider('drivers')]
-    public function test_the_pinned_build_is_the_captured_one(string $driver): void
+    public function test_the_pinned_build_is_the_recorded_terminal_build(string $driver): void
     {
-        $capture = $this->captureOf($driver);
         $compatibility = $this->compatibilityOf($driver);
+        $recording = $this->app->make(Recordings::class)->scenario($driver, 'terminal-turn');
 
         $this->assertSame($driver, $compatibility->driver);
-        $this->assertSame($capture['version'], $compatibility->version);
-        $this->assertTrue($compatibility->isPinnedBinary($capture['binary_sha256']));
+        $this->assertSame($recording->manifest()->build, $compatibility->version);
         $this->assertFalse($compatibility->isPinnedBinary(str_repeat('0', 64)));
+    }
+
+    #[DataProvider('drivers')]
+    public function test_the_account_capture_digest_belongs_to_its_captured_build(string $driver): void
+    {
+        $capture = $this->captureOf($driver);
+        $captured = DriverCompatibility::pinned($driver, $capture['version']);
+
+        $this->assertTrue($captured->isPinnedBinary($capture['binary_sha256']));
+        $this->assertFalse($this->compatibilityOf($driver)->isPinnedBinary($capture['binary_sha256']));
     }
 
     public function test_every_claude_start_flag_exists_in_the_captured_build(): void

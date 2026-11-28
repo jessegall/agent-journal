@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Button from '@/components/kit/Button.vue';
+import Button from '@kit/Button';
 import { Link } from '@inertiajs/vue3';
 import type { ProjectPaneData } from '@generated/types/connections';
 import SwitchCase from '@kit/SwitchCase';

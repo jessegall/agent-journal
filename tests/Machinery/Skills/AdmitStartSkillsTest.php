@@ -81,7 +81,7 @@ final class AdmitStartSkillsTest extends TestCase
 
         $stored = AgentSession::findById($session->id);
         $this->assertNull($stored->skill_generation_id);
-        $this->assertNull($stored->skill_keys);
+        $this->assertSame([], $stored->skill_keys);
     }
 
     public function test_a_driver_without_a_skill_adapter_is_refused(): void

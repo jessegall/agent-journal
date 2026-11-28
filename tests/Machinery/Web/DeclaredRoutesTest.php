@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Machinery\Web;
 
 use App\Access\AccessSettings;
+use App\Declarations\ActionRoute;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
 use App\Declarations\PageSlots;
@@ -120,7 +121,7 @@ final class DeclaredRoutesTest extends TestCase
                 'Notes.vue',
             )
                 ->visibleWhen(NobodySees::class)
-                ->actions(fn (PageActions $actions) => $actions->post('drafts', SaveDraft::class, 'save')),
+                ->actions(ActionRoute::post('drafts', SaveDraft::class, 'save')),
         ]);
 
         return ClientDeclarations::check([$library, $desk]);

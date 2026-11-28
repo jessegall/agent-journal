@@ -31,15 +31,15 @@ final class RunningCommandSeedTest extends TestCase
         $plannerId = $this->journal->actorCalled('Planner')->id;
         $this->assertNull($this->runningCommand($chat));
 
-        AgentRunningTool::startFor($plannerId, ToolLine::shell('npm test'));
+        $tool = AgentRunningTool::create($plannerId, ToolLine::shell('npm test'));
         $seed = $this->runningCommand($chat);
         $this->assertSame([$plannerId, 'Bash npm test', true], [$seed?->agentId, $seed?->line, $seed?->isRunning]);
 
-        AgentRunningTool::finishFor($plannerId);
+        $tool->finish();
         $finished = $this->runningCommand($chat);
         $this->assertSame(['Bash npm test', false], [$finished?->line, $finished?->isRunning]);
 
-        AgentRunningTool::clearFor($plannerId);
+        $tool->clear();
         $cleared = $this->runningCommand($chat);
         $this->assertSame([null, false], [$cleared?->line, $cleared?->isRunning]);
     }
@@ -48,10 +48,10 @@ final class RunningCommandSeedTest extends TestCase
     {
         $chat = $this->chatWithPlanner();
         $plannerId = $this->journal->actorCalled('Planner')->id;
-        AgentRunningTool::startFor($plannerId, ToolLine::shell('npm test'));
+        $tool = AgentRunningTool::create($plannerId, ToolLine::shell('npm test'));
 
         $this->assertSame(
-            AgentRunningTool::findShownOf($plannerId)->get()->changed_at_text,
+            $tool->changed_at_text,
             $this->runningCommand($chat)?->changedAt,
         );
     }
