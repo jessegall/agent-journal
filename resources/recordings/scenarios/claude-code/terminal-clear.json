@@ -1,13 +1,10 @@
 {
-    "description": "The owner clears a running Claude Code terminal and starts another native conversation",
+    "description": "The journal clears a running Claude Code terminal and records its next native session",
     "steps": [
         {"do": "restart-host"},
         {"do": "start-session", "agent": "Coder", "type": "terminal", "model": "claude-haiku-5-5", "effort": "low"},
         {"do": "wait-for", "fact": "turn-ended", "seconds": 180},
-        {
-            "do": "use-terminal",
-            "text": "Open the Coder agent started by this scenario. Take control in the Journal terminal and enter /clear. Wait for the new prompt to appear, then release control."
-        },
+        {"do": "send-keys", "agent": "Coder", "text": "/clear\r", "from": "clear"},
         {"do": "stop", "agent": "Coder"},
         {"do": "wait-for", "fact": "stopped", "seconds": 60},
         {"do": "wait-for", "fact": "instructions-answered", "seconds": 60}

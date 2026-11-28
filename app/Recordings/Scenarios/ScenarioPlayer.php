@@ -18,9 +18,14 @@ use App\Connections\ServerOrigin;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
+use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
+use App\Hosts\Enums\HostInstructionStatus;
+use App\Hosts\ProcessFeed;
+use App\Hosts\Protocol\HostProcessType;
 use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Hosts\HostInstruction;
+use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
 use App\Projects\Values\IssuedInvitation;
@@ -30,8 +35,10 @@ use App\Recordings\Scenarios\Enums\ScenarioStepType;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Recordings\Scenarios\Exceptions\ScenarioStuck;
 use App\Support\ActorReference;
+use App\Terminals\Screens\RowRange;
 use App\Time\Contracts\Sleeper;
 use App\Values\FilePath;
+use App\Values\HostInstructionSource;
 use App\Values\SignInChallenge;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -98,6 +105,8 @@ final readonly class ScenarioPlayer
      */
     private const int HOST_RESTART_SECOND_LIMIT = 120;
 
+    private const int TERMINAL_HOOK_SECOND_LIMIT = 180;
+
     public function __construct(
         private OwnerCommands $commands,
         private JournalCommands $journal,
@@ -110,6 +119,8 @@ final readonly class ScenarioPlayer
         private AgentStartOnMessage $starts,
         private ServerOrigin $origin,
         private PublishedReleases $releases,
+        private ProcessFeed $feed,
+        private RecordingDrafts $drafts,
     ) {}
 
     /**
@@ -265,14 +276,63 @@ final readonly class ScenarioPlayer
             return;
         }
 
-        if ($step->stepType === ScenarioStepType::UseTerminal) {
-            $askUser(new ScenarioPause((string) $step->text, null, 'Press Enter when the terminal is ready again'));
+        if ($step->stepType === ScenarioStepType::SendKeys) {
+            $this->sendKeys($run, $step);
 
             return;
         }
 
         $fact = $step->fact ?? throw ScenarioInvalid::at($run->scenario->name, $run->stepIndex(), 'waits for no fact');
         $this->waitFor($run, $fact, (int) $step->seconds);
+    }
+
+    private function sendKeys(ScenarioRun $run, ScenarioStep $step): void
+    {
+        $agent = $run->agentNamed((string) $step->agent);
+        $process = HostProcess::findNewestOfSession((string) $agent->current_session_id);
+
+        if ($process === null || $process->type !== HostProcessType::Terminal) {
+            throw ScenarioInvalid::at($run->scenario->name, $run->stepIndex(), "{$agent->name} has no terminal");
+        }
+
+        $frame = $this->feed->latestFrame($process->id);
+
+        if ($frame === null || $frame->rows === []) {
+            throw ScenarioInvalid::at($run->scenario->name, $run->stepIndex(), "{$agent->name} has no terminal frame");
+        }
+
+        $rows = new RowRange(0, count($frame->rows));
+        $sentAfter = RecordingDrafts::moment();
+        $instruction = $this->journal->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, new SendHostKeysCommand(
+            $process->id,
+            (string) $step->text,
+            $rows->guardOn($frame),
+            $process->input_generation,
+            HostInstructionSource::fromJournal(),
+        ));
+        $this->waitForKeys($run, $instruction, $step->from, $sentAfter);
+    }
+
+    private function waitForKeys(ScenarioRun $run, string $instruction, string|null $source, int $sentAfter): void
+    {
+        $looks = intdiv(self::TERMINAL_HOOK_SECOND_LIMIT * 1_000_000_000, self::LOOK_NANOSECONDS);
+
+        for ($look = 0; $look <= $looks; $look++) {
+            $keys = HostInstruction::query()->findOrFail($instruction);
+
+            if ($keys->status === HostInstructionStatus::Refused) {
+                throw ScenarioStuck::keysRefused($run, (string) $keys->refusal?->value);
+            }
+
+            if ($keys->status === HostInstructionStatus::Done
+                && ($source === null || $this->drafts->sawSessionStart($source, $sentAfter))) {
+                return;
+            }
+
+            $this->sleeper->sleep(self::LOOK_NANOSECONDS);
+        }
+
+        throw ScenarioStuck::keysNotObserved($run, $source);
     }
 
     private function connectProject(ScenarioRun $run): void

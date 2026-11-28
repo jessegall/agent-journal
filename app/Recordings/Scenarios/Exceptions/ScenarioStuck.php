@@ -30,6 +30,18 @@ final class ScenarioStuck extends RuntimeException
         return new self("The local installer could not connect the project for {$scenario}. It exited with code {$status}.");
     }
 
+    public static function keysRefused(ScenarioRun $run, string $reason): self
+    {
+        return new self("The host refused the terminal keys for {$run->scenario->name}: {$reason}.");
+    }
+
+    public static function keysNotObserved(ScenarioRun $run, string|null $source): self
+    {
+        $waiting = $source === null ? 'the key write answer' : "the key write answer and SessionStart from {$source}";
+
+        return new self("The scenario {$run->scenario->name} did not record {$waiting}.");
+    }
+
     public static function hostNotBack(string $scenario, int $seconds): self
     {
         return new self("The local host restarted for {$scenario} did not allow and check its images again within {$seconds} seconds.");

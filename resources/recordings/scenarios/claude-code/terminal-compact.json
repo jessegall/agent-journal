@@ -1,15 +1,12 @@
 {
-    "description": "The owner compacts a running Claude Code conversation through its terminal",
+    "description": "The journal compacts a running Claude Code conversation and records its next native session",
     "steps": [
         {"do": "restart-host"},
         {"do": "start-session", "agent": "Coder", "type": "terminal", "model": "claude-haiku-5-5", "effort": "low"},
         {"do": "wait-for", "fact": "turn-ended", "seconds": 180},
         {"do": "send-message", "agent": "Coder", "text": "List the current directory using ls."},
         {"do": "wait-for", "fact": "turn-ended", "seconds": 180},
-        {
-            "do": "use-terminal",
-            "text": "Open the Coder agent started by this scenario. Take control in the Journal terminal and enter /compact. Wait for compaction to finish and the prompt to return, then release control."
-        },
+        {"do": "send-keys", "agent": "Coder", "text": "/compact\r", "from": "compact"},
         {"do": "stop", "agent": "Coder"},
         {"do": "wait-for", "fact": "stopped", "seconds": 60},
         {"do": "wait-for", "fact": "instructions-answered", "seconds": 60}
