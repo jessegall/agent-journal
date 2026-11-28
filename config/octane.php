@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Support\Octane\GiveRequestContainerToEvents;
-use App\Support\Octane\GiveRequestItsTimeLimit;
+use App\Support\Octane\RequestEventContainer;
+use App\Support\Octane\RequestTimeLimit;
 use Laravel\Octane\Contracts\OperationTerminated;
 use Laravel\Octane\Events\OperationReleased;
 use Laravel\Octane\Events\RequestHandled;
@@ -79,8 +79,8 @@ return [
         RequestReceived::class => [
             ...Octane::prepareApplicationForNextOperation(),
             ...Octane::prepareApplicationForNextRequest(),
-            GiveRequestContainerToEvents::class,
-            GiveRequestItsTimeLimit::class,
+            RequestEventContainer::class,
+            RequestTimeLimit::class,
         ],
 
         RequestHandled::class => [
@@ -93,7 +93,7 @@ return [
 
         TaskReceived::class => [
             ...Octane::prepareApplicationForNextOperation(),
-            GiveRequestContainerToEvents::class,
+            RequestEventContainer::class,
             //
         ],
 
@@ -103,7 +103,7 @@ return [
 
         TickReceived::class => [
             ...Octane::prepareApplicationForNextOperation(),
-            GiveRequestContainerToEvents::class,
+            RequestEventContainer::class,
             //
         ],
 

@@ -9,7 +9,7 @@ use App\Bus\RequestKey;
 use App\Events\Web\InboxAccessEnded;
 use App\Events\Web\PageChanged;
 use App\Events\Web\ProtectedViewInvalidated;
-use App\Support\WindowResults;
+use App\Support\WindowResultBuilder;
 use App\Web\Creation\SurfaceDefinition;
 use App\Web\LiveProps;
 use App\Web\PageProps;
@@ -129,7 +129,7 @@ final class PagePropsTest extends TestCase
     public function test_a_surface_and_each_copy_have_their_own_receipt_key(): void
     {
         $keys = $this->app->make(RequestKey::class);
-        $results = $this->app->make(WindowResults::class);
+        $results = $this->app->make(WindowResultBuilder::class);
         $surface = new SurfaceDefinition(BooksPaneData::class, BooksWindowBuilder::class, 'BooksPane.vue');
         $keys->set('one-outer-visit');
 

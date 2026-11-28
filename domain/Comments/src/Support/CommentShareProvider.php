@@ -8,13 +8,13 @@ use App\Exceptions\RecordUnavailable;
 use App\Records\Contracts\ShareBudget;
 use App\Records\Contracts\ShareRecordProvider;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
+use App\Support\ShareContentRequest;
 use App\Support\SharedContent;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecords;
-use App\Support\ShareRelationRead;
+use App\Support\ShareRelationRequest;
 use App\Support\ShareSelection;
-use App\Support\ShareTargetRead;
+use App\Support\ShareTargetRequest;
 use App\Values\ProjectOwner;
 
 /**
@@ -48,12 +48,12 @@ final readonly class CommentShareProvider implements ShareRecordProvider
         throw RecordUnavailable::forActor($selection->root);
     }
 
-    public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
+    public function readTargets(ShareTargetRequest $read, ShareBudget $budget): ShareRecords
     {
         return new ShareRecords([], $read->targets, null);
     }
 
-    public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords
+    public function readRelated(ShareRelationRequest $read, ShareBudget $budget): ShareRecords
     {
         return new ShareRecords([], [], null);
     }
@@ -61,7 +61,7 @@ final readonly class CommentShareProvider implements ShareRecordProvider
     /**
      * @throws RecordUnavailable
      */
-    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
+    public function content(ShareContentRequest $read, ShareBudget $budget): SharedContent
     {
         throw RecordUnavailable::forActor($read->record);
     }

@@ -16,7 +16,7 @@ use App\Search\Values\SearchReader;
 use App\Search\Values\SearchResult;
 use App\Search\Values\TieredSearchSource;
 use App\Support\ActorReference;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 
 /**
@@ -52,9 +52,9 @@ final readonly class MessageSearch implements MessageSearchContract
     }
 
     /**
-     * @return ReadBuilder<Message>
+     * @return BoundedReadBuilder<Message>
      */
-    private static function admitted(AdmittedConstraints $constraints, SearchReader $reader): ReadBuilder
+    private static function admitted(AdmittedConstraints $constraints, SearchReader $reader): BoundedReadBuilder
     {
         $actor = ActorReference::fromStored($reader->actor->actorType(), $reader->actor->actorId());
 

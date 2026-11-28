@@ -30,9 +30,9 @@ final readonly class ActorDestinationProvider implements DestinationProvider
         $forwarding = Inbox::query()->forwarding()->attachedTo($identity)->oldestFirst()->first();
 
         if ($forwarding !== null) {
-            return new ResolvedDestinations($forwarding, $forwarding);
+            return RecipientDestinations::resolved($forwarding, $forwarding);
         }
 
-        return new DirectDestinations($assignee, $this->actors->get($identity), $this->inboxes);
+        return RecipientDestinations::direct($assignee, $this->actors->get($identity), $this->inboxes);
     }
 }

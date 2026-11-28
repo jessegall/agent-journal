@@ -23,7 +23,7 @@ final readonly class DirectFileAccess
         'app/Files/Enums/EntryType.php',
         'app/Providers/FilesServiceProvider.php',
         'app/Files/ClosedFolders.php',
-        'app/Support/CodeFiles.php',
+        'app/Support/ProjectCode.php',
         'app/Files/FileContents.php',
         'app/Files/Files.php',
         'app/Files/FileWriter.php',

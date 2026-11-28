@@ -30,9 +30,9 @@ use App\Sharing\Support\ShareReadPath;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
-use App\Support\ShareRelationRead;
-use App\Support\ShareTargetRead;
+use App\Support\ShareContentRequest;
+use App\Support\ShareRelationRequest;
+use App\Support\ShareTargetRequest;
 
 /**
  * Reads one shared page inside the bus transaction: the share row locked for reading, its authority and every step
@@ -126,7 +126,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
     ): SharedPage {
         $budget = ShareBudget::forRead($this->meter);
         $provider = $this->records->provider($target->type);
-        $content = $budget->run(fn () => $provider->content(new ShareContentRead($target), $budget));
+        $content = $budget->run(fn () => $provider->content(new ShareContentRequest($target), $budget));
         $linked = $this->linkedFrom($share, $target, $budget);
         [$children, $next] = $this->childrenOf($share, $target, $path, $command->cursor, $budget);
         $body = $command->isHead ? '' : $content->body;
@@ -160,7 +160,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
             $provider = $this->records->provider($type);
 
             $page = $budget->run(
-                fn () => $provider->readTargets(new ShareTargetRead([$target], $targets, null), $budget),
+                fn () => $provider->readTargets(new ShareTargetRequest([$target], $targets, null), $budget),
             );
 
             array_push($cards, ...array_map(SharedPageItem::fromCard(...), $page->eligible));
@@ -212,7 +212,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
 
         $page = $budget->run(
             fn () => $provider->readRelated(
-                new ShareRelationRead($target, $relation, self::CHILDREN_PAGE, $continuation),
+                new ShareRelationRequest($target, $relation, self::CHILDREN_PAGE, $continuation),
                 $budget,
             ),
         );

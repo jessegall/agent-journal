@@ -8,7 +8,7 @@ use App\Links\LinkRemoval;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
 use App\Models\Sessions\StopConditionResult;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -42,7 +42,7 @@ final readonly class PruneHookHistory
     }
 
     /**
-     * @param  callable(): ReadBuilder<covariant Model>  $prunable
+     * @param  callable(): BoundedReadBuilder<covariant Model>  $prunable
      */
     private function deleteInBatches(callable $prunable): int
     {

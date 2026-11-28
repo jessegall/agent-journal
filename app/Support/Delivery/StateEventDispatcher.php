@@ -204,7 +204,7 @@ final class StateEventDispatcher extends Dispatcher
             return null;
         }
 
-        $position = array_search(StateEventBridge::LISTENER, $listeners, true);
+        $position = array_search(StateEventDelivery::LISTENER, $listeners, true);
 
         if (is_int($position)) {
             return $position;

@@ -10,7 +10,7 @@ use App\Agents\Enums\SessionProcessStatus;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Sessions\Enums\StartRefusalReason;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -145,7 +145,7 @@ final class CheckSignInTest extends TestCase
             ->passBuildProbe('Boxed'));
         $opened = $this->journal->openedRuntimeOf('Boxed');
         $start = $this->journal->startOfSession($opened->sessionId);
-        $signedIn = ['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => MountRules::ACCOUNT_TARGET];
+        $signedIn = ['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => HelperMounts::ACCOUNT_TARGET];
 
         $this->journal->forgetSecurityProfiles()->asSystem(new CheckSignInCommand(
             $this->journal->hostProcessCalled('Boxed-sign-in')->id,

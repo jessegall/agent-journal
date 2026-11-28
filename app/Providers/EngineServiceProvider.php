@@ -25,7 +25,7 @@ use App\Reads\SelfMeasuredCommands;
 use App\Sessions\EnforceSessionStartLimitsOnTick;
 use App\Sessions\InterruptStuckTurnsOnTick;
 use App\Sessions\MarkSilentSessionsOnTick;
-use App\Support\CertifyPassedStopsOnTick;
+use App\Support\PassedStopCertifier;
 use App\Terminals\EndTerminalViewsOnTick;
 use App\Time\Contracts\MonotonicClock as MonotonicClockContract;
 use App\Time\Contracts\Sleeper as SleeperContract;
@@ -76,7 +76,7 @@ final class EngineServiceProvider extends ServiceProvider
         EngineListenerSet $listeners,
     ): void {
         $listeners->add(MarkSilentSessionsOnTick::class);
-        $listeners->add(CertifyPassedStopsOnTick::class);
+        $listeners->add(PassedStopCertifier::class);
         $listeners->add(EndTerminalViewsOnTick::class);
         $listeners->add(ExpireNavigationRequestsOnTick::class);
         $listeners->add(InterruptStuckTurnsOnTick::class);

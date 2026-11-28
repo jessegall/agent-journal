@@ -30,8 +30,8 @@ use App\Sessions\Contracts\AgentDirectory as AgentDirectoryContract;
 use App\Sessions\SessionStartOutcome;
 use App\Sessions\StartRemedyWords;
 use App\Support\AgentFacts;
-use App\Support\AgentOption;
-use App\Support\AgentStatusRules;
+use App\Support\HomeAgent;
+use App\Support\AgentStatusDecision;
 use App\Time\Contracts\ServerClock;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -77,7 +77,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
         return $this->optionsOf($found->sortBy(fn (Agent $agent) => $positions[$agent->id])->values());
     }
 
-    public function visibleAgent(string $agentId): AgentOption
+    public function visibleAgent(string $agentId): HomeAgent
     {
         $found = $this->visibleAmong([$agentId]);
 
@@ -102,7 +102,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
      * Each agent's option, its facts read for every one of them at once.
      *
      * @param  EloquentCollection<int, Agent>  $agents
-     * @return list<AgentOption>
+     * @return list<HomeAgent>
      */
     private function optionsOf(EloquentCollection $agents): array
     {
@@ -167,7 +167,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             $readiness,
             $canStop,
             $imageWaits,
-        ): AgentOption {
+        ): HomeAgent {
             $session = $sessions->get($agent->id);
             $runtime = $runtimes->get((string) $session?->id);
 
@@ -239,7 +239,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
         string|null $startRefusal,
         bool $canStop,
         CarbonImmutable $now,
-    ): AgentOption {
+    ): HomeAgent {
         $session = $facts->session;
         $runtime = $facts->runtime;
         $switch = $facts->switch;
@@ -252,7 +252,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             ),
         )->all());
 
-        return new AgentOption(
+        return new HomeAgent(
             $agent->id,
             $agent->name,
             $agent->profile_key,
@@ -274,7 +274,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             $resumable,
             $startRefusal,
             $facts->startOutcome,
-            AgentStatusRules::of(
+            AgentStatusDecision::of(
                 $facts->evidence($agent->isRetired(), $canStop, $now),
                 $this->remedyWords,
             ),

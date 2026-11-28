@@ -16,7 +16,7 @@ use App\Navigation\Contracts\SlotSections;
 use App\Reads\PageFormRequests;
 use App\Sessions\Contracts\AgentDirectory;
 use App\Support\ActorReference;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
 use Domain\Chat\Data\AgentPageData;
@@ -72,7 +72,7 @@ final readonly class ChatReader
 
         $page = $this->listing->firstPageWith([...$this->idOf($chosen), ...$this->idOf($read)]);
         $fields = $this->fillShell($fields, $page, $main);
-        $fields->selectedAgentId($chosen->map(fn (AgentOption $agent) => $agent->agentId)->getOrElse(Optional::create()));
+        $fields->selectedAgentId($chosen->map(fn (HomeAgent $agent) => $agent->agentId)->getOrElse(Optional::create()));
 
         if ($read->isDefined()) {
             $conversation = $this->conversationFor($input, $read->get());
@@ -121,12 +121,12 @@ final readonly class ChatReader
         return NoAccountsYet::addingWith($wizard)->page();
     }
 
-    /** @param Option<AgentOption> $agent
+    /** @param Option<HomeAgent> $agent
      * @return list<string>
      */
     private function idOf(Option $agent): array
     {
-        return $agent->map(fn (AgentOption $shown) => [$shown->agentId])->getOrElse([]);
+        return $agent->map(fn (HomeAgent $shown) => [$shown->agentId])->getOrElse([]);
     }
 
     /**
@@ -134,7 +134,7 @@ final readonly class ChatReader
      *
      * @throws PrivateRecordMissing
      */
-    private function visibleOrPrivate(string $agentId): AgentOption
+    private function visibleOrPrivate(string $agentId): HomeAgent
     {
         try {
             return $this->agents->visibleAgent($agentId);
@@ -147,7 +147,7 @@ final readonly class ChatReader
      * The conversation with the chosen agent, or, when the reader's own inbox is missing, the setup notice that
      * replaces it: ready data the project administrator must act on, never a failure to reload.
      */
-    private function conversationFor(ConversationRequest $input, AgentOption $agent): ConversationData|string
+    private function conversationFor(ConversationRequest $input, HomeAgent $agent): ConversationData|string
     {
         try {
             return $this->conversationWith($input, $agent);
@@ -156,7 +156,7 @@ final readonly class ChatReader
         }
     }
 
-    private function conversationWith(ConversationRequest $input, AgentOption $agent): ConversationData
+    private function conversationWith(ConversationRequest $input, HomeAgent $agent): ConversationData
     {
         $inboxId = $this->chats->pairWith(ActorReference::ofClass(Agent::class, $agent->agentId));
 

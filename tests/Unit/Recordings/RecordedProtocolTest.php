@@ -19,7 +19,7 @@ use App\Recordings\RecordedProtocol;
 use App\Recordings\RecordingManifest;
 use App\Recordings\RecordingOpening;
 use App\Recordings\ScenarioRecording;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\ExecutionBudgets;
 use App\Values\HostProcessPlan;
 use Illuminate\Http\Request;
@@ -160,9 +160,9 @@ final class RecordedProtocolTest extends TestCase
         $manifest = ContainerManifest::make(
             TestHost::IMAGE,
             'journal-net-test',
-            [MountRules::local()->workspaceMount(base_path('storage/framework'), WorkspaceUse::Shared, 'test')],
+            [HelperMounts::local()->workspaceMount(base_path('storage/framework'), WorkspaceUse::Shared, 'test')],
             ExecutionBudgets::defaults(),
-            MountRules::local(),
+            HelperMounts::local(),
             SecurityOptions::none(),
             true,
         );

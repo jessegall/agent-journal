@@ -45,7 +45,7 @@ use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
 use App\Sessions\InitialWakeSettlement;
-use App\Support\RuntimeStatuses;
+use App\Support\RuntimeStatusMapping;
 use App\Values\ClaimedRequest;
 use App\Values\DriverReceipt;
 use App\Values\DriverRequestPayload;
@@ -679,7 +679,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
      */
     protected function status(): Attribute
     {
-        return Accessor::get(fn () => RuntimeStatuses::ofRequest($this));
+        return Accessor::get(fn () => RuntimeStatusMapping::ofRequest($this));
     }
 
     // ----------[ Relations ]----------

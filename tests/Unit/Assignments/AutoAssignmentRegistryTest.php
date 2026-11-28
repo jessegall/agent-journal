@@ -12,7 +12,7 @@ use App\Assignments\PoolDefinition;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\AutoAssignmentDeclarationRefused;
 use App\Support\AssigneeIdentity;
-use App\Support\Bootstrappers\RegisterAssignables;
+use App\Support\Bootstrappers\AssignablesBootstrapper;
 use App\Support\Domain;
 use App\Support\DomainEntry;
 use App\Support\Registry\AssignmentRegistry;
@@ -258,7 +258,7 @@ final class AutoAssignmentRegistryTest extends TestCase
     private function boot(string ...$domains): void
     {
         foreach ($domains as $domain) {
-            new RegisterAssignables($this->registry)(DomainEntry::fromClass($domain));
+            new AssignablesBootstrapper($this->registry)(DomainEntry::fromClass($domain));
         }
     }
 

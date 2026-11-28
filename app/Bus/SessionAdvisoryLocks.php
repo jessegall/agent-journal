@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Bus;
 
 use App\Access\Exceptions\StackLockTimedOut;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
 
@@ -22,7 +22,7 @@ final readonly class SessionAdvisoryLocks
     /**
      * @throws StackLockTimedOut
      */
-    public function lock(int $namespace, string $key, OperationDeadline $deadline): void
+    public function lock(int $namespace, string $key, StackOperationDeadline $deadline): void
     {
         $connection = $this->databases->connection();
         $connection->statement("SET lock_timeout = '{$deadline->lockMilliseconds()}ms'");

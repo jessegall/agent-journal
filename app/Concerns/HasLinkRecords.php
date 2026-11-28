@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Concerns;
 
 use App\Contracts\Domains\DomainBootstrapper;
-use App\Support\Bootstrappers\RegisterLinkRecords;
+use App\Support\Bootstrappers\LinkRecordsBootstrapper;
 
 /**
  * Boots the record providers a domain declares through LinkRecordProvider.
@@ -17,6 +17,6 @@ trait HasLinkRecords
      */
     protected function bootstrappersHasLinkRecords(): array
     {
-        return [RegisterLinkRecords::class];
+        return [LinkRecordsBootstrapper::class];
     }
 }

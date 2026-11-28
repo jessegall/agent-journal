@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Assignments\Data;
 
-use App\Support\AutoAssignmentPage;
+use App\Support\AutoAssignmentFact;
+use App\Support\CursorPage;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
@@ -22,8 +23,9 @@ final class AutoAssignmentPageData extends Data
         public readonly string|null $nextAfterId = null,
     ) {}
 
-    public static function of(AutoAssignmentPage $page): self
+    /** @param CursorPage<AutoAssignmentFact> $page */
+    public static function of(CursorPage $page): self
     {
-        return self::from(['facts' => $page->facts, 'nextAfterId' => $page->nextAfterId]);
+        return self::from(['facts' => $page->items, 'nextAfterId' => $page->nextAfterId]);
     }
 }

@@ -10,7 +10,7 @@ use App\Assignments\Contracts\AssigneeProvider;
 use App\Exceptions\AssigneeUnavailable;
 use App\Models\Inboxes\Inbox;
 use App\Support\AssigneeIdentity;
-use App\Support\AssigneeList;
+use App\Support\CursorPage;
 use App\Support\AssigneeName;
 use App\Support\IdListPage;
 
@@ -59,7 +59,8 @@ final readonly class InboxAssignees implements AssigneeProvider
             ->all());
     }
 
-    public function eligible(IdListPage $page): AssigneeList
+    /** @return CursorPage<AssigneeName> */
+    public function eligible(IdListPage $page): CursorPage
     {
         $this->actors->actor();
 
@@ -71,7 +72,7 @@ final readonly class InboxAssignees implements AssigneeProvider
 
         $shown = $inboxes->take($page->limit);
 
-        return new AssigneeList(
+        return new CursorPage(
             array_values($shown->map(fn (Inbox $inbox) => self::nameOf($inbox))->all()),
             $inboxes->count() > $page->limit ? $shown->last()?->id : null,
         );

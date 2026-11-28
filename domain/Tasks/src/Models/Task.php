@@ -25,7 +25,7 @@ use App\Records\Contracts\ReadableModel;
 use App\Stacks\Contracts\Work\Focusable;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
-use App\Support\ActorLabelSet;
+use App\Support\ActorNames;
 use App\Support\ActorReference;
 use App\Support\AssignmentHolder;
 use App\Support\OrderedRecordIds;
@@ -286,7 +286,7 @@ final class Task extends JournalModel implements
      */
     public function executionBy(
         ActorReference $runner,
-        ActorLabelSet $labels,
+        ActorNames $labels,
         bool $isClaimed,
         Option $focuser,
     ): TaskExecution {

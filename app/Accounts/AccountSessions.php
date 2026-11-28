@@ -6,7 +6,7 @@ namespace App\Accounts;
 
 use App\Actors\Contracts\IdentityLinks;
 use App\Models\Agents\AgentSession;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 
 /**
@@ -17,9 +17,9 @@ final readonly class AccountSessions
     public function __construct(private IdentityLinks $links) {}
 
     /**
-     * @return ReadBuilder<AgentSession>
+     * @return BoundedReadBuilder<AgentSession>
      */
-    public function all(RecordIdentity $account): ReadBuilder
+    public function all(RecordIdentity $account): BoundedReadBuilder
     {
         return $this->links->among(AgentSession::query(), $account);
     }

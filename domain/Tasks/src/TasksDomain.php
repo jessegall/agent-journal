@@ -36,7 +36,7 @@ use App\Records\Contracts\StateProvider;
 use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use Domain\Comments\CommentsDomain;
 use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
@@ -350,14 +350,14 @@ final class TasksDomain extends Domain implements
     public function searchables(): array
     {
         return [
-            Searchable::make(
+            SearchSource::make(
                 'task',
                 'Tasks',
                 TaskSearchAccess::class,
                 TaskSearchProvider::class,
                 TaskReferenceRecognizer::class,
             ),
-            Searchable::make('log', 'Task log lines', TaskLogSearchAccess::class, TaskLogSearchProvider::class),
+            SearchSource::make('log', 'Task log lines', TaskLogSearchAccess::class, TaskLogSearchProvider::class),
         ];
     }
 

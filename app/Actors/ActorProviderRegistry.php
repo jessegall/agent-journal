@@ -22,7 +22,7 @@ use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Contracts\Work\ActorStackSessions;
 use App\Exceptions\ActorUnavailable;
 use App\Stacks\Contracts\Work\ActorStackSessionProvider;
-use App\Support\ActorLabelSet;
+use App\Support\ActorNames;
 use App\Support\ActorReference;
 use App\Support\Reflector;
 use App\Support\Registry;
@@ -126,7 +126,7 @@ final class ActorProviderRegistry implements
      *
      * @param  list<ActorReference>  $actors
      */
-    public function labelsFor(array $actors): ActorLabelSet
+    public function labelsFor(array $actors): ActorNames
     {
         $idsByType = [];
 
@@ -141,7 +141,7 @@ final class ActorProviderRegistry implements
             $namesByType[$type] = $provider->namesOf(array_values($ids));
         }
 
-        return new ActorLabelSet($namesByType);
+        return new ActorNames($namesByType);
     }
 
     /**

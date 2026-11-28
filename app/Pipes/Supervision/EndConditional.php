@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Bus\Contracts\Pipe;
-use App\Support\Execution\ConditionalSteps;
+use App\Support\Execution\PendingSteps;
 use App\Support\Execution\StepOutcome;
 
 /**
@@ -13,7 +13,7 @@ use App\Support\Execution\StepOutcome;
  */
 final readonly class EndConditional implements Pipe
 {
-    public function handle(ConditionalSteps $steps): StepOutcome
+    public function handle(PendingSteps $steps): StepOutcome
     {
         return $steps->outcome;
     }

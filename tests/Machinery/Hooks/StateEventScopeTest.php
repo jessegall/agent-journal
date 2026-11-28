@@ -10,8 +10,8 @@ use App\Access\Values\FrameGrant;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\SystemActor;
 use App\Engine\EngineAccess;
-use App\Support\Delivery\StateEventBridge;
-use App\Support\OperationDeadline;
+use App\Support\Delivery\StateEventDelivery;
+use App\Support\StackOperationDeadline;
 use App\Values\TrustedEntryAuthority;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Events\Dispatcher;
@@ -45,7 +45,7 @@ final class StateEventScopeTest extends TestCase
         $database = $this->app->make(ConnectionInterface::class);
         $event = new AfterCommitStateEvent($surrounding);
         $seen = [];
-        $dispatcher->listen(AfterCommitStateEvent::class, StateEventBridge::LISTENER);
+        $dispatcher->listen(AfterCommitStateEvent::class, StateEventDelivery::LISTENER);
         $dispatcher->listen(AfterCommitStateEvent::class, function (AfterCommitStateEvent $received) use (
             $event,
             $scope,
@@ -86,7 +86,7 @@ final class StateEventScopeTest extends TestCase
         $scope = $this->app->make(StateEventScope::class);
         $database = $this->app->make(ConnectionInterface::class);
         $seen = [];
-        $dispatcher->listen(AfterCommitStateEvent::class, StateEventBridge::LISTENER);
+        $dispatcher->listen(AfterCommitStateEvent::class, StateEventDelivery::LISTENER);
         $dispatcher->listen(AfterCommitStateEvent::class, function () use ($scope, &$seen): void {
             $seen[] = $scope->currentDispatch()->get();
         });
@@ -112,7 +112,7 @@ final class StateEventScopeTest extends TestCase
         $scope = $this->app->make(StateEventScope::class);
         $dispatcher = $this->app->make(Dispatcher::class);
         $seen = [];
-        $dispatcher->listen(NoteWritten::class, StateEventBridge::LISTENER);
+        $dispatcher->listen(NoteWritten::class, StateEventDelivery::LISTENER);
         $dispatcher->listen(NoteWritten::class, function () use ($scope, &$seen): void {
             $seen[] = $scope->currentDispatch()->get();
         });
@@ -120,9 +120,9 @@ final class StateEventScopeTest extends TestCase
         $dispatch = fn () => $dispatcher->dispatch(new NoteWritten());
 
         $access->grantFrame($target, 'frame-id');
-        $admission->admitCaller(new OperationDeadline(), $dispatch);
+        $admission->admitCaller(new StackOperationDeadline(), $dispatch);
         $access->grantMaintenance('test');
-        $admission->admitCaller(new OperationDeadline(), $dispatch);
+        $admission->admitCaller(new StackOperationDeadline(), $dispatch);
 
         $this->assertCount(2, $seen);
         $this->assertSame([$target], $seen[0]->audience->get()->targets);

@@ -10,7 +10,7 @@ use App\Pipes\Supervision\EndConditional;
 use App\Pipes\Supervision\RunFirstConditional;
 use App\Pipes\Supervision\RunNextConditional;
 use App\Pipes\Supervision\SkipNextConditional;
-use App\Support\Execution\ConditionalSteps;
+use App\Support\Execution\PendingSteps;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
 
@@ -32,11 +32,11 @@ final readonly class RunConditionalPipeline implements PipelineDefinition
             RunFirstConditional::class,
             Step::repeated(
                 Step::conditional(
-                    fn (ConditionalSteps $steps) => $steps->doesNextStepRun(),
+                    fn (PendingSteps $steps) => $steps->doesNextStepRun(),
                     then: RunNextConditional::class,
                     else: SkipNextConditional::class,
                 ),
-                while: fn (ConditionalSteps $steps) => $steps->hasNext(),
+                while: fn (PendingSteps $steps) => $steps->hasNext(),
             ),
             EndConditional::class,
         ];

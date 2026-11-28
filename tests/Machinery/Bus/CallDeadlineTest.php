@@ -8,7 +8,7 @@ use App\Api\SignedCall;
 use App\Http\Middleware\Mcp\SetCallDeadline;
 use App\Sessions\Enums\TransportProfileType;
 use App\Support\AgentContext;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Support\StackTransaction;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -23,7 +23,7 @@ use Tests\TestCase;
  * An MCP call's deadline is the earlier of 15 seconds from entry and 19 seconds after its signed issue time; a call
  * past it is refused before anything runs, and the transaction's lock wait comes from what is left.
  */
-#[TestsMachinery(OperationDeadline::class)]
+#[TestsMachinery(StackOperationDeadline::class)]
 final class CallDeadlineTest extends TestCase
 {
     use CommitsHookRows;
@@ -35,7 +35,7 @@ final class CallDeadlineTest extends TestCase
         $this->signedSecondsAgo(18);
 
         $milliseconds = $this->throughMiddleware(
-            fn (): int => $this->app->make(OperationDeadline::class)->milliseconds,
+            fn (): int => $this->app->make(StackOperationDeadline::class)->milliseconds,
         );
 
         $this->assertGreaterThan(800, $milliseconds);
@@ -44,14 +44,14 @@ final class CallDeadlineTest extends TestCase
 
     public function test_a_fresh_call_gets_15_seconds_and_the_default_comes_back_after_it(): void
     {
-        $default = $this->app->make(OperationDeadline::class);
+        $default = $this->app->make(StackOperationDeadline::class);
         $this->signedSecondsAgo(0);
 
         $this->assertSame(
             15_000,
-            $this->throughMiddleware(fn (): int => $this->app->make(OperationDeadline::class)->milliseconds),
+            $this->throughMiddleware(fn (): int => $this->app->make(StackOperationDeadline::class)->milliseconds),
         );
-        $this->assertSame($default, $this->app->make(OperationDeadline::class));
+        $this->assertSame($default, $this->app->make(StackOperationDeadline::class));
     }
 
     public function test_the_lock_wait_inside_its_transaction_comes_from_the_remaining_time(): void
@@ -64,7 +64,7 @@ final class CallDeadlineTest extends TestCase
                     ConnectionInterface::class,
                 )->scalar("SELECT current_setting('lock_timeout')"),
             ),
-            $this->app->make(OperationDeadline::class),
+            $this->app->make(StackOperationDeadline::class),
         ]);
 
         $this->assertSame("{$deadline->lockMilliseconds()}ms", $lockTimeout);

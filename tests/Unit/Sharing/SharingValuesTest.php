@@ -21,13 +21,13 @@ use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareSelectedTarget;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
+use App\Support\ShareContentRequest;
 use App\Support\SharedContent;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecords;
-use App\Support\ShareRelationRead;
+use App\Support\ShareRelationRequest;
 use App\Support\ShareSelection;
-use App\Support\ShareTargetRead;
+use App\Support\ShareTargetRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -100,9 +100,9 @@ final class SharingValuesTest extends TestCase
             ShareCandidates::class,
             ShareLinkedCandidate::class,
             ShareSelection::class,
-            ShareTargetRead::class,
-            ShareRelationRead::class,
-            ShareContentRead::class,
+            ShareTargetRequest::class,
+            ShareRelationRequest::class,
+            ShareContentRequest::class,
             SharedContent::class,
             GatewayConfiguration::class,
             GatewayOperation::class,

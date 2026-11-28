@@ -20,6 +20,6 @@ final readonly class InboxDestinationProvider implements DestinationProvider
             AssigneeUnavailable::throwing()->forActor($requested),
         );
 
-        return new ResolvedDestinations($inbox, $inbox);
+        return RecipientDestinations::resolved($inbox, $inbox);
     }
 }

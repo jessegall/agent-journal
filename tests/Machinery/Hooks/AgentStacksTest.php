@@ -29,7 +29,7 @@ use App\Stacks\StackRestorer;
 use App\Stacks\StateLoading\RegisteredStateType;
 use App\Stacks\StateTypes;
 use App\Support\AgentContext;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Support\StackTransaction;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
@@ -359,7 +359,7 @@ final class AgentStacksTest extends TestCase
         $other->table('agent_stacks')->lockForUpdate()->get();
 
         try {
-            $this->transaction()->runWithin(new OperationDeadline(300), function (): void {
+            $this->transaction()->runWithin(new StackOperationDeadline(300), function (): void {
                 DomainWrite::query()->insert(['name' => 'waiting write']);
                 $this->stacks()->push($this->target, $this->task(42));
             });
@@ -378,13 +378,13 @@ final class AgentStacksTest extends TestCase
     {
         $settings = $this->transaction()->run(function (): array {
             $outer = $this->timeouts();
-            $inner = $this->transaction()->runWithin(new OperationDeadline(100), fn () => $this->timeouts());
+            $inner = $this->transaction()->runWithin(new StackOperationDeadline(100), fn () => $this->timeouts());
 
             return [$outer, $inner];
         });
 
         $this->assertSame([['4s', '5s'], ['4s', '5s']], $settings);
-        $this->assertSame(5000, $this->app->make(OperationDeadline::class)->milliseconds);
+        $this->assertSame(5000, $this->app->make(StackOperationDeadline::class)->milliseconds);
     }
 
     public function test_a_caller_transaction_without_limits_runs_the_work_in_a_unit_of_its_own_with_the_limits_set(): void

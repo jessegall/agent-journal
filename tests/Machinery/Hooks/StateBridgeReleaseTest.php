@@ -7,7 +7,7 @@ namespace Tests\Machinery\Hooks;
 use App\Access\StateEvents\StateEventScope;
 use App\Bus\EventUnitLifecycle;
 use App\Bus\ListenerRegistry;
-use App\Support\Delivery\StateEventBridge;
+use App\Support\Delivery\StateEventDelivery;
 use App\Support\StackTransaction;
 use App\Values\StackTarget;
 use Illuminate\Database\ConnectionInterface;
@@ -25,7 +25,7 @@ use Tests\TestCase;
  * A bridged fact raised inside a stack sibling's admission keeps that sibling's audience until it is released after
  * the single commit; a fact raised with no admission has none, and a rollback reaches no listener.
  */
-#[TestsMachinery(StateEventBridge::class)]
+#[TestsMachinery(StateEventDelivery::class)]
 final class StateBridgeReleaseTest extends TestCase
 {
     use CommitsHookRows;
@@ -52,7 +52,7 @@ final class StateBridgeReleaseTest extends TestCase
         $this->app->instance(ListenerRegistry::class, new ListenerRegistry());
         $scope = $this->app->make(StateEventScope::class);
         $dispatcher = $this->app->make(Dispatcher::class);
-        $dispatcher->listen(RowRenamed::class, StateEventBridge::LISTENER);
+        $dispatcher->listen(RowRenamed::class, StateEventDelivery::LISTENER);
         $dispatcher->listen(RowRenamed::class, function (RowRenamed $renamed) use ($scope): void {
             $audience = $scope->currentDispatch()->get()->audience;
             $target = $audience->isEmpty() ? 'no audience' : $audience->get()->targets[0]->sessionId;

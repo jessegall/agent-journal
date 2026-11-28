@@ -38,11 +38,11 @@ Each program declares the methods it has; the form offers only those (`SignInPro
 | Codex | OAuth (`CodexSignIn`) | approves a short device code on OpenAI's page | runs Codex's device sign-in and reads the account back in the same app-server session |
 | Codex | API key (`CodexKeySignIn`) | pastes a key from the OpenAI platform | gives it to `codex login --with-api-key` on its standard input, which it then closes |
 
-For each sign-in the runner (`PrivateSignInProcesses`):
+For each sign-in the runner (`SignInRunner`):
 
 1. ends what still runs on the account's folder first (the drain), and fails the sign-in when that cannot be done;
 2. makes a new staging folder under `ACCOUNTS_ROOT` with mode 0700, and files 0600;
-3. starts the method's process in a `PrivateAccountProcess`: exact arguments and environment, output read into a
+3. starts the method's process in a `SignInProcess`: exact arguments and environment, output read into a
    small private buffer that is never logged, recorded or sent;
 4. reports `waiting`; the challenge the owner sees (an address, a device code) reaches the form through its own
    no-store endpoint, never through these reports;

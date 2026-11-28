@@ -10,7 +10,7 @@ use App\Attributes\Commands\Authorize;
 use App\Models\Agents\AgentStartChoice;
 use App\Policies\ProfileAdministrationPolicy;
 use App\Sessions\StartReceipt;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use App\Support\Command;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
@@ -69,7 +69,7 @@ final readonly class StartProfileMainCommand extends Command
      * kept for its next start, else on its latest conversation's driver or the profile's default; its latest
      * conversation is resumed when it ran on that driver, else a new one begins.
      */
-    public static function onMessage(string $requestId, AgentOption $agent, AgentStartChoice|null $choice): self
+    public static function onMessage(string $requestId, HomeAgent $agent, AgentStartChoice|null $choice): self
     {
         $latest = $agent->conversations[0] ?? null;
         $driver = $choice->driver ?? $latest?->driver;

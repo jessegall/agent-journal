@@ -8,7 +8,7 @@ use App\Exceptions\PlaceUnavailable;
 use App\Files\Contracts\Files as FilesContract;
 use App\Files\Enums\Place;
 use App\Files\Files;
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 use App\Values\FilePath;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\TestCase;
@@ -33,7 +33,7 @@ final class FilesServiceTest extends TestCase
     {
         $pattern = FilePath::in(Place::Project, 'app/Contracts/*.php');
 
-        $this->assertSame(CodeFiles::ofProcess()->folder($pattern), $this->app->make(FilesContract::class)->codeFolder($pattern));
+        $this->assertSame(ProjectCode::ofProcess()->folder($pattern), $this->app->make(FilesContract::class)->codeFolder($pattern));
     }
 
     public function test_a_test_points_a_place_at_its_own_folder_and_reads_there(): void

@@ -17,10 +17,10 @@ use App\Support\ActorReference;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
-use App\Support\AutoAssignmentPage;
+use App\Support\CursorPage;
 use App\Support\IdListPage;
 use App\Support\PoolReference;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -149,9 +149,11 @@ final class AutoAssignment extends JournalModel implements EventSource, Readable
     // ----------[ Internals ]----------
 
     /**
-     * @param  ReadBuilder<self>  $query
+     * @param  BoundedReadBuilder<self>  $query
+     *
+     * @return CursorPage<AutoAssignmentFact>
      */
-    private static function pageOf(ReadBuilder $query, IdListPage $page): AutoAssignmentPage
+    private static function pageOf(BoundedReadBuilder $query, IdListPage $page): CursorPage
     {
         $rows = $query
             ->pageAfter($page->afterId)
@@ -162,7 +164,7 @@ final class AutoAssignment extends JournalModel implements EventSource, Readable
         $facts = array_values($shown->map(fn (self $row) => $row->toFact())->all());
         $hasMore = $rows->count() > $page->limit;
 
-        return new AutoAssignmentPage($facts, $hasMore ? $shown->last()?->id : null);
+        return new CursorPage($facts, $hasMore ? $shown->last()?->id : null);
     }
 
     // ----------[ Queries ]----------
@@ -181,16 +183,20 @@ final class AutoAssignment extends JournalModel implements EventSource, Readable
 
     /**
      * One page of the auto-assignments that are on, by id, for the engine to consider.
+     *
+     * @return CursorPage<AutoAssignmentFact>
      */
-    public static function resolveEnabledPage(IdListPage $page): AutoAssignmentPage
+    public static function resolveEnabledPage(IdListPage $page): CursorPage
     {
         return self::pageOf(self::query()->enabled(), $page);
     }
 
     /**
      * One page of the actor's auto-assignments, on or off, by id.
+     *
+     * @return CursorPage<AutoAssignmentFact>
      */
-    public static function resolvePageFor(ActorReference $actor, IdListPage $page): AutoAssignmentPage
+    public static function resolvePageFor(ActorReference $actor, IdListPage $page): CursorPage
     {
         return self::pageOf(self::query()->ofActor($actor), $page);
     }

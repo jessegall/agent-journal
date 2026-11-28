@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Data\Pages\RecordCard;
 use App\Links\Concerns\ProvidesModelRecords;
 use App\Records\Contracts\RecordProvider;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Support\RecordChanges;
@@ -39,7 +39,7 @@ final readonly class DocumentLinkRecords implements RecordProvider
         return Document::linkType();
     }
 
-    protected function readableRecords(): ReadBuilder
+    protected function readableRecords(): BoundedReadBuilder
     {
         $this->actors->actor();
 

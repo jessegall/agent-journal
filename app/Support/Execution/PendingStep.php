@@ -69,9 +69,9 @@ final readonly class PendingStep
         );
     }
 
-    public function inOrder(): StepsInOrder
+    public function inOrder(): PendingSteps
     {
-        return new StepsInOrder(
+        return PendingSteps::inOrder(
             $this->step->children,
             new StepOutcome(ExitStatus::Success->status(), $this->context),
             $this->state,
@@ -81,13 +81,13 @@ final readonly class PendingStep
     /**
      * The steps after the first of an && or || list, with the first's outcome to decide on.
      */
-    public function conditionalAfter(StepOutcome $first): ConditionalSteps
+    public function conditionalAfter(StepOutcome $first): PendingSteps
     {
-        return new ConditionalSteps(
+        return PendingSteps::conditional(
             array_slice($this->step->children, 1),
             $first,
-            $this->step->type === StepType::AndList,
             $this->state,
+            $this->step->type === StepType::AndList,
         );
     }
 

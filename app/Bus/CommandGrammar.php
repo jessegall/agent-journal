@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Bus;
 
 use App\Reflection\ReflectedProperty;
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
@@ -196,7 +196,7 @@ final readonly class CommandGrammar
      */
     private static function importsOf(string $file): array
     {
-        $code = CodeFiles::ofProcess();
+        $code = ProjectCode::ofProcess();
 
         preg_match_all(
             '/^use\s+([A-Za-z0-9_\\\\]+)(?:\s+as\s+([A-Za-z0-9_]+))?;/m',

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Search\Values;
 
 use App\Search\Enums\ScoreTier;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 final readonly class TieredSearchSource
 {
     /**
-     * @param  Closure(): ReadBuilder<TModel>  $admitted
+     * @param  Closure(): BoundedReadBuilder<TModel>  $admitted
      * @param  list<string>  $columns
      * @param  Closure(TModel): string  $titleOf
      * @param  Closure(TModel, ScoreTier): SearchResult  $hitOf
@@ -40,9 +40,9 @@ final readonly class TieredSearchSource
     ) {}
 
     /**
-     * @return ReadBuilder<TModel>
+     * @return BoundedReadBuilder<TModel>
      */
-    public function rows(): ReadBuilder
+    public function rows(): BoundedReadBuilder
     {
         return ($this->admitted)();
     }

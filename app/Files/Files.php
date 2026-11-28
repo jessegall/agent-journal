@@ -17,7 +17,7 @@ use App\Files\Values\Fingerprint;
 use App\Files\Values\FolderEntries;
 use App\Navigation\Exceptions\FileOutsidePlaces;
 use App\Navigation\Exceptions\LinkLeavesPlace;
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 use App\Values\FilePath;
 use Closure;
 use JsonException;
@@ -38,7 +38,7 @@ final class Files implements FilesContract
         private readonly PathConfinement $confinement,
         private readonly FileContents $contents,
         private readonly FolderWalker $walker,
-        private readonly CodeFiles $code,
+        private readonly ProjectCode $code,
         private readonly FileWriter $writer,
     ) {}
 

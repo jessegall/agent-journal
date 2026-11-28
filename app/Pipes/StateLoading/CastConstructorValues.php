@@ -10,7 +10,6 @@ use App\Stacks\StateLoading\StateValues;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
 use App\Support\Reflector;
-use App\Support\StateLoading\SavedState;
 use App\Support\StateLoading\StateArguments;
 
 /**
@@ -22,26 +21,29 @@ final readonly class CastConstructorValues implements Pipe
     /**
      * @throws StateValuesRefused
      */
-    public function handle(SavedState $saved): StateArguments
+    public function handle(StateArguments $arguments): StateArguments
     {
-        $arguments = new StateArguments($saved->type, $saved->values);
         $given = [];
 
-        foreach ($this->parametersOf($saved) as $parameter) {
+        foreach ($this->parametersOf($arguments) as $parameter) {
             $declared = $parameter->type();
 
             if (! $declared->isDefined() || ! StateValues::isData($declared->get())) {
                 continue;
             }
 
-            if (array_key_exists($parameter->name(), $saved->values)) {
+            if (array_key_exists($parameter->name(), $arguments->values)) {
                 $given[$parameter->name()] = $arguments->castValue($parameter->name(), $declared->get());
 
                 continue;
             }
 
             if (! $parameter->hasDefaultValue()) {
-                throw StateValuesRefused::missing($saved->type->key, $saved->type->schemaVersion, $parameter->name());
+                throw StateValuesRefused::missing(
+                    $arguments->type->key,
+                    $arguments->type->schemaVersion,
+                    $parameter->name(),
+                );
             }
         }
 
@@ -51,9 +53,9 @@ final readonly class CastConstructorValues implements Pipe
     /**
      * @return list<ReflectedParameter>
      */
-    private function parametersOf(SavedState $saved): array
+    private function parametersOf(StateArguments $arguments): array
     {
-        return Reflector::of($saved->type->stateClass)->constructor()->map(
+        return Reflector::of($arguments->type->stateClass)->constructor()->map(
             fn (ReflectedMethod $constructor) => $constructor->parameters(),
         )->getOrElse([]);
     }

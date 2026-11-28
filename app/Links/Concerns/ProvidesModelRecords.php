@@ -6,7 +6,7 @@ namespace App\Links\Concerns;
 
 use App\Data\Pages\RecordCard;
 use App\Exceptions\RecordUnavailable;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,9 +19,9 @@ use Illuminate\Database\Eloquent\Model;
 trait ProvidesModelRecords
 {
     /**
-     * @return ReadBuilder<TRecord>
+     * @return BoundedReadBuilder<TRecord>
      */
-    abstract protected function readableRecords(): ReadBuilder;
+    abstract protected function readableRecords(): BoundedReadBuilder;
 
     /**
      * @param  TRecord  $record

@@ -8,7 +8,7 @@ use App\Accounts\Contracts\SignInProtocol;
 use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\SignInDriver;
 use App\Agents\Values\SecretHandover;
-use App\Support\PrivateAccountProcess;
+use App\Support\SignInProcess;
 use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
@@ -27,12 +27,12 @@ final readonly class CodexKeySignIn implements SignInProtocol
         return SignInHosts::openAi();
     }
 
-    public function begin(SignInDriver $driver, string $directory): PrivateAccountProcess
+    public function begin(SignInDriver $driver, string $directory): SignInProcess
     {
         return $driver->start(['login', '--with-api-key'], $directory, SecretHandover::none());
     }
 
-    public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null
+    public function challengeFrom(SignInProcess $process): SignInChallenge|null
     {
         return null;
     }
@@ -42,13 +42,13 @@ final readonly class CodexKeySignIn implements SignInProtocol
         return true;
     }
 
-    public function acceptCode(PrivateAccountProcess $process, string $code): void
+    public function acceptCode(SignInProcess $process, string $code): void
     {
         $process->send($code);
         $process->closeInput();
     }
 
-    public function hasFinished(PrivateAccountProcess $process): bool
+    public function hasFinished(SignInProcess $process): bool
     {
         return ! $process->isRunning();
     }
@@ -56,7 +56,7 @@ final readonly class CodexKeySignIn implements SignInProtocol
     /**
      * Signed in only when the login took the key and the status then says a key, not a ChatGPT login, is configured.
      */
-    public function prove(SignInDriver $driver, PrivateAccountProcess $process, string $directory): SignInVerification
+    public function prove(SignInDriver $driver, SignInProcess $process, string $directory): SignInVerification
     {
         if ($process->exitCode() !== 0) {
             return new SignInVerification(false, SignInIdentity::unproved());

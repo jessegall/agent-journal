@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Providers\DomainEventServiceProvider;
-use App\Support\Bootstrappers\RegisterStates;
+use App\Support\Bootstrappers\StatesBootstrapper;
 use App\Support\DomainRegistry;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
@@ -25,7 +25,7 @@ trait RegistersNoteStates
             $this->app->instance(DomainRegistry::class, $registry);
         }
 
-        $this->app->make(RegisterStates::class)($registry->get('Notes'));
+        $this->app->make(StatesBootstrapper::class)($registry->get('Notes'));
 
         return new DomainEventServiceProvider($this->app);
     }

@@ -6,7 +6,7 @@ namespace Tests\Unit\Domains;
 
 use App\Bus\Exceptions\InvalidListener;
 use App\Providers\DomainEventServiceProvider;
-use App\Support\Delivery\StateEventBridge;
+use App\Support\Delivery\StateEventDelivery;
 use App\Support\Domain;
 use App\Support\DomainRegistry;
 use Illuminate\Events\Dispatcher;
@@ -59,7 +59,7 @@ final class StateEventRegistrationTest extends TestCase
             $dispatcher = $this->app->make(Dispatcher::class);
 
             $this->assertSame(
-                [StateEventBridge::LISTENER],
+                [StateEventDelivery::LISTENER],
                 $dispatcher->getRawListeners()[NoteWritten::class],
             );
 

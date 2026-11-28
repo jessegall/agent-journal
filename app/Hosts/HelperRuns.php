@@ -10,7 +10,7 @@ use App\Files\Enums\Place;
 use App\Files\ManifestMount;
 use App\Hosts\Protocol\Payloads\HostContainerManifestPayload;
 use App\Hosts\Protocol\Payloads\HostContainerRunPayload;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\FilePath;
 use Illuminate\Container\Attributes\Config;
 
@@ -78,7 +78,7 @@ final readonly class HelperRuns
         return $this->run('account-folder-make', $arguments, [
             'user' => self::ROOT_USER.':'.self::ROOT_USER,
             'capabilities' => self::FOLDER_CAPABILITIES,
-            'mounts' => [ManifestMount::daemonBind(MountRules::ACCOUNTS_ROOT, self::ACCOUNTS_TARGET, true)],
+            'mounts' => [ManifestMount::daemonBind(HelperMounts::ACCOUNTS_ROOT, self::ACCOUNTS_TARGET, true)],
         ]);
     }
 
@@ -87,7 +87,7 @@ final readonly class HelperRuns
         return $this->run('account-folder-remove', [self::ACCOUNTS_TARGET, $account], [
             'user' => self::ROOT_USER.':'.self::ROOT_USER,
             'capabilities' => self::FOLDER_CAPABILITIES,
-            'mounts' => [ManifestMount::daemonBind(MountRules::ACCOUNTS_ROOT, self::ACCOUNTS_TARGET, true)],
+            'mounts' => [ManifestMount::daemonBind(HelperMounts::ACCOUNTS_ROOT, self::ACCOUNTS_TARGET, true)],
         ]);
     }
 
@@ -102,10 +102,10 @@ final readonly class HelperRuns
     {
         return [
             $this->run('account-folder-prepare', [self::ACCOUNT_TARGET, ...$mountPoints], [
-                'mounts' => [ManifestMount::daemonBind(MountRules::accountFolder($account), self::ACCOUNT_TARGET, true)],
+                'mounts' => [ManifestMount::daemonBind(HelperMounts::accountFolder($account), self::ACCOUNT_TARGET, true)],
             ]),
-            $this->run('account-folder-check', [MountRules::DATA_FOLDER, $account, ContainerManifest::PROGRAM_USER, self::ROOT_USER], [
-                'mounts' => [ManifestMount::daemonBind(MountRules::DATA_FOLDER, MountRules::DATA_FOLDER, false)],
+            $this->run('account-folder-check', [HelperMounts::DATA_FOLDER, $account, ContainerManifest::PROGRAM_USER, self::ROOT_USER], [
+                'mounts' => [ManifestMount::daemonBind(HelperMounts::DATA_FOLDER, HelperMounts::DATA_FOLDER, false)],
             ]),
         ];
     }
@@ -163,7 +163,7 @@ final readonly class HelperRuns
         return $this->run('plan-files-write', [$folder, self::SESSIONS_TARGET."/{$session}"], [
             'user' => self::ROOT_USER.':'.self::ROOT_USER,
             'capabilities' => self::FOLDER_CAPABILITIES,
-            'mounts' => [ManifestMount::daemonBind(MountRules::SESSIONS_ROOT, self::SESSIONS_TARGET, true)],
+            'mounts' => [ManifestMount::daemonBind(HelperMounts::SESSIONS_ROOT, self::SESSIONS_TARGET, true)],
         ], input: $archive);
     }
 
@@ -172,7 +172,7 @@ final readonly class HelperRuns
         return $this->run('session-files-remove', [self::SESSIONS_TARGET."/{$session}"], [
             'user' => self::ROOT_USER.':'.self::ROOT_USER,
             'capabilities' => self::FOLDER_CAPABILITIES,
-            'mounts' => [ManifestMount::daemonBind(MountRules::SESSIONS_ROOT, self::SESSIONS_TARGET, true)],
+            'mounts' => [ManifestMount::daemonBind(HelperMounts::SESSIONS_ROOT, self::SESSIONS_TARGET, true)],
         ]);
     }
 
@@ -181,7 +181,7 @@ final readonly class HelperRuns
      */
     public static function planFilesFolder(string $session, string $process): string
     {
-        return MountRules::SESSIONS_ROOT."/{$session}/{$process}/files";
+        return HelperMounts::SESSIONS_ROOT."/{$session}/{$process}/files";
     }
 
     /**

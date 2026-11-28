@@ -10,7 +10,7 @@ use App\Actors\SystemActor;
 use App\Bus\CommandEntrance;
 use App\Reads\Contracts\ReadLog;
 use App\Reads\ReadMeter;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Time\Contracts\MonotonicClock;
 use App\Values\TrustedEntryAuthority;
 use Illuminate\Contracts\Foundation\Application;
@@ -42,7 +42,7 @@ final readonly class EnginePass
     public function run(callable $work): mixed
     {
         $this->app->forgetScopedInstances();
-        $previousDeadline = $this->app->getBindings()[OperationDeadline::class] ?? null;
+        $previousDeadline = $this->app->getBindings()[StackOperationDeadline::class] ?? null;
         $this->bindPassDeadline($this->clock->nanoseconds());
         $meter = ReadMeter::ofCurrentScope();
         $meter->begin();
@@ -69,7 +69,7 @@ final readonly class EnginePass
     {
         $budget = $this->settings->passBudgetMilliseconds;
 
-        $this->app->bind(OperationDeadline::class, fn () => new OperationDeadline(
+        $this->app->bind(StackOperationDeadline::class, fn () => new StackOperationDeadline(
             $budget - intdiv($this->clock->nanoseconds() - $startNanoseconds, self::NANOSECONDS_PER_MILLISECOND),
         ));
     }
@@ -83,7 +83,7 @@ final readonly class EnginePass
             return;
         }
 
-        $this->app->bind(OperationDeadline::class, $previous['concrete'], $previous['shared']);
+        $this->app->bind(StackOperationDeadline::class, $previous['concrete'], $previous['shared']);
     }
 
     private function rollBackOpenTransactions(): void

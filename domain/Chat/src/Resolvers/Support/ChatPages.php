@@ -19,7 +19,7 @@ use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageReadEntry;
 use App\Support\ActorReference;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use App\Web\Data\RunningCommandData;
 use Domain\Chat\Data\ChatCapabilitiesData;
 use Domain\Chat\Data\ChatEntryData;
@@ -59,7 +59,7 @@ final readonly class ChatPages
         private AgentStartLog $startLog,
     ) {}
 
-    public function pageFor(AgentOption|null $agent, Inbox $inbox, string|null $dockToken): ConversationData
+    public function pageFor(HomeAgent|null $agent, Inbox $inbox, string|null $dockToken): ConversationData
     {
         $viewer = $this->actors->actor();
 
@@ -100,7 +100,7 @@ final readonly class ChatPages
     /**
      * The tool call the agent's chat line names now, the seed the pushed changes follow; none before its first call.
      */
-    private function runningCommandOf(AgentOption $agent): RunningCommandData|null
+    private function runningCommandOf(HomeAgent $agent): RunningCommandData|null
     {
         return AgentRunningTool::shownOf($agent->agentId)
             ->map(fn (AgentRunningTool $tool) => RunningCommandData::from($tool))

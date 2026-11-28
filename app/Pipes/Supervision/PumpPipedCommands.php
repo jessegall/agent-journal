@@ -9,7 +9,6 @@ use App\Processes\Enums\OutputStream;
 use App\Processes\Execution\SpawnedPart;
 use App\Support\Execution\PipedCommands;
 use App\Support\Execution\PipelinePump;
-use App\Support\Execution\PumpedCommands;
 use App\Support\Execution\StepOutcome;
 
 /**
@@ -18,7 +17,7 @@ use App\Support\Execution\StepOutcome;
  */
 final readonly class PumpPipedCommands implements Pipe
 {
-    public function handle(PipedCommands $commands): PumpedCommands
+    public function handle(PipedCommands $commands): PipedCommands
     {
         $started = $commands->started;
         $stdout = '';
@@ -36,6 +35,6 @@ final readonly class PumpPipedCommands implements Pipe
         $processes = array_map(fn (SpawnedPart $part) => $part->process, $started);
         new PipelinePump()->run($processes, $pump, $commands->stopSignal());
 
-        return new PumpedCommands($commands, $stdout);
+        return $commands->withStdout($stdout);
     }
 }

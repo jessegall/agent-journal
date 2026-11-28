@@ -22,7 +22,7 @@
                 [
                     "matchesText",
                     "$c.file.path",
-                    "(^|/)(app/Files/|app/Support/CodeFiles\\.php$|tests/)"
+                    "(^|/)(app/Files/|app/Support/ProjectCode\\.php$|tests/)"
                 ]
             ],
             [

@@ -7,7 +7,7 @@ namespace Domain\Chat\Tests\Reads;
 use App\Models\Agents\AgentRunningTool;
 use App\Models\Inboxes\Inbox;
 use App\Sessions\Contracts\AgentDirectory;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use App\Values\ToolLine;
 use App\Web\Data\RunningCommandData;
 use Domain\Chat\Resolvers\Support\ChatPages;
@@ -67,7 +67,7 @@ final class RunningCommandSeedTest extends TestCase
         $plannerId = $this->journal->actorCalled('Planner')->id;
         $agents = array_filter(
             $this->app->make(AgentDirectory::class)->visible(),
-            fn (AgentOption $option) => $option->agentId === $plannerId,
+            fn (HomeAgent $option) => $option->agentId === $plannerId,
         );
         $agent = reset($agents);
 

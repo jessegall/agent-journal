@@ -12,7 +12,7 @@ use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Sessions\Contracts\AgentDirectory;
 use App\Sessions\Contracts\ProfileResolver;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use App\Values\ProfileKey;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Data\AgentOptionData;
@@ -128,7 +128,7 @@ final readonly class AgentListing
         $mainProfiles = $this->mainProfilesAmong($agents);
         $designated = $this->agents->mainAgentId()->getOrElse(null);
 
-        return array_map(function (AgentOption $agent) use (
+        return array_map(function (HomeAgent $agent) use (
             $byAgent,
             $unread,
             $waiting,
@@ -235,12 +235,12 @@ final readonly class AgentListing
     /**
      * The profile keys among the agents whose profile coordinates the journal's work; a profile that is gone is none.
      *
-     * @param  list<AgentOption>  $agents
+     * @param  list<HomeAgent>  $agents
      * @return list<string>
      */
     private function mainProfilesAmong(array $agents): array
     {
-        $keys = array_values(array_unique(array_map(fn (AgentOption $agent) => $agent->profileKey, $agents)));
+        $keys = array_values(array_unique(array_map(fn (HomeAgent $agent) => $agent->profileKey, $agents)));
 
         return array_values(array_filter($keys, function (string $key): bool {
             $profile = ProfileKey::from($key);

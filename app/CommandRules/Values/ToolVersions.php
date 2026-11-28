@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\CommandRules\Values;
 
 use App\CommandRules\Data\Images\LockFileData;
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 use JsonException;
 
 /**
@@ -45,7 +45,7 @@ final readonly class ToolVersions
      */
     private static function lockOf(string $path): LockFileData
     {
-        $code = CodeFiles::ofProcess();
+        $code = ProjectCode::ofProcess();
         $text = $code->file($code->projectPathOf($path));
 
         return LockFileData::from(json_decode($text, true, 512, JSON_THROW_ON_ERROR));

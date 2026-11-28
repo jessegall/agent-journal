@@ -1958,7 +1958,7 @@
             "result": "eec665fc8c04b52084ee5e875b631758a7b45527",
             "move": "batch"
         },
-        "app/Support/CertifyPassedStopsOnTick.php": {
+        "app/Support/PassedStopCertifier.php": {
             "prior": "63a2d429a983e250c8482cc350287b7803d6104a",
             "result": "149959091806a5206cff1ab47fb6966f3a433c29",
             "move": "batch"

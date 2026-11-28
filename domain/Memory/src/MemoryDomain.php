@@ -11,7 +11,7 @@ use App\Mcp\Contracts\McpToolProvider;
 use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Mcp\Resources\MemoryResource;
@@ -61,7 +61,7 @@ final class MemoryDomain extends Domain implements
 
     public function searchables(): array
     {
-        return [Searchable::make('memory', 'Memories', MemorySearchAccess::class, MemorySearchProvider::class)];
+        return [SearchSource::make('memory', 'Memories', MemorySearchAccess::class, MemorySearchProvider::class)];
     }
 
     public function skills(): array

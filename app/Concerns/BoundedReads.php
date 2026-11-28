@@ -8,7 +8,7 @@ use App\Exceptions\LazyLoadRefused;
 use App\Exceptions\ModelReadAllRefused;
 use App\Reads\ReadMeter;
 use App\Records\Values\ReadOrder;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
@@ -21,11 +21,11 @@ trait BoundedReads
 
     /**
      * @param  QueryBuilder  $query
-     * @return ReadBuilder<*>
+     * @return BoundedReadBuilder<*>
      */
-    public function newEloquentBuilder($query): ReadBuilder
+    public function newEloquentBuilder($query): BoundedReadBuilder
     {
-        return new ReadBuilder($query);
+        return new BoundedReadBuilder($query);
     }
 
     public function defaultReadOrder(): ReadOrder

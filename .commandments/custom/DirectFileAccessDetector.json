@@ -4,7 +4,7 @@
     "sin": {
         "description": "A PHP file function reads, lists, stats or writes the disk outside the Files funnel. The rule selects the language's own function-call kind (Expr_FuncCall), so a method or static call that shares the name ($linker->unlink(), Task::file()) never matches, and the names unlink, rename, file, copy, link and stat are judged too.",
         "name": "direct-file-access",
-        "rule": "Read, list, stat and write files through App\\Files\\Contracts\\Files with a FilePath in its place; only the Files primitives in app/Files and app/Support/CodeFiles touch the disk, and a method the user settled as outside the places carries #[OutsideThePlaces]. The skill direct-file-access names the Files method for each function.",
+        "rule": "Read, list, stat and write files through App\\Files\\Contracts\\Files with a FilePath in its place; only the Files primitives in app/Files and app/Support/ProjectCode touch the disk, and a method the user settled as outside the places carries #[OutsideThePlaces]. The skill direct-file-access names the Files method for each function.",
         "skill": "direct-file-access"
     },
     "find": {
@@ -63,7 +63,7 @@
                 [
                     "matchesText",
                     "$c.file.path",
-                    "(^|/)(app/Files/|app/Support/CodeFiles\\.php$|tests/)"
+                    "(^|/)(app/Files/|app/Support/ProjectCode\\.php$|tests/)"
                 ]
             ],
             [

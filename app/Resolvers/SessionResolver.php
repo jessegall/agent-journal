@@ -13,7 +13,7 @@ use App\Sessions\Contracts\SessionResolver as SessionResolverContract;
 use App\Sessions\Enums\SessionStatus;
 use App\Sessions\SessionOption;
 use App\Sessions\StartReceipt;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Values\StackTarget;
 
 /**
@@ -80,9 +80,9 @@ final readonly class SessionResolver implements SessionResolverContract
     }
 
     /**
-     * @return ReadBuilder<AgentSession>
+     * @return BoundedReadBuilder<AgentSession>
      */
-    private function visibleSessions(): ReadBuilder
+    private function visibleSessions(): BoundedReadBuilder
     {
         $actor = $this->actors->actor();
         $query = AgentSession::query();

@@ -19,7 +19,8 @@ use App\Models\Records\AutoAssignment;
 use App\Support\ActorReference;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
-use App\Support\AutoAssignmentPage;
+use App\Support\AutoAssignmentFact;
+use App\Support\CursorPage;
 use App\Support\IdListPage;
 use App\Time\Contracts\ServerClock;
 use Closure;
@@ -64,12 +65,14 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
         return $this->statuses->of($row);
     }
 
-    public function enabled(IdListPage $page): AutoAssignmentPage
+    /** @return CursorPage<AutoAssignmentFact> */
+    public function enabled(IdListPage $page): CursorPage
     {
         return AutoAssignment::resolveEnabledPage($page);
     }
 
-    public function listFor(ActorReference $actor, IdListPage $page): AutoAssignmentPage
+    /** @return CursorPage<AutoAssignmentFact> */
+    public function listFor(ActorReference $actor, IdListPage $page): CursorPage
     {
         return AutoAssignment::resolvePageFor($actor, $page);
     }

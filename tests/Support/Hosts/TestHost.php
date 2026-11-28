@@ -18,7 +18,7 @@ use App\Projects\Enums\ArrangementType;
 use App\Recordings\Enums\Wire;
 use App\Recordings\Recordings;
 use App\Sessions\AgentClientSettings;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\ExecutionBudgets;
 use App\Values\HostProcessPlan;
 use Closure;
@@ -375,9 +375,9 @@ final class TestHost
         $manifest = ContainerManifest::make(
             self::IMAGE,
             "journal-net-{$name}",
-            [MountRules::local()->workspaceMount($this->folder, WorkspaceUse::Shared, $name)],
+            [HelperMounts::local()->workspaceMount($this->folder, WorkspaceUse::Shared, $name)],
             ExecutionBudgets::defaults(),
-            MountRules::local(),
+            HelperMounts::local(),
             SecurityOptions::none(),
             true,
         );
@@ -973,7 +973,7 @@ final class TestHost
             $command = [
                 ...$command,
                 '--installation-name', $this->installationName(),
-                '--data-folder', MountRules::DATA_FOLDER,
+                '--data-folder', HelperMounts::DATA_FOLDER,
             ];
         }
 

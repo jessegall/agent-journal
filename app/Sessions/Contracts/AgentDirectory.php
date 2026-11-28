@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sessions\Contracts;
 
 use App\Exceptions\StackTargetRefused;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use PhpOption\Option;
 
 /**
@@ -15,7 +15,7 @@ use PhpOption\Option;
 interface AgentDirectory
 {
     /**
-     * @return list<AgentOption>
+     * @return list<HomeAgent>
      */
     public function visible(): array;
 
@@ -23,7 +23,7 @@ interface AgentDirectory
      * The agents among those ids the actor may see, in the order of the ids; one out of sight is left out.
      *
      * @param  list<string>  $agentIds
-     * @return list<AgentOption>
+     * @return list<HomeAgent>
      */
     public function visibleAmong(array $agentIds): array;
 
@@ -32,7 +32,7 @@ interface AgentDirectory
      *
      * @throws StackTargetRefused
      */
-    public function visibleAgent(string $agentId): AgentOption;
+    public function visibleAgent(string $agentId): HomeAgent;
 
     /**
      * The designated main agent's id; none before agents:install ran.

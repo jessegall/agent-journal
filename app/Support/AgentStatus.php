@@ -21,7 +21,7 @@ final readonly class AgentStatus
         public string $label,
         public string|null $reason,
         public string|null $remedy,
-        public StatusOperation|null $operation,
+        public StatusFollowedOperation|null $operation,
         public string|null $commandOutcome,
         public int|null $observationAgeSeconds,
         public array $actions,

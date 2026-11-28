@@ -11,10 +11,10 @@ use App\Exceptions\AssigneeUnavailable;
 use App\Models\Agents\Agent;
 use App\Sessions\Exceptions\AgentNotAvailable;
 use App\Support\AssigneeIdentity;
-use App\Support\AssigneeList;
+use App\Support\CursorPage;
 use App\Support\AssigneeName;
 use App\Support\IdListPage;
-use App\Support\Lifecycle\AgentLifecycle;
+use App\Support\Lifecycle\AgentLocks;
 
 /**
  * Agents as holders of work: any agent that is not retired may receive work, whether or not it runs now, and every
@@ -24,7 +24,7 @@ final readonly class AgentAssignees implements AssigneeProvider
 {
     public function __construct(
         private CurrentActor $actors,
-        private AgentLifecycle $lifecycle,
+        private AgentLocks $lifecycle,
     ) {}
 
     /**
@@ -69,7 +69,8 @@ final readonly class AgentAssignees implements AssigneeProvider
             ->all());
     }
 
-    public function eligible(IdListPage $page): AssigneeList
+    /** @return CursorPage<AssigneeName> */
+    public function eligible(IdListPage $page): CursorPage
     {
         $this->actors->actor();
 
@@ -81,7 +82,7 @@ final readonly class AgentAssignees implements AssigneeProvider
 
         $shown = $agents->take($page->limit);
 
-        return new AssigneeList(
+        return new CursorPage(
             array_values(
                 $shown->map(fn (Agent $agent) => new AssigneeName(AssigneeIdentity::of($agent), $agent->name))->all(),
             ),

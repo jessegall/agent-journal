@@ -43,7 +43,7 @@ use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\PromptSubmitted;
-use App\Support\Inputs\ProtectedFileRead;
+use App\Support\Inputs\NamedReadPaths;
 use App\Support\Inputs\SessionEnded;
 use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\ShellCommandRequested;
@@ -304,7 +304,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
             $original = $hookInput->toolArguments();
             $path = $hookInput->argument('file_path', 'notebook_path');
 
-            if ($this->protection->refusesChange(ProtectedFileRead::resolve($hookInput->workFolder(), $path))) {
+            if ($this->protection->refusesChange(NamedReadPaths::resolve($hookInput->workFolder(), $path))) {
                 return $this->protectedRefusal();
             }
 

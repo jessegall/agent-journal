@@ -37,7 +37,7 @@ use App\Reads\Contracts\ReaderRequests as ReaderRequestsContract;
 use App\Reads\ReaderRequests;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Settings\OwnerSettingsAccess;
-use App\Support\ClientComponentFinder;
+use App\Support\PageComponents;
 use App\Support\ClientDeclarations;
 use App\Support\ClientOwnerAvailability;
 use App\Support\DeclaredRoutes;
@@ -48,13 +48,13 @@ use App\Support\Layout\Contracts\ProjectField as ProjectFieldContract;
 use App\Support\Layout\Contracts\ProjectRowLabel as ProjectRowLabelContract;
 use App\Support\Layout\ProjectField;
 use App\Support\Layout\ProjectRowLabel;
-use App\Support\NavigationRecords;
+use App\Support\NavigationReader;
 use App\Support\OwnerAutoAssignmentAccess;
 use App\Support\PageChangeBroadcastLog;
-use App\Support\ProtectedViews;
-use App\Support\RecordMenus;
+use App\Support\ViewInvalidation;
+use App\Support\MenuBuilder;
 use App\Support\RefusalReason;
-use App\Support\WindowResults;
+use App\Support\WindowResultBuilder;
 use App\Values\FilePath;
 use App\Web\Creation\SurfaceAttributeMap;
 use App\Web\Contracts\ProtectedViews as ProtectedViewsContract;
@@ -91,12 +91,12 @@ final class WebServiceProvider extends ServiceProvider
     {
         $this->app->bind(ProjectRowLabelContract::class, ProjectRowLabel::class);
         $this->app->bind(ProjectFieldContract::class, ProjectField::class);
-        $this->app->bind(NavigationRecordsContract::class, NavigationRecords::class);
-        $this->app->bind(RecordMenusContract::class, RecordMenus::class);
+        $this->app->bind(NavigationRecordsContract::class, NavigationReader::class);
+        $this->app->bind(RecordMenusContract::class, MenuBuilder::class);
         $this->app->singleton(DraftProducers::class);
         $this->app->alias(DraftProducers::class, DraftProducersContract::class);
         $this->app->bind(InstalledVersionContract::class, InstalledVersion::class);
-        $this->app->bind(ProtectedViewsContract::class, ProtectedViews::class);
+        $this->app->bind(ProtectedViewsContract::class, ViewInvalidation::class);
 
         $this->app->bind(
             InstallationFaults::class,
@@ -107,7 +107,7 @@ final class WebServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(ReaderRequestsContract::class, ReaderRequests::class);
-        $this->app->bind(WindowResultsContract::class, WindowResults::class);
+        $this->app->bind(WindowResultsContract::class, WindowResultBuilder::class);
         $this->app->bindIf(WindowOffers::class, NoWindowOffers::class);
         $this->app->bind(ClientOwnerAvailabilityContract::class, ClientOwnerAvailability::class);
         $this->app->bind(SettingsAccessPolicy::class, OwnerSettingsAccess::class);
@@ -125,7 +125,7 @@ final class WebServiceProvider extends ServiceProvider
         $this->app->bind(DeclaredPages::class, ClientDeclarations::class);
 
         // Inertia's page check reads the declared components, and today's pages through its usual finder.
-        $this->app->bind('inertia.view-finder', fn ($app) => new ClientComponentFinder(
+        $this->app->bind('inertia.view-finder', fn ($app) => new PageComponents(
             $app->make(ClientDeclarations::class),
             new FileViewFinder(
                 $app['files'],

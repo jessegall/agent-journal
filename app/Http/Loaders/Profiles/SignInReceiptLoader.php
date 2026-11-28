@@ -6,7 +6,7 @@ namespace App\Http\Loaders\Profiles;
 
 use App\Accounts\Data\SignInReceiptData;
 use App\Profiles\Data\SignInReceiptInput;
-use App\Support\SignInReceipts;
+use App\Support\SignInReceiptLookup;
 
 /**
  * What became of the owner's own sign-in start under a request key: the receipt is read for the sign-in this caller
@@ -14,7 +14,7 @@ use App\Support\SignInReceipts;
  */
 final readonly class SignInReceiptLoader
 {
-    public function __construct(private SignInReceipts $receipts) {}
+    public function __construct(private SignInReceiptLookup $receipts) {}
 
     public function __invoke(SignInReceiptInput $input): SignInReceiptData
     {

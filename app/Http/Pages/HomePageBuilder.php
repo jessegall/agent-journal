@@ -8,7 +8,7 @@ use App\Data\Pages\HomeData;
 use App\Data\Pages\HomeWindowData;
 use App\Navigation\Contracts\ClientOwnerAvailability;
 use App\Support\ClientDeclarations;
-use App\Support\Views\LayoutsView;
+use App\Support\Views\SavedLayouts;
 use App\Web\Creation\Contracts\PageBuilder;
 use App\Web\Declarations\RegisteredPage;
 use Illuminate\Http\Request;
@@ -21,7 +21,7 @@ final readonly class HomePageBuilder implements PageBuilder
 {
     public function __construct(
         private ClientDeclarations $declarations,
-        private LayoutsView $layouts,
+        private SavedLayouts $layouts,
         private ClientOwnerAvailability $owners,
     ) {}
 

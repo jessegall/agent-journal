@@ -25,7 +25,7 @@ use App\Sessions\SessionTokens;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentResult;
-use App\Support\Lifecycle\AgentLifecycle;
+use App\Support\Lifecycle\AgentLocks;
 use App\Support\RecordIdentity;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
@@ -38,7 +38,7 @@ final readonly class RetireAgentHandler implements CommandHandler
 {
     public function __construct(
         private CurrentAuthorizer $authorizer,
-        private AgentLifecycle $lifecycle,
+        private AgentLocks $lifecycle,
         private AgentSessions $sessions,
         private SessionTokens $credentials,
         private AssignmentStorage $store,

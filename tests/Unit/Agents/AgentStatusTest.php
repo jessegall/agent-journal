@@ -22,8 +22,8 @@ use App\Sessions\Enums\StartReadiness;
 use App\Sessions\SessionStartOutcome;
 use App\Sessions\StartRemedyWords;
 use App\Support\AgentEvidence;
-use App\Support\AgentStatusRules;
-use App\Support\HoldCopy;
+use App\Support\AgentStatusDecision;
+use App\Support\HoldWording;
 use App\Support\RuntimeEvidence;
 use App\Support\StatusAction;
 use App\Support\SwitchEvidence;
@@ -177,7 +177,7 @@ final class AgentStatusTest extends TestCase
         string $label,
         array $actions,
     ): void {
-        $status = AgentStatusRules::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::words(false));
 
         $this->assertSame(
             [$activity, $label, $actions],
@@ -246,7 +246,7 @@ final class AgentStatusTest extends TestCase
             readiness: $readiness,
         );
 
-        $status = AgentStatusRules::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::words(false));
 
         $this->assertSame(
             [$activity, $activity->label(), $activity->reason(), $actions],
@@ -263,8 +263,8 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = self::stopped(self::startOutcome(StartDisposition::Refused, 'image-unverified'));
 
-        $member = AgentStatusRules::of($evidence, self::words(false));
-        $operator = AgentStatusRules::of($evidence, self::words(true));
+        $member = AgentStatusDecision::of($evidence, self::words(false));
+        $operator = AgentStatusDecision::of($evidence, self::words(true));
 
         $this->assertSame(
             [
@@ -280,9 +280,9 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired));
 
-        $status = AgentStatusRules::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::words(false));
 
-        $this->assertSame(HoldCopy::of(HoldReason::OnboardingRequired, hasTerminal: false)->reason, $status->reason);
+        $this->assertSame(HoldWording::of(HoldReason::OnboardingRequired, hasTerminal: false)->reason, $status->reason);
     }
 
     /**
@@ -293,11 +293,11 @@ final class AgentStatusTest extends TestCase
     {
         $idle = self::runtime(RuntimeActivity::Idle);
 
-        $afterWake = AgentStatusRules::of(
+        $afterWake = AgentStatusDecision::of(
             self::live($idle, request: self::uncertain(DriverOperation::Wake)),
             self::words(false),
         );
-        $afterDelivery = AgentStatusRules::of(
+        $afterDelivery = AgentStatusDecision::of(
             self::live($idle, request: self::uncertain(DriverOperation::Deliver)),
             self::words(false),
         );
@@ -331,7 +331,7 @@ final class AgentStatusTest extends TestCase
             true,
         );
 
-        $status = AgentStatusRules::of($starting, self::words(false));
+        $status = AgentStatusDecision::of($starting, self::words(false));
 
         $this->assertSame(SessionActivityStatus::Starting, $status->sessionState);
         $this->assertSame(
@@ -359,7 +359,7 @@ final class AgentStatusTest extends TestCase
             waitsForDriverImage: true,
         );
 
-        $status = AgentStatusRules::of($waiting, self::words(false));
+        $status = AgentStatusDecision::of($waiting, self::words(false));
 
         $this->assertSame(
             [SessionActivityStatus::Starting, 'Building its driver image'],
@@ -387,7 +387,7 @@ final class AgentStatusTest extends TestCase
             true,
         );
 
-        $status = AgentStatusRules::of($unvouched, self::words(false));
+        $status = AgentStatusDecision::of($unvouched, self::words(false));
 
         $this->assertSame(SessionActivityStatus::Unknown, $status->sessionState);
         $this->assertSame(
@@ -413,8 +413,8 @@ final class AgentStatusTest extends TestCase
             true,
         );
 
-        $status = AgentStatusRules::of($allowed, self::words(false));
-        $refused = AgentStatusRules::of(self::live(self::runtime(RuntimeActivity::Running)), self::words(false));
+        $status = AgentStatusDecision::of($allowed, self::words(false));
+        $refused = AgentStatusDecision::of(self::live(self::runtime(RuntimeActivity::Running)), self::words(false));
 
         $this->assertSame(
             [
@@ -448,7 +448,7 @@ final class AgentStatusTest extends TestCase
             canReconcile: true,
         );
 
-        $status = AgentStatusRules::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::words(false));
 
         $this->assertSame(
             ['Start could not be confirmed', 'If the host confirms this step, the approved switch can continue.'],
@@ -461,7 +461,7 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = new AgentEvidence(true, null, null, null, null, false, null, null, null, false);
 
-        $status = AgentStatusRules::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::words(false));
 
         $this->assertSame([SessionActivityStatus::Retired, []], [$status->sessionState, $status->actions]);
     }
@@ -470,7 +470,7 @@ final class AgentStatusTest extends TestCase
     {
         $evidence = new AgentEvidence(false, null, null, null, null, false, null, null, null, false);
 
-        $status = AgentStatusRules::of($evidence, self::words(false));
+        $status = AgentStatusDecision::of($evidence, self::words(false));
 
         $this->assertSame([SessionActivityStatus::Stopped, []], [$status->sessionState, $status->actions]);
     }

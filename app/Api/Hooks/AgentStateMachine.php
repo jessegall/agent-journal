@@ -16,7 +16,7 @@ use App\Stacks\HookAnswer;
 use App\Stacks\IncomingWorkRegistration;
 use App\Stacks\StackAccess;
 use App\Support\Inputs\Contracts\HookInput;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Support\StackTransaction;
 use Closure;
 
@@ -40,7 +40,7 @@ final readonly class AgentStateMachine
     public function answer(
         HookInput $input,
         DriverCapabilities $capabilities,
-        OperationDeadline $deadline,
+        StackOperationDeadline $deadline,
         Closure $render,
     ): DriverReply {
         $capabilities->assertSupports($input->methodName());

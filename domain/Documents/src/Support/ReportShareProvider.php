@@ -10,7 +10,7 @@ use App\Records\Contracts\ShareRecordProvider;
 use App\Skills\Exceptions\ContentTooLarge;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
-use App\Support\ShareContentRead;
+use App\Support\ShareContentRequest;
 use App\Support\SharedContent;
 use App\Values\ProjectOwner;
 use Domain\Comments\Contracts\PublicCommentResolver;
@@ -56,7 +56,7 @@ final readonly class ReportShareProvider implements ShareRecordProvider
      * @throws RecordUnavailable
      * @throws ContentTooLarge when the stored body is larger than a body may be
      */
-    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
+    public function content(ShareContentRequest $read, ShareBudget $budget): SharedContent
     {
         $report = Report::query()->sharedPublished()->whereKey($read->record->id)->firstOr(
             RecordUnavailable::throwing()->forActor($read->record),

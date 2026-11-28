@@ -8,7 +8,7 @@ use App\Data\Pages\RecordCard;
 use App\Navigation\Contracts\RecordMenus;
 use App\Sessions\Contracts\AgentDirectory;
 use App\Settings\Enums\ActionMethod;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutFieldData;
@@ -78,7 +78,7 @@ final readonly class DocumentsShow extends DocumentsPage
 
         $feedback = DocumentFeedbackPartData::from([
             'recipients' => array_map(
-                fn (AgentOption $agent) => new DocumentRecipientData($agent->agentId, $agent->name),
+                fn (HomeAgent $agent) => new DocumentRecipientData($agent->agentId, $agent->name),
                 $this->agents->visible(),
             ),
             'address' => route('documents.ask-feedback', ['document' => $number], false),

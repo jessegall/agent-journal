@@ -61,7 +61,7 @@ final class DriverWordTest extends TestCase
         'app/Processes/Grammar/Pipelines/ReadSimpleCommandPipeline.php',
         'app/Providers/ProcessesServiceProvider.php',
         'app/Access/ShellAdmission.php',
-        'app/Support/Classification/ChildCommand.php',
+        'app/Support/Classification/WrapperChildFacts.php',
         'app/Support/Classification/CommandClassifier.php',
         'app/CommandRules/CommandRuleRegistry.php',
         'app/Processes/ExecutableCheck.php',

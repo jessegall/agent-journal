@@ -88,7 +88,7 @@ final readonly class PlanReviewView
      */
     private function recipients(): array
     {
-        return $this->assignees->eligible('agent', new IdListPage(null, self::RECIPIENTS_SHOWN))->assignees;
+        return $this->assignees->eligible('agent', new IdListPage(null, self::RECIPIENTS_SHOWN))->items;
     }
 
     private static function receiptOrMissing(PlanReviewEdition|null $edition): PlanReviewReceiptData|Optional

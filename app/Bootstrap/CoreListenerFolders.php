@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bootstrap;
 
-use App\Support\CodeFiles;
+use App\Support\ProjectCode;
 
 /**
  * Core's Listeners folders, app/Listeners and the MCP server's own, for the checked listener provider to discover.
@@ -21,7 +21,7 @@ final readonly class CoreListenerFolders
      */
     public static function all(): array
     {
-        $code = CodeFiles::ofProcess();
+        $code = ProjectCode::ofProcess();
 
         return array_map(
             fn (string $folder) => $code->realPathOf($code->projectPathOf(dirname(__DIR__)."/{$folder}")),

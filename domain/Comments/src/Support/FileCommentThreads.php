@@ -9,7 +9,7 @@ use App\Connections\Data\FileCommentData;
 use App\Connections\Data\FileThreadData;
 use App\Models\Projects\ProjectFile;
 use App\Projects\Contracts\FileComments;
-use App\Support\ActorLabelSet;
+use App\Support\ActorNames;
 use App\Support\ActorReference;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
@@ -66,7 +66,7 @@ final readonly class FileCommentThreads implements FileComments
      * @param  non-empty-list<TextCommentView>  $comments
      * @param  list<string>  $lines
      */
-    private function thread(array $comments, array $lines, ActorLabelSet $labels): FileThreadData
+    private function thread(array $comments, array $lines, ActorNames $labels): FileThreadData
     {
         $anchor = $comments[0]->anchor;
         $quoted = array_slice($lines, $anchor->firstLine - 1, $anchor->lastLine - $anchor->firstLine + 1);

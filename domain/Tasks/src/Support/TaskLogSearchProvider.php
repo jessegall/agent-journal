@@ -13,7 +13,7 @@ use App\Search\Values\RefreshCandidates;
 use App\Search\Values\SearchBatch;
 use App\Search\Values\SearchQuery;
 use App\Search\Values\SearchResult;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 use App\Support\TextSearch;
 use App\Values\SourcePosition;
@@ -176,9 +176,9 @@ final readonly class TaskLogSearchProvider implements SearchProvider
     /**
      * The lines of the tasks the reader may search: of the served environment, limited to the admitted task ids.
      *
-     * @return ReadBuilder<TaskLogEntry>
+     * @return BoundedReadBuilder<TaskLogEntry>
      */
-    private function lines(AdmittedConstraints $constraints): ReadBuilder
+    private function lines(AdmittedConstraints $constraints): BoundedReadBuilder
     {
         $tasks = $constraints->narrow(Task::query()->inEnvironments($this->environment->environmentIds()));
 

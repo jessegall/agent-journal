@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Data\Pages\RecordCard;
 use App\Links\Concerns\ProvidesModelRecords;
 use App\Records\Contracts\RecordProvider;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Fixtures\Modules\Notes\Models\Note;
@@ -36,7 +36,7 @@ final readonly class NoteLinkRecords implements RecordProvider
         return Note::linkType();
     }
 
-    protected function readableRecords(): ReadBuilder
+    protected function readableRecords(): BoundedReadBuilder
     {
         return Note::query()->forActor();
     }

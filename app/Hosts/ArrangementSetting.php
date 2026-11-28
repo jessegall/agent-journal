@@ -16,7 +16,7 @@ use App\Hosts\Protocol\Payloads\HostContainerLabelPayload;
 use App\Models\Projects\Host;
 use App\Projects\Enums\ArrangementType;
 use App\Projects\Exceptions\HostArrangementRefused;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\OperationSupport;
 use App\Values\SelectedAccount;
 
@@ -65,15 +65,15 @@ final readonly class ArrangementSetting
      * @throws WorkspaceSourceMissing
      * @throws AccountFolderInvalid
      */
-    public function mountRules(SelectedAccount|null $account, string $environment, array $driverMounts): MountRules
+    public function mountRules(SelectedAccount|null $account, string $environment, array $driverMounts): HelperMounts
     {
         if (! $this->arrangement->isContained()) {
-            return MountRules::local();
+            return HelperMounts::local();
         }
 
-        return MountRules::contained(
+        return HelperMounts::contained(
             $this->installationName,
-            $account === null ? null : MountRules::accountFolder($account->folder()),
+            $account === null ? null : HelperMounts::accountFolder($account->folder()),
             $this->workspaceSources->for($environment),
             $driverMounts,
         );

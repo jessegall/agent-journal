@@ -15,7 +15,7 @@ use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\HookEvent;
 use App\Stacks\HookAnswer;
 use App\Support\Inputs\SessionStarted;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
@@ -141,7 +141,7 @@ final class SessionContextTest extends TestCase
         $reply = $this->machine()->answer(
             $start,
             $capabilities,
-            new OperationDeadline(3000),
+            new StackOperationDeadline(3000),
             fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::observation(
                 HookEvent::SessionStart,
                 $answer,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\CommandRules\CommandReceipt;
-use App\Support\ExpiredReceipts;
+use App\Support\ReceiptExpiry;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 )]
 final class PruneReceiptsCommand extends Command
 {
-    public function handle(ExpiredReceipts $receipts): int
+    public function handle(ReceiptExpiry $receipts): int
     {
         $now = CarbonImmutable::now();
         $pruned = CommandReceipt::query()->pastRefusalWindow($now)->delete();

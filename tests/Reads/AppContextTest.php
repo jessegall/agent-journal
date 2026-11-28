@@ -13,7 +13,7 @@ use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Support\InstalledVersion;
-use App\Support\NavigationRecords;
+use App\Support\NavigationReader;
 use App\Values\FilePath;
 use App\Web\AppContext;
 use App\Web\InstallationFaults;
@@ -98,7 +98,7 @@ final class AppContextTest extends TestCase
     {
         $this->journal->owner();
 
-        $groups = $this->app->make(NavigationRecords::class)->tree($this->request())->toArray()['groups'];
+        $groups = $this->app->make(NavigationReader::class)->tree($this->request())->toArray()['groups'];
 
         $this->assertNotContains('', array_column($groups, 'key'));
     }

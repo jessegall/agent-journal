@@ -160,7 +160,7 @@ final readonly class DomainRegistry
     /**
      * Every domain's searchables, by domain name, in bootstrap/domains.php order.
      *
-     * @return array<string, list<Searchable>>
+     * @return array<string, list<SearchSource>>
      */
     public function searchableDeclarations(): array
     {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Hosts\FolderWorkspace;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use Tests\Support\Docker\AgentDaemonFolders;
 
 /**
@@ -14,7 +14,7 @@ use Tests\Support\Docker\AgentDaemonFolders;
  */
 final class AgentDaemonFoldersTest extends TestCase
 {
-    private const array BOUND_FOLDERS = [MountRules::ACCOUNTS_ROOT, MountRules::SESSIONS_ROOT, FolderWorkspace::ROOT];
+    private const array BOUND_FOLDERS = [HelperMounts::ACCOUNTS_ROOT, HelperMounts::SESSIONS_ROOT, FolderWorkspace::ROOT];
 
     public function test_the_agent_daemon_is_given_every_folder_the_journal_binds_from_it(): void
     {
@@ -25,7 +25,7 @@ final class AgentDaemonFoldersTest extends TestCase
     {
         $fixture = base_path('tests/Fixtures/Architecture/Compose/daemon-without-sessions.yaml');
 
-        $this->assertSame([MountRules::SESSIONS_ROOT], $this->foldersMissingFrom($fixture));
+        $this->assertSame([HelperMounts::SESSIONS_ROOT], $this->foldersMissingFrom($fixture));
     }
 
     /**

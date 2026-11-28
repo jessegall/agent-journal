@@ -9,7 +9,7 @@ use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\RecordLayoutData;
 use App\Support\RecordIdentity;
-use App\Support\WindowResults;
+use App\Support\WindowResultBuilder;
 use App\Navigation\Declarations\DomainClient;
 use App\Web\Creation\SurfaceDefinition;
 use Closure;
@@ -54,7 +54,7 @@ final class DeclaredLayoutResultTest extends TestCase
     {
         return $this->app->make(ActorStore::class)->actAsSystem(
             'test',
-            fn (): Data => $this->app->make(WindowResults::class)->surface(
+            fn (): Data => $this->app->make(WindowResultBuilder::class)->surface(
                 'shelf.lent',
                 'window shelf.lent',
                 [],

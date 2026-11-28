@@ -8,7 +8,7 @@ use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
 use App\Pipelines\RunProcessPipeline;
-use App\Support\Run\ChildEnvironment;
+use App\Support\Run\PendingAdmission;
 use App\Support\Run\RunStart;
 use Illuminate\Console\Command;
 
@@ -43,7 +43,7 @@ final class RunProcessCommand extends Command
             (string) $this->option('admission'),
             $this->requestKey(),
             (string) getcwd(),
-            ChildEnvironment::ofThisProcess(),
+            PendingAdmission::childEnvironment(),
         );
     }
 }

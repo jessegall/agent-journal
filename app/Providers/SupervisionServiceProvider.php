@@ -10,6 +10,7 @@ use App\Access\Contracts\PolicyCatalogue;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
 use App\Asks\AdvanceDueAsksOnTick;
+use App\Asks\AskSubjectResolver;
 use App\Asks\AskTypeRegistry;
 use App\Asks\Contracts\AskReader as AskReaderContract;
 use App\Asks\SupervisorDefinitions;
@@ -21,8 +22,7 @@ use App\Policies\SupervisorPolicy;
 use App\Processes\Contracts\SupervisorDefinitions as SupervisorDefinitionsContract;
 use App\Processes\Contracts\SupervisorDispatch;
 use App\Processes\Readers\AskReader;
-use App\Support\Types\QuestionAskType;
-use App\Support\Types\StuckType;
+use App\Support\Types\BuiltInAskType;
 use App\Values\AskTypeKey;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Config\Repository;
@@ -47,6 +47,7 @@ final class SupervisionServiceProvider extends ServiceProvider
         AskTypeRegistry $types,
         Repository $config,
         EngineListenerSet $engineListeners,
+        AskSubjectResolver $subjects,
     ): void {
         $engineListeners->add(AdvanceDueAsksOnTick::class);
         $this->loadCoreRoutes('supervision/asks.php');
@@ -66,8 +67,8 @@ final class SupervisionServiceProvider extends ServiceProvider
             [AccessType::Edit],
         ));
 
-        $types->register($this->app->make(QuestionAskType::class));
-        $types->register($this->app->make(StuckType::class));
+        $types->register(BuiltInAskType::question($subjects));
+        $types->register(BuiltInAskType::stuck($subjects));
         $this->requireKnownAskTypes($types, $config->array('journal.profiles.profiles'));
 
     }

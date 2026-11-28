@@ -13,7 +13,7 @@ use App\Hooks\Exceptions\HookDeadlineExpired;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
 use App\Stacks\HookAnswer;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Support\Storage\WalkStep;
 use Closure;
 use Domain\Tasks\TasksDomain;
@@ -43,7 +43,7 @@ final class AgentStateMachineTest extends TestCase
         $reply = $this->machine()->answer(
             $this->stop(),
             $this->capabilities(),
-            new OperationDeadline(3000),
+            new StackOperationDeadline(3000),
             $this->stopReply(),
         );
 
@@ -64,7 +64,7 @@ final class AgentStateMachineTest extends TestCase
         $first = $this->machine()->answer(
             $this->stop(),
             $this->capabilities(),
-            new OperationDeadline(3000),
+            new StackOperationDeadline(3000),
             $this->stopReply(),
         );
         $versionAfterFirst = AgentStackRow::query()->sole()->version;
@@ -73,7 +73,7 @@ final class AgentStateMachineTest extends TestCase
         $retry = $this->machine()->answer(
             $this->stop(),
             $this->capabilities(),
-            new OperationDeadline(3000),
+            new StackOperationDeadline(3000),
             fn () => throw TestFailure::renderedOnReplay(),
         );
 
@@ -91,7 +91,7 @@ final class AgentStateMachineTest extends TestCase
             $this->machine()->answer(
                 $this->stop(),
                 $this->capabilities(),
-                new OperationDeadline(3000),
+                new StackOperationDeadline(3000),
                 fn () => throw TestFailure::adapterFailed(),
             );
             $this->fail('The adapter failure was swallowed.');
@@ -105,7 +105,7 @@ final class AgentStateMachineTest extends TestCase
     {
         $this->expectException(HookDeadlineExpired::class);
 
-        $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(0), $this->stopReply());
+        $this->machine()->answer($this->stop(), $this->capabilities(), new StackOperationDeadline(0), $this->stopReply());
     }
 
     /**

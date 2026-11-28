@@ -6,7 +6,7 @@ namespace App\Pipes\Supervision;
 
 use App\Pipelines\ExecuteStepPipeline;
 use App\Pipelines\Support\PipelineAdapter;
-use App\Support\Execution\ConditionalSteps;
+use App\Support\Execution\PendingSteps;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
 
@@ -32,7 +32,7 @@ final readonly class RunFirstConditional extends PipelineAdapter
         return $input->firstChild();
     }
 
-    protected function back(object $outcome, object $input): ConditionalSteps
+    protected function back(object $outcome, object $input): PendingSteps
     {
         return $input->conditionalAfter($outcome);
     }

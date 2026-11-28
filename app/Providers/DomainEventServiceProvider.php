@@ -17,9 +17,9 @@ use App\Stacks\Declarations\StateEvents;
 use App\Stacks\Declarations\StateMethods;
 use App\Stacks\StateListenerDeclarations;
 use App\Stacks\StateTypes;
-use App\Support\Delivery\StateEventBridge;
+use App\Support\Delivery\StateEventDelivery;
 use App\Support\DomainRegistry;
-use App\Support\Registration\ListenerPolicy;
+use App\Support\Registration\ListenerRegistration;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 
@@ -123,10 +123,10 @@ final class DomainEventServiceProvider extends EventServiceProvider
 
         foreach ($states->eventClasses() as $event) {
             $wired = $dispatcher->getRawListeners()[$event] ?? [];
-            $bridged = is_array($wired) && in_array(StateEventBridge::LISTENER, $wired, true);
+            $bridged = is_array($wired) && in_array(StateEventDelivery::LISTENER, $wired, true);
 
             if (! $bridged) {
-                $dispatcher->listen($event, StateEventBridge::LISTENER);
+                $dispatcher->listen($event, StateEventDelivery::LISTENER);
             }
         }
     }
@@ -183,9 +183,9 @@ final class DomainEventServiceProvider extends EventServiceProvider
         ];
     }
 
-    private function policy(): ListenerPolicy
+    private function policy(): ListenerRegistration
     {
-        return new ListenerPolicy($this->app->make(PipelineRunner::class), $this->listenerOwnership());
+        return new ListenerRegistration($this->app->make(PipelineRunner::class), $this->listenerOwnership());
     }
 
     private function listenerOwnership(): ListenerOwnership

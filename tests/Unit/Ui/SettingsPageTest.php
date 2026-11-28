@@ -9,7 +9,6 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\SettingsGroup;
-use App\Support\Layout\SettingsPage;
 use App\Support\Layout\SettingsRow;
 use Spatie\LaravelData\Optional;
 use Tests\TestCase;
@@ -37,48 +36,46 @@ final class SettingsPageTest extends TestCase
 
     public function test_groups_keep_their_order_and_hold_editable_and_read_only_rows(): void
     {
-        $root = SettingsPage::build()
-            ->groups(
-                SettingsGroup::build()->key('general')->title('General')->help('The basics')->finish()
-                ->withRows(
-                    SettingsRow::build()
-                        ->key('name')
-                        ->label('Journal name')
-                        ->field(
-                            LayoutFieldData::build()
-                            ->name('name')
-                            ->value('Journal')
-                            ->finish(),
-                        )
-                        ->finish()->changed(),
-                    SettingsRow::build()
-                        ->key('on')
-                        ->label('Enabled')
-                        ->field(
-                            LayoutFieldData::build()
-                            ->name('on')
-                            ->value('1')
-                            ->finish(),
-                            'toggle',
-                        )
+        $root = SettingsGroup::page(
+            SettingsGroup::build()->key('general')->title('General')->help('The basics')->finish()
+            ->withRows(
+                SettingsRow::build()
+                    ->key('name')
+                    ->label('Journal name')
+                    ->field(
+                        LayoutFieldData::build()
+                        ->name('name')
+                        ->value('Journal')
                         ->finish(),
-                    SettingsRow::build()->key('version')->label('Version')->value('6')->finish(),
-                )
-                ->savingTo(LayoutFormData::build()
-                    ->method(ActionMethod::Post)
-                    ->href('/settings/general')
-                    ->fixed(['revision' => 4])
-                    ->finish()),
-                SettingsGroup::build()->key('profile')->title('Profile')->finish()->withRows(
-                    SettingsRow::build()->key('models')->label('Models')->chips(['fast', 'deep'])->finish(),
-                    SettingsRow::build()
-                        ->key('script')
-                        ->label('Script')
-                        ->code('/very/long/path/to/script.sh')
+                    )
+                    ->finish()->changed(),
+                SettingsRow::build()
+                    ->key('on')
+                    ->label('Enabled')
+                    ->field(
+                        LayoutFieldData::build()
+                        ->name('on')
+                        ->value('1')
                         ->finish(),
-                ),
+                        'toggle',
+                    )
+                    ->finish(),
+                SettingsRow::build()->key('version')->label('Version')->value('6')->finish(),
             )
-            ->finish()->layout()->root;
+            ->savingTo(LayoutFormData::build()
+                ->method(ActionMethod::Post)
+                ->href('/settings/general')
+                ->fixed(['revision' => 4])
+                ->finish()),
+            SettingsGroup::build()->key('profile')->title('Profile')->finish()->withRows(
+                SettingsRow::build()->key('models')->label('Models')->chips(['fast', 'deep'])->finish(),
+                SettingsRow::build()
+                    ->key('script')
+                    ->label('Script')
+                    ->code('/very/long/path/to/script.sh')
+                    ->finish(),
+            ),
+        )->root;
 
         $this->assertSame(['header', 'settings-page'], $this->keysOf($root->children));
 

@@ -6,14 +6,14 @@ namespace App\Pipes\Supervision;
 
 use App\Pipelines\ExecuteStepPipeline;
 use App\Pipelines\Support\PipelineAdapter;
-use App\Support\Execution\ConditionalSteps;
+use App\Support\Execution\PendingSteps;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
 
 /**
  * Runs the next step of an && or || list whose step before it decided that it runs.
  *
- * @extends PipelineAdapter<ConditionalSteps, StepOutcome>
+ * @extends PipelineAdapter<PendingSteps, StepOutcome>
  */
 final readonly class RunNextConditional extends PipelineAdapter
 {
@@ -32,7 +32,7 @@ final readonly class RunNextConditional extends PipelineAdapter
         return $input->next();
     }
 
-    protected function back(object $outcome, object $input): ConditionalSteps
+    protected function back(object $outcome, object $input): PendingSteps
     {
         return $input->after($outcome);
     }

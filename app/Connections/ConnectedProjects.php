@@ -21,7 +21,7 @@ use App\Models\Projects\Environment;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Projects\Enums\InstallLineHold;
-use App\Support\ActorLabelSet;
+use App\Support\ActorNames;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 
@@ -142,7 +142,7 @@ final readonly class ConnectedProjects
     /**
      * The name of the account that approved the grant, as the owner reads it.
      */
-    private function approverOf(DeviceGrant $grant, ActorLabelSet $labels): string
+    private function approverOf(DeviceGrant $grant, ActorNames $labels): string
     {
         if ($grant->approved_by_user_id === null) {
             return 'Not approved yet';

@@ -21,7 +21,7 @@ use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Values\InboxMemberAuthority;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
@@ -74,7 +74,7 @@ final class FixtureRequests
                 fn () => $this->app->make(AgentStateMachine::class)->answer(
                     $input,
                     $capabilities,
-                    new OperationDeadline(self::HOOK_DEADLINE_MILLISECONDS),
+                    new StackOperationDeadline(self::HOOK_DEADLINE_MILLISECONDS),
                     $render,
                 ),
             ),

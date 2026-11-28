@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\Bootstrappers\RegisterMorphAliases;
+use App\Support\Bootstrappers\MorphAliasesBootstrapper;
 use App\Support\DomainRegistry;
 use App\Support\Exports;
 use Tests\Architecture\Support\BindingRules;
@@ -46,7 +46,7 @@ final class RegisteredModuleTest extends TestCase
         $this->assertContains($notes->listenerFolder(), $this->registry()->listenerFolders());
         $this->assertFileExists($notes->migrationFolder().'/2026_11_19_000001_create_module_notes.php');
 
-        new RegisterMorphAliases()($notes);
+        new MorphAliasesBootstrapper()($notes);
         $this->app->register(NotesServiceProvider::class);
 
         $this->assertInstanceOf(NoteRecords::class, $this->app->make(NoteResolver::class));

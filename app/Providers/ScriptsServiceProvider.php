@@ -23,7 +23,7 @@ use App\Support\Keywords\ConditionalKeyword;
 use App\Support\Keywords\RunKeyword;
 use App\Support\Keywords\ScriptTrigger;
 use App\Support\Keywords\YieldKeyword;
-use App\Support\Objects\WorkspaceObject;
+use App\Support\Objects\WorkspaceScriptObject;
 use App\Values\ScriptKeywordDefinition;
 use Illuminate\Support\ServiceProvider;
 
@@ -49,7 +49,7 @@ final class ScriptsServiceProvider extends ServiceProvider
         $this->loadCoreRoutes('scripts/agent.php');
         $this->loadCoreRoutes('scripts/web.php');
 
-        $objects->register(WorkspaceObject::class);
+        $objects->register(WorkspaceScriptObject::class);
         $keywords->register(ScriptKeywordDefinition::structure('ON', SyntaxForm::Handler, 'Open a trigger handler.'));
 
         $keywords->register(

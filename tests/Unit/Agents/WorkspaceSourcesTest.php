@@ -10,7 +10,7 @@ use App\Hosts\ArrangementSetting;
 use App\Hosts\Exceptions\WorkspaceSourceMissing;
 use App\Hosts\Exceptions\WorkspaceSourcesInvalid;
 use App\Hosts\Protocol\HostMountType;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -55,7 +55,7 @@ final class WorkspaceSourcesTest extends TestCase
     {
         $rules = ArrangementSetting::fromConfig('local', '', '{}')->mountRules(null, 'review', []);
 
-        $this->assertEquals(MountRules::local(), $rules);
+        $this->assertEquals(HelperMounts::local(), $rules);
         $this->assertEquals(
             ManifestMount::bind('/Users/me/work/shop', '/workspace', true),
             $rules->workspaceMount('/Users/me/work/shop', WorkspaceUse::Shared, 's1'),

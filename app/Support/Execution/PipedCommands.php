@@ -24,6 +24,7 @@ final readonly class PipedCommands implements SpawnablePart
         public array $waiting,
         public array $started = [],
         public bool $isRefused = false,
+        public string $stdout = '',
     ) {}
 
     public function hasWaiting(): bool
@@ -44,6 +45,11 @@ final readonly class PipedCommands implements SpawnablePart
     public function refused(string $reason): self
     {
         return new self($this->toRun, array_slice($this->waiting, 1), $this->started, true);
+    }
+
+    public function withStdout(string $stdout): self
+    {
+        return clone ($this, ['stdout' => $stdout]);
     }
 
     /**

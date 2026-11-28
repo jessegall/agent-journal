@@ -24,7 +24,7 @@ use App\Hosts\Protocol\HostMountType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\Values\SessionContainer;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\ExecutionBudgets;
@@ -193,7 +193,7 @@ final class DriverPlansTest extends TestCase
         $this->journal->assertResult(
             [
                 [],
-                [[HostMountType::Scratch, null, MountRules::ACCOUNT_TARGET.'/tmp', true]],
+                [[HostMountType::Scratch, null, HelperMounts::ACCOUNT_TARGET.'/tmp', true]],
             ],
             [$mounts(DefaultDrivers::CLAUDE_CODE), $mounts(DefaultDrivers::CODEX)],
         );
@@ -203,7 +203,7 @@ final class DriverPlansTest extends TestCase
     {
         $manifest = ContainerManifest::probe('registry.example/agent@sha256:'.str_repeat('a', 64), SecurityOptions::none());
         $recipe = new AccountStartRecipe(
-            environment: [new StartSetting('CODEX_HOME', MountRules::ACCOUNT_TARGET)],
+            environment: [new StartSetting('CODEX_HOME', HelperMounts::ACCOUNT_TARGET)],
             emptyFolderVariables: [],
             removedVariables: [],
             startFlags: [],
@@ -233,7 +233,7 @@ final class DriverPlansTest extends TestCase
             [HostInstructionType::OpenContainer, true, true, []],
             [
                 $plan->instructionType(),
-                in_array('CODEX_HOME='.MountRules::ACCOUNT_TARGET, $plan->environment, true),
+                in_array('CODEX_HOME='.HelperMounts::ACCOUNT_TARGET, $plan->environment, true),
                 in_array('HOME=/home/journal', $plan->environment, true),
                 array_values(array_filter(
                     [...$plan->argv, ...$plan->environment],
@@ -250,9 +250,9 @@ final class DriverPlansTest extends TestCase
         $manifest = ContainerManifest::make(
             $image,
             'journal-net-s1',
-            [MountRules::local()->workspaceMount('/srv/work', WorkspaceUse::Shared, 's1')],
+            [HelperMounts::local()->workspaceMount('/srv/work', WorkspaceUse::Shared, 's1')],
             $budgets,
-            MountRules::local(),
+            HelperMounts::local(),
             SecurityOptions::none(),
             true,
         );

@@ -6,7 +6,7 @@ namespace App\Sessions;
 
 use App\Access\Exceptions\StackLockTimedOut;
 use App\Bus\SessionAdvisoryLocks;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use Closure;
 use Illuminate\Database\DatabaseManager;
 
@@ -24,7 +24,7 @@ final readonly class StartRequestLock
     public function __construct(
         private DatabaseManager $databases,
         private SessionAdvisoryLocks $locks,
-        private OperationDeadline $deadline,
+        private StackOperationDeadline $deadline,
     ) {}
 
     /**

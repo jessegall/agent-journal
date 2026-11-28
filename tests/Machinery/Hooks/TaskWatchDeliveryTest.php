@@ -11,7 +11,7 @@ use App\Models\Drivers\HookCall;
 use App\Providers\DomainEventServiceProvider;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Support\StackTransaction;
 use Domain\Rules\RulesDomain;
 use Domain\Tasks\Enums\TaskStatus;
@@ -129,7 +129,7 @@ final class TaskWatchDeliveryTest extends TestCase
     {
         $this->app->make(StackTransaction::class)->runAdmittedForTarget(
             $this->target,
-            new OperationDeadline(),
+            new StackOperationDeadline(),
             fn () => $this->app->make(Dispatcher::class)->dispatch($event),
         );
     }

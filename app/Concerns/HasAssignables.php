@@ -10,7 +10,7 @@ use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Contracts\InternalAssignableContributor;
 use App\Bootstrap\Attributes\Rules\RequiresInterface;
 use App\Contracts\Domains\DomainBootstrapper;
-use App\Support\Bootstrappers\RegisterAssignables;
+use App\Support\Bootstrappers\AssignablesBootstrapper;
 
 /**
  * Boots the records actors may hold, or actor types that hold records a domain declares through its capability
@@ -29,6 +29,6 @@ trait HasAssignables
      */
     protected function bootstrappersHasAssignables(): array
     {
-        return [RegisterAssignables::class];
+        return [AssignablesBootstrapper::class];
     }
 }

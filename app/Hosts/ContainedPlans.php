@@ -8,7 +8,7 @@ use App\Agents\ContainerManifest;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Values\PlanFile;
 use App\Models\Hosts\HostProcess;
-use App\Support\MountRules;
+use App\Support\HelperMounts;
 use App\Support\TarArchive;
 use App\Support\TarFile;
 use App\Values\HostProcessPlan;
@@ -102,6 +102,6 @@ final readonly class ContainedPlans
 
     private function filledText(string $text): string
     {
-        return str_replace(self::FILES_PLACEHOLDER, MountRules::SESSION_TARGET, $text);
+        return str_replace(self::FILES_PLACEHOLDER, HelperMounts::SESSION_TARGET, $text);
     }
 }

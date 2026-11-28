@@ -12,7 +12,7 @@ use App\Exceptions\AssigneeUnavailable;
 use App\Messages\Contracts\AdmittedRecipients;
 use App\Models\Access\User;
 use App\Support\AssigneeIdentity;
-use App\Support\AssigneeList;
+use App\Support\CursorPage;
 use App\Support\AssigneeName;
 use App\Support\IdListPage;
 
@@ -75,7 +75,8 @@ final readonly class UserAssignees implements AssigneeProvider
             ->all());
     }
 
-    public function eligible(IdListPage $page): AssigneeList
+    /** @return CursorPage<AssigneeName> */
+    public function eligible(IdListPage $page): CursorPage
     {
         $this->actors->actor();
 
@@ -89,7 +90,7 @@ final readonly class UserAssignees implements AssigneeProvider
         sort($ids);
         $shownIds = array_slice($ids, 0, $page->limit);
 
-        return new AssigneeList(
+        return new CursorPage(
             $this->names(array_map(fn (string $id) => new AssigneeIdentity(User::storedType(), $id), $shownIds)),
             $this->nextAfterId($shownIds, count($ids) > $page->limit),
         );

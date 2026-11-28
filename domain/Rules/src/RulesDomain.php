@@ -23,7 +23,7 @@ use App\Records\Contracts\LinkRecordProvider;
 use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Contracts\RuleDetailsResolver;
@@ -158,7 +158,7 @@ final class RulesDomain extends Domain implements
     public function searchables(): array
     {
         return [
-            Searchable::make(
+            SearchSource::make(
                 'rule',
                 'Rules',
                 RuleSearchAccess::class,

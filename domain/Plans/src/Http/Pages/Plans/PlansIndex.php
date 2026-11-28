@@ -17,7 +17,7 @@ use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutProgressData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\ListEmpty;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use App\Web\Enums\ReaderWidth;
@@ -113,7 +113,7 @@ final readonly class PlansIndex extends PlansPage
             ->finish();
     }
 
-    private function emptyFor(PlanFiltersData $filters): ListEmpty
+    private function emptyFor(PlanFiltersData $filters): EmptyListState
     {
         if ($filters->state instanceof PlanStateGroup || $filters->search !== null) {
             return $this->nothingMatches(
@@ -123,7 +123,7 @@ final readonly class PlansIndex extends PlansPage
             );
         }
 
-        return ListEmpty::build()
+        return EmptyListState::build()
             ->title('No plans yet')
             ->detail('A plan breaks bigger work into phases and tasks that agents can pick up.')
             ->icon('plan')

@@ -13,7 +13,7 @@ use App\Search\Values\SearchBatch;
 use App\Search\Values\SearchQuery;
 use App\Search\Values\SearchResult;
 use App\Search\Values\TieredSearchSource;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 use Domain\Plans\Models\Plan;
 
@@ -50,9 +50,9 @@ final readonly class PlanSearchProvider implements SearchProvider
     }
 
     /**
-     * @return ReadBuilder<Plan>
+     * @return BoundedReadBuilder<Plan>
      */
-    private static function admitted(AdmittedConstraints $constraints): ReadBuilder
+    private static function admitted(AdmittedConstraints $constraints): BoundedReadBuilder
     {
         return $constraints->narrow(Plan::query());
     }

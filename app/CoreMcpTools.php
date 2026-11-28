@@ -11,7 +11,7 @@ use App\Mcp\Tools\CapabilitiesReadTool;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\OverviewReadTool;
 use App\Mcp\Tools\SearchTool;
-use App\Support\Codebase;
+use App\Support\ProjectCode;
 
 /**
  * Core's own MCP tools and resources, added to the catalogue before the domains'.
@@ -37,7 +37,7 @@ final class CoreMcpTools
      */
     public static function tools(): array
     {
-        return self::orientationFirst(Codebase::in(__DIR__.'/Mcp/Tools', JournalTool::class), self::ORIENTATION_TOOLS);
+        return self::orientationFirst(ProjectCode::in(__DIR__.'/Mcp/Tools', JournalTool::class), self::ORIENTATION_TOOLS);
     }
 
     /**
@@ -45,7 +45,7 @@ final class CoreMcpTools
      */
     public static function resources(): array
     {
-        $found = Codebase::in(__DIR__.'/Mcp/Resources', JournalResource::class);
+        $found = ProjectCode::in(__DIR__.'/Mcp/Resources', JournalResource::class);
 
         return self::orientationFirst($found, self::ORIENTATION_RESOURCES);
     }

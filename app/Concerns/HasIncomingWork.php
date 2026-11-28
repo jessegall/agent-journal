@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Concerns;
 
 use App\Contracts\Domains\DomainBootstrapper;
-use App\Support\Bootstrappers\RegisterIncomingWork;
+use App\Support\Bootstrappers\IncomingWorkBootstrapper;
 
 /**
  * Registers the domain's incoming work at boot.
@@ -17,6 +17,6 @@ trait HasIncomingWork
      */
     protected function bootstrappersHasIncomingWork(): array
     {
-        return [RegisterIncomingWork::class];
+        return [IncomingWorkBootstrapper::class];
     }
 }

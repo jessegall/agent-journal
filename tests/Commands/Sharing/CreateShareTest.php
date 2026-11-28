@@ -39,7 +39,7 @@ use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareToken;
 use App\Skills\Exceptions\RequestKeyConflict;
 use App\Support\ActorReference;
-use App\Support\OperationDeadline;
+use App\Support\StackOperationDeadline;
 use App\Support\RecordIdentity;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
@@ -428,7 +428,7 @@ final class CreateShareTest extends SharingTestCase
             $secondCreator->table('share_installations')->lockForUpdate()->sole();
             $secondCreator->table('shares')->insert($this->lastSlotRow($first));
 
-            $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
+            $this->app->instance(StackOperationDeadline::class, new StackOperationDeadline(500));
 
             $this->assertThrows(
                 fn () => $this->createRacing($saved, '01JD8X0G9M3QZ6V4K2RACE0001'),

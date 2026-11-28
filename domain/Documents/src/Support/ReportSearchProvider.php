@@ -17,7 +17,7 @@ use App\Search\Values\SearchQuery;
 use App\Search\Values\SearchResult;
 use App\Search\Values\SearchWords;
 use App\Search\Values\TieredSearchSource;
-use App\Support\ReadBuilder;
+use App\Support\BoundedReadBuilder;
 use App\Support\RecordIdentity;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Values\PublicationPassage;
@@ -59,9 +59,9 @@ final readonly class ReportSearchProvider implements SearchProvider
     }
 
     /**
-     * @return ReadBuilder<Report>
+     * @return BoundedReadBuilder<Report>
      */
-    private static function admitted(AdmittedConstraints $constraints): ReadBuilder
+    private static function admitted(AdmittedConstraints $constraints): BoundedReadBuilder
     {
         return $constraints->narrow(Report::query());
     }

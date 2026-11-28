@@ -8,7 +8,7 @@ use App\Access\Contracts\OperationResolver;
 use App\Access\Exceptions\OperationUnavailable;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
-use App\Support\Operation;
+use App\Support\ReceiptedWrite;
 
 /**
  * The caller's write under a request key as operations_read and its resource give it: where it stands, its refusal or
@@ -42,7 +42,7 @@ final readonly class OperationsResolver
         return $this->page($operation, $offset);
     }
 
-    private function page(Operation $operation, int $offset): ToolResult
+    private function page(ReceiptedWrite $operation, int $offset): ToolResult
     {
         $receiptFields = is_array($operation->commandReply)
             ? $operation->commandReply

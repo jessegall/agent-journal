@@ -19,7 +19,7 @@ use App\Sharing\Support\LiveShareStatus;
 use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
-use App\Support\Codebase;
+use App\Support\ProjectCode;
 use App\Support\DomainRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
@@ -71,7 +71,7 @@ final class SharingServiceProvider extends ServiceProvider
             $records->checkRelations();
         });
 
-        $this->commands(Codebase::in(Codebase::consoleCommandFolder(dirname(__DIR__)).'/Sharing', Command::class));
+        $this->commands(ProjectCode::in(ProjectCode::consoleCommandFolder(dirname(__DIR__)).'/Sharing', Command::class));
         $this->loadCoreRoutes('sharing/sharing.php');
     }
 }

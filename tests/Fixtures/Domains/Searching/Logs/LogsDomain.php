@@ -9,7 +9,7 @@ use App\Search\Values\SearchBatch;
 use App\Search\Values\SearchQuery;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\Searchable;
+use App\Support\SearchSource;
 use Tests\Fixtures\Search\ClosedSearchAccess;
 
 /**
@@ -36,7 +36,7 @@ final class LogsDomain extends Domain
     public function searchables(): array
     {
         return [
-            Searchable::make(
+            SearchSource::make(
                 'line',
                 'Tasks',
                 ClosedSearchAccess::class,

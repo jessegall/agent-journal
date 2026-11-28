@@ -18,7 +18,7 @@ use App\Sessions\Contracts\AgentDirectory;
 use App\Sessions\Contracts\CurrentSession;
 use App\Sessions\Contracts\SessionResolver;
 use App\Support\ActorReference;
-use App\Support\AgentOption;
+use App\Support\HomeAgent;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 use App\Values\ProjectSelection;
@@ -112,7 +112,7 @@ final readonly class SurfaceContext
         }
     }
 
-    public function chosenAgent(string $key): AgentOption|null
+    public function chosenAgent(string $key): HomeAgent|null
     {
         $id = $this->queryId($key);
 

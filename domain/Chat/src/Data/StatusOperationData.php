@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Support\StatusOperation;
+use App\Support\StatusFollowedOperation;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -23,7 +23,7 @@ final class StatusOperationData extends Data
         public readonly int $version,
     ) {}
 
-    public static function fromStatusOperation(StatusOperation $operation): self
+    public static function fromStatusOperation(StatusFollowedOperation $operation): self
     {
         return self::from([
             'id' => $operation->id,
