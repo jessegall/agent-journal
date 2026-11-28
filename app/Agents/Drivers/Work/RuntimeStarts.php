@@ -4,19 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Work;
 
-use App\Accounts\Enums\CommandEntry;
-use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
-use App\Agents\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
 use App\Agents\ContainerManifest;
-use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Values\JournalServer;
-use App\Bus\Contracts\JournalCommands;
-use App\Exceptions\DriverUnknown;
-use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
 use App\Profiles\StartProfilePin;
 use App\Sessions\AgentClientSettings;
@@ -27,15 +19,14 @@ use App\Sessions\StartClaims;
 use App\Skills\StartSkillFiles;
 use App\Support\MountRules;
 use App\Values\DriverAccount;
-use App\Values\DriverRegistration;
 use App\Values\DriverStart;
 use Illuminate\Container\Attributes\Config;
 
 /**
- * The start of a headless Claude Code runtime the journal drives itself, as each of its processes runs it: in the
- * runtime's conversation and folder, on the start's account with the journal's server from the host's installation.
+ * The start of any process the journal opens for a runtime, a turn, a terminal or a probe, as that process runs it: in
+ * the runtime's conversation and folder, on the start's account with the journal's server from the host's installation.
  */
-final readonly class HeadlessStarts
+final readonly class RuntimeStarts
 {
     /**
      * Where the host's protected installation keeps the journal's PHP and its MCP relay, and its hook command.
@@ -58,12 +49,8 @@ final readonly class HeadlessStarts
     /**
      * The trusted entry the journal's own commands for headless starts run under.
      */
-    private const string TRUSTED_ENTRY = 'headless starts';
-
     public function __construct(
         private StartClaims $starts,
-        private DriverCatalogue $drivers,
-        private JournalCommands $commands,
         private SessionTokens $tokens,
         private SessionOfflineReplies $offlineReplies,
         private StartSkillFiles $skills,
@@ -71,47 +58,6 @@ final readonly class HeadlessStarts
         #[Config('journal.agents.session_journal_url')]
         private string $sessionJournalUrl,
     ) {}
-
-    /**
-     * The journal opens the headless runtime's next turn, a process of its own, when its start is proven, no turn runs
-     * and work waits.
-     */
-    public function openNextTurn(AgentRuntime $runtime): void
-    {
-        $open = new OpenHeadlessTurnCommand($runtime->id);
-
-        $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $open);
-    }
-
-    /**
-     * Whether a terminal of a runtime the journal drives is opened again once it is lost, as with its host's restart,
-     * so its start goes on.
-     */
-    public function opensAgainWhenLost(HostProcess $process): bool
-    {
-        if ($process->purpose !== HostProcessPurpose::AgentTerminal || $process->agent_runtime_id === null) {
-            return false;
-        }
-
-        $runtime = AgentRuntime::query()->whereKey($process->agent_runtime_id)->sole();
-
-        return $this->drives($runtime) && $this->opensTerminal($runtime);
-    }
-
-    /**
-     * The journal opens what a runtime whose start was just proven runs: its terminal, or its first turn.
-     */
-    public function openProven(AgentRuntime $runtime): void
-    {
-        if ($this->opensTerminal($runtime)) {
-            $open = new OpenJournalTerminalCommand($runtime->id);
-            $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $open);
-
-            return;
-        }
-
-        $this->openNextTurn($runtime);
-    }
 
     /**
      * How a process of the runtime signs in to the journal: the first takes the start's grant, each later one a fresh
@@ -128,23 +74,6 @@ final readonly class HeadlessStarts
         $journalUrl = $isContained ? $this->sessionJournalUrl : self::JOURNAL_URL;
 
         return new AgentClientSettings($journalUrl, $token, $profile);
-    }
-
-    /**
-     * Whether the journal drives this runtime itself, as its driver's registration says.
-     */
-    public function drives(AgentRuntime $runtime): bool
-    {
-        return in_array($runtime->driver_key, $this->drivers->drivenKeys(), true);
-    }
-
-    /**
-     * Whether the runtime works in a terminal, which takes its work from its own driver worker, as its driver's
-     * registration says.
-     */
-    public function opensTerminal(AgentRuntime $runtime): bool
-    {
-        return $this->registrationOf($runtime)->opensTerminal();
     }
 
     /**
@@ -221,19 +150,5 @@ final readonly class HeadlessStarts
             skillFiles: $this->skills->of($start->session_id),
             container: $this->containers->of($runtime, $start),
         );
-    }
-
-    /**
-     * A turn continues the conversation once a turn of it ran, or from its first turn when the owner chose to resume
-     * it.
-     */
-    private function registrationOf(AgentRuntime $runtime): DriverRegistration
-    {
-        $registrations = array_filter(
-            $this->drivers->catalogue(),
-            fn (DriverRegistration $registration) => $registration->key->key === $runtime->driver_key,
-        );
-
-        return array_values($registrations)[0] ?? throw DriverUnknown::for($runtime->driver_key);
     }
 }
