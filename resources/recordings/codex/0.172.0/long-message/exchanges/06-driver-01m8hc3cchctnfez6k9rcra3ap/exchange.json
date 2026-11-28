@@ -1,0 +1,38 @@
+{
+    "opening": {
+        "wire": "driver",
+        "exchange": "01m8hc3cchctnfez6k9rcra3ap",
+        "mode": "process",
+        "argv": [
+            "--",
+            "codex",
+            "login",
+            "status"
+        ],
+        "environment": {
+            "HOME": "{env:HOME}",
+            "CODEX_HOME": "{env:CODEX_HOME}",
+            "JOURNAL_ACCOUNTS_ROOT": "{env:JOURNAL_ACCOUNTS_ROOT}",
+            "JOURNAL_START_REF": "{env:JOURNAL_START_REF}"
+        },
+        "inherited": [],
+        "folder": "/workspace",
+        "columns": 0,
+        "rows": 0,
+        "image": "sha256:4c82b4114d6dc776a32c9758dd729485169666a97ef6f86edcea1730a9a823af",
+        "openedAt": 1795879449049483
+    },
+    "events": [
+        {
+            "type": "printed",
+            "at": 1795879449860196,
+            "bytes": "TG9nZ2VkIGluIHVzaW5nIENoYXRHUFQK",
+            "stream": "stderr",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        }
+    ],
+    "exit_code": 0
+}
