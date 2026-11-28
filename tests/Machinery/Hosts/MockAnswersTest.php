@@ -145,32 +145,38 @@ final class MockAnswersTest extends TestCase
     }
 
     /**
-     * What the mock prints for the arguments and the input, on either stream.
-     *
      * @param  list<string>  $arguments
+     * @return array{stdout: string, stderr: string}
      */
-    private function printed(string $installation, string $program, array $arguments, string $input = ''): string
+    private function printed(string $installation, string $program, array $arguments, string $input = ''): array
     {
         $ran = Process::env(['CLAUDE_CONFIG_DIR' => "{$installation}/home", 'CODEX_HOME' => "{$installation}/home"])
             ->input($input)
             ->run(["{$installation}/bin/{$program}", ...$arguments])
             ->throw();
 
-        return trim($ran->output().$ran->errorOutput());
+        return ['stdout' => trim($ran->output()), 'stderr' => trim($ran->errorOutput())];
     }
 
     /**
-     * What the real program printed when it was recorded, on either stream, with this installation's folders.
+     * @return array{stdout: string, stderr: string}
      */
-    private function recorded(string $driver, string $build, string $exchange, string $installation): string
+    private function recorded(string $driver, string $build, string $exchange, string $installation): array
     {
         $path = self::RECORDINGS."/{$driver}/{$build}/exchanges/{$exchange}/fixture.json";
         $fixture = json_decode((string) file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
-        $printed = implode(
-            '',
-            array_map(fn (array $chunk) => (string) base64_decode($chunk['bytes'], true), $fixture['output']),
-        );
+        $streams = ['stdout' => '', 'stderr' => ''];
 
-        return trim(str_replace(['{env:CLAUDE_CONFIG_DIR}', '{env:CODEX_HOME}'], "{$installation}/home", $printed));
+        foreach ($fixture['output'] as $chunk) {
+            $streams[$chunk['stream']] .= (string) base64_decode($chunk['bytes'], true);
+        }
+
+        $withFolders = fn (string $printed) => trim(str_replace(
+            ['{env:CLAUDE_CONFIG_DIR}', '{env:CODEX_HOME}'],
+            "{$installation}/home",
+            $printed,
+        ));
+
+        return ['stdout' => $withFolders($streams['stdout']), 'stderr' => $withFolders($streams['stderr'])];
     }
 }

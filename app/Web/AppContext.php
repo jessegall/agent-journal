@@ -173,7 +173,7 @@ final readonly class AppContext
     private function startAccounts(): array
     {
         return array_map(
-            fn (DriverFamily $family) => $this->starts->forProfileStart($family->key, ProfileBase::mainAgent()->key),
+            fn (DriverFamily $family) => $this->starts->forBuiltInStart($family->key, ProfileBase::mainAgent()),
             $this->drivers->families(),
         );
     }

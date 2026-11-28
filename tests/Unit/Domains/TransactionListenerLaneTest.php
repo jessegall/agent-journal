@@ -17,6 +17,8 @@ use App\Events\Connections\HostProcessExited;
 use App\Events\Connections\HostProcessLost;
 use App\Events\Connections\HostProcessRestarted;
 use App\Events\Links\LinksRemoved;
+use App\Events\Messages\MessageDeliveryChanged;
+use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
 use App\Events\Processes\OutputChunkCommitted;
 use App\Events\Processes\RunOutcomeRecorded;
@@ -114,6 +116,8 @@ final class TransactionListenerLaneTest extends TestCase
                 SessionClosed::class,
                 AgentSessionEnded::class,
                 OutputChunkCommitted::class,
+                MessageDeliveryChanged::class,
+                MessageRead::class,
                 MessageSent::class,
                 PlanReviewRequested::class,
                 TaskDescribed::class,
