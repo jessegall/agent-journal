@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Reflection\ReflectionCatalogue;
 use App\Support\DomainRegistry;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\TestCase as BaseTestCase;
 
 /**
@@ -16,5 +18,16 @@ abstract class TestCase extends BaseTestCase
     protected static function bootedDomains(): array
     {
         return DomainRegistry::installedClasses(dirname(__DIR__, 2));
+    }
+
+    /**
+     * Each architecture test reflects the whole project; what it kept is let go before the next test of the process.
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        ReflectionCatalogue::forget();
+        ScanCache::forget();
     }
 }

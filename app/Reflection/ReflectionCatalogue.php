@@ -37,6 +37,15 @@ final class ReflectionCatalogue
     }
 
     /**
+     * Lets go of every Reflector kept, so a process that reflects the whole project test after test, as the
+     * architecture tests do, holds one test's worth at a time.
+     */
+    public static function forget(): void
+    {
+        self::$current = null;
+    }
+
+    /**
      * The one Reflector of the type a spelling names, built by $build the first time the type is asked for.
      *
      * @param  string  $name  any spelling PHP accepts for the type

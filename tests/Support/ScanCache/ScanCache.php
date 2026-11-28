@@ -39,6 +39,14 @@ final class ScanCache
     private static array $loaded = [];
 
     /**
+     * Lets go of the cache files read into memory; a later scan reads its file from disk again.
+     */
+    public static function forget(): void
+    {
+        self::$loaded = [];
+    }
+
+    /**
      * @template TFinding
      *
      * @param  FileScan<TFinding>  $scan
