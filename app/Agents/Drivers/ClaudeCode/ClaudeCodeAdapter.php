@@ -17,6 +17,7 @@ use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Drivers\Hooks\DriverReply;
 use App\Agents\Drivers\Hooks\GuardedFiles;
+use App\Agents\Drivers\Hooks\NativeBackgrounding;
 use App\Agents\Drivers\Hooks\HookPayload;
 use App\Agents\Drivers\Hooks\JournalToolCall;
 use App\Agents\Drivers\Hooks\JournalTools;
@@ -94,6 +95,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         private RecordDriverFailure $failures,
         private CheckProtectedResources $protection,
         private AgentTexts $texts,
+        private NativeBackgrounding $backgrounding,
     ) {}
 
     public static function hookProtocol(): string
@@ -286,6 +288,11 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         if ($tool === ClaudeCodeTool::Bash) {
             $original = $hookInput->toolArguments();
             $command = $this->parser->parse($hookInput->argument('command'), ShellDialect::Bash);
+
+            // Bash's own run_in_background starts a shell the journal never sees, as a backgrounding line does.
+            if ($original->isSet('run_in_background') || $this->backgrounding->isInLine($command)) {
+                return $this->backgrounding->refusal();
+            }
 
             return $this->files->guardShell($hook, $command, fn () => new JudgedCall(
                 new ShellCommandRequested($hook, $command),

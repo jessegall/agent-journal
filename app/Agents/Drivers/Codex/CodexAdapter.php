@@ -17,6 +17,7 @@ use App\Agents\Drivers\Enums\ToolAllowance;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Drivers\Hooks\DriverReply;
 use App\Agents\Drivers\Hooks\GuardedFiles;
+use App\Agents\Drivers\Hooks\NativeBackgrounding;
 use App\Agents\Drivers\Hooks\HookPayload;
 use App\Agents\Drivers\Hooks\JournalToolCall;
 use App\Agents\Drivers\Hooks\JournalTools;
@@ -79,6 +80,7 @@ final readonly class CodexAdapter implements DriverAdapter
         private GuardedFiles $files,
         private CheckProtectedResources $protection,
         private AgentTexts $texts,
+        private NativeBackgrounding $backgrounding,
     ) {}
 
     public static function hookProtocol(): string
@@ -218,6 +220,10 @@ final readonly class CodexAdapter implements DriverAdapter
 
         $tool = CodexTool::named($hookInput->toolNameText());
 
+        if ($tool->drivesBackgroundTerminal()) {
+            return $this->backgrounding->refusal();
+        }
+
         if ($tool->canReadResources()) {
             $this->journalTools->requireJournalResource(self::DRIVER, $hookInput);
         }
@@ -238,6 +244,10 @@ final readonly class CodexAdapter implements DriverAdapter
 
         if ($tool->isShell()) {
             $command = $this->parser->parse($hookInput->argument('command'), ShellDialect::Bash);
+
+            if ($this->backgrounding->isInLine($command)) {
+                return $this->backgrounding->refusal();
+            }
 
             return $this->files->guardShell($hook, $command, fn () => new JudgedCall(
                 new ShellCommandRequested($hook, $command),

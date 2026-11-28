@@ -20,6 +20,14 @@ interface AgentDirectory
     public function visible(): array;
 
     /**
+     * The agents among those ids the actor may see, in the order of the ids; one out of sight is left out.
+     *
+     * @param  list<string>  $agentIds
+     * @return list<AgentOption>
+     */
+    public function visibleAmong(array $agentIds): array;
+
+    /**
      * One agent the actor may see, refused like a missing one when it is out of sight.
      *
      * @throws StackTargetRefused

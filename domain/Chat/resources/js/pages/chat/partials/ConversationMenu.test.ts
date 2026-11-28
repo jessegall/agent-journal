@@ -9,6 +9,20 @@ vi.mock("@inertiajs/vue3", () => ({
   router: { reload: (options: { data: { agent: string } }) => visited.push(options.data.agent) },
 }));
 
+// Each page the list asks its loader for after the first, and the agents the loader answers with.
+const pageReads: unknown[] = [];
+const laterAgents: AgentOptionData[] = [];
+
+vi.mock("@kit/loaders", () => ({
+  chatAgentPage: { key: "agent-page" },
+  LoaderCancelled: class extends Error {},
+  load: (_loader: unknown, cursor: unknown) => {
+    pageReads.push(cursor);
+
+    return Promise.resolve({ status: "ok", value: { agents: laterAgents, next: null } });
+  },
+}));
+
 const { default: ConversationMenu } = await import("./ConversationMenu.vue");
 const { HANDED_RECORD_TYPE, useHandOver } =
   await import("../../../composables/useHandOver");
@@ -90,6 +104,23 @@ function rowIds(list: Awaited<ReturnType<typeof openList>>): string[] {
 }
 
 describe("ConversationMenu", () => {
+  it("reads the next page of chats from its cursor and lists it after the first, each agent once", async () => {
+    laterAgents.splice(0, laterAgents.length, agent("writer", "Writer"), agent("planner", "Planner"));
+    const cursor = { afterAgentId: "writer", afterActiveAt: "2026-11-28 08:00:00" };
+    const list = mount(ConversationMenu, {
+      props: { agents, nextAgents: cursor, selectedAgentId: "main", openAgentIds: ["main"] },
+    });
+    await list.get("[data-chat-list-trigger]").trigger("click");
+    await flushPromises();
+
+    await list.get("[data-more-chats]").trigger("click");
+    await flushPromises();
+
+    expect(pageReads).toEqual([cursor]);
+    expect(rowIds(list)).toEqual(["main", "reviewer", "writer", "planner"]);
+    expect(list.find("[data-more-chats]").exists()).toBe(false);
+  });
+
   it("lists the chats On Home first, then the Recent ones most recently active first, retired agents hidden", async () => {
     const list = await openList();
 

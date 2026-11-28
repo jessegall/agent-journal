@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeSkills;
-use App\Hooks\Enums\ToolOutcome;
 use App\Skills\Enums\ReadEvidence;
-use App\Support\Inputs\Values\ToolResult;
 
 /**
- * A finished tool call that proves an agent read one skill whole: Claude's Skill tool, a Read of a whole SKILL.md of
- * the session's own runtime folder, a shell cat of one, or a successful php artisan skill:show of the key. A listing,
- * a partial read, a file of another folder or anything else proves nothing.
+ * A read of one skill whole that a driver's finished tool call proves; which calls prove one is each driver's to say.
+ * What every driver shares is read here: a SKILL.md of the session's own runtime folder, a shell line that prints such
+ * a file whole, and a successful php artisan skill:show of the key. A listing, a partial read or a file of another
+ * folder proves nothing.
  */
 final readonly class ProvenSkillRead
 {
     private const string KEY = '[a-z0-9]+(?:-[a-z0-9]+)*';
 
-    private const string SHELL_READ = '~^cat\s+([\'"]?)(\S+)\1\s*$~';
+    /**
+     * A shell line that prints one file whole with cat, its path in the group path.
+     */
+    public const string WHOLE_CAT = '~^cat\s+(?<quote>[\'"]?)(?<path>\S+)(?P=quote)\s*$~';
 
     public const string SKILL_SHOW = '~^php\s+artisan\s+skill:show\s+('.self::KEY.')\s*$~';
 
@@ -30,70 +31,17 @@ final readonly class ProvenSkillRead
     ) {}
 
     /**
-     * The read the call proves for the session whose runtime has this id, or null when it proves none.
+     * The read a driver's own skill tool proves, by the key it loaded.
      */
-    public static function of(ToolResult $call, string $runtimeId): self|null
+    public static function bySkillTool(string $skillKey): self
     {
-        if ($call->outcome !== ToolOutcome::Succeeded) {
-            return null;
-        }
-
-        return self::skillTool($call) ?? self::fileRead($call, $runtimeId) ?? self::shellRead($call, $runtimeId);
-    }
-
-    private static function skillTool(ToolResult $call): self|null
-    {
-        $prefix = ClaudeCodeSkills::PLUGIN_NAME.':';
-
-        if ($call->toolName !== 'Skill') {
-            return null;
-        }
-
-        $skill = $call->arguments->textArgument('skill');
-
-        if ($skill !== null && str_starts_with($skill, $prefix)) {
-            return new self(substr($skill, strlen($prefix)), ReadEvidence::ClaudeSkillTool);
-        }
-
-        return null;
-    }
-
-    private static function fileRead(ToolResult $call, string $runtimeId): self|null
-    {
-        $isPartial = $call->arguments->hasArgument('offset') || $call->arguments->hasArgument('limit');
-
-        if ($call->toolName !== 'Read' || $isPartial) {
-            return null;
-        }
-
-        $path = $call->arguments->textArgument('file_path');
-
-        if ($path !== null) {
-            return self::fromPath($path, $runtimeId);
-        }
-
-        return null;
-    }
-
-    private static function shellRead(ToolResult $call, string $runtimeId): self|null
-    {
-        $command = trim((string) $call->arguments->textArgument('command'));
-
-        if (preg_match(self::SKILL_SHOW, $command, $match) === 1) {
-            return new self($match[1], ReadEvidence::SkillShow);
-        }
-
-        if (preg_match(self::SHELL_READ, $command, $match) === 1) {
-            return self::fromPath($match[2], $runtimeId);
-        }
-
-        return null;
+        return new self($skillKey, ReadEvidence::ClaudeSkillTool);
     }
 
     /**
      * The skill a path names when it is a SKILL.md inside the folder of this runtime, written without dotted segments.
      */
-    private static function fromPath(string $path, string $runtimeId): self|null
+    public static function inFile(string $path, string $runtimeId): self|null
     {
         if (preg_match(self::DOTTED_SEGMENT, $path) === 1) {
             return null;
@@ -103,6 +51,29 @@ final readonly class ProvenSkillRead
 
         if (preg_match($skillFile, $path, $match) === 1) {
             return new self($match[1], ReadEvidence::FullFileRead);
+        }
+
+        return null;
+    }
+
+    /**
+     * The read a shell line proves: skill:show of a key, or one of the driver's whole-file reads, each a pattern whose
+     * group path names the file, of a SKILL.md of this runtime.
+     *
+     * @param  list<string>  $wholeReads
+     */
+    public static function byShellLine(string $line, array $wholeReads, string $runtimeId): self|null
+    {
+        $command = trim($line);
+
+        if (preg_match(self::SKILL_SHOW, $command, $match) === 1) {
+            return new self($match[1], ReadEvidence::SkillShow);
+        }
+
+        foreach ($wholeReads as $wholeRead) {
+            if (preg_match($wholeRead, $command, $match) === 1) {
+                return self::inFile($match['path'], $runtimeId);
+            }
         }
 
         return null;

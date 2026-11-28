@@ -21,6 +21,8 @@ final readonly class ShellCommand
         public ShellDialect $dialect,
         public ParseOutcome $outcome,
         public array $parts,
+        // Whether the line sends a command to the background with &.
+        public bool $hasBackgroundJob = false,
     ) {}
 
     /**

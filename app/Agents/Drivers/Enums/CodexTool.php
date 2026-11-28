@@ -7,12 +7,13 @@ namespace App\Agents\Drivers\Enums;
 use App\Exceptions\UnsupportedHook;
 
 /**
- * The Codex tools the adapter knows, by the names Codex 0.165.0 uses: running a shell command, applying a patch, and
- * finding or reading MCP tools and resources.
+ * The Codex tools the adapter knows, by the names Codex 0.165.0 uses: running a shell command, writing to a background
+ * terminal it keeps running, applying a patch, and finding or reading MCP tools and resources.
  */
 enum CodexTool: string
 {
     case Bash = 'Bash';
+    case WriteStdin = 'write_stdin';
     case ApplyPatch = 'apply_patch';
     case ToolSearch = 'tool_search';
     case ListMcpResources = 'list_mcp_resources';
@@ -28,8 +29,8 @@ enum CodexTool: string
     {
         return match ($this) {
             self::Bash => true,
-            self::ApplyPatch, self::ToolSearch, self::ListMcpResources, self::ListMcpResourceTemplates,
-            self::ReadMcpResource => false,
+            self::WriteStdin, self::ApplyPatch, self::ToolSearch, self::ListMcpResources,
+            self::ListMcpResourceTemplates, self::ReadMcpResource => false,
         };
     }
 
@@ -40,7 +41,7 @@ enum CodexTool: string
     {
         return match ($this) {
             self::ToolSearch, self::ListMcpResources, self::ListMcpResourceTemplates, self::ReadMcpResource => true,
-            self::Bash, self::ApplyPatch => false,
+            self::Bash, self::WriteStdin, self::ApplyPatch => false,
         };
     }
 
@@ -51,7 +52,16 @@ enum CodexTool: string
     {
         return match ($this) {
             self::ListMcpResources, self::ListMcpResourceTemplates, self::ReadMcpResource => true,
-            self::Bash, self::ApplyPatch, self::ToolSearch => false,
+            self::Bash, self::WriteStdin, self::ApplyPatch, self::ToolSearch => false,
         };
+    }
+
+    /**
+     * Whether the tool drives a terminal Codex keeps running in its own background, which no process of the journal's
+     * may be.
+     */
+    public function drivesBackgroundTerminal(): bool
+    {
+        return $this === self::WriteStdin;
     }
 }

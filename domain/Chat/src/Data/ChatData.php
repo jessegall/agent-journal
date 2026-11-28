@@ -12,8 +12,9 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The chat window: the agents the user can see, idle ones included, the one chosen (the main agent unless another
- * is), and the conversation with it. Without a designated main agent the installation still needs setting up.
+ * The chat window: the first page of the agents the user can see, idle ones included, the one chosen (the main agent
+ * unless another is), and the conversation with it. Without a designated main agent the installation still needs
+ * setting up.
  */
 #[TypeScript]
 final class ChatData extends Data
@@ -41,5 +42,7 @@ final class ChatData extends Data
         public readonly string|Optional $selectedInboxId = new Optional(),
         // The No accounts yet state, shown in place of the conversation while no account is signed in.
         public readonly LayoutPartData|Optional $noAccounts = new Optional(),
+        // Where the chat list's next page starts; none when the agents shown are all there are.
+        public readonly AgentPageCursorData|null $nextAgents = null,
     ) {}
 }

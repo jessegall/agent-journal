@@ -34,6 +34,8 @@ use App\Support\AgentOption;
 use App\Support\AgentStatusRules;
 use App\Time\Contracts\ServerClock;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use PhpOption\Option;
 
@@ -64,12 +66,46 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
 
     public function visible(): array
     {
-        $query = Agent::query()->byCreatedAt();
+        return $this->optionsOf($this->seen()->byCreatedAt()->limit(self::AGENTS_SHOWN)->get());
+    }
 
-        $agents = ($this->inspection->seesEveryAgent() ? $query : $query->whereKey($this->actors->actor()->id))
-            ->limit(self::AGENTS_SHOWN)
-            ->get();
+    public function visibleAmong(array $agentIds): array
+    {
+        $positions = array_flip($agentIds);
+        $found = $this->seen()->whereKey($agentIds)->limit(count($agentIds))->get();
 
+        return $this->optionsOf($found->sortBy(fn (Agent $agent) => $positions[$agent->id])->values());
+    }
+
+    public function visibleAgent(string $agentId): AgentOption
+    {
+        $found = $this->visibleAmong([$agentId]);
+
+        if ($found === []) {
+            throw StackTargetRefused::forTarget("agent {$agentId}");
+        }
+
+        return $found[0];
+    }
+
+    /**
+     * The agents the actor may see, as a query to order and bound.
+     *
+     * @return Builder<Agent>
+     */
+    private function seen(): Builder
+    {
+        return $this->inspection->agentsSeenBy($this->actors->actor());
+    }
+
+    /**
+     * Each agent's option, its facts read for every one of them at once.
+     *
+     * @param  EloquentCollection<int, Agent>  $agents
+     * @return list<AgentOption>
+     */
+    private function optionsOf(EloquentCollection $agents): array
+    {
         $ids = $agents->modelKeys();
 
         $sessions = AgentSession::query()->ofAgents($ids)->running()
@@ -85,7 +121,8 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             ->keyBy('session_id');
 
         // The starts that wait for their host's driver image, read once for every agent shown.
-        $imageWaits = HostDriverImageWait::query()->ofStarts(array_values(array_map(strval(...), $starts->pluck('id')->all())))
+        $imageWaits = HostDriverImageWait::query()
+            ->ofStarts(array_values(array_map(strval(...), $starts->pluck('id')->all())))
             ->pluck('session_process_id')->all();
 
         $requests = DriverRequest::query()->ofAgentRuntimes($runtimes->pluck('id')->all())
@@ -153,17 +190,6 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
                 $now,
             );
         })->all());
-    }
-
-    public function visibleAgent(string $agentId): AgentOption
-    {
-        foreach ($this->visible() as $agent) {
-            if ($agent->agentId === $agentId) {
-                return $agent;
-            }
-        }
-
-        throw StackTargetRefused::forTarget("agent {$agentId}");
     }
 
     public function mainAgentId(): Option
