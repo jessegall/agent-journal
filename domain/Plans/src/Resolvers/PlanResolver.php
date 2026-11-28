@@ -68,6 +68,15 @@ final readonly class PlanResolver implements PlanResolverContract
         );
     }
 
+    /** @return EloquentCollection<int, Plan> */
+    public function preview(PlanFilters $filters, int $limit): EloquentCollection
+    {
+        return $this->listed($filters)
+            ->listOrder($this->focusedPlanId())
+            ->limit($limit)
+            ->get(['id', 'title', 'status']);
+    }
+
     /**
      * The plans a list counts and shows: by its search, and by its states when it names any.
      *

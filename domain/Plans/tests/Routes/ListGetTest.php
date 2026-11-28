@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Routes;
 
 use App\Web\Creation\PageFactory;
+use App\Web\Creation\WindowFactory;
+use Domain\Plans\Data\PlansPaneData;
 use Domain\Plans\Http\Pages\PlansPageBuilder;
 use Domain\Plans\Http\Pages\PlansPageData;
+use Domain\Plans\Http\Windows\PlansWindowBuilder;
 use Illuminate\Http\Request;
 use Domain\Plans\PlansDomain;
 use Tests\Support\DomainBoot;
@@ -30,6 +33,18 @@ final class ListGetTest extends GuardedRouteEntryTestCase
         $result = $factory->create(PlansPageData::class, Request::create('/plans'));
 
         $this->assertSame('Plans', $result->layout()->root->children[0]->children[0]->text);
+    }
+
+    public function test_the_pane_exposes_only_the_compact_rows_and_full_link(): void
+    {
+        $this->journal->owner();
+        $factory = new WindowFactory($this->app);
+        $factory->register(PlansPaneData::class, PlansWindowBuilder::class);
+
+        $pane = $factory->create(PlansPaneData::class, Request::create('/?q=example'));
+
+        $this->assertSame([], $pane->items);
+        $this->assertSame('/plans?q=example', $pane->fullUrl);
     }
 
     protected static function bootedDomains(): array
