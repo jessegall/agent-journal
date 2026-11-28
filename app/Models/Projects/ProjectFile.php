@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
 use App\Exceptions\TextVersionUnavailable;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Reads\Contracts\TextContent;
@@ -41,7 +41,7 @@ use PhpOption\Option;
 #[Table('project_files')]
 final class ProjectFile extends JournalModel implements Commentable, Numbered, ProjectOwned, ReadableModel, TextContent
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use HasNumber;
     use Linkable;

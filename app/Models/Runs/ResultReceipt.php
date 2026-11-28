@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Processes\ResultReceiptSuperseded;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Values\VerifiedOutput;
@@ -40,7 +40,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class ResultReceipt extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use Linkable;
     use RaisesEvents;

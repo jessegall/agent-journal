@@ -37,7 +37,7 @@ final readonly class AccountsPageBuilder implements PageBuilder
             $policy->pageSize(),
             $chosen,
             $input->usagePage,
-            $input->add,
+            $input->isAdding,
         );
 
         if ($page->page !== $input->page) {

@@ -13,7 +13,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Exceptions\RevisionImmutable;
 use App\Models\Projects\Project;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Models\Support\NamedByRuleScope;
 use App\Projects\Contracts\ProjectOwned;
@@ -49,7 +49,7 @@ use Spatie\LaravelData\DataCollection;
  */
 final class RuleRevision extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use Linkable;
     use NamedByRuleScope;

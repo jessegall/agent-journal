@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleProposalRevision;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Processes\Values\ProvenBranch;
 use App\Projects\Contracts\ProjectOwned;
@@ -34,7 +34,7 @@ use Spatie\LaravelData\DataCollection;
  */
 final class ReaderProof extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use Linkable;
 

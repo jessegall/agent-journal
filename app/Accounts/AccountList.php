@@ -31,18 +31,18 @@ final readonly class AccountList
 
     public function __construct(private AccountUses $uses, private SignInProtocols $protocols) {}
 
-    public function page(int $page, int $size, string $chosen, int $usagePage, bool $adding): AccountListPageData
+    public function page(int $page, int $size, string $chosen, int $usagePage, bool $isAdding): AccountListPageData
     {
         $listed = Account::pageListed($page, $size);
         $accounts = array_values($listed->items());
-        $selected = $adding ? null : $this->selected($accounts, $chosen);
+        $selected = $isAdding ? null : $this->selected($accounts, $chosen);
         $visible = $accounts;
 
         if ($selected !== null && ! in_array($selected->id, array_column($visible, 'id'), true)) {
             $visible[] = $selected;
         }
 
-        $families = $adding
+        $families = $isAdding
             ? DefaultDrivers::familyKeys()
             : array_values(array_unique(array_column($visible, 'account_protocol')));
 
@@ -91,7 +91,7 @@ final readonly class AccountList
                 ->usageLastPage($usage->lastPage());
         }
 
-        if ($adding) {
+        if ($isAdding) {
             $fields->addForm($this->addForm($rows, array_values($selections), $now));
         }
 

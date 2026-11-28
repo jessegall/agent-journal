@@ -101,7 +101,7 @@ final readonly class RecordingDrafts
         return str_starts_with((string) $run['scenario'], Scenario::CONNECTED.'/');
     }
 
-    public function sawSessionStart(string $source, int $after): bool
+    public function hasSessionStart(string $source, int $after): bool
     {
         $folder = $this->drafts->child(Wire::Hooks->value);
 

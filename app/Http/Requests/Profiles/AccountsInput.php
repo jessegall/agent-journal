@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Profiles;
 
 use App\Web\Attributes\QueryInput;
+use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -18,8 +19,8 @@ final class AccountsInput extends Data
     public function __construct(
         #[QueryInput('account'), Nullable, Max(26)]
         public readonly string|null $account = null,
-        #[QueryInput('add'), BooleanType, WithCast(AccountAddCast::class)]
-        public readonly bool $add = false,
+        #[QueryInput('add'), MapInputName('add'), BooleanType, WithCast(AccountAddCast::class)]
+        public readonly bool $isAdding = false,
         #[QueryInput('page'), IntegerType, Min(1)]
         public readonly int $page = 1,
         #[QueryInput('usage_page'), IntegerType, Min(1)]

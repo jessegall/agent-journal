@@ -19,7 +19,7 @@ final class ListPageFields
 
     private int|null $total = null;
 
-    private bool $countRows = false;
+    private bool $isTotalDerived = false;
 
     /** @var list<LayoutPartData> */
     private array $filters = [];
@@ -69,7 +69,7 @@ final class ListPageFields
      */
     public function counting(int $total): self
     {
-        return clone ($this, ['total' => $total, 'countRows' => false]);
+        return clone ($this, ['total' => $total, 'isTotalDerived' => false]);
     }
 
     /**
@@ -77,7 +77,7 @@ final class ListPageFields
      */
     public function countingRows(): self
     {
-        return clone ($this, ['countRows' => true]);
+        return clone ($this, ['isTotalDerived' => true]);
     }
 
     public function filteredBy(LayoutPartData ...$filters): self
@@ -255,7 +255,7 @@ final class ListPageFields
             ->style('heading')
             ->finish()];
 
-        $total = $this->countRows ? count($this->table->rows) : $this->total;
+        $total = $this->isTotalDerived ? count($this->table->rows) : $this->total;
 
         if ($total !== null) {
             $parts[] = LayoutPartData::build()
