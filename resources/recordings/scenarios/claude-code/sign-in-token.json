@@ -1,0 +1,28 @@
+{
+    "description": "A Claude Code account signs in with a long-lived provider token from claude setup-token",
+    "steps": [
+        {
+            "do": "sign-in",
+            "driver": "claude-code",
+            "method": "provider_token"
+        },
+        {
+            "do": "wait-for",
+            "fact": "challenge-shown",
+            "seconds": 60
+        },
+        {
+            "do": "ask-user",
+            "text": "Send the provider token claude setup-token printed."
+        },
+        {
+            "do": "submit-code",
+            "from": "challenge"
+        },
+        {
+            "do": "wait-for",
+            "fact": "signed-in",
+            "seconds": 120
+        }
+    ]
+}

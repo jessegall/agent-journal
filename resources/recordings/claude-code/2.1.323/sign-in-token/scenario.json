@@ -1,0 +1,13 @@
+{
+    "format": 2,
+    "protocol": 1,
+    "scenario_hash": "b9788aa0db2b868260ee774f0b007a01913005d335501d808abd364d09c1a230",
+    "driver": "claude-code",
+    "build": "2.1.323",
+    "image_programs": "234caf25e241cc459eb4eff37ea55a2a828df57309c75dd16ab3e9247c6d692d",
+    "recorded_at": "2026-11-28T02:03:27+00:00",
+    "exchanges": [
+        "01-host-caller-915b0be9afb2601e",
+        "02-docker-daemon"
+    ]
+}
