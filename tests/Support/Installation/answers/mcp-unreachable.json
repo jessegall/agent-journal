@@ -1,1 +1,2 @@
-{"error":{"code":-32603,"data":{"code":"unavailable","retryable":true},"message":"The journal could not be reached: no network."},"id":1,"jsonrpc":"2.0"}
+{"id":1,"jsonrpc":"2.0","result":{"capabilities":{"tools":{}},"protocolVersion":"2025-06-18","serverInfo":{"name":"journal","version":"relay"}}}
+{"error":{"code":-32000,"data":{"code":"unavailable","retryable":true},"message":"The journal could not be reached: the journal could not be reached; nothing was sent\nPost \"http://journal.invalid/agent/mcp/v1\": dial tcp: lookup journal.invalid on 0.250.250.200:53: dial udp 0.250.250.200:53: connect: network is unreachable"},"id":2,"jsonrpc":"2.0"}

@@ -150,11 +150,12 @@ check_hook_refusal() {
     [ "$status" -eq 2 ]
 }
 
-# The MCP relay runs as the session's user on a read-only root and answers a frame it cannot pass on with a refusal.
+# The MCP relay runs as the session's user on a read-only root, completes the handshake itself and refuses a call it
+# cannot pass on.
 check_mcp_relay() {
     run_in_image -i --read-only --network=none --env=JOURNAL_URL=http://journal.invalid --env=JOURNAL_START_TOKEN=check \
         --env=JOURNAL_PROFILE=check --env=JOURNAL_PROFILE_REVISION=1 /opt/journal/bin/journal-mcp \
-        < .docker/helper/checks/mcp-initialize.json | grep -q '"code":"unavailable"'
+        < .docker/helper/checks/mcp-calls.json | grep -q '"code":"unavailable"'
 }
 
 check_absent_programs() {
