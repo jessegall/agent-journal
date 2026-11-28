@@ -88,8 +88,9 @@ final class DriversServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->singleton(DriverCatalogue::class, function (): DriverCatalogue {
-            $registry = new DriverCatalogue($this->app);
+        // Scoped, so each request's sandbox builds its drivers and their commands in its own container under Octane.
+        $this->app->scoped(DriverCatalogue::class, function (Application $app): DriverCatalogue {
+            $registry = new DriverCatalogue($app);
 
             foreach (DefaultDrivers::families() as $family) {
                 $registry->registerFamily($family);
