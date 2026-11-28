@@ -49,7 +49,8 @@ final readonly class ScreenClassifier
     private static function holdsEmptyComposer(ScreenLayout $layout, HostFramePayload $frame, RowRange $composer): bool
     {
         return $frame->buffer === $layout->buffer
-            && $composer->holds($frame->cursorRow)
+            && $composer->first === $frame->cursorRow
+            && $composer->last === $composer->first + 1
             && $frame->cursorColumn === $layout->emptyCursorColumn;
     }
 
