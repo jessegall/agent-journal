@@ -746,14 +746,17 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * The hosts whose inventory named a release other than the given one.
+     * The hosts whose inventory named a release other than the given one; a contained host runs the deploy's own
+     * runner image, which no release replaces, so it is never behind one.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
     protected function runningAnotherReleaseThan(Builder $query, string $release): void
     {
-        $query->whereNotNull('release')->where('release', '!=', $release);
+        $query->where('arrangement', '!=', ArrangementType::Contained)
+            ->whereNotNull('release')
+            ->where('release', '!=', $release);
     }
 
     /**

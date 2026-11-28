@@ -43,8 +43,18 @@ final class MarkSilentHostsTest extends TestCase
 
     public function test_a_host_on_another_release_than_the_journals_is_shown_with_what_to_do(): void
     {
-        $this->journal->publishRelease('6.2.0')->enrollHost('Mac', [base_path()]);
+        $this->journal->publishRelease('6.2.0')
+            ->enrollHost('Mac', [base_path()])
+            ->enrollContainedHost('Box', [base_path()]);
         $hostId = $this->journal->hostCalled('Mac')->hostId;
+        $development = HostInventoryPayload::from([
+            'protocol' => 1,
+            'release' => 'development',
+            'capabilities' => [],
+            'processes' => [],
+        ]);
+        // A contained host runs the deploy's runner image, never a release, so it is never behind one.
+        $this->journal->asSystem(new NotifyHostInventoryCommand($this->journal->hostCalled('Box')->hostId, $development));
         $inventory = HostInventoryPayload::from([
             'protocol' => 1,
             'release' => '6.1.0',
