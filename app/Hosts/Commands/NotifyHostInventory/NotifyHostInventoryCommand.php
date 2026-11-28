@@ -10,7 +10,7 @@ use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Support\Command;
 
 /**
- * A host that started reports what it holds, sent as its JSON body: its protocol, the newest instruction it answered and its processes. Run by the journal itself (internal, not exported).
+ * A host that started reports what it holds, sent as its JSON body: its protocol, the newest instruction it answered, its processes and every container of its installation. Run by the journal itself (internal, not exported).
  *
  * @extends Command<null>
  */

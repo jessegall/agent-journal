@@ -187,7 +187,7 @@
         "output": { "frames": "list<frame>", "chunks": "list<chunk>" },
         "frame": { "rows": "list<string>", "cursor_row": "int", "cursor_column": "int", "columns": "int", "buffer": "string", "captured": "int64", "unchanged_ms": "list<int64>", "title": "string?", "is_shielded": "bool?" },
         "chunk": { "stream": "string", "offset": "int64", "bytes": "string" },
-        "inventory": { "protocol": "int", "release": "string", "answered_through": "string?", "capabilities": "list<string>", "processes": "list<inventory_process>" },
+        "inventory": { "protocol": "int", "release": "string", "answered_through": "string?", "capabilities": "list<string>", "processes": "list<inventory_process>", "containers": "list<string>?" },
         "inventory_process": { "process_id": "string", "identity": "string", "container": "string?", "is_alive": "bool", "is_terminal_held": "bool", "spool_offset": "int64" },
         "host_heartbeat": { "live_processes": "list<string>", "answered_through": "string?" },
         "private_value": { "value": "string" },

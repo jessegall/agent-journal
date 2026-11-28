@@ -36,31 +36,9 @@ func (containers Containers) RemoveImage(ctx context.Context, reference string) 
 	return absentIsDone(err)
 }
 
-// LabelledContainer is a container the host made, found by its own label: its id, its labels and whether it still
-// runs.
-type LabelledContainer struct {
-	ID      string
-	Labels  map[string]string
-	Running bool
-}
-
-// Labelled lists every container, running or not, that the host of this installation made.
-func (containers Containers) Labelled(ctx context.Context) ([]LabelledContainer, error) {
-	listed, err := containers.withLabel(ctx, runnerLabel, string(containers.Rules.InstallationName))
-	if err != nil {
-		return nil, err
-	}
-
-	var found []LabelledContainer
-	for _, listedContainer := range listed {
-		found = append(found, LabelledContainer{
-			ID:      listedContainer.ID,
-			Labels:  listedContainer.Labels,
-			Running: listedContainer.State == container.StateRunning,
-		})
-	}
-
-	return found, nil
+// InstallationNames are the names of every container, running or not, that the host of this installation made.
+func (containers Containers) InstallationNames(ctx context.Context) ([]string, error) {
+	return containers.NamesWithLabel(ctx, ContainerLabel{Name: runnerLabel, Value: string(containers.Rules.InstallationName)})
 }
 
 // NamesWithLabel are the names of every container on the daemon, running or not yet removed, that carries the label

@@ -23,6 +23,7 @@ final class HostInventoryPayload extends Data
     /**
      * @param  list<string>  $capabilities
      * @param  list<HostInventoryProcessPayload>  $processes
+     * @param  list<string>  $containers
      */
     public function __construct(
         #[Present]
@@ -37,5 +38,7 @@ final class HostInventoryPayload extends Data
         #[MapName('answered_through')]
         #[OptionalField]
         public readonly string|null $answeredThrough = null,
+        #[OptionalField]
+        public readonly array $containers = [],
     ) {}
 }

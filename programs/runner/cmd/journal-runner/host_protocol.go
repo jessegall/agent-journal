@@ -148,7 +148,7 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment d
 		return nil, err
 	}
 	if err := protocol.relay.SendInventory(ctx); err != nil {
-		log.Printf("the host's inventory was not sent: %v", err)
+		log.Printf("the host's inventory was not sent whole: %v", err)
 	}
 	protocol.serve(ctx)
 	return protocol.table, nil

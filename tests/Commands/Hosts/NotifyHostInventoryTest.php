@@ -12,6 +12,7 @@ use App\Hosts\Enums\DriverImageStatus;
 use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\HostProtocolVersion;
@@ -30,8 +31,8 @@ use Tests\TestCase;
 
 /**
  * After a host started, a process it still runs is kept, one it no longer holds is lost, one opened after its
- * inventory was built is left alone and its claimed opening offered again, and every input instruction it had claimed is
- * refused host_restarted.
+ * inventory was built is left alone and its claimed opening offered again, a container no live process runs in is
+ * removed, and every input instruction it had claimed is refused host_restarted.
  */
 #[TestsCommand(NotifyHostInventoryCommand::class)]
 final class NotifyHostInventoryTest extends TestCase
@@ -88,6 +89,42 @@ final class NotifyHostInventoryTest extends TestCase
                 $refused->refusal,
                 $newerOpen->status,
             ],
+        );
+    }
+
+    public function test_a_container_no_live_process_runs_in_is_removed_and_the_one_a_live_process_owns_stays(): void
+    {
+        $this->journal
+            ->enrollHost('Mac', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcess('owned'))
+            ->hostProcess('owned', fn (TestHostProcess $owned) => $owned->report(HostProcessReportType::Running));
+        $owned = $this->journal->hostProcessCalled('owned');
+        $inventory = HostInventoryPayload::from([
+            'protocol' => 1,
+            'release' => '6.0.0',
+            'capabilities' => [],
+            'processes' => [[
+                'process_id' => $owned->id,
+                'identity' => 'container:owned',
+                'is_alive' => true,
+                'is_terminal_held' => false,
+                'spool_offset' => 0,
+            ]],
+            'containers' => [$owned->container_name, 'journal-process-crashed'],
+        ]);
+
+        $this->journal->asSystem(new NotifyHostInventoryCommand($owned->host_id, $inventory));
+
+        $removed = array_map(
+            fn (HostInstruction $removal) => $this->journal->payloadOf($removal)['container'],
+            array_values(array_filter(
+                $this->journal->hostInstructionsOn('Mac'),
+                fn (HostInstruction $instruction) => $instruction->type === HostInstructionType::Remove,
+            )),
+        );
+        $this->journal->assertResult(
+            [['journal-process-crashed'], HostProcessStatus::Running],
+            [$removed, $owned->refresh()->status],
         );
     }
 
