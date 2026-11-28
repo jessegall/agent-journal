@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wire\Hosts;
 
 use App\Hosts\Protocol\HostInstructionType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\OverTheWire;
 use Tests\Support\Recordings\TestScenario;
@@ -14,9 +15,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A Claude Code terminal turn plays as it was recorded: the journal starts the session, sends its message and stops
- * it on the real host, against the Docker daemon and the programs of the recording, and asks for every recorded call
- * and no other.
+ * Recorded terminal turns play on the real host against recorded programs and Docker calls.
  */
 #[OverTheWire]
 #[TimeLimit(seconds: 240, reason: 'It runs the real host, a played Docker daemon and a served journal through a whole turn.')]
@@ -57,6 +56,26 @@ final class RecordedTerminalTurnTest extends TestCase
                 ->assertHostWire(fn (WireAssert $host) => $host
                     ->matchesRecording()
                     ->ordered(HostInstructionType::OpenContainer, fn (WireAssert $open) => $open->matchesPayload()))
+                ->assertTyped('Run: ls.')
+                ->assertPlayedWhole());
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function codexChanges(): iterable
+    {
+        yield 'model' => ['codex/change-model', '/model gpt-6.1-terra'];
+        yield 'effort' => ['codex/change-effort', '/model --reasoning=medium'];
+    }
+
+    #[DataProvider('codexChanges')]
+    public function test_codex_types_the_recorded_change_and_continues_the_turn(string $scenario, string $keys): void
+    {
+        $this->journal->owner()
+            ->scenario($scenario, fn (TestScenario $turn) => $turn
+                ->play()
+                ->assertTyped($keys)
                 ->assertTyped('Run: ls.')
                 ->assertPlayedWhole());
     }

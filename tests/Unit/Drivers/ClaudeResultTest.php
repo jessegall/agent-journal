@@ -7,10 +7,13 @@ namespace Tests\Unit\Drivers;
 use App\Accounts\Enums\UsageWindowSlot;
 use App\Agents\Drivers\ClaudeCode\TurnResult;
 use App\Agents\Drivers\Enums\RequestProgress;
+use App\Recordings\CutExchange;
+use App\Recordings\Enums\Wire;
+use App\Recordings\Recordings;
 use App\Values\UsageCost;
 use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 /**
  * A recorded headless turn, read chunk by chunk as the host sends it, gives its model, its limit window, its one
@@ -18,38 +21,20 @@ use PHPUnit\Framework\TestCase;
  */
 final class ClaudeResultTest extends TestCase
 {
-    private const string RECORDINGS = __DIR__.'/../../../resources/recordings/claude-code/2.1.323';
-
     public function test_each_recorded_turn_gives_its_model_window_cost_and_success(): void
     {
         $recorded = [
-            'turns/process-turn' => ['0.0278512', 78.0],
-            'one-shot-allowlist' => ['0.0315396', 75.0],
+            'headless-turn' => ['0.002659780000', '0.000335900000'],
+            'one-shot-allowlist' => ['0.001212000000', '0.000816460000'],
         ];
 
-        foreach ($recorded as $name => [$cost, $percent]) {
-            $result = new TurnResult('process-1');
-            $usage = [];
+        foreach ($recorded as $name => $costs) {
+            $turns = $this->turnsOf($name);
+            $this->assertCount(count($costs), $turns, $name);
 
-            foreach ($this->stdoutOf($name) as $bytes) {
-                $usage = [...$usage, ...$result->read($bytes, CarbonImmutable::parse('2026-11-26 10:00:00'))];
+            foreach ($turns as $index => $turn) {
+                $this->assertRecordedTurn($turn, $costs[$index]);
             }
-
-            $end = $result->end(0);
-            $costs = array_values(array_filter($usage, fn ($reading) => $reading instanceof UsageCost));
-            $windows = array_values(array_filter($usage, fn ($reading) => $reading instanceof UsageWindowReading));
-
-            $this->assertSame(
-                [[$cost.'00000'], [UsageWindowSlot::SevenDay], [$percent], 'claude-opus-5-5', RequestProgress::Applied],
-                [
-                    array_map(fn (UsageCost $reading) => $reading->usd->amount, $costs),
-                    array_map(fn (UsageWindowReading $reading) => $reading->slot, $windows),
-                    array_map(fn (UsageWindowReading $reading) => round((float) $reading->usedPercent, 6), $windows),
-                    $end->model,
-                    $end->progress(),
-                ],
-                $name,
-            );
         }
     }
 
@@ -69,13 +54,44 @@ final class ClaudeResultTest extends TestCase
     }
 
     /**
-     * @return list<string>
+     * @return list<CutExchange>
      */
-    private function stdoutOf(string $name): array
+    private function turnsOf(string $name): array
     {
-        $fixture = json_decode((string) file_get_contents(self::RECORDINGS."/{$name}/fixture.json"), true, flags: JSON_THROW_ON_ERROR);
-        $stdout = array_filter($fixture['output'], fn (array $chunk) => $chunk['stream'] === 'stdout');
+        $recording = $this->journal->service(Recordings::class)->scenario('claude-code', $name);
+        $exchanges = array_map($recording->exchange(...), $recording->exchangesOn(Wire::Driver));
 
-        return array_values(array_map(fn (array $chunk) => (string) base64_decode($chunk['bytes'], true), $stdout));
+        return array_values(array_filter(
+            $exchanges,
+            fn (CutExchange $exchange) => in_array('--print', $exchange->opening->argv, true),
+        ));
+    }
+
+    private function assertRecordedTurn(CutExchange $turn, string $cost): void
+    {
+        $result = new TurnResult('process-1');
+        $usage = [];
+        $now = CarbonImmutable::parse('2026-11-28 06:00:00');
+
+        foreach ($turn->events as $event) {
+            if ($event->stream === 'stdout') {
+                $usage = [...$usage, ...$result->read($event->bytes, $now)];
+            }
+        }
+
+        $end = $result->end($turn->exitCode);
+        $costs = array_values(array_filter($usage, fn ($reading) => $reading instanceof UsageCost));
+        $windows = array_values(array_filter($usage, fn ($reading) => $reading instanceof UsageWindowReading));
+
+        $this->assertSame(
+            [[$cost], [UsageWindowSlot::SevenDay], [98.0], 'claude-haiku-5-5', RequestProgress::Applied],
+            [
+                array_map(fn (UsageCost $reading) => $reading->usd->amount, $costs),
+                array_map(fn (UsageWindowReading $reading) => $reading->slot, $windows),
+                array_map(fn (UsageWindowReading $reading) => round((float) $reading->usedPercent, 6), $windows),
+                $end->model,
+                $end->progress(),
+            ],
+        );
     }
 }
