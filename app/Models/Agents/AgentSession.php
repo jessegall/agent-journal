@@ -36,6 +36,7 @@ use App\Models\Skills\SkillGeneration;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
+use App\Models\Records\Link;
 use App\Sessions\Enums\ModelSelectionType;
 use App\Sessions\Enums\SessionStatus;
 use App\Skills\Values\StartProfile;
@@ -59,6 +60,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 /**
  * @property string $id
  * @property string $agent_id
+ * @property string $linked_type
+ * @property string $linked_id
  * @property string|null $parent_session_id
  * @property string|null $driver_key
  * @property string|null $driver_label
@@ -297,6 +300,38 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
             CarbonImmutable::instance($this->created_at),
             $this->ended_at,
         );
+    }
+
+    /**
+     * @param list<RecordIdentity> $accounts
+     * @return list<AccountUse>
+     */
+    public static function recentUsesOf(array $accounts, int $limit): array
+    {
+        if ($accounts === [] || $limit < 1) {
+            return [];
+        }
+
+        $table = self::query()->getModel()->getTable();
+        $pairs = Link::pairsFor(self::linkType(), $accounts);
+        $ranked = self::query()
+            ->joinSub($pairs, 'account_links', 'account_links.subject_id', '=', "{$table}.id")
+            ->select(["{$table}.*", 'account_links.linked_type', 'account_links.linked_id'])
+            ->selectRaw(
+                "row_number() over (partition by linked_type, linked_id order by {$table}.created_at desc, "
+                    ."{$table}.id desc) as account_rank",
+            );
+        $sessions = self::query()
+            ->fromSub($ranked, $table)
+            ->where('account_rank', '<=', $limit)
+            ->orderBy('account_rank')
+            ->limit(count($accounts) * $limit)
+            ->get();
+
+        return array_values($sessions->map(static fn (self $session) => $session->useOf(RecordIdentity::from([
+            'type' => $session->linked_type,
+            'id' => $session->linked_id,
+        ])))->all());
     }
 
     /**

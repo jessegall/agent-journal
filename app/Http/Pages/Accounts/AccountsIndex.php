@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Accounts;
 
-use App\Accounts\Data\AccountListData;
+use App\Accounts\Data\AccountListPageData;
 use App\Accounts\Data\AccountRowData;
 use App\Accounts\Data\AccountUsageData;
 use App\Accounts\Data\AccountUsageWindowData;
@@ -23,6 +23,7 @@ use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListPage;
+use App\Support\Layout\ListPaging;
 use App\Support\Layout\SettingsGroup;
 use App\Support\Layout\SettingsRow;
 use Carbon\CarbonImmutable;
@@ -47,17 +48,17 @@ final readonly class AccountsIndex extends AccountsPage
     /**
      * @param  string  $chosen  the id of the account to read, or '' for none
      */
-    public function of(AccountListData $accounts, string $chosen, bool $isAdding): DeclaredLayoutData
+    public function of(AccountListPageData $accounts, string $chosen): DeclaredLayoutData
     {
-        $reader = $isAdding
+        $reader = $accounts->addForm !== null
             ? [LayoutPartData::build()
                 ->asNative()
                 ->key('sign-in')
                 ->native(
-                    LayoutNativeData::build()->component('accounts/AddAccountPart')->props($accounts)->finish(),
+                    LayoutNativeData::build()->component('accounts/AddAccountPart')->props($accounts->addForm)->finish(),
                 )
                 ->finish()]
-            : $this->readerOf($accounts, $chosen);
+            : $this->readerOf($accounts);
 
         $adding = LayoutActionData::build()->query(['add' => '1', 'account' => ''])->finish();
 
@@ -65,7 +66,8 @@ final readonly class AccountsIndex extends AccountsPage
             ->title('Accounts')
             ->rows($accounts->rows, fn (AccountRowData $row) => $this->rowOf($row, $chosen))
             ->empty(NoAccountsYet::addingWith($adding))
-            ->countingRows()
+            ->counting($accounts->total)
+            ->paged(ListPaging::build()->page($accounts->page)->lastPage($accounts->lastPage)->finish())
             ->creating('Add account', $adding)
             ->withReader(LayoutBackData::build()
                 ->href(route('accounts.accounts', [], false))
@@ -80,7 +82,7 @@ final readonly class AccountsIndex extends AccountsPage
             ->key($row->id)
             ->label($row->label)
             ->detail($this->detailOf($row))
-            ->query(['account' => $row->id, 'add' => ''])
+            ->query(['account' => $row->id, 'add' => '', 'usage_page' => ''])
             ->isCurrent($row->id === $chosen)
             ->hasColumns(true)
             ->leading(
@@ -195,9 +197,9 @@ final readonly class AccountsIndex extends AccountsPage
     /**
      * @return list<LayoutPartData>
      */
-    private function readerOf(AccountListData $accounts, string $chosen): array
+    private function readerOf(AccountListPageData $accounts): array
     {
-        $row = array_find($accounts->rows, fn (AccountRowData $each) => $each->id === $chosen);
+        $row = $accounts->selected;
 
         if ($row === null) {
             return [];
@@ -209,12 +211,16 @@ final readonly class AccountsIndex extends AccountsPage
             $groups[] = $this->usageGroup($row->usage);
         }
 
-        return [
-            DetailPage::build()->title($row->label)->finish()
-                ->summarising($this->summaryOf($row))
-                ->withStanding(...array_map(fn (SettingsGroup $group) => $group->part(), $groups))
-                ->part(),
-        ];
+        $paging = ListPaging::build()
+            ->page($accounts->usagePage)
+            ->lastPage($accounts->usageLastPage)
+            ->parameter('usage_page')
+            ->finish();
+
+        return [DetailPage::build()->title($row->label)->finish()
+            ->summarising($this->summaryOf($row))
+            ->withStanding(...[...array_map(fn (SettingsGroup $group) => $group->part(), $groups), ...$paging->parts()])
+            ->part()];
     }
 
     /**

@@ -7,6 +7,7 @@ namespace App\Resolvers;
 use App\Access\Contracts\CurrentAuthorizer;
 use App\Accounts\AccountSessions;
 use App\Accounts\AccountUseCounts;
+use App\Accounts\AccountUseHistories;
 use App\Accounts\Contracts\AccountUses as AccountUsesContract;
 use App\Accounts\Exceptions\AccountUseMissing;
 use App\Actors\Contracts\IdentityLinks;
@@ -32,13 +33,14 @@ final readonly class AccountUses implements AccountUsesContract
     public function counts(array $accounts): AccountUseCounts
     {
         $this->authorizeRead();
-        $counts = new AccountUseCounts();
+        return new AccountUseCounts(SessionProcess::countUnresolvedByAccount($accounts));
+    }
 
-        foreach ($accounts as $account) {
-            $counts = $counts->with($account, SessionProcess::countUnresolvedOf($account));
-        }
+    public function histories(array $accounts, int $limit): AccountUseHistories
+    {
+        $this->authorizeRead();
 
-        return $counts;
+        return $this->sessions->histories($accounts, $limit);
     }
 
     public function history(RecordIdentity $account, int $limit): array

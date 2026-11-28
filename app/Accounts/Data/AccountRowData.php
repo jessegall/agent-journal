@@ -6,9 +6,6 @@ namespace App\Accounts\Data;
 
 use App\Accounts\Enums\AccountStatus;
 use App\Accounts\Enums\CleanupProblem;
-use App\Accounts\SignInProtocols;
-use App\Models\Accounts\Account;
-use App\Values\AccountUse;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -22,6 +19,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AccountRowData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<AccountRowDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = AccountRowDataFields::class;
+
     /**
      * @param  list<AccountStartData>  $recentStarts
      */
@@ -46,40 +48,4 @@ final class AccountRowData extends Data
         public readonly array $recentStarts,
         public readonly AccountUsageData|Optional $usage,
     ) {}
-
-    /**
-     * @param  list<AccountUse>  $recentUses
-     */
-    public static function fromAccount(
-        SignInProtocols $protocols,
-        Account $account,
-        bool $isActive,
-        int $runningCount,
-        array $recentUses,
-        AccountUsageData|Optional $usage,
-    ): self {
-        return new self(
-            $account->id,
-            $account->account_protocol,
-            $account->label,
-            $account->name_revision,
-            SignInMethodData::fromProtocol(
-                $account->method,
-                $protocols->for($account->account_protocol, $account->method),
-            ),
-            $account->status,
-            $account->identity,
-            $account->workspace,
-            $isActive,
-            $runningCount,
-            $account->checked_at?->toIso8601String(),
-            $account->expires_at?->toIso8601String(),
-            $account->cleanup_problem,
-            $account->awaitsCleanupRetry(),
-            $account->isHeldForCheck(),
-            $account->isCheckInconclusive(),
-            array_map(AccountStartData::fromUse(...), $recentUses),
-            $usage,
-        );
-    }
 }

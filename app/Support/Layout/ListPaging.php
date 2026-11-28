@@ -22,6 +22,7 @@ final readonly class ListPaging
         public string|null $after,
         public bool $isAppend = false,
         public bool $isCursor = false,
+        public string $parameter = 'page',
     ) {}
 
     /**
@@ -71,7 +72,7 @@ final readonly class ListPaging
 
         $action = $isOutside
             ? LayoutActionData::build()->reason($reason)->finish()
-            : LayoutActionData::build()->query(['page' => (string) $target])->finish();
+            : LayoutActionData::build()->query([$this->parameter => (string) $target])->finish();
 
         return LayoutPartData::build()->asAction()->key($key)->label($label)->action($action)->finish();
     }

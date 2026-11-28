@@ -20,6 +20,7 @@ use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * @property string $id
@@ -46,6 +47,8 @@ final class AccountUsageWindow extends JournalModel implements EventSource, Read
     use OfSignIn;
     use RaisesEvents;
     use RemovedWithAccount;
+
+    public const int DETAIL_LIMIT = 25;
 
     /**
      * @return array<string, string>
@@ -131,9 +134,16 @@ final class AccountUsageWindow extends JournalModel implements EventSource, Read
             return [];
         }
 
-        $windows = self::query()
+        $table = self::query()->getModel()->getTable();
+        $ranked = self::query()
             ->inCurrentGenerationOf($accounts)
+            ->select("{$table}.*")
+            ->selectRaw('row_number() over (partition by account_id order by limit_id, slot, id) as window_rank');
+        $windows = self::query()
+            ->fromSub($ranked, $table)
+            ->where('window_rank', '<=', self::DETAIL_LIMIT)
             ->inWindowOrder()
+            ->limit(count($accounts) * self::DETAIL_LIMIT)
             ->get();
 
         $grouped = [];
@@ -143,6 +153,16 @@ final class AccountUsageWindow extends JournalModel implements EventSource, Read
         }
 
         return $grouped;
+    }
+
+    /** @return LengthAwarePaginator<int, self> */
+    public static function pageOf(Account $account, int $page): LengthAwarePaginator
+    {
+        $query = self::query()->inCurrentGenerationOf([$account])->inWindowOrder();
+        $total = $query->count();
+        $last = max(1, (int) ceil($total / self::DETAIL_LIMIT));
+
+        return $query->paginate(self::DETAIL_LIMIT, page: min($page, $last), total: $total);
     }
 
     // ----------[ Scopes ]----------

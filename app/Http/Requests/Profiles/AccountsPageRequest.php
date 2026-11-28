@@ -19,6 +19,8 @@ final class AccountsPageRequest extends FormRequest
         return [
             'account' => ['nullable', 'string', 'max:26'],
             'add' => ['nullable', 'boolean'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'usage_page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -30,5 +32,15 @@ final class AccountsPageRequest extends FormRequest
     public function isAdding(): bool
     {
         return $this->boolean('add');
+    }
+
+    public function page(): int
+    {
+        return max(1, $this->integer('page', 1));
+    }
+
+    public function usagePage(): int
+    {
+        return max(1, $this->integer('usage_page', 1));
     }
 }

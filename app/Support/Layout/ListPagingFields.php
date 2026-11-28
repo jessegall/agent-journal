@@ -16,6 +16,8 @@ final class ListPagingFields
 
     private bool $isCursor = false;
 
+    private string $parameter = 'page';
+
     public function page(int $page): self
     {
         $this->page = $page;
@@ -46,6 +48,13 @@ final class ListPagingFields
         return $this;
     }
 
+    public function parameter(string $parameter): self
+    {
+        $this->parameter = $parameter;
+
+        return $this;
+    }
+
     public function finish(): ListPaging
     {
         return new ListPaging(
@@ -54,6 +63,7 @@ final class ListPagingFields
             after: $this->after,
             isAppend: $this->isAppend,
             isCursor: $this->isCursor,
+            parameter: $this->parameter,
         );
     }
 }
