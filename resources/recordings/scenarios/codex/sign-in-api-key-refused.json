@@ -1,0 +1,28 @@
+{
+    "description": "A Codex sign-in by an API key whose account has no credit ends refused, saying why",
+    "steps": [
+        {
+            "do": "sign-in",
+            "driver": "codex",
+            "method": "api_key"
+        },
+        {
+            "do": "wait-for",
+            "fact": "challenge-shown",
+            "seconds": 60
+        },
+        {
+            "do": "ask-user",
+            "text": "Send an API key whose account has no credit left."
+        },
+        {
+            "do": "submit-code",
+            "from": "challenge"
+        },
+        {
+            "do": "wait-for",
+            "fact": "sign-in-failed",
+            "seconds": 120
+        }
+    ]
+}

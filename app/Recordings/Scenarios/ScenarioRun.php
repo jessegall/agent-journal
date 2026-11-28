@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Recordings\Scenarios;
 
+use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -314,7 +315,21 @@ final class ScenarioRun
         return $this->scenario->steps[$this->stepsRun];
     }
 
-    public function isPlayedWhole(): bool
+    /**
+     * The fact the first step after the one in hand waits for, none when no later step waits.
+     */
+    public function nextFact(): ScenarioFact|null
+    {
+        foreach (array_slice($this->scenario->steps, $this->stepsRun + 1) as $step) {
+            if ($step->fact !== null) {
+                return $step->fact;
+            }
+        }
+
+        return null;
+    }
+
+        public function isPlayedWhole(): bool
     {
         return $this->stepsRun >= count($this->scenario->steps);
     }

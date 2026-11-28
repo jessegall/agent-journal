@@ -1,0 +1,28 @@
+{
+    "description": "A Codex account signs in with an API key",
+    "steps": [
+        {
+            "do": "sign-in",
+            "driver": "codex",
+            "method": "api_key"
+        },
+        {
+            "do": "wait-for",
+            "fact": "challenge-shown",
+            "seconds": 60
+        },
+        {
+            "do": "ask-user",
+            "text": "Send the API key to type into the sign-in."
+        },
+        {
+            "do": "submit-code",
+            "from": "challenge"
+        },
+        {
+            "do": "wait-for",
+            "fact": "signed-in",
+            "seconds": 120
+        }
+    ]
+}

@@ -223,8 +223,9 @@ final readonly class ScenarioPlayer
                 return;
             }
 
-            // Nothing typed: the person answers the sign-in in the journal's own page, which signs it in.
-            $this->waitFor($run, ScenarioFact::SignedIn, self::SIGN_IN_IN_PAGE_SECONDS);
+            // Nothing typed: the person answers the sign-in in the journal's own page, which ends it as the
+            // scenario's next fact says: signed in, or refused.
+            $this->waitFor($run, $run->nextFact() ?? ScenarioFact::SignedIn, self::SIGN_IN_IN_PAGE_SECONDS);
             $run->holdSignedInOnPage();
 
             return;

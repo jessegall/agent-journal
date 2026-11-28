@@ -526,6 +526,14 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     }
 
     /**
+     * Whether the sign-in ended without signing in, as one the provider refused does.
+     */
+    public function isFailed(): bool
+    {
+        return $this->status === SignInStatus::Failed;
+    }
+
+    /**
      * The attempt, while the owner may read it; none once it is gone or another owner's.
      */
     public static function findReadableByOwner(string $attemptId): self|null
