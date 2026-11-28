@@ -82,12 +82,13 @@ final class SendPostTest extends GuardedRouteEntryTestCase
 
         $this->journal->route('POST', 'chat.send', payload: [
             'inboxId' => $inbox->id,
-            'requestKey' => 'home-send-1',
             'body' => 'Still there?',
             'agent' => $session->agent_id,
             'expectedSessionId' => strtolower((string) Str::ulid()),
             'expectedGeneration' => 0,
-        ])->assertSessionHasErrors(['session' => 'The agent now runs another session. Send the message again to reach it.']);
+        ], headers: ['Idempotency-Key' => 'home-send-1'])->assertSessionHasErrors([
+            'session' => 'The agent now runs another session. Send the message again to reach it.',
+        ]);
 
         $this->journal->assertNothingDispatched();
     }
@@ -106,11 +107,10 @@ final class SendPostTest extends GuardedRouteEntryTestCase
 
         $this->journal->route('POST', 'chat.send', payload: [
             'inboxId' => $inbox->id,
-            'requestKey' => $requestKey,
             'body' => 'Are you there?',
             'agent' => $agent->id,
             'expectedSessionId' => null,
-        ])->assertRedirect();
+        ], headers: ['Idempotency-Key' => $requestKey])->assertRedirect();
 
         $this->journal->assertDispatchedInOrder([
             ExpectedCommand::of(StartProfileMainCommand::class, [
@@ -136,11 +136,10 @@ final class SendPostTest extends GuardedRouteEntryTestCase
 
         $this->journal->route('POST', 'chat.send', payload: [
             'inboxId' => $inbox->id,
-            'requestKey' => strtolower((string) Str::ulid()),
             'body' => 'Still there?',
             'agent' => $session->agent_id,
             'expectedSessionId' => $session->id,
-        ])->assertRedirect();
+        ], headers: ['Idempotency-Key' => strtolower((string) Str::ulid())])->assertRedirect();
 
         $this->journal->assertDispatched(StartProfileMainCommand::class, times: 0)
             ->assertDispatched(SendMessageCommand::class, ['body' => 'Still there?']);

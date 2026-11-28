@@ -39,8 +39,7 @@ final class RetryDeliveryPostTest extends GuardedRouteEntryTestCase
 
         $this->journal->route('POST', 'chat.retry-delivery', payload: [
             'messageId' => $messageId,
-            'requestKey' => strtolower((string) Str::ulid()),
-        ])->assertRedirect();
+        ], headers: ['Idempotency-Key' => strtolower((string) Str::ulid())])->assertRedirect();
 
         $message = Message::query()->findOrFail($messageId);
         $this->assertSame([null, null], [$message->delivery_failed_at, $message->delivery_failure]);
