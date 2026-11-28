@@ -8,6 +8,7 @@ use App\Events\Web\LayoutSaved;
 use App\Events\Web\NotificationsInvalidated;
 use App\Events\Web\PageChanged;
 use App\Events\Web\ProtectedViewInvalidated;
+use App\Events\Web\RunningCommandChanged;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -57,5 +58,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new LayoutRemoved('layout'),
+    ],
+    RunningCommandChanged::class => [
+        'role' => EventRole::Projection,
+        'migrated' => false,
+        'producers' => [
+            'app/Listeners/BroadcastRunningCommand.php',
+        ],
     ],
 ];

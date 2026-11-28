@@ -422,7 +422,8 @@ watch(isShown, readOnOpen);
         <template v-if="selected">
           <RunningCommand
             :agent="selected"
-            :command="conversation.runningCommand"
+            :inbox-id="conversation.inboxId"
+            :seed="conversation.runningCommand"
           />
         </template>
         <SlotSections :sections="chat.dockSections" />

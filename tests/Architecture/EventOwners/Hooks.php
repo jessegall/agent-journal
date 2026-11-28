@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Events\Hooks\ContextStarted;
 use App\Events\Hooks\HookCallRecorded;
+use App\Events\Hooks\RunningToolChanged;
 use App\Events\Hooks\StateCommandAnswered;
 use App\Events\Hooks\StateTypesRequested;
 use App\Events\Hooks\StopCheckHeld;
@@ -57,5 +58,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new HookCallRecorded('call'),
+    ],
+    RunningToolChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRunningTool::change',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RunningToolChanged('agent', 'Bash npm test', true, '2026-11-28T10:00:00.000000Z'),
     ],
 ];

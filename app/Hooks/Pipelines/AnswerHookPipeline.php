@@ -15,6 +15,7 @@ use App\Hooks\Pipes\Answer\KeepMessagesAndWake;
 use App\Hooks\Pipes\Answer\LockStack;
 use App\Hooks\Pipes\Answer\PrepareCall;
 use App\Hooks\Pipes\Answer\PublishHookEffects;
+use App\Hooks\Pipes\Answer\RecordRunningTool;
 use App\Hooks\Pipes\Answer\RenderReply;
 use App\Hooks\Pipes\Answer\RestoreStack;
 use App\Hooks\Pipes\Answer\SaveCall;
@@ -23,8 +24,8 @@ use App\Pipelines\Support\Step;
 
 /**
  * Answers one hook call inside its stack transaction: lock the stack, leave with a recorded reply, prepare the call,
- * restore and walk the stack, keep or hand over the states' messages, settle the frames' lifecycle, render the reply
- * and save it with the stack.
+ * restore and walk the stack, keep or hand over the states' messages, record the running tool, settle the frames'
+ * lifecycle, render the reply and save it with the stack.
  *
  * @implements PipelineDefinition<HookCallStage, DriverReply>
  */
@@ -47,6 +48,7 @@ final readonly class AnswerHookPipeline implements PipelineDefinition
                 then: KeepMessagesAndWake::class,
                 else: HandOverWaitingMessages::class,
             ),
+            RecordRunningTool::class,
             PublishHookEffects::class,
             ComposeForeground::class,
             RenderReply::class,

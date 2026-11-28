@@ -1,6 +1,7 @@
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import type { AuthorizerCallback } from 'pusher-js';
+import type { RunningCommandData } from '@generated/types/core';
 import { traceLive } from '@/composables/liveTrace';
 
 /**
@@ -21,13 +22,14 @@ export type UserConnection = {
 
 /**
  * What the connection tells its owner: a protected view to clear, notifications to read again, a chat whose access
- * ended, the private channel signed in to (first and after every reconnect, when changes may have been missed), the
+ * ended, an agent's new chat line, the private channel signed in to (first and after every reconnect, when changes may have been missed), the
  * transport lost, and a refused sign-in. Page changes reach the live props through the live transport.
  */
 export type LiveHandlers = {
     onProtectedViewInvalidated: () => void;
     onNotificationsChanged: () => void;
     onChatAccessEnded: (inboxId: string) => void;
+    onRunningCommand: (command: RunningCommandData) => void;
     onSubscribed: () => void;
     onLost: () => void;
     onRefused: () => void;
@@ -75,6 +77,7 @@ export function connectUser(userId: string, handlers: LiveHandlers): UserConnect
             traceLive('chat access ended');
             handlers.onChatAccessEnded(notice.inboxId);
         })
+        .listen('.agent.running-command', handlers.onRunningCommand)
         .listen('.view.protected-invalidated', handlers.onProtectedViewInvalidated)
         .listen('.notifications.changed', handlers.onNotificationsChanged);
     echo.connector.pusher.connection.bind(

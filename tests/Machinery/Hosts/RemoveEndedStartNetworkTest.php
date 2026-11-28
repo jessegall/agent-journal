@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Enums\SessionProcessStatus;
 use App\Events\Sessions\SessionProcessStopped;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Protocol\HostInstructionType;
+use App\Hosts\Protocol\HostProcessReportType;
 use App\Listeners\RemoveEndedStartNetwork;
 use App\Models\Sessions\SessionProcess;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * Every end of a start on a contained host removes its session's network, also a start that failed before any runtime
- * opened and one whose agent retired since; a start on a host that runs its processes itself made no network, so
- * nothing is removed there.
+ * opened, one whose agent retired since and one the host's own report ended, where no agent acts; a start on a host
+ * that runs its processes itself made no network, so nothing is removed there.
  */
 #[TestsMachinery(RemoveEndedStartNetwork::class)]
 final class RemoveEndedStartNetworkTest extends TestCase
@@ -55,6 +60,31 @@ final class RemoveEndedStartNetworkTest extends TestCase
                 fn ($removal) => $this->journal->payloadOf($removal)['network'],
                 $this->networkRemovalsOn('Box'),
             ))),
+        );
+    }
+
+    public function test_a_start_the_host_reports_ended_is_found_and_has_its_network_removed(): void
+    {
+        $this->journal->arrangeContainedJournal()->enrollContainedHost('Box', [base_path()]);
+        $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->idleAgent('Driven');
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openRuntime('Box', base_path(), driverType: DriverType::Terminal));
+        $sessionId = $this->journal->openedRuntimeOf('Driven')->sessionId;
+        $this->journal->host('Box', fn (TestEnrolledHost $box) => $box->openProcessForStart('agent', $sessionId));
+
+        $this->journal->hostProcess('agent', fn (TestHostProcess $agent) => $agent
+            ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0));
+
+        $network = $this->app->make(ArrangementSetting::class)->sessionContainerName($sessionId);
+        $this->journal->assertResult(
+            [SessionProcessStatus::Stopped, [$network]],
+            [
+                $this->journal->startOfSession($sessionId)->status,
+                array_values(array_unique(array_map(
+                    fn ($removal) => $this->journal->payloadOf($removal)['network'],
+                    $this->networkRemovalsOn('Box'),
+                ))),
+            ],
         );
     }
 

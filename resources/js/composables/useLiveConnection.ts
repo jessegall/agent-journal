@@ -1,4 +1,5 @@
 import { notifyChatAccessEnded } from '@/kit/chatAccess';
+import { notifyRunningCommand } from '@/kit/runningCommands';
 import { useAppContext } from '@/framework/appContext';
 import { onBeforeUnmount, onMounted, readonly, ref, watch } from 'vue';
 import type { LiveHandlers, UserConnection } from '@/echo';
@@ -97,6 +98,7 @@ export function useLiveConnection(): void {
             }),
             onNotificationsChanged: whileCurrent(followNotificationsSignal),
             onChatAccessEnded: whileCurrent(notifyChatAccessEnded),
+            onRunningCommand: whileCurrent(notifyRunningCommand),
             onSubscribed: whileCurrent(() => {
                 state.subscribed();
                 reconcileNotifications();

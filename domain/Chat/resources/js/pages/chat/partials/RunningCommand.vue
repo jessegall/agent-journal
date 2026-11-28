@@ -1,27 +1,61 @@
 <script setup lang="ts">
-import Spinner from "@kit/Spinner";
 import { computed } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
+import type { RunningCommandData } from "@generated/types/core";
+import { useRunningCommand } from "../../../composables/useRunningCommand";
 
 /**
- * The line above the composer that names what the agent is doing right now, such as Ran npm test, so a reply on its
- * way shows progress. It shows while the agent works and has done something since its last message here.
+ * The strip above the composer, as version 5 drew it: a dot that shows whether the agent holds a command, and the
+ * command it runs rolling in as each new one arrives, or the idle word when none shows.
  */
-const props = defineProps<{ agent: AgentOptionData; command: string | null }>();
+const props = defineProps<{
+  agent: AgentOptionData;
+  inboxId: string;
+  seed: RunningCommandData | null;
+}>();
 
-const isShown = computed(
-  () => props.command !== null && props.agent.status.sessionState === "working",
+const { line, held } = useRunningCommand(
+  () => props.agent.id,
+  () => props.inboxId,
+  () => props.seed,
+);
+const idleWord = computed(() =>
+  props.agent.status.sessionState === "working" ? "thinking" : "idle",
 );
 </script>
 
 <template>
-  <template v-if="isShown">
-    <p
-      class="flex min-w-0 items-center gap-2 text-meta text-text-3"
+  <p
+    class="m-0 flex flex-none items-center gap-2 px-3.5 py-1 font-mono text-[12px] text-text-3"
+    data-running-strip
+  >
+    <span
+      :class="['size-1.5 flex-none rounded-full', held ? 'bg-accent' : 'bg-text-4']"
+      :data-held="held"
+      data-running-dot
+    />
+    <span
+      class="pointer-events-none relative flex min-w-0 flex-[0_1_auto] items-center text-[10.5px] text-text-3"
       data-running-command
     >
-      <Spinner />
-      <span class="truncate font-mono" :title="command ?? undefined">{{ command }}</span>
-    </p>
-  </template>
+      <Transition
+        mode="out-in"
+        enter-active-class="[transition:opacity_180ms_ease,transform_180ms_cubic-bezier(0.22,0.7,0.3,1)] motion-reduce:transition-none"
+        leave-active-class="[transition:opacity_150ms_ease,transform_150ms_cubic-bezier(0.22,0.7,0.3,1)] motion-reduce:transition-none"
+        enter-from-class="translate-y-[10px] opacity-0"
+        leave-to-class="-translate-y-[10px] opacity-0"
+      >
+        <template v-if="line" :key="line">
+          <span
+            class="inline-block max-w-full truncate font-mono opacity-75"
+            :title="line"
+            data-running-line
+          >{{ line }}</span>
+        </template>
+        <template v-else key="idle">
+          <span class="inline-block max-w-[44ch] truncate" data-running-idle>{{ idleWord }}</span>
+        </template>
+      </Transition>
+    </span>
+  </p>
 </template>
