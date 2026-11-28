@@ -25,7 +25,7 @@ const props = defineProps<{
     recipientId: string | null;
     recipientName: string | null;
     commentAddress: string;
-    tellAddress: string;
+    messageAddress: string;
 }>();
 const hostProp = useHostProp();
 
@@ -34,12 +34,12 @@ const isForRecipient = ref(props.recipientId !== null);
 // The message telling the agent about a saved comment that could not be sent, kept so Send again sends that one.
 const untold = ref<{ key: string; message: { agent: string; path: string; first_line: number; last_line: number; comment: string } } | null>(null);
 
-function tell(): void {
+function message(): void {
     if (untold.value === null) {
         return;
     }
 
-    keyedPost(props.tellAddress, untold.value.message, untold.value.key, {
+    keyedPost(props.messageAddress, untold.value.message, untold.value.key, {
         onAccepted: () => (untold.value = null),
         onRefused: () => undefined,
         onUncertain: () => undefined,
@@ -70,7 +70,7 @@ function send(from: number, to: number, close: () => void): void {
                     key: crypto.randomUUID(),
                     message: { agent: props.recipientId, path: props.path, first_line: from, last_line: to, comment },
                 };
-                tell();
+                message();
             }
         },
         onFailed: () => (state.value = 'failed'),
@@ -80,7 +80,7 @@ function send(from: number, to: number, close: () => void): void {
 
 <template>
     <template v-if="untold !== null">
-        <RetryLine action="Send again" @retry="tell">Saved, but {{ recipientName }} was not told.</RetryLine>
+        <RetryLine action="Send again" @retry="message">Saved, but {{ recipientName }} was not told.</RetryLine>
     </template>
     <LineCommentable :line-count="lines.length" :commented-lines="commentedLines">
         <template #line="{ line, selected, cursor, commented, pick, step, comment }">

@@ -26,7 +26,7 @@ final class HoldStopCheckTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    public function test_a_held_stop_is_a_failed_attempt_and_a_session_of_its_own_tells_no_owner(): void
+    public function test_a_held_stop_is_a_failed_attempt_and_a_session_of_its_own_notifies_no_owner(): void
     {
         Event::fake([StopCheckHeld::class]);
         $start = $this->withConditions($this->journal->signedStart('Writer', 'writing-helper'));

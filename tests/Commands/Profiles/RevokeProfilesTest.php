@@ -80,7 +80,7 @@ final class RevokeProfilesTest extends TestCase
     /**
      * @param  list<string>|null  $allowlist
      */
-    public function test_revocation_retains_the_fence_of_the_revision_and_tells_subscribers(): void
+    public function test_revocation_retains_the_fence_of_the_revision_and_notifies_subscribers(): void
     {
         Event::fake([ProfileRevisionRevoked::class]);
         $this->activateConfiguration(['profiles' => ['journal-worker' => ['base' => 'writing-helper', 'tier' => 3, 'container' => 'required']]]);

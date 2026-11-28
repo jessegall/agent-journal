@@ -12,7 +12,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * Tells an agent about a comment just left on lines of a project file: the message names the file, the lines and the
  * comment, sent into the agent's inbox, and the request's Idempotency-Key makes a retry the same message.
  */
-final class TellFileCommentRequest extends FormRequest
+final class SendFileCommentRequest extends FormRequest
 {
     /**
      * @return array<string, list<string>>

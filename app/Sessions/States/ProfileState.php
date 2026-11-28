@@ -91,7 +91,7 @@ final class ProfileState extends AgentState implements BaseState
             yield Decision::deny($preparation->message);
         }
 
-        if ($preparation->status === StopPreparationStatus::Held && $preparation->tellsOwner) {
+        if ($preparation->status === StopPreparationStatus::Held && $preparation->notifiesOwner) {
             yield new HoldStopCheckCommand($this->agentId, $this->sessionId, $stopId, $preparation->message->key);
         }
 

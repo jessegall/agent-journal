@@ -126,7 +126,7 @@ final class RecordScriptStepResultTest extends TestCase
         );
     }
 
-    public function test_three_returns_on_an_unchanged_workspace_hold_the_work_and_tell_the_owner_once(): void
+    public function test_three_returns_on_an_unchanged_workspace_hold_the_work_and_message_the_owner_once(): void
     {
         $this->activateScriptedWriter();
         $this->writer = ActorReference::of(TestStart::start('writing-helper')->agent);
@@ -138,11 +138,11 @@ final class RecordScriptStepResultTest extends TestCase
         $this->answerReads(isDirty: true);
         $stillHeld = $this->stopAgain();
 
-        $this->assertSame([StopPreparationStatus::Held, true], [$held->status, $held->tellsOwner]);
+        $this->assertSame([StopPreparationStatus::Held, true], [$held->status, $held->notifiesOwner]);
         $reason = TestText::words(AgentText::of('core.stop.unchanged_returns', ['evidence' => self::GUIDANCE]));
         $this->assertSame(AgentText::of('core.stop.script_held', ['reason' => $reason])->key, $held->message->key);
         $this->assertStringContainsString($reason, TestText::words($held->message));
-        $this->assertSame([StopPreparationStatus::Held, false], [$stillHeld->status, $stillHeld->tellsOwner]);
+        $this->assertSame([StopPreparationStatus::Held, false], [$stillHeld->status, $stillHeld->notifiesOwner]);
     }
 
     public function test_a_clean_workspace_goes_straight_to_the_final_checks(): void

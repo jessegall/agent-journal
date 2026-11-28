@@ -46,7 +46,7 @@ final class FileWindowData extends Data
         public readonly string|null $recipientId,
         public readonly string|null $recipientName,
         public readonly string|null $commentAddress,
-        public readonly string|null $tellAddress,
+        public readonly string|null $messageAddress,
         public readonly LayoutBodyData|Optional $markdown = new Optional(),
     ) {}
 }

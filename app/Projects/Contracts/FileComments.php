@@ -29,5 +29,5 @@ interface FileComments
     /**
      * The address that tells the project's main agent of a comment on a file, or null when files take no comments.
      */
-    public function tellAddress(): string|null;
+    public function messageAddress(): string|null;
 }

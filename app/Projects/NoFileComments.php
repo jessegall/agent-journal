@@ -22,7 +22,7 @@ final readonly class NoFileComments implements FileComments
         return null;
     }
 
-    public function tellAddress(): string|null
+    public function messageAddress(): string|null
     {
         return null;
     }

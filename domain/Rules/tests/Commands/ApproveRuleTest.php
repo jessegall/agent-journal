@@ -97,7 +97,7 @@ final class ApproveRuleTest extends TestCase
         $this->assertSame(RuleStatus::Denied, $this->proposed->refresh()->status);
     }
 
-    public function test_an_approved_rule_tells_the_owner_once_on_their_private_channel(): void
+    public function test_an_approved_rule_notifies_the_owner_once_on_their_private_channel(): void
     {
         Event::fake([PageChanged::class]);
 

@@ -45,7 +45,7 @@ final class RenewTerminalControlTest extends TestCase
         $this->journal->owner();
     }
 
-    public function test_renewing_moves_the_expiry_on_and_tells_the_host(): void
+    public function test_renewing_moves_the_expiry_on_and_notifies_the_host(): void
     {
         $agentId = $this->grantedRuntime()->session->agent_id;
         $grant = TerminalGrant::query()->acrossActors()->sole();

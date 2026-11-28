@@ -74,7 +74,7 @@ final class SignInReadersTest extends TestCase
         );
     }
 
-    public function test_codex_tells_the_method_by_its_first_words_on_a_clean_exit_in_a_folder_with_its_sign_in(): void
+    public function test_codex_notifies_the_method_by_its_first_words_on_a_clean_exit_in_a_folder_with_its_sign_in(): void
     {
         $reader = new CodexSignInReader();
         $folder = new SignInFolder('/accounts/a7', '/accounts/a7', true);

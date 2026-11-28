@@ -87,7 +87,7 @@ final class TaskStartProgressTest extends TestCase
         $this->assertSame([$plan->id], array_map(fn (PlanProgressChanged $changed) => $changed->planId, $progress()));
     }
 
-    public function test_a_task_in_no_phase_tells_no_plan(): void
+    public function test_a_task_in_no_phase_notifies_no_plan(): void
     {
         $progress = $this->heard();
 
@@ -96,7 +96,7 @@ final class TaskStartProgressTest extends TestCase
         $this->assertSame([], $progress());
     }
 
-    public function test_with_plans_switched_off_the_start_works_and_tells_no_plan(): void
+    public function test_with_plans_switched_off_the_start_works_and_notifies_no_plan(): void
     {
         $plan = Plan::factory()->create();
         $task = $this->tasks()->createTask('task');

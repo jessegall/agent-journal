@@ -94,7 +94,7 @@ final class SignInReceiptLoaderTest extends TestCase
         $this->assertFalse($attempt->refresh()->isLive());
     }
 
-    public function test_a_key_no_start_was_sent_under_tells_nothing(): void
+    public function test_a_key_no_start_was_sent_under_notifies_nothing(): void
     {
         $this->journal->actAs('Owner');
 

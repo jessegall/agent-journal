@@ -20,7 +20,7 @@ use Tests\Support\Seeding\TestJournal;
  * The owner tells an agent, in their pair chat, about a comment on lines of a file.
  */
 #[TestsRoute('POST', 'comments.file-tell')]
-final class FileTellPostTest extends GuardedRouteEntryTestCase
+final class FileMessagePostTest extends GuardedRouteEntryTestCase
 {
     protected static function bootedDomains(): array
     {

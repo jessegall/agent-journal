@@ -79,7 +79,7 @@ final class ProgramRepliesTest extends TestCase
         ]], json_decode($reply->stdout, true));
     }
 
-    public function test_an_allowed_call_tells_codex_no_decision_and_claude_code_to_allow_it(): void
+    public function test_an_allowed_call_notifies_codex_no_decision_and_claude_code_to_allow_it(): void
     {
         $codex = DriverReplies::allowTool(['context'], ToolAllowance::NoDecision)->stdout;
         $claudeCode = DriverReplies::allowTool(['context'], ToolAllowance::AllowDecision)->stdout;

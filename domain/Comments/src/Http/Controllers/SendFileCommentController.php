@@ -11,18 +11,18 @@ use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Agents\Agent;
 use App\Support\ActorReference;
 use Domain\Chat\Contracts\ChatDirectory;
-use Domain\Comments\Http\Requests\TellFileCommentRequest;
+use Domain\Comments\Http\Requests\SendFileCommentRequest;
 use Illuminate\Http\RedirectResponse;
 
 /**
  * Tells the agent a comment on a project file is for, in a message in the chat of the user and that agent.
  */
-final readonly class TellFileCommentController
+final readonly class SendFileCommentController
 {
     #[Dispatches(OpenInboxCommand::class)]
     #[Dispatches(SendMessageCommand::class)]
     public function __invoke(
-        TellFileCommentRequest $request,
+        SendFileCommentRequest $request,
         ChatDirectory $chats,
         CommandBus $commands,
     ): RedirectResponse {

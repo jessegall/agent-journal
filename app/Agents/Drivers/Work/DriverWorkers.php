@@ -92,12 +92,12 @@ final readonly class DriverWorkers
         $now = $this->clock->now();
         $work = new DriverWork($process->id, $generation, $driver, $now, $cursors, $this->monotonic->nanoseconds());
 
-        $this->perform($work, $this->resumed($work, $process)->then($this->requestsOf($work)));
+        $this->runWork($work, $this->resumed($work, $process)->then($this->requestsOf($work)));
 
         if ($process->type === HostProcessType::Terminal) {
             $source = HostInstructionSource::forWorker($generation);
 
-            $this->perform($work, DriverActions::of(
+            $this->runWork($work, DriverActions::of(
                 new TakeHostProcessSnapshotCommand($process->id, $source),
                 new StreamHostProcessCommand($process->id, StreamRate::withWorker(0), false, $source),
             ));
@@ -129,18 +129,18 @@ final readonly class DriverWorkers
             $work->advance($entry->stream, $entry->cursor);
 
             if ($entry->hasEnded) {
-                $this->perform($work, $work->driver->onExit());
+                $this->runWork($work, $work->driver->onExit());
 
                 return false;
             }
 
-            $this->perform($work, $this->handOver($work, $entry));
+            $this->runWork($work, $this->handOver($work, $entry));
         }
 
         $now = $this->monotonic->nanoseconds();
 
         if ($work->isLeaseDue($now)) {
-            $this->perform($work, DriverActions::of(new RenewHostWorkerCommand($work->processId, $work->generation)));
+            $this->runWork($work, DriverActions::of(new RenewHostWorkerCommand($work->processId, $work->generation)));
             $work->renew($now);
         }
 
@@ -191,7 +191,7 @@ final readonly class DriverWorkers
     /**
      * Runs the commands as the worker: each is refused once another worker took the process over.
      */
-    private function perform(DriverWork $work, DriverActions $actions): void
+    private function runWork(DriverWork $work, DriverActions $actions): void
     {
         $answered = DriverActions::none();
 
@@ -206,7 +206,7 @@ final readonly class DriverWorkers
         });
 
         if ($answered->commands !== []) {
-            $this->perform($work, $answered);
+            $this->runWork($work, $answered);
         }
     }
 

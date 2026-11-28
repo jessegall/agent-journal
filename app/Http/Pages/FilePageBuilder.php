@@ -115,7 +115,7 @@ final readonly class FilePageBuilder implements PageBuilder
             ->recipientId($agent->id)
             ->recipientName($agent->name)
             ->commentAddress($this->comments->commentAddress())
-            ->tellAddress($this->comments->tellAddress())
+            ->messageAddress($this->comments->messageAddress())
             ->finish();
     }
 
@@ -136,7 +136,7 @@ final readonly class FilePageBuilder implements PageBuilder
             ->recipientId(null)
             ->recipientName(null)
             ->commentAddress($this->comments->commentAddress())
-            ->tellAddress($this->comments->tellAddress())
+            ->messageAddress($this->comments->messageAddress())
             ->finish();
     }
 
@@ -150,7 +150,7 @@ final readonly class FilePageBuilder implements PageBuilder
     {
         $found = ProjectFile::findAtPath($binding->id, $answer->path);
 
-        if (! $found->isDefined() || $this->comments->tellAddress() === null) {
+        if (! $found->isDefined() || $this->comments->messageAddress() === null) {
             return [
                 'commentTarget' => null,
                 'threads' => [],

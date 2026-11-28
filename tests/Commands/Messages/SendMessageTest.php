@@ -187,7 +187,7 @@ final class SendMessageTest extends TestCase
         $this->assertSame([$body], Message::query()->withoutGlobalScopes()->pluck('body')->all());
     }
 
-    public function test_a_refused_send_tells_nothing_and_a_resent_request_tells_nothing_again(): void
+    public function test_a_refused_send_notifies_nothing_and_a_resent_request_notifies_nothing_again(): void
     {
         Event::listen(MessageSent::class, function (MessageSent $sent): void {
             $this->received[] = $sent->messageId;

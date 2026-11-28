@@ -33,7 +33,7 @@ final class RejectRuleProposalTest extends TestCase
         $this->openAcmeRequest();
     }
 
-    public function test_a_rejection_leaves_the_request_rejected_and_tells_the_author(): void
+    public function test_a_rejection_leaves_the_request_rejected_and_notifies_the_author(): void
     {
         Event::fake([RuleRejected::class]);
 

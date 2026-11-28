@@ -16,7 +16,7 @@ final readonly class StopPreparation
     private function __construct(
         public StopPreparationStatus $status,
         public AgentText $message,
-        public bool $tellsOwner,
+        public bool $notifiesOwner,
     ) {}
 
     public static function preparing(): self
@@ -44,12 +44,12 @@ final readonly class StopPreparation
     /**
      * The work is held for repair for the reason given.
      */
-    public static function held(string $reason, bool $tellsOwner): self
+    public static function held(string $reason, bool $notifiesOwner): self
     {
         return new self(
             StopPreparationStatus::Held,
             AgentText::of('core.stop.script_held', ['reason' => $reason]),
-            $tellsOwner,
+            $notifiesOwner,
         );
     }
 }

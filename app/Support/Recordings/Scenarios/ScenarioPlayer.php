@@ -137,19 +137,19 @@ final readonly class ScenarioPlayer
      * pause and answers the line the user typed.
      *
      * @param  Closure(ScenarioPause): string  $askUser
-     * @param  Closure(string): void  $tell  hears a line for each step as it begins and ends, for whoever watches
+     * @param  Closure(string): void  $message  hears a line for each step as it begins and ends, for whoever watches
      *
      * @throws ScenarioStuck
      * @throws ScenarioInvalid
      */
-    public function play(ScenarioRun $run, Closure $askUser, Closure $tell): void
+    public function play(ScenarioRun $run, Closure $askUser, Closure $message): void
     {
         while (! $run->isPlayedWhole()) {
             $began = microtime(true);
             $number = $run->stepIndex() + 1;
-            $tell(sprintf('step %d: %s', $number, $run->nextStep()->summary()));
+            $message(sprintf('step %d: %s', $number, $run->nextStep()->summary()));
             $this->playNext($run, $askUser);
-            $tell(sprintf('step %d done after %.1f s', $number, microtime(true) - $began));
+            $message(sprintf('step %d done after %.1f s', $number, microtime(true) - $began));
         }
     }
 

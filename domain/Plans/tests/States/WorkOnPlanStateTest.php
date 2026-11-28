@@ -101,7 +101,7 @@ final class WorkOnPlanStateTest extends TestCase
         );
     }
 
-    public function test_placing_a_task_tells_the_plans_new_counts(): void
+    public function test_placing_a_task_notifies_the_plans_new_counts(): void
     {
         $phase = $this->plans->addPhaseTo(self::PLAN, 'Work')->phaseCalled('Work');
         $task = $this->journal->fixtures(TaskFixtures::class)->createTask('Write it');

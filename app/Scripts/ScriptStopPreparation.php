@@ -70,7 +70,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
         );
 
         if (! $run->status->isUnfinished()) {
-            return $this->answer($run, tellsOwner: false);
+            return $this->answer($run, notifiesOwner: false);
         }
 
         $driver = $this->currentDriver($script);
@@ -119,7 +119,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
         if ($held->isDefined()) {
             $run->finish(ProfileRunStatus::Held, (string) $held->get()->message, $held->get()->unchanged_returns);
 
-            return $this->answer($run, tellsOwner: false);
+            return $this->answer($run, notifiesOwner: false);
         }
 
         $handler = $driver->handlers[self::TRIGGER];
@@ -200,16 +200,16 @@ final readonly class ScriptStopPreparation implements StopPreparer
         $wasHeld = $run->followsHeldRun();
         $run->finish(ProfileRunStatus::Held, $this->texts->render($reason), $unchangedReturns);
 
-        return $this->answer($run, tellsOwner: ! $wasHeld);
+        return $this->answer($run, notifiesOwner: ! $wasHeld);
     }
 
-    private function answer(ProfileRun $run, bool $tellsOwner): StopPreparation
+    private function answer(ProfileRun $run, bool $notifiesOwner): StopPreparation
     {
         return match ($run->status) {
             ProfileRunStatus::Running, ProfileRunStatus::Suspended => StopPreparation::preparing(),
             ProfileRunStatus::FinalChecks => StopPreparation::finalChecks(),
             ProfileRunStatus::Returned => StopPreparation::returnToActor((string) $run->message),
-            ProfileRunStatus::Held => StopPreparation::held((string) $run->message, $tellsOwner),
+            ProfileRunStatus::Held => StopPreparation::held((string) $run->message, $notifiesOwner),
         };
     }
 

@@ -65,7 +65,7 @@ final class NoticeSkillsChangedTest extends TestCase
         $this->assertSame([], $this->boundary($session));
     }
 
-    public function test_a_skill_made_after_the_start_tells_the_agent_to_start_a_new_session_and_changes_nothing(): void
+    public function test_a_skill_made_after_the_start_notifies_the_agent_to_start_a_new_session_and_changes_nothing(): void
     {
         $session = $this->startedWithSkills();
         $handed = AgentSession::findById($session->id);

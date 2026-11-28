@@ -54,9 +54,9 @@ final class FileWindowDataFields
 
     private string|null $commentAddress;
 
-    private bool $hasTellAddress = false;
+    private bool $hasMessageAddress = false;
 
-    private string|null $tellAddress;
+    private string|null $messageAddress;
 
     private LayoutBodyData|Optional $markdown;
 
@@ -172,10 +172,10 @@ final class FileWindowDataFields
         return $this;
     }
 
-    public function tellAddress(string|null $address): self
+    public function messageAddress(string|null $address): self
     {
-        $this->tellAddress = $address;
-        $this->hasTellAddress = true;
+        $this->messageAddress = $address;
+        $this->hasMessageAddress = true;
 
         return $this;
     }
@@ -245,8 +245,8 @@ final class FileWindowDataFields
             throw MissingFields::forType(FileWindowData::class, 'commentAddress');
         }
 
-        if (! $this->hasTellAddress) {
-            throw MissingFields::forType(FileWindowData::class, 'tellAddress');
+        if (! $this->hasMessageAddress) {
+            throw MissingFields::forType(FileWindowData::class, 'messageAddress');
         }
 
         return new FileWindowData(
@@ -264,7 +264,7 @@ final class FileWindowDataFields
             recipientId: $this->recipientId,
             recipientName: $this->recipientName,
             commentAddress: $this->commentAddress,
-            tellAddress: $this->tellAddress,
+            messageAddress: $this->messageAddress,
             markdown: $this->markdown,
         );
     }

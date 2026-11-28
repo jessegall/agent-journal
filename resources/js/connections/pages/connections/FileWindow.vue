@@ -93,7 +93,7 @@ const shown = computed(() => {
                             data.commentTarget !== null &&
                             data.digest !== null &&
                             data.commentAddress !== null &&
-                            data.tellAddress !== null
+                            data.messageAddress !== null
                         "
                         #lines
                     >
@@ -106,7 +106,7 @@ const shown = computed(() => {
                             :recipient-id="data.recipientId"
                             :recipient-name="data.recipientName"
                             :comment-address="data.commentAddress"
-                            :tell-address="data.tellAddress"
+                            :message-address="data.messageAddress"
                         />
                     </template>
                 </CodeView>
