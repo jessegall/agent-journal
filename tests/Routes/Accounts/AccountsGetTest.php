@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
+use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Http\Requests\Profiles\AccountsInput;
+use App\Http\Responses\LoaderProps;
 use App\Web\Creation\SurfaceContexts;
 use App\Web\Creation\SurfacePayload;
+use App\Web\Values\LoaderInput;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
@@ -53,6 +56,33 @@ final class AccountsGetTest extends GuardedRouteEntryTestCase
         $this->expectException(ValidationException::class);
 
         AccountsInput::factory()->alwaysValidate()->from(new SurfacePayload($invalid, []));
+    }
+
+    public function test_a_loader_only_request_does_not_read_or_validate_the_page(): void
+    {
+        $journal = $this->journal->owner();
+        $uri = route('accounts.accounts', ['add' => 'invalid'], false);
+        $prop = 'load_accounts_sign_in_receipt';
+        $token = 'receipt-call';
+        $payload = json_encode([
+            'token' => $token,
+            'input' => ['key' => 'unsubmitted-key', 'driver' => 'codex'],
+        ], JSON_THROW_ON_ERROR);
+
+        $this->actingAs($journal->ownerUser())->get($uri, [
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => (string) $this->app->make(HandleInertiaRequests::class)->version(
+                Request::create($uri),
+            ),
+            'X-Inertia-Partial-Component' => 'layout/DeclaredLayout',
+            'X-Inertia-Partial-Data' => $prop,
+            LoaderProps::HEADER => 'accounts.sign-in-receipt',
+            LoaderInput::HEADER => rtrim(strtr(base64_encode($payload), '+/', '-_'), '='),
+        ])->assertOk()
+            ->assertJsonPath("props.{$prop}.token", $token)
+            ->assertJsonPath("props.{$prop}.status", 'ok')
+            ->assertJsonMissingPath('props.title')
+            ->assertJsonMissingPath('props.page');
     }
 
     protected function arrange(TestJournal $journal): RouteCall

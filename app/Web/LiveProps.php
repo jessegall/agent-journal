@@ -6,6 +6,7 @@ namespace App\Web;
 
 use App\Actors\Contracts\CurrentUserResolver;
 use App\Actors\CurrentUser;
+use App\Web\Attributes\Live;
 use App\Web\Values\LiveListeners;
 use Closure;
 use Inertia\DeferProp;
@@ -28,7 +29,7 @@ final readonly class LiveProps
      */
     public function optional(callable $read): OptionalProp
     {
-        return $this->marked($this->inertia->optional($read));
+        return $this->mark($this->inertia->optional($read));
     }
 
     /**
@@ -36,15 +37,15 @@ final readonly class LiveProps
      */
     public function deferred(callable $read, string $group): DeferProp
     {
-        return $this->marked($this->inertia->defer($read, $group));
+        return $this->mark($this->inertia->defer($read, $group));
     }
 
     /**
      * A prop read on every visit that does not leave it out.
      */
-    public function value(Closure $read): LiveProp|Closure
+    public function value(Closure $read, Live|null $live = null): LiveProp|Closure
     {
-        return $this->listeners()
+        return $this->listeners($live)
             ->map(fn (LiveListeners $listeners) => $this->inertia->live($read, $listeners->events, $listeners->channel))
             ->getOrElse($read);
     }
@@ -55,16 +56,18 @@ final readonly class LiveProps
      * @param  T  $prop
      * @return T
      */
-    private function marked(SupportsLiveUpdates $prop): SupportsLiveUpdates
+    public function mark(SupportsLiveUpdates $prop, Live|null $live = null): SupportsLiveUpdates
     {
-        return $this->listeners()->map(fn (LiveListeners $listeners) => $listeners->mark($prop))->getOrElse($prop);
+        return $this->listeners($live)->map(fn (LiveListeners $listeners) => $listeners->mark($prop))->getOrElse($prop);
     }
 
     /**
      * @return Option<LiveListeners>
      */
-    private function listeners(): Option
+    private function listeners(Live|null $live): Option
     {
-        return $this->users->currentUser()->map(fn (CurrentUser $user) => LiveListeners::pageChanges($user->id));
+        return $this->users->currentUser()->map(
+            fn (CurrentUser $user) => LiveListeners::pageChanges($user->id, $live?->events ?? []),
+        );
     }
 }

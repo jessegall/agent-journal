@@ -9,19 +9,28 @@ use App\Navigation\Contracts\ClientOwnerAvailability;
 use App\Navigation\Contracts\WindowResults;
 use App\Reads\Contracts\ReaderRequests;
 use App\Support\ClientDeclarations;
+use App\Support\VisibilityChecks;
+use App\Web\Attributes\Live;
 use App\Web\Creation\PageFactory;
 use App\Web\Creation\SurfaceAttributeMap;
 use App\Web\Creation\SurfaceDefinition;
+use App\Web\Creation\SurfacePropPolicy;
 use App\Web\Creation\WindowFactory;
+use App\Web\Data\HomeVisitProps;
 use App\Web\Data\Pages\UnavailableWindow;
+use App\Web\Data\ScheduledSurfaceProp;
 use App\Web\Declarations\RegisteredPage;
 use App\Web\Declarations\RegisteredSection;
 use App\Web\Enums\PageDestination;
 use App\Web\Values\WindowInstance;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
+use Inertia\ResponseFactory;
+use Inertia\SupportsLiveUpdates;
 use PhpOption\Option;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Lazy;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -50,6 +59,8 @@ final readonly class PageProps
         private PageFactory $pages,
         private WindowFactory $windows,
         private SurfaceAttributeMap $policies,
+        private ResponseFactory $inertia,
+        private VisibilityChecks $visibility,
     ) {}
 
     /**
@@ -59,38 +70,80 @@ final readonly class PageProps
      */
     public function forPage(RegisteredPage $page, DeclaredPageRequest $request): array
     {
-        $props = [
-            self::TITLE => $page->page->title,
-            self::PAGE => $this->live->value(fn () => $this->ownPageResult($page, $request)),
-        ];
-
+        $readPage = fn () => $this->ownPageResult($page, $request);
+        $policy = $this->policies->forPage($page->surface->type)->prop;
+        $props = $page->isHome()
+            ? $this->homeShell($page, $readPage, $policy)
+            : [
+                self::TITLE => $page->page->title,
+                self::PAGE => $this->scheduled($this->lazy($readPage, $policy), $policy->live),
+            ];
+        $component = $page->componentName();
         $route = $request->route() instanceof Route ? $request->route() : null;
 
         foreach ($this->sectionsOf($page) as $section) {
-            $props[$section->propName] = $this->live->deferred(
-                fn () => $this->sectionResult($section, $request, $route),
-                $section->propName,
+            if (! $this->visibility->allow($section->visibilityChecks())) {
+                continue;
+            }
+
+            $policy = $this->policies->forType($section->resolver->dataClass)->prop;
+            $read = fn () => $this->sectionResult($section, $request, $route);
+            $props[$section->propName] = $this->scheduled(
+                $this->lazy($read, $policy, $section->propName),
+                $policy->live,
             );
         }
 
-        $props[self::INSPECTOR] = $this->live->optional(fn () => $this->inspectorResult($request));
+        if ($request->asksFor($component, self::INSPECTOR)) {
+            $props[self::INSPECTOR] = $this->scheduled(Lazy::inertia(fn () => $this->inspectorResult($request)));
+        }
 
-        // The record open in the inspector mounts its own sections, read with its route rather than the page's.
         foreach ($this->inspectedPage($request)->map($this->sectionsOf(...))->getOrElse([]) as $section) {
-            $props["inspector_{$section->propName}"] = $this->live->optional(
-                fn () => $this->sectionResult($section, $request, $this->inspectedRoute($section->host, $request)),
-            );
+            $name = "inspector_{$section->propName}";
+
+            if ($request->asksFor($component, $name) && $this->visibility->allow($section->visibilityChecks())) {
+                $props[$name] = $this->scheduled(Lazy::inertia(
+                    fn () => $this->sectionResult($section, $request, $this->inspectedRoute($section->host, $request)),
+                ));
+            }
         }
 
-        // Home also offers every window as its own optional prop.
-        if ($page->isHome()) {
-            return [
-                ...$props,
-                ...$this->forHome($request),
-            ];
-        }
+        return $page->isHome() ? [...$props, ...$this->forHome($request, $component)] : $props;
+    }
+
+    /** @return array<string, mixed> */
+    private function homeShell(RegisteredPage $page, Closure $read, SurfacePropPolicy $policy): array
+    {
+        $props = HomeVisitProps::build()
+            ->title($this->inertia->always($page->page->title))
+            ->page(Lazy::closure($read))
+            ->finish()
+            ->toArray();
+        $props[self::PAGE] = $this->live->value($props[self::PAGE], $policy->live);
 
         return $props;
+    }
+
+    private function lazy(Closure $read, SurfacePropPolicy $policy, string|null $defaultGroup = null): Lazy
+    {
+        if ($policy->isOptional) {
+            return Lazy::inertia($read);
+        }
+
+        $group = $policy->deferred?->group ?? $defaultGroup;
+
+        return $group === null ? Lazy::closure($read) : Lazy::inertiaDeferred($read, $group);
+    }
+
+    private function scheduled(Lazy $value, Live|null $live = null): mixed
+    {
+        $prop = ScheduledSurfaceProp::build()->value($value)->finish()->toArray()['value'];
+
+        return match (true) {
+            $prop instanceof SupportsLiveUpdates => $this->live->mark($prop, $live),
+            $prop instanceof Closure => $this->live->value($prop, $live),
+            default => $prop,
+        };
     }
 
     /**
@@ -99,7 +152,7 @@ final readonly class PageProps
      *
      * @return array<string, mixed>
      */
-    public function forHome(DeclaredPageRequest $request): array
+    private function forHome(DeclaredPageRequest $request, string $component): array
     {
         $props = [];
 
@@ -109,21 +162,32 @@ final readonly class PageProps
             }
 
             $window = $page->window;
-            $original = WindowInstance::original($page->key);
-            $props[$page->propName] = $this->live->optional(
-                fn () => $this->windowResult($page, $window, $request, $original),
-            );
+            $policy = $this->policies->forType($window->type);
+            $checks = [...$page->visibilityChecks(), ...$policy->checks];
+            $instances = [WindowInstance::original($page->key)];
 
             foreach ($request->copiesAskedFor($page->propName) as $copyId) {
-                $copy = WindowInstance::copy($page->key, $copyId);
-                $props[$copy->prop($page->propName)] = $this->live->optional(
-                    fn () => $this->windowResult($page, $window, $request, $copy),
-                );
+                $instances[] = WindowInstance::copy($page->key, $copyId);
+            }
+
+            foreach ($instances as $instance) {
+                $name = $instance->prop($page->propName);
+
+                if ($request->asksFor($component, $name) && $this->visibility->allow($checks)) {
+                    $props[$name] = $this->scheduled(
+                        $this->lazy(fn () => $this->windowResult($page, $window, $request, $instance), $policy->prop),
+                        $policy->prop->live,
+                    );
+                }
             }
 
             foreach ($this->sectionsOf($page) as $section) {
-                $loadSection = fn () => $this->sectionResult($section, $request, null);
-                $props[$section->propName] = $this->live->optional($loadSection);
+                if ($request->asksFor($component, $section->propName)
+                    && $this->visibility->allow($section->visibilityChecks())) {
+                    $props[$section->propName] = $this->scheduled(Lazy::inertia(
+                        fn () => $this->sectionResult($section, $request, null),
+                    ));
+                }
             }
         }
 
@@ -145,8 +209,8 @@ final readonly class PageProps
         return $result;
     }
 
-    /** @param \Closure(): Request $visit */
-    private function pageResult(RegisteredPage $page, string $place, \Closure $visit): Data
+    /** @param Closure(): Request $visit */
+    private function pageResult(RegisteredPage $page, string $place, Closure $visit): Data
     {
         return $this->windowResults->surface(
             $page->key,

@@ -36,8 +36,8 @@ final class PagePropsTest extends TestCase
         $live = $this->pageObject($this->actingAs($this->journal->ownerUser())->get(route('home')))['liveProps'];
 
         $this->assertArrayHasKey('page', $live);
-        $this->assertArrayHasKey('inspector', $live);
-        $this->assertNotEmpty(array_filter(array_keys($live), fn (string $prop) => str_starts_with($prop, 'window_')));
+        $this->assertArrayNotHasKey('inspector', $live);
+        $this->assertEmpty(array_filter(array_keys($live), fn (string $prop) => str_starts_with($prop, 'window_')));
 
         foreach ($live as $prop) {
             $this->assertSame(
