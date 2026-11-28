@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
+use App\Agents\Drivers\Setup\DriverImageRecipe;
 use App\Hosts\Commands\AllowHostImages\AllowHostImagesCommand;
 use App\Hosts\Commands\BuildHostDriverImage\BuildHostDriverImageCommand;
 use App\Hosts\Commands\RecordDriverImageAnswer\RecordDriverImageAnswerCommand;
@@ -11,6 +12,8 @@ use App\Hosts\Commands\ReserveHostDriverImages\ReserveHostDriverImagesCommand;
 use App\Hosts\Enums\DriverImageStatus;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Hosts\HostInstruction;
+use App\Models\Projects\DriverImageRecipeRecord;
+use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestHostInstruction;
@@ -125,6 +128,26 @@ final class RecordDriverImageAnswerTest extends TestCase
      *
      * @return array<string, mixed>
      */
+    public function test_a_driver_image_that_passes_its_checks_retires_the_hosts_images_of_its_older_recipes(): void
+    {
+        $folder = DriverImageRecipeRecord::query()->findOrFail($this->image->driver_image_recipe_id)->folder;
+        $older = DriverImageRecipeRecord::create(
+            DriverImageRecipe::of($folder, ['Dockerfile' => 'FROM older'], 'base@sha256:a', '0.0.1'),
+        );
+        $replaced = HostDriverImage::create(Host::query()->findOrFail($this->image->host_id), $older);
+
+        $this->answer(HostInstructionType::BuildImage, $this->builtReply());
+        $this->answer(HostInstructionType::AllowImages, ['allowed' => 2, 'absent' => []]);
+        $checks = $this->latest(HostInstructionType::RunContainers);
+        $runs = count($this->journal->payloadOf($checks)['runs']);
+        $this->answer(HostInstructionType::RunContainers, ['results' => array_fill(0, $runs, $this->passing())]);
+
+        $this->journal->assertResult(
+            [DriverImageStatus::Ready, false],
+            [$this->image->refresh()->status, HostDriverImage::query()->whereKey($replaced->id)->exists()],
+        );
+    }
+
     private function builtReply(): array
     {
         $built = array_filter(

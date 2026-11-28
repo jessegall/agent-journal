@@ -20,6 +20,7 @@ use App\Events\Connections\DriverImageRefused;
 use App\Exceptions\HostDriverImageUnbuilt;
 use App\Hosts\Enums\DriverImagePhase;
 use App\Hosts\Enums\DriverImageStatus;
+use App\Models\Agents\AgentSession;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
@@ -163,6 +164,24 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
         $this->ready_at = CarbonImmutable::now();
         $this->saveAndAssert();
         $this->raise(new DriverImageAdmitted($this->id));
+    }
+
+    /**
+     * The host's images of the same driver's older recipes leave once this one is ready, so the host allows and checks
+     * only the current one; an image whose recipe a session that has not ended froze stays, as it may resume on it.
+     */
+    public function retireReplaced(string $folder): void
+    {
+        $replaced = self::query()
+            ->onHost($this->host_id)
+            ->whereKeyNot($this->id)
+            ->whereIn('driver_image_recipe_id', DriverImageRecipeRecord::query()
+                ->where('folder', $folder)
+                ->whereNotIn('recipe_digest', AgentSession::query()->liveOnFrozenRecipe()->select('driver_recipe_digest'))
+                ->select('id'));
+
+        HostDriverImageWait::query()->whereIn('host_driver_image_id', (clone $replaced)->select('id'))->delete();
+        $replaced->delete();
     }
 
     /**

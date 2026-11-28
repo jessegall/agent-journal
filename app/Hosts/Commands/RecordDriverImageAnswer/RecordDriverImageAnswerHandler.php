@@ -141,6 +141,7 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         }
 
         $image->checked();
+        $image->retireReplaced($folder);
     }
 
     /**
