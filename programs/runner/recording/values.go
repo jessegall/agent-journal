@@ -63,6 +63,18 @@ func (values *Values) Copy() *Values {
 	return &Values{bound: bound}
 }
 
+// RenamesSince counts the fakes bound since the earlier bindings to a live value other than the fake itself: a
+// candidate call that names the very values heard needs none.
+func (values *Values) RenamesSince(earlier *Values) int {
+	renames := 0
+	for fake, live := range values.bound {
+		if _, wasBound := earlier.bound[fake]; !wasBound && fake != live {
+			renames++
+		}
+	}
+	return renames
+}
+
 // Hear binds the fakes of the recorded JSON to the live values the heard JSON holds in the same places, refusing an
 // empty live value, one of another shape than the recorded one, and one that differs from a fake's earlier binding.
 func (values *Values) Hear(place Place, recorded, heard []byte) error {

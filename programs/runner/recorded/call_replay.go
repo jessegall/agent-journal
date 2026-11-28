@@ -223,11 +223,19 @@ func (replay *CallReplay) isEarlierPlayed(index int) bool {
 
 // take is the first call not yet played that the request is, or a streamed call it is, with the request's live
 // values bound.
+// candidatesAfterFit is how many further calls a request is weighed against once one fits, as the call naming its
+// very values is recorded near the first that fits.
+const candidatesAfterFit = 32
+
 func (replay *CallReplay) take(request *http.Request, body []byte) (int, error) {
 	asked := request.Method + " " + request.URL.Path
 	next := -1
 	var nearest error
+	chosen, chosenValues, fewest, looked := -1, (*recording.Values)(nil), 0, 0
 	for index := range replay.calls {
+		if chosen >= 0 && looked >= candidatesAfterFit {
+			break
+		}
 		streamed := replay.isStreamed(index)
 		if replay.played[index] && !streamed {
 			continue
@@ -239,18 +247,33 @@ func (replay *CallReplay) take(request *http.Request, body []byte) (int, error) 
 		if err == nil && !streamed {
 			err = replay.bodyBound(tried, index, body)
 		}
-		if err == nil {
+		if err == nil && streamed {
 			// A stream's calls match by their path and bind nothing: the live side cuts them by its own timing.
-			if !streamed {
-				replay.values = tried
-			}
 			replay.played[index] = true
 			return index, nil
+		}
+		if err == nil {
+			// Of the calls the request fits, the one naming the very values heard wins: concurrent calls that
+			// differ only in a value, such as two images' checks, are never bound crosswise.
+			renames := tried.RenamesSince(replay.values)
+			if chosen < 0 || renames < fewest {
+				chosen, chosenValues, fewest = index, tried, renames
+			}
+			if renames == 0 {
+				break
+			}
+			looked++
+			continue
 		}
 		var refusal bodyRefusal
 		if nearest == nil && errors.As(err, &refusal) {
 			nearest = err
 		}
+	}
+	if chosen >= 0 {
+		replay.values = chosenValues
+		replay.played[chosen] = true
+		return chosen, nil
 	}
 	if next < 0 {
 		return 0, fmt.Errorf("%s was asked after every recorded call was played", asked)

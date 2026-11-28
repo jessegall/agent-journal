@@ -12,11 +12,11 @@ import (
 // recordedSecret is the secret the journal's recording finisher signs every recorded claim's instructions with again.
 const recordedSecret = "recorded-instruction-secret"
 
-// recordedInstructions are the instructions of the type the journal handed out in the recorded Codex terminal turn,
-// in the order it handed them out, as the host claimed them.
-func recordedInstructions(t *testing.T, instructionType string) []Instruction {
+// recordedInstructions are the instructions of the type the journal handed out in the recorded Codex scenario, in the
+// order it handed them out, as the host claimed them.
+func recordedInstructions(t *testing.T, scenario string, instructionType string) []Instruction {
 	t.Helper()
-	calls, err := recorded.MustLoad(t, "codex", "driver-image-build").Calls(recording.WireHost)
+	calls, err := recorded.MustLoad(t, "codex", scenario).Calls(recording.WireHost)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func recordedInstructions(t *testing.T, instructionType string) []Instruction {
 		}
 	}
 	if len(found) == 0 {
-		t.Fatalf("the recorded Codex terminal turn handed out no %s", instructionType)
+		t.Fatalf("the recorded Codex scenario %s handed out no %s", scenario, instructionType)
 	}
 	return found
 }

@@ -16,7 +16,7 @@ import (
 // buildInstruction is the build_image the journal handed out in the recorded Codex terminal turn, signed for the test.
 func buildInstruction(t *testing.T) Instruction {
 	t.Helper()
-	instruction := recordedInstructions(t, "build_image")[0]
+	instruction := recordedInstructions(t, "driver-image-build", "build_image")[0]
 	instruction.ExpiresAt = testNow.Add(5 * time.Second)
 	instruction.Signature = Sign(testSecret, instruction)
 	return instruction
