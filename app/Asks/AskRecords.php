@@ -10,6 +10,7 @@ use App\Models\Asks\Ask;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\AskReference;
+use Illuminate\Database\Eloquent\Collection;
 
 final readonly class AskRecords
 {
@@ -31,6 +32,12 @@ final readonly class AskRecords
     public function visible(): ReadBuilder
     {
         return Ask::query()->visibleToParticipant($this->current->actor(), $this->owner->resolve());
+    }
+
+    /** @return Collection<int, Ask> */
+    public function preview(int $limit): Collection
+    {
+        return $this->visible()->orderByDesc('id')->limit($limit)->get(['id', 'body', 'open']);
     }
 
     /**
