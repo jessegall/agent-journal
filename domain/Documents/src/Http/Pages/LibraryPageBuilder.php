@@ -6,7 +6,7 @@ namespace Domain\Documents\Http\Pages;
 
 use App\Reads\PageFormRequests;
 use App\Web\Creation\Contracts\PageBuilder;
-use Domain\Documents\Http\Pages\Support\LibraryListing;
+use Domain\Documents\Http\Pages\Support\LibraryLayout;
 use Domain\Documents\Http\Requests\ListRecordsRequest;
 use Illuminate\Http\Request;
 
@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
  */
 final readonly class LibraryPageBuilder implements PageBuilder
 {
-    public function __construct(private LibraryListing $library, private PageFormRequests $requests) {}
+    public function __construct(private LibraryLayout $library, private PageFormRequests $requests) {}
 
     public function build(Request $visit): LibraryPageData
     {

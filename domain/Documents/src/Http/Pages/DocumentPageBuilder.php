@@ -15,10 +15,10 @@ use Domain\Comments\Contracts\CommentResolver;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Http\Pages\Documents\DocumentsShow;
-use Domain\Documents\Http\Pages\Support\LibraryListing;
+use Domain\Documents\Http\Pages\Support\LibraryLayout;
 use Domain\Documents\Http\Requests\RecordPageRequest;
 use Domain\Documents\Models\Document;
-use Domain\Documents\Support\RecordPageReads;
+use Domain\Documents\Support\RecordPageQuery;
 use Illuminate\Http\Request;
 
 /**
@@ -35,9 +35,9 @@ final readonly class DocumentPageBuilder implements PageBuilder
         private CommentResolver $comments,
         private RecordResolver $records,
         private ShareStatusResolver $shares,
-        private RecordPageReads $reads,
+        private RecordPageQuery $reads,
         private DocumentsShow $page,
-        private LibraryListing $library,
+        private LibraryLayout $library,
     ) {}
 
     public function build(Request $visit): DocumentPageData

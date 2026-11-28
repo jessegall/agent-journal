@@ -17,7 +17,7 @@ use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Http\Pages\Reports\ReportsShow;
 use Domain\Documents\Http\Requests\RecordPageRequest;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Support\RecordPageReads;
+use Domain\Documents\Support\RecordPageQuery;
 use Illuminate\Http\Request;
 
 /**
@@ -33,7 +33,7 @@ final readonly class ReportPageBuilder implements PageBuilder
         private CommentResolver $comments,
         private RecordResolver $records,
         private ShareStatusResolver $shares,
-        private RecordPageReads $reads,
+        private RecordPageQuery $reads,
         private ReportsShow $page,
     ) {}
 

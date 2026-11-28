@@ -10,7 +10,7 @@ use App\Links\Concerns\ProvidesModelRecords;
 use App\Records\Contracts\RecordProvider;
 use App\Support\BoundedReadBuilder;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Support\RecordChanges;
+use Domain\Documents\Support\RecordChangeGuard;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,7 +26,7 @@ final readonly class ReportLinkRecords implements RecordProvider
      */
     use ProvidesModelRecords;
 
-    public function __construct(private RecordChanges $changes, private CurrentActor $actors) {}
+    public function __construct(private RecordChangeGuard $changes, private CurrentActor $actors) {}
 
     public function referenceWord(): string
     {

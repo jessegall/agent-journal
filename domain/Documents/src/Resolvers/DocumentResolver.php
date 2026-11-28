@@ -19,7 +19,7 @@ use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
-use Domain\Documents\Support\RecordReading;
+use Domain\Documents\Support\RecordTextReader;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
@@ -150,7 +150,7 @@ final readonly class DocumentResolver implements DocumentResolverContract
             DocumentMissing::throwing()->numbered($number),
         );
 
-        return RecordReading::read("doc {$number}", $publishedRevision, $selection);
+        return RecordTextReader::read("doc {$number}", $publishedRevision, $selection);
     }
 
     public function show(int $number): DocumentView

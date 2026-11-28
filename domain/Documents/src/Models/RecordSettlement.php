@@ -13,7 +13,7 @@ use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Exceptions\RecordImmutable;
-use Domain\Documents\Support\RecordViews;
+use Domain\Documents\Support\RecordViewFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -80,7 +80,7 @@ final class RecordSettlement extends JournalModel implements ReadableModel
      */
     protected function card(): Attribute
     {
-        return Accessor::get(fn () => RecordViews::settlementCard($this));
+        return Accessor::get(fn () => RecordViewFactory::settlementCard($this));
     }
 
     // ----------[ Asserts ]----------

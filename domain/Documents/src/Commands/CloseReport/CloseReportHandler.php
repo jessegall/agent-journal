@@ -7,12 +7,12 @@ namespace Domain\Documents\Commands\CloseReport;
 use App\Support\RecordReference;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Support\RecordChanges;
-use Domain\Documents\Support\RecordSettlementService;
+use Domain\Documents\Support\RecordChangeGuard;
+use Domain\Documents\Support\RecordSettler;
 
 final readonly class CloseReportHandler extends DocumentCommandHandler
 {
-    public function __construct(private RecordChanges $changes, private RecordSettlementService $settling) {}
+    public function __construct(private RecordChangeGuard $changes, private RecordSettler $settling) {}
 
     public function handle(CloseReportCommand $command): void
     {

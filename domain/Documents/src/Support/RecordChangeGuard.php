@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Who may change a document or a report: the actor that created it, or an actor granted changing others' records.
  */
-final readonly class RecordChanges
+final readonly class RecordChangeGuard
 {
     public function __construct(
         private CurrentActor $actors,

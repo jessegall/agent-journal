@@ -17,7 +17,7 @@ use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Enums\EditingStatus;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Support\RecordReading;
+use Domain\Documents\Support\RecordTextReader;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -87,7 +87,7 @@ final readonly class ReportResolver implements ReportResolverContract
     {
         $report = self::published($number);
 
-        return RecordReading::read("report {$number}", $report, $selection);
+        return RecordTextReader::read("report {$number}", $report, $selection);
     }
 
     public function openCount(): int

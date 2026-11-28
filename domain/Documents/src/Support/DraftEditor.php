@@ -16,7 +16,7 @@ use Domain\Documents\Values\DraftTarget;
  * The one flow every draft edit follows: lock the document, find this editor's draft by its token, check the
  * version, change the text and save it as the next version.
  */
-final readonly class DraftEditService
+final readonly class DraftEditor
 {
     use RefusesOtherDrafts;
 

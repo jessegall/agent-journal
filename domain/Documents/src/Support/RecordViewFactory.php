@@ -24,7 +24,7 @@ use Domain\Documents\Models\Report;
  * How each document record becomes the view, card or suggestion a page or dock shows; the one place that knows each
  * mapping, kept out of the exported Data classes.
  */
-final readonly class RecordViews
+final readonly class RecordViewFactory
 {
     /**
      * A document as its page shows it: its current revision's text, who made it and its attention.

@@ -37,7 +37,7 @@ use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
 use Domain\Documents\Models\Concerns\Settles;
 use Domain\Documents\Models\Concerns\SharedWithComments;
-use Domain\Documents\Support\RecordViews;
+use Domain\Documents\Support\RecordViewFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -226,7 +226,7 @@ final class Document extends JournalModel implements
      */
     protected function card(): Attribute
     {
-        return Accessor::get(fn () => RecordViews::documentCard($this));
+        return Accessor::get(fn () => RecordViewFactory::documentCard($this));
     }
 
     /**
@@ -234,7 +234,7 @@ final class Document extends JournalModel implements
      */
     protected function dockCard(): Attribute
     {
-        return Accessor::get(fn () => RecordViews::documentSuggestion($this));
+        return Accessor::get(fn () => RecordViewFactory::documentSuggestion($this));
     }
 
     /**
@@ -242,7 +242,7 @@ final class Document extends JournalModel implements
      */
     protected function view(): Attribute
     {
-        return Accessor::get(fn () => RecordViews::documentView($this));
+        return Accessor::get(fn () => RecordViewFactory::documentView($this));
     }
 
     // ----------[ Relations ]----------

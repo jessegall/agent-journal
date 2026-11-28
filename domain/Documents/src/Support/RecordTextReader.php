@@ -15,7 +15,7 @@ use Domain\Documents\Models\Report;
  * Builds a bounded read of a document revision or a report: its outline, the selected part and the exact
  * continuation.
  */
-final class RecordReading
+final class RecordTextReader
 {
     /**
      * A bounded read of a document revision, or of a report, which has one revision only.

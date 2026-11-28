@@ -20,7 +20,7 @@ use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Models\Concerns\MeasuresBody;
 use Domain\Documents\Models\Concerns\SearchesText;
-use Domain\Documents\Support\RecordViews;
+use Domain\Documents\Support\RecordViewFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -98,7 +98,7 @@ final class DocumentRevision extends JournalModel implements Numbered, ReadableM
      */
     public function view(Document $document): RevisionView
     {
-        return RecordViews::revisionView($this, $document);
+        return RecordViewFactory::revisionView($this, $document);
     }
 
     /**
@@ -120,7 +120,7 @@ final class DocumentRevision extends JournalModel implements Numbered, ReadableM
      */
     protected function card(): Attribute
     {
-        return Accessor::get(fn () => RecordViews::revisionCard($this));
+        return Accessor::get(fn () => RecordViewFactory::revisionCard($this));
     }
 
     // ----------[ Relations ]----------

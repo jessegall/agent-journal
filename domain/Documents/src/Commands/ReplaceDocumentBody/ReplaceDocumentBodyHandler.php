@@ -6,13 +6,13 @@ namespace Domain\Documents\Commands\ReplaceDocumentBody;
 
 use App\Support\MarkdownText;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
-use Domain\Documents\Support\DraftEditService;
+use Domain\Documents\Support\DraftEditor;
 use Domain\Documents\Support\DraftText;
 use Domain\Documents\Values\DraftReference;
 
 final readonly class ReplaceDocumentBodyHandler extends DocumentCommandHandler
 {
-    public function __construct(private DraftEditService $drafts) {}
+    public function __construct(private DraftEditor $drafts) {}
 
     public function handle(ReplaceDocumentBodyCommand $command): DraftReference
     {

@@ -17,7 +17,7 @@ use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Events\DocumentClosed;
 use Domain\Documents\Exceptions\RecordImmutable;
-use Domain\Documents\Support\RecordViews;
+use Domain\Documents\Support\RecordViewFactory;
 use Domain\Documents\Values\CloseResult;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -112,7 +112,7 @@ final class DocumentClose extends JournalModel implements EventSource, ReadableM
      */
     protected function card(): Attribute
     {
-        return Accessor::get(fn () => RecordViews::closeCard($this));
+        return Accessor::get(fn () => RecordViewFactory::closeCard($this));
     }
 
     // ----------[ Asserts ]----------

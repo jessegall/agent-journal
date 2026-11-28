@@ -19,7 +19,7 @@ use Domain\Documents\Data\DraftView;
 use Domain\Documents\Events\DocumentDraftSaved;
 use Domain\Documents\Events\DocumentOpened;
 use Domain\Documents\Support\DraftText;
-use Domain\Documents\Support\RecordViews;
+use Domain\Documents\Support\RecordViewFactory;
 use Domain\Documents\Values\DraftReference;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -125,7 +125,7 @@ final class DocumentDraft extends JournalModel implements EventSource, ReadableM
 
     public function view(Document $document): DraftView
     {
-        return RecordViews::draftView($this, $document);
+        return RecordViewFactory::draftView($this, $document);
     }
 
     public function reference(Document $document): DraftReference

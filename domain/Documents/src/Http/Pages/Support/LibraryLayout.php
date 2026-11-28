@@ -16,7 +16,7 @@ use Domain\Documents\Http\Pages\Documents\DocumentsIndex;
  * The library as the window's query asks for it: one page of its documents, its reports or both under the search and
  * attention filters, with the parts given in its reader.
  */
-final readonly class LibraryListing
+final readonly class LibraryLayout
 {
     public function __construct(
         private DocumentResolver $documents,

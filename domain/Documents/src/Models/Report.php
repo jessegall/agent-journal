@@ -39,7 +39,7 @@ use Domain\Documents\Models\Concerns\MeasuresBody;
 use Domain\Documents\Models\Concerns\SearchesText;
 use Domain\Documents\Models\Concerns\Settles;
 use Domain\Documents\Models\Concerns\SharedWithComments;
-use Domain\Documents\Support\RecordViews;
+use Domain\Documents\Support\RecordViewFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -136,7 +136,7 @@ final class Report extends JournalModel implements
      */
     protected function card(): Attribute
     {
-        return Accessor::get(fn () => RecordViews::reportCard($this));
+        return Accessor::get(fn () => RecordViewFactory::reportCard($this));
     }
 
     /**
@@ -144,7 +144,7 @@ final class Report extends JournalModel implements
      */
     protected function dockCard(): Attribute
     {
-        return Accessor::get(fn () => RecordViews::reportSuggestion($this));
+        return Accessor::get(fn () => RecordViewFactory::reportSuggestion($this));
     }
 
     /**
@@ -152,7 +152,7 @@ final class Report extends JournalModel implements
      */
     protected function view(): Attribute
     {
-        return Accessor::get(fn () => RecordViews::reportView($this));
+        return Accessor::get(fn () => RecordViewFactory::reportView($this));
     }
 
     /**

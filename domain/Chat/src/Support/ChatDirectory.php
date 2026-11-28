@@ -67,7 +67,8 @@ final readonly class ChatDirectory implements ChatDirectoryContract
      */
     public function existingBetween(ActorReference $first, ActorReference $second): Inbox|null
     {
-        return Inbox::query()->withProviderKey(self::PAIR_PROVIDER)->ofProvider(self::pairKeyOf([$first, $second]))
+        return Inbox::query()->withProviderKey(self::PAIR_PROVIDER)
+            ->ofProvider(self::pairKeyOf([$first, $second]))
             ->first();
     }
 

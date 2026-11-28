@@ -23,7 +23,7 @@ use Domain\Documents\Values\DraftTarget;
  * answers with its outcome, otherwise the draft at the expected version closes into a revision when it changed. The
  * close record takes the final revision number from here, and each row raises its own fact.
  */
-final readonly class DraftCloseService
+final readonly class DraftCloser
 {
     use RefusesOtherDrafts;
 

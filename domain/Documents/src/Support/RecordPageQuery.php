@@ -15,7 +15,7 @@ use Domain\Documents\Http\Requests\RecordPageRequest;
  * Reads what a record page asked for beside the record, from its query: a comment's location, a version's sections
  * or a part of its lines. A page that asks for none reads none.
  */
-final readonly class RecordPageReads
+final readonly class RecordPageQuery
 {
     public function __construct(
         private RecordPageRequest $request,
