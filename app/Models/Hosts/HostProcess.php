@@ -20,6 +20,7 @@ use App\Events\Connections\HostProcessSeenInHeartbeat;
 use App\Events\Connections\HostProcessStarted;
 use App\Events\Connections\HostProcessWorkerClaimed;
 use App\Events\Connections\HostProcessWorkerRenewed;
+use App\Exceptions\HostProcessGone;
 use App\Exceptions\WorkerFenced;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
@@ -480,7 +481,8 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
      */
     public static function findLocked(string $id): self
     {
-        return self::query()->with('host')->whereKey($id)->lockForUpdate()->firstOrFail();
+        return self::query()->with('host')->whereKey($id)->lockForUpdate()
+            ->firstOr(HostProcessGone::throwing()->forProcess($id));
     }
 
     /**
