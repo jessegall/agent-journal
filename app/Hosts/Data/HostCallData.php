@@ -28,6 +28,7 @@ final class HostCallData extends Data
         public readonly array $query = [],
         public readonly int|null $bodyByteLimit = null,
         public readonly array $queryBounds = [],
+        public readonly string $method = 'POST',
     ) {}
 
     /**

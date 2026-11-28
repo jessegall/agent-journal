@@ -9,7 +9,6 @@ use App\Bus\Contracts\CommandHandler;
 use App\Hosts\Commands\RemoveHostContainer\RemoveHostContainerCommand;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
 use App\Hosts\HostInstructionPlacement;
-use App\Hosts\Protocol\HostProtocolVersion;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\Payloads\HostInventoryProcessPayload;
 use App\Models\Hosts\HostInstruction;
@@ -35,8 +34,10 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
         $host = $this->placement->orderingHost($command->hostId);
         $inventory = $command->inventory;
 
-        if ($inventory->protocol !== HostProtocolVersion::CURRENT) {
-            throw HostProtocolUnsupported::forHost($host->id, $inventory->protocol);
+        $expected = $host->expectedProtocol();
+
+        if ($inventory->protocol !== $expected) {
+            throw HostProtocolUnsupported::forHost($host->id, $inventory->protocol, $expected);
         }
 
         $reported = array_column(
@@ -49,6 +50,7 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
         );
 
         $now = $this->clock->now();
+        $host->recordProtocol($inventory->protocol);
         $host->recordCapabilities($inventory->capabilities);
         $host->forgetAllowedImages();
 

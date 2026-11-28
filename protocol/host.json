@@ -1,6 +1,20 @@
 {
     "about": "Host protocol 1 between the Go host and the PHP journal, written once. php artisan journal:host-protocol generates the Go and PHP code from this file; never edit the generated files.",
     "version": 1,
+    "protocols": {
+        "2": {
+            "shared_calls": ["claim_instruction", "answer_instruction", "pull_private_value", "notify_process_output", "notify_process_report", "notify_inventory", "notify_heartbeat", "notify_project_read"],
+            "calls": {
+                "pending_workspace_reads": { "route": "workspace-reads.pending", "method": "GET", "path": "/host/workspace-reads", "body": null, "reply": "workspace_reads" },
+                "report_workspace_read": { "route": "workspace-reads.report", "method": "POST", "path": "/host/workspace-reads/{reference}", "body": "workspace_read_report", "reply": null }
+            },
+            "types": {
+                "workspace_reads": { "pending": "list<workspace_read>" },
+                "workspace_read": { "reference": "string", "actor_id": "string", "work": "string" },
+                "workspace_read_report": { "available": "bool", "dirty": "bool", "clean": "bool", "generation": "uint64", "binding": "string?", "checkout": "string?", "head": "string?", "reason": "string?" }
+            }
+        }
+    },
     "opening_claim_about": "The expiry of an opening bounds the journal's claim, as timed by now in the claim reply. Other instructions still expire at execution.",
     "statuses": {
         "done": "the host carried the instruction out",

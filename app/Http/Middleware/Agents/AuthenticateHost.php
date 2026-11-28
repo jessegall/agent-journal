@@ -15,6 +15,7 @@ use App\Hosts\Contracts\SignedHostCalls;
 use App\Hosts\Data\FailedHostCallData;
 use App\Hosts\Exceptions\ApiSignatureInvalid;
 use App\Hosts\Exceptions\HostRoleRefused;
+use App\Hosts\RelayHostReader;
 use App\Hosts\Values\HostContext;
 use App\Models\Projects\Host;
 use App\Projects\Commands\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
@@ -56,6 +57,7 @@ final readonly class AuthenticateHost
         private ActorStore $actors,
         private CommandEntrance $entrance,
         private CommandBus $commands,
+        private RelayHostReader $relayReader,
     ) {}
 
     /**
@@ -76,6 +78,10 @@ final readonly class AuthenticateHost
         $this->container->instance(HostContext::class, $context);
 
         try {
+            if ($context->bindingIds !== []) {
+                $this->relayReader->assertRequest($request);
+            }
+
             $handle = fn (): Response => $next($request);
 
             $response = $this->entrance->through(

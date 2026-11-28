@@ -100,7 +100,7 @@ final readonly class GoProtocolSources
         }
 
         $types = array_filter(
-            $this->protocol->types,
+            $this->protocol->wireTypes(),
             fn (string $type) => $this->protocol->goPackageOf($type) === $package,
             ARRAY_FILTER_USE_KEY,
         );
@@ -149,6 +149,7 @@ final readonly class GoProtocolSources
     private function constants(): string
     {
         $version = $this->protocol->version;
+        $relay = $this->protocol->relayVersion();
         $statuses = $this->enum('Status', '', array_map(strval(...), array_keys($this->protocol->statuses)));
         $refusals = $this->enum('Refusal', '', array_map(strval(...), array_keys($this->protocol->refusals)));
         $keyWidth = max(0, ...array_map(fn (string $type) => strlen($type) + 3, $this->protocol->instructionTypes()));
@@ -164,6 +165,9 @@ final readonly class GoProtocolSources
         return <<<GO
             // ProtocolVersion is the version of the host protocol this binary speaks.
             const ProtocolVersion = {$version}
+
+            // RelayProtocolVersion is the version spoken by a connected project's relay.
+            const RelayProtocolVersion = {$relay}
 
             {$statuses}
 
@@ -320,7 +324,7 @@ final readonly class GoProtocolSources
      */
     private function ownerOf(string $name): string
     {
-        $isDeclared = array_key_exists($name, $this->protocol->types) || $this->isEnum($name);
+        $isDeclared = array_key_exists($name, $this->protocol->wireTypes()) || $this->isEnum($name);
 
         if (! $isDeclared) {
             throw HostFieldTypeUnknown::of($name);

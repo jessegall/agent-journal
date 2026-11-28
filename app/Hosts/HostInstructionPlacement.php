@@ -8,7 +8,7 @@ use App\Exceptions\HostProtocolRefused;
 use App\Exceptions\WorkerFenced;
 use App\Hosts\Exceptions\HostProtocolUnsupported;
 use App\Hosts\Protocol\HostInstructionType;
-use App\Hosts\Protocol\HostProtocolVersion;
+use App\Hosts\Protocol\HostProtocol;
 use App\Hosts\Values\HostInstructionBody;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
@@ -135,7 +135,7 @@ final readonly class HostInstructionPlacement
             throw HostProtocolRefused::revoked($host->id);
         }
 
-        if (! $host->acceptsProtocol(HostProtocolVersion::CURRENT)) {
+        if (! in_array($host->protocol, [HostProtocol::ENROLLED, HostProtocol::RELAY], true)) {
             throw HostProtocolUnsupported::forHost($host->id, $host->protocol);
         }
     }

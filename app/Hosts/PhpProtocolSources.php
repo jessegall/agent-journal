@@ -74,7 +74,7 @@ final readonly class PhpProtocolSources
             $sources[self::FOLDER."/{$name}.php"] = $this->enum($name, $enum, $values);
         }
 
-        foreach ($this->protocol->types as $type => $fields) {
+        foreach ($this->protocol->wireTypes() as $type => $fields) {
             $sources[self::FOLDER."/Payloads/{$this->dataName($type)}.php"] = $this->data($type, $fields);
         }
 
@@ -846,7 +846,7 @@ final readonly class PhpProtocolSources
      */
     public function dataName(string $type): string
     {
-        if (! array_key_exists($type, $this->protocol->types)) {
+        if (! array_key_exists($type, $this->protocol->wireTypes())) {
             throw HostFieldTypeUnknown::of($type);
         }
 

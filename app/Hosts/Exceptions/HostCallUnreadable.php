@@ -26,12 +26,12 @@ final class HostCallUnreadable extends RuntimeException implements CodedRefusal,
 
     public static function tooLarge(string $call, int $bytes, int $limit): self
     {
-        return new self("The host's {$call} is {$bytes} bytes, over the {$limit} bytes host protocol 1 takes.");
+        return new self("The host's {$call} is {$bytes} bytes, over the {$limit} bytes the host protocol takes.");
     }
 
     public static function unknownField(string $call, string $field): self
     {
-        return new self("The host's {$call} holds the field {$field}, which host protocol 1 does not know.");
+        return new self("The host's {$call} holds the field {$field}, which the host protocol does not know.");
     }
 
     public static function missingField(string $call, string $field): self
@@ -50,7 +50,7 @@ final class HostCallUnreadable extends RuntimeException implements CodedRefusal,
             $errors,
         ));
 
-        return new self("The host's {$call} holds values host protocol 1 does not take: {$fields}.");
+        return new self("The host's {$call} holds values the host protocol does not take: {$fields}.");
     }
 
     public function refusalCode(): RefusalCode
