@@ -56,7 +56,7 @@ final class JournalMockHostTest extends TestCase
     public function test_a_refusal_the_recording_does_not_hold_fails_the_test(): void
     {
         $this->expectException(AssertionFailedError::class);
-        $this->expectExceptionMessage('holds no open_container order refused as unsafe');
+        $this->expectExceptionMessage(HostRefusal::Unsafe->value);
 
         $this->journal->mockHost('Mac', fn (MockHost $host) => $host
             ->playing('claude-code/terminal-turn')

@@ -137,4 +137,11 @@ final class RetryAttempt extends JournalModel implements EventSource, ReadableMo
     {
         $query->orderByDesc('retry');
     }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function newestRecordedFirst(Builder $query): void
+    {
+        $query->latest('created_at');
+    }
 }

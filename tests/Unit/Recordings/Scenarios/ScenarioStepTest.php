@@ -107,16 +107,14 @@ final class ScenarioStepTest extends TestCase
 
     public function test_a_chat_message_without_its_text_is_refused_when_read(): void
     {
-        $this->expectException(ScenarioInvalid::class);
-        $this->expectExceptionMessage('lacks text');
+        $this->expectExceptionObject(ScenarioInvalid::at('claude-code/new-chat', 0, '(send-chat-message) lacks text'));
 
         Scenario::read('claude-code/new-chat', '{"steps":[{"do":"send-chat-message","agent":"Chat"}]}');
     }
 
     public function test_a_start_without_a_model_is_refused_when_read(): void
     {
-        $this->expectException(ScenarioInvalid::class);
-        $this->expectExceptionMessage('lacks model');
+        $this->expectExceptionObject(ScenarioInvalid::at('claude-code/turn', 0, '(start-session) lacks model'));
 
         $file = '{"steps":[{"do":"start-session","agent":"Coder","type":"terminal","effort":"low"}]}';
 
@@ -145,8 +143,7 @@ final class ScenarioStepTest extends TestCase
         $agents = ['Coder' => $this->journal->agentCalled('Coder')->id];
         $run = new ScenarioRun($scenario, $this->journal->ownerUser(), $agents, 'journal-runner@sha256:1');
 
-        $this->expectException(ScenarioInvalid::class);
-        $this->expectExceptionMessage('Coder has no terminal');
+        $this->expectExceptionObject(ScenarioInvalid::at($scenario->name, 0, 'Coder has no terminal'));
         $this->app->make(ScenarioPlayer::class)->playNext($run, fn () => $this->fail('A key step asked the user.'));
     }
 

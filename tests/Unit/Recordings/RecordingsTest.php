@@ -6,7 +6,7 @@ namespace Tests\Unit\Recordings;
 
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Files\Enums\Place;
-use App\Recordings\AgentImagePrograms;
+use App\Recordings\AgentImageBuild;
 use App\Recordings\Enums\StaleReason;
 use App\Recordings\Enums\Wire;
 use App\Recordings\Exceptions\RecordingMissing;
@@ -94,7 +94,7 @@ final class RecordingsTest extends TestCase
             $definitionDigest,
             'claude-code',
             $build,
-            $this->app->make(AgentImagePrograms::class)->hash(),
+            $this->app->make(AgentImageBuild::class)->hash(),
             '2026-11-27T08:00:00Z',
             ['01-host'],
         );

@@ -139,9 +139,8 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * The installation enrolled this host again: it takes the new secret and roots and starts with no failure, no
-     * answer and no allowed image, as nothing answers for what the host was before; its processes and instructions
-     * keep their host.
+     * Renews credentials and roots and clears the previous inventory and failure state.
+     * The host keeps its existing processes and instructions.
      *
      * @param  list<string>  $startRoots
      */

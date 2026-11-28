@@ -10,7 +10,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
 /**
- * An agent's chat line changed: each user who shares a chat with the agent receives the new line, once, and shows it
+ * An agent's activity line changed: each user who shares an inbox with the agent receives the new line, once, and shows it
  * with no page read.
  */
 final readonly class RunningCommandChanged implements ShouldBroadcast, WebEvent

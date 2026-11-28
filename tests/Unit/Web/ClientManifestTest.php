@@ -135,10 +135,10 @@ final class ClientManifestTest extends TestCase
         $props = File::get("{$this->root}/resources/js/generated/types/page-props.ts");
         $checks = File::get("{$this->root}/resources/js/generated/ui-prop-checks.ts");
 
-        $this->assertStringContainsString("'web/AskInboxPane': () => import(", $components);
+        $this->assertMatchesRegularExpression("~'web/AskInboxPane':\s*\(\)\s*=>\s*import\(~", $components);
         $this->assertStringNotContainsString("'web/AskInboxPane',", $components);
-        $this->assertStringContainsString('window_web_asks?: WindowResult<AskInboxPaneData>', $props);
-        $this->assertStringContainsString('accepts_window_web_asks: Accepts<AskInboxPaneData', $checks);
+        $this->assertMatchesRegularExpression('/window_web_asks\?\:\s*WindowResult<AskInboxPaneData>/', $props);
+        $this->assertMatchesRegularExpression('/accepts_window_web_asks:\s*Accepts<AskInboxPaneData/', $checks);
         $this->assertStringNotContainsString('window_web_terminal?:', $props);
     }
 

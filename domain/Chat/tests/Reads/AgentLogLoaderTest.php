@@ -77,6 +77,7 @@ final class AgentLogLoaderTest extends TestCase
     {
         [, $opened] = $this->openRuntime();
         $now = CarbonImmutable::now()->startOfSecond();
+        $evidence = 'Docker was unreachable.';
 
         foreach ([
             1,
@@ -84,7 +85,7 @@ final class AgentLogLoaderTest extends TestCase
             3,
         ] as $retry) {
             $attempt = RetryAttempt::create($opened->runtimeId, RetriedAction::Wake, $retry, 'Host unavailable.', $now);
-            $attempt->settle($retry === 3 ? RetryOutcome::GaveUp : RetryOutcome::Failed, 'Docker was unreachable.');
+            $attempt->settle($retry === 3 ? RetryOutcome::GaveUp : RetryOutcome::Failed, $evidence);
             $now = $attempt->retry_at;
         }
 
@@ -100,7 +101,7 @@ final class AgentLogLoaderTest extends TestCase
         )));
 
         $this->assertTrue($failure->isFailure);
-        $this->assertSame('Docker was unreachable.', (string) $failure->evidence);
+        $this->assertSame($evidence, (string) $failure->evidence);
     }
 
     private function read(string $agent): AgentLogData

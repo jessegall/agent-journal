@@ -970,4 +970,18 @@ return [
         'producers' => [],
         'sample' => fn () => new SessionProcessRegistered('start', 'session'),
     ],
+    \App\Events\Sessions\AgentStartChoiceMade::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentStartChoice::choose',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new \App\Events\Sessions\AgentStartChoiceMade('agent'),
+    ],
+    \App\Events\Sessions\RetryAttemptSettled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'RetryAttempt::settle',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new \App\Events\Sessions\RetryAttemptSettled('attempt', \App\Agents\Drivers\Enums\RetryOutcome::Succeeded),
+    ],
 ];

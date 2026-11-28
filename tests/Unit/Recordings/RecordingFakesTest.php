@@ -193,8 +193,10 @@ final class RecordingFakesTest extends TestCase
     {
         $fakes = new RecordingFakes([], ['Jane Example-Owner', 'acct-workspace-77']);
 
-        $faked = $fakes->replaceIn('signed in as Jane Example-Owner in acct-workspace-77');
+        $original = 'signed in as Jane Example-Owner in acct-workspace-77';
+        $faked = $fakes->replaceIn($original);
 
-        $this->assertSame('signed in as '.RecordingFakes::USER_NAME.' in '.RecordingFakes::USER_NAME, $faked);
+        $expected = str_replace(['Jane Example-Owner', 'acct-workspace-77'], RecordingFakes::USER_NAME, $original);
+        $this->assertSame($expected, $faked);
     }
 }

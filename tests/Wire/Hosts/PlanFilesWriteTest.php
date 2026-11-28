@@ -41,7 +41,7 @@ final class PlanFilesWriteTest extends TestCase
         $folder = "{$this->session}/process/files";
         $archive = TarArchive::of(
             TarFile::shared('hook-replies.json', '{"seal":"x"}'),
-            TarFile::privateTo((int) ContainerManifest::PROGRAM_USER, 'hook-replies.key', 'secret'),
+            TarFile::privateTo((int) ContainerManifest::DRIVER_USER, 'hook-replies.key', 'secret'),
         );
 
         $write = new Process(['sh', base_path('resources/host-scripts/plan-files-write.sh'), $folder, $this->session]);

@@ -13,7 +13,7 @@ use JsonSerializable;
 
 /**
  * How a recorded exchange opened: its wire and name, as calls, pipes or a terminal of a size, the argv, folder,
- * environment and image a program started with, and the moment its events are timed from, in microseconds.
+ * environment and image a process started with, and the moment its events are timed from, in microseconds.
  */
 final readonly class RecordingOpening implements JsonSerializable
 {
@@ -45,7 +45,7 @@ final readonly class RecordingOpening implements JsonSerializable
     }
 
     /**
-     * A driver program's exchange that opens at the moment, as the plan the host was ordered starts it: in its
+     * A driver's exchange that opens at the moment, as the plan the host was ordered starts it: in its
      * container's image, a terminal of the plan's size or pipes.
      */
     public static function ofProcess(string $exchange, HostOpenPlanPayload $plan, int $openedAt): self

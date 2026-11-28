@@ -445,7 +445,7 @@ trait ArrangesHostProcesses
     {
         $this->app->make(Repository::class)->set([
             'journal.agents.agent_image' => $playing->agentImage,
-            'journal.agents.development_programs' => $playing->developmentPrograms,
+            'journal.agents.development_binaries' => $playing->developmentPrograms,
         ]);
         $this->app->forgetInstance(AgentImage::class);
         $this->app->forgetInstance(DriverImageChecks::class);

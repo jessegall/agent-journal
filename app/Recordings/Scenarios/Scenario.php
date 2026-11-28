@@ -51,7 +51,7 @@ final readonly class Scenario
 
     /**
      * The agents the play makes before its first step, each once by its name: every agent a step names, except one a
-     * new-chat step makes itself.
+     * main-agent creation step makes itself.
      *
      * @return list<string>
      */
@@ -59,12 +59,12 @@ final readonly class Scenario
     {
         $named = array_filter(array_map(fn (ScenarioStep $step) => $step->agent, $this->steps));
 
-        $chats = array_map(
+        $created = array_map(
             fn (ScenarioStep $step) => $step->agent,
-            array_filter($this->steps, fn (ScenarioStep $step) => $step->stepType === ScenarioStepType::NewChat),
+            array_filter($this->steps, fn (ScenarioStep $step) => $step->stepType === ScenarioStepType::CreateMainAgent),
         );
 
-        return array_values(array_unique(array_diff($named, $chats)));
+        return array_values(array_unique(array_diff($named, $created)));
     }
 
     /**

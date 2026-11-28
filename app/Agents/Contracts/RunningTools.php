@@ -8,7 +8,7 @@ use App\Values\StackTarget;
 use App\Values\ToolLine;
 
 /**
- * Keeps the tool call each agent's chat line names, as its hooks start, finish and clear it.
+ * Keeps the tool call each agent's activity line names, as its hooks start, finish and clear it.
  */
 interface RunningTools
 {

@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * The program, model and account an agent's next start runs on, chosen while no session ran: a new chat's choice, or
+ * The driver, model and account an agent's next start runs on, chosen for a new agent or
  * a switch asked of a stopped agent. The message that starts the agent starts it on this choice.
  *
  * @property string $id
@@ -38,16 +38,6 @@ final class AgentStartChoice extends JournalModel implements EventSource, Readab
     use BoundedReads;
     use Linkable;
     use RaisesEvents;
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return BelongsTo<Agent, $this>
-     */
-    public function agent(): BelongsTo
-    {
-        return $this->belongsTo(Agent::class);
-    }
 
     // ----------[ Constructors ]----------
 
@@ -72,6 +62,16 @@ final class AgentStartChoice extends JournalModel implements EventSource, Readab
         $this->account_revision = $account?->reviewedSignIn;
         $this->saveAndAssert();
         $this->raise(new AgentStartChoiceMade($this->agent_id));
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<Agent, $this>
+     */
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class);
     }
 
     // ----------[ Queries ]----------

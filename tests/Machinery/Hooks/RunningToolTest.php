@@ -35,6 +35,7 @@ use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\ToolResult;
 use App\Support\StackOperationDeadline;
+use App\Values\ToolLine;
 use App\Values\Operation;
 use App\Values\ResourceRequest;
 use Closure;
@@ -62,7 +63,7 @@ final class RunningToolTest extends TestCase
 
         $this->answer($this->shellCall('git status', 'call-1'));
 
-        $this->assertLine('Bash git status', true);
+        $this->assertLine(ToolLine::shell('git status')->text, true);
         Event::assertDispatchedTimes(RunningToolChanged::class, 1);
         Event::assertDispatched(
             RunningToolChanged::class,
@@ -78,7 +79,7 @@ final class RunningToolTest extends TestCase
 
         $this->answer($this->shellCall('acme publish --everything', 'call-2'));
 
-        $this->assertLine('Bash git status', true);
+        $this->assertLine(ToolLine::shell('git status')->text, true);
         Event::assertNotDispatched(RunningToolChanged::class);
     }
 
@@ -88,28 +89,30 @@ final class RunningToolTest extends TestCase
 
         $this->answer($this->shellCall('composer test', 'call-1'));
 
-        $this->assertLine('Bash git status', true);
+        $this->assertLine(ToolLine::shell('git status')->text, true);
     }
 
     public function test_a_file_read_names_its_file_and_an_edit_its_files(): void
     {
-        $read = new ToolRequested($this->identity('call-1'), new Operation(
+        $readBy = new Operation(
             'claude',
             'claude:Read',
             [AccessType::Read],
             [ResourceRequest::path('/Users/x/p/src/Chat/Pages.php')],
             [],
             1,
-        ));
+        );
+        $read = new ToolRequested($this->identity('call-1'), $readBy);
         $this->answer($read);
-        $this->assertLine('Read …/Pages.php', true);
+        $this->assertLine(ToolLine::operation($readBy)->text, true);
 
+        $changes = new FileChanges([new FileChange('app/Models/Task.php', FileOperation::Edit)]);
         $edit = new FileEditRequested(
             $this->identity('call-2'),
-            new FileChanges([new FileChange('app/Models/Task.php', FileOperation::Edit)]),
+            $changes,
         );
         $this->answer($edit);
-        $this->assertLine('Edit app/Models/Task.php', true);
+        $this->assertLine(ToolLine::files($changes)->text, true);
     }
 
     public function test_a_finished_call_keeps_its_line_no_longer_running(): void
@@ -118,7 +121,7 @@ final class RunningToolTest extends TestCase
 
         $this->answer($this->finished('call-2'));
 
-        $this->assertLine('Bash git status', false);
+        $this->assertLine(ToolLine::shell('git status')->text, false);
     }
 
     public function test_a_stop_and_a_prompt_clear_the_line_and_a_finish_after_a_clear_changes_nothing(): void

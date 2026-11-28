@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Hooks;
 
 /**
- * The tool call an agent's chat line names changed: a new call started, the running one finished, or a new turn
+ * The tool call an agent's activity line names changed: a new call started, the running one finished, or a new turn
  * cleared it. It is published after the hook commits and causes no page read.
  */
 final readonly class RunningToolChanged implements HookEvent

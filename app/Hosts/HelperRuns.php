@@ -24,12 +24,12 @@ final readonly class HelperRuns
     private const string SCRIPTS = 'resources/host-scripts';
 
     /**
-     * The program's user, who owns every folder the program works in.
+     * The driver user, which owns every folder the driver works in.
      */
     private const string ROOT_USER = '0';
 
     /**
-     * What a root helper needs to hand a folder to the program's user and to remove one that user filled.
+     * What a root helper needs to hand a folder to the driver user and to remove one that user filled.
      */
     private const array FOLDER_CAPABILITIES = [
         'CHOWN',
@@ -54,7 +54,7 @@ final readonly class HelperRuns
     private const string SESSIONS_TARGET = '/sessions';
 
     /**
-     * The memory folder a clone keeps its key in, the program's user's alone, where nothing can be run.
+     * The memory folder a clone keeps its key in, the driver user's alone, where nothing can be run.
      */
     private const string CLONE_TMPFS = 'rw,noexec,nosuid,mode=0700,uid=10001';
 
@@ -85,7 +85,7 @@ final readonly class HelperRuns
             self::ACCOUNTS_TARGET,
             $account,
             $operation,
-            ContainerManifest::PROGRAM_USER,
+            ContainerManifest::DRIVER_USER,
         ];
 
         return $this->run('account-folder-make', $arguments, [
@@ -106,7 +106,7 @@ final readonly class HelperRuns
 
     /**
      * The runs before a protected start: the account's scratch folders emptied, its mount points made and its files
-     * kept private as the program's user, then the check that the folder and those above it are private to that user.
+     * kept private as the driver user, then the check that the folder and those above it are private to that user.
      *
      * @param  list<string>  $mountPoints  the folders right inside the account that the start mounts something over
      * @param  list<string>  $scratchPoints  those of them the start holds in memory, whose disk copy no start reads
@@ -128,7 +128,7 @@ final readonly class HelperRuns
             $this->run('account-folder-check', [
                 HelperMounts::DATA_FOLDER,
                 $account,
-                ContainerManifest::PROGRAM_USER,
+                ContainerManifest::DRIVER_USER,
                 self::ROOT_USER,
             ], [
                 'mounts' => [ManifestMount::daemonBind(HelperMounts::DATA_FOLDER, HelperMounts::DATA_FOLDER, false)],
@@ -138,7 +138,7 @@ final readonly class HelperRuns
 
     public function workspaceFolderCheck(string $folder): HostContainerRunPayload
     {
-        return $this->run('workspace-folder-check', [$folder, ContainerManifest::PROGRAM_USER], [
+        return $this->run('workspace-folder-check', [$folder, ContainerManifest::DRIVER_USER], [
             'mounts' => [ManifestMount::daemonBind($folder, $folder, false)],
         ]);
     }
@@ -185,7 +185,7 @@ final readonly class HelperRuns
                 'tmpfs' => [['target' => '/tmp', 'options' => self::CLONE_TMPFS]],
                 'mounts' => [$sourceMount, $checkout],
             ], self::CLONE_ENVIRONMENT),
-            $this->run('workspace-folder-check', [ContainerManifest::WORKDIR, ContainerManifest::PROGRAM_USER], [
+            $this->run('workspace-folder-check', [ContainerManifest::WORKDIR, ContainerManifest::DRIVER_USER], [
                 'mounts' => [$checkout->readOnlyAt(ContainerManifest::WORKDIR)],
             ]),
         ];

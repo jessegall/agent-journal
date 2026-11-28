@@ -10,7 +10,7 @@ use App\Agents\Drivers\Setup\Contracts\SignInEnvironment;
 use App\Agents\Drivers\Setup\Contracts\SignInPreparation;
 
 /**
- * How the sign-in runner runs a driver's driver: the program it runs, its environment, its model check, its
+ * How the sign-in runner invokes a driver, with its executable, environment, model check and
  * sign-out, its sign-in methods (OAuth first) and what a folder needs before a run and after a sign-in.
  */
 final readonly class SignInSetup

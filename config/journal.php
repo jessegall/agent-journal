@@ -9,6 +9,10 @@ use App\Sessions\States\ReadyState;
 $tunnels = env('SHARING_TUNNELS_DIR', storage_path('sharing'));
 
 return [
+    'recordings' => [
+        'image_build_script' => 'scripts/agent-image-programs.sh',
+    ],
+
 
     'sessions' => [
 
@@ -185,7 +189,7 @@ return [
         | Local development only: the agent daemon's folder of the checkout's own builds of the image's programs, bound
         | over the image's copies in every agent container so a change to them needs no image build; empty elsewhere.
         */
-        'development_programs' => (string) env('AGENTS_DEVELOPMENT_PROGRAMS', ''),
+        'development_binaries' => (string) env('AGENTS_DEVELOPMENT_PROGRAMS', ''),
 
         /*
         |--------------------------------------------------------------------------

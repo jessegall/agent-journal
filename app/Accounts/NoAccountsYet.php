@@ -10,7 +10,7 @@ use App\Support\Layout\LayoutPartData;
 
 /**
  * The No accounts yet state, in the design's words, with the action that opens the account wizard: the Accounts page
- * shows it with no account at all, and the chat with no account signed in.
+ * shows it with no account at all, and the conversation view with no account signed in.
  */
 final readonly class NoAccountsYet
 {

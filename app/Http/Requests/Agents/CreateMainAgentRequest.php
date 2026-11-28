@@ -10,7 +10,7 @@ use App\Values\ChosenAccount;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * A new chat's form: the driver, the model (a name or default) and, optionally, the signed-in account with the sign-in
+ * The form for adding a main agent: the driver, the model (a name or default) and, optionally, the signed-in account with the sign-in
  * revision the form showed; the agent is made in the local project.
  */
 final class CreateMainAgentRequest extends FormRequest

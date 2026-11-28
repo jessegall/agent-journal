@@ -51,6 +51,8 @@ final class HomePageTest extends TestCase
         return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 
+    private const string PLAN_TITLE = 'Build the release page';
+
     private string $chatInboxId;
 
     private int $sends = 0;
@@ -72,7 +74,7 @@ final class HomePageTest extends TestCase
             ActorReference::of($this->journal->ownerUser()),
             ActorReference::of($agent),
         )->id;
-        Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        Plan::factory()->create(['title' => self::PLAN_TITLE, 'type' => PlanType::Build]);
     }
 
     public function test_home_reads_two_copies_with_their_own_filters_and_ignores_page_only_props(): void
@@ -93,7 +95,7 @@ final class HomePageTest extends TestCase
             'X-Inertia-Partial-Component' => 'web/Home',
             'X-Inertia-Partial-Data' => "{$first},{$second},window_web_terminal",
         ])->assertOk()
-            ->assertJsonPath("props.{$first}.data.items.0.label", 'Build the release page')
+            ->assertJsonPath("props.{$first}.data.items.0.label", self::PLAN_TITLE)
             ->assertJsonPath("props.{$first}.data.fullUrl", '/plans?q=release')
             ->assertJsonPath("props.{$second}.data.items", [])
             ->assertJsonMissingPath('props.window_web_terminal')

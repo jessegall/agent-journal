@@ -46,8 +46,8 @@ final readonly class ContainedPlans
             );
 
             $archive = TarArchive::of(...array_map(
-                fn (PlanFile $file) => $file->isProgramOnly
-                    ? TarFile::privateTo((int) ContainerManifest::PROGRAM_USER, $file->name, $file->content)
+                fn (PlanFile $file) => $file->isDriverOnly
+                    ? TarFile::privateTo((int) ContainerManifest::DRIVER_USER, $file->name, $file->content)
                     : TarFile::shared($file->name, $file->content),
                 $files,
             ));
@@ -69,7 +69,7 @@ final readonly class ContainedPlans
 
     /**
      * The command, or with a restart command a shell that runs the restart command once its file exists and the
-     * command otherwise, so a container its host brings back resumes its program instead of starting it again.
+     * command otherwise, so a container its host brings back resumes its process instead of starting it again.
      *
      * @param  list<string>  $argv
      * @param  list<string>  $restart

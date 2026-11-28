@@ -8,7 +8,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * What an agent's status lets a viewer do now, which the browser maps to its route or dialog. A message starts or
- * resumes a stopped agent, so no action does; Stop ends the session from the chat list and Interrupt stops the turn
+ * resumes a stopped agent, so no action does; Stop ends the session from the conversation list and Interrupt stops the turn
  * from the composer.
  */
 #[TypeScript]

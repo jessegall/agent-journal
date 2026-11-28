@@ -146,12 +146,12 @@ describe("the Switch driver dialog", () => {
     expect(form.find("[data-no-account]").exists()).toBe(false);
   });
 
-  it("keeps the session and conversation for the same program, its next turn on the new model", async () => {
+  it("keeps the session and conversation for the same driver, its next turn on the new model", async () => {
     const form = mount(SessionForm, { props: { agent: agentOn() } });
     await flushPromises();
 
     await chooseModel(form, "sonnet");
-    expect(form.find("[data-same-program]").exists()).toBe(true);
+    expect(form.find("[data-same-driver]").exists()).toBe(true);
     expect(switchButton(form).text()).toBe("Switch");
     await switchButton(form).trigger("click");
 
@@ -166,7 +166,7 @@ describe("the Switch driver dialog", () => {
     });
   });
 
-  it("carries the conversation over to another program by default", async () => {
+  it("carries the conversation over to another driver by default", async () => {
     const form = mount(SessionForm, { props: { agent: agentOn() } });
     await flushPromises();
 
@@ -185,7 +185,7 @@ describe("the Switch driver dialog", () => {
     });
   });
 
-  it("starts clean on another program when asked, so the new session reads only the memories", async () => {
+  it("starts clean on another driver when asked, so the new session reads only the memories", async () => {
     const form = mount(SessionForm, { props: { agent: agentOn() } });
     await flushPromises();
 

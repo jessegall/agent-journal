@@ -31,7 +31,7 @@ final readonly class RecordingRun
     }
 
     /**
-     * Every variable the run's programs were given, by name, so the fakes put each folder back as its variable.
+     * Every variable the run's processes were given, by name, so the fakes put each folder back as its variable.
      *
      * @return array<string, string>
      */
@@ -43,7 +43,7 @@ final readonly class RecordingRun
     }
 
     /**
-     * The real values a faked recording must not hold: every value the run's programs were given.
+     * The real values a faked recording must not hold: every value the run's processes were given.
      *
      * @return list<string>
      */

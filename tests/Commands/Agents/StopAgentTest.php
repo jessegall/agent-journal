@@ -84,7 +84,7 @@ final class StopAgentTest extends TestCase
             'identity' => 'pid:turn',
             'generation' => 0,
             'exit_code' => 0,
-            'evidence' => 'the program exited with 0',
+            'evidence' => 'the process exited with 0',
         ])));
 
         $this->asOwner(new StopAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'stop-idle'));

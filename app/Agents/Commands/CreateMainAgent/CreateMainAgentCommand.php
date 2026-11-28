@@ -14,7 +14,7 @@ use App\Values\ChosenAccount;
 use App\Values\ProjectOwner;
 
 /**
- * A user opens a new chat: another main agent of the project, named by its number, whose first message starts it on
+ * A user adds another main agent of the project, named by its number, whose first message starts it on
  * the driver, model and account chosen here; the answer is its actor. Any number of main agents may run.
  *
  * @extends Command<ActorReference>

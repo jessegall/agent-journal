@@ -8,7 +8,7 @@ use App\Recordings\Enums\RecordingMode;
 use Closure;
 
 /**
- * One driver program's exchange cut out of the host's: how it opened, what was typed and printed in order, and the
+ * One driver's exchange cut out of the host's: how it opened, what was typed and printed in order, and the
  * code it ended with, none while it still ran when the run closed.
  */
 final readonly class CutExchange

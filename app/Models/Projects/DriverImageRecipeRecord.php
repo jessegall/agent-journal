@@ -107,7 +107,8 @@ final class DriverImageRecipeRecord extends JournalModel implements ReadableMode
      */
     public static function resolveFoldersOf(array $ids): array
     {
-        return self::query()->ofRecipeIds($ids)->pluck('folder', 'id')->all();
+        return self::query()->ofRecipeIds($ids)->get(['id', 'folder'])
+            ->mapWithKeys(fn (self $recipe): array => [$recipe->id => $recipe->folder])->all();
     }
 
     // ----------[ Scopes ]----------

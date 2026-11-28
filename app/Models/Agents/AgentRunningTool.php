@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use PhpOption\Option;
 
 /**
- * The tool call an agent's chat line names: the newest one its hooks let run, whether it still runs, and when that
+ * The tool call an agent's activity line names: the newest one its hooks let run, whether it still runs, and when that
  * last changed. One row per agent, which a new turn clears.
  *
  * @property string $id

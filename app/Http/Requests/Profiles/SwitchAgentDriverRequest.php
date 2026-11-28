@@ -19,7 +19,7 @@ use Illuminate\Validation\Rules\In;
 
 /**
  * Moves an agent to another driver, account or model, at the session the owner saw so a stale tab is refused, with
- * whether a new program's session reads the chat first and whether the turn stops now; without a session it keeps the
+ * whether a new driver's session reads the previous conversation first and whether the turn stops now; without a session it keeps the
  * choice for the agent's next start.
  */
 final class SwitchAgentDriverRequest extends FormRequest

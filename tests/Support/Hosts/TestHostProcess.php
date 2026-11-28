@@ -63,7 +63,7 @@ final class TestHostProcess
     private function evidenceOf(HostProcessReportType $report, int|null $exitCode): string|null
     {
         return match ($report) {
-            HostProcessReportType::Exited => "the program exited with {$exitCode}",
+            HostProcessReportType::Exited => "the process exited with {$exitCode}",
             HostProcessReportType::Lost => 'the program was not found after the host restarted',
             HostProcessReportType::Running, HostProcessReportType::Restarted => null,
         };

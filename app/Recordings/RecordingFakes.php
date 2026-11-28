@@ -263,7 +263,7 @@ final class RecordingFakes
     }
 
     /**
-     * The tokens, names and organizations a program prints or is handed under their JSON keys, such as the start grant
+     * The tokens, names and organizations a driver prints or is handed under their JSON keys, such as the start grant
      * of a thread's config, and an organization a screen names.
      */
     private function replaceNamedValues(string $text): string

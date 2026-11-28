@@ -39,14 +39,15 @@ final class ListGetTest extends GuardedRouteEntryTestCase
     public function test_the_pane_exposes_only_the_compact_rows_and_full_link(): void
     {
         $this->journal->owner();
-        $this->journal->fixtures(PlanFixtures::class)->createPlan('An example');
+        $title = 'An example';
+        $this->journal->fixtures(PlanFixtures::class)->createPlan($title);
         $factory = new WindowFactory($this->app);
         $factory->register(PlansPaneData::class, PlansWindowBuilder::class);
 
         $pane = $factory->create(PlansPaneData::class, Request::create('/?q=example'));
 
         $this->assertCount(1, $pane->items);
-        $this->assertSame('An example', $pane->items[0]->label);
+        $this->assertSame($title, $pane->items[0]->label);
         $this->assertSame('Planned', $pane->items[0]->value);
         $this->assertSame('/plans?q=example', $pane->fullUrl);
     }

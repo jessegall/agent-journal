@@ -29,7 +29,7 @@ interface Recorder
     public function add(string $exchange, RecordedEvent $event): void;
 
     /**
-     * Ends the exchange with the code its program exited with.
+     * Ends the exchange with the code its process exited with.
      */
     public function end(string $exchange, int $exitCode): void;
 }

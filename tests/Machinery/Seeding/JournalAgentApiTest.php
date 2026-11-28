@@ -30,7 +30,7 @@ final class JournalAgentApiTest extends TestCase
     public function test_a_frame_the_recording_does_not_hold_fails_the_test(): void
     {
         $this->expectException(AssertionFailedError::class);
-        $this->expectExceptionMessage('was asked what it does not hold');
+        $this->expectExceptionMessage('claude-code/terminal-turn');
 
         $this->journal->agentApi(fn (TestAgentApi $journal) => $journal
             ->playing('claude-code/terminal-turn')

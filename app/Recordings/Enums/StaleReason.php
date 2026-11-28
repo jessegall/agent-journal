@@ -12,5 +12,5 @@ enum StaleReason: string
     case Format = 'the recording format changed';
     case Protocol = 'the host protocol is newer than the recording';
     case Scenario = 'the scenario changed';
-    case ImagePrograms = "the agent image's programs changed";
+    case ImageBuild = "the agent image's build changed";
 }

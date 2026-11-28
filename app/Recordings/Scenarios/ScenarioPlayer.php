@@ -90,13 +90,15 @@ final readonly class ScenarioPlayer
      */
     private const int QUIET_SECOND_LIMIT = 20;
 
-    /**
-     * The chat a send-chat-message step posts in: one of the owner and the agent, as Home's chat with an agent is.
-     */
-    private const string CHAT_PROVIDER = 'recordings.chat';
+    public const string CONNECT_PROJECT = 'connect-recorded-project';
 
     /**
-     * The program line that restarts the local host, run by the record script on the machine.
+     * The paired inbox for a message between the owner and the agent.
+     */
+    private const string PAIR_PROVIDER = 'recordings.chat';
+
+    /**
+     * The command line that restarts the local host, run by the record script on the machine.
      */
     private const array HOST_RESTART = [
         'docker',
@@ -214,8 +216,8 @@ final readonly class ScenarioPlayer
             return;
         }
 
-        if ($step->stepType === ScenarioStepType::SendChatMessage) {
-            $this->sendChatMessage($run, $step);
+        if ($step->stepType === ScenarioStepType::SendToAgent) {
+            $this->sendToAgent($run, $step);
 
             return;
         }
@@ -348,7 +350,7 @@ final readonly class ScenarioPlayer
         $file = FilePath::in(Place::Project, self::CONNECTION_TICKET);
 
         $command = [
-            'connect-recorded-project',
+            self::CONNECT_PROJECT,
             $this->origin->canonical(),
             $this->releases->current()->version,
         ];
@@ -367,12 +369,12 @@ final readonly class ScenarioPlayer
     }
 
     /**
-     * Sends a message as the chat's send does, under one request key: the agent is started first on the choice kept
-     * for its next start when it runs no session, then the message is posted in its chat with the owner.
+     * Sends a message under one request key: the agent is started first on the choice kept
+     * for its next start when it runs no session, then the message is posted in its inbox with the owner.
      *
      * @throws ScenarioInvalid
      */
-    private function sendChatMessage(ScenarioRun $run, ScenarioStep $step): void
+    private function sendToAgent(ScenarioRun $run, ScenarioStep $step): void
     {
         $agent = $run->agentNamed((string) $step->agent);
         $owner = ActorReference::of($run->owner);
@@ -382,10 +384,10 @@ final readonly class ScenarioPlayer
             ActorReference::of($agent),
         ];
 
-        $chat = $this->requestKey->independently(
+        $inbox = $this->requestKey->independently(
             strtolower((string) Str::ulid()),
             fn () => $this->commands->run(new OpenInboxCommand(
-                self::CHAT_PROVIDER,
+                self::PAIR_PROVIDER,
                 implode('|', array_map(fn (ActorReference $member) => $member->text(), $members)),
                 $agent->name,
                 $members,
@@ -394,7 +396,7 @@ final readonly class ScenarioPlayer
 
         $key = strtolower((string) Str::ulid());
 
-        $this->requestKey->independently($key, function () use ($run, $step, $agent, $chat, $key): void {
+        $this->requestKey->independently($key, function () use ($run, $step, $agent, $inbox, $key): void {
             $this->owner->actAsOwner();
 
             try {
@@ -410,7 +412,7 @@ final readonly class ScenarioPlayer
                 $run->askTurn();
             }
 
-            $this->commands->run(new SendMessageCommand($chat, (string) $step->text));
+            $this->commands->run(new SendMessageCommand($inbox, (string) $step->text));
         });
     }
 

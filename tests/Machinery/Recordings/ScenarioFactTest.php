@@ -96,8 +96,7 @@ final class ScenarioFactTest extends TestCase
         $hostId = $this->journal->hostCalled('Mac')->hostId;
         $this->journal->asSystem(new MakeHostFolderCommand($hostId, 'cleanup', 'scenario-cleanup'));
 
-        $this->expectException(ScenarioStuck::class);
-        $this->expectExceptionMessage('instructions-answered did not happen in 0 seconds');
+        $this->expectExceptionObject(ScenarioStuck::at($scenario->name, 0, ScenarioFact::InstructionsAnswered, 0));
         $this->app->make(ScenarioPlayer::class)->playNext($run, fn () => '');
     }
 
@@ -108,8 +107,8 @@ final class ScenarioFactTest extends TestCase
         $run = $this->runOf(['Coder' => $this->journal->agentCalled('Coder')->id]);
         $run->agentNamed('Coder');
 
-        $this->assertSame('no step named an agent', $unnamed->sessionState());
-        $this->assertStringStartsWith('the session is active; ', $run->sessionState());
+        $this->assertSame(ScenarioRun::NO_NAMED_AGENT, $unnamed->sessionState());
+        $this->assertStringEndsWith('active', explode(';', $run->sessionState())[0]);
     }
 
     /**

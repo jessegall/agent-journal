@@ -26,6 +26,8 @@ final class GreetInNewChatTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string AGENT = 'Agent 2';
+
     public function test_a_start_with_a_new_chat_asks_the_agent_to_greet_its_user_there_once(): void
     {
         $chat = $this->chatOfOwnerAndAgent();
@@ -35,7 +37,7 @@ final class GreetInNewChatTest extends TestCase
         $this->assertCount(1, $reminders);
         $this->assertStringContainsString($chat->id, $reminders[0]);
         $this->assertStringContainsString('Owner', $reminders[0]);
-        $this->assertStringContainsString('Agent 2', $reminders[0]);
+        $this->assertStringContainsString($this->journal->agentCalled(self::AGENT)->name, $reminders[0]);
     }
 
     public function test_a_chat_that_holds_a_message_or_a_later_context_start_asks_for_no_greeting(): void
@@ -50,10 +52,10 @@ final class GreetInNewChatTest extends TestCase
 
     private function chatOfOwnerAndAgent(): Inbox
     {
-        $this->journal->owner()->idleAgent('Agent 2', 'main-agent');
+        $this->journal->owner()->idleAgent(self::AGENT, 'main-agent');
 
-        return $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Agent 2')
-            ->pairChatOf('Owner', 'Agent 2');
+        return $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', self::AGENT)
+            ->pairChatOf('Owner', self::AGENT);
     }
 
     /**

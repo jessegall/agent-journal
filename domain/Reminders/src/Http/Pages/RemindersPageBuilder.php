@@ -23,6 +23,10 @@ use Illuminate\Http\Request;
  */
 final readonly class RemindersPageBuilder implements PageBuilder
 {
+    public const string EMPTY_TITLE = 'No reminders yet';
+
+    public const string EMPTY_DETAIL = 'A reminder brings something back to you or an agent at the time you choose.';
+
     public function __construct(private OwnReminders $reminders, private PageFormRequests $requests) {}
 
     public function build(Request $visit): RemindersPageData
@@ -48,8 +52,8 @@ final readonly class RemindersPageBuilder implements PageBuilder
 
         if ($page->cards === []) {
             return $this->window(EmptyListState::build()
-                ->title('No reminders yet')
-                ->detail('A reminder brings something back to you or an agent at the time you choose.')
+                ->title(self::EMPTY_TITLE)
+                ->detail(self::EMPTY_DETAIL)
                 ->icon('bell')
                 ->fillsPage(true)
                 ->finish()->page());

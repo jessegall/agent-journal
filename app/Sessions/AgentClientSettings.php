@@ -46,7 +46,7 @@ final readonly class AgentClientSettings
     }
 
     /**
-     * The credentials by their variable's name, as a program's configuration hands them to a server it starts.
+     * The credentials by their variable's name, as a driver's configuration hands them to a server it starts.
      *
      * @return array<string, string>
      */

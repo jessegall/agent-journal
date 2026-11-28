@@ -6,7 +6,7 @@ namespace App\Recordings\Enums;
 
 /**
  * A wire between the journal and the outside that a recording keeps the calls of: the host protocol, the hooks, the
- * agent calls, the Docker daemon, and each driver program's own exchange cut out of the host's.
+ * agent calls, the Docker daemon, and each driver's own exchange cut out of the host's.
  */
 enum Wire: string
 {

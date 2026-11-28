@@ -27,6 +27,8 @@ use Carbon\CarbonImmutable;
  */
 final class ScenarioRun
 {
+    public const string NO_NAMED_AGENT = 'no step named an agent';
+
     /**
      * The name a step gives the agent image, whichever build it is pinned to.
      */
@@ -251,7 +253,7 @@ final class ScenarioRun
     }
 
     /**
-     * A step made the agent of this name, such as Home's New chat; later steps name it.
+     * A step made the agent of this name so later steps can refer to it.
      */
     public function holdAgent(string $name, string $agentId): void
     {
@@ -323,7 +325,7 @@ final class ScenarioRun
     public function sessionState(): string
     {
         if ($this->lastAgent === null) {
-            return 'no step named an agent';
+            return self::NO_NAMED_AGENT;
         }
 
         $sessionId = (string) $this->lastAgent()->current_session_id;

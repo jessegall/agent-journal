@@ -74,7 +74,7 @@ final readonly class AgentStartLog
             ->get()
             ->all());
 
-        $attempts = RetryAttempt::query()->ofSession($session->id)->limit(self::LINE_LIMIT)->get();
+        $attempts = RetryAttempt::query()->ofSession($session->id)->newestRecordedFirst()->limit(self::LINE_LIMIT)->get();
 
         $gaveUp = array_values($attempts->filter(fn (RetryAttempt $attempt) => $attempt->outcome === RetryOutcome::GaveUp)
             ->map(fn (RetryAttempt $attempt) => $attempt->driver_request_id)->all());

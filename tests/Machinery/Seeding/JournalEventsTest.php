@@ -92,6 +92,7 @@ final class JournalEventsTest extends TestCase
 
     public function test_an_expected_committed_listener_failure_is_accepted(): void
     {
+        $this->assertSame($this->journal, $this->journal->expectListenerFailure(self::class));
         $recorded = $this->journal->service(CommittedListenerFailures::class);
 
         $recorded->take(CommittedFactListenerFailed::of(
@@ -99,8 +100,6 @@ final class JournalEventsTest extends TestCase
             self::class,
             new RuntimeException(),
         ));
-
-        $this->assertSame($this->journal, $this->journal->expectListenerFailure(self::class));
     }
 
     /**

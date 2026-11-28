@@ -47,7 +47,7 @@ use Spatie\LaravelData\Data;
 final class ScenarioStep extends Data
 {
     /**
-     * Kills every running session container on the agent daemon, as a crash of the program inside it would end it.
+     * Kills every running session container on the agent daemon, as a crash of the driver inside it would end it.
      */
     private const string KILL_SESSION_CONTAINERS = 'docker kill $(docker ps -q --filter label=journal.session)';
 
@@ -108,8 +108,8 @@ final class ScenarioStep extends Data
             return new SubmitSignInCodeCommand($attempt, $code, $key);
         }
 
-        // Home's New chat makes the agent the later steps name, so it names no agent the run holds yet.
-        if ($this->stepType === ScenarioStepType::NewChat) {
+        // The creation step makes the agent the later steps name, so it names no agent the run holds yet.
+        if ($this->stepType === ScenarioStepType::CreateMainAgent) {
             return new CreateMainAgentCommand(
                 Project::findLocal()->id,
                 $run->scenario->driver(),
@@ -189,7 +189,7 @@ final class ScenarioStep extends Data
     }
 
     /**
-     * The model a start-session or new-chat step names, which its file must.
+     * The model a start or creation step names, which its file must.
      *
      * @throws ScenarioInvalid
      */
@@ -247,7 +247,7 @@ final class ScenarioStep extends Data
     }
 
     /**
-     * The program line that changes the machine for the step, which the record script runs on the machine from the
+     * The command line that changes the machine for the step, which the record script runs on the machine from the
      * checkout's root, as the journal's container holds no Docker: an image removed from the agent daemon, the
      * daemon stopped or started, or the installation made, updated or healed.
      *

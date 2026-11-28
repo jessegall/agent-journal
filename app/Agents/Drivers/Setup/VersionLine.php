@@ -23,7 +23,7 @@ final readonly class VersionLine
     }
 
     /**
-     * Whether a printed line names the build: a program may print a warning on a line of its own before its version.
+     * Whether a printed line names the build: a driver may print a warning on a line of its own before its version.
      */
     public function accepts(string $printed, string $build): bool
     {

@@ -5,7 +5,7 @@ import type { EligibleAccountData } from "@kit/sessionStarts";
 import type { DriverChoiceData } from "@generated/types/chat";
 
 /**
- * A driver choice as a form keeps it: the program (a driver family), the signed-in account with the sign-in revision
+ * A driver choice as a form keeps it: the driver (the driver family), the signed-in account with the sign-in revision
  * seen, and the model.
  */
 export type DriverChoice = {
@@ -16,13 +16,13 @@ export type DriverChoice = {
 };
 
 /**
- * The program, account and model one form picks for an agent of the agent's profile: the programs it may start on,
- * the accounts of the chosen program (only a signed-in one can be picked) and that program's models, read again
- * whenever the program changes. It starts from the given choice, such as the one made last time.
+ * The driver, account and model choices for an agent's profile: the drivers it may start on,
+ * the accounts of the chosen driver (only a signed-in one can be picked) and that driver's models, read again
+ * whenever the driver changes. It starts from the given choice, such as the one made last time.
  */
 export function useDriverChoice(agentId: () => string, start: () => Partial<DriverChoice>) {
   const { drivers } = useAppContext();
-  const programs = ref<DriverChoiceData[]>([]);
+  const choices = ref<DriverChoiceData[]>([]);
   const accounts = ref<EligibleAccountData[]>([]);
   const defaultModel = ref<string | null>(null);
   const family = ref<string | null>(start().family ?? null);
@@ -30,18 +30,18 @@ export function useDriverChoice(agentId: () => string, start: () => Partial<Driv
   const model = ref<string | null>(start().model ?? null);
   const readFailure = ref<string | null>(null);
 
-  // Each program once, in the catalogue's order, by the label of its first driver.
-  const programOptions = computed(() =>
-    [...new Map(programs.value.map((choice) => [choice.family, choice.label])).entries()].map(
+  // Each driver once, in the catalogue's order, by the label of its first driver.
+  const driverOptions = computed(() =>
+    [...new Map(choices.value.map((choice) => [choice.family, choice.label])).entries()].map(
       ([value, label]) => ({ value, label }),
     ),
   );
-  const programLabel = computed(
-    () => programOptions.value.find((option) => option.value === family.value)?.label ?? "this program",
+  const driverLabel = computed(
+    () => driverOptions.value.find((option) => option.value === family.value)?.label ?? "this driver",
   );
-  // How the chosen program runs: the driver type of its first driver in the catalogue.
+  // How the chosen driver runs: the driver type of its first driver in the catalogue.
   const driverType = computed(
-    () => programs.value.find((choice) => choice.family === family.value)?.driverType ?? "headless",
+    () => choices.value.find((choice) => choice.family === family.value)?.driverType ?? "headless",
   );
   const modelOptions = computed(() =>
     (drivers.value.find((look) => look.family === family.value)?.models ?? []).map((choice) => ({
@@ -69,19 +69,19 @@ export function useDriverChoice(agentId: () => string, start: () => Partial<Driv
         },
   );
 
-  function readPrograms(): void {
+  function readDrivers(): void {
     load(chatStartDrivers, { agent: agentId() }).then(
       (answer) => {
         if (answer.status !== "ok") {
-          readFailure.value = "The programs could not be read.";
+          readFailure.value = "The drivers could not be read.";
 
           return;
         }
 
-        programs.value = answer.value.drivers;
-        family.value = family.value ?? programs.value[0]?.family ?? null;
+        choices.value = answer.value.drivers;
+        family.value = family.value ?? choices.value[0]?.family ?? null;
       },
-      () => (readFailure.value = "The programs could not be read."),
+      () => (readFailure.value = "The drivers could not be read."),
     );
   }
 
@@ -110,7 +110,7 @@ export function useDriverChoice(agentId: () => string, start: () => Partial<Driv
     );
   }
 
-  readPrograms();
+  readDrivers();
   watch(
     family,
     (chosen) => {
@@ -125,8 +125,8 @@ export function useDriverChoice(agentId: () => string, start: () => Partial<Driv
     family,
     accountId,
     model,
-    programOptions,
-    programLabel,
+    driverOptions,
+    driverLabel,
     driverType,
     accountOptions,
     modelOptions,

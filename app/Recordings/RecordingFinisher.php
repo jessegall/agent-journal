@@ -40,7 +40,7 @@ final readonly class RecordingFinisher
         private HostProtocolCheck $protocolCheck,
         private DriverExchanges $driverExchanges,
         private RecordedProtocol $protocol,
-        private AgentImagePrograms $imagePrograms,
+        private AgentImageBuild $imageBuild,
         private Recordings $recordings,
         private ServerClock $clock,
         private ProcessFactory $processes,
@@ -75,7 +75,7 @@ final readonly class RecordingFinisher
             $this->files->digest(FilePath::in(Place::Project, Recordings::SCENARIOS."/{$run->scenario}.json")),
             $run->driver(),
             $this->recordings->buildOf($run->driver()),
-            $this->imagePrograms->hash(),
+            $this->imageBuild->hash(),
             $this->clock->now()->toIso8601String(),
             array_keys($exchanges),
         );
