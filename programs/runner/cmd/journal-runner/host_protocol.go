@@ -195,7 +195,7 @@ func openHostProtocol(ctx context.Context, journal *client.Client, enrollment de
 	}
 	outputs := hostapi.NewOutputs(stateFolder, func(processID string, output hostapi.Output) error {
 		return calls.NotifyProcessOutput(ctx, processID, output)
-	}, time.Now)
+	})
 	table := hostapi.OpenProcessTable(stateFolder, containers, reports, outputs)
 	table.NameHost(names)
 	if options.Allowed != nil {

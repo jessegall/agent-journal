@@ -502,11 +502,7 @@ func (table *ProcessTable) Signal(ctx context.Context, instruction Instruction, 
 		return Empty{}, err
 	}
 	if held.pid != 0 {
-		number, known := signalNumbers[plan.Signal]
-		if !known {
-			return Empty{}, RefusalError{Refusal: Unsafe, Reason: "unknown signal " + plan.Signal}
-		}
-		return Empty{}, host.OwnedGroupOf(held.pid).Signal(number)
+		return Empty{}, SignalProcessGroup(host.OwnedGroupOf(held.pid), plan.Signal)
 	}
 	return Empty{}, table.containers.Kill(ctx, held.containerName(), plan.Signal)
 }
@@ -696,6 +692,15 @@ func (held *heldProcess) markStopping() {
 
 func (held *heldProcess) isStopping() bool {
 	return held.stopping.Load()
+}
+
+// SignalProcessGroup delivers the named signal to the process group.
+func SignalProcessGroup(group host.OwnedGroup, signal string) error {
+	number, known := signalNumbers[signal]
+	if !known {
+		return RefusalError{Refusal: Unsafe, Reason: "unknown signal " + signal}
+	}
+	return group.Signal(number)
 }
 
 var signalNumbers = map[string]syscall.Signal{

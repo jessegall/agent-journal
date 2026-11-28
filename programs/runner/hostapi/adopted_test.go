@@ -178,7 +178,7 @@ func terminalTable(t *testing.T, state string, post OutputPoster) *ProcessTable 
 	if err != nil {
 		t.Fatal(err)
 	}
-	table := OpenProcessTable(state, host.Containers{}, queue, NewOutputs(state, post, time.Now))
+	table := OpenProcessTable(state, host.Containers{}, queue, NewOutputs(state, post))
 	if err := table.Adopt(context.Background()); err != nil {
 		t.Fatal(err)
 	}

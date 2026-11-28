@@ -67,7 +67,7 @@ func mockTable(t *testing.T, daemon *dockermock.Daemon) (*ProcessTable, *sentRep
 	}
 	runQueue(t, queue)
 	state := t.TempDir()
-	outputs := NewOutputs(state, func(string, Output) error { return nil }, time.Now)
+	outputs := NewOutputs(state, func(string, Output) error { return nil })
 	table := OpenProcessTable(state, containers, queue, outputs)
 	t.Cleanup(func() { stopAndWait(daemon, table) })
 	return table, sent
@@ -184,7 +184,7 @@ func TestARunningContainerIsAdoptedAgainAfterTheHostRestarted(t *testing.T) {
 			t.Fatal(err)
 		}
 		runQueue(t, queue)
-		outputs := NewOutputs(state, func(string, Output) error { return nil }, time.Now)
+		outputs := NewOutputs(state, func(string, Output) error { return nil })
 		return OpenProcessTable(state, containers, queue, outputs), sent
 	}
 	first, sent := open()
@@ -314,7 +314,7 @@ func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *t
 			t.Fatal(err)
 		}
 		runQueue(t, queue)
-		return OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
+		return OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send))
 	}
 	before, after := &sentChunks{}, &sentChunks{}
 	instruction := openInstruction(t, "turn", "never", mockImage)
@@ -350,7 +350,7 @@ func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.
 	}
 	runQueue(t, queue)
 	sent := &sentChunks{}
-	table := OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
+	table := OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send))
 	instruction := openInstruction(t, "probe", "never", mockImage)
 
 	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), instruction); err != nil {
@@ -388,7 +388,7 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 			t.Fatal(err)
 		}
 		runQueue(t, queue)
-		return OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
+		return OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send))
 	}
 	probe := recorded.MustProbe(t, "second-version")
 	first, second := probe.Output[0].Bytes, probe.Output[1].Bytes
@@ -428,7 +428,7 @@ func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(
 	}
 	runQueue(t, queue)
 	state, chunks := t.TempDir(), &sentChunks{}
-	table := OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
+	table := OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send))
 	version := recorded.MustProbe(t, "version")
 	login := recorded.MustProbe(t, "login-status")
 	standard, diagnostic := version.Output[0].Bytes, login.Output[0].Bytes

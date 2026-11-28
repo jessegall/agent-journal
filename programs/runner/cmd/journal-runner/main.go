@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"journal-runner/hostapi"
 	"maps"
 	"os"
 	"strings"
@@ -15,6 +14,7 @@ import (
 
 	"journal-runner/recording"
 	"journal-runner/screen"
+	"journal-runner/terminal"
 )
 
 // secretToggle is the key (Ctrl-]) that turns secret marking of typed input on and off; it is never forwarded.
@@ -38,7 +38,7 @@ func main() {
 	}
 
 	if len(os.Args) == 4 && os.Args[1] == "recording" && os.Args[2] == "render" {
-		rendered, err := hostapi.RenderFolder(os.Args[3])
+		rendered, err := terminal.RenderFolder(os.Args[3])
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "journal-runner:", err)
 			os.Exit(1)

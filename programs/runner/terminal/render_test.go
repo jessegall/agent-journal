@@ -1,4 +1,4 @@
-package hostapi
+package terminal
 
 import (
 	"bytes"

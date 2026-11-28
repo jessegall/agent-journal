@@ -1,20 +1,14 @@
 package hostapi
 
 import (
-	"context"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"math"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
-
-	"journal-runner/screen"
 )
 
 // OutputLimit is the most bytes the host sends in one output post.
@@ -38,123 +32,73 @@ func (output Output) MarshalJSON() ([]byte, error) {
 // OutputPoster sends a process's output to the journal.
 type OutputPoster func(processID string, output Output) error
 
-// Outputs keeps what each process prints: a terminal's screen, a pipe's spool, a recording when one is asked, and
-// sends it to the journal. Output is never queued: while the journal is away only the latest frame is kept, and a
-// gap in a pipe's bytes shows as a jump in offset.
+// Outputs keeps process bytes and posts output to the journal.
 type Outputs struct {
 	stateFolder string
 	post        OutputPoster
-	clock       func() time.Time
-	started     time.Time
 
-	mutex    sync.Mutex
-	screens  map[string]*Screen
-	spools   map[string]*Spool
-	streams  map[string]frameStream
-	held     map[string]Frame
-	private  map[string]privateEntry
-	openings map[string]int
+	mutex   sync.Mutex
+	spools  map[string]*Spool
+	private map[string]*time.Timer
 }
 
-// frameStream is a process's running stream: how to stop it, and the signal that its screen changed.
-type frameStream struct {
-	stop    context.CancelFunc
-	changed chan struct{}
-}
-
-// settleTime is how long a changed screen must stay still before its frame goes out, so one redraw sends one frame.
-const settleTime = 15 * time.Millisecond
-
-// privateEntry is how far a process's private entry has got: open, nothing of it leaves; closing, it leaves again
-// once the screen redrew.
-type privateEntry int
-
-const (
-	privateOpen privateEntry = iota + 1
-	privateClosing
-)
-
-// NewOutputs keeps output under the state folder and posts it with post.
-func NewOutputs(stateFolder string, post OutputPoster, clock func() time.Time) *Outputs {
+func NewOutputs(stateFolder string, post OutputPoster) *Outputs {
 	return &Outputs{
 		stateFolder: stateFolder,
 		post:        post,
-		clock:       clock,
-		started:     clock(),
-		screens:     map[string]*Screen{},
 		spools:      map[string]*Spool{},
-		streams:     map[string]frameStream{},
-		held:        map[string]Frame{},
-		private:     map[string]privateEntry{},
-		openings:    map[string]int{},
+		private:     map[string]*time.Timer{},
 	}
 }
 
-// OpenPrivate stops every frame and recording of the terminal process from leaving, and the frame held back, until
-// it redraws after ClosePrivate or the journal's deadline for the entry passed: an entry the journal forgot, because
-// its worker died or its instruction was lost, ends by itself and takes no value after it.
+// OpenPrivate holds the pipe's output until the submission closes or its deadline passes.
 func (outputs *Outputs) OpenPrivate(processID string, deadline time.Duration) error {
 	outputs.mutex.Lock()
 	defer outputs.mutex.Unlock()
-	if _, isTerminal := outputs.screens[processID]; !isTerminal {
-		return RefusalError{Refusal: NotRunning, Reason: "the process has no terminal"}
+	if _, opened := outputs.spools[processID]; !opened {
+		return RefusalError{Refusal: NotRunning, Reason: "the process has no output"}
 	}
-	outputs.private[processID] = privateOpen
-	outputs.openings[processID]++
-	opening := outputs.openings[processID]
-	delete(outputs.held, processID)
-	time.AfterFunc(deadline, func() { outputs.closeOpening(processID, opening) })
+	outputs.closePrivate(processID)
+	var entry *time.Timer
+	entry = time.AfterFunc(deadline, func() {
+		outputs.mutex.Lock()
+		defer outputs.mutex.Unlock()
+		if outputs.private[processID] == entry {
+			delete(outputs.private, processID)
+		}
+	})
+	outputs.private[processID] = entry
 	return nil
 }
 
-// closeOpening closes the private entry once its deadline passed, unless a later entry was opened since.
-func (outputs *Outputs) closeOpening(processID string, opening int) {
-	outputs.mutex.Lock()
-	isSame := outputs.openings[processID] == opening
-	outputs.mutex.Unlock()
-	if isSame {
-		outputs.ClosePrivate(processID)
-	}
-}
-
-// IsPrivate is whether the process's private entry is open, so a private value may be written into it.
 func (outputs *Outputs) IsPrivate(processID string) bool {
 	outputs.mutex.Lock()
 	defer outputs.mutex.Unlock()
-	return outputs.private[processID] == privateOpen
+	return outputs.private[processID] != nil
 }
 
-// ClosePrivate lets the process's output leave again once the screen redraws.
 func (outputs *Outputs) ClosePrivate(processID string) {
 	outputs.mutex.Lock()
 	defer outputs.mutex.Unlock()
-	if outputs.private[processID] == privateOpen {
-		outputs.private[processID] = privateClosing
+	outputs.closePrivate(processID)
+}
+
+func (outputs *Outputs) closePrivate(processID string) {
+	if entry := outputs.private[processID]; entry != nil {
+		entry.Stop()
+		delete(outputs.private, processID)
 	}
 }
 
-// Open starts keeping a process's output: a screen for a terminal, a spool for pipes.
 func (outputs *Outputs) Open(processID string, plan OpenPlan) error {
-	outputs.mutex.Lock()
-	defer outputs.mutex.Unlock()
-	if plan.Type == "terminal" {
-		shown, err := newScreen(int(plan.Size.Columns), int(plan.Size.Rows), plan.ShieldRules)
-		if err != nil {
-			return err
-		}
-		outputs.screens[processID] = shown
-		// A process opened again, as a healed one is, starts with no private entry of the one before it.
-		delete(outputs.private, processID)
-		// A terminal asked for its raw bytes, as a recording run asks, also sends what it prints as chunks.
-		if !plan.RawBytes {
-			return nil
-		}
-	}
 	spool, err := OpenSpool(filepath.Join(outputs.stateFolder, "spool", processID), int64(plan.SpoolBytes))
 	if err != nil {
 		return err
 	}
+	outputs.mutex.Lock()
+	defer outputs.mutex.Unlock()
 	outputs.spools[processID] = spool
+	outputs.closePrivate(processID)
 	return nil
 }
 
@@ -187,62 +131,36 @@ func (outputs *Outputs) acceptAdopted(processID string, output LocalLinkOutput) 
 	return nil
 }
 
-// Printed takes what the process printed on its standard output, or on its terminal.
+// Printed takes what the process printed on standard output.
 func (outputs *Outputs) Printed(processID string, printed []byte) {
 	outputs.PrintedOn(processID, StandardOutput, printed)
 }
 
-// The names of the streams a process prints on, as each chunk carries them; the journal chooses which it reads.
 const (
 	StandardOutput = "stdout"
 	StandardError  = "stderr"
 )
 
-// PrintedOn takes what the process printed on the named stream.
 func (outputs *Outputs) PrintedOn(processID string, stream string, printed []byte) {
 	outputs.mutex.Lock()
-	screen, isTerminal := outputs.screens[processID]
 	spool := outputs.spools[processID]
-	entry, isPrivate := outputs.private[processID]
-	outputs.mutex.Unlock()
-	if isTerminal {
-		screen.Feed(printed, outputs.monotonic())
-		outputs.screenChanged(processID)
-		if entry == privateClosing {
-			outputs.mutex.Lock()
-			delete(outputs.private, processID)
-			outputs.mutex.Unlock()
-		}
-		// A shielded screen's bytes and a private entry's are sent nowhere, as their frames reach no one.
-		if screen.IsShielded() || isPrivate {
-			return
-		}
-	}
-	outputs.sendChunks(processID, spool, stream, printed)
-}
-
-// sendChunks spools what the process printed and sends it as chunks; a process with no spool, such as a terminal
-// opened without raw bytes, sends none.
-func (outputs *Outputs) sendChunks(processID string, spool *Spool, stream string, printed []byte) {
 	if spool == nil {
+		outputs.mutex.Unlock()
 		return
+	}
+	isPrivate := outputs.private[processID] != nil
+	if isPrivate {
+		// Count the bytes so a restarted host skips them when it follows the original pipe again.
+		printed = make([]byte, len(printed))
 	}
 	offset, err := spool.Append(printed)
-	if err != nil {
-		return
+	outputs.mutex.Unlock()
+	if err == nil && !isPrivate {
+		outputs.send(processID, Output{Chunks: ChunksOf(stream, offset, printed)})
 	}
-	outputs.send(processID, Output{Chunks: chunksOf(stream, offset, printed)})
 }
 
-// ScreenOf is the process's screen, when it has a terminal.
-func (outputs *Outputs) ScreenOf(processID string) (*Screen, bool) {
-	outputs.mutex.Lock()
-	defer outputs.mutex.Unlock()
-	screen, found := outputs.screens[processID]
-	return screen, found
-}
-
-// SpoolOffset is how many bytes the pipe process printed, kept or not; 0 for a terminal.
+// SpoolOffset is the highest byte offset the host has counted for the process.
 func (outputs *Outputs) SpoolOffset(processID string) int64 {
 	outputs.mutex.Lock()
 	spool, found := outputs.spools[processID]
@@ -255,116 +173,14 @@ func (outputs *Outputs) SpoolOffset(processID string) int64 {
 	return spool.offset
 }
 
-// Snapshot sends one full frame of the process's screen now.
-func (outputs *Outputs) Snapshot(processID string) error {
-	screen, found := outputs.ScreenOf(processID)
-	if !found {
-		return RefusalError{Refusal: NotRunning, Reason: "the process has no screen"}
-	}
-	outputs.send(processID, Output{Frames: []Frame{screen.Frame(outputs.monotonic())}})
-	return nil
-}
-
-// Stream sends the process's frame at the rate asked, changed or not: an unchanged frame is the proof that the
-// screen held still. A rate of 0 ends the stream.
-func (outputs *Outputs) Stream(processID string, framesPerSecond int) error {
-	if _, found := outputs.ScreenOf(processID); !found {
-		return RefusalError{Refusal: NotRunning, Reason: "the process has no screen"}
-	}
-	outputs.mutex.Lock()
-	if running, isRunning := outputs.streams[processID]; isRunning {
-		running.stop()
-		delete(outputs.streams, processID)
-	}
-	if framesPerSecond <= 0 {
-		outputs.mutex.Unlock()
-		return nil
-	}
-	ctx, stop := context.WithCancel(context.Background())
-	stream := frameStream{stop: stop, changed: make(chan struct{}, 1)}
-	outputs.streams[processID] = stream
-	outputs.mutex.Unlock()
-	go outputs.streamFrames(ctx, processID, stream.changed, time.Second/time.Duration(framesPerSecond))
-	return nil
-}
-
-// streamFrames sends a changed screen once it stayed still for the settle time, at most once an interval over a
-// burst of changes, and an unchanged screen once an interval as the proof that it did not change.
-func (outputs *Outputs) streamFrames(ctx context.Context, processID string, changed <-chan struct{}, interval time.Duration) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	settled := time.NewTimer(time.Hour)
-	settled.Stop()
-	lastChangeSent := time.Time{}
-	send := func() {
-		_ = outputs.Snapshot(processID)
-		ticker.Reset(interval)
-	}
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-changed:
-			settled.Reset(max(settleTime, interval-time.Since(lastChangeSent)))
-		case <-settled.C:
-			lastChangeSent = time.Now()
-			send()
-		case <-ticker.C:
-			send()
-		}
-	}
-}
-
-// screenChanged tells the process's stream, when one runs, that its screen took output.
-func (outputs *Outputs) screenChanged(processID string) {
-	outputs.mutex.Lock()
-	stream, running := outputs.streams[processID]
-	outputs.mutex.Unlock()
-	if !running {
-		return
-	}
-	select {
-	case stream.changed <- struct{}{}:
-	default:
-	}
-}
-
-// Flush sends the frame held back while the journal was away.
-func (outputs *Outputs) Flush(processID string) {
-	outputs.mutex.Lock()
-	frame, held := outputs.held[processID]
-	delete(outputs.held, processID)
-	outputs.mutex.Unlock()
-	if held {
-		outputs.send(processID, Output{Frames: []Frame{frame}})
-	}
-}
-
-// send posts the output in parts no larger than OutputLimit; when a post fails only its latest frame is held back.
+// send forwards the relay's output and suppresses posts from a pipe while a private entry is open.
 func (outputs *Outputs) send(processID string, output Output) {
-	outputs.mutex.Lock()
-	_, isPrivate := outputs.private[processID]
-	screen, isTerminal := outputs.screens[processID]
-	outputs.mutex.Unlock()
-	if isPrivate {
+	if outputs.IsPrivate(processID) {
 		return
-	}
-	// A shielded screen's bytes on any stream, a side socket's too, stay on the machine as its frames do.
-	if isTerminal && screen.IsShielded() {
-		output.Chunks = nil
 	}
 	for _, part := range split(output, OutputLimit) {
-		if outputs.post(processID, part) == nil || len(part.Frames) == 0 {
-			continue
-		}
-		outputs.mutex.Lock()
-		outputs.held[processID] = part.Frames[len(part.Frames)-1]
-		outputs.mutex.Unlock()
+		_ = outputs.post(processID, part)
 	}
-}
-
-func (outputs *Outputs) monotonic() int64 {
-	return outputs.clock().Sub(outputs.started).Milliseconds()
 }
 
 // split cuts an output into posts whose chunk bytes stay within the limit; frames go in the first post.
@@ -383,8 +199,8 @@ func split(output Output, limit int) []Output {
 	return parts
 }
 
-// chunksOf cuts bytes into base64 chunks that each fit one post.
-func chunksOf(stream string, offset int64, bytes []byte) []Chunk {
+// ChunksOf cuts bytes into base64 chunks that each fit one post.
+func ChunksOf(stream string, offset int64, bytes []byte) []Chunk {
 	piece := OutputLimit / 4 * 3
 	chunks := []Chunk{}
 	for start := 0; start < len(bytes); start += piece {
@@ -396,88 +212,6 @@ func chunksOf(stream string, offset int64, bytes []byte) []Chunk {
 		})
 	}
 	return chunks
-}
-
-// Screen is a terminal process's screen as its emulator draws it, with when each row last changed.
-type Screen struct {
-	reader          *screen.EmulatorReader
-	mutex           sync.Mutex
-	rows            []string
-	changedAt       []int64
-	inputGeneration uint64
-	shields         []ShieldRule
-}
-
-// IsShielded is whether the screen now shows one the journal named as never to leave the machine.
-func (screen *Screen) IsShielded() bool {
-	return isShielded(screen.shields, screen.reader.Snapshot().Rows)
-}
-
-// Feed draws the printed bytes and marks the rows they changed at the host's monotonic time.
-func (screen *Screen) Feed(printed []byte, now int64) {
-	_ = screen.reader.Feed(printed)
-	snapshot := screen.reader.Snapshot()
-	screen.mutex.Lock()
-	defer screen.mutex.Unlock()
-	for len(screen.changedAt) < len(snapshot.Rows) {
-		screen.changedAt = append(screen.changedAt, now)
-		screen.rows = append(screen.rows, "")
-	}
-	for row, text := range snapshot.Rows {
-		if screen.rows[row] != text {
-			screen.rows[row] = text
-			screen.changedAt[row] = now
-		}
-	}
-}
-
-// Frame is the screen now, each row with how long it has not changed.
-func (screen *Screen) Frame(now int64) Frame {
-	snapshot := screen.reader.Snapshot()
-	if isShielded(screen.shields, snapshot.Rows) {
-		return Frame{Rows: []string{}, Columns: snapshot.Columns, Buffer: string(snapshot.Buffer), Captured: now,
-			UnchangedMs: []int64{}, IsShielded: true}
-	}
-	screen.mutex.Lock()
-	defer screen.mutex.Unlock()
-	unchanged := make([]int64, len(snapshot.Rows))
-	for row := range snapshot.Rows {
-		if row < len(screen.changedAt) {
-			unchanged[row] = now - screen.changedAt[row]
-		}
-	}
-	return Frame{
-		Rows:         snapshot.Rows,
-		CursorRow:    snapshot.Cursor.Row,
-		CursorColumn: snapshot.Cursor.Column,
-		Columns:      snapshot.Columns,
-		Buffer:       string(snapshot.Buffer),
-		Captured:     now,
-		UnchangedMs:  unchanged,
-	}
-}
-
-// RowsHash is the SHA-256 hex of the rows' text from one row to another, joined by newlines.
-func (screen *Screen) RowsHash(from, to int) string {
-	rows := screen.reader.Snapshot().Rows
-	from, to = max(0, from), min(to, len(rows)-1)
-	digest := sha256.Sum256([]byte(strings.Join(rows[from:to+1], "\n")))
-	return hex.EncodeToString(digest[:])
-}
-
-// InputGeneration is raised by every write the user makes.
-func (screen *Screen) InputGeneration() uint64 {
-	screen.mutex.Lock()
-	defer screen.mutex.Unlock()
-	return screen.inputGeneration
-}
-
-// RaiseInputGeneration marks a write of the user's, so a guarded write made before it is refused.
-func (screen *Screen) RaiseInputGeneration() uint64 {
-	screen.mutex.Lock()
-	defer screen.mutex.Unlock()
-	screen.inputGeneration++
-	return screen.inputGeneration
 }
 
 // Spool keeps a pipe process's output on disk up to the bytes the journal gave it, so a reattach resumes at its

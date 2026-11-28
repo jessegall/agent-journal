@@ -49,7 +49,7 @@ func containedTable(t *testing.T, runExit int) (*ProcessTable, *dockermock.Daemo
 	}
 	runQueue(t, queue)
 	state := t.TempDir()
-	table := OpenProcessTable(state, containers, queue, NewOutputs(state, func(string, Output) error { return nil }, time.Now))
+	table := OpenProcessTable(state, containers, queue, NewOutputs(state, func(string, Output) error { return nil }))
 	t.Cleanup(func() { stopAndWait(daemon, table) })
 
 	return table, daemon, func() []byte {

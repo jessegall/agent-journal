@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"slices"
 	"testing"
-	"time"
 
 	"journal-runner/dockermock"
 	"journal-runner/host"
@@ -28,7 +27,7 @@ func TestAContainerLeftByACrashIsNamedAtTheRestartAndRemovedWhileTheOwnedOneStay
 			t.Fatal(err)
 		}
 		runQueue(t, queue)
-		outputs := NewOutputs(state, func(string, Output) error { return nil }, time.Now)
+		outputs := NewOutputs(state, func(string, Output) error { return nil })
 		return OpenProcessTable(state, containers, queue, outputs), sent
 	}
 	first, sent := open()
