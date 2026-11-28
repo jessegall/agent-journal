@@ -95,6 +95,9 @@ final class DriverSwitchLinesTest extends TestCase
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
 
+        // A session with a runtime keeps its driver's label at start; this one opens without a runtime.
+        $session->keepDriverLabel('Claude Code 2.1.332');
+
         $switch = DriverSwitch::create(
             strtolower((string) Str::ulid()),
             $session,
