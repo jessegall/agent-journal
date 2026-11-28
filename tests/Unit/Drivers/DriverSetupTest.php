@@ -33,7 +33,9 @@ use App\Agents\SignInEgress;
 use App\Exceptions\PlanAdditionClash;
 use App\Files\Contracts\Files;
 use App\Hosts\Protocol\Payloads\HostRestartFilePayload;
+use App\Recordings\Recordings;
 use App\Values\PlanAddition;
+use Tests\Support\Recordings\RecordedProgram;
 use Tests\TestCase;
 
 /**
@@ -55,14 +57,19 @@ final class DriverSetupTest extends TestCase
     {
         $exact = VersionLine::exactly('codex-cli {build}');
         $prefix = VersionLine::startingWith('{build} ');
+        $recordings = $this->journal->service(Recordings::class);
+        $codex = RecordedProgram::versionOf($recordings, DefaultDrivers::CODEX, 'codex');
+        $claude = RecordedProgram::versionOf($recordings, DefaultDrivers::CLAUDE_CODE, 'claude');
+        $codexBuild = $this->journal->driverProfile(DefaultDrivers::CODEX)->build();
+        $claudeBuild = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
 
         $this->journal->assertResult(
             [true, false, true, false],
             [
-                $exact->accepts("codex-cli 0.172.0\n", '0.172.0'),
-                $exact->accepts('codex-cli 0.172.0 beta', '0.172.0'),
-                $prefix->accepts('2.1.332 (Claude Code)', '2.1.332'),
-                $prefix->accepts('2.1.3320 (Claude Code)', '2.1.332'),
+                $exact->accepts($codex, $codexBuild),
+                $exact->accepts(rtrim($codex).' beta', $codexBuild),
+                $prefix->accepts($claude, $claudeBuild),
+                $prefix->accepts(str_replace($claudeBuild, $claudeBuild.'0', $claude), $claudeBuild),
             ],
         );
     }

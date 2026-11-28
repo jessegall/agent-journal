@@ -9,6 +9,7 @@ use App\Actors\ActorStore;
 use App\Bus\CommandEntrance;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommittedListenerFailures;
 use App\Bus\Contracts\JournalCommands as JournalCommandsContract;
 use App\Bus\JournalCommands;
 use App\Bus\OutsideCommandAllowance;
@@ -16,7 +17,9 @@ use App\Bus\RequestKey;
 use App\Support\CommandRegistry;
 use Closure;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Assert;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Bus\RecordedListenerFailures;
 
 /**
  * How the journal fixture sends a command: on the bus as the actor in place, keyed or not, or as the journal itself
@@ -135,6 +138,19 @@ trait RunsCommands
         return $this->refusingOutsideWrites(
             fn (): mixed => $actors->actAsSystem('test', fn (): mixed => $dispatcher->run($command)),
         );
+    }
+
+    /**
+     * The test expects the listener, as its failure names it, to fail on a committed fact: the failure is reported and
+     * the test goes on.
+     */
+    public function expectListenerFailure(string $listener): self
+    {
+        $failures = $this->app->make(CommittedListenerFailures::class);
+        Assert::assertInstanceOf(RecordedListenerFailures::class, $failures);
+        $failures->expect($listener);
+
+        return $this;
     }
 
     /**

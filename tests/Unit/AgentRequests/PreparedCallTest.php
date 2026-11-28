@@ -9,6 +9,7 @@ use App\Api\SignedCall;
 use App\Exceptions\ApiDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
 use App\Profiles\StartProfilePin;
+use App\Recordings\RecordedCall;
 use App\Sessions\AgentClientSettings;
 use App\Sessions\Exceptions\SessionTokenRefused;
 use App\Sessions\Exceptions\StartSettingMissing;
@@ -35,31 +36,30 @@ final class PreparedCallTest extends TestCase
 
     public function test_a_transport_retry_sends_a_prepared_call_unchanged(): void
     {
-        Http::fake(['journal.test/*' => Http::sequence()->pushStatus(502)->push(['ok' => true])]);
-        $client = $this->app->make(AgentRequestClient::class);
-        $call = $client->prepare(
-            $this->settings(),
-            '/agent/mcp/v1',
-            self::BODY,
-            CarbonImmutable::now()->getTimestamp(),
-        );
-        $deadline = CarbonImmutable::now()->addSeconds(20);
+        Http::record();
+        $this->journal->agentApi(fn (TestAgentApi $journal) => $journal->playing('claude-code/headless-turn')
+            ->withFrame(1, function (AgentClientSettings $settings, RecordedCall $asked): void {
+                $client = $this->app->make(AgentRequestClient::class);
+                $call = $client->prepare($settings, $asked->path, $asked->body, CarbonImmutable::now()->getTimestamp());
+                $deadline = CarbonImmutable::now()->addSeconds(20);
+                $headers = ['Mcp-Method' => 'server/discover'];
 
-        $client->sendPrepared($call, ['Mcp-Method' => 'ping'], $deadline);
-        $client->sendPrepared($call, ['Mcp-Method' => 'ping'], $deadline);
+                $this->assertTrue($client->sendPrepared($call, $headers, $deadline)->isSuccessful());
+                $this->assertTrue($client->sendPrepared($call, $headers, $deadline)->isSuccessful());
 
-        $sent = Http::recorded()->map(fn (array $pair) => [
-            $pair[0]->url(),
-            $pair[0]->body(),
-            $pair[0]->header(SignedCall::ID_HEADER),
-            $pair[0]->header(SignedCall::ISSUED_AT_HEADER),
-            $pair[0]->header(SignedCall::SIGNATURE_HEADER),
-            $pair[0]->header('Mcp-Method'),
-        ]);
-        $this->assertCount(2, $sent);
-        $this->assertSame($sent[0], $sent[1]);
-        $this->assertSame(self::BODY, $sent[0][1]);
-        $this->assertSame([$call->signature], $sent[0][4]);
+                $sent = Http::recorded()->map(fn (array $pair) => [
+                    $pair[0]->url(),
+                    $pair[0]->body(),
+                    $pair[0]->header(SignedCall::ID_HEADER),
+                    $pair[0]->header(SignedCall::ISSUED_AT_HEADER),
+                    $pair[0]->header(SignedCall::SIGNATURE_HEADER),
+                    $pair[0]->header('Mcp-Method'),
+                ]);
+                $this->assertCount(2, $sent);
+                $this->assertSame($sent[0], $sent[1]);
+                $this->assertSame($asked->body, $sent[0][1]);
+                $this->assertSame([$call->signature], $sent[0][4]);
+            }));
     }
 
     public function test_a_500_answer_comes_back_as_status_and_body(): void
@@ -112,33 +112,34 @@ final class PreparedCallTest extends TestCase
 
     public function test_post_signs_the_same_envelope_as_before(): void
     {
-        Http::fake(['journal.test/*' => Http::response(['ok' => true])]);
+        Http::record();
+        $this->journal->agentApi(fn (TestAgentApi $journal) => $journal->playing('claude-code/terminal-turn')
+            ->withFrame(1, function (AgentClientSettings $settings, RecordedCall $asked): void {
+                $this->app->make(AgentRequestClient::class)->post($settings, $asked->path, $asked->body);
 
-        $this->app->make(AgentRequestClient::class)->post($this->settings(), '/hooks/claude', self::BODY);
+                Http::assertSent(function (Request $request) use ($settings, $asked): bool {
+                    $callId = $request->header(SignedCall::ID_HEADER)[0];
+                    $issuedAt = (int) $request->header(SignedCall::ISSUED_AT_HEADER)[0];
+                    $signature = SignedCall::agentSignatureFor(
+                        $settings->token,
+                        'POST',
+                        $request->url(),
+                        $callId,
+                        $issuedAt,
+                        $asked->body,
+                        $settings->profile,
+                    );
 
-        Http::assertSent(function (Request $request): bool {
-            $callId = $request->header(SignedCall::ID_HEADER)[0];
-            $issuedAt = (int) $request->header(SignedCall::ISSUED_AT_HEADER)[0];
-            $pin = new StartProfilePin('main-agent', 1);
-            $signature = SignedCall::agentSignatureFor(
-                'start-token',
-                'POST',
-                $request->url(),
-                $callId,
-                $issuedAt,
-                self::BODY,
-                $pin,
-            );
-
-            return $request->body() === self::BODY
-                && $request->header(SignedCall::SIGNATURE_HEADER) === [$signature]
-                && $request->header('Authorization') === ['Bearer start-token'];
-        });
+                    return $request->body() === $asked->body
+                        && $request->header(SignedCall::SIGNATURE_HEADER) === [$signature]
+                        && $request->header('Authorization') === ["Bearer {$settings->token}"];
+                });
+            }));
     }
 
     public function test_a_placeholder_token_is_refused_before_any_request(): void
     {
-        Http::fake();
+        Http::record();
 
         foreach (['', '${JOURNAL_START_TOKEN}', '<token>'] as $token) {
             $this->assertThrows(

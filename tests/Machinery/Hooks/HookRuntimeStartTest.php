@@ -25,6 +25,7 @@ use App\Support\StackTransaction;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Recordings\TestScenario;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -35,43 +36,6 @@ final class HookRuntimeStartTest extends TestCase
     use RefreshHookDatabase;
 
     private const string INVENTORY_ROW = '| %s | %s |';
-
-    private const array SHELL_CALL = [
-        'tool_input' => ['command' => 'git status'],
-        'tool_response' => [],
-    ];
-
-    private const array EVENT_FIELDS = [
-        'claude-code' => [
-            'SessionStart' => ['source' => 'startup'],
-            'UserPromptSubmit' => ['prompt' => 'Build the walk.'],
-            'PreToolUse' => [
-                'tool_name' => 'Bash',
-                ...self::SHELL_CALL,
-            ],
-            'PostToolUse' => [
-                'tool_name' => 'Bash',
-                ...self::SHELL_CALL,
-            ],
-            'Stop' => ['stop_hook_active' => false],
-            'StopFailure' => ['error' => 'rate_limit'],
-            'SessionEnd' => ['reason' => 'other'],
-        ],
-        'codex' => [
-            'SessionStart' => ['source' => 'startup'],
-            'UserPromptSubmit' => ['prompt' => 'Build the walk.'],
-            'PreToolUse' => [
-                'tool_name' => 'Bash',
-                ...self::SHELL_CALL,
-            ],
-            'PostToolUse' => [
-                'tool_name' => 'Bash',
-                ...self::SHELL_CALL,
-            ],
-            'Stop' => ['stop_hook_active' => false],
-            'SessionEnd' => ['reason' => 'other'],
-        ],
-    ];
 
     /**
      * Every installed domain, since the state types this test checks come from them.
@@ -127,13 +91,41 @@ final class HookRuntimeStartTest extends TestCase
         string $driver,
         string $event,
     ): void {
-        $payload = HookPayload::from(
-            ['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$driver][$event]],
-        );
+        $scenario = match ([$driver, $event]) {
+            [DefaultDrivers::CLAUDE_CODE, 'SessionEnd'] => 'claude-code/headless-turn',
+            default => "{$driver}/terminal-turn",
+        };
+        $fields = match ([$driver, $event]) {
+            [DefaultDrivers::CLAUDE_CODE, 'StopFailure'] => ['error' => 'rate_limit'],
+            [DefaultDrivers::CODEX, 'SessionEnd'] => ['reason' => 'other'],
+            default => [],
+        };
 
+        if ($fields !== []) {
+            $this->assertAdapterMaps($driver, [
+                'session_id' => 'session-1',
+                'hook_event_name' => $event,
+                ...$fields,
+            ]);
+
+            return;
+        }
+
+        $this->journal->scenario($scenario, fn (TestScenario $turn) => $turn->sendHook(
+            $event,
+            1,
+            fn (string $body) => $this->assertAdapterMaps($driver, json_decode($body, true, flags: JSON_THROW_ON_ERROR)),
+        ));
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields
+     */
+    private function assertAdapterMaps(string $driver, array $fields): void
+    {
         $call = $this->app->make(DriverAdapters::class)->for($driver)->callFor(
-            $payload,
-            TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', $event)),
+            HookPayload::from($fields),
+            TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', $fields['hook_event_name'])),
         );
 
         $this->assertInstanceOf(DriverCall::class, $call);

@@ -6,7 +6,6 @@ namespace Tests\Commands\Messages;
 
 use App\Agents\Enums\ActivityType;
 use App\Bus\Exceptions\CommandInputInvalid;
-use App\Bus\Exceptions\CommittedFactListenerFailed;
 use App\Bus\IsolatedListener;
 use App\Events\Messages\MessageSent;
 use App\Exceptions\CrossProjectEdge;
@@ -208,8 +207,8 @@ final class SendMessageTest extends TestCase
     }
 
     // A failing listener is never swallowed. The message stays saved, the listeners after it
-    // still hear the fact, and then the failure is thrown.
-    public function test_a_failing_listener_leaves_the_message_saved_and_heard_and_is_then_thrown(): void
+    // still hear the fact, and the failure is reported, never thrown to the sender.
+    public function test_a_failing_listener_leaves_the_message_saved_and_heard_and_is_reported(): void
     {
         Event::listen(MessageSent::class, function (MessageSent $sent): void {
             $this->received[] = $sent->messageId;
@@ -220,10 +219,9 @@ final class SendMessageTest extends TestCase
             FailingMessageListener::class.'@handle',
         ));
 
-        $this->assertThrows(
-            fn () => $this->journal->run(new SendMessageCommand($this->pairInboxId(), self::SAVED_TEXT)),
-            CommittedFactListenerFailed::class,
-        );
+        $this->journal->expectListenerFailure(FailingMessageListener::class);
+
+        $this->journal->run(new SendMessageCommand($this->pairInboxId(), self::SAVED_TEXT));
 
         $message = Message::query()->where('body', self::SAVED_TEXT)->sole();
         $this->assertSame([$message->id], $this->received);

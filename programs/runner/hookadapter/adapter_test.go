@@ -2,11 +2,15 @@ package hookadapter
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"journal-runner/recorded"
+	"journal-runner/recording"
 )
 
 const testKey = "the-start-key"
@@ -16,7 +20,7 @@ const testKey = "the-start-key"
 func writeReplies(t *testing.T, spawnTool string, deny string) string {
 	t.Helper()
 	folder := t.TempDir()
-	events := []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop", "SessionEnd"}
+	events := []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"}
 	refusal := Reply{Stdout: deny}
 	answers := map[string]map[string]Reply{}
 	for _, reason := range []string{reasonAway, reasonUnprepared, reasonSpawn} {
@@ -64,13 +68,32 @@ func journalAway(context.Context, []byte) (Reply, error) {
 	return Reply{}, errors.New("unreachable")
 }
 
+func nativeHook(t *testing.T, driver, scenario string, wanted nativeCall) []byte {
+	t.Helper()
+	calls, err := recorded.MustLoad(t, driver, scenario).Calls(recording.WireHooks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, call := range calls {
+		body, err := base64.StdEncoding.DecodeString(call.Asked.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if callOf(body) == wanted {
+			return body
+		}
+	}
+	t.Fatalf("%s/%s has no recorded hook for %+v", driver, scenario, wanted)
+	return nil
+}
+
 func TestAJournalAwayIsAnsweredFromTheFileForEachDriversShape(t *testing.T) {
-	for driver, spawnTool := range map[string]string{"first-driver": "Task", "second-driver": "spawn_agent"} {
+	for driver, spawnTool := range map[string]string{"claude-code": "Task", "codex": "spawn_agent"} {
 		path := writeReplies(t, spawnTool, driver+"-deny")
 		adapter := preparedAdapter(t, path, journalAway)
 
-		tool := adapter.Answer([]byte(`{"hook_event_name":"PreToolUse","tool_name":"Bash"}`))
-		stop := adapter.Answer([]byte(`{"hook_event_name":"Stop"}`))
+		tool := adapter.Answer(nativeHook(t, driver, "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
+		stop := adapter.Answer(nativeHook(t, driver, "terminal-turn", nativeCall{Event: "Stop"}))
 
 		if tool.Stdout != "away:"+driver+"-deny" || stop.Stdout != "{}" {
 			t.Fatalf("%s: got %+v and %+v", driver, tool, stop)
@@ -80,12 +103,12 @@ func TestAJournalAwayIsAnsweredFromTheFileForEachDriversShape(t *testing.T) {
 
 func TestASpawnToolIsRefusedWithoutAskingTheJournal(t *testing.T) {
 	asked := false
-	adapter := preparedAdapter(t, writeReplies(t, "Task", "deny"), func(context.Context, []byte) (Reply, error) {
+	adapter := preparedAdapter(t, writeReplies(t, "Bash", "deny"), func(context.Context, []byte) (Reply, error) {
 		asked = true
 		return Reply{Stdout: "allowed"}, nil
 	})
 
-	reply := adapter.Answer([]byte(`{"hook_event_name":"PreToolUse","tool_name":"Task"}`))
+	reply := adapter.Answer(nativeHook(t, "claude-code", "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
 
 	if reply.Stdout != "spawn:deny" || asked {
 		t.Fatalf("got %+v, asked %v", reply, asked)
@@ -95,7 +118,7 @@ func TestASpawnToolIsRefusedWithoutAskingTheJournal(t *testing.T) {
 func TestAToolCallBeforeTheStartIsPreparedIsRefused(t *testing.T) {
 	adapter := Adapter{Ask: journalAway, RepliesFile: writeReplies(t, "Task", "deny"), PreparationFile: filepath.Join(t.TempDir(), "none")}
 
-	reply := adapter.Answer([]byte(`{"hook_event_name":"PreToolUse","tool_name":"Bash"}`))
+	reply := adapter.Answer(nativeHook(t, "claude-code", "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
 
 	if reply.Stdout != "unprepared:deny" {
 		t.Fatalf("got %+v", reply)
@@ -107,8 +130,8 @@ func TestTheJournalsAnswerPassesAndAnUnknownEventIsRefused(t *testing.T) {
 		return Reply{Stdout: "from the journal"}, nil
 	})
 
-	answered := adapter.Answer([]byte(`{"hook_event_name":"PreToolUse","tool_name":"Bash"}`))
-	unknown := adapter.Answer([]byte(`{"hook_event_name":"Notification"}`))
+	answered := adapter.Answer(nativeHook(t, "claude-code", "terminal-turn", nativeCall{Event: "PreToolUse", Tool: "Bash"}))
+	unknown := adapter.Answer(nativeHook(t, "claude-code", "headless-turn", nativeCall{Event: "SessionEnd"}))
 
 	if answered.Stdout != "from the journal" || unknown.ExitCode != 2 {
 		t.Fatalf("got %+v and %+v", answered, unknown)
@@ -124,8 +147,9 @@ func TestATamperedOrMissingFileRefusesEveryCall(t *testing.T) {
 	}
 	allow := func(context.Context, []byte) (Reply, error) { return Reply{Stdout: "allowed"}, nil }
 
-	tampered := preparedAdapter(t, path, allow).Answer([]byte(`{"hook_event_name":"Stop"}`))
-	missing := preparedAdapter(t, filepath.Join(t.TempDir(), "hook-replies.json"), allow).Answer([]byte(`{"hook_event_name":"Stop"}`))
+	stop := nativeHook(t, "claude-code", "terminal-turn", nativeCall{Event: "Stop"})
+	tampered := preparedAdapter(t, path, allow).Answer(stop)
+	missing := preparedAdapter(t, filepath.Join(t.TempDir(), "hook-replies.json"), allow).Answer(stop)
 
 	if tampered.ExitCode != 2 || missing.ExitCode != 2 {
 		t.Fatalf("got %+v and %+v", tampered, missing)

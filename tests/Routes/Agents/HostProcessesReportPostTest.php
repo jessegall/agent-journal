@@ -56,6 +56,7 @@ final class HostProcessesReportPostTest extends GuardedRouteEntryTestCase
     public function test_a_listener_failing_on_the_committed_end_leaves_the_report_heard_and_is_reported(): void
     {
         Exceptions::fake();
+        $this->journal->expectListenerFailure(FailingProcessEndListener::class);
         Event::listen(HostProcessExited::class, new IsolatedListener(
             HostProcessExited::class,
             FailingProcessEndListener::class.'@handle',

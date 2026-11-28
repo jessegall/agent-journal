@@ -25,6 +25,7 @@ use Closure;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Recordings\TestScenario;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
@@ -77,7 +78,7 @@ final class DeliveredSkillsGuardTest extends TestCase
             .'*** End Patch';
 
         $call = $this->app->make(CodexAdapter::class)->callFor(
-            $this->payload('apply_patch', ['command' => $patch]),
+            $this->payload('codex', 'apply_patch', ['command' => $patch]),
             $this->hookIdentity(),
         );
 
@@ -92,7 +93,9 @@ final class DeliveredSkillsGuardTest extends TestCase
         $ownSkill = $this->ownRuntimeFolder().'/journal-skills/skills/a/SKILL.md';
         $read = $this->claudeCode('Read', ['file_path' => $ownSkill]);
         $edit = $this->app->make(ClaudeCodeAdapter::class)->callFor(
-            $this->payload('Edit', ['file_path' => '/work/project/SKILL.md', 'old_string' => 'a', 'new_string' => 'b']),
+            $this->payload('claude-code', 'Edit', [
+                'file_path' => '/work/project/SKILL.md', 'old_string' => 'a', 'new_string' => 'b',
+            ]),
             $this->hookIdentity(),
         );
 
@@ -147,7 +150,7 @@ final class DeliveredSkillsGuardTest extends TestCase
     private function codexShell(string $line): DriverCall
     {
         return $this->app->make(CodexAdapter::class)->callFor(
-            $this->payload('Bash', ['command' => $line]),
+            $this->payload('codex', 'Bash', ['command' => $line]),
             $this->hookIdentity(),
         );
     }
@@ -173,23 +176,22 @@ final class DeliveredSkillsGuardTest extends TestCase
         );
 
         return $this->app->make(ClaudeCodeAdapter::class)
-            ->callFor($this->payload($tool, $arguments), $this->hookIdentity())
+            ->callFor($this->payload('claude-code', $tool, $arguments), $this->hookIdentity())
             ->replyWith(fn (HookInput $input, Closure $render) => $render($allowed, TestText::renderer()));
     }
 
     /**
      * @param  array<string, mixed>  $arguments
      */
-    private function payload(string $tool, array $arguments): HookPayload
+    private function payload(string $driver, string $tool, array $arguments): HookPayload
     {
+        $recording = new TestScenario($this->journal, "{$driver}/terminal-turn");
+
         return HookPayload::from([
-            'session_id' => 'session-redacted',
-            'transcript_path' => '/redacted/transcript.jsonl',
+            ...$recording->hookFields('PreToolUse', 2),
             'cwd' => '/work/project',
-            'hook_event_name' => 'PreToolUse',
             'tool_name' => $tool,
             'tool_input' => $arguments,
-            'tool_use_id' => 'toolu-redacted',
         ]);
     }
 

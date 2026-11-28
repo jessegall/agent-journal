@@ -7,7 +7,10 @@ namespace Tests\Unit\Drivers;
 use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSignInReader;
 use App\Agents\Drivers\Codex\CodexSignInReader;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Values\SignInFolder;
+use App\Recordings\Recordings;
+use Tests\Support\Recordings\RecordedProgram;
 use Tests\TestCase;
 
 /**
@@ -20,16 +23,27 @@ final class SignInReadersTest extends TestCase
     public function test_claude_code_is_signed_in_only_by_an_accepted_method_in_this_folder(): void
     {
         $reader = new ClaudeCodeSignInReader();
-        $folder = new SignInFolder('/accounts/a7/', '/real/a7', false);
+        $recordings = $this->journal->service(Recordings::class);
+        $status = RecordedProgram::from(
+            $recordings->scenario(DefaultDrivers::CLAUDE_CODE, 'first-start'),
+            ['claude', 'auth', 'status', '--json'],
+        );
+        $printed = $status->printedOn('stdout');
+        $recordedFolder = json_decode($printed, true, flags: JSON_THROW_ON_ERROR)['configDirectory'];
+        $folder = new SignInFolder($recordedFolder.'/', '/real/a7', false);
 
-        $signedIn = $reader($this->claudeStatus('claude.ai', '/accounts/a7'), 0, $folder);
-        $byRealPath = $reader($this->claudeStatus('oauth_token', '/real/a7'), 0, $folder);
-        $elsewhere = $reader($this->claudeStatus('claude.ai', '/accounts/b8'), 0, $folder);
-        $unknownMethod = $reader($this->claudeStatus('console', '/accounts/a7'), 0, $folder);
+        $signedIn = $reader($printed, $status->exitCode(), $folder);
+        $byRealPath = $reader(
+            str_replace(['claude.ai', $recordedFolder], ['oauth_token', '/real/a7'], $printed),
+            $status->exitCode(),
+            $folder,
+        );
+        $elsewhere = $reader($printed, $status->exitCode(), SignInFolder::named('/accounts/b8'));
+        $unknownMethod = $reader(str_replace('claude.ai', 'console', $printed), $status->exitCode(), $folder);
         $unreadable = $reader('not json', 1, $folder);
 
         $this->journal->assertResult(
-            [true, 'owner@example.test', true, false, false, false, false],
+            [true, 'user@example.com', true, false, false, false, false],
             [
                 $signedIn->isSignedInBy(SignInMethod::OAuth),
                 $signedIn->email,
@@ -46,11 +60,13 @@ final class SignInReadersTest extends TestCase
     {
         $reader = new CodexSignInReader();
         $folder = new SignInFolder('/accounts/a7', '/accounts/a7', true);
+        $status = $this->codexStatus();
+        $printed = $status->printedOn('stderr');
 
-        $chatGpt = $reader("Logged in using ChatGPT\n", 0, $folder);
+        $chatGpt = $reader($printed, $status->exitCode(), $folder);
         $key = $reader('API key configured', 0, $folder);
-        $failed = $reader('Logged in using ChatGPT', 1, $folder);
-        $noFile = $reader('Logged in using ChatGPT', 0, new SignInFolder('/accounts/a7', '/accounts/a7', false));
+        $failed = $reader($printed, 1, $folder);
+        $noFile = $reader($printed, $status->exitCode(), new SignInFolder('/accounts/a7', '/accounts/a7', false));
         $crashed = $reader('', 2, $folder);
 
         $this->journal->assertResult(
@@ -75,18 +91,16 @@ final class SignInReadersTest extends TestCase
             [
                 $reader('Logged in using an API key', null, SignInFolder::named('/accounts/a7'))->isSignedIn,
                 $reader('Not logged in', null, SignInFolder::named('/accounts/a7'))->isSignedIn,
-                $reader('Logged in using ChatGPT', null, SignInFolder::named(''))->isSignedIn,
+                $reader($this->codexStatus()->printedOn('stderr'), null, SignInFolder::named(''))->isSignedIn,
             ],
         );
     }
 
-    private function claudeStatus(string $method, string $folder): string
+    private function codexStatus(): RecordedProgram
     {
-        return json_encode([
-            'loggedIn' => true,
-            'authMethod' => $method,
-            'configDirectory' => $folder,
-            'email' => 'owner@example.test',
-        ], JSON_THROW_ON_ERROR);
+        return RecordedProgram::from(
+            $this->journal->service(Recordings::class)->scenario(DefaultDrivers::CODEX, 'first-start'),
+            ['codex', 'login', 'status'],
+        );
     }
 }

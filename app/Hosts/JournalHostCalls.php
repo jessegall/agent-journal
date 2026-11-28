@@ -6,7 +6,6 @@ namespace App\Hosts;
 
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommittedFactListenerFailed;
 use App\Hosts\Commands\ClaimHostInstructions\ClaimHostInstructionsCommand;
 use App\Hosts\Commands\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
 use App\Hosts\Commands\NotifyHostInstruction\NotifyHostInstructionCommand;
@@ -27,7 +26,6 @@ use App\Hosts\Values\HostContext;
 use App\Projects\Commands\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Projects\Values\ProjectFileText;
 use App\Support\Command;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 
 /**
  * The journal's answer to each call of host protocol 1: the call's validated body, run as the journal's command for it.
@@ -38,7 +36,6 @@ final readonly class JournalHostCalls implements HostCalls
         private CommandBus $commands,
         private HostWake $wake,
         private HostClaimSlots $slots,
-        private ExceptionHandler $failures,
     ) {}
 
     /**
@@ -131,19 +128,14 @@ final readonly class JournalHostCalls implements HostCalls
     }
 
     /**
-     * Runs a report of the host's. A listener that failed on a fact the report committed is the journal's failure,
-     * reported apart: the report stands, so the host is answered as heard and never sends it again ahead of every
-     * later report.
+     * Runs a report of the host's: a listener that failed on a fact it committed is reported apart by the bus, so the
+     * host is answered as heard and never sends the report again.
      *
      * @param  Command<mixed>  $report
      */
     private function runReport(Command $report): void
     {
-        try {
-            $this->commands->run($report);
-        } catch (CommittedFactListenerFailed $failed) {
-            $this->failures->report($failed);
-        }
+        $this->commands->run($report);
     }
 
     /**

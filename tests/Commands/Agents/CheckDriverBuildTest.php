@@ -11,11 +11,13 @@ use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostProcess;
+use App\Recordings\Recordings;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
+use Tests\Support\Recordings\RecordedProgram;
 use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
@@ -62,12 +64,14 @@ final class CheckDriverBuildTest extends TestCase
         $pinned = $this->journal->openedRuntimeOf('Pinned');
         $this->journal->withAgent('Other', fn (TestAgent $other) => $other->openRuntime('Mac', base_path()));
         $other = $this->journal->openedRuntimeOf('Other');
-        $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
+        $version = $this->recordedVersion();
 
         $this->probeExited('Pinned', 'pinned-probe')
-            ->asSystem(new CheckDriverBuildCommand($this->probeOf($pinned->sessionId), "{$build} (Claude Code)\n"));
+            ->asSystem(new CheckDriverBuildCommand($this->probeOf($pinned->sessionId), $version));
+        $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
+        $otherVersion = str_replace($build, '9.9.9', $version);
         $this->probeExited('Other', 'other-probe')
-            ->asSystem(new CheckDriverBuildCommand($this->probeOf($other->sessionId), "9.9.9 (Claude Code)\n"));
+            ->asSystem(new CheckDriverBuildCommand($this->probeOf($other->sessionId), $otherVersion));
 
         $refused = $this->journal->startOfSession($other->sessionId);
         $this->journal->withAgent('Pinned', fn (TestAgent $pinned) => $pinned
@@ -104,11 +108,9 @@ final class CheckDriverBuildTest extends TestCase
             ->readyDriverImagesOn('Box');
         $this->journal->withAgent('Boxed', fn (TestAgent $boxed) => $boxed->openRuntime('Box', base_path()));
         $boxed = $this->journal->openedRuntimeOf('Boxed');
-        $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
-
         $this->probeExited('Boxed', 'boxed-probe')
             ->forgetSecurityProfiles()
-            ->asSystem(new CheckDriverBuildCommand($this->probeOf($boxed->sessionId), "{$build} (Claude Code)\n"));
+            ->asSystem(new CheckDriverBuildCommand($this->probeOf($boxed->sessionId), $this->recordedVersion()));
 
         $refused = $this->journal->startOfSession($boxed->sessionId);
         $this->journal->assertResult(
@@ -161,5 +163,12 @@ final class CheckDriverBuildTest extends TestCase
         $start = $this->journal->startOfSession($sessionId);
 
         return HostProcess::query()->where('session_process_id', $start->id)->sole()->id;
+    }
+
+    private function recordedVersion(): string
+    {
+        $recordings = $this->journal->service(Recordings::class);
+
+        return RecordedProgram::versionOf($recordings, DefaultDrivers::CLAUDE_CODE, 'claude');
     }
 }
