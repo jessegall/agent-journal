@@ -4,8 +4,8 @@
     "scenario_hash": "ef107ab7eccdb104eeaefb0609cb5de4945707d71650f4a8e8fe073150ddb065",
     "driver": "host",
     "build": "",
-    "image_programs": "efabd7db62059a1f2dca3cd38dd886c85e51462c28085ece2ed106be26264418",
-    "recorded_at": "2026-11-27T22:34:16+00:00",
+    "image_programs": "234caf25e241cc459eb4eff37ea55a2a828df57309c75dd16ab3e9247c6d692d",
+    "recorded_at": "2026-11-28T01:01:41+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",
         "02-docker-daemon"

@@ -10,12 +10,12 @@
         "columns": 0,
         "rows": 0,
         "image": "",
-        "openedAt": 1795819063876786
+        "openedAt": 1795827360046177
     },
     "events": [
         {
             "type": "asked",
-            "at": 1795819063876786,
+            "at": 1795827360046177,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -35,7 +35,7 @@
         },
         {
             "type": "asked",
-            "at": 1795819063952171,
+            "at": 1795827360121180,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -43,7 +43,7 @@
             "rows": 0,
             "call": {
                 "method": "POST",
-                "path": "/v1.51/containers/journal-process-00000000000000000000000002/stop",
+                "path": "/v1.51/containers/journal-process-00000000000000000000000011/stop",
                 "query": {
                     "t": "10"
                 },
@@ -57,7 +57,7 @@
         },
         {
             "type": "asked",
-            "at": 1795819063952652,
+            "at": 1795827360516665,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -77,7 +77,7 @@
         },
         {
             "type": "asked",
-            "at": 1795819063953191,
+            "at": 1795827360517159,
             "bytes": "",
             "stream": "",
             "secret": false,
@@ -85,7 +85,7 @@
             "rows": 0,
             "call": {
                 "method": "DELETE",
-                "path": "/v1.51/networks/local-00000000000000000000000003",
+                "path": "/v1.51/networks/local-00000000000000000000000012",
                 "query": [],
                 "status": null,
                 "headers": [],

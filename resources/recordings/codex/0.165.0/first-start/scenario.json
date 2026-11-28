@@ -4,12 +4,15 @@
     "scenario_hash": "e15e525bd7cd79d42283a74baafabe224743216ec7169bf591f4426aa94c3510",
     "driver": "codex",
     "build": "0.165.0",
-    "image_programs": "ff7d0483aab87a3c467aaa7cbf1a3456af84bc57af9d73c92db52f4b22fa7580",
-    "recorded_at": "2026-11-27T19:19:39+00:00",
+    "image_programs": "234caf25e241cc459eb4eff37ea55a2a828df57309c75dd16ab3e9247c6d692d",
+    "recorded_at": "2026-11-28T01:01:29+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",
-        "02-docker-daemon",
-        "03-driver-01m8f75d7r0fshzqbxcsn6fmzq",
-        "04-driver-01m8f75e5mnd0gvgpffhne7wf5"
+        "02-hooks-caller-0045bfff7e12afed",
+        "03-agent-caller-0045bfff7e12afed",
+        "04-docker-daemon",
+        "05-driver-01m8ftqmg345ac3aa7p5zjpph6",
+        "06-driver-01m8ftqmxqp4d6ah73wf1rsqax",
+        "07-driver-01m8ftqnn6p8k06pk0x75m0syh"
     ]
 }
