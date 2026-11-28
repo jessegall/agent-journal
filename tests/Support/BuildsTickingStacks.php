@@ -8,6 +8,7 @@ use App\Engine\Enums\NoSubject;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentStackRow;
 use App\Sessions\AgentSessions;
+use App\Sessions\States\Support\ReadyStateReference;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
 use App\Stacks\StateTypes;
@@ -40,13 +41,16 @@ trait BuildsTickingStacks
             TestSelections::of(),
             TestSelections::requestId(),
         );
+        $ready = ReadyStateReference::forSession(new StackTarget($agent->id, $session->id));
         $records = [
+            // The ready state is built from its agent and session, as a session's opening writes them.
             new FrameRecord(
                 "{$session->id}-ready",
-                new StateReference('core.ready', NoSubject::None),
+                $ready,
                 true,
                 1,
                 $enteredAt,
+                $ready->values,
             ),
             new FrameRecord(
                 "{$session->id}-plain",

@@ -75,7 +75,7 @@ final class SettleAccountUsesTest extends TestCase
         $this->actAsOwner();
     }
 
-    public function test_maintenance_cancels_unclaimed_starts_and_settles_only_once_claimed_ones_exited(): void
+    public function test_maintenance_cancels_unclaimed_starts_and_settles_only_once_claimed_ones_ended(): void
     {
         $account = $this->account();
         $claimed = $this->sessionOn($account);
@@ -94,9 +94,9 @@ final class SettleAccountUsesTest extends TestCase
             $this->bus()->run(new SettleAccountUsesCommand($account));
             $this->fail('An account with a claimed start was settled.');
         } catch (AccountInUse) {
+            // An ending session ends its claimed start with it, so the account is free to settle.
             $claimed->endAt(CarbonImmutable::now());
-            $this->assertSame(1, $this->uses()->counts([$account])->runningFor($account));
-            $this->starts[$claimed->id]->stopWithProof();
+            $this->assertSame(0, $this->uses()->counts([$account])->runningFor($account));
         }
 
         $this->bus()->run(new SettleAccountUsesCommand($account));
