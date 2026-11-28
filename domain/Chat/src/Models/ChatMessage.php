@@ -9,6 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Exceptions\InboxUnavailable;
+use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
@@ -226,6 +227,18 @@ final class ChatMessage extends JournalModel implements EventSource, ReadableMod
     public static function findLockedNewestInInbox(string $inboxId): self|null
     {
         return self::query()->newestInInbox($inboxId)->lockForUpdate()->first();
+    }
+
+    /** @return list<self> */
+    public static function previewOf(Inbox $inbox, int $limit): array
+    {
+        return array_values(self::query()
+            ->newestInInbox($inbox->id)
+            ->ofType(ChatMessageType::Message)
+            ->withSource()
+            ->limit($limit)
+            ->get()
+            ->all());
     }
 
     // ----------[ Scopes ]----------

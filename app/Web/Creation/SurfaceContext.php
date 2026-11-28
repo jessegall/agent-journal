@@ -22,6 +22,7 @@ use App\Support\AgentOption;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 use App\Values\ProjectSelection;
+use App\Values\StackTarget;
 use App\Web\RouteNumber;
 use App\Web\Values\WindowInstance;
 use Illuminate\Database\Eloquent\Model;
@@ -128,6 +129,11 @@ final readonly class SurfaceContext
 
     public function chosenSession(string $key): string|null
     {
+        return $this->chosenSessionTarget($key)?->sessionId;
+    }
+
+    public function chosenSessionTarget(string $key): StackTarget|null
+    {
         $id = $this->queryId($key);
 
         if ($id === null) {
@@ -135,7 +141,7 @@ final readonly class SurfaceContext
         }
 
         try {
-            return $this->visibleSessions->requireActive($id)->sessionId;
+            return $this->visibleSessions->requireActive($id);
         } catch (StackTargetRefused $refusal) {
             throw PrivateRecordMissing::forReader($refusal);
         }
