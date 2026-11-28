@@ -19,6 +19,20 @@ use App\Values\Word;
  */
 final class LexerCursor
 {
+    private const array OPERATORS = [
+        '&' => ['&&' => TokenType::AndIf, '&' => TokenType::Background],
+        '|' => ['||' => TokenType::OrIf, '|' => TokenType::Pipe],
+        ';' => [';' => TokenType::Semicolon],
+        '!' => ['!' => TokenType::Bang],
+        '(' => ['(' => TokenType::OpenParen],
+        ')' => [')' => TokenType::CloseParen],
+    ];
+
+    private const array EXTENDED_OPERATORS = [
+        '&' => ['&>>' => TokenType::Redirect, '&>' => TokenType::Redirect],
+        '|' => ['|&' => TokenType::PipeBoth],
+    ];
+
     public int $position = 0;
 
     public readonly HereDocumentQueue $hereDocuments;
@@ -133,6 +147,7 @@ final class LexerCursor
     public function readOperator(): bool
     {
         $start = $this->position;
+        $first = $this->source[$start];
         $extended = $this->dialect !== ShellDialect::Sh;
         $digits = strspn($this->source, '0123456789', $start);
         $afterDigits = $this->at($start + $digits);
@@ -146,13 +161,13 @@ final class LexerCursor
             return false;
         }
 
-        if ($this->source[$start] === '(' && $this->at($start + 1) === '(' && $this->isAtCommandStart()) {
+        if ($first === '(' && $this->at($start + 1) === '(' && $this->isAtCommandStart()) {
             $this->readArithmeticCommand($start);
 
             return true;
         }
 
-        foreach ($this->operators($extended) as $text => $type) {
+        foreach ($this->operators($first, $extended) as $text => $type) {
             if (substr_compare($this->source, $text, $start, strlen($text)) !== 0) {
                 continue;
             }
@@ -186,29 +201,15 @@ final class LexerCursor
     /**
      * @return array<string, TokenType>
      */
-    private function operators(bool $isExtended): array
+    private function operators(string $first, bool $isExtended): array
     {
-        $operators = [
-            '&&' => TokenType::AndIf,
-            '||' => TokenType::OrIf,
-        ];
+        $operators = self::OPERATORS[$first] ?? [];
 
-        if ($isExtended) {
-            $operators += [
-                '|&' => TokenType::PipeBoth,
-                '&>>' => TokenType::Redirect,
-                '&>' => TokenType::Redirect,
-            ];
+        if ($isExtended && isset(self::EXTENDED_OPERATORS[$first])) {
+            return self::EXTENDED_OPERATORS[$first] + $operators;
         }
 
-        return $operators + [
-            ';' => TokenType::Semicolon,
-            '&' => TokenType::Background,
-            '|' => TokenType::Pipe,
-            '!' => TokenType::Bang,
-            '(' => TokenType::OpenParen,
-            ')' => TokenType::CloseParen,
-        ];
+        return $operators;
     }
 
     private function readRedirect(int $start, int $digits): bool

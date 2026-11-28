@@ -20,8 +20,8 @@ final readonly class OpenSimpleCommandNode implements Pipe
     {
         $draft = $toParse->draft();
         $start = $toParse->cursor()->position();
-        $node = $draft->add(NodeType::SimpleCommand, new SourceRange($start, $start), null);
         $draft->countExecutablePart($start);
+        $node = $draft->add(NodeType::SimpleCommand, new SourceRange($start, $start), null);
 
         return new SimpleCommandDraft($toParse, SimpleCommandParts::startAt($node, $start), false);
     }

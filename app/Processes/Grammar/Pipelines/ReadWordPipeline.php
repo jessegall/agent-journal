@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Grammar\Pipelines;
 
 use App\Bus\Contracts\PipelineDefinition;
+use App\Pipelines\Support\Step;
 use App\Processes\Grammar\Pipes\ParseWordSubstitutions;
 use App\Processes\Grammar\Pipes\PlaceWord;
 use App\Processes\Grammar\Pipes\RefuseArrayAssignment;
@@ -26,7 +27,10 @@ final readonly class ReadWordPipeline implements PipelineDefinition
         return [
             RefuseArrayAssignment::class,
             PlaceWord::class,
-            ParseWordSubstitutions::class,
+            Step::conditional(
+                fn (UnparsedWord $word) => $word->canContainSubstitution(),
+                then: ParseWordSubstitutions::class,
+            ),
         ];
     }
 }

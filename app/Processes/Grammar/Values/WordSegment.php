@@ -21,4 +21,16 @@ final readonly class WordSegment
     {
         return clone ($this, ['range' => $this->range->shiftedBy($bytes)]);
     }
+
+    public function isShellTest(): bool
+    {
+        return $this->type === WordSegmentType::Literal
+            && str_starts_with($this->text, '[[ ')
+            && str_ends_with($this->text, ']]');
+    }
+
+    public function canContainSubstitution(): bool
+    {
+        return $this->type === WordSegmentType::Expansion || $this->isShellTest();
+    }
 }
