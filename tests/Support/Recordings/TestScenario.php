@@ -6,12 +6,14 @@ namespace Tests\Support\Recordings;
 
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
+use App\Hosts\Protocol\HostRoute;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
 use App\Models\Sessions\SessionProcess;
+use App\Recordings\Enums\Wire;
 use App\Recordings\Recordings;
 use App\Recordings\Scenarios\Enums\ScenarioStepType;
 use App\Recordings\Scenarios\Exceptions\ScenarioStuck;
@@ -126,6 +128,35 @@ final class TestScenario
     }
 
     /**
+     * The start ended refused, naming the reason the recorded host gave when it refused one of the journal's orders.
+     */
+    public function assertRefusedAsRecorded(): self
+    {
+        [$driver, $scenarioName] = explode('/', $this->name, 2);
+        $calls = $this->journal->service(Recordings::class)->scenario($driver, $scenarioName)->calls(Wire::Host);
+        $reasons = [];
+
+        foreach ($calls as $call) {
+            $answer = (array) json_decode($call->body, true);
+
+            if ($call->status === null && HostRoute::AnswerInstruction->matchesPath($call->path)
+                && ($answer['status'] ?? '') === 'refused') {
+                $reasons[] = (string) ($answer['reason'] ?? '');
+            }
+        }
+
+        $refusal = (string) SessionProcess::query()->supervised()->latest('created_at')->first()?->refusal;
+
+        Assert::assertTrue(
+            array_any($reasons, fn (string $reason) => $reason !== '' && str_contains($refusal, $reason)),
+            "The start of {$this->name} was refused as \"{$refusal}\", which names none of the recorded refusals: "
+                .implode(' | ', $reasons),
+        );
+
+        return $this;
+    }
+
+    /**
      * The host stops, and its played daemon was asked every call the recording holds and no other.
      */
     public function assertPlayedWhole(): self
@@ -176,6 +207,13 @@ final class TestScenario
     private function playNext(ScenarioRun $run): ScenarioStep
     {
         $step = $run->nextStep();
+
+        // The played daemon answers as the changed machine did, so a played run changes no machine of its own.
+        if ($step->stepType->isMachineChange()) {
+            $run->stepRan();
+
+            return $step;
+        }
 
         if ($step->stepType !== ScenarioStepType::RestartHost) {
             try {

@@ -334,9 +334,6 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
-     * Whether the host was asked to open the process and has not reported it running yet.
-     */
-    /**
      * Whether the process ran to its end and exited with 0, as a probe that answered does.
      */
     public function hasExitedWell(): bool
@@ -344,6 +341,17 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         return $this->status === HostProcessStatus::Exited && $this->exit_code === 0;
     }
 
+    /**
+     * Whether the process never ran to an end of its own: the host refused to open it or lost it.
+     */
+    public function isLost(): bool
+    {
+        return $this->status === HostProcessStatus::Lost;
+    }
+
+    /**
+     * Whether the host was asked to open the process and has not reported it running yet.
+     */
     public function isOrdered(): bool
     {
         return $this->status === HostProcessStatus::Ordered;

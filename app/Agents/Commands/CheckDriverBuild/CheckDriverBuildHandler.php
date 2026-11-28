@@ -36,7 +36,7 @@ final readonly class CheckDriverBuildHandler implements CommandHandler
             $profile = $this->profiles->of($runtime);
 
             if (! $process->hasExitedWell()) {
-                throw ProbeFailed::of($profile->family(), $process->end_evidence);
+                throw ProbeFailed::of($process, $profile->family());
             }
 
             $profile->assertPinnedBuild($command->printed, $runtime->session()->sole()->pinnedBuildOf($profile));

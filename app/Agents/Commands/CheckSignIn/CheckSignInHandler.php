@@ -6,6 +6,7 @@ namespace App\Agents\Commands\CheckSignIn;
 
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Work\HeadlessStarts;
+use App\Agents\Exceptions\ProbeFailed;
 use App\Bus\Contracts\CommandHandler;
 use App\Models\Hosts\HostProcess;
 use App\Sessions\Enums\StartRefusalReason;
@@ -28,15 +29,24 @@ final readonly class CheckSignInHandler implements CommandHandler
         $runtime = $process->runtime;
 
         $folder = $this->headless->accountFolderSeenBy($runtime, $start);
+        $profile = $this->profiles->of($runtime);
 
-        if (! $this->profiles->of($runtime)->hasAcceptedSignIn($command->printed, $folder)) {
-            $this->heartbeats->refuseStart($start, StartRefusalReason::NotSignedIn->explanation());
+        // A probe that never ran printed nothing to judge: the start is refused with why it did not run, as the
+        // build probe's is, never as an account that is not signed in.
+        $this->heartbeats->continueStart($start, function () use ($process, $profile, $command, $folder, $start): void {
+            if ($process->isLost()) {
+                throw ProbeFailed::of($process, $profile->family());
+            }
 
-            return;
-        }
+            if (! $profile->hasAcceptedSignIn($command->printed, $folder)) {
+                $this->heartbeats->refuseStart($start, StartRefusalReason::NotSignedIn->explanation());
 
-        // What the proven start runs opens once the proof is committed (OpenWhatAProvenStartRuns), in commands whose
-        // refusal can refuse the start.
-        $runtime->proveStart($this->clock->now());
+                return;
+            }
+
+            // What the proven start runs opens once the proof is committed (OpenWhatAProvenStartRuns), in commands
+            // whose refusal can refuse the start.
+            $process->runtime->proveStart($this->clock->now());
+        });
     }
 }

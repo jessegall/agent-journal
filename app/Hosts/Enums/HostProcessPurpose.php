@@ -33,4 +33,18 @@ enum HostProcessPurpose: string
 
         return ! in_array($this, $ownedByNoRuntime, true);
     }
+
+    /**
+     * The process as a sentence names it, such as "sign-in probe".
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::AgentTerminal => 'agent terminal',
+            self::AgentTurn => 'agent turn',
+            self::Probe => 'probe',
+            self::BuildProbe => 'build probe',
+            self::SignInProbe => 'sign-in probe',
+        };
+    }
 }

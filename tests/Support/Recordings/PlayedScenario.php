@@ -57,7 +57,26 @@ final readonly class PlayedScenario
             }
         }
 
-        // A scenario whose containers mount no volume names no installation, so the test host's own one serves.
+        // A start's network is named after the installation too, so a scenario that mounts no volume still names it.
+        foreach (self::claimedOf($recording->calls(Wire::Host)) as $instruction) {
+            $network = (string) (((array) $instruction['payload'])['container']['network'] ?? '');
+
+            // A probe joins no network, named none; a start's own is <installation>-<id>.
+            if ($instruction['type'] === 'open_container' && str_contains($network, '-')) {
+                return new self(
+                    $name,
+                    explode('-', $network)[0],
+                    $agentImage,
+                    $programs,
+                    $driverImages,
+                    $pinned,
+                    $profiles,
+                );
+            }
+        }
+
+        // A scenario whose containers mount no volume and join no network names no installation, so the test host's
+        // own one serves.
         return new self($name, TestHost::INSTALLATION_NAME, $agentImage, $programs, $driverImages, $pinned, $profiles);
     }
 

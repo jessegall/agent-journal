@@ -7,12 +7,14 @@ namespace Tests\Commands\Agents;
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Enums\SessionProcessStatus;
+use App\Hosts\Protocol\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Sessions\Enums\StartRefusalReason;
 use App\Support\MountRules;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\TestCase;
 
 /**
@@ -103,6 +105,29 @@ final class CheckSignInTest extends TestCase
                 'Out' => $notSignedIn,
             ],
             $results,
+        );
+    }
+
+    public function test_a_sign_in_probe_the_host_could_not_run_ends_the_start_with_the_hosts_reason(): void
+    {
+        $this->journal->owner()
+            ->chooseActiveAccounts()
+            ->showDriverArrangements()
+            ->idleAgent('Refused')
+            ->enrollHost('Mac', [base_path()]);
+        $this->journal->withAgent('Refused', fn (TestAgent $refused) => $refused
+            ->openRuntime('Mac', base_path())
+            ->passBuildProbe('Refused'));
+        [$open] = $this->journal->hostInstructionsOf('Refused-sign-in');
+        $this->journal->hostInstruction($open, fn (TestHostInstruction $order) => $order->refuse(HostRefusal::Unsafe));
+        $opened = $this->journal->openedRuntimeOf('Refused');
+
+        $this->journal->asSystem(new CheckSignInCommand($this->journal->hostProcessCalled('Refused-sign-in')->id, ''));
+
+        $start = $this->journal->startOfSession($opened->sessionId);
+        $this->journal->assertResult(
+            [SessionProcessStatus::Stopped, true],
+            [$start->status, str_contains((string) $start->refusal, 'sign-in probe did not answer: it was lost')],
         );
     }
 
