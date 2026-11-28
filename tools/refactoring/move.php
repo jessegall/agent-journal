@@ -11,7 +11,7 @@ declare(strict_types=1);
  *   php tools/refactoring/move.php App\\Contracts\\Stacks App\\Contracts\\Agents\\Stacks
  *   php tools/refactoring/move.php --namespace=App\\Contracts\\Old App\\Contracts\\New
  *   php tools/refactoring/move.php --list=moves.txt                           lines `Old New`, or `Old New # why`
- *   php tools/refactoring/move.php --replace App\\Values\\Old App\\Values\\Kept   merge: repoint every reference, delete Old
+ *   php tools/refactoring/move.php --replace App\\Values\\Old App\\Values\\Kept   merge: Old's members into Kept, repoint, delete Old
  *   php tools/refactoring/move.php --dry-run ...                              print the rows, write nothing
  *   php tools/refactoring/move.php --root=<tree> ...
  */
@@ -71,12 +71,26 @@ if ($dryRun) {
 
 $list = tempnam(sys_get_temp_dir(), 'moves');
 file_put_contents($list, implode("\n", $rows)."\n");
-passthru(implode(' ', array_map('escapeshellarg', [
-    PHP_BINARY,
-    __DIR__.'/layout/batch-move.php',
-    $list,
-    "--root={$root}",
-])), $status);
+$status = 0;
+
+// A merge first carries the old class's members into the kept class; the batch then repoints every reference.
+if ($replace) {
+    passthru(implode(' ', array_map('escapeshellarg', [
+        PHP_BINARY,
+        __DIR__.'/layout/merge-members.php',
+        $list,
+        "--root={$root}",
+    ])), $status);
+}
+
+if ($status === 0) {
+    passthru(implode(' ', array_map('escapeshellarg', [
+        PHP_BINARY,
+        __DIR__.'/layout/batch-move.php',
+        $list,
+        "--root={$root}",
+    ])), $status);
+}
 
 // The syntax tree misses a path or a name written as text; the same rows rewrite those once the move succeeded.
 if ($status === 0) {

@@ -129,6 +129,67 @@ final class MoveToolTest extends TestCase
         $this->assertSame(['Stacks', 'Hosts', 'Kept'], $this->parameterTypesOfUser());
     }
 
+    public function test_a_merge_carries_the_old_members_interfaces_and_imports_into_the_kept_class(): void
+    {
+        file_put_contents($this->tree.'/app/Values/Old.php', <<<'PHP'
+            <?php
+
+            namespace App\Values;
+
+            use App\Contracts\Hosts;
+
+            final readonly class Old implements Hosts
+            {
+                public const string LABEL = 'old';
+
+                // The hosts it was handed.
+                public function hosts(Hosts $hosts): Hosts
+                {
+                    return $hosts;
+                }
+            }
+
+            PHP);
+        file_put_contents($this->tree.'/app/Values/Kept.php', <<<'PHP'
+            <?php
+
+            namespace App\Values;
+
+            final readonly class Kept
+            {
+                public function kept(): string
+                {
+                    return Old::LABEL;
+                }
+            }
+
+            PHP);
+
+        [$exit] = $this->move('--replace', 'App\\Values\\Old', 'App\\Values\\Kept');
+        $kept = (string) file_get_contents($this->tree.'/app/Values/Kept.php');
+
+        $this->assertSame(0, $exit);
+        $this->assertFileDoesNotExist($this->tree.'/app/Values/Old.php');
+        $this->assertStringContainsString('use App\\Contracts\\Hosts;', $kept);
+        $this->assertStringContainsString('class Kept implements \\App\\Contracts\\Hosts', $kept);
+        $this->assertStringContainsString("public const string LABEL = 'old';", $kept);
+        $this->assertStringContainsString("// The hosts it was handed.\n    public function hosts(Hosts \$hosts): Hosts", $kept);
+        $this->assertStringContainsString('return Kept::LABEL;', $kept);
+    }
+
+    public function test_a_merge_of_a_member_name_in_both_classes_is_refused_and_writes_nothing(): void
+    {
+        $method = "\n    public function label(): string\n    {\n        return '%s';\n    }\n";
+        file_put_contents($this->tree.'/app/Values/Old.php', "<?php\n\nnamespace App\\Values;\n\nfinal readonly class Old\n{".sprintf($method, 'old')."}\n");
+        file_put_contents($this->tree.'/app/Values/Kept.php', "<?php\n\nnamespace App\\Values;\n\nfinal readonly class Kept\n{".sprintf($method, 'kept')."}\n");
+
+        [$exit] = $this->move('--replace', 'App\\Values\\Old', 'App\\Values\\Kept');
+
+        $this->assertSame(1, $exit);
+        $this->assertFileExists($this->tree.'/app/Values/Old.php');
+        $this->assertStringNotContainsString("'old'", (string) file_get_contents($this->tree.'/app/Values/Kept.php'));
+    }
+
     public function test_a_list_moves_each_line_and_skips_comments(): void
     {
         file_put_contents($this->tree.'.moves.txt', "# the plainer name\nApp\\Values\\User App\\Values\\Member # plainer\n");
