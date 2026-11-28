@@ -1,0 +1,9 @@
+{
+    "description": "A connected folder's relay is ordered to upgrade to the journal's release",
+    "steps": [
+        {"do": "connect-project"},
+        {"do": "wait-for", "fact": "connected", "seconds": 60},
+        {"do": "upgrade-host"},
+        {"do": "wait-for", "fact": "instructions-answered", "seconds": 60}
+    ]
+}

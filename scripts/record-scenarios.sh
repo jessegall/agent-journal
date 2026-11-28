@@ -88,7 +88,7 @@ switch_recording_off() {
 play_scenario() {
     local watcher status=0 connection_scratch=""
     case "$2" in
-        connected/*) connection_scratch=$(mktemp -d) || return 1 ;;
+        connected/*) connection_scratch=$(make_scratch_folder) || return 1 ;;
     esac
     run_machine_changes "$connection_scratch" &
     watcher=$!
@@ -148,7 +148,15 @@ connect_recorded_project() {
 
 stop_recorded_project() {
     python3 scripts/record-project-relay.py stop "$1/state" || return 1
-    rm -rf "$1"
+    # An installed release is read-only, as the installer leaves it.
+    chmod -R u+w "$1" && rm -rf "$1"
+}
+
+# The installer refuses a folder reached through a link, and macOS's temporary folder lies under the link /var.
+make_scratch_folder() {
+    local folder
+    folder=$(mktemp -d) || return 1
+    cd "$folder" && pwd -P
 }
 
 main "$@"

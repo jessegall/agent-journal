@@ -1,0 +1,43 @@
+{
+    "opening": {
+        "wire": "host",
+        "exchange": "caller-8e6e67d6f486875d",
+        "mode": "calls",
+        "argv": [],
+        "environment": {},
+        "inherited": [],
+        "folder": null,
+        "columns": 0,
+        "rows": 0,
+        "image": null,
+        "openedAt": 1795877761520829
+    },
+    "events": [
+        {
+            "type": "answered",
+            "at": 1795877761520782,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbnMiOltdLCJpZGxlX3dpbmRvd19zZWNvbmRzIjo2MDAsIm5vdyI6IjIwMjYtMTEtMjhUMTQ6NTU6MzYuNDkxWiJ9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        }
+    ],
+    "exit_code": null
+}

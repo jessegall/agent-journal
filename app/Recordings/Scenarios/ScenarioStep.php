@@ -210,7 +210,7 @@ final class ScenarioStep extends Data
      */
     private function hostInstructionFor(ScenarioRun $run, string $key): Command
     {
-        $host = $run->hostId();
+        $host = $run->instructedHostId();
 
         return match ($this->stepType) {
             ScenarioStepType::MakeFolder => new MakeHostFolderCommand($host, (string) $this->folder, $key),

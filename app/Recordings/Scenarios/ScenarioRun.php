@@ -199,6 +199,22 @@ final class ScenarioRun
         return $binding !== null && $binding->readinessAt(CarbonImmutable::now()) === BindingReadiness::Ready;
     }
 
+    /**
+     * The host a host step instructs: the connected project's relay once the scenario connected one, else the enrolled
+     * host, as only a relay carries out an upgrade.
+     *
+     * @throws ScenarioInvalid
+     */
+    public function instructedHostId(): string
+    {
+        if ($this->connectionAttempt === null) {
+            return $this->hostId();
+        }
+
+        return $this->connectedBinding()?->host_id
+            ?? throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, 'the install line has no live binding');
+    }
+
     public function readBindingId(): string
     {
         if ($this->connectionAttempt === null) {
