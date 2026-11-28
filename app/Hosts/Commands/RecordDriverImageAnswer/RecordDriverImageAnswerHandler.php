@@ -14,6 +14,7 @@ use App\Hosts\DriverImageJudgement;
 use App\Hosts\Enums\DriverImagePhase;
 use App\Hosts\Protocol\HostInstructions;
 use App\Hosts\Protocol\HostInstructionType;
+use App\Hosts\Protocol\Payloads\HostContainerRunResultPayload;
 use App\Hosts\Protocol\Payloads\HostContainerRunResultsPayload;
 use App\Hosts\Protocol\Payloads\HostContainerRunsPayload;
 use App\Hosts\Protocol\Payloads\HostImageBuiltPayload;
@@ -135,7 +136,16 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         $results = HostContainerRunResultsPayload::from($instruction->answerFacts())->results;
 
         if (! $this->checks->pass($expected, $results)) {
-            $image->refuse('a start check of the built image did not run its commands as the executor\'s user');
+            $printed = array_map(
+                fn (HostContainerRunResultPayload $result) => "exit {$result->exitCode}: ".trim($result->stdout.$result->stderr),
+                $results,
+            );
+            $image->refuse(sprintf(
+                'a start check of the built image did not run its commands as the executor\'s user (%d checks, %d results: %s)',
+                count($expected),
+                count($results),
+                substr(implode('; ', $printed), 0, self::OUTPUT_TAIL),
+            ));
 
             return;
         }

@@ -106,6 +106,16 @@ final class TestHost
      */
     private int $restarts = 0;
 
+    /**
+     * How long the mock Docker daemon gets to open its socket.
+     */
+    private const int DAEMON_START_SECONDS = 10;
+
+    /**
+     * The mock Docker daemon the host talks to.
+     */
+    private InvokedProcess|null $daemon = null;
+
     private function __construct(
         private readonly TestJournal $journal,
         public readonly string $name,
@@ -149,7 +159,7 @@ final class TestHost
         );
         $real->port = self::freePort();
         $real->serveJournal();
-        $real->run($real->mockDocker());
+        $real->daemon = $real->startDaemon();
         file_put_contents("{$folder}/secret", $host->secret);
         $enrolled = $processes->run([
             self::binary(), 'enroll', '--journal', "http://127.0.0.1:{$real->port}", '--host', $host->hostId,
@@ -233,12 +243,21 @@ final class TestHost
     }
 
     /**
-     * Stops the host binary and starts it again; the mock daemon and its containers run on.
+     * Stops the host binary and starts it again; the mock daemon and its containers run on. A played scenario's daemon
+     * starts its recording afresh with the host, as the recording begins with the host's start.
      */
     public function restartHost(): self
     {
         $this->restarts++;
         self::end($this->host, SIGTERM);
+
+        if ($this->playing !== null) {
+            self::end($this->daemon, SIGTERM);
+            @unlink("{$this->folder}/played-failures");
+            @unlink("{$this->folder}/docker.sock");
+            $this->daemon = $this->startDaemon();
+        }
+
         $this->startHost();
 
         return $this;
@@ -853,6 +872,21 @@ final class TestHost
     /**
      * @param  list<string>  $command
      */
+    /**
+     * The mock Docker daemon, started and kept among the running processes.
+     */
+    private function startDaemon(): InvokedProcess
+    {
+        $this->run($this->mockDocker());
+        $deadline = microtime(true) + self::DAEMON_START_SECONDS;
+
+        while (! file_exists("{$this->folder}/docker.sock") && microtime(true) < $deadline) {
+            usleep(50_000);
+        }
+
+        return $this->running[array_key_last($this->running)];
+    }
+
     private function run(array $command): void
     {
         $this->running[] = $this->processes->env(getenv())->forever()->input($this->untilKilled())->start($command);

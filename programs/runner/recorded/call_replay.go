@@ -275,6 +275,9 @@ func (replay *CallReplay) take(request *http.Request, body []byte) (int, error) 
 		replay.played[chosen] = true
 		return chosen, nil
 	}
+	if read, isRead := replay.playedRead(request); isRead {
+		return read, nil
+	}
 	if next < 0 {
 		return 0, fmt.Errorf("%s was asked after every recorded call was played", asked)
 	}
@@ -284,6 +287,23 @@ func (replay *CallReplay) take(request *http.Request, body []byte) (int, error) 
 			following.Answered.Method, following.Answered.Path, nearest)
 	}
 	return 0, fmt.Errorf("%s was asked where the recording holds %s %s next", asked, following.Answered.Method, following.Answered.Path)
+}
+
+// playedRead is a read the host asks again, answered as the recording answered it the first time: a GET changes
+// nothing, so a host that reads an image or a container once more than the recording did is told the same.
+func (replay *CallReplay) playedRead(request *http.Request) (int, bool) {
+	if request.Method != http.MethodGet {
+		return 0, false
+	}
+	for index, call := range replay.calls {
+		if !replay.played[index] || call.Answered.Method != http.MethodGet {
+			continue
+		}
+		if replay.values.Live(call.Answered.Path) == request.URL.Path {
+			return index, true
+		}
+	}
+	return 0, false
 }
 
 // pathBound binds the request's live values in its path to the call's fakes on a copy of the bindings, which a
