@@ -52,8 +52,7 @@ final readonly class HookAnswer
     }
 
     /**
-     * The decision the agent's chat line names: a denial as it is, else what the walk decided, so an admitted line is
-     * named as the agent or a state wrote it and never as the runner's line that runs it.
+     * The decision shown for the tool call. Admitted calls display the line the agent or a state supplied.
      */
     public function shownDecision(): Decision
     {

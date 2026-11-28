@@ -7,8 +7,7 @@ namespace App\Values;
 use App\Agents\Inputs\Values\FileChanges;
 
 /**
- * The line the chat shows for an agent's running tool call, as version 5 wrote it: the tool's name and its subject,
- * with secrets masked, long paths shortened to their file name and the whole cut to a length a line can hold.
+ * The name and subject of a running tool call, with secrets masked and long paths shortened to their file names.
  */
 final readonly class ToolLine
 {

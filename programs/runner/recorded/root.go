@@ -19,8 +19,8 @@ const rootMark = "protocol/host.json"
 // versionFile is a driver's pinned build in its image folder, the build its recordings are made with.
 const versionFile = "VERSION"
 
-// imagePrograms is the digest scripts/agent-image-programs.sh prints, worked out once for the whole test run.
-var imagePrograms = sync.OnceValues(func() (string, error) {
+// imageBuild is the agent image's build digest, read once for the whole test run.
+var imageBuild = sync.OnceValues(func() (string, error) {
 	root, err := Root()
 	if err != nil {
 		return "", err

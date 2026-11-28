@@ -19,7 +19,9 @@ final readonly class RecordingManifest implements JsonSerializable
     /**
      * The format of a recording folder; a recording of another format is made again.
      */
-    public const int FORMAT = 2;
+    public const int FORMAT = 3;
+
+    private const string IMAGE_BUILD = 'image_build';
 
     /**
      * @param  list<string>  $exchanges  each exchange's folder name, in order
@@ -71,7 +73,7 @@ final readonly class RecordingManifest implements JsonSerializable
             (string) $manifest['scenario_hash'],
             (string) $manifest['driver'],
             (string) $manifest['build'],
-            (string) $manifest['image_programs'],
+            (string) $manifest[self::IMAGE_BUILD],
             (string) $manifest['recorded_at'],
             array_values(array_map(strval(...), (array) $manifest['exchanges'])),
         );
@@ -112,7 +114,7 @@ final readonly class RecordingManifest implements JsonSerializable
             'scenario_hash' => $this->scenarioHash,
             'driver' => $this->driver,
             'build' => $this->build,
-            'image_programs' => $this->imageBuild,
+            self::IMAGE_BUILD => $this->imageBuild,
             'recorded_at' => $this->recordedAt,
             'exchanges' => $this->exchanges,
         ];
