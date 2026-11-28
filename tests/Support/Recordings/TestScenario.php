@@ -161,7 +161,7 @@ final class TestScenario
             } catch (ScenarioStuck $stuck) {
                 // The played daemon's own record says which call the host made that the recording does not hold.
                 $this->journal->testHost(fn (TestHost $host) => Assert::fail(
-                    $stuck->getMessage()."\n".implode("\n", $host->playedFailures()),
+                    $stuck->getMessage()."\n".implode("\n", [...$host->playedFailures(), $host->printed()]),
                 ));
             }
         }
