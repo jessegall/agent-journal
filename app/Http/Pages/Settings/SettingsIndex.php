@@ -7,7 +7,8 @@ namespace App\Http\Pages\Settings;
 use App\Actors\Contracts\CurrentActor;
 use App\Connections\ConnectionsOwnerCheck;
 use App\Connections\Exceptions\ServerOriginInvalid;
-use App\Http\Pages\Resolvers\ConnectProjectWindowResolver;
+use App\Connections\ConnectedProjects;
+use App\Connections\ConnectionCursors;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\CoreSettings;
 use App\Settings\Data\SettingData;
@@ -58,10 +59,10 @@ final readonly class SettingsIndex extends SettingsPage
         private CurrentActor $actors,
         private ConnectionsOwnerCheck $connections,
         private CoreSettings $core,
-        private ConnectProjectWindowResolver $connectWindow,
+        private ConnectedProjects $projects,
     ) {}
 
-    public function layout(): DeclaredLayoutData
+    public function layout(ConnectionCursors $cursors): DeclaredLayoutData
     {
         $sections = [];
 
@@ -69,14 +70,17 @@ final readonly class SettingsIndex extends SettingsPage
             foreach ($owner->groups as $group) {
                 $sections[] = [
                     $this->rank($owner, $group),
-                    $this->sectionOf($owner, $group),
+                    $this->sectionOf($owner, $group, $cursors),
                 ];
             }
         }
 
         usort($sections, fn (array $first, array $second) => $first[0] <=> $second[0]);
 
-        return SettingsLayout::make(...array_map(fn (array $ranked) => $ranked[1], $sections))->layout();
+        return SettingsLayout::build()
+            ->groups(...array_map(fn (array $ranked) => $ranked[1], $sections))
+            ->finish()
+            ->layout();
     }
 
     /**
@@ -98,7 +102,7 @@ final readonly class SettingsIndex extends SettingsPage
         return 2 * ($position === false ? count(self::ORDER) : $position) + ($this->isSwitched($group) ? 0 : 1);
     }
 
-    private function sectionOf(SettingsCatalogueData $owner, SettingGroupData $group): SettingsGroup
+    private function sectionOf(SettingsCatalogueData $owner, SettingGroupData $group, ConnectionCursors $cursors): SettingsGroup
     {
         $fixed = ['owner' => $owner->owner, 'group' => $group->identity->key, 'revision' => $owner->revision];
 
@@ -107,21 +111,28 @@ final readonly class SettingsIndex extends SettingsPage
 
         $rows = $isConnections ? $this->withoutSwitch($group->settings) : $group->settings;
 
-        $section = SettingsGroup::make($group->identity->key, $group->label, $group->description)
-            ->withRows(...$this->rowsOf($rows, $isConnections));
+        $section = SettingsGroup::build()
+            ->key($group->identity->key)
+            ->title($group->label)
+            ->help($group->description)
+            ->finish()
+            ->withRows(...$this->rowsOf($rows, $isConnections, $cursors));
 
         $section = match (true) {
             $isConnections => $section->switchedBy(
                 $this->saving($fixed),
-                new LayoutFieldData($this->core->remoteProjects->key, $this->switchTextOf($group->settings)),
+                LayoutFieldData::build()
+                    ->name($this->core->remoteProjects->key)
+                    ->value($this->switchTextOf($group->settings))
+                    ->finish(),
             ),
             $this->isSwitched($group) => $section->switchedBy(
-                LayoutFormData::from([
-                    'method' => ActionMethod::Post,
-                    'href' => route('settings.switch', [], false),
-                    'fixed' => $fixed,
-                ]),
-                new LayoutFieldData('enabled', $this->isOn($group) ? '1' : '0'),
+                LayoutFormData::build()
+                    ->method(ActionMethod::Post)
+                    ->href(route('settings.switch', [], false))
+                    ->fixed($fixed)
+                    ->finish(),
+                LayoutFieldData::build()->name('enabled')->value($this->isOn($group) ? '1' : '0')->finish(),
             ),
             default => $section,
         };
@@ -131,12 +142,12 @@ final readonly class SettingsIndex extends SettingsPage
             : $section;
 
         if (array_any($rows, fn (SettingData $setting) => $setting->source === SettingSource::Override)) {
-            return $section->resettableBy(LayoutFormData::from([
-                'method' => ActionMethod::Post,
-                'href' => route('settings.reset', [], false),
-                'fixed' => $fixed,
-                'confirmed' => "{$group->label} settings reset",
-            ]));
+            return $section->resettableBy(LayoutFormData::build()
+                ->method(ActionMethod::Post)
+                ->href(route('settings.reset', [], false))
+                ->fixed($fixed)
+                ->confirmed("{$group->label} settings reset")
+                ->finish());
         }
 
         return $section;
@@ -164,7 +175,7 @@ final readonly class SettingsIndex extends SettingsPage
      * @param  list<SettingData>  $settings
      * @return list<SettingsRow>
      */
-    private function rowsOf(array $settings, bool $isConnections): array
+    private function rowsOf(array $settings, bool $isConnections, ConnectionCursors $cursors): array
     {
         $rows = array_map(fn (SettingData $setting) => $this->rowOf($setting), $settings);
 
@@ -174,7 +185,7 @@ final readonly class SettingsIndex extends SettingsPage
 
         return [
             ...$rows,
-            ...$this->connectionRows(),
+            ...$this->connectionRows($cursors),
         ];
     }
 
@@ -183,11 +194,11 @@ final readonly class SettingsIndex extends SettingsPage
      */
     private function saving(array $fixed): LayoutFormData
     {
-        return LayoutFormData::from([
-            'method' => ActionMethod::Post,
-            'href' => route('settings.save', [], false),
-            'fixed' => $fixed,
-        ]);
+        return LayoutFormData::build()
+            ->method(ActionMethod::Post)
+            ->href(route('settings.save', [], false))
+            ->fixed($fixed)
+            ->finish();
     }
 
     /**
@@ -196,24 +207,39 @@ final readonly class SettingsIndex extends SettingsPage
      *
      * @return list<SettingsRow>
      */
-    private function connectionRows(): array
+    private function connectionRows(ConnectionCursors $cursors): array
     {
         if (! $this->connections->allows($this->actors->actor())) {
             return [];
         }
 
         try {
-            $connections = $this->connectWindow->read();
+            $connections = $this->projects->read($cursors);
         } catch (ServerOriginInvalid $invalid) {
-            return [SettingsRow::value('projects', 'Connect a project', $invalid->getMessage())->inBlock()];
+            return [SettingsRow::build()
+                ->key('projects')
+                ->label('Connect a project')
+                ->value($invalid->getMessage())
+                ->finish()->inBlock()];
         }
 
-        $panel = LayoutPartData::native(
-            'projects',
-            LayoutNativeData::of('connections/ConnectedProjectsPart', $connections),
-        );
+        $panel = LayoutPartData::build()
+            ->asNative()
+            ->key('projects')
+            ->native(
+                LayoutNativeData::build()
+                ->component('connections/ConnectedProjectsPart')
+                ->props($connections)
+                ->finish(),
+            )
+            ->finish();
 
-        return [SettingsRow::reading('projects', 'Connect a project', $panel)];
+        return [SettingsRow::build()
+            ->key('projects')
+            ->label('Connect a project')
+            ->control($panel)
+            ->isBlock(true)
+            ->finish()];
     }
 
     /**
@@ -247,31 +273,41 @@ final readonly class SettingsIndex extends SettingsPage
         $text = SettingsValues::textOf($setting);
 
         if ($text === null || ! SettingsValues::isEditable($setting)) {
-            return SettingsRow::value($key, $setting->label, $text ?? 'Not shown', $setting->description)->inBlock();
+            return SettingsRow::build()
+                ->key($key)
+                ->label($setting->label)
+                ->value($text ?? 'Not shown')
+                ->help($setting->description)
+                ->finish()->inBlock();
         }
 
         $row = match (true) {
-            $setting->default instanceof StringChoiceValueData => SettingsRow::field(
-                $key,
-                $setting->label,
-                new LayoutFieldData($key, $text, [], $this->optionsOf($setting)),
-                'choice',
-                $setting->description,
-            ),
-            $setting->type === SettingType::Boolean => SettingsRow::field(
-                $key,
-                $setting->label,
-                new LayoutFieldData($key, $text),
-                'toggle',
-                $setting->description,
-            ),
-            default => SettingsRow::field(
-                $key,
-                $setting->label,
-                new LayoutFieldData($key, $text),
-                'text',
-                $setting->description,
-            ),
+            $setting->default instanceof StringChoiceValueData => SettingsRow::build()
+                ->key($key)
+                ->label($setting->label)
+                ->help($setting->description)
+                ->field(
+                    LayoutFieldData::build()
+                    ->name($key)
+                    ->value($text)
+                    ->clears([])
+                    ->options($this->optionsOf($setting))
+                    ->finish(),
+                    'choice',
+                )
+                ->finish(),
+            $setting->type === SettingType::Boolean => SettingsRow::build()
+                ->key($key)
+                ->label($setting->label)
+                ->help($setting->description)
+                ->field(LayoutFieldData::build()->name($key)->value($text)->finish(), 'toggle')
+                ->finish(),
+            default => SettingsRow::build()
+                ->key($key)
+                ->label($setting->label)
+                ->help($setting->description)
+                ->field(LayoutFieldData::build()->name($key)->value($text)->finish(), 'text')
+                ->finish(),
         };
 
         if ($setting->source === SettingSource::Override) {

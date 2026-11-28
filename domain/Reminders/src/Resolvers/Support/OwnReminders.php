@@ -12,6 +12,7 @@ use Domain\Reminders\Models\Reminder;
 use Domain\Reminders\Policies\ReminderPolicy;
 use Domain\Reminders\Values\ReminderCard;
 use Domain\Reminders\Values\ReminderPage;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Reads one page of the calling actor's own reminders, 25 to a page, open ones first by due time, once the actor may
@@ -28,20 +29,34 @@ final readonly class OwnReminders
      */
     public function own(int $page): ReminderPage
     {
+        $query = $this->ordered();
+        $total = $query->clone()->count();
+        $cards = $query->forPage($page, self::PER_PAGE)->get()->map(self::card(...));
+
+        return new ReminderPage($cards->values()->all(), $page, self::PER_PAGE, $total);
+    }
+
+    /** @return list<ReminderCard> */
+    public function preview(int $limit): array
+    {
+        return $this->ordered()
+            ->limit($limit)
+            ->get(['id', 'title', 'due_at', 'status'])
+            ->map(self::card(...))
+            ->values()
+            ->all();
+    }
+
+    /** @return Builder<Reminder> */
+    private function ordered(): Builder
+    {
         $this->authorizer->authorize(ReminderPolicy::class, Reminder::class, AccessType::Read);
 
-        $query = Reminder::query()->ownedBy($this->actors->actor());
-        $total = $query->clone()->count();
+        return Reminder::query()->ownedBy($this->actors->actor())->inDueOrder();
+    }
 
-        $cards = $query->inDueOrder()->forPage($page, self::PER_PAGE)->limit(self::PER_PAGE)->get()->map(
-            fn (Reminder $reminder) => new ReminderCard(
-                $reminder->id,
-                $reminder->title,
-                $reminder->due_at,
-                $reminder->status,
-            ),
-        )->all();
-
-        return new ReminderPage(array_values($cards), $page, self::PER_PAGE, $total);
+    private static function card(Reminder $reminder): ReminderCard
+    {
+        return new ReminderCard($reminder->id, $reminder->title, $reminder->due_at, $reminder->status);
     }
 }

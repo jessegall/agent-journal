@@ -12,6 +12,6 @@ final class NotesResolver implements SectionResolver
 {
     public function read(SlotContext $context): RecentNotesData
     {
-        return new RecentNotesData([$context->type->value]);
+        return RecentNotesData::build()->titles([$context->type->value])->finish();
     }
 }

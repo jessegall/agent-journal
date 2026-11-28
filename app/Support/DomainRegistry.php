@@ -106,9 +106,15 @@ final readonly class DomainRegistry
      */
     public function clientDeclarations(DomainClient ...$coreDeclarations): ClientDeclarations
     {
+        return ClientDeclarations::check($this->clientOwners(...$coreDeclarations));
+    }
+
+    /** @return list<DomainClient> */
+    public function clientOwners(DomainClient ...$coreDeclarations): array
+    {
         $domainDeclarations = array_map(fn (DomainEntry $entry) => $entry->client(), $this->all());
 
-        return ClientDeclarations::check(array_values([...$coreDeclarations, ...$domainDeclarations]));
+        return [...$coreDeclarations, ...$domainDeclarations];
     }
 
     /**

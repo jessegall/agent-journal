@@ -14,6 +14,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class TerminalWindowData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<TerminalWindowDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = TerminalWindowDataFields::class;
+
     public function __construct(
         public readonly string $agentId,
     ) {}

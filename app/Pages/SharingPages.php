@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
+use App\Http\Pages\Sharing\GatewaySettingsPageBuilder;
+use App\Http\Pages\Sharing\GatewaySettingsPageData;
+use App\Http\Pages\Sharing\ShareDetailPageBuilder;
+use App\Http\Pages\Sharing\ShareDetailPageData;
+use App\Http\Pages\Sharing\ShareListPageBuilder;
+use App\Http\Pages\Sharing\ShareListPageData;
+use App\Http\Pages\Sharing\SharePreviewPageBuilder;
 use App\Agents\Drivers\Contracts\NativePartProvider;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
@@ -17,10 +24,6 @@ use App\Http\Controllers\Sharing\RetryShareController;
 use App\Http\Controllers\Sharing\RevealShareLinkController;
 use App\Http\Controllers\Sharing\RevokeShareController;
 use App\Http\Controllers\Sharing\SharePreviewController;
-use App\Http\Pages\Sharing\Resolvers\GatewaySettingsResolver;
-use App\Http\Pages\Sharing\Resolvers\ShareDetailResolver;
-use App\Http\Pages\Sharing\Resolvers\ShareListResolver;
-use App\Http\Pages\Sharing\Resolvers\SharePreviewResolver;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Declarations\DomainClient;
 use App\Navigation\Enums\Icon;
@@ -106,17 +109,38 @@ final class SharingPages implements NativePartProvider, PageProvider, TypeProvid
     public function pages(): array
     {
         return [
-            Page::layout('shares', 'Shares', Icon::Docs, ShareListResolver::class)
+            Page::build()
+                ->key('shares')
+                ->title('Shares')
+                ->icon(Icon::Docs)
+                ->pageType(ShareListPageData::class)
+                ->pageBuilder(ShareListPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('')
                 ->visibleWhen(SharingOwnerCheck::class),
-            Page::layout('share', 'Share', Icon::Docs, ShareDetailResolver::class)
+            Page::build()
+                ->key('share')
+                ->title('Share')
+                ->icon(Icon::Docs)
+                ->pageType(ShareDetailPageData::class)
+                ->pageBuilder(ShareDetailPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('shares/{share}')
                 ->visibleWhen(SharingOwnerCheck::class)
                 ->actions(fn (PageActions $actions) => $actions
                     ->post('shares/{share}/link', RevealShareLinkController::class, 'reveal-share-link')
                     ->post('shares/{share}/retry', RetryShareController::class, 'retry-share')
                     ->delete('shares/{share}', RevokeShareController::class, 'revoke-share')),
-            Page::layout('gateways', 'Share gateways', Icon::Docs, GatewaySettingsResolver::class)
+            Page::build()
+                ->key('gateways')
+                ->title('Share gateways')
+                ->icon(Icon::Docs)
+                ->pageType(GatewaySettingsPageData::class)
+                ->pageBuilder(GatewaySettingsPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('gateways')
                 ->visibleWhen(SharingOwnerCheck::class)
                 ->actions(fn (PageActions $actions) => $actions
@@ -131,7 +155,14 @@ final class SharingPages implements NativePartProvider, PageProvider, TypeProvid
                         DisableShareGatewayController::class,
                         'disable-share-gateway',
                     )),
-            Page::make('share-preview', 'Share', Icon::Docs, SharePreviewResolver::class, 'SharePreview.vue')
+            Page::build()
+                ->key('share-preview')
+                ->title('Share')
+                ->icon(Icon::Docs)
+                ->pageType(SharePreviewData::class)
+                ->pageBuilder(SharePreviewPageBuilder::class)
+                ->component('SharePreview.vue')
+                ->finish()
                 ->at('{reference}')
                 ->visibleWhen(SharingOwnerCheck::class)
                 ->actions(fn (PageActions $actions) => $actions

@@ -63,19 +63,29 @@ final readonly class DocumentsIndex extends DocumentsPage
             ];
         }
 
-        return ListPage::make('Documents', $rows, $this->emptyFor($filters))
+        $page = ListPage::build()
+            ->title('Documents')
+            ->rows($rows, static fn (LayoutRowData $row): LayoutRowData => $row)
+            ->empty($this->emptyFor($filters))
             ->searching(
                 'Search documents',
-                LayoutFieldData::from([
-                    'name' => 'query',
-                    'value' => $filters->searchWords()->getOrElse(''),
-                    'clears' => ['after', 'page'],
-                ]),
+                LayoutFieldData::build()
+                    ->name('query')
+                    ->value($filters->searchWords()->getOrElse(''))
+                    ->clears(['after', 'page'])
+                    ->finish(),
             )
             ->creatingWith($this->creation('doc', 'New document'), $this->creation('report', 'New report'))
-            ->paged(ListPaging::cursor($type === LibraryTypeFilter::All ? null : $this->nextOf($documents ?? $reports)))
-            ->withReader(LayoutBackData::from(['href' => '/documents', 'label' => 'Documents']), ...$reader)
-            ->layout();
+            ->withReader(LayoutBackData::build()->href('/documents')->label('Documents')->finish(), ...$reader);
+
+        if ($type === LibraryTypeFilter::All) {
+            return $page->finish();
+        }
+
+        return $page->paged(ListPaging::build()
+            ->after($this->nextOf($documents ?? $reports))
+            ->isAppend($filters->after !== null)
+            ->finish())->finish();
     }
 
     /**
@@ -83,17 +93,19 @@ final readonly class DocumentsIndex extends DocumentsPage
      */
     private function rowsOf(PublicationList $list, string $label, string $path, bool $hasMenu): array
     {
-        return array_map(fn (PublicationCard $card) => LayoutRowData::from([
-            'key' => $card->id,
-            'label' => "{$label} {$card->number} · {$card->title}",
-            'value' => $card->attention->value,
-            'detail' => $card->summaryLine(),
-            'href' => "/documents/{$path}/{$card->number}",
-            'trailing' => $this->projectLabel->partsFor(ProjectOwner::fromKey($card->ownerKey)),
-            'menu' => $hasMenu
+        return array_map(fn (PublicationCard $card) => LayoutRowData::build()
+            ->key($card->id)
+            ->label("{$label} {$card->number} · {$card->title}")
+            ->value($card->attention->value)
+            ->detail($card->summaryLine())
+            ->href("/documents/{$path}/{$card->number}")
+            ->trailing($this->projectLabel->partsFor(ProjectOwner::fromKey($card->ownerKey)))
+            ->menu(
+                $hasMenu
                 ? $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, $card->number)
                 : Optional::create(),
-        ]), $list->rows);
+            )
+            ->finish(), $list->rows);
     }
 
     private function nextOf(PublicationList|null $list): string|null
@@ -116,12 +128,13 @@ final readonly class DocumentsIndex extends DocumentsPage
             );
         }
 
-        return ListEmpty::nothingYet(
-            'No documents yet',
-            'Designs, plans and notes that you and the agents write are kept here.',
-            'docs',
-            $this->creation('doc', 'New document', 'first', 'primary'),
-        );
+        return ListEmpty::build()
+            ->title('No documents yet')
+            ->detail('Designs, plans and notes that you and the agents write are kept here.')
+            ->icon('docs')
+            ->actions([$this->creation('doc', 'New document', 'first', 'primary')])
+            ->fillsPage(true)
+            ->finish();
     }
 
     /**
@@ -137,28 +150,47 @@ final readonly class DocumentsIndex extends DocumentsPage
         $route = $type === 'doc' ? 'documents.create-document' : 'documents.create-report';
         $guidedNoun = $this->guidedNounOf($type);
 
-        $creation = new CreationDialog(
-            "{$key}-{$type}",
-            $label,
-            $type === 'doc' ? 'Document filed' : 'Report filed',
-            $type === 'doc' ? 'Create document' : 'Create report',
-            $guidedNoun,
-            waysInHeader: $key === 'create',
-        );
+        $creation = CreationDialog::build()
+            ->key("{$key}-{$type}")
+            ->title($label)
+            ->confirmation($type === 'doc' ? 'Document filed' : 'Report filed')
+            ->sendLabel($type === 'doc' ? 'Create document' : 'Create report')
+            ->guidedNoun($guidedNoun)
+            ->waysInHeader($key === 'create')
+            ->finish();
 
         return $this->creationDialog(
             $creation,
-            LayoutPartData::action('open', $label, LayoutActionData::changing([]), $openerStyle),
-            LayoutFormData::from(['method' => ActionMethod::Post, 'href' => route($route, [], false)]),
+            LayoutPartData::build()
+                ->asAction()
+                ->key('open')
+                ->label($label)
+                ->action(LayoutActionData::build()->query([])->finish())
+                ->style($openerStyle)
+                ->finish(),
+            LayoutFormData::build()->method(ActionMethod::Post)->href(route($route, [], false))->finish(),
             [
-                LayoutPartData::field('title', 'Title', LayoutFieldData::from(['name' => 'title']), 'text'),
-                LayoutPartData::field(
-                    'abstract',
-                    'One line about it',
-                    LayoutFieldData::from(['name' => 'abstract']),
-                    'text',
-                ),
-                LayoutPartData::field('body', 'Text', LayoutFieldData::from(['name' => 'body']), 'area'),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('title')
+                    ->label('Title')
+                    ->field(LayoutFieldData::build()->name('title')->finish())
+                    ->style('text')
+                    ->finish(),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('abstract')
+                    ->label('One line about it')
+                    ->field(LayoutFieldData::build()->name('abstract')->finish())
+                    ->style('text')
+                    ->finish(),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('body')
+                    ->label('Text')
+                    ->field(LayoutFieldData::build()->name('body')->finish())
+                    ->style('area')
+                    ->finish(),
                 ...($type === 'doc' ? $this->projectField->forProjectOrGlobal() : $this->projectField->forProject()),
             ],
         );

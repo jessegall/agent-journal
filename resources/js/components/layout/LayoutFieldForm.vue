@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
 import { ref, useId } from 'vue';
 import Field from '@/components/kit/Field.vue';
 import Input from '@/components/kit/Input.vue';
-import { useWindowQueryChange } from '@/framework/useWindowQuery';
+import { useWindowReload } from '@/framework/useWindowQuery';
 import type { LayoutFieldData, LayoutPartData } from '@/generated/types/core';
 
 // A filter field's form: submitting writes its one key into its own window's query and clears the keys the server
@@ -12,23 +11,15 @@ const props = defineProps<{
     field: LayoutFieldData;
     part: LayoutPartData;
 }>();
-const windowQuery = useWindowQueryChange();
+const reload = useWindowReload();
 const fieldId = `layout-field-${useId()}`;
 const value = ref(props.field.value);
 
 function apply(): void {
-    router.visit(
-        windowQuery({
-            ...Object.fromEntries(
-                props.field.clears.map((name) => [name, undefined]),
-            ),
-            [props.field.name]: value.value,
-        }),
-        {
-            preserveState: true,
-            preserveScroll: true,
-        },
-    );
+    reload({
+        ...Object.fromEntries(props.field.clears.map((name) => [name, undefined])),
+        [props.field.name]: value.value,
+    });
 }
 </script>
 

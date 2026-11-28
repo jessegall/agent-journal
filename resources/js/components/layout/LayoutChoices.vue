@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { useWindowQueryChange } from '@/framework/useWindowQuery';
+import { useWindowQueryChange, useWindowQueryClick } from '@/framework/useWindowQuery';
 import type { LayoutRowData } from '@/generated/types/core';
 
 // The choices of a declared layout: each sets the window's query or opens its own page, the chosen one marked current.
 defineProps<{ rows: LayoutRowData[] }>();
 const windowQuery = useWindowQueryChange();
+const choose = useWindowQueryClick();
 </script>
 
 <template>
@@ -14,7 +15,9 @@ const windowQuery = useWindowQueryChange();
     >
         <template v-for="row in rows" :key="row.key">
             <li class="flex">
-                <Link
+                <component
+                    :is="row.href === undefined ? 'a' : Link"
+                    @click="row.href === undefined && choose($event, row.query)"
                     :href="row.href ?? windowQuery(row.query)"
                     preserve-scroll
                     :aria-current="row.isCurrent ? 'true' : undefined"

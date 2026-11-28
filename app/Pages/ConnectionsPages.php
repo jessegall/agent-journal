@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
+use App\Connections\Data\FilePaneData;
+use App\Connections\Data\ProjectPaneData;
+use App\Http\Pages\ConnectProjectPageBuilder;
+use App\Http\Pages\DeviceApprovalPageBuilder;
+use App\Http\Pages\FilePageBuilder;
+use App\Http\Pages\ProjectPageBuilder;
+use App\Http\Windows\FileWindowBuilder;
+use App\Http\Windows\ProjectWindowBuilder;
 use App\Agents\Drivers\Contracts\NativePartProvider;
 use App\Connections\ConnectionsOwnerCheck;
 use App\Connections\Data\BindingListData;
@@ -30,10 +38,6 @@ use App\Connections\Enums\ConnectionAuditActor;
 use App\Connections\Enums\ConnectionAuditType;
 use App\Connections\Enums\FileWindowStatus;
 use App\Declarations\Page;
-use App\Http\Pages\Resolvers\ConnectProjectWindowResolver;
-use App\Http\Pages\Resolvers\DeviceApprovalWindowResolver;
-use App\Http\Pages\Resolvers\FileWindowResolver;
-use App\Http\Pages\Resolvers\ProjectWindowResolver;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Declarations\DomainClient;
@@ -64,30 +68,48 @@ final class ConnectionsPages implements NativePartProvider, NavigationProvider, 
     public function pages(): array
     {
         return [
-            Page::make(
-                'connect',
-                'Connect a project',
-                Icon::Connections,
-                ConnectProjectWindowResolver::class,
-                'ConnectProjectWindow.vue',
-            )
+            Page::build()
+                ->key('connect')
+                ->title('Connect a project')
+                ->icon(Icon::Connections)
+                ->pageType(ConnectProjectWindowData::class)
+                ->pageBuilder(ConnectProjectPageBuilder::class)
+                ->component('ConnectProjectWindow.vue')
+                ->finish()
                 ->at('')
                 ->visibleWhen(ConnectionsOwnerCheck::class),
-            Page::make(
-                'device',
-                'Approve a terminal',
-                Icon::Connections,
-                DeviceApprovalWindowResolver::class,
-                'DeviceApprovalWindow.vue',
-            )
+            Page::build()
+                ->key('device')
+                ->title('Approve a terminal')
+                ->icon(Icon::Connections)
+                ->pageType(DeviceApprovalData::class)
+                ->pageBuilder(DeviceApprovalPageBuilder::class)
+                ->component('DeviceApprovalWindow.vue')
+                ->finish()
                 ->at('devices/{code}')
                 ->visibleWhen(ConnectionsOwnerCheck::class),
-            Page::make('project', 'Project', Icon::Project, ProjectWindowResolver::class, 'ProjectWindow.vue')
+            Page::build()
+                ->key('project')
+                ->title('Project')
+                ->icon(Icon::Project)
+                ->pageType(ProjectWindowData::class)
+                ->pageBuilder(ProjectPageBuilder::class)
+                ->component('ProjectWindow.vue')
+                ->withWindow(ProjectPaneData::class, ProjectWindowBuilder::class, 'ProjectPane.vue')
+                ->finish()
                 ->at('project')
                 ->onHome(60)
                 ->placedAs(WindowPlace::Tree)
                 ->visibleWhen(ConnectionsOwnerCheck::class),
-            Page::make('file', 'File', Icon::File, FileWindowResolver::class, 'FileWindow.vue')
+            Page::build()
+                ->key('file')
+                ->title('File')
+                ->icon(Icon::File)
+                ->pageType(FileWindowData::class)
+                ->pageBuilder(FilePageBuilder::class)
+                ->component('FileWindow.vue')
+                ->withWindow(FilePaneData::class, FileWindowBuilder::class, 'FilePane.vue')
+                ->finish()
                 ->at('file')
                 ->onHome(61)
                 ->placedAs(WindowPlace::Editor)
@@ -109,6 +131,8 @@ final class ConnectionsPages implements NativePartProvider, NavigationProvider, 
     public function types(): array
     {
         return [
+            FilePaneData::class,
+            ProjectPaneData::class,
             BindingListData::class,
             BindingProviderData::class,
             ConnectProjectWindowData::class,

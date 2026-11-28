@@ -14,6 +14,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AccountListData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<AccountListDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = AccountListDataFields::class;
+
     /**
      * @param  list<AccountRowData>  $rows
      * @param  list<AccountSelectionData>  $selections

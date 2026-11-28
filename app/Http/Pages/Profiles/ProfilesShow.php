@@ -38,14 +38,19 @@ final readonly class ProfilesShow extends ProfilesPage
     {
         $profile = Profile::findByKey($key);
 
-        $page = DetailPage::make($profile->label);
+        $page = DetailPage::build()->title($profile->label)->finish();
 
         if ($profile->description !== '') {
             $page = $page->summarising($profile->description);
         }
 
         if ($profile->isRetired()) {
-            return $page->withStanding(LayoutPartData::notice('retired', 'info', 'This profile is retired.'))->part();
+            return $page->withStanding(LayoutPartData::build()
+                ->asNotice()
+                ->key('retired')
+                ->style('info')
+                ->title('This profile is retired.')
+                ->finish())->part();
         }
 
         $snapshot = $this->profiles->snapshotFor($key);
@@ -53,37 +58,47 @@ final readonly class ProfilesShow extends ProfilesPage
         $script = ProfileRevision::findCurrentOf($profile)->script_source;
 
         $rows = [
-            SettingsRow::value('type', 'Type', $snapshot->base->label, 'The kind of agent it is.'),
-            SettingsRow::value('tier', 'Work it does', $tier->label(), $tier->description().' '.self::TIER_HELP),
+            SettingsRow::build()
+                ->key('type')
+                ->label('Type')
+                ->value($snapshot->base->label)
+                ->help('The kind of agent it is.')
+                ->finish(),
+            SettingsRow::build()
+                ->key('tier')
+                ->label('Work it does')
+                ->value($tier->label())
+                ->help($tier->description().' '.self::TIER_HELP)
+                ->finish(),
         ];
 
         if ($snapshot->start->preferredDriver !== null) {
-            $rows[] = SettingsRow::value(
-                'driver',
-                'Preferred driver',
-                $snapshot->start->preferredDriver,
-                'The driver a start chooses first; you can still choose another.',
-            );
+            $rows[] = SettingsRow::build()
+                ->key('driver')
+                ->label('Preferred driver')
+                ->value($snapshot->start->preferredDriver)
+                ->help('The driver a start chooses first; you can still choose another.')
+                ->finish();
         }
 
         array_push($rows, ...$this->answersTo($snapshot->supervisor));
 
-        $rows[] = SettingsRow::value(
-            'instances',
-            'How many run',
-            str_replace('_', ' ', $snapshot->instances->value),
-            'Whether one is reused or a new one starts for each job.',
-        );
+        $rows[] = SettingsRow::build()
+            ->key('instances')
+            ->label('How many run')
+            ->value(str_replace('_', ' ', $snapshot->instances->value))
+            ->help('Whether one is reused or a new one starts for each job.')
+            ->finish();
 
         $rules = $this->rulesOf($key);
 
         if (! $script->isEmpty()) {
-            $rules[] = SettingsRow::code('script', 'Scripts', $script->text)->inBlock();
+            $rules[] = SettingsRow::build()->key('script')->label('Scripts')->code($script->text)->finish()->inBlock();
         }
 
         return $page->withStanding(
-            SettingsGroup::make('profile', 'Profile')->withRows(...$rows)->part(),
-            SettingsGroup::make('rules', 'Rules it works under')->withRows(...$rules)->part(),
+            SettingsGroup::build()->key('profile')->title('Profile')->finish()->withRows(...$rows)->part(),
+            SettingsGroup::build()->key('rules')->title('Rules it works under')->finish()->withRows(...$rules)->part(),
         )->part();
     }
 
@@ -99,12 +114,22 @@ final readonly class ProfilesShow extends ProfilesPage
         }
 
         if ($routes->default->isOwner()) {
-            return [SettingsRow::value('answers-to', 'Answers to', 'You', self::ANSWERS_HELP)];
+            return [SettingsRow::build()
+                ->key('answers-to')
+                ->label('Answers to')
+                ->value('You')
+                ->help(self::ANSWERS_HELP)
+                ->finish()];
         }
 
         if ($routes->default->isProfile()) {
             return [
-                SettingsRow::value('answers-to', 'Answers to', $routes->default->profileKey()->key, self::ANSWERS_HELP),
+                SettingsRow::build()
+                    ->key('answers-to')
+                    ->label('Answers to')
+                    ->value($routes->default->profileKey()->key)
+                    ->help(self::ANSWERS_HELP)
+                    ->finish(),
             ];
         }
 
@@ -122,22 +147,43 @@ final readonly class ProfilesShow extends ProfilesPage
         $groups = $this->rules->of($key);
 
         if ($groups->isUnread()) {
-            return [SettingsRow::value('rules', 'Rules it works under', 'Rules not available')->inBlock()];
+            return [SettingsRow::build()
+                ->key('rules')
+                ->label('Rules it works under')
+                ->value('Rules not available')
+                ->finish()->inBlock()];
         }
 
-        return array_map(fn (ProfileRuleGroup $group, int $place) => SettingsRow::reading(
-            "rules-{$place}",
-            $group->label,
-            $group->rules === []
-                ? LayoutPartData::text('none', 'No rules', 'muted')
-                : LayoutPartData::collection('rules', 'list', array_map(
-                    fn (ProfileRule $rule) => LayoutRowData::from([
-                        'key' => (string) $rule->number,
-                        'label' => $rule->text,
-                        'leading' => [LayoutPartData::text('number', (string) $rule->number, 'muted')],
-                    ]),
-                    $group->rules,
-                )),
-        )->inBlock(), $groups->groups, array_keys($groups->groups));
+        return array_map(fn (ProfileRuleGroup $group, int $place) => SettingsRow::build()
+            ->key("rules-{$place}")
+            ->label($group->label)
+            ->control(
+                $group->rules === []
+                ? LayoutPartData::build()->asText()->key('none')->value('No rules')->style('muted')->finish()
+                : LayoutPartData::build()
+                    ->asCollection()
+                    ->key('rules')
+                    ->style('list')
+                    ->rows(
+                        array_map(
+                            fn (ProfileRule $rule) => LayoutRowData::build()
+                                ->key((string) $rule->number)
+                                ->label($rule->text)
+                                ->leading(
+                                    [LayoutPartData::build()
+                                    ->asText()
+                                    ->key('number')
+                                    ->value((string) $rule->number)
+                                    ->style('muted')
+                                    ->finish()],
+                                )
+                                ->finish(),
+                            $group->rules,
+                        ),
+                    )
+                    ->finish(),
+            )
+            ->isBlock(true)
+            ->finish()->inBlock(), $groups->groups, array_keys($groups->groups));
     }
 }

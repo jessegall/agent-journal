@@ -7,11 +7,12 @@ namespace App\Web\Declarations;
 use App\Access\Contracts\VisibilityCheck;
 use App\Declarations\ActionRoute;
 use App\Declarations\Page;
-use App\Declarations\ResolverDefinition;
 use App\Declarations\RoutePath;
-use App\Navigation\Contracts\PageResolver;
 use App\Navigation\Declarations\DomainClient;
+use App\Web\Creation\SurfaceAttributeMap;
+use App\Web\Creation\SurfaceDefinition;
 use App\Web\Exceptions\ClientSlotMismatch;
+use App\Web\Exceptions\InvalidPageDeclaration;
 
 /**
  * A checked page of an installed domain: its full key, which is also its route name, its URI under the domain's
@@ -25,6 +26,7 @@ final readonly class RegisteredPage
     public const string HOME = 'web.home';
 
     /**
+     * @param  list<class-string<VisibilityCheck>> $checks
      * @param  array<string, Slot>  $slots  the page's slots by full key
      */
     private function __construct(
@@ -33,13 +35,16 @@ final readonly class RegisteredPage
         public string $key,
         public RoutePath $path,
         public string $uri,
-        public ResolverDefinition $resolver,
+        public SurfaceDefinition $surface,
+        public SurfaceDefinition|null $window,
         public string $componentFile,
+        public string|null $windowFile,
         public string $propName,
         public array $slots,
+        private array $checks,
     ) {}
 
-    public static function of(DomainClient $owner, Page $page): self
+    public static function of(DomainClient $owner, Page $page, SurfaceAttributeMap|null $policies = null): self
     {
         $key = $owner->fullKey('page', $page->key);
         $path = RoutePath::of($key, $page->path);
@@ -48,16 +53,36 @@ final readonly class RegisteredPage
             $owner->assertImplements($key, $page->visibility, VisibilityCheck::class);
         }
 
+        if ($page->homePosition !== null && $page->window === null) {
+            throw InvalidPageDeclaration::missingWindow($key);
+        }
+
+        $policy = $policies?->forPage($page->surface->type);
+        $record = $policy?->recordScope;
+
+        if ($record !== null && ! $path->hasParameter($record->parameter)) {
+            throw InvalidPageDeclaration::missingRecordParameter($key, $record->parameter);
+        }
+
+        $checks = $policy?->checks ?? [];
+
+        if ($page->visibility !== null) {
+            $checks[] = $page->visibility;
+        }
+
         return new self(
             owner: $owner,
             page: $page,
             key: $key,
             path: $path,
             uri: $owner->uri($path),
-            resolver: ResolverDefinition::of($owner, $key, $page->resolver, PageResolver::class, $page->dataClass),
-            componentFile: $owner->presentationFile($key, $page->component, $page->isDeclared),
+            surface: $page->surface,
+            window: $page->window,
+            componentFile: $owner->presentationFile($key, $page->surface->component, $page->isDeclared),
+            windowFile: $page->window === null ? null : $owner->componentFile($key, $page->window->component),
             propName: 'window_'.str_replace(['.', '-'], '_', $key),
             slots: self::checkedSlots($owner, $key, $path, $page->slots),
+            checks: $checks,
         );
     }
 
@@ -76,11 +101,7 @@ final readonly class RegisteredPage
      */
     public function visibilityChecks(): array
     {
-        if ($this->page->visibility === null) {
-            return [];
-        }
-
-        return [$this->page->visibility];
+        return $this->checks;
     }
 
     /**
@@ -110,7 +131,12 @@ final readonly class RegisteredPage
      */
     public function componentName(): string
     {
-        return $this->owner->presentationName($this->page->component, $this->page->isDeclared);
+        return $this->owner->presentationName($this->surface->component, $this->page->isDeclared);
+    }
+
+    public function windowComponentName(): string|null
+    {
+        return $this->window === null ? null : $this->owner->presentationName($this->window->component, false);
     }
 
     public function isHome(): bool

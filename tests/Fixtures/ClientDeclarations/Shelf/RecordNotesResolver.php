@@ -15,6 +15,6 @@ final class RecordNotesResolver implements SectionResolver
 {
     public function read(SlotContext $context): RecentNotesData
     {
-        return new RecentNotesData([(string) $context->id]);
+        return RecentNotesData::build()->titles([(string) $context->id])->finish();
     }
 }

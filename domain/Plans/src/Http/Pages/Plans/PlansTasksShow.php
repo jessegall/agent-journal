@@ -23,13 +23,27 @@ final readonly class PlansTasksShow extends PlansPage
 
     public function of(PlanFiltersData $filters, int $number, string $back, TaskDetails $task): DeclaredLayoutData
     {
-        $reader = DetailPage::make($task->title)
-            ->above(LayoutPartData::action('back', "Back to plan {$number}", LayoutActionData::to($back)))
+        $reader = DetailPage::build()->title($task->title)->finish()
+            ->above(LayoutPartData::build()
+                ->asAction()
+                ->key('back')
+                ->label("Back to plan {$number}")
+                ->action(LayoutActionData::build()->href($back)->finish())
+                ->finish())
             ->summarising($task->text instanceof TaskText ? $task->text->brief : '')
-            ->withActions(LayoutPartData::action('open', 'Open task', LayoutActionData::to("/tasks/{$task->number}")))
+            ->withActions(LayoutPartData::build()
+                ->asAction()
+                ->key('open')
+                ->label('Open task')
+                ->action(LayoutActionData::build()->href("/tasks/{$task->number}")->finish())
+                ->finish())
             ->withFacts(
-                LayoutRowData::from(['key' => 'task', 'label' => 'Task', 'value' => (string) $task->number]),
-                LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => ucfirst($task->status->value)]),
+                LayoutRowData::build()->key('task')->label('Task')->value((string) $task->number)->finish(),
+                LayoutRowData::build()
+                    ->key('state')
+                    ->label('State')
+                    ->value(ucfirst($task->status->value))
+                    ->finish(),
             );
 
         return $this->index->of($filters, [$reader->part()]);

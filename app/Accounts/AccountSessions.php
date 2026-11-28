@@ -23,4 +23,10 @@ final readonly class AccountSessions
     {
         return $this->links->among(AgentSession::query(), $account);
     }
+
+    /** @param list<RecordIdentity> $accounts */
+    public function histories(array $accounts, int $limit): AccountUseHistories
+    {
+        return new AccountUseHistories(AgentSession::recentUsesOf($accounts, $limit));
+    }
 }

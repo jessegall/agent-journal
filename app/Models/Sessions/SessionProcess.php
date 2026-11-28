@@ -417,6 +417,42 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     }
 
     /**
+     * @param list<RecordIdentity> $accounts
+     * @return array<string, int>
+     */
+    public static function countUnresolvedByAccount(array $accounts): array
+    {
+        if ($accounts === []) {
+            return [];
+        }
+
+        $groups = RecordIdentity::groupedByType($accounts);
+        $counts = self::query()
+            ->supervised()
+            ->unresolved()
+            ->where(static function (Builder $query) use ($groups): void {
+                foreach ($groups as $type => $records) {
+                    $query->orWhere(static fn (Builder $pair) => $pair
+                        ->where('account_type', $type)
+                        ->whereIn('account_id', array_column($records, 'id')));
+                }
+            })
+            ->select(['account_type', 'account_id'])
+            ->selectRaw('count(*) as running_count')
+            ->groupBy('account_type', 'account_id')
+            ->limit(count($accounts))
+            ->get();
+
+        $running = [];
+
+        foreach ($counts as $count) {
+            $running["{$count->account_type}:{$count->account_id}"] = (int) $count->getAttribute('running_count');
+        }
+
+        return $running;
+    }
+
+    /**
      * The sessions of the starts on the account that may still have or make a process, oldest first.
      *
      * @return list<string>

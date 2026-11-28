@@ -24,18 +24,18 @@ final readonly class SequencePageViews
         }
 
         return [
-            LayoutRowData::from([
-                'key' => 'sequences',
-                'label' => 'Sequences',
-                'href' => route('sequences.index', [], false),
-                'isCurrent' => ! $isRuns,
-            ]),
-            LayoutRowData::from([
-                'key' => 'runs',
-                'label' => 'Runs',
-                'href' => route('sequences.runs', [], false),
-                'isCurrent' => $isRuns,
-            ]),
+            LayoutRowData::build()
+                ->key('sequences')
+                ->label('Sequences')
+                ->href(route('sequences.index', [], false))
+                ->isCurrent(! $isRuns)
+                ->finish(),
+            LayoutRowData::build()
+                ->key('runs')
+                ->label('Runs')
+                ->href(route('sequences.runs', [], false))
+                ->isCurrent($isRuns)
+                ->finish(),
         ];
     }
 }

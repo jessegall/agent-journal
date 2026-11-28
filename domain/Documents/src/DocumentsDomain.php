@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Documents;
 
+use Domain\Documents\Data\DocumentsPaneData;
+use Domain\Documents\Http\Pages\DocumentPageBuilder;
+use Domain\Documents\Http\Pages\DocumentPageData;
+use Domain\Documents\Http\Pages\LibraryPageBuilder;
+use Domain\Documents\Http\Pages\LibraryPageData;
+use Domain\Documents\Http\Pages\ReportPageBuilder;
+use Domain\Documents\Http\Pages\ReportPageData;
+use Domain\Documents\Http\Pages\RevisionPageBuilder;
+use Domain\Documents\Http\Pages\RevisionPageData;
+use Domain\Documents\Http\Windows\DocumentsWindowBuilder;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Drivers\Contracts\NativePartProvider;
@@ -97,10 +107,6 @@ use Domain\Documents\Http\Controllers\SaveDraftPageController;
 use Domain\Documents\Http\Controllers\SettleDocumentPageController;
 use Domain\Documents\Http\Controllers\SettleReportPageController;
 use Domain\Documents\Http\Pages\Resolvers\DocumentDockResolver;
-use Domain\Documents\Http\Pages\Resolvers\DocumentWindowResolver;
-use Domain\Documents\Http\Pages\Resolvers\LibraryWindowResolver;
-use Domain\Documents\Http\Pages\Resolvers\ReportWindowResolver;
-use Domain\Documents\Http\Pages\Resolvers\RevisionWindowResolver;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
@@ -337,13 +343,28 @@ final class DocumentsDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::layout('library', 'Documents', Icon::Docs, LibraryWindowResolver::class)
+            Page::build()
+                ->key('library')
+                ->title('Documents')
+                ->icon(Icon::Docs)
+                ->pageType(LibraryPageData::class)
+                ->pageBuilder(LibraryPageBuilder::class)
+                ->declaredLayout()
+                ->withWindow(DocumentsPaneData::class, DocumentsWindowBuilder::class, 'DocumentsPane.vue')
+                ->finish()
                 ->at('')
                 ->onHome(27)
                 ->actions(fn (PageActions $actions) => $actions
                     ->post('docs', CreateDocumentPageController::class, 'create-document')
                     ->post('reports', CreateReportPageController::class, 'create-report')),
-            Page::layout('document', 'Document', Icon::Docs, DocumentWindowResolver::class)
+            Page::build()
+                ->key('document')
+                ->title('Document')
+                ->icon(Icon::Docs)
+                ->pageType(DocumentPageData::class)
+                ->pageBuilder(DocumentPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('docs/{document}')
                 ->inInspector()
                 ->actions(fn (PageActions $actions) => $actions
@@ -358,9 +379,23 @@ final class DocumentsDomain extends Domain implements
                         'ask-feedback',
                     ))
                 ->slots(fn (PageSlots $slots) => $slots->record('inspector', 'document', 'doc')),
-            Page::layout('revision', 'Revision', Icon::Docs, RevisionWindowResolver::class)
+            Page::build()
+                ->key('revision')
+                ->title('Revision')
+                ->icon(Icon::Docs)
+                ->pageType(RevisionPageData::class)
+                ->pageBuilder(RevisionPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('docs/{document}/revisions/{revision}'),
-            Page::layout('report', 'Report', Icon::Docs, ReportWindowResolver::class)
+            Page::build()
+                ->key('report')
+                ->title('Report')
+                ->icon(Icon::Docs)
+                ->pageType(ReportPageData::class)
+                ->pageBuilder(ReportPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('reports/{report}')
                 ->actions(fn (PageActions $actions) => $actions
                     ->post('reports/{report}/settle', SettleReportPageController::class, 'settle-report')),

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Rules;
 
+use Domain\Rules\Data\RulesPaneData;
+use Domain\Rules\Http\Pages\RulesPageBuilder;
+use Domain\Rules\Http\Pages\RulesPageData;
+use Domain\Rules\Http\Windows\RulesWindowBuilder;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
@@ -32,7 +36,6 @@ use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
-use Domain\Rules\Http\Pages\Resolvers\RulesWindowResolver;
 use Domain\Rules\Mcp\Resources\RulesResource;
 use Domain\Rules\Mcp\Tools\ProposeRuleTool;
 use Domain\Rules\Mcp\Tools\RuleReadTool;
@@ -103,7 +106,15 @@ final class RulesDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::layout('list', 'Rules', Icon::Rules, RulesWindowResolver::class)
+            Page::build()
+                ->key('list')
+                ->title('Rules')
+                ->icon(Icon::Rules)
+                ->pageType(RulesPageData::class)
+                ->pageBuilder(RulesPageBuilder::class)
+                ->declaredLayout()
+                ->withWindow(RulesPaneData::class, RulesWindowBuilder::class, 'RulesPane.vue')
+                ->finish()
                 ->at('')
                 ->onHome(30)
                 ->actions(fn (PageActions $actions) => $actions

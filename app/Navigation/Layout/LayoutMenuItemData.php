@@ -17,6 +17,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutMenuItemData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutMenuItemDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutMenuItemDataFields::class;
+
     public function __construct(
         public readonly string $key,
         public readonly string $label,

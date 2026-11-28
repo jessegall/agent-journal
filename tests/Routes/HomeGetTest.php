@@ -26,6 +26,38 @@ final class HomeGetTest extends GuardedRouteEntryTestCase
         );
     }
 
+    public function test_home_schedules_independent_copies_and_account_notices(): void
+    {
+        $journal = $this->journal->owner();
+        $copy = 'window_web_asks__123456abcdef';
+        $notices = 'section_web_bar_accounts_notices';
+
+        $this->actingAs($journal->ownerUser())->get(route('home'))->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->has('page')
+                ->missing($copy)
+                ->missing($notices)
+                ->reloadOnly($copy, fn (AssertableInertia $same) => $same
+                    ->where('title', 'Home')
+                    ->where("{$copy}.status", 'ready')
+                    ->where("{$copy}.data.items", [])
+                    ->missing('page')
+                    ->missing($notices))
+                ->loadDeferredProps($notices, fn (AssertableInertia $later) => $later
+                    ->where('title', 'Home')
+                    ->where("{$notices}.status", 'ready')
+                    ->missing($copy)
+                    ->missing('page'))
+                ->reload(
+                    only: ['window_web_terminal', 'window_web_asks__invalid'],
+                    callback: fn (AssertableInertia $forged) => $forged
+                        ->where('title', 'Home')
+                        ->missing('window_web_terminal')
+                        ->missing('window_web_asks__invalid'),
+                ),
+        );
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();

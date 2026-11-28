@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Web;
 
+use App\Web\Values\WindowInstance;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
+use Inertia\Support\Header;
 
 /**
  * The query every declared page and Home share: the record open in the inspector (?inspect=<full page key> with the
@@ -43,6 +47,18 @@ final class DeclaredPageRequest extends FormRequest
         return $this->string($name)->toString();
     }
 
+    public function asksFor(string $component, string $prop): bool
+    {
+        if ($this->header(Header::PARTIAL_COMPONENT) !== $component) {
+            return false;
+        }
+
+        $only = array_map(trim(...), explode(',', (string) $this->header(Header::PARTIAL_ONLY)));
+        $except = array_map(trim(...), explode(',', (string) $this->header(Header::PARTIAL_EXCEPT)));
+
+        return in_array($prop, $only, true) && ! in_array($prop, $except, true);
+    }
+
     /**
      * The ids of the copies of a window whose props this partial visit asks for by name, <prop>__<copy id>, at most
      * COPY_LIMIT of them; an id is only an address, read as twelve hexadecimal characters.
@@ -53,7 +69,7 @@ final class DeclaredPageRequest extends FormRequest
     {
         $copies = [];
 
-        foreach (explode(',', (string) $this->header('X-Inertia-Partial-Data')) as $asked) {
+        foreach (explode(',', (string) $this->header(Header::PARTIAL_ONLY)) as $asked) {
             if (preg_match('/^'.preg_quote($propName, '/').'__([a-f0-9]{12})$/', trim($asked), $match) === 1) {
                 $copies[] = $match[1];
             }
@@ -76,6 +92,27 @@ final class DeclaredPageRequest extends FormRequest
         }
 
         return [];
+    }
+
+    /** @param array<string, mixed> $query */
+    public function visit(array $query, Route|null $route = null): Request
+    {
+        $visit = Request::createFrom($this);
+        $visit->query->replace($query);
+
+        if ($route !== null) {
+            $visit->setRouteResolver(fn () => $route);
+        }
+
+        return $visit;
+    }
+
+    public function windowVisit(WindowInstance $window): Request
+    {
+        $visit = $this->visit($this->windowQuery($window->name()));
+        $window->attachTo($visit);
+
+        return $visit;
     }
 
     /**

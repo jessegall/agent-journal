@@ -33,14 +33,16 @@ final readonly class ChosenAgentSection implements SectionResolver
             $chosen->map(fn (AgentOption $agent) => [$agent->agentId])->getOrElse([]),
         );
 
-        return ChatData::from([
-            'agents' => $page->agents,
-            'nextAgents' => $page->next,
-            'isSetupRequired' => $main->isEmpty(),
-            'mainAgentId' => $main->getOrElse(Optional::create()),
-            'selectedAgentId' => $chosen
+        return ChatData::build()
+            ->agents($page->agents)
+            ->nextAgents($page->next)
+            ->isSetupRequired($main->isEmpty())
+            ->mainAgentId($main->getOrElse(Optional::create()))
+            ->selectedAgentId(
+                $chosen
                 ->map(fn (AgentOption $agent) => $agent->agentId)
                 ->getOrElse(Optional::create()),
-        ]);
+            )
+            ->finish();
     }
 }

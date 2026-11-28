@@ -16,6 +16,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutDialogData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutDialogDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutDialogDataFields::class;
+
     public function __construct(
         public readonly string $title,
         public readonly string $confirmation,

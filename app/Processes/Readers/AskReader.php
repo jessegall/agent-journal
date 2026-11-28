@@ -39,7 +39,12 @@ final readonly class AskReader implements AskReaderContract
         $card = $this->cards([$ask])[0];
         $result = AskResult::of($ask);
 
-        return new AskDetail($card, $ask->version, $result, $result->label());
+        return AskDetail::build()
+            ->card($card)
+            ->version($ask->version)
+            ->result($result)
+            ->resultLabel($result->label())
+            ->finish();
     }
 
     public function inbox(AskReference|null $before = null): AskInbox
@@ -53,10 +58,10 @@ final readonly class AskReader implements AskReaderContract
         $asks = $query->limit(self::PAGE_SIZE + 1)->get();
         $page = $asks->take(self::PAGE_SIZE);
 
-        return AskInbox::from([
-            'cards' => $this->cards(array_values($page->all())),
-            'before' => $asks->count() > self::PAGE_SIZE ? $page->last()->id : null,
-        ]);
+        return AskInbox::build()
+            ->cards($this->cards(array_values($page->all())))
+            ->before($asks->count() > self::PAGE_SIZE ? $page->last()->id : null)
+            ->finish();
     }
 
     /**
@@ -81,16 +86,16 @@ final readonly class AskReader implements AskReaderContract
 
             $current = $assigned->getOrElse(null);
 
-            return AskCard::from([
-                'id' => $ask->id,
-                'type' => $ask->type_key->key,
-                'body' => $ask->body,
-                'isOpen' => $ask->open,
-                'isObligation' => $current?->isSameAs($holder) === true,
-                'reply' => $replies[$ask->id] ?? null,
-                'holderType' => $current?->type,
-                'holderId' => $current?->id,
-            ]);
+            return AskCard::build()
+                ->id($ask->id)
+                ->type($ask->type_key->key)
+                ->body($ask->body)
+                ->isOpen($ask->open)
+                ->isObligation($current?->isSameAs($holder) === true)
+                ->reply($replies[$ask->id] ?? null)
+                ->holderType($current?->type)
+                ->holderId($current?->id)
+                ->finish();
         }, $asks);
     }
 }

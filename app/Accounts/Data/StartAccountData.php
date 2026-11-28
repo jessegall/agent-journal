@@ -6,8 +6,6 @@ namespace App\Accounts\Data;
 
 use App\Accounts\Enums\AccountProcessRole;
 use App\Accounts\Enums\AccountStatus;
-use App\Models\Accounts\Account;
-use App\Values\AccountUse;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -18,6 +16,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class StartAccountData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<StartAccountDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = StartAccountDataFields::class;
+
     public function __construct(
         public readonly string $sessionId,
         public readonly string $driver,
@@ -28,18 +31,4 @@ final class StartAccountData extends Data
         public readonly string $startedAt,
         public readonly string|null $endedAt,
     ) {}
-
-    public static function fromUse(AccountUse $use, Account $account): self
-    {
-        return new self(
-            $use->sessionId,
-            $use->driver,
-            $account->id,
-            $account->label,
-            $account->status,
-            $use->role,
-            $use->startedAt->toIso8601String(),
-            $use->endedAt?->toIso8601String(),
-        );
-    }
 }

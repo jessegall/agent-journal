@@ -35,34 +35,42 @@ final readonly class SequencesIndex extends SequencesPage
     {
         $sequences = array_values(Sequence::query()->newestCreatedFirst()->limit(self::LIST_LIMIT)->get()->all());
 
-        return ListPage::make(
-            'Sequences',
-            array_map(fn (Sequence $sequence) => LayoutRowData::from([
-                'key' => $sequence->id,
-                'label' => $sequence->name,
-                'detail' => $this->detailOf($sequence),
-                'href' => route('sequences.sequence', ['sequence' => $sequence->id], false),
-                'isCurrent' => $sequence->id === $chosenId,
-            ]), $sequences),
-            ListEmpty::nothingYet(
-                'No sequences yet',
-                'A sequence is a list of steps an agent follows the same way each time.',
-                'sequence',
-                LayoutPartData::action(
-                    'first',
-                    'New sequence',
-                    LayoutActionData::to(route('sequences.new', [], false)),
-                    'primary',
-                ),
-            ),
-        )
+        return ListPage::build()
+            ->title('Sequences')
+            ->rows(
+                $sequences,
+                fn (Sequence $sequence) => LayoutRowData::build()
+                ->key($sequence->id)
+                ->label($sequence->name)
+                ->detail($this->detailOf($sequence))
+                ->href(route('sequences.sequence', ['sequence' => $sequence->id], false))
+                ->isCurrent($sequence->id === $chosenId)
+                ->finish(),
+            )
+            ->empty(
+                ListEmpty::build()
+                ->title('No sequences yet')
+                ->detail('A sequence is a list of steps an agent follows the same way each time.')
+                ->icon('sequence')
+                ->actions(
+                    [LayoutPartData::build()
+                    ->asAction()
+                    ->key('first')
+                    ->label('New sequence')
+                    ->action(LayoutActionData::build()->href(route('sequences.new', [], false))->finish())
+                    ->style('primary')
+                    ->finish()],
+                )
+                ->fillsPage(true)
+                ->finish(),
+            )
             ->countingRows()
             ->creatingWith($this->creation())
             ->withReader(
-                LayoutBackData::from(['href' => route('sequences.index', [], false), 'label' => 'Sequences']),
+                LayoutBackData::build()->href(route('sequences.index', [], false))->label('Sequences')->finish(),
                 ...$reader,
             )
-            ->layout();
+            ->finish();
     }
 
     /**
@@ -86,47 +94,65 @@ final readonly class SequencesIndex extends SequencesPage
      */
     private function creation(): LayoutPartData
     {
-        $plain = LayoutPartData::action(
-            'creation',
-            'New sequence',
-            LayoutActionData::to(route('sequences.new', [], false)),
-            'primary',
-        );
+        $plain = LayoutPartData::build()
+            ->asAction()
+            ->key('creation')
+            ->label('New sequence')
+            ->action(LayoutActionData::build()->href(route('sequences.new', [], false))->finish())
+            ->style('primary')
+            ->finish();
 
         if (! $this->producers->offersGuided('sequence')) {
             return $plain;
         }
 
-        $creation = new CreationDialog(
-            'creation',
-            'New sequence',
-            'Draft opened in the editor',
-            'Open in the editor',
-            'sequence',
-            'Write the steps yourself',
-            'Build it with an agent',
-            true,
-        );
+        $creation = CreationDialog::build()
+            ->key('creation')
+            ->title('New sequence')
+            ->confirmation('Draft opened in the editor')
+            ->sendLabel('Open in the editor')
+            ->guidedNoun('sequence')
+            ->plainWay('Write the steps yourself')
+            ->guidedWay('Build it with an agent')
+            ->waysInHeader(true)
+            ->finish();
 
         return $this->creationDialog(
             $creation,
             $plain,
-            LayoutFormData::from(['method' => ActionMethod::Get, 'href' => route('sequences.new', [], false)]),
+            LayoutFormData::build()
+                ->method(ActionMethod::Get)
+                ->href(route('sequences.new', [], false))
+                ->finish(),
             [
-                LayoutPartData::field('name', 'Name', LayoutFieldData::from(['name' => 'name']), 'text'),
-                LayoutPartData::field(
-                    'steps',
-                    'Steps, one per line',
-                    LayoutFieldData::from(['name' => 'steps']),
-                    'area',
-                ),
-                LayoutPartData::field('doneWhen', 'Done when', LayoutFieldData::from(['name' => 'doneWhen']), 'text'),
-                LayoutPartData::field(
-                    'draftedBy',
-                    'Drafted by',
-                    LayoutFieldData::from(['name' => 'draftedBy']),
-                    'text',
-                ),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('name')
+                    ->label('Name')
+                    ->field(LayoutFieldData::build()->name('name')->finish())
+                    ->style('text')
+                    ->finish(),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('steps')
+                    ->label('Steps, one per line')
+                    ->field(LayoutFieldData::build()->name('steps')->finish())
+                    ->style('area')
+                    ->finish(),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('doneWhen')
+                    ->label('Done when')
+                    ->field(LayoutFieldData::build()->name('doneWhen')->finish())
+                    ->style('text')
+                    ->finish(),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('draftedBy')
+                    ->label('Drafted by')
+                    ->field(LayoutFieldData::build()->name('draftedBy')->finish())
+                    ->style('text')
+                    ->finish(),
             ],
         );
     }

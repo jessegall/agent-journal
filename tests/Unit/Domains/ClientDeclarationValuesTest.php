@@ -22,14 +22,22 @@ use App\Profiles\Enums\SlotContextType;
 use App\Settings\Enums\ActionMethod;
 use App\Text\Declarations\Section;
 use App\Text\Exceptions\InvalidSectionDeclaration;
+use App\Web\Attributes\Deferred;
+use App\Web\Creation\Exceptions\InvalidSurfacePolicy;
+use App\Web\Creation\Exceptions\MissingFields;
+use App\Web\Creation\SurfacePropPolicy;
 use App\Web\Declarations\Slot;
 use App\Web\Enums\PageDestination;
 use App\Web\Enums\PageSkeleton;
 use App\Web\Exceptions\InvalidPageDeclaration;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\ClientDeclarations\LooseResolver;
+use Tests\Fixtures\ClientDeclarations\Library\AddBook;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPaneData;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Windows\BooksWindowBuilder;
+use Tests\Fixtures\ClientDeclarations\Library\ShelfRowsLoader;
 use Tests\Fixtures\ClientDeclarations\RecentNotesData;
-use Tests\Fixtures\ClientDeclarations\RecentNotesResolver;
+use Tests\Fixtures\ClientDeclarations\RecentNotesPageBuilder;
+use Tests\Fixtures\ClientDeclarations\RecentNotesSection;
 use Tests\Support\TestIds;
 use ValueError;
 
@@ -39,37 +47,59 @@ use ValueError;
  */
 final class ClientDeclarationValuesTest extends TestCase
 {
+    public function test_a_prop_cannot_be_deferred_and_optional(): void
+    {
+        $this->expectExceptionObject(InvalidSurfacePolicy::at('Books', 'A prop cannot be both optional and deferred.'));
+
+        new SurfacePropPolicy('Books', new Deferred('books'), true, null);
+    }
+
     public function test_a_pages_scoped_parts_are_the_parts_their_values_declare_in_the_order_added(): void
     {
-        $page = Page::make('plan', 'Plan', Icon::Plan, RecentNotesResolver::class, 'PlanResolver.vue')
+        $page = Page::build()
+            ->key('plan')
+            ->title('Plan')
+            ->icon(Icon::Plan)
+            ->pageType(RecentNotesData::class)
+            ->pageBuilder(RecentNotesPageBuilder::class)
+            ->component('Plan.vue')
+            ->finish()
             ->slots(fn (PageSlots $slots) => $slots
                 ->add('bar', SlotContextType::Nothing)
                 ->record('inspector', 'plan', 'plan'))
             ->actions(fn (PageActions $actions) => $actions
-                ->get('read', LooseResolver::class, 'read')
-                ->post('start', LooseResolver::class, 'start')
-                ->patch('rename', LooseResolver::class, 'rename')
-                ->delete('drop', LooseResolver::class, 'drop'))
-            ->loaders(fn (PageLoaders $loaders) => $loaders->add('rows', RecentNotesResolver::class));
+                ->get('read', AddBook::class, 'read')
+                ->post('start', AddBook::class, 'start')
+                ->patch('rename', AddBook::class, 'rename')
+                ->delete('drop', AddBook::class, 'drop'))
+            ->loaders(fn (PageLoaders $loaders) => $loaders->add('rows', ShelfRowsLoader::class));
 
         $this->assertEquals(
             [
                 [Slot::make('bar', SlotContextType::Nothing), Slot::record('inspector', 'plan', 'plan')],
                 [
-                    ActionRoute::get('read', LooseResolver::class, 'read'),
-                    ActionRoute::post('start', LooseResolver::class, 'start'),
-                    ActionRoute::patch('rename', LooseResolver::class, 'rename'),
-                    ActionRoute::delete('drop', LooseResolver::class, 'drop'),
+                    ActionRoute::get('read', AddBook::class, 'read'),
+                    ActionRoute::post('start', AddBook::class, 'start'),
+                    ActionRoute::patch('rename', AddBook::class, 'rename'),
+                    ActionRoute::delete('drop', AddBook::class, 'drop'),
                 ],
-                [Loader::make('rows', RecentNotesResolver::class)],
+                [Loader::make('rows', ShelfRowsLoader::class)],
             ],
             [$page->slots, $page->actions, $page->loaders],
         );
     }
 
-    public function test_a_parameterised_page_records_its_reader_data_class_slots_and_actions(): void
+    public function test_a_parameterised_page_records_its_surface_types_slots_and_actions(): void
     {
-        $page = Page::make('plan', 'Plan', Icon::Plan, RecentNotesResolver::class, 'PlanResolver.vue')
+        $page = Page::build()
+            ->key('plan')
+            ->title('Plan')
+            ->icon(Icon::Plan)
+            ->pageType(RecentNotesData::class)
+            ->pageBuilder(RecentNotesPageBuilder::class)
+            ->component('Plan.vue')
+            ->withWindow(BooksPaneData::class, BooksWindowBuilder::class, 'BooksPane.vue')
+            ->finish()
             ->at('{plan}')
             ->inInspector()
             ->loadingAs(PageSkeleton::Reader)
@@ -85,10 +115,10 @@ final class ClientDeclarationValuesTest extends TestCase
                 ),
             )
             ->slots(fn (PageSlots $slots) => $slots->record('inspector', 'plan', 'plan'))
-            ->actions(fn (PageActions $actions) => $actions->post('start', LooseResolver::class, 'start'));
+            ->actions(fn (PageActions $actions) => $actions->post('start', AddBook::class, 'start'));
 
         $this->assertSame('{plan}', $page->path);
-        $this->assertSame(RecentNotesData::class, $page->dataClass);
+        $this->assertSame(RecentNotesData::class, $page->surface->type);
         $this->assertSame(PageDestination::Inspector, $page->opensIn);
         $this->assertSame(PageSkeleton::Reader, $page->skeleton);
         $this->assertSame(20, $page->homePosition);
@@ -106,7 +136,14 @@ final class ClientDeclarationValuesTest extends TestCase
 
     public function test_a_page_starts_at_its_own_key_off_home_and_a_change_leaves_the_original_untouched(): void
     {
-        $page = Page::make('list', 'Plans', Icon::Plan, RecentNotesResolver::class, 'PlansView.vue');
+        $page = Page::build()
+            ->key('list')
+            ->title('Plans')
+            ->icon(Icon::Plan)
+            ->pageType(RecentNotesData::class)
+            ->pageBuilder(RecentNotesPageBuilder::class)
+            ->component('PlansView.vue')
+            ->finish();
         $moved = $page->at('');
 
         $this->assertSame('list', $page->path);
@@ -116,11 +153,17 @@ final class ClientDeclarationValuesTest extends TestCase
         $this->assertSame(PageDestination::Page, $page->opensIn);
     }
 
-    public function test_a_reader_without_a_concrete_data_return_type_is_refused(): void
+    public function test_a_page_without_a_builder_is_refused(): void
     {
-        $this->expectExceptionObject(InvalidPageDeclaration::resolverReturnsNoData('list', LooseResolver::class));
+        $this->expectExceptionObject(MissingFields::forType(Page::class, 'pageBuilder'));
 
-        Page::make('list', 'Plans', Icon::Plan, LooseResolver::class, 'PlansView.vue');
+        Page::build()
+            ->key('list')
+            ->title('Plans')
+            ->icon(Icon::Plan)
+            ->pageType(RecentNotesData::class)
+            ->component('PlansView.vue')
+            ->finish();
     }
 
     public function test_a_record_slot_needs_its_route_parameter(): void
@@ -147,12 +190,12 @@ final class ClientDeclarationValuesTest extends TestCase
     public function test_navigation_nests_static_children_with_query_values_and_a_children_reader(): void
     {
         $plans = NavigationItem::page('list', 'Plans', Icon::Plan, group: 'web.work', position: 200)
-            ->count(LooseResolver::class)
+            ->count(AddBook::class)
             ->children([
                 NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open']),
                 NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed']),
             ]);
-        $collections = NavigationItem::heading('collections', 'Collections', childrenResolver: LooseResolver::class);
+        $collections = NavigationItem::heading('collections', 'Collections', childrenResolver: AddBook::class);
 
         $this->assertSame('list', $plans->page);
         $this->assertSame('web.work', $plans->group);
@@ -160,7 +203,7 @@ final class ClientDeclarationValuesTest extends TestCase
         $this->assertSame(['state' => 'open'], $plans->children[0]->queryValues);
         $this->assertSame('list', $plans->children[0]->page);
         $this->assertNull($collections->page);
-        $this->assertSame(LooseResolver::class, $collections->childrenResolver);
+        $this->assertSame(AddBook::class, $collections->childrenResolver);
     }
 
     public function test_an_item_with_nothing_to_open_is_refused(): void
@@ -191,7 +234,7 @@ final class ClientDeclarationValuesTest extends TestCase
             'Notes',
             'plans.inspector',
             SlotContextType::Record,
-            RecentNotesResolver::class,
+            RecentNotesSection::class,
             'OnPlan.vue',
         )->at(5);
 
@@ -209,7 +252,7 @@ final class ClientDeclarationValuesTest extends TestCase
             'Notes',
             'inspector',
             SlotContextType::Record,
-            RecentNotesResolver::class,
+            RecentNotesSection::class,
             'OnPlan.vue',
         );
     }

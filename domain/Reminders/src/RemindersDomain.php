@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Reminders;
 
+use Domain\Reminders\Data\RemindersPaneData;
+use Domain\Reminders\Http\Pages\RemindersPageBuilder;
+use Domain\Reminders\Http\Pages\RemindersPageData;
+use Domain\Reminders\Http\Windows\RemindersWindowBuilder;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
@@ -14,7 +18,6 @@ use App\Navigation\Enums\Icon;
 use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use Domain\Reminders\Http\Pages\Resolvers\RemindersWindowResolver;
 use Domain\Reminders\Policies\ReminderPolicy;
 use Domain\Reminders\Support\Skills\RemindersSkill;
 
@@ -49,7 +52,15 @@ final class RemindersDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::layout('list', 'Reminders', Icon::Activity, RemindersWindowResolver::class)->at('')->onHome(30),
+            Page::build()
+                ->key('list')
+                ->title('Reminders')
+                ->icon(Icon::Activity)
+                ->pageType(RemindersPageData::class)
+                ->pageBuilder(RemindersPageBuilder::class)
+                ->declaredLayout()
+                ->withWindow(RemindersPaneData::class, RemindersWindowBuilder::class, 'RemindersPane.vue')
+                ->finish()->at('')->onHome(30),
         ];
     }
 

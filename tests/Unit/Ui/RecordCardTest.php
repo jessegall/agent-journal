@@ -20,7 +20,12 @@ final class RecordCardTest extends TestCase
         $card = RecordCard::make('question-4', Icon::Speech, 'Which branch?')
             ->withBadge('Waiting', 'warn')
             ->happened('Asked', '2026-11-22T10:00:00Z')
-            ->withActions(LayoutPartData::action('answer', 'Answer', LayoutActionData::to('/chat/4')))
+            ->withActions(LayoutPartData::build()
+                ->asAction()
+                ->key('answer')
+                ->label('Answer')
+                ->action(LayoutActionData::build()->href('/chat/4')->finish())
+                ->finish())
             ->part();
 
         $this->assertSame('card', $card->style);

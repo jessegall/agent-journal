@@ -10,14 +10,15 @@ use App\Accounts\Commands\CancelSignIn\CancelSignInCommand;
 use App\Accounts\Commands\ClaimCleanup\ClaimCleanupCommand;
 use App\Accounts\Commands\CleanSignInAttempt\CleanSignInAttemptCommand;
 use App\Accounts\Commands\RetryAttemptCleanup\RetryAttemptCleanupCommand;
+use App\Accounts\Data\PendingAttemptCleanupData;
 use App\Accounts\Enums\CommandEntry;
 use App\Accounts\Enums\SignInMethod;
 use App\Accounts\Values\CleanupProgress;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Bus\JournalCommands;
-use App\Http\Pages\Resolvers\AccountsWindowResolver;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
+use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorReference;
 use App\Support\Command;
 use Illuminate\Support\Facades\Bus;
@@ -74,7 +75,7 @@ final class RetryAttemptCleanupTest extends TestCase
         }
 
         $this->assertNull($this->asHost(new ClaimCleanupCommand('host')));
-        $listed = $this->app->make(AccountsWindowResolver::class)->list()->pendingCleanups;
+        $listed = array_map(PendingAttemptCleanupData::fromAttempt(...), SignInAttempt::findPendingCleanups());
         $this->assertSame([$started->attemptId, true], [$listed[0]->attemptId, $listed[0]->awaitsRetry]);
 
         $this->asOwner(new RetryAttemptCleanupCommand($started->attemptId));

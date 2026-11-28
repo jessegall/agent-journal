@@ -4,15 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\Reads;
 
+use App\Actors\ActorStore;
+use App\Bus\RequestKey;
 use App\Events\Web\InboxAccessEnded;
 use App\Events\Web\PageChanged;
 use App\Events\Web\ProtectedViewInvalidated;
+use App\Support\WindowResults;
+use App\Web\Creation\SurfaceDefinition;
 use App\Web\LiveProps;
 use App\Web\PageProps;
 use App\Web\UserChannel;
 use Closure;
+use Domain\Chat\ChatDomain;
+use Domain\Chat\Http\Windows\ConversationWindowBuilder;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
+use LogicException;
+use Spatie\LaravelData\Lazy;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPaneData;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Windows\BooksWindowBuilder;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRead;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -28,6 +39,30 @@ final class PagePropsTest extends TestCase
 
     private const array EVENTS = [PageChanged::NAME, InboxAccessEnded::NAME, ProtectedViewInvalidated::NAME];
 
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
+
+    public function test_the_agent_section_reads_the_plain_form_request_only_when_its_group_is_loaded(): void
+    {
+        $journal = $this->journal->owner()->idleAgent('Second agent');
+        $agent = $journal->agentCalled('Second agent');
+        $section = 'section_web_bar_chat_agent';
+        $this->app->bind(
+            ConversationWindowBuilder::class,
+            static fn () => throw new LogicException('The unselected chat pane was resolved.'),
+        );
+
+        $this->actingAs($journal->ownerUser())->get(route('home', ['agent' => $agent->id]))->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->missing($section)
+                ->loadDeferredProps($section, fn (AssertableInertia $group) => $group
+                    ->where("{$section}.data.selectedAgentId", $agent->id)
+                    ->missing('window_chat_conversation')),
+        );
+    }
+
     public function test_every_on_screen_prop_listens_on_the_viewers_channel_for_the_page_events(): void
     {
         $this->journal->owner();
@@ -36,8 +71,8 @@ final class PagePropsTest extends TestCase
         $live = $this->pageObject($this->actingAs($this->journal->ownerUser())->get(route('home')))['liveProps'];
 
         $this->assertArrayHasKey('page', $live);
-        $this->assertArrayHasKey('inspector', $live);
-        $this->assertNotEmpty(array_filter(array_keys($live), fn (string $prop) => str_starts_with($prop, 'window_')));
+        $this->assertArrayNotHasKey('inspector', $live);
+        $this->assertEmpty(array_filter(array_keys($live), fn (string $prop) => str_starts_with($prop, 'window_')));
 
         foreach ($live as $prop) {
             $this->assertSame(
@@ -52,8 +87,8 @@ final class PagePropsTest extends TestCase
         $this->journal->asGuest();
         $live = $this->app->make(LiveProps::class);
 
-        $this->assertFalse($live->optional(fn () => 'read')->isLive());
-        $this->assertFalse($live->deferred(fn () => 'read', 'sections')->isLive());
+        $this->assertFalse($live->mark(Lazy::inertia(fn () => 'read')->resolve())->isLive());
+        $this->assertFalse($live->mark(Lazy::inertiaDeferred(fn () => 'read', 'sections')->resolve())->isLive());
         $this->assertInstanceOf(Closure::class, $live->value(fn () => 'read'));
     }
 
@@ -67,6 +102,38 @@ final class PagePropsTest extends TestCase
                 fn (AssertableInertia $reload) => $reload->where('inspector', null),
             ),
         );
+    }
+
+    public function test_a_surface_and_each_copy_have_their_own_receipt_key(): void
+    {
+        $keys = $this->app->make(RequestKey::class);
+        $results = $this->app->make(WindowResults::class);
+        $surface = new SurfaceDefinition(BooksPaneData::class, BooksWindowBuilder::class, 'BooksPane.vue');
+        $keys->set('one-outer-visit');
+
+        $this->app->make(ActorStore::class)->actAsSystem('fixture', function () use ($keys, $results, $surface): void {
+            $seen = [];
+
+            $read = function () use ($keys, &$seen): BooksPaneData {
+                $seen[] = $keys->key();
+
+                return BooksPaneData::build()->titles([])->finish();
+            };
+
+            $parts = [
+                'page library.books',
+                'inspector library.books',
+                'window library.books~abcdef123456',
+                'window library.books~123456abcdef',
+            ];
+
+            foreach ($parts as $part) {
+                $results->surface('library.books', $part, [], $surface, $read);
+            }
+
+            $this->assertCount(4, array_unique($seen));
+            $this->assertSame('one-outer-visit', $keys->key());
+        });
     }
 
     /**

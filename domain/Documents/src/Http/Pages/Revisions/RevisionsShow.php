@@ -23,22 +23,44 @@ final readonly class RevisionsShow extends RevisionsPage
     public function of(RevisionView $revision): DeclaredLayoutData
     {
         $metadata = [
-            LayoutPartData::text('label', "doc {$revision->documentNumber}, revision {$revision->number}", 'code'),
-            LayoutPartData::time('saved', 'Saved', $revision->closedAt),
+            LayoutPartData::build()
+                ->asText()
+                ->key('label')
+                ->value("doc {$revision->documentNumber}, revision {$revision->number}")
+                ->style('code')
+                ->finish(),
+            LayoutPartData::build()
+                ->asTime()
+                ->key('saved')
+                ->label('Saved')
+                ->detail($revision->closedAt)
+                ->finish(),
         ];
 
         if ($revision->isHistorical) {
-            $metadata[] = LayoutPartData::badge('historical', 'Historical', 'warn');
-            $current = LayoutActionData::to("/documents/docs/{$revision->documentNumber}");
-            $metadata[] = LayoutPartData::action('current', 'Current text', $current);
+            $metadata[] = LayoutPartData::build()
+                ->asBadge()
+                ->key('historical')
+                ->text('Historical')
+                ->tone('warn')
+                ->finish();
+            $current = LayoutActionData::build()->href("/documents/docs/{$revision->documentNumber}")->finish();
+            $metadata[] = LayoutPartData::build()
+                ->asAction()
+                ->key('current')
+                ->label('Current text')
+                ->action($current)
+                ->finish();
         }
 
-        return PublicationPage::make(
-            $revision->title,
-            $metadata,
-            $revision->abstract,
-            fn () => LayoutBodyData::fromMarkdown(trim($revision->body) === '' ? self::NO_TEXT : $revision->body),
-            [],
-        )->layout('');
+        return PublicationPage::build()
+            ->title($revision->title)
+            ->metadata($metadata)
+            ->summary($revision->abstract)
+            ->body(
+                fn () => LayoutBodyData::fromMarkdown(trim($revision->body) === '' ? self::NO_TEXT : $revision->body),
+            )
+            ->tabs([])
+            ->finish()->layout('');
     }
 }

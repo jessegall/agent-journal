@@ -63,7 +63,11 @@ use Tests\Fixtures\Modules\Notes\Commands\SystemNote\SystemNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote\UserNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
+use Tests\Fixtures\Modules\Notes\Data\CollectionPageData;
+use Tests\Fixtures\Modules\Notes\Data\NotesPageData;
 use Tests\Fixtures\Modules\Notes\Events\NoteRemoved;
+use Tests\Fixtures\Modules\Notes\Http\Pages\CollectionPageBuilder;
+use Tests\Fixtures\Modules\Notes\Http\Pages\NotesPageBuilder;
 use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NoteSnapshotLinkRecords;
@@ -73,9 +77,7 @@ use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use Tests\Fixtures\Modules\Notes\Policies\NotePolicy;
 use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 use Tests\Fixtures\Modules\Notes\Resolvers\CollectionChildren;
-use Tests\Fixtures\Modules\Notes\Resolvers\CollectionWindowResolver;
 use Tests\Fixtures\Modules\Notes\Resolvers\NoteSectionResolver;
-use Tests\Fixtures\Modules\Notes\Resolvers\NotesWindowResolver;
 use Tests\Fixtures\Modules\Notes\Skills\HasNotesCondition;
 use Tests\Fixtures\Modules\Notes\Skills\HasNotesParameters;
 use Tests\Fixtures\Modules\Notes\Skills\NotesSkill;
@@ -161,8 +163,22 @@ final class NotesDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::make('index', 'Notes', Icon::Docs, NotesWindowResolver::class, 'Index.vue')->at(''),
-            Page::make('collection', 'Collection', Icon::Docs, CollectionWindowResolver::class, 'Collection.vue')
+            Page::build()
+                ->key('index')
+                ->title('Notes')
+                ->icon(Icon::Docs)
+                ->pageType(NotesPageData::class)
+                ->pageBuilder(NotesPageBuilder::class)
+                ->component('Index.vue')
+                ->finish()->at(''),
+            Page::build()
+                ->key('collection')
+                ->title('Collection')
+                ->icon(Icon::Docs)
+                ->pageType(CollectionPageData::class)
+                ->pageBuilder(CollectionPageBuilder::class)
+                ->component('Collection.vue')
+                ->finish()
                 ->at('collections/{collection}')
                 ->slots(fn (PageSlots $slots) => $slots->record('note', 'collection', 'collection')),
         ];

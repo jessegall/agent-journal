@@ -84,13 +84,19 @@ final readonly class DocumentsShow extends DocumentsPage
             'address' => route('documents.ask-feedback', ['document' => $number], false),
         ]);
 
-        return DetailPage::make($document->title)
-            ->above(LayoutPartData::text('label', "Doc {$number} · revision {$document->revision}", 'muted'))
+        return DetailPage::build()->title($document->title)->finish()
+            ->above(LayoutPartData::build()
+                ->asText()
+                ->key('label')
+                ->value("Doc {$number} · revision {$document->revision}")
+                ->style('muted')
+                ->finish())
             ->summarising($document->abstract)
-            ->withActions(LayoutPartData::menu(
-                'actions',
-                $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, (string) $number),
-            ))
+            ->withActions(LayoutPartData::build()
+                ->asMenu()
+                ->key('actions')
+                ->menu($this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, (string) $number))
+                ->finish())
             ->withStanding(...$this->feedbackOf($feedback), ...$this->editingOf($document, $editing))
             ->withTabs(
                 PublicationTab::deferred(
@@ -99,13 +105,21 @@ final readonly class DocumentsShow extends DocumentsPage
                     fn () => $this->textOf($document, $label, $feedback, $isPublic(), $comments(), $reads()),
                 ),
                 PublicationTab::deferred('history', 'History', fn () => $this->historyOf($number, $revisions())),
-                PublicationTab::deferred('links', 'Links', fn () => LayoutPartData::native(
-                    'links',
-                    LayoutNativeData::of('documents/RecordLinks', RecordLinksPartData::from([
-                        'source' => $label,
-                        'links' => $links(),
-                    ])),
-                )),
+                PublicationTab::deferred('links', 'Links', fn () => LayoutPartData::build()
+                    ->asNative()
+                    ->key('links')
+                    ->native(
+                        LayoutNativeData::build()
+                        ->component('documents/RecordLinks')
+                        ->props(
+                            RecordLinksPartData::from([
+                                'source' => $label,
+                                'links' => $links(),
+                            ]),
+                        )
+                        ->finish(),
+                    )
+                    ->finish()),
                 PublicationTab::deferred(
                     'details',
                     'Details',
@@ -126,11 +140,12 @@ final readonly class DocumentsShow extends DocumentsPage
         $parts = [];
 
         if ($isPublic) {
-            $parts[] = LayoutPartData::notice(
-                'public',
-                'info',
-                'This document is shared publicly: a comment you leave here will be public.',
-            );
+            $parts[] = LayoutPartData::build()
+                ->asNotice()
+                ->key('public')
+                ->style('info')
+                ->title('This document is shared publicly: a comment you leave here will be public.')
+                ->finish();
         }
 
         $lines = DocumentCommentsPartData::of(
@@ -143,7 +158,13 @@ final readonly class DocumentsShow extends DocumentsPage
             $feedback->address,
         );
 
-        $parts[] = LayoutPartData::native('lines', LayoutNativeData::of('documents/DocumentComments', $lines));
+        $parts[] = LayoutPartData::build()
+            ->asNative()
+            ->key('lines')
+            ->native(
+                LayoutNativeData::build()->component('documents/DocumentComments')->props($lines)->finish(),
+            )
+            ->finish();
 
         $comments = RecordCommentsPartData::from([
             'comments' => $commentList,
@@ -152,9 +173,15 @@ final readonly class DocumentsShow extends DocumentsPage
             'version' => $document->revision,
         ]);
 
-        $parts[] = LayoutPartData::native('comments', LayoutNativeData::of('comments/RecordComments', $comments));
+        $parts[] = LayoutPartData::build()
+            ->asNative()
+            ->key('comments')
+            ->native(
+                LayoutNativeData::build()->component('comments/RecordComments')->props($comments)->finish(),
+            )
+            ->finish();
 
-        return LayoutPartData::box('text', 'stack', ...$parts);
+        return LayoutPartData::build()->asBox()->key('text')->style('stack')->children(...$parts)->finish();
     }
 
     /**
@@ -168,7 +195,13 @@ final readonly class DocumentsShow extends DocumentsPage
             return [];
         }
 
-        return [LayoutPartData::native('feedback', LayoutNativeData::of('documents/DocumentFeedback', $feedback))];
+        return [LayoutPartData::build()
+            ->asNative()
+            ->key('feedback')
+            ->native(
+                LayoutNativeData::build()->component('documents/DocumentFeedback')->props($feedback)->finish(),
+            )
+            ->finish()];
     }
 
     /**
@@ -182,7 +215,13 @@ final readonly class DocumentsShow extends DocumentsPage
         if ($editing->status === EditingStatus::HeldByViewer && ! $editing->draft instanceof Optional) {
             $editor = DraftEditorPartData::from(['number' => $document->number, 'draft' => $editing->draft]);
 
-            return [LayoutPartData::native('editing', LayoutNativeData::of('documents/DraftEditor', $editor))];
+            return [LayoutPartData::build()
+                ->asNative()
+                ->key('editing')
+                ->native(
+                    LayoutNativeData::build()->component('documents/DraftEditor')->props($editor)->finish(),
+                )
+                ->finish()];
         }
 
         if ($editing->status === EditingStatus::Held && ! $editing->held instanceof Optional) {
@@ -192,11 +231,22 @@ final readonly class DocumentsShow extends DocumentsPage
                 'held' => $editing->held,
             ]);
 
-            return [LayoutPartData::native('editing', LayoutNativeData::of('documents/RecoverForm', $recovery))];
+            return [LayoutPartData::build()
+                ->asNative()
+                ->key('editing')
+                ->native(
+                    LayoutNativeData::build()->component('documents/RecoverForm')->props($recovery)->finish(),
+                )
+                ->finish()];
         }
 
         if ($editing->status === EditingStatus::Held) {
-            return [LayoutPartData::notice('editing', 'info', "{$this->holderOf($editing)} is editing this document.")];
+            return [LayoutPartData::build()
+                ->asNotice()
+                ->key('editing')
+                ->style('info')
+                ->title("{$this->holderOf($editing)} is editing this document.")
+                ->finish()];
         }
 
         return [];
@@ -213,55 +263,83 @@ final readonly class DocumentsShow extends DocumentsPage
         RecordInspection $inspection,
     ): LayoutPartData {
         $settlements = array_map(
-            fn (SettlementCard $settlement) => LayoutRowData::from(
-                [
-                    'key' => $settlement->settledAt,
-                    'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}",
-                    'value' => $settlement->reason,
-                ],
-            ),
+            fn (SettlementCard $settlement) => LayoutRowData::build()
+                ->key($settlement->settledAt)
+                ->label("Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}")
+                ->value($settlement->reason)
+                ->finish(),
             $inspection->settlements,
         );
 
         $parts = [
-            LayoutPartData::collection('facts', 'facts', [
-                LayoutRowData::from(
+            LayoutPartData::build()
+                ->asCollection()
+                ->key('facts')
+                ->style('facts')
+                ->rows(
                     [
-                        'key' => 'editing',
-                        'label' => 'Editing',
-                        'value' => $editing->status->word($this->holderOf($editing)),
+                        LayoutRowData::build()
+                            ->key('editing')
+                            ->label('Editing')
+                            ->value($editing->status->word($this->holderOf($editing)))
+                            ->finish(),
+                        LayoutRowData::build()
+                            ->key('attention')
+                            ->label('Attention')
+                            ->value($document->attention->value)
+                            ->finish(),
                     ],
-                ),
-                LayoutRowData::from(
-                    ['key' => 'attention', 'label' => 'Attention', 'value' => $document->attention->value],
-                ),
-            ]),
+                )
+                ->finish(),
         ];
 
         if ($settlements !== []) {
-            $parts[] = LayoutPartData::collection('settlements', 'list', $settlements);
+            $parts[] = LayoutPartData::build()
+                ->asCollection()
+                ->key('settlements')
+                ->style('list')
+                ->rows($settlements)
+                ->finish();
         }
 
         if ($document->attention === AttentionStatus::Active) {
-            $parts[] = LayoutPartData::form(
-                'settle',
-                LayoutFormData::from(
-                    [
-                        'method' => ActionMethod::Post,
-                        'href' => route('documents.settle-document', ['document' => $document->number], false),
-                        'fixed' => ['revision' => (int) $document->revision],
-                    ],
-                ),
-                'inline',
-                LayoutPartData::field('reason', 'Reason', LayoutFieldData::from(['name' => 'reason']), 'text'),
-                LayoutPartData::action('send', 'Settle', LayoutActionData::submitting()),
-            );
+            $parts[] = LayoutPartData::build()
+                ->asForm()
+                ->key('settle')
+                ->form(
+                    LayoutFormData::build()
+                        ->method(ActionMethod::Post)
+                        ->href(route('documents.settle-document', ['document' => $document->number], false))
+                        ->fixed(['revision' => (int) $document->revision])
+                        ->finish(),
+                )
+                ->style('inline')
+                ->children(
+                    LayoutPartData::build()
+                    ->asField()
+                    ->key('reason')
+                    ->label('Reason')
+                    ->field(LayoutFieldData::build()->name('reason')->finish())
+                    ->style('text')
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('send')
+                    ->label('Settle')
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->finish(),
+                )
+                ->finish();
         }
 
         $share = RecordSharePartData::from(['reference' => $label]);
-        $parts[] = LayoutPartData::native('share', LayoutNativeData::of('documents/RecordShare', $share));
+        $parts[] = LayoutPartData::build()
+            ->asNative()
+            ->key('share')
+            ->native(LayoutNativeData::build()->component('documents/RecordShare')->props($share)->finish())
+            ->finish();
 
-        return LayoutPartData::box('details', 'stack', ...$parts);
+        return LayoutPartData::build()->asBox()->key('details')->style('stack')->children(...$parts)->finish();
     }
 
     /**
@@ -269,16 +347,23 @@ final readonly class DocumentsShow extends DocumentsPage
      */
     private function historyOf(int $number, array $revisions): LayoutPartData
     {
-        return LayoutPartData::collection('history', 'list', array_map(
-            fn (RevisionCard $revision) => LayoutRowData::from([
-                'key' => $revision->number,
-                'label' => "revision {$revision->number}",
-                'value' => $revision->title,
-                'detail' => $revision->closedAt,
-                'href' => "/documents/docs/{$number}/revisions/{$revision->number}",
-            ]),
-            $revisions,
-        ));
+        return LayoutPartData::build()
+            ->asCollection()
+            ->key('history')
+            ->style('list')
+            ->rows(
+                array_map(
+                    fn (RevisionCard $revision) => LayoutRowData::build()
+                        ->key($revision->number)
+                        ->label("revision {$revision->number}")
+                        ->value($revision->title)
+                        ->detail($revision->closedAt)
+                        ->href("/documents/docs/{$number}/revisions/{$revision->number}")
+                        ->finish(),
+                    $revisions,
+                ),
+            )
+            ->finish();
     }
 
     private function holderOf(DraftState $editing): string

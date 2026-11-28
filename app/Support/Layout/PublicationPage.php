@@ -14,13 +14,18 @@ use Closure;
  */
 final readonly class PublicationPage
 {
+    /** @use \App\Web\Creation\Buildable<PublicationPageFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = PublicationPageFields::class;
+
     /**
      * @param  list<LayoutPartData>  $metadata
      * @param  Closure(): LayoutBodyData  $body
      * @param  list<PublicationTab>  $tabs
      * @param  list<LayoutPartData>  $standing  shown on every tab under the header, so a tab change keeps them mounted
      */
-    private function __construct(
+    public function __construct(
         public string $title,
         public array $metadata,
         public string $summary,
@@ -28,16 +33,6 @@ final readonly class PublicationPage
         public array $tabs,
         public array $standing = [],
     ) {}
-
-    /**
-     * @param  list<LayoutPartData>  $metadata
-     * @param  Closure(): LayoutBodyData  $body
-     * @param  list<PublicationTab>  $tabs
-     */
-    public static function make(string $title, array $metadata, string $summary, Closure $body, array $tabs): self
-    {
-        return new self($title, $metadata, $summary, $body, $tabs);
-    }
 
     /**
      * The page with parts that stay under its header whichever tab is shown, such as the editor of a held draft.
@@ -52,23 +47,38 @@ final readonly class PublicationPage
      */
     public function layout(string $chosen): DeclaredLayoutData
     {
-        $header = LayoutPartData::box(
-            'header',
-            'header',
-            LayoutPartData::text('title', $this->title, 'heading'),
-            LayoutPartData::box('metadata', 'row', ...$this->metadata),
-            LayoutPartData::text('summary', $this->summary, 'muted'),
-        );
+        $header = LayoutPartData::build()
+            ->asBox()
+            ->key('header')
+            ->style('header')
+            ->children(
+                LayoutPartData::build()->asText()->key('title')->value($this->title)->style('heading')->finish(),
+                LayoutPartData::build()
+                ->asBox()
+                ->key('metadata')
+                ->style('row')
+                ->children(...$this->metadata)
+                ->finish(),
+                LayoutPartData::build()->asText()->key('summary')->value($this->summary)->style('muted')->finish(),
+            )
+            ->finish();
 
-        return DeclaredLayoutData::of(
-            LayoutPartData::box('publication', 'stack', $header, ...[...$this->standing, $this->content($chosen)]),
-        );
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('publication')
+                ->style('stack')
+                ->children($header, ...[...$this->standing, $this->content($chosen)])
+                ->finish(),
+            )
+            ->finish();
     }
 
     private function content(string $chosen): LayoutPartData
     {
         if ($this->tabs === []) {
-            return LayoutPartData::body('body', ($this->body)());
+            return LayoutPartData::build()->asBody()->key('body')->body(($this->body)())->finish();
         }
 
         return PublicationTab::setOf($this->tabs, $chosen);

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Contracts\Reports;
 
+use Domain\Documents\Models\Report;
+use Illuminate\Database\Eloquent\Collection;
 use App\Data\Pages\RecordCard;
 use App\Support\TextSelection;
 use App\Text\Exceptions\SectionMissing;
@@ -23,6 +25,9 @@ interface ReportResolver
      * The reports that match the filters.
      */
     public function list(DocumentFilters $filters): PublicationList;
+
+    /** @return Collection<int, Report> */
+    public function preview(DocumentFilters $filters, int $limit): Collection;
 
     /**
      * How many reports are still open.

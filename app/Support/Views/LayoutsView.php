@@ -13,16 +13,17 @@ use App\Models\Records\Layout;
 final readonly class LayoutsView
 {
     /**
+     * @param list<string> $panes
      * @return list<LayoutData>
      */
-    public function layouts(): array
+    public function layouts(array $panes): array
     {
         return array_values(Layout::query()
             ->byName()
             ->get()
             ->map(
                 fn (Layout $layout) => LayoutData::from(
-                    ['id' => (string) $layout->id, 'name' => $layout->name, 'shape' => $layout->shape],
+                    ['id' => (string) $layout->id, 'name' => $layout->name, 'shape' => $layout->shape->keepingWindows($panes)],
                 ),
             )
             ->all());

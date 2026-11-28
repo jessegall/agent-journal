@@ -11,26 +11,19 @@ use App\Exceptions\ClientDeclarationError;
  */
 final class InvalidPageDeclaration extends ClientDeclarationError
 {
-    public static function resolverReturnsNoData(string $page, string $resolver): self
+    public static function typePresentsNoLayout(string $page, string $type): self
     {
-        return new self(
-            sprintf(
-                'Page %s names the resolver %s, whose read method does not declare a concrete Data class as its return type.',
-                $page,
-                $resolver,
-            ),
-        );
+        return new self("Page {$page} uses the declared layout renderer, but {$type} does not present a layout.");
     }
 
-    public static function readerReturnsNoLayout(string $page, string $resolver): self
+    public static function missingRecordParameter(string $page, string $parameter): self
     {
-        return new self(
-            sprintf(
-                'Page %s is declared as a layout, but its resolver %s does not return DeclaredLayoutData from its read method.',
-                $page,
-                $resolver,
-            ),
-        );
+        return new self("Page {$page} declares record parameter {$parameter} but its route does not contain it.");
+    }
+
+    public static function missingWindow(string $page): self
+    {
+        return new self("Page {$page} has a Home position but does not declare a compact window.");
     }
 
     public static function recordSlotWithoutParameter(string $slot): self

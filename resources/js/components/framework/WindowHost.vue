@@ -27,7 +27,7 @@ const emit = defineEmits<{ close: [] }>();
 const isBatchStale = computed(() => isPropStale(props.propName));
 const { result, keptData, retry } = useWindowProps(
   props.propName,
-  props.askOnStart,
+  () => props.askOnStart,
 );
 provideHostProp(props.propName);
 
@@ -37,20 +37,23 @@ if (props.pageKey !== undefined) {
 </script>
 
 <template>
-  <ResultView
-    :result="result"
-    :kept-data="keptData"
-    :is-window="pageKey !== undefined"
-    :subject="
-      subject ?? (pageKey !== undefined ? 'this window' : 'this section')
-    "
-    :placement="pageKey !== undefined ? 'pane' : 'section'"
-    :is-batch-stale="isBatchStale"
-    @retry="retry"
-    @close="emit('close')"
-  >
-    <template #content="{ data }">
-      <component :is="component" :data="data" />
-    </template>
-  </ResultView>
+  <div :class="pageKey === undefined ? 'contents' : 'h-full min-h-0 overflow-auto'">
+    <ResultView
+      :result="result"
+      :kept-data="keptData"
+      :is-window="pageKey !== undefined"
+      :subject="
+        subject ?? (pageKey !== undefined ? 'this window' : 'this section')
+      "
+      :placement="pageKey !== undefined ? 'pane' : 'section'"
+      :is-batch-stale="isBatchStale"
+      @retry="retry"
+      @close="emit('close')"
+    >
+      <template #content="{ data }">
+        <component v-if="pageKey === undefined" :is="component" :data="data" />
+        <component v-else :is="component" v-bind="data as Record<string, unknown>" />
+      </template>
+    </ResultView>
+  </div>
 </template>

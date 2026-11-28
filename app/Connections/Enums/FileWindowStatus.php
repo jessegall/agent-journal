@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Connections\Enums;
 
+use App\Hosts\Protocol\HostProjectReadFailure;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -21,4 +22,13 @@ enum FileWindowStatus: string
     case Binary = 'binary';
     case TooLarge = 'too_large';
     case None = 'none';
+
+    public static function fromFailure(HostProjectReadFailure|null $failure): self
+    {
+        return match ($failure) {
+            HostProjectReadFailure::Binary => self::Binary,
+            HostProjectReadFailure::TooLarge => self::TooLarge,
+            default => self::Failed,
+        };
+    }
 }

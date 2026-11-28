@@ -18,14 +18,17 @@ use App\Support\Types\LoaderTypes;
 use App\Support\Types\PagePropTypes;
 use App\Support\Types\TypeOwners;
 use Illuminate\Support\Facades\File;
-use Tests\Fixtures\ClientDeclarations\Library\BooksResolver;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPageData;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BooksPageBuilder;
 use Tests\Fixtures\ClientDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\ClientDeclarations\Library\ShelfRowsData;
 use Tests\Fixtures\ClientDeclarations\Library\ShelfRowsInput;
 use Tests\Fixtures\ClientDeclarations\Library\ShelfRowsLoader;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageBuilder;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageData;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfPageBuilder;
 use Tests\Fixtures\ClientDeclarations\Shelf\ShelfDomain;
-use Tests\Fixtures\ClientDeclarations\Shelf\ShelfResolver;
-use Tests\Fixtures\ClientDeclarations\ShelfLayoutResolver;
+use Tests\Fixtures\ClientDeclarations\Shelf\ShelfPageData;
 use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 use Throwable;
@@ -55,21 +58,21 @@ final class ClientManifestTest extends TestCase
 
     private const string READY_STATE = "| { status: 'ready'; data: T; offer?: WindowOfferData }";
 
-    private const string SHARED_IMPORT = "import type { RecentNotesData } from './shared';";
+    private const string SHARED_IMPORT = "import type { BooksPageData, ShelfPageData } from './shared';";
 
     private const string LIBRARY_PAGE_PROPS = "export type LibraryIndexPageProps = {\n"
-        .'    page: WindowResult<RecentNotesData>;';
+        .'    page: WindowResult<BooksPageData>;';
 
-    private const string SHELF_WINDOW = 'window_shelf_index?: WindowResult<RecentNotesData>;';
+    private const string SHELF_WINDOW = 'window_shelf_index?:';
 
     private const string SHELF_ACCEPTS = 'export const accepts_shelf_index: '
-        ."Accepts<{ data: RecentNotesData }, typeof import('";
+        ."Accepts<{ data: ShelfPageData }, typeof import('";
 
-    private const string PAGE_PROPS_IMPORT = "import type { RecentNotesData } from './types/page-props';";
+    private const string PAGE_PROPS_IMPORT = "import type { BooksPageData, ShelfPageData } from './types/page-props';";
 
     private const string SHELF_CHECK = "Shelf/Resources/js/pages/shelf/Index.vue').default> = true;";
 
-    private const string LENT_WINDOW = 'window_shelf_lent?: WindowResult<DeclaredLayoutData>;';
+    private const string LENT_WINDOW = 'window_shelf_lent?:';
 
     private const string CORE_IMPORT = "import type { DeclaredLayoutData } from './core';";
 
@@ -125,6 +128,20 @@ final class ClientManifestTest extends TestCase
         $this->assertSame([], glob("{$this->root}/**/*.tmp") ?: []);
     }
 
+    public function test_installed_compact_components_are_not_route_pages(): void
+    {
+        $this->app->make(ClientManifest::class)->write($this->root);
+        $components = File::get("{$this->root}/resources/js/generated/ui-manifest.ts");
+        $props = File::get("{$this->root}/resources/js/generated/types/page-props.ts");
+        $checks = File::get("{$this->root}/resources/js/generated/ui-prop-checks.ts");
+
+        $this->assertStringContainsString("'web/AskInboxPane': () => import(", $components);
+        $this->assertStringNotContainsString("'web/AskInboxPane',", $components);
+        $this->assertStringContainsString('window_web_asks?: WindowResult<AskInboxPaneData>', $props);
+        $this->assertStringContainsString('accepts_window_web_asks: Accepts<AskInboxPaneData', $checks);
+        $this->assertStringNotContainsString('window_web_terminal?:', $props);
+    }
+
     public function test_a_generation_that_fails_midway_puts_every_file_it_replaced_back(): void
     {
         $this->manifest([$this->library(), $this->shelf()])->write($this->root);
@@ -178,7 +195,7 @@ final class ClientManifestTest extends TestCase
             self::LIBRARY_PAGE_PROPS,
             $props,
         );
-        $this->assertStringContainsString(self::SHELF_WINDOW, $props);
+        $this->assertStringNotContainsString(self::SHELF_WINDOW, $props);
         $this->assertStringContainsString(
             self::SHELF_ACCEPTS,
             $checks,
@@ -196,13 +213,27 @@ final class ClientManifestTest extends TestCase
         File::ensureDirectoryExists("{$this->root}/resources/js/pages/layout");
         File::put("{$this->root}/resources/js/pages/layout/DeclaredLayout.vue", '<template><div /></template>');
         $shelf = DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
-            Page::make('index', 'Shelf', Icon::Docs, ShelfResolver::class, 'Index.vue')->at(''),
-            Page::layout('lent', 'Lent', Icon::Docs, ShelfLayoutResolver::class)->at('lent'),
+            Page::build()
+                ->key('index')
+                ->title('Shelf')
+                ->icon(Icon::Docs)
+                ->pageType(ShelfPageData::class)
+                ->pageBuilder(ShelfPageBuilder::class)
+                ->component('Index.vue')
+                ->finish()->at(''),
+            Page::build()
+                ->key('lent')
+                ->title('Lent')
+                ->icon(Icon::Docs)
+                ->pageType(ShelfLayoutPageData::class)
+                ->pageBuilder(ShelfLayoutPageBuilder::class)
+                ->declaredLayout()
+                ->finish()->at('lent'),
         ]);
         $this->manifest([$this->library(), $shelf])->write($this->root);
         $props = File::get("{$this->root}/resources/js/generated/types/page-props.ts");
 
-        $this->assertStringContainsString(self::LENT_WINDOW, $props);
+        $this->assertStringNotContainsString(self::LENT_WINDOW, $props);
         $this->assertStringContainsString(self::CORE_IMPORT, $props);
         $this->assertStringContainsString(
             "'layout/DeclaredLayout',",
@@ -213,7 +244,14 @@ final class ClientManifestTest extends TestCase
     public function test_each_loader_gets_a_descriptor_typed_with_its_input_and_answer(): void
     {
         $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(
-            pages: [Page::make('index', 'Library', Icon::Docs, BooksResolver::class, 'Index.vue')->at('')],
+            pages: [Page::build()
+                ->key('index')
+                ->title('Library')
+                ->icon(Icon::Docs)
+                ->pageType(BooksPageData::class)
+                ->pageBuilder(BooksPageBuilder::class)
+                ->component('Index.vue')
+                ->finish()->at('')],
             types: [ShelfRowsInput::class, ShelfRowsData::class],
             loaders: [Loader::make('shelf-rows', ShelfRowsLoader::class)],
         );
@@ -257,14 +295,28 @@ final class ClientManifestTest extends TestCase
     private function library(): DomainClient
     {
         return DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
-            Page::make('index', 'Library', Icon::Docs, BooksResolver::class, 'Index.vue')->at(''),
+            Page::build()
+                ->key('index')
+                ->title('Library')
+                ->icon(Icon::Docs)
+                ->pageType(BooksPageData::class)
+                ->pageBuilder(BooksPageBuilder::class)
+                ->component('Index.vue')
+                ->finish()->at(''),
         ]);
     }
 
     private function shelf(): DomainClient
     {
         return DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
-            Page::make('index', 'Shelf', Icon::Docs, ShelfResolver::class, 'Index.vue')->at(''),
+            Page::build()
+                ->key('index')
+                ->title('Shelf')
+                ->icon(Icon::Docs)
+                ->pageType(ShelfPageData::class)
+                ->pageBuilder(ShelfPageBuilder::class)
+                ->component('Index.vue')
+                ->finish()->at(''),
         ]);
     }
 }

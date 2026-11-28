@@ -15,6 +15,7 @@ use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutProgressData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
@@ -51,17 +52,19 @@ final readonly class PlansIndex extends PlansPage
         $page = $this->plans->list($filters->toDomain());
         $settled = $filters->onPage($page->page);
 
-        return ListPage::make(
-            'Plans',
-            array_map(fn (PlanCard $card) => $this->rowOf($card, $settled), $page->cards),
-            $this->emptyFor($settled),
-        )
+        return ListPage::build()
+            ->title('Plans')
+            ->rows($page->cards, fn (PlanCard $card) => $this->rowOf($card, $settled))
+            ->empty($this->emptyFor($settled))
             ->counting($page->total)
             ->creatingWith($this->creation())
-            ->paged(ListPaging::numbered($page->page, max(1, $page->lastPage)))
-            ->withReader(new LayoutBackData(route('plans.list', $settled->toQuery(), false), 'Plans'), ...$reader)
+            ->paged(ListPaging::build()->page($page->page)->lastPage(max(1, $page->lastPage))->finish())
+            ->withReader(LayoutBackData::build()
+                ->href(route('plans.list', $settled->toQuery(), false))
+                ->label('Plans')
+                ->finish(), ...$reader)
             ->withReaderWidth(ReaderWidth::Unrestricted)
-            ->layout();
+            ->finish();
     }
 
     private function rowOf(PlanCard $plan, PlanFiltersData $filters): LayoutRowData
@@ -70,21 +73,44 @@ final readonly class PlansIndex extends PlansPage
         $trailing = $this->projectLabel->partsFor($plan->owner);
 
         if ($card->status === PlanStatus::Cancelled) {
-            $trailing[] = LayoutPartData::badge('state', 'Cancelled', 'quiet');
+            $trailing[] = LayoutPartData::build()
+                ->asBadge()
+                ->key('state')
+                ->text('Cancelled')
+                ->tone('quiet')
+                ->finish();
         }
 
         $trailing[] = $card->totalTasks === 0
-            ? LayoutPartData::text('progress', 'No tasks', 'muted')
-            : LayoutPartData::share('progress', $card->finishedTasks, $card->totalTasks, "Plan {$card->number}", 'tasks');
+            ? LayoutPartData::build()->asText()->key('progress')->value('No tasks')->style('muted')->finish()
+            : LayoutPartData::build()
+                ->asShare()
+                ->key('progress')
+                ->progress(
+                    LayoutProgressData::build()
+                    ->value($card->finishedTasks)
+                    ->max($card->totalTasks)
+                    ->label("Plan {$card->number}")
+                    ->unit('tasks')
+                    ->finish(),
+                )
+                ->finish();
 
-        return LayoutRowData::from([
-            'key' => $card->id,
-            'label' => $card->title,
-            'href' => route('plans.plan', ['plan' => $card->number, ...$filters->toQuery()], false),
-            'isCurrent' => $filters->plan === $card->number,
-            'leading' => [LayoutPartData::text('number', $card->number, 'muted')],
-            'trailing' => $trailing,
-        ]);
+        return LayoutRowData::build()
+            ->key($card->id)
+            ->label($card->title)
+            ->href(route('plans.plan', ['plan' => $card->number, ...$filters->toQuery()], false))
+            ->isCurrent($filters->plan === $card->number)
+            ->leading(
+                [LayoutPartData::build()
+                ->asText()
+                ->key('number')
+                ->value($card->number)
+                ->style('muted')
+                ->finish()],
+            )
+            ->trailing($trailing)
+            ->finish();
     }
 
     private function emptyFor(PlanFiltersData $filters): ListEmpty
@@ -97,12 +123,13 @@ final readonly class PlansIndex extends PlansPage
             );
         }
 
-        return ListEmpty::nothingYet(
-            'No plans yet',
-            'A plan breaks bigger work into phases and tasks that agents can pick up.',
-            'plan',
-            $this->creation('first', 'primary'),
-        );
+        return ListEmpty::build()
+            ->title('No plans yet')
+            ->detail('A plan breaks bigger work into phases and tasks that agents can pick up.')
+            ->icon('plan')
+            ->actions([$this->creation('first', 'primary')])
+            ->fillsPage(true)
+            ->finish();
     }
 
     /**
@@ -119,31 +146,52 @@ final readonly class PlansIndex extends PlansPage
      */
     private function creation(string $key = 'creation', string $openerStyle = 'bordered'): LayoutPartData
     {
-        $creation = new CreationDialog(
-            $key,
-            'New plan',
-            'Plan created',
-            'Create plan',
-            $this->producers->offersGuided('plan') ? 'plan' : Optional::create(),
-            guidedWay: 'Plan it with an agent',
-            waysInHeader: $key === 'creation',
-        );
+        $creation = CreationDialog::build()
+            ->key($key)
+            ->title('New plan')
+            ->confirmation('Plan created')
+            ->sendLabel('Create plan')
+            ->guidedNoun($this->producers->offersGuided('plan') ? 'plan' : Optional::create())
+            ->guidedWay('Plan it with an agent')
+            ->waysInHeader($key === 'creation')
+            ->finish();
 
         return $this->creationDialog(
             $creation,
-            LayoutPartData::action('open', 'New plan', LayoutActionData::changing([]), $openerStyle),
-            LayoutFormData::from(
-                ['method' => ActionMethod::Post, 'href' => route('plans.create-plan', [], false), 'isKeyed' => true],
-            ),
+            LayoutPartData::build()
+                ->asAction()
+                ->key('open')
+                ->label('New plan')
+                ->action(LayoutActionData::build()->query([])->finish())
+                ->style($openerStyle)
+                ->finish(),
+            LayoutFormData::build()
+                ->method(ActionMethod::Post)
+                ->href(route('plans.create-plan', [], false))
+                ->isKeyed(true)
+                ->finish(),
             [
-                LayoutPartData::field('title', 'Title', LayoutFieldData::from(['name' => 'title']), 'text'),
-                LayoutPartData::field('brief', 'Goal', LayoutFieldData::from(['name' => 'brief']), 'text'),
-                LayoutPartData::field(
-                    'type',
-                    'Type',
-                    LayoutFieldData::from(['name' => 'type', 'options' => $this->typeNames()]),
-                    'choice',
-                ),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('title')
+                    ->label('Title')
+                    ->field(LayoutFieldData::build()->name('title')->finish())
+                    ->style('text')
+                    ->finish(),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('brief')
+                    ->label('Goal')
+                    ->field(LayoutFieldData::build()->name('brief')->finish())
+                    ->style('text')
+                    ->finish(),
+                LayoutPartData::build()
+                    ->asField()
+                    ->key('type')
+                    ->label('Type')
+                    ->field(LayoutFieldData::build()->name('type')->options($this->typeNames())->finish())
+                    ->style('choice')
+                    ->finish(),
                 ...$this->projectField->forProject(),
             ],
         );

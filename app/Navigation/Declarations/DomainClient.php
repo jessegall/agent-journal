@@ -206,12 +206,19 @@ final readonly class DomainClient
         $code = CodeFiles::ofProcess();
 
         try {
-            return $code->realPathOf($code->projectPathOf($this->pageFolder())->child($component));
+            $folder = $code->projectPathOf($this->pageFolder());
+            $file = $code->realPathOf($folder->child($component));
         } catch (FilePathInvalid|FileOutsidePlaces|FolderClosed|LinkLeavesPlace $refusal) {
             throw ClientComponentMissing::outsideOwner($declaration, $component, $refusal);
         } catch (FileMissing|LinkLoop $refusal) {
             throw ClientComponentMissing::at($declaration, "{$this->pageFolder()}/{$component}", $refusal);
         }
+
+        if (! str_starts_with($file, rtrim($this->pageFolder(), '/').'/')) {
+            throw ClientComponentMissing::outsideOwner($declaration, $component);
+        }
+
+        return $file;
     }
 
     /**
@@ -224,7 +231,7 @@ final readonly class DomainClient
     }
 
     /**
-     * Refuses a class named by a declaration that does not implement the interface its role needs.
+     * Checks the contract of a section resolver or another declared role.
      *
      * @param  class-string  $interface
      */

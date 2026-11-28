@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
+use App\Navigation\Contracts\SectionResolver;
 use App\Navigation\Declarations\DomainClient;
 use App\Navigation\Exceptions\ClientResolverInvalid;
 use App\Support\DeclaredType;
@@ -14,13 +15,13 @@ use Illuminate\Foundation\Http\FormRequest;
 use Spatie\LaravelData\Data;
 
 /**
- * A checked page or section resolver: its class, the Data class its read method returns, and the one form request its
+ * A checked section resolver: its class, the Data class its read method returns, and the one form request its
  * constructor takes, if any. The container builds the reader per request; this holds only class names.
  */
 final readonly class ResolverDefinition
 {
     /**
-     * @param  class-string  $resolver
+     * @param  class-string<SectionResolver>  $resolver
      * @param  class-string<Data>  $dataClass
      * @param  class-string<FormRequest>|null  $request  null when the reader reads no request
      */
@@ -31,18 +32,16 @@ final readonly class ResolverDefinition
     ) {}
 
     /**
-     * @param  class-string  $resolver
-     * @param  class-string  $interface  PageResolver or SectionResolver
+     * @param  class-string<SectionResolver>  $resolver
      * @param  class-string<Data>  $dataClass
      */
     public static function of(
         DomainClient $owner,
         string $declaration,
         string $resolver,
-        string $interface,
         string $dataClass,
     ): self {
-        $owner->assertImplements($declaration, $resolver, $interface);
+        $owner->assertImplements($declaration, $resolver, SectionResolver::class);
 
         $parameters = Reflector::of($resolver)->constructor()
             ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())

@@ -15,6 +15,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutWaysData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutWaysDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutWaysDataFields::class;
+
     public function __construct(
         public readonly string $plain,
         public readonly string $guided,

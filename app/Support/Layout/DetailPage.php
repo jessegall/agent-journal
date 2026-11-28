@@ -11,6 +11,11 @@ namespace App\Support\Layout;
  */
 final readonly class DetailPage
 {
+    /** @use \App\Web\Creation\Buildable<DetailPageFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = DetailPageFields::class;
+
     /**
      * @param  list<LayoutPartData>  $metadata
      * @param  list<LayoutPartData>  $actions
@@ -18,7 +23,7 @@ final readonly class DetailPage
      * @param  list<LayoutPartData>  $standing
      * @param  list<PublicationTab>  $tabs
      */
-    private function __construct(
+    public function __construct(
         public string $title,
         public array $metadata = [],
         public string|null $abstract = null,
@@ -27,11 +32,6 @@ final readonly class DetailPage
         public array $standing = [],
         public array $tabs = [],
     ) {}
-
-    public static function make(string $title): self
-    {
-        return new self($title);
-    }
 
     /**
      * The line above the title, such as the link to the plan a task belongs to.
@@ -80,7 +80,7 @@ final readonly class DetailPage
      */
     public function layout(string $chosen = ''): DeclaredLayoutData
     {
-        return DeclaredLayoutData::of($this->part($chosen));
+        return DeclaredLayoutData::build()->root($this->part($chosen))->finish();
     }
 
     /**
@@ -88,7 +88,12 @@ final readonly class DetailPage
      */
     public function part(string $chosen = ''): LayoutPartData
     {
-        return LayoutPartData::box('detail', 'reader', ...[...$this->head(), ...$this->body($chosen)]);
+        return LayoutPartData::build()
+            ->asBox()
+            ->key('detail')
+            ->style('reader')
+            ->children(...[...$this->head(), ...$this->body($chosen)])
+            ->finish();
     }
 
     /**
@@ -96,12 +101,29 @@ final readonly class DetailPage
      */
     public static function removed(string $noun, LayoutBackData $back): DeclaredLayoutData
     {
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'removed',
-            'stack',
-            LayoutPartData::notice('removed', 'empty', "This {$noun} was removed."),
-            LayoutPartData::action('back', $back->label, LayoutActionData::to($back->href)),
-        ));
+        return DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('removed')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asNotice()
+                    ->key('removed')
+                    ->style('empty')
+                    ->title("This {$noun} was removed.")
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('back')
+                    ->label($back->label)
+                    ->action(LayoutActionData::build()->href($back->href)->finish())
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     /**
@@ -109,18 +131,38 @@ final readonly class DetailPage
      */
     private function head(): array
     {
-        $parts = [LayoutPartData::text('title', $this->title, 'heading')];
+        $parts = [LayoutPartData::build()
+            ->asText()
+            ->key('title')
+            ->value($this->title)
+            ->style('heading')
+            ->finish()];
 
         if ($this->metadata !== []) {
-            $parts[] = LayoutPartData::box('metadata', 'row', ...$this->metadata);
+            $parts[] = LayoutPartData::build()
+                ->asBox()
+                ->key('metadata')
+                ->style('row')
+                ->children(...$this->metadata)
+                ->finish();
         }
 
         if ($this->abstract !== null) {
-            $parts[] = LayoutPartData::text('abstract', $this->abstract, 'muted');
+            $parts[] = LayoutPartData::build()
+                ->asText()
+                ->key('abstract')
+                ->value($this->abstract)
+                ->style('muted')
+                ->finish();
         }
 
         if ($this->actions !== []) {
-            $parts[] = LayoutPartData::box('actions', 'row', ...$this->actions);
+            $parts[] = LayoutPartData::build()
+                ->asBox()
+                ->key('actions')
+                ->style('row')
+                ->children(...$this->actions)
+                ->finish();
         }
 
         return $parts;
@@ -134,7 +176,12 @@ final readonly class DetailPage
         $parts = [];
 
         if ($this->facts !== []) {
-            $parts[] = LayoutPartData::collection('facts', 'facts', $this->facts);
+            $parts[] = LayoutPartData::build()
+                ->asCollection()
+                ->key('facts')
+                ->style('facts')
+                ->rows($this->facts)
+                ->finish();
         }
 
         $parts = [

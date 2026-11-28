@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Plans;
 
+use Domain\Plans\Data\PhaseReaderData;
+use Domain\Plans\Data\PlansPaneData;
+use Domain\Plans\Http\Pages\PhasePageBuilder;
+use Domain\Plans\Http\Pages\PlanPageBuilder;
+use Domain\Plans\Http\Pages\PlanPageData;
+use Domain\Plans\Http\Pages\PlanTaskPageBuilder;
+use Domain\Plans\Http\Pages\PlanTaskPageData;
+use Domain\Plans\Http\Pages\PlansPageBuilder;
+use Domain\Plans\Http\Pages\PlansPageData;
+use Domain\Plans\Http\Windows\PlansWindowBuilder;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Drivers\Contracts\NativePartProvider;
@@ -66,10 +76,6 @@ use Domain\Plans\Http\Controllers\StartPlanController;
 use Domain\Plans\Http\Controllers\SuggestPlanGraphPageController;
 use Domain\Plans\Http\Controllers\UndoPlanGraphPageController;
 use Domain\Plans\Http\Controllers\WithdrawPlanReviewPageController;
-use Domain\Plans\Http\Pages\Resolvers\PhaseWindowResolver;
-use Domain\Plans\Http\Pages\Resolvers\PlansWindowResolver;
-use Domain\Plans\Http\Pages\Resolvers\PlanTaskWindowResolver;
-use Domain\Plans\Http\Pages\Resolvers\PlanWindowResolver;
 use Domain\Plans\Http\Pages\Resolvers\TaskPlanSection;
 use Domain\Plans\Http\Pages\Resolvers\WaitingPlansSection;
 use Domain\Plans\Mcp\Resources\PlanResource;
@@ -252,15 +258,37 @@ final class PlansDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::layout('list', 'Plans', Icon::Plan, PlansWindowResolver::class)
+            Page::build()
+                ->key('list')
+                ->title('Plans')
+                ->icon(Icon::Plan)
+                ->pageType(PlansPageData::class)
+                ->pageBuilder(PlansPageBuilder::class)
+                ->declaredLayout()
+                ->withWindow(PlansPaneData::class, PlansWindowBuilder::class, 'PlansPane.vue')
+                ->finish()
                 ->at('')
                 ->onHome(20)
                 ->actions(fn (PageActions $actions) => $actions
                     ->post('{plan}/start', StartPlanController::class, 'start')
                     ->post('create', CreatePlanPageController::class, 'create-plan')),
-            Page::layout('plan-task', 'Plan task', Icon::Plan, PlanTaskWindowResolver::class)
+            Page::build()
+                ->key('plan-task')
+                ->title('Plan task')
+                ->icon(Icon::Plan)
+                ->pageType(PlanTaskPageData::class)
+                ->pageBuilder(PlanTaskPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('{plan}/tasks/{task}'),
-            Page::layout('plan', 'Plan', Icon::Plan, PlanWindowResolver::class)
+            Page::build()
+                ->key('plan')
+                ->title('Plan')
+                ->icon(Icon::Plan)
+                ->pageType(PlanPageData::class)
+                ->pageBuilder(PlanPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('{plan}')
                 ->inInspector()
                 ->actions(fn (PageActions $actions) => $actions
@@ -288,7 +316,14 @@ final class PlansDomain extends Domain implements
                         'request-changes',
                     ))
                 ->slots(fn (PageSlots $slots) => $slots->record('inspector', 'plan', 'plan')),
-            Page::make('phase', 'Phase', Icon::Plan, PhaseWindowResolver::class, 'PhaseWindow.vue')
+            Page::build()
+                ->key('phase')
+                ->title('Phase')
+                ->icon(Icon::Plan)
+                ->pageType(PhaseReaderData::class)
+                ->pageBuilder(PhasePageBuilder::class)
+                ->component('PhaseWindow.vue')
+                ->finish()
                 ->at('{plan}/phases/{phase}'),
         ];
     }

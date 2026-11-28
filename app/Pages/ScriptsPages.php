@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
+use App\Http\Pages\ProfileScriptPageBuilder;
 use App\Accounts\AccountOwnerCheck;
 use App\CommandRules\Enums\SyntaxForm;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
 use App\Http\Controllers\Pages\CheckDraftPageController;
 use App\Http\Controllers\Pages\SaveDraftPageController;
-use App\Http\Pages\Resolvers\ProfileScriptWindowResolver;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Declarations\DomainClient;
 use App\Navigation\Enums\Icon;
@@ -40,13 +40,14 @@ final class ScriptsPages implements PageProvider, TypeProvider
     public function pages(): array
     {
         return [
-            Page::make(
-                'profile-script',
-                'Profile script',
-                Icon::Accounts,
-                ProfileScriptWindowResolver::class,
-                'ProfileScriptWindow.vue',
-            )
+            Page::build()
+                ->key('profile-script')
+                ->title('Profile script')
+                ->icon(Icon::Accounts)
+                ->pageType(ProfileScriptPageData::class)
+                ->pageBuilder(ProfileScriptPageBuilder::class)
+                ->component('ProfileScriptWindow.vue')
+                ->finish()
                 ->at('{profile}')
                 ->visibleWhen(AccountOwnerCheck::class)
                 ->actions(fn (PageActions $actions) => $actions

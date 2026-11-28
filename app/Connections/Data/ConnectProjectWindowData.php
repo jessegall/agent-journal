@@ -16,6 +16,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class ConnectProjectWindowData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<ConnectProjectWindowDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = ConnectProjectWindowDataFields::class;
+
     /**
      * @param  list<string>  $holdReasons  why the server issues no install line now, one sentence each
      * @param  list<JoinTargetData>  $projects

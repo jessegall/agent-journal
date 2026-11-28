@@ -6,21 +6,20 @@ namespace Tests\Unit\Web;
 
 use App\Actors\ActorStore;
 use App\Data\Pages\FailedWindow;
-use App\Declarations\ResolverDefinition;
 use App\Exceptions\LayoutRefused;
 use App\Exceptions\PrivateRecordMissing;
-use App\Navigation\Contracts\PageResolver;
-use App\Support\DomainEntry;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\WindowResults;
+use App\Navigation\Declarations\DomainClient;
+use App\Web\Creation\SurfaceDefinition;
 use App\Terminals\Enums\LayoutTag;
 use Closure;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Spatie\LaravelData\Data;
-use Tests\Fixtures\ClientDeclarations\Shelf\ShelfDomain;
-use Tests\Fixtures\ClientDeclarations\ShelfLayoutResolver;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageBuilder;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageData;
 use Tests\TestCase;
 
 /**
@@ -40,7 +39,9 @@ final class WindowResultKindsTest extends TestCase
 
     public function test_an_authorized_empty_read_is_ready(): void
     {
-        $result = $this->resultOf(fn () => DeclaredLayoutData::of(LayoutPartData::collection('loans', 'list', [])));
+        $result = $this->resultOf(fn () => DeclaredLayoutData::build()
+            ->root(LayoutPartData::build()->asCollection()->key('loans')->style('list')->rows([])->finish())
+            ->finish());
 
         $this->assertSame('ready', $result->toArray()['status']);
     }
@@ -70,7 +71,7 @@ final class WindowResultKindsTest extends TestCase
             'The window shelf.lent failed: RuntimeException: the table is gone',
             $this->callback(
                 fn (array $context): bool => $context['key'] === 'shelf.lent'
-                    && $context['reader'] === ShelfLayoutResolver::class
+                    && $context['reader'] === ShelfLayoutPageBuilder::class
                     && $context['exception'] instanceof RuntimeException,
             ),
         );
@@ -82,7 +83,9 @@ final class WindowResultKindsTest extends TestCase
     public function test_a_part_with_an_unknown_style_names_the_styles_allowed(): void
     {
         $result = $this->resultOf(
-            fn () => DeclaredLayoutData::of(LayoutPartData::text('when', 'Now', 'clock')),
+            fn () => DeclaredLayoutData::build()
+                ->root(LayoutPartData::build()->asText()->key('when')->value('Now')->style('clock')->finish())
+                ->finish(),
         );
 
         $this->assertSame('failed', $result->toArray()['status']);
@@ -112,18 +115,22 @@ final class WindowResultKindsTest extends TestCase
     {
         return $this->app->make(ActorStore::class)->actAsSystem(
             'test',
-            fn (): Data => $this->app->make(WindowResults::class)->result('shelf.lent', [], $this->definition(), $read),
+            fn (): Data => $this->app->make(WindowResults::class)->surface(
+                'shelf.lent',
+                'window shelf.lent',
+                [],
+                $this->definition(),
+                fn () => ShelfLayoutPageData::build()->shown($read())->finish(),
+            ),
         );
     }
 
-    private function definition(): ResolverDefinition
+    private function definition(): SurfaceDefinition
     {
-        return ResolverDefinition::of(
-            DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: []),
-            'shelf.lent',
-            ShelfLayoutResolver::class,
-            PageResolver::class,
-            DeclaredLayoutData::class,
+        return new SurfaceDefinition(
+            ShelfLayoutPageData::class,
+            ShelfLayoutPageBuilder::class,
+            DomainClient::DECLARED_LAYOUT,
         );
     }
 }

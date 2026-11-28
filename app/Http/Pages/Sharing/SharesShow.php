@@ -39,25 +39,52 @@ final readonly class SharesShow extends SharingPage
     ): DeclaredLayoutData {
         $title = ($share->status === ShareStatus::Proposed ? 'Proposal' : 'Share')." {$share->number}";
 
-        return PublicationPage::make(
-            $title,
-            [LayoutPartData::text('state', $share->status->value, 'muted')],
-            "A share of a {$share->root_type}.",
-            fn () => LayoutBodyData::fromMarkdown(''),
-            [
-                PublicationTab::deferred('share', 'Share', fn () => $this->factsOf($share, $members())),
-                PublicationTab::deferred(
-                    'audit',
-                    'Audit',
-                    fn () => LayoutPartData::native('audit', LayoutNativeData::of('sharing/AuditSection', $audit())),
-                ),
-            ],
-        )->withStanding(
-            LayoutPartData::native('controls', LayoutNativeData::of('sharing/ShareControls', $controls)),
-            LayoutPartData::native(
-                'runtime',
-                LayoutNativeData::of('sharing/RuntimeSection', ShareRuntimeData::fromShare($share)),
-            ),
+        return PublicationPage::build()
+            ->title($title)
+            ->metadata(
+                [LayoutPartData::build()
+                ->asText()
+                ->key('state')
+                ->value($share->status->value)
+                ->style('muted')
+                ->finish()],
+            )
+            ->summary("A share of a {$share->root_type}.")
+            ->body(fn () => LayoutBodyData::fromMarkdown(''))
+            ->tabs(
+                [
+                    PublicationTab::deferred('share', 'Share', fn () => $this->factsOf($share, $members())),
+                    PublicationTab::deferred(
+                        'audit',
+                        'Audit',
+                        fn () => LayoutPartData::build()
+                            ->asNative()
+                            ->key('audit')
+                            ->native(
+                                LayoutNativeData::build()->component('sharing/AuditSection')->props($audit())->finish(),
+                            )
+                            ->finish(),
+                    ),
+                ],
+            )
+            ->finish()->withStanding(
+            LayoutPartData::build()
+                ->asNative()
+                ->key('controls')
+                ->native(
+                    LayoutNativeData::build()->component('sharing/ShareControls')->props($controls)->finish(),
+                )
+                ->finish(),
+            LayoutPartData::build()
+                ->asNative()
+                ->key('runtime')
+                ->native(
+                    LayoutNativeData::build()
+                    ->component('sharing/RuntimeSection')
+                    ->props(ShareRuntimeData::fromShare($share))
+                    ->finish(),
+                )
+                ->finish(),
         )->layout($chosenTab);
     }
 
@@ -69,25 +96,60 @@ final readonly class SharesShow extends SharingPage
     private function factsOf(Share $share, array $members): LayoutPartData
     {
         $parts = [
-            LayoutPartData::collection('facts', 'facts', [
-                LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => $share->status->value]),
-                LayoutRowData::from(['key' => 'record', 'label' => 'Record', 'value' => $share->root_type]),
-                LayoutRowData::from(
-                    ['key' => 'gateway', 'label' => 'Gateway', 'value' => $share->gatewayKey() ?? 'None yet'],
-                ),
-            ]),
-            LayoutPartData::time('expires', 'Expires', $share->expires_at->toIso8601String()),
+            LayoutPartData::build()
+                ->asCollection()
+                ->key('facts')
+                ->style('facts')
+                ->rows(
+                    [
+                        LayoutRowData::build()
+                            ->key('state')
+                            ->label('State')
+                            ->value($share->status->value)
+                            ->finish(),
+                        LayoutRowData::build()
+                            ->key('record')
+                            ->label('Record')
+                            ->value($share->root_type)
+                            ->finish(),
+                        LayoutRowData::build()
+                            ->key('gateway')
+                            ->label('Gateway')
+                            ->value($share->gatewayKey() ?? 'None yet')
+                            ->finish(),
+                    ],
+                )
+                ->finish(),
+            LayoutPartData::build()
+                ->asTime()
+                ->key('expires')
+                ->label('Expires')
+                ->detail($share->expires_at->toIso8601String())
+                ->finish(),
         ];
 
         $parts[] = $members === []
-            ? LayoutPartData::notice('members', 'empty', 'No linked record is shared with it.')
-            : LayoutPartData::collection('members', 'list', array_map(
-                fn (ShareMemberData $member) => LayoutRowData::from(
-                    ['key' => $member->targetId, 'label' => $member->targetType],
-                ),
-                $members,
-            ));
+            ? LayoutPartData::build()
+                ->asNotice()
+                ->key('members')
+                ->style('empty')
+                ->title('No linked record is shared with it.')
+                ->finish()
+            : LayoutPartData::build()
+                ->asCollection()
+                ->key('members')
+                ->style('list')
+                ->rows(
+                    array_map(
+                        fn (ShareMemberData $member) => LayoutRowData::build()
+                            ->key($member->targetId)
+                            ->label($member->targetType)
+                            ->finish(),
+                        $members,
+                    ),
+                )
+                ->finish();
 
-        return LayoutPartData::box('share', 'stack', ...$parts);
+        return LayoutPartData::build()->asBox()->key('share')->style('stack')->children(...$parts)->finish();
     }
 }

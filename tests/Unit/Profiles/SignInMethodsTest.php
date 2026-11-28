@@ -65,7 +65,7 @@ final class SignInMethodsTest extends TestCase
         $protocols = $this->app->make(SignInProtocols::class);
 
         foreach (DefaultDrivers::familyKeys() as $driver) {
-            $listed = DriverMethodsData::fromProtocols($driver, $protocols);
+            $listed = DriverMethodsData::build()->driver($driver)->protocols($protocols)->finish();
 
             foreach ($listed->methods as $shown) {
                 $card = $protocols->for($driver, $shown->method)->card();

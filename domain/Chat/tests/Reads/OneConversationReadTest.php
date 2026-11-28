@@ -7,10 +7,10 @@ namespace Domain\Chat\Tests\Reads;
 use App\Bus\Contracts\RequestKey;
 use App\Models\Inboxes\Inbox;
 use Domain\Chat\Data\ChatData;
-use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
-use Domain\Chat\Http\Requests\ConversationRequest;
+use Domain\Chat\Http\Pages\ChatPageBuilder;
 use Domain\Chat\Support\PairChats;
 use Domain\Chat\Tests\TestCase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 
@@ -72,11 +72,11 @@ final class OneConversationReadTest extends TestCase
      */
     private function windowFor(array $query): ChatData
     {
-        $this->app->instance(ConversationRequest::class, ConversationRequest::create('/', 'GET', $query));
+        $visit = Request::create('/', 'GET', $query);
 
         return $this->app->make(RequestKey::class)->independently(
             (string) Str::ulid(),
-            fn () => $this->app->make(ChatWindowResolver::class)->read(),
+            fn () => $this->app->make(ChatPageBuilder::class)->build($visit),
         );
     }
 }

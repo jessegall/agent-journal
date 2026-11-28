@@ -11,10 +11,15 @@ namespace App\Support\Layout;
  */
 final readonly class ListEmpty
 {
+    /** @use \App\Web\Creation\Buildable<ListEmptyFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = ListEmptyFields::class;
+
     /**
      * @param  list<LayoutPartData>  $actions
      */
-    private function __construct(
+    public function __construct(
         public string $title,
         public string|null $detail,
         public array $actions,
@@ -23,42 +28,26 @@ final readonly class ListEmpty
     ) {}
 
     /**
-     * An empty state with nothing to offer, such as a list the viewer may not add to.
-     */
-    public static function informing(string $title, string|null $detail = null): self
-    {
-        return new self($title, $detail, []);
-    }
-
-    /**
-     * An empty state with its action: the permitted creation of a list read empty, or the clear action of a list its
-     * filter emptied.
-     */
-    public static function offering(string $title, LayoutPartData $action, string|null $detail = null): self
-    {
-        return new self($title, $detail, [$action]);
-    }
-
-    /**
-     * The page has no row at all yet: it shows no list and no reader, only this, centred under the header.
-     */
-    public static function nothingYet(string $title, string $detail, string $icon, LayoutPartData ...$actions): self
-    {
-        return new self($title, $detail, array_values($actions), true, $icon);
-    }
-
-    /**
      * The empty state that stands in place of the list and its reader.
      */
     public function page(): LayoutPartData
     {
-        return LayoutPartData::box(
-            'empty-page',
-            'page-empty',
-            LayoutPartData::text('icon', $this->icon, 'icon'),
-            LayoutPartData::notice('empty', 'first', $this->title, $this->detail),
-            ...$this->actions,
-        );
+        return LayoutPartData::build()
+            ->asBox()
+            ->key('empty-page')
+            ->style('page-empty')
+            ->children(
+                LayoutPartData::build()->asText()->key('icon')->value($this->icon)->style('icon')->finish(),
+                LayoutPartData::build()
+                ->asNotice()
+                ->key('empty')
+                ->style('first')
+                ->title($this->title)
+                ->detail($this->detail)
+                ->finish(),
+                ...$this->actions,
+            )
+            ->finish();
     }
 
     /**
@@ -66,7 +55,13 @@ final readonly class ListEmpty
      */
     public function parts(): array
     {
-        $notice = LayoutPartData::notice('empty', 'empty', $this->title, $this->detail);
+        $notice = LayoutPartData::build()
+            ->asNotice()
+            ->key('empty')
+            ->style('empty')
+            ->title($this->title)
+            ->detail($this->detail)
+            ->finish();
 
         if ($this->actions === []) {
             return [$notice];
@@ -74,7 +69,12 @@ final readonly class ListEmpty
 
         return [
             $notice,
-            LayoutPartData::box('empty-actions', 'row', ...$this->actions),
+            LayoutPartData::build()
+                ->asBox()
+                ->key('empty-actions')
+                ->style('row')
+                ->children(...$this->actions)
+                ->finish(),
         ];
     }
 }

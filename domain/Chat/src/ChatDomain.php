@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
+use Domain\Chat\Data\ChatData;
+use Domain\Chat\Data\ConversationPaneData;
+use Domain\Chat\Http\Pages\ChatPageBuilder;
+use Domain\Chat\Http\Windows\ConversationWindowBuilder;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
@@ -45,7 +49,6 @@ use Domain\Chat\Http\Loaders\AgentPageLoader;
 use Domain\Chat\Http\Loaders\ChatCandidatesLoader;
 use Domain\Chat\Http\Loaders\ChatRowsLoader;
 use Domain\Chat\Http\Loaders\StartDriversLoader;
-use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
 use Domain\Chat\Http\Pages\Resolvers\ChosenAgentSection;
 use Domain\Chat\Policies\DockPlacementPolicy;
 use Domain\Chat\Policies\MessagePinPolicy;
@@ -107,7 +110,15 @@ final class ChatDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::make('conversation', 'Chat', Icon::Speech, ChatWindowResolver::class, 'ChatWindow.vue')
+            Page::build()
+                ->key('conversation')
+                ->title('Chat')
+                ->icon(Icon::Speech)
+                ->pageType(ChatData::class)
+                ->pageBuilder(ChatPageBuilder::class)
+                ->component('ChatWindow.vue')
+                ->withWindow(ConversationPaneData::class, ConversationWindowBuilder::class, 'ConversationPane.vue')
+                ->finish()
                 ->at('')
                 ->onHome(10)
                 ->slots(fn (PageSlots $slots) => $slots->add('dock', SlotContextType::Session))

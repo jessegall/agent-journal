@@ -210,8 +210,8 @@ describe('a declared layout', () => {
     });
 
     it('moves between tabs by arrow and chooses one by its own tab key, asking only for its window prop', async () => {
-        const visit = vi
-            .spyOn(router, 'visit')
+        const reload = vi
+            .spyOn(router, 'reload')
             .mockImplementation(() => undefined);
         const view = mount(
             defineComponent({
@@ -265,19 +265,17 @@ describe('a declared layout', () => {
         expect(document.activeElement).toBe(tabs[1].element);
 
         await tabs[1].trigger('click');
-        const [href, options] = visit.mock.calls[0];
-        expect(String(href)).toContain('tab=references');
-        expect(options).toMatchObject({
+        expect(reload.mock.calls[0][0]).toMatchObject({
             only: ['window_handbook_entry'],
-            preserveState: true,
+            data: { tab: 'references' },
         });
         view.unmount();
-        visit.mockRestore();
+        reload.mockRestore();
     });
 
     it('adds the rows a Show more reads to the rows shown, and keeps them when the read fails', async () => {
-        const visit = vi
-            .spyOn(router, 'visit')
+        const reload = vi
+            .spyOn(router, 'reload')
             .mockImplementation(() => undefined);
         const row = (key: string) => ({
             key,
@@ -321,8 +319,8 @@ describe('a declared layout', () => {
         });
 
         await view.find('button').trigger('click');
-        const [href, options] = visit.mock.calls[0];
-        expect(String(href)).toContain('after=b');
+        const [options] = reload.mock.calls[0];
+        expect(options).toMatchObject({ only: ['page'], data: { after: 'b' } });
 
         options?.onNetworkError?.(new Error('offline') as never);
         options?.onFinish?.({} as never);
@@ -331,8 +329,8 @@ describe('a declared layout', () => {
         expect(view.find('[role="alert"]').exists()).toBe(true);
 
         await view.find('button').trigger('click');
-        await view.setProps({ data: layout(['c', 'd'], false) });
-        options?.onFinish?.({} as never);
+        await view.setProps({ data: layout(['b', 'c', 'c', 'd'], true) });
+        reload.mock.calls[1][0]?.onFinish?.({} as never);
         await view.vm.$nextTick();
         expect(view.findAll('li').map((item) => item.text())).toEqual([
             'a',
@@ -340,8 +338,12 @@ describe('a declared layout', () => {
             'c',
             'd',
         ]);
+        await view.find('button').trigger('click');
+        await view.setProps({ data: layout([], false) });
+        reload.mock.calls[2][0]?.onFinish?.({} as never);
+        expect(view.findAll('li').map((item) => item.text())).toEqual(['a', 'b', 'c', 'd']);
         view.unmount();
-        visit.mockRestore();
+        reload.mockRestore();
     });
 
     it('draws placeholder rows under one busy line, and a stale notice that reads only its own prop again', async () => {

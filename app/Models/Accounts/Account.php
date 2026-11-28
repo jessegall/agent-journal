@@ -43,6 +43,7 @@ use App\Values\SelectedAccount;
 use App\Values\SignInIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Str;
@@ -773,6 +774,21 @@ final class Account extends JournalModel implements EventSource, ReadableModel
         return array_values($accounts->all());
     }
 
+    /** @return LengthAwarePaginator<int, self> */
+    public static function pageListed(int $page, int $size): LengthAwarePaginator
+    {
+        $query = self::query()->kept()->inListOrder();
+        $total = $query->count();
+        $last = max(1, (int) ceil($total / $size));
+
+        return $query->paginate($size, page: min($page, $last), total: $total);
+    }
+
+    public static function findKept(string $accountId): self|null
+    {
+        return self::query()->kept()->whereKey($accountId)->first();
+    }
+
     /**
      * The chosen account, locked for a start and refused unless it accepts starts; the start path's own read,
      * which no request's actor limits.
@@ -977,7 +993,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     #[Scope]
     protected function inListOrder(Builder $query): void
     {
-        $query->orderBy('account_protocol')->orderBy('label_key');
+        $query->orderBy('account_protocol')->orderBy('label_key')->orderBy('id');
     }
 
     /**

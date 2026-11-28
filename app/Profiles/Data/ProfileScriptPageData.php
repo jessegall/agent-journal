@@ -13,6 +13,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class ProfileScriptPageData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<ProfileScriptPageDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = ProfileScriptPageDataFields::class;
+
     public function __construct(
         public readonly ProfileDraftData $draft,
         public readonly ProfileLanguageData $language,

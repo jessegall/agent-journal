@@ -19,13 +19,20 @@ final readonly class ProcessRunsShow extends ProcessRunsPage
 {
     public function of(RunWindowData $detail): DeclaredLayoutData
     {
-        return DetailPage::make("Run {$detail->snapshot->runId}")
-            ->withStanding(LayoutPartData::native('detail', LayoutNativeData::of('processes/RunView', $detail)))
+        return DetailPage::build()->title("Run {$detail->snapshot->runId}")->finish()
+            ->withStanding(LayoutPartData::build()
+                ->asNative()
+                ->key('detail')
+                ->native(LayoutNativeData::build()->component('processes/RunView')->props($detail)->finish())
+                ->finish())
             ->layout();
     }
 
     public function removed(): DeclaredLayoutData
     {
-        return DetailPage::removed('run', new LayoutBackData('/processes/runs', 'Runs'));
+        return DetailPage::removed('run', LayoutBackData::build()
+            ->href('/processes/runs')
+            ->label('Runs')
+            ->finish());
     }
 }

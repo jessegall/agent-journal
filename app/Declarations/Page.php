@@ -6,31 +6,29 @@ namespace App\Declarations;
 
 use App\Access\Contracts\VisibilityCheck;
 use App\Navigation\Contracts\PageOption;
-use App\Navigation\Contracts\PageResolver;
-use App\Navigation\Contracts\PresentsLayout;
-use App\Navigation\Declarations\DomainClient;
 use App\Navigation\Declarations\Loader;
 use App\Navigation\Enums\Icon;
-use App\Support\Reflector;
-use App\Text\Declarations\ResolverDataClass;
+use App\Web\Creation\Buildable;
+use App\Web\Creation\SurfaceDefinition;
 use App\Web\Declarations\Slot;
 use App\Web\Enums\PageDestination;
 use App\Web\Enums\PageSkeleton;
 use App\Web\Enums\WindowPlace;
-use App\Web\Exceptions\InvalidPageDeclaration;
 use Closure;
-use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
 /**
- * A page a domain owns, keyed within its domain: where it lives under the domain's prefix, the resolver and component
+ * A page a domain owns, keyed within its domain: where it lives under the domain's prefix, the page and optional window types
  * that draw it, how it shows on Home, and the slots, actions and loaders it offers. Each change returns a new page.
  */
 final class Page
 {
+    /** @use Buildable<PageFields> */
+    use Buildable;
+
+    protected const string FIELDS = PageFields::class;
+
     /**
-     * @param  class-string<PageResolver>  $resolver
-     * @param  class-string<Data>  $dataClass  the Data class the resolver's read method declares
      * @param  int|null  $homePosition  null when the page is not in Home's Default preset
      * @param  list<PageOption>  $options
      * @param  list<Slot>  $slots
@@ -39,15 +37,14 @@ final class Page
      * @param  class-string<VisibilityCheck>|null  $visibility  null when everyone signed in sees the page
      * @param  WindowPlace|Optional  $place  absent when a work layout has no place for the window
      */
-    private function __construct(
+    public function __construct(
         public readonly string $key,
         public readonly string $title,
         public readonly Icon $icon,
         public readonly string $path,
-        public readonly string $resolver,
-        public readonly string $dataClass,
-        public readonly string $component,
+        public readonly SurfaceDefinition $surface,
         public readonly FloatSize $floatSize,
+        public readonly SurfaceDefinition|null $window = null,
         public readonly PageDestination $opensIn = PageDestination::Page,
         public readonly PageSkeleton $skeleton = PageSkeleton::Rows,
         public readonly int|null $homePosition = null,
@@ -59,50 +56,6 @@ final class Page
         public readonly bool $isDeclared = false,
         public readonly WindowPlace|Optional $place = new Optional(),
     ) {}
-
-    /**
-     * A page at the path of its own key, read by the resolver and drawn by the component in the domain's script folder
-     * (resources/js).
-     *
-     * @param  class-string<PageResolver>  $resolver
-     */
-    public static function make(string $key, string $title, Icon $icon, string $resolver, string $component): self
-    {
-        $dataClass = ResolverDataClass::of($resolver);
-
-        if ($dataClass === null) {
-            throw InvalidPageDeclaration::resolverReturnsNoData($key, $resolver);
-        }
-
-        return new self($key, $title, $icon, $key, $resolver, $dataClass, $component, FloatSize::standard());
-    }
-
-    /**
-     * A page whose reader builds a declared layout of catalogue parts, drawn by the one shared renderer instead of a
-     * component of its own; its key, routes and placement work as any page's.
-     *
-     * @param  class-string<PageResolver>  $resolver
-     */
-    public static function layout(string $key, string $title, Icon $icon, string $resolver): self
-    {
-        $result = (string) ResolverDataClass::of($resolver);
-
-        if ($result === '' || ! Reflector::factory()->isSubclassOf($result, PresentsLayout::class)) {
-            throw InvalidPageDeclaration::readerReturnsNoLayout($key, $resolver);
-        }
-
-        return new self(
-            $key,
-            $title,
-            $icon,
-            $key,
-            $resolver,
-            $result,
-            DomainClient::DECLARED_LAYOUT,
-            FloatSize::standard(),
-            isDeclared: true,
-        );
-    }
 
     /**
      * The path relative to the domain's prefix, with {name} route parameters; an empty path is the prefix itself.

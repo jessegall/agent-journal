@@ -21,13 +21,17 @@ use App\Support\Layout\LayoutRowData;
 use App\Terminals\Enums\LayoutTag;
 use App\Text\Declarations\Section;
 use App\Text\Exceptions\InvalidSectionDeclaration;
+use App\Web\Creation\Exceptions\MissingFields;
 use App\Web\Exceptions\InvalidPageDeclaration;
 use PHPUnit\Framework\TestCase;
 use Spatie\LaravelData\Optional;
 use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;
-use Tests\Fixtures\ClientDeclarations\RecentNotesResolver;
-use Tests\Fixtures\ClientDeclarations\ShelfLayoutResolver;
+use Illuminate\Http\Request;
+use Tests\Fixtures\ClientDeclarations\RecentNotesData;
+use Tests\Fixtures\ClientDeclarations\RecentNotesPageBuilder;
 use Tests\Fixtures\ClientDeclarations\ShelfSectionLayoutResolver;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageBuilder;
+use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageData;
 
 /**
  * A page a domain declares as a layout: its reader must return a layout, and a layout that breaks the catalogue of
@@ -39,18 +43,43 @@ final class DeclaredLayoutTest extends TestCase
 
     private const array BADGE_TONES = ['quiet', 'good', 'warn', 'danger', 'busy', 'waiting'];
 
+    public function test_a_part_requires_a_key_before_it_finishes(): void
+    {
+        $this->expectExceptionObject(MissingFields::forType(LayoutPartData::class, 'key'));
+
+        LayoutPartData::build()->asText()->value('Title')->finish();
+    }
+
+    public function test_nullable_part_fields_preserve_explicit_null_and_the_variant_defaults(): void
+    {
+        $notice = LayoutPartData::build()->asNotice()->key('empty')->style('info')->title('Empty')->detail(null)->finish();
+
+        $this->assertNull($notice->detail);
+        $this->assertNull($notice->size);
+        $this->assertInstanceOf(Optional::class, $notice->action);
+    }
+
     public function test_a_layout_page_is_drawn_by_the_shared_renderer_from_its_readers_layout(): void
     {
-        $page = Page::layout('shelf', 'Shelf', Icon::Docs, ShelfLayoutResolver::class)->at('shelf');
+        $page = Page::build()
+            ->key('shelf')
+            ->title('Shelf')
+            ->icon(Icon::Docs)
+            ->pageType(ShelfLayoutPageData::class)
+            ->pageBuilder(ShelfLayoutPageBuilder::class)
+            ->declaredLayout()
+            ->finish()->at('shelf');
 
         $this->assertTrue($page->isDeclared);
-        $this->assertSame(DeclaredLayoutData::class, $page->dataClass);
-        $this->assertSame(DomainClient::DECLARED_LAYOUT, $page->component);
+        $this->assertSame(ShelfLayoutPageData::class, $page->surface->type);
+        $this->assertSame(DomainClient::DECLARED_LAYOUT, $page->surface->component);
         $this->assertSame('shelf', $page->path);
+
+        $layout = new ShelfLayoutPageBuilder()->build(Request::create('/shelf'))->layout();
 
         $this->assertSame(
             ['title', 'books', 'none-lent'],
-            array_map(fn (LayoutPartData $part) => $part->key, new ShelfLayoutResolver()->read()->root->children),
+            array_map(fn (LayoutPartData $part) => $part->key, $layout->root->children),
         );
     }
 
@@ -59,10 +88,17 @@ final class DeclaredLayoutTest extends TestCase
         $this->expectException(InvalidPageDeclaration::class);
 
         $this->expectExceptionMessage(
-            InvalidPageDeclaration::readerReturnsNoLayout('notes', RecentNotesResolver::class)->getMessage(),
+            InvalidPageDeclaration::typePresentsNoLayout('notes', RecentNotesData::class)->getMessage(),
         );
 
-        Page::layout('notes', 'Notes', Icon::Docs, RecentNotesResolver::class);
+        Page::build()
+            ->key('notes')
+            ->title('Notes')
+            ->icon(Icon::Docs)
+            ->pageType(RecentNotesData::class)
+            ->pageBuilder(RecentNotesPageBuilder::class)
+            ->declaredLayout()
+            ->finish();
     }
 
     public function test_a_layout_section_is_drawn_by_the_shared_renderer_and_refuses_other_data(): void
@@ -82,11 +118,26 @@ final class DeclaredLayoutTest extends TestCase
         $this->expectException(LayoutRefused::class);
         $this->expectExceptionMessage(LayoutRefused::siblingKeyRepeated('root.list', 'same')->getMessage());
 
-        DeclaredLayoutData::of(LayoutPartData::box(
-            'root',
-            'stack',
-            LayoutPartData::box('list', 'stack', LayoutPartData::text('same', 'a'), LayoutPartData::text('same', 'b')),
-        ));
+        DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('root')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asBox()
+                    ->key('list')
+                    ->style('stack')
+                    ->children(
+                        LayoutPartData::build()->asText()->key('same')->value('a')->finish(),
+                        LayoutPartData::build()->asText()->key('same')->value('b')->finish(),
+                    )
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     public function test_a_driver_type_outside_the_catalogue_is_refused(): void
@@ -97,25 +148,59 @@ final class DeclaredLayoutTest extends TestCase
             LayoutRefused::unknownStyle('root.title', LayoutTag::Text, 'shout')->getMessage(),
         );
 
-        DeclaredLayoutData::of(LayoutPartData::box('root', 'stack', LayoutPartData::text('title', 'Hi', 'shout')));
+        DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('root')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()->asText()->key('title')->value('Hi')->style('shout')->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     public function test_actions_fields_and_badges_carry_their_own_bindings(): void
     {
-        $layout = DeclaredLayoutData::of(LayoutPartData::box(
-            'root',
-            'stack',
-            LayoutPartData::action('open', 'Open', LayoutActionData::to('/plans/1')),
-            LayoutPartData::action('next', 'Next page', LayoutActionData::changing(['cursor' => 'abc'])),
-            LayoutPartData::action(
-                'approve',
-                'Approve',
-                LayoutActionData::unavailable(self::OWNER_ONLY_REASON),
-                'primary',
-            ),
-            LayoutPartData::field('filter', 'Filter', new LayoutFieldData('q', 'oak')),
-            LayoutPartData::badge('state', 'Open', 'good'),
-        ));
+        $layout = DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('root')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('open')
+                    ->label('Open')
+                    ->action(LayoutActionData::build()->href('/plans/1')->finish())
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('next')
+                    ->label('Next page')
+                    ->action(LayoutActionData::build()->query(['cursor' => 'abc'])->finish())
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('approve')
+                    ->label('Approve')
+                    ->action(LayoutActionData::build()->reason(self::OWNER_ONLY_REASON)->finish())
+                    ->style('primary')
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asField()
+                    ->key('filter')
+                    ->label('Filter')
+                    ->field(LayoutFieldData::build()->name('q')->value('oak')->finish())
+                    ->finish(),
+                    LayoutPartData::build()->asBadge()->key('state')->text('Open')->tone('good')->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
 
         [$open, $next, $approve, $filter, $state] = $layout->root->children;
         $this->assertInstanceOf(LayoutActionData::class, $open->action);
@@ -134,22 +219,59 @@ final class DeclaredLayoutTest extends TestCase
         $this->expectException(LayoutRefused::class);
         $this->expectExceptionMessage(LayoutRefused::submitOutsideForm('root.save')->getMessage());
 
-        DeclaredLayoutData::of(LayoutPartData::box(
-            'root',
-            'stack',
-            LayoutPartData::action('save', 'Save', LayoutActionData::submitting()),
-        ));
+        DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('root')
+                ->style('stack')
+                ->children(
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('save')
+                    ->label('Save')
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     public function test_a_form_holds_its_fields_and_its_submitting_action(): void
     {
-        $layout = DeclaredLayoutData::of(LayoutPartData::form(
-            'settle',
-            new LayoutFormData(ActionMethod::Post, '/documents/reports/42/settle', ['revision' => 1]),
-            'inline',
-            LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason', ''), 'text'),
-            LayoutPartData::action('save', 'Settle', LayoutActionData::submitting(), 'primary'),
-        ));
+        $layout = DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asForm()
+                ->key('settle')
+                ->form(
+                    LayoutFormData::build()
+                    ->method(ActionMethod::Post)
+                    ->href('/documents/reports/42/settle')
+                    ->fixed(['revision' => 1])
+                    ->finish(),
+                )
+                ->style('inline')
+                ->children(
+                    LayoutPartData::build()
+                    ->asField()
+                    ->key('reason')
+                    ->label('Reason')
+                    ->field(LayoutFieldData::build()->name('reason')->value('')->finish())
+                    ->style('text')
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('save')
+                    ->label('Settle')
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->style('primary')
+                    ->finish(),
+                )
+                ->finish(),
+            )
+            ->finish();
 
         $this->assertInstanceOf(LayoutFormData::class, $layout->root->form);
         $this->assertSame(['revision' => 1], $layout->root->form->fixed);
@@ -161,7 +283,9 @@ final class DeclaredLayoutTest extends TestCase
         $this->expectException(LayoutRefused::class);
         $this->expectExceptionMessage(LayoutRefused::toneNotAllowed('root', 'loud', self::BADGE_TONES)->getMessage());
 
-        DeclaredLayoutData::of(LayoutPartData::badge('state', 'Open', 'loud'));
+        DeclaredLayoutData::build()
+            ->root(LayoutPartData::build()->asBadge()->key('state')->text('Open')->tone('loud')->finish())
+            ->finish();
     }
 
     public function test_a_divider_holding_children_is_refused(): void
@@ -169,15 +293,29 @@ final class DeclaredLayoutTest extends TestCase
         $this->expectException(LayoutRefused::class);
         $this->expectExceptionMessage(LayoutRefused::childrenNotAllowed('root', LayoutTag::Box)->getMessage());
 
-        DeclaredLayoutData::of(LayoutPartData::box('root', 'divider', LayoutPartData::text('title', 'Hi')));
+        DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asBox()
+                ->key('root')
+                ->style('divider')
+                ->children(LayoutPartData::build()->asText()->key('title')->value('Hi')->finish())
+                ->finish(),
+            )
+            ->finish();
     }
 
     public function test_a_layout_deeper_than_the_limit_is_refused(): void
     {
-        $part = LayoutPartData::text('leaf', 'deep');
+        $part = LayoutPartData::build()->asText()->key('leaf')->value('deep')->finish();
 
         foreach (range(0, LayoutPartData::DEPTH_LIMIT) as $level) {
-            $part = LayoutPartData::box("level-{$level}", 'stack', $part);
+            $part = LayoutPartData::build()
+                ->asBox()
+                ->key("level-{$level}")
+                ->style('stack')
+                ->children($part)
+                ->finish();
         }
 
         $levels = array_map(fn (int $level) => "level-{$level}", range(LayoutPartData::DEPTH_LIMIT - 1, 0));
@@ -188,13 +326,13 @@ final class DeclaredLayoutTest extends TestCase
             LayoutRefused::tooDeep('root.'.implode('.', $levels).'.leaf', LayoutPartData::DEPTH_LIMIT)->getMessage(),
         );
 
-        DeclaredLayoutData::of($part);
+        DeclaredLayoutData::build()->root($part)->finish();
     }
 
     public function test_a_collection_past_its_row_limit_is_refused(): void
     {
         $rows = array_map(
-            fn (int $row) => new LayoutRowData("row-{$row}", "Row {$row}", ''),
+            fn (int $row) => LayoutRowData::build()->key("row-{$row}")->label("Row {$row}")->value('')->finish(),
             range(0, LayoutPartData::ROW_LIMIT),
         );
 
@@ -204,12 +342,19 @@ final class DeclaredLayoutTest extends TestCase
             LayoutRefused::tooManyRows('root', count($rows), LayoutPartData::ROW_LIMIT)->getMessage(),
         );
 
-        DeclaredLayoutData::of(LayoutPartData::collection('rows', 'list', $rows));
+        DeclaredLayoutData::build()
+            ->root(LayoutPartData::build()->asCollection()->key('rows')->style('list')->rows($rows)->finish())
+            ->finish();
     }
 
     public function test_a_skeleton_carries_its_placeholder_rows_and_a_plain_notice_may_not_claim_that_style(): void
     {
-        $skeleton = LayoutPartData::skeleton('loading', 3, 'Loading tasks');
+        $skeleton = LayoutPartData::build()
+            ->asSkeleton()
+            ->key('loading')
+            ->placeholders(3)
+            ->label('Loading tasks')
+            ->finish();
 
         $this->assertSame(1, $skeleton->assertWithinCatalogue());
         $this->assertSame(3, $skeleton->placeholders);
@@ -217,12 +362,21 @@ final class DeclaredLayoutTest extends TestCase
 
         $this->expectException(LayoutRefused::class);
 
-        DeclaredLayoutData::of(LayoutPartData::notice('loading', 'skeleton', 'Loading tasks'));
+        DeclaredLayoutData::build()
+            ->root(
+                LayoutPartData::build()
+                ->asNotice()
+                ->key('loading')
+                ->style('skeleton')
+                ->title('Loading tasks')
+                ->finish(),
+            )
+            ->finish();
     }
 
     public function test_a_stale_notice_holds_its_reason_in_the_notice_style_of_that_name(): void
     {
-        $stale = LayoutPartData::stale('stale', 'Offline');
+        $stale = LayoutPartData::build()->asStale()->key('stale')->text('Offline')->finish();
 
         $this->assertSame(1, $stale->assertWithinCatalogue());
         $this->assertSame('stale', $stale->style);
@@ -231,25 +385,50 @@ final class DeclaredLayoutTest extends TestCase
 
     public function test_the_parts_that_lead_and_trail_a_row_count_and_are_checked_with_the_layout(): void
     {
-        $row = new LayoutRowData(
-            'run-1',
-            'Run 1',
-            leading: [LayoutPartData::text('driver', 'Claude', 'driver')],
-            trailing: [LayoutPartData::badge('state', 'Running', 'busy')],
-        );
+        $row = LayoutRowData::build()
+            ->key('run-1')
+            ->label('Run 1')
+            ->leading(
+                [LayoutPartData::build()
+                ->asText()
+                ->key('driver')
+                ->value('Claude')
+                ->style('driver')
+                ->finish()],
+            )
+            ->trailing(
+                [LayoutPartData::build()->asBadge()->key('state')->text('Running')->tone('busy')->finish()],
+            )
+            ->finish();
 
-        $this->assertSame(3, LayoutPartData::collection('rows', 'list', [$row])->assertWithinCatalogue());
+        $this->assertSame(3, LayoutPartData::build()
+            ->asCollection()
+            ->key('rows')
+            ->style('list')
+            ->rows([$row])
+            ->finish()->assertWithinCatalogue());
 
         $this->expectException(LayoutRefused::class);
 
-        $unknown = new LayoutRowData('run-2', 'Run 2', trailing: [LayoutPartData::text('state', 'Running', 'unheard')]);
+        $unknown = LayoutRowData::build()
+            ->key('run-2')
+            ->label('Run 2')
+            ->trailing(
+                [LayoutPartData::build()
+                ->asText()
+                ->key('state')
+                ->value('Running')
+                ->style('unheard')
+                ->finish()],
+            )
+            ->finish();
 
-        LayoutPartData::collection('rows', 'list', [$unknown])->assertWithinCatalogue();
+        LayoutPartData::build()->asCollection()->key('rows')->style('list')->rows([$unknown])->finish()->assertWithinCatalogue();
     }
 
     public function test_a_fact_value_holds_pieces_that_link_only_when_they_have_an_address(): void
     {
-        $value = LayoutFactValueData::of([['Task 3', '/tasks/3'], ['Task 4', null]]);
+        $value = LayoutFactValueData::build()->linkedPieces([['Task 3', '/tasks/3'], ['Task 4', null]])->finish();
 
         $this->assertSame('/tasks/3', $value->pieces[0]->href);
         $this->assertInstanceOf(Optional::class, $value->pieces[1]->href);
@@ -257,14 +436,36 @@ final class DeclaredLayoutTest extends TestCase
 
     public function test_a_dialog_holds_its_opener_then_its_form_with_the_footer_that_sends_it(): void
     {
-        $dialog = LayoutPartData::dialog(
-            'create',
-            new LayoutDialogData('Create task', 'Task created'),
-            LayoutPartData::action('open', 'Create task', LayoutActionData::changing([])),
-            new LayoutFormData(ActionMethod::Post, '/tasks', isKeyed: true),
-            [LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text')],
-            [LayoutPartData::action('send', 'Create', LayoutActionData::submitting(), 'primary')],
-        );
+        $dialog = LayoutPartData::build()
+            ->asDialog()
+            ->key('create')
+            ->dialog(LayoutDialogData::build()->title('Create task')->confirmation('Task created')->finish())
+            ->opener(
+                LayoutPartData::build()
+                ->asAction()
+                ->key('open')
+                ->label('Create task')
+                ->action(LayoutActionData::build()->query([])->finish())
+                ->finish(),
+            )
+            ->sheet(
+                LayoutFormData::build()->method(ActionMethod::Post)->href('/tasks')->isKeyed(true)->finish(),
+                [LayoutPartData::build()
+                ->asField()
+                ->key('title')
+                ->label('Title')
+                ->field(LayoutFieldData::build()->name('title')->finish())
+                ->style('text')
+                ->finish()],
+                [LayoutPartData::build()
+                ->asAction()
+                ->key('send')
+                ->label('Create')
+                ->action(LayoutActionData::build()->submits(true)->finish())
+                ->style('primary')
+                ->finish()],
+            )
+            ->finish();
 
         $this->assertSame(['open', 'form'], array_map(fn (LayoutPartData $part) => $part->key, $dialog->children));
 
@@ -279,8 +480,24 @@ final class DeclaredLayoutTest extends TestCase
 
     public function test_a_progress_part_carries_its_reading_and_picks_its_style_by_whether_it_counts(): void
     {
-        $meter = LayoutPartData::progress('week', 72, 100, 'Weekly allowance', 'percent');
-        $counted = LayoutPartData::progress('tasks', 3, 8, 'Plan 4', 'tasks', true);
+        $meter = LayoutPartData::build()
+            ->asProgress()
+            ->key('week')
+            ->progress(
+                LayoutProgressData::build()
+                ->value(72)
+                ->max(100)
+                ->label('Weekly allowance')
+                ->unit('percent')
+                ->finish(),
+            )
+            ->finish();
+        $counted = LayoutPartData::build()
+            ->asProgress()
+            ->key('tasks')
+            ->progress(LayoutProgressData::build()->value(3)->max(8)->label('Plan 4')->unit('tasks')->finish())
+            ->style('counted')
+            ->finish();
 
         $this->assertSame(1, $meter->assertWithinCatalogue());
         $this->assertSame('meter', $meter->style);
@@ -291,8 +508,31 @@ final class DeclaredLayoutTest extends TestCase
 
     public function test_a_usage_part_is_a_meter_with_its_percent_and_in_a_row_carries_its_tip(): void
     {
-        $reader = LayoutPartData::usage('week', 72, 'This week used');
-        $row = LayoutPartData::usage('usage', 72, 'Usage', 'This week 72% used');
+        $reader = LayoutPartData::build()
+            ->asUsage()
+            ->key('week')
+            ->progress(
+                LayoutProgressData::build()
+                ->value(72)
+                ->max(100)
+                ->label('This week used')
+                ->unit('percent')
+                ->finish(),
+            )
+            ->finish();
+        $row = LayoutPartData::build()
+            ->asUsage()
+            ->key('usage')
+            ->progress(
+                LayoutProgressData::build()
+                ->value(72)
+                ->max(100)
+                ->label('Usage')
+                ->unit('percent')
+                ->finish(),
+            )
+            ->tip('This week 72% used')
+            ->finish();
 
         $this->assertSame(1, $reader->assertWithinCatalogue());
         $this->assertSame(['usage', null], [$reader->style, $reader->detail]);
@@ -302,7 +542,11 @@ final class DeclaredLayoutTest extends TestCase
 
     public function test_a_share_part_is_a_short_meter_of_the_pieces_finished(): void
     {
-        $share = LayoutPartData::share('progress', 3, 8, 'Plan 4', 'tasks');
+        $share = LayoutPartData::build()
+            ->asShare()
+            ->key('progress')
+            ->progress(LayoutProgressData::build()->value(3)->max(8)->label('Plan 4')->unit('tasks')->finish())
+            ->finish();
 
         $this->assertSame(1, $share->assertWithinCatalogue());
         $this->assertSame('share', $share->style);

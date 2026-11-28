@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Pages;
+
+use App\Connections\Data\DeviceApprovalData;
+use App\Connections\Enums\BindingReadiness;
+use App\Connections\ServerOrigin;
+use App\Exceptions\PrivateRecordMissing;
+use App\Http\Requests\Connections\DeviceApprovalPageRequest;
+use App\Models\Projects\DeviceGrant;
+use App\Reads\PageFormRequests;
+use App\Web\Creation\Contracts\PageBuilder;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
+
+/**
+ * The terminal request the owner checks before approving it, as the journal holds it now, so a reload or a second
+ * tab shows its committed state. An unknown code finds nothing, as a code of another owner does.
+ */
+final readonly class DeviceApprovalPageBuilder implements PageBuilder
+{
+    public function __construct(private PageFormRequests $requests, private ServerOrigin $origin) {}
+
+    /**
+     * The approval a terminal asked for, read only: reading it never approves it or issues a code; a code that does not
+     * exist answers as a private record does.
+     *
+     * @throws PrivateRecordMissing
+     */
+    public function build(Request $visit): DeviceApprovalData
+    {
+        $input = $this->requests->from(DeviceApprovalPageRequest::class, $visit);
+
+        try {
+            $grant = DeviceGrant::findForUserCode($input->userCode());
+        } catch (ModelNotFoundException $missing) {
+            throw PrivateRecordMissing::forReader($missing);
+        }
+
+        return DeviceApprovalData::build()
+            ->userCode($grant->user_code)
+            ->projectLabel($grant->binding->project_label)
+            ->machineLabel($grant->binding->machine_label)
+            ->scopes($grant->scopes)
+            ->expiresAt($grant->code_expires_at->toIso8601String())
+            ->journalOrigin($this->origin->canonical())
+            ->environmentLabel($grant->environment->label ?? 'no environment yet')
+            ->state($grant->approvalStateAt(CarbonImmutable::now()))
+            ->isBindingRevoked($grant->binding->readiness === BindingReadiness::Revoked)
+            ->finish();
+    }
+}

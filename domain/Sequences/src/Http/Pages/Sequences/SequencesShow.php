@@ -22,17 +22,27 @@ final readonly class SequencesShow extends SequencesPage
 
     public function of(Sequence $sequence): DeclaredLayoutData
     {
-        $page = DetailPage::make($sequence->name);
+        $page = DetailPage::build()->title($sequence->name)->finish();
         $summarisedPage = $sequence->summary === '' ? $page : $page->summarising($sequence->summary);
 
         $reader = $summarisedPage
-            ->withActions(LayoutPartData::action(
-                'edit-steps',
-                'Edit steps',
-                LayoutActionData::to(route('sequences.edit', ['sequence' => $sequence->id], false)),
-                'bordered',
-            ))
-            ->withStanding(LayoutPartData::collection('steps', 'list', $this->stepRows($sequence)))
+            ->withActions(LayoutPartData::build()
+                ->asAction()
+                ->key('edit-steps')
+                ->label('Edit steps')
+                ->action(
+                    LayoutActionData::build()
+                    ->href(route('sequences.edit', ['sequence' => $sequence->id], false))
+                    ->finish(),
+                )
+                ->style('bordered')
+                ->finish())
+            ->withStanding(LayoutPartData::build()
+                ->asCollection()
+                ->key('steps')
+                ->style('list')
+                ->rows($this->stepRows($sequence))
+                ->finish())
             ->part();
 
         return $this->index->of($sequence->id, [$reader]);
@@ -44,14 +54,19 @@ final readonly class SequencesShow extends SequencesPage
     private function stepRows(Sequence $sequence): array
     {
         return array_map(
-            fn (SequenceStepData $step, int $index) => LayoutRowData::from(
-                [
-                    'key' => $step->id,
-                    'label' => $step->title,
-                    'detail' => "Runs when {$step->runsWhen} · done when {$step->doneWhen}",
-                    'leading' => [LayoutPartData::text('number', (string) ($index + 1), 'muted')],
-                ],
-            ),
+            fn (SequenceStepData $step, int $index) => LayoutRowData::build()
+                ->key($step->id)
+                ->label($step->title)
+                ->detail("Runs when {$step->runsWhen} · done when {$step->doneWhen}")
+                ->leading(
+                    [LayoutPartData::build()
+                    ->asText()
+                    ->key('number')
+                    ->value((string) ($index + 1))
+                    ->style('muted')
+                    ->finish()],
+                )
+                ->finish(),
             $sequence->stepList(),
             array_keys($sequence->stepList()),
         );

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import type { Component } from 'vue';
-import { computed } from 'vue';
+import { computed, reactive } from 'vue';
 import PaneGrid from '@/web/pages/web/partials/PaneGrid.vue';
 import { showWindow } from '@/components/panes/arrangement';
 import { copyIdOf, openCopy, originalKeyOf, windowsIn } from '@/components/panes/paneLayout';
 import { provideFileOpener } from '@/framework/fileOpener';
+import { reloadWindow } from '@/framework/useWindowQuery';
 import type { PaneWindow } from '@/components/panes/paneLayout';
 import { providePaneLayout } from '@/components/panes/usePaneLayout';
 import { useWindowKeys } from '@/components/panes/useWindowKeys';
@@ -23,6 +24,7 @@ import InformationBar from './InformationBar.vue';
  */
 const props = defineProps<{ home: HomeData }>();
 const page = usePage();
+const openingFiles = reactive(new Set<string>());
 
 /**
  * A window's result once the browser has it, read for the pane's count when its data names a total, and for its tab's
@@ -30,33 +32,27 @@ const page = usePage();
  */
 function resultOf(
     propName: string,
-): WindowResult<{ pagination?: { total: number }; name?: string }> | undefined {
+): WindowResult<{ path?: string }> | undefined {
     // page.props is replaced on each visit, so it is read here, never kept.
     return page.props[propName] as
-        | WindowResult<{ pagination?: { total: number }; name?: string }>
+        | WindowResult<{ path?: string }>
         | undefined;
 }
 
 const layout = providePaneLayout('home-layout', () =>
     props.home.windows.map((window): PaneWindow => {
-        const result = resultOf(window.propName);
-
         return {
             key: window.paneKey,
             title: window.title,
             icon: window.icon,
             place: window.place,
-            count:
-                result?.status === 'ready'
-                    ? result.data.pagination?.total
-                    : undefined,
         };
     }),
     (key) => {
         const hosted = hostedWindow(key);
         const result = hosted === undefined ? undefined : resultOf(hosted.propName);
 
-        return result?.status === 'ready' && result.data.name ? result.data.name : undefined;
+        return result?.status === 'ready' ? result.data.path?.split('/').pop() : undefined;
     },
 );
 
@@ -124,7 +120,7 @@ provideFileOpener((path) => {
     if (unused?.hosted !== undefined) {
         layout.apply(showWindow(layout.arrangement.value, unused.key));
 
-        showIn(url, unused.hosted, path);
+        showIn(unused.hosted, path);
 
         return;
     }
@@ -141,19 +137,16 @@ provideFileOpener((path) => {
         return;
     }
 
-    showIn(url, hosted, path);
+    showIn(hosted, path);
 });
 
 /**
  * Has a File window read the file at the path, by a visit that changes only its own part of the query and its prop.
  */
-function showIn(url: URL, hosted: { propName: string; queryKey: string }, path: string): void {
-    url.searchParams.set(`window[${hosted.queryKey}][path]`, path);
-    router.visit(`${url.pathname}${url.search}`, {
-        only: [hosted.propName],
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
+function showIn(hosted: { propName: string; queryKey: string }, path: string): void {
+    openingFiles.add(hosted.propName);
+    reloadWindow(hosted.propName, hosted.queryKey, { path }, {
+        onFinish: () => openingFiles.delete(hosted.propName),
     });
 }
 
@@ -172,6 +165,7 @@ function componentOf(window: HomeWindowData): Component {
                 <WindowHost
                     :component="componentNamed(section.component)"
                     :prop-name="section.propName"
+                    :ask-on-start="false"
                 />
             </template>
         </AgentBar>
@@ -189,6 +183,7 @@ function componentOf(window: HomeWindowData): Component {
                                 :prop-name="hosted.propName"
                                 :page-key="hosted.queryKey"
                                 :subject="hosted.window.title"
+                                :ask-on-start="!openingFiles.has(hosted.propName)"
                             />
                         </template>
                     </template>

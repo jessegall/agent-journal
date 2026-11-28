@@ -21,11 +21,20 @@ final readonly class NoAccountsYet
 
     public static function addingWith(LayoutActionData $adding): ListEmpty
     {
-        return ListEmpty::nothingYet(
-            self::TITLE,
-            self::SENTENCE,
-            'account',
-            LayoutPartData::action('add', 'Add account', $adding, 'primary'),
-        );
+        return ListEmpty::build()
+            ->title(self::TITLE)
+            ->detail(self::SENTENCE)
+            ->icon('account')
+            ->actions(
+                [LayoutPartData::build()
+                ->asAction()
+                ->key('add')
+                ->label('Add account')
+                ->action($adding)
+                ->style('primary')
+                ->finish()],
+            )
+            ->fillsPage(true)
+            ->finish();
     }
 }

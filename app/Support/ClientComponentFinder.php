@@ -39,6 +39,10 @@ final readonly class ClientComponentFinder
             if ($page->componentName() === $component) {
                 return $page->componentFile;
             }
+
+            if ($page->windowFile !== null && $page->windowComponentName() === $component) {
+                return $page->windowFile;
+            }
         }
 
         return $this->shellPages->find($component);

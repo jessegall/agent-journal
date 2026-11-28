@@ -41,17 +41,19 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
     ): DeclaredLayoutData {
         $query = ['actor' => $follower->text(), 'page' => $runs->page->number];
 
-        return ListPage::make(
-            'Runs',
-            array_map(fn (SequenceRun $run) => $this->rowOf($run, $query, $chosenRunId), $runs->runs),
-            ListEmpty::informing(self::EMPTY_TEXT),
-        )
+        return ListPage::build()
+            ->title('Runs')
+            ->rows($runs->runs, fn (SequenceRun $run) => $this->rowOf($run, $query, $chosenRunId))
+            ->empty(ListEmpty::build()->title(self::EMPTY_TEXT)->finish())
             ->counting($runs->total)
             ->withViews(...$this->views->of(true))
             ->filteredBy($this->choicesOf($followers, $follower))
-            ->paged(ListPaging::numbered($runs->page->number, $runs->lastPage()))
-            ->withReader(new LayoutBackData(route('sequences.runs', $query, false), 'Runs'), ...$reader)
-            ->layout();
+            ->paged(ListPaging::build()->page($runs->page->number)->lastPage($runs->lastPage())->finish())
+            ->withReader(LayoutBackData::build()
+                ->href(route('sequences.runs', $query, false))
+                ->label('Runs')
+                ->finish(), ...$reader)
+            ->finish();
     }
 
     /**
@@ -59,11 +61,17 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
      */
     public function none(): DeclaredLayoutData
     {
-        return ListPage::make('Runs', [], ListEmpty::informing(self::EMPTY_TEXT))
+        return ListPage::build()
+            ->title('Runs')
+            ->rows([], static fn (LayoutRowData $row): LayoutRowData => $row)
+            ->empty(ListEmpty::build()->title(self::EMPTY_TEXT)->finish())
             ->counting(0)
             ->withViews(...$this->views->of(true))
-            ->withReader(new LayoutBackData(route('sequences.runs', [], false), 'Runs'))
-            ->layout();
+            ->withReader(LayoutBackData::build()
+                ->href(route('sequences.runs', [], false))
+                ->label('Runs')
+                ->finish())
+            ->finish();
     }
 
     /**
@@ -72,17 +80,27 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
     private function rowOf(SequenceRun $run, array $query, string $chosenRunId): LayoutRowData
     {
         $mark = $run->status === SequenceRunStatus::Running
-            ? LayoutPartData::text('step', $run->stepLine($run->current_step), 'chip')
-            : LayoutPartData::badge('state', ucfirst($run->status->value), 'quiet');
+            ? LayoutPartData::build()
+                ->asText()
+                ->key('step')
+                ->value($run->stepLine($run->current_step))
+                ->style('chip')
+                ->finish()
+            : LayoutPartData::build()
+                ->asBadge()
+                ->key('state')
+                ->text(ucfirst($run->status->value))
+                ->tone('quiet')
+                ->finish();
 
-        return LayoutRowData::from([
-            'key' => $run->id,
-            'label' => "Run {$run->number}",
-            'detail' => $run->name,
-            'href' => route('sequences.run', ['run' => $run->number, ...$query], false),
-            'isCurrent' => $run->id === $chosenRunId,
-            'trailing' => [$mark],
-        ]);
+        return LayoutRowData::build()
+            ->key($run->id)
+            ->label("Run {$run->number}")
+            ->detail($run->name)
+            ->href(route('sequences.run', ['run' => $run->number, ...$query], false))
+            ->isCurrent($run->id === $chosenRunId)
+            ->trailing([$mark])
+            ->finish();
     }
 
     /**
@@ -92,14 +110,21 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
     {
         $labels = $this->labels->labelsFor($followers);
 
-        return LayoutPartData::collection('actors', 'choices', array_map(
-            fn (ActorReference $follower) => LayoutRowData::from([
-                'key' => $follower->text(),
-                'label' => $labels->nameOf($follower) ?? $follower->text(),
-                'query' => ['actor' => $follower->text(), 'page' => ''],
-                'isCurrent' => $follower->text() === $chosen->text(),
-            ]),
-            $followers,
-        ));
+        return LayoutPartData::build()
+            ->asCollection()
+            ->key('actors')
+            ->style('choices')
+            ->rows(
+                array_map(
+                    fn (ActorReference $follower) => LayoutRowData::build()
+                        ->key($follower->text())
+                        ->label($labels->nameOf($follower) ?? $follower->text())
+                        ->query(['actor' => $follower->text(), 'page' => ''])
+                        ->isCurrent($follower->text() === $chosen->text())
+                        ->finish(),
+                    $followers,
+                ),
+            )
+            ->finish();
     }
 }

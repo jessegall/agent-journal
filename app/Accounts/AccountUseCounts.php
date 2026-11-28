@@ -33,6 +33,6 @@ final readonly class AccountUseCounts
 
     private static function keyOf(RecordIdentity $account): string
     {
-        return "{$account->type} {$account->id}";
+        return $account->reference();
     }
 }

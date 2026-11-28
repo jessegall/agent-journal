@@ -15,6 +15,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class ActivityWindowData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<ActivityWindowDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = ActivityWindowDataFields::class;
+
     /**
      * @param  list<ActivityEventData>  $events
      */

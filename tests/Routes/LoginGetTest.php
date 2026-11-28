@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Routes;
 
+use App\CorePages;
+use App\Pages\LoginPage;
+use App\Support\ClientDeclarations;
+use App\Web\Creation\PageFactory;
+use Illuminate\Http\Request;
 use Inertia\Support\SessionKey;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\Entries\Attributes\TestsRoute;
@@ -19,9 +24,30 @@ use Tests\Support\Seeding\TestJournal;
 #[TestsRoute('GET', 'login')]
 final class LoginGetTest extends GuardedRouteEntryTestCase
 {
+    public function test_login_prefill_depends_on_the_local_environment_and_stays_out_of_shell_declarations(): void
+    {
+        $declaration = CorePages::login();
+        $factory = $this->app->make(PageFactory::class);
+        $this->assertSame($declaration->builder, $factory->builderFor($declaration->type));
+        $visit = Request::create('/login?email=ignored');
+        $this->assertSame('', $factory->create(LoginPage::class, $visit)->input->email);
+        $declarations = $this->app->make(ClientDeclarations::class);
+
+        foreach ($declarations->pages() as $page) {
+            $this->assertNotSame(LoginPage::class, $page->surface->type);
+        }
+
+        $this->app['env'] = 'local';
+        $this->app['config']->set('journal.web.local_sign_in.email', 'sample@example.test');
+        $this->app['config']->set('journal.web.local_sign_in.password', 'local-test-password');
+
+        $this->assertSame('sample@example.test', $factory->create(LoginPage::class, $visit)->input->email);
+    }
+
     public function test_a_guests_page_is_neither_encrypted_nor_cleared(): void
     {
         $this->get(route('login'))->assertInertia(function (AssertableInertia $page): void {
+            $page->component('Login')->where('page.input.email', '');
             $this->assertArrayNotHasKey('encryptHistory', $page->toArray());
             $this->assertArrayNotHasKey('clearHistory', $page->toArray());
         });

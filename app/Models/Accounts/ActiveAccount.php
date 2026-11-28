@@ -211,13 +211,20 @@ final class ActiveAccount extends JournalModel implements EventSource, ReadableM
     }
 
     /**
-     * Each driver's current choice, one row per driver made so far.
+     * The current choices for the families shown by the requested view.
      *
-     * @return list<self>
+     * @param list<string> $families
+     * @return array<string, self>
      */
-    public static function findListed(): array
+    public static function forListedFamilies(array $families): array
     {
-        return array_values(self::query()->inDriverOrder()->get()->all());
+        return self::query()
+            ->inFamilies($families)
+            ->inDriverOrder()
+            ->limit(count($families))
+            ->get()
+            ->keyBy('account_protocol')
+            ->all();
     }
 
     // ----------[ Scopes ]----------
@@ -229,6 +236,16 @@ final class ActiveAccount extends JournalModel implements EventSource, ReadableM
     protected function ofDriver(Builder $query, string $driver): void
     {
         $query->where('account_protocol', $driver);
+    }
+
+    /**
+     * @param Builder<self> $query
+     * @param list<string> $families
+     */
+    #[Scope]
+    protected function inFamilies(Builder $query, array $families): void
+    {
+        $query->whereIn('account_protocol', $families);
     }
 
     /**

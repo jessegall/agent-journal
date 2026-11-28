@@ -4,6 +4,20 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
+use App\Asks\Data\AskPreviewData;
+use App\Agents\Activity\Data\ActivityPaneData;
+use App\Asks\Data\AskDetail;
+use App\Asks\Data\AskInbox;
+use App\Asks\Data\AskInboxPaneData;
+use App\Http\Pages\ActivityPageBuilder;
+use App\Http\Pages\AskDetailPageBuilder;
+use App\Http\Pages\AskInboxPageBuilder;
+use App\Http\Pages\HomePageBuilder;
+use App\Http\Pages\RuntimeStatusPageBuilder;
+use App\Http\Pages\RuntimeStatusPageData;
+use App\Http\Pages\TerminalPageBuilder;
+use App\Http\Windows\ActivityWindowBuilder;
+use App\Http\Windows\AskInboxWindowBuilder;
 use App\Accounts\Data\LoginInput;
 use App\Agents\Activity\Data\ActivityEventData;
 use App\Agents\Activity\Data\ActivityWindowData;
@@ -51,12 +65,6 @@ use App\Http\Loaders\Agents\StartPreviewLoader;
 use App\Http\Loaders\Drafts\DraftQuestionsLoader;
 use App\Http\Loaders\Drafts\DraftRecordLoader;
 use App\Http\Loaders\Profiles\StartReceiptLoader;
-use App\Http\Pages\Resolvers\ActivityWindowResolver;
-use App\Http\Pages\Resolvers\AskDetailResolver;
-use App\Http\Pages\Resolvers\AskInboxResolver;
-use App\Http\Pages\Resolvers\HomeWindowResolver;
-use App\Http\Pages\Resolvers\RuntimeStatusResolver;
-use App\Http\Pages\Resolvers\TerminalWindowResolver;
 use App\Messages\Data\DraftQuestionsData;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
@@ -99,6 +107,9 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
     public function types(): array
     {
         return [
+            ActivityPaneData::class,
+            AskInboxPaneData::class,
+            AskPreviewData::class,
             ActivityEventData::class,
             ActivityWindowData::class,
             AppContextData::class,
@@ -159,7 +170,14 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
     public function pages(): array
     {
         return [
-            Page::make('home', 'Home', Icon::Home, HomeWindowResolver::class, 'Home.vue')
+            Page::build()
+                ->key('home')
+                ->title('Home')
+                ->icon(Icon::Home)
+                ->pageType(HomeData::class)
+                ->pageBuilder(HomePageBuilder::class)
+                ->component('Home.vue')
+                ->finish()
                 ->at('')
                 ->slots(fn (PageSlots $slots) => $slots->add('bar', SlotContextType::Nothing))
                 ->loaders(fn (PageLoaders $loaders) => $loaders
@@ -167,9 +185,31 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                     ->add('draft-record', DraftRecordLoader::class)
                     ->add('start-receipt', StartReceiptLoader::class)
                     ->add('start-preview', StartPreviewLoader::class)),
-            Page::make('asks', 'Asks', Icon::Speech, AskInboxResolver::class, 'Asks.vue')->at('asks')->onHome(26),
-            Page::make('ask', 'Ask', Icon::Speech, AskDetailResolver::class, 'AskDetail.vue')->at('asks/{ask}'),
-            Page::layout('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class)
+            Page::build()
+                ->key('asks')
+                ->title('Asks')
+                ->icon(Icon::Speech)
+                ->pageType(AskInbox::class)
+                ->pageBuilder(AskInboxPageBuilder::class)
+                ->component('Asks.vue')
+                ->withWindow(AskInboxPaneData::class, AskInboxWindowBuilder::class, 'AskInboxPane.vue')
+                ->finish()->at('asks')->onHome(26),
+            Page::build()
+                ->key('ask')
+                ->title('Ask')
+                ->icon(Icon::Speech)
+                ->pageType(AskDetail::class)
+                ->pageBuilder(AskDetailPageBuilder::class)
+                ->component('AskDetail.vue')
+                ->finish()->at('asks/{ask}'),
+            Page::build()
+                ->key('runtimes')
+                ->title('Runtimes')
+                ->icon(Icon::Activity)
+                ->pageType(RuntimeStatusPageData::class)
+                ->pageBuilder(RuntimeStatusPageBuilder::class)
+                ->declaredLayout()
+                ->finish()
                 ->at('runtimes')
                 ->actions(fn (PageActions $actions) => $actions
                     ->post(
@@ -207,12 +247,27 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                         CancelScriptRuntimeRequestController::class,
                         'cancel-runtime-script',
                     )),
-            Page::make('activity', 'Activity', Icon::Activity, ActivityWindowResolver::class, 'ActivityPanel.vue')
+            Page::build()
+                ->key('activity')
+                ->title('Activity')
+                ->icon(Icon::Activity)
+                ->pageType(ActivityWindowData::class)
+                ->pageBuilder(ActivityPageBuilder::class)
+                ->component('ActivityPanel.vue')
+                ->withWindow(ActivityPaneData::class, ActivityWindowBuilder::class, 'ActivityPane.vue')
+                ->finish()
                 ->at('activity')
                 ->onHome(62)
                 ->placedAs(WindowPlace::Feed)
                 ->visibleWhen(ActivityOwnerCheck::class),
-            Page::make('terminal', 'Terminal', Icon::Activity, TerminalWindowResolver::class, 'TerminalWindow.vue')
+            Page::build()
+                ->key('terminal')
+                ->title('Terminal')
+                ->icon(Icon::Activity)
+                ->pageType(TerminalWindowData::class)
+                ->pageBuilder(TerminalPageBuilder::class)
+                ->component('TerminalWindow.vue')
+                ->finish()
                 ->at('agents/{agent}/terminal')
                 ->actions(fn (PageActions $actions) => $actions
                     ->post(

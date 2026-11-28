@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Accounts\Data;
 
-use App\Accounts\Values\MonthCost;
-use App\Models\Accounts\AccountUsageTokens;
-use App\Models\Accounts\AccountUsageWindow;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -19,6 +16,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AccountUsageData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<AccountUsageDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = AccountUsageDataFields::class;
+
     /**
      * @param  list<AccountUsageWindowData>  $windows
      */
@@ -28,25 +30,4 @@ final class AccountUsageData extends Data
         public readonly AccountMonthCostData|Optional $monthCost,
         public readonly AccountThreadTokensData|Optional $latestThread,
     ) {}
-
-    /**
-     * The account's usage; left out when it has no reading at all, so the account shows no usage.
-     *
-     * @param  list<AccountUsageWindow>  $windows
-     */
-    public static function fromReadings(
-        array $windows,
-        MonthCost|null $cost,
-        AccountUsageTokens|null $thread,
-    ): self|Optional {
-        if ($windows === [] && $cost === null && $thread === null) {
-            return Optional::create();
-        }
-
-        return new self(
-            array_map(AccountUsageWindowData::fromWindow(...), $windows),
-            AccountMonthCostData::optionalOrMissing($cost),
-            AccountThreadTokensData::optionalOrMissing($thread),
-        );
-    }
 }

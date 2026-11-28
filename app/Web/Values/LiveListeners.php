@@ -24,13 +24,25 @@ final readonly class LiveListeners
     /**
      * What changes a viewer's page: a page change, an inbox it lost, or a protected view it must drop, on its own
      * journal.user channel.
+     *
+     * @param list<class-string> $events
      */
-    public static function pageChanges(string $userId): self
+    public static function pageChanges(string $userId, array $events = []): self
     {
         return new self(
-            [PageChanged::NAME, InboxAccessEnded::NAME, ProtectedViewInvalidated::NAME],
+            $events === []
+                ? [PageChanged::NAME, InboxAccessEnded::NAME, ProtectedViewInvalidated::NAME]
+                : array_map(self::eventName(...), $events),
             new PrivateChannel(UserChannel::nameFor($userId)),
         );
+    }
+
+    /** @param class-string $event */
+    private static function eventName(string $event): string
+    {
+        $name = $event.'::NAME';
+
+        return defined($name) ? (string) constant($name) : $event;
     }
 
     /**

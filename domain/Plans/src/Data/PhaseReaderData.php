@@ -16,6 +16,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class PhaseReaderData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<PhaseReaderDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = PhaseReaderDataFields::class;
+
     public function __construct(
         public readonly string $planNumber,
         public readonly string $planTitle,

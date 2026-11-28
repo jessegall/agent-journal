@@ -22,7 +22,10 @@ use App\Values\InboxMemberAuthority;
 use App\Web\Exceptions\LoaderInputUnreadable;
 use Illuminate\Http\Request;
 use RuntimeException;
-use Tests\Fixtures\ClientDeclarations\Library\BooksResolver;
+use Tests\Fixtures\ClientDeclarations\Library\BookPageData;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPageData;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BookPageBuilder;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BooksPageBuilder;
 use Tests\Fixtures\ClientDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\ClientDeclarations\Library\NobodySees;
 use Tests\Fixtures\ClientDeclarations\Library\RefusingLoader;
@@ -49,10 +52,24 @@ final class LoaderPropsTest extends TestCase
         $library = DomainEntry::fromClass(LibraryDomain::class);
         $this->app->instance(ClientDeclarations::class, ClientDeclarations::check([$library->declaring(
             pages: [
-                Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')
+                Page::build()
+                    ->key('books')
+                    ->title('Books')
+                    ->icon(Icon::Docs)
+                    ->pageType(BooksPageData::class)
+                    ->pageBuilder(BooksPageBuilder::class)
+                    ->component('Books.vue')
+                    ->finish()
                     ->at('')
                     ->loaders(fn (PageLoaders $loaders) => $loaders->add('shelf-rows', ShelfRowsLoader::class)),
-                Page::make('book', 'Book', Icon::Docs, BooksResolver::class, 'Book/Reader.vue')
+                Page::build()
+                    ->key('book')
+                    ->title('Book')
+                    ->icon(Icon::Docs)
+                    ->pageType(BookPageData::class)
+                    ->pageBuilder(BookPageBuilder::class)
+                    ->component('Book/Reader.vue')
+                    ->finish()
                     ->at('{book}')
                     ->visibleWhen(NobodySees::class)
                     ->loaders(fn (PageLoaders $loaders) => $loaders->add('hidden-rows', ShelfRowsLoader::class)),

@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import type { AskInbox } from '@/types/generated';
-import { useIsInWindow } from '@/framework/useWindowQuery';
 
 defineProps<{ data: AskInbox }>();
-
-const isInWindow = useIsInWindow();
 
 function statusOf(card: AskInbox['cards'][number]): string {
     if (card.isObligation) {
@@ -17,13 +14,9 @@ function statusOf(card: AskInbox['cards'][number]): string {
 </script>
 
 <template>
-    <template v-if="!isInWindow">
-        <Head title="Asks" />
-    </template>
+    <Head title="Asks" />
     <main class="mx-auto flex max-w-3xl flex-col gap-5 p-6">
-        <template v-if="!isInWindow">
-            <h1 class="text-lg font-semibold">Asks</h1>
-        </template>
+        <h1 class="text-lg font-semibold">Asks</h1>
         <template v-if="data.cards.length === 0">
             <p class="text-text-3">No questions waiting.</p>
         </template>

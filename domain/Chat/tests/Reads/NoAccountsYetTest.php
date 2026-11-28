@@ -8,9 +8,9 @@ use App\Accounts\NoAccountsYet;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
 use Domain\Chat\Data\ChatData;
-use Domain\Chat\Http\Pages\Resolvers\ChatWindowResolver;
-use Domain\Chat\Http\Requests\ConversationRequest;
+use Domain\Chat\Http\Pages\ChatPageBuilder;
 use Domain\Chat\Tests\TestCase;
+use Illuminate\Http\Request;
 use Spatie\LaravelData\Optional;
 use Tests\Support\RefreshHookDatabase;
 
@@ -35,7 +35,7 @@ final class NoAccountsYetTest extends TestCase
             [NoAccountsYet::TITLE, NoAccountsYet::SENTENCE, 'Add account'],
             [$notice->text, $notice->detail, $action->text],
         );
-        $this->assertEquals(LayoutActionData::to('/accounts?add=1'), $action->action);
+        $this->assertEquals(LayoutActionData::build()->href('/accounts?add=1')->finish(), $action->action);
     }
 
     public function test_the_chat_shows_no_such_state_once_an_account_is_signed_in(): void
@@ -47,8 +47,8 @@ final class NoAccountsYetTest extends TestCase
 
     private function window(): ChatData
     {
-        $this->app->instance(ConversationRequest::class, ConversationRequest::create('/', 'GET'));
+        $visit = Request::create('/');
 
-        return $this->app->make(ChatWindowResolver::class)->read();
+        return $this->app->make(ChatPageBuilder::class)->build($visit);
     }
 }

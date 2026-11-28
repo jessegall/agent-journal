@@ -30,16 +30,19 @@ final readonly class SharesIndex extends SharingPage
      */
     public function of(ShareFiltersData $filters, array $shown, string|null $after): DeclaredLayoutData
     {
-        $page = ListPage::make('Shares', $this->rowsOf($shown), $this->emptyFor($filters))
+        $page = ListPage::build()
+            ->title('Shares')
+            ->rows($this->rowsOf($shown), static fn (LayoutRowData $row): LayoutRowData => $row)
+            ->empty($this->emptyFor($filters))
             ->filteredBy($this->filtersOf($filters))
-            ->paged(ListPaging::cursor($after))
-            ->withReader(new LayoutBackData('/sharing', 'Shares'));
+            ->paged(ListPaging::build()->after($after)->isAppend($filters->after !== null)->finish())
+            ->withReader(LayoutBackData::build()->href('/sharing')->label('Shares')->finish());
 
         if ($filters->after === null && $after === null) {
             $page = $page->countingRows();
         }
 
-        return $page->layout();
+        return $page->finish();
     }
 
     private function filtersOf(ShareFiltersData $filters): LayoutPartData
@@ -47,50 +50,70 @@ final readonly class SharesIndex extends SharingPage
         $chosen = $filters->status instanceof ShareStatus ? $filters->status->value : '';
 
         $states = [
-            LayoutRowData::from(
-                [
-                    'key' => 'any',
-                    'label' => 'Any',
-                    'query' => ['state' => '', 'after' => ''],
-                    'isCurrent' => $chosen === '',
-                ],
-            ),
+            LayoutRowData::build()
+                ->key('any')
+                ->label('Any')
+                ->query(['state' => '', 'after' => ''])
+                ->isCurrent($chosen === '')
+                ->finish(),
             ...array_map(
-                fn (ShareStatus $status) => LayoutRowData::from(
-                    [
-                        'key' => $status->value,
-                        'label' => $status->value,
-                        'query' => ['state' => $status->value, 'after' => ''],
-                        'isCurrent' => $chosen === $status->value,
-                    ],
-                ),
+                fn (ShareStatus $status) => LayoutRowData::build()
+                    ->key($status->value)
+                    ->label($status->value)
+                    ->query(['state' => $status->value, 'after' => ''])
+                    ->isCurrent($chosen === $status->value)
+                    ->finish(),
                 ShareStatus::cases(),
             ),
         ];
 
-        return LayoutPartData::box(
-            'filters',
-            'row',
-            LayoutPartData::collection('state', 'choices', $states),
-            LayoutPartData::field(
-                'root-type',
-                'Record type',
-                new LayoutFieldData('rootType', (string) $filters->rootType, ['after']),
-                'text',
-            ),
-            LayoutPartData::field(
-                'gateway',
-                'Gateway',
-                new LayoutFieldData('gateway', (string) $filters->gateway, ['after']),
-                'text',
-            ),
-            LayoutPartData::field(
-                'expires-before',
-                'Expires before',
-                new LayoutFieldData('expiresBefore', (string) $filters->expiresBefore, ['after']),
-                'text',
-            ),
-        );
+        return LayoutPartData::build()
+            ->asBox()
+            ->key('filters')
+            ->style('row')
+            ->children(
+                LayoutPartData::build()->asCollection()->key('state')->style('choices')->rows($states)->finish(),
+                LayoutPartData::build()
+                ->asField()
+                ->key('root-type')
+                ->label('Record type')
+                ->field(
+                    LayoutFieldData::build()
+                    ->name('rootType')
+                    ->value((string) $filters->rootType)
+                    ->clears(['after'])
+                    ->finish(),
+                )
+                ->style('text')
+                ->finish(),
+                LayoutPartData::build()
+                ->asField()
+                ->key('gateway')
+                ->label('Gateway')
+                ->field(
+                    LayoutFieldData::build()
+                    ->name('gateway')
+                    ->value((string) $filters->gateway)
+                    ->clears(['after'])
+                    ->finish(),
+                )
+                ->style('text')
+                ->finish(),
+                LayoutPartData::build()
+                ->asField()
+                ->key('expires-before')
+                ->label('Expires before')
+                ->field(
+                    LayoutFieldData::build()
+                    ->name('expiresBefore')
+                    ->value((string) $filters->expiresBefore)
+                    ->clears(['after'])
+                    ->finish(),
+                )
+                ->style('text')
+                ->finish(),
+            )
+            ->finish();
     }
 
     /**
@@ -101,17 +124,19 @@ final readonly class SharesIndex extends SharingPage
     {
         return array_map(fn (
             ShareRowData $row,
-        ) => LayoutRowData::from([
-            'key' => $row->id,
-            'label' => ($row->isProposal ? 'Proposal' : 'Share')." {$row->number}",
-            'value' => $row->status->value,
-            'detail' => implode(' · ', array_filter([
-                $row->rootType,
-                $row->gatewayKey,
-                'expires '.CarbonImmutable::parse($row->expiresAt)->toDateString(),
-            ])),
-            'href' => "/sharing/shares/{$row->id}",
-        ]), $rows);
+        ) => LayoutRowData::build()
+            ->key($row->id)
+            ->label(($row->isProposal ? 'Proposal' : 'Share')." {$row->number}")
+            ->value($row->status->value)
+            ->detail(
+                implode(' · ', array_filter([
+                    $row->rootType,
+                    $row->gatewayKey,
+                    'expires '.CarbonImmutable::parse($row->expiresAt)->toDateString(),
+                ])),
+            )
+            ->href("/sharing/shares/{$row->id}")
+            ->finish(), $rows);
     }
 
     /**
@@ -121,7 +146,7 @@ final readonly class SharesIndex extends SharingPage
     private function emptyFor(ShareFiltersData $filters): ListEmpty
     {
         if (! $this->isFiltered($filters)) {
-            return ListEmpty::informing('No shares yet.');
+            return ListEmpty::build()->title('No shares yet.')->finish();
         }
 
         return $this->nothingMatches(

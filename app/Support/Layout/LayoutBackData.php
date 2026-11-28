@@ -14,6 +14,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutBackData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutBackDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutBackDataFields::class;
+
     public function __construct(
         public readonly string $href,
         public readonly string $label,

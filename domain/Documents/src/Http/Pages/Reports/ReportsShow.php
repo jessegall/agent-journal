@@ -52,50 +52,79 @@ final readonly class ReportsShow extends ReportsPage
     ): DeclaredLayoutData {
         $label = "report {$number}";
 
-        return PublicationPage::make(
-            $report->title,
-            [
-                LayoutPartData::text('label', $label, 'code'),
-                LayoutPartData::native(
-                    'receipt',
-                    LayoutNativeData::of('documents/ReportReceipt', new ReportReceiptPartData((string) $number)),
-                ),
-            ],
-            $report->abstract,
-            fn () => LayoutBodyData::fromMarkdown($report->body),
-            [
-                PublicationTab::deferred('text', 'Text', fn () => $this->textOf($report, $isPublic(), $comments())),
-                PublicationTab::deferred('links', 'Links', fn () => LayoutPartData::native(
-                    'links',
-                    LayoutNativeData::of('documents/RecordLinks', RecordLinksPartData::from([
-                        'source' => $label,
-                        'links' => $links(),
-                    ])),
-                )),
-                PublicationTab::deferred(
-                    'details',
-                    'Details',
-                    fn () => $this->detailsOf($report, $number, $label, $inspection()),
-                ),
-            ],
-        )->layout($tab);
+        return PublicationPage::build()
+            ->title($report->title)
+            ->metadata(
+                [
+                    LayoutPartData::build()->asText()->key('label')->value($label)->style('code')->finish(),
+                    LayoutPartData::build()
+                        ->asNative()
+                        ->key('receipt')
+                        ->native(
+                            LayoutNativeData::build()
+                            ->component('documents/ReportReceipt')
+                            ->props(new ReportReceiptPartData((string) $number))
+                            ->finish(),
+                        )
+                        ->finish(),
+                ],
+            )
+            ->summary($report->abstract)
+            ->body(fn () => LayoutBodyData::fromMarkdown($report->body))
+            ->tabs(
+                [
+                    PublicationTab::deferred('text', 'Text', fn () => $this->textOf($report, $isPublic(), $comments())),
+                    PublicationTab::deferred('links', 'Links', fn () => LayoutPartData::build()
+                        ->asNative()
+                        ->key('links')
+                        ->native(
+                            LayoutNativeData::build()
+                            ->component('documents/RecordLinks')
+                            ->props(
+                                RecordLinksPartData::from([
+                                    'source' => $label,
+                                    'links' => $links(),
+                                ]),
+                            )
+                            ->finish(),
+                        )
+                        ->finish()),
+                    PublicationTab::deferred(
+                        'details',
+                        'Details',
+                        fn () => $this->detailsOf($report, $number, $label, $inspection()),
+                    ),
+                ],
+            )
+            ->finish()->layout($tab);
     }
 
     private function textOf(ReportView $report, bool $isPublic, RecordCommentsPartData $comments): LayoutPartData
     {
-        $parts = [LayoutPartData::body('body', LayoutBodyData::fromMarkdown($report->body))];
+        $parts = [LayoutPartData::build()
+            ->asBody()
+            ->key('body')
+            ->body(LayoutBodyData::fromMarkdown($report->body))
+            ->finish()];
 
         if ($isPublic) {
-            $parts[] = LayoutPartData::notice(
-                'public',
-                'info',
-                'This report is shared publicly: a comment you leave here will be public.',
-            );
+            $parts[] = LayoutPartData::build()
+                ->asNotice()
+                ->key('public')
+                ->style('info')
+                ->title('This report is shared publicly: a comment you leave here will be public.')
+                ->finish();
         }
 
-        $parts[] = LayoutPartData::native('comments', LayoutNativeData::of('comments/RecordComments', $comments));
+        $parts[] = LayoutPartData::build()
+            ->asNative()
+            ->key('comments')
+            ->native(
+                LayoutNativeData::build()->component('comments/RecordComments')->props($comments)->finish(),
+            )
+            ->finish();
 
-        return LayoutPartData::box('text', 'stack', ...$parts);
+        return LayoutPartData::build()->asBox()->key('text')->style('stack')->children(...$parts)->finish();
     }
 
     /**
@@ -109,48 +138,78 @@ final readonly class ReportsShow extends ReportsPage
         RecordInspection $inspection,
     ): LayoutPartData {
         $settlements = array_map(
-            fn (SettlementCard $settlement) => LayoutRowData::from(
-                [
-                    'key' => $settlement->settledAt,
-                    'label' => "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}",
-                    'value' => $settlement->reason,
-                ],
-            ),
+            fn (SettlementCard $settlement) => LayoutRowData::build()
+                ->key($settlement->settledAt)
+                ->label("Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}")
+                ->value($settlement->reason)
+                ->finish(),
             $inspection->settlements,
         );
 
         $parts = [
-            LayoutPartData::collection('facts', 'facts', [
-                LayoutRowData::from(['key' => 'editing', 'label' => 'Editing', 'value' => 'free']),
-                LayoutRowData::from(
-                    ['key' => 'attention', 'label' => 'Attention', 'value' => $report->attention->value],
-                ),
-            ]),
+            LayoutPartData::build()
+                ->asCollection()
+                ->key('facts')
+                ->style('facts')
+                ->rows(
+                    [
+                        LayoutRowData::build()->key('editing')->label('Editing')->value('free')->finish(),
+                        LayoutRowData::build()
+                            ->key('attention')
+                            ->label('Attention')
+                            ->value($report->attention->value)
+                            ->finish(),
+                    ],
+                )
+                ->finish(),
         ];
 
         if ($settlements !== []) {
-            $parts[] = LayoutPartData::collection('settlements', 'list', $settlements);
+            $parts[] = LayoutPartData::build()
+                ->asCollection()
+                ->key('settlements')
+                ->style('list')
+                ->rows($settlements)
+                ->finish();
         }
 
         if ($report->attention === AttentionStatus::Active) {
-            $parts[] = LayoutPartData::form(
-                'settle',
-                LayoutFormData::from(
-                    [
-                        'method' => ActionMethod::Post,
-                        'href' => route('documents.settle-report', ['report' => $number], false),
-                        'fixed' => ['revision' => 1],
-                    ],
-                ),
-                'inline',
-                LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason'), 'text'),
-                LayoutPartData::action('send', 'Settle', LayoutActionData::submitting()),
-            );
+            $parts[] = LayoutPartData::build()
+                ->asForm()
+                ->key('settle')
+                ->form(
+                    LayoutFormData::build()
+                        ->method(ActionMethod::Post)
+                        ->href(route('documents.settle-report', ['report' => $number], false))
+                        ->fixed(['revision' => 1])
+                        ->finish(),
+                )
+                ->style('inline')
+                ->children(
+                    LayoutPartData::build()
+                    ->asField()
+                    ->key('reason')
+                    ->label('Reason')
+                    ->field(LayoutFieldData::build()->name('reason')->finish())
+                    ->style('text')
+                    ->finish(),
+                    LayoutPartData::build()
+                    ->asAction()
+                    ->key('send')
+                    ->label('Settle')
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->finish(),
+                )
+                ->finish();
         }
 
         $share = RecordSharePartData::from(['reference' => $label]);
-        $parts[] = LayoutPartData::native('share', LayoutNativeData::of('documents/RecordShare', $share));
+        $parts[] = LayoutPartData::build()
+            ->asNative()
+            ->key('share')
+            ->native(LayoutNativeData::build()->component('documents/RecordShare')->props($share)->finish())
+            ->finish();
 
-        return LayoutPartData::box('details', 'stack', ...$parts);
+        return LayoutPartData::build()->asBox()->key('details')->style('stack')->children(...$parts)->finish();
     }
 }

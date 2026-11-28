@@ -17,6 +17,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutSplitData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LayoutSplitDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LayoutSplitDataFields::class;
+
     public const int LIST_WIDTH = 430;
 
     public function __construct(
@@ -25,20 +30,4 @@ final class LayoutSplitData extends Data
         public readonly ReaderWidth $readerWidth,
         public readonly LayoutBackData|Optional $back = new Optional(),
     ) {}
-
-    /**
-     * The split of an index address: the list alone in a narrow container.
-     */
-    public static function showingList(ReaderWidth $readerWidth = ReaderWidth::Unrestricted): self
-    {
-        return new self(self::LIST_WIDTH, NarrowView::List, $readerWidth);
-    }
-
-    /**
-     * The split of a record address: the reader alone in a narrow container, with Back to its list.
-     */
-    public static function showingReader(LayoutBackData $back, ReaderWidth $width = ReaderWidth::Unrestricted): self
-    {
-        return new self(self::LIST_WIDTH, NarrowView::Reader, $width, $back);
-    }
 }

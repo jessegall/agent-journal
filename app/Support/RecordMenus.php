@@ -13,6 +13,7 @@ use App\Navigation\Layout\LayoutMenuGroupData;
 use App\Navigation\Layout\LayoutMenuItemData;
 use App\Settings\Enums\ActionMethod;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Spatie\LaravelData\Optional;
 
 /**
  * Builds a menu for the actor of this request: the items of every installed domain whose domain and target are on and
@@ -64,17 +65,21 @@ final readonly class RecordMenus implements RecordMenusContract
             (string) $other,
         ]);
 
-        return LayoutMenuData::from([
-            'key' => $menu->key,
-            'label' => $menu->label,
-            'groups' => array_map(fn (int|string $group) => LayoutMenuGroupData::from([
-                'key' => (string) $group,
-                'items' => array_map(
-                    fn (RegisteredMenuItem $item) => $this->itemData($item, $routeValues),
-                    $grouped[$group],
-                ),
-            ]), array_keys($grouped)),
-        ]);
+        return LayoutMenuData::build()
+            ->key($menu->key)
+            ->label($menu->label)
+            ->groups(
+                array_map(fn (int|string $group) => LayoutMenuGroupData::build()
+                ->key((string) $group)
+                ->items(
+                    array_map(
+                        fn (RegisteredMenuItem $item) => $this->itemData($item, $routeValues),
+                        $grouped[$group],
+                    ),
+                )
+                ->finish(), array_keys($grouped)),
+            )
+            ->finish();
     }
 
     /**
@@ -107,13 +112,13 @@ final readonly class RecordMenus implements RecordMenusContract
         $url = $this->urls->route($routeName, $routeValues, false);
         $query = $item->menuItem->query;
 
-        return LayoutMenuItemData::from(array_filter([
-            'key' => $item->key,
-            'label' => $item->menuItem->label,
-            'href' => $query === [] ? $url : $url.'?'.http_build_query($query),
-            'method' => $isAction ? $target->action->method : ActionMethod::Get,
-            'icon' => $item->menuItem->icon,
-        ], fn (mixed $optionalField) => $optionalField !== null));
+        return LayoutMenuItemData::build()
+            ->key($item->key)
+            ->label($item->menuItem->label)
+            ->href($query === [] ? $url : $url.'?'.http_build_query($query))
+            ->method($isAction ? $target->action->method : ActionMethod::Get)
+            ->icon($item->menuItem->icon ?? Optional::create())
+            ->finish();
     }
 
     private function isVisible(RegisteredMenuItem $item): bool

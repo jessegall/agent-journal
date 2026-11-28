@@ -11,6 +11,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AskInbox extends Data
 {
+    /** @use \App\Web\Creation\Buildable<AskInboxFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = AskInboxFields::class;
+
     /**
      * @param  list<AskCard>  $cards
      */

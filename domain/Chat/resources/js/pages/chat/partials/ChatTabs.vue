@@ -16,7 +16,7 @@ import { keyedPost } from "@kit/keyedPost";
 import { newRequestId } from "@kit/requestId";
 import { createMainAgent } from "@kit/sessionStarts";
 import { onChatChoiceRequest, onNewChatRequest, requestChatList } from "../../../composables/useChatBarAsks";
-import { chooseChat, HOME_CHAT_PROP } from "../../../chatChoice";
+import { chooseHomeChat } from "../../../chatChoice";
 import { readNewChatChoice } from "../../../newChatChoice";
 
 /**
@@ -61,7 +61,7 @@ function tabId(agent: AgentOptionData): string {
 const barProp = useHostProp();
 
 function chooseById(agentId: string, sessionId: string | null): void {
-  chooseChat([HOME_CHAT_PROP, barProp], agentId, sessionId);
+  chooseHomeChat(barProp, agentId, sessionId);
 }
 
 function choose(agent: AgentOptionData): void {

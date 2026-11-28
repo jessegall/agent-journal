@@ -36,7 +36,11 @@ final readonly class TasksShow extends TasksPage
 
     public function page(TaskReaderData $reader): DetailPage
     {
-        return $this->pageWithBrief($reader, LayoutPartData::text('brief', $reader->brief));
+        return $this->pageWithBrief($reader, LayoutPartData::build()
+            ->asText()
+            ->key('brief')
+            ->value($reader->brief)
+            ->finish());
     }
 
     /**
@@ -46,18 +50,32 @@ final readonly class TasksShow extends TasksPage
     public function pageAtPassage(TaskReaderData $reader, TaskBriefPassage $passage): DetailPage
     {
         if (! $passage->isOpenIn($reader->brief, $reader->revision)) {
-            return $this->pageWithBrief($reader, LayoutPartData::text('brief', self::PASSAGE_GONE, 'muted'));
+            return $this->pageWithBrief($reader, LayoutPartData::build()
+                ->asText()
+                ->key('brief')
+                ->value(self::PASSAGE_GONE)
+                ->style('muted')
+                ->finish());
         }
 
         $excerpt = $passage->excerptOf($reader->brief, $reader->revision, self::PASSAGE_CHARACTERS);
 
-        return $this->pageWithBrief($reader, LayoutPartData::text('brief', $excerpt));
+        return $this->pageWithBrief($reader, LayoutPartData::build()
+            ->asText()
+            ->key('brief')
+            ->value($excerpt)
+            ->finish());
     }
 
     private function pageWithBrief(TaskReaderData $reader, LayoutPartData $brief): DetailPage
     {
-        return DetailPage::make($reader->title)
-            ->above(LayoutPartData::text('number', "Task {$reader->number}", 'code'))
+        return DetailPage::build()->title($reader->title)->finish()
+            ->above(LayoutPartData::build()
+                ->asText()
+                ->key('number')
+                ->value("Task {$reader->number}")
+                ->style('code')
+                ->finish())
             ->summarising($reader->brief)
             ->withActions(...$this->actionsOf($reader))
             ->withFacts(...$this->factsOf($reader))
@@ -65,13 +83,18 @@ final readonly class TasksShow extends TasksPage
                 PublicationTab::deferred('waits', 'Waits', fn () => $this->waitsOf($reader)),
                 PublicationTab::deferred('logs', 'Logs', fn () => $this->logsOf($reader)),
                 PublicationTab::deferred('proofs', 'Proofs', fn () => $this->proofsOf($reader)),
-                PublicationTab::deferred('comments', 'Comments', fn () => LayoutPartData::native(
-                    'comments',
-                    LayoutNativeData::of(
-                        'comments/RecordComments',
-                        RecordCommentsPartData::from(['comments' => $reader->comments, 'target' => $reader->label]),
-                    ),
-                )),
+                PublicationTab::deferred('comments', 'Comments', fn () => LayoutPartData::build()
+                    ->asNative()
+                    ->key('comments')
+                    ->native(
+                        LayoutNativeData::build()
+                        ->component('comments/RecordComments')
+                        ->props(
+                            RecordCommentsPartData::from(['comments' => $reader->comments, 'target' => $reader->label]),
+                        )
+                        ->finish(),
+                    )
+                    ->finish()),
                 PublicationTab::deferred('brief', 'Brief', fn () => $brief),
             );
     }
@@ -84,12 +107,12 @@ final readonly class TasksShow extends TasksPage
         $fixed = ['revision' => $reader->revision, 'run' => $reader->actions->runNumber];
         $address = fn (string $name) => route("tasks.{$name}", ['task' => $reader->number], false);
 
-        $post = fn (string $name) => LayoutFormData::from([
-            'method' => ActionMethod::Post,
-            'href' => $address($name),
-            'fixed' => $fixed,
-            'isKeyed' => true,
-        ]);
+        $post = fn (string $name) => LayoutFormData::build()
+            ->method(ActionMethod::Post)
+            ->href($address($name))
+            ->fixed($fixed)
+            ->isKeyed(true)
+            ->finish();
 
         $startRefusal = $reader->actions->startReason instanceof Optional
             ? 'You may not start this task.'
@@ -97,17 +120,27 @@ final readonly class TasksShow extends TasksPage
 
         $parts = [
             $reader->actions->mayStart
-                ? LayoutPartData::form(
-                    'start',
-                    $post('start'),
-                    'inline',
-                    LayoutPartData::action('start-send', 'Start', LayoutActionData::submitting(), 'primary'),
-                )
-                : LayoutPartData::action(
-                    'start',
-                    'Start',
-                    LayoutActionData::unavailable($startRefusal),
-                ),
+                ? LayoutPartData::build()
+                    ->asForm()
+                    ->key('start')
+                    ->form($post('start'))
+                    ->style('inline')
+                    ->children(
+                        LayoutPartData::build()
+                        ->asAction()
+                        ->key('start-send')
+                        ->label('Start')
+                        ->action(LayoutActionData::build()->submits(true)->finish())
+                        ->style('primary')
+                        ->finish(),
+                    )
+                    ->finish()
+                : LayoutPartData::build()
+                    ->asAction()
+                    ->key('start')
+                    ->label('Start')
+                    ->action(LayoutActionData::build()->reason($startRefusal)->finish())
+                    ->finish(),
         ];
 
         foreach ([
@@ -115,13 +148,27 @@ final readonly class TasksShow extends TasksPage
             'cancel' => $reader->actions->mayCancel,
         ] as $name => $may) {
             if ($may) {
-                $parts[] = LayoutPartData::form(
-                    $name,
-                    $post($name),
-                    'inline',
-                    LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason'), 'text'),
-                    LayoutPartData::action("{$name}-send", ucfirst($name), LayoutActionData::submitting()),
-                );
+                $parts[] = LayoutPartData::build()
+                    ->asForm()
+                    ->key($name)
+                    ->form($post($name))
+                    ->style('inline')
+                    ->children(
+                        LayoutPartData::build()
+                        ->asField()
+                        ->key('reason')
+                        ->label('Reason')
+                        ->field(LayoutFieldData::build()->name('reason')->finish())
+                        ->style('text')
+                        ->finish(),
+                        LayoutPartData::build()
+                        ->asAction()
+                        ->key("{$name}-send")
+                        ->label(ucfirst($name))
+                        ->action(LayoutActionData::build()->submits(true)->finish())
+                        ->finish(),
+                    )
+                    ->finish();
             }
         }
 
@@ -176,41 +223,76 @@ final readonly class TasksShow extends TasksPage
     private function waitsOf(TaskReaderData $reader): LayoutPartData
     {
         if ($reader->waits instanceof Optional || $reader->waitActions instanceof Optional) {
-            return LayoutPartData::notice('waits', 'empty', 'The waits could not be read.');
+            return LayoutPartData::build()
+                ->asNotice()
+                ->key('waits')
+                ->style('empty')
+                ->title('The waits could not be read.')
+                ->finish();
         }
 
-        return LayoutPartData::native('waits', LayoutNativeData::of(
-            'tasks/TaskWaitsTab',
-            TaskWaitsPartData::from([
-                'waits' => $reader->waits,
-                'actions' => $reader->waitActions,
-                'number' => $reader->number,
-            ]),
-        ));
+        return LayoutPartData::build()
+            ->asNative()
+            ->key('waits')
+            ->native(
+                LayoutNativeData::build()
+                ->component('tasks/TaskWaitsTab')
+                ->props(
+                    TaskWaitsPartData::from([
+                        'waits' => $reader->waits,
+                        'actions' => $reader->waitActions,
+                        'number' => $reader->number,
+                    ]),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     private function logsOf(TaskReaderData $reader): LayoutPartData
     {
         if ($reader->logs instanceof Optional) {
-            return LayoutPartData::notice('logs', 'empty', 'The logs could not be read.');
+            return LayoutPartData::build()
+                ->asNotice()
+                ->key('logs')
+                ->style('empty')
+                ->title('The logs could not be read.')
+                ->finish();
         }
 
-        return LayoutPartData::native(
-            'logs',
-            LayoutNativeData::of('tasks/TaskLogsTab', TaskLogsPartData::from(['logs' => $reader->logs])),
-        );
+        return LayoutPartData::build()
+            ->asNative()
+            ->key('logs')
+            ->native(
+                LayoutNativeData::build()
+                ->component('tasks/TaskLogsTab')
+                ->props(TaskLogsPartData::from(['logs' => $reader->logs]))
+                ->finish(),
+            )
+            ->finish();
     }
 
     private function proofsOf(TaskReaderData $reader): LayoutPartData
     {
         if ($reader->proofs instanceof Optional) {
-            return LayoutPartData::notice('proofs', 'empty', 'The proofs could not be read.');
+            return LayoutPartData::build()
+                ->asNotice()
+                ->key('proofs')
+                ->style('empty')
+                ->title('The proofs could not be read.')
+                ->finish();
         }
 
-        return LayoutPartData::native(
-            'proofs',
-            LayoutNativeData::of('tasks/TaskProofsTab', TaskProofsPartData::from(['proofs' => $reader->proofs])),
-        );
+        return LayoutPartData::build()
+            ->asNative()
+            ->key('proofs')
+            ->native(
+                LayoutNativeData::build()
+                ->component('tasks/TaskProofsTab')
+                ->props(TaskProofsPartData::from(['proofs' => $reader->proofs]))
+                ->finish(),
+            )
+            ->finish();
     }
 
     /**
@@ -229,21 +311,27 @@ final readonly class TasksShow extends TasksPage
             return self::factRow($key, $label, 'None');
         }
 
-        return LayoutRowData::from([
-            'key' => $key,
-            'label' => $label,
-            'fact' => LayoutFactValueData::of(array_map(
-                fn (string $number) => [
-                    $number,
-                    route('tasks.task', ['task' => $number], false),
-                ],
-                $numbers,
-            )),
-        ]);
+        return LayoutRowData::build()
+            ->key($key)
+            ->label($label)
+            ->fact(
+                LayoutFactValueData::build()
+                ->linkedPieces(
+                    array_map(
+                        fn (string $number) => [
+                            $number,
+                            route('tasks.task', ['task' => $number], false),
+                        ],
+                        $numbers,
+                    ),
+                )
+                ->finish(),
+            )
+            ->finish();
     }
 
     private static function factRow(string $key, string $label, string $value): LayoutRowData
     {
-        return LayoutRowData::from(['key' => $key, 'label' => $label, 'value' => $value]);
+        return LayoutRowData::build()->key($key)->label($label)->value($value)->finish();
     }
 }

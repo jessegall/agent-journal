@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Contracts\Documents;
 
+use Domain\Documents\Models\Document;
+use Illuminate\Database\Eloquent\Collection;
 use App\Data\Pages\RecordCard;
 use App\Support\TextSelection;
 use App\Text\Exceptions\SectionMissing;
@@ -26,6 +28,9 @@ interface DocumentResolver
      * The documents that match the filters.
      */
     public function list(DocumentFilters $filters): PublicationList;
+
+    /** @return Collection<int, Document> */
+    public function preview(DocumentFilters $filters, int $limit): Collection;
 
     /**
      * @throws DocumentMissing

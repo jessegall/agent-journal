@@ -16,6 +16,10 @@ use App\Navigation\Enums\Icon;
 use App\Profiles\Enums\SlotContextType;
 use App\Support\Domain;
 use App\Support\Exports;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPaneData;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BookPageBuilder;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BooksPageBuilder;
+use Tests\Fixtures\ClientDeclarations\Library\Http\Windows\BooksWindowBuilder;
 
 /**
  * A fixture domain with a list page, a record page offering a slot, an action, nested navigation and its own sidebar
@@ -42,12 +46,27 @@ final class LibraryDomain extends Domain implements NavigationProvider, PageProv
     public function pages(): array
     {
         return [
-            Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')
+            Page::build()
+                ->key('books')
+                ->title('Books')
+                ->icon(Icon::Docs)
+                ->pageType(BooksPageData::class)
+                ->pageBuilder(BooksPageBuilder::class)
+                ->component('Books.vue')
+                ->withWindow(BooksPaneData::class, BooksWindowBuilder::class, 'BooksPane.vue')
+                ->finish()
                 ->at('')
                 ->onHome(10)
                 ->slots(fn (PageSlots $slots) => $slots->add('aside', SlotContextType::Session))
                 ->actions(fn (PageActions $actions) => $actions->post('books', AddBook::class, 'add')),
-            Page::make('book', 'Book', Icon::Docs, BooksResolver::class, 'Book/Reader.vue')
+            Page::build()
+                ->key('book')
+                ->title('Book')
+                ->icon(Icon::Docs)
+                ->pageType(BookPageData::class)
+                ->pageBuilder(BookPageBuilder::class)
+                ->component('Book/Reader.vue')
+                ->finish()
                 ->at('{book}')
                 ->inInspector()
                 ->slots(fn (PageSlots $slots) => $slots->record('book-inspector', 'book', 'book')),
