@@ -102,7 +102,8 @@ final class NotifyRunningTest extends TestCase
         $agent->refresh();
         $this->assertSame(DriverType::Terminal, $agent->driver_type_preference);
         $this->assertSame(DriverType::Headless, $agent->driverTypeFor(DriverType::Headless, DriverType::Terminal));
-        $this->assertSame(DriverType::Terminal, $agent->driverTypeFor(null, DriverType::Headless));
+        // A terminal is no mode a start may run in any more (user 30877), so the saved one falls to headless.
+        $this->assertSame(DriverType::Headless, $agent->driverTypeFor(null, DriverType::Headless));
     }
 
     public function test_a_running_report_that_comes_after_the_start_ended_keeps_no_mode(): void
@@ -125,7 +126,7 @@ final class NotifyRunningTest extends TestCase
 
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
         $this->assertNull($agent->driver_type_preference);
-        $this->assertSame(DriverType::Terminal, $agent->driverTypeFor(null, DriverType::Terminal));
+        $this->assertSame(DriverType::Headless, $agent->driverTypeFor(null, DriverType::Terminal));
     }
 
     // A session its restarted host no longer serves is stopped by itself, and the pages hear it.

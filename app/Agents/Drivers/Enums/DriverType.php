@@ -13,6 +13,15 @@ enum DriverType: string
     case Terminal = 'terminal';
 
     /**
+     * Whether a start may run in this mode: only headless (user 30877); the terminal runs only behind the scenes, as
+     * an account's sign-in.
+     */
+    public function isChoosable(): bool
+    {
+        return $this === self::Headless;
+    }
+
+    /**
      * The mode a headless choice names: headless when asked for, else the terminal.
      */
     public static function ofHeadless(bool $isHeadless): self

@@ -124,7 +124,8 @@ final readonly class StartPreviews
             fn (DriverRegistration $registration) => $registration->driverType,
             array_filter(
                 $this->drivers->catalogue(),
-                fn (DriverRegistration $registration) => $registration->family === $family,
+                fn (DriverRegistration $registration) => $registration->family === $family
+                    && $registration->driverType->isChoosable(),
             ),
         ));
     }

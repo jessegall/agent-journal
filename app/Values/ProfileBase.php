@@ -66,7 +66,7 @@ final readonly class ProfileBase
             true,
             ExecutionBudgets::mainAgent(),
             true,
-            DriverType::Terminal
+            DriverType::Headless
         );
     }
 
