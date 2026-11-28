@@ -33,17 +33,16 @@ use App\Web\Creation\WindowFactory;
 use App\Web\Declarations\RegisteredPage;
 use App\Web\Exceptions\ClientSlotMismatch;
 use App\Web\Exceptions\InvalidPageDeclaration;
-use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\ClientDeclarations\Desk\DeskDomain;
 use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\ClientDeclarations\Library\AddBook;
 use Tests\Fixtures\ClientDeclarations\Library\BookCount;
 use Tests\Fixtures\ClientDeclarations\Library\BooksPageData;
+use Tests\Fixtures\ClientDeclarations\Library\BooksPaneData;
 use Tests\Fixtures\ClientDeclarations\Library\Http\Pages\BooksPageBuilder;
 use Tests\Fixtures\ClientDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\ClientDeclarations\Library\ShelfItems;
-use Tests\Fixtures\ClientDeclarations\Library\BooksPaneData;
 use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfPageBuilder;
 use Tests\Fixtures\ClientDeclarations\Shelf\ShelfPageData;
 use Tests\Fixtures\Domains\Books\BooksDomain;
@@ -190,8 +189,7 @@ final class ClientDeclarationsTest extends TestCase
     {
         $owner = DomainEntry::fromClass(LibraryDomain::class)->declaring();
         $surface = new SurfaceDefinition(ShelfPageData::class, ShelfPageBuilder::class, 'Books.vue');
-        $container = new Container();
-        $check = new DeclaredSurfaceCheck(new PageFactory($container), new WindowFactory($container));
+        $check = new DeclaredSurfaceCheck(new PageFactory(), new WindowFactory());
 
         $this->expectExceptionObject(InvalidSurface::unowned(
             'library.books',

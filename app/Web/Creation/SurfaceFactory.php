@@ -10,7 +10,7 @@ use App\Web\Creation\Contracts\PageBuilder;
 use App\Web\Creation\Contracts\WindowBuilder;
 use App\Web\Creation\Exceptions\InvalidBuilder;
 use App\Web\Creation\Exceptions\MissingBuilder;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 use Spatie\LaravelData\Data;
 
@@ -22,7 +22,6 @@ abstract class SurfaceFactory
 
     /** @param class-string<TBuilder> $contract */
     protected function __construct(
-        private readonly Container $container,
         private readonly string $surface,
         private readonly string $contract,
     ) {
@@ -54,12 +53,15 @@ abstract class SurfaceFactory
 
     /**
      * @template TProduct of Data
+     *
      * @param  class-string<TProduct>  $type
      * @return TProduct
      */
     public function create(string $type, Request $visit): Data
     {
-        $builder = $this->container->make($this->builderFor($type));
+        // The factory lives as long as the application; a builder is made in the container of the request it serves, so
+        // it reads that request's actor and scoped services, never those of the application's first container.
+        $builder = Container::getInstance()->make($this->builderFor($type));
         $product = $builder->build($visit);
 
         if ($product::class !== $type) {
