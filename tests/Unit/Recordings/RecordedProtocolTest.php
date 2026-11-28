@@ -81,12 +81,33 @@ final class RecordedProtocolTest extends TestCase
         );
     }
 
+    public function test_a_relay_claim_counts_toward_relay_coverage(): void
+    {
+        $request = Request::create('/host/instructions/claim?wait=10', 'POST');
+        $recording = $this->recordingOf([RecordedEvent::asked(1, RecordedCall::askedBy($request))], 'connected');
+        $protocol = $this->app->make(RecordedProtocol::class);
+
+        $protocol->assertKept($recording);
+
+        $this->assertNotContains('claim_instruction', $protocol->coverage([$recording])->relayRoutes);
+    }
+
+    public function test_a_recorded_relay_claim_rejects_an_unknown_query_field(): void
+    {
+        $request = Request::create('/host/instructions/claim?unexpected=10', 'POST');
+        $recording = $this->recordingOf([RecordedEvent::asked(1, RecordedCall::askedBy($request))], 'connected');
+
+        $this->expectException(RecordingBreaksProtocol::class);
+        $this->expectExceptionMessage('unexpected');
+        $this->app->make(RecordedProtocol::class)->assertKept($recording);
+    }
+
     /**
      * @param  list<RecordedEvent>  $events
      */
-    private function recordingOf(array $events): ScenarioRecording
+    private function recordingOf(array $events, string $driver = 'claude-code'): ScenarioRecording
     {
-        $manifest = RecordingManifest::of('scenario', 'claude-code', '2.1.332', 'programs', '2026-11-27', ['01-host']);
+        $manifest = RecordingManifest::of('scenario', $driver, '2.1.332', 'programs', '2026-11-27', ['01-host']);
 
         return ScenarioRecording::of($manifest, ['01-host' => [
             'opening' => RecordingOpening::ofCalls(Wire::Host, '01-host')->jsonSerialize(),

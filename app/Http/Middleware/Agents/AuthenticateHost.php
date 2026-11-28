@@ -40,6 +40,8 @@ use Symfony\Component\HttpFoundation\Response;
 #[Dispatches(RecordHostCallAnsweredCommand::class)]
 final readonly class AuthenticateHost
 {
+    public const string RELAY_REQUEST = 'journal.relay_request';
+
     /**
      * The header a host sends the calls that failed on its side in, on its next call the journal answers.
      */
@@ -80,6 +82,7 @@ final readonly class AuthenticateHost
         try {
             if ($context->bindingIds !== []) {
                 $this->relayReader->assertRequest($request);
+                $request->attributes->set(self::RELAY_REQUEST, true);
             }
 
             $handle = fn (): Response => $next($request);

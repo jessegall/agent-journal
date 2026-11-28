@@ -8,13 +8,13 @@ use RuntimeException;
 use Throwable;
 
 /**
- * A recorded call breaks host protocol 1 as its generated readers read it, so the recording is not kept.
+ * A recorded exchange breaks the host protocol it was recorded under.
  */
 final class RecordingBreaksProtocol extends RuntimeException
 {
-    public static function at(string $exchange, int $event, string $error, Throwable|null $cause = null): self
+    public static function at(int $protocol, string $exchange, int $event, string $error, Throwable|null $cause = null): self
     {
-        $message = "The recorded exchange {$exchange} breaks host protocol 1 at its event {$event}: {$error}";
+        $message = "The recorded exchange {$exchange} breaks host protocol {$protocol} at its event {$event}: {$error}";
 
         return new self($message, 0, $cause);
     }

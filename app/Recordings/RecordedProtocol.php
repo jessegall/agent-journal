@@ -17,19 +17,22 @@ use App\Hosts\Protocol\Payloads\HostAnswerPayload;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
 use App\Hosts\Protocol\Payloads\HostInstructionPayload;
 use App\Hosts\Protocol\Payloads\HostOpenPlanPayload;
+use App\Hosts\RelayHostReader;
 use App\Hosts\Values\RelayCall;
 use App\Recordings\Enums\RecordedEventType;
 use App\Recordings\Enums\Wire;
 use App\Recordings\Exceptions\RecordingBreaksProtocol;
 
 /**
- * Judges a recording by host protocol 1 as the generator wrote it, holding no rule of its own: every recorded host
- * call, claimed instruction, payload, plan and answer goes through the generated strict readers and the contained plan rules,
- * and the first that breaks them refuses the recording by its exchange, its event and the reader's error.
+ * Judges recorded host and relay calls by their generated readers and reports the first invalid exchange event.
  */
 final readonly class RecordedProtocol
 {
-    public function __construct(private HostCallReader $reader, private ContainedPlanRules $containedRules) {}
+    public function __construct(
+        private HostCallReader $reader,
+        private ContainedPlanRules $containedRules,
+        private RelayHostReader $relayReader,
+    ) {}
 
     /**
      * @throws RecordingBreaksProtocol
@@ -38,7 +41,7 @@ final readonly class RecordedProtocol
     {
         foreach ($recording->exchangesOn(Wire::Host) as $name) {
             foreach ($recording->exchange($name)->events as $index => $event) {
-                $this->assertCallKept($name, $index, $event);
+                $this->assertCallKept($recording->manifest()->protocol, $name, $index, $event);
             }
         }
     }
@@ -51,13 +54,19 @@ final readonly class RecordedProtocol
     public function coverage(array $recordings): ProtocolCoverage
     {
         $routes = [];
+        $relayRoutes = [];
         $instructionTypes = [];
         $refusals = [];
 
         foreach ($recordings as $recording) {
             foreach ($recording->calls(Wire::Host) as $call) {
                 $route = $this->routeOf($call);
-                $routes[] = $route;
+                if ($recording->manifest()->protocol === HostProtocol::RELAY) {
+                    $relayRoute = $this->relayReader->callFor($call->method, $call->path);
+                    $relayRoutes[] = $relayRoute?->name;
+                } else {
+                    $routes[] = $route;
+                }
 
                 if ($route === HostRoute::ClaimInstruction && $call->status !== null && $call->body !== '') {
                     $instructionTypes = [
@@ -85,13 +94,17 @@ final readonly class RecordedProtocol
                 HostRefusal::cases(),
                 fn (HostRefusal $refusal) => ! in_array($refusal, $refusals, true),
             )),
+            array_values(array_map(
+                fn (RelayCall $route) => $route->name,
+                array_filter(HostProtocol::relayCalls(), fn (RelayCall $route) => ! in_array($route->name, $relayRoutes, true)),
+            )),
         );
     }
 
     /**
      * @throws RecordingBreaksProtocol
      */
-    private function assertCallKept(string $exchange, int $index, RecordedEvent $event): void
+    private function assertCallKept(int $protocol, string $exchange, int $index, RecordedEvent $event): void
     {
         $call = $event->call;
 
@@ -99,15 +112,13 @@ final readonly class RecordedProtocol
             return;
         }
 
-        $route = $this->routeOf($call) ?? array_find(
-            HostProtocol::relayCalls(),
-            fn (RelayCall $route) => $route->matches($call->method, $call->path),
-        );
+        $relayRoute = $this->relayReader->callFor($call->method, $call->path);
+        $route = $protocol === HostProtocol::RELAY ? $relayRoute : ($this->routeOf($call) ?? $relayRoute);
 
         if ($route === null) {
             $error = "{$call->method} {$call->path} is no call of the enrolled host or relay protocol";
 
-            throw RecordingBreaksProtocol::at($exchange, $index, $error);
+            throw RecordingBreaksProtocol::at($protocol, $exchange, $index, $error);
         }
 
         try {
@@ -122,20 +133,35 @@ final readonly class RecordedProtocol
                 default => $this->assertAnsweredKept($route, $call),
             };
         } catch (HostCallUnreadable|HostProtocolRefused $broken) {
-            throw RecordingBreaksProtocol::at($exchange, $index, $broken->getMessage(), $broken);
+            throw RecordingBreaksProtocol::at($protocol, $exchange, $index, $broken->getMessage(), $broken);
         }
     }
 
     private function assertRelayCallKept(RelayCall $route, RecordedCall $call): void
     {
         if ($call->status === null) {
-            $this->reader->read($call->body === '' ? '{}' : $call->body, $route->body, $route->name);
+            $payload = $this->relayReader->readRequest($route, $call->query, $call->body);
+
+            if ($payload instanceof HostAnswerPayload) {
+                $this->assertAnswerKept($payload);
+            }
 
             return;
         }
 
-        if ($call->status === $route->status && $call->body !== '') {
-            $this->reader->read($call->body, $route->reply, "reply to {$route->name}");
+        if ($call->status >= 400) {
+            return;
+        }
+
+        if ($call->status !== $route->status) {
+            throw HostCallUnreadable::invalid($route->name, ['status' => ["Expected HTTP {$route->status}"]]);
+        }
+
+        $body = $call->status === 204 && $call->body === '' ? '{}' : $call->body;
+        $reply = $this->reader->read($body, $route->reply, "reply to {$route->name}");
+
+        if ($reply instanceof HostClaimedInstructionsPayload) {
+            $this->assertInstructionsKept($reply);
         }
     }
 
@@ -146,7 +172,14 @@ final readonly class RecordedProtocol
     {
         $body = $this->reader->read($call->body === '' ? '{}' : $call->body, $route->bodyPayload(), $route->value);
 
-        if (! $body instanceof HostAnswerPayload || $body->status !== HostAnswerStatus::Refused) {
+        if ($body instanceof HostAnswerPayload) {
+            $this->assertAnswerKept($body);
+        }
+    }
+
+    private function assertAnswerKept(HostAnswerPayload $body): void
+    {
+        if ($body->status !== HostAnswerStatus::Refused) {
             return;
         }
 
@@ -169,10 +202,13 @@ final readonly class RecordedProtocol
 
         $reply = $this->reader->read($call->body, $route->replyPayload(), "reply to {$route->value}");
 
-        if (! $reply instanceof HostClaimedInstructionsPayload) {
-            return;
+        if ($reply instanceof HostClaimedInstructionsPayload) {
+            $this->assertInstructionsKept($reply);
         }
+    }
 
+    private function assertInstructionsKept(HostClaimedInstructionsPayload $reply): void
+    {
         foreach ($reply->instructions as $instruction) {
             $type = HostInstructionType::from($instruction->type);
             $payload = $this->reader->read($instruction->payload, $type->payloadOf(), "payload of {$type->value}");

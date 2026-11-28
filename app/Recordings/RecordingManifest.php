@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Recordings;
 
-use App\Hosts\Protocol\HostProtocolVersion;
+use App\Hosts\Protocol\HostProtocol;
 use App\Recordings\Enums\StaleReason;
+use App\Recordings\Scenarios\Scenario;
 use JsonSerializable;
 
 /**
@@ -49,7 +50,7 @@ final readonly class RecordingManifest implements JsonSerializable
     ): self {
         return new self(
             self::FORMAT,
-            HostProtocolVersion::CURRENT,
+            self::protocolOf($driver),
             $scenarioHash,
             $driver,
             $build,
@@ -84,11 +85,16 @@ final readonly class RecordingManifest implements JsonSerializable
     {
         return match (true) {
             $this->format !== self::FORMAT => StaleReason::Format,
-            $this->protocol < HostProtocolVersion::CURRENT => StaleReason::Protocol,
+            $this->protocol < self::protocolOf($this->driver) => StaleReason::Protocol,
             $this->scenarioHash !== $scenarioHash => StaleReason::Scenario,
             $this->imagePrograms !== $imagePrograms => StaleReason::ImagePrograms,
             default => null,
         };
+    }
+
+    private static function protocolOf(string $driver): int
+    {
+        return $driver === Scenario::CONNECTED ? HostProtocol::RELAY : HostProtocol::ENROLLED;
     }
 
     /**

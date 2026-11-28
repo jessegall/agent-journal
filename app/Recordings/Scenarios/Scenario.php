@@ -14,6 +14,8 @@ use Throwable;
  */
 final readonly class Scenario
 {
+    public const string CONNECTED = 'connected';
+
     /**
      * @param  list<ScenarioStep>  $steps
      */

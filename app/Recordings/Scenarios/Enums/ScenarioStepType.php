@@ -22,6 +22,7 @@ enum ScenarioStepType: string
     case ChangeEffort = 'change-effort';
     case KillAgents = 'kill-agents';
     case SignIn = 'sign-in';
+    case ConnectProject = 'connect-project';
     case MakeFolder = 'make-folder';
     case ReadFolderUse = 'read-folder-use';
     case RemoveFolder = 'remove-folder';
@@ -54,6 +55,7 @@ enum ScenarioStepType: string
             self::ChangeModel,
             self::ChangeEffort,
             self::SignIn,
+            self::ConnectProject,
             self::SubmitCode,
             self::MakeFolder,
             self::ReadFolderUse,
@@ -73,7 +75,6 @@ enum ScenarioStepType: string
             self::MakeFolder,
             self::ReadFolderUse,
             self::RemoveFolder,
-            self::ReadProject,
             self::UpgradeHost,
             self::AllowImages,
         ], true);
@@ -134,7 +135,7 @@ enum ScenarioStepType: string
             self::MakeFolder, self::ReadFolderUse, self::RemoveFolder => ['folder'],
             self::ReadProject => ['path'],
             self::AllowImages => ['images'],
-            self::UpgradeHost => [],
+            self::ConnectProject, self::UpgradeHost => [],
             self::SubmitCode => ['from'],
             self::AskUser => ['text'],
             self::RemoveImage => ['image'],

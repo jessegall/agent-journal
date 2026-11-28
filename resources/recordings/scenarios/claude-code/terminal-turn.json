@@ -34,6 +34,11 @@
             "do": "wait-for",
             "fact": "stopped",
             "seconds": 60
+        },
+        {
+            "do": "wait-for",
+            "fact": "instructions-answered",
+            "seconds": 60
         }
     ]
 }

@@ -90,6 +90,14 @@ final class ScenarioStep extends Data
             return new BeginSignInCommand((string) $this->driver, SignInMethod::from((string) $this->method));
         }
 
+        if ($this->stepType === ScenarioStepType::ConnectProject) {
+            return $run->issueConnection();
+        }
+
+        if ($this->stepType === ScenarioStepType::ReadProject) {
+            return new RequestProjectReadCommand($run->readBindingId(), ProjectReadType::Directory, [(string) $this->path]);
+        }
+
         if ($this->stepType->isHostInstruction()) {
             return $this->hostInstructionFor($run, $key);
         }
@@ -208,11 +216,6 @@ final class ScenarioStep extends Data
             ScenarioStepType::MakeFolder => new MakeHostFolderCommand($host, (string) $this->folder, $key),
             ScenarioStepType::ReadFolderUse => new ReadFolderUseCommand($host, (string) $this->folder, $key),
             ScenarioStepType::RemoveFolder => new RemoveHostFolderCommand($host, (string) $this->folder, $key),
-            ScenarioStepType::ReadProject => new RequestProjectReadCommand(
-                $run->bindingIdOn($host),
-                ProjectReadType::Directory,
-                [(string) $this->path],
-            ),
             ScenarioStepType::UpgradeHost => new InstructHostUpgradeCommand($host),
             default => new AllowHostImagesCommand($host, array_map($run->imageNamed(...), $this->images ?? [])),
         };

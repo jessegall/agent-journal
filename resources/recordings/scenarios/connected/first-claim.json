@@ -1,0 +1,7 @@
+{
+    "description": "A relay connects a fresh folder and starts claiming instructions from its journal",
+    "steps": [
+        {"do": "connect-project"},
+        {"do": "wait-for", "fact": "connected", "seconds": 60}
+    ]
+}

@@ -29,7 +29,16 @@ enum ScenarioFact: string
     case SignedIn = 'signed-in';
     case SignInFailed = 'sign-in-failed';
     case Installed = 'installed';
+    case Connected = 'connected';
     case InstructionsAnswered = 'instructions-answered';
+
+    public function isAboutSession(): bool
+    {
+        return match ($this) {
+            self::Answering, self::TurnEnded, self::Interrupted, self::Stopped, self::StartRefused => true,
+            default => false,
+        };
+    }
 
     /**
      * Whether the journal holds the fact now for the run: of its last agent's session, its start, its sign-in or its
@@ -57,6 +66,7 @@ enum ScenarioFact: string
             self::SignedIn => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isSignedIn() === true,
             self::SignInFailed => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isFailed() === true,
             self::Installed => $run->installerExit() === 0 && Host::query()->exists(),
+            self::Connected => $run->isConnected(),
             self::InstructionsAnswered => HostInstruction::areAllAnsweredSince($run->startedAt),
         };
     }

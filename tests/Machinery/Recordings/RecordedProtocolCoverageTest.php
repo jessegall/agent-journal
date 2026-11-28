@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Recordings;
 
-use App\Hosts\Protocol\HostOrderType;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\HostRoute;
 use App\Recordings\RecordedProtocol;
@@ -39,7 +39,7 @@ final class RecordedProtocolCoverageTest extends TestCase
             [[], [], []],
             [
                 array_map(fn (HostRoute $route) => $route->value, $coverage->routes),
-                array_map(fn (HostOrderType $type) => $type->value, $coverage->orderTypes),
+                array_map(fn (HostInstructionType $type) => $type->value, $coverage->instructionTypes),
                 array_map(fn (HostRefusal $refusal) => $refusal->value, $coverage->refusals),
             ],
             'Record a scenario that holds each of these with scripts/record-scenarios.sh.',

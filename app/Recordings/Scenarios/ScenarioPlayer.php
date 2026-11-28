@@ -13,6 +13,7 @@ use App\Bus\ConsoleOwner;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OwnerCommands;
 use App\Bus\RequestKey;
+use App\Connections\InstallLine;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
@@ -20,6 +21,7 @@ use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
+use App\Projects\Values\IssuedInvitation;
 use App\Recordings\RecordingDrafts;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Enums\ScenarioStepType;
@@ -102,6 +104,7 @@ final readonly class ScenarioPlayer
         private RequestKey $requestKey,
         private ConsoleOwner $owner,
         private AgentStartOnMessage $starts,
+        private InstallLine $installLine,
     ) {}
 
     /**
@@ -211,6 +214,15 @@ final readonly class ScenarioPlayer
                 $run->holdAgent((string) $step->agent, $result->id);
             }
 
+            if ($result instanceof IssuedInvitation) {
+                $line = $this->installLine->for($run->holdConnectionAttempt());
+                $askUser(new ScenarioPause(
+                    "Run this install line in a fresh project folder:\n{$line}",
+                    null,
+                    'Press Enter after the relay connects',
+                ));
+            }
+
             return;
         }
 
@@ -311,6 +323,12 @@ final readonly class ScenarioPlayer
         for ($look = 0; $look <= $looks; $look++) {
             if ($fact->isReached($run)) {
                 return;
+            }
+
+            if (! $fact->isAboutSession()) {
+                $this->sleeper->sleep(self::LOOK_NANOSECONDS);
+
+                continue;
             }
 
             // A session that ended waits for nothing more: the play ends at once with the journal's own reason (user

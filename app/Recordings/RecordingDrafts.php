@@ -89,6 +89,17 @@ final readonly class RecordingDrafts
         return $this->isOn() && $this->files->exists($run) && $this->files->readJson($run)['closed_at'] === null;
     }
 
+    public function isRecordingConnectedFolder(): bool
+    {
+        if (! $this->isRunOpen()) {
+            return false;
+        }
+
+        $run = $this->files->readJson($this->runFile());
+
+        return str_starts_with((string) $run['scenario'], Scenario::CONNECTED.'/');
+    }
+
     /**
      * Starts the exchange's draft on the wire with its opening, while a run is open; once started it is kept.
      */
