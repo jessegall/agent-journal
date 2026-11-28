@@ -15,7 +15,7 @@ const sharedReads = new SharedPropReads((propName, ended) => {
             const shown = page.props[propName] as WindowResult<unknown> | undefined;
             outcome = shown?.status === 'denied' || shown?.status === 'unavailable'
                 ? 'denied'
-                : shown === undefined || shown.status === 'failed' ? 'failed' : 'applied';
+                : shown == null || shown.status === 'failed' ? 'failed' : 'applied';
         },
         onFinish: () => ended(outcome),
     });
