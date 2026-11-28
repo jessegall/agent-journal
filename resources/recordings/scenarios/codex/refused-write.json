@@ -7,7 +7,7 @@
         {
             "do": "send-message",
             "agent": "Coder",
-            "text": "Use the shell tool to run exactly: touch /tmp/journal-recording-write. If the tool refuses, report the refusal and do not retry or use another tool."
+            "text": "Run: touch /tmp/journal-recording-write. If denied, say so and stop."
         },
         {"do": "wait-for", "fact": "turn-ended", "seconds": 180},
         {"do": "stop", "agent": "Coder"},
