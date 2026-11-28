@@ -166,6 +166,15 @@ stop_recorded_project() {
         kill "$(cat "$1/terminal.pid")" 2>/dev/null || true
     fi
     python3 scripts/record-project-relay.py stop "$1/state"
+    revoke_recorded_binding "$1"
+}
+
+# A recording's folder is connected for one run: its binding and host are revoked, so none stays enrolled after it.
+revoke_recorded_binding() {
+    local binding
+    [ -f "$1/project/.journal/connection.json" ] || return 0
+    binding=$(python3 scripts/record-project-relay.py binding "$1/project") || return 1
+    docker compose exec -T app php artisan connections:revoke "$binding" >/dev/null
 }
 
 remove_recorded_project() {

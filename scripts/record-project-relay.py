@@ -2,6 +2,7 @@
 
 import errno
 import fcntl
+import json
 import os
 from pathlib import Path
 import pty
@@ -119,6 +120,10 @@ def stop(state):
     return 0
 
 
+def binding(folder):
+    print(json.loads(Path(folder, ".journal", "connection.json").read_text())["binding"])
+
+
 if __name__ == "__main__":
     action, *arguments = sys.argv[1:]
     if action == "connect":
@@ -129,4 +134,6 @@ if __name__ == "__main__":
         sys.exit(run_terminal(folder, Path(pid_file), command))
     if action == "stop":
         sys.exit(stop(Path(arguments[0])))
-    sys.exit("The recording relay needs a connect or stop operation.")
+    if action == "binding":
+        sys.exit(binding(arguments[0]))
+    sys.exit("The recording relay needs a connect, terminal, stop or binding operation.")

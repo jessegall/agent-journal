@@ -53,6 +53,17 @@ final class RevokeProjectBindingTest extends TestCase
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
 
+    public function test_the_console_revokes_a_connected_folder_and_its_host_as_the_owner(): void
+    {
+        $this->issueLine('ticket-one');
+        $binding = (string) $this->redeemLine('ticket-one', self::NONCE)->assertCreated()->json('bindingId');
+
+        $this->artisan('connections:revoke', ['binding' => $binding])->assertSuccessful();
+
+        $revoked = ProjectBinding::query()->with('host')->findOrFail($binding);
+        $this->assertSame([true, true], [$revoked->isRevoked(), $revoked->host->isRevoked()]);
+    }
+
     public function test_two_tabs_revoking_one_binding_get_its_one_revocation_time_and_one_audit(): void
     {
         $this->issueLine('ticket-one');
