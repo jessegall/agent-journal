@@ -3731,6 +3731,245 @@ const R8_NOTES=[['Debug lines in the chat (round 8)','What the journal does arou
   ['Technical details','A panel inside the chat, like Memories: opened from the pulse button beside the agent\'s name (red while the last start failed), from Technical details at the chat list\'s foot, or from any debug line. Everything or Failures; the log grouped by start, newest first, each start with its outcome (Started, Started on attempt 2 of 3, Failed after 3 tries). A failure opens to its reason and its evidence (command, stderr, exit status, container, account), with Copy the evidence; Copy all copies the log. ↑ ↓ move between failures, Esc closes.']];
 NOTE_CARDS.push(...R8_NOTES);
 if(dn)dn.insertAdjacentHTML('beforeend',R8_NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join(''));
+
+/* =====================================================================================================================
+   Round 9: the issue console (users 32572, 32580, doc 157). The journal's host and installation faults leave the
+   layout: a pill in the content's bottom-left corner while any is open, and a console with Fix, Auto-fix, Ask for help
+   and Ignore, an agent picker, and the Fix known problems myself setting.
+   ===================================================================================================================== */
+{
+document.head.insertAdjacentHTML('beforeend',`<style>
+.app{--tone-warn:#a4731a}.app.dark{--tone-warn:#d8a94a}
+.ic9pill{position:absolute;bottom:16px;z-index:150;display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px 0 8px;border-radius:999px;border:1px solid var(--border-2);background:var(--raised);box-shadow:var(--shadow-pop);cursor:pointer;font:inherit;font-size:var(--text-small);color:var(--text);animation:ic9in var(--duration-view) var(--ease-journal)}
+.ic9pill:hover{background:var(--hover)}
+.ic9pill:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.ic9pill .n{font-weight:600;font-variant-numeric:tabular-nums}
+.ic9pill .mk{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--danger)}
+.app.dark .ic9pill .mk{color:#1a0f0c}
+.ic9pill.warn .mk{background:var(--tone-warn)}
+.ic9pill.calm{cursor:default}.ic9pill.calm .mk{background:transparent;color:var(--text-3)}
+.ic9pill .w{color:var(--text-3)}.ic9pill .w .e{color:var(--danger)}.ic9pill .w .wa{color:var(--tone-warn)}
+.ic9pill.ping .mk{animation:ic9ping 900ms var(--ease-journal) 2}
+.ic9pill.narrow{bottom:104px}.ic9pill.narrow .w{display:none}
+@keyframes ic9in{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes ic9ping{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--danger) 45%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
+.ic9fault{margin:0;border-bottom:1px solid var(--border);padding:4px 16px;font-size:var(--text-small);color:var(--danger);line-height:1.45}
+.cdlg.ic9{width:580px;top:48px;max-height:calc(100% - 80px)}
+.cdlg.ic9 header .cnt{font-size:var(--text-small);color:var(--text-3);font-weight:400;flex:1}
+.cdlg.ic9 header b{flex:none}
+.cdlg.ic9 .cbody{padding:0}
+.cdlg.ic9 footer{font-size:var(--text-meta);color:var(--text-3)}
+.cdlg.ic9 footer kbd{font-family:var(--font-mono);font-size:10px;border:1px solid var(--border-2);border-radius:4px;padding:0 4px;color:var(--text-2)}
+.ic9filt{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line);flex:none}
+.ic9filt button{height:24px;padding:0 9px;border-radius:var(--radius-button);border:1px solid var(--line);background:transparent;font:inherit;font-size:var(--text-small);color:var(--text-2);cursor:pointer}
+.ic9filt button[aria-pressed=true]{border-color:var(--border-3);color:var(--text);background:var(--sel)}
+.ic9grp{padding:12px 16px 4px;font-size:var(--text-group);font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);display:flex;align-items:center;gap:8px;border-top:1px solid var(--line)}
+.cbody>.ic9grp:first-child{border-top:0}
+.ic9grp button{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:400;font:inherit;font-size:var(--text-meta);border:0;background:transparent;color:var(--text-3);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.ic9iss{display:grid;grid-template-columns:18px 1fr;gap:2px 10px;padding:12px 16px;border-top:1px solid var(--line)}
+.ic9grp+.ic9iss,.cbody>.ic9iss:first-child{border-top:0}
+.ic9iss:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.ic9iss .sv{padding-top:2px;color:var(--danger)}
+.ic9iss.warn .sv{color:var(--tone-warn)}
+.ic9iss.ok .sv,.ic9iss.dis .sv{color:var(--text-3)}
+.ic9iss.ok,.ic9iss.dis{opacity:.8}
+.ic9iss .tt{font-size:var(--text-card);line-height:1.45;font-weight:500;color:var(--text)}
+.ic9iss.ok .tt,.ic9iss.dis .tt{font-weight:400;color:var(--text-2)}
+.ic9iss.fresh{background:color-mix(in srgb,var(--danger) 6%,transparent)}
+.ic9iss .meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:var(--text-meta);color:var(--text-3);margin-top:3px}
+.ic9src{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:var(--radius-badge);background:var(--chip);color:var(--text-2);font-size:var(--text-meta)}
+.ic9iss .why,.ic9iss .how{font-size:var(--text-small);color:var(--text-2);line-height:1.5;margin-top:6px}
+.ic9iss .how{margin-top:3px}
+.ic9iss .todo{margin-top:8px;font-size:var(--text-small);line-height:1.5;color:var(--text)}
+.ic9iss .todo .lb{display:block;font-size:var(--text-meta);color:var(--text-3);margin-bottom:2px}
+.ic9iss pre{margin:6px 0 0;padding:7px 9px;background:var(--code-bg);border:1px solid var(--line);border-radius:var(--radius-field);font-family:var(--font-mono);font-size:11px;color:var(--text);white-space:pre-wrap;word-break:break-all}
+.ic9acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ic9busy{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:var(--text-small);color:var(--text-2)}
+.ic9help{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:999px;background:var(--sel);font-size:var(--text-meta);color:var(--text);margin-top:8px}
+.ic9help button{font:inherit;border:0;background:none;padding:0;color:var(--text-2);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.ic9conf{margin-top:10px;border:1px solid var(--border-2);border-radius:var(--radius-field);background:var(--bg);padding:10px 12px;font-size:var(--text-small);line-height:1.5;color:var(--text)}
+.ic9empty{padding:34px 24px;text-align:center;color:var(--text-3);font-size:var(--text-small);line-height:1.6}
+.ic9empty b{display:block;color:var(--text);font-size:var(--text-card);font-weight:500;margin-bottom:4px}
+.ic9sw{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;padding:0;cursor:pointer;font:inherit;font-size:var(--text-small);color:var(--text)}
+.ic9sw .tr{width:28px;height:16px;border-radius:999px;background:var(--border-3);position:relative;flex:none;transition:background var(--duration-hover) var(--ease-journal)}
+.ic9sw .tr::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--bg);transition:transform var(--duration-hover) var(--ease-journal)}
+.ic9sw[aria-checked=true] .tr{background:var(--brand)}
+.ic9sw[aria-checked=true] .tr::after{transform:translateX(12px)}
+.ic9sw:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+.cdlg.ic9pk{width:420px;top:50%;transform:translate(-50%,-50%);z-index:175}
+.ic9pk .lead9{margin:0;padding:0 16px 10px;font-size:var(--text-small);color:var(--text-3);line-height:1.45;border-bottom:1px solid var(--line)}
+.ic9opts{padding:6px;display:flex;flex-direction:column;gap:2px}
+.ic9opt{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:transparent;border-radius:var(--radius-button);padding:7px 9px;cursor:pointer;font:inherit;color:var(--text)}
+.ic9opt:hover{background:var(--hover)}
+.ic9opt[aria-checked=true]{background:var(--sel)}
+.ic9opt:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.ic9opt small{display:block;font-size:var(--text-meta);color:var(--text-3)}
+.ic9opt .st{font-size:var(--text-meta);color:var(--text-3)}
+.ic9opt .av9{width:22px;height:22px;border-radius:6px;background:var(--chip);display:grid;place-items:center;color:var(--text-2)}
+.ic9sep{height:1px;background:var(--line);margin:4px 8px}
+.ic9note{padding:6px 16px 10px}
+.ic9note label{display:block;font-size:var(--text-meta);color:var(--text-3);margin-bottom:4px}
+.ic9note textarea{width:100%;box-sizing:border-box;min-height:58px;resize:vertical;border:1px solid var(--border-2);border-radius:var(--radius-field);background:var(--bg);padding:7px 9px;font:inherit;font-size:var(--text-small);color:var(--text)}
+.ic9narrow.cdlg{left:0;right:0;transform:none;top:auto;bottom:0;width:auto;max-height:90%;border-radius:16px 16px 0 0;border-bottom:0}
+.ic9narrow footer .keys{display:none}
+</style>`);
+$('svg defs').insertAdjacentHTML('beforeend',`<symbol id="ic9warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.8v3.6M8 10.9v.1"/></symbol>
+  <symbol id="ic9host" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="8" rx="1.5"/><path d="M5.5 13.5h5M8 11v2.5"/></symbol>
+  <symbol id="ic9box" viewBox="0 0 16 16"><path d="M2.5 5 8 2.2 13.5 5v6L8 13.8 2.5 11Z"/><path d="M2.5 5 8 7.8 13.5 5M8 7.8v6"/></symbol>
+  <symbol id="ic9tag" viewBox="0 0 16 16"><path d="M2.5 2.5h5.2l5.8 5.8-5.2 5.2-5.8-5.8Z"/><circle cx="5.3" cy="5.3" r=".9"/></symbol>
+  <symbol id="ic9auto" viewBox="0 0 16 16"><path d="M13.2 6.2A5.5 5.5 0 0 0 3 5M2.8 9.8A5.5 5.5 0 0 0 13 11"/><path d="M3 2.5V5h2.5M13 13.5V11h-2.5"/></symbol>
+  <symbol id="ic9hand" viewBox="0 0 16 16"><path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2Z"/></symbol>`);
+
+/* An issue: what went wrong, since when, where it comes from, what to do, and the remedy when the journal knows one. */
+const REL=n=>({label:'Run the install line again',past:`Brought ${n} up to release 6.2.0`,doing:`Running the install line on ${n}…`,done:`${n} runs 6.2.0 now`,kind:'a host on an older release',rule:'run its install line again'});
+const ISS={
+  h1:{sev:'error',src:['ic9host','Host mac-1.home'],at:'15:13',min:18,title:'The host mac-1.home has failed to reach the journal since 15:13',why:'Its last call: connection refused by journal.home:443.',todo:'Check that the machine is awake and online. It clears by itself once a call goes through.',link:'Open Hosts'},
+  r1:{sev:'warn',src:['ic9tag','Host mac-1.home'],at:'15:09',min:22,title:'The host mac-1.home runs release 6.1.4, not the journal\'s 6.2.0',todo:'Run its install line again on that machine to bring it up to date.',cmd:'curl -fsSL https://journal.home/install/7f3c | sh',fix:REL('mac-1.home')},
+  i1:{sev:'error',src:['ic9box','Installation · updater'],at:'14:58',min:33,title:'The updater could not restart the queue worker after 3 tries',why:'The worker exits at start: “SQLSTATE[HY000] database is locked”.',todo:'Read the updater\'s log on the journal\'s machine, then restart the worker.',cmd:'docker compose logs updater --tail 50'},
+  h2:{sev:'error',src:['ic9host','Host ci-runner-1'],at:'15:27',min:4,title:'The host ci-runner-1 has failed to reach the journal since 15:27',why:'Its last call: TLS handshake timed out after 10 s.',todo:'Check the runner\'s network. It clears by itself once a call goes through.',link:'Open Hosts'},
+  h3:{sev:'warn',src:['ic9host','Host journal-host'],at:'15:24',min:7,title:'The journal\'s own host has not called the journal since 15:24',todo:'Restart the journal\'s host container.',cmd:'docker compose restart host',
+    fix:{label:'Restart the host container',past:'Restarted the journal\'s host container',doing:'Restarting the host container…',done:'the host called again at 15:34',kind:'the journal\'s own host going quiet',rule:'restart its container'}},
+  h4:{sev:'error',src:['ic9host','Host build-2'],at:'15:21',min:10,title:'The host build-2 has failed to reach the journal since 15:21',why:'Its last call: 401, its secret was refused.',todo:'The host was probably enrolled again elsewhere. Enroll it again from Hosts.',link:'Open Hosts'},
+  r2:{sev:'warn',src:['ic9tag','Host build-2'],at:'15:02',min:29,title:'The host build-2 runs release 6.1.4, not the journal\'s 6.2.0',todo:'Run its install line again on that machine.',cmd:'curl -fsSL https://journal.home/install/a91e | sh',fix:REL('build-2')},
+  r3:{sev:'warn',src:['ic9tag','Host ci-runner-1'],at:'14:51',min:40,title:'The host ci-runner-1 runs release 6.0.9, not the journal\'s 6.2.0',todo:'Run its install line again on that machine.',cmd:'curl -fsSL https://journal.home/install/c02d | sh',fix:REL('ci-runner-1')},
+  i2:{sev:'error',src:['ic9box','Installation · scheduler'],at:'14:40',min:51,title:'The scheduler has not run for 50 minutes',todo:'Restart the scheduler container.',cmd:'docker compose restart scheduler',
+    fix:{label:'Restart the scheduler',past:'Restarted the scheduler',doing:'Restarting the scheduler…',done:'the scheduler ran at 15:34',kind:'the scheduler stopping',rule:'restart it'}}};
+Object.entries(ISS).forEach(([k,v])=>v.id=k);
+const HELPERS=[['a1','Agent 1','main','Idle · waits for you'],['a2','Agent 2','main','Working on task 1702'],['a3','Agent 3','main','Asleep']];
+const FIXED_EARLIER={title:'Restarted the journal\'s host container',how:'it had not called the journal for 2 minutes · it called again at 14:49',at:'14:47'};
+
+/* Each step: its issues, whether the journal fixes known problems itself, and whether the console opens with it. */
+const IC_STEPS={
+  iss1:{list:['h1','i1'],auto:true,fixed:[{title:'Brought mac-1.home up to release 6.2.0',how:'ran its install line again · it was on 6.1.4',at:'15:09'},FIXED_EARLIER]},
+  iss2:{list:['h3','r1','i1','i2'],auto:false,open:true,fixed:[]},
+  iss3:{list:['h2','h3','h4','h1','r1','r2','i1','r3','i2'],auto:false,open:true,fixed:[]},
+  iss4:{list:[],auto:true,fixed:[],arrive:'r2'},
+  iss5:{list:['h1','i1'],auto:true,open:true,ign:['i1'],fixed:[FIXED_EARLIER]},
+  iss6:{list:['h1','i1'],auto:true,open:true,fixed:[FIXED_EARLIER],clears:true}};
+let IC={on:false};
+const icLive=()=>IC.list.filter(x=>!IC.ign.has(x.id));
+const icErr=()=>icLive().filter(x=>x.sev==='error').length,icWarn=()=>icLive().filter(x=>x.sev==='warn').length;
+const icN=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
+const icLater=(ms,f)=>{const my=IC.run;setTimeout(()=>{if(IC.on&&IC.run===my)f()},ms)};
+const icSay=t=>{const l=$('#ic9live');if(l)l.textContent=t};
+const icNarrow=()=>frameW<760;
+function icSeed(k){const d=IC_STEPS[k];IC={on:true,k,run:(IC.run||0)+1,list:d.list.map(x=>({...ISS[x]})),auto:d.auto,ign:new Set(d.ign||[]),cleared:[],fixed:d.fixed.slice(),rules:[],busy:{},conf:null,help:{},pick:null,pill:null,filt:'all',fresh:null,open:!!d.open,before:false};
+  if(d.clears)icLater(2600,()=>icClear('h1','it reached the journal again','15:32'));
+  if(d.arrive)icLater(900,()=>icArrive({...ISS[d.arrive]}))}
+function icClear(id,why,at){const x=IC.list.find(y=>y.id===id);if(!x)return;IC.list=IC.list.filter(y=>y!==x);IC.cleared.unshift({...x,clearedAt:at,clearWhy:why});icSay('Cleared: '+x.title);
+  if(!icLive().length){IC.pill={ic:'tick',t:'All clear'};icLater(4000,()=>{IC.pill=null;icDraw()})}icDraw()}
+/* The journal runs a remedy: the issue shows it working, then moves to Fixed for you. */
+function icFix(id,by){const x=IC.list.find(y=>y.id===id);if(!x||IC.busy[id])return;IC.busy[id]=true;IC.conf=null;icDraw();
+  icLater(1800,()=>{IC.list=IC.list.filter(y=>y.id!==id);delete IC.busy[id];IC.fixed.unshift({title:x.fix.past,how:`${by||'you pressed Fix'} · ${x.fix.done}`,at:'15:34'});icSay('Fixed: '+x.fix.done);
+    if(!icLive().length){IC.pill={ic:'tick',t:'Fixed · '+x.fix.done};icLater(4000,()=>{IC.pill=null;icDraw()})}icDraw()})}
+/* A new issue arrives: with a known remedy and the setting on, the journal fixes it without asking. */
+function icArrive(x){if(IC.auto&&x.fix){IC.pill={ic:'spin',t:`Fixing ${x.src[1].replace('Host ','')}…`};icDraw();
+    icLater(2000,()=>{IC.fixed.unshift({title:x.fix.past,how:`it was on 6.1.4 · ran its install line again · ${x.fix.done}`,at:'15:33'});IC.pill={ic:'tick',t:'Fixed · '+x.fix.done};icSay('Fixed by itself: '+x.fix.done);icDraw();
+      icLater(4000,()=>{IC.pill=null;icDraw()})});return}
+  IC.list.unshift(x);IC.fresh=x.id;icSay('New issue: '+x.title);icDraw()}
+
+/* ---- Drawing: the pill and the dialogs live in #app beside the toast, drawn by themselves ---- */
+function icPill(){const nar=icNarrow()?' narrow':'';
+  if(IC.pill)return `<div class="ic9pill calm${nar}" role="status"><span class="mk">${IC.pill.ic==='spin'?'<span class="spin"></span>':I('tick','s13')}</span><span>${esc(IC.pill.t)}</span></div>`;
+  const a=icLive(),e=icErr(),w=icWarn();if(!a.length)return '';
+  const parts=[e?`<span class="e">${icN(e,'error')}</span>`:'',w?`<span class="wa">${icN(w,'warning')}</span>`:''].filter(Boolean).join(', ');
+  return `<button class="ic9pill${e?'':' warn'}${IC.fresh?' ping':''}${nar}" data-ic="pill" aria-haspopup="dialog" aria-expanded="${IC.open}" aria-label="${a.length} open issue${a.length===1?'':'s'}: ${parts.replace(/<[^>]+>/g,'')}. Open the issue console" title="Issues · ⌥⇧I"><span class="mk">${I(e?'alert':'ic9warn','s13')}</span><span class="n">${a.length}</span><span class="w">· ${parts}</span></button>`}
+function icIssue(x,state){const icon=state==='ok'?'tick':x.sev==='warn'||state==='dis'?'ic9warn':'alert',cls=state||(x.sev==='warn'?'warn':'');
+  const time=state==='ok'?`Cleared at ${x.clearedAt} · ${esc(x.clearWhy)}`:`Since ${x.at} · ${x.min} min ago`;let body='';
+  if(!state){const f=x.fix,h=IC.help[x.id];
+    body=`${x.why?`<div class="why">${esc(x.why)}</div>`:''}<div class="todo"><span class="lb">${f?'What to do · Fix does it for you':'What to do'}</span>${esc(x.todo)}${x.cmd?`<pre>${esc(x.cmd)}</pre>`:''}</div>
+    ${h?`<span class="ic9help">${I('ic9hand','s13')}${esc(h)} is looking at it · <button data-icchat="${esc(h)}">open its chat</button></span>`:''}
+    ${IC.busy[x.id]?`<div class="ic9busy" role="status"><span class="spin"></span>${esc(f.doing)}</div>`
+      :IC.conf===x.id?`<div class="ic9conf" role="group" aria-label="Auto-fix">From now on, whenever ${esc(f.kind)} happens, the journal will ${esc(f.rule)} without asking and list it under Fixed for you. It fixes this one now too.<div class="ic9acts"><button class="btn sm primary" data-icautoyes="${x.id}">Auto-fix from now on</button><button class="btn sm" data-icautono="${x.id}">Cancel</button></div></div>`
+      :`<div class="ic9acts">${f?`<button class="btn sm primary" data-icfix="${x.id}" title="${esc(f.label)} now">${I('wand','s14')}Fix</button><button class="btn sm bordered" data-icauto="${x.id}" title="Fix this kind without asking from now on">${I('ic9auto','s14')}Auto-fix</button>`:''}${x.link?`<button class="btn sm bordered" data-iclink>${I('arrow','s14')}${x.link}</button>`:''}${x.cmd&&!f?`<button class="btn sm bordered" data-iccopy>${I('copy','s14')}Copy the command</button>`:''}<button class="btn sm bordered" data-ichelp="${x.id}" aria-haspopup="dialog">${I('ic9hand','s14')}Ask for help</button><button class="btn sm" data-icign="${x.id}" title="Hide it until it changes">Ignore</button></div>`}`}
+  return `<article class="ic9iss ${cls}${IC.fresh===x.id?' fresh':''}" tabindex="-1" data-iciss="${x.id}" aria-label="${x.sev==='warn'?'Warning':'Error'}: ${esc(x.title)}"><span class="sv">${I(icon,'s14')}</span>
+    <div><div class="tt">${esc(x.title)}</div><div class="meta"><span class="ic9src">${I(x.src[0],'s13')}${esc(x.src[1])}</span><span>${time}</span>${state==='dis'?`<button class="btn sm" data-icunign="${x.id}">Show again</button>`:''}</div>${body}</div></article>`}
+const icFixed=f=>`<article class="ic9iss ok" tabindex="-1"><span class="sv">${I('tick','s14')}</span><div><div class="tt">${esc(f.title)}</div><div class="how">${esc(f.how)}</div><div class="meta"><span>Fixed at ${f.at}</span></div></div></article>`;
+function icConsole(){const a=icLive(),e=icErr(),w=icWarn(),f=IC.filt,fixable=a.filter(x=>x.fix&&!IC.busy[x.id]),ign=IC.list.filter(x=>IC.ign.has(x.id));
+  const shown=a.filter(x=>f==='all'||(f==='err'?x.sev==='error':x.sev==='warn'));
+  let body=!a.length?`<div class="ic9empty"><b>${IC.cleared.length||IC.fixed.length?'All clear':'No issues'}</b>Every host reaches the journal and runs its release, and the installation is well.</div>`
+    :shown.length?shown.map(x=>icIssue(x,'')).join(''):`<div class="ic9empty"><b>No ${f==='err'?'errors':'warnings'}</b>Only ${f==='err'?'warnings':'errors'} are open.</div>`;
+  if(IC.cleared.length)body+=`<div class="ic9grp">Cleared · ${IC.cleared.length}</div>`+IC.cleared.map(x=>icIssue(x,'ok')).join('');
+  if(IC.fixed.length)body+=`<div class="ic9grp">Fixed for you · today</div>`+IC.fixed.map(icFixed).join('');
+  if(ign.length)body+=`<div class="ic9grp">Ignored · ${ign.length}<button data-icunignall>Show them again</button></div>`+ign.map(x=>icIssue(x,'dis')).join('');
+  return `<div class="scrim" data-icclose></div><div class="cdlg ic9${icNarrow()?' ic9narrow':''}" role="dialog" aria-modal="true" aria-labelledby="ic9t" tabindex="-1" data-icdlg>
+    <header><b id="ic9t">Issues</b><span class="cnt">${a.length?`${a.length} open · newest first`:'none open'}</span>${IC.k==='iss6'&&a.length?'<button class="btn sm bordered" data-icrest>Clear the rest</button>':''}${fixable.length>1?`<button class="btn sm bordered" data-icfixall>${I('wand','s14')}Fix all ${fixable.length}</button>`:''}<button class="ib" data-icclose aria-label="Close the issue console" title="Close · Esc">${I('close','s14')}</button></header>
+    ${a.length>3?`<div class="ic9filt" role="group" aria-label="Show"><button data-icf="all" aria-pressed="${f==='all'}">All ${a.length}</button><button data-icf="err" aria-pressed="${f==='err'}">Errors ${e}</button><button data-icf="warn" aria-pressed="${f==='warn'}">Warnings ${w}</button></div>`:''}
+    <div class="cbody" data-icbody>${body}</div>
+    <footer><button class="ic9sw" role="switch" aria-checked="${IC.auto}" data-icsetting title="When the journal knows the remedy for a problem, it applies it itself instead of showing a warning"><span class="tr"></span>Fix known problems myself</button>${IC.rules.length?`<span>· ${icN(IC.rules.length,'auto-fix rule')}</span>`:''}<span class="gap"></span><span class="keys"><kbd>↑</kbd> <kbd>↓</kbd> move · <kbd>Esc</kbd> closes</span></footer></div>`}
+function icPicker(){const x=IC.list.find(y=>y.id===IC.pick.id);if(!x)return '';const sel=IC.pick.to,d=drv7('main');
+  return `<div class="scrim" style="z-index:172" data-icpickno></div><div class="cdlg ic9pk${icNarrow()?' ic9narrow':''}" role="dialog" aria-modal="true" aria-labelledby="ic9pt" tabindex="-1" data-icpk>
+    <header><b id="ic9pt">Ask for help</b><button class="ib" data-icpickno aria-label="Close" title="Close · Esc">${I('close','s14')}</button></header>
+    <p class="lead9">${esc(x.title)}. The agent gets the issue, its reason, its evidence and what was tried, in its own chat.</p>
+    <div class="ic9opts" role="radiogroup" aria-label="Who helps">${HELPERS.map(([id,nm,r,st])=>`<button class="ic9opt" role="radio" aria-checked="${sel===id}" data-icto="${id}"><span>${MEM[id]?avatar(id):`<span class="av9">${nm.slice(-1)}</span>`}</span><span>${esc(nm)}<small>${r}</small></span><span class="st">${st}</span></button>`).join('')}
+      <div class="ic9sep"></div><button class="ic9opt" role="radio" aria-checked="${sel==='new'}" data-icto="new"><span class="av9">${I('plus','s13')}</span><span>A new agent for it<small>${esc(drvLine(d))} · starts with this issue</small></span><span class="st"></span></button></div>
+    <div class="ic9note"><label for="ic9n">A note for it (optional)</label><textarea id="ic9n" placeholder="For example: it started after I moved the Mac to the new network."></textarea></div>
+    <footer><span class="gap"></span><button class="btn sm" data-icpickno>Cancel</button><button class="btn sm primary" data-icsend ${sel?'':'disabled'}>${sel==='new'?'Start it and send':sel?'Send to '+esc(HELPERS.find(h=>h[0]===sel)[1]):'Send'}</button></footer></div>`}
+function icDraw(){const app=$('#app');let host=$('#ic9');if(!host){app.insertAdjacentHTML('beforeend','<div id="ic9"></div><div id="ic9live" class="sr" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>');host=$('#ic9')}
+  if(!IC.on){host.innerHTML='';return}
+  const ae=document.activeElement,ik=ae&&host.contains(ae)&&ae.dataset?Object.keys(ae.dataset).map(k=>`[data-${k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())}="${ae.dataset[k]}"]`)[0]:null;
+  const bd=$('[data-icbody]'),sc=bd?bd.scrollTop:0,note=$('#ic9n')?$('#ic9n').value:'';
+  host.innerHTML=(IC.before?'':icPill())+(IC.open&&!IC.before?icConsole():'')+(IC.pick?icPicker():'');
+  const p=$('.ic9pill',host);if(p)p.style.left=(($('#side')||{offsetWidth:0}).offsetWidth+16)+'px';
+  const bd2=$('[data-icbody]');if(bd2)bd2.scrollTop=sc;if($('#ic9n')&&note)$('#ic9n').value=note;
+  icWire(host);if(ik){const n=$(ik,host);if(n)n.focus()}}
+const icFocus=s=>{const n=$(s);if(n)n.focus()};
+function icOpen(){IC.open=true;IC.fresh=null;icDraw();icFocus('[data-icdlg]')}
+function icShut(){IC.open=false;icDraw();icFocus('[data-ic="pill"]')}
+function icPickShut(){const id=IC.pick&&IC.pick.id;IC.pick=null;icDraw();icFocus(`[data-ichelp="${id}"]`)}
+function icWire(host){const on=(s,f)=>$$(s).filter(e=>host.contains(e)).forEach(f);
+  on('[data-ic="pill"]',b=>b.onclick=()=>IC.open?icShut():icOpen());
+  on('[data-icclose]',b=>b.onclick=icShut);
+  on('[data-icdlg]',d=>d.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();if(IC.conf){const id=IC.conf;IC.conf=null;icDraw();icFocus(`[data-icauto="${id}"]`);return}icShut()}
+    if((e.key==='ArrowDown'||e.key==='ArrowUp')&&!e.target.closest('textarea')){const r=$$('.ic9iss',d),i=r.indexOf(document.activeElement.closest('.ic9iss'));e.preventDefault();const n=r[(i+(e.key==='ArrowDown'?1:-1)+r.length)%r.length];if(n)n.focus()}});
+  on('[data-icf]',b=>b.onclick=()=>{IC.filt=b.dataset.icf;icDraw();icFocus(`[data-icf="${IC.filt}"]`)});
+  on('[data-icign]',b=>b.onclick=()=>{IC.ign.add(b.dataset.icign);icSay('Ignored. It comes back when it changes.');icDraw();icFocus('.ic9iss')});
+  on('[data-icunign]',b=>b.onclick=()=>{IC.ign.delete(b.dataset.icunign);icDraw();icFocus(`[data-iciss="${b.dataset.icunign}"]`)});
+  on('[data-icunignall]',b=>b.onclick=()=>{IC.ign.clear();icDraw()});
+  on('[data-icfix]',b=>b.onclick=()=>icFix(b.dataset.icfix));
+  on('[data-icfixall]',b=>b.onclick=()=>icLive().filter(x=>x.fix).forEach((x,i)=>icLater(i*300,()=>icFix(x.id))));
+  on('[data-icauto]',b=>b.onclick=()=>{IC.conf=b.dataset.icauto;icDraw();icFocus('[data-icautoyes]')});
+  on('[data-icautono]',b=>b.onclick=()=>{IC.conf=null;icDraw();icFocus(`[data-icauto="${b.dataset.icautono}"]`)});
+  /* A new rule fixes every open issue of its kind. */
+  on('[data-icautoyes]',b=>b.onclick=()=>{const x=IC.list.find(y=>y.id===b.dataset.icautoyes);IC.rules.push(x.fix.kind);IC.list.filter(y=>y.fix&&y.fix.kind===x.fix.kind).forEach(y=>icFix(y.id,'by your auto-fix rule'))});
+  on('[data-icsetting]',b=>b.onclick=()=>{IC.auto=!IC.auto;if(IC.auto)icLive().filter(x=>x.fix).forEach((x,i)=>icLater(i*300,()=>icFix(x.id,'Fix known problems is on')));icDraw();icFocus('[data-icsetting]')});
+  on('[data-ichelp]',b=>b.onclick=()=>{IC.pick={id:b.dataset.ichelp,to:null};icDraw();icFocus('.ic9opt')});
+  on('[data-icto]',b=>b.onclick=()=>{IC.pick.to=b.dataset.icto;icDraw();icFocus(`[data-icto="${IC.pick.to}"]`)});
+  on('[data-icpk]',d=>d.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();icPickShut()}
+    if((e.key==='ArrowDown'||e.key==='ArrowUp')&&e.target.classList.contains('ic9opt')){e.preventDefault();const r=$$('.ic9opt',d),i=r.indexOf(e.target);r[(i+(e.key==='ArrowDown'?1:-1)+r.length)%r.length].focus()}});
+  on('[data-icpickno]',b=>b.onclick=icPickShut);
+  on('[data-icsend]',b=>b.onclick=()=>{const id=IC.pick.id,fresh=IC.pick.to==='new',to=fresh?'Agent 4':HELPERS.find(h=>h[0]===IC.pick.to)[1];IC.help[id]=to;IC.pick=null;icSay(`Sent to ${to}`);toast(fresh?'Started Agent 4 with the issue':`Sent the issue to ${to}`);icDraw();icFocus(`[data-iciss="${id}"]`)});
+  on('[data-iccopy]',b=>b.onclick=()=>toast('Copied the command'));
+  on('[data-iclink]',b=>b.onclick=()=>toast('Opens the Hosts page'));
+  on('[data-icchat]',b=>b.onclick=()=>{icShut();toast(`Opens ${b.dataset.icchat}'s chat`)});
+  on('[data-icrest]',b=>b.onclick=()=>[...IC.list].forEach((x,i)=>icLater(i*500,()=>icClear(x.id,'the updater restarted the worker','15:3'+(3+i)))))}
+
+/* ---- The steps ---- */
+const icTools=()=>`<button class="tbtn" data-icbefore aria-pressed="${!!IC.before}">Show the layout before</button> <button class="tbtn" data-icnarrow aria-pressed="${icNarrow()}">Phone width</button>${IC.k==='iss4'||IC.k==='iss1'?' <button class="tbtn" data-icopen>Open the console (⌘K “Show issues”)</button>':''}`;
+Object.assign(STEPS,{
+  iss1:['25 · Issues out of the layout','The journal\'s host and installation faults no longer stack as red lines under the top bar: the layout keeps its height. A pill in the bottom-left corner of the content (clear of the sidebar; toasts stay bottom right) shows the count and the worst kind: red for an error, amber for warnings only. Click it, or press ⌥⇧I, to open the console, newest first, each issue with its time, its source, why and what to do. Fix known problems myself is on, so the release warning on mac-1.home never waited: it is under Fixed for you. In every other step there are no issues, so there is no pill.'],
+  iss2:['26 · Fix, Auto-fix, Ask for help, Ignore','Fix known problems myself is off here, so the console\'s warnings wait for you. A warning with a known remedy offers Fix (runs it now) and Auto-fix (asks once, then fixes this kind without asking); an error without one offers what you can do (Copy the command, Open Hosts). Every issue offers Ask for help (pick an agent or a new one) and Ignore. Turn the setting on in the foot and the journal fixes the rest itself.'],
+  iss3:['27 · Many issues','Nine issues from five sources, the setting off. The pill keeps one line, “9 · 5 errors, 4 warnings”; the console filters All, Errors and Warnings, scrolls, and offers Fix all 5 in its head.'],
+  iss4:['28 · Fixed for you','Fix known problems myself is on. A host on an older release appears: the pill reads “Fixing build-2…”, then “Fixed · build-2 runs 6.2.0 now” for 4 seconds, then goes. Nothing waited for you; the console lists it under Fixed for you with what the journal did.'],
+  iss5:['29 · An ignored issue','You ignored the updater\'s error: it leaves the count (the pill reads 1) and folds into Ignored with Show again. It comes back by itself when it changes. When every issue is ignored the pill goes; ⌘K “Show issues” still opens the console.'],
+  iss6:['30 · An issue that clears itself','The console is open. mac-1.home reaches the journal again: its issue turns grey with a tick, reads “Cleared at 15:32 · it reached the journal again” and moves to Cleared, and the count drops. Clear the rest clears the last one: the pill reads All clear for 4 seconds, then fades out.']});
+Object.keys(IC_STEPS).forEach(k=>{Object.defineProperty(STEPS[k],2,{get:icTools});
+  const b=document.createElement('button');b.dataset.k=k;b.textContent=STEPS[k][0];b.onclick=()=>{step=k;page='home';load()};$('#steps').append(b)});
+LOADERS.push(()=>{if(IC_STEPS[step])icSeed(step);else IC={on:false,run:(IC.run||0)+1}});
+AFTER_RENDER.push(()=>{
+  /* Before: each fault as the red line AppSidebarLayout draws today under the top bar. */
+  if(IC.on&&IC.before){const tb=$('#main .topbar');if(tb)tb.insertAdjacentHTML('afterend',IC.list.map(x=>`<p class="ic9fault" role="alert">${esc(x.title)}${x.why?': '+esc(x.why.replace(/^Its last call: /,'its last call, ')):'.'}</p>`).join(''))}
+  icDraw();const sl=$('#sLine');if(!sl)return;
+  const bf=$('[data-icbefore]',sl);if(bf)bf.onclick=()=>{IC.before=!IC.before;render()};
+  const nr=$('[data-icnarrow]',sl);if(nr)nr.onclick=()=>{if(icNarrow())fitWindow();else{frameW=390;render()}};
+  const op=$('[data-icopen]',sl);if(op)op.onclick=icOpen});
+document.addEventListener('keydown',e=>{if(IC.on&&e.altKey&&e.shiftKey&&e.code==='KeyI'){e.preventDefault();IC.open?icShut():icOpen()}});
+const R9_NOTES=[['The issue console (round 9)','Today AppSidebarLayout.vue (line 52) draws each string of installation.faults (AppContext::installation, from InstallationFaults and HostLinkAlarms, owner only) as a red line under the top bar, so they stack and push the page down. Now a pill in the content\'s bottom-left corner shows while any issue is open and not ignored: its mark (red triangle for an error, amber circle for warnings only), the count, the kinds in words. It pings once for a new issue, announced politely; ⌥⇧I toggles the console. Below 760 px it sits above the composer with only its count.'],
+  ['The console and its actions','A dialog titled Issues, newest first: each issue with its sentence, a source chip, since when, why, what to do with its command, and its actions. Fix runs the known remedy and shows it working; Auto-fix asks once in place, then fixes that kind without asking; Ask for help opens the picker; Ignore hides it until it changes. Fix and Auto-fix only where a remedy is known; Fix all in the head when several are. Filters with more than three; then Cleared, Fixed for you and Ignored. Esc returns focus to the pill; ↑ ↓ move between issues. Below 760 px it is a sheet from the bottom.'],
+  ['Ask for help and Fix known problems myself','Ask for help lists the main agents with their states and “A new agent for it” with the driver it starts on, and a note; Send hands the agent the issue with its reason and evidence in its own chat, and the issue reads “Agent 1 is looking at it · open its chat”. Fix known problems myself, on by default, sits in the console\'s foot and in Settings: a problem with a known remedy never waits as a warning, the journal applies the remedy and logs it under Fixed for you; when a remedy fails, the issue opens with the failure as its reason. For the code: a fault becomes a record (id, severity, source, since, why, what to do, command, remedy), with a log of applied remedies, per-owner ignores, auto-fix rules and the setting.']];
+NOTE_CARDS.push(...R9_NOTES);
+if(dn)dn.insertAdjacentHTML('beforeend',R9_NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join(''));
+}
 load();
 })();
 </script>
