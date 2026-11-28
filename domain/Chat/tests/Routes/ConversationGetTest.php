@@ -27,7 +27,7 @@ final class ConversationGetTest extends GuardedRouteEntryTestCase
 {
     public function test_the_chat_address_and_home_window_register_distinct_products(): void
     {
-        $journal = $this->journal->owner();
+        $journal = $this->journal->owner()->installProfiles();
         $windows = $this->app->make(WindowFactory::class);
         $pages = $this->app->make(PageFactory::class);
 

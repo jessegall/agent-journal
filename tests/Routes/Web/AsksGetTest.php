@@ -30,7 +30,7 @@ final class AsksGetTest extends GuardedRouteEntryTestCase
 {
     public function test_the_compact_inbox_exposes_only_previews_and_its_address(): void
     {
-        $journal = $this->journal->owner();
+        $journal = $this->journal->owner()->installProfiles();
         $owner = ActorReference::of($journal->ownerUser());
         $type = CoreAskType::Question;
 

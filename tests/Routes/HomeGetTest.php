@@ -19,7 +19,7 @@ final class HomeGetTest extends GuardedRouteEntryTestCase
 {
     public function test_the_owners_page_is_kept_encrypted_in_the_history(): void
     {
-        $this->journal->owner();
+        $this->journal->owner()->installProfiles();
 
         $this->actingAs($this->journal->ownerUser())->get(route('home'))->assertInertia(
             fn (AssertableInertia $page) => $this->assertArrayHasKey('encryptHistory', $page->toArray()),
@@ -28,7 +28,7 @@ final class HomeGetTest extends GuardedRouteEntryTestCase
 
     public function test_home_schedules_independent_copies_and_account_notices(): void
     {
-        $journal = $this->journal->owner();
+        $journal = $this->journal->owner()->installProfiles();
         $copy = 'window_web_asks__123456abcdef';
         $notices = 'section_web_bar_accounts_notices';
 

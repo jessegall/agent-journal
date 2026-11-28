@@ -13,9 +13,7 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Profiles\Profile;
 use App\Policies\ProfileAdministrationPolicy;
-use App\Profiles\Enums\ModelTier;
 use App\Sessions\Contracts\ProfileResolver;
-use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 
 /**
@@ -33,18 +31,15 @@ final readonly class StartAccounts implements StartAccountsContract
     public function forProfileStart(string $driver, string $profileKey): EligibleAccountsData
     {
         $accounts = $this->forDriver($driver);
+        $profile = $this->profiles->snapshotFor(ProfileKey::from($profileKey));
+        $family = $this->drivers->family($driver);
 
-        return $this->withProfileDefaults($accounts, ProfileKey::from($profileKey));
-    }
-
-    public function forBuiltInStart(string $driver, ProfileBase $base): EligibleAccountsData
-    {
-        $accounts = $this->forDriver($driver);
-        $key = ProfileKey::from($base->key);
-
-        return $this->profiles->has($key)
-            ? $this->withProfileDefaults($accounts, $key)
-            : $this->withStartDefaults($accounts, $base->tier, null);
+        return EligibleAccountsData::from([
+            'driver' => $accounts->driver,
+            'accounts' => $accounts->accounts,
+            'defaultModel' => $family->modelAt($profile->preferredTier),
+            'preferredDriver' => $profile->start->preferredDriver,
+        ]);
     }
 
     public function forDriver(string $driver): EligibleAccountsData
@@ -76,25 +71,5 @@ final readonly class StartAccounts implements StartAccountsContract
     public function hasSignedInAccount(): bool
     {
         return Account::hasSignedInAccount();
-    }
-
-    private function withProfileDefaults(EligibleAccountsData $accounts, ProfileKey $key): EligibleAccountsData
-    {
-        $profile = $this->profiles->snapshotFor($key);
-
-        return $this->withStartDefaults($accounts, $profile->preferredTier, $profile->start->preferredDriver);
-    }
-
-    private function withStartDefaults(
-        EligibleAccountsData $accounts,
-        ModelTier $tier,
-        string|null $preferredDriver,
-    ): EligibleAccountsData {
-        return EligibleAccountsData::from([
-            'driver' => $accounts->driver,
-            'accounts' => $accounts->accounts,
-            'defaultModel' => $this->drivers->family($accounts->driver)->modelAt($tier),
-            'preferredDriver' => $preferredDriver,
-        ]);
     }
 }

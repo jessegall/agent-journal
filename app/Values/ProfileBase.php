@@ -42,7 +42,7 @@ final readonly class ProfileBase
         // Whether its driver is its container's own terminal process, which the host attaches to, again after a
         // restart: the main agent's is; a helper runs without a terminal.
         public bool $isAttachable,
-        // How its sessions run when a start names no driver type: the main agent in a terminal, a helper headless.
+        // How its sessions run when a start names no driver type.
         public DriverType $defaultDriverType,
     ) {}
 
@@ -66,7 +66,7 @@ final readonly class ProfileBase
             true,
             ExecutionBudgets::mainAgent(),
             true,
-            DriverType::Terminal,
+            DriverType::Headless,
         );
     }
 

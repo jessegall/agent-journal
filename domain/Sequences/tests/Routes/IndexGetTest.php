@@ -35,7 +35,7 @@ final class IndexGetTest extends GuardedRouteEntryTestCase
 
     public function test_the_full_index_exposes_the_projected_layout(): void
     {
-        $journal = $this->journal->owner();
+        $journal = $this->journal->owner()->installProfiles();
 
         $this->actingAs($journal->ownerUser())->get(route('sequences.index'))->assertInertia(
             fn (AssertableInertia $page) => $page

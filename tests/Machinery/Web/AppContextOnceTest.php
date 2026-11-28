@@ -6,9 +6,6 @@ namespace Tests\Machinery\Web;
 
 use App\Http\Controllers\RenameAccountController;
 use App\Http\Middleware\Web\HandleInertiaRequests;
-use App\Models\Profiles\Profile;
-use App\Values\ProfileBase;
-use App\Values\ProfileKey;
 use App\Web\AppContextFreshness;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -30,9 +27,7 @@ final class AppContextOnceTest extends TestCase
 
     public function test_the_app_context_comes_with_the_first_page_and_not_again_on_the_next_visit(): void
     {
-        $this->journal->owner();
-        $profile = ProfileKey::from(ProfileBase::mainAgent()->key);
-        $this->assertFalse(Profile::hasCurrent($profile));
+        $this->journal->owner()->installProfiles();
 
         $firstPage = $this->visit();
         $firstPage->assertOk();
@@ -50,12 +45,11 @@ final class AppContextOnceTest extends TestCase
             ],
         );
         $this->assertNotEmpty($first['startAccounts'][0]['defaultModel']);
-        $this->assertFalse(Profile::hasCurrent($profile));
     }
 
     public function test_after_a_route_that_changes_it_the_next_page_sends_it_again(): void
     {
-        $this->journal->owner();
+        $this->journal->owner()->installProfiles();
         $kept = implode(',', array_keys((array) $this->visit()->json('onceProps')));
 
         $next = $this->withSession(['journal.app-context-stale' => true])
