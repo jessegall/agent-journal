@@ -26,7 +26,7 @@ use PhpOption\Some;
  * An agent asked to read skills whole. It keeps the skills still to read and its tool uses; once the budget is spent it
  * refuses changes until every skill is read, and it finishes when its list is empty.
  */
-#[StateType(ReadSkillStateReference::class, schemaVersion: 1)]
+#[StateType(ReadSkillStateReference::class, version: 1)]
 final class ReadSkillState extends AgentState implements UniqueState
 {
     use ToolBudgetDecisions {

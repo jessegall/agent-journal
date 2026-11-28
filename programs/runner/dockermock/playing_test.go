@@ -4,13 +4,17 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -244,23 +248,49 @@ func TestEveryRecordedMultiplexedAnswerIsWholeFrames(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	definitions, _ := filepath.Glob(filepath.Join(root, "resources/recordings/scenarios/*/*.json"))
 	read := 0
-	for _, definition := range definitions {
-		scenario, err := recorded.Load(root, filepath.Base(filepath.Dir(definition)), strings.TrimSuffix(filepath.Base(definition), ".json"))
+	err = filepath.WalkDir(filepath.Join(root, "resources", "recordings"), func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
-			continue
+			return err
 		}
-		calls, _ := scenario.Calls(recording.WireDocker)
-		for _, call := range calls {
-			if call.Answered.Headers["Content-Type"] != "application/vnd.docker.multiplexed-stream" || call.Answered.IsCut {
+		if entry.IsDir() || entry.Name() != "exchange.json" {
+			return nil
+		}
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		var exchange recorded.Exchange
+		if err := json.Unmarshal(content, &exchange); err != nil {
+			return fmt.Errorf("reading %s: %w", path, err)
+		}
+		if exchange.Opening.Wire != recording.WireDocker {
+			return nil
+		}
+		for _, event := range exchange.Events {
+			if event.Type != "answered" {
 				continue
 			}
+			var answer recording.Call
+			if err := json.Unmarshal(event.Call, &answer); err != nil {
+				return fmt.Errorf("reading an answer in %s: %w", path, err)
+			}
+			if answer.Headers["Content-Type"] != "application/vnd.docker.multiplexed-stream" || answer.IsCut || answer.Body == "" {
+				continue
+			}
+			stream, err := base64.StdEncoding.DecodeString(answer.Body)
+			if err != nil {
+				return fmt.Errorf("reading the answer to %s in %s: %w", answer.Path, path, err)
+			}
 			read++
-			if at := wholeFramesEnd(decoded(call.Answered.Body)); at >= 0 {
-				t.Errorf("the %s answer to %s of %s breaks its frames at byte %d", call.Answered.Method, call.Answered.Path, scenario.Name, at)
+			if at := wholeFramesEnd(stream); at >= 0 {
+				t.Errorf("the %s answer to %s in %s breaks its frames at byte %d", answer.Method, answer.Path, path, at)
 			}
 		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 	if read == 0 {
 		t.Fatal("no recording holds a multiplexed answer")

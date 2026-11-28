@@ -13,7 +13,7 @@ use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 /**
  * An ordinary state listener with a result prescribed by the fixture.
  */
-#[StateType(WatchNoteStateReference::class, schemaVersion: 1)]
+#[StateType(WatchNoteStateReference::class, version: 1)]
 final class WatchNoteState extends AgentState
 {
     /**

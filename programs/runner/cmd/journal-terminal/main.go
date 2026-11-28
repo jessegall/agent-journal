@@ -112,15 +112,11 @@ func start(
 	if err != nil {
 		return 1, err
 	}
-	driver := arguments[0]
-	if driver == "claude" {
-		driver = "claude-code"
-	}
 	journal := client.ForRemoteProject(binding.Enrollment, &http.Client{Timeout: 30 * time.Second})
 	request.RootID = binding.RootID
 	request.Folder = folder.Root
 	request.AgentID = binding.MainAgentID
-	request.Driver = driver
+	request.Driver = arguments[0]
 	request.Profile = "main-agent"
 	opened, err := openMainRuntime(journal, state, request, binding.BindingID)
 	if err != nil {

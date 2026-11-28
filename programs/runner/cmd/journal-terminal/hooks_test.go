@@ -11,6 +11,7 @@ import (
 
 func TestTheTerminalForwardsItsHookWithTheStartGrant(t *testing.T) {
 	const token = "the-start-token"
+	const driver = "example-driver"
 	received := make(chan *http.Request, 1)
 	journal := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		received <- request
@@ -27,12 +28,12 @@ func TestTheTerminalForwardsItsHookWithTheStartGrant(t *testing.T) {
 	if !ok {
 		t.Fatal("the start environment did not provide a grant")
 	}
-	_, err := forwardHooks(grant)(t.Context(), "claude-code", []byte("{}"))
+	_, err := forwardHooks(grant)(t.Context(), driver, []byte("{}"))
 	if !errors.Is(err, client.ErrRefused) {
 		t.Fatalf("the journal's refusal was returned as %v", err)
 	}
 	request := <-received
-	if request.Header.Get("Authorization") != "Bearer "+token || request.URL.RequestURI() != "/hooks/claude-code?generation=1" {
+	if request.Header.Get("Authorization") != "Bearer "+token || request.URL.RequestURI() != "/hooks/"+driver+"?generation=1" {
 		t.Fatalf("the start grant did not sign the expected hook: %s", request.URL)
 	}
 }

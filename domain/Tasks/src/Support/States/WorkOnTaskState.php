@@ -35,7 +35,7 @@ use PhpOption\Some;
  * or its own claim ends; a late end of an earlier claim never closes it. It holds the stop back while open, and keeps
  * the task in focus while its frame is the live top.
  */
-#[StateType(WorkOnTaskStateReference::class, schemaVersion: 1)]
+#[StateType(WorkOnTaskStateReference::class, version: 1)]
 final class WorkOnTaskState extends AgentState implements DurableState, WorkState
 {
     /**

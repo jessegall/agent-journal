@@ -15,7 +15,7 @@ use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 /**
  * A review state that runs only while the review settings group is switched on, read from the settings each time.
  */
-#[StateType(ReviewStateReference::class, schemaVersion: 1)]
+#[StateType(ReviewStateReference::class, version: 1)]
 final class ReviewState extends AgentState implements ConditionalState
 {
     public function __construct(

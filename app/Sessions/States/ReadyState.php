@@ -28,7 +28,7 @@ use Generator;
  * the session runs, and ends a stopped session once none of its processes runs, as a headless one has none between
  * its turns.
  */
-#[StateType(ReadyStateReference::class, schemaVersion: 1)]
+#[StateType(ReadyStateReference::class, version: 1)]
 class ReadyState extends AgentState implements UniqueState
 {
     private SessionRun $run;

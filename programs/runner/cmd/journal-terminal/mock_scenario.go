@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"path/filepath"
 	"slices"
 	"strings"
 	"syscall"
@@ -38,6 +37,7 @@ func mockScenario(arguments []string) error {
 	named := flags.String("scenario", "", "the recorded scenario to play, as <driver>/<name>")
 	repository := flags.String("repo", "", "the repository whose recording to play")
 	typed := flags.String("typed", "", "a file that keeps the text the mock is given")
+	transcript := flags.String("transcript", "", "the live transcript path to put in the recorded hooks")
 	hold := flags.Bool("hold-for-stop", false, "leave the terminal alive until the journal stops it")
 	if err := flags.Parse(arguments); err != nil {
 		return err
@@ -78,7 +78,7 @@ func mockScenario(arguments []string) error {
 	if err != nil {
 		return err
 	}
-	if err := placeHooks(hooks, argv, folder); err != nil {
+	if err := placeHooks(hooks, argv, folder, *transcript); err != nil {
 		return err
 	}
 	if term.IsTerminal(int(os.Stdin.Fd())) {
@@ -230,19 +230,22 @@ func recordedHooksOf(scenario recorded.Scenario, exchange recorded.Exchange, set
 }
 
 // placeHooks gives the recorded hook the live conversation and directory it is about.
-func placeHooks(hooks []recordedHook, argv []string, folder string) error {
+func placeHooks(hooks []recordedHook, argv []string, folder, transcript string) error {
 	at := slices.Index(argv, "--session-id")
 	if at < 0 || at+1 >= len(argv) {
 		return nil
 	}
 	conversation := argv[at+1]
-	transcript := filepath.Join(os.Getenv("CLAUDE_CONFIG_DIR"), "projects", "journal", conversation+".jsonl")
+	fields := map[string]string{"session_id": conversation, "cwd": folder}
+	if transcript != "" {
+		fields["transcript_path"] = transcript
+	}
 	for index := range hooks {
 		var native map[string]json.RawMessage
 		if err := json.Unmarshal(hooks[index].body, &native); err != nil {
 			return err
 		}
-		for key, value := range map[string]string{"session_id": conversation, "cwd": folder, "transcript_path": transcript} {
+		for key, value := range fields {
 			if _, known := native[key]; known {
 				native[key], _ = json.Marshal(value)
 			}

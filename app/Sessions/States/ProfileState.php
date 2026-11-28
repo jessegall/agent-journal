@@ -40,7 +40,7 @@ use Generator;
  * stop conditions, and is refused while they fail. A run of the same failure, unchanged, holds the work instead and
  * tells its owner. A session with no profile, or none frozen, stops freely.
  */
-#[StateType(ProfileStateReference::class, schemaVersion: 1)]
+#[StateType(ProfileStateReference::class, version: 1)]
 final class ProfileState extends AgentState implements BaseState
 {
     /**

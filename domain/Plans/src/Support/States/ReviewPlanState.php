@@ -25,7 +25,7 @@ use PhpOption\Some;
  * An agent asked to review a plan: its instruction is the review, and it may not stop until the review is decided or
  * withdrawn. It only nudges; the plan itself refuses changes while it is under review.
  */
-#[StateType(ReviewPlanStateReference::class, schemaVersion: 1)]
+#[StateType(ReviewPlanStateReference::class, version: 1)]
 final class ReviewPlanState extends AgentState implements DurableState, UniqueSubjectState
 {
     private bool $isReviewing = true;

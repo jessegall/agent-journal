@@ -17,7 +17,7 @@ use Tests\Fixtures\Domains\QuestionReminders\Events\QuestionAnswered;
  * An agent waits for the answer to its question. Once it waited long enough the tick asks for one reminder; the
  * reminder's handler rechecks the question under its lock, so a second tick or a late answer sends nothing more.
  */
-#[StateType(AwaitAnswerStateReference::class, schemaVersion: 1)]
+#[StateType(AwaitAnswerStateReference::class, version: 1)]
 #[Ticks(guard: AwaitAnswerGuard::class)]
 final class AwaitAnswerState extends AgentState implements TickableState
 {

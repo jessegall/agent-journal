@@ -266,10 +266,10 @@ final class ScenarioRun
 
     public function useConnectedMainAgent(string $name): Agent
     {
-        $agentId = $this->connectedBinding()?->main_agent_id
-            ?? throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, 'the binding has no main agent');
+        $binding = $this->connectedBinding()
+            ?? throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, 'the install line has no live binding');
 
-        $this->holdAgent($name, $agentId);
+        $this->holdAgent($name, $binding->main_agent_id);
 
         return $this->agentNamed($name);
     }

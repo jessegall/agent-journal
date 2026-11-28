@@ -27,7 +27,7 @@ use PhpOption\Some;
  * the replies it saw already say it all; once the budget is spent it refuses every tool but the journal's and reads
  * until the agent answers. Its agent's reply or reaction targeting the message finishes it.
  */
-#[StateType(AnswerMessageStateReference::class, schemaVersion: 1)]
+#[StateType(AnswerMessageStateReference::class, version: 1)]
 final class AnswerMessageState extends AgentState implements DurableState, UniqueSubjectState
 {
     use ToolBudgetDecisions;

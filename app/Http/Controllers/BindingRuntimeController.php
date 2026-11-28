@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use App\Agents\Drivers\Commands\RecordOwnTerminal\RecordOwnTerminalCommand;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
@@ -35,8 +36,10 @@ final readonly class BindingRuntimeController
         HostContext $host,
         CommandBus $commands,
         PinnedBuilds $pins,
+        DriverCatalogue $drivers,
     ): JsonResponse {
-        $commands->run($request->asBindingRuntime($host->hostId, $binding));
+        $start = $request->withDriver($drivers->familyForStart($request->driver));
+        $commands->run($start->asBindingRuntime($host->hostId, $binding));
 
         // A start asked again under its id, after a lost reply or a restart, answers the runtime it opened.
         $earlier = $request->startId === null
@@ -47,7 +50,7 @@ final readonly class BindingRuntimeController
             return $this->answer($binding, $runtime, $commands, JsonResponse::HTTP_OK);
         }
 
-        $opened = $commands->run($request->asMainRuntime($host->hostId, $pins->versionOf($request->driver)));
+        $opened = $commands->run($start->asMainRuntime($host->hostId, $pins->versionOf($start->driver)));
 
         if ($request->startId !== null) {
             $commands->run(

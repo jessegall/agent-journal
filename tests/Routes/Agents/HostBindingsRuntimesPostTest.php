@@ -62,7 +62,7 @@ final class HostBindingsRuntimesPostTest extends GuardedRouteEntryTestCase
                 'rootId' => 'root-1',
                 'folder' => '/Users/owner/shop',
                 'agentId' => $agentId,
-                'driver' => 'claude-code',
+                'driver' => 'claude',
                 'profile' => 'main-agent',
                 'model' => 'claude-opus-5-5',
             ])
@@ -73,6 +73,7 @@ final class HostBindingsRuntimesPostTest extends GuardedRouteEntryTestCase
                 'hostId' => $relay->hostId,
                 'bindingId' => $bindingId,
                 'agentId' => $agentId,
+                'driver' => 'claude-code',
             ])
             ->expects(OpenBindingMainRuntimeCommand::class, [
                 'agentId' => $agentId,
