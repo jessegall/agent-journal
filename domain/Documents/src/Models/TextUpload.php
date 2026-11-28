@@ -8,8 +8,8 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
 use App\Sessions\Contracts\SessionProvenance;
@@ -44,9 +44,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class TextUpload extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
+    use ProjectMembership;
     use RaisesEvents;
 
     public const int BYTE_LIMIT = 2 * 1024 * 1024;

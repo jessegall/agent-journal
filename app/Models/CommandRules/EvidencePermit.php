@@ -15,8 +15,8 @@ use App\Events\Processes\EvidencePermitConsumed;
 use App\Events\Processes\EvidencePermitExpired;
 use App\Models\Projects\Project;
 use App\Models\Runs\ProcessRun;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
@@ -51,9 +51,9 @@ use Spatie\LaravelData\DataCollection;
  */
 final class EvidencePermit extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
+    use ProjectMembership;
     use RaisesEvents;
 
     /**

@@ -11,8 +11,8 @@ use App\Contracts\Events\EventSource;
 use App\Events\Processes\CommandAliasLineRecorded;
 use App\Models\Projects\Project;
 use App\Models\Support\Accessor;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
 use App\Values\AliasLookup;
@@ -37,9 +37,9 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  */
 final class CommandAlias extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
+    use ProjectMembership;
     use RaisesEvents;
 
     /**

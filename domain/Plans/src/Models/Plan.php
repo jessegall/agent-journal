@@ -16,8 +16,8 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\Numbered;
 use App\Records\Contracts\ReadableModel;
@@ -95,17 +95,17 @@ use PhpOption\Option;
 final class Plan extends JournalModel implements Assignable, EventSource, Numbered, ProjectOwned, ReadableModel, Shareable
 {
     use AssignableListing;
-    use ProjectMembership;
     use BoundedReads;
-
     /**
      * @use HasFactory<PlanFactory>
      */
     use HasFactory;
 
     use HasNumber;
+
     use Linkable;
     use OrdersById;
+    use ProjectMembership;
     use RaisesEvents;
 
     /**

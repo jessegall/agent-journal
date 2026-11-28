@@ -9,8 +9,8 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Processes\ResultReceiptSuperseded;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Values\VerifiedOutput;
 use App\Projects\Contracts\ProjectOwned;
@@ -40,9 +40,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class ResultReceipt extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
+    use ProjectMembership;
     use RaisesEvents;
 
     public const string CREATED_AT = 'published_at';

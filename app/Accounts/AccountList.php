@@ -86,6 +86,7 @@ final readonly class AccountList
             $usage = AccountUsageWindow::pageOf($selected, $usagePage);
 
             $selectedUsage = $this->usageOf($selected, array_values($usage->items()), $costs, $threads);
+
             $fields->selected($row($selected, $selectedUsage))
                 ->usagePage($usage->currentPage())
                 ->usageLastPage($usage->lastPage());

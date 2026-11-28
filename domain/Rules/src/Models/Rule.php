@@ -11,8 +11,8 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Exceptions\CrossProjectEdge;
-use App\Models\Support\ProjectOrGlobalMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectOrGlobalMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\Numbered;
 use App\Records\Contracts\ReadableModel;
@@ -49,11 +49,11 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class Rule extends JournalModel implements EventSource, Numbered, ProjectOwned, ReadableModel
 {
-    use ProjectOrGlobalMembership;
     use BoundedReads;
     use HasNumber;
     use Linkable;
     use OrdersById;
+    use ProjectOrGlobalMembership;
     use RaisesEvents;
 
     /**

@@ -20,8 +20,8 @@ use App\Events\Connections\ProjectBindingRevoked;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\Agent;
 use App\Models\Support\Accessor;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Projects\Enums\ArrangementType;
 use App\Projects\Exceptions\BindingRuntimeRefused;
@@ -77,10 +77,10 @@ use PhpOption\Option;
  */
 final class ProjectBinding extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
     use OrdersById;
+    use ProjectMembership;
     use RaisesEvents;
 
     /**

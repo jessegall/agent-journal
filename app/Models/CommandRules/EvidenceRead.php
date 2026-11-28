@@ -9,8 +9,8 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
 use App\Models\Runs\ProcessRun;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
@@ -35,10 +35,10 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class EvidenceRead extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use InsertsRowSets;
     use Linkable;
+    use ProjectMembership;
 
     public const string CREATED_AT = 'read_at';
 

@@ -19,9 +19,9 @@ use App\Models\Projects\Project;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Support\Accessor;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Processes\Enums\OutputStream;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
@@ -52,11 +52,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  */
 final class CommandRequest extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use HasActorColumns;
     use HasActorColumns;
     use Linkable;
+    use ProjectMembership;
 
     public const int EXCERPT_LENGTH = 200;
 

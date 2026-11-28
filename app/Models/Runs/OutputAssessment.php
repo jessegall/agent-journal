@@ -8,8 +8,8 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleRevision;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Enums\InterpretationStatus;
 use App\Processes\Enums\ProblemCode;
@@ -41,9 +41,9 @@ use Spatie\LaravelData\DataCollection;
  */
 final class OutputAssessment extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
+    use ProjectMembership;
 
     public const null UPDATED_AT = null;
 

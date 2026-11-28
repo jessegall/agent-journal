@@ -8,9 +8,9 @@ use App\Agents\Enums\ActivityLevel;
 use App\Agents\Enums\ActivityType;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
@@ -41,10 +41,10 @@ use Illuminate\Database\Eloquent\Model;
 #[Table('activity_entries')]
 final class ActivityEntry extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use HasActorColumns;
     use Linkable;
+    use ProjectMembership;
 
     /**
      * The most entries one read returns.

@@ -8,8 +8,8 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Models\Projects\Project;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
@@ -32,10 +32,10 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class ModuleRuleBundle extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use InsertsAbsentRows;
     use Linkable;
+    use ProjectMembership;
 
     public const string CREATED_AT = 'approved_at';
 

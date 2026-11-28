@@ -13,8 +13,8 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Support\Accessor;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\Numbered;
 use App\Records\Contracts\ReadableModel;
@@ -56,11 +56,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 final class Phase extends JournalModel implements Assignable, EventSource, Numbered, ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use HasNumber;
     use Linkable;
     use OrdersById;
+    use ProjectMembership;
     use RaisesEvents;
 
     /**

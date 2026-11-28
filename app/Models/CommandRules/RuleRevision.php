@@ -13,9 +13,9 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Exceptions\RevisionImmutable;
 use App\Models\Projects\Project;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Models\Support\NamedByRuleScope;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
@@ -49,10 +49,10 @@ use Spatie\LaravelData\DataCollection;
  */
 final class RuleRevision extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
     use NamedByRuleScope;
+    use ProjectMembership;
 
     public const string CREATED_AT = 'approved_at';
 

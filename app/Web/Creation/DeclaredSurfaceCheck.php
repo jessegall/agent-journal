@@ -62,6 +62,7 @@ final class DeclaredSurfaceCheck
         $type = Reflector::find($window->type)->getOrCall(
             static fn () => throw InvalidSurface::windowType($key, $window->type),
         );
+
         $parent = $type->parent();
 
         if ($parent->filter(static fn (Reflector $class): bool => $class->name() === Data::class)->isEmpty()) {

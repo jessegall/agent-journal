@@ -16,8 +16,8 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\Commentable;
 use App\Records\Contracts\Numbered;
@@ -99,17 +99,17 @@ final class Task extends JournalModel implements
     ReadableModel
 {
     use AssignableListing;
-    use ProjectMembership;
     use BoundedReads;
-
     /**
      * @use HasFactory<TaskFactory>
      */
     use HasFactory;
 
     use HasNumber;
+
     use Linkable;
     use OrdersById;
+    use ProjectMembership;
     use RaisesEvents;
 
     /**

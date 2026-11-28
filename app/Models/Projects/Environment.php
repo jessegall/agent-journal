@@ -9,8 +9,8 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Connections\EnvironmentOpened;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Projects\Exceptions\InvitationUnusable;
 use App\Records\Contracts\ReadableModel;
@@ -28,9 +28,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class Environment extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
+    use ProjectMembership;
     use RaisesEvents;
 
     /**

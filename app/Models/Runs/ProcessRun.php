@@ -17,8 +17,8 @@ use App\Events\Processes\ProcessRunStopped;
 use App\Events\Processes\ProcessRunUpdateCounted;
 use App\Models\Access\User;
 use App\Models\Support\BelongsToOneActor;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Processes\Enums\CaptureStatus;
 use App\Processes\Enums\LifecycleStatus;
 use App\Processes\Enums\RunLogicalResult;
@@ -81,9 +81,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class ProcessRun extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
+    use ProjectMembership;
     use RaisesEvents;
 
     /**

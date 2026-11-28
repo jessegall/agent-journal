@@ -16,9 +16,9 @@ use App\Events\Processes\ClassificationRuleActivated;
 use App\Events\Processes\ClassificationRuleRestored;
 use App\Events\Processes\ClassificationRuleRetired;
 use App\Models\Projects\Project;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Models\Support\NamedByRuleScope;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
 use App\Values\CommandRule;
@@ -47,10 +47,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 final class ClassificationRule extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use ProjectMembership;
     use BoundedReads;
     use Linkable;
     use NamedByRuleScope;
+    use ProjectMembership;
     use RaisesEvents;
 
     /**

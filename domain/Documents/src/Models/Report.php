@@ -12,8 +12,8 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Models\Support\Accessor;
-use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
+use App\Models\Support\ProjectMembership;
 use App\Projects\Contracts\ProjectOwned;
 use App\Reads\Contracts\TextContent;
 use App\Records\Contracts\Commentable;
@@ -75,13 +75,13 @@ final class Report extends JournalModel implements
     Shareable,
     TextContent
 {
-    use ProjectMembership;
     use BoundedReads;
     use CreatedWithAttention;
     use HasNumber;
     use Linkable;
     use MeasuresBody;
     use OrdersById;
+    use ProjectMembership;
     use RaisesEvents;
     use SearchesText;
     use Settles;
