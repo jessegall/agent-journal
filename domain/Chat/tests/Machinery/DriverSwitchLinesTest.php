@@ -19,8 +19,8 @@ use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 
 /**
  * A driver switch writes one line in the chat of the user who asked for it: where the agent moved and what its new

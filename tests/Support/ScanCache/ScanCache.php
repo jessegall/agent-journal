@@ -162,6 +162,7 @@ final class ScanCache
     {
         // The scan's own code is part of the key, so a changed scan never reads the findings of its old self.
         $code = Reflector::of($scan)->fileName()->map(fn (string $file) => (string) sha1_file($file))->getOrElse('');
+
         return dirname(__DIR__, 3).'/storage/framework/testing/scan-cache/'.preg_replace(
             '/[^a-z0-9_.-]+/i',
             '-',
