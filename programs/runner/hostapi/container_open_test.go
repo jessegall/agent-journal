@@ -22,7 +22,7 @@ func containedTable(t *testing.T, runExit int) (*ProcessTable, *dockermock.Daemo
 	var mutex sync.Mutex
 	var written []byte
 	daemon.Programs = func(container *dockermock.Container) dockermock.Program {
-		if container.Config.Tty {
+		if slices.Contains(container.Config.Cmd, "--settings") {
 			return nil
 		}
 		return func(_ context.Context, run *dockermock.Container, input io.Reader, _ io.Writer) int {
@@ -73,7 +73,6 @@ func containedManifest() host.ContainerManifest {
 		Tmpfs:               []host.ContainerTmpfs{{Target: "/tmp", Options: "size=1024"}},
 		Labels:              []host.ContainerLabel{{Name: "journal.session", Value: "s1"}},
 		Budgets:             host.ContainerBudgets{CPUCores: 1, MemoryBytes: 1 << 30, Processes: 64, OpenFiles: 256},
-		IsAttachable:        true,
 		Restart:             "no",
 	}
 }
@@ -82,7 +81,7 @@ func containedInstruction(t *testing.T, change func(plan *OpenPlan)) Instruction
 	t.Helper()
 	manifest := containedManifest()
 	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096,
-		Type:      "terminal",
+		Type:      "pipe",
 		Restart:   "never",
 		Argv:      []string{"program", "--settings", "/files/settings.json"},
 		Container: &manifest,
@@ -165,7 +164,7 @@ func TestAContainerOpenUsesTheClaimTimeEvenWhenExecutionIsPastExpiry(t *testing.
 func TestEachPreparationRunsToItsEndWithItsInputBeforeTheContainer(t *testing.T) {
 	table, daemon, written := containedTable(t, 0)
 	preparation := host.ContainerRun{DeadlineMs: 30000, Manifest: containedManifest(), Command: []string{"sh", "-c", "cat"}, Input: []byte("the files")}
-	preparation.Manifest.Name, preparation.Manifest.IsAttachable = "", false
+	preparation.Manifest.Name = ""
 
 	instruction := containedInstruction(t, func(plan *OpenPlan) { plan.Container.Preparations = []host.ContainerRun{preparation} })
 	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), instruction); err != nil {
@@ -183,7 +182,7 @@ func TestEachPreparationRunsToItsEndWithItsInputBeforeTheContainer(t *testing.T)
 func TestAFailedPreparationRefusesTheContainer(t *testing.T) {
 	table, daemon, _ := containedTable(t, 1)
 	preparation := host.ContainerRun{DeadlineMs: 30000, Manifest: containedManifest(), Command: []string{"sh", "-c", "exit 1"}}
-	preparation.Manifest.Name, preparation.Manifest.IsAttachable = "", false
+	preparation.Manifest.Name = ""
 
 	instruction := containedInstruction(t, func(plan *OpenPlan) { plan.Container.Preparations = []host.ContainerRun{preparation} })
 	_, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), instruction)
@@ -215,7 +214,7 @@ func TestAContainedPlanWithoutAContainerNameIsRefused(t *testing.T) {
 func TestAContainerRunAnswersItsExitCodeAndOutput(t *testing.T) {
 	table, _, _ := containedTable(t, 3)
 	run := host.ContainerRun{DeadlineMs: 30000, Manifest: containedManifest(), Command: []string{"sh", "-c", "exit 3"}, OutputLimit: 100}
-	run.Manifest.Name, run.Manifest.IsAttachable = "", false
+	run.Manifest.Name = ""
 
 	results, err := table.RunContainers(context.Background(), Instruction{}, ContainerRuns{Runs: []host.ContainerRun{run}})
 	if err != nil {

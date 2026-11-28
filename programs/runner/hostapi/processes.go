@@ -16,13 +16,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/creack/pty"
-
 	"journal-runner/host"
 )
 
-// ProcessTable holds the processes the journal ordered the host to open: it starts each, keeps its terminal or
-// pipes, heals a crashed one whose restart policy asks it, and reports each change through the report queue.
+// ProcessTable holds the processes the journal ordered the host to open: it starts pipe processes, follows
+// adopted terminals, heals a crashed one whose restart policy asks it, and reports each change through the report queue.
 type ProcessTable struct {
 	containers host.Containers
 	reports    *ReportQueue
@@ -62,7 +60,6 @@ type heldProcess struct {
 	stateMutex sync.Mutex
 	generation int
 	identity   string
-	terminal   host.TerminalStream
 	adopted    *adoptedTerminal
 	input      io.WriteCloser
 	native     *exec.Cmd
@@ -105,24 +102,31 @@ func (table *ProcessTable) Adopt(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	for id, process := range kept {
+		if process.IsAdoptedTerminal {
+			table.terminalGenerations[id] = process.Generation
+		}
+	}
 	for id, container := range kept {
 		if container.IsAdoptedTerminal {
-			table.terminalGenerations[id] = container.Generation
+			continue
+		}
+		if err := verifyOpenPlan(container.Plan); err != nil {
+			if err := table.reports.Add(ProcessReport{ProcessID: id, Report: ProcessReportLost,
+				Generation: container.Generation, Evidence: err.Error()}); err != nil {
+				return err
+			}
 			continue
 		}
 		held := &heldProcess{id: id, plan: container.Plan, generation: container.Generation, exited: make(chan struct{})}
 		if err := table.outputs.Open(id, held.plan); err != nil {
 			return err
 		}
-		if container.Pid != 0 && held.plan.Type == "terminal" {
-			table.endOrphanedTerminal(held, container.Pid)
-			continue
-		}
 		if container.Pid != 0 {
 			table.adoptNative(held, container.Pid)
 			continue
 		}
-		if err := table.reattach(ctx, held); err != nil {
+		if err := table.followContainer(ctx, held); err != nil {
 			table.keep(held)
 			table.end(held, ProcessReport{ProcessID: id, Report: ProcessReportLost, Evidence: "not found after the host restarted: " + err.Error()})
 			continue
@@ -130,6 +134,7 @@ func (table *ProcessTable) Adopt(ctx context.Context) error {
 		table.keep(held)
 		go table.watchContainer(held)
 	}
+	table.saveKept()
 	return nil
 }
 
@@ -169,7 +174,7 @@ func (table *ProcessTable) Inventory() []InventoryProcess {
 			Identity:       held.currentIdentity(),
 			Container:      held.containerName(),
 			IsAlive:        alive,
-			IsTerminalHeld: held.terminal != nil || held.adopted != nil,
+			IsTerminalHeld: held.adopted != nil,
 			SpoolOffset:    offset,
 		})
 	}
@@ -185,14 +190,10 @@ func (table *ProcessTable) PlanOf(processID string) (OpenPlan, error) {
 	return held.plan, nil
 }
 
-// Write writes into the process's terminal or standard input.
+// Write writes into the process's standard input.
 func (table *ProcessTable) Write(processID string, bytes []byte) error {
 	held, err := table.held(processID)
 	if err != nil {
-		return err
-	}
-	if held.terminal != nil {
-		_, err = held.terminal.Write(bytes)
 		return err
 	}
 	if held.input == nil {
@@ -215,6 +216,9 @@ func (table *ProcessTable) CloseInput(processID string) error {
 }
 
 func (table *ProcessTable) OpenContainer(ctx context.Context, instruction Instruction, plan OpenPlan) (Opened, error) {
+	if err := verifyOpenPlan(plan); err != nil {
+		return Opened{}, err
+	}
 	if plan.Container == nil {
 		return Opened{}, RefusalError{Refusal: Unsafe, Reason: "open_container names no container"}
 	}
@@ -257,12 +261,12 @@ func (table *ProcessTable) startContainer(ctx context.Context, held *heldProcess
 	if err := table.containers.Start(ctx, held.containerName()); err != nil {
 		return err
 	}
-	return table.attachContainer(ctx, held)
+	return table.reportRunningContainer(ctx, held)
 }
 
-// attachContainer attaches to the container's terminal, names its instance and reports it running.
-func (table *ProcessTable) attachContainer(ctx context.Context, held *heldProcess) error {
-	if err := table.reattach(ctx, held); err != nil {
+// reportRunningContainer follows the container and reports it running.
+func (table *ProcessTable) reportRunningContainer(ctx context.Context, held *heldProcess) error {
+	if err := table.followContainer(ctx, held); err != nil {
 		return err
 	}
 	report := ProcessReportRunning
@@ -274,22 +278,13 @@ func (table *ProcessTable) attachContainer(ctx context.Context, held *heldProces
 	return table.reports.Add(ProcessReport{ProcessID: held.id, Report: report, Identity: identity, Generation: generation})
 }
 
-// reattach names the running container's instance and attaches to its terminal.
-func (table *ProcessTable) reattach(ctx context.Context, held *heldProcess) error {
+// followContainer names the running container's instance and follows its pipes.
+func (table *ProcessTable) followContainer(ctx context.Context, held *heldProcess) error {
 	identity, err := table.containers.InstanceID(ctx, held.containerName())
 	if err != nil {
 		return err
 	}
 	held.setIdentity(identity)
-	if held.plan.Container.IsAttachable {
-		terminal, err := table.containers.AttachTerminal(ctx, held.containerName(), held.plan.Size.Rows, held.plan.Size.Columns)
-		if err != nil {
-			return err
-		}
-		held.terminal = terminal
-		go table.copyOutput(held.id, terminal)
-		return nil
-	}
 	if held.plan.Container.TakesInput {
 		input, err := table.containers.AttachInput(ctx, held.containerName())
 		if err != nil {
@@ -354,7 +349,7 @@ func (table *ProcessTable) watchContainer(held *heldProcess) {
 			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportLost, Evidence: "the crashed container could not be started again: " + err.Error()})
 			return
 		}
-		if err := table.attachContainer(ctx, held); err != nil {
+		if err := table.reportRunningContainer(ctx, held); err != nil {
 			table.end(held, ProcessReport{ProcessID: held.id, Report: ProcessReportLost, Evidence: err.Error()})
 			return
 		}
@@ -363,6 +358,9 @@ func (table *ProcessTable) watchContainer(held *heldProcess) {
 
 // OpenProcess opens a native process of the plan on this host.
 func (table *ProcessTable) OpenProcess(_ context.Context, instruction Instruction, plan OpenPlan) (Opened, error) {
+	if err := verifyOpenPlan(plan); err != nil {
+		return Opened{}, err
+	}
 	if err := table.admit(plan); err != nil {
 		return Opened{}, err
 	}
@@ -392,7 +390,7 @@ func (table *ProcessTable) OpenProcess(_ context.Context, instruction Instructio
 	return Opened{Identity: identity, Generation: generation}, nil
 }
 
-// startNative starts the process as a child of the host in its own process group, behind a terminal or pipes.
+// startNative starts the process as a child of the host in its own process group, with pipes.
 func (table *ProcessTable) startNative(held *heldProcess, argv []string) error {
 	if len(argv) == 0 {
 		return RefusalError{Refusal: Unsafe, Reason: "the instruction names no program"}
@@ -407,38 +405,28 @@ func (table *ProcessTable) startNative(held *heldProcess, argv []string) error {
 	// The process holds its own copies of the descriptors once it started; the host's close with this start.
 	defer host.CloseFiles(files)
 	command.ExtraFiles = files
-	if held.plan.Type == "terminal" {
-		terminal, err := pty.StartWithAttrs(command, &pty.Winsize{Rows: held.plan.Size.Rows, Cols: held.plan.Size.Columns},
-			&syscall.SysProcAttr{Setsid: true, Setctty: true})
-		if err != nil {
-			return err
-		}
-		held.terminal = host.PtyTerminal(terminal)
-		go table.copyOutput(held.id, terminal)
-	} else {
-		command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-		input, err := command.StdinPipe()
-		if err != nil {
-			return err
-		}
-		spool, err := openSpool(table.stateFolder, held.id)
-		if err != nil {
-			return err
-		}
-		// The error output goes to the same spool in the order it was printed, as a program may print its sign-in line
-		// there; a host that drops it would read every such program as saying nothing.
-		command.Stdout = spool
-		command.Stderr = spool
-		err = command.Start()
-		_ = spool.Close()
-		if err != nil {
-			return err
-		}
-		held.input = input
-		if held.finished == nil {
-			held.finished = make(chan struct{})
-			table.followSpool(held, 0)
-		}
+	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	input, err := command.StdinPipe()
+	if err != nil {
+		return err
+	}
+	spool, err := openSpool(table.stateFolder, held.id)
+	if err != nil {
+		return err
+	}
+	// The error output goes to the same spool in the order it was printed, as a program may print its sign-in line
+	// there; a host that drops it would read every such program as saying nothing.
+	command.Stdout = spool
+	command.Stderr = spool
+	err = command.Start()
+	_ = spool.Close()
+	if err != nil {
+		return err
+	}
+	held.input = input
+	if held.finished == nil {
+		held.finished = make(chan struct{})
+		table.followSpool(held, 0)
 	}
 	held.native = command
 	held.pid = command.Process.Pid
@@ -500,15 +488,12 @@ func hasFileNamed(folder, glob string) bool {
 	return errors.Is(err, found)
 }
 
-func (table *ProcessTable) Resize(_ context.Context, instruction Instruction, size TerminalSize) (Empty, error) {
-	held, err := table.held(instruction.ProcessID)
-	if err != nil {
+func (table *ProcessTable) Resize(_ context.Context, instruction Instruction, _ TerminalSize) (Empty, error) {
+	if _, err := table.held(instruction.ProcessID); err != nil {
 		return Empty{}, err
 	}
-	if held.terminal == nil {
-		return Empty{}, RefusalError{Refusal: NotRunning, Reason: "the process has no terminal"}
-	}
-	return Empty{}, held.terminal.Resize(size.Rows, size.Columns)
+
+	return Empty{}, RefusalError{Refusal: NotRunning, Reason: "the process has no terminal"}
 }
 
 func (table *ProcessTable) Signal(ctx context.Context, instruction Instruction, plan SignalPlan) (Empty, error) {
@@ -579,8 +564,7 @@ func (table *ProcessTable) end(held *heldProcess, report ProcessReport) {
 	close(held.exited)
 }
 
-// saveKept writes the plans of the processes that still run, so a restart adopts those that can outlive the host and
-// ends what is left of the others.
+// saveKept writes the plans of the processes that still run, so a restart adopts those that can outlive the host again.
 func (table *ProcessTable) saveKept() {
 	table.mutex.Lock()
 	defer table.mutex.Unlock()
@@ -599,8 +583,7 @@ func (table *ProcessTable) writeKept(ending *heldProcess) {
 			continue
 		default:
 		}
-		// A native terminal cannot outlive the host, but is kept by its pid so a restart can end what is left of it.
-		if held == ending || held.adopted != nil || (!held.canOutliveHost() && held.pid == 0) {
+		if held == ending || held.adopted != nil || (held.plan.Container == nil && held.pid == 0) {
 			continue
 		}
 		_, generation := held.state()
@@ -650,19 +633,6 @@ func readKeptAt(path string) (map[string]keptProcess, error) {
 		return nil, err
 	}
 	return kept, json.Unmarshal(content, &kept)
-}
-
-func (table *ProcessTable) copyOutput(processID string, printed io.Reader) {
-	buffer := make([]byte, 32*1024)
-	for {
-		count, err := printed.Read(buffer)
-		if count > 0 {
-			table.outputs.Printed(processID, append([]byte(nil), buffer[:count]...))
-		}
-		if err != nil {
-			return
-		}
-	}
 }
 
 // copyLog hands on each piece of a container's log under the name of the stream it was printed on, past the bytes the

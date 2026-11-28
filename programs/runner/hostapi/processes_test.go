@@ -108,7 +108,7 @@ func stopAndWait(daemon *dockermock.Daemon, table *ProcessTable) {
 func openInstruction(t *testing.T, processID, restart, image string) Instruction {
 	t.Helper()
 	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096,
-		Type:    "terminal",
+		Type:    "pipe",
 		Restart: restart,
 		Argv:    []string{"mock-program"},
 		Container: &host.ContainerManifest{
@@ -119,7 +119,6 @@ func openInstruction(t *testing.T, processID, restart, image string) Instruction
 			Workdir:        "/workspace",
 			IsReadOnlyRoot: true,
 			Network:        "journal-net-" + processID,
-			IsAttachable:   true,
 			Budgets:        host.ContainerBudgets{CPUCores: 1, MemoryBytes: 1 << 30, Processes: 64, OpenFiles: 256},
 			Mounts:         []host.ContainerMount{{Type: host.MountBind, Source: t.TempDir(), Target: "/workspace"}},
 		},
@@ -319,8 +318,6 @@ func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *t
 	}
 	before, after := &sentChunks{}, &sentChunks{}
 	instruction := openInstruction(t, "turn", "never", mockImage)
-	instruction.Payload = strings.Replace(instruction.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
-	instruction.Payload = strings.Replace(instruction.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
 	if _, err := carry(testInstructions{ProcessTable: open(before)}, "open_container")(context.Background(), instruction); err != nil {
 		t.Fatal(err)
 	}
@@ -355,8 +352,6 @@ func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.
 	sent := &sentChunks{}
 	table := OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
 	instruction := openInstruction(t, "probe", "never", mockImage)
-	instruction.Payload = strings.Replace(instruction.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
-	instruction.Payload = strings.Replace(instruction.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
 
 	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), instruction); err != nil {
 		t.Fatal(err)
@@ -480,41 +475,25 @@ func TestAHealedProcessRunsItsRestartArgvOnceItsFileExistsUnderItsFolder(t *test
 	}
 }
 
-// A native terminal lost with its host is ended and reported lost only once its process is gone, so the journal never
-// opens it again while the old one still runs.
-func TestATerminalLostWithItsHostIsReportedLostOnlyOnceItsProcessEnded(t *testing.T) {
-	containers, err := host.ContainersOn(dockermock.Start(t, mockImage).Host(), host.ContainerRules{Arrangement: host.Local})
-	if err != nil {
-		t.Fatal(err)
-	}
-	state, ended := t.TempDir(), filepath.Join(t.TempDir(), "ended")
-	open := func(reports *sentReports) *ProcessTable {
-		queue, err := OpenReportQueue(t.TempDir(), reports.send)
-		if err != nil {
-			t.Fatal(err)
-		}
-		runQueue(t, queue)
-		return OpenProcessTable(state, containers, queue, NewOutputs(state, (&sentChunks{}).send, time.Now))
-	}
-	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "terminal", Restart: "never", Folder: t.TempDir(),
-		Size: TerminalSize{Columns: 40, Rows: 5},
-		Argv: []string{"sh", "-c", `trap 'touch "$0"; exit 0' HUP; while true; do sleep 0.05; done`, ended}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	before := open(&sentReports{})
-	if _, err := carry(testInstructions{ProcessTable: before}, "open_process")(context.Background(), Instruction{ID: "open-t", Type: "open_process", ProcessID: "t",
-		Payload: string(plan)}); err != nil {
-		t.Fatal(err)
-	}
-	reports := &sentReports{}
-
-	if err := open(reports).Adopt(context.Background()); err != nil {
-		t.Fatal(err)
-	}
-
-	reports.waitFor(t, "lost")
-	if _, err := os.Stat(ended); err != nil {
-		t.Fatalf("the terminal was reported lost before its process ended: %v", err)
+func TestTheRunnerRefusesToOpenATerminal(t *testing.T) {
+	for _, mode := range []string{"serve", "relay"} {
+		t.Run(mode, func(t *testing.T) {
+			table := OpenProcessTable(t.TempDir(), host.Containers{}, nil, nil)
+			if mode == "relay" {
+				table.AllowOnly(&AllowedPrograms{})
+			}
+			for _, name := range []string{"open_container", "open_process"} {
+				t.Run(name, func(t *testing.T) {
+					order := openInstruction(t, "terminal", "never", mockImage)
+					order.Type = name
+					order.Payload = strings.Replace(order.Payload, `"type":"pipe"`, `"type":"terminal"`, 1)
+					_, err := carry(testInstructions{ProcessTable: table}, name)(t.Context(), order)
+					var refusal RefusalError
+					if !errors.As(err, &refusal) || refusal.Refusal != Unsafe || refusal.Reason != "the host opens no terminal" {
+						t.Fatalf("opening a terminal returned %v", err)
+					}
+				})
+			}
+		})
 	}
 }
