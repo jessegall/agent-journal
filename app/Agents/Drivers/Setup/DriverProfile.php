@@ -54,9 +54,13 @@ final readonly class DriverProfile
         return $this->setup->family;
     }
 
+    /**
+     * The build the driver runs: the one its image folder pins, which a family a module adds shares with the driver
+     * it runs like.
+     */
     public function build(): string
     {
-        return $this->builds->versionOf($this->setup->family);
+        return $this->builds->versionOf($this->setup->image->family());
     }
 
     /**

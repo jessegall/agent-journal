@@ -21,7 +21,10 @@ use App\Support\Drivers\AccountConfigurationWrite;
 use App\Support\Drivers\CodexFolderTrust;
 use App\Support\Drivers\CodexJournalServer;
 
+use function Tools\Accounts\pinned_version;
+
 require __DIR__.'/../../vendor/autoload.php';
+require __DIR__.'/native-evidence.php';
 
 $request = json_decode((string) fgets(STDIN), true, flags: JSON_THROW_ON_ERROR);
 $workingRoots = realpath((string) $request['working_roots']);
@@ -42,7 +45,7 @@ if (! is_dir($root) && ! mkdir($root, 0o700)) {
 
 $settings = array_map(
     static fn (string $value): string => sprintf('"%s"', addcslashes($value, '"\\')),
-    DriverCompatibility::pinned(DefaultDrivers::CODEX)->settings,
+    DriverCompatibility::pinned(DefaultDrivers::CODEX, pinned_version(DefaultDrivers::CODEX))->settings,
 );
 new AccountConfigurationWrite()->prepare(
     (string) $request['account'],

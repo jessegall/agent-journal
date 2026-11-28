@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
-use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Setup\DriverImage;
 use App\Agents\Drivers\Setup\DriverImageRecipe;
 use App\Agents\Drivers\Setup\DriverImageRecipes;
@@ -65,8 +64,8 @@ final class DriverImageRecipeTest extends TestCase
     {
         $recipes = $this->journal->service(DriverImageRecipes::class);
 
-        $codex = $recipes->of(DefaultDrivers::CODEX, DriverImage::at('.docker/drivers/codex'), self::BASE);
-        $again = $recipes->of(DefaultDrivers::CODEX, DriverImage::at('.docker/drivers/codex'), self::BASE);
+        $codex = $recipes->of(DriverImage::at('.docker/drivers/codex'), self::BASE);
+        $again = $recipes->of(DriverImage::at('.docker/drivers/codex'), self::BASE);
 
         $this->assertSame([$codex->digest, '0.165.0'], [$again->digest, $codex->version]);
         $this->assertStringContainsString('Dockerfile', $codex->context);

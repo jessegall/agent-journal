@@ -96,10 +96,14 @@ final class CodexTest extends TestCase
         $this->assertTrue($input->stop->isAfterRefusedStop);
     }
 
-    public function test_a_journal_allow_answers_allow_so_no_approval_is_asked(): void
+    /**
+     * Codex refuses an allow decision that carries no rewritten input, so a journal allow is told as no decision,
+     * which lets the call through.
+     */
+    public function test_a_journal_allow_is_told_as_no_decision(): void
     {
         $this->assertSame(
-            '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}',
+            '{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}',
             $this->render('shell command', Decision::allow())->stdout,
         );
     }

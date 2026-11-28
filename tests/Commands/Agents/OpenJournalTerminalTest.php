@@ -81,7 +81,8 @@ final class OpenJournalTerminalTest extends TestCase
             ->showDriverArrangements()
             ->arrangeContainedJournal()
             ->idleAgent('Driven')
-            ->enrollContainedHost('Box', [base_path()]);
+            ->enrollContainedHost('Box', [base_path()])
+            ->readyDriverImagesOn('Box');
         $this->proveTerminalOn('Box');
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
             ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
@@ -99,7 +100,7 @@ final class OpenJournalTerminalTest extends TestCase
         );
     }
 
-    public function test_a_contained_terminal_runs_its_hooks_from_its_managed_settings_with_their_reply_file(): void
+    public function test_a_contained_terminal_is_handed_no_managed_policy_and_runs_its_hooks_with_their_reply_file(): void
     {
         $this->journal
             ->owner()
@@ -107,22 +108,22 @@ final class OpenJournalTerminalTest extends TestCase
             ->showDriverArrangements()
             ->arrangeContainedJournal()
             ->idleAgent('Driven')
-            ->enrollContainedHost('Box', [base_path()]);
+            ->enrollContainedHost('Box', [base_path()])
+            ->readyDriverImagesOn('Box');
         $this->proveTerminalOn('Box');
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
             ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
 
         [$open] = $this->journal->hostInstructionsOf('terminal');
-        $files = array_column($this->journal->payloadOf($open)['files'], null, 'name');
-        $managed = json_decode($files['managed-settings.json']['content'], true, flags: JSON_THROW_ON_ERROR);
-        $settings = json_decode($files['settings.json']['content'], true, flags: JSON_THROW_ON_ERROR);
+        $files = $this->archivedFiles($this->journal->payloadOf($open)['container']['preparations']);
+        $settings = json_decode($files['settings.json'], true, flags: JSON_THROW_ON_ERROR);
 
+        // The Claude Code driver image holds the managed policy, so a start is handed none.
         $this->journal->assertResult(
-            [true, $settings['hooks']['SessionStart'], '/opt/journal/bin/journal-hook claude-code {folder:files}/hook-replies.json'],
+            [false, '/opt/journal/bin/journal-hook claude-code /tmp/journal-session/hook-replies.json'],
             [
-                $files['managed-settings.json']['template'],
-                $managed['hooks']['SessionStart'],
-                $managed['hooks']['SessionStart'][0]['hooks'][0]['command'],
+                array_key_exists('managed-settings.json', $files),
+                $settings['hooks']['SessionStart'][0]['hooks'][0]['command'],
             ],
         );
     }
@@ -166,5 +167,33 @@ final class OpenJournalTerminalTest extends TestCase
         ));
 
         return [$opened, $start];
+    }
+
+    /**
+     * The plan files a contained start's preparations hand its files folder, by name, read from their tar archive.
+     *
+     * @param  list<array<string, mixed>>  $preparations
+     * @return array<string, string>
+     */
+    private function archivedFiles(array $preparations): array
+    {
+        $files = [];
+
+        foreach ($preparations as $preparation) {
+            $archive = (string) base64_decode((string) ($preparation['input'] ?? ''), true);
+
+            for ($offset = 0; $offset + 512 <= strlen($archive);) {
+                $name = rtrim(substr($archive, $offset, 100), "\0");
+                $size = (int) octdec(rtrim(substr($archive, $offset + 124, 12), "\0 "));
+
+                if ($name === '') {
+                    break;
+                }
+                $files[$name] = substr($archive, $offset + 512, $size);
+                $offset += 512 + (int) ceil($size / 512) * 512;
+            }
+        }
+
+        return $files;
     }
 }

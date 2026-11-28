@@ -21,6 +21,7 @@ use function Tools\Accounts\journal_account;
 use function Tools\Accounts\judged;
 use function Tools\Accounts\missing;
 use function Tools\Accounts\pinned_build_item;
+use function Tools\Accounts\pinned_version;
 use function Tools\Accounts\print_evidence;
 use function Tools\Accounts\protected_host_items;
 use function Tools\Accounts\read_options;
@@ -29,7 +30,7 @@ use function Tools\Accounts\run_program;
 require __DIR__.'/../../vendor/autoload.php';
 require __DIR__.'/native-evidence.php';
 
-$compatibility = DriverCompatibility::pinned(DefaultDrivers::CODEX);
+$compatibility = DriverCompatibility::pinned(DefaultDrivers::CODEX, pinned_version(DefaultDrivers::CODEX));
 $options = read_options(array_slice($argv, 1), 'codex');
 $program = $options['program'];
 $accountA = journal_account($options['accounts_root'], $options['account_a']);

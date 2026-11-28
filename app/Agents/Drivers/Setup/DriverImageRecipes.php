@@ -22,7 +22,7 @@ final readonly class DriverImageRecipes
     /**
      * @throws DriverImageRecipeInvalid for a link in the folder or a path no recipe may carry
      */
-    public function of(string $family, DriverImage $image, string $base): DriverImageRecipe
+    public function of(DriverImage $image, string $base): DriverImageRecipe
     {
         $folder = FilePath::in(Place::Project, $image->folder);
         $files = [];
@@ -39,6 +39,6 @@ final readonly class DriverImageRecipes
             }
         }
 
-        return DriverImageRecipe::of($image->folder, $files, $base, $this->builds->versionOf($family));
+        return DriverImageRecipe::of($image->folder, $files, $base, $this->builds->versionOf($image->family()));
     }
 }

@@ -16,4 +16,12 @@ final readonly class DriverImage
     {
         return new self($folder);
     }
+
+    /**
+     * The driver family whose image this folder builds, the folder's own name under .docker/drivers.
+     */
+    public function family(): string
+    {
+        return basename($this->folder);
+    }
 }

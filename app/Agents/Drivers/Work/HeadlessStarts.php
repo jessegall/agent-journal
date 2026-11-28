@@ -124,7 +124,7 @@ final readonly class HeadlessStarts
      */
     public function clientSettingsOf(AgentRuntime $runtime): AgentClientSettings
     {
-        $session = $runtime->session;
+        $session = $runtime->loadMissing('session')->session;
         $token = $runtime->claimStartGrant() ?? $this->tokens->rotate($session);
         $profile = new StartProfilePin($session->profile_key, $session->profile_revision);
 

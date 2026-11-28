@@ -33,7 +33,24 @@ trait UsesTemporaryPlaces
         config([$place->rootSetting() => $real]);
         $this->app->forgetInstance(Files::class);
 
+        if ($place === Place::Project) {
+            $this->keepDriverPins($real);
+        }
+
         return $real;
+    }
+
+    /**
+     * A project moved to a temporary folder is still this journal's, which pins each driver in its image folder's
+     * VERSION file.
+     */
+    private function keepDriverPins(string $project): void
+    {
+        foreach (File::glob(base_path('.docker/drivers/*/VERSION')) as $pin) {
+            $kept = $project.'/'.substr($pin, strlen(base_path()) + 1);
+            File::ensureDirectoryExists(dirname($kept));
+            File::copy($pin, $kept);
+        }
     }
 
     protected function tearDownUsesTemporaryPlaces(): void

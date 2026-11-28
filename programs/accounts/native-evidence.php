@@ -83,6 +83,14 @@ final readonly class InstalledBuild
 }
 
 /**
+ * The driver's pinned build, from its image folder's VERSION file: the one place a driver's version is written.
+ */
+function pinned_version(string $family): string
+{
+    return trim((string) file_get_contents(__DIR__."/../../.docker/drivers/{$family}/VERSION"));
+}
+
+/**
  * @param  list<string>  $arguments
  * @return array{
  *     program: string,
