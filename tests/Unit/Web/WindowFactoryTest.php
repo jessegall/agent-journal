@@ -8,7 +8,6 @@ use App\Web\Creation\Exceptions\InvalidBuilder;
 use App\Web\Creation\Exceptions\MissingBuilder;
 use App\Web\Creation\PageFactory;
 use App\Web\Creation\WindowFactory;
-use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 use Tests\Fixtures\Web\Types\BookData;
 use Tests\Fixtures\Web\Types\BookPageBuilder;
@@ -20,7 +19,7 @@ final class WindowFactoryTest extends TestCase
 {
     public function test_a_registered_window_builds_its_exact_type(): void
     {
-        $factory = new WindowFactory(new Container());
+        $factory = new WindowFactory();
         $factory->register(BookData::class, BookWindowBuilder::class);
 
         $book = $factory->create(BookData::class, Request::create('/book'));
@@ -31,10 +30,9 @@ final class WindowFactoryTest extends TestCase
 
     public function test_a_page_registration_never_supplies_a_window(): void
     {
-        $container = new Container();
-        $pages = new PageFactory($container);
+        $pages = new PageFactory();
         $pages->register(BookData::class, BookPageBuilder::class);
-        $windows = new WindowFactory($container);
+        $windows = new WindowFactory();
         $this->expectExceptionObject(MissingBuilder::forType('window', BookData::class));
 
         $windows->create(BookData::class, Request::create('/book'));
@@ -42,7 +40,7 @@ final class WindowFactoryTest extends TestCase
 
     public function test_a_duplicate_window_registration_is_refused(): void
     {
-        $factory = new WindowFactory(new Container());
+        $factory = new WindowFactory();
         $factory->register(BookData::class, BookWindowBuilder::class);
         $this->expectExceptionObject(InvalidBuilder::duplicate('window', BookData::class));
 
@@ -53,12 +51,12 @@ final class WindowFactoryTest extends TestCase
     {
         $this->expectExceptionObject(InvalidBuilder::registration('window', BookData::class, BookPageBuilder::class));
 
-        (new WindowFactory(new Container()))->register(BookData::class, BookPageBuilder::class);
+        new WindowFactory()->register(BookData::class, BookPageBuilder::class);
     }
 
     public function test_a_window_builder_cannot_return_a_different_type(): void
     {
-        $factory = new WindowFactory(new Container());
+        $factory = new WindowFactory();
         $factory->register(ShelfPage::class, BookWindowBuilder::class);
         $this->expectExceptionObject(
             InvalidBuilder::result(BookWindowBuilder::class, BookData::class, ShelfPage::class),

@@ -11,6 +11,7 @@ use App\Web\Creation\Exceptions\InvalidSurface;
 use App\Web\Creation\PageFactory;
 use App\Web\Creation\SurfaceDefinition;
 use App\Web\Creation\WindowFactory;
+use Domain\Rules\RulesDomain;
 use Illuminate\Container\Container;
 use Tests\Fixtures\Modules\Handbook\HandbookDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
@@ -21,16 +22,21 @@ use Tests\TestCase;
 
 final class DeclaredSurfaceCheckTest extends TestCase
 {
+    protected static function bootedDomains(): array
+    {
+        // The notes module requires the rules domain, which its entry checks as it is read.
+        return [RulesDomain::class];
+    }
+
     public function test_registration_reads_the_concrete_return_without_resolving_the_builder(): void
     {
-        $container = new Container();
-        $pages = new PageFactory($container);
-        $check = new DeclaredSurfaceCheck($pages, new WindowFactory($container));
+        $pages = new PageFactory();
+        $check = new DeclaredSurfaceCheck($pages, new WindowFactory());
 
         $check->registerPage($this->library(), 'library.book', $this->book());
 
         $this->assertSame(BookPageBuilder::class, $pages->builderFor(BookData::class));
-        $this->assertFalse($container->resolved(BookPageBuilder::class));
+        $this->assertFalse(Container::getInstance()->resolved(BookPageBuilder::class));
     }
 
     public function test_a_repeat_names_the_declaration_and_type(): void
@@ -67,9 +73,7 @@ final class DeclaredSurfaceCheckTest extends TestCase
 
     private function collector(): DeclaredSurfaceCheck
     {
-        $container = new Container();
-
-        return new DeclaredSurfaceCheck(new PageFactory($container), new WindowFactory($container));
+        return new DeclaredSurfaceCheck(new PageFactory(), new WindowFactory());
     }
 
     private function library(): DomainClient
