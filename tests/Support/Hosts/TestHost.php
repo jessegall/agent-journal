@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Hosts;
 
 use App\Agents\ContainerManifest;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Work\RuntimeStarts;
 use App\Agents\Enums\WorkspaceUse;
@@ -17,9 +18,12 @@ use App\Models\Agents\AgentRuntime;
 use App\Projects\Enums\ArrangementType;
 use App\Sessions\AgentClientSettings;
 use App\Support\HelperMounts;
+use App\Support\Recordings\Scenarios\Scenario;
+use App\Support\Recordings\Scenarios\ScenarioPlayer;
 use App\Values\ExecutionBudgets;
 use App\Values\HostProcessPlan;
 use Closure;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory;
 use PHPUnit\Framework\Assert;
@@ -30,9 +34,6 @@ use Tests\Support\Hosts\Steps\Contracts\HostStep;
 use Tests\Support\Hosts\Steps\ReleasesTurns;
 use Tests\Support\Mocks\Mock;
 use Tests\Support\Recordings\PlayedScenario;
-use App\Agents\Drivers\Contracts\DriverCatalogue;
-use App\Support\Recordings\Scenarios\Scenario;
-use App\Support\Recordings\Scenarios\ScenarioPlayer;
 use Tests\Support\Recordings\TerminalCapture;
 use Tests\Support\Seeding\TestJournal;
 
@@ -594,7 +595,7 @@ final class TestHost
         ];
 
         if ($this->terminalScenario !== null) {
-            $config = $this->journal->service(\Illuminate\Contracts\Config\Repository::class);
+            $config = $this->journal->service(Repository::class);
             $environment = [
                 ...$environment,
                 'APP_ENV' => 'local',

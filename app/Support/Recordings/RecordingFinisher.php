@@ -115,6 +115,7 @@ final readonly class RecordingFinisher
         ));
 
         [$terminalOpenings, $calls] = $this->partitionOpenings($windowed);
+
         $all = [
             ...$calls,
             ...array_values($this->driverExchanges->cutFrom($hostEvents, $fakes, $terminalOpenings)),
@@ -153,7 +154,10 @@ final readonly class RecordingFinisher
             }
         }
 
-        return [$terminals, $calls];
+        return [
+            $terminals,
+            $calls,
+        ];
     }
 
     /**

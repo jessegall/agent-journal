@@ -268,6 +268,7 @@ final class ScenarioRun
     {
         $agentId = $this->connectedBinding()?->main_agent_id
             ?? throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, 'the binding has no main agent');
+
         $this->holdAgent($name, $agentId);
 
         return $this->agentNamed($name);

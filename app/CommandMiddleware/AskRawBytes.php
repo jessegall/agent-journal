@@ -32,11 +32,13 @@ final readonly class AskRawBytes implements CommandMiddleware
 
         if ($command instanceof RecordOwnTerminalCommand) {
             $terminal = $next($call->replacedBy($command->askingRawBytes()));
+
             $opening = RecordingOpening::ofProcess(
                 $terminal->processId,
                 $terminal->plan->payload(),
                 RecordingDrafts::moment(),
             );
+
             $this->drafts->begin(Wire::Driver, $terminal->processId, $opening->withEnvironmentNames());
 
             return $terminal;

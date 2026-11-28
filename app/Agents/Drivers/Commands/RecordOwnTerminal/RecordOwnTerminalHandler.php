@@ -20,8 +20,10 @@ final readonly class RecordOwnTerminalHandler implements CommandHandler
     public function handle(RecordOwnTerminalCommand $command): RecordedOwnTerminal
     {
         $runtime = AgentRuntime::query()->withSessionAgent()->whereKey($command->runtimeId)->lockForUpdate()->sole();
+
         $start = SessionProcess::findLockedCurrentOf($runtime->agent_session_id)
             ?? throw SessionProcessUnknown::forSession($runtime->agent_session_id);
+
         $terminal = $runtime->hostProcesses()->live()->ofPurposes([HostProcessPurpose::AgentTerminal])->first();
         $plan = $this->plans->of($runtime);
 

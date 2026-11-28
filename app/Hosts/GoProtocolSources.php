@@ -125,9 +125,11 @@ final readonly class GoProtocolSources
         foreach ($this->protocol->localLink as $message => $shape) {
             $name = $this->goName("local_link_{$message}");
             $meaning = "the {$message} message on the local terminal link";
+
             $parts[] = is_string($shape)
                 ? "// {$name} is {$meaning}.\ntype {$name} = {$this->goName($shape, $package)}"
                 : $this->struct($name, $shape, $package, $meaning);
+
             $parts[] = <<<GO
                 // Read{$name} reads {$meaning} and refuses invalid fields.
                 func Read{$name}(body []byte) ({$name}, error) {

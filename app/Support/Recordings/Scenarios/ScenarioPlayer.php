@@ -358,6 +358,7 @@ final readonly class ScenarioPlayer
 
         $agent = $run->useConnectedMainAgent((string) $step->agent);
         $previous = $agent->current_session_id;
+
         $status = $changeMachine([
             self::START_TERMINAL,
             $run->scenario->driver(),
@@ -511,7 +512,11 @@ final readonly class ScenarioPlayer
     private function changeMachine(array $argv): int
     {
         if ($argv === [self::CONNECT_PROJECT]) {
-            $argv = [...$argv, $this->origin->canonical(), $this->releases->current()->version];
+            $argv = [
+                ...$argv,
+                $this->origin->canonical(),
+                $this->releases->current()->version,
+            ];
         }
 
         $request = FilePath::in(Place::Project, self::MACHINE_CHANGE);
