@@ -1,0 +1,7 @@
+{
+    "description": "A connected folder's relay reports its presence and the journal acknowledges its boot and setup",
+    "steps": [
+        {"do": "connect-project"},
+        {"do": "wait-for", "fact": "connected", "seconds": 60}
+    ]
+}

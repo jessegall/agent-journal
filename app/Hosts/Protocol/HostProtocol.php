@@ -124,6 +124,16 @@ final readonly class HostProtocol
                 null,
                 204,
             ),
+            new RelayCall(
+                'notify_presence',
+                'POST',
+                '#^/host/bindings/[^/]+/presence$#',
+                Payloads\HostBindingPresencePayload::class,
+                Payloads\HostBindingPresenceReceiptPayload::class,
+                [],
+                null,
+                200,
+            ),
         ];
     }
 }

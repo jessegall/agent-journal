@@ -6,12 +6,15 @@
             "shared_calls": ["claim_instruction", "answer_instruction", "pull_private_value", "notify_process_output", "notify_process_report", "notify_inventory", "notify_heartbeat", "notify_project_read"],
             "calls": {
                 "pending_workspace_reads": { "route": "workspace-reads.pending", "method": "GET", "path": "/host/workspace-reads", "body": null, "reply": "workspace_reads" },
-                "report_workspace_read": { "route": "workspace-reads.report", "method": "POST", "path": "/host/workspace-reads/{reference}", "body": "workspace_read_report", "reply": null }
+                "report_workspace_read": { "route": "workspace-reads.report", "method": "POST", "path": "/host/workspace-reads/{reference}", "body": "workspace_read_report", "reply": null },
+                "notify_presence": { "route": "bindings.presence", "method": "POST", "path": "/host/bindings/{binding}/presence", "body": "binding_presence", "reply": "binding_presence_receipt" }
             },
             "types": {
                 "workspace_reads": { "pending": "list<workspace_read>" },
                 "workspace_read": { "reference": "string", "actor_id": "string", "work": "string" },
-                "workspace_read_report": { "available": "bool", "dirty": "bool", "clean": "bool", "generation": "uint64", "binding": "string?", "checkout": "string?", "head": "string?", "reason": "string?" }
+                "workspace_read_report": { "available": "bool", "dirty": "bool", "clean": "bool", "generation": "uint64", "binding": "string?", "checkout": "string?", "head": "string?", "reason": "string?" },
+                "binding_presence": { "bootId": "string", "sequence": "int", "release": "string", "provisioning": "string", "isTakeover": "bool?", "setupGeneration": "int?", "isReconciled": "bool?" },
+                "binding_presence_receipt": { "bindingId": "string", "generation": "int", "setupGeneration": "int", "serverTime": "string", "presenceExpiresAt": "string", "authorityGeneration": "int", "readiness": "string", "lastContactAt": "string|null" }
             }
         }
     },

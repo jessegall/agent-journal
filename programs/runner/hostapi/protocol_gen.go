@@ -459,3 +459,26 @@ type WorkspaceReadReport struct {
 	Head       string `json:"head,omitempty"`
 	Reason     string `json:"reason,omitempty"`
 }
+
+// BindingPresence is the binding_presence of host protocol 1.
+type BindingPresence struct {
+	BootID          string `json:"bootId"`
+	Sequence        int    `json:"sequence"`
+	Release         string `json:"release"`
+	Provisioning    string `json:"provisioning"`
+	IsTakeover      bool   `json:"isTakeover,omitempty"`
+	SetupGeneration int    `json:"setupGeneration,omitempty"`
+	IsReconciled    bool   `json:"isReconciled,omitempty"`
+}
+
+// BindingPresenceReceipt is the binding_presence_receipt of host protocol 1.
+type BindingPresenceReceipt struct {
+	BindingID           string  `json:"bindingId"`
+	Generation          int     `json:"generation"`
+	SetupGeneration     int     `json:"setupGeneration"`
+	ServerTime          string  `json:"serverTime"`
+	PresenceExpiresAt   string  `json:"presenceExpiresAt"`
+	AuthorityGeneration int     `json:"authorityGeneration"`
+	Readiness           string  `json:"readiness"`
+	LastContactAt       *string `json:"lastContactAt"`
+}

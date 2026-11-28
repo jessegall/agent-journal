@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Route;
 
 // A connected project's relay speaks the remote-project protocol and needs no runtime to report it is present.
 Route::post('/host/bindings/{binding}/presence', BindingPresenceController::class)
-    ->middleware('journal.host:'.HostRouteRole::Relay->value)
+    ->middleware(['journal.host:'.HostRouteRole::Relay->value, 'record.calls:host'])
     ->whereUlid('binding')
     ->name('agents.host.bindings.presence');
 

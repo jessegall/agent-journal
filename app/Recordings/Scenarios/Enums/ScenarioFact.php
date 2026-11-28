@@ -30,6 +30,7 @@ enum ScenarioFact: string
     case SignInFailed = 'sign-in-failed';
     case Installed = 'installed';
     case Connected = 'connected';
+    case RelayHeartbeat = 'relay-heartbeat';
     case InstructionsAnswered = 'instructions-answered';
 
     public function isAboutSession(): bool
@@ -67,6 +68,7 @@ enum ScenarioFact: string
             self::SignInFailed => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isFailed() === true,
             self::Installed => $run->installerExit() === 0 && Host::query()->exists(),
             self::Connected => $run->isConnected(),
+            self::RelayHeartbeat => $run->hasRelayHeartbeat(),
             self::InstructionsAnswered => HostInstruction::areAllAnsweredSince($run->startedAt),
         };
     }
