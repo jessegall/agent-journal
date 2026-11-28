@@ -26,6 +26,7 @@ use Tests\Support\Drivers\HandTypedProcessDriver;
 use Tests\Support\Entries\Attributes\OverTheWire;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostProcess;
+use Tests\Support\Recordings\RecordedTurn;
 use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -52,12 +53,6 @@ final class SessionLifeTest extends TestCase
      * How many times keys a moved screen refused are typed again.
      */
     private const int TYPING_TRIES = 5;
-
-    private const string FIRST_MESSAGE = 'Check your pending journal work.';
-
-    private const string CLAUDE_ANSWER = 'Your pending journal work is empty.';
-
-    private const string CODEX_ANSWER = 'Your journal overview shows no pending work:';
 
     private const array TABLES = [
         'hosts',
@@ -106,28 +101,34 @@ final class SessionLifeTest extends TestCase
 
     public function test_a_worker_that_dies_after_ordering_the_paste_is_replaced_without_a_second_paste(): void
     {
-        $this->arrangeTerminalHost()->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5');
+        [$first] = $this->journal->recordedTurns('claude-code');
+        $this->arrangeTerminalHost()->openTerminal(
+            'Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', $first,
+        );
 
         $this->journal
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
                 ->beginWorker()
                 ->driveUntil($this->onePasteOn('terminal'))
                 ->beginWorker()
-                ->driveUntil($this->answeredOn('terminal', self::CLAUDE_ANSWER), seconds: 20))
+                ->driveUntil($first->answeredOn('terminal'), seconds: 20))
             ->assertJournal($this->onePasteOn('terminal'))
             ->assertJournal(fn (Assert $journal) => $journal->where('hostProcesses.terminal.workerGeneration', 2));
     }
 
     public function test_a_journal_that_dies_mid_delivery_has_the_message_typed_and_answered_once_it_is_back(): void
     {
-        $this->arrangeTerminalHost()->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5');
+        [$first] = $this->journal->recordedTurns('claude-code');
+        $this->arrangeTerminalHost()->openTerminal(
+            'Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', $first,
+        );
 
         $this->journal
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
                 ->driveUntil($this->onePasteOn('terminal')))
             ->testHost(fn (TestHost $mac) => $mac->restartJournal())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
-                ->driveUntil($this->answeredOn('terminal', self::CLAUDE_ANSWER), HostInstruction::CLAIM_SECONDS * 2))
+                ->driveUntil($first->answeredOn('terminal'), HostInstruction::CLAIM_SECONDS * 2))
             ->assertJournal($this->onePasteOn('terminal'));
     }
 
@@ -147,7 +148,7 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_terminal_driven_by_the_journal_answers_its_message_and_stops(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', self::CLAUDE_ANSWER)
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5')
             ->asSystem($this->stopOf('terminal'));
 
         $this->journal
@@ -158,7 +159,7 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_terminal_lost_with_its_hosts_restart_is_opened_again_resuming_its_conversation(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', self::CLAUDE_ANSWER)
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5')
             ->testHost(fn (TestHost $mac) => $mac->restartHost())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Lost))
             ->withAgent('Terminal', fn (TestAgent $terminal) => $terminal
@@ -175,7 +176,7 @@ final class SessionLifeTest extends TestCase
     public function test_a_codex_terminal_driven_by_the_journal_answers_its_message_and_stops(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5', self::CODEX_ANSWER)
+            ->answerTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5')
             ->asSystem($this->stopOf('codex'));
 
         $this->journal
@@ -191,9 +192,11 @@ final class SessionLifeTest extends TestCase
         // presses Escape.
         $this->arrangeTerminalHost()->journal->testHost(fn (TestHost $mac) => $mac
             ->playClaudeTerminal('terminal-interrupt'));
-        $this->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5')
+        [$claude] = $this->journal->recordedTurns('claude-code');
+        [$codex] = $this->journal->recordedTurns('codex');
+        $this->openTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', $claude)
             ->interruptRunningTurn('Terminal', 'terminal')
-            ->openTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5')
+            ->openTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5', $codex)
             ->interruptRunningTurn('Codex', 'codex');
 
         $this->journal->assertJournal(fn (Assert $journal) => $journal
@@ -204,8 +207,8 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_and_a_codex_terminal_lost_with_their_hosts_restart_are_both_opened_again(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', self::CLAUDE_ANSWER);
-        $this->answerTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5', self::CODEX_ANSWER)
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5');
+        $this->answerTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5')
             ->testHost(fn (TestHost $mac) => $mac->restartHost())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Lost))
             ->hostProcess('codex', fn (TestHostProcess $codex) => $codex->waitFor(HostProcessStatus::Lost))
@@ -228,7 +231,8 @@ final class SessionLifeTest extends TestCase
         $healed = fn (int $times) => fn (Assert $journal) => $journal
             ->where('hostProcesses.terminal.generation', fn (int $generation) => $generation >= $times)
             ->where('testHost.claudeStarts', fn (array $starts) => count($starts) > $times);
-        $answered = $this->answeredOn('terminal', self::CLAUDE_ANSWER);
+        [$first] = $this->journal->recordedTurns('claude-code');
+        $answered = $first->answeredOn('terminal');
 
         $this->journal->owner()
             ->showDriverArrangements()
@@ -244,10 +248,10 @@ final class SessionLifeTest extends TestCase
         $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
             ->driveUntil($healed(1))
             ->driveUntil($this->composerShownOn('terminal')));
-        $this->typeTaken("\e[200~".self::FIRST_MESSAGE."\e[201~\r", fn (Assert $journal) => str_contains(
-            implode("\n", $journal->value('hostProcesses.terminal.rows') ?? []),
-            self::CLAUDE_ANSWER,
-        ));
+        $this->typeTaken(
+            $first->keys,
+            fn (Assert $journal) => $first->answeredIn($journal->value('hostProcesses.terminal.rows')),
+        );
         $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
             ->driveUntil($answered)
             ->driveUntil($this->stillOn('terminal')));
@@ -354,8 +358,7 @@ final class SessionLifeTest extends TestCase
     }
 
     /**
-     * Opens the agent's terminal of the driver, proves its start and drives it until a row of its screen is the
-     * answer.
+     * Opens the agent's terminal and drives both recorded messages through to their answers.
      */
     private function answerTerminal(
         string $agent,
@@ -363,18 +366,29 @@ final class SessionLifeTest extends TestCase
         string $driver,
         string $build,
         string|null $model,
-        string $answer,
     ): TestJournal {
-        return $this->openTerminal($agent, $name, $driver, $build, $model)->journal
-            ->hostProcess($name, fn (TestHostProcess $terminal) => $terminal
-                ->driveUntil($this->answeredOn($name, $answer), seconds: 20));
+        [$first, $second] = $this->journal->recordedTurns($driver);
+
+        return $this->openTerminal($agent, $name, $driver, $build, $model, $first)->journal
+            ->withAgent($agent, fn (TestAgent $session) => $session
+                ->process($name, fn (TestHostProcess $terminal) => $terminal
+                    ->driveUntil($first->answeredOn($name), seconds: 20))
+                ->deliver("second-turn-{$name}", $second->message)
+                ->process($name, fn (TestHostProcess $terminal) => $terminal
+                    ->driveUntil($second->answeredOn($name), seconds: 20)));
     }
 
     /**
      * Opens the agent's terminal of the driver with its first message and proves its start; the turn is running.
      */
-    private function openTerminal(string $agent, string $name, string $driver, string $build, string|null $model): self
-    {
+    private function openTerminal(
+        string $agent,
+        string $name,
+        string $driver,
+        string $build,
+        string|null $model,
+        RecordedTurn $first,
+    ): self {
         $this->journal->withAgent($agent, fn (TestAgent $terminal) => $terminal
             ->openRuntime(
                 'Mac',
@@ -384,7 +398,7 @@ final class SessionLifeTest extends TestCase
                 profile: $driver === 'codex' ? 'codex' : 'claude',
                 driverType: DriverType::Terminal,
                 model: $model,
-                firstMessage: self::FIRST_MESSAGE,
+                firstMessage: $first->message,
             )
             ->proveStart(HostProcessPurpose::AgentTerminal, $name));
 
@@ -509,17 +523,6 @@ final class SessionLifeTest extends TestCase
     {
         return fn (Assert $journal) => $journal
             ->where('agents.Driven.runtime.firstRequest.progress', RequestProgress::Applied);
-    }
-
-    /**
-     * The terminal's screen contains the answer of the recorded turn.
-     */
-    private function answeredOn(string $name, string $answer): Closure
-    {
-        return fn (Assert $journal) => $journal->where(
-            "hostProcesses.{$name}.rows",
-            fn (array|null $rows) => str_contains(implode("\n", $rows ?? []), $answer),
-        );
     }
 
     /**

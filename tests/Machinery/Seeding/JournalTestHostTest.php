@@ -35,8 +35,6 @@ final class JournalTestHostTest extends TestCase
     /**
      * What was typed into the recorded Claude Code terminal turn the mock Docker's containers play.
      */
-    private const string RECORDED_PROMPT = 'Check your pending journal work.';
-
     use CommitsHookRows;
     use WithActiveAccount;
 
@@ -249,9 +247,10 @@ final class JournalTestHostTest extends TestCase
 
     public function test_keys_typed_on_a_real_hosts_process_reach_its_program(): void
     {
+        [$turn] = $this->journal->recordedTurns('claude-code');
         $typed = fn (Assert $journal) => $journal->where(
             'hostProcesses.terminal.rows',
-            fn (array|null $rows) => str_contains(implode("\n", $rows ?? []), self::RECORDED_PROMPT),
+            fn (array|null $rows) => str_contains(implode("\n", $rows ?? []), $turn->message),
         );
 
         $this->journal
@@ -262,7 +261,7 @@ final class JournalTestHostTest extends TestCase
                 ->process('terminal', fn (TestHostProcess $terminal) => $terminal
                     ->waitFor(HostProcessStatus::Running)
                     ->driveUntil(fn (Assert $journal) => $journal->has('hostProcesses.terminal.rows'))
-                    ->type(self::RECORDED_PROMPT)
+                    ->type($turn->message)
                     ->driveUntil($typed)))
             ->assertJournal($typed)
             ->stopRunningHost();
