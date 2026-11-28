@@ -85,6 +85,22 @@ final readonly class RecordedEvent implements JsonSerializable
     }
 
     /**
+     * The host's output report this event asked with, none for any other event.
+     */
+    public function outputReport(): RecordedOutputReport|null
+    {
+        return $this->call === null ? null : RecordedOutputReport::askedBy($this->call);
+    }
+
+    /**
+     * The event asking with the report in place of the one it asked with.
+     */
+    public function withOutputReport(RecordedOutputReport $report): self
+    {
+        return $this->call === null ? $this : $this->withCall($this->call->withBody($report->body()));
+    }
+
+    /**
      * Whether this printed on the same stream as the other, with nothing between them, so the two are one chunk.
      */
     public function continues(self $other): bool

@@ -103,9 +103,13 @@ final readonly class RecordedCall implements JsonSerializable
      */
     public function fakedBy(RecordingFakes $fakes): self
     {
-        $body = $this->isMultiplexed()
-            ? MultiplexedStream::of($this->body)->changed($fakes->replaceIn(...))->bytes()
-            : $fakes->replaceIn($this->body);
+        // A host's output report carries what was printed in base64, which text faking never reads.
+        $report = RecordedOutputReport::askedBy($this);
+        $body = match (true) {
+            $report !== null => $fakes->replaceIn($report->fakedBy($fakes)->body()),
+            $this->isMultiplexed() => MultiplexedStream::of($this->body)->changed($fakes->replaceIn(...))->bytes(),
+            default => $fakes->replaceIn($this->body),
+        };
 
         return clone ($this, [
             'path' => $fakes->replaceIn($this->path),

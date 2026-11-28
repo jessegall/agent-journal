@@ -46,7 +46,7 @@ final class RecordedCallTest extends TestCase
 
     public function test_a_multiplexed_body_is_faked_frame_by_frame_with_each_length_written_anew(): void
     {
-        $lines = ["  \"configDirectory\": \"/home/journal/.account\",\n", "}\n"];
+        $lines = ["  \"configDirectory\": \"/Users/someone/.account\",\n", "}\n"];
         $body = implode('', array_map(fn (string $line) => "\1\0\0\0".pack('N', strlen($line)).$line, $lines));
         $request = Request::create('/v1.51/containers/journal-process-1/logs');
         $answer = new Response($body, 200, ['Content-Type' => MultiplexedStream::CONTENT_TYPE]);

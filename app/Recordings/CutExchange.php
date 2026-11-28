@@ -40,7 +40,7 @@ final readonly class CutExchange
     {
         $events = array_map(fn (RecordedEvent $event) => $event->fakedBy($fakes), $this->events);
 
-        return clone ($this, ['opening' => $this->opening->fakedBy($fakes), 'events' => $events]);
+        return clone ($this, ['opening' => $this->opening->fakedBy($fakes), 'events' => $this->reoffset($events)]);
     }
 
     /**
@@ -61,6 +61,40 @@ final readonly class CutExchange
     }
 
     /**
+     * The faked events with each output report's chunks at offsets moved by how much the faking lengthened or shortened
+     * the chunks of the same process before them, so a played process's output still runs on without a gap.
+     *
+     * @param  list<RecordedEvent>  $faked  this exchange's events, faked, in the same order
+     * @return list<RecordedEvent>
+     */
+    private function reoffset(array $faked): array
+    {
+        $shifts = [];
+
+        foreach ($this->events as $index => $event) {
+            $real = $event->outputReport();
+            $fakedReport = $faked[$index]->outputReport();
+
+            if ($real === null || $fakedReport === null) {
+                continue;
+            }
+
+            $shift = $shifts[$real->processId] ?? 0;
+            $chunkShifts = [];
+
+            foreach ($fakedReport->lengthChangesFrom($real) as $change) {
+                $chunkShifts[] = $shift;
+                $shift += $change;
+            }
+
+            $shifts[$real->processId] = $shift;
+            $faked[$index] = $faked[$index]->withOutputReport($fakedReport->shiftedBy($chunkShifts));
+        }
+
+        return array_values($faked);
+    }
+
+    /**
      * Every text the exchange holds, decoded, one to a line: its argv, folder and environment, what was typed and
      * printed, and each call's path and body, so a search for a real value finds it however it was sent.
      */
@@ -71,6 +105,7 @@ final readonly class CutExchange
                 $event->bytes,
                 $event->call->path ?? '',
                 $event->call->body ?? '',
+                $event->outputReport()?->printed() ?? '',
             ]),
             $this->events,
         );
