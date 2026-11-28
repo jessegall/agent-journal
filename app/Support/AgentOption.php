@@ -48,6 +48,8 @@ final readonly class AgentOption
         public string|null $sessionModel = null,
         // What holds the current runtime now, with the session and generation above it belongs to.
         public HoldReason $hold = HoldReason::None,
+        // The effort the session runs at; none without a session.
+        public string|null $sessionEffort = null,
     ) {}
 
     /**

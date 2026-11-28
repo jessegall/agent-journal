@@ -249,6 +249,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
             $session?->driver_label,
             $session?->model,
             $runtime === null ? HoldReason::None : $runtime->hold_reason,
+            sessionEffort: $session?->effort,
         );
     }
 }
