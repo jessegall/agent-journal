@@ -7,13 +7,13 @@ namespace App\Agents\Enums;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * What an agent's status lets a viewer do now, which the browser maps to its route or dialog.
+ * What an agent's status lets a viewer do now, which the browser maps to its route or dialog. A message starts or
+ * resumes a stopped agent, so no action does; Stop ends the session from the chat list and Interrupt stops the turn
+ * from the composer.
  */
 #[TypeScript]
 enum StatusActionType: string
 {
-    case Start = 'start';
-    case Resume = 'resume';
     case Retry = 'retry';
     case Switch = 'switch';
     case CheckStatus = 'check-status';
@@ -32,8 +32,6 @@ enum StatusActionType: string
     public function label(): string
     {
         return match ($this) {
-            self::Start => 'Start session',
-            self::Resume => 'Resume',
             self::Retry => 'Retry',
             self::Switch => 'Switch',
             self::CheckStatus => 'Check status',
@@ -43,7 +41,7 @@ enum StatusActionType: string
             self::CancelStart => 'Cancel start',
             self::RecheckSwitch => 'Check and switch',
             self::OpenTerminal => 'Open terminal',
-            self::Stop => 'Stop session',
+            self::Stop => 'End session',
             self::Interrupt => 'Interrupt',
         };
     }

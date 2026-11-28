@@ -10,6 +10,7 @@ use App\Agents\Enums\AgentAction;
 use App\Agents\Enums\AgentPresence;
 use App\Agents\ResumableConversation;
 use App\Exceptions\SessionOutdated;
+use App\Sessions\Enums\SessionActivityStatus;
 use App\Sessions\SessionStartOutcome;
 
 /**
@@ -60,5 +61,15 @@ final readonly class AgentOption
         if ($this->sessionId !== $sessionId) {
             throw SessionOutdated::forAgent($this->agentId);
         }
+    }
+
+    /**
+     * Whether a message to this agent starts its session: it has none, and no start or switch is under way.
+     */
+    public function isStartable(): bool
+    {
+        $state = $this->status->sessionState;
+
+        return $this->sessionId === null && ($state === SessionActivityStatus::Stopped || $state->isStartRefused());
     }
 }

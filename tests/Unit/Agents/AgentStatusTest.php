@@ -83,10 +83,7 @@ final class AgentStatusTest extends TestCase
                 self::stopped(self::startOutcome(StartDisposition::Refused, 'model-required')),
                 SessionActivityStatus::Refused,
                 'Start refused',
-                [
-                    'start',
-                    'dismiss',
-                ],
+                ['dismiss'],
             ],
             'lost reply' => [
                 self::stopped(self::startOutcome(StartDisposition::Accepted)),
@@ -104,7 +101,7 @@ final class AgentStatusTest extends TestCase
                 self::stopped(null),
                 SessionActivityStatus::Stopped,
                 'Stopped',
-                ['start'],
+                [],
             ],
             'replayed sessionless receipt' => [
                 self::stopped(self::startOutcome(StartDisposition::Refused, 'image-unverified')),
@@ -254,7 +251,6 @@ final class AgentStatusTest extends TestCase
             null,
             null,
             null,
-            false,
             $readiness->isUnverified(),
             readiness: $readiness,
         );
@@ -341,7 +337,6 @@ final class AgentStatusTest extends TestCase
             null,
             false,
             false,
-            false,
             true,
         );
 
@@ -369,7 +364,6 @@ final class AgentStatusTest extends TestCase
             null,
             null,
             null,
-            false,
             true,
             waitsForDriverImage: true,
         );
@@ -399,7 +393,6 @@ final class AgentStatusTest extends TestCase
             null,
             false,
             false,
-            false,
             true,
         );
 
@@ -424,7 +417,6 @@ final class AgentStatusTest extends TestCase
             null,
             null,
             null,
-            false,
             false,
             false,
             true,
@@ -462,7 +454,6 @@ final class AgentStatusTest extends TestCase
             null,
             null,
             false,
-            false,
             canReconcile: true,
         );
 
@@ -477,23 +468,20 @@ final class AgentStatusTest extends TestCase
 
     public function test_a_retired_agent_offers_no_lifecycle_command(): void
     {
-        $evidence = new AgentEvidence(true, null, null, null, null, false, null, null, null, true, false);
+        $evidence = new AgentEvidence(true, null, null, null, null, false, null, null, null, false);
 
         $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame([SessionActivityStatus::Retired, []], [$status->sessionState, $status->actions]);
     }
 
-    public function test_a_stopped_agent_with_a_saved_conversation_also_offers_resume(): void
+    public function test_a_stopped_agent_offers_no_start_or_resume_because_its_next_message_starts_it(): void
     {
-        $evidence = new AgentEvidence(false, null, null, null, null, false, null, null, null, true, false);
+        $evidence = new AgentEvidence(false, null, null, null, null, false, null, null, null, false);
 
         $status = AgentStatusRules::of($evidence, self::words(false));
 
-        $this->assertSame(
-            [StatusActionType::Start, StatusActionType::Resume],
-            array_map(fn (StatusAction $action) => $action->type, $status->actions),
-        );
+        $this->assertSame([SessionActivityStatus::Stopped, []], [$status->sessionState, $status->actions]);
     }
 
     private static function live(
@@ -515,7 +503,6 @@ final class AgentStatusTest extends TestCase
             $switch,
             $request,
             $startOutcome,
-            false,
             false,
             $isTerminal,
         );
@@ -552,7 +539,7 @@ final class AgentStatusTest extends TestCase
 
     private static function stopped(SessionStartOutcome|null $startOutcome): AgentEvidence
     {
-        return new AgentEvidence(false, null, null, null, null, false, null, null, $startOutcome, false, false);
+        return new AgentEvidence(false, null, null, null, null, false, null, null, $startOutcome, false);
     }
 
     private static function runtime(

@@ -9,6 +9,7 @@ use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Policies\ProfileAdministrationPolicy;
 use App\Sessions\StartReceipt;
+use App\Support\AgentOption;
 use App\Support\Command;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
@@ -57,6 +58,24 @@ final readonly class StartProfileMainCommand extends Command
             $target->shouldSaveDriverType,
             $target->account,
             $target->conversationId,
+        );
+    }
+
+    /**
+     * The start a message to a stopped agent opens: its latest conversation resumed on that conversation's driver, or
+     * a new one on the profile's default, under the message's own request.
+     */
+    public static function onMessage(string $requestId, AgentOption $agent): self
+    {
+        $latest = $agent->conversations[0] ?? null;
+
+        return new self(
+            strtolower($requestId),
+            $agent->agentId,
+            ProfileKey::from($agent->profileKey),
+            ModelSelection::fromInput('default'),
+            $latest?->driver,
+            conversationId: $latest?->conversationId,
         );
     }
 }
