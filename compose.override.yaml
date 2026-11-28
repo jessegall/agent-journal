@@ -9,14 +9,17 @@ services:
         image: ${COMPOSE_PROJECT_NAME}-development
         build:
             target: development
+        # Started again on every PHP change (restart-on-change.sh polls, as file events from the host's editor do not
+        # reach the container reliably), which also clears the opcode cache of its long-lived workers.
         command:
             [
+                'sh',
+                '.docker/dev/restart-on-change.sh',
                 'php',
                 'artisan',
                 'octane:frankenphp',
                 '--host=0.0.0.0',
                 '--port=8000',
-                '--watch',
                 '--caddyfile=.docker/app/Caddyfile',
             ]
         environment:
@@ -55,6 +58,7 @@ services:
         # .env as the container's environment (the server's way) would override it.
         env_file: !reset []
         image: ${COMPOSE_PROJECT_NAME}-development
+        command: ['sh', '.docker/dev/restart-on-change.sh', 'php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
         ports:
             - '127.0.0.1:${FORWARD_REVERB_PORT:-54704}:8080'
         volumes:
@@ -77,7 +81,8 @@ services:
         # .env as the container's environment (the server's way) would override it.
         env_file: !reset []
         image: ${COMPOSE_PROJECT_NAME}-development
-        # drivers:supervise starts every worker as a new process; after a code change run php artisan drivers:restart.
+        # drivers:supervise starts again on every PHP change, and with it its workers.
+        command: ['sh', '.docker/dev/restart-on-change.sh', 'php', 'artisan', 'drivers:supervise']
         volumes:
             - .:/app
             - /app/node_modules
@@ -97,8 +102,8 @@ services:
         # .env as the container's environment (the server's way) would override it.
         env_file: !reset []
         image: ${COMPOSE_PROJECT_NAME}-development
-        # engine:tick keeps its code loaded for the life of the process: after a code change run
-        # docker compose restart ticker. No file watcher restarts it.
+        # engine:tick keeps its code loaded for the life of the process, so it starts again on every PHP change.
+        command: ['sh', '.docker/dev/restart-on-change.sh', 'php', 'artisan', 'engine:tick']
         volumes:
             - .:/app
             - /app/node_modules
