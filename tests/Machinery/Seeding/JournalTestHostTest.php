@@ -35,7 +35,7 @@ final class JournalTestHostTest extends TestCase
     /**
      * What was typed into the recorded Claude Code terminal turn the mock Docker's containers play.
      */
-    private const string RECORDED_PROMPT = 'Count slowly from 1 to 300, one number per line, then say done.';
+    private const string RECORDED_PROMPT = 'Check your pending journal work.';
 
     use CommitsHookRows;
     use WithActiveAccount;

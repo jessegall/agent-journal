@@ -561,8 +561,10 @@ func (table *ProcessTable) held(processID string) (*heldProcess, error) {
 func (table *ProcessTable) end(held *heldProcess, report ProcessReport) {
 	report.Identity, report.Generation = held.state()
 	_ = table.reports.Add(report)
+	table.mutex.Lock()
+	defer table.mutex.Unlock()
+	table.writeKept(held)
 	close(held.exited)
-	table.saveKept()
 }
 
 // saveKept writes the plans of the processes that still run, so a restart adopts those that can outlive the host and
@@ -570,6 +572,11 @@ func (table *ProcessTable) end(held *heldProcess, report ProcessReport) {
 func (table *ProcessTable) saveKept() {
 	table.mutex.Lock()
 	defer table.mutex.Unlock()
+	table.writeKept(nil)
+}
+
+// writeKept saves the live processes other than the one ending while the table holds its lock.
+func (table *ProcessTable) writeKept(ending *heldProcess) {
 	kept := map[string]keptProcess{}
 	for id, held := range table.processes {
 		select {
@@ -578,7 +585,7 @@ func (table *ProcessTable) saveKept() {
 		default:
 		}
 		// A native terminal cannot outlive the host, but is kept by its pid so a restart can end what is left of it.
-		if !held.canOutliveHost() && held.pid == 0 {
+		if held == ending || (!held.canOutliveHost() && held.pid == 0) {
 			continue
 		}
 		_, generation := held.state()
@@ -690,8 +697,11 @@ func (held *heldProcess) nextGeneration() {
 	held.generation++
 }
 
-// containerName is the name the journal gave the container of a process.
+// containerName is the process's container name, empty for a native process.
 func (held *heldProcess) containerName() string {
+	if held.plan.Container == nil {
+		return ""
+	}
 	return held.plan.Container.Name
 }
 
