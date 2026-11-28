@@ -16,13 +16,18 @@ vi.mock('@/echo', () => ({
     },
 }));
 vi.mock('@inertiajs/vue3', () => ({ usePage: () => page, router: { on: vi.fn(), reload: vi.fn() } }));
-vi.mock('./usePageChanges', () => ({ markDirty: vi.fn(), forgetPageChanges: vi.fn(), useLiveVisits: vi.fn() }));
+vi.mock('./usePageChanges', () => ({
+    markDirty: vi.fn(),
+    markShownPropsDirty: vi.fn(),
+    forgetPageChanges: vi.fn(),
+    useLiveVisits: vi.fn(),
+}));
 vi.mock('@/framework/liveTransport', () => ({ attachLiveConnection: vi.fn() }));
 vi.mock('./protectedView', () => ({ clearProtectedViews: vi.fn(), purge: vi.fn() }));
 vi.mock('./useNotifications', () => ({ followNotificationsSignal: vi.fn(), reconcileNotifications: vi.fn() }));
 
 const { liveStage, retryLiveConnection, useLiveConnection } = await import('./useLiveConnection');
-const { markDirty } = await import('./usePageChanges');
+const { markDirty, markShownPropsDirty } = await import('./usePageChanges');
 const { attachLiveConnection } = await import('@/framework/liveTransport');
 const { clearProtectedViews, purge } = await import('./protectedView');
 
@@ -47,10 +52,11 @@ describe('useLiveConnection', () => {
         shell.unmount();
     });
 
-    it('clears protected views when the transport is lost and leaves the reconnect reads to the live client', () => {
+    it('clears protected views when the transport is lost and reads every prop it shows once signed in again', () => {
         const shell = mountShell();
         opened[0].handlers.onSubscribed();
         vi.mocked(markDirty).mockClear();
+        vi.mocked(markShownPropsDirty).mockClear();
 
         opened[0].handlers.onLost();
         expect(clearProtectedViews).toHaveBeenCalledOnce();
@@ -58,6 +64,7 @@ describe('useLiveConnection', () => {
         opened[0].handlers.onSubscribed();
 
         expect(markDirty).not.toHaveBeenCalled();
+        expect(markShownPropsDirty).toHaveBeenCalledOnce();
         shell.unmount();
     });
 
@@ -86,7 +93,10 @@ describe('useLiveConnection', () => {
         expect(purge).toHaveBeenCalledOnce();
         expect(opened[1].userId).toBe('user-2');
         expect(markDirty).not.toHaveBeenCalled();
+        expect(markShownPropsDirty).not.toHaveBeenCalled();
+        // Following a user first lets go of any connection, then attaches the user's own.
         expect(vi.mocked(attachLiveConnection).mock.calls.map(([attached]) => attached)).toEqual([
+            null,
             opened[0],
             null,
             opened[1],
@@ -94,13 +104,13 @@ describe('useLiveConnection', () => {
         shell.unmount();
     });
 
-    it('clears protected views and reads the page again on an invalidation', () => {
+    it('clears protected views and reads every prop it shows again on an invalidation', () => {
         const shell = mountShell();
 
         opened[0].handlers.onProtectedViewInvalidated();
 
         expect(clearProtectedViews).toHaveBeenCalledOnce();
-        expect(markDirty).toHaveBeenCalledExactlyOnceWith('signal');
+        expect(markShownPropsDirty).toHaveBeenCalledOnce();
         shell.unmount();
     });
 });

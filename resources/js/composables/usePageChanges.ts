@@ -216,10 +216,20 @@ function requestedLiveProps(): string[] {
 }
 
 /**
+ * The deferred props the page on screen holds: each shows only once a read in the current protected generation
+ * answered it, so one cleared view must be read again with the live props.
+ */
+function requestedDeferredProps(): string[] {
+    const page = usePage();
+
+    return Object.values(page.deferredProps ?? {}).flat().filter((prop) => page.props[prop] !== undefined);
+}
+
+/**
  * One page read: an async partial reload of the props still on the page, which never cancels a form or a navigation.
  */
 function readPage(wanted: string[], ended: (end: PageReadEnd) => void): void {
-    const requested = new Set(requestedLiveProps());
+    const requested = new Set([...requestedLiveProps(), ...requestedDeferredProps()]);
     const only = wanted.filter((prop) => requested.has(prop));
 
     // Nothing on the page is live: the read is over at once, after the caller has taken the generation it marked.
@@ -317,6 +327,14 @@ export const appliedReadGeneration = readonly(reads.appliedGeneration);
  */
 export function markDirty(reason: DirtyReason): number {
     return reads.markDirty(reason, requestedLiveProps());
+}
+
+/**
+ * Marks every prop the page shows to be read again, its deferred ones with its live ones, as protected views were
+ * cleared and show nothing until a read in the new generation answers them; answers the generation marked.
+ */
+export function markShownPropsDirty(): number {
+    return reads.markDirty('signal', [...requestedLiveProps(), ...requestedDeferredProps()]);
 }
 
 /**

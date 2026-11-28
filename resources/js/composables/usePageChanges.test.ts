@@ -21,6 +21,7 @@ const listeners: { before: BeforeListener[]; navigate: Array<() => void> } = { b
 const page = reactive({
     props: { page: { status: 'ready' }, navigation: [] } as Record<string, unknown>,
     liveProps: { page: {}, navigation: {}, navigationCounts: {} } as Record<string, unknown>,
+    deferredProps: {} as Record<string, string[]>,
 });
 
 function fireBefore(visit: Visit): boolean | void {
@@ -176,6 +177,18 @@ describe('usePageChanges', () => {
         window.dispatchEvent(new Event('focus'));
 
         expect(reloads[0].only).toEqual(['page', 'navigation']);
+    });
+
+    it('reads the deferred props it shows with its live props once protected views were cleared', async () => {
+        const { markShownPropsDirty } = await changes();
+        page.deferredProps = { chat: ['section_web_bar_chat_agent'], counts: ['navigationCounts'] };
+        page.props.section_web_bar_chat_agent = { agent: 'Main agent' };
+
+        markShownPropsDirty();
+
+        expect(reloads[0].only).toEqual(['page', 'navigation', 'section_web_bar_chat_agent']);
+        page.deferredProps = {};
+        delete page.props.section_web_bar_chat_agent;
     });
 
     it('reads once for a catch-up', async () => {

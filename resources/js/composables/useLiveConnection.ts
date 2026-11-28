@@ -7,7 +7,7 @@ import { attachLiveConnection } from '@/framework/liveTransport';
 import { liveTrace } from './liveTrace';
 import { clearProtectedViews, purge } from './protectedView';
 import { followNotificationsSignal, reconcileNotifications } from './useNotifications';
-import { forgetPageChanges, markDirty, useLiveVisits } from './usePageChanges';
+import { forgetPageChanges, markDirty, markShownPropsDirty, useLiveVisits } from './usePageChanges';
 
 /**
  * Where the tab's live connection stands: connecting until the transport and the private channel are both signed in
@@ -23,7 +23,7 @@ export class LiveConnectionState {
 
     /**
      * The channel is signed in to. The first time, one catch-up read covers what changed before it; after a reconnect
-     * the live client reads its props again by itself.
+     * every prop the page shows is read again, as the loss cleared what protected views show.
      */
     subscribed(): void {
         this.generation.value++;
@@ -31,7 +31,11 @@ export class LiveConnectionState {
 
         if (this.generation.value === 1) {
             markDirty('catch-up');
+
+            return;
         }
+
+        markShownPropsDirty();
     }
 
     /**
@@ -89,7 +93,7 @@ export function useLiveConnection(): void {
         return {
             onProtectedViewInvalidated: whileCurrent(() => {
                 clearProtectedViews();
-                markDirty('signal');
+                markShownPropsDirty();
             }),
             onNotificationsChanged: whileCurrent(followNotificationsSignal),
             onChatAccessEnded: whileCurrent(notifyChatAccessEnded),
