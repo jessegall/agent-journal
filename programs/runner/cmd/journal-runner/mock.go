@@ -301,7 +301,13 @@ func scriptWords(script string) []string {
 
 // replayProgram plays the recording in a session's container by what is typed into it, as its program would.
 func replayProgram(fixture recording.Fixture) dockermock.Program {
-	return func(_ context.Context, _ *dockermock.Container, input io.Reader, output io.Writer) int {
+	return func(ctx context.Context, container *dockermock.Container, input io.Reader, output io.Writer) int {
+		// The runner sizes the terminal after attaching, so the opening screen has a reader.
+		select {
+		case <-container.Resized():
+		case <-ctx.Done():
+			return 1
+		}
 		if err := recording.GatedReplay(fixture, input, output, mockPause, func(recording.Typed) error { return nil }); err != nil {
 			return 1
 		}
