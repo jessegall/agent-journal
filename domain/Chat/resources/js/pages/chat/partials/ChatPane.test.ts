@@ -350,4 +350,23 @@ describe("ChatPane", () => {
     expect(pane.find("[data-popover-above]").exists()).toBe(true);
     expect(pane.get('[aria-label="Composer"]').element).toBe(composer);
   });
+
+  it("keeps showing a chat whose start runs as starting after a reload, never the start picker", async () => {
+    revealedProps.value = new Set(["window_chat_conversation"]);
+    const chat = chatWith("conversation-1", null, false);
+    chat.agents[0] = {
+      ...chat.agents[0],
+      sessionId: null,
+      isRetired: false,
+      status: { sessionState: "starting", label: "Starting the session", actions: [] },
+    } as (typeof chat.agents)[number];
+    const pane = mount(ChatPane, {
+      props: { chat, offersChoice: false, loadMore: () => undefined, protectedProp: "window_chat_conversation" },
+    });
+    await flushPromises();
+
+    expect(pane.find("[data-start-picker]").exists()).toBe(false);
+    expect(pane.find('[aria-label="Composer"]').exists()).toBe(true);
+    expect(pane.get("[data-agent-row]").text()).toContain("Starting the session");
+  });
 });
