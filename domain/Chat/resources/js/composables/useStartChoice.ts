@@ -23,11 +23,6 @@ export type StartDriver = {
 };
 
 /**
- * Where a start stands: still choosing, sent and waiting for its answer, or refused with the server's reason.
- */
-export type StartState = "choosing" | "starting" | "refused";
-
-/**
  * The start picker's choices, from the app context so they show on its first paint: driver, account, model and effort,
  * the chat's last run or the user's last new chat preselected, and Start. A refused start keeps them to send again.
  */
@@ -39,7 +34,8 @@ export function useStartChoice(agent: () => AgentOptionData) {
   const accountId = ref<string | null>(null);
   const model = ref<string | null>(null);
   const effort = ref<string | null>(null);
-  const state = ref<StartState>("choosing");
+  // Only the post itself is this component's: whether a start is out, refused or running comes from the agent's status.
+  const isSending = ref(false);
   const refusal = ref<string | null>(null);
   let requestId = newRequestId();
 
@@ -89,9 +85,8 @@ export function useStartChoice(agent: () => AgentOptionData) {
     }
   }
 
-  // A refused start keeps every choice; Start again sends a new start.
+  // A start the server refused at once keeps every choice; Start again sends a new start.
   function refuse(reason: string): void {
-    state.value = "refused";
     refusal.value = reason;
     requestId = newRequestId();
   }
@@ -104,7 +99,7 @@ export function useStartChoice(agent: () => AgentOptionData) {
       return;
     }
 
-    if (state.value === "starting") {
+    if (isSending.value) {
       return;
     }
 
@@ -116,7 +111,7 @@ export function useStartChoice(agent: () => AgentOptionData) {
       model: model.value,
       effort: effort.value,
     };
-    state.value = "starting";
+    isSending.value = true;
     refusal.value = null;
     keyedPost(
       startMain.url(agent().profileKey),
@@ -134,6 +129,7 @@ export function useStartChoice(agent: () => AgentOptionData) {
         onAccepted: () => keepNewChatChoice(viewerId, choice),
         onRefused: (reason) => refuse(reason ?? "The session could not be started."),
         onUncertain: () => refuse("We could not confirm the session started; the chat shows where it stands."),
+        onFinish: () => (isSending.value = false),
       },
       [hostProp],
     );
@@ -148,7 +144,7 @@ export function useStartChoice(agent: () => AgentOptionData) {
     accountId,
     model,
     effort,
-    state,
+    isSending,
     refusal,
     isAsLastTime,
     chooseDriver,

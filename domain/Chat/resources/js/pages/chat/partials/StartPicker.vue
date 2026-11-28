@@ -16,7 +16,10 @@ import { useStartChoice, type StartDriver } from "../../../composables/useStartC
 const props = defineProps<{ agent: AgentOptionData; isNew: boolean }>();
 
 const choice = useStartChoice(() => props.agent);
-const isStarting = computed(() => choice.state.value === "starting");
+// A start in progress and a failed one come from the agent's status in the props, so a reload shows them as they are.
+const isStarting = computed(
+  () => choice.isSending.value || ["starting", "verifying"].includes(props.agent.status.sessionState),
+);
 const title = computed(() => (props.isNew ? "Start a new chat" : `Start ${props.agent.name} again`));
 const subtitle = computed(() =>
   choice.isAsLastTime.value
@@ -24,7 +27,11 @@ const subtitle = computed(() =>
     : "Choose what runs it; your first message goes after it starts.",
 );
 // The reason the agent's last start was refused, or the one this picker's start was refused with.
-const failure = computed(() => choice.refusal.value ?? props.agent.status.reason);
+const failure = computed(
+  () =>
+    choice.refusal.value ??
+    (["failed", "refused"].includes(props.agent.status.sessionState) ? props.agent.status.reason : null),
+);
 
 type Group = "driver" | "account" | "model" | "effort";
 

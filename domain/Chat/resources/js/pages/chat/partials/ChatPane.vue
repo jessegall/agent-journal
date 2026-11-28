@@ -95,8 +95,14 @@ const selected = computed(() => {
 });
 // A chat whose agent runs no session, new or ended, offers the start picker in place of the composer; a new one, which
 // holds nothing yet, shows only the picker.
+// A start in progress shows the chat as starting, never the picker, even before the server names the new session.
+const STARTS_IN_PROGRESS = ["starting", "verifying", "working", "stopping", "interrupting"];
 const needsStart = computed(
-  () => selected.value !== undefined && selected.value.sessionId === null && !selected.value.isRetired,
+  () =>
+    selected.value !== undefined &&
+    selected.value.sessionId === null &&
+    !selected.value.isRetired &&
+    !STARTS_IN_PROGRESS.includes(selected.value.status.sessionState),
 );
 const isNewChat = computed(() => needsStart.value && (conversation.value?.entries.length ?? 0) === 0);
 // On its own page the chat offers its own list, so Option+F opens it; on Home the chat bar's listener does.
