@@ -54,11 +54,7 @@ final readonly class ProjectPageBuilder implements PageBuilder
 
         $root = $answers->of('');
 
-        $state = match ($root->status) {
-            ProjectReadStatus::Answered => ProjectWindowStatus::Ready,
-            ProjectReadStatus::Pending => ProjectWindowStatus::Pending,
-            ProjectReadStatus::Failed, ProjectReadStatus::Expired => ProjectWindowStatus::Failed,
-        };
+        $state = ProjectWindowStatus::fromRead($root->status);
 
         $entries = $state === ProjectWindowStatus::Ready
             ? $this->tree($answers, '', $root->entries, $open)

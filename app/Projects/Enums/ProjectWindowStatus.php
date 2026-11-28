@@ -18,4 +18,13 @@ enum ProjectWindowStatus: string
     case Failed = 'failed';
     case Offline = 'offline';
     case None = 'none';
+
+    public static function fromRead(ProjectReadStatus $status): self
+    {
+        return match ($status) {
+            ProjectReadStatus::Answered => self::Ready,
+            ProjectReadStatus::Pending => self::Pending,
+            ProjectReadStatus::Failed, ProjectReadStatus::Expired => self::Failed,
+        };
+    }
 }
