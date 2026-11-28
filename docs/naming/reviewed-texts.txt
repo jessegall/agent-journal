@@ -149,6 +149,7 @@ Driver version
 Dropped compared with the rule in use: {{ revision.removedClasses.join(", ") || "none" }}
 Edit
 Email
+End session
 Ended
 Enter adds it to this pane · drag a row to place it
 Enter opens it floating · drag a row onto Home to dock it
@@ -459,7 +460,6 @@ Stacked
 Start
 Start again
 Start refused
-Start session
 Started
 Starting
 Starting the new session
@@ -469,7 +469,6 @@ Status: {{ part.lifecycle }}, ended by {{ part.end }}
 Still to do: {{ data.steps.join('; ') }}
 Stop
 Stop failed{{ reason ? `: ${reason}` : '' }}
-Stop session
 Stop the agent
 Stop this agent? Its unfinished line is not sent.
 Stopped
