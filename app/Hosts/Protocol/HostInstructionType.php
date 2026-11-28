@@ -32,6 +32,7 @@ enum HostInstructionType: string
     case RunContainers = 'run_containers';
     case ListContainers = 'list_containers';
     case RemoveNetwork = 'remove_network';
+    case RemoveImage = 'remove_image';
     case Remove = 'remove';
     case ReadProject = 'read_project';
     case Upgrade = 'upgrade';
@@ -130,6 +131,7 @@ enum HostInstructionType: string
             self::RunContainers => Payloads\HostContainerRunsPayload::class,
             self::ListContainers => Payloads\HostContainerLabelPayload::class,
             self::RemoveNetwork => Payloads\HostNetworkRemovalPayload::class,
+            self::RemoveImage => Payloads\HostImageRemovalPayload::class,
             self::Remove => Payloads\HostRemovePlanPayload::class,
             self::ReadProject => Payloads\HostProjectReadPayload::class,
             self::Upgrade => Payloads\HostUpgradePlanPayload::class,
@@ -158,6 +160,7 @@ enum HostInstructionType: string
             self::Stream,
             self::Snapshot,
             self::RemoveNetwork,
+            self::RemoveImage,
             self::Remove,
             self::ReadProject => Payloads\HostEmptyPayload::class,
             self::RunFenced => Payloads\HostFencedResultsPayload::class,

@@ -42,6 +42,15 @@ func (table *ProcessTable) ListContainers(ctx context.Context, _ Instruction, la
 	return ContainerNames{Names: names}, nil
 }
 
+// RemoveImage removes the image by its reference; one already gone counts as removed.
+func (table *ProcessTable) RemoveImage(ctx context.Context, _ Instruction, removal ImageRemoval) (Empty, error) {
+	if table.containers.Daemon == nil {
+		return Empty{}, nil
+	}
+
+	return Empty{}, table.containers.RemoveImage(ctx, removal.Image)
+}
+
 // RemoveNetwork removes the network by its name; one already gone counts as removed.
 func (table *ProcessTable) RemoveNetwork(ctx context.Context, _ Instruction, removal NetworkRemoval) (Empty, error) {
 	if table.containers.Daemon == nil {

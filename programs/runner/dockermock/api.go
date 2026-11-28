@@ -48,6 +48,8 @@ func (daemon *Daemon) serve(writer http.ResponseWriter, request *http.Request) {
 		daemon.buildImage(writer, request)
 	case parts[0] == "images" && strings.HasSuffix(path, "/history"):
 		playRecorded(writer, "history.json")
+	case parts[0] == "images" && request.Method == http.MethodDelete:
+		daemon.removeImage(writer, strings.TrimPrefix(path, "/images/"))
 	case parts[0] == "images" && strings.HasSuffix(path, "/json"):
 		daemon.inspectImage(writer, strings.TrimSuffix(strings.TrimPrefix(path, "/images/"), "/json"))
 	case path == "/containers/create":
@@ -104,6 +106,19 @@ func (daemon *Daemon) inspectImage(writer http.ResponseWriter, reference string)
 	}
 
 	answer(writer, http.StatusOK, map[string]any{"Id": image.ID, "RepoDigests": image.Digests})
+}
+
+// removeImage removes a held image, as a daemon does for an image no container uses; one it does not hold is absent.
+func (daemon *Daemon) removeImage(writer http.ResponseWriter, reference string) {
+	daemon.mutex.Lock()
+	defer daemon.mutex.Unlock()
+	if _, held := daemon.Images[reference]; !held {
+		refuse(writer, http.StatusNotFound, "No such image: "+reference)
+
+		return
+	}
+	delete(daemon.Images, reference)
+	answer(writer, http.StatusOK, []map[string]string{{"Deleted": reference}})
 }
 
 func (daemon *Daemon) create(writer http.ResponseWriter, request *http.Request) {

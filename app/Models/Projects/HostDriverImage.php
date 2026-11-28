@@ -17,6 +17,7 @@ use App\Events\Connections\DriverImageBuildFinished;
 use App\Events\Connections\DriverImageBuildSent;
 use App\Events\Connections\DriverImageChecksSent;
 use App\Events\Connections\DriverImageRefused;
+use App\Events\Connections\DriverImageReplaced;
 use App\Exceptions\HostDriverImageUnbuilt;
 use App\Hosts\Enums\DriverImagePhase;
 use App\Hosts\Enums\DriverImageStatus;
@@ -167,18 +168,27 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
     }
 
     /**
-     * The host's images of the same driver's older recipes leave once this one is ready, so the host allows and checks
-     * only the current one; an image whose recipe a session that has not ended froze stays, as it may resume on it.
+     * The host's images of the same driver's older recipes leave once this one is ready, rows and Docker images both, so
+     * the host allows and checks only the current one; an image whose recipe a session that has not ended froze stays,
+     * as it may resume on it.
      */
     public function retireReplaced(string $folder): void
     {
+        $frozen = AgentSession::query()->liveOnFrozenRecipe()->select('driver_recipe_digest');
         $replaced = self::query()
             ->onHost($this->host_id)
             ->whereKeyNot($this->id)
             ->whereIn('driver_image_recipe_id', DriverImageRecipeRecord::query()
                 ->where('folder', $folder)
-                ->whereNotIn('recipe_digest', AgentSession::query()->liveOnFrozenRecipe()->select('driver_recipe_digest'))
+                ->whereNotIn('recipe_digest', $frozen)
                 ->select('id'));
+
+        // Each dropped image the host built is removed from its daemon once the drop commits.
+        $built = (clone $replaced)->whereNotNull('image')->readAll('the replaced images of one driver on one host');
+
+        foreach ($built->get() as $dropped) {
+            $this->raise(new DriverImageReplaced($dropped->id, $dropped->host_id, (string) $dropped->image));
+        }
 
         HostDriverImageWait::query()->whereIn('host_driver_image_id', (clone $replaced)->select('id'))->delete();
         $replaced->delete();

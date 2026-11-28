@@ -10,10 +10,12 @@ use App\Models\Projects\HostDriverImage;
 use App\Recordings\Recordings;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\OverTheWire;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\Recordings\PlayedScenario;
 use Tests\Support\Recordings\TestScenario;
 use Tests\Support\Recordings\WireAssert;
+use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -22,6 +24,7 @@ use Tests\TestCase;
  * The test journal plays a recorded scenario in parts, on a host whose Docker daemon plays the recording, and reads
  * the orders it gave against the recorded ones.
  */
+#[TestsMachinery(TestJournal::class)]
 #[OverTheWire]
 #[TimeLimit(seconds: 240, reason: 'It runs the real host, a played Docker daemon and a served journal through a whole turn.')]
 final class JournalPlayedScenariosTest extends TestCase

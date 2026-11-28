@@ -128,13 +128,16 @@ final class RecordDriverImageAnswerTest extends TestCase
      *
      * @return array<string, mixed>
      */
-    public function test_a_driver_image_that_passes_its_checks_retires_the_hosts_images_of_its_older_recipes(): void
+    public function test_a_driver_image_that_passes_its_checks_retires_and_removes_the_hosts_images_of_its_older_recipes(): void
     {
         $folder = DriverImageRecipeRecord::query()->findOrFail($this->image->driver_image_recipe_id)->folder;
         $older = DriverImageRecipeRecord::create(
             DriverImageRecipe::of($folder, ['Dockerfile' => 'FROM older'], 'base@sha256:a', '0.0.1'),
         );
         $replaced = HostDriverImage::create(Host::query()->findOrFail($this->image->host_id), $older);
+        $olderImage = 'sha256:'.str_repeat('b', 64);
+        $replaced->startAttempt('older-build');
+        $replaced->built($olderImage);
 
         $this->answer(HostInstructionType::BuildImage, $this->builtReply());
         $this->answer(HostInstructionType::AllowImages, ['allowed' => 2, 'absent' => []]);
@@ -143,8 +146,12 @@ final class RecordDriverImageAnswerTest extends TestCase
         $this->answer(HostInstructionType::RunContainers, ['results' => array_fill(0, $runs, $this->passing())]);
 
         $this->journal->assertResult(
-            [DriverImageStatus::Ready, false],
-            [$this->image->refresh()->status, HostDriverImage::query()->whereKey($replaced->id)->exists()],
+            [DriverImageStatus::Ready, false, $olderImage],
+            [
+                $this->image->refresh()->status,
+                HostDriverImage::query()->whereKey($replaced->id)->exists(),
+                $this->journal->payloadOf($this->latest(HostInstructionType::RemoveImage))['image'],
+            ],
         );
     }
 

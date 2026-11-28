@@ -37,6 +37,7 @@
         "run_containers": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "container_runs", "reply": "container_run_results" },
         "list_containers": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "container_label", "reply": "container_names" },
         "remove_network": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "network_removal", "reply": "empty" },
+        "remove_image": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "image_removal", "reply": "empty" },
         "remove": { "scope": "host", "process_type": "any", "ends_process": true, "is_repeatable": true, "payload": "remove_plan", "reply": "empty" },
         "read_project": { "scope": "host", "process_type": "any", "is_repeatable": true, "payload": "project_read", "reply": "empty" },
         "upgrade": { "scope": "host", "process_type": "any", "payload": "upgrade_plan", "reply": "upgrade_started" },
@@ -234,7 +235,8 @@
         "container_run_result": { "exitCode": "int", "stdout": "string", "stderr": "string", "isTruncated": "bool", "isTimedOut": "bool" },
         "container_run_results": { "results": "list<container_run_result>" },
         "container_names": { "names": "list<string>" },
-        "network_removal": { "network": "string" }
+        "network_removal": { "network": "string" },
+        "image_removal": { "image": "string" }
     },
     "calls": {
         "claim_instruction": { "route": "instructions.claim", "path": "/host/instructions/claim", "query": { "limit": "int", "wait": "int" }, "query_bounds": { "limit": [1, 50], "wait": [0, 25] }, "body": null, "reply": "claimed_instructions" },

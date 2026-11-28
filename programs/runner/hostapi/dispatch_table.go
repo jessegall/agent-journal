@@ -28,6 +28,7 @@ type InstructionHandlers interface {
 	RunContainers(ctx context.Context, instruction Instruction, payload ContainerRuns) (ContainerRunResults, error)
 	ListContainers(ctx context.Context, instruction Instruction, payload host.ContainerLabel) (ContainerNames, error)
 	RemoveNetwork(ctx context.Context, instruction Instruction, payload NetworkRemoval) (Empty, error)
+	RemoveImage(ctx context.Context, instruction Instruction, payload ImageRemoval) (Empty, error)
 	Remove(ctx context.Context, instruction Instruction, payload RemovePlan) (Empty, error)
 	ReadProject(ctx context.Context, instruction Instruction, payload client.ProjectRead) (Empty, error)
 	Upgrade(ctx context.Context, instruction Instruction, payload UpgradePlan) (UpgradeStarted, error)
@@ -55,6 +56,7 @@ func Executors(handlers InstructionHandlers) map[string]Executor {
 		"run_containers":  carrying(handlers.RunContainers),
 		"list_containers": carrying(handlers.ListContainers),
 		"remove_network":  carrying(handlers.RemoveNetwork),
+		"remove_image":    carrying(handlers.RemoveImage),
 		"remove":          carrying(handlers.Remove),
 		"read_project":    carrying(handlers.ReadProject),
 		"upgrade":         carrying(handlers.Upgrade),

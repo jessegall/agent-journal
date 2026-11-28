@@ -10,9 +10,11 @@ use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\HostRoute;
 use App\Values\FeedEntry;
 use PHPUnit\Framework\AssertionFailedError;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\MockHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
@@ -20,6 +22,7 @@ use Tests\TestCase;
  * recorded host answered the same order, which binds the recording's ids to the test's, and sends what the recorded
  * host sent about that process; it never refuses an order in a way the recording does not hold.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalMockHostTest extends TestCase
 {
     use RefreshHookDatabase;

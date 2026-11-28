@@ -8,13 +8,16 @@ use App\Api\AgentRequestClient;
 use App\Sessions\AgentClientSettings;
 use Illuminate\Http\Client\Response;
 use PHPUnit\Framework\AssertionFailedError;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Recordings\TestAgentApi;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The test journal serves a recorded scenario's agent wire for the agent's own sender: a frame the recorded agent sent
  * meets the recorded journal's answer, and a frame the recording does not hold fails the test.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalAgentApiTest extends TestCase
 {
     public function test_a_recorded_frame_meets_the_recorded_answer(): void

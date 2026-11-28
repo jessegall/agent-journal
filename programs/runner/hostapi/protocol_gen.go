@@ -71,6 +71,7 @@ var InstructionTypes = map[string]InstructionTraits{
 	"run_containers":  {HostWide: true, Repeatable: true},
 	"list_containers": {HostWide: true, Repeatable: true},
 	"remove_network":  {HostWide: true, Repeatable: true},
+	"remove_image":    {HostWide: true, Repeatable: true},
 	"remove":          {HostWide: true, Repeatable: true},
 	"read_project":    {HostWide: true, Repeatable: true},
 	"upgrade":         {HostWide: true, Repeatable: false},
@@ -423,4 +424,9 @@ type ContainerNames struct {
 // NetworkRemoval is the network_removal of host protocol 1.
 type NetworkRemoval struct {
 	Network string `json:"network"`
+}
+
+// ImageRemoval is the image_removal of host protocol 1.
+type ImageRemoval struct {
+	Image string `json:"image"`
 }

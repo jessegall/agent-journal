@@ -28,6 +28,14 @@ func (containers Containers) RemoveNetwork(ctx context.Context, name string) err
 	return absentIsDone(err)
 }
 
+// RemoveImage removes the image with the untagged layers only it held; an image already gone counts as removed, and
+// one a container still uses is refused by Docker, as the journal sends only the images no container uses.
+func (containers Containers) RemoveImage(ctx context.Context, reference string) error {
+	_, err := containers.Daemon.ImageRemove(ctx, reference, client.ImageRemoveOptions{PruneChildren: true})
+
+	return absentIsDone(err)
+}
+
 // LabelledContainer is a container the host made, found by its own label: its id, its labels and whether it still
 // runs.
 type LabelledContainer struct {
