@@ -10,6 +10,7 @@ use App\Contracts\Events\Listener;
 use App\Events\Hooks\ToolCallFinished;
 use App\Hooks\Enums\ToolOutcome;
 use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
 use App\Skills\Commands\RecordSkillRead\RecordSkillReadCommand;
 
 /**
@@ -31,9 +32,9 @@ final readonly class RecordProvenSkillReads implements Listener
             return;
         }
 
-        $session = $runtime->session;
+        $session = AgentSession::findById($event->target->sessionId);
 
-        if ($session === null || ! $this->skills->supportsSession($session)) {
+        if (! $this->skills->supportsSession($session)) {
             return;
         }
 

@@ -187,7 +187,7 @@ function selectRow(event: MouseEvent, row: LayoutRowData): void {
                                         :aria-current="row.isCurrent ? 'true' : undefined"
                                         class="focus-visible:outline-2 focus-visible:outline-focus"
                                         @click="selectRow($event, row)"
-                                        >{{ row.label }}</Link
+                                        >{{ row.label }}</component
                                     >
                                 </template>
                                 <template v-else>{{ row.label }}</template>

@@ -74,6 +74,22 @@ final class DriverSetupTest extends TestCase
         );
     }
 
+    public function test_a_version_line_is_found_below_a_warning_the_program_printed_first(): void
+    {
+        $exact = VersionLine::exactly('codex-cli {build}');
+        $recordings = $this->journal->service(Recordings::class);
+        $version = RecordedProgram::from($recordings->scenario(DefaultDrivers::CODEX, 'change-effort'), ['codex', '--version']);
+        $build = $this->journal->driverProfile(DefaultDrivers::CODEX)->build();
+
+        $this->journal->assertResult(
+            [true, false],
+            [
+                $exact->accepts($version->printedOn('stderr').$version->printedOn('stdout'), $build),
+                $exact->accepts($version->printedOn('stderr'), $build),
+            ],
+        );
+    }
+
     public function test_a_plan_takes_one_restart_file(): void
     {
         $restart = new PlanAddition(restartWhenFile: HostRestartFilePayload::from(['folder' => '/home', 'glob' => '*.jsonl']));

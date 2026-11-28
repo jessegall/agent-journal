@@ -4,7 +4,7 @@ import Button from "@kit/Button";
 import TerminalControlBar from "@kit/TerminalControlBar";
 import { useTerminalController } from "@kit/terminalController";
 import { useTerminalResize } from "@kit/terminalResize";
-import { router } from "@inertiajs/vue3";
+import { useWindowReload } from "@kit/useWindowQuery";
 import { ref, toRef, watch } from "vue";
 
 /**
@@ -12,6 +12,7 @@ import { ref, toRef, watch } from "vue";
  * and the shared terminal drawing, with the control bar, Retry for a host that stopped reporting and Back to chat
  * when the agent's terminal does not run. Unmounting it closes its read and drops its control.
  */
+const reload = useWindowReload();
 const props = defineProps<{
   agentId: string;
   isShown: boolean;
@@ -62,7 +63,7 @@ watch(
       identity.processGeneration !== expected.generation
     ) {
       sessionChanged.value = true;
-      router.reload();
+      reload({});
     }
   },
 );

@@ -26,7 +26,7 @@ const choose = useWindowQueryClick();
                         'text-text shadow-[inset_0_-1px_0_var(--color-brand)]': row.isCurrent,
                         'text-text-3 hover:text-text-2': !row.isCurrent,
                     }"
-                    >{{ row.label }}</Link
+                    >{{ row.label }}</component
                 >
             </li>
         </template>

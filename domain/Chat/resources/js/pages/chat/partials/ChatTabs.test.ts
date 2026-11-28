@@ -6,6 +6,12 @@ import type { AgentOptionData } from "@generated/types/chat";
 // The chats chosen, each as the agent its reload named and the props it read.
 const visited: string[] = [];
 const reloaded: string[][] = [];
+let chatIsShown = true;
+
+vi.mock("@kit/useWindowQuery", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@kit/useWindowQuery")>(),
+  isWindowShown: () => chatIsShown,
+}));
 
 const created: Array<{ url: string; body: Record<string, unknown> }> = [];
 
@@ -64,6 +70,7 @@ function tabsFor(selectedAgentId: string, columnAgentIds: string[] = []) {
 describe("ChatTabs", () => {
   beforeEach(() => {
     visited.length = 0;
+    chatIsShown = true;
     reloaded.length = 0;
     created.length = 0;
     const store = useOpenChats("user-tabs");
@@ -96,6 +103,16 @@ describe("ChatTabs", () => {
     expect(visited).toEqual(["agent-3", "agent-3"]);
     // Only the chat window and the bar are read again, never the whole page.
     expect(reloaded[0]).toEqual(["window_chat_conversation", "page"]);
+  });
+
+  it("chooses a chat in the bar without reloading a hidden window", async () => {
+    chatIsShown = false;
+    useOpenChats("user-tabs").open("agent-3");
+    const tabs = tabsFor("agent-2");
+
+    await tabs.get('[data-chat-tab="agent-3"]').trigger("click");
+
+    expect(reloaded).toEqual([["page"]]);
   });
 
   it("closes only the tab, offers Undo, and Undo brings it back", async () => {
