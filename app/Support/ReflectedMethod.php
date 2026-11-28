@@ -41,7 +41,6 @@ final class ReflectedMethod
     public function __construct(private readonly ReflectionMethod $method, private readonly Closure $reflectorOf)
     {
         $this->label = "method {$method->getDeclaringClass()->getName()}::{$method->getName()}()";
-        $this->declaredAttributes = new DeclarationAttributes(fn () => $method->getAttributes(), $this->label);
     }
 
     public function name(): string
@@ -179,6 +178,11 @@ final class ReflectedMethod
 
     private function declaredAttributes(): DeclarationAttributes
     {
-        return $this->declaredAttributes;
+        $method = $this->method;
+
+        return $this->declaredAttributes ??= new DeclarationAttributes(
+            static fn () => $method->getAttributes(),
+            $this->label,
+        );
     }
 }

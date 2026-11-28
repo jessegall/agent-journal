@@ -59,6 +59,16 @@ final class ReflectorLineageTest extends TestCase
         $this->assertSame($child->methods(), $child->methods());
     }
 
+    public function test_the_public_instance_walk_visits_only_own_methods_without_using_the_cache(): void
+    {
+        $child = Reflector::of(MemberParcelChild::class);
+        $methods = iterator_to_array($child->ownPublicInstanceMethods(), false);
+
+        $this->assertSame(['overridden'], array_map(fn (ReflectedMethod $method) => $method->name(), $methods));
+        $this->assertNotSame($child->method('overridden'), $methods[0]);
+        $this->assertSame('child', $methods[0]->attribute(MemberMarker::class)->label);
+    }
+
     public function test_class_questions_answer_as_php_declares_them(): void
     {
         $this->assertSame('MemberParcelChild', Reflector::of(MemberParcelChild::class)->shortName());
