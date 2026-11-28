@@ -82,9 +82,9 @@ vi.mock("./VerifyingSessionCard.vue", () => ({
 
 const { default: ChatPane } = await import("./ChatPane.vue");
 
-function chatWith(inboxId: string): ChatData {
+function chatWith(inboxId: string, runningCommand: string | null = null): ChatData {
   return {
-    agents: [{ id: "agent-1", name: "Main agent" }],
+    agents: [{ id: "agent-1", name: "Main agent", status: { sessionState: "working" } }],
     selectedAgentId: "agent-1",
     isSetupRequired: false,
     dockSections: [],
@@ -104,6 +104,7 @@ function chatWith(inboxId: string): ChatData {
       },
       sessionId: null,
       sessionGeneration: 0,
+      runningCommand,
       dock: { cards: [], hasMore: null },
       entries: [
         {
@@ -118,10 +119,10 @@ function chatWith(inboxId: string): ChatData {
   } as unknown as ChatData;
 }
 
-function mountPane(inboxId = "conversation-1") {
+function mountPane(inboxId = "conversation-1", runningCommand: string | null = null) {
   return mount(ChatPane, {
     props: {
-      chat: chatWith(inboxId),
+      chat: chatWith(inboxId, runningCommand),
       offersChoice: false,
       agentUrl: () => "/chat",
       chatUrl: () => "/chat",
@@ -197,5 +198,30 @@ describe("ChatPane", () => {
       ["conversation-1-unread"],
       ["conversation-2-unread"],
     ]);
+  });
+
+  it("shows the agent's running command above the composer, and changes it when the chat is read again", async () => {
+    revealedProps.value = new Set(["window_chat_conversation"]);
+    const pane = mountPane("conversation-1", "Ran npm test");
+    await flushPromises();
+
+    const line = pane.get("[data-running-command]");
+    expect(line.text()).toBe("Ran npm test");
+    expect(
+      line.element.compareDocumentPosition(pane.get('[aria-label="Composer"]').element) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    await pane.setProps({ chat: chatWith("conversation-1", "Edited src/b.php") });
+
+    expect(pane.get("[data-running-command]").text()).toBe("Edited src/b.php");
+  });
+
+  it("shows no running command when the agent has done nothing since its last message", async () => {
+    revealedProps.value = new Set(["window_chat_conversation"]);
+    const pane = mountPane();
+    await flushPromises();
+
+    expect(pane.find("[data-running-command]").exists()).toBe(false);
   });
 });

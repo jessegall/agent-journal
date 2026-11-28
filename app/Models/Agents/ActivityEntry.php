@@ -143,6 +143,22 @@ final class ActivityEntry extends JournalModel implements ProjectOwned, Readable
     }
 
     /**
+     * What one actor read, ran or edited after the time given (any time without one), newest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function toolWorkOf(Builder $query, ActorReference $actor, CarbonImmutable|null $after): void
+    {
+        $query
+            ->byActor($actor)
+            ->whereIn('type', [ActivityType::Read, ActivityType::Ran, ActivityType::Edited])
+            ->when($after !== null, fn (Builder $later) => $later->where('occurred_at', '>', $after))
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('id');
+    }
+
+    /**
      * An environment's entries made after the one with this id, oldest first.
      *
      * @param  Builder<self>  $query

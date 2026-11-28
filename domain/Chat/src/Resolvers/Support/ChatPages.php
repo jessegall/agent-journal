@@ -12,6 +12,7 @@ use App\Messages\Contracts\MessageParticipant;
 use App\Messages\Contracts\MessageParticipants;
 use App\Messages\Enums\InboxPermission;
 use App\Models\Access\User;
+use App\Models\Agents\ActivityEntry;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
@@ -19,6 +20,7 @@ use App\Models\Messages\Message;
 use App\Models\Messages\MessageReadEntry;
 use App\Support\ActorReference;
 use App\Support\AgentOption;
+use Carbon\CarbonImmutable;
 use Domain\Chat\Data\ChatCapabilitiesData;
 use Domain\Chat\Data\ChatEntryData;
 use Domain\Chat\Data\ChatRowsPageData;
@@ -86,7 +88,26 @@ final readonly class ChatPages
             'hasOlder' => $page->hasOlder,
             'entries' => $page->entries,
             'dock' => $this->dock->page($inbox, $dockToken),
+            'runningCommand' => $agent === null ? null : $this->runningCommandOf($agent, $page->entries),
         ]);
+    }
+
+    /**
+     * The agent's latest tool work as a line, such as Ran npm test, once its latest message in the chat is behind it.
+     *
+     * @param  list<ChatEntryData>  $entries
+     */
+    private function runningCommandOf(AgentOption $agent, array $entries): string|null
+    {
+        $reference = ActorReference::forAgent($agent->agentId);
+        $replies = array_filter($entries, fn (ChatEntryData $entry) => $entry->author === $reference->text());
+        $latest = $replies === [] ? null : CarbonImmutable::parse(end($replies)->createdAt);
+
+        return ActivityEntry::query()
+            ->toolWorkOf($reference, $latest)
+            ->firstOption()
+            ->map(fn (ActivityEntry $entry) => "{$entry->type->verb()} {$entry->subject}")
+            ->getOrElse(null);
     }
 
     /**
