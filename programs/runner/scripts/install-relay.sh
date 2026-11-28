@@ -124,7 +124,7 @@ find_existing_command_placement() {
 # journal-runner is checked against the manifest before it runs; it verifies the manifest's signature and the program list,
 # and prints the folder it sealed the release in, named for the version and the program list.
 install_release() {
-    local program="$3/journal-runner" line sha256 printed
+    local program="$3/journal-runner" state_folder="$5" line sha256 printed
     line="\"name\":\"bin/journal-runner\",\"source\":\"$4/bin/journal-runner\",\"sha256\":\""
     sha256=$(grep -o "$line[0-9a-f]*" "$3/manifest.json" | sed "s/.*sha256\":\"//")
     [ -n "$sha256" ] ||
@@ -137,7 +137,7 @@ install_release() {
     fetch_file "$1/releases/current/programs.json" "$3/programs.json" ||
         refuse "the download step failed: the journal's program list could not be downloaded from $1."
     printed=$("$program" install-release --origin "$1" --manifest "$3/manifest.json" --signature "$3/manifest.json.sig" \
-        --programs "$3/programs.json" --into-root "$5" --version "$2") ||
+        --programs "$3/programs.json" --into-root "$state_folder" --state "$state_folder" --version "$2") ||
         refuse "the install-release step failed: the release could not be installed."
     printf '%s\n' "$printed" | tail -n 1
 }
