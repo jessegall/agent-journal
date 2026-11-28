@@ -94,6 +94,19 @@ final class CodexHooksTest extends TestCase
         $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
     }
 
+    public function test_a_null_tool_response_is_refused(): void
+    {
+        $this->journal->scenario('codex/terminal-turn', function (TestScenario $turn): void {
+            $recorded = $turn->toolHookBody('PostToolUse', CodexTool::Bash->value);
+            $payload = json_decode($recorded, true, flags: JSON_THROW_ON_ERROR);
+            $payload['tool_response'] = null;
+
+            $this->hook(DefaultDrivers::CODEX, json_encode($payload, JSON_THROW_ON_ERROR))
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors('tool_response');
+        });
+    }
+
     public function test_a_failure_notification_codex_never_sends_is_refused(): void
     {
         $body = '{"session_id":"session-redacted","hook_event_name":"StopFailure","error":"authentication_failed"}';

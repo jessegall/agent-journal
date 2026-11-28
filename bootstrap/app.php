@@ -58,8 +58,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // A message body is kept exactly as typed, and a project file's text exactly as its host read it, its leading and
         // trailing spaces and newlines included.
         $middleware->trimStrings(except: ['body', fn (Request $request) => $request->is('host/reports/project-reads/*')]);
-        // A signed agent or host call reaches its handler exactly as it was signed: an empty string stays an empty string.
-        $middleware->convertEmptyStringsToNull(except: [fn (Request $request) => $request->is('agent/*', 'host/*')]);
+        // Signed calls keep empty strings such as the response from a silent shell command.
+        $middleware->convertEmptyStringsToNull(except: [
+            fn (Request $request) => $request->is('agent/*', 'host/*')
+                || ($request->isMethod('POST') && $request->is('hooks/*')),
+        ]);
         // A user's write is receipted under the Idempotency-Key header it carries.
         $middleware->web(append: [
             ReadIdempotencyKey::class,
