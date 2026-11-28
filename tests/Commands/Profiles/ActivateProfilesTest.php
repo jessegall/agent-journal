@@ -397,7 +397,7 @@ final class ActivateProfilesTest extends TestCase
         $this->assertEquals(ExecutionBudgets::defaults(), $helper->budgets);
     }
 
-    public function test_the_main_agent_defaults_to_a_terminal_and_each_helper_to_headless(): void
+    public function test_each_built_in_profile_defaults_to_headless(): void
     {
         $this->activateProfile('journal-main', ProfileBase::mainAgent());
         $this->activateProfile('journal-reviewer', ProfileBase::readOnlyHelper());
@@ -408,7 +408,7 @@ final class ActivateProfilesTest extends TestCase
             ['journal-main', 'journal-reviewer', 'journal-worker'],
         );
 
-        $this->assertSame([DriverType::Terminal, DriverType::Headless, DriverType::Headless], $driverTypes);
+        $this->assertSame([DriverType::Headless, DriverType::Headless, DriverType::Headless], $driverTypes);
     }
 
     public function test_locally_the_main_agent_stays_on_the_protected_host_with_the_default_budget(): void

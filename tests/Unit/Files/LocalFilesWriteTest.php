@@ -50,11 +50,12 @@ final class LocalFilesWriteTest extends TestCase
     public function test_a_whole_file_write_replaces_the_file_and_leaves_no_temporary_file(): void
     {
         file_put_contents("{$this->project}/manifest.json", 'old');
+        $entries = scandir($this->project);
 
         $this->files()->write($this->path('manifest.json'), 'new');
 
         $this->assertSame('new', file_get_contents("{$this->project}/manifest.json"));
-        $this->assertSame(['manifest.json', 'vendor'], array_values(array_diff(scandir($this->project) ?: [], ['.', '..'])));
+        $this->assertSame($entries, scandir($this->project));
         $this->assertSame(0o644, fileperms("{$this->project}/manifest.json") & 0o777);
     }
 

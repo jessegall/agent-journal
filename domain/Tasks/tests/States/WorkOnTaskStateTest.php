@@ -377,7 +377,7 @@ final class WorkOnTaskStateTest extends TestCase
     {
         $frames = array_filter(
             AgentStackRow::query()->withoutGlobalScopes()->forTarget($this->writerTarget())->sole()->frames->all(),
-            fn (FrameRecord $frame) => ! $frame->isBottom,
+            fn (FrameRecord $frame) => $frame->reference->typeKey === WorkOnTaskStateReference::key(),
         );
 
         return array_values(array_map(function (FrameRecord $frame): string {

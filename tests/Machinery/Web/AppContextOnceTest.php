@@ -27,9 +27,10 @@ final class AppContextOnceTest extends TestCase
 
     public function test_the_app_context_comes_with_the_first_page_and_not_again_on_the_next_visit(): void
     {
-        $this->journal->owner();
+        $this->journal->owner()->installProfiles();
 
         $firstPage = $this->visit();
+        $firstPage->assertOk();
         $first = $firstPage->json('props');
         $kept = implode(',', array_keys((array) $firstPage->json('onceProps')));
         $next = $this->visit(['X-Inertia-Except-Once-Props' => $kept])->json('props');
@@ -43,11 +44,12 @@ final class AppContextOnceTest extends TestCase
                 array_key_exists('startAccounts', $next),
             ],
         );
+        $this->assertNotEmpty($first['startAccounts'][0]['defaultModel']);
     }
 
     public function test_after_a_route_that_changes_it_the_next_page_sends_it_again(): void
     {
-        $this->journal->owner();
+        $this->journal->owner()->installProfiles();
         $kept = implode(',', array_keys((array) $this->visit()->json('onceProps')));
 
         $next = $this->withSession(['journal.app-context-stale' => true])

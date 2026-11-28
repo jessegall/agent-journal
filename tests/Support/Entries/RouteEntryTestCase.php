@@ -49,6 +49,10 @@ abstract class RouteEntryTestCase extends TestCase
      */
     protected function assertReachedAndDispatchesItsCommands(RouteCall $call): void
     {
+        if ($call->caller === Caller::User && $this->isPageVisit()) {
+            $this->journal->installProfiles();
+        }
+
         $this->journal->sinkCommands()->sinkReplies($call->replies);
 
         $response = $this->send($call, $call->caller);
@@ -232,13 +236,18 @@ abstract class RouteEntryTestCase extends TestCase
      */
     private function assertRendersItsPage(TestResponse $response): void
     {
-        $route = $this->route();
-
-        if ($this->entry()->method !== 'GET' || $route->getControllerClass() !== PageController::class) {
+        if (! $this->isPageVisit()) {
             return;
         }
 
-        $component = $this->app->make(ClientDeclarations::class)->page(DeclaredRouteKey::of($route))->componentName();
+        $component = $this->app->make(ClientDeclarations::class)
+            ->page(DeclaredRouteKey::of($this->route()))
+            ->componentName();
         $response->assertInertia(fn (AssertableInertia $page) => $page->component($component, false));
+    }
+
+    private function isPageVisit(): bool
+    {
+        return $this->entry()->method === 'GET' && $this->route()->getControllerClass() === PageController::class;
     }
 }

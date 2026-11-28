@@ -8,7 +8,6 @@ use App\Providers\DomainEventServiceProvider;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use Domain\Comments\CommentsDomain;
-use Domain\Documents\DocumentsDomain;
 use Domain\Tasks\TasksDomain;
 use Tests\TestCase;
 
@@ -38,15 +37,12 @@ final class DomainListTest extends TestCase
                 'Sequences',
                 'Questions',
                 'Reminders',
-                'Helpers',
             ],
             array_map(fn (DomainEntry $entry) => $entry->name, $registry->all()),
         );
         $this->assertStringEndsWith('/domain/Plans/src', $registry->get('Plans')->folder);
         $this->assertSame([TasksDomain::class], $registry->get('Plans')->requires);
         $this->assertSame([CommentsDomain::class], $registry->get('Tasks')->requires);
-        $this->assertSame([DocumentsDomain::class], $registry->get('Helpers')->requires);
-        $this->assertStringEndsWith('/domain/Helpers/src', $registry->get('Helpers')->folder);
     }
 
     public function test_listeners_are_discovered_only_in_the_domain_and_core_listener_folders(): void

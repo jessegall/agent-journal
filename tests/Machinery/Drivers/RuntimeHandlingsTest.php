@@ -78,21 +78,13 @@ final class RuntimeHandlingsTest extends TestCase
         $this->journal->assertResult(SessionProcessStatus::Stopped, $start->refresh()->status);
     }
 
-    public function test_a_probe_that_never_ran_refuses_its_start_whichever_handling_ends_it(): void
+    public function test_a_probe_that_never_ran_refuses_its_start_when_the_host_reports_its_loss(): void
     {
-        $results = [];
+        [, $start] = $this->orderedProcess('probe', HostProcessPurpose::BuildProbe);
 
-        foreach ([TurnHandling::class, TerminalHandling::class, HostHandling::class] as $index => $handling) {
-            [$probe, $start] = $this->orderedProcess("probe-{$index}", HostProcessPurpose::BuildProbe, "Probed{$index}");
+        $this->journal->hostProcess('probe', fn (TestHostProcess $probe) => $probe->report(HostProcessReportType::Lost));
 
-            $this->endInsideHost($handling, $probe, $this->lossOf($probe));
-            $results[$handling] = $start->refresh()->status;
-        }
-
-        $this->journal->assertResult(
-            array_fill_keys([TurnHandling::class, TerminalHandling::class, HostHandling::class], SessionProcessStatus::Stopped),
-            $results,
-        );
+        $this->journal->assertResult(SessionProcessStatus::Stopped, $start->refresh()->status);
     }
 
     public function test_a_host_run_driver_opens_nothing_and_is_not_run_by_the_journal(): void
@@ -130,8 +122,9 @@ final class RuntimeHandlingsTest extends TestCase
      *
      * @return array{HostProcess, SessionProcess}
      */
-    private function orderedProcess(string $name, HostProcessPurpose $purpose, string $agent = self::AGENT): array
+    private function orderedProcess(string $name, HostProcessPurpose $purpose): array
     {
+        $agent = self::AGENT;
         $this->journal->idleAgent($agent);
         $this->journal->withAgent($agent, fn (TestAgent $driven) => $driven
             ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal));

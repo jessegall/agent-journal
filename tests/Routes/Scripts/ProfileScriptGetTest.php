@@ -19,7 +19,7 @@ final class ProfileScriptGetTest extends GuardedRouteEntryTestCase
 {
     public function test_the_script_result_uses_the_profile_in_the_route(): void
     {
-        $owner = $this->journal->owner()->ownerUser();
+        $owner = $this->journal->owner()->installProfiles()->ownerUser();
 
         $this->actingAs($owner)
             ->get(route('scripts.profile-script', ['profile' => 'draft-test']).'?profile=ignored')

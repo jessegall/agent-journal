@@ -46,7 +46,7 @@ final class PagePropsTest extends TestCase
 
     public function test_the_agent_section_reads_the_plain_form_request_only_when_its_group_is_loaded(): void
     {
-        $journal = $this->journal->owner()->idleAgent('Second agent');
+        $journal = $this->journal->owner()->installProfiles()->idleAgent('Second agent');
         $agent = $journal->agentCalled('Second agent');
         $section = 'section_web_bar_chat_agent';
         $this->app->bind(
@@ -65,7 +65,7 @@ final class PagePropsTest extends TestCase
 
     public function test_home_loads_the_full_chat_content_for_the_requested_column_alone(): void
     {
-        $journal = $this->journal->owner()->idleAgent('Selected agent')->idleAgent('Other column');
+        $journal = $this->journal->owner()->installProfiles()->idleAgent('Selected agent')->idleAgent('Other column');
         $selected = $journal->agentCalled('Selected agent')->id;
         $column = $journal->agentCalled('Other column')->id;
         $prop = 'window_chat_conversation';
@@ -87,7 +87,7 @@ final class PagePropsTest extends TestCase
 
     public function test_every_on_screen_prop_listens_on_the_viewers_channel_for_the_page_events(): void
     {
-        $this->journal->owner();
+        $this->journal->owner()->installProfiles();
         $channel = UserChannel::nameFor((string) $this->journal->ownerUser()->id);
 
         $live = $this->pageObject($this->actingAs($this->journal->ownerUser())->get(route('home')))['liveProps'];
@@ -116,7 +116,7 @@ final class PagePropsTest extends TestCase
 
     public function test_the_inspector_reads_nothing_while_no_record_is_open(): void
     {
-        $this->journal->owner();
+        $this->journal->owner()->installProfiles();
 
         $this->actingAs($this->journal->ownerUser())->get(route('home'))->assertInertia(
             fn (AssertableInertia $page) => $page->reloadOnly(
