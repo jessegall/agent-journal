@@ -12,8 +12,8 @@ use Spatie\LaravelData\Support\DataProperty;
 final class AccountAddCast implements Cast
 {
     /**
-     * @param array<string, mixed> $properties
-     * @param CreationContext<Data> $context
+     * @param  array<string, mixed>  $properties
+     * @param  CreationContext<Data>  $context
      */
     public function cast(
         DataProperty $property,

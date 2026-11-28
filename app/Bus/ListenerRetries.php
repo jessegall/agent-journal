@@ -20,13 +20,13 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\RetryAttempt;
 use App\Models\Hosts\HostProcess;
+use App\Support\Reflector;
 use App\Support\StackTransaction;
 use App\Time\Contracts\ServerClock;
 use App\Values\RetrySchedule;
 use Illuminate\Contracts\Bus\Dispatcher as Jobs;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Events\Dispatcher as Events;
-use ReflectionClass;
 use Throwable;
 
 final readonly class ListenerRetries
@@ -43,13 +43,13 @@ final readonly class ListenerRetries
     {
         $run = $failure->run;
 
-        if ($run === null || $failure->cause instanceof CommandRefusal || ! class_exists($run->listenerClass())) {
+        if ($run === null || $failure->cause instanceof CommandRefusal) {
             return;
         }
 
-        $listener = new ReflectionClass($run->listenerClass());
+        $listener = Reflector::find($run->listenerClass())->getOrElse(null);
 
-        if ($listener->getAttributes(RetriedWhenItFails::class) !== []) {
+        if ($listener !== null && $listener->isClass() && $listener->hasAttribute(RetriedWhenItFails::class)) {
             $this->enqueue($run, 1);
         }
     }

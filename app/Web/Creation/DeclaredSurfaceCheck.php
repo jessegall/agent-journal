@@ -59,11 +59,10 @@ final class DeclaredSurfaceCheck
         $this->assertProduct($owner, $key, $window);
         $this->assertBuilder($key, $window, PageBuilder::class);
 
-        if (! Reflector::exists($window->type)) {
-            throw InvalidSurface::windowType($key, $window->type);
-        }
-
-        $parent = Reflector::of($window->type)->parent();
+        $type = Reflector::find($window->type)->getOrCall(
+            static fn () => throw InvalidSurface::windowType($key, $window->type),
+        );
+        $parent = $type->parent();
 
         if ($parent->filter(static fn (Reflector $class): bool => $class->name() === Data::class)->isEmpty()) {
             throw InvalidSurface::windowType($key, $window->type);
@@ -94,14 +93,12 @@ final class DeclaredSurfaceCheck
         }
     }
 
-    /** @param class-string $otherContract */
+    /** @param class-string<PageBuilder>|class-string<WindowBuilder> $otherContract */
     private function assertBuilder(string $key, SurfaceDefinition $surface, string $otherContract): void
     {
-        if (! Reflector::exists($surface->builder)) {
-            throw InvalidSurface::builder($key, $surface->builder, $surface->type);
-        }
-
-        $builder = Reflector::of($surface->builder);
+        $builder = Reflector::find($surface->builder)->getOrCall(
+            static fn () => throw InvalidSurface::builder($key, $surface->builder, $surface->type),
+        );
 
         if (! $builder->isFinal() || $builder->parent()->isDefined()
             || $builder->implements($otherContract) || ! $builder->hasMethod('build')) {

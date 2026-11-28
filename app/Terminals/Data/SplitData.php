@@ -21,4 +21,9 @@ final class SplitData extends PaneNodeData
     ) {
         parent::__construct(PaneNodeType::Split);
     }
+
+    public function withChildren(PaneNodeData $first, PaneNodeData $second): self
+    {
+        return clone ($this, ['first' => $first, 'second' => $second]);
+    }
 }

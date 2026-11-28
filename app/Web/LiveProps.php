@@ -49,7 +49,7 @@ final readonly class LiveProps
     private function listeners(Live|null $live): Option
     {
         return $this->users->currentUser()->map(
-            fn (CurrentUser $user) => LiveListeners::pageChanges($user->id, $live?->events ?? []),
+            fn (CurrentUser $user) => LiveListeners::pageChanges($user->id, $live->events ?? []),
         );
     }
 }

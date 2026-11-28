@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Attributes;
 
+use App\Support\Reflector;
 use App\Web\Attributes\Concerns\InjectsSurfaceValue;
 use App\Web\Creation\Exceptions\InvalidSurfaceInput;
 use App\Web\Creation\SurfaceContext;
@@ -28,7 +29,13 @@ final readonly class RouteModel implements InjectsPropertyValue
             throw InvalidSurfaceInput::context($property->className, $property->name);
         }
 
-        $alias = Relation::getMorphAlias($model);
+        $type = Reflector::find($model)->getOrElse(null);
+
+        if ($type === null || ! $type->is(Model::class)) {
+            throw InvalidSurfaceInput::context($property->className, $property->name);
+        }
+
+        $alias = Relation::getMorphAlias($type->name());
 
         if (! is_string($alias) || $alias === $model) {
             throw InvalidSurfaceInput::context($property->className, $property->name);

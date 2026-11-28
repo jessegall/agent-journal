@@ -22,4 +22,13 @@ final class PaneData extends PaneNodeData
     ) {
         parent::__construct(PaneNodeType::Pane);
     }
+
+    /** @param callable(string): bool $available */
+    public function keepingWindows(callable $available): self
+    {
+        $windows = array_values(array_filter($this->windows, $available));
+        $active = in_array($this->active, $windows, true) ? $this->active : ($windows[0] ?? null);
+
+        return clone ($this, ['windows' => $windows, 'active' => $active]);
+    }
 }
