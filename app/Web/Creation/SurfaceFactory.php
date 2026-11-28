@@ -1,0 +1,78 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Web\Creation;
+
+use App\Support\Reflector;
+use App\Support\Registry;
+use App\Web\Creation\Contracts\PageBuilder;
+use App\Web\Creation\Contracts\WindowBuilder;
+use App\Web\Creation\Exceptions\InvalidBuilder;
+use App\Web\Creation\Exceptions\MissingBuilder;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Http\Request;
+use Spatie\LaravelData\Data;
+
+/** @template TBuilder of PageBuilder|WindowBuilder */
+abstract class SurfaceFactory
+{
+    /** @var Registry<class-string<TBuilder>> */
+    private readonly Registry $builders;
+
+    /** @param class-string<TBuilder> $contract */
+    protected function __construct(
+        private readonly Container $container,
+        private readonly string $surface,
+        private readonly string $contract,
+    ) {
+        $this->builders = Registry::once(
+            static fn (string $type) => MissingBuilder::forType($surface, $type),
+            static fn (string $type) => InvalidBuilder::duplicate($surface, $type),
+        );
+    }
+
+    public function register(string $type, string $builder): void
+    {
+        if (! $this->isConcreteData($type) || ! $this->isConcreteBuilder($builder)) {
+            throw InvalidBuilder::registration($this->surface, $type, $builder);
+        }
+
+        $this->builders->put($type, $builder);
+    }
+
+    /** @return class-string<TBuilder> */
+    public function builderFor(string $type): string
+    {
+        return $this->builders->get($type);
+    }
+
+    /**
+     * @template TProduct of Data
+     * @param  class-string<TProduct>  $type
+     * @return TProduct
+     */
+    public function create(string $type, Request $visit): Data
+    {
+        $builder = $this->container->make($this->builderFor($type));
+        $product = $builder->build($visit);
+
+        if ($product::class !== $type) {
+            throw InvalidBuilder::result($builder::class, $product::class, $type);
+        }
+
+        /** @var TProduct $product */
+        return $product;
+    }
+
+    private function isConcreteData(string $type): bool
+    {
+        return is_subclass_of($type, Data::class) && ! Reflector::of($type)->isAbstract();
+    }
+
+    /** @phpstan-assert-if-true class-string<TBuilder> $builder */
+    private function isConcreteBuilder(string $builder): bool
+    {
+        return is_subclass_of($builder, $this->contract) && Reflector::of($builder)->isInstantiable();
+    }
+}
