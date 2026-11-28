@@ -19,6 +19,7 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordReading;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * The filed reports, newest first, a page at a time.
@@ -33,8 +34,7 @@ final readonly class ReportResolver implements ReportResolverContract
         $size = $filters->pageSize()->rows;
         $words = $filters->searchWords();
 
-        $reports = Report::query()->sharedPublished()->inAttention($filters->attention->state())
-            ->when($filters->searches(), fn (Builder $query) => $query->matchingText($words->get()))
+        $reports = $this->matching($filters)
             ->when(
                 $filters->after !== null,
                 fn (Builder $query) => $query->where('id', '<', $filters->after),
@@ -56,6 +56,24 @@ final readonly class ReportResolver implements ReportResolverContract
             'hasNextPage' => $reports->count() > $size,
             'next' => $reports->count() > $size ? $page->last()?->id : null,
         ]);
+    }
+
+    /** @return Collection<int, Report> */
+    public function preview(DocumentFilters $filters, int $limit): Collection
+    {
+        return $this->matching($filters)
+            ->newestFirst()
+            ->limit($limit)
+            ->get(['id', 'number', 'title']);
+    }
+
+    /** @return Builder<Report> */
+    private function matching(DocumentFilters $filters): Builder
+    {
+        $words = $filters->searchWords();
+
+        return Report::query()->sharedPublished()->inAttention($filters->attention->state())
+            ->when($filters->searches(), fn (Builder $query) => $query->matchingText($words->get()));
     }
 
     public function read(int $number, TextSelection $selection): RecordText

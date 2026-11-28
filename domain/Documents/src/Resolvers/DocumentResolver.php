@@ -21,6 +21,7 @@ use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Support\RecordReading;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 
 /**
@@ -38,7 +39,7 @@ final readonly class DocumentResolver implements DocumentResolverContract
         $words = $filters->searchWords();
         $matching = fn (Builder|HasOneOrMany $revisions) => self::closedMatching($revisions, $words->get());
 
-        $documents = Document::query()->sharedPublished()->inAttention($filters->attention->state())
+        $documents = $this->matching($filters)
             ->when(
                 $filters->searches(),
                 fn (Builder $query) => $query->withCurrentRevision(),
@@ -46,14 +47,7 @@ final readonly class DocumentResolver implements DocumentResolverContract
             )
             ->when(
                 $filters->searches() && $filters->revisions,
-                fn (Builder $query) => $query->whereHas('revisions', $matching)->with(['revisions' => $matching]),
-            )
-            ->when(
-                $filters->searches() && ! $filters->revisions,
-                fn (Builder $query) => $query->whereIn(
-                    'current_revision_id',
-                    DocumentRevision::query()->closed()->matchingText($words->get())->keys(),
-                ),
+                fn (Builder $query) => $query->with(['revisions' => $matching]),
             )
             ->when(
                 $filters->after !== null,
@@ -78,6 +72,36 @@ final readonly class DocumentResolver implements DocumentResolverContract
             'hasNextPage' => $documents->count() > $size,
             'next' => $documents->count() > $size ? $page->last()?->id : null,
         ]);
+    }
+
+    /** @return Collection<int, Document> */
+    public function preview(DocumentFilters $filters, int $limit): Collection
+    {
+        return $this->matching($filters)
+            ->newestFirst()
+            ->limit($limit)
+            ->with('currentRevision:id,title')
+            ->get(['id', 'number', 'current_revision_id']);
+    }
+
+    /** @return Builder<Document> */
+    private function matching(DocumentFilters $filters): Builder
+    {
+        $words = $filters->searchWords();
+        $matching = fn (Builder|HasOneOrMany $revisions) => self::closedMatching($revisions, $words->get());
+
+        return Document::query()->sharedPublished()->inAttention($filters->attention->state())
+            ->when(
+                $filters->searches() && $filters->revisions,
+                fn (Builder $query) => $query->whereHas('revisions', $matching),
+            )
+            ->when(
+                $filters->searches() && ! $filters->revisions,
+                fn (Builder $query) => $query->whereIn(
+                    'current_revision_id',
+                    DocumentRevision::query()->closed()->matchingText($words->get())->keys(),
+                ),
+            );
     }
 
     public function revisions(int $number, int $page): array
