@@ -6,6 +6,7 @@ namespace Tests\Unit\Recordings\Scenarios;
 
 use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
 use App\Accounts\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
+use App\Agents\Commands\CreateMainAgent\CreateMainAgentCommand;
 use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\InterruptAgent\InterruptAgentCommand;
 use App\Agents\Commands\StartAgent\StartAgentCommand;
@@ -77,6 +78,33 @@ final class ScenarioStepTest extends TestCase
                 [$interrupt::class, $release::class, $stop::class],
             ],
         );
+    }
+
+    public function test_a_new_chat_makes_a_main_agent_on_the_scenarios_driver_and_names_none_made_before_the_play(): void
+    {
+        $this->journal->owner();
+        $scenario = Scenario::read('claude-code/new-chat', (string) json_encode(['steps' => [
+            ['do' => 'new-chat', 'agent' => 'Chat', 'model' => 'claude-haiku-5-5'],
+            ['do' => 'send-chat-message', 'agent' => 'Chat', 'text' => 'Run: ls.'],
+            ['do' => 'stop', 'agent' => 'Chat'],
+        ]]));
+        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), [], 'journal-runner@sha256:1');
+
+        $chat = $scenario->steps[0]->commandFor($run, $this->app->make(DriverCatalogue::class));
+
+        $this->assertInstanceOf(CreateMainAgentCommand::class, $chat);
+        $this->assertSame(
+            ['claude-code', 'claude-haiku-5-5', null, []],
+            [$chat->driver, $chat->model, $chat->account, $scenario->agentsMadeBeforePlay()],
+        );
+    }
+
+    public function test_a_chat_message_without_its_text_is_refused_when_read(): void
+    {
+        $this->expectException(ScenarioInvalid::class);
+        $this->expectExceptionMessage('lacks text');
+
+        Scenario::read('claude-code/new-chat', '{"steps":[{"do":"send-chat-message","agent":"Chat"}]}');
     }
 
     public function test_a_start_without_a_model_is_refused_when_read(): void

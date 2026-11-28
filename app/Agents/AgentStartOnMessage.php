@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Chat\Support;
+namespace App\Agents;
 
 use App\Agents\Commands\StartProfileMain\StartProfileMainCommand;
 use App\Bus\Contracts\CommandBus;
@@ -26,20 +26,26 @@ final readonly class AgentStartOnMessage
     ) {}
 
     /**
+     * Answers whether it started the agent, under the request's key.
+     *
      * @throws SessionOutdated
      * @throws StackTargetRefused
      */
-    public function prepare(string $agentId, string|null $expectedSessionId): void
+    public function prepare(string $agentId, string|null $expectedSessionId): bool
     {
         $agent = $this->agents->visibleAgent($agentId);
         $agent->assertRuns($expectedSessionId);
 
-        if ($agent->isStartable()) {
-            $this->commands->run(StartProfileMainCommand::onMessage(
-                $this->requestKey->requireFor(StartProfileMainCommand::class),
-                $agent,
-                AgentStartChoice::findFor($agent->agentId),
-            ));
+        if (! $agent->isStartable()) {
+            return false;
         }
+
+        $this->commands->run(StartProfileMainCommand::onMessage(
+            $this->requestKey->requireFor(StartProfileMainCommand::class),
+            $agent,
+            AgentStartChoice::findFor($agent->agentId),
+        ));
+
+        return true;
     }
 }

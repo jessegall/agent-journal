@@ -7,12 +7,16 @@ namespace App\Recordings\Scenarios;
 use App\Accounts\Enums\CommandEntry;
 use App\Accounts\SignInChallenges;
 use App\Accounts\Values\SignInStarted;
+use App\Agents\AgentStartOnMessage;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OwnerCommands;
+use App\Bus\ConsoleOwner;
 use App\Bus\RequestKey;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
+use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
@@ -21,6 +25,7 @@ use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Enums\ScenarioStepType;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Recordings\Scenarios\Exceptions\ScenarioStuck;
+use App\Support\ActorReference;
 use App\Time\Contracts\Sleeper;
 use App\Values\FilePath;
 use App\Values\SignInChallenge;
@@ -73,6 +78,11 @@ final readonly class ScenarioPlayer
     private const int QUIET_SECOND_LIMIT = 20;
 
     /**
+     * The chat a send-chat-message step posts in: one of the owner and the agent, as Home's chat with an agent is.
+     */
+    private const string CHAT_PROVIDER = 'recordings.chat';
+
+    /**
      * The program line that restarts the local host, run by the record script on the machine.
      */
     private const array HOST_RESTART = ['docker', 'compose', 'restart', 'agent-host'];
@@ -90,6 +100,8 @@ final readonly class ScenarioPlayer
         private Sleeper $sleeper,
         private Files $files,
         private RequestKey $requestKey,
+        private ConsoleOwner $owner,
+        private AgentStartOnMessage $starts,
     ) {}
 
     /**
@@ -178,6 +190,12 @@ final readonly class ScenarioPlayer
             return;
         }
 
+        if ($step->stepType === ScenarioStepType::SendChatMessage) {
+            $this->sendChatMessage($run, $step);
+
+            return;
+        }
+
         if ($step->stepType->isCommand()) {
             // A step is one request of the owner, so a command that runs only under a request key gets its own.
             $result = $this->requestKey->independently(
@@ -187,6 +205,10 @@ final readonly class ScenarioPlayer
 
             if ($result instanceof SignInStarted) {
                 $run->holdSignInAttempt($result->attemptId);
+            }
+
+            if ($result instanceof ActorReference) {
+                $run->holdAgent((string) $step->agent, $result->id);
             }
 
             return;
@@ -233,6 +255,48 @@ final readonly class ScenarioPlayer
 
         $fact = $step->fact ?? throw ScenarioInvalid::at($run->scenario->name, $run->stepIndex(), 'waits for no fact');
         $this->waitFor($run, $fact, (int) $step->seconds);
+    }
+
+    /**
+     * Sends a message as the chat's send does, under one request key: the agent is started first on the choice kept
+     * for its next start when it runs no session, then the message is posted in its chat with the owner.
+     *
+     * @throws ScenarioInvalid
+     */
+    private function sendChatMessage(ScenarioRun $run, ScenarioStep $step): void
+    {
+        $agent = $run->agentNamed((string) $step->agent);
+        $owner = ActorReference::of($run->owner);
+        $members = [$owner, ActorReference::of($agent)];
+        $chat = $this->requestKey->independently(
+            strtolower((string) Str::ulid()),
+            fn () => $this->commands->run(new OpenInboxCommand(
+                self::CHAT_PROVIDER,
+                implode('|', array_map(fn (ActorReference $member) => $member->text(), $members)),
+                $agent->name,
+                $members,
+            )),
+        );
+        $key = strtolower((string) Str::ulid());
+
+        $this->requestKey->independently($key, function () use ($run, $step, $agent, $chat, $key): void {
+            $this->owner->actAsOwner();
+
+            try {
+                $isStarted = $this->starts->prepare($agent->id, null);
+            } finally {
+                $this->owner->finish();
+            }
+
+            // The start's own wake is the turn that reads the message; a running session takes one more turn.
+            if ($isStarted) {
+                $run->holdStartRequest($key);
+            } else {
+                $run->askTurn();
+            }
+
+            $this->commands->run(new SendMessageCommand($chat, (string) $step->text));
+        });
     }
 
     /**

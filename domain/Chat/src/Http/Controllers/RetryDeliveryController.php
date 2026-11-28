@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
+use App\Agents\AgentStartOnMessage;
 use App\Agents\Commands\StartProfileMain\StartProfileMainCommand;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Messages\Commands\RetryDelivery\RetryDeliveryCommand;
 use Domain\Chat\Data\RetryDeliveryInput;
-use Domain\Chat\Support\AgentStartOnMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

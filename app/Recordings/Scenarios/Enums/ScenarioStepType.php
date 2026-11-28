@@ -11,6 +11,10 @@ enum ScenarioStepType: string
 {
     case StartSession = 'start-session';
     case SendMessage = 'send-message';
+    // Home's New chat: a new main agent on the scenario's driver and the model named, kept under the agent's name.
+    case NewChat = 'new-chat';
+    // The chat's send: the agent is started on its kept choice when it runs no session, then the message is posted.
+    case SendChatMessage = 'send-chat-message';
     case Interrupt = 'interrupt';
     case ReleaseHold = 'release-hold';
     case Stop = 'stop';
@@ -43,6 +47,7 @@ enum ScenarioStepType: string
         return in_array($this, [
             self::StartSession,
             self::SendMessage,
+            self::NewChat,
             self::Interrupt,
             self::ReleaseHold,
             self::Stop,
@@ -105,9 +110,13 @@ enum ScenarioStepType: string
                 'model',
                 'effort',
             ],
-            self::SendMessage => [
+            self::SendMessage, self::SendChatMessage => [
                 'agent',
                 'text',
+            ],
+            self::NewChat => [
+                'agent',
+                'model',
             ],
             self::Interrupt, self::ReleaseHold, self::Stop => ['agent'],
             self::ChangeModel => [

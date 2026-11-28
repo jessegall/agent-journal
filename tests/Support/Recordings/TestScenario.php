@@ -192,7 +192,7 @@ final class TestScenario
             ->readyRecordedDriverImagesOn(self::HOST, $playing->driverImages);
         $agents = [];
 
-        foreach (array_unique(array_filter(array_map(fn ($step) => $step->agent, $scenario->steps))) as $agent) {
+        foreach ($scenario->agentsMadeBeforePlay() as $agent) {
             $this->journal->idleAgent($agent, self::AGENT_PROFILE);
             $agents[$agent] = $this->journal->agentCalled($agent)->id;
         }
