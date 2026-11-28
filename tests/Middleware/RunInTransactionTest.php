@@ -13,7 +13,6 @@ use App\Bus\EventUnitLifecycle;
 use App\Bus\Exceptions\CausalDepthExceeded;
 use App\Bus\Exceptions\CommandRefused;
 use App\Bus\Exceptions\CommandTransactionMismatch;
-use App\Bus\Exceptions\CommittedFactListenerFailed;
 use App\Bus\Exceptions\EventUnitRefused;
 use App\Bus\Exceptions\ExplicitTransactionInCommand;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
@@ -252,7 +251,7 @@ final class RunInTransactionTest extends TestCase
     }
 
     // A failure is never swallowed. Every fact still goes out, then the failure is thrown.
-    public function test_a_failing_listener_is_thrown_once_the_next_fact_went_out_too(): void
+    public function test_a_failing_listener_is_reported_once_the_next_fact_went_out_too(): void
     {
         $this->preparePublication();
         $first = new RaisingRow();
@@ -271,12 +270,13 @@ final class RunInTransactionTest extends TestCase
         };
         $this->app->make(Dispatcher::class)->listen(RowRenamed::class, $listener);
 
-        $commit = fn () => $this->commit(function () use ($first, $second): void {
+        $this->journal->expectListenerFailure('a listener');
+
+        $this->commit(function () use ($first, $second): void {
             $first->rename('failing');
             $second->rename('next');
         });
 
-        $this->assertThrows($commit, CommittedFactListenerFailed::class);
         $this->assertSame(['failing', 'next'], $heard);
         $this->assertSame('failing', $first->refresh()->name);
     }

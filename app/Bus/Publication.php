@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus;
 
+use App\Bus\Contracts\CommittedListenerFailures;
 use App\Bus\Contracts\Events\FactStaging;
 use App\Bus\Exceptions\CommittedFactListenerFailed;
 use App\Contracts\Events\Event;
@@ -31,6 +32,7 @@ final class Publication
     public function __construct(
         private readonly CommandNesting $nesting,
         private readonly FactStaging $staging,
+        private readonly CommittedListenerFailures $failed,
     ) {}
 
     /**
@@ -46,9 +48,7 @@ final class Publication
     }
 
     /**
-     * Releases every committed unit's facts, oldest unit first.
-     *
-     * @throws CommittedFactListenerFailed
+     * Releases every committed unit's facts, oldest unit first; a listener that failed is handed on once all ran.
      */
     public function release(): void
     {
@@ -69,21 +69,21 @@ final class Publication
         $failures = $this->failures;
         $this->failures = [];
 
-        if ($failures !== []) {
-            throw $failures[0];
+        foreach ($failures as $failure) {
+            $this->failed->take($failure);
         }
     }
 
     /**
      * Takes the failure of one listener: during a release it waits until every fact was handed out, so the listeners
-     * and facts after it still run; outside one it is thrown at once.
-     *
-     * @throws CommittedFactListenerFailed
+     * and facts after it still run; outside one it is handed on at once.
      */
     public function fail(CommittedFactListenerFailed $failure): void
     {
         if (! $this->isReleasing) {
-            throw $failure;
+            $this->failed->take($failure);
+
+            return;
         }
 
         $this->failures[] = $failure;

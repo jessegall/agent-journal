@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommittedListenerFailures;
 use App\Bus\Contracts\GuardedCommandBus;
 use App\Bus\LaravelCommandBus;
 use App\Bus\OuterTransactionOwner;
@@ -35,6 +36,7 @@ use Illuminate\Translation\Translator;
 use Laravel\Fortify\Features;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\Support\Bus\RecordedListenerFailures;
 use Tests\Support\Bus\RefusingCommandBus;
 use Tests\Support\Console\PendingAppCommand;
 use Tests\Support\DomainLoadGuard;
@@ -79,6 +81,23 @@ abstract class TestCase extends BaseTestCase
         $this->app->make(Translator::class)->addNamespace('tests', base_path('tests/Fixtures/AgentTexts/lang'));
         $this->beforeApplicationDestroyed(fn () => $this->closeConnections());
         $this->keepProcessOutputApart();
+        // One recorder for the whole test, kept when a request of the test forgets the scoped instances.
+        $failures = $this->app->make(RecordedListenerFailures::class);
+        $this->app->bind(CommittedListenerFailures::class, fn () => $failures);
+    }
+
+    /**
+     * A listener that failed on a committed fact fails the test, unless the test expected that failure.
+     */
+    protected function assertPostConditions(): void
+    {
+        parent::assertPostConditions();
+
+        $failures = $this->app->make(CommittedListenerFailures::class);
+
+        if ($failures instanceof RecordedListenerFailures) {
+            $failures->assertAllExpected();
+        }
     }
 
     /**

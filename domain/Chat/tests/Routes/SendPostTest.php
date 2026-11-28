@@ -9,6 +9,8 @@ use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverSourceType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Values\SelectionSource;
+use App\Bus\IsolatedListener;
+use App\Events\Messages\MessageSent;
 use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Agents\AgentSession;
 use App\Sessions\StartReceipt;
@@ -17,7 +19,9 @@ use App\Values\ProfileKey;
 use App\Values\SelectedDriver;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Communication\FailingMessageListener;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
@@ -55,6 +59,30 @@ final class SendPostTest extends GuardedRouteEntryTestCase
             ->running()->pluck('id')->all();
 
         $this->assertSame([$opened->sessionId], $running);
+
+        $call = RouteCall::recorded('chat-send', ['01JPAGEREQUESTINBOX0000000' => $inbox->id])
+            ->payload([
+                'body' => 'Hello',
+                'agent' => $this->journal->agentCalled('Turning agent')->id,
+                'expectedSessionId' => $opened->sessionId,
+                'inboxId' => $inbox->id,
+            ]);
+
+        $this->send($call, $call->caller)->assertRedirect();
+
+        $this->journal->assertMessageSent($inbox, 'Owner', 'Hello');
+    }
+
+    public function test_a_send_whose_listener_fails_after_the_commit_still_answers_its_redirect(): void
+    {
+        $this->chooseActiveAccounts();
+        $inbox = $this->journal->owner()->inboxCalled('Owner');
+        $this->journal->showDriverArrangements()->idleAgent('Turning agent')->enrollHost('Turn host', ['/work']);
+        $this->journal->withAgent('Turning agent', fn (TestAgent $turningAgent) => $turningAgent
+            ->openRuntime('Turn host', '/work'));
+        $opened = $this->journal->openedRuntimeOf('Turning agent');
+        Event::listen(MessageSent::class, new IsolatedListener(MessageSent::class, FailingMessageListener::class.'@handle'));
+        $this->journal->expectListenerFailure(FailingMessageListener::class);
 
         $call = RouteCall::recorded('chat-send', ['01JPAGEREQUESTINBOX0000000' => $inbox->id])
             ->payload([
