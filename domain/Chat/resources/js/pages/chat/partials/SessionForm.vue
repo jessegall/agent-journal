@@ -12,12 +12,9 @@ import { useSwitchOperation } from "../../../composables/useSwitchOperation";
 import DriverChoiceFields from "./DriverChoiceFields.vue";
 
 /**
- * The Switch driver dialog: what runs the agent now, the Program, Account and Model to move it to, and what happens to
- * the conversation. The same program keeps its session and conversation, and its next turn runs on the new model or
- * account; another program starts a new session that carries the chat over (the default) or starts clean. While the
- * agent works it waits for the current turn unless told not to; with no session nothing starts now, and the next
- * message starts the agent on the new driver. Switch is off until something differs. A switch already under way is
- * followed again, never sent again.
+ * The Switch driver dialog, so the user moves an agent to another program, account or model: the same program keeps the
+ * conversation, another carries the chat over or starts clean, and a working agent may finish its turn first. Without a
+ * session it keeps the choice for the next message.
  */
 const props = defineProps<{ agent: AgentOptionData }>();
 

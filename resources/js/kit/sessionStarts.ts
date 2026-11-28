@@ -1,7 +1,5 @@
-// The shared kit a domain's components import as @kit/sessionStarts: Core's routes that create a new chat's main
-// agent, start, resume and switch an agent's session, settle a switch, open a live session's terminal, dismiss a
-// start outcome, cancel a start, check a start whose session is not verified yet, and the accounts a driver may start
-// with.
+// The shared kit a domain's components import as @kit/sessionStarts: Core's routes for an agent's session, to create
+// a chat's agent, start, switch, interrupt, stop or cancel it and read its accounts.
 export { startMain, switchMethod, switchStage } from '@/routes/profiles';
 export { recheck, retry } from '@/routes/agents/switch';
 export {

@@ -19,11 +19,9 @@ import {
 } from "../../../composables/useHandOver";
 
 /**
- * The one chat list, a popover under the chat's name (also Option+F): a search over each agent's name and what it does,
- * the filters All, Main agents, Helpers and Waits on you, then the chats On Home and the Recent ones, the most recently
- * active first, retired agents behind a toggle, in a list that scrolls under a foot that stays. Up and Down move,
- * Enter opens and Shift+Enter opens beside. A record dragged onto the name opens it; let go on a chat, it is handed to
- * that agent. Group chats are not listed.
+ * The one chat list, opened from the chat's name or Option+F, so the user finds and opens any agent's chat: a search,
+ * filters, the chats on Home then the recent ones, retired agents behind a toggle, and a bottom that stays. Shift+Enter
+ * opens a chat beside this one, and a record dropped on a chat is handed to that agent.
  */
 const props = defineProps<{
   agents: AgentOptionData[];

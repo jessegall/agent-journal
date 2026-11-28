@@ -18,10 +18,9 @@ use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\In;
 
 /**
- * A switch of an agent of the profile in the route to another driver, driver type, account or model: the session and
- * process generation the owner saw, so a stale tab is refused, and the request id that makes a repeat find the same
- * switch; whether another program's session first reads the chat, and whether the current turn stops now. Without a
- * session it is the choice the agent's next message starts it on.
+ * Moves an agent to another driver, account or model, at the session the owner saw so a stale tab is refused, with
+ * whether a new program's session reads the chat first and whether the turn stops now; without a session it keeps the
+ * choice for the agent's next start.
  */
 final class SwitchAgentDriverRequest extends FormRequest
 {

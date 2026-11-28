@@ -10,10 +10,8 @@ import ReplyLine from "./ReplyLine.vue";
 import DeliveryLine from "./DeliveryLine.vue";
 
 /**
- * One message of a chat: the viewer's own as a bubble on the right, another's on the left, only as wide as its text,
- * under its name line with React and Reply at that line's right end. A reply shows who it answers and a line of the
- * original above its text. Under the text come whether it is unread and its reactions, and under the viewer's own bubble
- * how far it got to the other member.
+ * One message of a chat as a bubble, the viewer's own on the right and others' on the left, with React, Reply, the message
+ * it answers, its reactions and, under the viewer's own, how far it got to the agent.
  */
 const props = defineProps<{
   message: MessageEntryData;
