@@ -21,9 +21,18 @@ final class ListAutoAssignmentsRequest extends FormRequest
     public function rules(ActorTypes $actorTypes): array
     {
         return [
-            'actorType' => ['required', Rule::in($actorTypes->requestTypes())],
-            'actorId' => ['required', 'ulid'],
-            'after' => ['nullable', 'ulid'],
+            'actorType' => [
+                'required',
+                Rule::in($actorTypes->requestTypes()),
+            ],
+            'actorId' => [
+                'required',
+                'ulid',
+            ],
+            'after' => [
+                'nullable',
+                'ulid',
+            ],
         ];
     }
 

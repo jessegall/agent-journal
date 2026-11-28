@@ -583,7 +583,10 @@ if (realpath($argv[0] ?? '') === __FILE__) {
     $migrationFolders = [];
 
     foreach (explode(',', (string) ($options['migrations'] ?? 'database/migrations')) as $pattern) {
-        $migrationFolders = [...$migrationFolders, ...(glob($pattern.(str_ends_with($pattern, 'domain') ? '/*/database/migrations' : '')) ?: [])];
+        $migrationFolders = [
+            ...$migrationFolders,
+            ...(glob($pattern.(str_ends_with($pattern, 'domain') ? '/*/database/migrations' : '')) ?: []),
+        ];
     }
 
     $lines = scopeIndexReport(array_slice($argv, $rest), $migrationFolders);

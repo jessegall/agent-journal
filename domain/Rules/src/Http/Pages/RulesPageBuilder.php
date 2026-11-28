@@ -158,7 +158,10 @@ final readonly class RulesPageBuilder implements PageBuilder
             ->style('stack')
             ->children(
                 ...$review,
-                ...[LayoutPartData::build()->asCollection()->key('rows')->style('list')->rows($rows)->finish(), $this->pagerOf($page)],
+                ...[
+                    LayoutPartData::build()->asCollection()->key('rows')->style('list')->rows($rows)->finish(),
+                    $this->pagerOf($page),
+                ],
             )
             ->finish();
     }

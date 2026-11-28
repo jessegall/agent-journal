@@ -118,7 +118,10 @@ final readonly class SkillStatusResolver
 
         foreach ($this->stacks->forTarget($session->target)->frames as $frame) {
             if ($frame->typeKey === $typeKey) {
-                $waiting = [...$waiting, ...$frame->textList('skillKeys')];
+                $waiting = [
+                    ...$waiting,
+                    ...$frame->textList('skillKeys'),
+                ];
             }
         }
 

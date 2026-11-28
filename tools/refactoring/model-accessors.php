@@ -66,7 +66,11 @@ const METHOD_RETURNS = [
 function answersAContract(string $class, string $method): bool
 {
     $type = Reflector::of($class);
-    $others = [...array_slice($type->lineage(), 1), ...$type->interfaces(), ...$type->allTraits()];
+    $others = [
+        ...array_slice($type->lineage(), 1),
+        ...$type->interfaces(),
+        ...$type->allTraits(),
+    ];
 
     return array_any($others, fn (Reflector $other) => $other->hasMethod($method));
 }

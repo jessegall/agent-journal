@@ -19,14 +19,43 @@ final class WorkspaceReadReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'available' => ['required', 'boolean'],
-            'dirty' => ['required', 'boolean'],
-            'clean' => ['required', 'boolean'],
-            'generation' => ['required', 'integer', 'min:0'],
-            'binding' => ['sometimes', 'string', 'max:64'],
-            'checkout' => ['required_with:binding', 'string', 'max:128'],
-            'head' => ['nullable', 'string', 'regex:/^[0-9a-f]{40}([0-9a-f]{24})?$/'],
-            'reason' => ['nullable', 'string', 'in:unborn,unavailable'],
+            'available' => [
+                'required',
+                'boolean',
+            ],
+            'dirty' => [
+                'required',
+                'boolean',
+            ],
+            'clean' => [
+                'required',
+                'boolean',
+            ],
+            'generation' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+            'binding' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
+            'checkout' => [
+                'required_with:binding',
+                'string',
+                'max:128',
+            ],
+            'head' => [
+                'nullable',
+                'string',
+                'regex:/^[0-9a-f]{40}([0-9a-f]{24})?$/',
+            ],
+            'reason' => [
+                'nullable',
+                'string',
+                'in:unborn,unavailable',
+            ],
         ];
     }
 

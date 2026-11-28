@@ -66,7 +66,10 @@ final readonly class OperationsResolver
         ];
 
         foreach (array_slice($outcomes, $offset, self::OUTCOMES_PER_PAGE) as $outcome) {
-            $page = [...$pageFields['outcomes'], $outcome];
+            $page = [
+                ...$pageFields['outcomes'],
+                $outcome,
+            ];
 
             if ($pageFields['outcomes'] !== [] && ! $this->budget->doesPayloadFit([
                 ...$pageFields,

@@ -68,8 +68,32 @@ function replacementsOf(string $rows): array
  */
 function textFiles(string $root): iterable
 {
-    $folders = ['app', 'tests', 'domain', 'config', 'routes', 'bootstrap', 'database', 'docs', 'tools', 'resources', 'scripts'];
-    $extensions = ['php', 'json', 'md', 'txt', 'ts', 'vue', 'neon', 'xml', 'yaml', 'yml', 'sh'];
+    $folders = [
+        'app',
+        'tests',
+        'domain',
+        'config',
+        'routes',
+        'bootstrap',
+        'database',
+        'docs',
+        'tools',
+        'resources',
+        'scripts',
+    ];
+    $extensions = [
+        'php',
+        'json',
+        'md',
+        'txt',
+        'ts',
+        'vue',
+        'neon',
+        'xml',
+        'yaml',
+        'yml',
+        'sh',
+    ];
 
     foreach ($folders as $folder) {
         if (! is_dir("{$root}/{$folder}")) {

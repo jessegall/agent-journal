@@ -16,7 +16,11 @@ final class AutoAssignmentPoolsRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['assignableType' => ['required', 'string', 'max:100']];
+        return ['assignableType' => [
+            'required',
+            'string',
+            'max:100',
+        ]];
     }
 
     public function assignableType(): string

@@ -20,11 +20,30 @@ final class TellFileCommentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'agent' => ['required', 'string', 'ulid'],
-            'path' => ['required', 'string', 'max:'.ProjectRead::PATH_CHARACTER_LIMIT],
-            'first_line' => ['required', 'integer', 'min:1'],
-            'last_line' => ['required', 'integer', 'gte:first_line'],
-            'comment' => ['required', 'string'],
+            'agent' => [
+                'required',
+                'string',
+                'ulid',
+            ],
+            'path' => [
+                'required',
+                'string',
+                'max:'.ProjectRead::PATH_CHARACTER_LIMIT,
+            ],
+            'first_line' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+            'last_line' => [
+                'required',
+                'integer',
+                'gte:first_line',
+            ],
+            'comment' => [
+                'required',
+                'string',
+            ],
         ];
     }
 

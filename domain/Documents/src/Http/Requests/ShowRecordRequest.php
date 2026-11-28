@@ -19,17 +19,55 @@ final class ShowRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'number' => ['required', 'string'],
-            'selection' => ['nullable', 'array'],
-            'selection.section' => ['nullable', 'string'],
-            'selection.firstLine' => ['nullable', 'integer', 'min:1'],
-            'selection.lastLine' => ['nullable', 'integer', 'min:1'],
-            'selection.bullets' => ['nullable', 'boolean'],
-            'selection.words' => ['nullable', 'string'],
-            'selection.all' => ['nullable', 'boolean'],
-            'revision' => ['nullable', 'integer', 'min:1'],
-            'at_revision' => ['nullable', 'integer', 'min:1'],
-            'page' => ['nullable', 'integer', 'min:1'],
+            'number' => [
+                'required',
+                'string',
+            ],
+            'selection' => [
+                'nullable',
+                'array',
+            ],
+            'selection.section' => [
+                'nullable',
+                'string',
+            ],
+            'selection.firstLine' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'selection.lastLine' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'selection.bullets' => [
+                'nullable',
+                'boolean',
+            ],
+            'selection.words' => [
+                'nullable',
+                'string',
+            ],
+            'selection.all' => [
+                'nullable',
+                'boolean',
+            ],
+            'revision' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'at_revision' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'page' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
         ];
     }
 

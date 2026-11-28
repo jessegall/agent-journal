@@ -108,7 +108,10 @@ final readonly class PageProps
             }
         }
 
-        return $page->isHome() ? [...$props, ...$this->forHome($request, $component)] : $props;
+        return $page->isHome() ? [
+            ...$props,
+            ...$this->forHome($request, $component),
+        ] : $props;
     }
 
     /** @return array<string, mixed> */
@@ -163,7 +166,10 @@ final readonly class PageProps
 
             $window = $page->window;
             $policy = $this->policies->forType($window->type);
-            $checks = [...$page->visibilityChecks(), ...$policy->checks];
+            $checks = [
+                ...$page->visibilityChecks(),
+                ...$policy->checks,
+            ];
             $instances = [WindowInstance::original($page->key)];
 
             foreach ($request->copiesAskedFor($page->propName) as $copyId) {

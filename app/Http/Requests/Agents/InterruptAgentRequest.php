@@ -18,8 +18,14 @@ final class InterruptAgentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'requestId' => ['required', 'ulid'],
-            'sessionId' => ['required', 'ulid'],
+            'requestId' => [
+                'required',
+                'ulid',
+            ],
+            'sessionId' => [
+                'required',
+                'ulid',
+            ],
             'actor' => ['prohibited'],
         ];
     }

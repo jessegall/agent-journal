@@ -20,7 +20,11 @@ final readonly class NativeBackgrounding
     /**
      * The programs that detach a command from the shell that started it.
      */
-    private const array DETACHING_PROGRAMS = ['nohup', 'setsid', 'disown'];
+    private const array DETACHING_PROGRAMS = [
+        'nohup',
+        'setsid',
+        'disown',
+    ];
 
     public function __construct(private AgentTexts $texts) {}
 

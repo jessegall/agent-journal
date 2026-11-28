@@ -21,7 +21,10 @@ final class DisableAutoAssignmentRequest extends FormRequest
      */
     public function rules(ActorTypes $actorTypes): array
     {
-        return [...$this->keyRules($actorTypes), ...$this->revisionRules()];
+        return [
+            ...$this->keyRules($actorTypes),
+            ...$this->revisionRules(),
+        ];
     }
 
     public function command(): DisableAutoAssignmentCommand

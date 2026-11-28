@@ -13,8 +13,16 @@ final class ConnectProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'attempts' => ['nullable', 'string', 'max:2048'],
-            'bindings' => ['nullable', 'string', 'max:2048'],
+            'attempts' => [
+                'nullable',
+                'string',
+                'max:2048',
+            ],
+            'bindings' => [
+                'nullable',
+                'string',
+                'max:2048',
+            ],
         ];
     }
 

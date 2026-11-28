@@ -59,7 +59,10 @@ final readonly class SharingAssets
                 continue;
             }
 
-            $listed = [$entry['file'] ?? null, ...($entry['css'] ?? [])];
+            $listed = [
+                $entry['file'] ?? null,
+                ...($entry['css'] ?? []),
+            ];
             array_push($files, ...array_filter($listed, 'is_string'));
         }
 

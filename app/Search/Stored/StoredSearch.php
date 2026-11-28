@@ -63,7 +63,10 @@ final readonly class StoredSearch
             $successorId => new StoredSearchPosition($successorState),
         ];
 
-        $order = [...$this->order, $successorId];
+        $order = [
+            ...$this->order,
+            $successorId,
+        ];
 
         while (count($order) > $retainedLimit) {
             unset($positions[array_shift($order)]);

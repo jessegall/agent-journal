@@ -19,9 +19,22 @@ final class CommentLocationRequest extends RecordTargetRequest
     {
         return [
             'target' => $this->targetRules(),
-            'comment' => ['required', 'ulid'],
-            'first_line' => ['nullable', 'integer', 'min:1', 'required_with:last_line'],
-            'last_line' => ['nullable', 'integer', 'min:1', 'required_with:first_line'],
+            'comment' => [
+                'required',
+                'ulid',
+            ],
+            'first_line' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'required_with:last_line',
+            ],
+            'last_line' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'required_with:first_line',
+            ],
         ];
     }
 

@@ -73,7 +73,10 @@ final readonly class ScreenSlot
             return new self($arriving, $this->retiredStreams);
         }
 
-        $retired = [...$this->retiredStreams, $stored->streamName()];
+        $retired = [
+            ...$this->retiredStreams,
+            $stored->streamName(),
+        ];
 
         return new self($arriving, array_slice($retired, -self::RETIRED_STREAM_LIMIT));
     }

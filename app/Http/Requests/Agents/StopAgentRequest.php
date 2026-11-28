@@ -19,9 +19,19 @@ final class StopAgentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'requestId' => ['required', 'ulid'],
-            'sessionId' => ['required', 'ulid'],
-            'generation' => ['required', 'integer', 'min:0'],
+            'requestId' => [
+                'required',
+                'ulid',
+            ],
+            'sessionId' => [
+                'required',
+                'ulid',
+            ],
+            'generation' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
             'actor' => ['prohibited'],
         ];
     }

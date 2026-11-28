@@ -20,6 +20,10 @@ final class ReassignRecordRequest extends FormRequest
      */
     public function rules(ActorTypes $actorTypes): array
     {
-        return [...$this->recordRules(), ...$this->expectedRules($actorTypes), ...$this->recipientRules($actorTypes)];
+        return [
+            ...$this->recordRules(),
+            ...$this->expectedRules($actorTypes),
+            ...$this->recipientRules($actorTypes),
+        ];
     }
 }

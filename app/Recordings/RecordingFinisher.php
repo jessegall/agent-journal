@@ -59,7 +59,10 @@ final readonly class RecordingFinisher
             throw HostProtocolDrifted::naming($drifted);
         }
 
-        $personal = [...User::resolvePersonalValues(), ...Account::resolvePersonalValues()];
+        $personal = [
+            ...User::resolvePersonalValues(),
+            ...Account::resolvePersonalValues(),
+        ];
         $fakes = new RecordingFakes($run->environment(), $personal);
 
         $exchanges = array_map(
@@ -79,7 +82,10 @@ final readonly class RecordingFinisher
         $recording = ScenarioRecording::ofExchanges($manifest, $exchanges);
 
         $this->protocol->assertKept($recording);
-        $known = [...$run->knownValues(), ...$personal];
+        $known = [
+            ...$run->knownValues(),
+            ...$personal,
+        ];
 
         // Each exchange is checked on its own, so a long recording never sits in memory as one text.
         foreach ($exchanges as $exchange) {
@@ -112,7 +118,10 @@ final readonly class RecordingFinisher
         ];
 
         $named = [];
-        $images = [$this->agentImage, ...HostDriverImage::resolveReadyImages()];
+        $images = [
+            $this->agentImage,
+            ...HostDriverImage::resolveReadyImages(),
+        ];
 
         foreach ($all as $index => $exchange) {
             $fakes->assertClean($exchange->opening, $images);

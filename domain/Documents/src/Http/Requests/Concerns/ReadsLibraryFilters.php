@@ -18,12 +18,33 @@ trait ReadsLibraryFilters
     protected function libraryRules(): array
     {
         return [
-            'attention' => ['nullable', Rule::enum(AttentionFilter::class)],
-            'page' => ['nullable', 'integer', 'min:1'],
-            'query' => ['nullable', 'string', 'max:200'],
-            'revisions' => ['nullable', 'boolean'],
-            'after' => ['nullable', 'string', 'ulid'],
-            'type' => ['nullable', Rule::enum(LibraryTypeFilter::class)],
+            'attention' => [
+                'nullable',
+                Rule::enum(AttentionFilter::class),
+            ],
+            'page' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'query' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+            'revisions' => [
+                'nullable',
+                'boolean',
+            ],
+            'after' => [
+                'nullable',
+                'string',
+                'ulid',
+            ],
+            'type' => [
+                'nullable',
+                Rule::enum(LibraryTypeFilter::class),
+            ],
         ];
     }
 

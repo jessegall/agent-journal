@@ -17,7 +17,11 @@ final class ActivityWindowRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['before' => ['nullable', 'string', 'ulid']];
+        return ['before' => [
+            'nullable',
+            'string',
+            'ulid',
+        ]];
     }
 
     public function before(): string

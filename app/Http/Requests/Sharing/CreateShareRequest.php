@@ -27,7 +27,10 @@ final class CreateShareRequest extends FormRequest
         return [
             ...$this->confirmedPreviewRules(),
             ...$this->idempotencyKeyRules(),
-            'minutes' => ['nullable', 'integer'],
+            'minutes' => [
+                'nullable',
+                'integer',
+            ],
         ];
     }
 

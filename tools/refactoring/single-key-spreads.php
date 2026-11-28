@@ -59,7 +59,10 @@ function ownReturnsOf(ClassMethod $method): array
         foreach ($node->getSubNodeNames() as $name) {
             $child = $node->{$name};
             $children = is_array($child) ? $child : [$child];
-            $pending = [...$pending, ...array_filter($children, fn (mixed $one) => $one instanceof Node)];
+            $pending = [
+                ...$pending,
+                ...array_filter($children, fn (mixed $one) => $one instanceof Node),
+            ];
         }
     }
 

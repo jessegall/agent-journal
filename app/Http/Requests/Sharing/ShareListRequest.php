@@ -20,11 +20,29 @@ final class ShareListRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'state' => ['nullable', Rule::enum(ShareStatus::class)],
-            'rootType' => ['nullable', 'string', 'max:100'],
-            'gateway' => ['nullable', 'string', 'ulid'],
-            'expiresBefore' => ['nullable', 'date'],
-            'after' => ['nullable', 'string', 'ulid'],
+            'state' => [
+                'nullable',
+                Rule::enum(ShareStatus::class),
+            ],
+            'rootType' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+            'gateway' => [
+                'nullable',
+                'string',
+                'ulid',
+            ],
+            'expiresBefore' => [
+                'nullable',
+                'date',
+            ],
+            'after' => [
+                'nullable',
+                'string',
+                'ulid',
+            ],
         ];
     }
 
@@ -39,6 +57,9 @@ final class ShareListRequest extends FormRequest
 
         $state = $this->enum('state', ShareStatus::class);
 
-        return ShareFiltersData::from($state === null ? $filters : [...$filters, 'state' => $state]);
+        return ShareFiltersData::from($state === null ? $filters : [
+            ...$filters,
+            'state' => $state,
+        ]);
     }
 }

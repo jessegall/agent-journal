@@ -106,7 +106,17 @@ final readonly class QueuedPart implements SpawnablePart
      */
     public function descriptors(): array
     {
-        $descriptors = [0 => $this->input, 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+        $descriptors = [
+            0 => $this->input,
+            1 => [
+                'pipe',
+                'w',
+            ],
+            2 => [
+                'pipe',
+                'w',
+            ],
+        ];
 
         foreach ($this->step->redirects as $redirect) {
             $descriptors[$redirect->descriptor] = $this->descriptor($redirect);

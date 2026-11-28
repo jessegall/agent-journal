@@ -744,7 +744,10 @@ final readonly class RecordSearch implements RecordSearchContract
             }
         }
 
-        $visible = [...$visible, ...$this->visibleAmong($held)];
+        $visible = [
+            ...$visible,
+            ...$this->visibleAmong($held),
+        ];
     }
 
     /**

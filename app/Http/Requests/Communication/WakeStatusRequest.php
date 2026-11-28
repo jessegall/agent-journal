@@ -14,7 +14,11 @@ final class WakeStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'messageId' => ['required', 'string', 'size:26'],
+            'messageId' => [
+                'required',
+                'string',
+                'size:26',
+            ],
         ];
     }
 

@@ -26,8 +26,16 @@ final class PlanReviewRequest extends FormRequest
     {
         return [
             ...$this->idempotencyKeyRules(),
-            'edition' => ['sometimes', 'integer', 'min:1'],
-            'reason' => ['sometimes', 'string', 'max:'.Plan::NOTE_CHARACTER_LIMIT],
+            'edition' => [
+                'sometimes',
+                'integer',
+                'min:1',
+            ],
+            'reason' => [
+                'sometimes',
+                'string',
+                'max:'.Plan::NOTE_CHARACTER_LIMIT,
+            ],
         ];
     }
 

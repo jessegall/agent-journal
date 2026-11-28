@@ -108,6 +108,9 @@ final readonly class ScenarioProcesses
      */
     private static function opening(): array
     {
-        return [HostInstructionType::OpenContainer->value, HostInstructionType::OpenProcess->value];
+        return [
+            HostInstructionType::OpenContainer->value,
+            HostInstructionType::OpenProcess->value,
+        ];
     }
 }

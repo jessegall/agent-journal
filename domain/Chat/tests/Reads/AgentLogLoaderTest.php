@@ -80,7 +80,11 @@ final class AgentLogLoaderTest extends TestCase
         [, $opened] = $this->openRuntime();
         $now = CarbonImmutable::now()->startOfSecond();
 
-        foreach ([1, 2, 3] as $retry) {
+        foreach ([
+            1,
+            2,
+            3,
+        ] as $retry) {
             $attempt = RetryAttempt::record($opened->runtimeId, RetriedAction::Wake, $retry, 'Host unavailable.', $now);
             $attempt->settle($retry === 3 ? RetryOutcome::GaveUp : RetryOutcome::Failed, 'Docker was unreachable.');
             $now = $attempt->retry_at;

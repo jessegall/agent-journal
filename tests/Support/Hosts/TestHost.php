@@ -15,8 +15,6 @@ use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Projects\Enums\ArrangementType;
-use App\Recordings\Enums\Wire;
-use App\Recordings\Recordings;
 use App\Sessions\AgentClientSettings;
 use App\Support\HelperMounts;
 use App\Values\ExecutionBudgets;
@@ -72,11 +70,6 @@ final class TestHost
     private const string CLAUDE_EXCHANGES = 'resources/recordings/claude-code/'.self::CLAUDE_BUILD.'/exchanges';
 
     private const string CODEX_BUILD = '0.172.0';
-
-    /**
-     * The recorded scenario whose terminal session each mock plays.
-     */
-    private const string TERMINAL_SCENARIO = 'terminal-turn';
 
     private const string CLAUDE_RECORDED_TURNS = 'resources/recordings/claude-code/2.1.323/turns';
 
@@ -811,30 +804,19 @@ final class TestHost
         copy(__DIR__.'/fixtures/claude-turn.jsonl', "{$this->installation()}/turn.jsonl");
         symlink(self::binary(), "{$this->installation()}/bin/journal-runner");
         mkdir("{$this->installation()}/terminal-turn", 0o700);
-        copy($this->recordedSession('claude-code', self::CLAUDE_BUILD).'/fixture.json', "{$this->installation()}/terminal-turn/fixture.json");
+        copy($this->terminalFixture('claude-code'), "{$this->installation()}/terminal-turn/fixture.json");
         copy(__DIR__.'/scripts/codex-mock.sh', "{$this->installation()}/bin/codex");
         chmod("{$this->installation()}/bin/codex", 0o700);
         mkdir("{$this->installation()}/codex-terminal-turn", 0o700);
         mkdir($this->stepsRan(), 0o700, true);
-        copy($this->recordedSession('codex', self::CODEX_BUILD).'/fixture.json', "{$this->installation()}/codex-terminal-turn/fixture.json");
+        copy($this->terminalFixture('codex'), "{$this->installation()}/codex-terminal-turn/fixture.json");
         $this->installExchanges('claude-code', self::CLAUDE_BUILD);
         $this->installExchanges('codex', self::CODEX_BUILD);
     }
 
-    /**
-     * The folder of the terminal session the driver's terminal turn recorded: its one driver exchange on a terminal.
-     */
-    private function recordedSession(string $driver, string $build): string
+    private function terminalFixture(string $driver): string
     {
-        $recording = $this->journal->service(Recordings::class)->scenario($driver, self::TERMINAL_SCENARIO);
-
-        foreach ($recording->exchangesOn(Wire::Driver) as $name) {
-            if ($recording->exchange($name)->isTerminal()) {
-                return base_path("resources/recordings/{$driver}/{$build}/".self::TERMINAL_SCENARIO."/exchanges/{$name}");
-            }
-        }
-
-        Assert::fail("The {$driver} terminal turn recorded no terminal session.");
+        return base_path($this->journal->recordedTerminal($driver)->folder->child('fixture.json')->relative);
     }
 
     /**
@@ -943,7 +925,7 @@ final class TestHost
 
         $command = [
             ...$command,
-            '--recording', $this->recordedSession('claude-code', self::CLAUDE_BUILD),
+            '--recording', dirname($this->terminalFixture('claude-code')),
             '--executable', self::RECORDED_PROGRAM,
             '--version-recording', base_path(self::CLAUDE_EXCHANGES.'/version'),
             '--sign-in-recording', base_path(self::CLAUDE_EXCHANGES.'/auth-status'),

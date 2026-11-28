@@ -31,7 +31,11 @@ final readonly class HelperRuns
     /**
      * What a root helper needs to hand a folder to the program's user and to remove one that user filled.
      */
-    private const array FOLDER_CAPABILITIES = ['CHOWN', 'FOWNER', 'DAC_OVERRIDE'];
+    private const array FOLDER_CAPABILITIES = [
+        'CHOWN',
+        'FOWNER',
+        'DAC_OVERRIDE',
+    ];
 
     /**
      * The branch a cloned workspace works on.
@@ -54,7 +58,11 @@ final readonly class HelperRuns
      */
     private const string CLONE_TMPFS = 'rw,noexec,nosuid,mode=0700,uid=10001';
 
-    private const array CLONE_ENVIRONMENT = ['HOME=/tmp', 'GIT_CONFIG_NOSYSTEM=1', 'GIT_TERMINAL_PROMPT=0'];
+    private const array CLONE_ENVIRONMENT = [
+        'HOME=/tmp',
+        'GIT_CONFIG_NOSYSTEM=1',
+        'GIT_TERMINAL_PROMPT=0',
+    ];
 
     private const int OUTPUT_LIMIT = 16384;
 
@@ -73,7 +81,12 @@ final readonly class HelperRuns
 
     public function accountFolderMake(string $account, string $operation): HostContainerRunPayload
     {
-        $arguments = [self::ACCOUNTS_TARGET, $account, $operation, ContainerManifest::PROGRAM_USER];
+        $arguments = [
+            self::ACCOUNTS_TARGET,
+            $account,
+            $operation,
+            ContainerManifest::PROGRAM_USER,
+        ];
 
         return $this->run('account-folder-make', $arguments, [
             'user' => self::ROOT_USER.':'.self::ROOT_USER,
@@ -104,7 +117,12 @@ final readonly class HelperRuns
             $this->run('account-folder-prepare', [self::ACCOUNT_TARGET, ...$mountPoints], [
                 'mounts' => [ManifestMount::daemonBind(HelperMounts::accountFolder($account), self::ACCOUNT_TARGET, true)],
             ]),
-            $this->run('account-folder-check', [HelperMounts::DATA_FOLDER, $account, ContainerManifest::PROGRAM_USER, self::ROOT_USER], [
+            $this->run('account-folder-check', [
+                HelperMounts::DATA_FOLDER,
+                $account,
+                ContainerManifest::PROGRAM_USER,
+                self::ROOT_USER,
+            ], [
                 'mounts' => [ManifestMount::daemonBind(HelperMounts::DATA_FOLDER, HelperMounts::DATA_FOLDER, false)],
             ]),
         ];
@@ -122,7 +140,12 @@ final readonly class HelperRuns
      */
     public function workspaceClone(string $volume, string $repository, string $revision, string $deployKeySecret): HostContainerRunPayload
     {
-        $arguments = [$repository, $revision, self::WORKSPACE_BRANCH, ContainerManifest::WORKDIR];
+        $arguments = [
+            $repository,
+            $revision,
+            self::WORKSPACE_BRANCH,
+            ContainerManifest::WORKDIR,
+        ];
 
         return $this->run('workspace-clone', $arguments, [
             'network' => 'bridge',
@@ -139,7 +162,12 @@ final readonly class HelperRuns
     public function writerCheckout(ManifestMount $source, string $volume): array
     {
         $checkout = ManifestMount::volume($volume, ContainerManifest::WORKDIR, true);
-        $arguments = [self::SOURCE_TARGET, 'HEAD', self::WORKSPACE_BRANCH, ContainerManifest::WORKDIR];
+        $arguments = [
+            self::SOURCE_TARGET,
+            'HEAD',
+            self::WORKSPACE_BRANCH,
+            ContainerManifest::WORKDIR,
+        ];
         $sourceMount = $source->readOnlyAt(self::SOURCE_TARGET);
 
         return [
@@ -219,7 +247,13 @@ final readonly class HelperRuns
                 'tmpfs' => $container['tmpfs'] ?? [],
                 'volumes' => [],
                 'labels' => [],
-                'budgets' => ['cpuCores' => 0, 'memoryBytes' => 0, 'memorySwapBytes' => 0, 'processes' => 0, 'openFiles' => 0],
+                'budgets' => [
+                    'cpuCores' => 0,
+                    'memoryBytes' => 0,
+                    'memorySwapBytes' => 0,
+                    'processes' => 0,
+                    'openFiles' => 0,
+                ],
                 'securityOptions' => ['seccomp' => '', 'apparmor' => ''],
                 'isAttachable' => false,
                 'takesInput' => false,

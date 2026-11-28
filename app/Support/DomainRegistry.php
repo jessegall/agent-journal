@@ -114,7 +114,10 @@ final readonly class DomainRegistry
     {
         $domainDeclarations = array_map(fn (DomainEntry $entry) => $entry->client(), $this->all());
 
-        return [...$coreDeclarations, ...$domainDeclarations];
+        return [
+            ...$coreDeclarations,
+            ...$domainDeclarations,
+        ];
     }
 
     /**
@@ -123,7 +126,10 @@ final readonly class DomainRegistry
      */
     public function commandDeclarations(CommandOwner $core, PipelineRunner $pipelines): CommandRegistry
     {
-        $owners = [$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())];
+        $owners = [
+            $core,
+            ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all()),
+        ];
 
         return CheckedCommandRegistries::for($owners, $pipelines);
     }

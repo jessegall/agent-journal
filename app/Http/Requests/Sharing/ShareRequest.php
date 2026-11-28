@@ -22,8 +22,16 @@ final class ShareRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'auditAfter' => ['nullable', 'string', 'ulid'],
-            'tab' => ['nullable', 'string', 'max:40'],
+            'auditAfter' => [
+                'nullable',
+                'string',
+                'ulid',
+            ],
+            'tab' => [
+                'nullable',
+                'string',
+                'max:40',
+            ],
         ];
     }
 

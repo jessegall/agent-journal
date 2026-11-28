@@ -95,7 +95,14 @@ final class PageFields
 
     public function finish(): Page
     {
-        foreach (['key', 'title', 'icon', 'pageType', 'pageBuilder', 'component'] as $field) {
+        foreach ([
+            'key',
+            'title',
+            'icon',
+            'pageType',
+            'pageBuilder',
+            'component',
+        ] as $field) {
             if (! isset($this->{$field})) {
                 throw MissingFields::forType(Page::class, $field);
             }

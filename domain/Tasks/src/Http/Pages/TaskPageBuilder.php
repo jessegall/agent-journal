@@ -161,7 +161,10 @@ final readonly class TaskPageBuilder implements PageBuilder
         $after = $input->proofsAfter();
         $page = $this->proofs->proofsOf($taskId, $after === '' ? null : $after, self::PROOFS_PER_PAGE);
 
-        $fields = ['after' => $after, 'proofs' => $page->proofs];
+        $fields = [
+            'after' => $after,
+            'proofs' => $page->proofs,
+        ];
 
         if ($page->nextAfter !== null) {
             $fields['nextAfter'] = $page->nextAfter;

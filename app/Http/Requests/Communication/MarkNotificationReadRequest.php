@@ -15,7 +15,11 @@ final class MarkNotificationReadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'receiptId' => ['required', 'string', 'size:26'],
+            'receiptId' => [
+                'required',
+                'string',
+                'size:26',
+            ],
         ];
     }
 

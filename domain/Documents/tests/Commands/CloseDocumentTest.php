@@ -136,7 +136,12 @@ final class CloseDocumentTest extends TestCase
     public function test_creating_editing_and_closing_a_document_raise_each_fact_once_in_order(): void
     {
         $events = $this->app->make(Dispatcher::class);
-        $plain = [DocumentCreated::class, DocumentOpened::class, ReportFiled::class, RecordSettled::class];
+        $plain = [
+            DocumentCreated::class,
+            DocumentOpened::class,
+            ReportFiled::class,
+            RecordSettled::class,
+        ];
         $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));
 
         $events->listen(
@@ -177,7 +182,12 @@ final class CloseDocumentTest extends TestCase
     public function test_an_unchanged_close_raises_no_publication(): void
     {
         $events = $this->app->make(Dispatcher::class);
-        $plain = [DocumentCreated::class, DocumentOpened::class, ReportFiled::class, RecordSettled::class];
+        $plain = [
+            DocumentCreated::class,
+            DocumentOpened::class,
+            ReportFiled::class,
+            RecordSettled::class,
+        ];
         $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));
 
         $events->listen(

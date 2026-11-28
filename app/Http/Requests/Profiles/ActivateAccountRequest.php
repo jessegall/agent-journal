@@ -16,7 +16,11 @@ final class ActivateAccountRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['expectedChangeNumber' => ['nullable', 'integer', 'min:0']];
+        return ['expectedChangeNumber' => [
+            'nullable',
+            'integer',
+            'min:0',
+        ]];
     }
 
     /**

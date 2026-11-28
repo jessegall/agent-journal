@@ -25,7 +25,10 @@ final readonly class TaskSearchAccess extends ReadToolSearchAccess
             return parent::openAction($recordId, null);
         }
 
-        $arguments = [TaskReadResult::ID_ARGUMENT => $recordId, 'passage' => $location->id];
+        $arguments = [
+            TaskReadResult::ID_ARGUMENT => $recordId,
+            'passage' => $location->id,
+        ];
 
         return new OpenAction(TaskReadResult::TOOL, $arguments);
     }

@@ -23,9 +23,21 @@ final class TaskActionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reason' => ['sometimes', 'string', 'max:'.Task::NOTE_CHARACTER_LIMIT],
-            'revision' => ['sometimes', 'integer', 'min:1'],
-            'run' => ['sometimes', 'integer', 'min:0'],
+            'reason' => [
+                'sometimes',
+                'string',
+                'max:'.Task::NOTE_CHARACTER_LIMIT,
+            ],
+            'revision' => [
+                'sometimes',
+                'integer',
+                'min:1',
+            ],
+            'run' => [
+                'sometimes',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 

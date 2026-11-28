@@ -44,7 +44,11 @@ $cursorFile = WORK.'/cursor.json';
 $cursor = is_file($cursorFile) ? json_decode((string) file_get_contents($cursorFile), true, 512, JSON_THROW_ON_ERROR) : null;
 
 if (($cursor['input'] ?? null) !== $inputHash) {
-    $cursor = ['input' => $inputHash, 'done' => [], 'counts' => []];
+    $cursor = [
+        'input' => $inputHash,
+        'done' => [],
+        'counts' => [],
+    ];
 }
 
 foreach ($chunks as $number => $chunk) {
@@ -75,7 +79,13 @@ foreach ($chunks as $number => $chunk) {
         'tools/processes/analyse-shell-lines.php',
     ], $input);
 
-    $counts = ['lines' => count($chunk), 'agree' => 0, 'differ' => 0, 'outcomes' => [], 'explained' => []];
+    $counts = [
+        'lines' => count($chunk),
+        'agree' => 0,
+        'differ' => 0,
+        'outcomes' => [],
+        'explained' => [],
+    ];
     $differences = [];
     $readings = hash_init('sha256');
     $classifications = hash_init('sha256');
@@ -124,7 +134,13 @@ foreach ($chunks as $number => $chunk) {
     fwrite(STDOUT, sprintf("chunk %d of %d: %d lines, %d differ\n", $number + 1, count($chunks), $counts['lines'], $counts['differ']));
 }
 
-$total = ['lines' => 0, 'agree' => 0, 'differ' => 0, 'outcomes' => [], 'explained' => []];
+$total = [
+    'lines' => 0,
+    'agree' => 0,
+    'differ' => 0,
+    'outcomes' => [],
+    'explained' => [],
+];
 ksort($cursor['counts']);
 $total['version6_digest'] = hash('sha256', implode('', array_column($cursor['counts'], 'version6_digest')));
 $total['classification_digest'] = hash('sha256', implode('', array_column($cursor['counts'], 'classification_digest')));
@@ -164,7 +180,10 @@ $report = [
     'unexplained' => count($failingIds),
     'input_hash' => $inputHash,
     'sources' => $sources,
-    'chunks' => ['total' => count($chunks), 'done' => count($cursor['done'])],
+    'chunks' => [
+        'total' => count($chunks),
+        'done' => count($cursor['done']),
+    ],
     'counts' => $total,
     'elapsed_seconds' => round(microtime(true) - $started, 1),
     'failing_ids' => array_slice($failingIds, 0, 500),

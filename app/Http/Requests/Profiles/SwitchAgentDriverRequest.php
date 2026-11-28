@@ -30,17 +30,50 @@ final class SwitchAgentDriverRequest extends FormRequest
     public function rules(DriverCatalogue $drivers): array
     {
         return [
-            'requestId' => ['required', 'ulid'],
-            'agentId' => ['required', 'ulid'],
-            'expectedSessionId' => ['nullable', 'ulid'],
-            'expectedGeneration' => ['required_with:expectedSessionId', 'integer', 'min:0'],
-            'driver' => ['required', Rule::in($drivers->familyKeys())],
-            'driverType' => ['required', Rule::enum(DriverType::class)],
-            'accountId' => ['required', 'ulid'],
-            'accountRevision' => ['required', 'integer', 'min:0'],
-            'conversationId' => ['nullable', 'ulid'],
+            'requestId' => [
+                'required',
+                'ulid',
+            ],
+            'agentId' => [
+                'required',
+                'ulid',
+            ],
+            'expectedSessionId' => [
+                'nullable',
+                'ulid',
+            ],
+            'expectedGeneration' => [
+                'required_with:expectedSessionId',
+                'integer',
+                'min:0',
+            ],
+            'driver' => [
+                'required',
+                Rule::in($drivers->familyKeys()),
+            ],
+            'driverType' => [
+                'required',
+                Rule::enum(DriverType::class),
+            ],
+            'accountId' => [
+                'required',
+                'ulid',
+            ],
+            'accountRevision' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+            'conversationId' => [
+                'nullable',
+                'ulid',
+            ],
             'saveDriverType' => ['boolean'],
-            'model' => ['required', 'string', 'max:100'],
+            'model' => [
+                'required',
+                'string',
+                'max:100',
+            ],
             'carryConversation' => ['boolean'],
             'stopsTurn' => ['boolean'],
         ];

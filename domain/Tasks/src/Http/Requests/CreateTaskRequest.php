@@ -22,8 +22,16 @@ final class CreateTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:'.Task::TITLE_CHARACTER_LIMIT],
-            'brief' => ['required', 'string', 'max:'.Task::NOTE_CHARACTER_LIMIT],
+            'title' => [
+                'required',
+                'string',
+                'max:'.Task::TITLE_CHARACTER_LIMIT,
+            ],
+            'brief' => [
+                'required',
+                'string',
+                'max:'.Task::NOTE_CHARACTER_LIMIT,
+            ],
             ...$this->projectRules(),
         ];
     }

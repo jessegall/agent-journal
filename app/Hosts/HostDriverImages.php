@@ -47,7 +47,10 @@ final readonly class HostDriverImages implements HostDriverImagesContract
 
     public function allowSetOf(Host $host): array
     {
-        return [$this->base->reference, ...HostDriverImage::resolveAllowedImagesOn($host->id)];
+        return [
+            $this->base->reference,
+            ...HostDriverImage::resolveAllowedImagesOn($host->id),
+        ];
     }
 
     public function needsAllowSet(Host $host): bool

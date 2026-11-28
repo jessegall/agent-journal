@@ -22,8 +22,14 @@ final class ProjectWindowRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'open' => ['sometimes', 'array'],
-            'open.*' => ['string', 'max:1024'],
+            'open' => [
+                'sometimes',
+                'array',
+            ],
+            'open.*' => [
+                'string',
+                'max:1024',
+            ],
         ];
     }
 

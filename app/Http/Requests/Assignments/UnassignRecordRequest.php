@@ -20,6 +20,9 @@ final class UnassignRecordRequest extends FormRequest
      */
     public function rules(ActorTypes $actorTypes): array
     {
-        return [...$this->recordRules(), ...$this->expectedRules($actorTypes)];
+        return [
+            ...$this->recordRules(),
+            ...$this->expectedRules($actorTypes),
+        ];
     }
 }

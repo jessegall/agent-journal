@@ -22,7 +22,10 @@ final readonly class SignInChallenges
 
     public function publish(string $attemptId, SignInChallenge $challenge, CarbonImmutable $until): void
     {
-        $challengeFields = ['address' => $challenge->address, 'code' => $challenge->code];
+        $challengeFields = [
+            'address' => $challenge->address,
+            'code' => $challenge->code,
+        ];
         $this->cache->put(self::challengeKey($attemptId), $this->encrypter->encrypt($challengeFields), $until);
     }
 
@@ -45,7 +48,10 @@ final readonly class SignInChallenges
      */
     public function typeCode(string $attemptId, string $submissionKey, string $code, CarbonImmutable $until): void
     {
-        $answer = ['key' => $submissionKey, 'code' => $code];
+        $answer = [
+            'key' => $submissionKey,
+            'code' => $code,
+        ];
         $this->cache->put(self::codeKey($attemptId), $this->encrypter->encrypt($answer), $until);
     }
 

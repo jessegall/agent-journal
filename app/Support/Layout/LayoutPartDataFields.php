@@ -407,7 +407,10 @@ final class LayoutPartDataFields
 
     public function reader(LayoutPartData ...$reader): self
     {
-        $this->children = [...$this->children, ...array_values($reader)];
+        $this->children = [
+            ...$this->children,
+            ...array_values($reader),
+        ];
 
         return $this;
     }

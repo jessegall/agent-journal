@@ -58,7 +58,10 @@ final readonly class SettleSampleHandler implements CommandHandler
         foreach ($permit->candidate_rules as $rule) {
             foreach ($rule->contracts as $contract) {
                 $branches = $request->unsampledBranches($contract->exits);
-                $statuses = [...$statuses, ...array_map(fn (ExitBranch $branch) => $branch->status, $branches)];
+                $statuses = [
+                    ...$statuses,
+                    ...array_map(fn (ExitBranch $branch) => $branch->status, $branches),
+                ];
             }
         }
 

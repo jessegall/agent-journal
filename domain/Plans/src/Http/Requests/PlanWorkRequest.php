@@ -26,11 +26,31 @@ final class PlanWorkRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'recipient_type' => ['required', 'string', 'in:agent,user'],
-            'recipient_id' => ['required', 'string', 'max:64'],
-            'expected_reference' => ['sometimes', 'string', 'max:64'],
-            'expected_holder_type' => ['sometimes', 'string', 'in:agent,user'],
-            'expected_holder_id' => ['sometimes', 'string', 'max:64'],
+            'recipient_type' => [
+                'required',
+                'string',
+                'in:agent,user',
+            ],
+            'recipient_id' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'expected_reference' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
+            'expected_holder_type' => [
+                'sometimes',
+                'string',
+                'in:agent,user',
+            ],
+            'expected_holder_id' => [
+                'sometimes',
+                'string',
+                'max:64',
+            ],
         ];
     }
 

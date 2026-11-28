@@ -92,7 +92,10 @@ final readonly class PlanGraphService
             $destinations['undo'] = route('plans.undo-waits', ['plan' => $number], false);
         }
 
-        $offered = [...$graph->toArray(), 'destinations' => $destinations];
+        $offered = [
+            ...$graph->toArray(),
+            'destinations' => $destinations,
+        ];
 
         foreach ($this->changes->suggestion($graph->planId, $actorId) as $suggestion) {
             $offered['suggestion'] = $suggestion->toArray();

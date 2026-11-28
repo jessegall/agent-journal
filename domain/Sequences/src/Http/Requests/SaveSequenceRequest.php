@@ -23,13 +23,24 @@ final class SaveSequenceRequest extends FormRequest
      */
     public function rules(): array
     {
-        $text = ['required', 'string', 'max:'.self::TEXT_CHARACTER_LIMIT];
+        $text = [
+            'required',
+            'string',
+            'max:'.self::TEXT_CHARACTER_LIMIT,
+        ];
 
         return [
             ...$this->projectRules(),
             'name' => $text,
-            'version' => ['nullable', 'integer', 'min:1'],
-            'steps' => ['present', 'array'],
+            'version' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'steps' => [
+                'present',
+                'array',
+            ],
             'steps.*.id' => $text,
             'steps.*.title' => $text,
             'steps.*.runs_when' => $text,

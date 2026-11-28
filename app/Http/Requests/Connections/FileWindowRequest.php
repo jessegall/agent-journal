@@ -17,7 +17,10 @@ final class FileWindowRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['path' => ['nullable', 'string']];
+        return ['path' => [
+            'nullable',
+            'string',
+        ]];
     }
 
     public function path(): string

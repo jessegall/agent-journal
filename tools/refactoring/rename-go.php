@@ -107,7 +107,10 @@ final class GoplsServer
         $this->open($file);
         $params = [
             'textDocument' => ['uri' => "file://{$file}"],
-            'position' => ['line' => $line, 'character' => $character],
+            'position' => [
+                'line' => $line,
+                'character' => $character,
+            ],
             'newName' => $newName,
         ];
 

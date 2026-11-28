@@ -25,7 +25,10 @@ final readonly class JournalServer
      */
     public function resolved(): self
     {
-        foreach ([$this->command, ...$this->arguments()] as $path) {
+        foreach ([
+            $this->command,
+            ...$this->arguments(),
+        ] as $path) {
             if (! new HostPath($path)->isResolved()) {
                 throw ProfileRefused::unresolvedSetting("the journal MCP path {$path}");
             }

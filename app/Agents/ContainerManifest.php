@@ -124,13 +124,23 @@ final readonly class ContainerManifest
             return [];
         }
 
-        $programs = ['journal-init', 'journal-exec', 'journal-shell', 'journal-hook', 'journal-mcp', 'journal-check'];
+        $programs = [
+            'journal-init',
+            'journal-exec',
+            'journal-shell',
+            'journal-hook',
+            'journal-mcp',
+            'journal-check',
+        ];
         $mounts = array_map(
             fn (string $program) => ManifestMount::daemonBind("{$folder}/{$program}", "/opt/journal/bin/{$program}", false),
             $programs,
         );
 
-        return [...$mounts, ManifestMount::daemonBind("{$folder}/journal-shell", '/opt/journal/shell/bash', false)];
+        return [
+            ...$mounts,
+            ManifestMount::daemonBind("{$folder}/journal-shell", '/opt/journal/shell/bash', false),
+        ];
     }
 
     /**

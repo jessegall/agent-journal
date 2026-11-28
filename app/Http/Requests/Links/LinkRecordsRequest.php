@@ -20,8 +20,16 @@ final class LinkRecordsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'source' => ['required', 'string', 'max:64'],
-            'target' => ['required', 'string', 'max:64'],
+            'source' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'target' => [
+                'required',
+                'string',
+                'max:64',
+            ],
         ];
     }
 

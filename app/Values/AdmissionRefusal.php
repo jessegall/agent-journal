@@ -53,7 +53,11 @@ final readonly class AdmissionRefusal
             return AgentText::of('core.shell.refused', $values);
         }
 
-        $held = [...$values, 'request' => $this->requestId, 'next' => $this->next];
+        $held = [
+            ...$values,
+            'request' => $this->requestId,
+            'next' => $this->next,
+        ];
 
         return AgentText::of('core.shell.refused_held', $held);
     }

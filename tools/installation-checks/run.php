@@ -53,7 +53,10 @@ try {
     $journal->signIn((string) ($options['email'] ?? 'owner@journal.local'), (string) ($options['password'] ?? 'password'));
     $outcomes = $sessionCheck->run();
 } catch (RuntimeException $stopped) {
-    $outcomes = [...$sessionCheck->outcomes(), Outcome::judged('the check ran to its end', false, $stopped->getMessage())];
+    $outcomes = [
+        ...$sessionCheck->outcomes(),
+        Outcome::judged('the check ran to its end', false, $stopped->getMessage()),
+    ];
 }
 
 foreach ($outcomes as $outcome) {

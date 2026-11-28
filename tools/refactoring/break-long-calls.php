@@ -132,7 +132,19 @@ function opensAList(array $tokens, int $open): bool
             && ! in_array($before->text, [')', ']', '}'], true);
     }
 
-    $keywords = [T_IF, T_ELSEIF, T_WHILE, T_FOR, T_FOREACH, T_SWITCH, T_MATCH, T_CATCH, T_ECHO, T_PRINT, T_RETURN];
+    $keywords = [
+        T_IF,
+        T_ELSEIF,
+        T_WHILE,
+        T_FOR,
+        T_FOREACH,
+        T_SWITCH,
+        T_MATCH,
+        T_CATCH,
+        T_ECHO,
+        T_PRINT,
+        T_RETURN,
+    ];
 
     if (in_array($before->id, $keywords, true)) {
         return false;

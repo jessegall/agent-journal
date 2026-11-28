@@ -30,8 +30,16 @@ final class PlanRequest extends FormRequest
         return [
             ...$this->outlinePageRules(),
             ...$this->planFilterRules(),
-            'tab' => ['nullable', 'string', 'in:tasks,graph'],
-            'node' => ['nullable', 'string', 'max:26'],
+            'tab' => [
+                'nullable',
+                'string',
+                'in:tasks,graph',
+            ],
+            'node' => [
+                'nullable',
+                'string',
+                'max:26',
+            ],
         ];
     }
 

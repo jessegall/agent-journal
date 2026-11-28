@@ -26,17 +26,54 @@ final class StartProfileMainRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'requestId' => ['required', 'ulid'],
-            'agentId' => ['required', 'ulid'],
-            'model' => ['required', 'string', 'max:100'],
-            'driver' => ['nullable', 'string', 'max:32'],
-            'driverType' => ['nullable', Rule::enum(DriverType::class)],
+            'requestId' => [
+                'required',
+                'ulid',
+            ],
+            'agentId' => [
+                'required',
+                'ulid',
+            ],
+            'model' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+            'driver' => [
+                'nullable',
+                'string',
+                'max:32',
+            ],
+            'driverType' => [
+                'nullable',
+                Rule::enum(DriverType::class),
+            ],
             'saveDriverType' => ['boolean'],
-            'accountId' => ['nullable', 'ulid', 'required_with:accountRevision'],
-            'accountRevision' => ['nullable', 'integer', 'min:0', 'required_with:accountId'],
-            'conversationId' => ['nullable', 'ulid'],
-            'previewRevision' => ['nullable', 'integer', 'min:0'],
-            'effort' => ['nullable', 'string', 'max:32'],
+            'accountId' => [
+                'nullable',
+                'ulid',
+                'required_with:accountRevision',
+            ],
+            'accountRevision' => [
+                'nullable',
+                'integer',
+                'min:0',
+                'required_with:accountId',
+            ],
+            'conversationId' => [
+                'nullable',
+                'ulid',
+            ],
+            'previewRevision' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'effort' => [
+                'nullable',
+                'string',
+                'max:32',
+            ],
             'actor' => ['prohibited'],
             'session' => ['prohibited'],
         ];

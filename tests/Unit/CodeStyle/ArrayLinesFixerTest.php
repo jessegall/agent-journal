@@ -60,4 +60,19 @@ final class ArrayLinesFixerTest extends TestCase
 
         $this->assertSame($expected, $tokens->generateCode());
     }
+
+    public function test_it_preserves_multiline_string_contents_and_trailing_comments(): void
+    {
+        $code = <<<'PHP'
+            <?php
+            $message = ['first line
+            second line', 'another short entry'];
+            $colors = ['red', 'green' /* reason for green */];
+            PHP;
+        $tokens = Tokens::fromCode($code);
+
+        new ArrayLinesFixer()->fix(new SplFileInfo('sample.php'), $tokens);
+
+        $this->assertSame($code, $tokens->generateCode());
+    }
 }

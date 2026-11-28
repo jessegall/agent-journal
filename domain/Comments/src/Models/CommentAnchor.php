@@ -138,7 +138,11 @@ final class CommentAnchor extends JournalModel implements ReadableModel
         }
 
         if ($type === TextAnchorType::Quote) {
-            $columns = ['quote' => 'quote', 'startOffset' => 'start_offset', 'endOffset' => 'end_offset'];
+            $columns = [
+                'quote' => 'quote',
+                'startOffset' => 'start_offset',
+                'endOffset' => 'end_offset',
+            ];
         }
 
         foreach ($columns as $field => $name) {

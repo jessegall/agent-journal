@@ -92,7 +92,10 @@ final class HostProtocolData extends Data
     {
         $relay = $this->protocols[$this->relayVersion()];
 
-        return [...array_intersect_key($this->calls, array_fill_keys($relay->sharedCalls, true)), ...$relay->calls];
+        return [
+            ...array_intersect_key($this->calls, array_fill_keys($relay->sharedCalls, true)),
+            ...$relay->calls,
+        ];
     }
 
     /**
@@ -100,6 +103,9 @@ final class HostProtocolData extends Data
      */
     public function wireTypes(): array
     {
-        return [...$this->types, ...$this->protocols[$this->relayVersion()]->types];
+        return [
+            ...$this->types,
+            ...$this->protocols[$this->relayVersion()]->types,
+        ];
     }
 }

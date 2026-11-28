@@ -48,9 +48,7 @@ mkdir($folder.'/deep/'.implode('/', array_map(fn (int $level) => "level-{$level}
 // A file changed within the last second is never kept, so the files settle first.
 sleep(2);
 
-$config = new Repository(['journal' => ['files' => [
-    'places' => ['project' => $folder, 'temporary' => $folder],
-]]]);
+$config = new Repository(['journal' => ['files' => ['places' => ['project' => $folder, 'temporary' => $folder]]]]);
 $roots = new PlaceRoots(new PlaceRootSettings($config));
 $closed = new ClosedFolders($roots);
 $confinement = new PathConfinement($roots, $closed);

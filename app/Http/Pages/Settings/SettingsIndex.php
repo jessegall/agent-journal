@@ -100,7 +100,11 @@ final readonly class SettingsIndex extends SettingsPage
 
     private function sectionOf(SettingsCatalogueData $owner, SettingGroupData $group, ConnectionCursors $cursors): SettingsGroup
     {
-        $fixed = ['owner' => $owner->owner, 'group' => $group->identity->key, 'revision' => $owner->revision];
+        $fixed = [
+            'owner' => $owner->owner,
+            'group' => $group->identity->key,
+            'revision' => $owner->revision,
+        ];
 
         $isConnections = $owner->owner === SettingRegistry::CORE
             && $group->identity->key === $this->core->connectedProjects->key;

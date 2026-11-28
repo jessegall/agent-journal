@@ -149,7 +149,10 @@ foreach ($arguments as $argument) {
             ...$with,
             ...array_map(static fn (string $name) => ltrim($name, '\\'), explode(',', substr($argument, 7))),
         ],
-        str_starts_with($argument, '--list=') => $renames = [...$renames, ...listedRenames(substr($argument, 7))],
+        str_starts_with($argument, '--list=') => $renames = [
+            ...$renames,
+            ...listedRenames(substr($argument, 7)),
+        ],
         default => $words[] = $argument,
     };
 }

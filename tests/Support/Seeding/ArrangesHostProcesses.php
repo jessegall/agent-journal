@@ -63,6 +63,8 @@ use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Recordings\PlayedScenario;
+use Tests\Support\Recordings\RecordedTerminal;
+use Tests\Support\Recordings\RecordedTurn;
 use Tests\Support\Recordings\TestAgentApi;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
@@ -174,6 +176,17 @@ trait ArrangesHostProcesses
     public function runTestHost(string $host, Closure $scope): self
     {
         return $this->startTestHost($host, null, $scope);
+    }
+
+    public function recordedTerminal(string $driver): RecordedTerminal
+    {
+        return RecordedTerminal::from($this->service(Recordings::class), $driver);
+    }
+
+    /** @return list<RecordedTurn> */
+    public function recordedTurns(string $driver): array
+    {
+        return $this->recordedTerminal($driver)->turns($this->service(Files::class));
     }
 
     /**

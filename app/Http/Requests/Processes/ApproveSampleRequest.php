@@ -17,8 +17,16 @@ final class ApproveSampleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'expected_revision' => ['required', 'integer', 'min:1'],
-            'command_digest' => ['required', 'string', 'size:64'],
+            'expected_revision' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+            'command_digest' => [
+                'required',
+                'string',
+                'size:64',
+            ],
         ];
     }
 

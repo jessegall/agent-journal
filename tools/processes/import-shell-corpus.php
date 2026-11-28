@@ -416,8 +416,15 @@ function main(array $arguments): void
                 'generated-sample-seed-7.jsonl' => SAMPLE_FILE,
             ]),
         ],
-        'generated' => ['seed' => 7, 'count' => 500, 'random' => 'Go math/rand/v2 PCG(7, 7), exported by a test run of version 5'],
-        'defaults' => ['dialect' => DIALECT, 'context' => CONTEXT],
+        'generated' => [
+            'seed' => 7,
+            'count' => 500,
+            'random' => 'Go math/rand/v2 PCG(7, 7), exported by a test run of version 5',
+        ],
+        'defaults' => [
+            'dialect' => DIALECT,
+            'context' => CONTEXT,
+        ],
         'counts' => [
             'splitter_lines' => count($splitterLines),
             'corrections' => count(listOf($corrections, 'splitter_corrections.json')),
@@ -433,7 +440,13 @@ function main(array $arguments): void
             'origins' => $cases->origins(),
         ],
         'unsupported_families' => UNSUPPORTED_FAMILIES,
-        'decisions_schema' => ['case_id', 'legacy_outcome', 'intended_outcome', 'reason', 'reference'],
+        'decisions_schema' => [
+            'case_id',
+            'legacy_outcome',
+            'intended_outcome',
+            'reason',
+            'reference',
+        ],
         'fixtures' => array_map(fn (string $content): string => hash('sha256', $content), $files),
     ];
     file_put_contents("{$folder}/manifest.json", encode($manifest)."\n");

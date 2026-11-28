@@ -17,9 +17,21 @@ class SettingsGroupRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'owner' => ['required', 'string', 'max:64'],
-            'group' => ['required', 'string', 'max:64'],
-            'revision' => ['required', 'integer', 'min:0'],
+            'owner' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'group' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'revision' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 

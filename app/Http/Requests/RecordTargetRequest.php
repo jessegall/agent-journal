@@ -21,7 +21,11 @@ abstract class RecordTargetRequest extends FormRequest
      */
     protected function targetRules(): array
     {
-        return ['required', 'string', 'max:64'];
+        return [
+            'required',
+            'string',
+            'max:64',
+        ];
     }
 
     /**

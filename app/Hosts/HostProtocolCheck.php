@@ -73,7 +73,10 @@ final readonly class HostProtocolCheck
 
         $leftOver = array_diff($this->generatedFiles($place, $folder), array_keys($sources));
 
-        return [...$drifted, ...array_values($leftOver)];
+        return [
+            ...$drifted,
+            ...array_values($leftOver),
+        ];
     }
 
     /**
@@ -85,7 +88,10 @@ final readonly class HostProtocolCheck
      */
     public function generatedFiles(Place $place = Place::Project, string $folder = ''): array
     {
-        return [...$this->generatedClasses($place, $folder), ...$this->generatedGoFiles($place, $folder)];
+        return [
+            ...$this->generatedClasses($place, $folder),
+            ...$this->generatedGoFiles($place, $folder),
+        ];
     }
 
     /**

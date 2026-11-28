@@ -544,7 +544,12 @@ function happeningsOf(array $names): array
  */
 function isParticiple(string $word, array $verbs): bool
 {
-    $stems = [substr($word, 0, -2), substr($word, 0, -1), substr($word, 0, -3), preg_replace('/ied$/', 'y', $word)];
+    $stems = [
+        substr($word, 0, -2),
+        substr($word, 0, -1),
+        substr($word, 0, -3),
+        preg_replace('/ied$/', 'y', $word),
+    ];
     $isRegular = str_ends_with($word, 'ed') && array_any($stems, fn (string $stem) => $stem !== '' && isset($verbs[$stem]));
 
     return $isRegular || in_array($word, IRREGULAR_PARTICIPLES, true);

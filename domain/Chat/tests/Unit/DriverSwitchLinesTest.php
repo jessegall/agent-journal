@@ -87,7 +87,10 @@ final class DriverSwitchLinesTest extends TestCase
             $this->journal->actorCalled('Owner')->id,
         );
 
-        return [$switch, $chat];
+        return [
+            $switch,
+            $chat,
+        ];
     }
 
     /**

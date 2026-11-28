@@ -27,13 +27,41 @@ final class RecordPageRequest extends FormRequest
     {
         return [
             ...$this->libraryRules(),
-            'commentsAfter' => ['nullable', 'string', 'max:64'],
-            'commentLocation' => ['nullable', 'string', 'max:64'],
-            'sectionsVersion' => ['nullable', 'string', 'max:64'],
-            'textVersion' => ['nullable', 'string', 'max:64'],
-            'firstLine' => ['nullable', 'integer', 'min:1'],
-            'lastLine' => ['nullable', 'integer', 'min:1'],
-            'tab' => ['nullable', 'string', 'max:40'],
+            'commentsAfter' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+            'commentLocation' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+            'sectionsVersion' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+            'textVersion' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+            'firstLine' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'lastLine' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'tab' => [
+                'nullable',
+                'string',
+                'max:40',
+            ],
         ];
     }
 

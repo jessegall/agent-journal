@@ -25,15 +25,52 @@ final class ConfigureShareGatewayRequest extends FormRequest
     {
         return [
             ...$this->idempotencyKeyRules(),
-            'gatewayKey' => ['required', 'string', 'max:64'],
-            'executableVersion' => ['required', 'string', 'max:64'],
-            'providerHost' => ['required', 'string', 'max:255'],
-            'publicOrigin' => ['required', 'string', 'url:https', 'max:255'],
-            'listenerPort' => ['required', 'integer', 'min:1', 'max:65535'],
-            'secrets' => ['present', 'array', 'max:10'],
-            'secrets.*.name' => ['required', 'string', 'regex:/^[a-z0-9_-]+$/'],
-            'secrets.*.value' => ['nullable', 'string', 'max:4096'],
-            'makeDefault' => ['required', 'boolean'],
+            'gatewayKey' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'executableVersion' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'providerHost' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'publicOrigin' => [
+                'required',
+                'string',
+                'url:https',
+                'max:255',
+            ],
+            'listenerPort' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:65535',
+            ],
+            'secrets' => [
+                'present',
+                'array',
+                'max:10',
+            ],
+            'secrets.*.name' => [
+                'required',
+                'string',
+                'regex:/^[a-z0-9_-]+$/',
+            ],
+            'secrets.*.value' => [
+                'nullable',
+                'string',
+                'max:4096',
+            ],
+            'makeDefault' => [
+                'required',
+                'boolean',
+            ],
         ];
     }
 

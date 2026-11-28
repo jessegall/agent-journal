@@ -50,7 +50,13 @@ final class DeliveryStatusesTest extends TestCase
         $message->failDelivery('The start was refused.', CarbonImmutable::now());
 
         $shown = $this->shown($chat);
-        $this->assertSame([DeliveryStatus::Failed, 'The start was refused.'], [$shown->delivery, $shown->deliveryFailure]);
+        $this->assertSame([
+            DeliveryStatus::Failed,
+            'The start was refused.',
+        ], [
+            $shown->delivery,
+            $shown->deliveryFailure,
+        ]);
     }
 
     /**
@@ -64,7 +70,10 @@ final class DeliveryStatusesTest extends TestCase
         $id = $this->journal->runAs('Owner', new SendMessageCommand($chat->id, 'Run the checks.'));
         $this->journal->actAs('Owner');
 
-        return [$chat, Message::query()->findOrFail($id)];
+        return [
+            $chat,
+            Message::query()->findOrFail($id),
+        ];
     }
 
     private function shown(Inbox $chat): MessageEntryData

@@ -31,7 +31,11 @@ final readonly class LiveListeners
     {
         return new self(
             $events === []
-                ? [PageChanged::NAME, InboxAccessEnded::NAME, ProtectedViewInvalidated::NAME]
+                ? [
+                    PageChanged::NAME,
+                    InboxAccessEnded::NAME,
+                    ProtectedViewInvalidated::NAME,
+                ]
                 : array_map(self::eventName(...), $events),
             new PrivateChannel(UserChannel::nameFor($userId)),
         );

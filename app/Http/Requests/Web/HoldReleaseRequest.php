@@ -19,9 +19,20 @@ final class HoldReleaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reason' => ['required', 'string', 'max:500', 'regex:/\S/'],
-            'agentId' => ['required', 'string'],
-            'hold' => ['required', Rule::enum(HoldReason::class)],
+            'reason' => [
+                'required',
+                'string',
+                'max:500',
+                'regex:/\S/',
+            ],
+            'agentId' => [
+                'required',
+                'string',
+            ],
+            'hold' => [
+                'required',
+                Rule::enum(HoldReason::class),
+            ],
         ];
     }
 

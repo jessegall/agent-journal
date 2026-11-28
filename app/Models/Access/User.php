@@ -222,7 +222,10 @@ class User extends Authenticatable implements
     {
         $users = self::query()->get(['name', 'email']);
 
-        return array_merge(...$users->map(fn (self $user) => [$user->name, $user->email])->all());
+        return array_merge(...$users->map(fn (self $user) => [
+            $user->name,
+            $user->email,
+        ])->all());
     }
 
     /**

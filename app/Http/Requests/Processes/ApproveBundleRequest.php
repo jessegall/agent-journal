@@ -17,9 +17,22 @@ final class ApproveBundleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'module' => ['required', 'string', 'max:255'],
-            'version' => ['present', 'nullable', 'string', 'max:255'],
-            'digest' => ['required', 'string', 'size:64'],
+            'module' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'version' => [
+                'present',
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'digest' => [
+                'required',
+                'string',
+                'size:64',
+            ],
         ];
     }
 

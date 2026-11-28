@@ -17,7 +17,10 @@ final class RetireAgentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'agentId' => ['required', 'ulid'],
+            'agentId' => [
+                'required',
+                'ulid',
+            ],
             'session' => ['prohibited'],
             'session_id' => ['prohibited'],
             'actor' => ['prohibited'],

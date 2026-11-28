@@ -84,7 +84,14 @@ final readonly class ContainedPlans
         $script = 'if find "$1" -name "$2" -print -quit 2>/dev/null | grep -q .; then exec '
             .$this->quoted($restart).'; fi; exec '.$this->quoted($argv);
 
-        return ['/bin/sh', '-c', $script, 'journal-session', $this->filledText($when->folder), $when->glob];
+        return [
+            '/bin/sh',
+            '-c',
+            $script,
+            'journal-session',
+            $this->filledText($when->folder),
+            $when->glob,
+        ];
     }
 
     /**

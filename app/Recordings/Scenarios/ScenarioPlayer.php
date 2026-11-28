@@ -98,7 +98,12 @@ final readonly class ScenarioPlayer
     /**
      * The program line that restarts the local host, run by the record script on the machine.
      */
-    private const array HOST_RESTART = ['docker', 'compose', 'restart', 'agent-host'];
+    private const array HOST_RESTART = [
+        'docker',
+        'compose',
+        'restart',
+        'agent-host',
+    ];
 
     /**
      * How long a restarted host may take to allow its images again.
@@ -339,7 +344,11 @@ final readonly class ScenarioPlayer
     {
         $ticket = $run->holdConnectionAttempt();
         $file = FilePath::in(Place::Project, self::CONNECTION_TICKET);
-        $command = ['connect-recorded-project', $this->origin->canonical(), $this->releases->current()->version];
+        $command = [
+            'connect-recorded-project',
+            $this->origin->canonical(),
+            $this->releases->current()->version,
+        ];
         $this->files->write($file, $ticket->secret."\n", Permissions::OwnerOnly);
 
         try {
@@ -363,7 +372,10 @@ final readonly class ScenarioPlayer
     {
         $agent = $run->agentNamed((string) $step->agent);
         $owner = ActorReference::of($run->owner);
-        $members = [$owner, ActorReference::of($agent)];
+        $members = [
+            $owner,
+            ActorReference::of($agent),
+        ];
         $chat = $this->requestKey->independently(
             strtolower((string) Str::ulid()),
             fn () => $this->commands->run(new OpenInboxCommand(

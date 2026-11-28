@@ -29,7 +29,10 @@ final class ApproveProposalRequest extends FormRequest
         return [
             ...$this->confirmedPreviewRules(),
             ...$this->idempotencyKeyRules(),
-            'minutes' => ['nullable', 'integer'],
+            'minutes' => [
+                'nullable',
+                'integer',
+            ],
         ];
     }
 

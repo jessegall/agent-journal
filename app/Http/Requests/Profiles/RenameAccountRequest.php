@@ -18,8 +18,16 @@ final class RenameAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'label' => ['required', 'string', 'max:'.AccountLabel::LENGTH_LIMIT],
-            'seenRevision' => ['nullable', 'integer', 'min:0'],
+            'label' => [
+                'required',
+                'string',
+                'max:'.AccountLabel::LENGTH_LIMIT,
+            ],
+            'seenRevision' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 

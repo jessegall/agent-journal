@@ -218,7 +218,10 @@ foreach (array_values(array_diff(array_slice($argv, 1), ['--fix'])) as $path) {
                     }
 
                     $findings++;
-                    $replacements = [...$replacements, ...renamesIn($method, $name, $short)];
+                    $replacements = [
+                        ...$replacements,
+                        ...renamesIn($method, $name, $short),
+                    ];
                     printf(
                         "%s:%d\t%s::%s\t\$%s\t\$%s\n",
                         $file,

@@ -47,7 +47,10 @@ function main(array $paths): void
 
             $traverser = new NodeTraverser(new NameResolver());
             $nodes = $traverser->traverse(parsedOnce($file, file_get_contents($file)));
-            $accessors = [...$accessors, ...accessorsOf($nodes)];
+            $accessors = [
+                ...$accessors,
+                ...accessorsOf($nodes),
+            ];
 
             foreach (typedReads($nodes) as $read) {
                 $reads[] = [

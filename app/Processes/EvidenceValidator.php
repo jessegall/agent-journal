@@ -38,7 +38,10 @@ final readonly class EvidenceValidator
         VerificationContract $contract,
     ): OutputValidation {
         $run = ProcessRun::findForAnyActor($part->process_run_id);
-        $problems = [...$this->runProblems($run, $part), ...$read->problems];
+        $problems = [
+            ...$this->runProblems($run, $part),
+            ...$read->problems,
+        ];
 
         if ($consumed->offsets != $part->stream_offsets) {
             $problems[] = $this->problem(ProblemCode::OutputIncomplete, 'The reader left captured bytes unread.');

@@ -58,11 +58,7 @@ final class ContainedSessionLifeTest extends TestCase
 
     public function test_a_contained_claude_code_session_answers_in_its_own_container_and_is_removed_once_stopped(): void
     {
-        $answered = fn (Assert $journal) => $journal
-            ->where(
-                'hostProcesses.terminal.rows',
-                fn (array|null $rows) => in_array('done', array_map(trim(...), $rows ?? []), true),
-            );
+        [$first, $second] = $this->journal->recordedTurns('claude-code');
 
         $this->journal->owner()
             ->arrangeContainedJournal()
@@ -79,10 +75,14 @@ final class ContainedSessionLifeTest extends TestCase
                     profile: 'claude',
                     driverType: DriverType::Terminal,
                     model: 'claude-opus-5-5',
-                    firstMessage: 'Count slowly from 1 to 300, then say done.',
+                    firstMessage: $first->message,
                 )
-                ->proveStart(HostProcessPurpose::AgentTerminal, 'terminal'))
-            ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->driveUntil($answered, seconds: 20));
+                ->proveStart(HostProcessPurpose::AgentTerminal, 'terminal')
+                ->process('terminal', fn (TestHostProcess $host) => $host
+                    ->driveUntil($first->answeredOn('terminal'), seconds: 20))
+                ->deliver('second-turn', $second->message)
+                ->process('terminal', fn (TestHostProcess $host) => $host
+                    ->driveUntil($second->answeredOn('terminal'), seconds: 20)));
         $process = $this->journal->hostProcessCalled('terminal');
         $this->journal
             ->asSystem(new StopHostProcessCommand($process->id, 1000, 1000, HostInstructionSource::fromJournal()));

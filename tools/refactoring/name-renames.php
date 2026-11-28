@@ -92,7 +92,13 @@ function applyGoRenames(array $names, array $options): int
 function renameOptions(array $arguments): array
 {
     $options = [
-        'word' => '', 'replacement' => '', 'types' => [], 'namespace' => '', 'paths' => [], 'apply' => false, 'verb' => false,
+        'word' => '',
+        'replacement' => '',
+        'types' => [],
+        'namespace' => '',
+        'paths' => [],
+        'apply' => false,
+        'verb' => false,
     ];
     $words = [];
 

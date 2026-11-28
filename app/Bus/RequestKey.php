@@ -113,7 +113,11 @@ final class RequestKey implements RequestKeyContract
      */
     public function independently(string $key, Closure $work): mixed
     {
-        $before = [$this->key, $this->depth, $this->isReceiptTaken];
+        $before = [
+            $this->key,
+            $this->depth,
+            $this->isReceiptTaken,
+        ];
         $this->set($key);
         $this->depth = 0;
         $this->isReceiptTaken = false;

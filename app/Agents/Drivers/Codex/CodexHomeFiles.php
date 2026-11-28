@@ -83,7 +83,10 @@ final readonly class CodexHomeFiles implements PlanPart
     public static function hooksRelaying(string $hookCommand): array
     {
         $command = RelayedHookCommand::for($hookCommand, self::HOOK_NAME)->text;
-        $hook = [['hooks' => [['type' => 'command', 'command' => $command]]]];
+        $hook = [['hooks' => [[
+            'type' => 'command',
+            'command' => $command,
+        ]]]];
 
         return array_fill_keys(array_keys(self::HOOK_EVENTS), $hook);
     }

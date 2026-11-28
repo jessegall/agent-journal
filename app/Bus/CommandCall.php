@@ -156,7 +156,10 @@ final readonly class CommandCall
      */
     public function authorizedOn(object|string $subject): self
     {
-        $authorized = [$this->command, $subject];
+        $authorized = [
+            $this->command,
+            $subject,
+        ];
 
         $repeatableRead = $this->isRepeatableRead;
 

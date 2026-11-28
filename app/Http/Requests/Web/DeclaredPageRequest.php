@@ -28,9 +28,20 @@ final class DeclaredPageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'inspect' => ['nullable', 'string', 'max:200'],
-            'window' => ['nullable', 'array'],
-            'session' => ['nullable', 'string', 'ulid'],
+            'inspect' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+            'window' => [
+                'nullable',
+                'array',
+            ],
+            'session' => [
+                'nullable',
+                'string',
+                'ulid',
+            ],
         ];
     }
 
