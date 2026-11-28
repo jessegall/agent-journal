@@ -141,7 +141,7 @@ final readonly class PageProps
             return Lazy::inertia($read);
         }
 
-        $group = $policy->deferred?->group ?? $defaultGroup;
+        $group = $policy->deferred->group ?? $defaultGroup;
 
         if ($group === null) {
             return Lazy::closure($read);

@@ -16,7 +16,8 @@ final readonly class NotesPageBuilder implements PageBuilder
 {
     public function build(Request $visit): NotesPageData
     {
-        $texts = Note::query()->forActor()->latest('id')->pluck('text')->values()->all();
+        $notes = Note::query()->forActor()->latest('id')->get(['text']);
+        $texts = array_values($notes->map(fn (Note $note) => $note->text)->all());
 
         return NotesPageData::build()->texts($texts)->finish();
     }

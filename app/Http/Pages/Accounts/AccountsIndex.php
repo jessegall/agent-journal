@@ -21,6 +21,7 @@ use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutProgressData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;

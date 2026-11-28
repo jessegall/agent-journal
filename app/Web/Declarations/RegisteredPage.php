@@ -64,7 +64,7 @@ final readonly class RegisteredPage
             throw InvalidPageDeclaration::missingRecordParameter($key, $record->parameter);
         }
 
-        $checks = $policy?->checks ?? [];
+        $checks = $policy->checks ?? [];
 
         if ($page->visibility !== null) {
             $checks[] = $page->visibility;

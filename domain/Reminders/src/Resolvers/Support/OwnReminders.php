@@ -33,18 +33,18 @@ final readonly class OwnReminders
         $total = $query->clone()->count();
         $cards = $query->forPage($page, self::PER_PAGE)->get()->map(self::card(...));
 
-        return new ReminderPage($cards->values()->all(), $page, self::PER_PAGE, $total);
+        return new ReminderPage(array_values($cards->all()), $page, self::PER_PAGE, $total);
     }
 
     /** @return list<ReminderCard> */
     public function preview(int $limit): array
     {
-        return $this->ordered()
+        $cards = $this->ordered()
             ->limit($limit)
             ->get(['id', 'title', 'due_at', 'status'])
-            ->map(self::card(...))
-            ->values()
-            ->all();
+            ->map(self::card(...));
+
+        return array_values($cards->all());
     }
 
     /** @return Builder<Reminder> */

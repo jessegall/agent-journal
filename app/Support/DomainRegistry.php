@@ -115,7 +115,7 @@ final readonly class DomainRegistry
         $domainDeclarations = array_map(fn (DomainEntry $entry) => $entry->client(), $this->all());
 
         return [
-            ...$coreDeclarations,
+            ...array_values($coreDeclarations),
             ...$domainDeclarations,
         ];
     }

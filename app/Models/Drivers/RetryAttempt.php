@@ -97,6 +97,7 @@ final class RetryAttempt extends JournalModel
 
     // ----------[ Scopes ]----------
 
+    /** @param Builder<self> $query */
     #[Scope]
     protected function ofSession(Builder $query, string $sessionId): void
     {

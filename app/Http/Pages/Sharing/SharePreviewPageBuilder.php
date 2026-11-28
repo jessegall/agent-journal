@@ -62,7 +62,7 @@ final readonly class SharePreviewPageBuilder implements PageBuilder
             )
             ->savedPreview(SavedSharePreviewData::optionalOrMissing($saved->getOrElse(null)))
             ->liveShare(RootShareData::optionalOrMissing($live->getOrElse(null)))
-            ->openProposals(Share::findOpenProposalsFor($root))
+            ->openProposals(array_map(RootShareData::fromShare(...), Share::findOpenProposalsFor($root)))
             ->finish();
     }
 }

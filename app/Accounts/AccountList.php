@@ -53,6 +53,7 @@ final readonly class AccountList
         $costs = AccountUsageCost::resolveMonthTotals(array_column($visible, 'id'), $now);
         $threads = AccountUsageTokens::findNewestOf($visible);
 
+        /** @param list<AccountUsageWindow> $readings */
         $row = function (Account $account, array $readings) use ($selections, $counts, $histories, $costs, $threads) {
             $identity = $account->record_identity;
             $active = $selections[$account->account_protocol] ?? null;

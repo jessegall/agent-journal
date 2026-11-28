@@ -21,8 +21,8 @@ final readonly class CollectionPageBuilder implements PageBuilder
     public function build(Request $visit): CollectionPageData
     {
         $collection = $this->requests->from(CollectionRequest::class, $visit)->collection();
-        $texts = Note::query()->forActor()->where('created_at', 'like', "{$collection}-%")
-            ->pluck('text')->values()->all();
+        $notes = Note::query()->forActor()->where('created_at', 'like', "{$collection}-%")->get(['text']);
+        $texts = array_values($notes->map(fn (Note $note) => $note->text)->all());
 
         return CollectionPageData::build()->collection($collection)->texts($texts)->finish();
     }

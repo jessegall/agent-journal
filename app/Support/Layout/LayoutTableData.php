@@ -13,7 +13,7 @@ final class LayoutTableData extends Data
     /** @use Buildable<LayoutTableDataFields> */
     use Buildable;
 
-    protected const FIELDS = LayoutTableDataFields::class;
+    protected const string FIELDS = LayoutTableDataFields::class;
 
     /** @param list<LayoutRowData> $rows */
     public function __construct(

@@ -14,8 +14,6 @@ final readonly class SkipNextConditional implements Pipe
 {
     public function handle(PendingSteps $steps): PendingSteps
     {
-        $steps->state->skipEveryPart($steps->remaining[0], $steps->skipReason());
-
         return $steps->skippingNext();
     }
 }

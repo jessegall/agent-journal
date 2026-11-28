@@ -9,10 +9,10 @@ use Spatie\LaravelData\Optional;
 
 final class LayoutFactValueDataFields
 {
-    /** @var list<array{string, string|null}> */
+    /** @var list<LayoutFactPieceData> */
     private array $pieces;
 
-    /** @param list<array{string, string|null}> $pieces */
+    /** @param list<LayoutFactPieceData> $pieces */
     public function pieces(array $pieces): self
     {
         $this->pieces = $pieces;
