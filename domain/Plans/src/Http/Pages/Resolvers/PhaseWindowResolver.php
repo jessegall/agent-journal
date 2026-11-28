@@ -33,21 +33,23 @@ final readonly class PhaseWindowResolver implements PageResolver
         $ask = $this->request->outlinePageAsk();
         $progress = $phase->progress;
 
-        return PhaseReaderData::from([
-            'planNumber' => (string) $phase->plan->number,
-            'planTitle' => $phase->plan->title,
-            'number' => (string) $phase->number,
-            'title' => $phase->title,
-            'finishedTasks' => $progress->finished,
-            'cancelledTasks' => $progress->cancelled,
-            'totalTasks' => $progress->total,
-            'isCurrent' => (Phase::resolveCurrentNumbersOf(
-                [$phase->plan_id],
-            )[$phase->plan_id] ?? null) === $phase->number,
-            'canRunChecks' => $this->timing->forCaller()->isAllowed(),
-            'tasks' => $this->outline->tasksOf($phase, $ask->tasksAfter, $ask->revision),
-            'checkReceipt' => self::checkReceiptOf($phase),
-        ]);
+        return PhaseReaderData::build()
+            ->planNumber((string) $phase->plan->number)
+            ->planTitle($phase->plan->title)
+            ->number((string) $phase->number)
+            ->title($phase->title)
+            ->finishedTasks($progress->finished)
+            ->cancelledTasks($progress->cancelled)
+            ->totalTasks($progress->total)
+            ->isCurrent(
+                (Phase::resolveCurrentNumbersOf(
+                    [$phase->plan_id],
+                )[$phase->plan_id] ?? null) === $phase->number,
+            )
+            ->canRunChecks($this->timing->forCaller()->isAllowed())
+            ->tasks($this->outline->tasksOf($phase, $ask->tasksAfter, $ask->revision))
+            ->checkReceipt(self::checkReceiptOf($phase))
+            ->finish();
     }
 
     /**
