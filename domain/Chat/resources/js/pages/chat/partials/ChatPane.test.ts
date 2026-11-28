@@ -3,8 +3,7 @@ import { enableAutoUnmount, flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
 import type { ChatData } from "@generated/types/chat";
-import type { RunningCommandData } from "@generated/types/core";
-import { notifyRunningCommand } from "@kit/runningCommands";
+import { notifyRunningCommand, type RunningCommandData } from "@kit/runningCommands";
 
 const revealedProps = ref(new Set<string>());
 const purgers: Array<() => void> = [];
@@ -82,7 +81,7 @@ const { default: ChatPane } = await import("./ChatPane.vue");
 
 function chatWith(inboxId: string, runningCommand: RunningCommandData | null = null): ChatData {
   return {
-    agents: [{ id: "agent-1", name: "Main agent", status: { sessionState: "working" } }],
+    agents: [{ id: "agent-1", name: "Main agent", status: { sessionState: "working", label: "working", actions: [] } }],
     selectedAgentId: "agent-1",
     isSetupRequired: false,
     dockSections: [],

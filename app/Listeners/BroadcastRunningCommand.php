@@ -23,12 +23,11 @@ final readonly class BroadcastRunningCommand implements Listener
 
     public function handle(RunningToolChanged $change): void
     {
-        $inboxIds = InboxMember::query()
+        $inboxIds = array_values(array_map(strval(...), InboxMember::query()
             ->active()
             ->ofActor(ActorReference::forAgent($change->agentId))
             ->pluck('inbox_id')
-            ->values()
-            ->all();
+            ->all()));
         $userIds = array_map(
             fn (ActorReference $user) => $user->id,
             InboxMember::resolveAttachedTo($inboxIds, User::class),

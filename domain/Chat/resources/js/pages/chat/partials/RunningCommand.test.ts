@@ -3,9 +3,8 @@ import { enableAutoUnmount, mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
-import type { RunningCommandData } from "@generated/types/core";
 import type { SessionActivityStatus } from "@kit/CoreTypes";
-import { notifyRunningCommand } from "@kit/runningCommands";
+import { notifyRunningCommand, type RunningCommandData } from "@kit/runningCommands";
 import { RUNNING_COMMAND_GAP_MS } from "../../../composables/useRunningCommand";
 import RunningCommand from "./RunningCommand.vue";
 

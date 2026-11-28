@@ -1,7 +1,6 @@
-import { onRunningCommand } from "@kit/runningCommands";
+import { onRunningCommand, type RunningCommandData } from "@kit/runningCommands";
 import { computed, onScopeDispose, ref, toValue, watch } from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref } from "vue";
-import type { RunningCommandData } from "@generated/types/core";
 
 /**
  * The shortest time between two changes of the line, so a burst of commands shows its newest twice a second at most.

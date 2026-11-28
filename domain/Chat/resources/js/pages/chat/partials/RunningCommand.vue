@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
-import type { RunningCommandData } from "@generated/types/core";
+import type { RunningCommandData } from "@kit/runningCommands";
 import { useRunningCommand } from "../../../composables/useRunningCommand";
 
 /**
@@ -45,16 +45,14 @@ const idleWord = computed(() =>
         enter-from-class="translate-y-[10px] opacity-0"
         leave-to-class="-translate-y-[10px] opacity-0"
       >
-        <template v-if="line" :key="line">
-          <span
-            class="inline-block max-w-full truncate font-mono opacity-75"
-            :title="line"
-            data-running-line
-          >{{ line }}</span>
-        </template>
-        <template v-else key="idle">
-          <span class="inline-block max-w-[44ch] truncate" data-running-idle>{{ idleWord }}</span>
-        </template>
+        <span
+          v-if="line"
+          :key="line"
+          class="inline-block max-w-full truncate font-mono opacity-75"
+          :title="line"
+          data-running-line
+        >{{ line }}</span>
+        <span v-else key="idle" class="inline-block max-w-[44ch] truncate" data-running-idle>{{ idleWord }}</span>
       </Transition>
     </span>
   </p>

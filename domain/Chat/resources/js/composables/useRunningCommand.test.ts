@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { effectScope, nextTick, ref } from "vue";
 import type { EffectScope } from "vue";
-import type { RunningCommandData } from "@generated/types/core";
-import { notifyRunningCommand } from "@kit/runningCommands";
+import { notifyRunningCommand, type RunningCommandData } from "@kit/runningCommands";
 import {
   COMMAND_LINGER_MS,
   RUNNING_COMMAND_GAP_MS,

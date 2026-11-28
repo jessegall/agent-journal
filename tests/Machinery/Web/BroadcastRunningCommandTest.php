@@ -13,6 +13,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -22,6 +23,8 @@ use Tests\TestCase;
 #[TestsMachinery(BroadcastRunningCommand::class)]
 final class BroadcastRunningCommandTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string CHANGED_AT = '2026-11-28T10:00:00.123456Z';
 
     protected function setUp(): void

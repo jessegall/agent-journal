@@ -13,6 +13,7 @@ use App\Web\Data\RunningCommandData;
 use Domain\Chat\Resolvers\Support\ChatPages;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
+use Tests\Support\RefreshHookDatabase;
 
 /**
  * The chat page seeds its line above the composer with the agent's running tool call as its row holds it, the same
@@ -20,6 +21,8 @@ use Domain\Chat\Tests\TestCase;
  */
 final class RunningCommandSeedTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_the_page_seeds_the_line_with_the_agents_running_tool_call(): void
     {
         $chat = $this->chatWithPlanner();
