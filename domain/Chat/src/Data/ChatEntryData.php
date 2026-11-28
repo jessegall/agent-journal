@@ -9,6 +9,7 @@ use Domain\Chat\Support\Wire\EncodedCard;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
+use Spatie\TypeScriptTransformer\Attributes\Optional as TypeScriptOptional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 use Spatie\TypeScriptTransformer\References\CustomReference;
 
@@ -28,7 +29,7 @@ final class ChatEntryData extends Data
         public readonly string $createdAt,
         public readonly MessageEntryData|Optional $message = new Optional(),
         public readonly QuestionEntryData|Optional $question = new Optional(),
-        #[LiteralTypeScriptType(
+        #[TypeScriptOptional, LiteralTypeScriptType(
             '%DockCardEnvelope%',
             references: ['DockCardEnvelope' => new CustomReference('docking', 'DockCardEnvelope')],
         )]
