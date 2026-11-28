@@ -2938,6 +2938,28 @@ const dn=$('[data-slot="notes"]');if(dn)dn.insertAdjacentHTML('beforeend',NEW_NO
 .mc-ro{margin:0 0 14px;padding:11px 12px;border:1px dashed var(--border-2);border-radius:var(--radius-composer);color:var(--text-3);font-size:var(--text-small);text-align:center}
 /* A long list in any menu scrolls inside it. */
 .menu{max-height:min(440px,calc(100% - 24px));overflow-y:auto}
+
+/* Switch driver: what runs the agent now, the new program, account and model, and what happens to the conversation. */
+.sw-dlg{width:500px}
+.sw-dlg .cbody{display:flex;flex-direction:column;gap:2px}
+.swnow{display:flex;align-items:center;gap:8px;padding:2px 0 12px;margin-bottom:6px;border-bottom:1px solid var(--line);font-size:var(--text-small);color:var(--text-2)}
+.swnow .l{width:84px;color:var(--text-3)}
+.swnow .st{margin-left:auto;font-size:var(--text-badge)}
+.sw-dlg .frow{display:grid;grid-template-columns:84px 1fr;align-items:center;gap:8px;padding:5px 0}
+.sw-dlg .frow .l{font-size:var(--text-small);color:var(--text-3)}
+.sw-dlg .field{width:100%}
+.sw-dlg .warn{font-size:var(--text-small);color:var(--text-3)}
+.swwhat{margin-top:10px;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--bg-2);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.swwhat h4{margin:0;font-size:var(--text-small);font-weight:500;color:var(--text)}
+.swwhat p{margin:0;font-size:var(--text-small);color:var(--text-2);line-height:1.45}
+.swwhat p.q{color:var(--text-3)}
+.swopt{display:flex;gap:9px;align-items:flex-start;font-size:var(--text-small);color:var(--text-3);line-height:1.45;cursor:pointer}
+.swopt input{margin-top:3px;accent-color:var(--brand)}
+.swopt b{display:block;color:var(--text);font-weight:500}
+.swchk{display:flex;gap:9px;align-items:flex-start;margin-top:12px;font-size:var(--text-small);color:var(--text-2);cursor:pointer}
+.swchk input{margin-top:2px;accent-color:var(--brand)}
+.swchk small{display:block;color:var(--text-3);font-size:var(--text-badge)}
+.swnote{margin:12px 0 0;font-size:var(--text-small);color:var(--text-3)}
 </style>
 <script>
 (function(){
@@ -2953,9 +2975,9 @@ window.mcStripH=()=>page==='home'&&!ui.barHidden?34:0;
 const PROG={claude:{t:'Claude Code',mk:CLAUDE,models:['Opus','Sonnet']},codex:{t:'Codex',mk:CODEX,models:['GPT-5','GPT-5 mini']}};
 const TYPE_W={main:'main agent',helper:'helper worker designer',group:'group'};
 const IDLE=/waits for you|Ended|Stopped|Interrupted|Not started|failed|cancelled|No account|Idle|Retired|Not running|Ready/i;
-const STARTING=/Starting|Verifying|Resuming/;
+const STARTING=/Starting|Verifying|Resuming|Switching/;
 const uniq=a=>a.filter((x,i)=>a.indexOf(x)===i);
-const allConvs=()=>uniq(activeConvs()).filter(c=>CONV[c]);
+const allConvs=()=>uniq(activeConvs()).filter(c=>CONV[c]&&!isGroup(c));
 const typeOf=c=>isGroup(c)?'group':MAINS.has(agentOf(c))?'main':'helper';
 const isRetired=c=>!!(INFO[c]&&INFO[c].retired);
 const minOf=c=>INFO[c]?INFO[c].min:(c==='main'?0:30);
@@ -2969,7 +2991,8 @@ const acctsFor=p=>ACCOUNTS.filter(a=>a[0]===p).map(a=>({n:a[1],ok:a[3]==='Signed
 const mainName=c=>c==='main'?'Agent 1':convName(c);
 
 function baseInfo(){INFO={main:{min:0},h262:{min:2,you:true},w3:{min:5},g1:{min:8},w5:{min:1}}}
-function syncOpen(){MC.open=MC.open.filter(c=>CONV[c]);if(CONV[A.mainConv]&&!MC.open.includes(A.mainConv))MC.open.push(A.mainConv);
+/* Group chats are hidden for now: no tab, no row, no filter. A group will later start as a new chat that people join. */
+function syncOpen(){MC.open=MC.open.filter(c=>CONV[c]&&!isGroup(c));if(CONV[A.mainConv]&&!isGroup(A.mainConv)&&!MC.open.includes(A.mainConv))MC.open.push(A.mainConv);
   if(MC.seen[0]!==A.mainConv)MC.seen=[A.mainConv,...MC.seen.filter(x=>x!==A.mainConv)]}
 function markOf(c){const s=STATE[c]||'';
   if(/failed/i.test(s))return `<span class="bad" title="${esc(s)}">${I('alert','s13')}</span>`;
@@ -2979,12 +3002,11 @@ function markOf(c){const s=STATE[c]||'';
 const tabIcon=c=>isGroup(c)?I('users','s13'):PROG[progOf(c)].mk('s13');
 
 /* ---- The tab row ------------------------------------------------------------------------------------------------ */
-function stripHtml(){syncOpen();const cols=MC.view==='side'?columns():[],n=allConvs().filter(c=>!isRetired(c)).length;
+function stripHtml(){syncOpen();const cols=MC.view==='side'?columns():[];
   return `<div class="ctabs"><div class="tl" role="tablist" aria-label="Chats on Home">${MC.open.map(c=>{const sel=c===A.mainConv,u=unreadOf(c);
       return `<div class="ctab ${cols.includes(c)?'col':''}" role="tab" tabindex="${sel?0:-1}" aria-selected="${sel}" data-mctab="${c}" data-fk="mctab:${c}" title="${esc(mainName(c))} · ${esc(STATE[c]||'')}">${tabIcon(c)}<span class="nm">${esc(mainName(c))}</span>${markOf(c)}${u?`<span class="num u" aria-label="${u} unread">${u}</span>`:''}${MC.open.length>1?`<button class="ib x" data-mcclose="${c}" tabindex="-1" aria-label="Close the tab of ${esc(mainName(c))}; it keeps working" title="Close the tab · it keeps working">${I('close','s13')}</button>`:''}</div>`}).join('')}</div>
     <button class="btn sm newc" data-mcnew data-fk="mcnew" aria-haspopup="dialog" aria-expanded="${!!MC.nw}" title="Start another main agent · ⌥N">${I('plus','s14')}New chat</button>
-    <div class="r"><button class="btn sm" data-mcpick data-fk="mcpick" aria-haspopup="dialog" aria-expanded="${!!MC.pick}" title="Find any chat · ⌥F">${I('search','s14')}All chats <span class="num">${n}</span></button>
-    <div class="vseg" role="group" aria-label="How the open chats show"><button data-mcview="one" data-fk="mcview:one" aria-pressed="${MC.view==='one'}">${I('window','s13')}One at a time</button><button data-mcview="side" data-fk="mcview:side" aria-pressed="${MC.view==='side'}" ${MC.open.length<2?'disabled title="Open a second chat first"':'title="The open chats as columns"'}>${I('layout','s13')}Side by side</button></div></div></div>`}
+    <div class="r"><div class="vseg" role="group" aria-label="How the open chats show"><button data-mcview="one" data-fk="mcview:one" aria-pressed="${MC.view==='one'}">${I('window','s13')}One at a time</button><button data-mcview="side" data-fk="mcview:side" aria-pressed="${MC.view==='side'}" ${MC.open.length<2?'disabled title="Open a second chat first"':'title="The open chats as columns"'}>${I('layout','s13')}Side by side</button></div></div></div>`}
 
 /* ---- Side by side: the open chats as columns, as many as fit at 400 px each; the most recently used win. --------- */
 const maxCols=()=>Math.max(2,Math.floor(W()/400));
@@ -3002,7 +3024,7 @@ function openChat(c,beside){if(page!=='home')page='home';MC.pick=null;if(!MC.ope
 function closeTab(c){if(MC.open.length<2)return;const i=MC.open.indexOf(c),before={open:MC.open.slice(),seen:MC.seen.slice(),cur:A.mainConv,view:MC.view,grid:clone(A.grid),prev:MC.prevGrid};
   MC.open.splice(i,1);MC.seen=MC.seen.filter(x=>x!==c);if(A.mainConv===c)A.mainConv=MC.open[Math.min(i,MC.open.length-1)];
   if(MC.view==='side')layoutSide();changed();focusFk('mctab:'+A.mainConv);
-  toast(`Closed the tab of ${mainName(c)} · it keeps working, and All chats finds it`,()=>{Object.assign(MC,{open:before.open,seen:before.seen,view:before.view,prevGrid:before.prev});A.mainConv=before.cur;A.grid=before.grid;render()})}
+  toast(`Closed the tab of ${mainName(c)} · it keeps working, and the chat list finds it`,()=>{Object.assign(MC,{open:before.open,seen:before.seen,view:before.view,prevGrid:before.prev});A.mainConv=before.cur;A.grid=before.grid;render()})}
 
 /* ---- New chat ----------------------------------------------------------------------------------------------------- */
 function anchorAt(el,w,right){const app=$('#app').getBoundingClientRect(),r=el?el.getBoundingClientRect():{left:200,right:600,bottom:120};
@@ -3026,7 +3048,7 @@ function startChat(){const d=MC.nw;if(!d||!d.acct)return;MC.nw=null;MC.last={pro
   openChat(c);const t=d.text.trim();if(t)setTimeout(()=>sendMessage(c,t),80)}
 
 /* ---- The chat list ------------------------------------------------------------------------------------------------ */
-const FILTERS=[['all','All'],['main','Main agents'],['helper','Helpers'],['group','Groups'],['you','Waits on you']];
+const FILTERS=[['all','All'],['main','Main agents'],['helper','Helpers'],['you','Waits on you']];
 function openPick(el,trigger,right){const at=anchorAt(el,384,right);MC.pick={...at,q:'',f:'all',i:0,retired:false,trigger};MC.nw=null;menu=null;addpop=null;render();focusFk('pick:q')}
 function closePick(back){const t=MC.pick&&MC.pick.trigger;MC.pick=null;const e=$('#cpick');if(e)e.remove();$$('[data-mcpick],[data-convmenu]').forEach(b=>b.setAttribute('aria-expanded','false'));if(back&&t)focusFk(t)}
 const hl=(s,q)=>{const e=esc(s);if(!q)return e;const i=s.toLowerCase().indexOf(q);return i<0?e:esc(s.slice(0,i))+'<mark>'+esc(s.slice(i,i+q.length))+'</mark>'+esc(s.slice(i+q.length))};
@@ -3060,9 +3082,7 @@ function pickHtml(){const P=MC.pick,D=pickData();P.flat=D.flat;if(P.i>=D.flat.le
     <div class="pf" role="group" aria-label="Show">${FILTERS.map(([k,t])=>`<button class="pfb" data-pf="${k}" data-fk="pf:${k}" aria-pressed="${P.f===k}">${t}${k==='you'&&D.counts.you?` <span class="n">${D.counts.you}</span>`:''}</button>`).join('')}</div>
     <div class="pl" id="plist" role="listbox" aria-label="Chats">${listHtml(D)}</div>
     <div class="pfoot"><button class="mi" data-pnew data-fk="pnew">${I('plus','s14')}<span class="lb">New chat<small>Starts another main agent</small></span><span class="k">⌥N</span></button>
-      <button class="mi" data-pgroup data-fk="pgroup">${I('users','s14')}<span class="lb">New group chat…</span></button>
-      <div class="pacts" role="group" aria-label="This chat"><span class="lbl2">${esc(mainName(c))}</span>${grp?`<button class="btn sm" data-paddto>${I('userplus','s14')}Add someone…</button>`
-        :`<button class="btn sm" data-pmem>${I('brain','s14')}Memories</button><button class="btn sm" data-pswitch title="Choose another program for this agent">Switch driver…</button><button class="btn sm" data-pend ${ended?'disabled':''} title="${ended?'No session is running':'Ends the session; the chat stays, and your next message starts a new one'}">End session</button>`}</div></div>
+      ${grp?'':`<div class="pacts" role="group" aria-label="This chat"><span class="lbl2">${esc(mainName(c))}</span><button class="btn sm" data-pmem>${I('brain','s14')}Memories</button><button class="btn sm" data-pswitch aria-haspopup="dialog" title="Change the program, account or model of this agent">Switch driver…</button><button class="btn sm" data-pend ${ended?'disabled':''} title="${ended?'No session is running':'Ends the session; the chat stays, and your next message starts a new one'}">End session</button></div>`}</div>
     <div class="qfoot">↑ ↓ choose · Enter opens · ⇧Enter opens beside · Esc closes</div></div>`}
 function moveSel(d){const P=MC.pick;if(!P.flat.length)return;P.i=Math.max(0,Math.min(P.flat.length-1,P.i+d));
   $$('#cpick .prow').forEach(r=>{const on=+r.dataset.pi===P.i;r.classList.toggle('on',on);r.setAttribute('aria-selected',on);if(on&&d)r.scrollIntoView({block:'nearest'})});
@@ -3075,11 +3095,9 @@ function drawPick(){const old=$('#cpick');if(old)old.remove();if(!MC.pick||page!
   g.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closePick(true)}});
   $$('[data-pf]',g).forEach(b=>b.onclick=()=>{MC.pick.f=b.dataset.pf;MC.pick.i=0;drawPick();focusFk('pf:'+b.dataset.pf)});
   $$('.pfoot [data-pnew]',g).forEach(b=>b.onclick=()=>{closePick();openNew('mcnew')});
-  $('[data-pgroup]',g).onclick=()=>{closePick();newGroup()};
   const on=(s,f)=>{const e=$(s,g);if(e)e.onclick=f};
-  on('[data-paddto]',()=>{closePick();addMenu($('[data-addto]'))});
   on('[data-pmem]',()=>{closePick();openWin('mem:'+agentOf(A.mainConv))});
-  on('[data-pswitch]',()=>{closePick(true);toast(`Switch driver opens its dialog for ${MEM[agentOf(A.mainConv)].name}: the one deliberate way to change its program`)});
+  on('[data-pswitch]',()=>{closePick();openSwitch(A.mainConv,'convmenu')});
   on('[data-pend]',()=>{const c=A.mainConv,before=STATE[c];closePick(true);NOSESS[c]='ended';STATE[c]='Session ended · your next message starts a new one';render();
     toast(`Ended the session of ${MEM[agentOf(c)].name} · the chat stays`,()=>{delete NOSESS[c];STATE[c]=before;render()})});
   bindList()}
@@ -3106,6 +3124,67 @@ sendMessage=function(c,t,extra){
   return mcSend(c,t,extra)};
 function stopTurn(c){STATE[c]='Stopped · waits for you';CONV[c].msgs.push(['sys','You stopped this turn · your next message goes on from here']);render();focusFk('compose:'+c)}
 
+/* ---- Switch driver: the one deliberate way to change an agent's program, account or model. ---------------------- */
+/* The same program keeps its session and conversation. Another program cannot take a session over, so it starts a new
+   one that reads this chat and the memories first (or, if asked, the memories only). The chat itself never changes. */
+let CUR={}, SW=null, SWING={};
+const PNAME={'Claude Code':'claude','Codex':'codex'};
+const drvLine=d=>`${PROG[d.prog].t} · ${d.model} · ${d.acct}`;
+const drvShort=d=>`${PROG[d.prog].t} · ${d.model}`;
+function swDrv(c){if(CUR[c])return CUR[c];if(c==='main')return {prog:'claude',model:'Opus',acct:'Work (Max)'};
+  const [p,model,acct]=(CONV[c].sub||'').split(' · '),pr=PNAME[p]||progOf(c);
+  return {prog:pr,model:PROG[pr].models.includes(model)?model:PROG[pr].models[0],acct:acct||(acctsFor(pr).filter(a=>a.ok)[0]||{n:'no account'}).n}}
+function openSwitch(c,trigger){const now=swDrv(c);SW={c,trigger,now,prog:now.prog,acct:now.acct,model:now.model,carry:'read',wait:true};menu=null;MC.pick=null;MC.nw=null;render();focusFk('swprog:'+now.prog)}
+function swHtml(){const d=SW,c=d.c,a=agentOf(c),nm=MEM[a].name,P=PROG[d.prog],accts=acctsFor(d.prog),ok=accts.filter(x=>x.ok),same=d.prog===d.now.prog,
+    changed=d.prog!==d.now.prog||d.acct!==d.now.acct||d.model!==d.now.model;
+  const what=same?`<p>${nm} keeps its session and the conversation it holds. ${changed?`From its next turn it runs on ${esc(d.model)}${d.acct!==d.now.acct?' with '+esc(d.acct):''}.`:'Choose another program, account or model above.'}</p>`
+    :`<label class="swopt"><input type="radio" name="swcarry" value="read" data-swcarry ${d.carry==='read'?'checked':''}><span><b>Carry the conversation over</b>${P.t} cannot take over the ${PROG[d.now.prog].t} session, so it starts a new one that first reads this chat and ${nm}'s memories.</span></label>
+      <label class="swopt"><input type="radio" name="swcarry" value="fresh" data-swcarry ${d.carry==='fresh'?'checked':''}><span><b>Start clean</b>The new session reads only ${nm}'s memories. The chat stays here to read, but ${P.t} does not read it.</span></label>`;
+  return `<div class="scrim" data-swx></div><div class="cdlg sw-dlg" id="swdlg" role="dialog" aria-modal="true" aria-labelledby="swt">
+    <header>${avatar(a)}<b id="swt">Switch driver · ${nm}</b><button class="ib" data-swx data-fk="sw:x" aria-label="Close">${I('close','s14')}</button></header>
+    <div class="cbody">
+      <div class="swnow"><span class="l">Now</span>${PROG[d.now.prog].mk('s14')}<span>${esc(drvLine(d.now))}</span><span class="st">${esc(STATE[c]||'')}</span></div>
+      <div class="frow"><span class="l" id="swl-p">Program</span><div class="vseg" role="group" aria-labelledby="swl-p" style="width:max-content">${Object.entries(PROG).map(([k,p])=>`<button data-swprog="${k}" data-fk="swprog:${k}" aria-pressed="${d.prog===k}">${p.mk('s13')}${p.t}</button>`).join('')}</div></div>
+      <div class="frow"><label class="l" for="swacct">Account</label>${ok.length?`<select class="field" id="swacct" data-swacct data-fk="swacct">${accts.map(x=>`<option value="${esc(x.n)}" ${x.n===d.acct?'selected':''} ${x.ok?'':'disabled'}>${esc(x.n)}${x.ok?'':' · needs sign-in'}</option>`).join('')}</select>`
+        :`<span class="warn">No ${P.t} account is connected. <button class="lk" data-swgoacc>Add one on Accounts</button></span>`}</div>
+      <div class="frow"><label class="l" for="swmodel">Model</label><select class="field" id="swmodel" data-swmodel data-fk="swmodel">${P.models.map(m=>`<option ${m===d.model?'selected':''}>${m}</option>`).join('')}</select></div>
+      <div class="swwhat" role="group" aria-labelledby="swh"><h4 id="swh">The conversation</h4>${what}<p class="q">The chat never changes: every message stays, and one line marks the switch.</p></div>
+      ${working(c)?`<label class="swchk"><input type="checkbox" data-swwait ${d.wait?'checked':''}><span>Wait until ${nm} finishes its current turn<small>Unticked, the turn stops now and the switch starts at once.</small></span></label>`:''}
+      ${NOSESS[c]?`<p class="swnote">No session is running, so nothing starts now: your next message starts ${nm} on the new driver.</p>`:''}
+    </div>
+    <footer><span class="gap"></span><button class="btn sm" data-swx data-fk="sw:cancel">Cancel</button><button class="btn sm primary" data-swgo data-fk="sw:go" ${changed&&d.acct&&ok.length?'':'disabled title="Choose another program, account or model"'}>${same?'Switch':'Switch to '+P.t}</button></footer></div>`}
+function swApply(c,to){CUR[c]=to;const a=agentOf(c);MEM[a].prog=to.prog;MEM[a].role=PROG[to.prog].t+(MAINS.has(a)?' · main agent':'');if(c!=='main')CONV[c].sub=drvLine(to)}
+function swGo(){const d=SW;if(!d)return;SW=null;const c=d.c,a=agentOf(c),nm=MEM[a].name,to={prog:d.prog,acct:d.acct,model:d.model},from=d.now,same=to.prog===from.prog;
+  if(NOSESS[c]){swApply(c,to);CONV[c].msgs.push(['sys',`You switched ${nm} from ${drvShort(from)} to ${drvShort(to)} · your next message starts it there`]);render();focusFk('compose:'+c);return}
+  const run=()=>{STATE[c]=`Switching to ${drvShort(to)}…`;SWING[c]=SWING[c]||[];render();
+    setTimeout(()=>{const held=SWING[c]||[];delete SWING[c];
+      if(MC.failNext){MC.failNext=false;STATE[c]='Idle · waits for you';held.forEach(dl=>dl.to=[[a,'delivered']]);
+        CONV[c].msgs.push(['sys',`The switch to ${drvShort(to)} did not finish: ${esc(to.acct)} was refused · ${nm} stays on ${drvShort(from)}`]);render();return}
+      swApply(c,to);held.forEach(dl=>dl.to=[[a,'delivered']]);STATE[c]='Idle · waits for you';
+      CONV[c].msgs.push(['sys',`Switched from ${drvShort(from)} to ${drvShort(to)} · ${same?'the same session and conversation':d.carry==='read'?'the new session read this chat and the memories':'the new session read only the memories'}`]);
+      if(!same)CONV[c].msgs.push(['ag','now',d.carry==='read'?`I'm on ${PROG[to.prog].t} now and I've read our chat. Go on where we were.`:`I'm on ${PROG[to.prog].t} now, starting from my memories.`]);
+      render()},1800)};
+  if(working(c)&&d.wait){STATE[c]=`Switches to ${drvShort(to)} when this turn ends`;SWING[c]=[];render();setTimeout(run,1800)}
+  else{if(working(c))CONV[c].msgs.push(['sys','You stopped this turn to switch the driver']);run()}
+  focusFk('compose:'+c)}
+/* A message written during a switch waits under its bubble and goes out on the new driver. */
+const swSend=sendMessage;
+sendMessage=function(c,t,extra){if(SWING[c]&&t&&t.trim()){const dl={s:'sent',to:[[agentOf(c),'waiting']]};CONV[c].msgs.push(['me',esc(t),undefined,Object.assign({},extra,{dl})]);SWING[c].push(dl);render();return}
+  return swSend(c,t,extra)};
+AFTER_RENDER.push(()=>{if(!SW)return;if(page!=='home'){SW=null;return}
+  $('#main').insertAdjacentHTML('beforeend',swHtml());const g=$('#swdlg'),d=SW,close=()=>{const t=d.trigger;SW=null;render();focusFk(t)};
+  $$('#main [data-swx]').forEach(b=>b.onclick=close);
+  $$('[data-swprog]',g).forEach(b=>b.onclick=()=>{d.prog=b.dataset.swprog;const ok=acctsFor(d.prog).filter(x=>x.ok),back=d.prog===d.now.prog;
+    d.acct=back?d.now.acct:ok.length?ok[0].n:null;d.model=back?d.now.model:PROG[d.prog].models[0];render();focusFk('swprog:'+d.prog)});
+  const ac=$('[data-swacct]',g);if(ac)ac.onchange=()=>{d.acct=ac.value;render();focusFk('swacct')};
+  const md=$('[data-swmodel]',g);md.onchange=()=>{d.model=md.value;render();focusFk('swmodel')};
+  $$('[data-swcarry]',g).forEach(r=>r.onchange=()=>{d.carry=r.value});
+  const w=$('[data-swwait]',g);if(w)w.onchange=()=>{d.wait=w.checked};
+  const ga=$('[data-swgoacc]',g);if(ga)ga.onclick=()=>{SW=null;page='accounts';render()};
+  $('[data-swgo]',g).onclick=swGo;
+  g.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}})});
+LOADERS.push(()=>{CUR={};SW=null;SWING={};MEM.a1.prog='claude';MEM.a1.role='Claude Code · main agent'});
+
 /* The composer: Stop beside Send while the agent works; a retired agent's chat is read-only. */
 const mcComposer=composer;
 composer=function(c){if(isRetired(c))return `<div class="mc-ro">${esc(mainName(c))} is retired. Its chat stays here to read.</div>`;
@@ -3116,6 +3195,10 @@ composer=function(c){if(isRetired(c))return `<div class="mc-ro">${esc(mainName(c
 const mcBar=abarHtml;
 abarHtml=function(){syncOpen();const c=A.mainConv;let h=mcBar();
   h=h.replace(/<button class="btn sm bordered" data-stop[^>]*>[\s\S]*?<\/button>/,'');
+  /* One control for every chat: the agent's name opens the chat list (⌥F). No add-someone while groups are hidden. */
+  h=h.replace('title="Conversations, memories, who is in this chat"','title="All chats, and this chat\'s memories and driver · ⌥F"')
+    .replace(/<button class="ib" data-addto[^>]*>[\s\S]*?<\/button>/,'').replace(/<button class="btn sm" data-members[^>]*>[\s\S]*?<\/button>/,'');
+  if(CUR[c])h=h.replace(c==='main'?'Claude Code · Opus · Work (Max)':esc(CONV[c].sub),drvLine(CUR[c]));
   if(c!=='main'&&!isGroup(c)&&MAINS.has(agentOf(c)))h=h.replace(`<span>${convName(c)}</span>`,`<span>${convName(c)} · main</span>`);
   h=h.replace(/<button class="btn sm bordered stact" data-na="start" data-fk="na:bar">Start session<\/button>/,'').replace('data-na="start" data-fk="na:bar">Start again','data-na="go" data-fk="na:bar">Try again');
   return stripHtml()+h};
@@ -3139,17 +3222,18 @@ ABOVE_COMPOSER.push(c=>c==='main'&&MC.kick?'<button hidden data-na="go" data-mck
 STEPS.noacct[1]=STEPS.noacct[1].replace('Then Start session: a driver with no account shows as unavailable.','Then send a message: Agent 1 starts with it, with no Start session button.');
 /* The drag-and-drop list under the name: recent first, retired hidden, no Open-beside rows; it scrolls when long. */
 const mcItems=convMenuItems;
-convMenuItems=function(){const it=mcItems(),rows=it.filter(x=>x.dropconv&&!isRetired(x.dropconv)).sort((a,b)=>minOf(a.dropconv)-minOf(b.dropconv)),rest=it.filter(x=>!x.dropconv&&!(x.ic==='float'&&/^Open /.test(x.label||'')));
+convMenuItems=function(){const it=mcItems(),rows=it.filter(x=>x.dropconv&&!isRetired(x.dropconv)&&!isGroup(x.dropconv)).sort((a,b)=>minOf(a.dropconv)-minOf(b.dropconv)),
+    rest=it.filter(x=>!x.dropconv&&!(x.ic==='float'&&/^Open /.test(x.label||''))&&!/^(New group chat|Add someone to this chat)/.test(x.label||''));
   return [rest[0],...rows,...rest.slice(1)]};
 const mcKeys=keysHtml;
 keysHtml=function(){return mcKeys().replace('</dl>','<dt><kbd>⌥N</kbd></dt><dd>New chat: start another main agent</dd><dt><kbd>⌥F</kbd></dt><dd>Find any chat</dd><dt><kbd>Esc</kbd> in the composer</dt><dd>Stop the agent\'s current turn</dd></dl>')};
-PAL_EXTRA.push(C=>{if(page!=='home')return;C('New chat','plus',()=>{setTimeout(()=>openNew(),0);return false},'⌥N');C('Find a chat','search',()=>{setTimeout(()=>openPick($('[data-mcpick]'),'mcpick',true),0);return false},'⌥F');
+PAL_EXTRA.push(C=>{if(page!=='home')return;C('New chat','plus',()=>{setTimeout(()=>openNew(),0);return false},'⌥N');C('Find a chat','search',()=>{setTimeout(()=>openPick($('[data-convmenu]'),'convmenu'),0);return false},'⌥F');
+  if(!isGroup(A.mainConv))C(`Switch driver of ${MEM[agentOf(A.mainConv)].name}…`,'cog',()=>{setTimeout(()=>openSwitch(A.mainConv,'convmenu'),0);return false});
   if(MC.open.length>1)C(MC.view==='side'?'Show one chat at a time':'Show the open chats side by side','layout',()=>setView(MC.view==='side'?'one':'side'))});
 
 /* ---- Wiring ------------------------------------------------------------------------------------------------------- */
 WIRE_EXTRA.push(on=>{
   on('[data-convmenu]',b=>{b.onclick=()=>MC.pick?closePick(true):openPick(b,'convmenu');b.setAttribute('aria-haspopup','dialog');b.setAttribute('aria-expanded',!!MC.pick)});
-  on('[data-mcpick]',b=>b.onclick=()=>MC.pick?closePick(true):openPick(b,'mcpick',true));
   on('[data-mcnew]',b=>b.onclick=()=>{if(MC.nw){MC.nw=null;render()}else openNew()});
   on('[data-mcview]',b=>b.onclick=()=>setView(b.dataset.mcview));
   on('[data-mctab]',t=>{t.onclick=e=>{if(e.target.closest('[data-mcclose]'))return;openChat(t.dataset.mctab)};
@@ -3178,7 +3262,7 @@ AFTER_RENDER.push(()=>{
   if(MC.kick){MC.kick=false;const k=$('[data-mckick]');if(k)k.click()}});
 /* A popover closes on a click outside it, without taking that click. */
 document.addEventListener('pointerdown',e=>{const t=e.target;if(!t.closest)return;
-  if(MC.pick&&!t.closest('#cpick,[data-convmenu],[data-mcpick]'))closePick();
+  if(MC.pick&&!t.closest('#cpick,[data-convmenu]'))closePick();
   if(MC.nw&&!t.closest('#mcnew,[data-mcnew]')){MC.nw=null;const n=$('#mcnew');if(n)n.remove()}},true);
 /* Side by side: the agent bar follows the column you work in. */
 function follow(el){if(MC.view!=='side'||page!=='home'||!el.closest)return;const p=el.closest('#desk [data-pane]'),pn=p&&paneById(p.dataset.pane);
@@ -3188,7 +3272,7 @@ document.addEventListener('focusin',e=>follow(e.target));
 document.addEventListener('pointerdown',e=>{if(e.target.closest&&!e.target.closest('button,textarea,input,select,a,[tabindex]'))follow(e.target)});
 addEventListener('keydown',e=>{if(page!=='home')return;
   if(e.altKey&&!e.metaKey&&!e.ctrlKey&&e.code==='KeyN'){e.preventDefault();e.stopImmediatePropagation();if(MC.nw){MC.nw=null;render()}else openNew();return}
-  if(e.altKey&&!e.metaKey&&!e.ctrlKey&&e.code==='KeyF'){e.preventDefault();e.stopImmediatePropagation();if(MC.pick)closePick(true);else openPick($('[data-mcpick]'),'mcpick',true);return}
+  if(e.altKey&&!e.metaKey&&!e.ctrlKey&&e.code==='KeyF'){e.preventDefault();e.stopImmediatePropagation();if(MC.pick)closePick(true);else openPick($('[data-convmenu]'),'convmenu');return}
   const t=e.target;if(e.key==='Escape'&&t.matches&&t.matches('[data-compose]')&&!menu&&!MC.pick){const c=t.dataset.compose;if(working(c)&&!isGroup(c)){e.preventDefault();e.stopImmediatePropagation();stopTurn(c)}}},true);
 
 /* ---- The steps ---------------------------------------------------------------------------------------------------- */
@@ -3217,26 +3301,30 @@ function seed(){
     STATE[c]=x.idle?(x.you?'Waits for you':'Idle · waits for you'):what;INFO[c]={min,unread:x.unread||0,you:!!x.you};EXTRA.push(c)});
   GONE.forEach(([c,name,what],i)=>{MEM[c]={name,kind:'agent',prog:c.startsWith('cx')?'codex':'claude',role:'retired'};OWN[c]=c;
     CONV[c]={name,sub:what,origin:'This agent is retired',msgs:[['ag','earlier',`Finished: ${what}.`]]};STATE[c]='Retired';INFO[c]={min:3000+i*900,retired:true};EXTRA.push(c)});
-  CONV.g2={name:'Release check',members:['you','a1','a2','w3','sam'],origin:'You started this chat with Agent 1, Agent 2, Worker 3 and Sam',msgs:[['say','a2','13:32','The release order is in plan 56; Worker 3 tests the last two.']]};STATE.g2='Agent 2 reading';
-  EXTRA.push('h262','w3','m2','m3','g1','g2');MC.next=4}
+  EXTRA.push('h262','w3','m2','m3');MC.next=4}
 const failTool=()=>`<button class="tbtn" data-mcfail aria-pressed="${MC.failNext}">The next start fails</button>`;
-STEPS.many=['16 · Several chats','Agent 1, Agent 2 and Agent 3 are main agents, each with its own chat, open as tabs above the agent bar. New chat (⌥N) starts another: the program, the account and the model, the same as last time, and Enter starts it, so ⌥N then Enter makes one more. Its session starts with the first message. Click the agent\'s name, or All chats (⌥F), to find any of 40 chats: type to search, filter, the most recent first, retired agents hidden until asked for, a list that scrolls inside a fixed height, and New chat always at the foot.',''];
+STEPS.many=['16 · Several chats','Agent 1, Agent 2 and Agent 3 are main agents, each with its own chat, open as tabs above the agent bar. New chat (⌥N) starts another: the program, the account and the model, the same as last time, and Enter starts it, so ⌥N then Enter makes one more. Its session starts with the first message. Click the agent\'s name (or ⌥F), the one control for every chat, to find any of 38 chats: type to search, filter, the most recent first, retired agents hidden until asked for, a list that scrolls inside a fixed height, and New chat always at the foot. Group chats are hidden for now.',''];
 STEPS.side=['17 · Side by side','Three chats as columns, each with its own composer. The agent bar follows the column you work in, and the tab row underlines the chats that have a column. A chat with no column takes the place of the one used longest ago. One at a time brings back your own layout.',''];
 STEPS.session=['18 · Sending starts the session','No Start session and no Resume. Agent 3 has had no session since the host restarted: send it a message and the journal resumes it by itself (“Resuming the session…”, then the answer). Agent 1 works: Stop sits beside Send (or press Esc in the composer) and stops only its current turn. End session and Switch driver stay deliberate, in the chat list.',''];
-['many','side','session'].forEach(k=>Object.defineProperty(STEPS[k],2,{get:failTool}));
+STEPS.sw=['19 · Switch driver','Agent 1 works on Claude Code and is being moved to Codex. The dialog shows what runs it now, then the program, account and model to switch to, and what happens to the conversation: Codex cannot take over the Claude Code session, so it starts a new one that reads this chat and the memories (or only the memories). The same program keeps its session. Agent 1 finishes its turn first unless you untick it; the chat gets one line for the switch, and messages written meanwhile wait and go out on the new driver.',''];
+['many','side','session','sw'].forEach(k=>Object.defineProperty(STEPS[k],2,{get:failTool}));
 LOADERS.push(()=>{baseInfo();NOSESS={};MAINS.clear();MAINS.add('a1');Object.assign(MC,{view:'one',open:[A.mainConv],seen:[A.mainConv],pick:null,nw:null,prevGrid:null,next:2,kick:false,failNext:false});
   if(/^Stopped|^Idle|^Working on your/.test(STATE.main||''))STATE.main='Working on task 1702';
-  if(!['many','side','session'].includes(step))return;
+  if(!['many','side','session','sw'].includes(step))return;
   seed();
+  if(step==='sw'){MC.open=['main','m2'];MC.seen=['main','m2'];const now=swDrv('main');SW={c:'main',trigger:'convmenu',now,prog:'codex',acct:'Codex team key',model:'GPT-5',carry:'read',wait:true}}
   if(step==='many'){MC.open=['main','m2','m3'];MC.seen=['main','m2','m3']}
   if(step==='side'){MC.open=['main','m2','h262','m3'];MC.seen=['main','m2','h262','m3'];MC.prevGrid=A.grid;MC.view='side';layoutSide()}
   if(step==='session'){MC.open=['main','m3'];A.mainConv='m3';MC.seen=['m3','main']}});
-['many','side','session'].forEach(k=>{const b=document.createElement('button');b.dataset.k=k;b.textContent=STEPS[k][0];b.onclick=()=>{step=k;page='home';load()};$('#steps').append(b)});
-const NEW_NOTES=[['Several chats','Main agent is a role. Any number of agents hold it, each with its own chat. The open chats are tabs in one row above the agent bar (34 px, the pane strip\'s look): the program\'s mark, the name, a spinner while it works or a hollow dot while idle, the unread count, and × on hover, which closes the tab only: the agent keeps working and All chats finds it. The agent bar under the row belongs to the chosen tab. ← → move between tabs, Delete closes one.'],
+['many','side','session','sw'].forEach(k=>{const b=document.createElement('button');b.dataset.k=k;b.textContent=STEPS[k][0];b.onclick=()=>{step=k;page='home';load()};$('#steps').append(b)});
+/* Group chats are hidden for now, so their steps leave the selector. */
+$$('#steps button').forEach(b=>{if(['group','grpdl'].includes(b.dataset.k))b.hidden=true});
+const NEW_NOTES=[['Several chats','Main agent is a role. Any number of agents hold it, each with its own chat. The open chats are tabs in one row above the agent bar (34 px, the pane strip\'s look): the program\'s mark, the name, a spinner while it works or a hollow dot while idle, the unread count, and × on hover, which closes the tab only: the agent keeps working and the chat list finds it. The agent bar under the row belongs to the chosen tab. ← → move between tabs, Delete closes one.'],
   ['New chat','New chat, after the tabs and at the foot of the chat list, or ⌥N: a small form with the program, the account (only signed-in ones can be chosen), the model and an optional first message. It opens with the last choice, so Enter starts one more at once. The new tab opens and its chat says “Agent 4 is ready”; its session starts with the first message. There is no limit on how many.'],
   ['Side by side','One at a time shows the chosen chat; Side by side shows the open chats as framed columns, as many as fit at 400 px each (three at 1440 px), the most recently used first. Choosing a tab without a column swaps out the column used longest ago. The agent bar follows the column you type in. One at a time brings back the layout you had.'],
-  ['The chat list','The agent\'s name and All chats (⌥F) open one list: a search on top (name, what it does, a task number; the match is underlined), filters (All, Main agents, Helpers, Groups, Waits on you with its count), then On Home and Recent, the most recent first, each row with its time and state. Retired agents are hidden behind “Show 12 retired agents”; a retired chat opens to read only. The list is capped at 336 px and scrolls; the foot stays: New chat, New group chat, and the chosen chat\'s Memories, Switch driver and End session. ↑ ↓ and Enter open, ⇧Enter or the row\'s button opens beside. No match says so and offers New chat.'],
-  ['Sending starts the session','The chat never asks to start or resume. A message to an agent with no session waits under its bubble (“Waiting for Agent 3 to start”) while the bar says “Resuming the session…” or “Starting the session…”; then it is delivered and answered. If the start fails, the message says Not delivered with the reason and Retry. While the agent works, Stop sits beside Send (Esc in the composer does the same) and stops only the current turn; the bar has no Stop. A session ends only when you ask: End session, or Switch driver.']];
+  ['The chat list','One control opens it: the agent\'s name in the agent bar (or ⌥F); there is no second All chats button. A search on top (name, what it does, a task number; the match is underlined), filters (All, Main agents, Helpers, Waits on you with its count), then On Home and Recent, the most recent first, each row with its time and state. Group chats are hidden for now: no Groups filter, no group rows or tabs, no New group chat and no add-someone; a group will later start as a new chat that people are added to. Retired agents are hidden behind “Show 12 retired agents”; a retired chat opens to read only. The list is capped at 336 px and scrolls; the foot stays: New chat, and the chosen chat\'s Memories, Switch driver… and End session. ↑ ↓ and Enter open, ⇧Enter or the row\'s button opens beside. No match says so and offers New chat.'],
+  ['Sending starts the session','The chat never asks to start or resume. A message to an agent with no session waits under its bubble (“Waiting for Agent 3 to start”) while the bar says “Resuming the session…” or “Starting the session…”; then it is delivered and answered. If the start fails, the message says Not delivered with the reason and Retry. While the agent works, Stop sits beside Send (Esc in the composer does the same) and stops only the current turn; the bar has no Stop. A session ends only when you ask: End session, or Switch driver.'],
+  ['Switch driver','Opened from Switch driver… at the chat list\'s foot (or ⌘K). A dialog over Home: Now (the program, model and account that run the agent, and its state), then Program, Account (only signed-in ones; none connected links to Accounts) and Model. The conversation box says what happens: the same program keeps its session and conversation and runs the next turn on the new account or model; another program cannot take the session over, so it starts a new one that first reads this chat and the memories (Carry the conversation over, the default) or only the memories (Start clean). The chat never changes. If the agent works, the switch waits for its turn to end unless you untick that; with no session running, it only records the choice and the next message starts there. Switch is off until something differs. While it switches the bar says “Switching to Codex · GPT-5…”, messages wait, then one line marks the switch; a failure leaves the agent on its old driver and says why.']];
 NOTE_CARDS.push(...NEW_NOTES);
 const dn=$('[data-slot="notes"]');if(dn)dn.insertAdjacentHTML('beforeend',NEW_NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join(''));
 load();
