@@ -9,7 +9,8 @@ import { purge, trackProtectedRead } from './protectedView';
 /**
  * Keeps the page on screen up to date: every reload the Inertia live client starts runs as this tab's own async reload,
  * never cancelling a form or a navigation. Changes during a read make one trailing read, a form being sent makes it
- * wait, and a failed read retries after 1, 2 and 4 seconds.
+ * wait, and a failed read retries after 1, 2 and 4 seconds, then on its own at a growing pause, and at once on a new live
+ * signal. A read that gets no answer within its deadline counts as failed.
  */
 export type PageReadStatus = 'idle' | 'reading' | 'retrying' | 'failed';
 
@@ -30,6 +31,24 @@ export type PageReadEnd = 'applied' | 'failed' | 'cancelled';
 export type PageRead = (only: string[], ended: (end: PageReadEnd) => void) => void;
 
 const RETRY_DELAYS_MS = [1000, 2000, 4000];
+
+/**
+ * The pause before the first retry of a read that stays failed after its quick retries; each next one doubles it up to
+ * the most.
+ */
+const FAILED_RETRY_FIRST_MS = 10000;
+
+const FAILED_RETRY_MOST_MS = 60000;
+
+/**
+ * How long a read may wait for its answer before it counts as failed.
+ */
+const READ_DEADLINE_MS = 20000;
+
+/**
+ * One read in flight: over once it ended or was given up.
+ */
+type ReadInFlight = { isOver: boolean };
 
 /**
  * The page reads of one tab: one at a time, each covering every change marked before it started.
@@ -57,7 +76,17 @@ export class PageReadScheduler {
 
     private retryTimer: ReturnType<typeof setTimeout> | undefined;
 
-    constructor(private readonly read: PageRead) {}
+    private deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+
+    private inFlight: ReadInFlight | undefined;
+
+    /**
+     * @param timedOut called with the props of a read that got no answer within its deadline
+     */
+    constructor(
+        private readonly read: PageRead,
+        private readonly timedOut: (only: string[]) => void = () => undefined,
+    ) {}
 
     /**
      * Marks the props dirty and answers the generation marked: a read covers it once appliedGeneration reaches it.
@@ -66,7 +95,7 @@ export class PageReadScheduler {
         const marked = ++this.dirtyGeneration;
         props.forEach((prop) => this.wanted.add(prop));
 
-        if (reason === 'focus' && this.status.value === 'failed') {
+        if (this.status.value === 'failed') {
             this.resume();
 
             return marked;
@@ -107,7 +136,10 @@ export class PageReadScheduler {
      */
     forget(): void {
         clearTimeout(this.retryTimer);
+        clearTimeout(this.deadlineTimer);
         this.retryTimer = undefined;
+        this.deadlineTimer = undefined;
+        this.giveUpRead();
         this.formsSending = 0;
         this.failures = 0;
         this.wanted.clear();
@@ -120,7 +152,20 @@ export class PageReadScheduler {
         this.retryTimer = undefined;
         this.failures = 0;
         this.status.value = 'idle';
+        traceLive('read resumed');
         this.readNext();
+    }
+
+    /**
+     * Lets go of the read in flight: its late answer changes nothing here.
+     */
+    private giveUpRead(): void {
+        if (this.inFlight !== undefined) {
+            this.inFlight.isOver = true;
+        }
+
+        this.inFlight = undefined;
+        this.isReading = false;
     }
 
     private readNext(): void {
@@ -130,22 +175,36 @@ export class PageReadScheduler {
 
         const covered = this.dirtyGeneration;
         const only = [...this.wanted];
-        let hasEnded = false;
+        const read: ReadInFlight = { isOver: false };
         this.wanted.clear();
         this.isReading = true;
+        this.inFlight = read;
         this.status.value = this.failures === 0 ? 'reading' : 'retrying';
 
-        this.read(only, (end) => {
-            if (hasEnded) {
+        this.deadlineTimer = setTimeout(() => {
+            if (read.isOver) {
                 return;
             }
 
-            hasEnded = true;
-            this.isReading = false;
+            traceLive('read timed out');
+            this.giveUpRead();
+            this.timedOut(only);
+            this.settle('failed', covered, only);
+        }, READ_DEADLINE_MS);
+
+        this.read(only, (end) => {
+            if (read.isOver) {
+                return;
+            }
+
+            clearTimeout(this.deadlineTimer);
+            this.deadlineTimer = undefined;
+            this.giveUpRead();
             this.settle(end, covered, only);
 
-            // A navigation cancelled it: the page it leads to reads the dirty work when it arrives.
-            if (end !== 'cancelled') {
+            // A navigation cancelled it: the page it leads to reads the dirty work when it arrives. A signal marked
+            // since the read started is what cancelled it, and no page follows, so its read comes now.
+            if (end !== 'cancelled' || this.dirtyGeneration > covered) {
                 this.readNext();
             }
         });
@@ -163,24 +222,32 @@ export class PageReadScheduler {
         only.forEach((prop) => this.wanted.add(prop));
 
         if (end === 'cancelled') {
+            traceLive('read cancelled');
             this.status.value = 'idle';
 
             return;
         }
 
         this.failures++;
-
-        if (this.failures > RETRY_DELAYS_MS.length) {
-            this.status.value = 'failed';
-
-            return;
-        }
-
-        this.status.value = 'retrying';
+        this.status.value = this.failures > RETRY_DELAYS_MS.length ? 'failed' : 'retrying';
         this.retryTimer = setTimeout(() => {
             this.retryTimer = undefined;
             this.readNext();
-        }, RETRY_DELAYS_MS[this.failures - 1]);
+        }, this.retryDelay());
+    }
+
+    /**
+     * The pause after the latest failure: 1, 2 and 4 seconds, then a growing one, never past the most.
+     */
+    private retryDelay(): number {
+        if (this.failures <= RETRY_DELAYS_MS.length) {
+            return RETRY_DELAYS_MS[this.failures - 1];
+        }
+
+        return Math.min(
+            FAILED_RETRY_FIRST_MS * 2 ** (this.failures - RETRY_DELAYS_MS.length - 1),
+            FAILED_RETRY_MOST_MS,
+        );
     }
 
     private isDirty(): boolean {
@@ -188,10 +255,7 @@ export class PageReadScheduler {
     }
 
     private mayStart(): boolean {
-        return !this.isReading
-            && this.formsSending === 0
-            && this.retryTimer === undefined
-            && this.status.value !== 'failed';
+        return !this.isReading && this.formsSending === 0 && this.retryTimer === undefined;
     }
 }
 
@@ -285,7 +349,7 @@ function readPage(wanted: string[], ended: (end: PageReadEnd) => void): void {
     }
 }
 
-const reads = new PageReadScheduler(readPage);
+const reads = new PageReadScheduler(readPage, (only) => only.forEach((name) => staleProps.add(name)));
 
 /**
  * A reload the Inertia live client started: a GET partial reload that names only live props of the page, and is no

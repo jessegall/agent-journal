@@ -53,9 +53,10 @@ async function changes() {
     const module = await import('./usePageChanges');
     const { router } = await import('@inertiajs/vue3');
     const { purge } = await import('./protectedView');
+    const { traceLive } = await import('./liveTrace');
     const shell = mount(defineComponent({ setup: () => { module.useLiveVisits(); return () => h('div'); } }));
 
-    return { ...module, router, purge, shell };
+    return { ...module, router, purge, traceLive, shell };
 }
 
 function liveVisit(only: string[] = ['page']): Visit {
@@ -146,13 +147,117 @@ describe('usePageChanges', () => {
         answer(reloads[2], 'network');
         vi.advanceTimersByTime(4000);
         answer(reloads[3], 'network');
-        vi.advanceTimersByTime(10000);
+        vi.advanceTimersByTime(9000);
 
         expect(reloads).toHaveLength(4);
         expect(pageReadStatus.value).toBe('failed');
         retryPageRead();
         answer(reloads[4], 'applied');
         expect(isPropStale('page')).toBe(false);
+    });
+
+    it('reads again by itself after it failed, at a growing pause that stops at one minute', async () => {
+        const { pageReadStatus } = await changes();
+        fireBefore(liveVisit());
+
+        for (const pause of [1000, 2000, 4000]) {
+            answer(reloads[reloads.length - 1], 'network');
+            vi.advanceTimersByTime(pause);
+        }
+
+        answer(reloads[3], 'network');
+        expect(pageReadStatus.value).toBe('failed');
+        vi.advanceTimersByTime(10000);
+        expect(reloads).toHaveLength(5);
+
+        answer(reloads[4], 'network');
+        vi.advanceTimersByTime(19999);
+        expect(reloads).toHaveLength(5);
+        vi.advanceTimersByTime(1);
+        expect(reloads).toHaveLength(6);
+
+        for (const pause of [40000, 60000, 60000]) {
+            answer(reloads[reloads.length - 1], 'network');
+            vi.advanceTimersByTime(pause);
+        }
+
+        expect(reloads).toHaveLength(9);
+        answer(reloads[8], 'applied');
+        expect(pageReadStatus.value).toBe('idle');
+    });
+
+    it('reads again at once on a live signal after three failures', async () => {
+        const { pageReadStatus } = await changes();
+        fireBefore(liveVisit());
+
+        for (const pause of [1000, 2000, 4000]) {
+            answer(reloads[reloads.length - 1], 'network');
+            vi.advanceTimersByTime(pause);
+        }
+
+        answer(reloads[3], 'network');
+        expect(pageReadStatus.value).toBe('failed');
+
+        fireBefore(liveVisit());
+
+        expect(reloads).toHaveLength(5);
+        answer(reloads[4], 'applied');
+        expect(pageReadStatus.value).toBe('idle');
+    });
+
+    it('counts a read with no answer as failed after its deadline, and the next signal reads', async () => {
+        const { isPropStale, pageReadStatus, traceLive } = await changes();
+        fireBefore(liveVisit());
+
+        vi.advanceTimersByTime(19999);
+        expect(pageReadStatus.value).toBe('reading');
+        vi.advanceTimersByTime(1);
+
+        expect(pageReadStatus.value).toBe('retrying');
+        expect(isPropStale('page')).toBe(true);
+        expect(traceLive).toHaveBeenCalledWith('read timed out');
+
+        fireBefore(liveVisit());
+        vi.advanceTimersByTime(1000);
+        expect(reloads).toHaveLength(2);
+        answer(reloads[1], 'applied');
+        expect(pageReadStatus.value).toBe('idle');
+    });
+
+    it('lets the late answer of a read that timed out change nothing', async () => {
+        const { appliedReadGeneration } = await changes();
+        fireBefore(liveVisit());
+        vi.advanceTimersByTime(20000);
+
+        answer(reloads[0], 'applied');
+
+        expect(appliedReadGeneration.value).toBe(0);
+    });
+
+    it('follows a read a second signal cancelled with a read that applies', async () => {
+        const { appliedReadGeneration, markDirty, traceLive } = await changes();
+        fireBefore(liveVisit());
+
+        const marked = markDirty('signal');
+        reloads[0].onCancel();
+
+        expect(traceLive).toHaveBeenCalledWith('read cancelled');
+        expect(reloads).toHaveLength(2);
+        answer(reloads[1], 'applied');
+        expect(appliedReadGeneration.value).toBe(marked);
+    });
+
+    it('leaves a read a navigation cancelled to the page that arrives', async () => {
+        const { appliedReadGeneration } = await changes();
+        fireBefore(liveVisit());
+
+        reloads[0].onCancel();
+        expect(reloads).toHaveLength(1);
+
+        listeners.navigate.forEach((listener) => listener());
+        expect(reloads).toHaveLength(2);
+        answer(reloads[1], 'applied');
+        expect(appliedReadGeneration.value).toBe(1);
     });
 
     it('purges on 403 and goes to the sign-in page on 401 or 419', async () => {
