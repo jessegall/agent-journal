@@ -21,6 +21,30 @@ final class BlankLineAfterBlockFixerTest extends TestCase
     public static function samples(): array
     {
         return [
+            'a trait use after a trait block with aliases, as Pint keeps it' => [
+                <<<'PHP'
+                    <?php
+                    class A
+                    {
+                        use B {
+                            b as private c;
+                        }
+                        use D;
+                    }
+
+                    PHP,
+                <<<'PHP'
+                    <?php
+                    class A
+                    {
+                        use B {
+                            b as private c;
+                        }
+                        use D;
+                    }
+
+                    PHP,
+            ],
             'a statement after an if block, a catch kept by its brace' => [
                 <<<'PHP'
                     <?php

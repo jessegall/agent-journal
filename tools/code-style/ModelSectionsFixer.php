@@ -12,6 +12,8 @@ use PhpCsFixer\Tokenizer\Tokens;
 use PhpParser\Error;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeFinder;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use RuntimeException;
 use SplFileInfo;
@@ -96,6 +98,11 @@ final class ModelSectionsFixer implements FixerInterface
             return [];
         }
 
-        return array_values(array_filter(new NodeFinder()->findInstanceOf($ast, Class_::class), \isModel(...)));
+        // A class's full name, which tells a model, is set only once its names are resolved.
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor(new NameResolver());
+        $resolved = $traverser->traverse($ast);
+
+        return array_values(array_filter(new NodeFinder()->findInstanceOf($resolved, Class_::class), \isModel(...)));
     }
 }

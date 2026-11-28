@@ -76,6 +76,12 @@ final class TernaryReturnFixer implements FixerInterface
                 continue;
             }
 
+            // A return that assigns, such as return $this->cached = $a ? $b : $c, keeps its ternary: split into an if,
+            // the assignment would take the condition's value instead of the answer.
+            if ($this->topLevel($tokens, $return + 1, $end, '=') !== null) {
+                continue;
+            }
+
             $question = $this->topLevel($tokens, $return + 1, $end, '?');
 
             if ($question === null || $tokens[$tokens->getNextMeaningfulToken($question)]->equals(':')) {

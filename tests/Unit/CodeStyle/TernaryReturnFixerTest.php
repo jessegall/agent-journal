@@ -21,6 +21,24 @@ final class TernaryReturnFixerTest extends TestCase
     public static function samples(): array
     {
         return [
+            'a return that assigns keeps its ternary' => [
+                <<<'PHP'
+                    <?php
+                    function a(bool $b): int
+                    {
+                        return $this->cached = $b ? 1 : 2;
+                    }
+
+                    PHP,
+                <<<'PHP'
+                    <?php
+                    function a(bool $b): int
+                    {
+                        return $this->cached = $b ? 1 : 2;
+                    }
+
+                    PHP,
+            ],
             'a ternary return becomes an if and a return' => [
                 <<<'PHP'
                     <?php

@@ -8,6 +8,7 @@ use PhpCsFixer\Fixer\FixerInterface;
 use PhpCsFixer\FixerDefinition\CodeSample;
 use PhpCsFixer\FixerDefinition\FixerDefinition;
 use PhpCsFixer\FixerDefinition\FixerDefinitionInterface;
+use PhpCsFixer\Tokenizer\CT;
 use PhpCsFixer\Tokenizer\Token;
 use PhpCsFixer\Tokenizer\Tokens;
 use SplFileInfo;
@@ -35,6 +36,7 @@ final class BlankLineAfterBlockFixer implements FixerInterface
         T_CASE,
         T_DEFAULT,
         T_USE,
+        CT::T_USE_TRAIT,
         T_CLOSE_TAG,
     ];
 

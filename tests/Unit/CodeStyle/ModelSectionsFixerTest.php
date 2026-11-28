@@ -16,6 +16,8 @@ final class ModelSectionsFixerTest extends TestCase
 {
     private const string MODEL = <<<'PHP'
         <?php
+        namespace Domain\Tasks\Models;
+
         class Task extends Model
         {
             public function isOpen(): bool
