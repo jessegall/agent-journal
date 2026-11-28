@@ -26,13 +26,13 @@ final readonly class RemoveEndedStartNetwork implements Listener
 
     public function handle(StartEndEvent $event): void
     {
-        $start = SessionProcess::query()->findOrFail($event->startId);
+        $start = SessionProcess::query()->supervised()->whereKey($event->startId)->sole();
 
         if ($start->host_id === null || ! Host::query()->findOrFail($start->host_id)->arrangement->isContained()) {
             return;
         }
 
-        if (SessionProcess::query()->ofSessions([$start->session_id])->unresolved()->exists()) {
+        if (SessionProcess::query()->supervised()->ofSessions([$start->session_id])->unresolved()->exists()) {
             return;
         }
 
