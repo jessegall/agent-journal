@@ -69,7 +69,7 @@ describe("ChatTabs", () => {
     const store = useOpenChats("user-tabs");
     store.chats.agentIds = [];
     store.chats.recent = [];
-    store.show("one");
+    store.showColumns(1);
   });
 
   it("shows each open main agent as a tab, the chosen one selected, with its unread count", async () => {
@@ -144,13 +144,15 @@ describe("ChatTabs", () => {
     tabs.unmount();
   });
 
-  it("shows the open chats side by side, underlining the tabs that have a column", async () => {
+  it("picks two chats side by side from the one layout icon, underlining the tabs that have a column", async () => {
     useOpenChats("user-tabs").open("agent-3");
     const tabs = tabsFor("agent-2", ["agent-2", "agent-3"]);
 
-    await tabs.get('[data-segment="side"]').trigger("click");
+    expect(tabs.find('[data-segment="side"]').exists()).toBe(false);
+    await tabs.get("[data-chat-layout]").trigger("click");
+    await tabs.get('[data-chat-layout-choice="2"]').trigger("click");
 
-    expect(useOpenChats("user-tabs").chats.mode).toBe("side");
+    expect(useOpenChats("user-tabs").chats.columns).toBe(2);
     expect(useOpenChats("user-tabs").besideOf("agent-2")).toEqual(["agent-3"]);
     expect(tabs.get('[data-chat-tab="agent-3"]').classes()).toContain("underline");
   });

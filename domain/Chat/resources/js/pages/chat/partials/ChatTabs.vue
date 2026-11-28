@@ -3,7 +3,6 @@ import Avatar from "@kit/Avatar";
 import Icon from "@kit/Icon";
 import IconButton from "@kit/IconButton";
 import Kbd from "@kit/Kbd";
-import SegmentedControl from "@kit/SegmentedControl";
 import Status from "@kit/Status";
 import Toast from "@kit/Toast";
 import { useAppContext } from "@kit/appContext";
@@ -11,7 +10,8 @@ import { useHostProp } from "@kit/hostProp";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
 import { sessionLooks } from "../../../sessionLooks";
-import { useOpenChats, type ChatViewMode } from "../../../composables/useOpenChats";
+import { useOpenChats } from "../../../composables/useOpenChats";
+import ChatLayoutPicker from "./ChatLayoutPicker.vue";
 import { keyedPost } from "@kit/keyedPost";
 import { newRequestId } from "@kit/requestId";
 import { createMainAgent } from "@kit/sessionStarts";
@@ -22,7 +22,7 @@ import { readNewChatChoice } from "../../../newChatChoice";
 /**
  * The open chats in Home's one chat bar, so the user moves between several agents: each tab shows the agent, its state
  * and unread count, the chosen one a caret that opens the chat list, and closing one leaves the agent working. New chat
- * (Option+N) opens a tab whose chat asks what runs it, and a switch shows one chat at a time or side by side.
+ * (Option+N) opens a tab whose chat asks what runs it, and one icon picks how many chats show side by side.
  */
 const props = defineProps<{
   agents: AgentOptionData[];
@@ -30,11 +30,6 @@ const props = defineProps<{
   // The chats that have a column side by side, which their tabs underline.
   columnAgentIds: string[];
 }>();
-
-const MODES: readonly { value: ChatViewMode; label: string }[] = [
-  { value: "one", label: "One at a time" },
-  { value: "side", label: "Side by side" },
-];
 
 const { viewer, drivers } = useAppContext();
 const viewerId = viewer.value.id ?? "guest";
@@ -231,13 +226,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
     </button>
     <span class="flex-1"></span>
     <span class="flex flex-none items-center pr-1">
-      <SegmentedControl
-        :model-value="openChats.chats.mode"
-        label="How the open chats show"
-        :items="MODES"
-        data-view-mode
-        @update:model-value="(mode: ChatViewMode) => openChats.show(mode)"
-      />
+      <ChatLayoutPicker />
     </span>
     <template v-if="newChatRefusal">
       <p class="flex items-center px-2 text-small text-danger" role="alert" data-new-chat-refusal>{{ newChatRefusal }}</p>

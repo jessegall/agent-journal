@@ -8,7 +8,7 @@ import { useStatusAnnouncement } from "../../composables/useStatusAnnouncement";
 import { useChatListShortcut } from "../../composables/useChatBarAsks";
 
 /**
- * Home's part of the one chat bar: the open chats as tabs with New chat and the view switch. The chosen agent is named
+ * Home's part of the one chat bar: the open chats as tabs with New chat and the chat layout. The chosen agent is named
  * in its chat, above the composer; here its state changes are read out, and Option+F opens its chat list.
  */
 const props = defineProps<{ data: ChatData }>();
@@ -21,7 +21,7 @@ useChatListShortcut(() => props.data.selectedAgentId);
 
 // The chats that have a column now: the chosen one, and side by side those beside it.
 const columnAgentIds = computed(() =>
-  openChats.chats.mode === "side" && props.data.selectedAgentId !== undefined
+  openChats.chats.columns > 1 && props.data.selectedAgentId !== undefined
     ? [props.data.selectedAgentId, ...openChats.besideOf(props.data.selectedAgentId)]
     : [],
 );

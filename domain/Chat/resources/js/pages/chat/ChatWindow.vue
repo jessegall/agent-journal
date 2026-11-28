@@ -37,7 +37,7 @@ watch(
 const columnAgentIds = computed(() => {
   const chosen = props.data.selectedAgentId;
 
-  return ownPage || chosen === undefined || openChats.chats.mode !== "side"
+  return ownPage || chosen === undefined || openChats.chats.columns < 2
     ? []
     : [chosen, ...openChats.besideOf(chosen)];
 });
