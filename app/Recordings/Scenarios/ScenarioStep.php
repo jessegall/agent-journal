@@ -8,6 +8,7 @@ use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
 use App\Accounts\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Accounts\Enums\SignInMethod;
 use App\Agents\Commands\ChangeAgentEffort\ChangeAgentEffortCommand;
+use App\Agents\Commands\CreateMainAgent\CreateMainAgentCommand;
 use App\Agents\Commands\ChangeAgentModel\ChangeAgentModelCommand;
 use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\InterruptAgent\InterruptAgentCommand;
@@ -22,6 +23,7 @@ use App\Hosts\Commands\InstructHostUpgrade\InstructHostUpgradeCommand;
 use App\Hosts\Commands\MakeHostFolder\MakeHostFolderCommand;
 use App\Hosts\Commands\ReadFolderUse\ReadFolderUseCommand;
 use App\Hosts\Commands\RemoveHostFolder\RemoveHostFolderCommand;
+use App\Models\Projects\Project;
 use App\Projects\Commands\RequestProjectRead\RequestProjectReadCommand;
 use App\Projects\Enums\ProjectReadType;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
@@ -98,6 +100,16 @@ final class ScenarioStep extends Data
             return new SubmitSignInCodeCommand($attempt, $code, $key);
         }
 
+        // Home's New chat makes the agent the later steps name, so it names no agent the run holds yet.
+        if ($this->stepType === ScenarioStepType::NewChat) {
+            return new CreateMainAgentCommand(
+                Project::findLocal()->id,
+                $run->scenario->driver(),
+                $this->startModel($run),
+                null,
+            );
+        }
+
         $agent = $run->agentNamed((string) $this->agent);
 
         if ($this->stepType === ScenarioStepType::StartSession) {
@@ -169,13 +181,13 @@ final class ScenarioStep extends Data
     }
 
     /**
-     * The model a start-session step names, which its file must.
+     * The model a start-session or new-chat step names, which its file must.
      *
      * @throws ScenarioInvalid
      */
     private function startModel(ScenarioRun $run): string
     {
-        $missing = '(start-session) names no model';
+        $missing = "({$this->stepType->value}) names no model";
 
         return $this->model ?? throw ScenarioInvalid::at($run->scenario->name, $run->stepIndex(), $missing);
     }

@@ -1,0 +1,37 @@
+{
+    "description": "Home's New chat makes a main agent on Claude Code Haiku, its first message starts it under the message's key on the real daemon, and it answers",
+    "steps": [
+        {
+            "do": "restart-host"
+        },
+        {
+            "do": "new-chat",
+            "agent": "Chat",
+            "model": "claude-haiku-5-5"
+        },
+        {
+            "do": "send-chat-message",
+            "agent": "Chat",
+            "text": "Run: ls."
+        },
+        {
+            "do": "wait-for",
+            "fact": "answering",
+            "seconds": 180
+        },
+        {
+            "do": "wait-for",
+            "fact": "turn-ended",
+            "seconds": 180
+        },
+        {
+            "do": "stop",
+            "agent": "Chat"
+        },
+        {
+            "do": "wait-for",
+            "fact": "stopped",
+            "seconds": 60
+        }
+    ]
+}

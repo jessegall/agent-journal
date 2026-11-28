@@ -170,6 +170,14 @@ final class ScenarioRun
         return $binding->id;
     }
 
+    /**
+     * A step made the agent of this name, such as Home's New chat; later steps name it.
+     */
+    public function holdAgent(string $name, string $agentId): void
+    {
+        $this->agents[$name] = $agentId;
+    }
+
     public function holdStartRequest(string $requestId): void
     {
         $this->startRequest = $requestId;

@@ -123,13 +123,13 @@ final class PlayScenarioCommand extends Command
     }
 
     /**
-     * Each agent the scenario's steps name, by its name, as this journal holds it.
+     * Each agent the scenario makes before its first step, by its name, as this journal holds it.
      *
      * @return array<string, string>
      */
     private function agentsOf(Scenario $scenario, OwnerCommands $commands): array
     {
-        $names = array_values(array_unique(array_filter(array_map(fn ($step) => $step->agent, $scenario->steps))));
+        $names = $scenario->agentsMadeBeforePlay();
         $play = CarbonImmutable::now()->format('His');
         $agents = [];
 

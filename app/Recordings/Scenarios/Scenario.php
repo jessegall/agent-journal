@@ -48,6 +48,23 @@ final readonly class Scenario
     }
 
     /**
+     * The agents the play makes before its first step, each once by its name: every agent a step names, except one a
+     * new-chat step makes itself.
+     *
+     * @return list<string>
+     */
+    public function agentsMadeBeforePlay(): array
+    {
+        $named = array_filter(array_map(fn (ScenarioStep $step) => $step->agent, $this->steps));
+        $chats = array_map(
+            fn (ScenarioStep $step) => $step->agent,
+            array_filter($this->steps, fn (ScenarioStep $step) => $step->stepType === ScenarioStepType::NewChat),
+        );
+
+        return array_values(array_unique(array_diff($named, $chats)));
+    }
+
+    /**
      * @param  array<string, mixed>  $step
      *
      * @throws ScenarioInvalid
