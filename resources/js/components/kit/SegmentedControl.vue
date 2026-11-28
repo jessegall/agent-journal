@@ -9,20 +9,31 @@ import { segmentedKey } from './segmented';
  * and padding 2. Left and Right (and Up, Down, Home and End) move the choice and the focus, round the ends. An item's
  * icon comes through the icon slot.
  */
-const props = defineProps<{ label: string; items: readonly { value: TValue; label: string }[] }>();
+const props = defineProps<{
+    label: string;
+    items: readonly { value: TValue; label: string }[];
+    bare?: boolean;
+    disabled?: boolean;
+}>();
 const chosen = defineModel<TValue>({ required: true });
 
-defineSlots<{ icon?: (props: { value: TValue; isOn: boolean }) => unknown }>();
+defineSlots<{ items?: () => unknown; icon?: (props: { value: TValue; isOn: boolean }) => unknown }>();
 
 const root = useTemplateRef<HTMLElement>('root');
 
 function choose(value: string): void {
-    chosen.value = value as TValue;
+    if (!props.disabled) {
+        chosen.value = value as TValue;
+    }
 }
 
 provide(segmentedKey, { chosen: computed(() => chosen.value), choose });
 
 async function moveBy(event: KeyboardEvent): Promise<void> {
+    if (props.disabled) {
+        return;
+    }
+
     const next = radioGroupChoice(
         event.key,
         props.items.map((item) => item.value),
@@ -45,16 +56,18 @@ async function moveBy(event: KeyboardEvent): Promise<void> {
         ref="root"
         role="radiogroup"
         :aria-label="label"
-        class="inline-flex gap-0.5 rounded-button border border-border-2 p-0.5"
+        :class="bare ? undefined : 'inline-flex gap-0.5 rounded-button border border-border-2 p-0.5'"
         @keydown="moveBy"
     >
-        <template v-for="item in items" :key="item.value">
-            <SegmentedItem :value="item.value">
-                <span class="inline-flex items-center gap-2">
-                    <slot name="icon" :value="item.value" :is-on="chosen === item.value" />
-                    {{ item.label }}
-                </span>
-            </SegmentedItem>
-        </template>
+        <slot name="items">
+            <template v-for="item in items" :key="item.value">
+                <SegmentedItem :value="item.value" :disabled="disabled">
+                    <span class="inline-flex items-center gap-2">
+                        <slot name="icon" :value="item.value" :is-on="chosen === item.value" />
+                        {{ item.label }}
+                    </span>
+                </SegmentedItem>
+            </template>
+        </slot>
     </div>
 </template>

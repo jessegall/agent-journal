@@ -29,7 +29,7 @@ final readonly class TasksPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(TasksRequest::class, $visit);
+        $input = $this->requests->forVisit(TasksRequest::class, $visit);
 
         return $this->index->of($input->filters(), []);
     }

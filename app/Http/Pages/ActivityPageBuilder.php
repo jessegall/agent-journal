@@ -29,7 +29,7 @@ final readonly class ActivityPageBuilder implements PageBuilder
 
     public function build(Request $visit): ActivityWindowData
     {
-        $input = $this->requests->from(ActivityWindowRequest::class, $visit);
+        $input = $this->requests->forVisit(ActivityWindowRequest::class, $visit);
 
         $environmentId = $this->served->environmentId();
         $before = $input->before();

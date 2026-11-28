@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Domain\Plans\Contracts;
 
 use App\Exceptions\AgentActorRequired;
-use Domain\Plans\Models\Plan;
+use App\Support\Layout\LayoutRowData;
 use Domain\Plans\Values\AssignedPlanFilters;
 use Domain\Plans\Values\AssignedPlanList;
 use Domain\Plans\Values\PlanFilters;
 use Domain\Plans\Values\PlanList;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * One page of plan cards for whoever acts in this request, with the selected plan; every agent and the user read every
@@ -23,8 +22,12 @@ interface PlanResolver
      */
     public function list(PlanFilters $filters): PlanList;
 
-    /** @return Collection<int, Plan> */
-    public function preview(PlanFilters $filters, int $limit): Collection;
+    /**
+     * The rows shown in the window for these filters.
+     *
+     * @return list<LayoutRowData>
+     */
+    public function preview(PlanFilters $filters, int $limit): array;
 
     /**
      * The plans the calling agent holds directly, read in one snapshot; holding a phase or a task of a plan does not

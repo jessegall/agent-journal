@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Machinery\Recordings;
 
 use App\Hosts\Commands\MakeHostFolder\MakeHostFolderCommand;
-use App\Recordings\Scenarios\Enums\ScenarioFact;
-use App\Recordings\Scenarios\Exceptions\ScenarioStuck;
-use App\Recordings\Scenarios\Scenario;
-use App\Recordings\Scenarios\ScenarioPlayer;
-use App\Recordings\Scenarios\ScenarioRun;
 use App\Sessions\Commands\EndStoppedSession\EndStoppedSessionCommand;
+use App\Support\Recordings\Scenarios\Enums\ScenarioFact;
+use App\Support\Recordings\Scenarios\Exceptions\ScenarioStuck;
+use App\Support\Recordings\Scenarios\Scenario;
+use App\Support\Recordings\Scenarios\ScenarioPlayer;
+use App\Support\Recordings\Scenarios\ScenarioRun;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

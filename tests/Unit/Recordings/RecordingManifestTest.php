@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Recordings;
 
 use App\Hosts\Protocol\HostProtocolVersion;
-use App\Recordings\AgentImageBuild;
-use App\Recordings\Enums\StaleReason;
-use App\Recordings\RecordingManifest;
+use App\Support\Recordings\AgentImageBuild;
+use App\Support\Recordings\Enums\StaleReason;
+use App\Support\Recordings\RecordingManifest;
 use Tests\TestCase;
 
 /**

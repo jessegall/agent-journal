@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from "@kit/Button";
 import Avatar from "@kit/Avatar";
 import Icon from "@kit/Icon";
 import Status from "@kit/Status";
@@ -51,7 +52,8 @@ function openBeside(other: AgentOptionData): void {
     <div class="min-w-0 flex-1">
       <RunningCommand :agent="agent" :inbox-id="inboxId" :seed="seed" />
     </div>
-    <button
+    <Button
+      variant="bare"
       type="button"
       class="flex size-6 flex-none items-center justify-center rounded-control hover:bg-hover"
       :class="hasFailedStart ? 'text-danger' : 'text-text-4'"
@@ -64,7 +66,7 @@ function openBeside(other: AgentOptionData): void {
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" aria-hidden="true">
         <path d="M1 7.5h2.5L5 3.5l2.5 7L9 6l1 1.5h3" />
       </svg>
-    </button>
+    </Button>
     <AgentSessionActions :key="`${agent.id}-${agent.sessionGeneration}`" :agent="agent" />
     <ConversationMenu
       :agents="agents"

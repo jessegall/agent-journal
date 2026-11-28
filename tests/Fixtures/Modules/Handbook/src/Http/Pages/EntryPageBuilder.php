@@ -38,7 +38,7 @@ final readonly class EntryPageBuilder implements PageBuilder
 
     public function build(Request $visit): EntryPageData
     {
-        $request = $this->requests->from(EntryRequest::class, $visit);
+        $request = $this->requests->forVisit(EntryRequest::class, $visit);
         $ownerId = (string) $this->auth->id();
         $entry = $this->entries->visibleTo($ownerId, $request->entryNumber());
         $text = fn () => LayoutBodyData::fromMarkdown($this->entries->textSlice($entry, self::TEXT_BYTE_LIMIT));

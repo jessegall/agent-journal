@@ -12,6 +12,7 @@ use App\Stacks\Contracts\Work\CurrentState;
 use App\Stacks\References\StateReference;
 use App\Stacks\References\SubjectReference;
 use App\Support\AssigneeIdentity;
+use App\Support\Layout\LayoutRowData;
 use App\Support\NumberedPage;
 use Domain\Plans\Contracts\PlanResolver as PlanResolverContract;
 use Domain\Plans\Models\Phase;
@@ -68,13 +69,19 @@ final readonly class PlanResolver implements PlanResolverContract
         );
     }
 
-    /** @return EloquentCollection<int, Plan> */
-    public function preview(PlanFilters $filters, int $limit): EloquentCollection
+    /** @return list<LayoutRowData> */
+    public function preview(PlanFilters $filters, int $limit): array
     {
-        return $this->listed($filters)
+        $records = $this->listed($filters)
             ->listOrder($this->focusedPlanId())
             ->limit($limit)
             ->get(['id', 'title', 'status']);
+
+        return $records->map(fn (Plan $plan) => LayoutRowData::build()
+            ->key($plan->id)
+            ->label($plan->title)
+            ->value(ucfirst($plan->status->value))
+            ->finish())->values()->all();
     }
 
     /**

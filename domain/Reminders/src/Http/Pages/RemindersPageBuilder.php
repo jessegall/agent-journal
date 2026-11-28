@@ -36,7 +36,7 @@ final readonly class RemindersPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(RemindersRequest::class, $visit);
+        $input = $this->requests->forVisit(RemindersRequest::class, $visit);
 
         try {
             $page = $this->reminders->own($input->pageNumber());

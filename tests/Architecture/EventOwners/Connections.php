@@ -18,6 +18,7 @@ use App\Events\Connections\DriverImageBuildFinished;
 use App\Events\Connections\DriverImageBuildSent;
 use App\Events\Connections\DriverImageChecksSent;
 use App\Events\Connections\DriverImageRefused;
+use App\Events\Connections\DriverImageReplaced;
 use App\Events\Connections\DriverImageWaitServed;
 use App\Events\Connections\EnvironmentOpened;
 use App\Events\Connections\HostCallAnswered;
@@ -131,6 +132,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new DriverImageAdmitted('image'),
+    ],
+    DriverImageReplaced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostDriverImage::retire',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverImageReplaced('image', 'host', 'sha256:ref'),
     ],
     DriverImageRefused::class => [
         'role' => EventRole::RowFact,

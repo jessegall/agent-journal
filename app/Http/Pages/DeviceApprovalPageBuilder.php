@@ -32,7 +32,7 @@ final readonly class DeviceApprovalPageBuilder implements PageBuilder
      */
     public function build(Request $visit): DeviceApprovalData
     {
-        $input = $this->requests->from(DeviceApprovalPageRequest::class, $visit);
+        $input = $this->requests->forVisit(DeviceApprovalPageRequest::class, $visit);
 
         try {
             $grant = DeviceGrant::findForUserCode($input->userCode());

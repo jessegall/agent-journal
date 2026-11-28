@@ -16,7 +16,7 @@ final readonly class BookPageBuilder implements PageBuilder
 
     public function build(Request $visit): BookPageData
     {
-        $request = $this->requests->from(BooksRequest::class, $visit);
+        $request = $this->requests->forVisit(BooksRequest::class, $visit);
 
         return BookPageData::build()->titles([$request->path()])->finish();
     }

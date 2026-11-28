@@ -9,11 +9,11 @@ use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\InstructionSignature;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
-use App\Recordings\Exceptions\RecordedEnvironmentRefused;
-use App\Recordings\Exceptions\RecordingLeaks;
-use App\Recordings\Exceptions\RecordingOutsideContainer;
-use App\Recordings\RecordingFakes;
-use App\Recordings\RecordingOpening;
+use App\Support\Recordings\Exceptions\RecordedEnvironmentRefused;
+use App\Support\Recordings\Exceptions\RecordingLeaks;
+use App\Support\Recordings\Exceptions\RecordingOutsideContainer;
+use App\Support\Recordings\RecordingFakes;
+use App\Support\Recordings\RecordingOpening;
 use App\Values\HostProcessPlan;
 use Tests\TestCase;
 

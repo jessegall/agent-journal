@@ -26,7 +26,7 @@ final readonly class ShelfPageBuilder implements PageBuilder
     public function build(Request $visit): ShelfPageData
     {
         $this->calls->readers[] = 'shelf';
-        $request = $this->requests->from(ShelfRequest::class, $visit);
+        $request = $this->requests->forVisit(ShelfRequest::class, $visit);
 
         return ShelfPageData::build()->titles([
             $request->queryWords(),

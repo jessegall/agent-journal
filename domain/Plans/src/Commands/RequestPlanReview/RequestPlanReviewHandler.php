@@ -19,9 +19,8 @@ final readonly class RequestPlanReviewHandler extends PlanCommandHandler
     public function handle(RequestPlanReviewCommand $command): string
     {
         $plan = Plan::findLockedStructure($command->planId);
-
         $review = PlanReviewEdition::create($plan, $command->dispatchedBy());
-        $plan->openReview($review, $command->reviewers);
+        $plan->openReview($review->id, $command->reviewers);
 
         return $review->id;
     }

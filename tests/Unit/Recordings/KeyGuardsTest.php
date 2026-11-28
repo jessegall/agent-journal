@@ -8,11 +8,11 @@ use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostRoute;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
 use App\Hosts\Protocol\Payloads\HostKeyWritePayload;
-use App\Recordings\CutExchange;
-use App\Recordings\Enums\RecordedEventType;
-use App\Recordings\Enums\Wire;
-use App\Recordings\KeyGuards;
-use App\Recordings\Recordings;
+use App\Support\Recordings\CutExchange;
+use App\Support\Recordings\Enums\RecordedEventType;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\KeyGuards;
+use App\Support\Recordings\Recordings;
 use Tests\TestCase;
 
 /**

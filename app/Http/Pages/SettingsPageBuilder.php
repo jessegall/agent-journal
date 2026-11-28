@@ -25,7 +25,7 @@ final readonly class SettingsPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(ConnectProjectRequest::class, $visit);
+        $input = $this->requests->forVisit(ConnectProjectRequest::class, $visit);
 
         return $this->layout->layout($input->cursors());
     }

@@ -49,7 +49,7 @@ final readonly class FilePageBuilder implements PageBuilder
 
     public function build(Request $visit): FileWindowData
     {
-        $input = $this->requests->from(FileWindowRequest::class, $visit);
+        $input = $this->requests->forVisit(FileWindowRequest::class, $visit);
 
         $path = $input->path();
         $found = ProjectBinding::findLastHeardFromIn($this->served->environmentIds());

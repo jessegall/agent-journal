@@ -15,6 +15,7 @@ const props = withDefaults(
         dim?: boolean;
         option?: boolean;
         opens?: boolean;
+        bare?: boolean;
     }>(),
     { variant: 'single', selected: false, static: false, dim: false, option: false, opens: false },
 );
@@ -51,8 +52,8 @@ function moveBetweenOptions(event: KeyboardEvent): void {
         :aria-selected="option ? selected : undefined"
         :aria-current="!option && !static && selected ? 'true' : undefined"
         :data-selected="selected ? '' : undefined"
-        class="w-full border-b border-line text-left text-field outline-none"
-        :class="[
+        :class="bare ? undefined : [
+            'w-full border-b border-line text-left text-field outline-none',
             shape,
             static && !opens && 'cursor-default',
             static && opens && 'cursor-pointer',
@@ -62,15 +63,20 @@ function moveBetweenOptions(event: KeyboardEvent): void {
         ]"
         @keydown="moveBetweenOptions"
     >
-        <slot name="lead" />
-        <NameBlock :dim="dim">
-            <template #title>
-                <slot name="title" />
-            </template>
-            <template v-if="$slots.subline && variant !== 'single'" #subline>
-                <slot name="subline" />
-            </template>
-        </NameBlock>
-        <slot name="trail" />
+        <template v-if="bare">
+            <slot />
+        </template>
+        <template v-else>
+            <slot name="lead" />
+            <NameBlock :dim="dim">
+                <template #title>
+                    <slot name="title" />
+                </template>
+                <template v-if="$slots.subline && variant !== 'single'" #subline>
+                    <slot name="subline" />
+                </template>
+            </NameBlock>
+            <slot name="trail" />
+        </template>
     </component>
 </template>

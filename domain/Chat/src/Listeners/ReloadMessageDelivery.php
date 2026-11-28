@@ -18,6 +18,7 @@ final readonly class ReloadMessageDelivery implements Listener
 {
     public function handle(MessageDeliveryChanged $event): void
     {
-        ChatMessage::findForMessage($event->messageId)?->reload();
+        $entry = ChatMessage::findForMessage($event->messageId);
+        $entry?->reload();
     }
 }

@@ -16,15 +16,7 @@ final readonly class PlaceRootSettings
 
     public function configuredRoot(Place $place): string|null
     {
-        $configured = match ($place) {
-            Place::Accounts => $this->config->get('journal.accounts.root'),
-            Place::SharingSecrets => $this->config->get('journal.sharing.secrets_dir'),
-            Place::SharingTunnels => $this->config->get('journal.sharing.tunnels_dir'),
-            Place::ProcessOutput => $this->config->get('filesystems.disks.process-output.root'),
-            Place::Project, Place::Temporary, Place::HookRuntime, Place::Releases => $this->config->get(
-                "journal.files.places.{$place->value}",
-            ),
-        };
+        $configured = $this->config->get($place->rootSetting());
 
         if (! is_string($configured) || $configured === '') {
             return null;

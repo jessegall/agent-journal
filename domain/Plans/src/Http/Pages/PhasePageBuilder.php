@@ -31,7 +31,7 @@ final readonly class PhasePageBuilder implements PageBuilder
 
     public function build(Request $visit): PhaseReaderData
     {
-        $input = $this->requests->from(PhaseRequest::class, $visit);
+        $input = $this->requests->forVisit(PhaseRequest::class, $visit);
 
         $phase = $input->phase();
         $ask = $input->outlinePageAsk();

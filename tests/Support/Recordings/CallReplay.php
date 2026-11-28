@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support\Recordings;
 
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedCall;
-use App\Recordings\ScenarioRecording;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedCall;
+use App\Support\Recordings\ScenarioRecording;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Recordings\Exceptions\LiveValueRefused;
 use Tests\Support\Recordings\Exceptions\UnrecordedCall;

@@ -30,7 +30,7 @@ final readonly class NewSequencePageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(NewSequenceRequest::class, $visit);
+        $input = $this->requests->forVisit(NewSequenceRequest::class, $visit);
 
         $editor = SequenceEditorPartData::from([
             'name' => $input->name(),

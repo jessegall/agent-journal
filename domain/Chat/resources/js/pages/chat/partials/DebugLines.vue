@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from "@kit/Button";
 import { computed, ref } from "vue";
 import type { AgentLogLineData } from "@generated/types/chat";
 import { clockOf } from "../../../agentLogTimes";
@@ -19,7 +20,8 @@ const hasFailure = computed(() => props.lines.some((line) => line.isFailure));
 <template>
   <template v-if="lines.length > 0">
     <div class="flex flex-col items-start gap-0.5" data-debug-lines>
-      <button
+      <Button
+        variant="bare"
         type="button"
         class="flex items-center gap-1 rounded-control px-1 text-meta hover:bg-hover"
         :class="hasFailure ? 'text-danger' : 'text-text-4'"
@@ -33,12 +35,13 @@ const hasFailure = computed(() => props.lines.some((line) => line.isFailure));
           <path d="M1 7.5h2.5L5 3.5l2.5 7L9 6l1 1.5h3" />
         </svg>
         <span>{{ lines.length }}</span>
-      </button>
+      </Button>
       <template v-if="isUnfolded">
         <ol class="flex w-full flex-col gap-0.5" aria-label="What happened around the agent">
           <template v-for="line in lines" :key="line.id">
             <li>
-              <button
+              <Button
+                variant="bare"
                 type="button"
                 class="flex w-full min-w-0 items-baseline gap-1.5 rounded-control px-1 text-left text-meta hover:bg-hover"
                 :class="line.isFailure ? 'text-danger' : 'text-text-4'"
@@ -52,7 +55,7 @@ const hasFailure = computed(() => props.lines.some((line) => line.isFailure));
                 <template v-if="line.detail !== ''">
                   <span class="min-w-0 truncate">· {{ line.detail }}</span>
                 </template>
-              </button>
+              </Button>
             </li>
           </template>
         </ol>

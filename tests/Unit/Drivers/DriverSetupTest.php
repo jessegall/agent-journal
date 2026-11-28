@@ -33,7 +33,7 @@ use App\Agents\SignInEgress;
 use App\Exceptions\PlanAdditionClash;
 use App\Files\Contracts\Files;
 use App\Hosts\Protocol\Payloads\HostRestartFilePayload;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Recordings;
 use App\Values\PlanAddition;
 use Tests\Support\Recordings\RecordedProgram;
 use Tests\TestCase;

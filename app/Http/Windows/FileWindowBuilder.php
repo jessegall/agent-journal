@@ -31,7 +31,7 @@ final readonly class FileWindowBuilder implements WindowBuilder
 
     public function build(Request $visit): FilePaneData
     {
-        $path = $this->requests->from(FileWindowRequest::class, $visit)->path();
+        $path = $this->requests->forVisit(FileWindowRequest::class, $visit)->path();
 
         $pane = FilePaneData::build()
             ->path($path)

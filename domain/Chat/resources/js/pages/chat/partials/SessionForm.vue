@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Avatar from "@kit/Avatar";
 import Button from "@kit/Button";
+import Input from "@kit/Input";
 import Dialog from "@kit/Dialog";
 import { keyedPost } from "@kit/keyedPost";
 import { newRequestId } from "@kit/requestId";
@@ -162,11 +163,11 @@ switching.resume();
         <template v-else>
           <p>{{ picker.driverLabel.value }} cannot take this session over, so a new session starts.</p>
           <label class="flex items-start gap-2">
-            <input v-model="carriesConversation" type="radio" :value="true" name="conversation" data-carry-over />
+            <Input choice="radio" :checked="carriesConversation" name="conversation" data-carry-over @change="carriesConversation = true" />
             <span>Carry the conversation over: the new session first reads this chat and the memories.</span>
           </label>
           <label class="flex items-start gap-2">
-            <input v-model="carriesConversation" type="radio" :value="false" name="conversation" data-start-clean />
+            <Input choice="radio" :checked="!carriesConversation" name="conversation" data-start-clean @change="carriesConversation = false" />
             <span>Start clean: the new session reads only the memories, and the chat stays here to read.</span>
           </label>
         </template>
@@ -174,7 +175,7 @@ switching.resume();
       </div>
       <template v-if="isWorking">
         <label class="flex items-center gap-2 text-small text-text-2">
-          <input v-model="waitsForTurn" type="checkbox" data-wait-for-turn />
+          <Input choice="checkbox" :checked="waitsForTurn" data-wait-for-turn @change="waitsForTurn = ($event.target as HTMLInputElement).checked" />
           Wait until {{ agent.name }} finishes its current turn
         </label>
       </template>

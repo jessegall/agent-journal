@@ -7,8 +7,8 @@ namespace Tests\Support\Hosts;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostRoute;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
-use App\Recordings\Enums\Wire;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\Recordings;
 use PHPUnit\Framework\Assert;
 
 /**

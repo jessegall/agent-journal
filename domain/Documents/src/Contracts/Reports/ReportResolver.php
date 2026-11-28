@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Contracts\Reports;
 
 use App\Data\Pages\RecordCard;
+use App\Support\Layout\LayoutRowData;
 use App\Support\TextSelection;
 use App\Text\Exceptions\SectionMissing;
 use Domain\Documents\Data\DocumentFilters;
@@ -13,8 +14,6 @@ use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Exceptions\ReportMissing;
-use Domain\Documents\Models\Report;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Reads the filed reports: a page of them, or one by its number.
@@ -26,8 +25,12 @@ interface ReportResolver
      */
     public function list(DocumentFilters $filters): PublicationList;
 
-    /** @return Collection<int, Report> */
-    public function preview(DocumentFilters $filters, int $limit): Collection;
+    /**
+     * The rows shown in the window for these filters.
+     *
+     * @return list<LayoutRowData>
+     */
+    public function preview(DocumentFilters $filters, int $limit): array;
 
     /**
      * How many reports are still open.

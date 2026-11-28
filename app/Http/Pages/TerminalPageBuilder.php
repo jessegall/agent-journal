@@ -20,7 +20,7 @@ final readonly class TerminalPageBuilder implements PageBuilder
 
     public function build(Request $visit): TerminalWindowData
     {
-        $input = $this->requests->from(TerminalFrameRequest::class, $visit);
+        $input = $this->requests->forVisit(TerminalFrameRequest::class, $visit);
 
         return TerminalWindowData::build()->agentId($input->agentId())->finish();
     }

@@ -53,7 +53,7 @@ final readonly class ChatReader
      */
     public function fill(Request $visit, ChatFields $fields): ChatFields
     {
-        $input = $this->requests->from(ConversationRequest::class, $visit);
+        $input = $this->requests->forVisit(ConversationRequest::class, $visit);
 
         $main = $this->agents->mainAgentId();
         $chosenInbox = $input->chosenInbox();

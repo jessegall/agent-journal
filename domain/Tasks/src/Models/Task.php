@@ -223,9 +223,7 @@ final class Task extends JournalModel implements
      */
     public function block(string $reason): void
     {
-        if ($this->status !== TaskStatus::Started) {
-            throw TaskChangedSinceRead::notBlockable($this->number, $this->status);
-        }
+        $this->assertBlockable();
 
         $previousState = $this->status;
         $this->status = TaskStatus::Blocked;
@@ -397,6 +395,13 @@ final class Task extends JournalModel implements
     }
 
     // ----------[ Asserts ]----------
+
+    private function assertBlockable(): void
+    {
+        if ($this->status !== TaskStatus::Started) {
+            throw TaskChangedSinceRead::notBlockable($this->number, $this->status);
+        }
+    }
 
     /**
      * @throws TaskChangedSinceRead when the task is not started

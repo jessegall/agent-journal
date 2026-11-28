@@ -31,7 +31,7 @@ final readonly class StartAccountPageBuilder implements PageBuilder
      */
     public function build(Request $visit): StartAccountData
     {
-        $input = $this->requests->from(StartAccountPageRequest::class, $visit);
+        $input = $this->requests->forVisit(StartAccountPageRequest::class, $visit);
 
         $sessionId = $input->sessionId();
         $identity = $this->uses->accountOf($sessionId, Account::linkType());

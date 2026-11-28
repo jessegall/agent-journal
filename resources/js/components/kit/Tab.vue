@@ -10,7 +10,14 @@ import { tabsKey } from './tabs';
  * only tab stop. A closable tab shows a close button on hover, selection or focus, and closes on Delete, Backspace or a
  * middle click. Measures: docs/designs/kit-components.md.
  */
-const props = defineProps<{ value: string; label: string; icon?: IconName; count?: number; closable?: boolean }>();
+const props = defineProps<{
+    value: string;
+    label: string;
+    icon?: IconName;
+    count?: number;
+    closable?: boolean;
+    bare?: boolean;
+}>();
 const group = inject(tabsKey);
 const look = computed(() => {
     if (group?.active.value !== props.value) {
@@ -47,10 +54,10 @@ function middleClick(event: MouseEvent): void {
         :id="group?.tabId(value)"
         role="tab"
         :aria-selected="group?.active.value === value"
-        :aria-controls="group?.panelId(value)"
+        :aria-controls="bare ? undefined : group?.panelId(value)"
         :tabindex="group?.active.value === value ? 0 : -1"
-        class="group/tab inline-flex shrink items-center gap-1.5 py-[7px] text-badge tracking-[0.03em] transition-colors duration-(--duration-hover) focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-focus"
-        :class="[
+        :class="bare ? undefined : [
+            'group/tab inline-flex shrink items-center gap-1.5 py-[7px] text-badge tracking-[0.03em] transition-colors duration-(--duration-hover) focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-focus',
             { 'min-w-14': group?.hasLeastWidth.value },
             look,
         ]"
@@ -58,13 +65,15 @@ function middleClick(event: MouseEvent): void {
         @auxclick="middleClick"
         @keydown="press"
     >
-        <template v-if="icon">
-            <Icon :name="icon" size="sm" />
-        </template>
-        <span class="min-w-0 truncate">{{ label }}</span>
-        <template v-if="count !== undefined">
-            <span class="tabular-nums">{{ count }}</span>
-        </template>
+        <slot>
+            <template v-if="icon">
+                <Icon :name="icon" size="sm" />
+            </template>
+            <span class="min-w-0 truncate">{{ label }}</span>
+            <template v-if="count !== undefined">
+                <span class="tabular-nums">{{ count }}</span>
+            </template>
+        </slot>
         <template v-if="closable">
             <span
                 class="opacity-0 group-focus-within/tab:opacity-100 group-hover/tab:opacity-100 group-aria-selected/tab:opacity-100"
