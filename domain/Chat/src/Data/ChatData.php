@@ -18,6 +18,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class ChatData extends Data
 {
+    /** @use \App\Web\Creation\Buildable<ChatDataFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = ChatDataFields::class;
+
     /**
      * @param  list<AgentOptionData>  $agents
      * @param  list<ChatSummaryData>  $chats

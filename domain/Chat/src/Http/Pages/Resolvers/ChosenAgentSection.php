@@ -30,13 +30,15 @@ final readonly class ChosenAgentSection implements SectionResolver
         $main = $this->agents->mainAgentId();
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->agents->visibleAgent(...));
 
-        return ChatData::from([
-            'agents' => $this->listing->visible(),
-            'isSetupRequired' => $main->isEmpty(),
-            'mainAgentId' => $main->getOrElse(Optional::create()),
-            'selectedAgentId' => $chosen
+        return ChatData::build()
+            ->agents($this->listing->visible())
+            ->isSetupRequired($main->isEmpty())
+            ->mainAgentId($main->getOrElse(Optional::create()))
+            ->selectedAgentId(
+                $chosen
                 ->map(fn (AgentOption $agent) => $agent->agentId)
                 ->getOrElse(Optional::create()),
-        ]);
+            )
+            ->finish();
     }
 }

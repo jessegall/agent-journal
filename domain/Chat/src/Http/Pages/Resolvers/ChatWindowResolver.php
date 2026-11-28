@@ -21,7 +21,7 @@ use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
 use Domain\Chat\Data\AgentOptionData;
 use Domain\Chat\Data\ChatData;
-use Domain\Chat\Data\ChatSummaryData;
+use Domain\Chat\Data\ChatDataFields;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Resolvers\Support\ChatPages;
@@ -65,18 +65,20 @@ final readonly class ChatWindowResolver implements PageResolver
         // One conversation per read: the chosen agent's, or the one a column's own reload names.
         $read = $this->request->columnAgent()->map($this->visibleOrPrivate(...))->orElse($chosen);
 
-        return ChatData::from([
-            'agents' => $agents,
-            'isSetupRequired' => $main->isEmpty(),
-            'mainAgentId' => $main->getOrElse(Optional::create()),
-            'selectedAgentId' => $chosen
-                ->map(fn (AgentOption $agent) => $agent->agentId)
-                ->getOrElse(Optional::create()),
-            ...$read->map($this->conversationFields(...))->getOrElse([]),
-            'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
-            ...$this->chatList(),
-            'noAccounts' => $this->noAccounts(),
-        ]);
+        $fields = $this->fields($agents, $main)
+            ->selectedAgentId($chosen->map(fn (AgentOption $agent) => $agent->agentId)->getOrElse(Optional::create()));
+
+        if ($read->isDefined()) {
+            $conversation = $this->conversationFor($read->get());
+
+            if ($conversation instanceof ConversationData) {
+                $fields->conversation($conversation);
+            } else {
+                $fields->setupNotice($conversation);
+            }
+        }
+
+        return $this->finish($fields);
     }
 
     /**
@@ -90,17 +92,33 @@ final readonly class ChatWindowResolver implements PageResolver
     {
         $inbox = $this->chats->attached($inboxId);
 
-        return ChatData::from([
-            'agents' => $agents,
-            'isSetupRequired' => $main->isEmpty(),
-            'mainAgentId' => $main->getOrElse(Optional::create()),
-            'selectedAgentId' => Optional::create(),
-            'selectedInboxId' => $inboxId,
-            'conversation' => $this->pages->pageFor(null, $inbox, $this->request->dockToken()),
-            'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
-            ...$this->chatList(),
-            'noAccounts' => $this->noAccounts(),
-        ]);
+        return $this->finish($this->fields($agents, $main)
+            ->selectedInboxId($inboxId)
+            ->conversation($this->pages->pageFor(null, $inbox, $this->request->dockToken())));
+    }
+
+    /**
+     * @param list<AgentOptionData> $agents
+     * @param Option<string> $main
+     */
+    private function fields(array $agents, Option $main): ChatDataFields
+    {
+        return ChatData::build()
+            ->agents($agents)
+            ->isSetupRequired($main->isEmpty())
+            ->mainAgentId($main->getOrElse(Optional::create()));
+    }
+
+    private function finish(ChatDataFields $fields): ChatData
+    {
+        $chats = $this->chats->joined()->limit(InboxMember::ATTACHED_LIMIT)->get();
+
+        return $fields
+            ->dockSections($this->slots->sectionsIn(self::PAGE, 'dock'))
+            ->chats($this->pages->summariesOf($chats))
+            ->canCreateChats($this->chats->mayCreate())
+            ->noAccounts($this->noAccounts())
+            ->finish();
     }
 
     /**
@@ -115,19 +133,6 @@ final readonly class ChatWindowResolver implements PageResolver
         $wizard = LayoutActionData::build()->href(route('accounts.accounts', ['add' => '1'], false))->finish();
 
         return NoAccountsYet::addingWith($wizard)->page();
-    }
-
-    /**
-     * The chats the viewer is in, each with its title and unread count, and whether it may open a new one.
-     *
-     * @return array{chats: list<ChatSummaryData>, canCreateChats: bool}
-     */
-    private function chatList(): array
-    {
-        return [
-            'chats' => $this->pages->summariesOf($this->chats->joined()->limit(InboxMember::ATTACHED_LIMIT)->get()),
-            'canCreateChats' => $this->chats->mayCreate(),
-        ];
     }
 
     /**
@@ -147,15 +152,13 @@ final readonly class ChatWindowResolver implements PageResolver
     /**
      * The conversation with the chosen agent, or, when the reader's own inbox is missing, the setup notice that
      * replaces it: ready data the project administrator must act on, never a failure to reload.
-     *
-     * @return array{conversation?: ConversationData, setupNotice?: string}
      */
-    private function conversationFields(AgentOption $agent): array
+    private function conversationFor(AgentOption $agent): ConversationData|string
     {
         try {
-            return ['conversation' => $this->conversationWith($agent)];
+            return $this->conversationWith($agent);
         } catch (InboxUnavailable) {
-            return ['setupNotice' => self::INBOX_MISSING];
+            return self::INBOX_MISSING;
         }
     }
 
