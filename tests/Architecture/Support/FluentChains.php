@@ -127,13 +127,14 @@ final readonly class FluentChains
 
     /**
      * A getter that ends a chain is named for what it gives back: a row called by a name, a row of another, a service
-     * or a fixture builder.
+     * or a fixture builder; or it is a builder's finish, which ends the builder's chain by handing back what it built.
      */
     private static function isGetter(ReflectedMethod $method): bool
     {
         $name = $method->name();
 
-        return str_ends_with($name, 'Called') || str_ends_with($name, 'Of') || in_array($name, ['service', 'fixtures'], true);
+        return str_ends_with($name, 'Called') || str_ends_with($name, 'Of')
+            || in_array($name, ['service', 'fixtures', 'finish'], true);
     }
 
     /**
