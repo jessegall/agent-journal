@@ -68,4 +68,15 @@ describe("ChatWindow", () => {
     expect(window.get('[data-column="agent-2"]').text()).toBe("agent-2");
     expect(reloads).toHaveLength(1);
   });
+
+  it("opens Home with two chats open on one chat alone, reading no other", async () => {
+    useOpenChats("user-window").show("one");
+
+    const window = mount(ChatWindow, { props: { data: windowWith("agent-2", conversationOf("agent-2")) } });
+    await flushPromises();
+
+    expect(window.find("[data-side-by-side]").exists()).toBe(false);
+    expect(window.findAll("[data-pane]")).toHaveLength(1);
+    expect(reloads).toEqual([]);
+  });
 });
