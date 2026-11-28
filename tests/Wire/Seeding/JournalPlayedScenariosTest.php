@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Machinery\Seeding;
+namespace Tests\Wire\Seeding;
 
 use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Accounts\Account;

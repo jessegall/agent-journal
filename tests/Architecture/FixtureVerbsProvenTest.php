@@ -34,7 +34,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Every public verb of the test journal and of each domain's fixture objects is called by a test of the fixture
- * itself: the journal's in tests/Machinery/Seeding, a domain fixture's in the tests beside it, so no test leans on a
+ * itself: the journal's in tests/Machinery/Seeding (or tests/Wire/Seeding for the real host's), a domain fixture's in the tests beside it, so no test leans on a
  * verb nobody proved; every verb of a subject the journal opens a scope on is called by some test.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses the seeding and fixture tests, and every test for the subjects.')]
@@ -69,7 +69,10 @@ final class FixtureVerbsProvenTest extends TestCase
 
     public function test_every_fixture_verb_is_called_by_a_test_of_its_fixture(): void
     {
-        $journalTests = glob(base_path('tests/Machinery/Seeding/*Test.php')) ?: [];
+        $journalTests = [
+            ...glob(base_path('tests/Machinery/Seeding/*Test.php')) ?: [],
+            ...glob(base_path('tests/Wire/Seeding/*Test.php')) ?: [],
+        ];
         $unproven = $this->unprovenOf(Reflector::of(TestJournal::class), $journalTests);
 
         foreach (glob(base_path('domain/*/tests/Fixtures/*Fixtures.php')) ?: [] as $file) {
