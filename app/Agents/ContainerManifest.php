@@ -109,8 +109,19 @@ final readonly class ContainerManifest
      */
     public function withDevelopmentPrograms(string $folder): self
     {
+        return clone ($this, ['mounts' => [...$this->mounts, ...self::developmentProgramMounts($folder)]]);
+    }
+
+    /**
+     * The checkout's builds of the agent image's programs, mounted over the image's own where a development machine
+     * builds them (AGENTS_DEVELOPMENT_PROGRAMS); none where it builds none.
+     *
+     * @return list<ManifestMount>
+     */
+    public static function developmentProgramMounts(string $folder): array
+    {
         if ($folder === '') {
-            return $this;
+            return [];
         }
 
         $programs = ['journal-init', 'journal-exec', 'journal-shell', 'journal-hook', 'journal-mcp', 'journal-check'];
@@ -118,9 +129,8 @@ final readonly class ContainerManifest
             fn (string $program) => ManifestMount::daemonBind("{$folder}/{$program}", "/opt/journal/bin/{$program}", false),
             $programs,
         );
-        $shell = ManifestMount::daemonBind("{$folder}/journal-shell", '/opt/journal/shell/bash', false);
 
-        return clone ($this, ['mounts' => [...$this->mounts, ...$mounts, $shell]]);
+        return [...$mounts, ManifestMount::daemonBind("{$folder}/journal-shell", '/opt/journal/shell/bash', false)];
     }
 
     /**

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hosts;
 
+use App\Agents\ContainerManifest;
 use App\Agents\Drivers\Setup\DriverProfiles;
+use App\Files\ManifestMount;
 use App\Hosts\Protocol\Payloads\HostContainerRunPayload;
 use App\Hosts\Protocol\Payloads\HostContainerRunResultPayload;
+use Illuminate\Container\Attributes\Config;
 
 /**
  * The checks a built driver image passes before any start runs on it, as build.sh's protected start check: a command
@@ -38,7 +41,11 @@ final readonly class DriverImageChecks
         'openFiles' => 0,
     ];
 
-    public function __construct(private DriverProfiles $profiles) {}
+    public function __construct(
+        private DriverProfiles $profiles,
+        #[Config('journal.agents.development_programs')]
+        private string $developmentPrograms,
+    ) {}
 
     /**
      * The checks of the image built from the driver folder, one result expected for each, in order.
@@ -97,7 +104,11 @@ final readonly class DriverImageChecks
                 'blocksNewPrivileges' => false,
                 'network' => 'none',
                 'networkLabels' => [],
-                'mounts' => [],
+                // A check runs the programs a session runs, the checkout's builds on a development machine too.
+                'mounts' => array_map(
+                    fn (ManifestMount $mount) => $mount->protocolData(),
+                    ContainerManifest::developmentProgramMounts($this->developmentPrograms),
+                ),
                 'tmpfs' => [['target' => '/run/journal-exec', 'options' => 'uid=10002,gid=10001,mode=0750,size=1m']],
                 'volumes' => [],
                 'labels' => [],
