@@ -13,11 +13,14 @@ import {
   type ReplyTarget,
 } from "../../../composables/useConversationIntents";
 import { useMessageDrafts } from "../../../composables/useMessageDrafts";
+import { useTurnInterrupt } from "../../../composables/useTurnInterrupt";
+import type { AgentOptionData } from "@generated/types/chat";
 
 /**
  * Posts in the chat with the chosen agent, at the chat's own inbox. The text is the draft of this chat,
  * so browsing other chats, a switch or a reload keeps it; a send names the session the user saw the agent run, is
  * refused when the agent runs another one by then, and clears only its own draft, only if it was not typed on since.
+ * While the agent works, Stop beside Send, or Esc in the field, stops only its current turn.
  */
 const props = defineProps<{
   draftKey: string;
@@ -27,6 +30,8 @@ const props = defineProps<{
   inboxId: string;
   replyingTo: ReplyTarget | null;
   conversationProp: string;
+  // The agent whose turn Stop ends, while its status offers that; none while nothing works.
+  workingAgent: AgentOptionData | null;
 }>();
 
 const emit = defineEmits<{ replied: []; cancelReply: [] }>();
@@ -41,6 +46,13 @@ const placeholder = computed(
   () => `Message ${props.addresseeName ?? "everyone in this chat"}`,
 );
 useComposerHeight(textarea, body);
+const turn = useTurnInterrupt();
+
+function stopTurn(): void {
+  if (props.workingAgent !== null) {
+    turn.interrupt(props.workingAgent);
+  }
+}
 
 // The stored draft is read in the browser only, after the server-rendered page has been taken over; the composer is
 // mounted only once its conversation is revealed. A denial or sign-out empties it, which removes the stored draft.
@@ -133,6 +145,7 @@ function sendOnEnter(event: KeyboardEvent): void {
       :aria-label="placeholder"
       class="block w-full border-0 p-0.5 transition-[height] duration-160"
       @keydown.enter="sendOnEnter"
+      @keydown.esc="stopTurn"
     />
     <div class="mt-2 flex items-center gap-1.5">
       <IconButton
@@ -145,6 +158,22 @@ function sendOnEnter(event: KeyboardEvent): void {
       <Menu label="Message options">
         <MenuItem disabled>Dump files</MenuItem>
       </Menu>
+      <template v-if="turn.refusal.value">
+        <span class="text-small text-danger">{{ turn.refusal.value }}</span>
+      </template>
+      <template v-if="workingAgent">
+        <Button
+          type="button"
+          size="small"
+          variant="bordered"
+          data-stop-turn
+          :pending="turn.isPending.value"
+          @click="stopTurn"
+        >
+          <Icon name="stop" :size="14" />
+          Stop
+        </Button>
+      </template>
       <Button
         type="submit"
         size="small"

@@ -41,6 +41,8 @@ const props = defineProps<{
   conversationProp: string;
   // The chat the entries are in, which a reaction names.
   inboxId: string;
+  // What the user's last messages wait for, such as the agent's start; none while nothing holds them.
+  startWait: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -170,6 +172,13 @@ function replyTo(message: MessageEntryData): void {
   emit("reply", { id: message.id, number: message.number, body: message.body });
 }
 
+// The wait shows under the user's own last messages: those still being sent, or the last entry when it is theirs.
+const isLastOwn = computed(() => {
+  const last = props.entries.at(-1);
+
+  return props.pending.length > 0 || (last !== undefined && isOwn(last));
+});
+
 // Nothing to show yet: no entry, none being sent and none refused.
 const isEmpty = computed(
   () =>
@@ -256,6 +265,15 @@ const isEmpty = computed(
         :intent="intent"
         @check-again="(shown) => emit('checkAgain', shown)"
       />
+    </template>
+    <template v-if="startWait !== null && isLastOwn">
+      <p
+        class="-mt-4 self-end text-meta text-text-4"
+        role="status"
+        data-start-wait
+      >
+        {{ startWait }}
+      </p>
     </template>
     <template v-for="item in refused" :key="item.entry.intentKey">
       <RefusedSend

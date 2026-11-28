@@ -12,10 +12,7 @@ import {
   dismissStartOutcome,
   recheck,
   retry,
-  interruptTurn,
-  stopSession,
 } from "@kit/sessionStarts";
-import { keyedPost } from "@kit/keyedPost";
 import { sendPageAction } from "@kit/pageActions";
 import { load, LoaderCancelled, webCapacity } from "@kit/loaders";
 import type { CapacityData } from "@kit/CoreTypes";
@@ -25,20 +22,22 @@ import { useSwitchOperation } from "../../../composables/useSwitchOperation";
 import { openAgentTerminal } from "../../../composables/useTerminalModal";
 import SessionAction from "./SessionAction.vue";
 import SessionForm from "./SessionForm.vue";
-import StopConfirmation from "./StopConfirmation.vue";
 
 /**
- * What the chosen agent's status offers now, each action mapped to its route or dialog: Start, Resume and Switch open
- * their forms, Check status and Check capacity read, Sign in opens Accounts, Dismiss hides the outcome and Cancel start
- * cancels. Each agent's open dialog survives a chat switch and a reload.
+ * What the chosen agent's status offers now in the agent bar, each action mapped to its route or dialog: Switch opens
+ * its form, Check status and Check capacity read, Sign in opens Accounts, Dismiss hides the outcome and Cancel start
+ * cancels. A message starts a stopped agent, the composer stops a turn and the chat list ends a session, so the bar
+ * draws neither. Each agent's open dialog survives a chat switch and a reload.
  */
 const props = defineProps<{ agent: AgentOptionData }>();
 
 const emit = defineEmits<{ dialog: [isOpen: boolean] }>();
 
-type FormMode = "start" | "resume" | "switch";
+type FormMode = "switch";
+// The actions another part of the chat draws: the composer's Stop and the chat list's End session.
+type BarActionType = Exclude<StatusActionData["type"], "interrupt" | "stop">;
 
-const formModes: FormMode[] = ["start", "resume", "switch"];
+const formModes: FormMode[] = ["switch"];
 const viewerId = useAppContext().viewer.value.id;
 const openDialog =
   viewerId === undefined
@@ -49,7 +48,6 @@ const kept = openDialog?.read() ?? null;
 const formMode = ref<FormMode | null>(
   formModes.find((mode) => mode === kept) ?? null,
 );
-const isStopAsked = ref(false);
 // The button that opened a dialog, which gets the focus back when the dialog closes.
 let opener: HTMLElement | null = null;
 const notice = ref<string | null>(null);
@@ -60,9 +58,7 @@ const statusCheck = useStatusCheck(
   (done) => router.reload({ onFinish: done }),
 );
 
-watch([formMode, isStopAsked], ([mode, isAsked]) =>
-  emit("dialog", mode !== null || isAsked),
-);
+watch(formMode, (mode) => emit("dialog", mode !== null));
 watch(formMode, (mode) =>
   mode === null ? openDialog?.forget() : openDialog?.keep(mode),
 );
@@ -80,11 +76,6 @@ function rememberOpener(): void {
 function returnFocus(): void {
   opener?.focus();
   opener = null;
-}
-
-function closeStop(): void {
-  isStopAsked.value = false;
-  returnFocus();
 }
 
 function settleSwitch(
@@ -183,87 +174,26 @@ function checkStatus(): void {
   );
 }
 
-/**
- * Stops the session the bar shows, at the generation it shows, once under a new request id, after the confirmation;
- * the bar then follows the stop from the page, and Stopped shows only when the page says so.
- */
-function stop(): void {
-  if (props.agent.sessionId === null) {
-    return;
-  }
-
-  isStopAsked.value = false;
-
-  pendingType.value = "stop";
-  const requestId = newRequestId();
-  keyedPost(
-    stopSession.url(props.agent.id),
-    {
-      requestId,
-      sessionId: props.agent.sessionId,
-      generation: props.agent.sessionGeneration,
-    },
-    requestId,
-    {
-      onAccepted: () => undefined,
-      onRefused: (reason) => (notice.value = reason),
-      onUncertain: readAgain,
-      onFinish: () => {
-        pendingType.value = null;
-        returnFocus();
-      },
-    },
-  );
-}
-
-/**
- * Interrupts the current turn once; the session stays and the bar shows Interrupting, then the observed activity.
- */
-function interrupt(): void {
-  if (props.agent.sessionId === null) {
-    return;
-  }
-
-  pendingType.value = "interrupt";
-  const requestId = newRequestId();
-  keyedPost(
-    interruptTurn.url(props.agent.id),
-    { requestId, sessionId: props.agent.sessionId },
-    requestId,
-    {
-      onAccepted: () => undefined,
-      onRefused: (reason) => (notice.value = reason),
-      onUncertain: readAgain,
-      onFinish: () => (pendingType.value = null),
-    },
-  );
-}
-
 function openTerminal(): void {
   openAgentTerminal(props.agent);
 }
 
+function isBarAction(
+  action: StatusActionData,
+): action is StatusActionData & { type: BarActionType } {
+  return action.type !== "interrupt" && action.type !== "stop";
+}
+
 // The terminal has no button in the agent bar: the agent menu opens it, and the words below while the driver waits.
 const drawnActions = computed(() =>
-  props.agent.status.actions.filter(
-    (action) => action.type !== "open-terminal" || !props.agent.hasTerminal,
-  ),
+  props.agent.status.actions
+    .filter(isBarAction)
+    .filter(
+      (action) => action.type !== "open-terminal" || !props.agent.hasTerminal,
+    ),
 );
 
-const handlers: Record<StatusActionData["type"], () => void> = {
-  stop: () => {
-    rememberOpener();
-    isStopAsked.value = true;
-  },
-  interrupt,
-  start: () => {
-    rememberOpener();
-    formMode.value = "start";
-  },
-  resume: () => {
-    rememberOpener();
-    formMode.value = "resume";
-  },
+const handlers: Record<BarActionType, () => void> = {
   switch: () => {
     rememberOpener();
     formMode.value = "switch";
@@ -318,14 +248,6 @@ const handlers: Record<StatusActionData["type"], () => void> = {
           formMode = null;
           returnFocus();
         "
-      />
-    </template>
-    <template v-if="isStopAsked">
-      <StopConfirmation
-        :agent-name="agent.name"
-        :is-pending="pendingType === 'stop'"
-        @confirm="stop"
-        @close="closeStop"
       />
     </template>
   </div>

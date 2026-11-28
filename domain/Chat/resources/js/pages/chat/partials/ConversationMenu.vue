@@ -3,10 +3,12 @@ import Menu from "@kit/Menu";
 import MenuGroup from "@kit/MenuGroup";
 import MenuSeparator from "@kit/MenuSeparator";
 import { router } from "@inertiajs/vue3";
-import { computed, useTemplateRef } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
 import ConversationActions from "./ConversationActions.vue";
 import ConversationRow from "./ConversationRow.vue";
+import StopConfirmation from "./StopConfirmation.vue";
+import { useSessionEnd } from "../../../composables/useSessionEnd";
 import {
   carriesRecord,
   droppedRecord,
@@ -15,7 +17,7 @@ import {
 
 /**
  * The conversation menu under the chat's name, as the design draws it: the conversations with each agent that works,
- * the chosen one ticked, then the chosen agent's terminal, Add someone to this chat and New group chat. A record
+ * the chosen one ticked, then the chosen agent's terminal, End session, Add someone to this chat and New group chat. A record
  * dragged onto the name opens the menu; let go on a conversation, it is handed to that agent.
  */
 const props = defineProps<{
@@ -43,6 +45,25 @@ const terminalAgent = computed(() =>
       agent.sessionId !== null,
   ),
 );
+
+// The chosen agent, while its status offers to end its session; End session asks first.
+const endableAgent = computed(() =>
+  props.agents.find(
+    (agent) =>
+      agent.id === props.selectedAgentId &&
+      agent.status.actions.some((action) => action.type === "stop"),
+  ),
+);
+const isEndAsked = ref(false);
+const sessionEnd = useSessionEnd();
+
+function endSession(): void {
+  const agent = endableAgent.value;
+
+  if (agent !== undefined) {
+    sessionEnd.end(agent, () => (isEndAsked.value = false));
+  }
+}
 
 function subLine(agent: AgentOptionData): string {
   return agent.id === props.mainAgentId ? "main agent" : agent.status.label;
@@ -94,9 +115,24 @@ function handTo(event: DragEvent, agent: AgentOptionData): void {
       <MenuSeparator />
       <ConversationActions
         :terminal-agent="terminalAgent"
+        :endable-agent="endableAgent"
         :can-create-chats="canCreateChats"
         @new-group="emit('newGroup')"
+        @end-session="isEndAsked = true"
       />
     </Menu>
+    <template v-if="isEndAsked && endableAgent">
+      <StopConfirmation
+        :agent-name="endableAgent.name"
+        :is-pending="sessionEnd.isPending.value"
+        @confirm="endSession"
+        @close="isEndAsked = false"
+      />
+    </template>
+    <template v-if="sessionEnd.refusal.value">
+      <p class="text-small text-danger" role="alert">
+        {{ sessionEnd.refusal.value }}
+      </p>
+    </template>
   </div>
 </template>

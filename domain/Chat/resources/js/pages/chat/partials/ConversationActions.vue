@@ -7,15 +7,16 @@ import { chatRoster } from "../../../composables/useChatRoster";
 import { openAgentTerminal } from "../../../composables/useTerminalModal";
 
 /**
- * What the conversation menu offers below the conversations: the chosen agent's terminal while it runs in one, Add
- * someone to this chat, and New group chat for who may make chats.
+ * What the conversation menu offers below the conversations: the chosen agent's terminal while it runs in one, End
+ * session while its status offers it, Add someone to this chat, and New group chat for who may make chats.
  */
 defineProps<{
   terminalAgent: AgentOptionData | undefined;
+  endableAgent: AgentOptionData | undefined;
   canCreateChats: boolean;
 }>();
 
-const emit = defineEmits<{ newGroup: [] }>();
+const emit = defineEmits<{ newGroup: []; endSession: [] }>();
 </script>
 
 <template>
@@ -28,6 +29,14 @@ const emit = defineEmits<{ newGroup: [] }>();
         >Open {{ terminalAgent.sessionDriverLabel ?? "its" }}
         terminal</MenuItemLabel
       >
+    </MenuItem>
+  </template>
+  <template v-if="endableAgent">
+    <MenuItem data-end-session @click="emit('endSession')">
+      <template #leading>
+        <Icon name="stop" :size="14" />
+      </template>
+      <MenuItemLabel>End session</MenuItemLabel>
     </MenuItem>
   </template>
   <MenuItem data-add-someone @click="chatRoster.isOpen = true">

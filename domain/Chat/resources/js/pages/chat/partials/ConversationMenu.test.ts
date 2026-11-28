@@ -44,7 +44,7 @@ function agent(id: string, name: string, retired = false): AgentOptionData {
       remedy: null,
       commandOutcome: null,
       observationAgeSeconds: null,
-      actions: [{ type: "start", label: "Start session" }],
+      actions: [],
       isProcessConfirmed: false,
     },
   };

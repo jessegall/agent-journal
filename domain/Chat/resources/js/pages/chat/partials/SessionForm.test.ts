@@ -219,7 +219,7 @@ const idle: AgentOptionData = {
     remedy: null,
     commandOutcome: null,
     observationAgeSeconds: null,
-    actions: [{ type: "start", label: "Start session" }],
+    actions: [],
     isProcessConfirmed: false,
   },
 };

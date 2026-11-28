@@ -61,6 +61,7 @@ function listOf(
     pending?: ConversationIntent[];
     refused?: { entry: object; reason: string }[];
     viewer?: string;
+    startWait?: string | null;
   } = {},
 ) {
   return mount(MessageList, {
@@ -73,6 +74,7 @@ function listOf(
       participants: [],
       conversationProp: "page",
       inboxId: "inbox-chat",
+      startWait: props.startWait ?? null,
     } as never,
   });
 }
@@ -145,5 +147,23 @@ describe("MessageList", () => {
 
     expect(list.find("b").exists()).toBe(false);
     expect(list.text()).toContain("<b>bold</b>");
+  });
+
+  it("shows under the user's own last message that it waits for the agent to start", () => {
+    const list = listOf({
+      entries: [message(1, "user:user-1", "You")],
+      startWait: "Waiting for Agent 3 to start",
+    });
+
+    expect(list.get("[data-start-wait]").text()).toBe("Waiting for Agent 3 to start");
+  });
+
+  it("shows no wait once the agent answered last", () => {
+    const list = listOf({
+      entries: [message(1, "user:user-1", "You"), message(2, "agent:a3", "Agent 3")],
+      startWait: "Waiting for Agent 3 to start",
+    });
+
+    expect(list.find("[data-start-wait]").exists()).toBe(false);
   });
 });

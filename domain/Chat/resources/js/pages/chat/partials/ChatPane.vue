@@ -106,6 +106,21 @@ const selected = computed(() => {
 
   return props.chat.agents.find((agent) => agent.id === wanted);
 });
+// The chosen agent while its status offers to stop its turn: the composer then shows Stop beside Send.
+const workingAgent = computed(
+  () =>
+    selected.value?.status.actions.some(
+      (action) => action.type === "interrupt",
+    ) === true
+      ? selected.value
+      : null,
+);
+// While the chosen agent starts, the user's last messages wait under their bubble for it.
+const startWait = computed(() =>
+  selected.value?.status.sessionState === "starting"
+    ? `Waiting for ${selected.value.name} to start`
+    : null,
+);
 const key = computed(() => {
   const userId = viewer.value.id;
 
@@ -417,6 +432,7 @@ watch(isShown, readOnOpen);
           :participants="conversation.participants"
           :conversation-prop="protectedProp"
           :inbox-id="conversation.inboxId"
+          :start-wait="startWait"
           @reply="(target) => (replyingTo = target)"
           @older="timeline.loadOlder"
           @check-again="(intent) => owner?.retry(intent, protectedProp)"
@@ -454,6 +470,7 @@ watch(isShown, readOnOpen);
           :inbox-id="conversation.inboxId"
           :replying-to="replyingTo"
           :conversation-prop="protectedProp"
+          :working-agent="workingAgent"
           @replied="replyingTo = null"
           @cancel-reply="replyingTo = null"
         />
