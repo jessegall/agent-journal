@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import type { AskInboxPaneData } from '@/generated/types/core';
+import type { AskInboxPaneData } from '@generated/types/web';
 
 defineProps<AskInboxPaneData>();
 </script>

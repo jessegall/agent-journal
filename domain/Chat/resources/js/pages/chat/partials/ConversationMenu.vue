@@ -159,7 +159,7 @@ function choose(agent: AgentOptionData): void {
   isOpen.value = false;
 
   if (hostProp === "page") {
-    chooseChat(["page"], agent.id, agent.sessionId);
+    chooseChat(agent.id, agent.sessionId);
 
     return;
   }

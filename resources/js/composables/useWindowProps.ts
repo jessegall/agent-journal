@@ -13,7 +13,9 @@ const sharedReads = new SharedPropReads((propName, ended) => {
         onCancelToken: (token) => (cancelRead = () => token.cancel()),
         onSuccess: (page) => {
             const shown = page.props[propName] as WindowResult<unknown> | undefined;
-            outcome = shown?.status === 'denied' ? 'denied' : 'applied';
+            outcome = shown?.status === 'denied' || shown?.status === 'unavailable'
+                ? 'denied'
+                : shown === undefined || shown.status === 'failed' ? 'failed' : 'applied';
         },
         onFinish: () => ended(outcome),
     });
@@ -27,7 +29,11 @@ let nextMount = 0;
  * only this prop. Mounts asking at once share one read and keep their own draft, focus and scroll; an optional prop is
  * asked for once shown and leaves with its last mount.
  */
-export function useWindowProps(propName: string, askOnStart = true) {
+export function isWindowShown(propName: string): boolean {
+    return sharedReads.isShown(propName);
+}
+
+export function useWindowProps(propName: string, askOnStart: () => boolean = () => true) {
     const page = usePage();
     const { viewer } = useAppContext();
     const mount = ++nextMount;
@@ -58,20 +64,24 @@ export function useWindowProps(propName: string, askOnStart = true) {
         sharedReads.request(readKey, propName, mount, (outcome) => (announcedOutcome.value = outcome));
     }
 
-    if (askOnStart && result.value === undefined) {
-        retry();
-    }
+    watch(askOnStart, (shouldRead) => {
+        const deferred = Object.values(page.deferredProps ?? {}).flat();
+
+        if (shouldRead && result.value === undefined && !deferred.includes(propName)) {
+            retry();
+        }
+    }, { immediate: true });
 
     // The page this mount shows the prop on; a navigation away never clears the next page's prop of the same name.
     const mountedComponent = page.component;
-    const mountedUrl = page.url;
+    const mountedPath = page.url.split('?')[0];
     sharedReads.show(propName, mount);
 
     onBeforeUnmount(() => {
         const isLast = sharedReads.hide(propName, mount);
 
         // The last mount closed: the prop leaves the page, so the live client no longer reads it.
-        if (isLast && page.component === mountedComponent && page.url === mountedUrl) {
+        if (isLast && page.component === mountedComponent && page.url.split('?')[0] === mountedPath) {
             router.replaceProp(propName, undefined);
         }
 

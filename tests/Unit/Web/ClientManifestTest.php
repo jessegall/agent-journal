@@ -125,6 +125,20 @@ final class ClientManifestTest extends TestCase
         $this->assertSame([], glob("{$this->root}/**/*.tmp") ?: []);
     }
 
+    public function test_installed_compact_components_are_not_route_pages(): void
+    {
+        $this->app->make(ClientManifest::class)->write($this->root);
+        $components = File::get("{$this->root}/resources/js/generated/ui-manifest.ts");
+        $props = File::get("{$this->root}/resources/js/generated/types/page-props.ts");
+        $checks = File::get("{$this->root}/resources/js/generated/ui-prop-checks.ts");
+
+        $this->assertStringContainsString("'web/AskInboxPane': () => import(", $components);
+        $this->assertStringNotContainsString("'web/AskInboxPane',", $components);
+        $this->assertStringContainsString('window_web_asks?: WindowResult<AskInboxPaneData>', $props);
+        $this->assertStringContainsString('accepts_window_web_asks: Accepts<AskInboxPaneData', $checks);
+        $this->assertStringNotContainsString('window_web_terminal?:', $props);
+    }
+
     public function test_a_generation_that_fails_midway_puts_every_file_it_replaced_back(): void
     {
         $this->manifest([$this->library(), $this->shelf()])->write($this->root);

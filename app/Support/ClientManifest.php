@@ -50,6 +50,7 @@ final readonly class ClientManifest
 
         $hash = substr(sha1((string) json_encode([$components, $folders])), 0, 12);
 
+        $checks = $this->propChecks($root);
         $artifacts = [
             'resources/js/generated/ui-manifest.ts' => $this->render('ui-manifest.ts', [
                 'hash' => $hash,
@@ -89,10 +90,8 @@ final readonly class ClientManifest
                 'ui-prop-checks.ts',
                 [
                     'hash' => $hash,
-                    'checks' => $this->propChecks($root),
-                    'dataTypes' => array_values(
-                        array_unique(array_map($this->propTypes->dataTypeOf(...), $this->declarations->pages())),
-                    ),
+                    'checks' => $checks,
+                    'dataTypes' => array_values(array_unique(array_column($checks, 'dataType'))),
                 ],
             ),
             'resources/js/generated/domain-roots.json' => json_encode(
@@ -158,17 +157,29 @@ final readonly class ClientManifest
     /**
      * One check per page component: the props its page gives it, and the component file.
      *
-     * @return array<string, array{type: string, path: string}>
+     * @return array<string, array{type: string, path: string, dataType: string}>
      */
     private function propChecks(string $root): array
     {
         $checks = [];
 
         foreach ($this->declarations->pages() as $page) {
-            $checks['accepts_'.str_replace(['.', '-'], '_', $page->key)] = [
-                'type' => '{ data: '.$this->propTypes->dataTypeOf($page).' }',
+            $name = str_replace(['.', '-'], '_', $page->key);
+            $dataType = $this->propTypes->dataTypeOf($page);
+            $checks["accepts_{$name}"] = [
+                'type' => "{ data: {$dataType} }",
                 'path' => '../../../'.$this->fromRoot($root, $page->componentFile),
+                'dataType' => $dataType,
             ];
+
+            if ($page->window !== null && $page->windowFile !== null) {
+                $pane = class_basename($page->window->type);
+                $checks["accepts_window_{$name}"] = [
+                    'type' => $pane,
+                    'path' => '../../../'.$this->fromRoot($root, $page->windowFile),
+                    'dataType' => $pane,
+                ];
+            }
         }
 
         ksort($checks);

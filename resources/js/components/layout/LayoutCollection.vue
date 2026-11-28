@@ -4,12 +4,12 @@ import { onMounted, ref, useTemplateRef, watch } from 'vue';
 import ListRow from '@/components/kit/ListRow.vue';
 import RecordMenu from '@/components/kit/RecordMenu.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
-import { useWindowQueryChange } from '@/framework/useWindowQuery';
+import { useWindowQueryChange, useWindowQueryClick } from '@/framework/useWindowQuery';
 import type { LayoutPartData, LayoutRowData } from '@/generated/types/core';
 import LayoutChoices from './LayoutChoices.vue';
 import LayoutFacts from './LayoutFacts.vue';
 import LayoutPart from './LayoutPart.vue';
-import { useLayoutAppend } from './layoutAppend';
+import { useLayoutAppend, useLayoutListIdentity } from './layoutAppend';
 import { rememberRow, restoreRow } from './listReturn';
 
 // The keyed rows of a declared layout: facts as term and value pairs, choices that set the window's query or open a
@@ -17,23 +17,30 @@ import { rememberRow, restoreRow } from './listReturn';
 // button or a right click, and Show more adds rows.
 const props = defineProps<{ part: LayoutPartData }>();
 const windowQuery = useWindowQueryChange();
+const choose = useWindowQueryClick();
 const isAppending = useLayoutAppend();
+const identity = useLayoutListIdentity();
 const page = usePage();
 const list = useTemplateRef<HTMLElement>('list');
 const shown = ref<LayoutRowData[]>(props.part.rows);
 
 watch(
-    () => props.part.rows,
-    (rows) => {
-        if (props.part.style !== 'list' || !isAppending.value) {
+    [() => props.part.rows, identity],
+    ([rows, filter], [, previousFilter]) => {
+        if (props.part.style !== 'list' || filter !== previousFilter || !isAppending.value) {
             shown.value = rows;
 
             return;
         }
 
-        const keys = new Set(shown.value.map((row) => row.key));
+        const kept = new Map(shown.value.map((row) => [row.key, row]));
+        for (const row of rows) {
+            if (!kept.has(row.key)) {
+                kept.set(row.key, row);
+            }
+        }
 
-        shown.value = [...shown.value, ...rows.filter((row) => !keys.has(row.key))];
+        shown.value = [...kept.values()];
     },
     { flush: 'sync' },
 );
@@ -129,6 +136,13 @@ function destinationOf(row: LayoutRowData): string | null {
 
     return Object.keys(row.query).length > 0 ? windowQuery(row.query) : null;
 }
+function selectRow(event: MouseEvent, row: LayoutRowData): void {
+    rememberRow(page.url, row.key);
+
+    if (row.href === undefined) {
+        choose(event, row.query);
+    }
+}
 </script>
 
 <template>
@@ -165,13 +179,14 @@ function destinationOf(row: LayoutRowData): string | null {
                             </template>
                             <template #title>
                                 <template v-if="destinationOf(row) !== null">
-                                    <Link
+                                    <component
+                                        :is="row.href === undefined ? 'a' : Link"
                                         :href="destinationOf(row) ?? ''"
                                         :data-row-key="row.key"
                                         preserve-scroll
                                         :aria-current="row.isCurrent ? 'true' : undefined"
                                         class="focus-visible:outline-2 focus-visible:outline-focus"
-                                        @click="rememberRow(page.url, row.key)"
+                                        @click="selectRow($event, row)"
                                         >{{ row.label }}</Link
                                     >
                                 </template>

@@ -1,13 +1,14 @@
 // @vitest-environment happy-dom
 import { mount } from '@vue/test-utils';
-import { defineComponent, h } from 'vue';
+import { defineComponent } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
-import { provideWindowKey } from '@/framework/useWindowQuery';
 import type { AskInbox } from '@/types/generated';
 import Asks from './Asks.vue';
+import AskInboxPane from './AskInboxPane.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: defineComponent({ name: 'Head', render: () => null }),
+    Link: { props: ['href'], template: '<a :href="href"><slot /></a>' },
 }));
 
 const data = { cards: [] } as unknown as AskInbox;
@@ -20,15 +21,9 @@ describe('the asks', () => {
     });
 
     it('leave the heading to the window frame on Home', () => {
-        const InWindow = defineComponent({
-            setup() {
-                provideWindowKey('web.asks');
+        const view = mount(AskInboxPane, { props: { items: [], inboxUrl: '/asks' } });
 
-                return () => h(Asks, { data });
-            },
-        });
-        const view = mount(InWindow, {});
-
+        expect(view.get('a').attributes('href')).toBe('/asks');
         expect(view.find('h1').exists()).toBe(false);
         expect(view.findComponent({ name: 'Head' }).exists()).toBe(false);
     });

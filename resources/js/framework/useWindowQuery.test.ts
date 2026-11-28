@@ -6,7 +6,7 @@ import { defineComponent, h } from 'vue';
 import { provideHostProp } from './hostProp';
 import { provideWindowKey, useWindowReload } from './useWindowQuery';
 
-vi.mock('@inertiajs/vue3', () => ({ router: { visit: vi.fn(), reload: vi.fn() }, usePage: () => ({ url: '/' }) }));
+vi.mock('@inertiajs/vue3', () => ({ router: { reload: vi.fn() }, usePage: () => ({ url: '/' }) }));
 
 function reloadIn(key: string): ReturnType<typeof useWindowReload> {
     let reload: ReturnType<typeof useWindowReload> | undefined;
@@ -24,18 +24,26 @@ function reloadIn(key: string): ReturnType<typeof useWindowReload> {
 }
 
 describe('reloading one Home window', () => {
-    afterEach(() => vi.mocked(router.visit).mockClear());
+    afterEach(() => vi.mocked(router.reload).mockClear());
 
-    it('keeps every other window part of the address and replaces only the values it names', () => {
-        window.history.replaceState(null, '', '/?window[project][open][0]=src&window[files][path]=a.go&window[files][q]=x');
+    it('replaces the selected copy query and leaves siblings intact when a filter is cleared', () => {
+        window.history.replaceState(
+            null,
+            '',
+            '/?window[project][open][0]=src&window[files][path]=a.go&window[files~abcdef123456][q]=x',
+        );
 
-        reloadIn('files')({ path: 'b.go' }, { onNetworkError: () => true, onHttpException: () => true });
+        reloadIn('files~abcdef123456')({ path: 'b.go', q: undefined });
 
-        const address = decodeURIComponent(String(vi.mocked(router.visit).mock.calls[0][0]));
-        expect(address).toContain('window[project][open][0]=src');
-        expect(address).toContain('window[files][path]=b.go');
-        expect(address).toContain('window[files][q]=x');
-        expect(address).not.toContain('a.go');
-        expect(vi.mocked(router.visit).mock.calls[0][1]).toMatchObject({ only: ['window_files'], preserveState: true });
+        expect(vi.mocked(router.reload).mock.calls[0][0]).toMatchObject({
+            only: ['window_files'],
+            data: {
+                window: {
+                    project: { open: { 0: 'src' } },
+                    files: { path: 'a.go' },
+                    'files~abcdef123456': { path: 'b.go', q: undefined },
+                },
+            },
+        });
     });
 });

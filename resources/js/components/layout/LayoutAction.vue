@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { ref, useId } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import type { IconName } from '@/components/kit/Icon.vue';
 import { useHostProp } from '@/framework/hostProp';
-import { useWindowQueryChange } from '@/framework/useWindowQuery';
+import { useWindowReload } from '@/framework/useWindowQuery';
 import type { LayoutPartData } from '@/generated/types/core';
+import type { WindowResult } from '@/generated/types/page-props';
 import { useLayoutAppend } from './layoutAppend';
 import { useLayoutForm } from './layoutForm';
 
@@ -14,7 +15,8 @@ import { useLayoutForm } from './layoutForm';
 // or a disabled button whose reason stays readable beside it. An appending action reads the next rows into its window
 // and can be pressed again after a failure.
 const props = defineProps<{ part: LayoutPartData }>();
-const windowQuery = useWindowQueryChange();
+const reload = useWindowReload();
+const page = usePage();
 const form = useLayoutForm();
 const hostProp = useHostProp();
 const isAppending = useLayoutAppend();
@@ -24,26 +26,28 @@ const reasonId = `layout-reason-${useId()}`;
 const style = props.part.style as 'bordered' | 'ghost' | 'primary' | 'danger';
 const size = (props.part.size ?? 'normal') as 'small' | 'normal' | 'large';
 
-function hrefOf(part: LayoutPartData): string | undefined {
-    if (part.action?.href) {
-        return part.action.href;
-    }
+function act(): void {
+    const action = props.part.action;
 
-    return part.action !== undefined &&
-        Object.keys(part.action.query).length > 0
-        ? windowQuery(part.action.query)
-        : undefined;
+    if (action !== undefined && action.href === undefined && Object.keys(action.query).length > 0) {
+        reload(action.query);
+    }
 }
 
 function showMore(): void {
+    if (isReading.value || props.part.action === undefined) {
+        return;
+    }
+
     isReading.value = true;
     failed.value = false;
     isAppending.value = true;
 
-    router.visit(hrefOf(props.part) ?? '', {
-        only: [hostProp],
-        preserveState: true,
-        preserveScroll: true,
+    reload(props.part.action.query, {
+        onSuccess: () => {
+            const result = page.props[hostProp] as WindowResult<unknown> | undefined;
+            failed.value = result?.status !== 'ready';
+        },
         onNetworkError: () => {
             failed.value = true;
 
@@ -56,7 +60,7 @@ function showMore(): void {
         },
         onFinish: () => {
             isReading.value = false;
-            isAppending.value = false;
+            isAppending.value = failed.value;
         },
     });
 }
@@ -99,7 +103,7 @@ function showMore(): void {
         </span>
     </template>
     <template v-else>
-        <Button :variant="style" :size="size" :href="hrefOf(part)">
+        <Button :variant="style" :size="size" :href="part.action?.href" @click="act">
             <template v-if="part.detail" #icon>
                 <Icon :name="part.detail as IconName" :size="14" />
             </template>

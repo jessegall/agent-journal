@@ -1,3 +1,5 @@
+import { shouldIntercept } from "@inertiajs/core";
+import type { FormDataConvertible, ReloadOptions } from "@inertiajs/core";
 import { router, usePage } from "@inertiajs/vue3";
 import { inject, provide } from "vue";
 import { useHostProp } from "./hostProp";
@@ -90,54 +92,101 @@ export function useWindowQueryChange(): (
   };
 }
 
+type WindowQueryChanges = Record<string, string | string[] | undefined>;
+type WindowQuery = Record<string, FormDataConvertible>;
+type WindowReloadOptions = Omit<ReloadOptions, "only" | "data">;
+
+function addQueryValue(query: WindowQuery, parts: string[], value: string): void {
+  const [key, ...rest] = parts;
+
+  if (key === undefined || key === "__proto__") {
+    return;
+  }
+
+  if (rest.length === 0) {
+    query[key] = value;
+    return;
+  }
+
+  if (rest[0] === "") {
+    const values = query[key];
+    query[key] = Array.isArray(values) ? [...values, value] : [value];
+    return;
+  }
+
+  const existing = query[key];
+  const branch: WindowQuery =
+    typeof existing === "object" && existing !== null && !Array.isArray(existing)
+      ? (existing as WindowQuery)
+      : Object.create(null);
+  addQueryValue(branch, rest, value);
+  query[key] = branch;
+}
+
 /**
- * Asks the server again for this window's prop alone, with extra query values for this window only, such as a list's
- * next cursor: on Home inside its own window[<key>] part, elsewhere plainly. The answer replaces the prop while the
- * window keeps what it shows.
+ * Inertia replaces top-level query keys. Include the other copies when replacing the window branch.
  */
+export function windowQueryData(key: string, values: WindowQueryChanges): { window: WindowQuery } {
+  const query: WindowQuery = Object.create(null);
+  const url = new URL(window.location.href);
+
+  for (const [name, value] of url.searchParams) {
+    if (name.startsWith("window[")) {
+      const parts = Array.from(name.matchAll(/\[([^\]]*)\]/g), (match) => match[1]);
+      addQueryValue(query, parts, value);
+    }
+  }
+
+  const changed = Object.fromEntries(
+    Object.entries(values).map(([name, value]) => [name, value === "" ? undefined : value]),
+  );
+  query[key] = { ...(query[key] as WindowQuery | undefined), ...changed };
+
+  return { window: query };
+}
+
+/**
+ * Asks for the visible host alone and carries the rest of the current address through the reload.
+ */
+export function reloadWindow(
+  prop: string,
+  key: string | null,
+  values: WindowQueryChanges,
+  options: WindowReloadOptions = {},
+): void {
+  const data = key === null
+    ? Object.fromEntries(
+        Object.entries(values).map(([name, value]) => [name, value === "" ? undefined : value]),
+      )
+    : windowQueryData(key, values);
+
+  router.reload({ only: [prop], data, ...options });
+}
+
 export function useWindowReload(): (
-  values: Record<string, string | string[]>,
-  callbacks: {
-    onNetworkError: () => boolean;
-    onHttpException: (response: { status: number }) => boolean;
-  },
+  values: WindowQueryChanges,
+  options?: WindowReloadOptions,
 ) => void {
   const key = inject<string | null>(WINDOW_KEY, null);
   const prop = useHostProp();
 
-  return (values, callbacks) => {
-    if (key === null) {
-      router.reload({ only: [prop], data: values, ...callbacks });
+  return (values, options) => reloadWindow(prop, key, values, options);
+}
 
-      return;
+/**
+ * Keeps a query link openable in a new tab and scopes ordinary clicks to its host's prop.
+ */
+export function useWindowQueryClick(): (event: MouseEvent, query: WindowQueryChanges) => void {
+  const reload = useWindowReload();
+
+  return (event, query) => {
+    if (shouldIntercept(event)) {
+      event.preventDefault();
+      reload(query);
     }
-
-    const url = new URL(window.location.href);
-    const prefix = `window[${key}]`;
-
-    for (const [name, value] of Object.entries(values)) {
-      const param = `${prefix}[${name}]`;
-
-      for (const kept of [...url.searchParams.keys()]) {
-        if (kept === param || kept.startsWith(`${param}[`)) {
-          url.searchParams.delete(kept);
-        }
-      }
-
-      for (const [index, each] of (Array.isArray(value) ? value : [value]).entries()) {
-        if (each !== "") {
-          url.searchParams.set(Array.isArray(value) ? `${param}[${index}]` : param, each);
-        }
-      }
-    }
-
-    router.visit(`${url.pathname}${url.search}`, {
-      only: [prop],
-      preserveState: true,
-      preserveScroll: true,
-      replace: true,
-      async: true,
-      ...callbacks,
-    });
   };
+}
+
+export function useWindowInstanceKey(): string | null {
+  return inject<string | null>(WINDOW_KEY, null);
 }

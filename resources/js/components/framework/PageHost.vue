@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import TextLink from "@kit/TextLink";
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
+import { ref, watch } from "vue";
 import type { Component } from "vue";
+import { useAppContext } from "@/framework/appContext";
 import type { WindowResult } from "@/generated/types/page-props";
 import {
   hasStaleProps,
@@ -16,7 +18,7 @@ import ResultView from "./ResultView.vue";
  * A declared page of its own: its reader's result, handed to the page's component as its one data prop, and the
  * offer to dock the source it shows when there is one.
  */
-withDefaults(
+const props = withDefaults(
   defineProps<{
     component: Component;
     page: WindowResult<unknown>;
@@ -25,6 +27,23 @@ withDefaults(
   {
     subject: "item",
   },
+);
+
+const visit = usePage();
+const { viewer } = useAppContext();
+const keptData = ref<unknown>();
+watch(
+  [() => props.page, () => visit.url?.split("?")[0], () => viewer.value?.id],
+  ([result, path, actor], old) => {
+    if (path !== old?.[1] || actor !== old?.[2] || result.status === "denied" || result.status === "unavailable") {
+      keptData.value = undefined;
+    }
+
+    if (result.status === "ready") {
+      keptData.value = result.data;
+    }
+  },
+  { immediate: true },
 );
 </script>
 
@@ -40,6 +59,7 @@ withDefaults(
   </template>
   <ResultView
     :result="page"
+    :kept-data="keptData"
     is-window
     :subject="subject"
     placement="page"

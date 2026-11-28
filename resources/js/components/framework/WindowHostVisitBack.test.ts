@@ -57,8 +57,8 @@ const { useLiveVisits } = await import('@/composables/usePageChanges');
 const { default: WindowHost } = await import('./WindowHost.vue');
 
 const PlansWindow = defineComponent({
-    props: { data: { type: Object, required: true } },
-    setup: () => () => h('p', 'The plans'),
+    props: { name: { type: String, required: true } },
+    setup: (props) => () => h('p', `The ${props.name.toLowerCase()}`),
 });
 
 function openPlansWindow() {

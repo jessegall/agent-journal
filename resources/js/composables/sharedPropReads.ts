@@ -123,6 +123,10 @@ export class SharedPropReads {
         return true;
     }
 
+    isShown(propName: string): boolean {
+        return this.shown.has(propName);
+    }
+
     isInFlight(key: string): boolean {
         return this.inFlight.has(key);
     }
