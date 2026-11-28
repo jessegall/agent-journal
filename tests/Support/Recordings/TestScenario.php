@@ -46,12 +46,12 @@ final class TestScenario
      */
     private const string AGENT_PROFILE = 'journal-worker';
 
-    private ScenarioRun|null $run = null;
-
     /**
      * How long the restarted test host gets to allow its images again.
      */
     private const int HOST_RESTART_SECONDS = 60;
+
+    private ScenarioRun|null $run = null;
 
     public function __construct(private readonly TestJournal $journal, private readonly string $name) {}
 

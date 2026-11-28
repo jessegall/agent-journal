@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Tests\Support\Recordings\TestAgentApi;
 use Tests\TestCase;
 
 /**
@@ -98,6 +99,15 @@ final class PreparedCallTest extends TestCase
             ApiDeadlinePassed::class,
             'deadline',
         );
+    }
+
+    public function test_a_post_meets_the_recorded_journals_answer_to_the_same_frame(): void
+    {
+        $this->journal->agentApi(fn (TestAgentApi $journal) => $journal
+            ->playing('claude-code/terminal-turn')
+            ->assertAnswersFrame(1, fn (AgentClientSettings $settings, string $path, string $body) => $this->app
+                ->make(AgentRequestClient::class)
+                ->post($settings, $path, $body)));
     }
 
     public function test_post_signs_the_same_envelope_as_before(): void

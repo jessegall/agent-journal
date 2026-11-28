@@ -40,10 +40,15 @@ final class WireAssert
      * The host wire of the recording against the orders the journal gave.
      *
      * @param  list<HostInstruction>  $live
-     * @param  array<string, string>  $machineFolders  each folder of the playing machine, by the recorded one it stands for
+     * @param  array<string, string>  $machineFolders  each folder of the playing machine, by the recorded one it
+     *                                                 stands for
      */
-    public static function ofHost(string $scenario, ScenarioRecording $recording, array $live, array $machineFolders): self
-    {
+    public static function ofHost(
+        string $scenario,
+        ScenarioRecording $recording,
+        array $live,
+        array $machineFolders,
+    ): self {
         $recorded = [];
 
         foreach ($recording->calls(Wire::Host) as $call) {
@@ -52,7 +57,10 @@ final class WireAssert
             }
 
             foreach (HostClaimedInstructionsPayload::from($call->body)->instructions as $instruction) {
-                $recorded[] = [HostInstructionType::from($instruction->type), (array) json_decode($instruction->payload, true)];
+                $recorded[] = [
+                    HostInstructionType::from($instruction->type),
+                    (array) json_decode($instruction->payload, true),
+                ];
             }
         }
 

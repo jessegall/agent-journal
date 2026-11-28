@@ -67,6 +67,9 @@ func mock(arguments []string) error {
 	if len(arguments) > 0 && arguments[0] == "playing" {
 		return mockPlaying(arguments[1:])
 	}
+	if len(arguments) > 0 && arguments[0] == "wire" {
+		return mockWire(arguments[1:])
+	}
 
 	return errors.New("usage: journal-runner mock docker --socket <path> --image <reference>... | mock recording ...")
 }

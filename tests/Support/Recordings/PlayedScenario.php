@@ -28,14 +28,16 @@ final readonly class PlayedScenario
         'codex' => '.docker/drivers/codex',
     ];
 
+    /**
+     * @param  array<string, string>  $driverImages  the recorded driver image of each driver folder
+     * @param  list<string>  $pinnedImages  the images the recorded host was installed with, which it checked at its start
+     */
     private function __construct(
         public string $name,
         public string $installationName,
         public string $agentImage,
         public string $developmentPrograms,
-        /** @var array<string, string> the recorded driver image of each driver folder */
         public array $driverImages,
-        /** @var list<string> the images the recorded host was installed with, which it checked at its start */
         public array $pinnedImages,
         public string $securityProfiles,
     ) {}

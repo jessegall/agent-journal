@@ -63,6 +63,7 @@ use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Recordings\PlayedScenario;
+use Tests\Support\Recordings\TestAgentApi;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
@@ -559,6 +560,25 @@ trait ArrangesHostProcesses
     public function recordedTerminalHost(Closure $scope): self
     {
         $scope($this->app->make(RecordedTerminalHost::class));
+
+        return $this;
+    }
+
+    /**
+     * The journal's side of a recorded scenario's agent wire, served for the agent's own sender, handed to the scope;
+     * it stops when the scope ends, and fails the test if it was asked what the recording does not hold.
+     *
+     * @param  Closure(TestAgentApi): mixed  $scope
+     */
+    public function agentApi(Closure $scope): self
+    {
+        $journal = new TestAgentApi($this);
+
+        try {
+            $scope($journal);
+        } finally {
+            $journal->stop();
+        }
 
         return $this;
     }
