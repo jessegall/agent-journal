@@ -3,6 +3,7 @@ package hostapi
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"journal-runner/client"
@@ -55,15 +56,24 @@ func (relay Relay) Claim(ctx context.Context) error {
 	return ctx.Err()
 }
 
-// SendInventory tells the journal what the host holds now and the newest instruction it answered.
+// SendInventory tells the journal what the host holds now, every container of its installation on the daemon and the
+// newest instruction it answered. A daemon that cannot be asked leaves the containers out, and the inventory is still
+// sent, so the journal still settles the processes.
 func (relay Relay) SendInventory(ctx context.Context) error {
-	return relay.Journal.NotifyInventory(ctx, Inventory{
+	containers, listed := relay.Table.InstallationContainers(ctx)
+	if listed != nil {
+		listed = fmt.Errorf("the inventory names no containers, as the daemon could not list them: %w", listed)
+	}
+	sent := relay.Journal.NotifyInventory(ctx, Inventory{
 		Protocol:        ProtocolVersion,
 		Release:         relay.Release,
 		AnsweredThrough: relay.Record.AnsweredThrough(),
 		Capabilities:    relay.Dispatcher.Capabilities(),
 		Processes:       relay.Table.Inventory(),
+		Containers:      containers,
 	})
+
+	return errors.Join(sent, listed)
 }
 
 // Beat sends a heartbeat at every interval until the context ends.

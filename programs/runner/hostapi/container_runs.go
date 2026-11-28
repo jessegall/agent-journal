@@ -42,6 +42,16 @@ func (table *ProcessTable) ListContainers(ctx context.Context, _ Instruction, la
 	return ContainerNames{Names: names}, nil
 }
 
+// InstallationContainers are the names of every container of this installation on the daemon, running or not, for the
+// inventory, so the journal removes each one no live process of its own holds; a host that runs no containers has none.
+func (table *ProcessTable) InstallationContainers(ctx context.Context) ([]string, error) {
+	if table.containers.Daemon == nil {
+		return []string{}, nil
+	}
+
+	return table.containers.InstallationNames(ctx)
+}
+
 // RemoveImage removes the image by its reference; one already gone counts as removed.
 func (table *ProcessTable) RemoveImage(ctx context.Context, _ Instruction, removal ImageRemoval) (Empty, error) {
 	if table.containers.Daemon == nil {

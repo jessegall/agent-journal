@@ -207,6 +207,7 @@ type Inventory struct {
 	AnsweredThrough string             `json:"answered_through,omitempty"`
 	Capabilities    []string           `json:"capabilities"`
 	Processes       []InventoryProcess `json:"processes"`
+	Containers      []string           `json:"containers,omitempty"`
 }
 
 // InventoryProcess is the inventory_process of host protocol 1.
