@@ -101,15 +101,7 @@ final readonly class AgentListing
      */
     private function unreadIn(array $inboxIds): array
     {
-        return Message::query()->inInboxes($inboxIds)->unreadBy($this->participants->reader($this->actors->actor()))
-            ->reorder()
-            ->groupBy('inbox_id')
-            ->selectRaw('inbox_id, count(*) as unread_count')
-            ->limit(count($inboxIds))
-            ->toBase()
-            ->pluck('unread_count', 'inbox_id')
-            ->map(fn (mixed $count): int => intval($count))
-            ->all();
+        return Message::unreadCountsIn($inboxIds, $this->participants->reader($this->actors->actor()));
     }
 
     /**
@@ -144,7 +136,7 @@ final readonly class AgentListing
             ->pluck('source_id')
             ->all()));
 
-        $open = (new Collection($this->questions->shownByIds($questionIds)))->filter(
+        $open = new Collection($this->questions->shownByIds($questionIds))->filter(
             fn (ShownQuestion $question) => $question->answer === null
                 && $question->targetType === $viewer->type
                 && $question->targetId === $viewer->id,

@@ -141,12 +141,13 @@ final readonly class ChatPages
      */
     public function summariesOf(Collection $chats): array
     {
-        $viewer = $this->viewerModel();
+        $inboxIds = array_values($chats->map(fn (Inbox $inbox) => $inbox->id)->all());
+        $unread = Message::unreadCountsIn($inboxIds, $this->viewerModel());
 
         return array_values($chats->map(fn (Inbox $inbox) => ChatSummaryData::from([
             'inboxId' => $inbox->id,
             'label' => $inbox->label,
-            'unread' => Message::query()->inInbox($inbox->id)->unreadBy($viewer)->count(),
+            'unread' => $unread[$inbox->id] ?? 0,
         ]))->all());
     }
 

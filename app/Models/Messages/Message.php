@@ -205,6 +205,25 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
     // ----------[ Scopes ]----------
 
     /**
+     * The reader's unread messages in each of the inboxes, counted in one query; an inbox with none is left out.
+     *
+     * @param  list<string>  $inboxIds
+     * @return array<string, int>
+     */
+    public static function unreadCountsIn(array $inboxIds, MessageParticipant $reader): array
+    {
+        return self::query()->inInboxes($inboxIds)->unreadBy($reader)
+            ->reorder()
+            ->groupBy('inbox_id')
+            ->selectRaw('inbox_id, count(*) as unread_count')
+            ->limit(count($inboxIds))
+            ->toBase()
+            ->pluck('unread_count', 'inbox_id')
+            ->map(fn (mixed $count): int => intval($count))
+            ->all();
+    }
+
+    /**
      * Messages the reader has not read, sent by others into its inboxes since it joined them, in number order.
      *
      * @param  Builder<self>  $query

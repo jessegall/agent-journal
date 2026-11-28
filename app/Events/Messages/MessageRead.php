@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Events\Messages;
 
+use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Support\ActorReference;
 
 /**
  * An actor read a message for the first time.
  */
+#[TransactionListenerConsent]
 final readonly class MessageRead implements MessageEvent
 {
     public function __construct(
