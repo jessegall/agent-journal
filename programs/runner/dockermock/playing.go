@@ -33,7 +33,11 @@ type Playing struct {
 	programs map[string]program
 	// environments are the live environments of the containers created, by the name and the id they were created as.
 	environments map[string][]string
-	mutex        sync.Mutex
+	// runKeys are the image and command each recorded container ran, by its id and its name, as recorded.
+	runKeys map[string]string
+	// outputs are what each recorded run printed, as the host answered its run_containers order.
+	outputs runOutputs
+	mutex   sync.Mutex
 }
 
 // program is the driver exchange a container ran, and whether the container had a terminal.
@@ -44,6 +48,7 @@ type program struct {
 
 // createdProgram is what a recorded container create names of the program it runs.
 type createdProgram struct {
+	Image      string   `json:"Image"`
 	Entrypoint []string `json:"Entrypoint"`
 	Cmd        []string `json:"Cmd"`
 	Tty        bool     `json:"Tty"`
@@ -76,8 +81,12 @@ func PlayScenario(failures recorded.Failures, scenario recorded.Scenario) (*Play
 	if err != nil {
 		return nil, err
 	}
+	outputs, err := runOutputsOf(scenario)
+	if err != nil {
+		return nil, err
+	}
 	playing := &Playing{replay: replay, scenario: scenario, programs: programs,
-		environments: map[string][]string{}}
+		environments: map[string][]string{}, runKeys: map[string]string{}, outputs: outputs}
 	replay.Upgraded = playing.attached
 	replay.Heard = playing.heard
 	// A container's wait or followed log answers only once what was asked of it while it waited was asked here too.
@@ -118,8 +127,13 @@ func (playing *Playing) heard(call recorded.Call, body []byte) {
 	playing.mutex.Lock()
 	defer playing.mutex.Unlock()
 	playing.environments[answered.ID] = createdEnvironment(body)
+	var created createdProgram
+	_ = json.Unmarshal(decoded(call.Asked.Body), &created)
+	key := runKey(created.Image, append(slices.Clone(created.Entrypoint), created.Cmd...))
+	playing.runKeys[answered.ID] = key
 	if name := call.Asked.Query["name"]; name != "" {
 		playing.environments[name] = createdEnvironment(body)
+		playing.runKeys[name] = key
 	}
 }
 
@@ -168,8 +182,10 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 	defer connection.Close()
 	playing.mutex.Lock()
 	ran, isDriver := playing.programs[containerOf(call.Answered.Path)]
+	key := playing.runKeys[containerOf(call.Answered.Path)]
 	playing.mutex.Unlock()
 	if !isDriver {
+		playing.printRun(key, connection)
 		return
 	}
 	fixture, err := recording.Load(ran.exchange.Folder)
@@ -190,6 +206,23 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 	caller := newJournalCaller(calls, playing.scenario.Manifest.Driver, environment, output, playing.replay.Values())
 	defer caller.finish()
 	_ = recording.GatedReplay(fixture, buffered, caller, playedPause, func(recording.Typed) error { return nil })
+}
+
+// printRun writes what the recorded run of the image and command printed, as Docker streams a container that ran no
+// driver program: its standard output and its standard error each as frames of their own.
+func (playing *Playing) printRun(key string, connection net.Conn) {
+	playing.mutex.Lock()
+	output, isRecorded := playing.outputs.take(key)
+	playing.mutex.Unlock()
+	if !isRecorded {
+		return
+	}
+	if output.Stdout != "" {
+		_, _ = stdoutFrames{connection}.Write([]byte(output.Stdout))
+	}
+	if output.Stderr != "" {
+		_, _ = stderrFrames{connection}.Write([]byte(output.Stderr))
+	}
 }
 
 // isLongPoll answers whether the call waits on its container: a wait, or a log followed until the container ends.
@@ -227,10 +260,22 @@ func decoded(body string) []byte {
 type stdoutFrames struct{ writer io.Writer }
 
 func (frames stdoutFrames) Write(piece []byte) (int, error) {
+	return writeFrame(frames.writer, 1, piece)
+}
+
+// stderrFrames writes each piece as one frame of Docker's multiplexed stream on standard error.
+type stderrFrames struct{ writer io.Writer }
+
+func (frames stderrFrames) Write(piece []byte) (int, error) {
+	return writeFrame(frames.writer, 2, piece)
+}
+
+// writeFrame writes one frame of Docker's multiplexed stream: its stream's number, its length, then the piece.
+func writeFrame(writer io.Writer, stream byte, piece []byte) (int, error) {
 	header := make([]byte, 8)
-	header[0] = 1
+	header[0] = stream
 	binary.BigEndian.PutUint32(header[4:], uint32(len(piece)))
-	if _, err := frames.writer.Write(append(header, piece...)); err != nil {
+	if _, err := writer.Write(append(header, piece...)); err != nil {
 		return 0, err
 	}
 	return len(piece), nil
