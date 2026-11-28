@@ -13,7 +13,7 @@ use Tests\TestCase;
 /**
  * The agent-images service's script (.docker/agent-images/load.sh) run for real against a mock agent daemon: it
  * loads the saved archives only when a pinned image is missing, keeps the pinned images and those a container runs
- * on, names the agent image by its id for the driver builds, and fails with a plain line when the pins are unset or an archive does not hold a pinned image.
+ * on and the driver images the host built, names the agent image by its id for the driver builds, and fails with a plain line when the pins are unset or an archive does not hold a pinned image.
  */
 #[OverTheWire]
 final class AgentImagesTest extends TestCase
@@ -113,6 +113,20 @@ final class AgentImagesTest extends TestCase
         $this->assertSame(0, $run->getExitCode(), $run->getErrorOutput());
         $this->assertSame(
             [self::AGENT, self::RUNNER, 'sha256:working'],
+            array_values(array_filter(explode("\n", File::get("{$this->folder}/mock/daemon-images")))),
+        );
+    }
+
+    public function test_a_driver_image_the_host_built_stays(): void
+    {
+        $this->daemonHolds(self::AGENT, self::RUNNER, 'sha256:old', 'sha256:codex');
+        File::put("{$this->folder}/mock/driver-images", "sha256:codex\n");
+
+        $run = $this->load(self::AGENT, self::RUNNER);
+
+        $this->assertSame(0, $run->getExitCode(), $run->getErrorOutput());
+        $this->assertSame(
+            [self::AGENT, self::RUNNER, 'sha256:codex'],
             array_values(array_filter(explode("\n", File::get("{$this->folder}/mock/daemon-images")))),
         );
     }

@@ -136,10 +136,18 @@ answer_daemon_image() {
     local image
     shift
     case "$1" in
-        ls) cat "$STAND_IN/daemon-images" ;;
+        ls) list_daemon_images "$@" ;;
         tag) ;;
         rm) for image; do sed -i.before "\|^$image\$|d" "$STAND_IN/daemon-images"; done; rm -f "$STAND_IN/daemon-images.before" ;;
         inspect) inspect_daemon_images "$@" ;;
+    esac
+}
+
+# Every held image, or with a reference filter the driver images $STAND_IN/driver-images lists.
+list_daemon_images() {
+    case "$*" in
+        *"reference=journal-driver-"*) cat "$STAND_IN/driver-images" 2>/dev/null || true ;;
+        *) cat "$STAND_IN/daemon-images" ;;
     esac
 }
 

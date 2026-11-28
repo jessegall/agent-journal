@@ -1,6 +1,6 @@
 #!/bin/sh
-# Loads the two pinned images into the agent daemon from images/ when one is missing, and keeps only the pinned images
-# and those a container still runs on.   sh /load.sh   (in the agent-images service, with AGENT_IMAGE and RUNNER_IMAGE)
+# Loads the two pinned images into the agent daemon from images/ when one is missing, and keeps only the pinned images,
+# the driver images the host built and those a container still runs on.   sh /load.sh   (in the agent-images service, with AGENT_IMAGE and RUNNER_IMAGE)
 set -eu
 
 main() {
@@ -15,11 +15,14 @@ main() {
     name_agent_image
 }
 
-# An earlier build never fills the disk, and an agent at work keeps its image until its container is gone.
+# An earlier build never fills the disk, a driver image the host built stays for the starts that run it, and an agent
+# at work keeps its image until its container is gone.
 remove_unheld_images() {
-    local held
+    local held drivers
+    drivers=$(docker image ls --quiet --no-trunc --filter 'reference=journal-driver-*')
     for held in $(docker image ls --quiet --no-trunc); do
         [ "$held" = "$AGENT_IMAGE" ] || [ "$held" = "$RUNNER_IMAGE" ] && continue
+        case " $(echo $drivers) " in *" $held "*) continue ;; esac
         [ -n "$(docker container ls --all --quiet --filter "ancestor=$held")" ] && continue
         docker image rm --force "$held" >/dev/null
     done
