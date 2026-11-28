@@ -24,6 +24,7 @@ use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\RecordIdentity;
 use App\Values\AgentText;
+use Carbon\CarbonImmutable;
 use Generator;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -79,13 +80,15 @@ final class ReadMessageState extends AgentState implements DurableState, UniqueS
     // ----------[ Lifecycle ]----------
 
     /**
-     * The state starts with every message of the inbox the agent has not read yet, oldest first.
+     * The state starts with every message of the inbox the agent has not read yet, oldest first; each has arrived in
+     * the agent's session now.
      */
     public function onEnter(): void
     {
         $agent = Agent::query()->findOrFail($this->agentId);
 
         $unread = Message::query()->inInbox($this->inboxId)->unreadBy($agent)->get();
+        $unread->each(fn (Message $message) => $message->markDelivered(CarbonImmutable::now()));
         $ids = $unread->map(fn (Message $message): string => $message->id)->all();
         $this->unreadIds = array_values($ids);
         $this->hasEntered = true;
@@ -112,12 +115,13 @@ final class ReadMessageState extends AgentState implements DurableState, UniqueS
     // ----------[ Events ]----------
 
     /**
-     * A message someone else sent into this inbox waits to be read.
+     * A message someone else sent into this inbox waits to be read, and has arrived in the agent's session.
      */
     public function onMessageSent(MessageSent $event): void
     {
         if ($event->inboxId === $this->inboxId && ! $this->isOwnAgent($event->sender)) {
             $this->unreadIds = array_values(array_unique([...$this->unreadIds, $event->messageId]));
+            Message::query()->findOrFail($event->messageId)->markDelivered(CarbonImmutable::now());
         }
     }
 

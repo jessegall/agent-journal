@@ -218,8 +218,8 @@ describe("ConversationMenu", () => {
 
     expect(visited).toEqual(["/?agent=reviewer"]);
     expect(useHandOver().takeFor("reviewer")).toEqual({
-      ...record,
       agentId: "reviewer",
+      text: "Read this, please: Doc 101 (/documents/101)",
     });
   });
 });

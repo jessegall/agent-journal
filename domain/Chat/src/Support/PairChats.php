@@ -43,15 +43,35 @@ final readonly class PairChats implements PairChatsContract
         $viewer = $this->actors->actor();
         $members = [$viewer, $actor];
         $key = implode('|', array_map(fn (ActorReference $member) => $member->text(), $members));
-        $sorted = array_map(fn (ActorReference $member) => $member->text(), $members);
-        sort($sorted);
 
         return $this->commands->run(new OpenInboxCommand(
             self::PAIR_PROVIDER,
-            implode('|', $sorted),
+            self::pairKeyOf($members),
             $this->labels->labelsFor([$actor])->nameOf($actor) ?? $key,
             $members,
         ));
+    }
+
+    /**
+     * The pair chat of the two actors when one was opened; none before either opened it.
+     */
+    public function existingBetween(ActorReference $first, ActorReference $second): Inbox|null
+    {
+        return Inbox::query()->withProviderKey(self::PAIR_PROVIDER)->ofProvider(self::pairKeyOf([$first, $second]))
+            ->first();
+    }
+
+    /**
+     * The key a pair chat is opened under: its two members, in a fixed order whoever opens it.
+     *
+     * @param  list<ActorReference>  $members
+     */
+    private static function pairKeyOf(array $members): string
+    {
+        $sorted = array_map(fn (ActorReference $member) => $member->text(), $members);
+        sort($sorted);
+
+        return implode('|', $sorted);
     }
 
     /**

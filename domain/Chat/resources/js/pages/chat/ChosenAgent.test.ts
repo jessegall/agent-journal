@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
 
 vi.mock("@inertiajs/vue3", () => ({
-  usePage: () => ({ url: "/", props: { drivers: [] } }),
+  usePage: () => ({ url: "/", props: { drivers: [], viewer: { id: "user-1" } } }),
   router: { visit: () => undefined },
 }));
 vi.mock("./partials/AgentSessionActions.vue", () => ({ default: { template: "<div />" } }));
@@ -21,7 +21,7 @@ function chatWith(agent: Partial<AgentOptionData>): ChatData {
         sessionDriver: null,
         sessionDriverLabel: null,
         sessionModel: null,
-        status: undefined,
+        status: { sessionState: "idle", label: "Idle", actions: [] },
         isMain: false,
         isRetired: false,
         waitsOnYou: false,

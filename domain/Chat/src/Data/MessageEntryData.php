@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
+use Domain\Chat\Enums\DeliveryState;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A message as its chat entry shows it: its number in the inbox, its body, the message it answers, and whether the
- * viewer read it.
+ * A message as its chat entry shows it: its number in the inbox, its body, the message it answers, whether the viewer
+ * read it, and how far it got to the other members, with why its delivery failed.
  */
 #[TypeScript]
 final class MessageEntryData extends Data
@@ -21,5 +22,7 @@ final class MessageEntryData extends Data
         public readonly string|null $targetMessageId,
         public readonly int|null $targetNumber,
         public readonly bool $isReadByViewer,
+        public readonly DeliveryState $delivery,
+        public readonly string|null $deliveryFailure,
     ) {}
 }

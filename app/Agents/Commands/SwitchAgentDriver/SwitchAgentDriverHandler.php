@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands\SwitchAgentDriver;
 
+use App\Agents\Commands\InterruptAgent\InterruptAgentCommand;
 use App\Agents\Commands\StopAgent\StopAgentCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Exceptions\DriverSwitchStale;
@@ -59,12 +60,27 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
         if ($refusals === []) {
             $switch->markPreflighted();
             $switch->beginStopping(AgentRuntime::findForSession($session->id));
+            $this->stopTurn($command);
             $this->commands->run(new StopAgentCommand($agent->id, $session->id, $command->requestId));
         } else {
             $switch->refuse($refusals[0]->value);
         }
 
         return DriverSwitchReceipt::of($switch);
+    }
+
+    /**
+     * Ends the current turn first when the owner chose not to wait for it, so the switch starts at once.
+     */
+    private function stopTurn(SwitchAgentDriverCommand $command): void
+    {
+        if ($command->stopsTurn) {
+            $this->commands->run(new InterruptAgentCommand(
+                $command->agentId,
+                $command->expectedSessionId,
+                "{$command->requestId}-turn",
+            ));
+        }
     }
 
     /**

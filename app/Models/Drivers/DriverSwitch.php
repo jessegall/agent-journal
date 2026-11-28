@@ -49,6 +49,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $account_revision
  * @property string|null $conversation_id
  * @property bool $remember
+ * @property string $model
+ * @property bool $carries_conversation
  * @property string $requested_by
  * @property string|null $replacement_session_id
  * @property DriverSwitchStage $stage
@@ -76,6 +78,7 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
             'expected_generation' => 'integer',
             'account_revision' => 'integer',
             'remember' => 'boolean',
+            'carries_conversation' => 'boolean',
             'stage' => DriverSwitchStage::class,
         ];
     }
@@ -105,6 +108,8 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
         $switch->account_revision = $target->account->reviewedSignIn;
         $switch->conversation_id = $target->conversationId;
         $switch->remember = $target->shouldSaveDriverType;
+        $switch->model = $target->model;
+        $switch->carries_conversation = $target->carriesConversation;
         $switch->requested_by = $requestedBy;
         $switch->stage = DriverSwitchStage::Requested;
         $switch->save();
@@ -239,6 +244,8 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
             new ChosenAccount($this->account_id, $this->account_revision),
             $this->conversation_id,
             $this->remember,
+            $this->model,
+            $this->carries_conversation,
         ));
     }
 

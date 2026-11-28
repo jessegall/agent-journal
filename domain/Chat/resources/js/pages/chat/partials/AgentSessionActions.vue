@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import TextLink from "@kit/TextLink";
-import { useAppContext } from "@kit/appContext";
 import { router } from "@inertiajs/vue3";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { newRequestId } from "@kit/requestId";
 import type { AgentOptionData, StatusActionData } from "@generated/types/chat";
 import {
@@ -16,40 +15,22 @@ import {
 import { sendPageAction } from "@kit/pageActions";
 import { load, LoaderCancelled, webCapacity } from "@kit/loaders";
 import type { CapacityData } from "@kit/CoreTypes";
-import { useOpenSessionDialog } from "../../../composables/useChosenAgent";
 import { useStatusCheck } from "../../../composables/useStatusCheck";
 import { useSwitchOperation } from "../../../composables/useSwitchOperation";
 import { openAgentTerminal } from "../../../composables/useTerminalModal";
 import SessionAction from "./SessionAction.vue";
-import SessionForm from "./SessionForm.vue";
 
 /**
- * What the chosen agent's status offers now in the agent bar, each action mapped to its route or dialog: Switch opens
- * its form, Check status and Check capacity read, Sign in opens Accounts, Dismiss hides the outcome and Cancel start
- * cancels. A message starts a stopped agent, the composer stops a turn and the chat list ends a session, so the bar
- * draws neither. Each agent's open dialog survives a chat switch and a reload.
+ * What the chosen agent's status offers now in the agent bar, each action mapped to its route: Retry and Check and
+ * switch settle a switch, Check status and Check capacity read, Sign in opens Accounts, Dismiss hides the outcome and
+ * Cancel start cancels. A message starts a stopped agent, the composer stops a turn, and the chat list ends a session
+ * and opens Switch driver…, so the bar draws none of those.
  */
 const props = defineProps<{ agent: AgentOptionData }>();
 
-const emit = defineEmits<{ dialog: [isOpen: boolean] }>();
+// The actions another part of the chat draws: the composer's Stop, the chat list's End session and Switch driver….
+type BarActionType = Exclude<StatusActionData["type"], "interrupt" | "stop" | "switch">;
 
-type FormMode = "switch";
-// The actions another part of the chat draws: the composer's Stop and the chat list's End session.
-type BarActionType = Exclude<StatusActionData["type"], "interrupt" | "stop">;
-
-const formModes: FormMode[] = ["switch"];
-const viewerId = useAppContext().viewer.value.id;
-const openDialog =
-  viewerId === undefined
-    ? undefined
-    : useOpenSessionDialog(viewerId, props.agent.id);
-const kept = openDialog?.read() ?? null;
-// The dialog this agent had open in this tab comes back, with the start or switch it follows.
-const formMode = ref<FormMode | null>(
-  formModes.find((mode) => mode === kept) ?? null,
-);
-// The button that opened a dialog, which gets the focus back when the dialog closes.
-let opener: HTMLElement | null = null;
 const notice = ref<string | null>(null);
 const pendingType = ref<string | null>(null);
 const switching = useSwitchOperation(() => props.agent);
@@ -58,25 +39,8 @@ const statusCheck = useStatusCheck(
   (done) => router.reload({ onFinish: done }),
 );
 
-watch(formMode, (mode) => emit("dialog", mode !== null));
-watch(formMode, (mode) =>
-  mode === null ? openDialog?.forget() : openDialog?.keep(mode),
-);
-
 // A switch already under way for this agent is followed again, never sent again.
 onMounted(() => switching.resume());
-
-function rememberOpener(): void {
-  opener =
-    document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
-}
-
-function returnFocus(): void {
-  opener?.focus();
-  opener = null;
-}
 
 function settleSwitch(
   route: typeof retry,
@@ -181,7 +145,7 @@ function openTerminal(): void {
 function isBarAction(
   action: StatusActionData,
 ): action is StatusActionData & { type: BarActionType } {
-  return action.type !== "interrupt" && action.type !== "stop";
+  return action.type !== "interrupt" && action.type !== "stop" && action.type !== "switch";
 }
 
 // The terminal has no button in the agent bar: the agent menu opens it, and the words below while the driver waits.
@@ -194,10 +158,6 @@ const drawnActions = computed(() =>
 );
 
 const handlers: Record<BarActionType, () => void> = {
-  switch: () => {
-    rememberOpener();
-    formMode.value = "switch";
-  },
   retry: () => settleSwitch(retry, "Retrying"),
   "recheck-switch": () => settleSwitch(recheck, "Checking"),
   "check-status": checkStatus,
@@ -239,16 +199,6 @@ const handlers: Record<BarActionType, () => void> = {
     </template>
     <template v-if="switching.refusal.value">
       <p class="text-small text-danger">{{ switching.refusal.value }}</p>
-    </template>
-    <template v-if="formMode">
-      <SessionForm
-        :agent="agent"
-        :mode="formMode"
-        @close="
-          formMode = null;
-          returnFocus();
-        "
-      />
     </template>
   </div>
 </template>

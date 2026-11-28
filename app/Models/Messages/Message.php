@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Events\Messages\MessageDeliveryChanged;
 use App\Events\Messages\MessageSent;
 use App\Messages\Contracts\MessageParticipant;
 use App\Messages\Contracts\MessageReceiver;
@@ -34,6 +35,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $body
  * @property int $number
  * @property string|null $target_message_id
+ * @property CarbonImmutable|null $delivered_at
+ * @property CarbonImmutable|null $delivery_failed_at
+ * @property string|null $delivery_failure
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Inbox $inbox
@@ -51,6 +55,17 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
     use BoundedReads;
     use Linkable;
     use RaisesEvents;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'delivered_at' => 'immutable_datetime',
+            'delivery_failed_at' => 'immutable_datetime',
+        ];
+    }
 
     // ----------[ Constructors ]----------
 
@@ -86,6 +101,51 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
     public function author(): ActorReference
     {
         return $this->sender;
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * The message is in its agent's session now; a delivery is recorded once and never undone.
+     */
+    public function markDelivered(CarbonImmutable $at): void
+    {
+        if ($this->delivered_at !== null) {
+            return;
+        }
+
+        $this->delivered_at = $at;
+        $this->delivery_failed_at = null;
+        $this->delivery_failure = null;
+        $this->save();
+        $this->raise(new MessageDeliveryChanged($this->id, $this->inbox_id));
+    }
+
+    /**
+     * The delivery gave up for the reason, such as a start of the agent that was refused; a delivered message keeps
+     * its delivery.
+     */
+    public function failDelivery(string $reason, CarbonImmutable $at): void
+    {
+        if ($this->delivered_at !== null) {
+            return;
+        }
+
+        $this->delivery_failed_at = $at;
+        $this->delivery_failure = $reason;
+        $this->save();
+        $this->raise(new MessageDeliveryChanged($this->id, $this->inbox_id));
+    }
+
+    /**
+     * A retry queues the message again: its failure and reason are cleared.
+     */
+    public function retryDelivery(): void
+    {
+        $this->delivery_failed_at = null;
+        $this->delivery_failure = null;
+        $this->save();
+        $this->raise(new MessageDeliveryChanged($this->id, $this->inbox_id));
     }
 
     // ----------[ Accessors ]----------
@@ -195,6 +255,29 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
     protected function inInboxesOf(Builder $query, ActorReference $actor): void
     {
         $query->whereHas('inbox.members', fn (Builder $member) => $member->active()->ofActor($actor));
+    }
+
+    /**
+     * The messages that answer any of these.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function answering(Builder $query, array $ids): void
+    {
+        $query->whereIn('target_message_id', $ids);
+    }
+
+    /**
+     * Messages neither delivered to their agent nor given up on yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function awaitingDelivery(Builder $query): void
+    {
+        $query->whereNull('delivered_at')->whereNull('delivery_failed_at');
     }
 
     /**

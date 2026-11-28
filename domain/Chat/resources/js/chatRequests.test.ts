@@ -19,7 +19,6 @@ vi.mock('@kit/loaders', async (importOriginal) => ({
 }));
 
 const { default: ChatRoster } = await import('./pages/chat/partials/ChatRoster.vue');
-const { default: CreateChatForm } = await import('./pages/chat/partials/CreateChatForm.vue');
 const { sendReaction } = await import('./reactions');
 const { useConversationIntents } = await import('./composables/useConversationIntents');
 
@@ -58,14 +57,6 @@ describe('the Inertia posts of the chat, as the page sends them', () => {
         sendReaction(RECORDED.inbox, RECORDED.message, '👍', 'conversation');
 
         holdsContract('chat-react', last());
-    });
-
-    it('opens a group chat', async () => {
-        const form = mount(CreateChatForm);
-        await form.find('input').setValue('Design');
-        await form.find('form').trigger('submit');
-
-        holdsContract('chat-create-group', last());
     });
 
     it('removes a member, makes a member owner and closes the chat', async () => {

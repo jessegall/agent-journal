@@ -9,6 +9,7 @@ use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Policies\ProfileAdministrationPolicy;
 use App\Sessions\StartReceipt;
+use App\Models\Agents\AgentStartChoice;
 use App\Support\AgentOption;
 use App\Support\Command;
 use App\Values\ChosenAccount;
@@ -52,7 +53,7 @@ final readonly class StartProfileMainCommand extends Command
             $requestId,
             $agentId,
             $profile,
-            ModelSelection::fromInput('default'),
+            ModelSelection::fromInput($target->model),
             $target->driver,
             $target->driverType,
             $target->shouldSaveDriverType,
@@ -62,20 +63,24 @@ final readonly class StartProfileMainCommand extends Command
     }
 
     /**
-     * The start a message to a stopped agent opens: its latest conversation resumed on that conversation's driver, or
-     * a new one on the profile's default, under the message's own request.
+     * The start a message to a stopped agent opens, under the message's own request: on the driver, model and account
+     * kept for its next start, else on its latest conversation's driver or the profile's default; its latest
+     * conversation is resumed when it ran on that driver, else a new one begins.
      */
-    public static function onMessage(string $requestId, AgentOption $agent): self
+    public static function onMessage(string $requestId, AgentOption $agent, AgentStartChoice|null $choice): self
     {
         $latest = $agent->conversations[0] ?? null;
+        $driver = $choice->driver ?? $latest?->driver;
+        $resumed = $latest !== null && $latest->driver === $driver ? $latest->conversationId : null;
 
         return new self(
             strtolower($requestId),
             $agent->agentId,
             ProfileKey::from($agent->profileKey),
-            ModelSelection::fromInput('default'),
-            $latest?->driver,
-            conversationId: $latest?->conversationId,
+            ModelSelection::fromInput($choice->model ?? 'default'),
+            $driver,
+            chosenAccount: $choice?->chosenAccount(),
+            conversationId: $resumed,
         );
     }
 }

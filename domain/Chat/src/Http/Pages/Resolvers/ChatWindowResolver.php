@@ -68,7 +68,31 @@ final readonly class ChatWindowResolver implements PageResolver
             ...$chosen->map($this->conversationFields(...))->getOrElse([]),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->chatList(),
+            'beside' => $this->besideOf($chosen),
         ]);
+    }
+
+    /**
+     * The chats the query shows beside the chosen one, each agent once; one out of sight is left out.
+     *
+     * @param  Option<AgentOption>  $chosen
+     * @return list<ConversationData>
+     */
+    private function besideOf(Option $chosen): array
+    {
+        $chosenId = $chosen->map(fn (AgentOption $agent) => $agent->agentId)->getOrElse(null);
+        $visible = [];
+
+        foreach ($this->agents->visible() as $agent) {
+            $visible[$agent->agentId] = $agent;
+        }
+
+        $shown = array_filter(
+            array_unique($this->request->besideAgents()),
+            fn (string $agentId) => $agentId !== $chosenId && isset($visible[$agentId]),
+        );
+
+        return array_values(array_map(fn (string $agentId) => $this->conversationWith($visible[$agentId]), $shown));
     }
 
     /**

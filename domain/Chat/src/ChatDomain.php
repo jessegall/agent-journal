@@ -37,6 +37,7 @@ use Domain\Chat\Http\Controllers\Membership\RemoveParticipantController;
 use Domain\Chat\Http\Controllers\Membership\TransferChatController;
 use Domain\Chat\Http\Controllers\ReactController;
 use Domain\Chat\Http\Controllers\ReadShownController;
+use Domain\Chat\Http\Controllers\RetryDeliveryController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\UndockController;
 use Domain\Chat\Http\Loaders\ChatCandidatesLoader;
@@ -110,6 +111,7 @@ final class ChatDomain extends Domain implements
                 ->slots(fn (PageSlots $slots) => $slots->add('dock', SlotContextType::Session))
                 ->actions(fn (PageActions $actions) => $actions
                     ->post('messages', SendMessageController::class, 'send')
+                    ->post('messages/retry', RetryDeliveryController::class, 'retry-delivery')
                     ->post('messages/read', ReadShownController::class, 'read')
                     ->post('messages/react', ReactController::class, 'react')
                     ->post('questions/answer', AnswerQuestionController::class, 'answer')

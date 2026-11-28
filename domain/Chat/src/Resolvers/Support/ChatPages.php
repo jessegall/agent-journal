@@ -30,6 +30,7 @@ use Domain\Chat\Data\MessageEntryData;
 use Domain\Chat\Data\ParticipantData;
 use Domain\Chat\Data\QuestionEntryData;
 use Domain\Chat\Enums\ChatMessageType;
+use Domain\Chat\Enums\DeliveryState;
 use Domain\Chat\Models\ChatMessage;
 use Domain\Chat\Support\Cards\DockIdentity;
 use Domain\Chat\Support\DockProjection;
@@ -164,12 +165,13 @@ final readonly class ChatPages
 
         $viewer = $this->actors->actor();
         $readIds = $this->readIdsAmong($rows);
+        $readByOthers = $this->readByOthersAmong($rows);
         $questions = $this->questionsAmong($rows);
         $rows->load(['source' => fn (MorphTo $source) => $source->morphWith([Message::class => ['target']])]);
 
         return array_values($rows->map(function (
             ChatMessage $row,
-        ) use ($names, $events, $viewer, $readIds, $questions): ChatEntryData {
+        ) use ($names, $events, $viewer, $readIds, $readByOthers, $questions): ChatEntryData {
             $author = $row->author;
 
             $fields = [
@@ -179,7 +181,7 @@ final readonly class ChatPages
                 'author' => $author->text(),
                 'authorLabel' => $names->nameOf($author),
                 'createdAt' => $row->created_at->toIso8601String(),
-                ...$this->sourceFieldsOf($row, $viewer, $readIds, $questions),
+                ...$this->sourceFieldsOf($row, $viewer, $readIds, $readByOthers, $questions),
             ];
 
             $event = $events[$row->id] ?? null;
@@ -197,11 +199,17 @@ final readonly class ChatPages
      * event carries its card apart.
      *
      * @param  list<string>  $readIds
+     * @param  list<string>  $readByOthers
      * @param  array<string, ShownQuestion>  $questions
      * @return array<string, MessageEntryData|QuestionEntryData>
      */
-    private function sourceFieldsOf(ChatMessage $row, ActorReference $viewer, array $readIds, array $questions): array
-    {
+    private function sourceFieldsOf(
+        ChatMessage $row,
+        ActorReference $viewer,
+        array $readIds,
+        array $readByOthers,
+        array $questions,
+    ): array {
         if ($row->type === ChatMessageType::Question) {
             return ['question' => $this->questionEntryOf($questions[$row->source_id], $viewer)];
         }
@@ -219,6 +227,8 @@ final readonly class ChatPages
             'targetMessageId' => $message->target_message_id,
             'targetNumber' => $message->target?->number,
             'isReadByViewer' => in_array($message->id, $readIds, true),
+            'delivery' => DeliveryState::of($message, in_array($message->id, $readByOthers, true)),
+            'deliveryFailure' => $message->delivery_failure,
         ])];
     }
 
@@ -277,6 +287,26 @@ final readonly class ChatPages
             ->ofMessages($messageIds)
             ->pluck('message_id')
             ->all()));
+    }
+
+    /**
+     * The messages among the rows another member read or answered, which counts as reading.
+     *
+     * @param  Collection<int, ChatMessage>  $rows
+     * @return list<string>
+     */
+    private function readByOthersAmong(Collection $rows): array
+    {
+        $messageIds = array_values(array_map(
+            strval(...),
+            $rows->where('source_type', Message::linkType())->pluck('source_id')->all(),
+        ));
+        $viewer = $this->viewerModel();
+
+        $read = MessageReadEntry::query()->ofMessages($messageIds)->notOfReader($viewer)->pluck('message_id')->all();
+        $answered = Message::query()->answering($messageIds)->whereNotSender($viewer)->pluck('target_message_id')->all();
+
+        return array_values(array_unique(array_map(strval(...), [...$read, ...$answered])));
     }
 
     /**

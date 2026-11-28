@@ -14,6 +14,7 @@ import { useSessionEnd } from "../../../composables/useSessionEnd";
 import {
   carriesRecord,
   droppedRecord,
+  handOverText,
   useHandOver,
 } from "../../../composables/useHandOver";
 
@@ -167,7 +168,7 @@ function openOnDrag(event: DragEvent): void {
 const handOver = useHandOver();
 
 function handTo(event: DragEvent, agent: AgentOptionData): void {
-  handOver.hold({ ...droppedRecord(event), agentId: agent.id });
+  handOver.hold({ agentId: agent.id, text: handOverText(droppedRecord(event)) });
   choose(agent);
 }
 

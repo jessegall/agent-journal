@@ -7,7 +7,7 @@ import { useChatTimeline } from "../../../composables/useChatTimeline";
 import { openedRecordOf, recordKey } from "../../../recordPanel";
 import { useChosenAgent } from "../../../composables/useChosenAgent";
 import { useConversationIntents } from "../../../composables/useConversationIntents";
-import { handOverText, useHandOver } from "../../../composables/useHandOver";
+import { useHandOver } from "../../../composables/useHandOver";
 import { draftKey } from "../../../composables/useMessageDrafts";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
 import type { DockCardEnvelope } from "@kit/dockCards";
@@ -26,6 +26,7 @@ import RecordPanel from "./RecordPanel.vue";
 import DockStack from "./DockStack.vue";
 import MessageList from "./MessageList.vue";
 import ConversationMenu from "./ConversationMenu.vue";
+import SessionForm from "./SessionForm.vue";
 
 /**
  * The chat: the chosen agent's conversation, what other domains suggest in the dock slot, the sources
@@ -108,6 +109,8 @@ const key = computed(() => {
     : draftKey(userId, conversation.value.inboxId);
 });
 const replyingTo = ref<ReplyTarget | null>(null);
+// The chosen agent's Switch driver dialog, opened from the chat list on Chat's own page.
+const isSwitchOpen = ref(false);
 
 /**
  * This view's own entries of the chat, merged by id in order, and paged back on request.
@@ -173,7 +176,7 @@ function closeRecord(): void {
 // A read that returned the user's own sends settles them.
 watch(timeline.entries, () => owner.value?.settle());
 
-// A record let go on this chat's agent is sent here once the chat has opened, as the hand-over's message.
+// A message waiting for this chat's agent, a handed record or a new chat's first message, is sent once the chat opens.
 const handOver = useHandOver();
 watch(
   [owner, () => selected.value?.id ?? null],
@@ -197,7 +200,7 @@ watch(
     sender.submit(
       sender.beginSend({
         draftKey: key.value,
-        text: handOverText(handed),
+        text: handed.text,
         agent: handed.agentId,
         expectedSessionId: opened.sessionId,
         inboxId: opened.inboxId,
@@ -322,6 +325,7 @@ watch(isShown, readOnOpen);
           :selected-agent-id="chat.selectedAgentId"
           :open-agent-ids="selected ? [selected.id] : []"
           :agent-url="agentUrl"
+          @switch-driver="isSwitchOpen = true"
         >
           <template #trigger>
             <span class="text-body text-text">{{
@@ -331,6 +335,9 @@ watch(isShown, readOnOpen);
           </template>
         </ConversationMenu>
       </div>
+      <template v-if="isSwitchOpen && selected">
+        <SessionForm :agent="selected" @close="isSwitchOpen = false" />
+      </template>
     </template>
     <template v-if="offersChoice && chat.isSetupRequired">
       <p class="text-small text-text-3">

@@ -14,9 +14,9 @@ use App\Values\ModelSelection;
 use App\Values\ProfileKey;
 
 /**
- * The owner switches an agent from the session it runs to another driver, driver type or account: preflighted first,
- * then the old session stopped, and its replacement started only once the stop is proven. The same request id
- * answers the same switch.
+ * The owner switches an agent from the session it runs to another driver, driver type, account or model: preflighted
+ * first, then the old session stopped, after its current turn unless the owner stops that turn now, and its replacement
+ * started only once the stop is proven. The same request id answers the same switch.
  *
  * @extends Command<DriverSwitchReceipt>
  */
@@ -31,5 +31,6 @@ final readonly class SwitchAgentDriverCommand extends Command
         public int $expectedGeneration,
         public DriverSwitchTarget $target,
         public ModelSelection $requested,
+        public bool $stopsTurn = false,
     ) {}
 }

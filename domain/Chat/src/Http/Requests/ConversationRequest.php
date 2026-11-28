@@ -11,12 +11,17 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * The chat window's own query: the agent it talks to, when one is chosen, the chat, and where the dock's next page
- * starts.
+ * The chat window's own query: the agent it talks to, when one is chosen, the chat, the agents whose chats show beside
+ * it, and where the dock's next page starts.
  */
 final class ConversationRequest extends FormRequest
 {
     use ReadsOptionalText;
+
+    /**
+     * The most chats shown beside the chosen one.
+     */
+    public const int MOST_BESIDE = 3;
 
     /**
      * @return array<string, list<string>>
@@ -38,6 +43,15 @@ final class ConversationRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:2048',
+            ],
+            'beside' => [
+                'nullable',
+                'array',
+                'max:'.self::MOST_BESIDE,
+            ],
+            'beside.*' => [
+                'string',
+                'ulid',
             ],
         ];
     }
@@ -80,6 +94,19 @@ final class ConversationRequest extends FormRequest
     public function dockToken(): string|null
     {
         return $this->optionalText('dock');
+    }
+
+    /**
+     * The agents whose chats show beside the chosen one, in the order the query names them; none in one-at-a-time view.
+     *
+     * @return list<string>
+     */
+    public function besideAgents(): array
+    {
+        return array_values(array_map(
+            fn (string $agentId) => strtolower($agentId),
+            $this->collect('beside')->filter(fn (mixed $agentId) => is_string($agentId))->all(),
+        ));
     }
 
     /**

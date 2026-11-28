@@ -7,17 +7,16 @@ namespace Domain\Chat\Http\Controllers;
 use App\Agents\Commands\StartProfileMain\StartProfileMainCommand;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
-use App\Bus\Contracts\RequestKey;
 use App\Messages\Commands\SendMessage\SendMessageCommand;
-use App\Sessions\Contracts\AgentDirectory;
 use Domain\Chat\Data\MessageInput;
+use Domain\Chat\Support\AgentStartOnMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
 /**
  * Sends the composer's message into the chat the window showed, as a reply when it names the message it answers.
- * With an agent chosen, the agent must still run the session the user saw; an agent with no session is started or
- * resumed first, under the message's request key, and reads the message once it runs.
+ * With an agent chosen, the agent must still run the session the user saw, and one with no session is started or
+ * resumed first.
  */
 final readonly class SendMessageController
 {
@@ -25,21 +24,12 @@ final readonly class SendMessageController
     #[Dispatches(SendMessageCommand::class)]
     public function __invoke(
         MessageInput $input,
-        AgentDirectory $agents,
+        AgentStartOnMessage $start,
         CommandBus $commands,
-        RequestKey $requestKey,
         Redirector $redirect,
     ): RedirectResponse {
         if ($input->agent !== null) {
-            $agent = $agents->visibleAgent($input->agent);
-            $agent->assertRuns($input->expectedSessionId);
-
-            if ($agent->isStartable()) {
-                $commands->run(StartProfileMainCommand::onMessage(
-                    $requestKey->requireFor(StartProfileMainCommand::class),
-                    $agent,
-                ));
-            }
+            $start->prepare($input->agent, $input->expectedSessionId);
         }
 
         $commands->run(new SendMessageCommand($input->inboxId, $input->body, $input->targetMessageNumber));
