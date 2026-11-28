@@ -26,9 +26,9 @@ final readonly class ProfileScriptWindowResolver implements PageResolver
     {
         $profile = ProfileKey::from((string) $this->request->route('profile'));
 
-        return ProfileScriptPageData::from([
-            'draft' => $this->drafts->draft($profile),
-            'language' => $this->language->language(),
-        ]);
+        return ProfileScriptPageData::build()
+            ->draft($this->drafts->draft($profile))
+            ->language($this->language->language())
+            ->finish();
     }
 }
