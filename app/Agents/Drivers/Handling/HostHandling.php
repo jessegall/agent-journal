@@ -41,4 +41,9 @@ final readonly class HostHandling implements RuntimeHandling
     {
         return false;
     }
+
+    public function isWakeSettledByActivity(): bool
+    {
+        return true;
+    }
 }

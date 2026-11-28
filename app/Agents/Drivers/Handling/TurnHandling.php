@@ -50,4 +50,9 @@ final readonly class TurnHandling implements RuntimeHandling
     {
         return true;
     }
+
+    public function isWakeSettledByActivity(): bool
+    {
+        return false;
+    }
 }

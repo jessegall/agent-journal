@@ -218,6 +218,11 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
      */
     public function beginApplying(int $attempt): void
     {
+        // A report of an attempt that arrives once the request ended, as from a resumed worker, leaves it ended.
+        if ($this->progress->isFinal()) {
+            return;
+        }
+
         $this->moveTo(RequestProgress::Applying);
         $this->attempt_version = $attempt;
         $this->saveAndAssert();

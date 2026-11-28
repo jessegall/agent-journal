@@ -8,6 +8,7 @@ use App\Agents\Commands\WakeAgent\WakeAgentCommand;
 use App\Agents\Drivers\Commands\AcknowledgeWake\AcknowledgeWakeCommand;
 use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Agents\Drivers\Enums\DriverOperation;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Models\Drivers\DriverRequest;
@@ -96,5 +97,40 @@ final class AcknowledgeWakeTest extends TestCase
 
         $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
         $this->assertSame([0, RequestProgress::Staged], [$wake->wake_acknowledged, $wake->progress]);
+    }
+
+    public function test_a_turns_hooks_leave_its_wake_open_until_the_turn_ends(): void
+    {
+        [$host, $opened] = $this->openRuntime(driverType: DriverType::Headless);
+        $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
+        $before = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole()->progress;
+
+        $this->journal->asSystem(new AcknowledgeWakeCommand($opened->sessionId));
+
+        $this->journal->assertResult(
+            $before,
+            DriverRequest::query()->where('operation', DriverOperation::Wake)->sole()->progress,
+        );
+    }
+
+    public function test_a_late_report_of_an_attempt_leaves_an_applied_wake_applied(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $this->journal->asSystem(
+            new NotifyRuntimeActivityCommand($host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::None, 1),
+        );
+        $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
+        $this->journal->claimRequestsOnHost($host->hostId, 10);
+        $this->journal->asSystem(new AcknowledgeWakeCommand($opened->sessionId));
+        $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
+        $version = $wake->row_version;
+
+        $wake->beginApplying($wake->attempt_version + 1);
+
+        $this->journal->assertResult(
+            [RequestProgress::Applied, $version],
+            [$wake->refresh()->progress, $wake->row_version],
+        );
     }
 }

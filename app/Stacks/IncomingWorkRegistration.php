@@ -8,7 +8,7 @@ use App\Stacks\Contracts\Work\IncomingWork;
 use App\Stacks\Contracts\Work\IncomingWorkRegistration as IncomingWorkRegistrationContract;
 use App\Stacks\Exceptions\IncomingWorkFailed;
 use App\Stacks\Exceptions\IncomingWorkRepeated;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 use Throwable;
 
 /**
@@ -21,8 +21,6 @@ final class IncomingWorkRegistration implements IncomingWorkRegistrationContract
      * @var list<class-string<IncomingWork>>
      */
     private array $workClasses = [];
-
-    public function __construct(private readonly Container $container) {}
 
     public function register(string $class): void
     {
@@ -38,9 +36,12 @@ final class IncomingWorkRegistration implements IncomingWorkRegistrationContract
      */
     public function acceptAll(): void
     {
+        // The registry lives for the worker; each work is built in the request's own container, Octane's sandbox.
+        $container = Container::getInstance();
+
         foreach ($this->workClasses as $workClass) {
             try {
-                $this->container->make($workClass)->accept();
+                $container->make($workClass)->accept();
             } catch (Throwable $cause) {
                 throw IncomingWorkFailed::forWork($workClass, $cause);
             }

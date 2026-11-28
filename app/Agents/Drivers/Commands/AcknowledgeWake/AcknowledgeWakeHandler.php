@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Commands\AcknowledgeWake;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Bus\Contracts\CommandHandler;
@@ -17,13 +18,14 @@ use App\Time\Contracts\ServerClock;
  */
 final readonly class AcknowledgeWakeHandler implements CommandHandler
 {
-    public function __construct(private ServerClock $clock) {}
+    public function __construct(private ServerClock $clock, private DriverCatalogue $drivers) {}
 
     public function handle(AcknowledgeWakeCommand $command): void
     {
         $runtime = AgentRuntime::findForSession($command->sessionId);
 
-        if ($runtime === null) {
+        // A turn's wake settles when its turn ends, so its hooks' activity leaves it open, as its driver says.
+        if ($runtime === null || ! $this->drivers->forRuntime($runtime)->isWakeSettledByActivity()) {
             return;
         }
 

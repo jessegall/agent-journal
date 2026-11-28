@@ -53,4 +53,9 @@ interface Driver
      * What the ended process means for the start it ran for: refused, stopped or left to go on.
      */
     public function endWith(HostProcess $process, HostProcessEndEvent $fact): void;
+
+    /**
+     * Whether any activity of the woken agent settles its wake, rather than the end of the turn the wake opened.
+     */
+    public function isWakeSettledByActivity(): bool;
 }

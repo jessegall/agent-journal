@@ -33,4 +33,9 @@ interface RuntimeHandling
      * Whether the journal itself opens the runtime's processes, rather than its host.
      */
     public function isRunByJournal(): bool;
+
+    /**
+     * Whether any activity of the woken agent settles its wake, rather than the end of the turn the wake opened.
+     */
+    public function isWakeSettledByActivity(): bool;
 }

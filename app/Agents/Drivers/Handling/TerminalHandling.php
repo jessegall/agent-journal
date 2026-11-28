@@ -61,4 +61,9 @@ final readonly class TerminalHandling implements RuntimeHandling
     {
         return true;
     }
+
+    public function isWakeSettledByActivity(): bool
+    {
+        return true;
+    }
 }

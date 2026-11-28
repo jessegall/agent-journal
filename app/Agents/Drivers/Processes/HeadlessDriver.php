@@ -76,6 +76,12 @@ final class HeadlessDriver implements ProcessDriver
 
     public function resume(array $inFlight, array $ordered): DriverActions
     {
+        // The turn's input may have been closed for a request that ended since, which no in-flight request names.
+        $this->isInputClosed = HostInstruction::query()
+            ->ofProcess($this->process->id)
+            ->ofType(HostInstructionType::CloseStdin)
+            ->exists();
+
         foreach ($ordered as $instruction) {
             $this->isInputClosed = $this->isInputClosed || $instruction->type === HostInstructionType::CloseStdin;
         }
