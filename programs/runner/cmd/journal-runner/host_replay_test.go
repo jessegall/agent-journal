@@ -150,6 +150,29 @@ func commonFolder(paths []string) string {
 	return strings.Join(common, "/")
 }
 
+func recordedStartupImages(t *testing.T, scenario recorded.Scenario) host.PinnedImages {
+	t.Helper()
+	calls, err := scenario.Calls(recording.WireDocker)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var images host.PinnedImages
+	for _, call := range calls {
+		_, reference, inspect := strings.Cut(call.Asked.Path, "/images/")
+		if call.Asked.Method == http.MethodGet && inspect && strings.HasSuffix(reference, "/json") {
+			images = append(images, strings.TrimSuffix(reference, "/json"))
+			continue
+		}
+		if len(images) > 0 {
+			break
+		}
+	}
+	if len(images) == 0 {
+		t.Fatal("the recorded host startup contains no pinned-image inspections")
+	}
+	return images
+}
+
 // TestARecordedTerminalTurnPlaysThroughTheHostWhole runs the host against the journal's side and the Docker daemon of
 // a recorded Claude Code terminal turn, from the host's start, and waits until the host asked every call the journal
 // answered.
@@ -157,6 +180,9 @@ func TestARecordedTerminalTurnPlaysThroughTheHostWhole(t *testing.T) {
 	scenario := recorded.MustLoad(t, "claude-code", "terminal-turn")
 	replay, address := journalReplay(t, scenario)
 	docker := dockermock.Play(t, "claude-code", "terminal-turn")
+	if err := verifyArrangement(host.Contained, recordedStartupImages(t, scenario), docker.Host(), ""); err != nil {
+		t.Fatal(err)
+	}
 	containers, err := host.ContainersOn(docker.Host(), recordedRules(t, scenario))
 	if err != nil {
 		t.Fatal(err)
