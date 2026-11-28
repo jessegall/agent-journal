@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"journal-runner/localsocket"
 )
 
 const terminalSocketSuffix = ".sock"
@@ -83,7 +85,7 @@ func (table *ProcessTable) hasLiveProcess(id string) bool {
 }
 
 func (table *ProcessTable) connectTerminal(ctx context.Context, socket, expectedID string) error {
-	connection, err := (&net.Dialer{Timeout: terminalHelloLimit}).DialContext(ctx, "unix", socket)
+	connection, err := localsocket.Dial(ctx, net.Dialer{Timeout: terminalHelloLimit}, socket)
 	if err != nil {
 		return err
 	}

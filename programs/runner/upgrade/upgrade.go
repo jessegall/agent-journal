@@ -133,3 +133,15 @@ func (binding Binding) drainMark() string {
 func (binding Binding) bindingKey() string {
 	return strings.NewReplacer("/", "-", " ", "-").Replace(binding.State.CanonicalRoot)
 }
+
+// WakeRelay starts the binding's relay from the release the binding switched to, or else from the journal-runner
+// installed beside this command.
+func WakeRelay(state device.ConnectionState, bindingID string) error {
+	installation, err := device.OwnInstallation()
+	if err != nil {
+		return err
+	}
+	beside := filepath.Join(installation, "bin", "journal-runner")
+
+	return device.StartRelay(Binding{State: state}.RelayProgram(beside), state.Folder, bindingID)
+}

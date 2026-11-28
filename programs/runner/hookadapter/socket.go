@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"journal-runner/localsocket"
 )
 
 // SocketName is the session socket inside a session's private run folder, .journal/sessions/<runtime>/run.
@@ -24,7 +26,7 @@ type hookCall struct {
 func AskThroughSocket(path string, driver string) func(ctx context.Context, native []byte) (Reply, error) {
 	return func(ctx context.Context, native []byte) (Reply, error) {
 		var dialer net.Dialer
-		connection, err := dialer.DialContext(ctx, "unix", path)
+		connection, err := localsocket.Dial(ctx, dialer, path)
 		if err != nil {
 			return Reply{}, err
 		}
@@ -59,12 +61,16 @@ func Listen(runFolder string) (net.Listener, error) {
 	}
 	path := filepath.Join(runFolder, SocketName)
 	_ = os.Remove(path)
-	listener, err := net.Listen("unix", path)
+	listener, err := localsocket.Listen(path)
 	if err != nil {
 		return nil, err
 	}
 
-	return listener, os.Chmod(path, 0o600)
+	if err := os.Chmod(path, 0o600); err != nil {
+		_ = listener.Close()
+		return nil, err
+	}
+	return listener, nil
 }
 
 // Serve answers each call on the session socket with forward, which sends it to the journal with the runtime's

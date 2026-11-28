@@ -152,6 +152,16 @@ func (dispatcher *Dispatcher) answerOf(ctx context.Context, claimed claimedInstr
 		}
 	}
 	facts, err := executor(ctx, instruction)
+	return answerFromFacts(instruction, facts, err)
+}
+
+// ReplyWith answers a local instruction with its typed facts and refusal, if any.
+func ReplyWith[R any](instruction Instruction, reply R, err error) Answer {
+	facts, err := factsOf(reply, err)
+	return answerFromFacts(instruction, facts, err)
+}
+
+func answerFromFacts(instruction Instruction, facts map[string]any, err error) Answer {
 	if err != nil {
 		return refusalAnswer(instruction, err, facts)
 	}

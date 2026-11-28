@@ -58,7 +58,7 @@ func (commands dispatcher) disconnect(flags []string, folder string, stdout, std
 		return commands.finishDisconnect(record, request, stdout, stderr)
 	}
 
-	found, binding, _, err := commands.connected(folder)
+	found, binding, _, err := project.Connected(folder, commands.stateFolder)
 	if errors.Is(err, project.ErrNotConnected) {
 		fmt.Fprintln(stdout, "Not connected: no connected project folder holds "+folder+".")
 		return 0

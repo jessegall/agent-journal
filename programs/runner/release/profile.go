@@ -45,6 +45,7 @@ var RemoteProject = Profile{
 	Files: []ProfileFile{
 		{Name: "bin/" + ProgramName, Source: GoProgram{Package: "./cmd/journal-runner"}, Executable: true},
 		{Name: "bin/journal", Source: GoProgram{Package: "./cmd/journal"}, Executable: true},
+		{Name: "bin/journal-terminal", Source: GoProgram{Package: "./cmd/journal-terminal"}, Executable: true},
 		{Name: "bin/journal-hook", Source: GoProgram{Package: "./cmd/journal-hook"}, Executable: true},
 		{Name: "bin/journal-account", Source: GoProgram{Package: "./cmd/journal-account"}, Executable: true},
 		{Name: "journal/programs/accounts/no-keychain/security", Source: RepositoryFile{Path: "programs/accounts/no-keychain/security"}, Executable: true},
