@@ -33,6 +33,7 @@ use Domain\Chat\Enums\ChatMessageType;
 use Domain\Chat\Enums\DeliveryStatus;
 use Domain\Chat\Models\ChatMessage;
 use Domain\Chat\Support\Cards\DockIdentity;
+use Domain\Chat\Support\AgentStartLog;
 use Domain\Chat\Support\DockProjection;
 use Domain\Chat\Support\PairChats;
 use Domain\Questions\Contracts\QuestionSummaryReader;
@@ -55,6 +56,7 @@ final readonly class ChatPages
         private InboxEligibility $eligibility,
         private MessageParticipants $participants,
         private QuestionSummaryReader $questions,
+        private AgentStartLog $startLog,
     ) {}
 
     public function pageFor(AgentOption|null $agent, Inbox $inbox, string|null $dockToken): ConversationData
@@ -91,6 +93,7 @@ final readonly class ChatPages
             'entries' => $page->entries,
             'dock' => $this->dock->page($inbox, $dockToken),
             'runningCommand' => $agent === null ? null : $this->runningCommandOf($agent),
+            'debugLines' => $agent === null ? [] : $this->startLog->newestStartLines($agent->agentId),
         ]);
     }
 

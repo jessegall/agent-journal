@@ -76,6 +76,7 @@ const chat = {
         sessionId: null,
         sessionGeneration: 0,
         dock: { cards: [], hasMore: null },
+        debugLines: [],
         entries: [
             {
                 id: RECORDED.message,

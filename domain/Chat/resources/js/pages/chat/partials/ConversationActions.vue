@@ -17,7 +17,7 @@ defineProps<{
   workingAgent: AgentOptionData | undefined;
 }>();
 
-const emit = defineEmits<{ newChat: []; switchDriver: []; endSession: []; stopTurn: [] }>();
+const emit = defineEmits<{ newChat: []; switchDriver: []; endSession: []; stopTurn: []; technicalDetails: [] }>();
 </script>
 
 <template>
@@ -61,6 +61,9 @@ const emit = defineEmits<{ newChat: []; switchDriver: []; endSession: []; stopTu
             {{ terminalAgent.sessionDriverLabel ?? "Its" }} terminal
           </Button>
         </template>
+        <Button size="small" aria-haspopup="dialog" data-technical-details @click="emit('technicalDetails')"
+          >Technical details</Button
+        >
         <Button
           size="small"
           aria-haspopup="dialog"

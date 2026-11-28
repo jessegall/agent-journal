@@ -107,6 +107,7 @@ function chatWith(inboxId: string, runningCommand: RunningCommandData | null = n
       sessionId: null,
       sessionGeneration: 0,
       runningCommand,
+      debugLines: [],
       dock: { cards: [], hasMore: null },
       entries: hasEntries ? [
         {
