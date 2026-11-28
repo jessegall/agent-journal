@@ -110,13 +110,12 @@ func recordedStartupImages(t *testing.T, scenario recorded.Scenario) host.Pinned
 	return images
 }
 
-// TestARecordedTerminalTurnPlaysThroughTheHostWhole runs the host against the journal's side and the Docker daemon of
-// a recorded Claude Code terminal turn, from the host's start, and waits until the host asked every call the journal
-// answered.
+// TestARecordedTerminalTurnPlaysThroughTheHostWhole runs the host against both wires of a recorded terminal turn,
+// from startup through the last recorded cleanup request.
 func TestARecordedTerminalTurnPlaysThroughTheHostWhole(t *testing.T) {
-	scenario := recorded.MustLoad(t, "claude-code", "terminal-turn")
+	scenario := recorded.MustLoad(t, "terminal-turn")
 	journalWire := hostapitest.Replay(t, scenario)
-	docker := dockermock.Play(t, "claude-code", "terminal-turn")
+	docker := dockermock.Play(t, scenario)
 	if err := verifyArrangement(host.Contained, recordedStartupImages(t, scenario), docker.Host(), ""); err != nil {
 		t.Fatal(err)
 	}

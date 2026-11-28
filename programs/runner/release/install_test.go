@@ -21,7 +21,7 @@ import (
 
 const relayContent = "#!/bin/sh\necho relay\n"
 
-// A connected machine installs a release with the official installs of the journal's listed programs on its PATH:
+// A connected machine installs a release with the journal's listed programs on its PATH:
 // both listed programs are sealed into the folder named for the version and the list, the allow list names both, a
 // rerun rewrites a deleted allow list and changes nothing sealed, and a listed program with an unknown build is left
 // off with its reason.
@@ -35,16 +35,20 @@ func TestAConnectedInstallSealsTheListedProgramsAndARerunRewritesOnlyTheAllowLis
 		writer.Write([]byte(relayContent))
 	}))
 	defer server.Close()
-	listed, oldCodexBuild := listedPrograms(t)
+	first := recorded.MustProbe(t, "version").Printed(os.Getenv)
+	second := recorded.MustProbe(t, "second-version").Printed(os.Getenv)
+	firstProgram := agentProgram()
+	firstProgram.Build = strings.Fields(first)[0]
+	secondProgram := Program{Name: "second-agent", Executable: "second", Build: strings.Fields(second)[1],
+		Check: []string{"--version"}, HostName: "SECOND_EXECUTABLE"}
+	listed := listOf(t, firstProgram, secondProgram)
 	programs, err := ParseProgramList(listed)
 	if err != nil {
 		t.Fatal(err)
 	}
 	path := t.TempDir()
-	for _, program := range programs {
-		version := recorded.MustProbe(t, program.Name, "version")
-		writeProgram(t, path, program.Executable, version.Printed(os.Getenv))
-	}
+	writeProgram(t, path, firstProgram.Executable, first)
+	writeProgram(t, path, secondProgram.Executable, second)
 	root, state := t.TempDir(), t.TempDir()
 	folder := InstallationFolder(root, "6.0.0", listed)
 	installer := Installer{
@@ -92,8 +96,8 @@ func TestAConnectedInstallSealsTheListedProgramsAndARerunRewritesOnlyTheAllowLis
 		}
 	}
 
-	programs[1].Build = oldCodexBuild
-	codex := programs[1]
+	programs[1].Build = "0.0.0"
+	unknown := programs[1]
 	refusedList, err := json.Marshal(ProgramList{Programs: programs})
 	if err != nil {
 		t.Fatal(err)
@@ -103,47 +107,9 @@ func TestAConnectedInstallSealsTheListedProgramsAndARerunRewritesOnlyTheAllowLis
 		t.Fatal(err)
 	}
 	off, err := ProvidersOff(refused)
-	if err != nil || len(off) != 1 || off[0].Name != codex.Name || !strings.Contains(off[0].Reason, codex.Build) {
+	if err != nil || len(off) != 1 || off[0].Name != unknown.Name || !strings.Contains(off[0].Reason, unknown.Build) {
 		t.Fatalf("the program with an unknown build was not left off with its reason: %+v %v", off, err)
 	}
-}
-
-func listedPrograms(t *testing.T) ([]byte, string) {
-	t.Helper()
-	root, err := recorded.Root()
-	if err != nil {
-		t.Fatal(err)
-	}
-	content, err := os.ReadFile(filepath.Join(root, "docs", "accounts", "docker-images.json"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	var manifest struct {
-		Images []struct {
-			Name  string `json:"name"`
-			Codex string `json:"codex"`
-		} `json:"images"`
-	}
-	if err := json.Unmarshal(content, &manifest); err != nil {
-		t.Fatal(err)
-	}
-	for _, image := range manifest.Images {
-		if image.Name != "agent" {
-			continue
-		}
-		claude := recorded.MustProbe(t, "claude-code", "version")
-		codex := recorded.MustProbe(t, "codex", "version")
-		listed, err := json.Marshal(ProgramList{Programs: []Program{
-			{Name: "claude-code", Executable: "claude", Build: strings.Fields(claude.Printed(os.Getenv))[0], Check: []string{"--version"}, HostName: "CLAUDE_CODE_EXECUTABLE"},
-			{Name: "codex", Executable: "codex", Build: strings.Fields(codex.Printed(os.Getenv))[1], Check: []string{"--version"}, HostName: "CODEX_EXECUTABLE"},
-		}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		return listed, image.Codex
-	}
-	t.Fatal("the image manifest does not name an agent image")
-	return nil, ""
 }
 
 // signedRelease is a release of one relay file for this machine's target, and its signature.

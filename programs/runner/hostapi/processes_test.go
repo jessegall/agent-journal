@@ -149,8 +149,8 @@ func TestAnOpenContainerRunsAndIsReportedRunning(t *testing.T) {
 
 func TestACrashedContainerHealedOnACrashIsStartedAgainAndANeverContainerIsLeftDown(t *testing.T) {
 	daemon := dockermock.Start(t, mockImage)
-	daemon.Play(dockermock.RecordedProgramOf(t, "claude-code", "terminal-turn", "/bin/sh").Run)
-	killed := dockermock.RecordedProgramOf(t, "claude-code", "killed-mid-turn", "/bin/sh")
+	daemon.Play(dockermock.RecordedProgramOf(t, "terminal-turn", "/bin/sh").Run)
+	killed := dockermock.RecordedProgramOf(t, "killed-mid-turn", "/bin/sh")
 	table, sent := mockTable(t, daemon)
 
 	if _, err := carry(testInstructions{ProcessTable: table}, "open_container")(context.Background(), openInstruction(t, "healed", "on_crash", mockImage)); err != nil {
@@ -302,7 +302,7 @@ func TestReportsMadeWhileTheJournalIsAwayAreSentInOrderOnceItIsBack(t *testing.T
 
 func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *testing.T) {
 	daemon := dockermock.Start(t, mockImage)
-	turn := dockermock.RecordedProgramOf(t, "claude-code", "terminal-turn", "/bin/sh")
+	turn := dockermock.RecordedProgramOf(t, "terminal-turn", "/bin/sh")
 	daemon.Play(turn.Run)
 	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
@@ -340,7 +340,7 @@ func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *t
 // A pipe container whose program prints and exits at once, as a sign-in probe does, has all it printed read.
 func TestAPipeContainerThatPrintsAndExitsAtOnceHasItsOutputReadWhole(t *testing.T) {
 	daemon := dockermock.Start(t, mockImage)
-	signIn := dockermock.RecordedProgramOf(t, "claude-code", "headless-turn", "auth")
+	signIn := dockermock.RecordedProgramOf(t, "headless-turn", "auth")
 	daemon.Play(signIn.Run)
 	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
@@ -395,7 +395,7 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 		runQueue(t, queue)
 		return OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
 	}
-	probe := recorded.MustProbe(t, "codex", "version")
+	probe := recorded.MustProbe(t, "second-version")
 	first, second := probe.Output[0].Bytes, probe.Output[1].Bytes
 	firstFile, secondFile := recordedOutputFile(t, first), recordedOutputFile(t, second)
 	before, after, reports := &sentChunks{}, &sentChunks{}, &sentReports{}
@@ -434,8 +434,8 @@ func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(
 	runQueue(t, queue)
 	state, chunks := t.TempDir(), &sentChunks{}
 	table := OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
-	version := recorded.MustProbe(t, "claude-code", "version")
-	login := recorded.MustProbe(t, "codex", "login-status")
+	version := recorded.MustProbe(t, "version")
+	login := recorded.MustProbe(t, "login-status")
 	standard, diagnostic := version.Output[0].Bytes, login.Output[0].Bytes
 	standardFile, diagnosticFile := recordedOutputFile(t, standard), recordedOutputFile(t, diagnostic)
 	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "pipe", Restart: "never", Folder: t.TempDir(),

@@ -72,7 +72,7 @@ func mockScenario(arguments []string) error {
 	return playExchange(exchange, os.Stdin, os.Stdout, hooks)
 }
 
-// assertModelNamed refuses a Claude Code start whose arguments name no model, naming what is missing.
+// assertModelNamed refuses a start whose arguments name no model, naming what is missing.
 func assertModelNamed(argv []string) error {
 	if slices.Contains(argv, "--version") || slices.Contains(argv, "auth") || slices.Contains(argv, "login") {
 		return nil

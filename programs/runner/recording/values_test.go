@@ -18,7 +18,7 @@ const liveOrderID = "01m8e43aw61nwtv446cw9v0cty"
 // recordedClaim is the first recorded answer to the host's claim of its orders, and the call it was asked by.
 func recordedClaim(t *testing.T) (recording.Call, []byte) {
 	t.Helper()
-	calls, err := recorded.MustLoad(t, "host", "folders").Calls(recording.WireHost)
+	calls, err := recorded.MustLoad(t, "folders").Calls(recording.WireHost)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,11 +81,11 @@ func TestAnAddressOfAnotherShapeIsRefused(t *testing.T) {
 	}
 }
 
-// recordedOutputPaths are the paths of two recorded processes' output calls of the Claude Code terminal turn, each
+// recordedOutputPaths are the paths of two recorded processes' output calls of the terminal turn, each
 // naming its own fake process.
 func recordedOutputPaths(t *testing.T) (string, string) {
 	t.Helper()
-	calls, err := recorded.MustLoad(t, "claude-code", "terminal-turn").Calls(recording.WireHost)
+	calls, err := recorded.MustLoad(t, "terminal-turn").Calls(recording.WireHost)
 	if err != nil {
 		t.Fatal(err)
 	}

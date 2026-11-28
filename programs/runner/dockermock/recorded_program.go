@@ -21,19 +21,19 @@ type RecordedProgram struct {
 
 // RecordedProgramOf is the program of the scenario's first driver exchange whose command holds the word, such as
 // "auth" for the sign-in status probe; a scenario without one fails the test.
-func RecordedProgramOf(t testing.TB, driver, scenario, word string) RecordedProgram {
+func RecordedProgramOf(t testing.TB, scenario, word string) RecordedProgram {
 	t.Helper()
-	for _, exchange := range recorded.MustLoad(t, driver, scenario).ExchangesOn(recording.WireDriver) {
+	for _, exchange := range recorded.MustLoad(t, scenario).ExchangesOn(recording.WireDriver) {
 		if !slices.Contains(exchange.Opening.Argv, word) {
 			continue
 		}
 		fixture, err := recording.Load(exchange.Folder)
 		if err != nil {
-			t.Fatalf("reading the recorded program %s of %s/%s: %v", word, driver, scenario, err)
+			t.Fatalf("reading the recorded program %s of %s: %v", word, scenario, err)
 		}
 		return RecordedProgram{fixture: fixture}
 	}
-	t.Fatalf("the recording %s/%s ran no program with %q", driver, scenario, word)
+	t.Fatalf("the recording %s ran no program with %q", scenario, word)
 
 	return RecordedProgram{}
 }
