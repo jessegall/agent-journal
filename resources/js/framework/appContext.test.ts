@@ -56,6 +56,8 @@ describe('a driver look', () => {
                 markTone: 'own',
                 signInCode: 'outgoing',
                 models: ['acme-large'],
+                efforts: ['low'],
+                defaultEffort: 'low',
             },
         ];
         const { driverLook } = useAppContext();

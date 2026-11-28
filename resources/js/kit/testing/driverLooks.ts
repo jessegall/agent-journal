@@ -10,6 +10,8 @@ export const declaredLooks: DriverLookData[] = [
         markTone: 'own',
         signInCode: 'paste-back',
         models: ['haiku', 'sonnet', 'opus', 'fable'],
+        efforts: ['low', 'medium', 'high'],
+        defaultEffort: 'medium',
     },
     {
         family: 'codex',
@@ -19,5 +21,7 @@ export const declaredLooks: DriverLookData[] = [
         markTone: 'current-color',
         signInCode: 'outgoing',
         models: ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.2-sol', 'gpt-6.2-astra'],
+        efforts: ['low', 'medium', 'high'],
+        defaultEffort: 'medium',
     },
 ];

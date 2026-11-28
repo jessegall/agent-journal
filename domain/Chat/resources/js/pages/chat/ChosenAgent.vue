@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { usePage } from "@inertiajs/vue3";
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, ref } from "vue";
 import type { AgentOptionData, ChatData } from "@generated/types/chat";
 import Avatar from "@kit/Avatar";
 import Icon from "@kit/Icon";
@@ -15,6 +15,7 @@ import { sessionLooks } from "../../sessionLooks";
 import ConversationMenu from "./partials/ConversationMenu.vue";
 import AgentSessionActions from "./partials/AgentSessionActions.vue";
 import { useStatusAnnouncement } from "../../composables/useStatusAnnouncement";
+import { requestNewChat, useChatListShortcut } from "../../composables/useChatBarAsks";
 
 /**
  * Home's agent bar: the chosen agent with the state its evidence gives, in a mark and words of their own, why a start
@@ -31,6 +32,8 @@ const switchDialog = computed(() =>
   props.data.selectedAgentId === undefined ? undefined : useOpenSessionDialog(viewerId, props.data.selectedAgentId),
 );
 const isSwitchOpen = ref(switchDialog.value?.read() === "switch");
+// Option+F opens the list of the chosen agent's chat: one listener for Home.
+useChatListShortcut(() => props.data.selectedAgentId);
 
 function openSwitch(): void {
   isSwitchOpen.value = true;
@@ -42,7 +45,6 @@ function closeSwitch(): void {
   switchDialog.value?.forget();
   document.querySelector<HTMLElement>("[data-chat-list-trigger]")?.focus();
 }
-const tabRow = useTemplateRef<InstanceType<typeof ChatTabs>>("tabRow");
 
 // Opening a chat beside this one opens its tab and shows the open chats side by side.
 function openBeside(agent: AgentOptionData): void {
@@ -87,7 +89,6 @@ const subline = computed(() => {
 <template>
   <div class="relative z-90 flex flex-1 flex-wrap items-center gap-2">
     <ChatTabs
-      ref="tabRow"
       :agents="data.agents"
       :selected-agent-id="data.selectedAgentId"
       :column-agent-ids="columnAgentIds"
@@ -99,7 +100,7 @@ const subline = computed(() => {
         :agents="data.agents"
         :selected-agent-id="data.selectedAgentId"
         :open-agent-ids="openChats.chats.agentIds"
-        @new-chat="tabRow?.openNewChat()"
+        @new-chat="requestNewChat()"
         @open-beside="openBeside"
         @switch-driver="openSwitch"
         :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"

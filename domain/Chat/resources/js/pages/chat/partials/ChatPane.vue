@@ -29,6 +29,7 @@ import RecordPanel from "./RecordPanel.vue";
 import DockStack from "./DockStack.vue";
 import MessageList from "./MessageList.vue";
 import ConversationMenu from "./ConversationMenu.vue";
+import { useChatListShortcut } from "../../../composables/useChatBarAsks";
 import SessionForm from "./SessionForm.vue";
 
 /**
@@ -89,6 +90,8 @@ const selected = computed(() => {
 
   return props.chat.agents.find((agent) => agent.id === wanted);
 });
+// On its own page the chat offers its own list, so Option+F opens it; on Home the chat bar's listener does.
+useChatListShortcut(() => (props.offersChoice ? selected.value?.id : undefined));
 // The chosen agent while its status offers to stop its turn: the composer then shows Stop beside Send.
 const workingAgent = computed(
   () =>
