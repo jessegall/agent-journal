@@ -1,13 +1,13 @@
 {
     "driver": "driver",
-    "driver_version": "sha256:4d0d5dc2e016890e78176696d0750373c2df23a530bb6ec29c26bc22f9c2638d",
+    "driver_version": "sha256:633e5ad6d8ee087d745ea07b13bc19612c87c10acee4ee150ccc5ea7cb63f955",
     "profile": "",
     "mode": "process",
     "geometry": {
         "columns": 0,
         "rows": 0
     },
-    "recorded_at": "2026-11-27T20:47:55.875278+00:00",
+    "recorded_at": "2026-11-28T00:51:31.852117+00:00",
     "initial_state": {
         "working_folder": "/workspace",
         "arguments": [
@@ -25,7 +25,7 @@
     },
     "output": [
         {
-            "offset": 902419000,
+            "offset": 548814000,
             "stream": "stderr",
             "bytes": "TG9nZ2VkIGluIHVzaW5nIENoYXRHUFQK"
         }
