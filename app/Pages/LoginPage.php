@@ -14,6 +14,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LoginPage extends Data
 {
+    /** @use \App\Web\Creation\Buildable<LoginPageFields> */
+    use \App\Web\Creation\Buildable;
+
+    protected const string FIELDS = LoginPageFields::class;
+
     public const string COMPONENT = 'Login';
 
     public function __construct(public readonly LoginInput $input) {}
