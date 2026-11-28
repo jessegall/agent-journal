@@ -128,7 +128,7 @@ final class RecordDriverImageAnswerTest extends TestCase
     private function builtReply(): array
     {
         $built = array_filter(
-            $this->journal->recordedHostAnswers('codex', 'terminal-turn'),
+            $this->journal->recordedHostAnswers('codex', 'driver-image-build'),
             fn (array $answer) => array_key_exists('history', (array) ($answer['facts'] ?? [])),
         );
 

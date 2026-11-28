@@ -12,7 +12,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * agent, or given up on. It only moves forward, and a retry walks it again.
  */
 #[TypeScript]
-enum DeliveryState: string
+enum DeliveryStatus: string
 {
     case Sent = 'sent';
     case Arrived = 'arrived';

@@ -46,11 +46,20 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         $instruction = HostInstruction::findLocked($command->instructionId);
         $host = Host::findLocked($instruction->host_id);
 
-        foreach (HostDriverImage::findWaitingOn($instruction->id) as $image) {
+        $images = HostDriverImage::findWaitingOn($instruction->id);
+        // Every waiting image's recipe in one read, as a host holds many images at once.
+        $folders = DriverImageRecipeRecord::query()
+            ->whereIn('id', array_map(fn (HostDriverImage $image) => $image->driver_image_recipe_id, $images))
+            ->pluck('folder', 'id')
+            ->all();
+
+        foreach ($images as $image) {
+            $folder = (string) $folders[$image->driver_image_recipe_id];
+
             match ($instruction->type) {
                 HostInstructionType::BuildImage => $this->judgeBuild($image, $instruction),
-                HostInstructionType::AllowImages => $this->checkAllowed($image, $instruction),
-                HostInstructionType::RunContainers => $this->judgeChecks($image, $instruction),
+                HostInstructionType::AllowImages => $this->checkAllowed($image, $instruction, $folder),
+                HostInstructionType::RunContainers => $this->judgeChecks($image, $instruction, $folder),
                 default => null,
             };
         }
@@ -91,7 +100,7 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
      * The runner allowed the set that named the image: an image it still holds goes to its start checks, one the
      * daemon lost is built again.
      */
-    private function checkAllowed(HostDriverImage $image, HostInstruction $instruction): void
+    private function checkAllowed(HostDriverImage $image, HostInstruction $instruction, string $folder): void
     {
         if (! $image->isCurrent($instruction->id, DriverImagePhase::Allow)) {
             return;
@@ -104,12 +113,11 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         }
 
         $image->acknowledged();
-        $recipe = DriverImageRecipeRecord::query()->findOrFail($image->driver_image_recipe_id);
         $checks = $this->instructions->runContainers(
             $image->host_id,
             // One round of checks to each allow the image is named in: an allow again after a restart checks again.
             HostInstructionSource::keyed("driver-image-checks:{$image->id}:{$instruction->id}"),
-            HostContainerRunsPayload::from(['runs' => $this->checks->of($image->builtImage(), $recipe->folder)]),
+            HostContainerRunsPayload::from(['runs' => $this->checks->of($image->builtImage(), $folder)]),
         );
         $image->markChecksSent($checks->getKey());
     }
@@ -117,14 +125,13 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
     /**
      * Checks that each passed make the image ready; anything else refuses it, so no start ever runs on it.
      */
-    private function judgeChecks(HostDriverImage $image, HostInstruction $instruction): void
+    private function judgeChecks(HostDriverImage $image, HostInstruction $instruction, string $folder): void
     {
         if (! $image->isCurrent($instruction->id, DriverImagePhase::Check)) {
             return;
         }
 
-        $recipe = DriverImageRecipeRecord::query()->findOrFail($image->driver_image_recipe_id);
-        $expected = $this->checks->of($image->builtImage(), $recipe->folder);
+        $expected = $this->checks->of($image->builtImage(), $folder);
         $results = HostContainerRunResultsPayload::from($instruction->answerFacts())->results;
 
         if (! $this->checks->pass($expected, $results)) {

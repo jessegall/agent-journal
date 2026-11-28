@@ -30,7 +30,7 @@ use Domain\Chat\Data\MessageEntryData;
 use Domain\Chat\Data\ParticipantData;
 use Domain\Chat\Data\QuestionEntryData;
 use Domain\Chat\Enums\ChatMessageType;
-use Domain\Chat\Enums\DeliveryState;
+use Domain\Chat\Enums\DeliveryStatus;
 use Domain\Chat\Models\ChatMessage;
 use Domain\Chat\Support\Cards\DockIdentity;
 use Domain\Chat\Support\DockProjection;
@@ -227,7 +227,7 @@ final readonly class ChatPages
             'targetMessageId' => $message->target_message_id,
             'targetNumber' => $message->target?->number,
             'isReadByViewer' => in_array($message->id, $readIds, true),
-            'delivery' => DeliveryState::of($message, in_array($message->id, $readByOthers, true)),
+            'delivery' => DeliveryStatus::of($message, in_array($message->id, $readByOthers, true)),
             'deliveryFailure' => $message->delivery_failure,
         ])];
     }

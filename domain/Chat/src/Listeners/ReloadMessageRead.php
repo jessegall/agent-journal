@@ -11,7 +11,7 @@ use Domain\Chat\Models\ChatMessage;
 /**
  * Once a member reads a message for the first time, its chat entry is read again, so the sender sees it read.
  */
-final readonly class ReloadReadMessage implements Listener
+final readonly class ReloadMessageRead implements Listener
 {
     public function handle(MessageRead $event): void
     {
