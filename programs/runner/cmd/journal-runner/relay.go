@@ -132,7 +132,7 @@ func (binder bindingRelay) run(parent context.Context) error {
 	return nil
 }
 
-// serveInstructions runs host protocol 1 for this binding alone, local and uncontained, from a folder of its own beside the
+// serveInstructions runs the relay protocol for this binding alone, local and uncontained, from a folder of its own beside the
 // binding's state, so two bindings' relays never share a process table; the journal opens and drives every process
 // and reads the folder by instructions.
 func (binder bindingRelay) serveInstructions(
@@ -165,7 +165,9 @@ func (binder bindingRelay) serveInstructions(
 	}
 	maps.Copy(names, allowed.Programs)
 	started, err := startHostProtocol(ctx, journal, binder.binding.Enrollment, folder, names, host.Containers{},
-		binder.release, hostProtocolOptions{Reads: &reads, Upgrade: &upgrade, Idle: binder.idle, Allowed: allowed})
+		binder.release, hostProtocolOptions{
+			Protocol: hostapi.RelayProtocolVersion, Reads: &reads, Upgrade: &upgrade, Idle: binder.idle, Allowed: allowed,
+		})
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package hostapi
 
 import (
 	"context"
+	"encoding/json"
 	"net/url"
 	"strconv"
 	"strings"
@@ -18,6 +19,18 @@ const (
 // Journal makes the host's calls to the journal over its signed client.
 type Journal struct {
 	Client *client.Client
+	Protocol int
+}
+
+func (journal Journal) call(ctx context.Context, path string, request, reply any) error {
+	if journal.Protocol != RelayProtocolVersion || reply == nil {
+		return journal.Client.Call(ctx, path, request, reply)
+	}
+	var raw json.RawMessage
+	if err := journal.Client.Call(ctx, path, request, &raw); err != nil {
+		return err
+	}
+	return decodeStrictly(raw, reply)
 }
 
 // ClaimInstruction claims the instructions waiting for the host and answers them.
@@ -25,7 +38,7 @@ func (journal Journal) ClaimInstruction(ctx context.Context, limit int, wait int
 	var reply ClaimedInstructions
 	path := "/host/instructions/claim?limit=" + strconv.Itoa(limit) + "&wait=" + strconv.Itoa(wait)
 
-	return reply, journal.Client.Call(ctx, path, nil, &reply)
+	return reply, journal.call(ctx, path, nil, &reply)
 }
 
 // AnswerInstruction answers one instruction.
@@ -37,7 +50,7 @@ func (journal Journal) AnswerInstruction(ctx context.Context, instruction string
 func (journal Journal) PullPrivateValue(ctx context.Context, submission string) (PrivateValue, error) {
 	var reply PrivateValue
 
-	return reply, journal.Client.Call(ctx, "/host/private-values/"+url.PathEscape(submission), nil, &reply)
+	return reply, journal.call(ctx, "/host/private-values/"+url.PathEscape(submission), nil, &reply)
 }
 
 // NotifyProcessOutput hands the journal what a process printed.

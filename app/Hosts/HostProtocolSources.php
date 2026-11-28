@@ -240,11 +240,12 @@ final readonly class HostProtocolSources
         $version = $this->protocol->version;
         $relay = $this->protocol->relayVersion();
         $calls = [];
+        $payloads = new PhpProtocolSources($this->protocol);
 
         foreach ($this->protocol->relayCalls() as $name => $call) {
             $pattern = '#^'.preg_replace('/\\\\\{\\w+\\\\\}/', '[^/]+', preg_quote($call->path, '#')).'$#';
-            $body = 'Payloads\\Host'.Str::studly($call->body ?? 'empty').'Payload::class';
-            $reply = 'Payloads\\Host'.Str::studly($call->reply ?? 'empty').'Payload::class';
+            $body = 'Payloads\\'.$payloads->dataName($call->body ?? 'empty').'::class';
+            $reply = 'Payloads\\'.$payloads->dataName($call->reply ?? 'empty').'::class';
             $query = $this->phpList(array_keys($call->query));
             $limit = $call->bodyByteLimit ?? 'null';
             $status = $call->reply === null ? 204 : 200;

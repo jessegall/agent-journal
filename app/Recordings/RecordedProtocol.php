@@ -10,12 +10,14 @@ use App\Hosts\Exceptions\HostCallUnreadable;
 use App\Hosts\HostCallReader;
 use App\Hosts\Protocol\HostAnswerStatus;
 use App\Hosts\Protocol\HostInstructionType;
+use App\Hosts\Protocol\HostProtocol;
 use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\HostRoute;
 use App\Hosts\Protocol\Payloads\HostAnswerPayload;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
 use App\Hosts\Protocol\Payloads\HostInstructionPayload;
 use App\Hosts\Protocol\Payloads\HostOpenPlanPayload;
+use App\Hosts\Values\RelayCall;
 use App\Recordings\Enums\RecordedEventType;
 use App\Recordings\Enums\Wire;
 use App\Recordings\Exceptions\RecordingBreaksProtocol;
@@ -97,21 +99,43 @@ final readonly class RecordedProtocol
             return;
         }
 
-        $route = $this->routeOf($call);
+        $route = $this->routeOf($call) ?? array_find(
+            HostProtocol::relayCalls(),
+            fn (RelayCall $route) => $route->matches($call->method, $call->path),
+        );
 
         if ($route === null) {
-            $error = "{$call->method} {$call->path} is no call of host protocol 1, such as a relay call of protocol 2";
+            $error = "{$call->method} {$call->path} is no call of the enrolled host or relay protocol";
 
             throw RecordingBreaksProtocol::at($exchange, $index, $error);
         }
 
         try {
+            if ($route instanceof RelayCall) {
+                $this->assertRelayCallKept($route, $call);
+
+                return;
+            }
+
             match ($event->type) {
                 RecordedEventType::Asked => $this->assertAskedKept($route, $call),
                 default => $this->assertAnsweredKept($route, $call),
             };
         } catch (HostCallUnreadable|HostProtocolRefused $broken) {
             throw RecordingBreaksProtocol::at($exchange, $index, $broken->getMessage(), $broken);
+        }
+    }
+
+    private function assertRelayCallKept(RelayCall $route, RecordedCall $call): void
+    {
+        if ($call->status === null) {
+            $this->reader->read($call->body === '' ? '{}' : $call->body, $route->body, $route->name);
+
+            return;
+        }
+
+        if ($call->status === $route->status && $call->body !== '') {
+            $this->reader->read($call->body, $route->reply, "reply to {$route->name}");
         }
     }
 
