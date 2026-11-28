@@ -7,7 +7,7 @@
         "columns": 0,
         "rows": 0
     },
-    "recorded_at": "2026-11-28T14:17:37.107881+00:00",
+    "recorded_at": "2026-11-28T14:31:51.416498+00:00",
     "initial_state": {
         "working_folder": "/workspace",
         "arguments": [
@@ -30,7 +30,7 @@
     },
     "output": [
         {
-            "offset": 1312097000,
+            "offset": 1106260000,
             "stream": "stdout",
             "bytes": "ewogICJsb2dnZWRJbiI6IHRydWUsCiAgImF1dGhNZXRob2QiOiAiY2xhdWRlLmFpIiwKICAiYXBpUHJvdmlkZXIiOiAiZmlyc3RQYXJ0eSIsCiAgImFuYWx5dGljc0Rpc2FibGVkIjogZmFsc2UsCiAgInByb2plY3RzRGlyZWN0b3J5IjogIi9ob21lL2pvdXJuYWwvLmFjY291bnQvcHJvamVjdHMiLAogICJjb25maWdEaXJlY3RvcnkiOiAiL2hvbWUvam91cm5hbC8uYWNjb3VudCIsCiAgImxvZ2luRXhwaXJlc0F0IjogIjIwMjYtMTItMjZUMjA6MjU6MzcuMzYxWiIsCiAgImNvbnNvbGVQcm9maWxlU2lnbkluT2ZmZXJlZCI6IHRydWUsCiAgImVtYWlsIjogInVzZXJAZXhhbXBsZS5jb20iLAogICJvcmdJZCI6ICIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLAogICJvcmdOYW1lIjogIkV4YW1wbGUgT3JnYW5pemF0aW9uIiwKICAic3Vic2NyaXB0aW9uVHlwZSI6ICJtYXgiLAogICJzdG9yZWRDbGF1ZGVBaUxvZ2luIjogdHJ1ZSwKICAicGxhblRpZXIiOiAibWF4XzIweCIKfQo="
         }
