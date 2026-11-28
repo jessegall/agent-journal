@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Agents;
 
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
+use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverType;
@@ -12,6 +13,8 @@ use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\ContainedPlanFields;
+use App\Hosts\Protocol\HostProcessReportType;
+use App\Messages\Data\MessageTextData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
@@ -72,6 +75,30 @@ final class OpenJournalTerminalTest extends TestCase
             1,
             HostProcess::query()
                 ->where('agent_runtime_id', $runtime->id)
+                ->where('purpose', HostProcessPurpose::AgentTerminal)
+                ->count(),
+        );
+    }
+
+    public function test_work_accepted_while_its_terminal_runs_opens_no_second_terminal(): void
+    {
+        [$opened, $start] = $this->provenTerminal();
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('terminal', HostProcessPurpose::AgentTerminal));
+        $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
+            ->report(HostProcessReportType::Running));
+
+        $this->journal->asOwner(new DeliverAgentCommand(
+            $this->journal->agentCalled('Driven')->id,
+            $opened->sessionId,
+            'work',
+            [new MessageTextData('Run: pwd.')],
+        ));
+
+        $this->journal->assertResult(
+            1,
+            HostProcess::query()
+                ->where('session_process_id', $start->id)
                 ->where('purpose', HostProcessPurpose::AgentTerminal)
                 ->count(),
         );
