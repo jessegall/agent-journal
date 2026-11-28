@@ -9,14 +9,15 @@ use App\Navigation\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPaging;
 use Domain\Reminders\Http\Requests\RemindersRequest;
 use Domain\Reminders\Resolvers\Support\OwnReminders;
 use Domain\Reminders\Values\ReminderCard;
 
 /**
- * The reminders window: the caller's own reminders with their due time and status, No reminders when there are none,
- * and Reminders unavailable for a caller who may not read them.
+ * The reminders window: the caller's own reminders with their due time and status, the No reminders yet empty state
+ * when there are none, and Reminders unavailable for a caller who may not read them.
  */
 final readonly class RemindersWindowResolver implements PageResolver
 {
@@ -36,7 +37,11 @@ final readonly class RemindersWindowResolver implements PageResolver
         }
 
         if ($page->cards === []) {
-            return $this->window(LayoutPartData::notice('empty', 'empty', 'No reminders'));
+            return $this->window(ListEmpty::nothingYet(
+                'No reminders yet',
+                'A reminder brings something back to you or an agent at the time you choose.',
+                'bell',
+            )->page());
         }
 
         return $this->window(
