@@ -263,7 +263,10 @@ final readonly class HostProtocolSources
                 PHP;
         }
 
-        $routes = implode("\n", $calls);
+        $routes = implode("\n", array_map(
+            fn (string $line) => '    '.$line,
+            explode("\n", implode("\n", $calls)),
+        ));
 
         return $this->constantsClass('HostProtocol', 'The enrolled host and connected relay protocols.', <<<PHP
                 public const int ENROLLED = {$version};

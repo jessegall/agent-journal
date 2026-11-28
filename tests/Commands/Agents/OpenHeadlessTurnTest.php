@@ -243,7 +243,7 @@ final class OpenHeadlessTurnTest extends TestCase
     }
 
     #[DataProvider('retryTriggers')]
-    public function test_an_unclaimed_open_retries_once_after_its_wait(bool $useJob): void
+    public function test_an_unclaimed_open_retries_once_after_its_wait(bool $isJobUsed): void
     {
         $now = CarbonImmutable::now()->startOfSecond();
         $this->journal->useServerClockAt($now);
@@ -264,7 +264,7 @@ final class OpenHeadlessTurnTest extends TestCase
 
         $this->journal->moveServerClockTo($attempt->retry_at);
 
-        if ($useJob) {
+        if ($isJobUsed) {
             $job->handle($retries);
         } else {
             $retries->sweep();
