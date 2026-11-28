@@ -80,3 +80,22 @@ func TestACallNeverAskedFailsThePlay(t *testing.T) {
 		t.Fatalf("a play with no call asked failed with %v", failed.said)
 	}
 }
+
+func TestAClaimDoesNotWaitForAnOverlappingClaimFromTheRecording(t *testing.T) {
+	replay := MustCallReplay(t, MustLoad(t, "claude-code", "terminal-turn"), recording.WireHost)
+	const claimPath = "/host/instructions/claim"
+	replay.IsLongPoll = func(call Call) bool { return call.Answered.Path == claimPath }
+	replay.OrderGroup = func(Call) string { return "host" }
+
+	for index, call := range replay.calls {
+		if replay.isOrdered(index) {
+			if !replay.isEarlierPlayed(index) {
+				t.Fatal("the first instruction claim waits for the next claim")
+			}
+			return
+		}
+		replay.played[index] = true
+	}
+
+	t.Fatal("the recorded terminal turn contains no instruction claim")
+}
