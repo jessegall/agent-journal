@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support\Recordings;
 
-use App\Models\Sessions\SessionProcess;
-use App\Models\Hosts\HostProcess;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostRoute;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
 use App\Models\Hosts\HostInstruction;
+use App\Models\Hosts\HostProcess;
+use App\Models\Sessions\SessionProcess;
 use App\Recordings\Enums\Wire;
 use App\Recordings\ScenarioRecording;
 use Closure;

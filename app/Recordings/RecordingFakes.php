@@ -145,9 +145,10 @@ final class RecordingFakes
         );
 
         $faked = (string) preg_replace_callback(self::UUID, fn (array $found) => $this->fakeOf($found[0], ''), $faked);
-        $faked = (string) preg_replace_callback(self::ULID, fn (array $found) => $this->ulidFakeOf($found[0]), $faked);
+        $fakeUlid = fn (array $found) => $this->numberedFakeOf($found[0], self::FAKE_ULID_PREFIX, '%026d');
+        $faked = (string) preg_replace_callback(self::ULID, $fakeUlid, $faked);
 
-        $fakeDigest = fn (array $found) => $this->digestFakeOf($found[0]);
+        $fakeDigest = fn (array $found) => $this->numberedFakeOf($found[0], self::FAKE_DIGEST_PREFIX, '%064d');
 
         return (string) preg_replace_callback(self::DIGEST, $fakeDigest, $faked);
     }
@@ -289,29 +290,16 @@ final class RecordingFakes
         return (string) preg_replace("/[^\\s\"'│]+(?:'s|’s) (Organization|Workspace)/u", 'Example\'s $1', $named);
     }
 
-    private function ulidFakeOf(string $real): string
-    {
-        if (str_starts_with($real, self::FAKE_ULID_PREFIX)) {
-            return $real;
-        }
-
-        return $this->numberedFakeOf($real, '%026d');
-    }
-
-    private function digestFakeOf(string $real): string
-    {
-        if (str_starts_with($real, self::FAKE_DIGEST_PREFIX)) {
-            return $real;
-        }
-
-        return $this->numberedFakeOf($real, '%064d');
-    }
-
     /**
-     * The fake a real value gets from the format, numbered in the order the values are seen, the same each time.
+     * The fake a real value gets from the format, numbered in the order the values are seen, the same each time; a
+     * value that starts with the fakes' prefix is a fake already and stays as it is.
      */
-    private function numberedFakeOf(string $real, string $format): string
+    private function numberedFakeOf(string $real, string $fakePrefix, string $format): string
     {
+        if (str_starts_with($real, $fakePrefix)) {
+            return $real;
+        }
+
         $known = array_search($real, $this->fakes, true);
 
         if (is_string($known)) {

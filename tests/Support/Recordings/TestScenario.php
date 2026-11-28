@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support\Recordings;
 
-use App\Models\Drivers\DriverRequest;
-use App\Models\Sessions\SessionProcess;
-use App\Models\Hosts\HostProcess;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
+use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostInstruction;
+use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
+use App\Models\Sessions\SessionProcess;
 use App\Recordings\Recordings;
 use App\Recordings\Scenarios\Enums\ScenarioStepType;
 use App\Recordings\Scenarios\Exceptions\ScenarioStuck;
@@ -101,7 +101,7 @@ final class TestScenario
         $recording = $this->journal->service(Recordings::class)->scenario($driver, $scenarioName);
         $host = $this->journal->hostCalled(self::HOST)->hostId;
         // An order's sequence counts within its process, so the orders go in the order they were made, by their ids.
-        $orders = HostInstruction::query()->where('host_id', $host)->orderBy('id')->get()->all();
+        $orders = array_values(HostInstruction::query()->where('host_id', $host)->orderBy('id')->get()->all());
         $playing = PlayedScenario::of($this->name, $recording);
         // The playing host reads the profiles it names, so it names its own folder where the recorded machine named one.
         $profiles = [TestHost::containedEnvironment()['AGENTS_SECURITY_PROFILES'] => $playing->securityProfiles];
