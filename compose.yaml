@@ -286,6 +286,8 @@ services:
             - agent-docker-data:${AGENT_DAEMON_DATA:-/home/rootless/.local/share/docker}
             - agent-docker-socket:/run/agent-docker
             - accounts-data:/srv/journal/accounts
+            # Each start's plan files, written by a helper run and bound read-only into the session's container.
+            - session-files:/srv/journal/sessions
             # The operator's server folders, one per environment, bound as workspaces after daemon-side checks
             # (AGENTS_WORKSPACES_FOLDER in .env; unset leaves an empty folder, so no operator folder exists).
             - ${AGENTS_WORKSPACES_FOLDER:-./.docker/helper/no-workspaces}:/srv/journal/workspaces
@@ -466,6 +468,7 @@ volumes:
             device: tmpfs
             o: 'uid=1000,gid=1000,mode=0750'
     accounts-data:
+    session-files:
     # The contained agent host's enrollment and start records, kept across restarts so it reconciles from them.
     host-state:
 

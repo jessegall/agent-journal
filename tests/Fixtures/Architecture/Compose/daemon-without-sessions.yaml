@@ -1,0 +1,7 @@
+services:
+    agent-docker:
+        image: docker:28-dind
+        volumes:
+            - agent-docker-data:/var/lib/docker
+            - accounts-data:/srv/journal/accounts
+            - ./.docker/helper/no-workspaces:/srv/journal/workspaces
