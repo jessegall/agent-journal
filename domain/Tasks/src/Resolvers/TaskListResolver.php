@@ -16,6 +16,7 @@ use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Values\TaskFilters;
 use Domain\Tasks\Values\TaskList;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Lists the tasks every signed-in actor sees, ordered by id: the holder filter is a subquery of Core's assignments
@@ -32,15 +33,7 @@ final readonly class TaskListResolver implements TaskListResolverContract
 
     public function list(TaskFilters $filters): TaskList
     {
-        $caller = AssigneeIdentity::of($this->actors->actor());
-
-        $matching = $this->heldAs(
-            Task::query()->matching($filters->search)->inStates($filters->states)
-                ->inEnvironments($filters->environmentIds),
-            $filters->holder,
-            $caller,
-        );
-
+        $matching = $this->matching($filters);
         $total = $matching->clone()->count();
         $tasks = $matching->orderBy('id')->forPage($filters->page->number, $filters->page->size)->get();
 
@@ -61,6 +54,25 @@ final readonly class TaskListResolver implements TaskListResolverContract
             ),
             $filters->page,
             $total,
+        );
+    }
+
+    /** @return Collection<int, Task> */
+    public function preview(TaskFilters $filters, int $limit): Collection
+    {
+        return $this->matching($filters)->orderBy('id')->limit($limit)->get(['id', 'title', 'status']);
+    }
+
+    /** @return Builder<Task> */
+    private function matching(TaskFilters $filters): Builder
+    {
+        $caller = AssigneeIdentity::of($this->actors->actor());
+
+        return $this->heldAs(
+            Task::query()->matching($filters->search)->inStates($filters->states)
+                ->inEnvironments($filters->environmentIds),
+            $filters->holder,
+            $caller,
         );
     }
 
