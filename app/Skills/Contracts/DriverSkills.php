@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Skills\Contracts;
 
 use App\Skills\Enums\SkillReload;
+use App\Support\Inputs\Values\ToolResult;
+use App\Values\ProvenSkillRead;
 use App\Values\SkillDelivery;
 use App\Values\SkillKey;
 
 /**
  * How one driver finds its skills: the layout of a published set, the folder the host writes it to and what the
- * start adds, how an agent is told to read a skill, and whether a running session sees a changed set.
+ * start adds, how an agent is told to read a skill, which of its tool calls prove a skill read whole, and whether a
+ * running session sees a changed set.
  */
 interface DriverSkills
 {
@@ -40,4 +43,10 @@ interface DriverSkills
      * Whether the driver reads changed skills at once or only in a new session.
      */
     public function reloadMode(): SkillReload;
+
+    /**
+     * The skill read whole that this succeeded tool call of the driver's proves for the session of that runtime;
+     * none when it proves none.
+     */
+    public function provenRead(ToolResult $call, string $runtimeId): ProvenSkillRead|null;
 }

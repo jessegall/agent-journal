@@ -93,7 +93,7 @@ final class ConversationRequest extends FormRequest
      *
      * @return Option<string>
      */
-    public function chatToRead(): Option
+    public function columnAgent(): Option
     {
         $read = $this->optionalText('read');
 

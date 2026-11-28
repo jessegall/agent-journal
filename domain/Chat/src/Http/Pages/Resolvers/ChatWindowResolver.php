@@ -62,7 +62,7 @@ final readonly class ChatWindowResolver implements PageResolver
 
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->visibleOrPrivate(...));
         // One conversation per read: the chosen agent's, or the one a column's own reload names.
-        $read = $this->request->chatToRead()->map($this->visibleOrPrivate(...))->orElse($chosen);
+        $read = $this->request->columnAgent()->map($this->visibleOrPrivate(...))->orElse($chosen);
         $page = $this->listing->firstPageWith([...$this->idOf($chosen), ...$this->idOf($read)]);
 
         return ChatData::from([
