@@ -6,6 +6,7 @@ namespace Tests\Support\Seeding;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Actors\ActorStore;
+use App\Bus\CommandEntrance;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\JournalCommands as JournalCommandsContract;
@@ -134,6 +135,23 @@ trait RunsCommands
         return $this->refusingOutsideWrites(
             fn (): mixed => $actors->actAsSystem('test', fn (): mixed => $dispatcher->run($command)),
         );
+    }
+
+    /**
+     * Runs the work as the system inside the entry, as a listener of a command that arrived there runs: the commands it
+     * sends pass that entry's check.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function runInside(CommandEntry $entry, Closure $work): mixed
+    {
+        $entrance = $this->app->make(CommandEntrance::class);
+        $actors = $this->app->make(ActorStore::class);
+
+        return $actors->actAsSystem('test', fn (): mixed => $entrance->through($entry, $work));
     }
 
     /**

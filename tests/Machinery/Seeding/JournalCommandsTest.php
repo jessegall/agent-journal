@@ -7,11 +7,13 @@ namespace Tests\Machinery\Seeding;
 use App\Accounts\Enums\CommandEntry;
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Commands\CreateAgent\CreateAgentCommand;
+use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\RequestKey;
 use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Inboxes\Inbox;
 use App\Models\Records\Layout;
+use App\Support\CommandRegistry;
 use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
 use App\Terminals\Data\LayoutShape;
 use LogicException;
@@ -87,6 +89,17 @@ final class JournalCommandsTest extends TestCase
 
         $this->assertTrue(Inbox::findMain()->exists);
         $this->assertSame($this->journal->ownerUser()->id, $this->app->make(CurrentActor::class)->actor()->id);
+    }
+
+    public function test_work_run_inside_an_entry_sends_that_entrys_commands(): void
+    {
+        $this->journal->owner();
+        $install = new InstallInboxesCommand();
+        $entry = $this->app->make(CommandRegistry::class)->entryOf($install::class);
+
+        $this->journal->runInside($entry, fn () => $this->app->make(CommandBus::class)->run($install));
+
+        $this->assertTrue(Inbox::findMain()->exists);
     }
 
     public function test_a_journal_command_from_the_wrong_entry_is_refused(): void
