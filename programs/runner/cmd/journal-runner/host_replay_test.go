@@ -167,6 +167,9 @@ func recordedStartupImages(t *testing.T, scenario recorded.Scenario) host.Pinned
 			break
 		}
 	}
+	if len(images) == 0 {
+		t.Fatal("the recorded host startup contains no pinned-image inspections")
+	}
 	return images
 }
 
