@@ -41,3 +41,6 @@ relaunch	say restart (user 22350)
 ui	say client: what the browser shows is the client (user 24540)
 hears	a listener listens to an event: say listens or listener (listensTo, not hears)
 answerer	vague role word: say what it is (a hook handler, the actor who answered: answeredBy)
+tell
+tells
+perform
