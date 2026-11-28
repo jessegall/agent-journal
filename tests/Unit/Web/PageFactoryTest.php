@@ -1,0 +1,86 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Web;
+
+use App\Web\Creation\Contracts\PageBuilder;
+use App\Web\Creation\Exceptions\InvalidBuilder;
+use App\Web\Creation\Exceptions\MissingBuilder;
+use App\Web\Creation\PageFactory;
+use Illuminate\Container\Container;
+use Illuminate\Http\Request;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Spatie\LaravelData\Data;
+use Tests\Fixtures\Web\Types\BookData;
+use Tests\Fixtures\Web\Types\BookPageBuilder;
+use Tests\Fixtures\Web\Types\ShelfPage;
+use Tests\TestCase;
+
+final class PageFactoryTest extends TestCase
+{
+    public function test_each_creation_resolves_a_fresh_builder_for_its_visit(): void
+    {
+        $container = new Container();
+        $factory = new PageFactory($container);
+        $factory->register(BookData::class, BookPageBuilder::class);
+
+        $this->assertSame(BookPageBuilder::class, $factory->builderFor(BookData::class));
+        $this->assertFalse($container->resolved(BookPageBuilder::class));
+
+        $first = $factory->create(BookData::class, Request::create('/first'));
+        $second = $factory->create(BookData::class, Request::create('/second'));
+
+        $this->assertSame(BookData::class, $first::class);
+        $this->assertSame('/first #1', $first->title);
+        $this->assertSame('/second #1', $second->title);
+    }
+
+    public function test_an_unregistered_type_names_the_page_and_requested_class(): void
+    {
+        $factory = new PageFactory(new Container());
+        $factory->register(BookData::class, BookPageBuilder::class);
+        $this->expectExceptionObject(MissingBuilder::forType('page', ShelfPage::class));
+
+        $factory->create(ShelfPage::class, Request::create('/shelf'));
+    }
+
+    public function test_a_duplicate_registration_is_refused(): void
+    {
+        $factory = new PageFactory(new Container());
+        $factory->register(BookData::class, BookPageBuilder::class);
+        $this->expectExceptionObject(InvalidBuilder::duplicate('page', BookData::class));
+
+        $factory->register(BookData::class, BookPageBuilder::class);
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function invalidRegistrations(): array
+    {
+        return [
+            'non-Data type' => [Request::class, BookPageBuilder::class],
+            'base Data type' => [Data::class, BookPageBuilder::class],
+            'non-builder class' => [BookData::class, BookData::class],
+            'builder interface' => [BookData::class, PageBuilder::class],
+            'unknown builder' => [BookData::class, 'Tests\\UnknownBuilder'],
+        ];
+    }
+
+    #[DataProvider('invalidRegistrations')]
+    public function test_an_invalid_registration_is_refused(string $type, string $builder): void
+    {
+        $factory = new PageFactory(new Container());
+        $this->expectExceptionObject(InvalidBuilder::registration('page', $type, $builder));
+
+        $factory->register($type, $builder);
+    }
+
+    public function test_a_different_result_type_is_refused(): void
+    {
+        $factory = new PageFactory(new Container());
+        $factory->register(ShelfPage::class, BookPageBuilder::class);
+        $this->expectExceptionObject(InvalidBuilder::result(BookPageBuilder::class, BookData::class, ShelfPage::class));
+
+        $factory->create(ShelfPage::class, Request::create('/shelf'));
+    }
+}
