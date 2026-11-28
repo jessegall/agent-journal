@@ -25,7 +25,7 @@ final class RunningCommandData extends Data
 
     public static function fromAgentRunningTool(AgentRunningTool $tool): self
     {
-        return new self($tool->agent_id, $tool->line, $tool->is_running, $tool->changedAtText());
+        return new self($tool->agent_id, $tool->line, $tool->is_running, $tool->changed_at_text);
     }
 
     public static function fromRunningToolChanged(RunningToolChanged $change): self

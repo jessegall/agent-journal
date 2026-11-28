@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Recordings;
 
 use App\Files\Enums\Place;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Recordings;
 use App\Values\FilePath;
 
 final class TerminalCapture

@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentQuery;
 use App\Support\AssigneeIdentity;
+use App\Support\Layout\LayoutRowData;
 use Domain\Tasks\Contracts\TaskListResolver as TaskListResolverContract;
 use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Models\Task;
@@ -16,7 +17,6 @@ use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Values\TaskFilters;
 use Domain\Tasks\Values\TaskList;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Lists the tasks every signed-in actor sees, ordered by id: the holder filter is a subquery of Core's assignments
@@ -57,10 +57,16 @@ final readonly class TaskListResolver implements TaskListResolverContract
         );
     }
 
-    /** @return Collection<int, Task> */
-    public function preview(TaskFilters $filters, int $limit): Collection
+    /** @return list<LayoutRowData> */
+    public function preview(TaskFilters $filters, int $limit): array
     {
-        return $this->matching($filters)->orderBy('id')->limit($limit)->get(['id', 'title', 'status']);
+        $records = $this->matching($filters)->orderBy('id')->limit($limit)->get(['id', 'title', 'status']);
+
+        return $records->map(fn (Task $task) => LayoutRowData::build()
+            ->key($task->id)
+            ->label($task->title)
+            ->value($task->status->standingWord())
+            ->finish())->values()->all();
     }
 
     /** @return Builder<Task> */

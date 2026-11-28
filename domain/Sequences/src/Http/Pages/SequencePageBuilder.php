@@ -32,7 +32,7 @@ final readonly class SequencePageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(SequenceRequest::class, $visit);
+        $input = $this->requests->forVisit(SequenceRequest::class, $visit);
 
         try {
             $sequence = Sequence::findById($input->sequenceId());

@@ -83,7 +83,7 @@ final class AgentLogLoaderTest extends TestCase
             2,
             3,
         ] as $retry) {
-            $attempt = RetryAttempt::record($opened->runtimeId, RetriedAction::Wake, $retry, 'Host unavailable.', $now);
+            $attempt = RetryAttempt::create($opened->runtimeId, RetriedAction::Wake, $retry, 'Host unavailable.', $now);
             $attempt->settle($retry === 3 ? RetryOutcome::GaveUp : RetryOutcome::Failed, 'Docker was unreachable.');
             $now = $attempt->retry_at;
         }

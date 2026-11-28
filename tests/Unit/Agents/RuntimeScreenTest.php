@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Agents;
 
 use App\Files\Contracts\Files;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Recordings;
 use App\Terminals\Data\ScreenFrameData;
 use App\Terminals\Enums\ScreenBuffer;
 use App\Terminals\RuntimeScreen;

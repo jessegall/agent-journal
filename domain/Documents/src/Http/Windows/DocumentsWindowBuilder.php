@@ -14,8 +14,6 @@ use Domain\Documents\Data\DocumentsPaneData;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\LibraryTypeFilter;
 use Domain\Documents\Http\Requests\ListRecordsRequest;
-use Domain\Documents\Models\Document;
-use Domain\Documents\Models\Report;
 use Illuminate\Http\Request;
 
 final readonly class DocumentsWindowBuilder implements WindowBuilder
@@ -29,22 +27,22 @@ final readonly class DocumentsWindowBuilder implements WindowBuilder
 
     public function build(Request $visit): DocumentsPaneData
     {
-        $input = $this->requests->from(ListRecordsRequest::class, $visit);
+        $input = $this->requests->forVisit(ListRecordsRequest::class, $visit);
         $filters = $input->filters();
         $type = $input->typeFilter();
         $policy = $this->policies->forType(DocumentsPaneData::class);
         $limit = $policy->limitFor('items');
 
-        $documents = $type->isForDocuments() ? $this->documents->preview($filters, $limit)->all() : [];
-        $reports = $type->isForReports() ? $this->reports->preview($filters, $limit)->all() : [];
+        $documents = $type->isForDocuments() ? $this->documents->preview($filters, $limit) : [];
+        $reports = $type->isForReports() ? $this->reports->preview($filters, $limit) : [];
 
         $recent = [
             ...$documents,
             ...$reports,
         ];
 
-        usort($recent, fn (Document|Report $left, Document|Report $right) => strcmp($right->id, $left->id));
-        $items = array_map($this->row(...), array_slice($recent, 0, $limit));
+        usort($recent, fn (LayoutRowData $left, LayoutRowData $right) => strcmp($right->key, $left->key));
+        $items = array_slice($recent, 0, $limit);
 
         $query = array_filter([
             'attention' => $filters->attention === AttentionFilter::Active ? null : $filters->attention->value,
@@ -56,20 +54,6 @@ final readonly class DocumentsWindowBuilder implements WindowBuilder
         return DocumentsPaneData::build()
             ->items($items)
             ->fullUrl(route('documents.library', $query, false))
-            ->finish();
-    }
-
-    private function row(Document|Report $record): LayoutRowData
-    {
-        $document = $record instanceof Document;
-
-        return LayoutRowData::build()
-            ->key($record->id)
-            ->label($document ? $record->currentRevision->title : $record->title)
-            ->value($document ? 'Document' : 'Report')
-            ->href($document
-                ? route('documents.document', ['document' => $record->number], false)
-                : route('documents.report', ['report' => $record->number], false))
             ->finish();
     }
 }

@@ -11,7 +11,7 @@ use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Protocol\HostProcessReportType;
 use App\Hosts\Protocol\HostRefusal;
 use App\Models\Hosts\HostProcess;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Recordings;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

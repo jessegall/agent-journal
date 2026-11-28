@@ -30,7 +30,7 @@ final readonly class ShareListPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(ShareListRequest::class, $visit);
+        $input = $this->requests->forVisit(ShareListRequest::class, $visit);
 
         $filters = $input->filters();
         $found = Share::findListPage($filters->toFilters(), self::ROWS);

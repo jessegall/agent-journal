@@ -6,8 +6,8 @@ namespace Tests\Machinery\Recordings;
 
 use App\Files\Enums\Place;
 use App\Http\Middleware\RecordCalls;
-use App\Recordings\RecordingDrafts;
-use App\Recordings\Scenarios\Scenario;
+use App\Support\Recordings\RecordingDrafts;
+use App\Support\Recordings\Scenarios\Scenario;
 use Illuminate\Support\Facades\File;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Entries\Attributes\TestsMachinery;

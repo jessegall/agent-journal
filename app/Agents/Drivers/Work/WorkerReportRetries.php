@@ -72,7 +72,7 @@ final readonly class WorkerReportRetries
             return null;
         }
 
-        return $this->transaction->run(fn () => RetryAttempt::record(
+        return $this->transaction->run(fn () => RetryAttempt::create(
             $process->agent_runtime_id,
             RetriedAction::WorkerReport,
             $retry,

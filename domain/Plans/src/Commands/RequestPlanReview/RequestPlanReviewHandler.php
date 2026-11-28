@@ -7,6 +7,7 @@ namespace Domain\Plans\Commands\RequestPlanReview;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Models\PlanReviewEdition;
 
 final readonly class RequestPlanReviewHandler extends PlanCommandHandler
 {
@@ -18,7 +19,9 @@ final readonly class RequestPlanReviewHandler extends PlanCommandHandler
     public function handle(RequestPlanReviewCommand $command): string
     {
         $plan = Plan::findLockedStructure($command->planId);
+        $review = PlanReviewEdition::create($plan, $command->dispatchedBy());
+        $plan->openReview($review->id, $command->reviewers);
 
-        return $plan->openReview($command->dispatchedBy(), $command->reviewers)->getKey();
+        return $review->id;
     }
 }

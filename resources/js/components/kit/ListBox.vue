@@ -7,7 +7,7 @@ import { listBoxActiveKey } from './listBoxActive';
  * where Down, Up, Home and End move and wrap and Enter chooses, and names the list and the active option (the activeId
  * model) in its aria attributes. Measures: docs/designs/kit-components.md.
  */
-withDefaults(defineProps<{ label: string; size?: 'popover' | 'palette' }>(), { size: 'popover' });
+withDefaults(defineProps<{ label: string; size?: 'popover' | 'palette' | 'bare' }>(), { size: 'popover' });
 
 const activeId = defineModel<string | null>('activeId', { default: null });
 const list = useTemplateRef<HTMLElement>('list');
@@ -82,8 +82,7 @@ defineExpose({ controlKeys });
         ref="list"
         role="listbox"
         :aria-label="label"
-        class="overflow-y-auto p-1.5"
-        :class="size === 'palette' ? 'max-h-105' : 'max-h-85'"
+        :class="{ popover: 'overflow-y-auto p-1.5 max-h-85', palette: 'overflow-y-auto p-1.5 max-h-105', bare: '' }[size]"
     >
         <slot />
     </div>

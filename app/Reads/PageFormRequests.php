@@ -19,7 +19,7 @@ final readonly class PageFormRequests
      * @param  class-string<TRequest>  $type
      * @return TRequest
      */
-    public function from(string $type, Request $visit): FormRequest
+    public function forVisit(string $type, Request $visit): FormRequest
     {
         $request = new $type();
         $type::createFrom($visit, $request);

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/kit/Button.vue';
 import { Link } from '@inertiajs/vue3';
 import type { FilePaneData } from '@generated/types/connections';
 import SwitchCase from '@kit/SwitchCase';
@@ -27,7 +28,7 @@ const { gaveUp, retry } = usePendingPoll(
             <template #none><p>No project is connected.</p></template>
             <template #binary><p>Only text files can be previewed.</p></template>
             <template #too_large><p>This file exceeds the preview size.</p></template>
-            <template #default><button class="self-start underline" @click="retry">Retry file read</button></template>
+            <template #default><Button variant="bare" class="self-start underline" @click="retry">Retry file read</Button></template>
         </SwitchCase>
         <Link :href="fullUrl" class="self-start text-xs font-medium underline">Open full file</Link>
     </div>

@@ -7,6 +7,7 @@ use App\Events\Inboxes\InboxLeft;
 use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Inboxes\InboxOpened;
 use App\Events\Messages\ClosingWordsDelivered;
+use App\Events\Messages\MessageDeliveryChanged;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
 use App\Events\Messages\NotificationReceiptHidden;
@@ -28,6 +29,13 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    MessageDeliveryChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => ['Message::markDelivered', 'Message::failDelivery', 'Message::retryDelivery'],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new MessageDeliveryChanged('message', 'inbox'),
+    ],
     MessageRead::class => [
         'role' => EventRole::RowFact,
         'owner' => 'MessageReadEntry::create',

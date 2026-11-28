@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Recordings;
 
-use App\Recordings\MultiplexedStream;
-use App\Recordings\RecordedCall;
-use App\Recordings\RecordingFakes;
+use App\Support\Recordings\MultiplexedStream;
+use App\Support\Recordings\RecordedCall;
+use App\Support\Recordings\RecordingFakes;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Route;

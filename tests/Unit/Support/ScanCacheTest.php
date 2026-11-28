@@ -68,6 +68,23 @@ final class ScanCacheTest extends TestCase
         $this->assertSame($parsedBefore, ScanCache::parsedFiles());
     }
 
+    public function test_a_narrow_scan_loads_its_own_cache_entry(): void
+    {
+        $first = "{$this->folder}/first.php";
+        $second = "{$this->folder}/second.php";
+        file_put_contents($first, '<?php // one');
+        file_put_contents($second, '<?php // two');
+
+        ScanCache::findings($this->scan(), [$first, $second]);
+        ScanCache::findings($this->scan(), [$first]);
+        ScanCache::forget();
+
+        $entries = glob(storage_path("framework/testing/scan-cache/{$this->key}*"));
+
+        $this->assertCount(2, $entries);
+        $this->assertSame(['// one'], ScanCache::findings($this->scan(), [$first]));
+    }
+
     /**
      * A scan whose one finding is the file's code after its opening tag.
      *

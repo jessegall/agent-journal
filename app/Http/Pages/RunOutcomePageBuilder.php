@@ -26,7 +26,7 @@ final readonly class RunOutcomePageBuilder implements PageBuilder
 
     public function build(Request $visit): RunOutcomePageData
     {
-        $input = $this->requests->from(RunPageRequest::class, $visit);
+        $input = $this->requests->forVisit(RunPageRequest::class, $visit);
 
         $runId = $input->runId();
 

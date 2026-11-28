@@ -239,7 +239,8 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->actual_binding = $actualBinding;
         $this->outcome = $outcome;
         $this->saveAndAssert();
-        RetryAttempt::ofVersion($this)?->settle(RetryOutcome::Succeeded);
+        $attempt = RetryAttempt::ofVersion($this);
+        $attempt?->settle(RetryOutcome::Succeeded);
         $this->raise(new DriverRequestApplied($this->id));
     }
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Recordings;
 
-use App\Recordings\CutExchange;
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedCall;
-use App\Recordings\RecordedEvent;
-use App\Recordings\RecordedOutputReport;
-use App\Recordings\RecordingFakes;
-use App\Recordings\RecordingOpening;
+use App\Support\Recordings\CutExchange;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedCall;
+use App\Support\Recordings\RecordedEvent;
+use App\Support\Recordings\RecordedOutputReport;
+use App\Support\Recordings\RecordingFakes;
+use App\Support\Recordings\RecordingOpening;
 use Illuminate\Http\Request;
 use Tests\TestCase;
 

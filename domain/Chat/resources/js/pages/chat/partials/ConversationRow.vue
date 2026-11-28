@@ -3,6 +3,7 @@ import Avatar from "@kit/Avatar";
 import Chip from "@kit/Chip";
 import Icon from "@kit/Icon";
 import IconButton from "@kit/IconButton";
+import ListRow from "@kit/ListRow";
 import Status from "@kit/Status";
 import { timeAgo } from "@kit/format";
 import { computed } from "vue";
@@ -31,10 +32,12 @@ const doing = computed(() => matchParts(props.agent.status.label, props.search))
 </script>
 
 <template>
-  <div
+  <ListRow
+    bare
+    static
+    option
     :id="rowId"
-    role="option"
-    :aria-selected="isActive"
+    :selected="isActive"
     :aria-current="isChosen ? 'true' : undefined"
     :data-conversation="agent.id"
     class="flex cursor-pointer items-center gap-2.5 px-3 py-1.5 hover:bg-hover"
@@ -87,5 +90,5 @@ const doing = computed(() => matchParts(props.agent.status.label, props.search))
         @click.stop="emit('openBeside')"
       />
     </template>
-  </div>
+  </ListRow>
 </template>

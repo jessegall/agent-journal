@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Recordings\Scenarios;
 
 use App\Agents\Drivers\Enums\DriverType;
-use App\Recordings\Scenarios\Enums\ScenarioFact;
-use App\Recordings\Scenarios\Enums\ScenarioStepType;
-use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
-use App\Recordings\Scenarios\Scenario;
+use App\Support\Recordings\Scenarios\Enums\ScenarioFact;
+use App\Support\Recordings\Scenarios\Enums\ScenarioStepType;
+use App\Support\Recordings\Scenarios\Exceptions\ScenarioInvalid;
+use App\Support\Recordings\Scenarios\Scenario;
 use Tests\TestCase;
 
 /**

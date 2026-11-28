@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import Avatar from "@kit/Avatar";
+import Button from "@kit/Button";
+import Tab from "@kit/Tab";
+import Tabs from "@kit/Tabs";
 import Icon from "@kit/Icon";
 import IconButton from "@kit/IconButton";
 import Kbd from "@kit/Kbd";
@@ -90,23 +93,11 @@ function undoClose(): void {
   }
 }
 
-function moveFrom(agent: AgentOptionData, step: 1 | -1): void {
-  const place = tabs.value.indexOf(agent);
-  const next = tabs.value[(place + step + tabs.value.length) % tabs.value.length];
-  document.getElementById(tabId(next))?.focus();
-  choose(next);
-}
+function chooseTab(id: string): void {
+  const agent = tabs.value.find((each) => each.id === id);
 
-function pressOnTab(event: KeyboardEvent, agent: AgentOptionData): void {
-  const actions: Record<string, () => void> = {
-    ArrowRight: () => moveFrom(agent, 1),
-    ArrowLeft: () => moveFrom(agent, -1),
-    Delete: () => close(agent),
-  };
-
-  if (event.key in actions) {
-    event.preventDefault();
-    actions[event.key]();
+  if (agent !== undefined) {
+    choose(agent);
   }
 }
 
@@ -163,57 +154,63 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
 
 <template>
   <div class="@container/bar flex h-full w-full min-w-0 items-stretch gap-1" data-chat-tabs>
-    <div class="flex min-w-0 items-stretch overflow-x-auto [scrollbar-width:none]" role="tablist" aria-label="Open chats">
-      <template v-for="agent in tabs" :key="agent.id">
-        <div
-          class="group/tab flex max-w-[220px] flex-none items-center gap-1.5 border-r border-line px-2.5 text-small"
-          :class="agent.id === selectedAgentId ? 'bg-bg text-text' : 'text-text-2 hover:bg-hover'"
-        >
-          <button
-            :id="tabId(agent)"
-            type="button"
-            role="tab"
-            :aria-selected="agent.id === selectedAgentId"
-            :tabindex="agent.id === selectedAgentId ? 0 : -1"
-            :data-chat-tab="agent.id"
-            class="flex min-w-0 items-center gap-1.5 whitespace-nowrap"
-            :class="columnAgentIds.includes(agent.id) && 'underline underline-offset-4'"
-            @click="choose(agent)"
-            @keydown="pressOnTab($event, agent)"
+    <Tabs
+      variant="bare"
+      label="Open chats"
+      :model-value="selectedAgentId ?? ''"
+      class="min-w-0 overflow-x-auto [scrollbar-width:none]"
+      @update:model-value="chooseTab"
+    >
+      <template #tabs>
+        <template v-for="agent in tabs" :key="agent.id">
+          <div
+            class="group/tab flex max-w-[220px] flex-none items-center gap-1.5 border-r border-line px-2.5 text-small"
+            :class="agent.id === selectedAgentId ? 'bg-bg text-text' : 'text-text-2 hover:bg-hover'"
           >
-            <Avatar :participant="{ kind: 'agent', driver: agent.sessionDriver ?? '' }" />
-            <span class="min-w-0 truncate">{{ agent.isMain ? `${agent.name} · main` : agent.name }}</span>
-            <Status :state="sessionLooks[agent.status.sessionState]" label="" />
-            <template v-if="agent.unreadCount > 0">
-              <span class="font-medium text-text" :aria-label="`${agent.unreadCount} unread`">{{
-                agent.unreadCount
-              }}</span>
+            <Tab
+              bare
+              :value="agent.id"
+              :label="agent.name"
+              :id="tabId(agent)"
+              :data-chat-tab="agent.id"
+              class="flex min-w-0 items-center gap-1.5 whitespace-nowrap"
+              :class="columnAgentIds.includes(agent.id) && 'underline underline-offset-4'"
+              @keydown.delete.prevent="close(agent)"
+            >
+              <Avatar :participant="{ kind: 'agent', driver: agent.sessionDriver ?? '' }" />
+              <span class="min-w-0 truncate">{{ agent.isMain ? `${agent.name} · main` : agent.name }}</span>
+              <Status :state="sessionLooks[agent.status.sessionState]" label="" />
+              <template v-if="agent.unreadCount > 0">
+                <span class="font-medium text-text" :aria-label="`${agent.unreadCount} unread`">{{
+                  agent.unreadCount
+                }}</span>
+              </template>
+            </Tab>
+            <template v-if="agent.id === selectedAgentId">
+              <IconButton
+                icon="caret"
+                size="xs"
+                :tooltip="false"
+                :label="`The chat list, from ${agent.name}'s chat`"
+                :data-tab-caret="agent.id"
+                @click="requestChatList(agent.id)"
+              />
             </template>
-          </button>
-          <template v-if="agent.id === selectedAgentId">
             <IconButton
-              icon="caret"
+              icon="close"
               size="xs"
               :tooltip="false"
-              :label="`The chat list, from ${agent.name}'s chat`"
-              :data-tab-caret="agent.id"
-              @click="requestChatList(agent.id)"
+              :label="`Close the tab of ${agent.name}`"
+              class="opacity-0 group-hover/tab:opacity-100 focus-visible:opacity-100"
+              :data-close-tab="agent.id"
+              @click="close(agent)"
             />
-          </template>
-          <IconButton
-            icon="close"
-            size="xs"
-            :tooltip="false"
-            :label="`Close the tab of ${agent.name}`"
-            class="opacity-0 group-hover/tab:opacity-100 focus-visible:opacity-100"
-            :data-close-tab="agent.id"
-            @click="close(agent)"
-          />
-        </div>
+          </div>
+        </template>
       </template>
-    </div>
-    <button
-      type="button"
+    </Tabs>
+    <Button
+      variant="bare"
       class="flex flex-none items-center gap-1.5 px-2.5 text-small whitespace-nowrap text-text-2 hover:bg-hover"
       :aria-busy="isOpeningNewChat"
       title="New chat · ⌥N"
@@ -223,7 +220,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", openOnShortcut));
       <Icon name="plus" :size="14" />
       <span class="@max-[820px]/bar:hidden">New chat</span>
       <Kbd class="@max-[820px]/bar:hidden" variant="bare" decorative>⌥N</Kbd>
-    </button>
+    </Button>
     <span class="flex-1"></span>
     <span class="flex flex-none items-center pr-1">
       <ChatLayoutPicker />

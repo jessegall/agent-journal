@@ -482,6 +482,11 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
         return self::query()->onHost($hostId)->unrevoked()->first();
     }
 
+    public static function findServingInstall(string $id): self|null
+    {
+        return self::query()->acrossProjects()->unrevoked()->with('host')->find($id);
+    }
+
     /**
      * The binding this host's redemption made under its installation nonce.
      *

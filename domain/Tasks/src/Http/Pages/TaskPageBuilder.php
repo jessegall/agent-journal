@@ -77,7 +77,7 @@ final readonly class TaskPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(TaskRequest::class, $visit);
+        $input = $this->requests->forVisit(TaskRequest::class, $visit);
 
         try {
             $taskId = $input->taskId();

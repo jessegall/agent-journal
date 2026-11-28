@@ -34,7 +34,7 @@ final readonly class SequenceRunsPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(SequenceRunsRequest::class, $visit);
+        $input = $this->requests->forVisit(SequenceRunsRequest::class, $visit);
 
         try {
             $followers = $this->runs->followers();

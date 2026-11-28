@@ -26,8 +26,10 @@ final readonly class DriverSwitchLines
 
     public function switched(DriverSwitch $switch): void
     {
-        $from = $this->labelOf(AgentSession::query()->find($switch->expected_session_id), $switch);
-        $to = $this->labelOf(AgentSession::query()->find($switch->replacement_session_id), $switch);
+        $expected = AgentSession::query()->find($switch->expected_session_id);
+        $from = $this->labelOf($expected, $switch);
+        $replacement = AgentSession::query()->find($switch->replacement_session_id);
+        $to = $this->labelOf($replacement, $switch);
         $agent = Agent::query()->findOrFail($switch->agent_id);
 
         $read = match (true) {
@@ -42,7 +44,8 @@ final readonly class DriverSwitchLines
 
     public function failed(DriverSwitch $switch, string $reason): void
     {
-        $from = $this->labelOf(AgentSession::query()->find($switch->expected_session_id), $switch);
+        $expected = AgentSession::query()->find($switch->expected_session_id);
+        $from = $this->labelOf($expected, $switch);
         $agent = Agent::query()->findOrFail($switch->agent_id);
 
         $this->post($switch, "The switch to {$switch->target_family} failed: {$reason} {$agent->name} stays on {$from}.");

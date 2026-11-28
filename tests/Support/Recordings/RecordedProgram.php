@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support\Recordings;
 
-use App\Recordings\CutExchange;
-use App\Recordings\Enums\Wire;
-use App\Recordings\Recordings;
-use App\Recordings\ScenarioRecording;
+use App\Support\Recordings\CutExchange;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\Recordings;
+use App\Support\Recordings\ScenarioRecording;
 use PHPUnit\Framework\Assert;
 
 final readonly class RecordedProgram

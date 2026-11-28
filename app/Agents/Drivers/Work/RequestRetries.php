@@ -47,7 +47,7 @@ final readonly class RequestRetries
         $previous?->settle(RetryOutcome::Failed, $failure);
         $action = $request->operation === DriverOperation::Wake ? RetriedAction::Wake : RetriedAction::TurnOpen;
 
-        $attempt = RetryAttempt::record(
+        $attempt = RetryAttempt::create(
             $request->agent_runtime_id,
             $action,
             $retry + 1,

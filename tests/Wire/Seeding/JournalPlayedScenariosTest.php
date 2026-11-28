@@ -7,7 +7,7 @@ namespace Tests\Wire\Seeding;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Models\Accounts\Account;
 use App\Models\Projects\HostDriverImage;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Recordings;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\OverTheWire;
 use Tests\Support\Entries\Attributes\TestsMachinery;

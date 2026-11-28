@@ -83,7 +83,7 @@ final class ScanCache
     {
         // A file changed earlier in this process must be stated afresh, not from PHP's stat cache.
         clearstatcache();
-        $cacheFile = self::cacheFileFor($scan);
+        $cacheFile = self::cacheFileFor($scan, $paths);
         $stored = self::read($cacheFile);
         $byFile = [];
         $changed = false;
@@ -127,17 +127,20 @@ final class ScanCache
 
     /**
      * @param  FileScan<mixed>  $scan
+     * @param  list<string>  $paths
      */
-    private static function cacheFileFor(FileScan $scan): string
+    private static function cacheFileFor(FileScan $scan, array $paths): string
     {
         // The scan's own code is part of the key, so a changed scan never reads the findings of its old self.
         $code = Reflector::of($scan)->fileName()->map(fn (string $file) => (string) sha1_file($file))->getOrElse('');
+        sort($paths, SORT_STRING);
+        $scope = sha1(implode("\0", $paths));
 
         return dirname(__DIR__, 3).'/storage/framework/testing/scan-cache/'.preg_replace(
             '/[^a-z0-9_.-]+/i',
             '-',
             $scan->key(),
-        ).'-'.substr($code, 0, 12).'.cache';
+        ).'-'.substr($code, 0, 12).'-'.substr($scope, 0, 12).'.cache';
     }
 
     /**

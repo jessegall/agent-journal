@@ -20,7 +20,7 @@ final readonly class CollectionPageBuilder implements PageBuilder
 
     public function build(Request $visit): CollectionPageData
     {
-        $collection = $this->requests->from(CollectionRequest::class, $visit)->collection();
+        $collection = $this->requests->forVisit(CollectionRequest::class, $visit)->collection();
         $notes = Note::query()->forActor()->where('created_at', 'like', "{$collection}-%")->get(['text']);
         $texts = array_values($notes->map(fn (Note $note) => $note->text)->all());
 

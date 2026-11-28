@@ -109,7 +109,8 @@ onMounted(async () => {
             <template v-for="line in start.lines" :key="line.id">
               <li>
                 <template v-if="line.isFailure">
-                  <button
+                  <Button
+                    variant="bare"
                     type="button"
                     class="flex w-full items-baseline gap-1.5 rounded-control px-1 text-left text-meta text-danger hover:bg-hover focus-visible:outline-2 focus-visible:outline-focus"
                     :aria-expanded="expanded === line.id"
@@ -120,7 +121,7 @@ onMounted(async () => {
                     <span class="font-mono">{{ secondsClockOf(line.at) }}</span>
                     <span class="font-medium">{{ line.title }}</span>
                     <span class="min-w-0 truncate">· {{ line.detail }}</span>
-                  </button>
+                  </Button>
                   <template v-if="expanded === line.id">
                     <dl class="mt-1 mb-2 ml-1 flex flex-col gap-1 text-meta" data-log-evidence>
                       <dt class="text-text-4">Reason</dt>

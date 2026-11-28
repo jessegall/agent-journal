@@ -44,7 +44,7 @@ final readonly class ReportPageBuilder implements PageBuilder
 
     private function content(Request $visit): RecordLayoutData
     {
-        $input = $this->requests->from(RecordPageRequest::class, $visit);
+        $input = $this->requests->forVisit(RecordPageRequest::class, $visit);
 
         $number = $input->reportNumber();
         $report = $this->reports->show($number);

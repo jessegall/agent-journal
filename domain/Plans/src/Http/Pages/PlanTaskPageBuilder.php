@@ -38,7 +38,7 @@ final readonly class PlanTaskPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(PlanTaskRequest::class, $visit);
+        $input = $this->requests->forVisit(PlanTaskRequest::class, $visit);
 
         $plan = Plan::query()->findOrFail($input->planId());
         $ids = $plan->taskIds();

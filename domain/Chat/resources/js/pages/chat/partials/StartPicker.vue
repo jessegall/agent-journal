@@ -3,8 +3,10 @@ import { Link } from "@inertiajs/vue3";
 import Avatar from "@kit/Avatar";
 import Button from "@kit/Button";
 import Icon from "@kit/Icon";
+import SegmentedControl from "@kit/SegmentedControl";
+import SegmentedItem from "@kit/SegmentedItem";
 import { accountsPage } from "@kit/sessionStarts";
-import { computed, nextTick } from "vue";
+import { computed } from "vue";
 import type { AgentOptionData } from "@generated/types/chat";
 import { useStartChoice, type StartDriver } from "../../../composables/useStartChoice";
 
@@ -63,28 +65,6 @@ function pick(group: Group, value: string): void {
   ({ account: choice.accountId, model: choice.model, effort: choice.effort })[group].value = value;
 }
 
-// Enter starts; the arrow keys move the choice within its group and the focus with it.
-async function press(event: KeyboardEvent, group: Group, values: string[], current: string | null): Promise<void> {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    choice.start();
-
-    return;
-  }
-
-  const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
-
-  if (step === undefined || values.length === 0) {
-    return;
-  }
-
-  event.preventDefault();
-  const next = values[(values.indexOf(current ?? values[0]) + step + values.length) % values.length];
-  pick(group, next);
-  await nextTick();
-  document.querySelector<HTMLElement>(`[data-start-option="${group}:${next}"]`)?.focus();
-}
-
 const optionClass =
   "flex min-h-11 items-center gap-2.5 rounded-field border border-border-2 px-3 py-2 text-left text-text-2 " +
   "hover:border-border-3 hover:bg-hover hover:text-text aria-checked:border-text aria-checked:bg-sel " +
@@ -123,27 +103,34 @@ const optionClass =
       </div>
 
       <div id="start-driver-label" class="mt-3 mb-1.5 text-group tracking-[.06em] text-text-4 uppercase">Driver</div>
-      <div class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2" role="radiogroup" aria-labelledby="start-driver-label">
-        <template v-for="driver in choice.startable.value" :key="driver.family">
-          <button
-            type="button"
-            role="radio"
+      <SegmentedControl
+        bare
+        label="Driver"
+        :items="choice.startable.value.map((driver) => ({ value: driver.family, label: driver.label }))"
+        :model-value="choice.chosen.value?.family ?? ''"
+        class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2"
+        :disabled="isStarting"
+        @update:model-value="pick('driver', $event)"
+        @keydown.enter.prevent="choice.start()"
+      >
+        <template #items>
+          <SegmentedItem
+            v-for="driver in choice.startable.value"
+            :key="driver.family"
+            :value="driver.family"
+            bare
             :class="optionClass"
-            :aria-checked="driver.family === choice.chosen.value?.family"
-            :tabindex="driver.family === choice.chosen.value?.family ? 0 : -1"
             :disabled="isStarting"
             :data-start-option="`driver:${driver.family}`"
-            @click="pick('driver', driver.family)"
-            @keydown="press($event, 'driver', choice.startable.value.map((each) => each.family), choice.chosen.value?.family ?? null)"
           >
             <Avatar :participant="{ kind: 'agent', driver: driver.family }" />
             <span class="flex min-w-0 flex-col leading-[1.3]">
               <b class="text-card font-medium text-text" data-start-label>{{ driver.label }}</b>
               <small class="truncate text-meta text-text-3">{{ accountLabelOf(driver) }}</small>
             </span>
-          </button>
+          </SegmentedItem>
         </template>
-      </div>
+      </SegmentedControl>
       <template v-if="choice.notSignedIn.value.length > 0">
         <p class="mt-2 text-small text-text-3" data-not-signed-in>
           {{ choice.notSignedIn.value.map((driver) => driver.label).join(" and ") }}
@@ -155,38 +142,52 @@ const optionClass =
       <template v-if="choice.chosen.value">
         <template v-if="choice.chosen.value.accounts.length > 1">
           <div id="start-account-label" class="mt-3 mb-1.5 text-group tracking-[.06em] text-text-4 uppercase">Account</div>
-          <div class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2" role="radiogroup" aria-labelledby="start-account-label">
-            <template v-for="account in choice.chosen.value.accounts" :key="account.id">
-              <button
-                type="button"
-                role="radio"
+          <SegmentedControl
+            bare
+            label="Account"
+            :items="choice.chosen.value.accounts.map((account) => ({ value: account.id, label: account.label }))"
+            :model-value="choice.accountId.value ?? ''"
+            class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2"
+            :disabled="isStarting"
+            @update:model-value="pick('account', $event)"
+            @keydown.enter.prevent="choice.start()"
+          >
+            <template #items>
+              <SegmentedItem
+                v-for="account in choice.chosen.value.accounts"
+                :key="account.id"
+                :value="account.id"
+                bare
                 :class="optionClass"
-                :aria-checked="account.id === choice.accountId.value"
-                :tabindex="account.id === choice.accountId.value ? 0 : -1"
                 :disabled="isStarting"
                 :data-start-option="`account:${account.id}`"
-                @click="pick('account', account.id)"
-                @keydown="press($event, 'account', choice.chosen.value.accounts.map((each) => each.id), choice.accountId.value)"
               >
                 <b class="text-card font-medium text-text" data-start-label>{{ account.label }}</b>
-              </button>
+              </SegmentedItem>
             </template>
-          </div>
+          </SegmentedControl>
         </template>
 
         <div id="start-model-label" class="mt-3 mb-1.5 text-group tracking-[.06em] text-text-4 uppercase">Model</div>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-2" role="radiogroup" aria-labelledby="start-model-label">
-          <template v-for="each in choice.chosen.value.models" :key="each">
-            <button
-              type="button"
-              role="radio"
+        <SegmentedControl
+          bare
+          label="Model"
+          :items="choice.chosen.value.models.map((value) => ({ value, label: value }))"
+          :model-value="choice.model.value ?? ''"
+          class="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-2"
+          :disabled="isStarting"
+          @update:model-value="pick('model', $event)"
+          @keydown.enter.prevent="choice.start()"
+        >
+          <template #items>
+            <SegmentedItem
+              v-for="each in choice.chosen.value.models"
+              :key="each"
+              :value="each"
+              bare
               :class="optionClass"
-              :aria-checked="each === choice.model.value"
-              :tabindex="each === choice.model.value ? 0 : -1"
               :disabled="isStarting"
               :data-start-option="`model:${each}`"
-              @click="pick('model', each)"
-              @keydown="press($event, 'model', choice.chosen.value.models, choice.model.value)"
             >
               <span class="flex flex-col leading-[1.3]">
                 <b class="text-card font-medium text-text" data-start-label>{{ each }}</b>
@@ -194,28 +195,35 @@ const optionClass =
                   <small class="text-meta text-text-3">Default</small>
                 </template>
               </span>
-            </button>
+            </SegmentedItem>
           </template>
-        </div>
+        </SegmentedControl>
 
         <div id="start-effort-label" class="mt-3 mb-1.5 text-group tracking-[.06em] text-text-4 uppercase">Effort</div>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2" role="radiogroup" aria-labelledby="start-effort-label">
-          <template v-for="each in choice.chosen.value.efforts" :key="each">
-            <button
-              type="button"
-              role="radio"
+        <SegmentedControl
+          bare
+          label="Effort"
+          :items="choice.chosen.value.efforts.map((value) => ({ value, label: value }))"
+          :model-value="choice.effort.value ?? ''"
+          class="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2"
+          :disabled="isStarting"
+          @update:model-value="pick('effort', $event)"
+          @keydown.enter.prevent="choice.start()"
+        >
+          <template #items>
+            <SegmentedItem
+              v-for="each in choice.chosen.value.efforts"
+              :key="each"
+              :value="each"
+              bare
               :class="[optionClass, 'min-h-9 justify-center text-text capitalize']"
-              :aria-checked="each === choice.effort.value"
-              :tabindex="each === choice.effort.value ? 0 : -1"
               :disabled="isStarting"
               :data-start-option="`effort:${each}`"
-              @click="pick('effort', each)"
-              @keydown="press($event, 'effort', choice.chosen.value.efforts, choice.effort.value)"
             >
               {{ each }}
-            </button>
+            </SegmentedItem>
           </template>
-        </div>
+        </SegmentedControl>
       </template>
 
       <div class="mt-3.5 flex items-center gap-2.5 border-t border-line pt-3">

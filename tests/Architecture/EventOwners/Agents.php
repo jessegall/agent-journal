@@ -314,7 +314,7 @@ return [
     ],
     SessionProcessStopped::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'SessionProcess::stopWithProof',
+        'owner' => 'SessionProcess::stopAt',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SessionProcessStopped('start'),

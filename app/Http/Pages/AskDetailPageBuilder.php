@@ -20,7 +20,7 @@ final readonly class AskDetailPageBuilder implements PageBuilder
 
     public function build(Request $visit): AskDetail
     {
-        $input = $this->requests->from(AskPageRequest::class, $visit);
+        $input = $this->requests->forVisit(AskPageRequest::class, $visit);
 
         return $this->asks->detail($input->ask());
     }

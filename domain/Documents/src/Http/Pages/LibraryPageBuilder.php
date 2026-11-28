@@ -20,7 +20,7 @@ final readonly class LibraryPageBuilder implements PageBuilder
 
     public function build(Request $visit): LibraryPageData
     {
-        $input = $this->requests->from(ListRecordsRequest::class, $visit);
+        $input = $this->requests->forVisit(ListRecordsRequest::class, $visit);
 
         return LibraryPageData::build()
             ->shown($this->library->layout($input->filters(), $input->typeFilter()))

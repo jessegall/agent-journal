@@ -11,7 +11,7 @@ use App\Agents\Values\SecretHandover;
 use App\Agents\Values\SignInReport;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Recordings;
 use Tests\Support\Recordings\RecordedProgram;
 use Tests\TestCase;
 

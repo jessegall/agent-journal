@@ -29,7 +29,7 @@ final readonly class PlansPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(PlansRequest::class, $visit);
+        $input = $this->requests->forVisit(PlansRequest::class, $visit);
 
         return $this->index->of($input->filters(), []);
     }

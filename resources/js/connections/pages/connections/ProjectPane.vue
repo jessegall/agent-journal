@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/kit/Button.vue';
 import { Link } from '@inertiajs/vue3';
 import type { ProjectPaneData } from '@generated/types/connections';
 import SwitchCase from '@kit/SwitchCase';
@@ -23,9 +24,9 @@ const { gaveUp, retry } = usePendingPoll(
                 <ul class="divide-y divide-border">
                     <li v-for="entry in items" :key="entry.path" class="py-2">
                         <span v-if="entry.isFolder" class="break-all">{{ entry.name }}/</span>
-                        <button v-else class="break-all text-left hover:underline" @click="openFile(entry.path)">
+                        <Button variant="bare" v-else class="break-all text-left hover:underline" @click="openFile(entry.path)">
                             {{ entry.name }}
-                        </button>
+                        </Button>
                     </li>
                 </ul>
             </template>
@@ -36,7 +37,7 @@ const { gaveUp, retry } = usePendingPoll(
                 <p>Reading the project's files…</p>
             </template>
             <template #default>
-                <button class="underline" @click="retry">Retry project read</button>
+                <Button variant="bare" class="underline" @click="retry">Retry project read</Button>
             </template>
         </SwitchCase>
         <Link :href="fullUrl" class="mt-2 inline-flex text-xs font-medium underline">Open project</Link>

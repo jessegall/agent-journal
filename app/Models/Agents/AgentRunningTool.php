@@ -13,6 +13,7 @@ use App\Values\ToolLine;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use PhpOption\Option;
 
 /**
@@ -24,6 +25,7 @@ use PhpOption\Option;
  * @property string|null $line
  * @property bool $is_running
  * @property CarbonImmutable $changed_at
+ * @property-read string $changed_at_text
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  *
@@ -96,17 +98,17 @@ final class AgentRunningTool extends JournalModel implements EventSource
         $this->is_running = $isRunning;
         $this->changed_at = CarbonImmutable::now();
         $this->saveAndAssert();
-        $this->raise(new RunningToolChanged($this->agent_id, $line, $isRunning, $this->changedAtText()));
+        $this->raise(new RunningToolChanged($this->agent_id, $line, $isRunning, $this->changed_at_text));
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * When the line last changed, in UTC with microseconds, as the browser orders the changes it receives.
      */
-    public function changedAtText(): string
+    protected function changedAtText(): Attribute
     {
-        return $this->changed_at->setTimezone('UTC')->format(self::CHANGED_AT_FORMAT);
+        return Attribute::get(fn (): string => $this->changed_at->setTimezone('UTC')->format(self::CHANGED_AT_FORMAT));
     }
 
     // ----------[ Queries ]----------
@@ -118,7 +120,9 @@ final class AgentRunningTool extends JournalModel implements EventSource
      */
     public static function shownOf(string $agentId): Option
     {
-        return Option::fromValue(self::query()->ofAgent($agentId)->first());
+        $tool = self::query()->ofAgent($agentId)->first();
+
+        return Option::fromValue($tool);
     }
 
     /**

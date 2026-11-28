@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support\Recordings;
 
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedCall;
-use App\Recordings\Recordings;
-use App\Recordings\ScenarioRecording;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedCall;
+use App\Support\Recordings\Recordings;
+use App\Support\Recordings\ScenarioRecording;
 use PHPUnit\Framework\AssertionFailedError;
 use Tests\Support\Recordings\CallReplay;
 use Tests\Support\Recordings\Exceptions\UnrecordedCall;

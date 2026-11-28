@@ -22,7 +22,8 @@ const emit = defineEmits<{ newChat: []; switchDriver: []; endSession: []; stopTu
 
 <template>
   <div class="flex flex-col gap-1.5 border-t border-line px-3 py-2">
-    <button
+    <Button
+      variant="bare"
       type="button"
       class="flex items-center gap-2 rounded-field px-1.5 py-1 text-left text-body text-text hover:bg-hover"
       data-new-chat
@@ -35,7 +36,7 @@ const emit = defineEmits<{ newChat: []; switchDriver: []; endSession: []; stopTu
         ></span
       >
       <Kbd>⌥N</Kbd>
-    </button>
+    </Button>
     <template v-if="chosenAgent">
       <div
         class="flex flex-wrap items-center gap-1.5"
