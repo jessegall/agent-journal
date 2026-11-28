@@ -20,7 +20,7 @@ use App\Values\ProfileKey;
 /**
  * A user starts a main agent from a main_agent profile, with an explicit model or the profile's default and,
  * when the profile does not pin one, a driver of their choosing; optionally a driver type, kept for the agent when
- * saveDriverType, and an account they chose in place of the default.
+ * saveDriverType, an account they chose in place of the default, and the effort to run at.
  *
  * @extends Command<StartReceipt>
  */
@@ -38,6 +38,8 @@ final readonly class StartProfileMainCommand extends Command
         public ChosenAccount|null $chosenAccount = null,
         public string|null $conversationId = null,
         public int|null $previewRevision = null,
+        // The effort the start runs at; none leaves it to the profile's tier or the family's default.
+        public string|null $effort = null,
     ) {}
 
     /**

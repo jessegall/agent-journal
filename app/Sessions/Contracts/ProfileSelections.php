@@ -16,11 +16,14 @@ use App\Values\ProfileKey;
 interface ProfileSelections
 {
     /**
+     * The effort named is the one the start runs at; with none, the profile's tier or the family's default decides.
+     *
      * @throws ProfileMissing
      */
     public function select(
         ProfileKey $profile,
         ModelSelection $requested,
         string|null $driverKey,
+        string|null $effort,
     ): ProfileSelection;
 }

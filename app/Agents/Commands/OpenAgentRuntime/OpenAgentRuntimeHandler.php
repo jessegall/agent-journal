@@ -85,6 +85,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             ProfileKey::from($agent->profile_key),
             ModelSelection::fromInput($command->model),
             $command->driver,
+            null,
         )->selection;
 
         $pinned = $this->drivers->pinned($command->driver, $command->driverType);

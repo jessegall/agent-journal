@@ -15,7 +15,8 @@ use Illuminate\Validation\Rules\Enum;
 
 /**
  * A main start from the profile in the route: the request id that makes a repeat find the same start, the main
- * agent, the model (a name or default) and, optionally, the driver, driver type and chosen account. Who starts comes from the request's actor.
+ * agent, the model (a name or default) and, optionally, the driver, driver type, chosen account and effort. Who starts
+ * comes from the request's actor.
  */
 final class StartProfileMainRequest extends FormRequest
 {
@@ -35,6 +36,7 @@ final class StartProfileMainRequest extends FormRequest
             'accountRevision' => ['nullable', 'integer', 'min:0', 'required_with:accountId'],
             'conversationId' => ['nullable', 'ulid'],
             'previewRevision' => ['nullable', 'integer', 'min:0'],
+            'effort' => ['nullable', 'string', 'max:32'],
             'actor' => ['prohibited'],
             'session' => ['prohibited'],
         ];
@@ -55,6 +57,7 @@ final class StartProfileMainRequest extends FormRequest
                 : null,
             $this->filled('conversationId') ? $this->string('conversationId')->lower()->toString() : null,
             $this->filled('previewRevision') ? $this->integer('previewRevision') : null,
+            $this->filled('effort') ? $this->string('effort')->lower()->toString() : null,
         );
     }
 }
