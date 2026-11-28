@@ -7,7 +7,7 @@ namespace Domain\Plans\Tests\Machinery;
 use App\Models\Access\User;
 use App\Support\ActorReference;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanGraphService;
+use Domain\Plans\Support\PlanGraphEditor;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\Fixtures\TestPhase;
 use Domain\Plans\Tests\Fixtures\TestPlan;
@@ -24,7 +24,7 @@ use Tests\Support\RefreshHookDatabase;
  * The plan graph's Suggest keeps a suggestion that drops the waits phase order or other waits
  * already imply, Apply makes it as one version-checked change, and Undo puts the earlier waits back.
  */
-#[TestsMachinery(PlanGraphService::class)]
+#[TestsMachinery(PlanGraphEditor::class)]
 final class PlanGraphEditingTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -6,8 +6,8 @@ namespace Domain\Plans\Commands\AddPhaseTasks;
 
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Models\Phase;
-use Domain\Plans\Support\PlanStructure;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Plans\Support\PlanStructureEditor;
+use Domain\Tasks\Contracts\TaskVisibility;
 
 /**
  * Adds the tasks once Tasks confirmed, in one read, that every one exists for the actor and is of the phase's project;
@@ -16,8 +16,8 @@ use Domain\Tasks\Contracts\TaskResolver;
 final readonly class AddPhaseTasksHandler extends PlanCommandHandler
 {
     public function __construct(
-        private TaskResolver $tasks,
-        private PlanStructure $structure,
+        private TaskVisibility $tasks,
+        private PlanStructureEditor $structure,
     ) {}
 
     public function handle(AddPhaseTasksCommand $command): void

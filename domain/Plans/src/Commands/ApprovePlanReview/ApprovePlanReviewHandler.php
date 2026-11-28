@@ -7,11 +7,11 @@ namespace Domain\Plans\Commands\ApprovePlanReview;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
-use Domain\Plans\Support\PlanReviewDecision;
+use Domain\Plans\Support\PlanReviewChecks;
 
 final readonly class ApprovePlanReviewHandler extends PlanCommandHandler
 {
-    public function __construct(private PlanReviewDecision $decision) {}
+    public function __construct(private PlanReviewChecks $decision) {}
 
     /**
      * The approved edition's id, its decider, time and fingerprint being the receipt.

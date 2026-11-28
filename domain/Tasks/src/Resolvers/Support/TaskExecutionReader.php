@@ -16,7 +16,7 @@ use PhpOption\Option;
 /**
  * The execution summary of a page of tasks, with every agent label read in one batch: no read per task.
  */
-final readonly class TaskExecutions
+final readonly class TaskExecutionReader
 {
     public function __construct(
         private ActorLabels $labels,

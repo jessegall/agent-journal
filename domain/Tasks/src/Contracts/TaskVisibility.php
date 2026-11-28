@@ -13,7 +13,7 @@ use Domain\Tasks\Values\TaskSummary;
  * Checks that tasks named by id exist and may be read by whoever acts in this request. It changes nothing; a check
  * that passed says so for that moment only.
  */
-interface TaskResolver
+interface TaskVisibility
 {
     /**
      * @throws TaskMissing

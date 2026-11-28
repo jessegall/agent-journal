@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Routes;
 
 use Domain\Plans\PlansDomain;
-use Domain\Plans\Support\PlanGraphService;
+use Domain\Plans\Support\PlanGraphEditor;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;
 use Tests\Support\DomainBoot;
@@ -29,7 +29,7 @@ final class ApplyWaitsPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
-        $journal->service(PlanGraphService::class)->suggest($plan);
+        $journal->service(PlanGraphEditor::class)->suggest($plan);
 
         return RouteCall::as(Caller::User)
             ->parameters(['plan' => $plan->number])

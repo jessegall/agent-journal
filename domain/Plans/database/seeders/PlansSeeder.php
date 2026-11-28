@@ -6,7 +6,7 @@ namespace Domain\Plans\Database\Seeders;
 
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Illuminate\Database\Seeder;
 
 /**
@@ -23,7 +23,7 @@ final class PlansSeeder extends Seeder
      * @param  list<string>  $reproducingTaskIds  the tasks of the reproducing phase
      */
     public function run(
-        PlanStructure $structure,
+        PlanStructureEditor $structure,
         array $readingTaskIds = [],
         array $startingTaskIds = [],
         array $reproducingTaskIds = [],

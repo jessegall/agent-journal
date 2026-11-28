@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use Domain\Tasks\Contracts\TaskProofResolver as TaskProofResolverContract;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Models\TaskCheck;
 use Domain\Tasks\Values\TaskProofPage;
 
@@ -17,7 +17,7 @@ final readonly class TaskProofResolver implements TaskProofResolverContract
 {
     public const int LARGEST_PAGE = 100;
 
-    public function __construct(private TaskResolver $visibility) {}
+    public function __construct(private TaskVisibility $visibility) {}
 
     public function proofsOf(string $taskId, string|null $afterId, int $limit): TaskProofPage
     {

@@ -14,7 +14,7 @@ use Domain\Tasks\Models\TaskRun;
 /**
  * Task runs as internal responsibilities: Core's run claims assign them, and a finished run's work is over.
  */
-final readonly class TaskRunAssignments implements AssignableProvider
+final readonly class TaskRunAssignmentProvider implements AssignableProvider
 {
     public function requireAssignable(RecordIdentity $record): Assignable
     {

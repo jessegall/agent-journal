@@ -6,7 +6,7 @@ namespace Domain\Tasks\Commands\AddTaskWait;
 
 use App\Exceptions\CrossProjectEdge;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskWaitRefused;
@@ -15,15 +15,15 @@ use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Support\TaskGraphLock;
 use Domain\Tasks\Support\TaskWaitGraph;
-use Domain\Tasks\Support\TaskWaitRules;
+use Domain\Tasks\Support\TaskWaitGuard;
 
 final readonly class AddTaskWaitHandler extends TaskCommandHandler
 {
     public function __construct(
-        private TaskResolver $tasks,
+        private TaskVisibility $tasks,
         private TaskGraphLock $lock,
         private TaskWaitGraph $graph,
-        private TaskWaitRules $rules,
+        private TaskWaitGuard $rules,
     ) {}
 
     /**

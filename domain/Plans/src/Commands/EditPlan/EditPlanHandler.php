@@ -6,11 +6,11 @@ namespace Domain\Plans\Commands\EditPlan;
 
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
-use Domain\Plans\Support\PlanApprovals;
+use Domain\Plans\Support\PlanReviewChecks;
 
 final readonly class EditPlanHandler extends PlanCommandHandler
 {
-    public function __construct(private PlanApprovals $approvals) {}
+    public function __construct(private PlanReviewChecks $approvals) {}
 
     /**
      * Gives the plan its new text as a new revision; an approval of the earlier content stays recorded but becomes

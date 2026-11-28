@@ -7,7 +7,7 @@ namespace Domain\Tasks\Resolvers;
 use App\Actors\Contracts\CurrentActor;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Contracts\TaskWaitResolver as TaskWaitResolverContract;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
@@ -24,7 +24,7 @@ final readonly class TaskWaitResolver implements TaskWaitResolverContract
 
     public function __construct(
         private CurrentActor $actors,
-        private TaskResolver $visibility,
+        private TaskVisibility $visibility,
     ) {}
 
     public function waitsOf(string $taskId): TaskWaits

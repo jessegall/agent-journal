@@ -10,7 +10,7 @@ use Domain\Plans\Data\PhaseTaskPageData;
 use Domain\Plans\Data\PlanOutlineData;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Values\TaskSummary;
 use Spatie\LaravelData\Optional;
@@ -27,11 +27,11 @@ final readonly class PlanOutline
     public const int TASKS_PER_PAGE = 50;
 
     public function __construct(
-        private TaskResolver $tasks,
+        private TaskVisibility $tasks,
         private TaskWaitResolver $waits,
     ) {}
 
-    public function of(string $planId, int|null $currentPhase, OutlinePageAsk $ask): PlanOutlineData
+    public function of(string $planId, int|null $currentPhase, OutlinePageRequest $ask): PlanOutlineData
     {
         $headings = Phase::findHeadingsIn($planId, $ask->phasesAfter, self::PHASES_PER_PAGE + 1);
         $shown = $headings->take(self::PHASES_PER_PAGE);

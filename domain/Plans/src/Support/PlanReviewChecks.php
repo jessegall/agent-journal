@@ -14,7 +14,7 @@ use Domain\Plans\Models\PlanReviewEdition;
  * read still the one asked for (a decided or withdrawn review reports its outcome). The plan could not change while
  * it was under review, so the decider read what it decides on.
  */
-final readonly class PlanReviewDecision
+final readonly class PlanReviewChecks
 {
     /**
      * @return array{0: Plan, 1: PlanReviewEdition}
@@ -38,5 +38,19 @@ final readonly class PlanReviewDecision
             $plan,
             $edition,
         ];
+    }
+
+    /**
+     * Marks the plan's current approval historical, once the plan changed under it; a plan with none is left alone.
+     */
+    public function retireCurrentOf(Plan $plan): void
+    {
+        $approval = PlanReviewEdition::findCurrentApprovalOf($plan->id);
+
+        if ($approval === null) {
+            return;
+        }
+
+        $approval->markHistorical();
     }
 }

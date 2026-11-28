@@ -15,7 +15,7 @@ use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Contracts\TaskProgressCounter;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Values\TaskSummary;
 
 /**
@@ -30,7 +30,7 @@ final readonly class PhaseTiming implements VerificationTiming
         private CurrentActor $actors,
         private ActorStackSessions $stackSessions,
         private AssignmentResolver $assignments,
-        private TaskResolver $tasks,
+        private TaskVisibility $tasks,
         private TaskProgressCounter $taskCounts,
     ) {}
 

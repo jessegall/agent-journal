@@ -13,7 +13,7 @@ use App\Stacks\References\StateReference;
 use App\Support\AssigneeIdentity;
 use Domain\Tasks\Contracts\AssignedTaskResolver as AssignedTaskResolverContract;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Resolvers\Support\TaskExecutions;
+use Domain\Tasks\Resolvers\Support\TaskExecutionReader;
 use Domain\Tasks\Support\States\Support\WorkOnTaskStateReference;
 use Domain\Tasks\Values\TaskFilters;
 use Domain\Tasks\Values\TaskList;
@@ -31,7 +31,7 @@ final readonly class AssignedTaskResolver implements AssignedTaskResolverContrac
         private AssignmentResolver $assignments,
         private AssigneeResolver $assignees,
         private CurrentState $states,
-        private TaskExecutions $executions,
+        private TaskExecutionReader $executions,
     ) {}
 
     public function currentForCaller(): Option

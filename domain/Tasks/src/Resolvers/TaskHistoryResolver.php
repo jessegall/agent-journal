@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use Domain\Tasks\Contracts\TaskHistoryResolver as TaskHistoryResolverContract;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Models\TaskHistoryEntry;
 use Domain\Tasks\Values\TaskHistoryPage;
 
@@ -17,7 +17,7 @@ final readonly class TaskHistoryResolver implements TaskHistoryResolverContract
 {
     public const int LARGEST_PAGE = 100;
 
-    public function __construct(private TaskResolver $visibility) {}
+    public function __construct(private TaskVisibility $visibility) {}
 
     public function historyOf(string $taskId, int|null $beforeSequence, int $limit): TaskHistoryPage
     {

@@ -30,7 +30,7 @@ use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\CommitsHookRows;
@@ -244,9 +244,9 @@ final class SaveSharePreviewTest extends SharingTestCase
         );
     }
 
-    private function planStructure(): PlanStructure
+    private function planStructure(): PlanStructureEditor
     {
-        return $this->app->make(PlanStructure::class);
+        return $this->app->make(PlanStructureEditor::class);
     }
 
     private function budget(): ShareBudget

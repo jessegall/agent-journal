@@ -10,7 +10,7 @@ use Domain\Tasks\Models\Task;
 /**
  * The named reads of tasks the Tasks domain answers for.
  */
-final readonly class TaskRecords
+final readonly class TaskFinder
 {
     public function get(string $taskId): Task
     {

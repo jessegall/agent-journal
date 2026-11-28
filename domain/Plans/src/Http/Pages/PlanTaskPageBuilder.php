@@ -13,7 +13,7 @@ use Domain\Plans\Http\Pages\Plans\PlansTasksShow;
 use Domain\Plans\Http\Requests\PlanTaskRequest;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Values\TaskSummary;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -27,7 +27,7 @@ final readonly class PlanTaskPageBuilder implements PageBuilder
     public function __construct(
         private PageFormRequests $requests,
         private TaskDetailsResolver $tasks,
-        private TaskResolver $visible,
+        private TaskVisibility $visible,
         private PlansTasksShow $page,
     ) {}
 

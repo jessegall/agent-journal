@@ -16,7 +16,7 @@ use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\Fixtures\TestPhase;
 use Domain\Plans\Tests\Fixtures\TestPlan;
@@ -209,9 +209,9 @@ final class AssignPlanWorkTest extends TestCase
         return $this->app->make(CommandBus::class)->run(new AssignPlanWorkCommand($root, $recipient));
     }
 
-    private function planStructure(): PlanStructure
+    private function planStructure(): PlanStructureEditor
     {
-        return $this->app->make(PlanStructure::class);
+        return $this->app->make(PlanStructureEditor::class);
     }
 
     /**

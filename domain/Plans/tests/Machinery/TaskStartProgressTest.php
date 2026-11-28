@@ -10,7 +10,7 @@ use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Listeners\CountPhaseTaskStates;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
@@ -115,9 +115,9 @@ final class TaskStartProgressTest extends TestCase
         return $this->journal->fixtures(TaskFixtures::class);
     }
 
-    private function planStructure(): PlanStructure
+    private function planStructure(): PlanStructureEditor
     {
-        return $this->app->make(PlanStructure::class);
+        return $this->app->make(PlanStructureEditor::class);
     }
 
     private function start(Task $task): void

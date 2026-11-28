@@ -15,7 +15,7 @@ use PhpOption\Some;
  * The suggestion one actor asked for on one plan's graph, and the undo of the one they applied, kept for a quarter of
  * an hour so the next read of the graph and the next post find them.
  */
-final readonly class PlanGraphChanges
+final readonly class PlanGraphCache
 {
     private const int KEPT_SECONDS = 900;
 

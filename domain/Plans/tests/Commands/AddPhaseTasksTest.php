@@ -9,7 +9,7 @@ use App\Exceptions\CrossProjectEdge;
 use App\Values\ProjectOwner;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\Fixtures\TestPhase;
 use Domain\Plans\Tests\Fixtures\TestPlan;
@@ -166,9 +166,9 @@ final class AddPhaseTasksTest extends TestCase
         return $this->plans->phaseCalled('Read')->id;
     }
 
-    private function structure(): PlanStructure
+    private function structure(): PlanStructureEditor
     {
-        return $this->app->make(PlanStructure::class);
+        return $this->app->make(PlanStructureEditor::class);
     }
 
     /**

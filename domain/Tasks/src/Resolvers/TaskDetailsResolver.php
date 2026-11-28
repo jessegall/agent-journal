@@ -7,10 +7,10 @@ namespace Domain\Tasks\Resolvers;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\CommandRules\Enums\ReadView;
 use Domain\Tasks\Contracts\TaskDetailsResolver as TaskDetailsResolverContract;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Data\TaskDetails;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Resolvers\Support\TaskExecutions;
+use Domain\Tasks\Resolvers\Support\TaskExecutionReader;
 
 /**
  * Reads one visible task with its holder and its run; the brief, result note and reasons only in the context view.
@@ -18,9 +18,9 @@ use Domain\Tasks\Resolvers\Support\TaskExecutions;
 final readonly class TaskDetailsResolver implements TaskDetailsResolverContract
 {
     public function __construct(
-        private TaskResolver $visibility,
+        private TaskVisibility $visibility,
         private AssigneeResolver $assignees,
-        private TaskExecutions $executions,
+        private TaskExecutionReader $executions,
     ) {}
 
     public function details(string $taskId, ReadView $view): TaskDetails

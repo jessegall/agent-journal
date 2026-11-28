@@ -12,10 +12,10 @@ use App\Contracts\Events\Event;
 use App\Exceptions\AmbiguousDomainRoot;
 use App\Support\DomainRegistry;
 use App\Support\Exports as DeclaredExports;
-use Domain\Tasks\Contracts\TaskResolver as TaskResolverContract;
+use Domain\Tasks\Contracts\TaskVisibility as TaskResolverContract;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Exceptions\TaskMissing;
-use Domain\Tasks\Resolvers\TaskResolver;
+use Domain\Tasks\Resolvers\TaskVisibility;
 use Domain\Tasks\Values\TaskSummary;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -83,8 +83,8 @@ final class ExportsTest extends TestCase
         ];
 
         yield 'a concrete reader under contracts' => [
-            DeclaredExports::make()->contracts(TaskResolver::class),
-            InvalidExports::notAnInterface('Tasks', TaskResolver::class),
+            DeclaredExports::make()->contracts(TaskVisibility::class),
+            InvalidExports::notAnInterface('Tasks', TaskVisibility::class),
         ];
 
         yield 'a plain value under commands' => [

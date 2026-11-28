@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use Domain\Tasks\Contracts\TaskGraphResolver as TaskGraphResolverContract;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Data\TaskGraph;
 use Domain\Tasks\Data\TaskGraphEdge;
 use Domain\Tasks\Data\TaskGraphNode;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Support\TaskGraphVersion;
-use Domain\Tasks\Support\TaskWaitRules;
+use Domain\Tasks\Support\TaskWaitGuard;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -22,8 +22,8 @@ use Spatie\LaravelData\Optional;
 final readonly class TaskGraphResolver implements TaskGraphResolverContract
 {
     public function __construct(
-        private TaskResolver $visibility,
-        private TaskWaitRules $rules,
+        private TaskVisibility $visibility,
+        private TaskWaitGuard $rules,
         private TaskGraphVersion $version,
     ) {}
 

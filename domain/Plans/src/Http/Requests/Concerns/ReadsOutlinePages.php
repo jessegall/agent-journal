@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Requests\Concerns;
 
-use Domain\Plans\Support\OutlinePageAsk;
+use Domain\Plans\Support\OutlinePageRequest;
 
 /**
  * The outline pages a plan reader asks for in its request: phases_after, and phase with tasks_after and revision.
@@ -40,9 +40,9 @@ trait ReadsOutlinePages
         ];
     }
 
-    public function outlinePageAsk(): OutlinePageAsk
+    public function outlinePageAsk(): OutlinePageRequest
     {
-        return new OutlinePageAsk(
+        return new OutlinePageRequest(
             phasesAfter: $this->integer('phases_after'),
             phase: $this->filled('phase') ? $this->integer('phase') : null,
             tasksAfter: $this->integer('tasks_after'),

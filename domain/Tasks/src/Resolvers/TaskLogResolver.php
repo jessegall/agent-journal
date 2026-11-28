@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use Domain\Tasks\Contracts\TaskLogResolver as TaskLogResolverContract;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Models\TaskLogEntry;
 use Domain\Tasks\Values\TaskLogPage;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,7 +18,7 @@ final readonly class TaskLogResolver implements TaskLogResolverContract
 {
     public const int LARGEST_PAGE = 100;
 
-    public function __construct(private TaskResolver $visibility) {}
+    public function __construct(private TaskVisibility $visibility) {}
 
     public function newest(string $taskId, int $limit): TaskLogPage
     {

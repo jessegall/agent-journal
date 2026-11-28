@@ -10,7 +10,7 @@ use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Values\TaskSummary;
 
 /**
@@ -21,7 +21,7 @@ final readonly class RecordPhaseCheckHandler extends PlanCommandHandler
 {
     public function __construct(
         private ResultReceipts $receipts,
-        private TaskResolver $tasks,
+        private TaskVisibility $tasks,
     ) {}
 
     /**

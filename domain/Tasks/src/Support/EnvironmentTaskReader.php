@@ -16,7 +16,7 @@ use Domain\Tasks\Models\Task;
  * The tasks the acting user holds that were made through a binding of one environment, counted and the first by
  * number; a task of another environment, or made here, is never among them.
  */
-final readonly class EnvironmentTasks implements EnvironmentTasksContract
+final readonly class EnvironmentTaskReader implements EnvironmentTasksContract
 {
     public function __construct(private CurrentActor $actors, private AssignmentResolver $assignments) {}
 

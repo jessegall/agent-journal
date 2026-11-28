@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Routes;
 
 use Domain\Plans\PlansDomain;
-use Domain\Plans\Support\PlanGraphService;
+use Domain\Plans\Support\PlanGraphEditor;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;
 use Tests\Support\DomainBoot;
@@ -29,7 +29,7 @@ final class UndoWaitsPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
-        $graph = $journal->service(PlanGraphService::class);
+        $graph = $journal->service(PlanGraphEditor::class);
         $graph->suggest($plan);
         $journal->keyed(fn () => $graph->apply($plan));
 

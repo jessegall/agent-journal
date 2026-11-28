@@ -8,7 +8,7 @@ use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Stacks\Contracts\Work\AgentStacks;
 use Domain\Tasks\Events\TaskStarted;
-use Domain\Tasks\Resolvers\Support\TaskRecords;
+use Domain\Tasks\Resolvers\Support\TaskFinder;
 use Domain\Tasks\Support\States\Support\WorkOnTaskStateReference;
 
 /**
@@ -18,7 +18,7 @@ use Domain\Tasks\Support\States\Support\WorkOnTaskStateReference;
 final readonly class PushTaskState implements Listener
 {
     public function __construct(
-        private TaskRecords $tasks,
+        private TaskFinder $tasks,
         private AgentStacks $stacks,
     ) {}
 

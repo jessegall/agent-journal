@@ -6,7 +6,7 @@ namespace Tests\Architecture;
 
 use App\Support\Domain;
 use App\Support\DomainRegistry;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\BoundaryRoots;
@@ -40,7 +40,7 @@ final class DomainBoundaryTest extends TestCase
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
         $seeder = base_path(CompositionSite::Seeders->value);
         $original = (string) file_get_contents($seeder);
-        $planted = PlanStructure::class;
+        $planted = PlanStructureEditor::class;
 
         try {
             file_put_contents($seeder, str_replace('use Illuminate\\Database\\Seeder;', "use Illuminate\\Database\\Seeder;\nuse {$planted};", $original));
@@ -58,7 +58,7 @@ final class DomainBoundaryTest extends TestCase
         $registry = $this->app->make(DomainRegistry::class);
         $route = base_path('domain/Tasks/routes/boundary-probe.php');
         $seeder = base_path('database/seeders/BoundaryProbeSeeder.php');
-        $private = PlanStructure::class;
+        $private = PlanStructureEditor::class;
         $routeFolderExisted = is_dir(dirname($route));
         $routeFolderExisted || mkdir(dirname($route), 0777, true);
         file_put_contents($route, "<?php\n\nuse {$private};\n");

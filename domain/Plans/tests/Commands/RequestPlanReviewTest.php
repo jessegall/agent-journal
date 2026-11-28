@@ -18,7 +18,7 @@ use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\Fixtures\TestPhase;
@@ -170,9 +170,9 @@ final class RequestPlanReviewTest extends TestCase
         return $this->app->make(CommandBus::class)->run($command);
     }
 
-    public function structure(): PlanStructure
+    public function structure(): PlanStructureEditor
     {
-        return $this->app->make(PlanStructure::class);
+        return $this->app->make(PlanStructureEditor::class);
     }
 
     /**

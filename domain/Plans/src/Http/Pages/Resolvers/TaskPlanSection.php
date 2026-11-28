@@ -9,7 +9,7 @@ use App\Declarations\SlotContext;
 use App\Navigation\Contracts\SectionResolver;
 use Domain\Plans\Data\TaskPlanData;
 use Domain\Plans\Models\Phase;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskVisibility;
 
 /**
  * The plan and phase of the task open in Tasks' reader, read from Plans' own tables by the task's id. The task's
@@ -20,7 +20,7 @@ final readonly class TaskPlanSection implements SectionResolver
 {
     public function __construct(
         private CurrentActor $actors,
-        private TaskResolver $tasks,
+        private TaskVisibility $tasks,
     ) {}
 
     public function read(SlotContext $context): TaskPlanData

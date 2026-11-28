@@ -7,11 +7,11 @@ namespace Domain\Plans\Commands\RequestPlanChanges;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
-use Domain\Plans\Support\PlanReviewDecision;
+use Domain\Plans\Support\PlanReviewChecks;
 
 final readonly class RequestPlanChangesHandler extends PlanCommandHandler
 {
-    public function __construct(private PlanReviewDecision $decision) {}
+    public function __construct(private PlanReviewChecks $decision) {}
 
     /**
      * The edition's id, sent back with the reason as the plan's visible changes-requested note.

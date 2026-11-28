@@ -12,7 +12,7 @@ use App\Support\Layout\LayoutRowData;
 use Domain\Tasks\Contracts\TaskListResolver as TaskListResolverContract;
 use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Resolvers\Support\TaskExecutions;
+use Domain\Tasks\Resolvers\Support\TaskExecutionReader;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Values\TaskFilters;
 use Domain\Tasks\Values\TaskList;
@@ -27,7 +27,7 @@ final readonly class TaskListResolver implements TaskListResolverContract
     public function __construct(
         private CurrentActor $actors,
         private AssigneeResolver $assignees,
-        private TaskExecutions $executions,
+        private TaskExecutionReader $executions,
         private AssignmentQuery $assignments,
     ) {}
 

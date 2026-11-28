@@ -9,11 +9,11 @@ use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Exceptions\TaskWaitRefused;
 use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Support\TaskGraphLock;
-use Domain\Tasks\Support\TaskWaitRules;
+use Domain\Tasks\Support\TaskWaitGuard;
 
 final readonly class RemoveTaskWaitHandler extends TaskCommandHandler
 {
-    public function __construct(private TaskGraphLock $lock, private TaskWaitRules $rules) {}
+    public function __construct(private TaskGraphLock $lock, private TaskWaitGuard $rules) {}
 
     /**
      * @throws TaskWaitRefused

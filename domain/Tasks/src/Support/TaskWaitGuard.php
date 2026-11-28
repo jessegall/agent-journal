@@ -16,7 +16,7 @@ use Domain\Tasks\Policies\TaskPolicy;
 /**
  * The rules every change of a wait follows, whether one wait changes or several at once.
  */
-final readonly class TaskWaitRules
+final readonly class TaskWaitGuard
 {
     public function __construct(private CurrentAuthorizer $authorizer) {}
 

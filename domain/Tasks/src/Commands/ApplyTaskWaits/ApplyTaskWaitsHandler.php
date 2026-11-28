@@ -15,7 +15,7 @@ use Domain\Tasks\Models\TaskWaitHistory;
 use Domain\Tasks\Support\TaskGraphLock;
 use Domain\Tasks\Support\TaskGraphVersion;
 use Domain\Tasks\Support\TaskWaitGraph;
-use Domain\Tasks\Support\TaskWaitRules;
+use Domain\Tasks\Support\TaskWaitGuard;
 use Domain\Tasks\Values\TaskWaitPair;
 
 final readonly class ApplyTaskWaitsHandler extends TaskCommandHandler
@@ -23,7 +23,7 @@ final readonly class ApplyTaskWaitsHandler extends TaskCommandHandler
     public function __construct(
         private TaskGraphLock $lock,
         private TaskGraphVersion $version,
-        private TaskWaitRules $rules,
+        private TaskWaitGuard $rules,
         private TaskWaitGraph $graph,
     ) {}
 

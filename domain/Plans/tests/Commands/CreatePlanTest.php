@@ -10,7 +10,7 @@ use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Domain\Plans\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -117,7 +117,7 @@ final class CreatePlanTest extends TestCase
             $this->journal->run(new CreatePlanCommand('Stock', 'Fill the shelves.', PlanType::Build, $shop)),
         );
 
-        $phase = $this->app->make(PlanStructure::class)->addPhase($plan, 'First');
+        $phase = $this->app->make(PlanStructureEditor::class)->addPhase($plan, 'First');
 
         $this->assertSame([$shop, $shop], [$plan->project_id, $phase->project_id]);
     }

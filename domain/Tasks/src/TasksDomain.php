@@ -42,9 +42,9 @@ use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Contracts\TaskLogResolver;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskProofResolver;
-use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Contracts\TaskRunEndEvent;
 use Domain\Tasks\Contracts\TaskStateEvent;
+use Domain\Tasks\Contracts\TaskVisibility;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Data\TaskDetails;
 use Domain\Tasks\Data\TaskGraph;
@@ -86,9 +86,9 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Policies\TaskRunPolicy;
-use Domain\Tasks\Resolvers\TaskAssignments;
+use Domain\Tasks\Resolvers\TaskAssignmentProvider;
 use Domain\Tasks\Resolvers\TaskRecords;
-use Domain\Tasks\Resolvers\TaskRunAssignments;
+use Domain\Tasks\Resolvers\TaskRunAssignmentProvider;
 use Domain\Tasks\Support\Assignments\AssignedWorkProvider;
 use Domain\Tasks\Support\Assignments\AutoAssigner;
 use Domain\Tasks\Support\Assignments\NamedTaskPoolFactory;
@@ -237,7 +237,7 @@ final class TasksDomain extends Domain implements
                 TaskProofResolver::class,
                 TaskWaitResolver::class,
                 TaskGraphResolver::class,
-                TaskResolver::class,
+                TaskVisibility::class,
                 TaskAssignmentResolver::class,
                 AssignedTaskResolver::class,
                 TaskListResolver::class,
@@ -301,12 +301,12 @@ final class TasksDomain extends Domain implements
 
     public function assignables(): array
     {
-        return [Task::linkType() => TaskAssignments::class];
+        return [Task::linkType() => TaskAssignmentProvider::class];
     }
 
     public function internalAssignables(): array
     {
-        return [TaskRun::linkType() => TaskRunAssignments::class];
+        return [TaskRun::linkType() => TaskRunAssignmentProvider::class];
     }
 
     public function autoAssigners(): array

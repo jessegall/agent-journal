@@ -16,11 +16,11 @@ use Domain\Tasks\Contracts\TaskProgressCounter;
  * Changes a plan's structure under the plan's lock: a new phase, and tasks placed in a phase once each, which moves
  * the phase's and the plan's task tallies by the placed tasks alone.
  */
-final readonly class PlanStructure
+final readonly class PlanStructureEditor
 {
     public function __construct(
         private TaskProgressCounter $taskCounts,
-        private PlanApprovals $approvals,
+        private PlanReviewChecks $approvals,
     ) {}
 
     public function addPhase(Plan $plan, string $title): Phase

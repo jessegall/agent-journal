@@ -19,7 +19,7 @@ use Domain\Tasks\Contracts\TaskListResolver as TaskListResolverContract;
 use Domain\Tasks\Contracts\TaskLogResolver as TaskLogResolverContract;
 use Domain\Tasks\Contracts\TaskProgressCounter as TaskProgressCounterContract;
 use Domain\Tasks\Contracts\TaskProofResolver as TaskProofResolverContract;
-use Domain\Tasks\Contracts\TaskResolver as TaskResolverContract;
+use Domain\Tasks\Contracts\TaskVisibility as TaskResolverContract;
 use Domain\Tasks\Contracts\TaskWaitResolver as TaskWaitResolverContract;
 use Domain\Tasks\Listeners\BindTaskCheckResults;
 use Domain\Tasks\Models\Task;
@@ -33,9 +33,9 @@ use Domain\Tasks\Resolvers\TaskListResolver;
 use Domain\Tasks\Resolvers\TaskLogResolver;
 use Domain\Tasks\Resolvers\TaskProgressCounter;
 use Domain\Tasks\Resolvers\TaskProofResolver;
-use Domain\Tasks\Resolvers\TaskResolver;
+use Domain\Tasks\Resolvers\TaskVisibility;
 use Domain\Tasks\Resolvers\TaskWaitResolver;
-use Domain\Tasks\Support\EnvironmentTasks;
+use Domain\Tasks\Support\EnvironmentTaskReader;
 use Domain\Tasks\Support\TaskSummaries;
 use Illuminate\Support\ServiceProvider;
 
@@ -53,10 +53,10 @@ final class TasksServiceProvider extends ServiceProvider
         $this->app->bind(TaskProofResolverContract::class, TaskProofResolver::class);
         $this->app->bind(TaskWaitResolverContract::class, TaskWaitResolver::class);
         $this->app->bind(TaskGraphResolverContract::class, TaskGraphResolver::class);
-        $this->app->bind(TaskResolverContract::class, TaskResolver::class);
+        $this->app->bind(TaskResolverContract::class, TaskVisibility::class);
         $this->app->scoped(TaskAssignmentResolverContract::class, TaskAssignmentResolver::class);
         $this->app->scoped(AssignedTaskResolverContract::class, AssignedTaskResolver::class);
-        $this->app->scoped(EnvironmentTasksContract::class, EnvironmentTasks::class);
+        $this->app->scoped(EnvironmentTasksContract::class, EnvironmentTaskReader::class);
         $this->app->scoped(TaskListResolverContract::class, TaskListResolver::class);
         $this->app->scoped(TaskDetailsResolverContract::class, TaskDetailsResolver::class);
     }

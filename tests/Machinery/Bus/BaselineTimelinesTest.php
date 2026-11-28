@@ -30,7 +30,7 @@ use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Events\TaskFinished;
@@ -494,9 +494,9 @@ final class BaselineTimelinesTest extends TestCase
         return SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
     }
 
-    private function planStructure(): PlanStructure
+    private function planStructure(): PlanStructureEditor
     {
-        return $this->app->make(PlanStructure::class);
+        return $this->app->make(PlanStructureEditor::class);
     }
 
     private function claimSignIn(string $hostId, CarbonImmutable $now): SignInAttempt|null

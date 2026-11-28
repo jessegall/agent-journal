@@ -14,7 +14,7 @@ use Domain\Plans\Http\Pages\Plans\PlansShow;
 use Domain\Plans\Http\Requests\PlanRequest;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Resolvers\PlanResolver;
-use Domain\Plans\Support\PlanGraphService;
+use Domain\Plans\Support\PlanGraphEditor;
 use Domain\Plans\Support\PlanOutline;
 use Domain\Plans\Support\PlanReviewView;
 use Domain\Tasks\Contracts\TaskGraphResolver;
@@ -35,7 +35,7 @@ final readonly class PlanPageBuilder implements PageBuilder
         private PlanReviewView $review,
         private TaskGraphResolver $graphs,
         private PlansShow $page,
-        private PlanGraphService $editing,
+        private PlanGraphEditor $editing,
     ) {}
 
     public function build(Request $visit): PlanPageData

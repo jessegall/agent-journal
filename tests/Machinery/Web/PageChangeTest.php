@@ -15,7 +15,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Support\PlanStructureEditor;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Models\Task;
@@ -96,8 +96,8 @@ final class PageChangeTest extends TestCase
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
 
-    private function planStructure(): PlanStructure
+    private function planStructure(): PlanStructureEditor
     {
-        return $this->app->make(PlanStructure::class);
+        return $this->app->make(PlanStructureEditor::class);
     }
 }

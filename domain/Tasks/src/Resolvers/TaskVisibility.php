@@ -6,7 +6,7 @@ namespace Domain\Tasks\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Projects\Contracts\ProjectOwned;
-use Domain\Tasks\Contracts\TaskResolver as TaskResolverContract;
+use Domain\Tasks\Contracts\TaskVisibility as TaskResolverContract;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Values\TaskSummary;
@@ -16,7 +16,7 @@ use Illuminate\Container\Attributes\Scoped;
  * Checks tasks for the actor of this request, all ids in one read. Every agent and the user read every task.
  */
 #[Scoped]
-final readonly class TaskResolver implements TaskResolverContract
+final readonly class TaskVisibility implements TaskResolverContract
 {
     public function __construct(private CurrentActor $actors) {}
 
