@@ -150,7 +150,6 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     public function offerAgain(): void
     {
         $this->status = HostInstructionStatus::Pending;
-        $this->claimed_at = null;
         $this->saveAndAssert();
         $this->raise(new HostInstructionOfferedAgain($this->id, $this->host_process_id));
     }
@@ -240,6 +239,17 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
     public function isOpen(): bool
     {
         return $this->status->isOpen();
+    }
+
+    public function expiredUnclaimed(): bool
+    {
+        return $this->refusal === HostRefusal::Expired && $this->claimed_at === null;
+    }
+
+    public function isForAttemptOf(DriverRequest $request): bool
+    {
+        return $this->driver_request_id === $request->id
+            && $this->idempotency_key === "{$request->id}:{$this->step}:{$request->attempt_version}";
     }
 
     // ----------[ Asserts ]----------

@@ -17,6 +17,7 @@ use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\HostWakeRefusal;
 use App\Agents\Drivers\Enums\RequestOutcome;
 use App\Agents\Drivers\Enums\RequestProgress;
+use App\Agents\Drivers\Enums\RetryOutcome;
 use App\Agents\Drivers\Values\RequestReportBinding;
 use App\Agents\Enums\ConversationModeType;
 use App\Exceptions\HostReportRefused;
@@ -26,6 +27,7 @@ use App\Models\Accounts\Account;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\RetryAttempt;
 use App\Models\Drivers\RuntimeEvent;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionRequest;
@@ -77,6 +79,7 @@ final class NotifyRequestProgressTest extends TestCase
         'hosts',
         'agent_runtimes',
         'driver_requests',
+        'retry_attempts',
         'driver_turns',
         'accounts',
         'active_accounts',
@@ -318,6 +321,50 @@ final class NotifyRequestProgressTest extends TestCase
         $this->assertSame(
             RequestProgress::Accepted,
             DriverRequest::query()->findOrFail($opened->firstRequestId)->progress,
+        );
+    }
+
+    public function test_a_wake_that_fails_twice_retries_before_releasing_its_message_once(): void
+    {
+        [$host, $opened, $wake] = $this->startWithMessage();
+        $this->assertSame([$wake->id], $this->claimedIds($host));
+
+        foreach ([5, 10] as $wait) {
+            $this->notifyProgress($host->hostId, $wake->id, RequestProgress::Unavailable);
+            $this->assertSame([], $this->claimedIds($host));
+            $this->travel($wait)->seconds();
+            $this->assertSame([$wake->id], $this->claimedIds($host));
+        }
+
+        $this->notifyApplied($host, $wake, self::CONVERSATION);
+
+        $this->assertSame([$opened->firstRequestId], $this->claimedIds($host));
+        $this->assertSame([], $this->claimedIds($host));
+        $attempts = RetryAttempt::query()->ofSession($opened->sessionId)->orderBy('retry')->limit(4)->get();
+        $this->assertSame([5, 10], $attempts->pluck('wait_seconds')->all());
+        $this->assertSame([RetryOutcome::Failed, RetryOutcome::Succeeded], $attempts->pluck('outcome')->all());
+    }
+
+    public function test_a_wake_that_exhausts_its_three_retries_keeps_its_final_failure(): void
+    {
+        [$host, $opened, $wake] = $this->startWithMessage();
+        $this->assertSame([$wake->id], $this->claimedIds($host));
+
+        foreach ([5, 10, 20] as $wait) {
+            $this->notifyProgress($host->hostId, $wake->id, RequestProgress::Unavailable);
+            $this->travel($wait)->seconds();
+            $this->assertSame([$wake->id], $this->claimedIds($host));
+        }
+
+        $this->notifyProgress($host->hostId, $wake->id, RequestProgress::Unavailable);
+
+        $this->assertSame(RequestProgress::Unavailable, $wake->refresh()->progress);
+        $this->assertSame([], $this->claimedIds($host));
+        $attempts = RetryAttempt::query()->ofSession($opened->sessionId)->orderBy('retry')->limit(4)->get();
+        $this->assertSame([5, 10, 20], $attempts->pluck('wait_seconds')->all());
+        $this->assertSame(
+            [RetryOutcome::Failed, RetryOutcome::Failed, RetryOutcome::GaveUp],
+            $attempts->pluck('outcome')->all(),
         );
     }
 
