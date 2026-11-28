@@ -3811,7 +3811,7 @@ document.head.insertAdjacentHTML('beforeend',`<style>
 .ic9note label{display:block;font-size:var(--text-meta);color:var(--text-3);margin-bottom:4px}
 .ic9note textarea{width:100%;box-sizing:border-box;min-height:58px;resize:vertical;border:1px solid var(--border-2);border-radius:var(--radius-field);background:var(--bg);padding:7px 9px;font:inherit;font-size:var(--text-small);color:var(--text)}
 .ic9narrow.cdlg{left:0;right:0;transform:none;top:auto;bottom:0;width:auto;max-height:90%;border-radius:16px 16px 0 0;border-bottom:0}
-.ic9narrow footer .keys{display:none}
+.ic9narrow footer .ic9keys{display:none}
 </style>`);
 $('svg defs').insertAdjacentHTML('beforeend',`<symbol id="ic9warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.8v3.6M8 10.9v.1"/></symbol>
   <symbol id="ic9host" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="8" rx="1.5"/><path d="M5.5 13.5h5M8 11v2.5"/></symbol>
@@ -3896,7 +3896,7 @@ function icConsole(){const a=icLive(),e=icErr(),w=icWarn(),f=IC.filt,fixable=a.f
     <header><b id="ic9t">Issues</b><span class="cnt">${a.length?`${a.length} open · newest first`:'none open'}</span>${IC.k==='iss6'&&a.length?'<button class="btn sm bordered" data-icrest>Clear the rest</button>':''}${fixable.length>1?`<button class="btn sm bordered" data-icfixall>${I('wand','s14')}Fix all ${fixable.length}</button>`:''}<button class="ib" data-icclose aria-label="Close the issue console" title="Close · Esc">${I('close','s14')}</button></header>
     ${a.length>3?`<div class="ic9filt" role="group" aria-label="Show"><button data-icf="all" aria-pressed="${f==='all'}">All ${a.length}</button><button data-icf="err" aria-pressed="${f==='err'}">Errors ${e}</button><button data-icf="warn" aria-pressed="${f==='warn'}">Warnings ${w}</button></div>`:''}
     <div class="cbody" data-icbody>${body}</div>
-    <footer><button class="ic9sw" role="switch" aria-checked="${IC.auto}" data-icsetting title="When the journal knows the remedy for a problem, it applies it itself instead of showing a warning"><span class="tr"></span>Fix known problems myself</button>${IC.rules.length?`<span>· ${icN(IC.rules.length,'auto-fix rule')}</span>`:''}<span class="gap"></span><span class="keys"><kbd>↑</kbd> <kbd>↓</kbd> move · <kbd>Esc</kbd> closes</span></footer></div>`}
+    <footer><button class="ic9sw" role="switch" aria-checked="${IC.auto}" data-icsetting title="When the journal knows the remedy for a problem, it applies it itself instead of showing a warning"><span class="tr"></span>Fix known problems myself</button>${IC.rules.length?`<span>· ${icN(IC.rules.length,'auto-fix rule')}</span>`:''}<span class="gap"></span><span class="ic9keys"><kbd>↑</kbd> <kbd>↓</kbd> move · <kbd>Esc</kbd> closes</span></footer></div>`}
 function icPicker(){const x=IC.list.find(y=>y.id===IC.pick.id);if(!x)return '';const sel=IC.pick.to,d=drv7('main');
   return `<div class="scrim" style="z-index:172" data-icpickno></div><div class="cdlg ic9pk${icNarrow()?' ic9narrow':''}" role="dialog" aria-modal="true" aria-labelledby="ic9pt" tabindex="-1" data-icpk>
     <header><b id="ic9pt">Ask for help</b><button class="ib" data-icpickno aria-label="Close" title="Close · Esc">${I('close','s14')}</button></header>
