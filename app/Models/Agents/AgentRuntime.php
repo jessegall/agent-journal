@@ -307,14 +307,9 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
      */
     public function liveAgentProcessIds(): array
     {
-        $agentProcesses = [
-            HostProcessPurpose::AgentTerminal,
-            HostProcessPurpose::AgentTurn,
-        ];
-
         return array_values(array_map(
             strval(...),
-            $this->hostProcesses()->live()->ofPurposes($agentProcesses)->limit(8)->pluck('id')->all(),
+            $this->hostProcesses()->live()->ofPurposes(HostProcessPurpose::agentPurposes())->limit(8)->pluck('id')->all(),
         ));
     }
 

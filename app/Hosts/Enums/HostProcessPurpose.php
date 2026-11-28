@@ -16,6 +16,16 @@ enum HostProcessPurpose: string
     case SignInProbe = 'sign_in_probe';
 
     /**
+     * The purposes of a process that is the agent itself, its terminal or its turn, whichever its driver runs.
+     *
+     * @return list<self>
+     */
+    public static function agentPurposes(): array
+    {
+        return [self::AgentTerminal, self::AgentTurn];
+    }
+
+    /**
      * Whether the process only probes the start, its build or its sign-in, and is never the agent itself.
      */
     public function isProbe(): bool
