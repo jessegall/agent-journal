@@ -13,9 +13,7 @@ use App\Terminals\Screens\OptionList;
 use App\Terminals\Screens\ScreenLayout;
 
 /**
- * How the pinned build draws its terminal, from resources/recordings/codex/0.165.0: the alternate buffer, a composer
- * that is the lowest › row, empty while the cursor sits after the ›, and no bracketed paste. Each menu is known by its
- * › options and two keywords and holds the runtime for a user.
+ * Codex draws its composer and prompt marker in the alternate buffer, and its menus use the same option marker.
  */
 final readonly class CodexLayout implements DriverLayout
 {
@@ -37,8 +35,8 @@ final readonly class CodexLayout implements DriverLayout
 
         return new ScreenLayout(
             buffer: 'alternate',
-            composer: new MarkedRow('composer', ['› '], [], 3),
-            emptyCursorColumn: 2,
+            composer: new CodexComposer(),
+            emptyCursorColumn: CodexComposer::EMPTY_CURSOR_COLUMN,
             composerStillMs: self::STILL_MS,
             menus: [
                 // Recorded in keyscripts/model-choice: its user ran without the daemon, two rows up from Cancel.

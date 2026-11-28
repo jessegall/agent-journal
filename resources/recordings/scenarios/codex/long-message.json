@@ -1,0 +1,17 @@
+{
+    "description": "A Codex terminal submits a message that wraps across several rows and answers it",
+    "steps": [
+        {"do": "restart-host"},
+        {"do": "start-session", "agent": "Coder", "type": "terminal", "model": "gpt-6-luna", "effort": "low"},
+        {"do": "wait-for", "fact": "turn-ended", "seconds": 180},
+        {
+            "do": "send-message",
+            "agent": "Coder",
+            "text": "Summarize this story in one sentence. A small library kept its oldest books in a quiet room upstairs. Every Friday the librarian carried a different book downstairs, read the opening page to the visitors, and invited them to borrow it. One Friday a child brought a book written by her grandfather, and the librarian made room on the shelf for it."
+        },
+        {"do": "wait-for", "fact": "turn-ended", "seconds": 120},
+        {"do": "stop", "agent": "Coder"},
+        {"do": "wait-for", "fact": "stopped", "seconds": 60},
+        {"do": "wait-for", "fact": "instructions-answered", "seconds": 60}
+    ]
+}
