@@ -16,25 +16,17 @@ Command-text checks and folder modes do not count: a tool runs as the same user 
 Only what the pinned client applies natively before its tools run counts, and only once a private native procedure
 has shown it hold on this host.
 
-## How the journal judges a contained host
+## How a contained start is protected
 
-The journal judges each contained host itself (`App\Agents\Drivers\Isolation`): for every driver family on the
-standard and the protected container it keeps a report of each item with the native mechanism the pinned client has
-for it or why it has none, the recorded run that showed it hold, and whether the whole arrangement is enforced. An item
-with a mechanism but no recorded run is reported as missing native evidence; an item with no mechanism stays
-unavailable whatever is recorded. A run is per driver, build and platform.
+Every contained start runs protected, in the driver image its host built (doc 146): the driver runs as uid 10001 with
+the account folder, and every command the model runs goes through the shell bridge and the executor as uid 10002. No
+start waits on a report of the host. What proves the protection is checked before any start runs on an image:
 
-The operator records a run of the native procedures with
-`php artisan accounts:record-protection-run <host> <family> <platform> <run> <items...>`, which judges that report
-again.
-
-## The protected-account trial
-
-Evidence for the protected container can only be made by running a protected session, so a driver named in
-`AGENTS_PROTECTED_ACCOUNT_TRIAL` (a family such as `claude-code`, which covers `claude-code-headless`) starts its
-protected container once every item has its native mechanism, before any run is recorded. The journal reads the
-setting itself and the contained host gets it as `--protected-trial`. A driver that is not named, and any item with no
-mechanism, stays refused, and the refusal names each item with its reason.
+- the agent image's build checks that a command through the protected start runs as the executor's user
+  (`check_protected_start` in `.docker/helper/build.sh`);
+- each driver image runs `.docker/helper/checks/driver-image.sh` as its last build step;
+- the host runs the journal's start checks in every image it built (`App\Hosts\DriverImageChecks`), and an image whose
+  commands do not run as uid 10002 is refused, so no start runs on it.
 
 ## No driver sandbox
 

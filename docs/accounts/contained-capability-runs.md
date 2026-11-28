@@ -77,9 +77,8 @@ The runs of tasks 1634 and 1501 record a signed-in session using it.
 
 ## relay-protection: unsupported
 
-The contained host's protection report, recorded on the host's row (`hosts.protection`, `claude-code@2.1.323`,
-platform `linux-container`), sets every item unenforced with the same reason: the journal uses no driver sandbox, and
-in the standard container the driver and the commands it runs share one user. So hook commands and the Bash tool run
+In the standard container every item is unenforced for the same reason: the journal uses no driver sandbox, and the
+driver and the commands it runs share one user. So hook commands and the Bash tool run
 as the same user in the same container, and the relay's material is readable by model-run descendants.
 
 ## The other three

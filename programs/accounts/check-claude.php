@@ -9,7 +9,6 @@ declare(strict_types=1);
  *
  *   php programs/accounts/check-claude.php [--program=claude] [--accounts-root=<journal accounts folder>]
  *       [--account-a=<account directory>] [--account-b=<account directory>] [--allow-requests]
- *       [--host=<journal-runner>] [--host-state=<its state folder>]
  *
  * --allow-requests lets the hostile work settings item send one small request on account A.
  */
@@ -26,7 +25,6 @@ use function Tools\Accounts\missing;
 use function Tools\Accounts\pinned_build_item;
 use function Tools\Accounts\pinned_version;
 use function Tools\Accounts\print_evidence;
-use function Tools\Accounts\protected_host_items;
 use function Tools\Accounts\read_options;
 use function Tools\Accounts\run_program;
 
@@ -145,5 +143,4 @@ $items[] = missing('outage-keeps-denials', 'a protected start while the journal 
 
 print_evidence($compatibility, $installed, [
     ...$items,
-    ...protected_host_items($options['host_agent'], $options['host_state'], 'claude', $compatibility->version),
 ]);

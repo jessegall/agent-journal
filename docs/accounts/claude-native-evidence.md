@@ -43,7 +43,7 @@ missing with what it needs.
 | parallel-refresh | missing: two launches on one account across a token refresh | task 243 |
 | own-output-and-foreign-denial | missing: the protected launcher with per-session output rules | task 262 |
 | outage-keeps-denials | missing: a protected launch while the journal is unreachable | task 263 |
-| host-* | missing: the protected host's native boundary for each item, as the journal's protection report of the host reports it ([host-protection.md](host-protection.md)) | task 258 |
+| host-* | met in a contained start only: each item is kept by the driver image's two users, checked on every image the host built ([host-protection.md](host-protection.md)) | doc 146 |
 
 Help text and flags are never authentication proof: `launch-flags` only shows the build accepts them.
 `tests/Unit/Accounts/ClaudeNativeEvidenceTest.php` runs the procedure against a mock program.

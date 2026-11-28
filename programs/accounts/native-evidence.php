@@ -98,8 +98,6 @@ function pinned_version(string $family): string
  *     account_a: string|null,
  *     account_b: string|null,
  *     allow_requests: bool,
- *     host_agent: string|null,
- *     host_state: string|null,
  * }
  */
 function read_options(array $arguments, string $defaultProgram): array
@@ -110,8 +108,6 @@ function read_options(array $arguments, string $defaultProgram): array
         'account_a' => null,
         'account_b' => null,
         'allow_requests' => false,
-        'host_agent' => null,
-        'host_state' => null,
     ];
 
     foreach ($arguments as $argument) {
@@ -122,8 +118,6 @@ function read_options(array $arguments, string $defaultProgram): array
             '--account-a' => $options['account_a'] = $value,
             '--account-b' => $options['account_b'] = $value,
             '--allow-requests' => $options['allow_requests'] = true,
-            '--host' => $options['host_agent'] = $value,
-            '--host-state' => $options['host_state'] = $value,
             default => throw EvidenceRefused::unknownOption($name),
         };
     }
@@ -201,38 +195,6 @@ function run_program(array $command, array $environment, string $workingDirector
     fclose($pipes[1]);
 
     return new ProgramRun(proc_close($process), $stdout);
-}
-
-/**
- * One item a boundary part the protected host reports: pass only when the host enforces it with recorded native
- * evidence, missing with the host's own reason otherwise, and one missing item when no host was named.
- *
- * @return list<array{item: string, result: string, reason: string, consumer: string}>
- */
-function protected_host_items(string|null $hostAgent, string|null $hostState, string $program, string $build): array
-{
-    if ($hostAgent === null) {
-        return [item('protected-host', 'missing', 'name the protected host with --host=<journal-runner>', 'task 258')];
-    }
-
-    $command = [$hostAgent, 'protection', '--driver', $program, '--build', $build];
-
-    if ($hostState !== null) {
-        array_push($command, '--state', $hostState);
-    }
-
-    $report = json_decode(run_program($command, ['PATH' => (string) getenv('PATH')], sys_get_temp_dir())->stdout, true);
-
-    if (! is_array($report) || ! is_array($report['items'] ?? null)) {
-        return [item('protected-host', 'missing', 'the protected host gave no protection report', 'task 258')];
-    }
-
-    return array_map(
-        fn (array $part) => $part['enforced'] === true
-            ? item('host-'.$part['item'], 'pass', (string) $part['evidence'], 'task 258')
-            : item('host-'.$part['item'], 'missing', (string) $part['reason'], 'task 258'),
-        $report['items'],
-    );
 }
 
 /**

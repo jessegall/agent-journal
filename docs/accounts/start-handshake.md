@@ -72,9 +72,8 @@ Status: supported, by the same account mount (question 30).
 Status: unverified for both programs.
 
 The protected host (task 258, [host-installation.md](host-installation.md)) claims, prepares, starts, stops and
-reconciles account starts, but it starts none yet: neither program's protected arrangement is available on any host
-(the journal's protection report of the host names what is missing, [host-protection.md](host-protection.md)), so every account start
-is refused before release. The rows stay unverified until the native evidence procedures show the arrangement hold;
+reconciles account starts; a contained start runs protected in the driver image its host built and checked
+([host-protection.md](host-protection.md)). The rows stay unverified until the native evidence procedures show the arrangement hold;
 only then may `ProgramCompatibility` mark a build, platform and arrangement native shown.
 
 ## Changing a row

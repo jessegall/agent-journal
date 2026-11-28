@@ -9,7 +9,6 @@ declare(strict_types=1);
  *
  *   php programs/accounts/check-codex.php [--program=codex] [--accounts-root=<journal accounts folder>]
  *       [--account-a=<account directory>] [--account-b=<account directory>]
- *       [--host=<journal-runner>] [--host-state=<its state folder>]
  */
 
 use App\Agents\Drivers\DefaultDrivers;
@@ -23,7 +22,6 @@ use function Tools\Accounts\missing;
 use function Tools\Accounts\pinned_build_item;
 use function Tools\Accounts\pinned_version;
 use function Tools\Accounts\print_evidence;
-use function Tools\Accounts\protected_host_items;
 use function Tools\Accounts\read_options;
 use function Tools\Accounts\run_program;
 
@@ -135,5 +133,4 @@ $items[] = missing('outage-keeps-denials', 'a protected start while the journal 
 
 print_evidence($compatibility, $installed, [
     ...$items,
-    ...protected_host_items($options['host_agent'], $options['host_state'], 'codex', $compatibility->version),
 ]);
