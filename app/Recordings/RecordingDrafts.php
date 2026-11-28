@@ -8,6 +8,7 @@ use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Files\Values\Depth;
+use App\Recordings\Enums\RecordedEventType;
 use App\Recordings\Enums\Wire;
 use App\Recordings\Scenarios\Scenario;
 use App\Values\FilePath;
@@ -98,6 +99,35 @@ final readonly class RecordingDrafts
         $run = $this->files->readJson($this->runFile());
 
         return str_starts_with((string) $run['scenario'], Scenario::CONNECTED.'/');
+    }
+
+    public function sawSessionStart(string $source, int $after): bool
+    {
+        $folder = $this->drafts->child(Wire::Hooks->value);
+
+        if (! $this->files->isFolder($folder)) {
+            return false;
+        }
+
+        foreach ($this->files->list($folder, pattern: '*.jsonl')->paths() as $draft) {
+            $lines = $this->files->locked($this->lockOf($draft), fn () => $this->files->readJsonLines($draft));
+
+            foreach (array_slice($lines, 1) as $line) {
+                $event = RecordedEvent::fromLine($line);
+
+                if ($event->at < $after || $event->type !== RecordedEventType::Asked || $event->call === null) {
+                    continue;
+                }
+
+                $body = json_decode($event->call->body, true);
+
+                if (($body['hook_event_name'] ?? '') === 'SessionStart' && ($body['source'] ?? '') === $source) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

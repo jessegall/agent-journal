@@ -1,0 +1,12 @@
+{
+    "description": "The journal clears a running Claude Code terminal and records its next native session",
+    "steps": [
+        {"do": "restart-host"},
+        {"do": "start-session", "agent": "Coder", "type": "terminal", "model": "claude-haiku-5-5", "effort": "low"},
+        {"do": "wait-for", "fact": "turn-ended", "seconds": 180},
+        {"do": "send-keys", "agent": "Coder", "text": "/clear\r", "from": "clear"},
+        {"do": "stop", "agent": "Coder"},
+        {"do": "wait-for", "fact": "stopped", "seconds": 60},
+        {"do": "wait-for", "fact": "instructions-answered", "seconds": 60}
+    ]
+}
