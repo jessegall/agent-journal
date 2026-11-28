@@ -5,20 +5,20 @@
     "driver": "codex",
     "build": "0.172.0",
     "image_programs": "0a1b73e72b6fbc13cd901dffbc1819e849055247b77d6e6ac75228414cdccedb",
-    "recorded_at": "2026-11-28T06:41:42+00:00",
+    "recorded_at": "2026-11-28T06:51:51+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",
-        "02-hooks-caller-0924912fca247652",
-        "03-hooks-caller-0ba3ede5eec2386f",
-        "04-hooks-caller-42b0c7fae3421d77",
-        "05-agent-caller-0924912fca247652",
-        "06-agent-caller-0ba3ede5eec2386f",
-        "07-agent-caller-42b0c7fae3421d77",
+        "02-hooks-caller-6c0015ea5cec732a",
+        "03-hooks-caller-781d7d0c3c55eef2",
+        "04-hooks-caller-f1b5d67a22957cbc",
+        "05-agent-caller-6c0015ea5cec732a",
+        "06-agent-caller-781d7d0c3c55eef2",
+        "07-agent-caller-f1b5d67a22957cbc",
         "08-docker-daemon",
-        "09-driver-01m8ge5z94p4h31mdwwcaej9cn",
-        "10-driver-01m8ge5zz5anv8xjdh6w6jg9m1",
-        "11-driver-01m8ge6109bekamnbcarwyq31q",
-        "12-driver-01m8ge69yyxkjp87ykaxw5jwq2",
-        "13-driver-01m8ge6gthn4gyre21cr44e3ev"
+        "09-driver-01m8gerj9ggaz5nvfc8xpqhvvm",
+        "10-driver-01m8gerk1qs2bz70cjyzw2w126",
+        "11-driver-01m8germ1fgaz6yc9kgj0vrd4q",
+        "12-driver-01m8gerwyy8zszvkbfqkpdmwwt",
+        "13-driver-01m8ges3smvb3xgfnm48zha8nh"
     ]
 }
