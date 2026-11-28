@@ -23,7 +23,7 @@ function lineOf(type: AgentLogLineData["type"], title: string, isFailure: boolea
     at: "2026-11-28T14:31:05+00:00",
     type,
     title,
-    detail: isFailure ? "Claude Code refused the sign-in" : "agent terminal · journal-process-1",
+    detail: isFailure ? "Claude Code refused the sign-in" : "Agent terminal · 0.9 s",
     isFailure,
     reason: isFailure ? "Claude Code refused the sign-in" : null,
     evidence: isFailure ? "exit code 1" : null,
@@ -31,8 +31,21 @@ function lineOf(type: AgentLogLineData["type"], title: string, isFailure: boolea
 }
 
 describe("DebugLines", () => {
-  it.each(KINDS)("shows a %s line quietly with its words and detail, a failure in red", (type, title, isFailure) => {
+  it("keeps the lines folded into one small icon until it is pressed, red when a step failed", async () => {
+    const lines = mount(DebugLines, {
+      props: { lines: [lineOf("woke", "Woke", false), lineOf("wake-failed", "Wake failed", true)] },
+    });
+
+    expect(lines.find("[data-debug-line]").exists()).toBe(false);
+    expect(lines.get("[data-debug-toggle]").classes()).toContain("text-danger");
+    await lines.get("[data-debug-toggle]").trigger("click");
+
+    expect(lines.findAll("[data-debug-line]")).toHaveLength(2);
+  });
+
+  it.each(KINDS)("shows a %s line quietly with its words and detail, a failure in red", async (type, title, isFailure) => {
     const lines = mount(DebugLines, { props: { lines: [lineOf(type, title, isFailure)] } });
+    await lines.get("[data-debug-toggle]").trigger("click");
     const line = lines.get(`[data-debug-line="${type}"]`);
 
     expect(line.text()).toContain(title);
@@ -41,6 +54,7 @@ describe("DebugLines", () => {
 
   it("opens Technical details at the line pressed, and shows nothing with no line", async () => {
     const lines = mount(DebugLines, { props: { lines: [lineOf("wake-failed", "Wake failed", true)] } });
+    await lines.get("[data-debug-toggle]").trigger("click");
 
     await lines.get("[data-debug-line]").trigger("click");
 
