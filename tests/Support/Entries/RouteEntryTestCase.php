@@ -58,6 +58,7 @@ abstract class RouteEntryTestCase extends TestCase
         if ($call->answer !== []) {
             $response->assertJson($call->answer);
         }
+
         $this->journal->assertDispatchedOnlyDeclared(
             DeclaredCommands::ofRoute($this->route()),
             (string) $this->route()->getControllerClass(),

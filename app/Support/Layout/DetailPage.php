@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
+use App\Web\Creation\Buildable;
+
 /**
  * The shared recipe of a record's reader: a metadata line, the title, an abstract, its actions, its facts with their
  * links, parts on every tab, and its tabs, of which only the chosen one is read. A removed record is a notice with Back
@@ -11,8 +13,8 @@ namespace App\Support\Layout;
  */
 final readonly class DetailPage
 {
-    /** @use \App\Web\Creation\Buildable<DetailPageFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<DetailPageFields> */
+    use Buildable;
 
     protected const string FIELDS = DetailPageFields::class;
 
@@ -104,24 +106,24 @@ final readonly class DetailPage
         return DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('removed')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()
-                    ->asNotice()
+                    ->asBox()
                     ->key('removed')
-                    ->style('empty')
-                    ->title("This {$noun} was removed.")
+                    ->style('stack')
+                    ->children(
+                        LayoutPartData::build()
+                            ->asNotice()
+                            ->key('removed')
+                            ->style('empty')
+                            ->title("This {$noun} was removed.")
+                            ->finish(),
+                        LayoutPartData::build()
+                            ->asAction()
+                            ->key('back')
+                            ->label($back->label)
+                            ->action(LayoutActionData::build()->href($back->href)->finish())
+                            ->finish(),
+                    )
                     ->finish(),
-                    LayoutPartData::build()
-                    ->asAction()
-                    ->key('back')
-                    ->label($back->label)
-                    ->action(LayoutActionData::build()->href($back->href)->finish())
-                    ->finish(),
-                )
-                ->finish(),
             )
             ->finish();
     }

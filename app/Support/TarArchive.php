@@ -31,6 +31,7 @@ final readonly class TarArchive
             .sprintf('%07o', $file->owner)."\0"
             .sprintf('%011o', $size)."\0"
             .sprintf('%011o', 0)."\0";
+
         $rest = '0'.str_repeat("\0", 100).'ustar'."\0".'00'.str_repeat("\0", 247);
         $unsummed = $fields.str_repeat(' ', 8).$rest;
         $checksum = array_sum(array_map(ord(...), str_split($unsummed)));
@@ -42,6 +43,10 @@ final readonly class TarArchive
     {
         $remainder = strlen($content) % self::BLOCK;
 
-        return $remainder === 0 ? $content : $content.str_repeat("\0", self::BLOCK - $remainder);
+        if ($remainder === 0) {
+            return $content;
+        }
+
+        return $content.str_repeat("\0", self::BLOCK - $remainder);
     }
 }

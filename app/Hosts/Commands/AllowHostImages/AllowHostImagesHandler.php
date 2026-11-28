@@ -37,6 +37,7 @@ final readonly class AllowHostImagesHandler implements CommandHandler
             HostInstructionSource::fromJournal(),
             HostImagesPlanPayload::from(['images' => $command->images]),
         );
+
         $host->allowImages($command->images);
 
         foreach (HostDriverImage::findAllowingOn($host->id) as $image) {

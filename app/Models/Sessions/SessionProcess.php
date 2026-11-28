@@ -341,7 +341,11 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     {
         $start = self::findLatestOfSession($sessionId);
 
-        return $start === null ? TransportProfileType::Mcp : $start->transport_profile;
+        if ($start === null) {
+            return TransportProfileType::Mcp;
+        }
+
+        return $start->transport_profile;
     }
 
     /**
@@ -417,7 +421,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     }
 
     /**
-     * @param list<RecordIdentity> $accounts
+     * @param  list<RecordIdentity>  $accounts
      * @return array<string, int>
      */
     public static function countUnresolvedByAccount(array $accounts): array
@@ -427,6 +431,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
         }
 
         $groups = RecordIdentity::groupedByType($accounts);
+
         $counts = self::query()
             ->supervised()
             ->unresolved()

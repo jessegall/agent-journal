@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Assignments\Contracts;
 
 use App\Support\AssigneeIdentity;
-use App\Support\CursorPage;
 use App\Support\AssigneeName;
+use App\Support\CursorPage;
 use App\Support\IdListPage;
 
 /**

@@ -67,8 +67,8 @@ use App\Support\Delivery\StateBridgeFactStaging;
 use App\Support\Delivery\StateEventDispatcher;
 use App\Support\Inspection\Contracts\StackInspectionQuery as StackInspectionQueryContract;
 use App\Support\Inspection\Queries\AnyAgentStackInspection;
-use App\Support\StackOperationDeadline;
 use App\Support\Reflector;
+use App\Support\StackOperationDeadline;
 use App\Support\StackTransaction;
 use App\Support\StateCatalog\Contracts\StateTypes as StateTypesContract;
 use Illuminate\Console\Scheduling\Schedule;
@@ -222,6 +222,7 @@ final class HooksServiceProvider extends ServiceProvider
         }
 
         $named = Reflector::of($entry);
+
         $reference = $named->isSubclassOf(AgentState::class)
             ? Reflector::of($named->attribute(StateType::class)->reference)
             : $named;

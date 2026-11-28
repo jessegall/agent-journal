@@ -49,26 +49,42 @@ final readonly class SurfaceContext
 
     public function actor(): ActorReference|null
     {
-        return $this->actors->hasActor() ? $this->actors->actor() : null;
+        if ($this->actors->hasActor()) {
+            return $this->actors->actor();
+        }
+
+        return null;
     }
 
     public function activeAgent(): ActorReference|null
     {
         $actor = $this->actor();
 
-        return $actor instanceof ActorReference && $actor->isAgent() ? $actor : null;
+        if ($actor instanceof ActorReference && $actor->isAgent()) {
+            return $actor;
+        }
+
+        return null;
     }
 
     public function owner(): ActorReference|null
     {
         $owner = $this->admission->owner();
 
-        return $owner->isUser() ? $owner : null;
+        if ($owner->isUser()) {
+            return $owner;
+        }
+
+        return null;
     }
 
     public function session(): string|null
     {
-        return $this->sessions->hasSession() ? $this->sessions->sessionId() : null;
+        if ($this->sessions->hasSession()) {
+            return $this->sessions->sessionId();
+        }
+
+        return null;
     }
 
     public function project(): ProjectSelection
@@ -90,7 +106,11 @@ final readonly class SurfaceContext
     {
         $key = $this->visit->route($parameter);
 
-        return is_string($key) || is_int($key) ? (string) $key : null;
+        if (is_string($key) || is_int($key)) {
+            return (string) $key;
+        }
+
+        return null;
     }
 
     public function routeModel(string $parameter, string $recordType): Model|null

@@ -83,8 +83,8 @@ final class PageFields
     }
 
     /**
-     * @param class-string<Data> $type
-     * @param class-string<WindowBuilder> $builder
+     * @param  class-string<Data>  $type
+     * @param  class-string<WindowBuilder>  $builder
      */
     public function withWindow(string $type, string $builder, string $component): self
     {

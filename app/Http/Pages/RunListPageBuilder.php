@@ -66,21 +66,21 @@ final readonly class RunListPageBuilder implements PageBuilder
         return DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('runs-page')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()
                     ->asBox()
-                    ->key('header')
-                    ->style('header')
+                    ->key('runs-page')
+                    ->style('stack')
                     ->children(
-                        LayoutPartData::build()->asText()->key('title')->value('Runs')->style('heading')->finish(),
+                        LayoutPartData::build()
+                            ->asBox()
+                            ->key('header')
+                            ->style('header')
+                            ->children(
+                                LayoutPartData::build()->asText()->key('title')->value('Runs')->style('heading')->finish(),
+                            )
+                            ->finish(),
+                        $list,
                     )
                     ->finish(),
-                    $list,
-                )
-                ->finish(),
             )
             ->finish();
     }

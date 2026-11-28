@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Accounts;
 
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
-use App\Support\Layout\EmptyListState;
 
 /**
  * The No accounts yet state, in the design's words, with the action that opens the account wizard: the Accounts page
@@ -27,12 +27,12 @@ final readonly class NoAccountsYet
             ->icon('account')
             ->actions(
                 [LayoutPartData::build()
-                ->asAction()
-                ->key('add')
-                ->label('Add account')
-                ->action($adding)
-                ->style('primary')
-                ->finish()],
+                    ->asAction()
+                    ->key('add')
+                    ->label('Add account')
+                    ->action($adding)
+                    ->style('primary')
+                    ->finish()],
             )
             ->fillsPage(true)
             ->finish();

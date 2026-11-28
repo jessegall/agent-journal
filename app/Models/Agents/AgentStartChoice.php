@@ -35,7 +35,17 @@ final class AgentStartChoice extends JournalModel implements ReadableModel
     use BoundedReads;
     use Linkable;
 
-    // ----------[ Constructors ]----------
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<Agent, $this>
+     */
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class);
+    }
+
+    // ----------[ Queries ]----------
 
     /**
      * Keeps the agent's next start on the driver, model and account, in place of the one it kept before.
@@ -52,18 +62,6 @@ final class AgentStartChoice extends JournalModel implements ReadableModel
 
         return $choice;
     }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return BelongsTo<Agent, $this>
-     */
-    public function agent(): BelongsTo
-    {
-        return $this->belongsTo(Agent::class);
-    }
-
-    // ----------[ Queries ]----------
 
     /**
      * The choice the agent's next start runs on; none while nothing was chosen.

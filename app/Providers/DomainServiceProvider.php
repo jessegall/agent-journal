@@ -55,13 +55,16 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PageFactory::class);
         $this->app->singleton(SurfaceAttributeMap::class);
         $this->app->singleton(WindowFactory::class);
+
         $this->app->booting(function () use ($registry): void {
             $this->registerDomainProviders($registry);
+
             $this->app->make(DeclaredSurfaceCheck::class)->registerDeclarations(
                 $this->app->make(ClientDeclarations::class),
                 $this->app->make(SurfaceAttributeMap::class),
             );
         });
+
         $this->keepMigrationsOfUnbootedDomains($registry);
 
         $this->app->singleton(

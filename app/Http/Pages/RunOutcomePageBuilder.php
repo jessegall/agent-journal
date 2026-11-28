@@ -34,8 +34,8 @@ final readonly class RunOutcomePageBuilder implements PageBuilder
             ->runId($runId)
             ->summary(
                 $this->summaries->summaryOf($runId)
-                ->map(fn (RunOutcomeSummaryData $summary) => $summary)
-                ->getOrElse(Optional::create()),
+                    ->map(fn (RunOutcomeSummaryData $summary) => $summary)
+                    ->getOrElse(Optional::create()),
             )
             ->finish();
     }

@@ -6,6 +6,7 @@ namespace App\Accounts\Data;
 
 use App\Accounts\Enums\AccountStatus;
 use App\Accounts\Enums\CleanupProblem;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -19,8 +20,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AccountRowData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<AccountRowDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<AccountRowDataFields> */
+    use Buildable;
 
     protected const string FIELDS = AccountRowDataFields::class;
 

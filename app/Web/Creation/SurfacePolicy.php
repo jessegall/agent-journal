@@ -15,11 +15,11 @@ use Spatie\LaravelData\Data;
 final readonly class SurfacePolicy
 {
     /**
-     * @param class-string<Data> $type
-     * @param array<string, SurfacePropPolicy> $properties
-     * @param list<class-string<VisibilityCheck>> $checks
-     * @param array<string, positive-int> $bounds
-     * @param array<string, string> $appendKeys
+     * @param  class-string<Data>  $type
+     * @param  array<string, SurfacePropPolicy>  $properties
+     * @param  list<class-string<VisibilityCheck>>  $checks
+     * @param  array<string, positive-int>  $bounds
+     * @param  array<string, string>  $appendKeys
      */
     public function __construct(
         public string $type,

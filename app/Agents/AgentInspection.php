@@ -32,6 +32,10 @@ final readonly class AgentInspection
      */
     public function agentsSeenBy(ActorReference $actor): Builder
     {
-        return $this->seesEveryAgent() ? Agent::query() : Agent::query()->whereKey($actor->id);
+        if ($this->seesEveryAgent()) {
+            return Agent::query();
+        }
+
+        return Agent::query()->whereKey($actor->id);
     }
 }

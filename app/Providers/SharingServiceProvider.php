@@ -19,8 +19,8 @@ use App\Sharing\Support\LiveShareStatus;
 use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
-use App\Support\ProjectCode;
 use App\Support\DomainRegistry;
+use App\Support\ProjectCode;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 

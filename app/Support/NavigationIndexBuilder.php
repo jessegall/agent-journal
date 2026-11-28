@@ -67,6 +67,7 @@ final readonly class NavigationIndexBuilder
             ...$above,
             $navigation->key,
         ];
+
         $occurrences[$navigation->key][] = $contribution;
 
         // A listed item repeating an ancestor's key would list itself again without end: it is dropped, unread.

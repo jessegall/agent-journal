@@ -61,6 +61,7 @@ final readonly class RecordedProtocol
         foreach ($recordings as $recording) {
             foreach ($recording->calls(Wire::Host) as $call) {
                 $route = $this->routeOf($call);
+
                 if ($recording->manifest()->protocol === HostProtocol::RELAY) {
                     $relayRoute = $this->relayReader->callFor($call->method, $call->path);
                     $relayRoutes[] = $relayRoute?->name;

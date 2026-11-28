@@ -23,10 +23,12 @@ final class AgentPageLoaderTest extends TestCase
     public function test_the_page_after_an_agent_never_active_holds_the_ones_below_it(): void
     {
         $this->journal->owner()->idleAgent('Planner')->idleAgent('Reviewer');
+
         $ids = [
             $this->journal->agentCalled('Planner')->id,
             $this->journal->agentCalled('Reviewer')->id,
         ];
+
         rsort($ids);
         $this->journal->actAs('Owner');
 

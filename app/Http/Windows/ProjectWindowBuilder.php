@@ -28,6 +28,7 @@ final readonly class ProjectWindowBuilder implements WindowBuilder
     public function build(Request $visit): ProjectPaneData
     {
         $selection = ProjectBinding::findLastHeardFromIn($this->served->environmentIds());
+
         $pane = ProjectPaneData::build()
             ->fullUrl(route('connections.project', absolute: false))
             ->connectUrl(route('connections.connect', absolute: false));

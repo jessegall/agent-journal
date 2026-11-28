@@ -6,10 +6,10 @@ namespace App\Http\Pages\Profiles;
 
 use App\Models\Profiles\Profile;
 use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use Spatie\LaravelData\Optional;
 
@@ -34,22 +34,22 @@ final readonly class ProfilesIndex extends ProfilesPage
             ->rows(
                 $profiles,
                 fn (Profile $profile) => LayoutRowData::build()
-                ->key($profile->id)
-                ->label($profile->label)
-                ->detail($profile->description === '' ? Optional::create() : $profile->description)
-                ->href(route('accounts.profile', ['profile' => $profile->key], false))
-                ->isCurrent($profile->key === $selectedKey)
-                ->finish(),
+                    ->key($profile->id)
+                    ->label($profile->label)
+                    ->detail($profile->description === '' ? Optional::create() : $profile->description)
+                    ->href(route('accounts.profile', ['profile' => $profile->key], false))
+                    ->isCurrent($profile->key === $selectedKey)
+                    ->finish(),
             )
             ->empty(
                 EmptyListState::build()
-                ->title('No profiles yet')
-                ->detail(
-                    'A profile is a kind of helper: the program it runs, its models, its rules and whom it answers to.',
-                )
-                ->icon('users')
-                ->fillsPage(true)
-                ->finish(),
+                    ->title('No profiles yet')
+                    ->detail(
+                        'A profile is a kind of helper: the program it runs, its models, its rules and whom it answers to.',
+                    )
+                    ->icon('users')
+                    ->fillsPage(true)
+                    ->finish(),
             )
             ->countingRows()
             ->withReader(

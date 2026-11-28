@@ -40,6 +40,8 @@ final class RetryAttempt extends JournalModel
         ];
     }
 
+    // ----------[ Constructors ]----------
+
     public static function record(
         string $runtimeId,
         RetriedAction $action,
@@ -65,12 +67,16 @@ final class RetryAttempt extends JournalModel
         return $attempt;
     }
 
+    // ----------[ Mutations ]----------
+
     public function settle(RetryOutcome $outcome, string|null $evidence = null): void
     {
         $this->outcome = $outcome;
         $this->evidence = $evidence;
         $this->save();
     }
+
+    // ----------[ Queries ]----------
 
     public static function latestOf(DriverRequest $request): self|null
     {
@@ -88,6 +94,8 @@ final class RetryAttempt extends JournalModel
             ->where('attempt_version', $request->attempt_version)
             ->first();
     }
+
+    // ----------[ Scopes ]----------
 
     #[Scope]
     protected function ofSession(Builder $query, string $sessionId): void

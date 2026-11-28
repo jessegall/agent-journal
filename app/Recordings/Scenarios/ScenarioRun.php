@@ -281,13 +281,18 @@ final class ScenarioRun
         }
 
         $session = (string) $this->lastAgent()->current_session_id;
+
         $moments = array_filter([
             DriverRequest::resolveLastMovedAtOf($session),
             HookCall::resolveLastAtOf($session),
             HostProcess::resolveLastMovedAtOfSession($session),
         ]);
 
-        return $moments === [] ? null : max($moments);
+        if ($moments === []) {
+            return null;
+        }
+
+        return max($moments);
     }
 
     /**

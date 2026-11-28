@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Asks\Data;
 
 use App\Asks\Enums\AskResult;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -15,8 +16,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AskDetail extends Data
 {
-    /** @use \App\Web\Creation\Buildable<AskDetailFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<AskDetailFields> */
+    use Buildable;
 
     protected const string FIELDS = AskDetailFields::class;
 

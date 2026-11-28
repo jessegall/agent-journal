@@ -136,7 +136,11 @@ final class ReflectedMethod
     {
         $comment = $this->method->getDocComment();
 
-        return $comment === false ? None::create() : new Some($comment);
+        if ($comment === false) {
+            return None::create();
+        }
+
+        return new Some($comment);
     }
 
     /**

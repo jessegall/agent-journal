@@ -31,6 +31,7 @@ final readonly class AccountsPageBuilder implements PageBuilder
         $input = AccountsInput::factory()->alwaysValidate()->from(new SurfacePayload($context, []));
         $policy = $this->policies->forPage(AccountsPageData::class);
         $chosen = $input->account ?? '';
+
         $page = $this->accounts->page(
             $input->page,
             $policy->pageSize(),

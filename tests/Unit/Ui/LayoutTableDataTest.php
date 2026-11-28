@@ -31,6 +31,7 @@ final class LayoutTableDataTest extends TestCase
     {
         $records = (static function (): Generator {
             yield 'second';
+
             yield 'first';
         })();
         $mapped = [];

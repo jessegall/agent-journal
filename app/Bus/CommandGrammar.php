@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Bus;
 
 use App\Reflection\ReflectedProperty;
-use App\Support\ProjectCode;
 use App\Support\DeclaredType;
+use App\Support\ProjectCode;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use BackedEnum;

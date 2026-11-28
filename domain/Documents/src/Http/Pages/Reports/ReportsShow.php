@@ -62,9 +62,9 @@ final readonly class ReportsShow extends ReportsPage
                         ->key('receipt')
                         ->native(
                             LayoutNativeData::build()
-                            ->component('documents/ReportReceipt')
-                            ->props(new ReportReceiptPartData((string) $number))
-                            ->finish(),
+                                ->component('documents/ReportReceipt')
+                                ->props(new ReportReceiptPartData((string) $number))
+                                ->finish(),
                         )
                         ->finish(),
                 ],
@@ -79,11 +79,11 @@ final readonly class ReportsShow extends ReportsPage
                         ->key('links')
                         ->native(
                             LayoutNativeData::build()
-                            ->component('documents/RecordLinks')
-                            ->props(
-                                RecordLinksPartData::from(['source' => $label, 'links' => $links()]),
-                            )
-                            ->finish(),
+                                ->component('documents/RecordLinks')
+                                ->props(
+                                    RecordLinksPartData::from(['source' => $label, 'links' => $links()]),
+                                )
+                                ->finish(),
                         )
                         ->finish()),
                     PublicationTab::deferred(
@@ -184,23 +184,24 @@ final readonly class ReportsShow extends ReportsPage
                 ->style('inline')
                 ->children(
                     LayoutPartData::build()
-                    ->asField()
-                    ->key('reason')
-                    ->label('Reason')
-                    ->field(LayoutFieldData::build()->name('reason')->finish())
-                    ->style('text')
-                    ->finish(),
+                        ->asField()
+                        ->key('reason')
+                        ->label('Reason')
+                        ->field(LayoutFieldData::build()->name('reason')->finish())
+                        ->style('text')
+                        ->finish(),
                     LayoutPartData::build()
-                    ->asAction()
-                    ->key('send')
-                    ->label('Settle')
-                    ->action(LayoutActionData::build()->submits(true)->finish())
-                    ->finish(),
+                        ->asAction()
+                        ->key('send')
+                        ->label('Settle')
+                        ->action(LayoutActionData::build()->submits(true)->finish())
+                        ->finish(),
                 )
                 ->finish();
         }
 
         $share = RecordSharePartData::from(['reference' => $label]);
+
         $parts[] = LayoutPartData::build()
             ->asNative()
             ->key('share')

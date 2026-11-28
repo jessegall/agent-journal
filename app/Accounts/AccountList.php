@@ -43,6 +43,7 @@ final readonly class AccountList
         $families = $adding
             ? DefaultDrivers::familyKeys()
             : array_values(array_unique(array_column($visible, 'account_protocol')));
+
         $selections = ActiveAccount::forListedFamilies($families);
         $identities = array_map(static fn (Account $account): RecordIdentity => $account->record_identity, $visible);
         $counts = $this->uses->counts($identities);
@@ -51,6 +52,7 @@ final readonly class AccountList
         $windows = AccountUsageWindow::findCurrentOf($visible);
         $costs = AccountUsageCost::resolveMonthTotals(array_column($visible, 'id'), $now);
         $threads = AccountUsageTokens::findNewestOf($visible);
+
         $row = function (Account $account, array $readings) use ($selections, $counts, $histories, $costs, $threads) {
             $identity = $account->record_identity;
             $active = $selections[$account->account_protocol] ?? null;
@@ -67,7 +69,9 @@ final readonly class AccountList
                 )->finish())
                 ->finish();
         };
+
         $rows = array_map(static fn (Account $account) => $row($account, $windows[$account->id] ?? []), $accounts);
+
         $fields = AccountListPageData::build()
             ->rows($rows)
             ->total($listed->total())
@@ -76,6 +80,7 @@ final readonly class AccountList
 
         if ($selected !== null) {
             $usage = AccountUsageWindow::pageOf($selected, $usagePage);
+
             $fields->selected($row($selected, array_values($usage->items())))
                 ->usagePage($usage->currentPage())
                 ->usageLastPage($usage->lastPage());
@@ -100,8 +105,8 @@ final readonly class AccountList
     }
 
     /**
-     * @param list<AccountRowData> $rows
-     * @param list<ActiveAccount> $selections
+     * @param  list<AccountRowData>  $rows
+     * @param  list<ActiveAccount>  $selections
      */
     private function addForm(array $rows, array $selections, CarbonImmutable $now): AccountListData
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Data;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -16,8 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class PhaseReaderData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<PhaseReaderDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<PhaseReaderDataFields> */
+    use Buildable;
 
     protected const string FIELDS = PhaseReaderDataFields::class;
 

@@ -87,11 +87,11 @@ final readonly class AccountsIndex extends AccountsPage
             ->hasColumns(true)
             ->leading(
                 [LayoutPartData::build()
-                ->asText()
-                ->key('driver')
-                ->value($row->driver)
-                ->style('driver')
-                ->finish()],
+                    ->asText()
+                    ->key('driver')
+                    ->value($row->driver)
+                    ->style('driver')
+                    ->finish()],
             )
             ->trailing(
                 [
@@ -181,13 +181,13 @@ final readonly class AccountsIndex extends AccountsPage
                 ->key('usage')
                 ->progress(
                     LayoutProgressData::build()
-                    ->value(
-                        max(array_map(fn (AccountUsageWindowData $window) => (float) $window->usedPercent, $measuredWindows)),
-                    )
-                    ->max(100)
-                    ->label('Usage')
-                    ->unit('percent')
-                    ->finish(),
+                        ->value(
+                            max(array_map(fn (AccountUsageWindowData $window) => (float) $window->usedPercent, $measuredWindows)),
+                        )
+                        ->max(100)
+                        ->label('Usage')
+                        ->unit('percent')
+                        ->finish(),
                 )
                 ->tip($readings)
                 ->finish(),
@@ -268,20 +268,20 @@ final readonly class AccountsIndex extends AccountsPage
             ->label('Name')
             ->control(
                 LayoutPartData::build()
-                ->asForm()
-                ->key('rename')
-                ->form($rename)
-                ->style('live')
-                ->children(
-                    LayoutPartData::build()
-                    ->asField()
-                    ->key('label')
-                    ->label('Name')
-                    ->field(LayoutFieldData::build()->name('label')->value($row->label)->finish())
-                    ->style('text')
+                    ->asForm()
+                    ->key('rename')
+                    ->form($rename)
+                    ->style('live')
+                    ->children(
+                        LayoutPartData::build()
+                            ->asField()
+                            ->key('label')
+                            ->label('Name')
+                            ->field(LayoutFieldData::build()->name('label')->value($row->label)->finish())
+                            ->style('text')
+                            ->finish(),
+                    )
                     ->finish(),
-                )
-                ->finish(),
             )
             ->help('Shown in the account list and the agent bar.')
             ->finish();
@@ -302,22 +302,22 @@ final readonly class AccountsIndex extends AccountsPage
             ->label('Make default')
             ->control(
                 LayoutPartData::build()
-                ->asForm()
-                ->key('activate')
-                ->form($activate)
-                ->style('live')
-                ->children(
-                    LayoutPartData::build()
-                    ->asField()
-                    ->key('isDefault')
-                    ->label('Make default')
-                    ->field(
-                        LayoutFieldData::build()->name('isDefault')->value($row->isActive ? '1' : '0')->finish(),
+                    ->asForm()
+                    ->key('activate')
+                    ->form($activate)
+                    ->style('live')
+                    ->children(
+                        LayoutPartData::build()
+                            ->asField()
+                            ->key('isDefault')
+                            ->label('Make default')
+                            ->field(
+                                LayoutFieldData::build()->name('isDefault')->value($row->isActive ? '1' : '0')->finish(),
+                            )
+                            ->style('toggle')
+                            ->finish(),
                     )
-                    ->style('toggle')
                     ->finish(),
-                )
-                ->finish(),
             )
             ->help($help)
             ->finish();
@@ -369,17 +369,17 @@ final readonly class AccountsIndex extends AccountsPage
             ->label($label)
             ->control(
                 LayoutPartData::build()
-                ->asUsage()
-                ->key('meter')
-                ->progress(
-                    LayoutProgressData::build()
-                    ->value($window->usedPercent)
-                    ->max(100)
-                    ->label("{$label} used")
-                    ->unit('percent')
+                    ->asUsage()
+                    ->key('meter')
+                    ->progress(
+                        LayoutProgressData::build()
+                            ->value($window->usedPercent)
+                            ->max(100)
+                            ->label("{$label} used")
+                            ->unit('percent')
+                            ->finish(),
+                    )
                     ->finish(),
-                )
-                ->finish(),
             )
             ->help($reset)
             ->isBlock(true)
@@ -437,11 +437,11 @@ final readonly class AccountsIndex extends AccountsPage
             ->style('inline')
             ->children(
                 LayoutPartData::build()
-                ->asAction()
-                ->key("{$key}-send")
-                ->label($label)
-                ->action(LayoutActionData::build()->submits(true)->finish())
-                ->finish(),
+                    ->asAction()
+                    ->key("{$key}-send")
+                    ->label($label)
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->finish(),
             )
             ->finish();
     }

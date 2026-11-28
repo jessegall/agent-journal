@@ -38,6 +38,7 @@ final readonly class EvidenceValidator
         VerificationContract $contract,
     ): OutputValidation {
         $run = ProcessRun::findForAnyActor($part->process_run_id);
+
         $problems = [
             ...$this->runProblems($run, $part),
             ...$read->problems,

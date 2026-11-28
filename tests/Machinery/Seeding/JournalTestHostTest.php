@@ -39,6 +39,7 @@ final class JournalTestHostTest extends TestCase
      * What was typed into the recorded Claude Code terminal turn the mock Docker's containers play.
      */
     use CommitsHookRows;
+
     use WithActiveAccount;
 
     private const array TABLES = [

@@ -7,6 +7,7 @@ namespace App\Support\Layout;
 use App\Navigation\Contracts\PresentsLayout;
 use App\Navigation\Contracts\RecordWindow;
 use App\Support\RecordIdentity;
+use App\Web\Creation\Buildable;
 use PhpOption\Option;
 use PhpOption\Some;
 use Spatie\LaravelData\Attributes\Hidden;
@@ -18,8 +19,8 @@ use Spatie\LaravelData\Data;
  */
 final class RecordLayoutData extends Data implements PresentsLayout, RecordWindow
 {
-    /** @use \App\Web\Creation\Buildable<RecordLayoutDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<RecordLayoutDataFields> */
+    use Buildable;
 
     protected const string FIELDS = RecordLayoutDataFields::class;
 

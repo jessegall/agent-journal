@@ -156,10 +156,12 @@ final readonly class HostProtocolSources
         $cases = $this->enumCases($refusals);
         $answerFields = $this->phpList($this->protocol->refusedAnswerNames);
         $typedFacts = $this->factsArms(fn (string $type) => 'true', 'false');
+
         $factsPayloads = $this->factsArms(
             fn (string $type) => 'Payloads\\'.new PhpProtocolSources($this->protocol)->dataName($type).'::class',
             'Payloads\\HostEmptyPayload::class',
         );
+
         $generated = self::GENERATED;
         $source = self::PROTOCOL_FILE;
 
@@ -249,6 +251,7 @@ final readonly class HostProtocolSources
             $query = $this->phpList(array_keys($call->query));
             $limit = $call->bodyByteLimit ?? 'null';
             $status = $call->reply === null ? 204 : 200;
+
             $calls[] = <<<PHP
                         new RelayCall(
                             '{$name}',
@@ -300,6 +303,7 @@ final readonly class HostProtocolSources
     private function containedPlanFieldsClass(): string
     {
         $refusedFields = $this->phpList($this->protocol->containedPlan->refusedFields);
+
         $grantEnvironment = implode("\n", array_map(
             fn (string $name) => "            '{$name}',",
             $this->protocol->containedPlan->startGrantEnvironment,

@@ -43,11 +43,11 @@ final readonly class SharesShow extends SharingPage
             ->title($title)
             ->metadata(
                 [LayoutPartData::build()
-                ->asText()
-                ->key('state')
-                ->value($share->status->value)
-                ->style('muted')
-                ->finish()],
+                    ->asText()
+                    ->key('state')
+                    ->value($share->status->value)
+                    ->style('muted')
+                    ->finish()],
             )
             ->summary("A share of a {$share->root_type}.")
             ->body(fn () => LayoutBodyData::fromMarkdown(''))
@@ -68,24 +68,24 @@ final readonly class SharesShow extends SharingPage
                 ],
             )
             ->finish()->withStanding(
-            LayoutPartData::build()
-                ->asNative()
-                ->key('controls')
-                ->native(
-                    LayoutNativeData::build()->component('sharing/ShareControls')->props($controls)->finish(),
-                )
-                ->finish(),
-            LayoutPartData::build()
-                ->asNative()
-                ->key('runtime')
-                ->native(
-                    LayoutNativeData::build()
-                    ->component('sharing/RuntimeSection')
-                    ->props(ShareRuntimeData::fromShare($share))
+                LayoutPartData::build()
+                    ->asNative()
+                    ->key('controls')
+                    ->native(
+                        LayoutNativeData::build()->component('sharing/ShareControls')->props($controls)->finish(),
+                    )
                     ->finish(),
-                )
-                ->finish(),
-        )->layout($chosenTab);
+                LayoutPartData::build()
+                    ->asNative()
+                    ->key('runtime')
+                    ->native(
+                        LayoutNativeData::build()
+                            ->component('sharing/RuntimeSection')
+                            ->props(ShareRuntimeData::fromShare($share))
+                            ->finish(),
+                    )
+                    ->finish(),
+            )->layout($chosenTab);
     }
 
     /**

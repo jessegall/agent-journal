@@ -78,6 +78,7 @@ final readonly class AgentStack implements HookDecider
 
             $decision = $answered->decision;
             $steps[] = $handler->walkStep($decision, count($answered->lines), $texts);
+
             $effects = [
                 ...$effects,
                 ...$answered->effects,

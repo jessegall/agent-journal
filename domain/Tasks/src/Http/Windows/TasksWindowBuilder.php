@@ -8,9 +8,9 @@ use App\Reads\PageFormRequests;
 use App\Support\Layout\LayoutRowData;
 use App\Web\Creation\Contracts\WindowBuilder;
 use App\Web\Creation\SurfaceAttributeMap;
+use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Data\TasksPaneData;
 use Domain\Tasks\Enums\TaskHolderFilter;
-use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Http\Requests\TasksRequest;
 use Domain\Tasks\Models\Task;
 use Illuminate\Http\Request;
@@ -28,6 +28,7 @@ final readonly class TasksWindowBuilder implements WindowBuilder
         $filters = $this->requests->from(TasksRequest::class, $visit)->filters();
         $policy = $this->policies->forType(TasksPaneData::class);
         $tasks = $this->tasks->preview($filters->toDomain(), $policy->limitFor('items'));
+
         $items = $tasks->map(fn (Task $task) => LayoutRowData::build()
             ->key($task->id)
             ->label($task->title)

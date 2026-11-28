@@ -17,8 +17,8 @@ use App\CommandMiddleware\CommitHeldStartRefusals;
 use App\CommandMiddleware\GuardTickOrigin;
 use App\CommandMiddleware\KeepStartReceipt;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
-use App\Support\ProjectCode;
 use App\Support\Exports;
+use App\Support\ProjectCode;
 
 /**
  * Core's own commands and middleware, read at start-up beside the domains'.

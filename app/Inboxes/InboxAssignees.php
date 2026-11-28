@@ -10,8 +10,8 @@ use App\Assignments\Contracts\AssigneeProvider;
 use App\Exceptions\AssigneeUnavailable;
 use App\Models\Inboxes\Inbox;
 use App\Support\AssigneeIdentity;
-use App\Support\CursorPage;
 use App\Support\AssigneeName;
+use App\Support\CursorPage;
 use App\Support\IdListPage;
 
 /**

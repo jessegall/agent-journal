@@ -63,6 +63,7 @@ final readonly class RecordingFinisher
             ...User::resolvePersonalValues(),
             ...Account::resolvePersonalValues(),
         ];
+
         $fakes = new RecordingFakes($run->environment(), $personal);
 
         $exchanges = array_map(
@@ -82,6 +83,7 @@ final readonly class RecordingFinisher
         $recording = ScenarioRecording::ofExchanges($manifest, $exchanges);
 
         $this->protocol->assertKept($recording);
+
         $known = [
             ...$run->knownValues(),
             ...$personal,
@@ -118,6 +120,7 @@ final readonly class RecordingFinisher
         ];
 
         $named = [];
+
         $images = [
             $this->agentImage,
             ...HostDriverImage::resolveReadyImages(),

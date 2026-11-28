@@ -23,15 +23,15 @@ use App\Text\Declarations\Section;
 use App\Text\Exceptions\InvalidSectionDeclaration;
 use App\Web\Creation\Exceptions\MissingFields;
 use App\Web\Exceptions\InvalidPageDeclaration;
+use Illuminate\Http\Request;
 use PHPUnit\Framework\TestCase;
 use Spatie\LaravelData\Optional;
 use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;
-use Illuminate\Http\Request;
 use Tests\Fixtures\ClientDeclarations\RecentNotesData;
 use Tests\Fixtures\ClientDeclarations\RecentNotesPageBuilder;
-use Tests\Fixtures\ClientDeclarations\ShelfSectionLayoutResolver;
 use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageBuilder;
 use Tests\Fixtures\ClientDeclarations\Shelf\Http\Pages\ShelfLayoutPageData;
+use Tests\Fixtures\ClientDeclarations\ShelfSectionLayoutResolver;
 
 /**
  * A page a domain declares as a layout: its reader must return a layout, and a layout that breaks the catalogue of
@@ -121,21 +121,21 @@ final class DeclaredLayoutTest extends TestCase
         DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('root')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()
                     ->asBox()
-                    ->key('list')
+                    ->key('root')
                     ->style('stack')
                     ->children(
-                        LayoutPartData::build()->asText()->key('same')->value('a')->finish(),
-                        LayoutPartData::build()->asText()->key('same')->value('b')->finish(),
+                        LayoutPartData::build()
+                            ->asBox()
+                            ->key('list')
+                            ->style('stack')
+                            ->children(
+                                LayoutPartData::build()->asText()->key('same')->value('a')->finish(),
+                                LayoutPartData::build()->asText()->key('same')->value('b')->finish(),
+                            )
+                            ->finish(),
                     )
                     ->finish(),
-                )
-                ->finish(),
             )
             ->finish();
     }
@@ -151,13 +151,13 @@ final class DeclaredLayoutTest extends TestCase
         DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('root')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()->asText()->key('title')->value('Hi')->style('shout')->finish(),
-                )
-                ->finish(),
+                    ->asBox()
+                    ->key('root')
+                    ->style('stack')
+                    ->children(
+                        LayoutPartData::build()->asText()->key('title')->value('Hi')->style('shout')->finish(),
+                    )
+                    ->finish(),
             )
             ->finish();
     }
@@ -167,38 +167,38 @@ final class DeclaredLayoutTest extends TestCase
         $layout = DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('root')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()
-                    ->asAction()
-                    ->key('open')
-                    ->label('Open')
-                    ->action(LayoutActionData::build()->href('/plans/1')->finish())
+                    ->asBox()
+                    ->key('root')
+                    ->style('stack')
+                    ->children(
+                        LayoutPartData::build()
+                            ->asAction()
+                            ->key('open')
+                            ->label('Open')
+                            ->action(LayoutActionData::build()->href('/plans/1')->finish())
+                            ->finish(),
+                        LayoutPartData::build()
+                            ->asAction()
+                            ->key('next')
+                            ->label('Next page')
+                            ->action(LayoutActionData::build()->query(['cursor' => 'abc'])->finish())
+                            ->finish(),
+                        LayoutPartData::build()
+                            ->asAction()
+                            ->key('approve')
+                            ->label('Approve')
+                            ->action(LayoutActionData::build()->reason(self::OWNER_ONLY_REASON)->finish())
+                            ->style('primary')
+                            ->finish(),
+                        LayoutPartData::build()
+                            ->asField()
+                            ->key('filter')
+                            ->label('Filter')
+                            ->field(LayoutFieldData::build()->name('q')->value('oak')->finish())
+                            ->finish(),
+                        LayoutPartData::build()->asBadge()->key('state')->text('Open')->tone('good')->finish(),
+                    )
                     ->finish(),
-                    LayoutPartData::build()
-                    ->asAction()
-                    ->key('next')
-                    ->label('Next page')
-                    ->action(LayoutActionData::build()->query(['cursor' => 'abc'])->finish())
-                    ->finish(),
-                    LayoutPartData::build()
-                    ->asAction()
-                    ->key('approve')
-                    ->label('Approve')
-                    ->action(LayoutActionData::build()->reason(self::OWNER_ONLY_REASON)->finish())
-                    ->style('primary')
-                    ->finish(),
-                    LayoutPartData::build()
-                    ->asField()
-                    ->key('filter')
-                    ->label('Filter')
-                    ->field(LayoutFieldData::build()->name('q')->value('oak')->finish())
-                    ->finish(),
-                    LayoutPartData::build()->asBadge()->key('state')->text('Open')->tone('good')->finish(),
-                )
-                ->finish(),
             )
             ->finish();
 
@@ -222,18 +222,18 @@ final class DeclaredLayoutTest extends TestCase
         DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('root')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()
-                    ->asAction()
-                    ->key('save')
-                    ->label('Save')
-                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->asBox()
+                    ->key('root')
+                    ->style('stack')
+                    ->children(
+                        LayoutPartData::build()
+                            ->asAction()
+                            ->key('save')
+                            ->label('Save')
+                            ->action(LayoutActionData::build()->submits(true)->finish())
+                            ->finish(),
+                    )
                     ->finish(),
-                )
-                ->finish(),
             )
             ->finish();
     }
@@ -243,33 +243,33 @@ final class DeclaredLayoutTest extends TestCase
         $layout = DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asForm()
-                ->key('settle')
-                ->form(
-                    LayoutFormData::build()
-                    ->method(ActionMethod::Post)
-                    ->href('/documents/reports/42/settle')
-                    ->fixed(['revision' => 1])
+                    ->asForm()
+                    ->key('settle')
+                    ->form(
+                        LayoutFormData::build()
+                            ->method(ActionMethod::Post)
+                            ->href('/documents/reports/42/settle')
+                            ->fixed(['revision' => 1])
+                            ->finish(),
+                    )
+                    ->style('inline')
+                    ->children(
+                        LayoutPartData::build()
+                            ->asField()
+                            ->key('reason')
+                            ->label('Reason')
+                            ->field(LayoutFieldData::build()->name('reason')->value('')->finish())
+                            ->style('text')
+                            ->finish(),
+                        LayoutPartData::build()
+                            ->asAction()
+                            ->key('save')
+                            ->label('Settle')
+                            ->action(LayoutActionData::build()->submits(true)->finish())
+                            ->style('primary')
+                            ->finish(),
+                    )
                     ->finish(),
-                )
-                ->style('inline')
-                ->children(
-                    LayoutPartData::build()
-                    ->asField()
-                    ->key('reason')
-                    ->label('Reason')
-                    ->field(LayoutFieldData::build()->name('reason')->value('')->finish())
-                    ->style('text')
-                    ->finish(),
-                    LayoutPartData::build()
-                    ->asAction()
-                    ->key('save')
-                    ->label('Settle')
-                    ->action(LayoutActionData::build()->submits(true)->finish())
-                    ->style('primary')
-                    ->finish(),
-                )
-                ->finish(),
             )
             ->finish();
 
@@ -296,11 +296,11 @@ final class DeclaredLayoutTest extends TestCase
         DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('root')
-                ->style('divider')
-                ->children(LayoutPartData::build()->asText()->key('title')->value('Hi')->finish())
-                ->finish(),
+                    ->asBox()
+                    ->key('root')
+                    ->style('divider')
+                    ->children(LayoutPartData::build()->asText()->key('title')->value('Hi')->finish())
+                    ->finish(),
             )
             ->finish();
     }
@@ -365,11 +365,11 @@ final class DeclaredLayoutTest extends TestCase
         DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asNotice()
-                ->key('loading')
-                ->style('skeleton')
-                ->title('Loading tasks')
-                ->finish(),
+                    ->asNotice()
+                    ->key('loading')
+                    ->style('skeleton')
+                    ->title('Loading tasks')
+                    ->finish(),
             )
             ->finish();
     }
@@ -390,11 +390,11 @@ final class DeclaredLayoutTest extends TestCase
             ->label('Run 1')
             ->leading(
                 [LayoutPartData::build()
-                ->asText()
-                ->key('driver')
-                ->value('Claude')
-                ->style('driver')
-                ->finish()],
+                    ->asText()
+                    ->key('driver')
+                    ->value('Claude')
+                    ->style('driver')
+                    ->finish()],
             )
             ->trailing(
                 [LayoutPartData::build()->asBadge()->key('state')->text('Running')->tone('busy')->finish()],
@@ -415,11 +415,11 @@ final class DeclaredLayoutTest extends TestCase
             ->label('Run 2')
             ->trailing(
                 [LayoutPartData::build()
-                ->asText()
-                ->key('state')
-                ->value('Running')
-                ->style('unheard')
-                ->finish()],
+                    ->asText()
+                    ->key('state')
+                    ->value('Running')
+                    ->style('unheard')
+                    ->finish()],
             )
             ->finish();
 
@@ -442,28 +442,28 @@ final class DeclaredLayoutTest extends TestCase
             ->dialog(LayoutDialogData::build()->title('Create task')->confirmation('Task created')->finish())
             ->opener(
                 LayoutPartData::build()
-                ->asAction()
-                ->key('open')
-                ->label('Create task')
-                ->action(LayoutActionData::build()->query([])->finish())
-                ->finish(),
+                    ->asAction()
+                    ->key('open')
+                    ->label('Create task')
+                    ->action(LayoutActionData::build()->query([])->finish())
+                    ->finish(),
             )
             ->sheet(
                 LayoutFormData::build()->method(ActionMethod::Post)->href('/tasks')->isKeyed(true)->finish(),
                 [LayoutPartData::build()
-                ->asField()
-                ->key('title')
-                ->label('Title')
-                ->field(LayoutFieldData::build()->name('title')->finish())
-                ->style('text')
-                ->finish()],
+                    ->asField()
+                    ->key('title')
+                    ->label('Title')
+                    ->field(LayoutFieldData::build()->name('title')->finish())
+                    ->style('text')
+                    ->finish()],
                 [LayoutPartData::build()
-                ->asAction()
-                ->key('send')
-                ->label('Create')
-                ->action(LayoutActionData::build()->submits(true)->finish())
-                ->style('primary')
-                ->finish()],
+                    ->asAction()
+                    ->key('send')
+                    ->label('Create')
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->style('primary')
+                    ->finish()],
             )
             ->finish();
 
@@ -485,11 +485,11 @@ final class DeclaredLayoutTest extends TestCase
             ->key('week')
             ->progress(
                 LayoutProgressData::build()
-                ->value(72)
-                ->max(100)
-                ->label('Weekly allowance')
-                ->unit('percent')
-                ->finish(),
+                    ->value(72)
+                    ->max(100)
+                    ->label('Weekly allowance')
+                    ->unit('percent')
+                    ->finish(),
             )
             ->finish();
         $counted = LayoutPartData::build()
@@ -513,11 +513,11 @@ final class DeclaredLayoutTest extends TestCase
             ->key('week')
             ->progress(
                 LayoutProgressData::build()
-                ->value(72)
-                ->max(100)
-                ->label('This week used')
-                ->unit('percent')
-                ->finish(),
+                    ->value(72)
+                    ->max(100)
+                    ->label('This week used')
+                    ->unit('percent')
+                    ->finish(),
             )
             ->finish();
         $row = LayoutPartData::build()
@@ -525,11 +525,11 @@ final class DeclaredLayoutTest extends TestCase
             ->key('usage')
             ->progress(
                 LayoutProgressData::build()
-                ->value(72)
-                ->max(100)
-                ->label('Usage')
-                ->unit('percent')
-                ->finish(),
+                    ->value(72)
+                    ->max(100)
+                    ->label('Usage')
+                    ->unit('percent')
+                    ->finish(),
             )
             ->tip('This week 72% used')
             ->finish();

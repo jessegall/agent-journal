@@ -253,17 +253,21 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
         return $this->claimed_at !== null;
     }
 
-    public function answerDeadline(): CarbonImmutable
-    {
-        return $this->type->isOpening() && $this->hasBeenClaimed()
-            ? $this->expires_at->addSeconds(self::OPEN_ANSWER_GRACE_SECONDS)
-            : $this->expires_at;
-    }
-
     public function isForAttemptOf(DriverRequest $request): bool
     {
         return $this->driver_request_id === $request->id
             && $this->idempotency_key === "{$request->id}:{$this->step}:{$request->attempt_version}";
+    }
+
+    // ----------[ Transformers ]----------
+
+    public function answerDeadline(): CarbonImmutable
+    {
+        if ($this->type->isOpening() && $this->hasBeenClaimed()) {
+            return $this->expires_at->addSeconds(self::OPEN_ANSWER_GRACE_SECONDS);
+        }
+
+        return $this->expires_at;
     }
 
     // ----------[ Asserts ]----------

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
+use App\Web\Creation\Buildable;
+
 /**
  * One group of settings: a heading, its help, its rows and, where the declaration permits it, a switch beside the
  * heading and a Reset form, each carrying the revision the group was read at, so a group changed meanwhile is refused
@@ -11,8 +13,8 @@ namespace App\Support\Layout;
  */
 final readonly class SettingsGroup
 {
-    /** @use \App\Web\Creation\Buildable<SettingsGroupFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<SettingsGroupFields> */
+    use Buildable;
 
     protected const string FIELDS = SettingsGroupFields::class;
 
@@ -35,31 +37,31 @@ final readonly class SettingsGroup
         return DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('settings')
-                ->style('page')
-                ->children(
-                    LayoutPartData::build()
                     ->asBox()
-                    ->key('header')
-                    ->style('page-head')
+                    ->key('settings')
+                    ->style('page')
                     ->children(
                         LayoutPartData::build()
-                        ->asText()
-                        ->key('title')
-                        ->value('Settings')
-                        ->style('heading')
-                        ->finish(),
+                            ->asBox()
+                            ->key('header')
+                            ->style('page-head')
+                            ->children(
+                                LayoutPartData::build()
+                                    ->asText()
+                                    ->key('title')
+                                    ->value('Settings')
+                                    ->style('heading')
+                                    ->finish(),
+                            )
+                            ->finish(),
+                        LayoutPartData::build()
+                            ->asBox()
+                            ->key('settings-page')
+                            ->style('settings-page')
+                            ->children(...array_map(fn (self $group) => $group->part(), $groups))
+                            ->finish(),
                     )
                     ->finish(),
-                    LayoutPartData::build()
-                    ->asBox()
-                    ->key('settings-page')
-                    ->style('settings-page')
-                    ->children(...array_map(fn (self $group) => $group->part(), $groups))
-                    ->finish(),
-                )
-                ->finish(),
             )
             ->finish();
     }
@@ -143,11 +145,11 @@ final readonly class SettingsGroup
                 ->style('inline')
                 ->children(
                     LayoutPartData::build()
-                    ->asAction()
-                    ->key('reset-send')
-                    ->label('Reset')
-                    ->action(LayoutActionData::build()->submits(true)->finish())
-                    ->finish(),
+                        ->asAction()
+                        ->key('reset-send')
+                        ->label('Reset')
+                        ->action(LayoutActionData::build()->submits(true)->finish())
+                        ->finish(),
                 )
                 ->finish();
         }
@@ -158,6 +160,7 @@ final readonly class SettingsGroup
 
         if ($this->rows !== []) {
             $rows = array_map(fn (SettingsRow $row) => $row->part(), $this->rows);
+
             $parts[] = LayoutPartData::build()
                 ->asBox()
                 ->key('rows')

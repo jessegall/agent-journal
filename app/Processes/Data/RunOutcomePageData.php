@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Data;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -14,8 +15,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class RunOutcomePageData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<RunOutcomePageDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<RunOutcomePageDataFields> */
+    use Buildable;
 
     protected const string FIELDS = RunOutcomePageDataFields::class;
 

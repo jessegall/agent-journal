@@ -137,7 +137,8 @@ abstract class ChatFields
 
     /**
      * @template T of ChatData|ChatWindowData
-     * @param class-string<T> $type
+     *
+     * @param  class-string<T>  $type
      * @return T
      */
     protected function complete(string $type): ChatData|ChatWindowData

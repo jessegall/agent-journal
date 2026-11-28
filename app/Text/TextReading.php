@@ -22,6 +22,7 @@ final class TextReading
     public static function read(MarkdownText $text, TextSelection $selection, int $version): array
     {
         $part = $text->part($selection);
+
         $read = [
             'text' => $part->text,
             'lines' => "{$part->firstLine}-{$part->lastLine}",

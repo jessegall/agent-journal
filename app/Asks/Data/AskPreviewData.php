@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Asks\Data;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 #[TypeScript]
 final class AskPreviewData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<AskPreviewDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<AskPreviewDataFields> */
+    use Buildable;
 
     protected const string FIELDS = AskPreviewDataFields::class;
 

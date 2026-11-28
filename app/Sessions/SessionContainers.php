@@ -69,11 +69,13 @@ final readonly class SessionContainers
         );
 
         $use = $runtime->loadMissing('session')->session->workspaceUse($policy->access);
+
         $rules = $this->arrangement->mountRules(
             $account,
             ArrangementSetting::ENVIRONMENT,
             $this->drivers->ofFamily($runtime->family)->containerMounts(),
         );
+
         // Every driver starts protected: its own user reads the sign-in, the commands its model runs cannot.
         $startProfile = StartProfileType::ProtectedAccount;
 

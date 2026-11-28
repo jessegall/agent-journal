@@ -739,7 +739,11 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
 
         $moved = self::query()->ofRuntime($runtime)->max('updated_at');
 
-        return $moved === null ? null : CarbonImmutable::parse((string) $moved);
+        if ($moved === null) {
+            return null;
+        }
+
+        return CarbonImmutable::parse((string) $moved);
     }
 
     /**
@@ -749,7 +753,11 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     {
         $runtime = AgentRuntime::findForSession($sessionId);
 
-        return $runtime === null ? null : self::query()->ofRuntime($runtime)->orderByDesc('sequence')->first();
+        if ($runtime === null) {
+            return null;
+        }
+
+        return self::query()->ofRuntime($runtime)->orderByDesc('sequence')->first();
     }
 
     /**
@@ -759,7 +767,11 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     {
         $runtime = AgentRuntime::findForSession($sessionId);
 
-        return $runtime === null ? 0 : self::query()
+        if ($runtime === null) {
+            return 0;
+        }
+
+        return self::query()
             ->ofRuntime($runtime)
             ->withAnyOperation([DriverOperation::Wake, DriverOperation::Deliver])
             ->withProgress(RequestProgress::Applied)

@@ -99,7 +99,7 @@ final class AgentRunningTool extends JournalModel implements EventSource
         $this->raise(new RunningToolChanged($this->agent_id, $line, $isRunning, $this->changedAtText()));
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Calculations ]----------
 
     /**
      * When the line last changed, in UTC with microseconds, as the browser orders the changes it receives.

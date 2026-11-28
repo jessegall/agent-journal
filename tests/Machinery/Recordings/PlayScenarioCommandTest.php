@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Machinery\Recordings;
 
 use App\Agents\Drivers\Contracts\PinnedBuilds;
-use App\Console\Commands\PlayScenarioCommand;
 use App\Connections\ServerOrigin;
+use App\Console\Commands\PlayScenarioCommand;
 use App\Files\Enums\Place;
 use App\Hosts\HostProtocolCheck;
 use App\Hosts\HostProtocolSources;

@@ -67,8 +67,10 @@ final class DriverSwitchLinesTest extends TestCase
     {
         $this->journal->owner()->idleAgent('Main agent', 'main-agent');
         $agent = $this->journal->agentCalled('Main agent');
+
         $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Main agent')
             ->pairChatOf('Owner', 'Main agent');
+
         $session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;

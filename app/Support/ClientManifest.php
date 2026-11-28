@@ -51,6 +51,7 @@ final readonly class ClientManifest
         $hash = substr(sha1((string) json_encode([$components, $folders])), 0, 12);
 
         $checks = $this->propChecks($root);
+
         $artifacts = [
             'resources/js/generated/ui-manifest.ts' => $this->render('ui-manifest.ts', [
                 'hash' => $hash,
@@ -166,6 +167,7 @@ final readonly class ClientManifest
         foreach ($this->declarations->pages() as $page) {
             $name = str_replace(['.', '-'], '_', $page->key);
             $dataType = $this->propTypes->dataTypeOf($page);
+
             $checks["accepts_{$name}"] = [
                 'type' => "{ data: {$dataType} }",
                 'path' => '../../../'.$this->fromRoot($root, $page->componentFile),
@@ -174,6 +176,7 @@ final readonly class ClientManifest
 
             if ($page->window !== null && $page->windowFile !== null) {
                 $pane = class_basename($page->window->type);
+
                 $checks["accepts_window_{$name}"] = [
                     'type' => $pane,
                     'path' => '../../../'.$this->fromRoot($root, $page->windowFile),

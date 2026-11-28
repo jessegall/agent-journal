@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Http\Pages\SettingsPageBuilder;
-use App\Http\Pages\SettingsPageData;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
 use App\Http\Controllers\ResetSettingsPageController;
 use App\Http\Controllers\SaveSettingsPageController;
 use App\Http\Controllers\SwitchSettingsGroupPageController;
+use App\Http\Pages\SettingsPageBuilder;
+use App\Http\Pages\SettingsPageData;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Declarations\DomainClient;

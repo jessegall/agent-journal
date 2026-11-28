@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Connections\Data;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -16,8 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class ConnectProjectWindowData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<ConnectProjectWindowDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<ConnectProjectWindowDataFields> */
+    use Buildable;
 
     protected const string FIELDS = ConnectProjectWindowDataFields::class;
 

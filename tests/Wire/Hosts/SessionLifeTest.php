@@ -103,7 +103,12 @@ final class SessionLifeTest extends TestCase
     {
         [$first] = $this->journal->recordedTurns('claude-code');
         $this->arrangeTerminalHost()->openTerminal(
-            'Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', $first,
+            'Terminal',
+            'terminal',
+            'claude-code',
+            '2.1.332',
+            'claude-opus-5-5',
+            $first,
         );
 
         $this->journal
@@ -120,7 +125,12 @@ final class SessionLifeTest extends TestCase
     {
         [$first] = $this->journal->recordedTurns('claude-code');
         $this->arrangeTerminalHost()->openTerminal(
-            'Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', $first,
+            'Terminal',
+            'terminal',
+            'claude-code',
+            '2.1.332',
+            'claude-opus-5-5',
+            $first,
         );
 
         $this->journal

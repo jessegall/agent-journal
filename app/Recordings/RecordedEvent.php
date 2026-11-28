@@ -89,7 +89,11 @@ final readonly class RecordedEvent implements JsonSerializable
      */
     public function outputReport(): RecordedOutputReport|null
     {
-        return $this->call === null ? null : RecordedOutputReport::askedBy($this->call);
+        if ($this->call === null) {
+            return null;
+        }
+
+        return RecordedOutputReport::askedBy($this->call);
     }
 
     /**
@@ -97,7 +101,11 @@ final readonly class RecordedEvent implements JsonSerializable
      */
     public function withOutputReport(RecordedOutputReport $report): self
     {
-        return $this->call === null ? $this : $this->withCall($this->call->withBody($report->body()));
+        if ($this->call === null) {
+            return $this;
+        }
+
+        return $this->withCall($this->call->withBody($report->body()));
     }
 
     /**

@@ -58,15 +58,21 @@ final readonly class AgentStartLog
     {
         $session = AgentSession::query()->ofAgent($agentId)->newestCreatedFirst()->first();
 
-        return $session === null ? [] : array_reverse($this->startOf($session)->lines);
+        if ($session === null) {
+            return [];
+        }
+
+        return array_reverse($this->startOf($session)->lines);
     }
 
     private function startOf(AgentSession $session): AgentLogStartData
     {
         $starts = SessionProcess::query()->supervised()->ofSessions([$session->id])->limit(self::LINE_LIMIT)->get();
         $attempts = RetryAttempt::query()->ofSession($session->id)->latest()->limit(self::LINE_LIMIT)->get();
+
         $gaveUp = $attempts->filter(fn (RetryAttempt $attempt) => $attempt->outcome === RetryOutcome::GaveUp)
             ->pluck('driver_request_id')->all();
+
         $lines = [
             ...$this->startLinesOf($starts->all(), $this->runsOn($session)),
             ...$this->processLinesOf($starts->pluck('id')->all()),
@@ -156,6 +162,7 @@ final readonly class AgentStartLog
 
         foreach (HostProcess::query()->ofStarts($startIds)->limit(self::LINE_LIMIT)->get() as $process) {
             $detail = ucfirst($process->purpose->label()).$this->tookOf($process->created_at, $process->started_at);
+
             $lines[] = $this->line(
                 $process->id.'-started',
                 $process->started_at ?? $process->created_at,
@@ -196,6 +203,7 @@ final readonly class AgentStartLog
             ->withAnyOperation([DriverOperation::Wake, DriverOperation::Deliver])
             ->limit(self::LINE_LIMIT)
             ->get();
+
         $lines = [];
 
         foreach ($requests as $request) {
@@ -330,7 +338,11 @@ final readonly class AgentStartLog
      */
     private function endedOf(HostProcess $process): string
     {
-        return $process->status === HostProcessStatus::Lost ? 'was lost' : "exited with status {$process->exit_code}";
+        if ($process->status === HostProcessStatus::Lost) {
+            return 'was lost';
+        }
+
+        return "exited with status {$process->exit_code}";
     }
 
     private function timeOf(CarbonImmutable|null $at): string

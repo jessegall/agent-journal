@@ -81,11 +81,13 @@ final class PlayScenarioCommand extends Command
             $run = new ScenarioRun($scenario, $owner, $this->agentsOf($scenario, $commands), $agentImage);
 
             $drafts->openRun($scenario);
+
             $player->play(
                 $run,
                 fn (ScenarioPause $pause) => $this->askUser($pause),
                 fn (string $line) => $this->line($line),
             );
+
             $drafts->closeRun();
             $folder = $finisher->finish($drafts->run());
             $drafts->clear();

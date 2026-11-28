@@ -269,6 +269,7 @@ final class OpenJournalTerminalTest extends TestCase
                 if ($name === '') {
                     break;
                 }
+
                 $files[$name] = substr($archive, $offset + 512, $size);
                 $offset += 512 + (int) ceil($size / 512) * 512;
             }

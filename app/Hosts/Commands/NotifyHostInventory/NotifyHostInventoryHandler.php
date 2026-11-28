@@ -58,6 +58,7 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
         foreach (HostDriverImage::findAdmittedOn($host->id) as $image) {
             $image->reallow();
         }
+
         $host->recordRelease($inventory->release);
 
         $liveProcesses = HostProcess::findLiveOn($host);

@@ -65,6 +65,7 @@ final readonly class PartAssessments
 
         if (! $validation->isValid()) {
             $codes = array_map(fn (OutputProblem $problem) => $problem->code->value, $validation->problems);
+
             $actor = [
                 (string) $run->actor_type,
                 (string) $run->actor_id,

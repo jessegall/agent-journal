@@ -95,6 +95,10 @@ final readonly class Recordings
      */
     public function buildOf(string $driver): string
     {
-        return $this->drivers->hasFamily($driver) ? $this->builds->versionOf($driver) : '';
+        if ($this->drivers->hasFamily($driver)) {
+            return $this->builds->versionOf($driver);
+        }
+
+        return '';
     }
 }

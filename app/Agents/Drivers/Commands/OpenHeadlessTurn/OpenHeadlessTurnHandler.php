@@ -70,6 +70,7 @@ final readonly class OpenHeadlessTurnHandler implements CommandHandler
 
         $request = $work[0];
         $prompt = $request->prompt();
+
         $driverStart = $this->headless->startOf(
             $runtime,
             $start,

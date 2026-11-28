@@ -42,6 +42,7 @@ final readonly class ListenerRetries
     public function schedule(CommittedFactListenerFailed $failure): void
     {
         $run = $failure->run;
+
         if ($run === null || $failure->cause instanceof CommandRefusal || ! class_exists($run->listenerClass())) {
             return;
         }
@@ -83,6 +84,7 @@ final readonly class ListenerRetries
     {
         $runtimeId = $this->runtimeOf($run->event);
         $now = $this->clock->now();
+
         $attempt = $runtimeId === null ? null : $this->transaction->run(fn () => RetryAttempt::record(
             $runtimeId,
             RetriedAction::Listener,
@@ -90,6 +92,7 @@ final readonly class ListenerRetries
             'The agent could not continue.',
             $now,
         ));
+
         $job = new RetryCommittedListener($run, $retry, $attempt?->id);
         $this->jobs->dispatch($job->delay($now->addSeconds(RetrySchedule::waitBefore($retry)))->afterCommit());
     }
@@ -99,8 +102,7 @@ final readonly class ListenerRetries
         return match (true) {
             $event instanceof AgentRuntimeStartProven => $event->runtimeId,
             $event instanceof SessionProcessRegistered => AgentRuntime::findForSession($event->sessionId)?->id,
-            $event instanceof DriverRequestAccepted, $event instanceof DriverRequestApplied =>
-                DriverRequest::query()->findOrFail($event->requestId)->agent_runtime_id,
+            $event instanceof DriverRequestAccepted, $event instanceof DriverRequestApplied => DriverRequest::query()->findOrFail($event->requestId)->agent_runtime_id,
             $event instanceof HostProcessLost => HostProcess::query()->findOrFail($event->processId)->agent_runtime_id,
             default => null,
         };

@@ -46,6 +46,7 @@ final class SpawnedProcess
             'setsid',
             ...$argv,
         ];
+
         $error = '';
 
         set_error_handler(function (int $level, string $message) use (&$error): bool {
@@ -95,6 +96,7 @@ final class SpawnedProcess
         foreach ($streams as $stream) {
             stream_set_blocking($stream, false);
         }
+
         /**
          * @var array<int, string> $gathered
          */

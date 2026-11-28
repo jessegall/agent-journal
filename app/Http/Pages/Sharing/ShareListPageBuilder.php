@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Sharing;
 
-use App\Http\Pages\Sharing\SharesIndex;
 use App\Http\Requests\Sharing\ShareListRequest;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareGatewayConfiguration;

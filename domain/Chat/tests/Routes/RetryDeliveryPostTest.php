@@ -32,8 +32,10 @@ final class RetryDeliveryPostTest extends GuardedRouteEntryTestCase
     public function test_a_retry_clears_the_failure_so_the_delivery_walks_again(): void
     {
         $this->journal->owner()->idleAgent('Planner');
+
         $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner')
             ->pairChatOf('Owner', 'Planner');
+
         $messageId = $this->journal->runAs('Owner', new SendMessageCommand($chat->id, 'Run the checks.'));
         Message::query()->findOrFail($messageId)->failDelivery('The start was refused.', CarbonImmutable::now());
 

@@ -8,13 +8,13 @@ use App\Http\Pages\CreationDialog;
 use App\Navigation\Contracts\DraftProducers;
 use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use Domain\Sequences\Models\Sequence;
 
@@ -40,29 +40,29 @@ final readonly class SequencesIndex extends SequencesPage
             ->rows(
                 $sequences,
                 fn (Sequence $sequence) => LayoutRowData::build()
-                ->key($sequence->id)
-                ->label($sequence->name)
-                ->detail($this->detailOf($sequence))
-                ->href(route('sequences.sequence', ['sequence' => $sequence->id], false))
-                ->isCurrent($sequence->id === $chosenId)
-                ->finish(),
+                    ->key($sequence->id)
+                    ->label($sequence->name)
+                    ->detail($this->detailOf($sequence))
+                    ->href(route('sequences.sequence', ['sequence' => $sequence->id], false))
+                    ->isCurrent($sequence->id === $chosenId)
+                    ->finish(),
             )
             ->empty(
                 EmptyListState::build()
-                ->title('No sequences yet')
-                ->detail('A sequence is a list of steps an agent follows the same way each time.')
-                ->icon('sequence')
-                ->actions(
-                    [LayoutPartData::build()
-                    ->asAction()
-                    ->key('first')
-                    ->label('New sequence')
-                    ->action(LayoutActionData::build()->href(route('sequences.new', [], false))->finish())
-                    ->style('primary')
-                    ->finish()],
-                )
-                ->fillsPage(true)
-                ->finish(),
+                    ->title('No sequences yet')
+                    ->detail('A sequence is a list of steps an agent follows the same way each time.')
+                    ->icon('sequence')
+                    ->actions(
+                        [LayoutPartData::build()
+                            ->asAction()
+                            ->key('first')
+                            ->label('New sequence')
+                            ->action(LayoutActionData::build()->href(route('sequences.new', [], false))->finish())
+                            ->style('primary')
+                            ->finish()],
+                    )
+                    ->fillsPage(true)
+                    ->finish(),
             )
             ->countingRows()
             ->creatingWith($this->creation())

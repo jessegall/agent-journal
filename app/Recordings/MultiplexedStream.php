@@ -44,6 +44,7 @@ final readonly class MultiplexedStream
                 $body[$at],
                 substr($body, $at + self::HEAD_BYTES, $length),
             ];
+
             $at += self::HEAD_BYTES + $length;
         }
 

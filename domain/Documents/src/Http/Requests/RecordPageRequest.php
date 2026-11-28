@@ -82,7 +82,11 @@ final class RecordPageRequest extends FormRequest
     {
         $asked = $this->optionalText('commentLocation');
 
-        return $asked === null ? [] : [$asked];
+        if ($asked === null) {
+            return [];
+        }
+
+        return [$asked];
     }
 
     /**
@@ -94,7 +98,11 @@ final class RecordPageRequest extends FormRequest
     {
         $asked = $this->optionalText('sectionsVersion');
 
-        return $asked === null ? [] : [$asked];
+        if ($asked === null) {
+            return [];
+        }
+
+        return [$asked];
     }
 
     /**

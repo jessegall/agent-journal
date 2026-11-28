@@ -92,6 +92,7 @@ final readonly class ShellCommandRequested implements HookInput
         $line = $decision->answerType() === AnswerType::Rewrite
             ? ToolLine::rewritten($decision->replacementLine())
             : ToolLine::shell($this->command->source);
+
         $tools->started($target, $line);
     }
 }

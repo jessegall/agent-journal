@@ -8,9 +8,9 @@ use App\Reads\PageFormRequests;
 use App\Support\Layout\LayoutRowData;
 use App\Web\Creation\Contracts\WindowBuilder;
 use App\Web\Creation\SurfaceAttributeMap;
-use Domain\Documents\Data\DocumentsPaneData;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Contracts\Reports\ReportResolver;
+use Domain\Documents\Data\DocumentsPaneData;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\LibraryTypeFilter;
 use Domain\Documents\Http\Requests\ListRecordsRequest;
@@ -37,10 +37,12 @@ final readonly class DocumentsWindowBuilder implements WindowBuilder
 
         $documents = $type->isForDocuments() ? $this->documents->preview($filters, $limit)->all() : [];
         $reports = $type->isForReports() ? $this->reports->preview($filters, $limit)->all() : [];
+
         $recent = [
             ...$documents,
             ...$reports,
         ];
+
         usort($recent, fn (Document|Report $left, Document|Report $right) => strcmp($right->id, $left->id));
         $items = array_map($this->row(...), array_slice($recent, 0, $limit));
 

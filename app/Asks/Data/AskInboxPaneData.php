@@ -8,6 +8,7 @@ use App\Web\Attributes\Bounded;
 use App\Web\Attributes\Live;
 use App\Web\Attributes\Optional as OptionalProp;
 use App\Web\Attributes\WindowOnly;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -16,8 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[WindowOnly, OptionalProp, Live]
 final class AskInboxPaneData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<AskInboxPaneDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<AskInboxPaneDataFields> */
+    use Buildable;
 
     protected const string FIELDS = AskInboxPaneDataFields::class;
 

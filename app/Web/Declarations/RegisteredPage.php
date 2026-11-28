@@ -26,7 +26,7 @@ final readonly class RegisteredPage
     public const string HOME = 'web.home';
 
     /**
-     * @param  list<class-string<VisibilityCheck>> $checks
+     * @param  list<class-string<VisibilityCheck>>  $checks
      * @param  array<string, Slot>  $slots  the page's slots by full key
      */
     private function __construct(
@@ -136,7 +136,11 @@ final readonly class RegisteredPage
 
     public function windowComponentName(): string|null
     {
-        return $this->window === null ? null : $this->owner->presentationName($this->window->component, false);
+        if ($this->window === null) {
+            return null;
+        }
+
+        return $this->owner->presentationName($this->window->component, false);
     }
 
     public function isHome(): bool

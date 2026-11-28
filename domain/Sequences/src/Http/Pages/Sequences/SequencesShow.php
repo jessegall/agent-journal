@@ -32,8 +32,8 @@ final readonly class SequencesShow extends SequencesPage
                 ->label('Edit steps')
                 ->action(
                     LayoutActionData::build()
-                    ->href(route('sequences.edit', ['sequence' => $sequence->id], false))
-                    ->finish(),
+                        ->href(route('sequences.edit', ['sequence' => $sequence->id], false))
+                        ->finish(),
                 )
                 ->style('bordered')
                 ->finish())
@@ -60,11 +60,11 @@ final readonly class SequencesShow extends SequencesPage
                 ->detail("Runs when {$step->runsWhen} · done when {$step->doneWhen}")
                 ->leading(
                     [LayoutPartData::build()
-                    ->asText()
-                    ->key('number')
-                    ->value((string) ($index + 1))
-                    ->style('muted')
-                    ->finish()],
+                        ->asText()
+                        ->key('number')
+                        ->value((string) ($index + 1))
+                        ->style('muted')
+                        ->finish()],
                 )
                 ->finish(),
             $sequence->stepList(),

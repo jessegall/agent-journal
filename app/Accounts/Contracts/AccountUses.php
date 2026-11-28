@@ -36,7 +36,8 @@ interface AccountUses
     /**
      * Reads each account's newest distinct sessions in one batch.
      *
-     * @param list<RecordIdentity> $accounts
+     * @param  list<RecordIdentity>  $accounts
+     *
      * @throws ActorNotAllowed
      */
     public function histories(array $accounts, int $limit): AccountUseHistories;

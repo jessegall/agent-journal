@@ -376,6 +376,7 @@ final class CreateDocumentTest extends TestCase
         );
 
         $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
+
         $context = new AgentContext(
             TestIds::of($agent),
             TestIds::of($agent * 10),
@@ -383,6 +384,7 @@ final class CreateDocumentTest extends TestCase
             null,
             TransportProfileType::Mcp,
         );
+
         $this->app->instance(AgentContext::class, $context);
     }
 

@@ -169,6 +169,7 @@ final readonly class PhpProtocolSources
         $namespace = self::PROTOCOL_NAMESPACE;
         $generated = self::GENERATED;
         $enums = $this->enumImports();
+
         $version = array_key_exists($type, $this->protocol->types)
             ? $this->protocol->version
             : $this->protocol->relayVersion();

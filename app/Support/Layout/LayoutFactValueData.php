@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -14,8 +15,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutFactValueData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<LayoutFactValueDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<LayoutFactValueDataFields> */
+    use Buildable;
 
     protected const string FIELDS = LayoutFactValueDataFields::class;
 

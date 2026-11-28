@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Web\Data;
 
 use App\Web\Creation\Exceptions\MissingFields;
-use Spatie\LaravelData\Data;
 use Inertia\AlwaysProp;
+use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Lazy;
 
 final class HomeVisitPropsFields

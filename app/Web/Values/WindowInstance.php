@@ -34,16 +34,28 @@ final readonly class WindowInstance
     {
         $window = $visit->attributes->get(self::class);
 
-        return $window instanceof self ? $window : null;
+        if ($window instanceof self) {
+            return $window;
+        }
+
+        return null;
     }
 
     public function name(): string
     {
-        return $this->copyId === null ? $this->declaration : "{$this->declaration}~{$this->copyId}";
+        if ($this->copyId === null) {
+            return $this->declaration;
+        }
+
+        return "{$this->declaration}~{$this->copyId}";
     }
 
     public function prop(string $base): string
     {
-        return $this->copyId === null ? $base : "{$base}__{$this->copyId}";
+        if ($this->copyId === null) {
+            return $base;
+        }
+
+        return "{$base}__{$this->copyId}";
     }
 }

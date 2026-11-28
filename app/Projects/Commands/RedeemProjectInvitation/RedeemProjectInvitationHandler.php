@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Projects\Commands\RedeemProjectInvitation;
 
-use App\Hosts\Protocol\HostProtocol;
 use App\Access\Contracts\JournalAdmission;
 use App\Actors\Contracts\ActorProvisioning;
 use App\Bus\Contracts\CommandHandler;
 use App\Connections\Enums\ConnectionAuditActor;
 use App\Connections\Enums\ConnectionAuditType;
 use App\Connections\InstallLineAvailability;
+use App\Hosts\Protocol\HostProtocol;
 use App\Models\Agents\Agent;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\Environment;

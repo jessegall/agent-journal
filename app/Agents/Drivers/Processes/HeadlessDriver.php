@@ -167,6 +167,7 @@ final class HeadlessDriver implements ProcessDriver
         }
 
         $this->isInputClosed = true;
+
         $source = HostInstructionSource::forStep(
             $turn->id,
             self::CLOSE_INPUT,

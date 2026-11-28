@@ -43,9 +43,9 @@ use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\RecordedTerminalHost;
 use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Recordings\TerminalCapture;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
-use Tests\Support\Recordings\TerminalCapture;
 use Tests\TestCase;
 
 /**

@@ -47,6 +47,7 @@ final readonly class SignInProtocols
     public function for(string $driver, SignInMethod $method = SignInMethod::OAuth): SignInProtocol
     {
         $profile = $this->profiles->ofFamily($driver);
+
         $protocol = $profile->signInProtocolBy($method)
             ?? throw SignInMethodMissing::for($driver, $method->value, $profile->build());
 

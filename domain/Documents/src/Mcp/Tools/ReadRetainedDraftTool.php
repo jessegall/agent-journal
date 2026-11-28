@@ -41,10 +41,12 @@ final class ReadRetainedDraftTool extends PublicationReadTool
     {
         $id = $arguments->ulid('draft_id');
         $draft = $this->drafts->draft($id);
+
         $text = [
             'body' => $draft->body,
             'reason' => $draft->reason,
         ];
+
         $cursor = $arguments->continuation();
 
         $position = $cursor === null

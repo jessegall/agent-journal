@@ -42,8 +42,8 @@ final class DetailPageTest extends TestCase
                 ->label('Waits for')
                 ->fact(
                     LayoutFactValueData::build()
-                    ->linkedPieces([['Task 3', '/tasks/3'], ['Task 4', null]])
-                    ->finish(),
+                        ->linkedPieces([['Task 3', '/tasks/3'], ['Task 4', null]])
+                        ->finish(),
                 )
                 ->finish())
             ->withStanding(LayoutPartData::build()->asText()->key('note')->value('Standing')->finish())

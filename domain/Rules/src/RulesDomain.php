@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Rules;
 
-use Domain\Rules\Data\RulesPaneData;
-use Domain\Rules\Http\Pages\RulesPageBuilder;
-use Domain\Rules\Http\Pages\RulesPageData;
-use Domain\Rules\Http\Windows\RulesWindowBuilder;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
@@ -28,6 +24,7 @@ use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Contracts\RuleResolver;
+use Domain\Rules\Data\RulesPaneData;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleApproved;
 use Domain\Rules\Events\RuleDenied;
@@ -36,6 +33,9 @@ use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
+use Domain\Rules\Http\Pages\RulesPageBuilder;
+use Domain\Rules\Http\Pages\RulesPageData;
+use Domain\Rules\Http\Windows\RulesWindowBuilder;
 use Domain\Rules\Mcp\Resources\RulesResource;
 use Domain\Rules\Mcp\Tools\ProposeRuleTool;
 use Domain\Rules\Mcp\Tools\RuleReadTool;

@@ -7,6 +7,4 @@ namespace App\Web\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_PROPERTY)]
-final readonly class Optional
-{
-}
+final readonly class Optional {}

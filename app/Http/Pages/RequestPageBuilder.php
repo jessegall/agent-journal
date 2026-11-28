@@ -79,32 +79,32 @@ final readonly class RequestPageBuilder implements PageBuilder
         return DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('request')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()
                     ->asBox()
-                    ->key('header')
-                    ->style('header')
+                    ->key('request')
+                    ->style('stack')
                     ->children(
                         LayoutPartData::build()
-                        ->asText()
-                        ->key('title')
-                        ->value("Request: {$request->operation}")
-                        ->style('heading')
-                        ->finish(),
+                            ->asBox()
+                            ->key('header')
+                            ->style('header')
+                            ->children(
+                                LayoutPartData::build()
+                                    ->asText()
+                                    ->key('title')
+                                    ->value("Request: {$request->operation}")
+                                    ->style('heading')
+                                    ->finish(),
+                            )
+                            ->finish(),
+                        LayoutPartData::build()
+                            ->asNative()
+                            ->key('detail')
+                            ->native(
+                                LayoutNativeData::build()->component('processes/RequestWindow')->props($detail)->finish(),
+                            )
+                            ->finish(),
                     )
                     ->finish(),
-                    LayoutPartData::build()
-                    ->asNative()
-                    ->key('detail')
-                    ->native(
-                        LayoutNativeData::build()->component('processes/RequestWindow')->props($detail)->finish(),
-                    )
-                    ->finish(),
-                )
-                ->finish(),
             )
             ->finish();
     }

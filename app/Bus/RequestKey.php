@@ -118,6 +118,7 @@ final class RequestKey implements RequestKeyContract
             $this->depth,
             $this->isReceiptTaken,
         ];
+
         $this->set($key);
         $this->depth = 0;
         $this->isReceiptTaken = false;

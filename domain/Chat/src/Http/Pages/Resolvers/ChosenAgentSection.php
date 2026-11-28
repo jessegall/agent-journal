@@ -29,6 +29,7 @@ final readonly class ChosenAgentSection implements SectionResolver
     {
         $main = $this->agents->mainAgentId();
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->agents->visibleAgent(...));
+
         $page = $this->listing->firstPageWith(
             $chosen->map(fn (HomeAgent $agent) => [$agent->agentId])->getOrElse([]),
         );
@@ -40,8 +41,8 @@ final readonly class ChosenAgentSection implements SectionResolver
             ->mainAgentId($main->getOrElse(Optional::create()))
             ->selectedAgentId(
                 $chosen
-                ->map(fn (HomeAgent $agent) => $agent->agentId)
-                ->getOrElse(Optional::create()),
+                    ->map(fn (HomeAgent $agent) => $agent->agentId)
+                    ->getOrElse(Optional::create()),
             )
             ->finish();
     }

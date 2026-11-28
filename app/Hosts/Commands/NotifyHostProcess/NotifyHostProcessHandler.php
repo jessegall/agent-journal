@@ -69,9 +69,14 @@ final readonly class NotifyHostProcessHandler implements CommandHandler
         $evidence = $report->signal === null
             ? "the program exited with {$report->exitCode}"
             : "the program was ended by {$report->signal}";
+
         $printed = trim((string) preg_replace('/\e\[[0-9;?]*[ -\/]*[@-~]/', '', $report->lastPrinted ?? ''));
 
-        return $printed === '' ? $evidence : $evidence.': '.mb_substr($printed, -self::EVIDENCE_CHARACTERS);
+        if ($printed === '') {
+            return $evidence;
+        }
+
+        return $evidence.': '.mb_substr($printed, -self::EVIDENCE_CHARACTERS);
     }
 
     /**

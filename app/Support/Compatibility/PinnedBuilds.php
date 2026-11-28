@@ -40,8 +40,10 @@ final readonly class PinnedBuilds implements PinnedBuildsContract
 
         $version = trim($this->files->read($file));
 
-        return preg_match('/^\d+\.\d+\.\d+$/', $version) === 1
-            ? $version
-            : throw DriverVersionUnreadable::invalid($file->relative, $version);
+        if (preg_match('/^\d+\.\d+\.\d+$/', $version) === 1) {
+            return $version;
+        }
+
+        throw DriverVersionUnreadable::invalid($file->relative, $version);
     }
 }

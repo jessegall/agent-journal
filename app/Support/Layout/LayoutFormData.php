@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Layout;
 
 use App\Settings\Enums\ActionMethod;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -17,8 +18,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutFormData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<LayoutFormDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<LayoutFormDataFields> */
+    use Buildable;
 
     protected const string FIELDS = LayoutFormDataFields::class;
 

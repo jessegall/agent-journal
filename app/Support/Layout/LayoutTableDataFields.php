@@ -13,8 +13,9 @@ final class LayoutTableDataFields
 
     /**
      * @template TRecord
-     * @param iterable<TRecord> $records
-     * @param callable(TRecord): LayoutRowData $map
+     *
+     * @param  iterable<TRecord>  $records
+     * @param  callable(TRecord): LayoutRowData  $map
      */
     public function rows(iterable $records, callable $map): self
     {

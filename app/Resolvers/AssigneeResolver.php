@@ -9,11 +9,11 @@ use App\Assignments\Contracts\AssigneeResolver as AssigneeResolverContract;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Support\AssigneeIdentity;
-use App\Support\CursorPage;
 use App\Support\AssigneeName;
 use App\Support\Assignment;
 use App\Support\AssignmentHolder;
 use App\Support\AssignmentHolders;
+use App\Support\CursorPage;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 

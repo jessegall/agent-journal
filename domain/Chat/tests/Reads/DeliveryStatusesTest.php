@@ -50,6 +50,7 @@ final class DeliveryStatusesTest extends TestCase
         $message->failDelivery('The start was refused.', CarbonImmutable::now());
 
         $shown = $this->shown($chat);
+
         $this->assertSame([
             DeliveryStatus::Failed,
             'The start was refused.',
@@ -65,8 +66,10 @@ final class DeliveryStatusesTest extends TestCase
     private function sent(): array
     {
         $this->journal->owner()->idleAgent('Planner');
+
         $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner')
             ->pairChatOf('Owner', 'Planner');
+
         $id = $this->journal->runAs('Owner', new SendMessageCommand($chat->id, 'Run the checks.'));
         $this->journal->actAs('Owner');
 

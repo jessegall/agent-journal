@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Accounts\Data;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -14,8 +15,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class DriverMethodsData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<DriverMethodsDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<DriverMethodsDataFields> */
+    use Buildable;
 
     protected const string FIELDS = DriverMethodsDataFields::class;
 

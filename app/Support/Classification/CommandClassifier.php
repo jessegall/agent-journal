@@ -157,6 +157,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
                 ...$this->redirects->factsOf($node),
                 ...$this->backgroundFacts($node),
             ];
+
             $parts = [
                 ...$parts,
                 ...$this->partOf($tree, $node, $depth, $context),
@@ -615,6 +616,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
                     ...$unresolved,
                     ...$this->contextAssignment($match[1], $node),
                 ];
+
                 $index++;
 
                 continue;

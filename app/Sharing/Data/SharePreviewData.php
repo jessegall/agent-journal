@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Data;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -17,8 +18,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class SharePreviewData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<SharePreviewDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<SharePreviewDataFields> */
+    use Buildable;
 
     protected const string FIELDS = SharePreviewDataFields::class;
 

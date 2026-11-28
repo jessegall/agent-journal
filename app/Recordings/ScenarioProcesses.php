@@ -88,6 +88,7 @@ final readonly class ScenarioProcesses
     private function inventoryOf(string $body): string
     {
         $inventory = HostInventoryPayload::from(json_decode($body, true, flags: JSON_THROW_ON_ERROR));
+
         $processes = array_values(array_filter(
             $inventory->processes,
             fn (HostInventoryProcessPayload $process) => in_array($process->processId, $this->opened, true),

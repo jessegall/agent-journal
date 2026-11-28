@@ -19,8 +19,8 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class RetryDeliveryController
 {
-    #[Dispatches(StartProfileMainCommand::class)]
     #[Dispatches(RetryDeliveryCommand::class)]
+    #[Dispatches(StartProfileMainCommand::class)]
     public function __invoke(
         RetryDeliveryInput $input,
         AgentStartOnMessage $start,

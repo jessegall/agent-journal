@@ -14,7 +14,7 @@ trait ChatProperties
     /**
      * @param  list<AgentOptionData>  $agents
      * @param  list<ChatSummaryData>  $chats
-     * @param  list<\App\Navigation\Data\Pages\SlotSectionData>  $dockSections
+     * @param  list<SlotSectionData>  $dockSections
      */
     public function __construct(
         #[DataCollectionOf(AgentOptionData::class)]

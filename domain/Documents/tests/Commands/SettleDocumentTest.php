@@ -143,12 +143,14 @@ final class SettleDocumentTest extends TestCase
     public function test_settling_twice_with_one_reason_and_filing_a_report_raise_one_fact_each(): void
     {
         $events = $this->app->make(Dispatcher::class);
+
         $plain = [
             DocumentCreated::class,
             DocumentOpened::class,
             ReportFiled::class,
             RecordSettled::class,
         ];
+
         $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));
 
         $events->listen(

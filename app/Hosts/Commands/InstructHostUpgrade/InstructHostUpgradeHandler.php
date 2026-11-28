@@ -42,6 +42,7 @@ final readonly class InstructHostUpgradeHandler implements CommandHandler
             'signature' => base64_encode($this->files->readNamed($this->releases->currentSignature())),
             'drivers' => $this->drivers->drivers()->toJson(),
         ]);
+
         $instruction = $this->instructions->upgrade($host->id, HostInstructionSource::fromJournal(), $plan);
 
         $host->instructionUpgrade($instruction->id);

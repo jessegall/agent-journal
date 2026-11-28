@@ -28,6 +28,7 @@ final readonly class BroadcastRunningCommand implements Listener
             ->ofActor(ActorReference::forAgent($change->agentId))
             ->pluck('inbox_id')
             ->all()));
+
         $userIds = array_map(
             fn (ActorReference $user) => $user->id,
             InboxMember::resolveAttachedTo($inboxIds, User::class),

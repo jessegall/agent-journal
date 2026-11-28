@@ -133,6 +133,7 @@ final class ArgumentGrammar extends Data
                     ...$seen,
                     ...$options,
                 ];
+
                 $last = $options[array_key_last($options)];
                 $index += $last->takesNextWord((string) $text) ? 1 : 0;
 

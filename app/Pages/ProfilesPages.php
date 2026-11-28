@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Http\Pages\AccountsPageBuilder;
-use App\Http\Pages\AccountsPageData;
-use App\Http\Pages\ProfilePageBuilder;
-use App\Http\Pages\ProfilePageData;
-use App\Http\Pages\ProfilesPageBuilder;
-use App\Http\Pages\ProfilesPageData;
-use App\Http\Pages\StartAccountPageBuilder;
 use App\Accounts\AccountOwnerCheck;
 use App\Accounts\Data\AccountListData;
 use App\Accounts\Data\AccountMonthCostData;
@@ -62,7 +55,14 @@ use App\Http\Controllers\StartSignInController;
 use App\Http\Controllers\SubmitSignInCodeController;
 use App\Http\Loaders\Accounts\StartAccountsLoader;
 use App\Http\Loaders\Profiles\SignInReceiptLoader;
+use App\Http\Pages\AccountsPageBuilder;
+use App\Http\Pages\AccountsPageData;
+use App\Http\Pages\ProfilePageBuilder;
+use App\Http\Pages\ProfilePageData;
+use App\Http\Pages\ProfilesPageBuilder;
+use App\Http\Pages\ProfilesPageData;
 use App\Http\Pages\Resolvers\AccountNoticesSection;
+use App\Http\Pages\StartAccountPageBuilder;
 use App\Navigation\Contracts\NavigationProvider;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Contracts\SectionProvider;

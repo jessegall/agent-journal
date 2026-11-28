@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Navigation\Layout;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -15,8 +16,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutMenuData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<LayoutMenuDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<LayoutMenuDataFields> */
+    use Buildable;
 
     protected const string FIELDS = LayoutMenuDataFields::class;
 

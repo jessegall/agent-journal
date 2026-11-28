@@ -89,7 +89,11 @@ final class HookCall extends JournalModel implements EventSource, ReadableModel
     {
         $last = self::query()->acrossEveryAgent()->forSession($sessionId)->max('created_at');
 
-        return $last === null ? null : CarbonImmutable::parse((string) $last);
+        if ($last === null) {
+            return null;
+        }
+
+        return CarbonImmutable::parse((string) $last);
     }
 
     // ----------[ Scopes ]----------

@@ -58,38 +58,6 @@ final class Link extends MorphPivot implements EventSource, ProjectOwned, Readab
      */
     protected $guarded = ['*'];
 
-    /**
-     * @param list<RecordIdentity> $linked
-     * @return Builder<self>
-     */
-    public static function pairsFor(string $subjectType, array $linked): Builder
-    {
-        $groups = RecordIdentity::groupedByType($linked);
-        $targets = self::query()
-            ->fromSourceType($subjectType)
-            ->where(static function (Builder $query) use ($groups): void {
-                foreach ($groups as $type => $records) {
-                    $query->orWhere(static fn (Builder $pair) => $pair
-                        ->toTargetType($type)
-                        ->whereIn('target_id', array_column($records, 'id')));
-                }
-            })
-            ->selectRaw('source_id AS subject_id, target_type AS linked_type, target_id AS linked_id');
-
-        $sources = self::query()
-            ->toTargetType($subjectType)
-            ->where(static function (Builder $query) use ($groups): void {
-                foreach ($groups as $type => $records) {
-                    $query->orWhere(static fn (Builder $pair) => $pair
-                        ->fromSourceType($type)
-                        ->whereIn('source_id', array_column($records, 'id')));
-                }
-            })
-            ->selectRaw('target_id AS subject_id, source_type AS linked_type, source_id AS linked_id');
-
-        return $targets->union($sources);
-    }
-
     // ----------[ Constructors ]----------
 
     /**
@@ -258,6 +226,39 @@ final class Link extends MorphPivot implements EventSource, ProjectOwned, Readab
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * @param  list<RecordIdentity>  $linked
+     * @return Builder<self>
+     */
+    public static function pairsFor(string $subjectType, array $linked): Builder
+    {
+        $groups = RecordIdentity::groupedByType($linked);
+
+        $targets = self::query()
+            ->fromSourceType($subjectType)
+            ->where(static function (Builder $query) use ($groups): void {
+                foreach ($groups as $type => $records) {
+                    $query->orWhere(static fn (Builder $pair) => $pair
+                        ->toTargetType($type)
+                        ->whereIn('target_id', array_column($records, 'id')));
+                }
+            })
+            ->selectRaw('source_id AS subject_id, target_type AS linked_type, target_id AS linked_id');
+
+        $sources = self::query()
+            ->toTargetType($subjectType)
+            ->where(static function (Builder $query) use ($groups): void {
+                foreach ($groups as $type => $records) {
+                    $query->orWhere(static fn (Builder $pair) => $pair
+                        ->fromSourceType($type)
+                        ->whereIn('source_id', array_column($records, 'id')));
+                }
+            })
+            ->selectRaw('target_id AS subject_id, source_type AS linked_type, source_id AS linked_id');
+
+        return $targets->union($sources);
+    }
 
     /**
      * The link between the two models; none before the first.

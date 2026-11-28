@@ -178,6 +178,7 @@ final readonly class NavigationReader implements NavigationRecordsContract
             ...$navigation->navigationItem->routeValues,
             ...$navigation->navigationItem->queryValues,
         ];
+
         $actual = [
             ...$request->query->all(),
             ...$request->route()->parameters(),

@@ -109,6 +109,7 @@ final readonly class PagePropTypes
             $owner = $this->reflector->make($type)->isSubclassOf(PresentsLayout::class)
                 ? $this->owners->ownerOf(DeclaredLayoutData::class)
                 : $this->owners->ownerOf($type);
+
             $imports[$owner][] = $this->dataName($type);
         }
 

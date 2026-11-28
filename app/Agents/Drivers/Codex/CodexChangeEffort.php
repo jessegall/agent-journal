@@ -23,6 +23,7 @@ final readonly class CodexChangeEffort implements DriverKeyScript
             ...KeyScript::command('/model --reasoning={effort}', '› /model --reasoning={effort}'),
             KeyStep::evidence('see the reasoning applied', 'model changed to', ' {effort}'),
         ];
+
         $build = $this->builds->versionOf(DefaultDrivers::CODEX);
 
         return new KeyScript('ChangeEffort', DefaultDrivers::CODEX, $build, ['effort'], $steps);

@@ -8,9 +8,9 @@ use App\Reads\PageFormRequests;
 use App\Support\Layout\LayoutRowData;
 use App\Web\Creation\Contracts\WindowBuilder;
 use App\Web\Creation\SurfaceAttributeMap;
-use Domain\Rules\Data\RulesPaneData;
 use App\Web\Values\PaneExcerpt;
 use Domain\Rules\Contracts\RuleResolver;
+use Domain\Rules\Data\RulesPaneData;
 use Domain\Rules\Http\Requests\RulesRequest;
 use Domain\Rules\Models\Rule;
 use Illuminate\Http\Request;
@@ -28,6 +28,7 @@ final readonly class RulesWindowBuilder implements WindowBuilder
         $filters = $this->requests->from(RulesRequest::class, $visit)->filters();
         $policy = $this->policies->forType(RulesPaneData::class);
         $rules = $this->rules->preview($filters->toDomain(), $policy->limitFor('items'));
+
         $items = $rules->map(fn (Rule $rule) => LayoutRowData::build()
             ->key($rule->id)
             ->label(PaneExcerpt::of($rule->text))

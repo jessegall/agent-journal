@@ -44,7 +44,9 @@ final readonly class RevisionsShow extends RevisionsPage
                 ->text('Historical')
                 ->tone('warn')
                 ->finish();
+
             $current = LayoutActionData::build()->href("/documents/docs/{$revision->documentNumber}")->finish();
+
             $metadata[] = LayoutPartData::build()
                 ->asAction()
                 ->key('current')

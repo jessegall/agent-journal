@@ -38,6 +38,7 @@ final class AgentListingTest extends TestCase
     public function test_an_agent_shows_the_viewers_unread_messages_and_when_its_chat_last_moved(): void
     {
         $this->journal->owner()->agent('Planner')->agent('Reviewer');
+
         $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner')
             ->pairChatOf('Owner', 'Planner');
 

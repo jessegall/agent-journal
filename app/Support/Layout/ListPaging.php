@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
+use App\Web\Creation\Buildable;
+
 /**
  * How a list is paged, matching what its response supplies: a numbered list takes the page and the last page, and
  * draws first, previous, next and last with the end controls disabled; a cursor list draws one Show more
@@ -11,8 +13,8 @@ namespace App\Support\Layout;
  */
 final readonly class ListPaging
 {
-    /** @use \App\Web\Creation\Buildable<ListPagingFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<ListPagingFields> */
+    use Buildable;
 
     protected const string FIELDS = ListPagingFields::class;
 
@@ -54,11 +56,11 @@ final readonly class ListPaging
                     $this->control('first', 'First', 1, 'You are on the first page.'),
                     $this->control('previous', 'Previous', $this->page - 1, 'You are on the first page.'),
                     LayoutPartData::build()
-                    ->asText()
-                    ->key('position')
-                    ->value("Page {$this->page} of {$this->lastPage}")
-                    ->style('muted')
-                    ->finish(),
+                        ->asText()
+                        ->key('position')
+                        ->value("Page {$this->page} of {$this->lastPage}")
+                        ->style('muted')
+                        ->finish(),
                     $this->control('next', 'Next', $this->page + 1, 'You are on the last page.'),
                     $this->control('last', 'Last', $this->lastPage, 'You are on the last page.'),
                 )

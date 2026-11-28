@@ -44,11 +44,14 @@ final readonly class PairChats implements PairChatsContract
     public function pairWith(ActorReference $actor): string
     {
         $viewer = $this->actors->actor();
+
         $members = [
             $viewer,
             $actor,
         ];
+
         $key = implode('|', array_map(fn (ActorReference $member) => $member->text(), $members));
+
         $open = new OpenInboxCommand(
             self::PAIR_PROVIDER,
             self::pairKeyOf($members),

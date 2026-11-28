@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Terminals\Data;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -14,8 +15,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class TerminalWindowData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<TerminalWindowDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<TerminalWindowDataFields> */
+    use Buildable;
 
     protected const string FIELDS = TerminalWindowDataFields::class;
 

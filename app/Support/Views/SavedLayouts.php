@@ -13,7 +13,7 @@ use App\Models\Records\Layout;
 final readonly class SavedLayouts
 {
     /**
-     * @param list<string> $panes
+     * @param  list<string>  $panes
      * @return list<LayoutData>
      */
     public function layouts(array $panes): array

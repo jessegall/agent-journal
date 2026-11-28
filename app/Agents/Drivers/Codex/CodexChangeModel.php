@@ -24,6 +24,7 @@ final readonly class CodexChangeModel implements DriverKeyScript
             ...KeyScript::command('/model {model}', '› /model {model}'),
             KeyStep::evidence('see the model applied', 'model changed to {model}'),
         ];
+
         $build = $this->builds->versionOf(DefaultDrivers::CODEX);
 
         return new KeyScript('ChangeModel', DefaultDrivers::CODEX, $build, ['model'], $steps);

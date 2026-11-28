@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Pages\Settings;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Connections\ConnectionsOwnerCheck;
-use App\Connections\Exceptions\ServerOriginInvalid;
 use App\Connections\ConnectedProjects;
 use App\Connections\ConnectionCursors;
+use App\Connections\ConnectionsOwnerCheck;
+use App\Connections\Exceptions\ServerOriginInvalid;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\CoreSettings;
 use App\Settings\Data\SettingData;
@@ -228,9 +228,9 @@ final readonly class SettingsIndex extends SettingsPage
             ->key('projects')
             ->native(
                 LayoutNativeData::build()
-                ->component('connections/ConnectedProjectsPart')
-                ->props($connections)
-                ->finish(),
+                    ->component('connections/ConnectedProjectsPart')
+                    ->props($connections)
+                    ->finish(),
             )
             ->finish();
 
@@ -288,11 +288,11 @@ final readonly class SettingsIndex extends SettingsPage
                 ->help($setting->description)
                 ->field(
                     LayoutFieldData::build()
-                    ->name($key)
-                    ->value($text)
-                    ->clears([])
-                    ->options($this->optionsOf($setting))
-                    ->finish(),
+                        ->name($key)
+                        ->value($text)
+                        ->clears([])
+                        ->options($this->optionsOf($setting))
+                        ->finish(),
                     'choice',
                 )
                 ->finish(),

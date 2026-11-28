@@ -299,6 +299,12 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->saveAndAssert();
     }
 
+    public function recordProtocol(int $protocol): void
+    {
+        $this->protocol = $protocol;
+        $this->saveAndAssert();
+    }
+
     // ----------[ Predicates ]----------
 
     /**
@@ -401,17 +407,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         return $this->protocol === $protocol;
     }
 
-    public function expectedProtocol(): int
-    {
-        return $this->isConnectedFolderRelay() ? HostProtocol::RELAY : HostProtocol::ENROLLED;
-    }
-
-    public function recordProtocol(int $protocol): void
-    {
-        $this->protocol = $protocol;
-        $this->saveAndAssert();
-    }
-
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
@@ -437,6 +432,15 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     // ----------[ Calculations ]----------
+
+    public function expectedProtocol(): int
+    {
+        if ($this->isConnectedFolderRelay()) {
+            return HostProtocol::RELAY;
+        }
+
+        return HostProtocol::ENROLLED;
+    }
 
     /**
      * The instruction's signature the host checks: HMAC-SHA256, keyed by the host's instruction secret, of the instruction's id, number,

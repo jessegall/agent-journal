@@ -105,6 +105,7 @@ final readonly class RecordedCall implements JsonSerializable
     {
         // A host's output report carries what was printed in base64, which text faking never reads.
         $report = RecordedOutputReport::askedBy($this);
+
         $body = match (true) {
             $report !== null => $fakes->replaceIn($report->fakedBy($fakes)->body()),
             $this->isMultiplexed() => MultiplexedStream::of($this->body)->changed($fakes->replaceIn(...))->bytes(),

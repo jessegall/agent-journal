@@ -68,9 +68,13 @@ final class CodexHooksTest extends TestCase
     public static function moments(): iterable
     {
         yield 'session start' => ['codex/terminal-turn', 'SessionStart', null];
+
         yield 'prompt' => ['codex/terminal-turn', 'UserPromptSubmit', null];
+
         yield 'tool call' => ['codex/terminal-turn', 'PreToolUse', CodexTool::Bash->value];
+
         yield 'finished tool' => ['codex/terminal-turn', 'PostToolUse', CodexTool::Bash->value];
+
         yield 'stop' => ['codex/terminal-turn', 'Stop', null];
     }
 

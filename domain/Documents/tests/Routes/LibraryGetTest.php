@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
+use App\Web\Creation\PageFactory;
 use App\Web\Creation\WindowFactory;
 use Domain\Documents\Data\DocumentsPaneData;
-use Domain\Documents\Http\Windows\DocumentsWindowBuilder;
-use App\Web\Creation\PageFactory;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Http\Pages\LibraryPageBuilder;
 use Domain\Documents\Http\Pages\LibraryPageData;
+use Domain\Documents\Http\Windows\DocumentsWindowBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\DomainBoot;

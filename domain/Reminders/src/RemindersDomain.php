@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Reminders;
 
-use Domain\Reminders\Data\RemindersPaneData;
-use Domain\Reminders\Http\Pages\RemindersPageBuilder;
-use Domain\Reminders\Http\Pages\RemindersPageData;
-use Domain\Reminders\Http\Windows\RemindersWindowBuilder;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
@@ -18,6 +14,10 @@ use App\Navigation\Enums\Icon;
 use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
+use Domain\Reminders\Data\RemindersPaneData;
+use Domain\Reminders\Http\Pages\RemindersPageBuilder;
+use Domain\Reminders\Http\Pages\RemindersPageData;
+use Domain\Reminders\Http\Windows\RemindersWindowBuilder;
 use Domain\Reminders\Policies\ReminderPolicy;
 use Domain\Reminders\Support\Skills\RemindersSkill;
 

@@ -112,6 +112,7 @@ final readonly class DriverRequestClaims
         }
 
         $now = $this->clock->now();
+
         $pending = DriverRequest::query()
             ->ofAgentRuntimes($runtimes->keys()->all())
             ->withProgress(RequestProgress::Accepted)

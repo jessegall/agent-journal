@@ -21,8 +21,8 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SwitchAgentDriverController
 {
-    #[Dispatches(SwitchAgentDriverCommand::class)]
     #[Dispatches(ChooseNextStartCommand::class)]
+    #[Dispatches(SwitchAgentDriverCommand::class)]
     public function __invoke(
         SwitchAgentDriverRequest $request,
         CommandBus $commands,

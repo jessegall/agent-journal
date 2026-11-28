@@ -20,6 +20,7 @@ final readonly class ActivityWindowBuilder implements WindowBuilder
     public function build(Request $visit): ActivityPaneData
     {
         $policy = $this->policies->forType(ActivityPaneData::class);
+
         $entries = ActivityEntry::query()
             ->newestBefore($this->served->environmentId(), null)
             ->limit($policy->limitFor('items'))

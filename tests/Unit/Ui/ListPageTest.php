@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\LayoutTabData;
-use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use App\Terminals\Enums\LayoutTag;
@@ -204,12 +204,12 @@ final class ListPageTest extends TestCase
             ->rows([], static fn (LayoutRowData $row): LayoutRowData => $row)
             ->empty(
                 EmptyListState::build()
-                ->title('No tasks yet')
-                ->detail('What a task is.')
-                ->icon('todos')
-                ->actions([$first])
-                ->fillsPage(true)
-                ->finish(),
+                    ->title('No tasks yet')
+                    ->detail('What a task is.')
+                    ->icon('todos')
+                    ->actions([$first])
+                    ->fillsPage(true)
+                    ->finish(),
             )
             ->counting(0)
             ->withReader($back)

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Accounts\Data;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -16,8 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AccountUsageData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<AccountUsageDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<AccountUsageDataFields> */
+    use Buildable;
 
     protected const string FIELDS = AccountUsageDataFields::class;
 

@@ -10,6 +10,7 @@ use App\Web\AppContextFreshness;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Testing\TestResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -73,7 +74,7 @@ final class AppContextOnceTest extends TestCase
 
     /**
      * @param  array<string, string>  $headers
-     * @return TestResponse<\Symfony\Component\HttpFoundation\Response>
+     * @return TestResponse<Response>
      */
     private function visit(array $headers = []): TestResponse
     {

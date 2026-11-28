@@ -38,35 +38,35 @@ final class SettingsPageTest extends TestCase
     {
         $root = SettingsGroup::page(
             SettingsGroup::build()->key('general')->title('General')->help('The basics')->finish()
-            ->withRows(
-                SettingsRow::build()
-                    ->key('name')
-                    ->label('Journal name')
-                    ->field(
-                        LayoutFieldData::build()
-                        ->name('name')
-                        ->value('Journal')
+                ->withRows(
+                    SettingsRow::build()
+                        ->key('name')
+                        ->label('Journal name')
+                        ->field(
+                            LayoutFieldData::build()
+                                ->name('name')
+                                ->value('Journal')
+                                ->finish(),
+                        )
+                        ->finish()->changed(),
+                    SettingsRow::build()
+                        ->key('on')
+                        ->label('Enabled')
+                        ->field(
+                            LayoutFieldData::build()
+                                ->name('on')
+                                ->value('1')
+                                ->finish(),
+                            'toggle',
+                        )
                         ->finish(),
-                    )
-                    ->finish()->changed(),
-                SettingsRow::build()
-                    ->key('on')
-                    ->label('Enabled')
-                    ->field(
-                        LayoutFieldData::build()
-                        ->name('on')
-                        ->value('1')
-                        ->finish(),
-                        'toggle',
-                    )
-                    ->finish(),
-                SettingsRow::build()->key('version')->label('Version')->value('6')->finish(),
-            )
-            ->savingTo(LayoutFormData::build()
-                ->method(ActionMethod::Post)
-                ->href('/settings/general')
-                ->fixed(['revision' => 4])
-                ->finish()),
+                    SettingsRow::build()->key('version')->label('Version')->value('6')->finish(),
+                )
+                ->savingTo(LayoutFormData::build()
+                    ->method(ActionMethod::Post)
+                    ->href('/settings/general')
+                    ->fixed(['revision' => 4])
+                    ->finish()),
             SettingsGroup::build()->key('profile')->title('Profile')->finish()->withRows(
                 SettingsRow::build()->key('models')->label('Models')->chips(['fast', 'deep'])->finish(),
                 SettingsRow::build()

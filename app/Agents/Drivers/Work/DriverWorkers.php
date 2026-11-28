@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Work;
 
-use App\Agents\Drivers\Processes\ProcessDrivers;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
+use App\Agents\Drivers\Processes\ProcessDrivers;
 use App\Bus\Contracts\JournalCommands;
 use App\Exceptions\WorkerFenced;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
@@ -166,6 +166,7 @@ final readonly class DriverWorkers
     {
         $runtimes = AgentRuntime::query()->whereKey($process->agent_runtime_id)->get();
         $inFlight = array_values(DriverRequest::query()->inFlightForAny($runtimes)->get()->all());
+
         $ordered = array_merge(...array_map(
             fn (DriverRequest $request) => HostInstruction::findOrderedFor($request),
             $inFlight,
@@ -199,6 +200,7 @@ final readonly class DriverWorkers
                 $answer = $command instanceof NotifyRequestProgressCommand || $command instanceof NotifyRuntimeActivityCommand
                     ? $this->retries->run($work, fn () => $this->run($command), fn () => $this->renew($work))
                     : $this->run($command);
+
                 $answered = $answered->then($work->driver->onAnswered($command, $answer));
             }
         });

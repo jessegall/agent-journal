@@ -308,6 +308,7 @@ final class TestScenario
                     .implode("\n", [...$host->playedFailures(), $host->printed()]),
                 ));
             }
+
             usleep(100_000);
         }
 

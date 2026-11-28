@@ -42,6 +42,7 @@ final class AssignedPlansCommand extends Command
 
         return $this->runReport(function () use ($plans, $call): int {
             $assignedPlanPage = $plans->listAssignedPlans($call->search, $call->states, $call->page, $call->perPage);
+
             $headers = [
                 'Id',
                 'Title',

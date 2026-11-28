@@ -33,6 +33,7 @@ final readonly class GreetInNewChat implements Listener
         }
 
         $agent = $event->target->actorReference();
+
         $chats = Inbox::query()
             ->withProviderKey(PairChats::PAIR_PROVIDER)
             ->whereIn('id', InboxMember::query()->active()->ofActor($agent)->inboxIds())
@@ -53,6 +54,7 @@ final readonly class GreetInNewChat implements Listener
         }
 
         $names = $this->labels->labelsFor([$agent, ...$users]);
+
         $event->reminders->add(AgentText::of('chat.greeting', [
             'inbox' => $chat->id,
             'user' => $names->nameOf($users[0]) ?? $users[0]->text(),

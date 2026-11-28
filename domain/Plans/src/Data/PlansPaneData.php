@@ -9,6 +9,7 @@ use App\Web\Attributes\Bounded;
 use App\Web\Attributes\Live;
 use App\Web\Attributes\Optional as OptionalProp;
 use App\Web\Attributes\WindowOnly;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -17,8 +18,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[WindowOnly, OptionalProp, Live]
 final class PlansPaneData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<PlansPaneDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<PlansPaneDataFields> */
+    use Buildable;
 
     protected const string FIELDS = PlansPaneDataFields::class;
 

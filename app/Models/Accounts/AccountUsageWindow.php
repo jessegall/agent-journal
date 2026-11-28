@@ -135,10 +135,12 @@ final class AccountUsageWindow extends JournalModel implements EventSource, Read
         }
 
         $table = self::query()->getModel()->getTable();
+
         $ranked = self::query()
             ->inCurrentGenerationOf($accounts)
             ->select("{$table}.*")
             ->selectRaw('row_number() over (partition by account_id order by limit_id, slot, id) as window_rank');
+
         $windows = self::query()
             ->fromSub($ranked, $table)
             ->where('window_rank', '<=', self::DETAIL_LIMIT)

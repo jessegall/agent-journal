@@ -47,46 +47,46 @@ final readonly class RulesPageBuilder implements PageBuilder
         return DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('rules')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()
                     ->asBox()
-                    ->key('top')
-                    ->style('header')
+                    ->key('rules')
+                    ->style('stack')
                     ->children(
                         LayoutPartData::build()
-                        ->asText()
-                        ->key('title')
-                        ->value("Rules ({$page->total})")
-                        ->style('heading')
-                        ->finish(),
-                        LayoutPartData::build()
-                        ->asField()
-                        ->key('search')
-                        ->label('Search rules')
-                        ->field(
-                            LayoutFieldData::build()
-                            ->name('q')
-                            ->value($filters->search)
-                            ->clears(['page', 'rule'])
+                            ->asBox()
+                            ->key('top')
+                            ->style('header')
+                            ->children(
+                                LayoutPartData::build()
+                                    ->asText()
+                                    ->key('title')
+                                    ->value("Rules ({$page->total})")
+                                    ->style('heading')
+                                    ->finish(),
+                                LayoutPartData::build()
+                                    ->asField()
+                                    ->key('search')
+                                    ->label('Search rules')
+                                    ->field(
+                                        LayoutFieldData::build()
+                                            ->name('q')
+                                            ->value($filters->search)
+                                            ->clears(['page', 'rule'])
+                                            ->finish(),
+                                    )
+                                    ->finish(),
+                            )
                             ->finish(),
-                        )
-                        ->finish(),
+                        LayoutPartData::build()
+                            ->asBox()
+                            ->key('split')
+                            ->style('split')
+                            ->children(
+                                $this->listOf($page, is_string($selected) ? $selected : '', $filters->search),
+                                $this->readerOf($page),
+                            )
+                            ->finish(),
                     )
                     ->finish(),
-                    LayoutPartData::build()
-                    ->asBox()
-                    ->key('split')
-                    ->style('split')
-                    ->children(
-                        $this->listOf($page, is_string($selected) ? $selected : '', $filters->search),
-                        $this->readerOf($page),
-                    )
-                    ->finish(),
-                )
-                ->finish(),
             )
             ->finish();
     }
@@ -113,19 +113,19 @@ final readonly class RulesPageBuilder implements PageBuilder
                 ->style('stack')
                 ->children(
                     LayoutPartData::build()
-                    ->asNotice()
-                    ->key('notice')
-                    ->style('empty')
-                    ->title("No rules match \"{$search}\".")
-                    ->finish(),
+                        ->asNotice()
+                        ->key('notice')
+                        ->style('empty')
+                        ->title("No rules match \"{$search}\".")
+                        ->finish(),
                     LayoutPartData::build()
-                    ->asAction()
-                    ->key('clear')
-                    ->label('Clear search')
-                    ->action(
-                        LayoutActionData::build()->query(['q' => '', 'page' => '', 'rule' => ''])->finish(),
-                    )
-                    ->finish(),
+                        ->asAction()
+                        ->key('clear')
+                        ->label('Clear search')
+                        ->action(
+                            LayoutActionData::build()->query(['q' => '', 'page' => '', 'rule' => ''])->finish(),
+                        )
+                        ->finish(),
                 )
                 ->finish();
         }
@@ -227,17 +227,17 @@ final readonly class RulesPageBuilder implements PageBuilder
                 ->style('row')
                 ->children(
                     LayoutPartData::build()
-                    ->asText()
-                    ->key('title')
-                    ->value("Rule {$shown->number}")
-                    ->style('heading')
-                    ->finish(),
+                        ->asText()
+                        ->key('title')
+                        ->value("Rule {$shown->number}")
+                        ->style('heading')
+                        ->finish(),
                     LayoutPartData::build()
-                    ->asBadge()
-                    ->key('state')
-                    ->text($shown->status->label())
-                    ->tone($shown->status->tone())
-                    ->finish(),
+                        ->asBadge()
+                        ->key('state')
+                        ->text($shown->status->label())
+                        ->tone($shown->status->tone())
+                        ->finish(),
                 )
                 ->finish(),
             LayoutPartData::build()->asText()->key('text')->value($shown->text)->style('paragraph')->finish(),
@@ -268,12 +268,12 @@ final readonly class RulesPageBuilder implements PageBuilder
             ->style('inline')
             ->children(
                 LayoutPartData::build()
-                ->asAction()
-                ->key('send')
-                ->label($label)
-                ->action(LayoutActionData::build()->submits(true)->finish())
-                ->style($style)
-                ->finish(),
+                    ->asAction()
+                    ->key('send')
+                    ->label($label)
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->style($style)
+                    ->finish(),
             )
             ->finish();
 

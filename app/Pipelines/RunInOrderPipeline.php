@@ -10,8 +10,8 @@ use App\Pipes\Supervision\EndInOrder;
 use App\Pipes\Supervision\RunNextInOrder;
 use App\Pipes\Supervision\StartInOrder;
 use App\Support\Execution\PendingStep;
-use App\Support\Execution\StepOutcome;
 use App\Support\Execution\PendingSteps;
+use App\Support\Execution\StepOutcome;
 
 /**
  * Runs a step's children one after another, each in the context the one before it left.

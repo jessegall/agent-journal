@@ -78,8 +78,10 @@ final class SendPostTest extends GuardedRouteEntryTestCase
         $this->chooseActiveAccounts();
         $inbox = $this->journal->owner()->inboxCalled('Owner');
         $this->journal->showDriverArrangements()->idleAgent('Turning agent')->enrollHost('Turn host', ['/work']);
+
         $this->journal->withAgent('Turning agent', fn (TestAgent $turningAgent) => $turningAgent
             ->openRuntime('Turn host', '/work'));
+
         $opened = $this->journal->openedRuntimeOf('Turning agent');
         Event::listen(MessageSent::class, new IsolatedListener(MessageSent::class, FailingMessageListener::class.'@handle'));
         $this->journal->expectListenerFailure(FailingMessageListener::class);
@@ -124,8 +126,10 @@ final class SendPostTest extends GuardedRouteEntryTestCase
     public function test_a_message_to_an_agent_with_no_session_starts_it_first_under_the_message_request(): void
     {
         $agent = $this->journal->owner()->idleAgent('Chat builder')->agentCalled('Chat builder');
+
         $inbox = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Chat builder')
             ->pairChatOf('Owner', 'Chat builder');
+
         $requestKey = strtolower((string) Str::ulid());
 
         $this->journal->sinkCommands()->sinkReplies([
@@ -157,6 +161,7 @@ final class SendPostTest extends GuardedRouteEntryTestCase
         $session = $this->journal->owner()->idleAgent('Chat builder')
             ->startSession('Chat builder', 'Chat builder')
             ->sessionCalled('Chat builder');
+
         $inbox = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Chat builder')
             ->pairChatOf('Owner', 'Chat builder');
 

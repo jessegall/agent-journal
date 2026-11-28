@@ -308,6 +308,7 @@ final readonly class ScenarioPlayer
 
         $rows = new RowRange(0, count($frame->rows));
         $sentAfter = RecordingDrafts::moment();
+
         $instruction = $this->journal->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, new SendHostKeysCommand(
             $process->id,
             (string) $step->text,
@@ -315,6 +316,7 @@ final readonly class ScenarioPlayer
             $process->input_generation,
             HostInstructionSource::fromJournal(),
         ));
+
         $this->waitForKeys($run, $instruction, $step->from, $sentAfter);
     }
 
@@ -344,11 +346,13 @@ final readonly class ScenarioPlayer
     {
         $ticket = $run->holdConnectionAttempt();
         $file = FilePath::in(Place::Project, self::CONNECTION_TICKET);
+
         $command = [
             'connect-recorded-project',
             $this->origin->canonical(),
             $this->releases->current()->version,
         ];
+
         $this->files->write($file, $ticket->secret."\n", Permissions::OwnerOnly);
 
         try {
@@ -372,10 +376,12 @@ final readonly class ScenarioPlayer
     {
         $agent = $run->agentNamed((string) $step->agent);
         $owner = ActorReference::of($run->owner);
+
         $members = [
             $owner,
             ActorReference::of($agent),
         ];
+
         $chat = $this->requestKey->independently(
             strtolower((string) Str::ulid()),
             fn () => $this->commands->run(new OpenInboxCommand(
@@ -385,6 +391,7 @@ final readonly class ScenarioPlayer
                 $members,
             )),
         );
+
         $key = strtolower((string) Str::ulid());
 
         $this->requestKey->independently($key, function () use ($run, $step, $agent, $chat, $key): void {

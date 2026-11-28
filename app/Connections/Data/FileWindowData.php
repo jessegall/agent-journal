@@ -6,6 +6,7 @@ namespace App\Connections\Data;
 
 use App\Connections\Enums\FileWindowStatus;
 use App\Connections\Layout\LayoutBodyData;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -19,8 +20,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class FileWindowData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<FileWindowDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<FileWindowDataFields> */
+    use Buildable;
 
     protected const string FIELDS = FileWindowDataFields::class;
 

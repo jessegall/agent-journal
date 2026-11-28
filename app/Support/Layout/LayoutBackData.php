@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -14,8 +15,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutBackData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<LayoutBackDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<LayoutBackDataFields> */
+    use Buildable;
 
     protected const string FIELDS = LayoutBackDataFields::class;
 

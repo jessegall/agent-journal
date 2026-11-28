@@ -177,6 +177,7 @@ final readonly class SupervisorDefinitions implements SupervisorDefinitionsContr
             ...array_map(fn (SupervisorProfile $profile) => $profile->routes, $profiles),
             ...$actors,
         ];
+
         $types = array_map(fn (AskType $type) => $type->key(), $this->types->all());
 
         new SupervisorGraph($routes)->requireAcyclic($types);

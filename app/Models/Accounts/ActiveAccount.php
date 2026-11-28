@@ -213,7 +213,7 @@ final class ActiveAccount extends JournalModel implements EventSource, ReadableM
     /**
      * The current choices for the families shown by the requested view.
      *
-     * @param list<string> $families
+     * @param  list<string>  $families
      * @return array<string, self>
      */
     public static function forListedFamilies(array $families): array
@@ -239,8 +239,8 @@ final class ActiveAccount extends JournalModel implements EventSource, ReadableM
     }
 
     /**
-     * @param Builder<self> $query
-     * @param list<string> $families
+     * @param  Builder<self>  $query
+     * @param  list<string>  $families
      */
     #[Scope]
     protected function inFamilies(Builder $query, array $families): void

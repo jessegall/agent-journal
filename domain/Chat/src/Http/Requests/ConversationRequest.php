@@ -76,7 +76,11 @@ final class ConversationRequest extends FormRequest
     {
         $chosen = $this->optionalText('inbox');
 
-        return $chosen === null ? None::create() : new Some(strtolower($chosen));
+        if ($chosen === null) {
+            return None::create();
+        }
+
+        return new Some(strtolower($chosen));
     }
 
     /**
@@ -97,7 +101,11 @@ final class ConversationRequest extends FormRequest
     {
         $read = $this->optionalText('read');
 
-        return $read === null ? None::create() : new Some(strtolower($read));
+        if ($read === null) {
+            return None::create();
+        }
+
+        return new Some(strtolower($read));
     }
 
     /**
@@ -107,6 +115,10 @@ final class ConversationRequest extends FormRequest
     {
         $chosen = $this->optionalText('agent');
 
-        return $chosen === null ? None::create() : new Some(strtolower($chosen));
+        if ($chosen === null) {
+            return None::create();
+        }
+
+        return new Some(strtolower($chosen));
     }
 }

@@ -6,8 +6,8 @@ namespace Tests\Architecture\Support;
 
 use App\Links\LinkAccess;
 use App\Reflection\ReflectedProperty;
-use App\Support\Exports;
 use App\Support\BoundedReadBuilder;
+use App\Support\Exports;
 use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node;

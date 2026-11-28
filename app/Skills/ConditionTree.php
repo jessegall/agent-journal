@@ -109,6 +109,7 @@ final readonly class ConditionTree
         $depth = 0;
         $nodes = 0;
         $parameterBytes = 0;
+
         $pending = [[
             $wire,
             1,

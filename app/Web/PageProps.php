@@ -72,12 +72,14 @@ final readonly class PageProps
     {
         $readPage = fn () => $this->ownPageResult($page, $request);
         $policy = $this->policies->forPage($page->surface->type)->prop;
+
         $props = $page->isHome()
             ? $this->homeShell($page, $readPage, $policy)
             : [
                 self::TITLE => $page->page->title,
                 self::PAGE => $this->scheduled($this->lazy($readPage, $policy), $policy->live),
             ];
+
         $component = $page->componentName();
         $route = $request->route() instanceof Route ? $request->route() : null;
 
@@ -88,6 +90,7 @@ final readonly class PageProps
 
             $policy = $this->policies->forType($section->resolver->dataClass)->prop;
             $read = fn () => $this->sectionResult($section, $request, $route);
+
             $props[$section->propName] = $this->scheduled(
                 $this->lazy($read, $policy, $section->propName),
                 $policy->live,
@@ -108,10 +111,14 @@ final readonly class PageProps
             }
         }
 
-        return $page->isHome() ? [
-            ...$props,
-            ...$this->forHome($request, $component),
-        ] : $props;
+        if ($page->isHome()) {
+            return [
+                ...$props,
+                ...$this->forHome($request, $component),
+            ];
+        }
+
+        return $props;
     }
 
     /** @return array<string, mixed> */
@@ -122,6 +129,7 @@ final readonly class PageProps
             ->page(Lazy::closure($read))
             ->finish()
             ->toArray();
+
         $props[self::PAGE] = $this->live->value($props[self::PAGE], $policy->live);
 
         return $props;
@@ -135,7 +143,11 @@ final readonly class PageProps
 
         $group = $policy->deferred?->group ?? $defaultGroup;
 
-        return $group === null ? Lazy::closure($read) : Lazy::inertiaDeferred($read, $group);
+        if ($group === null) {
+            return Lazy::closure($read);
+        }
+
+        return Lazy::inertiaDeferred($read, $group);
     }
 
     private function scheduled(Lazy $value, Live|null $live = null): mixed
@@ -166,10 +178,12 @@ final readonly class PageProps
 
             $window = $page->window;
             $policy = $this->policies->forType($window->type);
+
             $checks = [
                 ...$page->visibilityChecks(),
                 ...$policy->checks,
             ];
+
             $instances = [WindowInstance::original($page->key)];
 
             foreach ($request->copiesAskedFor($page->propName) as $copyId) {

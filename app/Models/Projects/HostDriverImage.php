@@ -175,6 +175,7 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
     public function retireReplaced(string $folder): void
     {
         $frozen = AgentSession::query()->liveOnFrozenRecipe()->select('driver_recipe_digest');
+
         $replaced = self::query()
             ->onHost($this->host_id)
             ->whereKeyNot($this->id)

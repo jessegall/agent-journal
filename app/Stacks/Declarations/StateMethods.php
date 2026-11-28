@@ -249,6 +249,7 @@ final class StateMethods
     private function assertAnswersOneByOne(ReflectedMethod $method): void
     {
         $isStateMoment = str_starts_with($method->name(), 'on') && $this->isPublicInstanceMethod($method);
+
         $declaresMany = $method->returnType()
             ->map(fn (DeclaredType $type) => $this->namesArrayOrIterable($type))
             ->getOrElse(false);

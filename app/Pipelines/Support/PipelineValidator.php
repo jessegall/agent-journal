@@ -7,9 +7,9 @@ namespace App\Pipelines\Support;
 use App\Bus\Contracts\Pipe;
 use App\Bus\Contracts\PipelineDefinition;
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Support\ProjectCode;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
+use App\Support\ProjectCode;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Foundation\Application;
 

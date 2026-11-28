@@ -48,6 +48,7 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         $host = Host::findLocked($instruction->host_id);
 
         $images = HostDriverImage::findWaitingOn($instruction->id);
+
         // Every waiting image's recipe in one read, as a host holds many images at once.
         $folders = DriverImageRecipeRecord::query()
             ->whereIn('id', array_map(fn (HostDriverImage $image) => $image->driver_image_recipe_id, $images))
@@ -114,12 +115,14 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         }
 
         $image->acknowledged();
+
         $checks = $this->instructions->runContainers(
             $image->host_id,
             // One round of checks to each allow the image is named in: an allow again after a restart checks again.
             HostInstructionSource::keyed("driver-image-checks:{$image->id}:{$instruction->id}"),
             HostContainerRunsPayload::from(['runs' => $this->checks->of($image->builtImage(), $folder)]),
         );
+
         $image->markChecksSent($checks->getKey());
     }
 
@@ -140,6 +143,7 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
                 fn (HostContainerRunResultPayload $result) => "exit {$result->exitCode}: ".trim($result->stdout.$result->stderr),
                 $results,
             );
+
             $image->refuse(sprintf(
                 'a start check of the built image did not run its commands as the executor\'s user (%d checks, %d results: %s)',
                 count($expected),

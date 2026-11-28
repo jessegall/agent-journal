@@ -62,40 +62,40 @@ final readonly class RequestListPageBuilder implements PageBuilder
         return DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('review')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()
                     ->asBox()
-                    ->key('header')
-                    ->style('header')
+                    ->key('review')
+                    ->style('stack')
                     ->children(
                         LayoutPartData::build()
-                        ->asText()
-                        ->key('title')
-                        ->value('Command review')
-                        ->style('heading')
-                        ->finish(),
+                            ->asBox()
+                            ->key('header')
+                            ->style('header')
+                            ->children(
+                                LayoutPartData::build()
+                                    ->asText()
+                                    ->key('title')
+                                    ->value('Command review')
+                                    ->style('heading')
+                                    ->finish(),
+                            )
+                            ->finish(),
+                        LayoutPartData::build()
+                            ->asText()
+                            ->key('kinds')
+                            ->value('Sorting a command into kinds does not allow it to run.')
+                            ->style('muted')
+                            ->finish(),
+                        $this->requestsOf($requestRows),
+                        $this->rulesOf($ruleRows),
+                        LayoutPartData::build()
+                            ->asNative()
+                            ->key('bundles')
+                            ->native(
+                                LayoutNativeData::build()->component('processes/BundleApprovals')->props($bundles)->finish(),
+                            )
+                            ->finish(),
                     )
                     ->finish(),
-                    LayoutPartData::build()
-                    ->asText()
-                    ->key('kinds')
-                    ->value('Sorting a command into kinds does not allow it to run.')
-                    ->style('muted')
-                    ->finish(),
-                    $this->requestsOf($requestRows),
-                    $this->rulesOf($ruleRows),
-                    LayoutPartData::build()
-                    ->asNative()
-                    ->key('bundles')
-                    ->native(
-                        LayoutNativeData::build()->component('processes/BundleApprovals')->props($bundles)->finish(),
-                    )
-                    ->finish(),
-                )
-                ->finish(),
             )
             ->finish();
     }
@@ -120,11 +120,11 @@ final readonly class RequestListPageBuilder implements PageBuilder
                 ->children(
                     $heading,
                     LayoutPartData::build()
-                    ->asNotice()
-                    ->key('empty')
-                    ->style('empty')
-                    ->title('No command request is waiting.')
-                    ->finish(),
+                        ->asNotice()
+                        ->key('empty')
+                        ->style('empty')
+                        ->title('No command request is waiting.')
+                        ->finish(),
                 )
                 ->finish();
         }
@@ -136,22 +136,22 @@ final readonly class RequestListPageBuilder implements PageBuilder
             ->children(
                 $heading,
                 LayoutPartData::build()
-                ->asCollection()
-                ->key('rows')
-                ->style('list')
-                ->rows(
-                    array_map(
-                        fn (RequestRowData $request) => LayoutRowData::build()
-                            ->key($request->id)
-                            ->label($request->operation)
-                            ->value($request->state)
-                            ->detail("{$request->line} · {$request->holdReason} · next: {$request->next}")
-                            ->href("/processes/requests/{$request->id}")
-                            ->finish(),
-                        $requests,
-                    ),
-                )
-                ->finish(),
+                    ->asCollection()
+                    ->key('rows')
+                    ->style('list')
+                    ->rows(
+                        array_map(
+                            fn (RequestRowData $request) => LayoutRowData::build()
+                                ->key($request->id)
+                                ->label($request->operation)
+                                ->value($request->state)
+                                ->detail("{$request->line} · {$request->holdReason} · next: {$request->next}")
+                                ->href("/processes/requests/{$request->id}")
+                                ->finish(),
+                            $requests,
+                        ),
+                    )
+                    ->finish(),
             )
             ->finish();
     }
@@ -171,11 +171,11 @@ final readonly class RequestListPageBuilder implements PageBuilder
                 ->children(
                     $heading,
                     LayoutPartData::build()
-                    ->asNotice()
-                    ->key('empty')
-                    ->style('empty')
-                    ->title('The project has no rule of its own yet.')
-                    ->finish(),
+                        ->asNotice()
+                        ->key('empty')
+                        ->style('empty')
+                        ->title('The project has no rule of its own yet.')
+                        ->finish(),
                 )
                 ->finish();
         }
@@ -187,21 +187,21 @@ final readonly class RequestListPageBuilder implements PageBuilder
             ->children(
                 $heading,
                 LayoutPartData::build()
-                ->asCollection()
-                ->key('rows')
-                ->style('list')
-                ->rows(
-                    array_map(
-                        fn (ClassificationRuleRowData $rule) => LayoutRowData::build()
-                            ->key($rule->id)
-                            ->label("{$rule->ruleId} ({$rule->owner}) revision {$rule->revision}")
-                            ->value($rule->state)
-                            ->detail($rule->reason)
-                            ->finish(),
-                        $rules,
-                    ),
-                )
-                ->finish(),
+                    ->asCollection()
+                    ->key('rows')
+                    ->style('list')
+                    ->rows(
+                        array_map(
+                            fn (ClassificationRuleRowData $rule) => LayoutRowData::build()
+                                ->key($rule->id)
+                                ->label("{$rule->ruleId} ({$rule->owner}) revision {$rule->revision}")
+                                ->value($rule->state)
+                                ->detail($rule->reason)
+                                ->finish(),
+                            $rules,
+                        ),
+                    )
+                    ->finish(),
             )
             ->finish();
     }

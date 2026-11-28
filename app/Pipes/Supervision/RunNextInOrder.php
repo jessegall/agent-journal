@@ -7,8 +7,8 @@ namespace App\Pipes\Supervision;
 use App\Pipelines\ExecuteStepPipeline;
 use App\Pipelines\Support\PipelineAdapter;
 use App\Support\Execution\PendingStep;
-use App\Support\Execution\StepOutcome;
 use App\Support\Execution\PendingSteps;
+use App\Support\Execution\StepOutcome;
 
 /**
  * Runs the next step of a sequence in the context the step before it left.

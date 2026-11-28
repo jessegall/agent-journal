@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Pages;
 
 use App\Accounts\Data\LoginInput;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -14,8 +15,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LoginPage extends Data
 {
-    /** @use \App\Web\Creation\Buildable<LoginPageFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<LoginPageFields> */
+    use Buildable;
 
     protected const string FIELDS = LoginPageFields::class;
 

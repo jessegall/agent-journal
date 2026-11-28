@@ -119,6 +119,7 @@ final readonly class FindNextSubstitution implements Pipe
             }
 
             $word = $next->toParse->inside($token->word->shiftedBy($offset));
+
             $inside = [
                 ...$inside,
                 ...PendingSegment::allOf($word),

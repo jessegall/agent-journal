@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Asks\Data;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 #[TypeScript]
 final class AskCard extends Data
 {
-    /** @use \App\Web\Creation\Buildable<AskCardFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<AskCardFields> */
+    use Buildable;
 
     protected const string FIELDS = AskCardFields::class;
 

@@ -12,7 +12,10 @@ use Spatie\LaravelData\Data;
 abstract class LayoutPageData extends Data implements PresentsLayout
 {
     /** Holds the checked tree before its browser projection. */
-    public function __construct(#[Hidden] public readonly DeclaredLayoutData $shown) {}
+    public function __construct(
+        #[Hidden]
+        public readonly DeclaredLayoutData $shown,
+    ) {}
 
     /** Returns the checked tree sent to the browser. */
     final public function layout(): DeclaredLayoutData

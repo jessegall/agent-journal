@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Pages\Sharing;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Http\Pages\Sharing\SharesShow;
 use App\Http\Requests\Sharing\ShareRequest;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareMember;

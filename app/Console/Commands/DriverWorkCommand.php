@@ -6,8 +6,8 @@ namespace App\Console\Commands;
 
 use App\Agents\Drivers\Exceptions\WorkerReportFailed;
 use App\Agents\Drivers\Work\DriverWorkers;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 
 /**
  * Drives one process until its worker is fenced, asked to restart or the process ends.

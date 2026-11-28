@@ -46,11 +46,11 @@ final readonly class SequenceRunsShow extends SequenceRunsPage
                 ->isCurrent($isCurrent)
                 ->leading(
                     [LayoutPartData::build()
-                    ->asText()
-                    ->key('position')
-                    ->value((string) $position)
-                    ->style('muted')
-                    ->finish()],
+                        ->asText()
+                        ->key('position')
+                        ->value((string) $position)
+                        ->style('muted')
+                        ->finish()],
                 )
                 ->trailing([$this->markOf($position, $run->current_step, $run->status)])
                 ->finish();

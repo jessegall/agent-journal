@@ -31,10 +31,12 @@ final class NoAccountsYetTest extends TestCase
         $this->assertInstanceOf(LayoutPartData::class, $empty);
         $notice = $empty->children[1];
         $action = $empty->children[2];
+
         $this->assertSame(
             [NoAccountsYet::TITLE, NoAccountsYet::SENTENCE, 'Add account'],
             [$notice->text, $notice->detail, $action->text],
         );
+
         $this->assertEquals(LayoutActionData::build()->href('/accounts?add=1')->finish(), $action->action);
     }
 

@@ -50,6 +50,7 @@ final readonly class AppContextFreshness
 
         $controller = new ReflectionClass($class);
         $method = $route->getActionMethod();
+
         $onMethod = $controller->hasMethod($method)
             ? new ReflectionMethod($controller->getName(), $method)->getAttributes(RefreshesAppContext::class)
             : [];

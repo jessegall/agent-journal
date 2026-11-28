@@ -6,6 +6,7 @@ namespace App\Accounts\Data;
 
 use App\Accounts\Enums\AccountProcessRole;
 use App\Accounts\Enums\AccountStatus;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -16,8 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class StartAccountData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<StartAccountDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<StartAccountDataFields> */
+    use Buildable;
 
     protected const string FIELDS = StartAccountDataFields::class;
 

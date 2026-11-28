@@ -17,10 +17,10 @@ use App\Support\ActorReference;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
+use App\Support\BoundedReadBuilder;
 use App\Support\CursorPage;
 use App\Support\IdListPage;
 use App\Support\PoolReference;
-use App\Support\BoundedReadBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -150,7 +150,6 @@ final class AutoAssignment extends JournalModel implements EventSource, Readable
 
     /**
      * @param  BoundedReadBuilder<self>  $query
-     *
      * @return CursorPage<AutoAssignmentFact>
      */
     private static function pageOf(BoundedReadBuilder $query, IdListPage $page): CursorPage

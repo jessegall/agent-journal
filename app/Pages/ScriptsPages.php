@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Http\Pages\ProfileScriptPageBuilder;
 use App\Accounts\AccountOwnerCheck;
 use App\CommandRules\Enums\SyntaxForm;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
 use App\Http\Controllers\Pages\CheckDraftPageController;
 use App\Http\Controllers\Pages\SaveDraftPageController;
+use App\Http\Pages\ProfileScriptPageBuilder;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Declarations\DomainClient;
 use App\Navigation\Enums\Icon;

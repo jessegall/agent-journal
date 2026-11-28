@@ -6,6 +6,7 @@ namespace App\Navigation\Layout;
 
 use App\Navigation\Enums\Icon;
 use App\Settings\Enums\ActionMethod;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -17,8 +18,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutMenuItemData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<LayoutMenuItemDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<LayoutMenuItemDataFields> */
+    use Buildable;
 
     protected const string FIELDS = LayoutMenuItemDataFields::class;
 

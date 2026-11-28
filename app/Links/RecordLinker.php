@@ -51,6 +51,7 @@ final readonly class RecordLinker implements RecordLinkerContract
         $from = $this->records->requireWritable($source);
         $to = $this->records->requireReadable($target);
         $this->transaction->assertRunning($from->getConnection());
+
         $ordered = [
             $from,
             $to,

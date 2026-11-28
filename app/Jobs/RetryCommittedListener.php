@@ -30,6 +30,10 @@ final class RetryCommittedListener implements ShouldQueue
      */
     public function middleware(): array
     {
-        return $this->attemptId === null ? [] : [new WithoutOverlapping($this->attemptId)->expireAfter(90)];
+        if ($this->attemptId === null) {
+            return [];
+        }
+
+        return [new WithoutOverlapping($this->attemptId)->expireAfter(90)];
     }
 }

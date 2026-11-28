@@ -10,6 +10,7 @@ use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\Contracts\ProjectField;
 use App\Support\Layout\Contracts\ProjectRowLabel;
 use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
@@ -17,7 +18,6 @@ use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutProgressData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use App\Web\Enums\ReaderWidth;
@@ -88,11 +88,11 @@ final readonly class PlansIndex extends PlansPage
                 ->key('progress')
                 ->progress(
                     LayoutProgressData::build()
-                    ->value($card->finishedTasks)
-                    ->max($card->totalTasks)
-                    ->label("Plan {$card->number}")
-                    ->unit('tasks')
-                    ->finish(),
+                        ->value($card->finishedTasks)
+                        ->max($card->totalTasks)
+                        ->label("Plan {$card->number}")
+                        ->unit('tasks')
+                        ->finish(),
                 )
                 ->finish();
 
@@ -103,11 +103,11 @@ final readonly class PlansIndex extends PlansPage
             ->isCurrent($filters->plan === $card->number)
             ->leading(
                 [LayoutPartData::build()
-                ->asText()
-                ->key('number')
-                ->value($card->number)
-                ->style('muted')
-                ->finish()],
+                    ->asText()
+                    ->key('number')
+                    ->value($card->number)
+                    ->style('muted')
+                    ->finish()],
             )
             ->trailing($trailing)
             ->finish();

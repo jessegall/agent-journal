@@ -11,9 +11,9 @@ use App\Mcp\Tools\JournalTool;
 use App\Navigation\Contracts\DraftProducerProvider;
 use App\Scripts\Contracts\ScriptKeywordProvider;
 use App\Scripts\Contracts\ScriptObjectProvider;
-use App\Support\Bootstrappers\MigrationsBootstrapper;
 use App\Support\Bootstrappers\DraftProducersBootstrapper;
 use App\Support\Bootstrappers\EngineListenersBootstrapper;
+use App\Support\Bootstrappers\MigrationsBootstrapper;
 use App\Support\Bootstrappers\MorphAliasesBootstrapper;
 use App\Support\Bootstrappers\ScriptDefinitionsBootstrapper;
 

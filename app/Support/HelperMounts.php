@@ -186,6 +186,7 @@ final readonly class HelperMounts
         }
 
         $labels = [HostContainerLabelPayload::from(['name' => ContainerLabels::SESSION, 'value' => $sessionId])];
+
         $volumes = [HostContainerVolumePayload::from([
             'name' => $this->historyVolume($sessionId, $resumedSessionId),
             'labels' => $labels,
@@ -242,6 +243,7 @@ final readonly class HelperMounts
         $targets = array_map(static fn (ManifestMount $mount) => $mount->target, $mounts);
 
         $driverTargets = array_map(fn (ManifestMount $mount) => $mount->target, $this->driverMounts);
+
         $allowed = [
             ...self::CONTAINED_TARGETS,
             ...$driverTargets,

@@ -65,10 +65,12 @@ final class RunningCommandSeedTest extends TestCase
     private function runningCommand(Inbox $chat): RunningCommandData|null
     {
         $plannerId = $this->journal->actorCalled('Planner')->id;
+
         $agents = array_filter(
             $this->app->make(AgentDirectory::class)->visible(),
             fn (HomeAgent $option) => $option->agentId === $plannerId,
         );
+
         $agent = reset($agents);
 
         return $this->app->make(ChatPages::class)->pageFor($agent, $chat, null)->runningCommand;

@@ -6,6 +6,7 @@ namespace App\Support\Layout;
 
 use App\Exceptions\LayoutRefused;
 use App\Navigation\Contracts\PresentsLayout;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -16,8 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class DeclaredLayoutData extends Data implements PresentsLayout
 {
-    /** @use \App\Web\Creation\Buildable<DeclaredLayoutDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<DeclaredLayoutDataFields> */
+    use Buildable;
 
     /**
      * The most parts one layout holds, its root among them.

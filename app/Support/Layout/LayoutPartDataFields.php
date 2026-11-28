@@ -421,12 +421,13 @@ final class LayoutPartDataFields
     }
 
     /**
-     * @param list<LayoutPartData> $fields
-     * @param list<LayoutPartData> $footer
+     * @param  list<LayoutPartData>  $fields
+     * @param  list<LayoutPartData>  $footer
      */
     public function sheet(LayoutFormData $form, array $fields, array $footer): self
     {
         $actions = LayoutPartData::build()->asBox()->key('footer')->style('row')->children(...$footer)->finish();
+
         $this->children[] = LayoutPartData::build()
             ->asForm()
             ->key('form')

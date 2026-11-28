@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Pages;
 
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutDialogData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
-use App\Support\Layout\EmptyListState;
 
 /**
  * What every page of the app builds the same way: a creation dialog, written by hand or with an agent, and the empty
@@ -44,12 +44,12 @@ abstract readonly class Page
                 $form,
                 $fields,
                 [LayoutPartData::build()
-                ->asAction()
-                ->key('send')
-                ->label($creation->sendLabel)
-                ->action(LayoutActionData::build()->submits(true)->finish())
-                ->style('primary')
-                ->finish()],
+                    ->asAction()
+                    ->key('send')
+                    ->label($creation->sendLabel)
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->style('primary')
+                    ->finish()],
             )
             ->finish();
     }
@@ -65,11 +65,11 @@ abstract readonly class Page
             ->title($message)
             ->actions(
                 [LayoutPartData::build()
-                ->asAction()
-                ->key('clear')
-                ->label($clearLabel)
-                ->action(LayoutActionData::build()->query($cleared)->finish())
-                ->finish()],
+                    ->asAction()
+                    ->key('clear')
+                    ->label($clearLabel)
+                    ->action(LayoutActionData::build()->query($cleared)->finish())
+                    ->finish()],
             )
             ->finish();
     }

@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Http\Pages\Sharing\GatewaySettingsPageBuilder;
-use App\Http\Pages\Sharing\GatewaySettingsPageData;
-use App\Http\Pages\Sharing\ShareDetailPageBuilder;
-use App\Http\Pages\Sharing\ShareDetailPageData;
-use App\Http\Pages\Sharing\ShareListPageBuilder;
-use App\Http\Pages\Sharing\ShareListPageData;
-use App\Http\Pages\Sharing\SharePreviewPageBuilder;
 use App\Agents\Drivers\Contracts\NativePartProvider;
 use App\Declarations\Page;
 use App\Declarations\PageActions;
@@ -24,6 +17,13 @@ use App\Http\Controllers\Sharing\RetryShareController;
 use App\Http\Controllers\Sharing\RevealShareLinkController;
 use App\Http\Controllers\Sharing\RevokeShareController;
 use App\Http\Controllers\Sharing\SharePreviewController;
+use App\Http\Pages\Sharing\GatewaySettingsPageBuilder;
+use App\Http\Pages\Sharing\GatewaySettingsPageData;
+use App\Http\Pages\Sharing\ShareDetailPageBuilder;
+use App\Http\Pages\Sharing\ShareDetailPageData;
+use App\Http\Pages\Sharing\ShareListPageBuilder;
+use App\Http\Pages\Sharing\ShareListPageData;
+use App\Http\Pages\Sharing\SharePreviewPageBuilder;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Declarations\DomainClient;
 use App\Navigation\Enums\Icon;

@@ -63,6 +63,7 @@ final readonly class AgentListing
         $read = $this->rowsOf($this->ranked($pairIds)->limit(self::PAGE_SIZE + 1));
         $onPage = array_map(fn (RankedAgent $row) => $row->agentId, array_slice($read, 0, self::PAGE_SIZE));
         $missing = array_values(array_unique(array_diff($shownAgentIds, $onPage)));
+
         $extra = $missing === []
             ? []
             : $this->rowsOf($this->ranked($pairIds)->whereKey($missing)->limit(count($missing)));
@@ -105,6 +106,7 @@ final readonly class AgentListing
 
         if (count($read) > self::PAGE_SIZE) {
             $last = $shown[self::PAGE_SIZE - 1];
+
             $next = AgentPageCursorData::from([
                 'afterAgentId' => $last->agentId,
                 'afterActiveAt' => $last->lastActiveAt,
@@ -124,6 +126,7 @@ final readonly class AgentListing
             $row->agentId,
             $row,
         ], $rows), 1, 0);
+
         $agents = $this->agents->visibleAmong(array_keys($byAgent));
         $inboxIds = array_values(array_filter(array_map(fn (RankedAgent $row) => $row->inboxId, $rows)));
         $unread = $this->unreadIn($inboxIds);
@@ -161,6 +164,7 @@ final readonly class AgentListing
         $members = InboxMember::query()->ofInboxes($pairIds)->ofActorType(Agent::storedType())->active()
             ->select(['actor_id', 'inbox_id'])
             ->limit(InboxMember::ATTACHED_LIMIT);
+
         $activity = ChatMessage::query()->ofInboxes($pairIds)
             ->groupBy('inbox_id')
             ->selectRaw('inbox_id, max(created_at) as last_active_at')
@@ -219,6 +223,7 @@ final readonly class AgentListing
     private function waitingIn(array $inboxIds): array
     {
         $viewer = $this->actors->actor();
+
         $questionIds = array_values(array_map(strval(...), ChatMessage::query()->ofInboxes($inboxIds)
             ->ofType(ChatMessageType::Question)
             ->latest('created_at')

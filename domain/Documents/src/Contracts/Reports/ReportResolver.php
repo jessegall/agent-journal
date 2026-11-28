@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Contracts\Reports;
 
-use Domain\Documents\Models\Report;
-use Illuminate\Database\Eloquent\Collection;
 use App\Data\Pages\RecordCard;
 use App\Support\TextSelection;
 use App\Text\Exceptions\SectionMissing;
@@ -15,6 +13,8 @@ use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Exceptions\ReportMissing;
+use Domain\Documents\Models\Report;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Reads the filed reports: a page of them, or one by its number.

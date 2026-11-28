@@ -20,8 +20,8 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SendMessageController
 {
-    #[Dispatches(StartProfileMainCommand::class)]
     #[Dispatches(SendMessageCommand::class)]
+    #[Dispatches(StartProfileMainCommand::class)]
     public function __invoke(
         MessageInput $input,
         AgentStartOnMessage $start,

@@ -9,6 +9,7 @@ use App\Web\Attributes\CopyScoped;
 use App\Web\Attributes\Live;
 use App\Web\Attributes\Optional as OptionalProp;
 use App\Web\Attributes\WindowOnly;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -16,8 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[WindowOnly, CopyScoped, OptionalProp, Live]
 final class FilePaneData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<FilePaneDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<FilePaneDataFields> */
+    use Buildable;
 
     protected const string FIELDS = FilePaneDataFields::class;
 

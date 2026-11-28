@@ -26,6 +26,7 @@ final readonly class SignInChallenges
             'address' => $challenge->address,
             'code' => $challenge->code,
         ];
+
         $this->cache->put(self::challengeKey($attemptId), $this->encrypter->encrypt($challengeFields), $until);
     }
 
@@ -52,6 +53,7 @@ final readonly class SignInChallenges
             'key' => $submissionKey,
             'code' => $code,
         ];
+
         $this->cache->put(self::codeKey($attemptId), $this->encrypter->encrypt($answer), $until);
     }
 

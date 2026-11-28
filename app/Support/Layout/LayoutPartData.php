@@ -8,6 +8,7 @@ use App\Connections\Layout\LayoutBodyData;
 use App\Exceptions\LayoutRefused;
 use App\Navigation\Layout\LayoutMenuData;
 use App\Terminals\Enums\LayoutTag;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -21,8 +22,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutPartData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<LayoutPartDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<LayoutPartDataFields> */
+    use Buildable;
 
     protected const string FIELDS = LayoutPartDataFields::class;
 

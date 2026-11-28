@@ -36,6 +36,7 @@ final readonly class CardEncoder implements CardEncoderContract
     private function node(DockPart $part): array
     {
         $descriptor = $this->parts->descriptorOf($part);
+
         $node = [
             'type' => $descriptor->type->value,
             'key' => $part->key(),

@@ -70,14 +70,14 @@ final readonly class MenuBuilder implements RecordMenusContract
             ->label($menu->label)
             ->groups(
                 array_map(fn (int|string $group) => LayoutMenuGroupData::build()
-                ->key((string) $group)
-                ->items(
-                    array_map(
-                        fn (RegisteredMenuItem $item) => $this->itemData($item, $routeValues),
-                        $grouped[$group],
-                    ),
-                )
-                ->finish(), array_keys($grouped)),
+                    ->key((string) $group)
+                    ->items(
+                        array_map(
+                            fn (RegisteredMenuItem $item) => $this->itemData($item, $routeValues),
+                            $grouped[$group],
+                        ),
+                    )
+                    ->finish(), array_keys($grouped)),
             )
             ->finish();
     }

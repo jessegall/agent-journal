@@ -57,7 +57,11 @@ final readonly class HookAnswer
      */
     public function shownDecision(): Decision
     {
-        return $this->isDenied() ? $this->decision : $this->walkedDecision;
+        if ($this->isDenied()) {
+            return $this->decision;
+        }
+
+        return $this->walkedDecision;
     }
 
     /**

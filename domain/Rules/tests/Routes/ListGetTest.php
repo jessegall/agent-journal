@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Routes;
 
+use App\Web\Creation\PageFactory;
 use App\Web\Creation\WindowFactory;
 use Domain\Rules\Data\RulesPaneData;
-use Domain\Rules\Http\Windows\RulesWindowBuilder;
-use App\Web\Creation\PageFactory;
 use Domain\Rules\Http\Pages\RulesPageBuilder;
 use Domain\Rules\Http\Pages\RulesPageData;
-use Illuminate\Http\Request;
+use Domain\Rules\Http\Windows\RulesWindowBuilder;
 use Domain\Rules\RulesDomain;
+use Illuminate\Http\Request;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

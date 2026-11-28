@@ -239,6 +239,7 @@ final class OpenHeadlessTurnTest extends TestCase
     public static function retryTriggers(): iterable
     {
         yield 'delayed job' => [true];
+
         yield 'sweep after a lost job' => [false];
     }
 

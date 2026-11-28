@@ -88,11 +88,14 @@ final readonly class TasksShow extends TasksPage
                     ->key('comments')
                     ->native(
                         LayoutNativeData::build()
-                        ->component('comments/RecordComments')
-                        ->props(
-                            RecordCommentsPartData::from(['comments' => $reader->comments, 'target' => $reader->label]),
-                        )
-                        ->finish(),
+                            ->component('comments/RecordComments')
+                            ->props(
+                                RecordCommentsPartData::from([
+                                    'comments' => $reader->comments,
+                                    'target' => $reader->label,
+                                ]),
+                            )
+                            ->finish(),
                     )
                     ->finish()),
                 PublicationTab::deferred('brief', 'Brief', fn () => $brief),
@@ -108,6 +111,7 @@ final readonly class TasksShow extends TasksPage
             'revision' => $reader->revision,
             'run' => $reader->actions->runNumber,
         ];
+
         $address = fn (string $name) => route("tasks.{$name}", ['task' => $reader->number], false);
 
         $post = fn (string $name) => LayoutFormData::build()
@@ -130,12 +134,12 @@ final readonly class TasksShow extends TasksPage
                     ->style('inline')
                     ->children(
                         LayoutPartData::build()
-                        ->asAction()
-                        ->key('start-send')
-                        ->label('Start')
-                        ->action(LayoutActionData::build()->submits(true)->finish())
-                        ->style('primary')
-                        ->finish(),
+                            ->asAction()
+                            ->key('start-send')
+                            ->label('Start')
+                            ->action(LayoutActionData::build()->submits(true)->finish())
+                            ->style('primary')
+                            ->finish(),
                     )
                     ->finish()
                 : LayoutPartData::build()
@@ -158,18 +162,18 @@ final readonly class TasksShow extends TasksPage
                     ->style('inline')
                     ->children(
                         LayoutPartData::build()
-                        ->asField()
-                        ->key('reason')
-                        ->label('Reason')
-                        ->field(LayoutFieldData::build()->name('reason')->finish())
-                        ->style('text')
-                        ->finish(),
+                            ->asField()
+                            ->key('reason')
+                            ->label('Reason')
+                            ->field(LayoutFieldData::build()->name('reason')->finish())
+                            ->style('text')
+                            ->finish(),
                         LayoutPartData::build()
-                        ->asAction()
-                        ->key("{$name}-send")
-                        ->label(ucfirst($name))
-                        ->action(LayoutActionData::build()->submits(true)->finish())
-                        ->finish(),
+                            ->asAction()
+                            ->key("{$name}-send")
+                            ->label(ucfirst($name))
+                            ->action(LayoutActionData::build()->submits(true)->finish())
+                            ->finish(),
                     )
                     ->finish();
             }
@@ -239,15 +243,15 @@ final readonly class TasksShow extends TasksPage
             ->key('waits')
             ->native(
                 LayoutNativeData::build()
-                ->component('tasks/TaskWaitsTab')
-                ->props(
-                    TaskWaitsPartData::from([
-                        'waits' => $reader->waits,
-                        'actions' => $reader->waitActions,
-                        'number' => $reader->number,
-                    ]),
-                )
-                ->finish(),
+                    ->component('tasks/TaskWaitsTab')
+                    ->props(
+                        TaskWaitsPartData::from([
+                            'waits' => $reader->waits,
+                            'actions' => $reader->waitActions,
+                            'number' => $reader->number,
+                        ]),
+                    )
+                    ->finish(),
             )
             ->finish();
     }
@@ -268,9 +272,9 @@ final readonly class TasksShow extends TasksPage
             ->key('logs')
             ->native(
                 LayoutNativeData::build()
-                ->component('tasks/TaskLogsTab')
-                ->props(TaskLogsPartData::from(['logs' => $reader->logs]))
-                ->finish(),
+                    ->component('tasks/TaskLogsTab')
+                    ->props(TaskLogsPartData::from(['logs' => $reader->logs]))
+                    ->finish(),
             )
             ->finish();
     }
@@ -291,9 +295,9 @@ final readonly class TasksShow extends TasksPage
             ->key('proofs')
             ->native(
                 LayoutNativeData::build()
-                ->component('tasks/TaskProofsTab')
-                ->props(TaskProofsPartData::from(['proofs' => $reader->proofs]))
-                ->finish(),
+                    ->component('tasks/TaskProofsTab')
+                    ->props(TaskProofsPartData::from(['proofs' => $reader->proofs]))
+                    ->finish(),
             )
             ->finish();
     }
@@ -319,16 +323,16 @@ final readonly class TasksShow extends TasksPage
             ->label($label)
             ->fact(
                 LayoutFactValueData::build()
-                ->linkedPieces(
-                    array_map(
-                        fn (string $number) => [
-                            $number,
-                            route('tasks.task', ['task' => $number], false),
-                        ],
-                        $numbers,
-                    ),
-                )
-                ->finish(),
+                    ->linkedPieces(
+                        array_map(
+                            fn (string $number) => [
+                                $number,
+                                route('tasks.task', ['task' => $number], false),
+                            ],
+                            $numbers,
+                        ),
+                    )
+                    ->finish(),
             )
             ->finish();
     }

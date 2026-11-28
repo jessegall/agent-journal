@@ -10,6 +10,6 @@ use Illuminate\Support\Facades\Route;
 // live binding.
 Route::prefix('host')->middleware(['journal.host:'.HostRouteRole::Shared->value, 'record.calls:host'])
     ->name('agents.host.')->group(function (): void {
-    Route::get('/workspace-reads', [WorkspaceReadController::class, 'index'])->name('workspace-reads.pending');
-    Route::post('/workspace-reads/{reference}', WorkspaceReadController::class)->name('workspace-reads.report');
-});
+        Route::get('/workspace-reads', [WorkspaceReadController::class, 'index'])->name('workspace-reads.pending');
+        Route::post('/workspace-reads/{reference}', WorkspaceReadController::class)->name('workspace-reads.report');
+    });

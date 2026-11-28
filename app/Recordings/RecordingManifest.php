@@ -94,7 +94,11 @@ final readonly class RecordingManifest implements JsonSerializable
 
     private static function protocolOf(string $driver): int
     {
-        return $driver === Scenario::CONNECTED ? HostProtocol::RELAY : HostProtocol::ENROLLED;
+        if ($driver === Scenario::CONNECTED) {
+            return HostProtocol::RELAY;
+        }
+
+        return HostProtocol::ENROLLED;
     }
 
     /**

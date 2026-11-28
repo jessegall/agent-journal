@@ -66,6 +66,7 @@ final class RecordedTerminalTurnTest extends TestCase
     public static function codexChanges(): iterable
     {
         yield 'model' => ['codex/change-model', '/model gpt-6.1-terra'];
+
         yield 'effort' => ['codex/change-effort', '/model --reasoning=medium'];
     }
 

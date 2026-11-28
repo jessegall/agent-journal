@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -16,8 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutDialogData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<LayoutDialogDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<LayoutDialogDataFields> */
+    use Buildable;
 
     protected const string FIELDS = LayoutDialogDataFields::class;
 

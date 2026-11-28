@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
+use App\Web\Creation\Buildable;
+
 /**
  * One setting of a group: its label and help, a changed flag, and either one form field or a read-only value; a block
  * row puts its value below the label, for chips, code and long paths that wrap.
  */
 final readonly class SettingsRow
 {
-    /** @use \App\Web\Creation\Buildable<SettingsRowFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<SettingsRowFields> */
+    use Buildable;
 
     protected const string FIELDS = SettingsRowFields::class;
 

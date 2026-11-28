@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Pages;
 
 use App\Navigation\Enums\Icon;
+use App\Web\Creation\Buildable;
 use App\Web\Enums\WindowPlace;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -17,8 +18,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class HomeWindowData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<HomeWindowDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<HomeWindowDataFields> */
+    use Buildable;
 
     protected const string FIELDS = HomeWindowDataFields::class;
 

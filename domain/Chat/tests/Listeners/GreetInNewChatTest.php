@@ -63,6 +63,7 @@ final class GreetInNewChatTest extends TestCase
     {
         $this->app->forgetScopedInstances();
         $reminders = $this->app->make(ReminderContribution::class);
+
         $this->app->make(GreetInNewChat::class)->handle(new ContextStarted(
             new StackTarget($this->journal->agentCalled('Agent 2')->id, '01m8dd0sct689m9bbtqr335rad'),
             'hook-'.bin2hex(random_bytes(4)),

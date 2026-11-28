@@ -29,6 +29,7 @@ final class OneConversationReadTest extends TestCase
             ->idleAgent('Agent 3', 'main-agent')
             ->idleAgent('Agent 4', 'main-agent')
             ->idleAgent('Agent 5', 'main-agent');
+
         $chosen = $this->journal->agentCalled('Agent 2')->id;
 
         $window = $this->windowFor([

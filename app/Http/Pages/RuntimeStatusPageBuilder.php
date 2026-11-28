@@ -54,9 +54,9 @@ final readonly class RuntimeStatusPageBuilder implements PageBuilder
                 ->key('refusal')
                 ->native(
                     LayoutNativeData::build()
-                    ->component('web/RuntimeRefusal')
-                    ->props(RecoveryRefusalPartData::from(['errorKey' => 'review']))
-                    ->finish(),
+                        ->component('web/RuntimeRefusal')
+                        ->props(RecoveryRefusalPartData::from(['errorKey' => 'review']))
+                        ->finish(),
                 )
                 ->finish(),
         ];
@@ -115,6 +115,7 @@ final readonly class RuntimeStatusPageBuilder implements PageBuilder
             $terminal = LayoutActionData::build()
                 ->href(route('web.terminal', ['agent' => $status->agentId], false))
                 ->finish();
+
             $summary[] = LayoutPartData::build()
                 ->asAction()
                 ->key('terminal')
@@ -140,10 +141,10 @@ final readonly class RuntimeStatusPageBuilder implements PageBuilder
             ->children(
                 LayoutPartData::build()->asBox()->key('summary')->style('row')->children(...$summary)->finish(),
                 LayoutPartData::build()
-                ->asNative()
-                ->key('live')
-                ->native(LayoutNativeData::build()->component('web/RuntimeCard')->props($entry)->finish())
-                ->finish(),
+                    ->asNative()
+                    ->key('live')
+                    ->native(LayoutNativeData::build()->component('web/RuntimeCard')->props($entry)->finish())
+                    ->finish(),
             )
             ->finish();
     }

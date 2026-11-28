@@ -162,10 +162,15 @@ final class ClaudeCodeHooksTest extends TestCase
     public static function moments(): iterable
     {
         yield 'session start' => ['claude-code/terminal-turn', 'SessionStart', null];
+
         yield 'prompt' => ['claude-code/terminal-turn', 'UserPromptSubmit', null];
+
         yield 'tool call' => ['claude-code/terminal-turn', 'PreToolUse', ClaudeCodeTool::Bash->value];
+
         yield 'finished tool' => ['claude-code/terminal-turn', 'PostToolUse', ClaudeCodeTool::Bash->value];
+
         yield 'stop' => ['claude-code/terminal-turn', 'Stop', null];
+
         yield 'session end' => ['claude-code/headless-turn', 'SessionEnd', null];
     }
 

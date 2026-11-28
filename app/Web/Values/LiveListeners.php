@@ -25,7 +25,7 @@ final readonly class LiveListeners
      * What changes a viewer's page: a page change, an inbox it lost, or a protected view it must drop, on its own
      * journal.user channel.
      *
-     * @param list<class-string> $events
+     * @param  list<class-string>  $events
      */
     public static function pageChanges(string $userId, array $events = []): self
     {
@@ -46,7 +46,11 @@ final readonly class LiveListeners
     {
         $name = $event.'::NAME';
 
-        return defined($name) ? (string) constant($name) : $event;
+        if (defined($name)) {
+            return (string) constant($name);
+        }
+
+        return $event;
     }
 
     /**

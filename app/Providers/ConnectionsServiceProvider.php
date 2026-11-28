@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Agents\Drivers\Work\RequestRetries;
 use App\Access\Contracts\PolicyCatalogue;
 use App\Access\Values\PolicyDefinition;
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Drivers\Processes\ProcessDrivers;
+use App\Agents\Drivers\Work\RequestRetries;
 use App\Agents\Drivers\Work\WorkerLease;
 use App\Agents\Enums\AccessType;
 use App\Bus\JournalCommands;

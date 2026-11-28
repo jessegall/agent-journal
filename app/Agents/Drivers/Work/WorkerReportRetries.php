@@ -28,6 +28,7 @@ final readonly class WorkerReportRetries
 
     /**
      * @template T
+     *
      * @param  Closure(): T  $report
      * @param  Closure(): void  $renew
      * @return T

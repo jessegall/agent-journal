@@ -66,6 +66,7 @@ final readonly class RequestProjectReadHandler implements CommandHandler
             'entries_limit' => ProjectRead::DIRECTORY_ENTRY_LIMIT,
             'text_limit' => ProjectRead::FILE_TEXT_BYTE_LIMIT,
         ]);
+
         $this->instructions->readProject($binding->host_id, HostInstructionSource::fromJournal(), $payload);
 
         return $read;

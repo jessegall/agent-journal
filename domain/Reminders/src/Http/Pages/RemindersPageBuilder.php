@@ -7,9 +7,9 @@ namespace Domain\Reminders\Http\Pages;
 use App\Exceptions\ActorNotAllowed;
 use App\Reads\PageFormRequests;
 use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPaging;
 use App\Web\Creation\Contracts\PageBuilder;
 use Domain\Reminders\Http\Requests\RemindersRequest;
@@ -94,14 +94,14 @@ final readonly class RemindersPageBuilder implements PageBuilder
         return DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('reminders')
-                ->style('stack')
-                ->children(
-                    LayoutPartData::build()->asText()->key('title')->value('Reminders')->style('heading')->finish(),
-                    ...$parts,
-                )
-                ->finish(),
+                    ->asBox()
+                    ->key('reminders')
+                    ->style('stack')
+                    ->children(
+                        LayoutPartData::build()->asText()->key('title')->value('Reminders')->style('heading')->finish(),
+                        ...$parts,
+                    )
+                    ->finish(),
             )
             ->finish();
     }

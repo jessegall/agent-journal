@@ -39,6 +39,7 @@ final readonly class BuildHostDriverImageHandler implements CommandHandler
         }
 
         $recipe = DriverImageRecipeRecord::query()->findOrFail($image->driver_image_recipe_id)->recipe;
+
         $instruction = $this->instructions->buildImage(
             $command->hostId,
             HostInstructionSource::keyed("driver-image:{$image->id}:".($image->attempt + 1)),
@@ -52,6 +53,7 @@ final readonly class BuildHostDriverImageHandler implements CommandHandler
                 'output_limit' => self::OUTPUT_LIMIT,
             ]),
         );
+
         $image->startAttempt($instruction->getKey());
 
         return $image->id;

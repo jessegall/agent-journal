@@ -68,17 +68,17 @@ final readonly class GatewaySettingsPageBuilder implements PageBuilder
             ->style('section')
             ->children(
                 LayoutPartData::build()
-                ->asText()
-                ->key('sees')
-                ->value('The gateway provider can see the public address and everything a share shows.')
-                ->style('paragraph')
-                ->finish(),
+                    ->asText()
+                    ->key('sees')
+                    ->value('The gateway provider can see the public address and everything a share shows.')
+                    ->style('paragraph')
+                    ->finish(),
                 LayoutPartData::build()
-                ->asText()
-                ->key('inspection')
-                ->value('Turning off traffic inspection does not hide the content from the provider.')
-                ->style('paragraph')
-                ->finish(),
+                    ->asText()
+                    ->key('inspection')
+                    ->value('Turning off traffic inspection does not hide the content from the provider.')
+                    ->style('paragraph')
+                    ->finish(),
             )
             ->finish();
 
@@ -225,26 +225,26 @@ final readonly class GatewaySettingsPageBuilder implements PageBuilder
             ->style('section')
             ->children(
                 LayoutPartData::build()
-                ->asText()
-                ->key('heading')
-                ->value('Disabling revokes these shares:')
-                ->style('muted')
-                ->finish(),
+                    ->asText()
+                    ->key('heading')
+                    ->value('Disabling revokes these shares:')
+                    ->style('muted')
+                    ->finish(),
                 LayoutPartData::build()
-                ->asCollection()
-                ->key('shares')
-                ->style('list')
-                ->rows(
-                    array_map(
-                        fn (RootShareData $share) => LayoutRowData::build()
-                            ->key($share->id)
-                            ->label("Share {$share->number}")
-                            ->value($share->status->value)
-                            ->finish(),
-                        $revision->dependentShares,
-                    ),
-                )
-                ->finish(),
+                    ->asCollection()
+                    ->key('shares')
+                    ->style('list')
+                    ->rows(
+                        array_map(
+                            fn (RootShareData $share) => LayoutRowData::build()
+                                ->key($share->id)
+                                ->label("Share {$share->number}")
+                                ->value($share->status->value)
+                                ->finish(),
+                            $revision->dependentShares,
+                        ),
+                    )
+                    ->finish(),
             )
             ->finish();
     }
@@ -273,11 +273,11 @@ final readonly class GatewaySettingsPageBuilder implements PageBuilder
                 ->style('inline')
                 ->children(
                     LayoutPartData::build()
-                    ->asAction()
-                    ->key('send')
-                    ->label('Make default')
-                    ->action(LayoutActionData::build()->submits(true)->finish())
-                    ->finish(),
+                        ->asAction()
+                        ->key('send')
+                        ->label('Make default')
+                        ->action(LayoutActionData::build()->submits(true)->finish())
+                        ->finish(),
                 )
                 ->finish();
         }
@@ -302,12 +302,12 @@ final readonly class GatewaySettingsPageBuilder implements PageBuilder
             ->style('inline')
             ->children(
                 LayoutPartData::build()
-                ->asAction()
-                ->key('send')
-                ->label('Disable')
-                ->action(LayoutActionData::build()->submits(true)->finish())
-                ->style('danger')
-                ->finish(),
+                    ->asAction()
+                    ->key('send')
+                    ->label('Disable')
+                    ->action(LayoutActionData::build()->submits(true)->finish())
+                    ->style('danger')
+                    ->finish(),
             )
             ->finish();
 

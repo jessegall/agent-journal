@@ -46,6 +46,7 @@ final readonly class RequestRetries
 
         $previous?->settle(RetryOutcome::Failed, $failure);
         $action = $request->operation === DriverOperation::Wake ? RetriedAction::Wake : RetriedAction::TurnOpen;
+
         $attempt = RetryAttempt::record(
             $request->agent_runtime_id,
             $action,
@@ -56,6 +57,7 @@ final readonly class RequestRetries
             $request->attempt_version + 1,
             $processId,
         );
+
         $request->retryAfter($attempt->retry_at);
         $this->jobs->dispatch(new ContinueAgentWhenDue($request->id)->delay($attempt->retry_at)->afterCommit());
 

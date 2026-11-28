@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Layout;
 
 use App\Connections\Layout\LayoutBodyData;
+use App\Web\Creation\Buildable;
 use Closure;
 
 /**
@@ -14,8 +15,8 @@ use Closure;
  */
 final readonly class PublicationPage
 {
-    /** @use \App\Web\Creation\Buildable<PublicationPageFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<PublicationPageFields> */
+    use Buildable;
 
     protected const string FIELDS = PublicationPageFields::class;
 
@@ -54,11 +55,11 @@ final readonly class PublicationPage
             ->children(
                 LayoutPartData::build()->asText()->key('title')->value($this->title)->style('heading')->finish(),
                 LayoutPartData::build()
-                ->asBox()
-                ->key('metadata')
-                ->style('row')
-                ->children(...$this->metadata)
-                ->finish(),
+                    ->asBox()
+                    ->key('metadata')
+                    ->style('row')
+                    ->children(...$this->metadata)
+                    ->finish(),
                 LayoutPartData::build()->asText()->key('summary')->value($this->summary)->style('muted')->finish(),
             )
             ->finish();
@@ -66,11 +67,11 @@ final readonly class PublicationPage
         return DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('publication')
-                ->style('stack')
-                ->children($header, ...[...$this->standing, $this->content($chosen)])
-                ->finish(),
+                    ->asBox()
+                    ->key('publication')
+                    ->style('stack')
+                    ->children($header, ...[...$this->standing, $this->content($chosen)])
+                    ->finish(),
             )
             ->finish();
     }

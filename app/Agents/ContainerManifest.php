@@ -132,6 +132,7 @@ final readonly class ContainerManifest
             'journal-mcp',
             'journal-check',
         ];
+
         $mounts = array_map(
             fn (string $program) => ManifestMount::daemonBind("{$folder}/{$program}", "/opt/journal/bin/{$program}", false),
             $programs,

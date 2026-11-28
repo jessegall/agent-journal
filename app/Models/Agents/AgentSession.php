@@ -29,6 +29,7 @@ use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Projects\DriverImageRecipeRecord;
 use App\Models\Projects\HostDriverImage;
+use App\Models\Records\Link;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\SessionToken;
@@ -36,7 +37,6 @@ use App\Models\Skills\SkillGeneration;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
-use App\Models\Records\Link;
 use App\Sessions\Enums\ModelSelectionType;
 use App\Sessions\Enums\SessionStatus;
 use App\Skills\Values\StartProfile;
@@ -303,38 +303,6 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * @param list<RecordIdentity> $accounts
-     * @return list<AccountUse>
-     */
-    public static function recentUsesOf(array $accounts, int $limit): array
-    {
-        if ($accounts === [] || $limit < 1) {
-            return [];
-        }
-
-        $table = self::query()->getModel()->getTable();
-        $pairs = Link::pairsFor(self::linkType(), $accounts);
-        $ranked = self::query()
-            ->joinSub($pairs, 'account_links', 'account_links.subject_id', '=', "{$table}.id")
-            ->select(["{$table}.*", 'account_links.linked_type', 'account_links.linked_id'])
-            ->selectRaw(
-                "row_number() over (partition by linked_type, linked_id order by {$table}.created_at desc, "
-                    ."{$table}.id desc) as account_rank",
-            );
-        $sessions = self::query()
-            ->fromSub($ranked, $table)
-            ->where('account_rank', '<=', $limit)
-            ->orderBy('account_rank')
-            ->limit(count($accounts) * $limit)
-            ->get();
-
-        return array_values($sessions->map(static fn (self $session) => $session->useOf(RecordIdentity::from([
-            'type' => $session->linked_type,
-            'id' => $session->linked_id,
-        ])))->all());
-    }
-
-    /**
      * How the session's container has the workspace, from its start's access declaration and whether it helps
      * another session, never from the profile's name: read-only without a grant to change files, the main's own
      * workspace for a session that helps none, and its own clone for a helper that writes.
@@ -492,6 +460,40 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * @param  list<RecordIdentity>  $accounts
+     * @return list<AccountUse>
+     */
+    public static function recentUsesOf(array $accounts, int $limit): array
+    {
+        if ($accounts === [] || $limit < 1) {
+            return [];
+        }
+
+        $table = self::query()->getModel()->getTable();
+        $pairs = Link::pairsFor(self::linkType(), $accounts);
+
+        $ranked = self::query()
+            ->joinSub($pairs, 'account_links', 'account_links.subject_id', '=', "{$table}.id")
+            ->select(["{$table}.*", 'account_links.linked_type', 'account_links.linked_id'])
+            ->selectRaw(
+                "row_number() over (partition by linked_type, linked_id order by {$table}.created_at desc, "
+                    ."{$table}.id desc) as account_rank",
+            );
+
+        $sessions = self::query()
+            ->fromSub($ranked, $table)
+            ->where('account_rank', '<=', $limit)
+            ->orderBy('account_rank')
+            ->limit(count($accounts) * $limit)
+            ->get();
+
+        return array_values($sessions->map(static fn (self $session) => $session->useOf(RecordIdentity::from([
+            'type' => $session->linked_type,
+            'id' => $session->linked_id,
+        ])))->all());
+    }
 
     /**
      * The recipes that sessions started on the host froze and that have not ended, by digest.

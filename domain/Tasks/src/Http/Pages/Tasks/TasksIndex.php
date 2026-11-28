@@ -10,13 +10,13 @@ use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\Contracts\ProjectField;
 use App\Support\Layout\Contracts\ProjectRowLabel;
 use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use Domain\Tasks\Contracts\TaskListResolver;
@@ -75,11 +75,11 @@ final readonly class TasksIndex extends TasksPage
             ->isCurrent($filters->task === (string) $card->number)
             ->leading(
                 [LayoutPartData::build()
-                ->asText()
-                ->key('number')
-                ->value((string) $card->number)
-                ->style('muted')
-                ->finish()],
+                    ->asText()
+                    ->key('number')
+                    ->value((string) $card->number)
+                    ->style('muted')
+                    ->finish()],
             )
             ->trailing(
                 [

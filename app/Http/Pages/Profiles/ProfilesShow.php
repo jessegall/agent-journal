@@ -171,11 +171,11 @@ final readonly class ProfilesShow extends ProfilesPage
                                 ->label($rule->text)
                                 ->leading(
                                     [LayoutPartData::build()
-                                    ->asText()
-                                    ->key('number')
-                                    ->value((string) $rule->number)
-                                    ->style('muted')
-                                    ->finish()],
+                                        ->asText()
+                                        ->key('number')
+                                        ->value((string) $rule->number)
+                                        ->style('muted')
+                                        ->finish()],
                                 )
                                 ->finish(),
                             $group->rules,

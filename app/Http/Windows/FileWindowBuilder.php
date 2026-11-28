@@ -32,6 +32,7 @@ final readonly class FileWindowBuilder implements WindowBuilder
     public function build(Request $visit): FilePaneData
     {
         $path = $this->requests->from(FileWindowRequest::class, $visit)->path();
+
         $pane = FilePaneData::build()
             ->path($path)
             ->fullUrl(route('connections.file', $path === '' ? [] : ['path' => $path], false))
@@ -66,6 +67,7 @@ final readonly class FileWindowBuilder implements WindowBuilder
 
         $lines = explode("\n", (string) $answer->text, self::LINE_COUNT_LIMIT + 1);
         $preview = array_slice($lines, 0, self::LINE_COUNT_LIMIT);
+
         $cut = $answer->isTruncated || count($lines) > self::LINE_COUNT_LIMIT
             || array_any($preview, fn (string $line) => mb_strlen($line) > self::LINE_CHARACTER_LIMIT);
 

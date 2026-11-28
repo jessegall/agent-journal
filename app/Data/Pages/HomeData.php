@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Pages;
 
 use App\Navigation\Data\Pages\SlotSectionData;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -16,8 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class HomeData extends Data
 {
-    /** @use \App\Web\Creation\Buildable<HomeDataFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<HomeDataFields> */
+    use Buildable;
 
     protected const string FIELDS = HomeDataFields::class;
 

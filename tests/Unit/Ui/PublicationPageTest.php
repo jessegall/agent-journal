@@ -68,9 +68,9 @@ final class PublicationPageTest extends TestCase
             ->key('comments')
             ->native(
                 LayoutNativeData::build()
-                ->component('documents/Comments')
-                ->props(new RecentNotesData(['a']))
-                ->finish(),
+                    ->component('documents/Comments')
+                    ->props(new RecentNotesData(['a']))
+                    ->finish(),
             )
             ->finish();
 
@@ -86,11 +86,11 @@ final class PublicationPageTest extends TestCase
             ->title('Entry 7')
             ->metadata(
                 [LayoutPartData::build()
-                ->asText()
-                ->key('edition')
-                ->value('Second edition')
-                ->style('muted')
-                ->finish()],
+                    ->asText()
+                    ->key('edition')
+                    ->value('Second edition')
+                    ->style('muted')
+                    ->finish()],
             )
             ->summary('Its summary')
             ->body($this->body(...))

@@ -16,7 +16,10 @@ use Spatie\LaravelData\Data;
 abstract class RecordPageData extends Data implements PresentsLayout, RecordWindow
 {
     /** Holds the checked layout and the identity used to offer its record. */
-    public function __construct(#[Hidden] public readonly RecordLayoutData $shown) {}
+    public function __construct(
+        #[Hidden]
+        public readonly RecordLayoutData $shown,
+    ) {}
 
     /** Returns the browser tree without the server-only record. */
     final public function layout(): DeclaredLayoutData

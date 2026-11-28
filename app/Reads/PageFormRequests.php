@@ -15,7 +15,8 @@ final readonly class PageFormRequests
 
     /**
      * @template TRequest of FormRequest
-     * @param class-string<TRequest> $type
+     *
+     * @param  class-string<TRequest>  $type
      * @return TRequest
      */
     public function from(string $type, Request $visit): FormRequest

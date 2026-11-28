@@ -50,6 +50,7 @@ final readonly class TaskExecutions
 
         foreach ($tasks as $task) {
             $runner = $runners[$task->id] ?? null;
+
             $executions[$task->id] = $runner === null ? null : $task->executionBy(
                 $runner,
                 $labels,

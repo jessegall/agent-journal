@@ -14,7 +14,7 @@ use Closure;
 final readonly class RecipientDestinations implements Destinations
 {
     /**
-     * @param Closure(): LabeledInbox $readInbox
+     * @param  Closure(): LabeledInbox  $readInbox
      */
     private function __construct(private Assignee $holder, private Closure $readInbox) {}
 

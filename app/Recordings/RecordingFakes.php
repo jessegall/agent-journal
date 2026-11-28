@@ -229,6 +229,7 @@ final class RecordingFakes
             array_unique($this->personalValues),
             fn (string $value) => strlen($value) >= self::SHORTEST_KNOWN_VALUE,
         ));
+
         usort($values, fn (string $left, string $right) => strlen($right) <=> strlen($left));
 
         return $values;

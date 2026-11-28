@@ -6,9 +6,9 @@ namespace App\Assignments\Contracts;
 
 use App\Assignments\AssignmentSet;
 use App\Support\AssigneeIdentity;
-use App\Support\CursorPage;
 use App\Support\AssigneeName;
 use App\Support\AssignmentHolders;
+use App\Support\CursorPage;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Pages;
 
 use App\Support\Layout\LayoutWaysData;
+use App\Web\Creation\Buildable;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -13,8 +14,8 @@ use Spatie\LaravelData\Optional;
  */
 final readonly class CreationDialog
 {
-    /** @use \App\Web\Creation\Buildable<CreationDialogFields> */
-    use \App\Web\Creation\Buildable;
+    /** @use Buildable<CreationDialogFields> */
+    use Buildable;
 
     protected const string FIELDS = CreationDialogFields::class;
 

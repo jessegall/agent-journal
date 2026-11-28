@@ -170,12 +170,14 @@ final readonly class HelperRuns
     public function writerCheckout(ManifestMount $source, string $volume): array
     {
         $checkout = ManifestMount::volume($volume, ContainerManifest::WORKDIR, true);
+
         $arguments = [
             self::SOURCE_TARGET,
             'HEAD',
             self::WORKSPACE_BRANCH,
             ContainerManifest::WORKDIR,
         ];
+
         $sourceMount = $source->readOnlyAt(self::SOURCE_TARGET);
 
         return [

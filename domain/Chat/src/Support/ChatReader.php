@@ -47,7 +47,8 @@ final readonly class ChatReader
 
     /**
      * @template T of ChatFields
-     * @param T $fields
+     *
+     * @param  T  $fields
      * @return T
      */
     public function fill(Request $visit, ChatFields $fields): ChatFields
@@ -60,6 +61,7 @@ final readonly class ChatReader
         if ($chosenInbox->isDefined()) {
             $fields = $this->fillShell($fields, $this->listing->firstPageWith([]), $main);
             $inbox = $this->chats->attached($chosenInbox->get());
+
             $fields->selectedInboxId($inbox->id)
                 ->conversation($this->pages->pageFor(null, $inbox, $input->dockToken()));
 
@@ -89,8 +91,9 @@ final readonly class ChatReader
 
     /**
      * @template T of ChatFields
-     * @param T $fields
-     * @param Option<string> $main
+     *
+     * @param  T  $fields
+     * @param  Option<string>  $main
      * @return T
      */
     private function fillShell(ChatFields $fields, AgentPageData $page, Option $main): ChatFields

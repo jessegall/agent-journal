@@ -50,8 +50,9 @@ final class ListPageFields
 
     /**
      * @template TRecord
-     * @param iterable<TRecord> $records
-     * @param callable(TRecord): LayoutRowData $map
+     *
+     * @param  iterable<TRecord>  $records
+     * @param  callable(TRecord): LayoutRowData  $map
      */
     public function rows(iterable $records, callable $map): self
     {
@@ -182,11 +183,11 @@ final class ListPageFields
             return DeclaredLayoutData::build()
                 ->root(
                     LayoutPartData::build()
-                    ->asBox()
-                    ->key('index')
-                    ->style('page')
-                    ->children($this->header(), $this->empty->page())
-                    ->finish(),
+                        ->asBox()
+                        ->key('index')
+                        ->style('page')
+                        ->children($this->header(), $this->empty->page())
+                        ->finish(),
                 )
                 ->finish();
         }
@@ -200,11 +201,11 @@ final class ListPageFields
             return DeclaredLayoutData::build()
                 ->root(
                     LayoutPartData::build()
-                    ->asBox()
-                    ->key('list')
-                    ->style('page')
-                    ->children($this->header(), ...$parts)
-                    ->finish(),
+                        ->asBox()
+                        ->key('list')
+                        ->style('page')
+                        ->children($this->header(), ...$parts)
+                        ->finish(),
                 )
                 ->finish();
         }
@@ -220,27 +221,27 @@ final class ListPageFields
         return DeclaredLayoutData::build()
             ->root(
                 LayoutPartData::build()
-                ->asBox()
-                ->key('index')
-                ->style('page')
-                ->children(
-                    $this->header(),
-                    LayoutPartData::build()
-                    ->asSplit()
-                    ->key('split')
-                    ->split($split)
-                    ->list(
+                    ->asBox()
+                    ->key('index')
+                    ->style('page')
+                    ->children(
+                        $this->header(),
                         LayoutPartData::build()
-                        ->asBox()
-                        ->key('list')
-                        ->style('page-list')
-                        ->children(...$parts)
-                        ->finish(),
+                            ->asSplit()
+                            ->key('split')
+                            ->split($split)
+                            ->list(
+                                LayoutPartData::build()
+                                    ->asBox()
+                                    ->key('list')
+                                    ->style('page-list')
+                                    ->children(...$parts)
+                                    ->finish(),
+                            )
+                            ->reader(...$this->readerParts())
+                            ->finish(),
                     )
-                    ->reader(...$this->readerParts())
                     ->finish(),
-                )
-                ->finish(),
             )
             ->finish();
     }

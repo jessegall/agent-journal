@@ -22,6 +22,7 @@ use App\Navigation\Data\WindowOfferData;
 use App\Reads\ReadMeter;
 use App\Reflection\Contracts\ReflectorFactory;
 use App\Web\Creation\Exceptions\MissingBuilder;
+use App\Web\Creation\SurfaceDefinition;
 use App\Web\Data\Pages\UnavailableWindow;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
@@ -31,7 +32,6 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 use PhpOption\None;
 use Psr\Log\LoggerInterface;
-use App\Web\Creation\SurfaceDefinition;
 use Spatie\LaravelData\Data;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
@@ -63,8 +63,8 @@ final readonly class WindowResultBuilder implements WindowResultsContract
     }
 
     /**
-     * @param list<class-string<VisibilityCheck>> $checks
-     * @param Closure(): Data $read
+     * @param  list<class-string<VisibilityCheck>>  $checks
+     * @param  Closure(): Data  $read
      */
     public function surface(string $key, string $part, array $checks, SurfaceDefinition $surface, Closure $read): Data
     {
@@ -72,10 +72,10 @@ final readonly class WindowResultBuilder implements WindowResultsContract
     }
 
     /**
-     * @param list<class-string<VisibilityCheck>> $checks
-     * @param class-string<Data> $type
-     * @param class-string $reader
-     * @param Closure(): Data $read
+     * @param  list<class-string<VisibilityCheck>>  $checks
+     * @param  class-string<Data>  $type
+     * @param  class-string  $reader
+     * @param  Closure(): Data  $read
      */
     private function read(
         string $key,

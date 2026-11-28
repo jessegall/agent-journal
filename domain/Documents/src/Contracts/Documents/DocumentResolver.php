@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Contracts\Documents;
 
-use Domain\Documents\Models\Document;
-use Illuminate\Database\Eloquent\Collection;
 use App\Data\Pages\RecordCard;
 use App\Support\TextSelection;
 use App\Text\Exceptions\SectionMissing;
@@ -18,6 +16,8 @@ use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\StaleRead;
+use Domain\Documents\Models\Document;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Reads the published documents: a page of them, or one by its number with its current text.

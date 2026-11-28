@@ -40,6 +40,7 @@ final class AgentLogLoaderTest extends TestCase
 
         $log = $this->read($this->agentIdOf($opened));
         $shown = $log->starts[0];
+
         $refused = array_values(array_filter(
             $shown->lines,
             fn (AgentLogLineData $line) => $line->type === AgentLogLineType::StartRefused,
@@ -92,10 +93,12 @@ final class AgentLogLoaderTest extends TestCase
         $failure = $lines->sole(fn (AgentLogLineData $line) => $line->type === AgentLogLineType::GaveUp);
 
         $this->assertCount(3, $retrying);
+
         $this->assertTrue($retrying->contains(fn (AgentLogLineData $line) => str_contains(
             (string) $line->detail,
             'attempt 2 of 3',
         )));
+
         $this->assertTrue($failure->isFailure);
         $this->assertSame('Docker was unreachable.', (string) $failure->evidence);
     }

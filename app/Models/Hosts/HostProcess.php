@@ -377,7 +377,11 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         return Accessor::get(function () {
             $ended = $this->status === HostProcessStatus::Lost ? 'was lost' : "exited with {$this->exit_code}";
 
-            return $this->exit_evidence === null ? $ended : "{$ended}: {$this->exit_evidence}";
+            if ($this->exit_evidence === null) {
+                return $ended;
+            }
+
+            return "{$ended}: {$this->exit_evidence}";
         });
     }
 
@@ -433,9 +437,11 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
             return AgentRuntime::query()->whereKey($this->agent_runtime_id)->value('agent_session_id');
         }
 
-        return $this->session_process_id === null
-            ? null
-            : SessionProcess::query()->supervised()->whereKey($this->session_process_id)->value('session_id');
+        if ($this->session_process_id === null) {
+            return null;
+        }
+
+        return SessionProcess::query()->supervised()->whereKey($this->session_process_id)->value('session_id');
     }
 
     /**
@@ -472,7 +478,11 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     {
         $moved = self::query()->withoutGlobalScopes()->workingForSession($sessionId)->max('updated_at');
 
-        return $moved === null ? null : CarbonImmutable::parse((string) $moved);
+        if ($moved === null) {
+            return null;
+        }
+
+        return CarbonImmutable::parse((string) $moved);
     }
 
     /**

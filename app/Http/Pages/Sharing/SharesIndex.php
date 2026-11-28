@@ -8,11 +8,11 @@ use App\Sharing\Data\ShareFiltersData;
 use App\Sharing\Data\ShareRowData;
 use App\Sharing\Enums\ShareStatus;
 use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\EmptyListState;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\Layout\EmptyListState;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use Carbon\CarbonImmutable;
@@ -74,44 +74,44 @@ final readonly class SharesIndex extends SharingPage
             ->children(
                 LayoutPartData::build()->asCollection()->key('state')->style('choices')->rows($states)->finish(),
                 LayoutPartData::build()
-                ->asField()
-                ->key('root-type')
-                ->label('Record type')
-                ->field(
-                    LayoutFieldData::build()
-                    ->name('rootType')
-                    ->value((string) $filters->rootType)
-                    ->clears(['after'])
+                    ->asField()
+                    ->key('root-type')
+                    ->label('Record type')
+                    ->field(
+                        LayoutFieldData::build()
+                            ->name('rootType')
+                            ->value((string) $filters->rootType)
+                            ->clears(['after'])
+                            ->finish(),
+                    )
+                    ->style('text')
                     ->finish(),
-                )
-                ->style('text')
-                ->finish(),
                 LayoutPartData::build()
-                ->asField()
-                ->key('gateway')
-                ->label('Gateway')
-                ->field(
-                    LayoutFieldData::build()
-                    ->name('gateway')
-                    ->value((string) $filters->gateway)
-                    ->clears(['after'])
+                    ->asField()
+                    ->key('gateway')
+                    ->label('Gateway')
+                    ->field(
+                        LayoutFieldData::build()
+                            ->name('gateway')
+                            ->value((string) $filters->gateway)
+                            ->clears(['after'])
+                            ->finish(),
+                    )
+                    ->style('text')
                     ->finish(),
-                )
-                ->style('text')
-                ->finish(),
                 LayoutPartData::build()
-                ->asField()
-                ->key('expires-before')
-                ->label('Expires before')
-                ->field(
-                    LayoutFieldData::build()
-                    ->name('expiresBefore')
-                    ->value((string) $filters->expiresBefore)
-                    ->clears(['after'])
+                    ->asField()
+                    ->key('expires-before')
+                    ->label('Expires before')
+                    ->field(
+                        LayoutFieldData::build()
+                            ->name('expiresBefore')
+                            ->value((string) $filters->expiresBefore)
+                            ->clears(['after'])
+                            ->finish(),
+                    )
+                    ->style('text')
                     ->finish(),
-                )
-                ->style('text')
-                ->finish(),
             )
             ->finish();
     }

@@ -19,6 +19,7 @@ final readonly class EndBuiltin implements Pipe
     {
         $queued = $ended->call->queued;
         $events = $queued->state->events;
+
         $printed = [
             OutputStream::Stdout->value => $ended->stdout,
             OutputStream::Stderr->value => $ended->stderr,

@@ -278,6 +278,7 @@ final readonly class DeclarativeReader
 
         $counts = [];
         $total = $this->definition->totalField;
+
         $fields = $total === null ? $this->definition->countFields : [
             ...$this->definition->countFields,
             $total,
@@ -355,7 +356,11 @@ final readonly class DeclarativeReader
             $failures = $summary->count($field);
 
             if ($failures !== null) {
-                return $failures === 0 ? ClaimedOutcome::Passed : ClaimedOutcome::Failed;
+                if ($failures === 0) {
+                    return ClaimedOutcome::Passed;
+                }
+
+                return ClaimedOutcome::Failed;
             }
         }
 
