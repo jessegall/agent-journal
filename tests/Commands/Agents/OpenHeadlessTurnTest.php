@@ -8,24 +8,42 @@ use App\Agents\Commands\ChangeAgentModel\ChangeAgentModelCommand;
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
+use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityHandler;
 use App\Agents\Drivers\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\RequestProgress;
+use App\Agents\Drivers\Enums\RetryOutcome;
+use App\Agents\Drivers\Exceptions\WorkerReportFailed;
+use App\Agents\Drivers\Work\DriverWorkers;
+use App\Agents\Drivers\Work\RequestRetries;
+use App\Bus\Contracts\CommandHandler;
+use App\Hosts\Commands\ClaimHostInstructions\ClaimHostInstructionsCommand;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
+use App\Hosts\Commands\SweepHostInstructions\SweepHostInstructionsCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\Payloads\HostInventoryPayload;
+use App\Jobs\ContinueAgentWhenDue;
 use App\Messages\Data\MessageTextData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
+use App\Models\Drivers\RetryAttempt;
 use App\Models\Hosts\HostProcess;
 use App\Processes\Enums\RuntimeActivity;
 use App\Sessions\OpenedRuntime;
+use App\Time\Contracts\Sleeper;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Exceptions;
+use PHPUnit\Framework\Attributes\DataProvider;
+use RuntimeException;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\FakeMonotonicClock;
+use Tests\Support\FakeSleeper;
 use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
@@ -43,7 +61,7 @@ final class OpenHeadlessTurnTest extends TestCase
     private const array TABLES = [
         'hosts', 'host_processes', 'host_instructions', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
         'hook_calls', 'agent_runtimes', 'driver_requests', 'driver_turns', 'accounts', 'active_accounts',
-        'session_processes', 'session_requests', 'inboxes', 'inbox_members', 'links', 'users',
+        'session_processes', 'session_requests', 'inboxes', 'inbox_members', 'links', 'users', 'retry_attempts',
     ];
 
     public function test_work_waits_for_the_proven_build_then_runs_one_turn_at_a_time(): void
@@ -213,6 +231,114 @@ final class OpenHeadlessTurnTest extends TestCase
             [RuntimeActivity::Running, RuntimeActivity::Idle, false],
             [$working, $idle->activity, $idle->isStale(CarbonImmutable::now()->addHour())],
         );
+    }
+
+    /**
+     * @return iterable<string, array{bool}>
+     */
+    public static function retryTriggers(): iterable
+    {
+        yield 'delayed job' => [true];
+        yield 'sweep after a lost job' => [false];
+    }
+
+    #[DataProvider('retryTriggers')]
+    public function test_an_unclaimed_open_retries_once_after_its_wait(bool $useJob): void
+    {
+        $now = CarbonImmutable::now()->startOfSecond();
+        $this->journal->useServerClockAt($now);
+        $opened = $this->runtimeOnItsFirstTurn();
+        [$first] = $this->journal->hostInstructionsOf('first');
+        $request = DriverRequest::query()->findOrFail($first->driver_request_id);
+        $this->journal->moveServerClockTo($first->expires_at->addSecond())
+            ->asSystem(new SweepHostInstructionsCommand());
+
+        $attempt = RetryAttempt::query()->ofSession($opened->sessionId)->sole();
+        $this->assertSame([$request->id, 5, 1], [$attempt->driver_request_id, $attempt->wait_seconds, $attempt->retry]);
+        $this->assertSame(HostProcessStatus::Lost, $this->journal->hostProcessCalled('first')->refresh()->status);
+        $retries = $this->journal->service(RequestRetries::class);
+        $job = new ContinueAgentWhenDue($request->id);
+        $this->journal->moveServerClockTo($attempt->retry_at->subSecond());
+        $job->handle($retries);
+        $this->assertSame(1, $this->turnCount($opened->runtimeId));
+
+        $this->journal->moveServerClockTo($attempt->retry_at);
+
+        if ($useJob) {
+            $job->handle($retries);
+        } else {
+            $retries->sweep();
+        }
+
+        $retries->sweep();
+        $job->handle($retries);
+        $this->assertSame(2, $this->turnCount($opened->runtimeId));
+        $this->assertSame(RequestProgress::Staged, $request->refresh()->progress);
+    }
+
+    public function test_an_expired_open_its_host_had_claimed_leaves_delivery_uncertain(): void
+    {
+        $this->journal->useServerClockAt(CarbonImmutable::now()->startOfSecond());
+        $opened = $this->runtimeOnItsFirstTurn();
+        [$first] = $this->journal->hostInstructionsOf('first');
+        $this->journal->asSystem(new ClaimHostInstructionsCommand($first->host_id, 10));
+        $this->assertNotNull($first->refresh()->claimed_at);
+        $this->journal->hostInstruction($first, fn (TestHostInstruction $open) => $open->refuse(HostRefusal::Expired));
+
+        $request = DriverRequest::query()->findOrFail($first->driver_request_id);
+        $this->assertSame(RequestProgress::DeliveryUncertain, $request->progress);
+        $this->assertSame(1, $this->turnCount($opened->runtimeId));
+        $this->assertFalse(RetryAttempt::query()->ofSession($opened->sessionId)->exists());
+    }
+
+    public function test_a_worker_report_that_fails_twice_waits_five_then_ten_seconds(): void
+    {
+        $opened = $this->runtimeOnItsFirstTurn();
+        $this->journal->hostProcess('first', fn (TestHostProcess $turn) => $turn->report(HostProcessReportType::Running));
+        $clock = $this->failActivityReports(2);
+        $this->journal->service(DriverWorkers::class)->begin($this->journal->hostProcessCalled('first')->id);
+
+        $history = RetryAttempt::query()->ofSession($opened->sessionId)->orderBy('retry')->limit(4)->get();
+        $this->assertSame([5, 10], $history->pluck('wait_seconds')->all());
+        $this->assertSame([RetryOutcome::Failed, RetryOutcome::Succeeded], $history->pluck('outcome')->all());
+        $this->assertSame(15_000_000_000, $clock->nanoseconds());
+    }
+
+    public function test_the_worker_exits_with_failure_after_exhausting_its_report_retries(): void
+    {
+        $opened = $this->runtimeOnItsFirstTurn();
+        Exceptions::fake();
+        $process = $this->journal->hostProcessCalled('first');
+        $this->journal->hostProcess('first', fn (TestHostProcess $turn) => $turn->report(HostProcessReportType::Running));
+        $clock = $this->failActivityReports(4);
+        $this->artisan('drivers:work', ['process' => $process->id])->assertFailed();
+
+        Exceptions::assertReported(WorkerReportFailed::class);
+        $last = RetryAttempt::query()->ofSession($opened->sessionId)->orderByDesc('retry')->firstOrFail();
+        $this->assertSame(RetryOutcome::GaveUp, $last->outcome);
+        $this->assertSame(35_000_000_000, $clock->nanoseconds());
+    }
+
+    private function failActivityReports(int $failures): FakeMonotonicClock
+    {
+        $clock = new FakeMonotonicClock();
+        $this->app->instance(Sleeper::class, new FakeSleeper($clock));
+        $handler = $this->journal->service(NotifyRuntimeActivityHandler::class);
+        $this->app->instance(NotifyRuntimeActivityHandler::class, new class($handler, $failures) implements CommandHandler
+        {
+            public function __construct(private NotifyRuntimeActivityHandler $handler, private int $failures) {}
+
+            public function handle(NotifyRuntimeActivityCommand $command): void
+            {
+                if ($this->failures-- > 0) {
+                    throw new RuntimeException('The activity report did not commit.');
+                }
+
+                $this->handler->handle($command);
+            }
+        });
+
+        return $clock;
     }
 
     private function runtimeOnItsFirstTurn(): OpenedRuntime

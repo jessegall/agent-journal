@@ -121,6 +121,47 @@ func TestAContainedPlanOpensTheContainerItsManifestDescribes(t *testing.T) {
 	}
 }
 
+func TestAContainerOpenUsesTheClaimTimeEvenWhenExecutionIsPastExpiry(t *testing.T) {
+	for _, scenario := range []struct {
+		name       string
+		claimedIn  time.Duration
+		wantStatus Status
+	}{
+		{name: "claimed in time", claimedIn: 23 * time.Second, wantStatus: Done},
+		{name: "claimed too late", claimedIn: 31 * time.Second, wantStatus: Refused},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			table, daemon, _ := containedTable(t, 0)
+			placed := testNow
+			order := containedInstruction(t, func(*OpenPlan) {})
+			order.ExpiresAt = placed.Add(30 * time.Second)
+			order.Signature = Sign(testSecret, order)
+			verifier := Verifier{Secret: testSecret, Now: func() time.Time { return placed.Add(33 * time.Second) }}
+			record, err := OpenAnsweredRecord(t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			answers := make(chan Answer, 1)
+			executors := Executors(testInstructions{ProcessTable: table})
+			dispatcher := NewDispatcher(verifier, record, executors, func(_ Instruction, answer Answer) { answers <- answer })
+			dispatcher.submitAt(t.Context(), order, placed.Add(scenario.claimedIn))
+			dispatcher.Wait()
+
+			answer := <-answers
+			if answer.Status != scenario.wantStatus {
+				t.Fatalf("got %+v, want %s", answer, scenario.wantStatus)
+			}
+			if scenario.wantStatus == Refused && answer.Refusal != Expired {
+				t.Fatalf("late claim refusal: %+v", answer)
+			}
+			_, opened := daemon.Container("journal-process-p1")
+			if opened != (scenario.wantStatus == Done) {
+				t.Fatalf("container opened: %t, claim answer: %+v", opened, answer)
+			}
+		})
+	}
+}
+
 func TestEachPreparationRunsToItsEndWithItsInputBeforeTheContainer(t *testing.T) {
 	table, daemon, written := containedTable(t, 0)
 	preparation := host.ContainerRun{DeadlineMs: 30000, Manifest: containedManifest(), Command: []string{"sh", "-c", "cat"}, Input: []byte("the files")}

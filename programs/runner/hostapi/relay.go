@@ -50,7 +50,7 @@ func (relay Relay) Claim(ctx context.Context) error {
 		relay.Clock.Observe(claimed.Now)
 		relay.Idle.Observe(claimed.IdleWindowSeconds)
 		for _, instruction := range claimed.Instructions {
-			relay.Dispatcher.Submit(ctx, instruction)
+			relay.Dispatcher.submitAt(ctx, instruction, claimed.Now)
 		}
 	}
 	return ctx.Err()

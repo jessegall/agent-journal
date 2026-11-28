@@ -9,7 +9,7 @@ use App\Models\Hosts\HostInstruction;
 use App\Time\Contracts\ServerClock;
 
 /**
- * Refuses the instructions that expired unclaimed or unanswered, and prunes answered ones after an hour.
+ * Refuses unanswered instructions past their deadlines and prunes answered ones after an hour.
  */
 final readonly class SweepHostInstructionsHandler implements CommandHandler
 {

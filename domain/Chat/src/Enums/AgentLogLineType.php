@@ -20,10 +20,16 @@ enum AgentLogLineType: string
     case WakeFailed = 'wake-failed';
     case TurnOpened = 'turn-opened';
     case TurnFailed = 'turn-failed';
+    case Retrying = 'retrying';
+    case GaveUp = 'gave-up';
 
     public function isFailure(): bool
     {
-        return in_array($this, [self::StartRefused, self::ProcessFailed, self::WakeFailed, self::TurnFailed], true);
+        return in_array(
+            $this,
+            [self::StartRefused, self::ProcessFailed, self::WakeFailed, self::TurnFailed, self::GaveUp],
+            true,
+        );
     }
 
     /**
@@ -42,6 +48,8 @@ enum AgentLogLineType: string
             self::WakeFailed => 'Wake failed',
             self::TurnOpened => 'Turn opened',
             self::TurnFailed => 'Turn failed',
+            self::Retrying => 'Retrying',
+            self::GaveUp => 'Gave up',
         };
     }
 }

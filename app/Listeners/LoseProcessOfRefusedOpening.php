@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Work\RequestRetries;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\Connections\HostInstructionRefused;
+use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Time\Contracts\ServerClock;
 
@@ -17,7 +19,7 @@ use App\Time\Contracts\ServerClock;
 #[InCommandTransaction]
 final readonly class LoseProcessOfRefusedOpening implements Listener
 {
-    public function __construct(private ServerClock $clock) {}
+    public function __construct(private ServerClock $clock, private RequestRetries $retries) {}
 
     public function handle(HostInstructionRefused $fact): void
     {
@@ -30,6 +32,7 @@ final readonly class LoseProcessOfRefusedOpening implements Listener
         if ($process->isOrdered()) {
             $reason = $fact->reason === null ? '' : ", {$fact->reason}";
             $process->lose("the host refused to open it ({$fact->refusal->value}){$reason}", $this->clock->now());
+            $this->retries->settleExpiredOpen(HostInstruction::findLocked($fact->instructionId));
         }
     }
 }

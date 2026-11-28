@@ -11,6 +11,7 @@ use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\HostWakeRefusal;
 use App\Agents\Drivers\Enums\RequestOutcome;
 use App\Agents\Drivers\Enums\RequestProgress;
+use App\Agents\Drivers\Enums\RetryOutcome;
 use App\Agents\Drivers\Values\ScriptGoal;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -238,6 +239,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->actual_binding = $actualBinding;
         $this->outcome = $outcome;
         $this->saveAndAssert();
+        RetryAttempt::ofVersion($this)?->settle(RetryOutcome::Succeeded);
         $this->raise(new DriverRequestApplied($this->id));
     }
 
@@ -249,6 +251,16 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->retried_from_version = $this->row_version;
         $this->no_process_created = false;
         $this->retry();
+    }
+
+    public function retryAfter(CarbonImmutable $offerAfter): void
+    {
+        $this->offer_after = $offerAfter;
+        $this->staged_at = null;
+        $this->wake_claimed = null;
+        $this->actual_binding = null;
+        $this->refusal_reason = null;
+        $this->retrySafely();
     }
 
     /**
@@ -789,6 +801,15 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $query->where(
             fn (Builder $offerable) => $offerable->whereNull('offer_after')->orWhere('offer_after', '<=', $at),
         );
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function offeredAgainBy(Builder $query, CarbonImmutable $at): void
+    {
+        $query->withProgress(RequestProgress::Accepted)->where('offer_after', '<=', $at)->orderBy('offer_after');
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Agents\Drivers\Work\RequestRetries;
 use App\Access\Contracts\PolicyCatalogue;
 use App\Access\Values\PolicyDefinition;
 use App\Accounts\Enums\CommandEntry;
@@ -132,6 +133,8 @@ final class ConnectionsServiceProvider extends ServiceProvider
                     new SweepHostInstructionsCommand(),
                 ))
                 ->everyThirtySeconds();
+
+            $schedule->call(fn (RequestRetries $retries) => $retries->sweep())->everyThirtySeconds();
         });
     }
 }
