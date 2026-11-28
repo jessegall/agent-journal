@@ -16,7 +16,7 @@ use App\Support\ActorReference;
 /**
  * The one chat line a driver switch writes in the chat of the user who asked for it, posted by the journal: what it
  * switched from and to and what the new session read, or why it failed and that the agent stays on its old driver. A
- * new program's session that carries the chat over is asked there to read it first and say where it runs now.
+ * new driver's session that carries the chat over is asked there to read it first and say where it runs now.
  */
 final readonly class DriverSwitchLines
 {
