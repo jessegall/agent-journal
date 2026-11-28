@@ -17,11 +17,12 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
+use PhpParser\Token;
 
 /**
  * Lays arrays out as rule 111 says: two or more entries go one to a line when returned, assigned or too wide for 120
  * characters; an argument that fits stays on one line, and a split one that fits is joined. Commented arrays,
- * array() and destructuring are left as they are.
+ * arrays containing multiline literals, array() and destructuring are left as they are.
  */
 final readonly class ArrayLayout
 {
@@ -118,7 +119,21 @@ final readonly class ArrayLayout
 
         new NodeTraverser(new ParentConnectingVisitor())->traverse($ast);
 
-        return new NodeFinder()->findInstanceOf($ast, Array_::class);
+        $tokens = $this->parser->getTokens();
+        $arrays = new NodeFinder()->findInstanceOf($ast, Array_::class);
+
+        return array_values(array_filter($arrays, fn (Array_ $array) => $this->canMoveEntries($array, $tokens)));
+    }
+
+    /** @param list<Token> $tokens */
+    private function canMoveEntries(Array_ $array, array $tokens): bool
+    {
+        $start = $array->getStartTokenPos();
+        $inside = array_slice($tokens, $start, $array->getEndTokenPos() - $start + 1);
+
+        return ! array_any($inside, fn (Token $token) => $token->is([T_COMMENT, T_DOC_COMMENT, T_START_HEREDOC])
+            || ($token->is([T_CONSTANT_ENCAPSED_STRING, T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML])
+                && str_contains($token->text, "\n")));
     }
 
     /**
