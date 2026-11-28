@@ -34,7 +34,7 @@ final class AgentLogLoaderTest extends TestCase
 
     public function test_the_log_lists_a_failed_start_with_its_reason(): void
     {
-        $this->journal->owner()->idleAgent('Planner')->startSession('Planner', 'Planner');
+        $this->journal->idleAgent('Planner')->startSession('Planner', 'Planner');
         $session = $this->journal->sessionCalled('Planner');
         $start = $this->journal->startOfSession($session->id);
         $start->refuse(self::REFUSAL);
@@ -68,8 +68,6 @@ final class AgentLogLoaderTest extends TestCase
 
     public function test_an_agent_the_viewer_cannot_see_is_refused(): void
     {
-        $this->journal->owner();
-
         $this->expectException(StackTargetRefused::class);
 
         $this->read('01m8dd0sct689m9bbtqr335rad');
