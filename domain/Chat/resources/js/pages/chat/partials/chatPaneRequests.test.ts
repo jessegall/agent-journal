@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 import type { ChatData } from '@generated/types/chat';
 import { holdsContract, RECORDED } from '@kit/testing/pageRequests';
@@ -113,5 +113,20 @@ describe('the Inertia posts of the chat pane, as the page sends them', () => {
         shown.findComponent({ name: 'MessageList' }).vm.$emit('decline', { id: RECORDED.question });
         await flushPromises();
         holdsContract('chat-decline', sent.at(-1));
+        shown.unmount();
+    });
+
+    it('marks what it shows as read again when the user comes back to the page, with no link to press', async () => {
+        const shown = pane();
+        revealedProps.value = new Set([PROP]);
+        await flushPromises();
+        const before = sent.length;
+        vi.spyOn(document, 'hasFocus').mockReturnValue(true);
+
+        window.dispatchEvent(new Event('focus'));
+        await flushPromises();
+
+        holdsContract('chat-read', sent.at(-1));
+        expect([sent.length - before, shown.text().includes('Read shown messages')]).toEqual([1, false]);
     });
 });
