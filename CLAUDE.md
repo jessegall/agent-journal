@@ -57,12 +57,12 @@ yours to resolve at its source.
 - At the end of the whole plan, once: the full suite, `composer test`. Never the full suite between phases, never in a loop.
 - Commit after each phase, then go straight on to the next phase without stopping to report.
 
-## Docker steps are tested with a stand-in Docker (rule 76; user messages 19244 to 19255, 19359, 19364)
+## Docker steps are tested with the Docker mock (rule 76; user messages 19244 to 19255, 19359, 19364)
 
-- Everything an installation does with Docker is tested against a stand-in Docker in the normal suite: install, update, boot, start, stop, image builds and pins, the scripts in `.docker` and `scripts`, and the scripts compose runs.
-- A change to such a script or step ships with its stand-in scenario in the same commit. Never push a pipeline change that no scenario runs.
+- Everything an installation does with Docker is tested against the Docker mock in the normal suite: install, update, boot, start, stop, image builds and pins, the scripts in `.docker` and `scripts`, and the scripts compose runs.
+- A change to such a script or step ships with its Docker-mock scenario in the same commit. Never push a pipeline change that no scenario runs.
 - The same scenarios run against a real Docker only from the separate installation suite, never from `composer test`.
-- **Everything that talks to Docker has such a test, a session's whole life too** (rule 83; user messages 19640, 19642): starting a session, a conversation through it (a chat message goes in through the journal and the host to a stand-in program, the reply comes back and the open page is told), stopping it, and a host restart with what happens to its containers. No code that runs a docker command or depends on a container is written or changed without its stand-in test in the same commit, and no session fix is handed to the user before that test passes.
+- **Everything that talks to Docker has such a test, a session's whole life too** (rule 83; user messages 19640, 19642): starting a session, a conversation through it (a chat message goes in through the journal and the host to a mock program, the reply comes back and the open page is told), stopping it, and a host restart with what happens to its containers. No code that runs a docker command or depends on a container is written or changed without its Docker-mock test in the same commit, and no session fix is handed to the user before that test passes.
 
 ## Version 6 never holds old code (rule 87; user messages 19760, 19761)
 
@@ -118,7 +118,7 @@ yours to resolve at its source.
 
 - After a change to the Go host only, swap it in with `sh scripts/dev-watch-host.sh --once` and restart the host service: seconds. Never run `journal local-host` for that.
 - `journal local-host` is for a change to an image or to the setup. It builds an image only when what goes into it changed, and `.docker/helper/build.sh` checks, archives and records an image only when it came out different from the archived one.
-- A stand-in scenario fails when an unchanged image is checked or archived again. A run that changes nothing ends in seconds.
+- A Docker-mock scenario fails when an unchanged image is checked or archived again. A run that changes nothing ends in seconds.
 
 ## Shell scripts (rule 77; user messages 19357, 19362, 19364)
 
@@ -128,7 +128,7 @@ yours to resolve at its source.
 - No script body inside `compose.yaml`: it is a file of its own.
 - A shell script holds shell only (user message 19367): no Python, PHP or JSON pasted into it. Each such piece is a small file of its own with a plain name that the script calls; JSON a script writes comes from a template file.
 - In a script, `main` declares every value the script works with and takes each from the step that produces it (`newest=$(find_newest_commit)`); a step prints its result or does its work, and every variable it assigns is `local` (rule 79; user message 19393). Function names are short verb_noun words with no articles: `fetch_commit`, never `fetch_the_commit` (user message 19386).
-- The whole standard, the shared library and the stand-ins are described in `docs/shell-scripts.md`.
+- The whole standard, the shared library and the mocks are described in `docs/shell-scripts.md`.
 
 ## A driver's screens belong to the screen navigation (rule 80; user messages 19423, 19424, 19427, 19428)
 
@@ -142,7 +142,7 @@ yours to resolve at its source.
 
 - A test seeds with the test journal's verbs, sends every command with `run`, `runAs`, `runAsStart`, `asSystem` or
   `asOwner`, and asserts with the journal's assertions, written fluently.
-- A test never binds a stand-in into the container, sets an actor by hand or keeps a private helper where a journal
+- A test never binds a mock into the container, sets an actor by hand or keeps a private helper where a journal
   verb fits. A missing verb is added to the test journal and proven by a test of the fixture (FixtureVerbsProvenTest).
 
 ## A fluent chain keeps one subject (rule 115; user message 27561)

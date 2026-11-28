@@ -133,6 +133,11 @@ func (daemon *Daemon) create(writer http.ResponseWriter, request *http.Request) 
 
 		return
 	}
+	if missing := daemon.missingBindSource(body.HostConfig); missing != "" {
+		refuse(writer, http.StatusBadRequest, `invalid mount config for type "bind": bind source path does not exist: `+missing)
+
+		return
+	}
 	name := request.URL.Query().Get("name")
 	daemon.mutex.Lock()
 	_, taken := daemon.find(name)
@@ -146,6 +151,37 @@ func (daemon *Daemon) create(writer http.ResponseWriter, request *http.Request) 
 	daemon.mutex.Unlock()
 
 	answer(writer, http.StatusCreated, map[string]any{"Id": created.ID, "Warnings": []string{}})
+}
+
+// missingBindSource is the first bind source of the container that lies in none of the daemon's folders, as a real
+// daemon refuses a bind of a folder its machine does not hold; none when the daemon holds every folder.
+func (daemon *Daemon) missingBindSource(hostConfig container.HostConfig) string {
+	if daemon.Folders == nil {
+		return ""
+	}
+	for _, mount := range hostConfig.Mounts {
+		if mount.Type == "bind" && !daemon.holdsFolder(mount.Source) {
+			return mount.Source
+		}
+	}
+	for _, bind := range hostConfig.Binds {
+		source := strings.SplitN(bind, ":", 2)[0]
+		if strings.HasPrefix(source, "/") && !daemon.holdsFolder(source) {
+			return source
+		}
+	}
+
+	return ""
+}
+
+func (daemon *Daemon) holdsFolder(path string) bool {
+	for _, folder := range daemon.Folders {
+		if path == folder || strings.HasPrefix(path, strings.TrimSuffix(folder, "/")+"/") {
+			return true
+		}
+	}
+
+	return false
 }
 
 // keep adds a created container to what the daemon holds; the caller holds the lock.

@@ -16,7 +16,7 @@ func imagesInstruction(images string) Instruction {
 	return Instruction{ID: "allow", Type: "allow_images", Payload: `{"images":[` + images + `]}`}
 }
 
-// imagesTable is a contained host's table over a stand-in daemon that holds the images given.
+// imagesTable is a contained host's table over a mock daemon that holds the images given.
 func imagesTable(t *testing.T, allowed *host.AllowedImages, images ...string) *ProcessTable {
 	t.Helper()
 	daemon, err := client.New(client.WithHost(dockermock.Start(t, images...).Host()))

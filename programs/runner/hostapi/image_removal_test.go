@@ -11,7 +11,7 @@ import (
 func TestADroppedDriverImageIsRemovedFromTheDaemon(t *testing.T) {
 	table, daemon, _ := containedTable(t, 0)
 	if _, held := daemon.Images[mockImage]; !held {
-		t.Fatalf("the stand-in daemon holds no image %s, so this scenario proves nothing", mockImage)
+		t.Fatalf("the mock daemon holds no image %s, so this scenario proves nothing", mockImage)
 	}
 
 	for range 2 {

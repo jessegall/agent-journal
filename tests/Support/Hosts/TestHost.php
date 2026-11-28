@@ -24,6 +24,7 @@ use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Process\InputStream;
+use Tests\Support\Docker\AgentDaemonFolders;
 use Tests\Support\Hosts\Steps\CompletesBrowserSignIn;
 use Tests\Support\Hosts\Steps\Contracts\HostStep;
 use Tests\Support\Hosts\Steps\ReleasesTurns;
@@ -924,8 +925,12 @@ final class TestHost
             return $command;
         }
 
+        // A contained host's daemon holds its own folder and the folders compose.yaml gives the agent daemon, no more.
+        $folders = [$this->folder, ...AgentDaemonFolders::of(base_path('compose.yaml'))];
+
         return [
             ...$command,
+            ...array_merge(...array_map(fn (string $folder) => ['--folder', $folder], $folders)),
             '--recording', dirname(base_path(self::TERMINAL_TURN)),
             '--executable', 'claude',
             '--version-recording', base_path(self::CLAUDE_EXCHANGES.'/version'),

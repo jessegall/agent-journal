@@ -41,6 +41,8 @@ type Daemon struct {
 	// Programs gives the program of a container about to start; nil, or an answer of nil, runs the default: a
 	// container with a terminal runs until it is stopped, any other ends at once with exit code 0.
 	Programs func(container *Container) Program
+	// Folders are the folders the daemon's machine holds, a bind's source must lie in one; nil holds every folder.
+	Folders []string
 
 	server     *httptest.Server
 	mutex      sync.Mutex

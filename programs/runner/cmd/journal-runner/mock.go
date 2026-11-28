@@ -84,6 +84,8 @@ func mockDocker(arguments []string) error {
 	versionRecording := flags.String("version-recording", "", "the exchange recording of what the program prints for --version")
 	signInRecording := flags.String("sign-in-recording", "", "the exchange recording of what the program prints for auth")
 	started := flags.String("containers", "", "the file each started container's shape is added to, one JSON object a line")
+	var folders folderList
+	flags.Var(&folders, "folder", "a folder the daemon's machine holds, repeated; without one the daemon holds every folder")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -108,6 +110,7 @@ func mockDocker(arguments []string) error {
 		programs = programInContainer(mockProgram{*program, version, signIn}, replayProgram(fixture))
 	}
 	daemon := dockermock.Serve(listener, *image)
+	daemon.Folders = folders.held()
 	daemon.Programs = func(container *dockermock.Container) dockermock.Program {
 		if *started != "" {
 			_ = noteContainer(*started, container)
@@ -354,4 +357,24 @@ func writeTranscript(path string) error {
 		return err
 	}
 	return os.WriteFile(path, []byte(`{"type":"user"}`+"\n"), 0o600)
+}
+
+// folderList collects the repeated --folder flags.
+type folderList []string
+
+func (folders *folderList) String() string { return strings.Join(*folders, ",") }
+
+func (folders *folderList) Set(folder string) error {
+	*folders = append(*folders, folder)
+
+	return nil
+}
+
+// held is the folders given, or nil when none was, so the daemon holds every folder.
+func (folders folderList) held() []string {
+	if len(folders) == 0 {
+		return nil
+	}
+
+	return folders
 }
