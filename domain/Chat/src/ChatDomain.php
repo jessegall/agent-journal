@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Chat;
 
 use Domain\Chat\Data\ChatData;
-use Domain\Chat\Data\ConversationPaneData;
+use Domain\Chat\Data\ChatWindowData;
 use Domain\Chat\Http\Pages\ChatPageBuilder;
-use Domain\Chat\Http\Windows\ConversationWindowBuilder;
+use Domain\Chat\Http\Windows\ChatWindowBuilder;
 use App\Access\Contracts\PolicyProvider;
 use App\Access\Values\PolicyDefinition;
 use App\Agents\Enums\AccessType;
@@ -117,7 +117,7 @@ final class ChatDomain extends Domain implements
                 ->pageType(ChatData::class)
                 ->pageBuilder(ChatPageBuilder::class)
                 ->component('ChatWindow.vue')
-                ->withWindow(ConversationPaneData::class, ConversationWindowBuilder::class, 'ConversationPane.vue')
+                ->withWindow(ChatWindowData::class, ChatWindowBuilder::class, 'HomeChatWindow.vue')
                 ->finish()
                 ->at('')
                 ->onHome(10)

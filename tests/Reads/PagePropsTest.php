@@ -16,7 +16,7 @@ use App\Web\PageProps;
 use App\Web\UserChannel;
 use Closure;
 use Domain\Chat\ChatDomain;
-use Domain\Chat\Http\Windows\ConversationWindowBuilder;
+use Domain\Chat\Http\Windows\ChatWindowBuilder;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use LogicException;
@@ -50,7 +50,7 @@ final class PagePropsTest extends TestCase
         $agent = $journal->agentCalled('Second agent');
         $section = 'section_web_bar_chat_agent';
         $this->app->bind(
-            ConversationWindowBuilder::class,
+            ChatWindowBuilder::class,
             static fn () => throw new LogicException('The unselected chat pane was resolved.'),
         );
 
@@ -60,6 +60,28 @@ final class PagePropsTest extends TestCase
                 ->loadDeferredProps($section, fn (AssertableInertia $group) => $group
                     ->where("{$section}.data.selectedAgentId", $agent->id)
                     ->missing('window_chat_conversation')),
+        );
+    }
+
+    public function test_home_loads_the_full_chat_content_for_the_requested_column_alone(): void
+    {
+        $journal = $this->journal->owner()->idleAgent('Selected agent')->idleAgent('Other column');
+        $selected = $journal->agentCalled('Selected agent')->id;
+        $column = $journal->agentCalled('Other column')->id;
+        $prop = 'window_chat_conversation';
+        $uri = route('home', ['window' => ['chat.conversation' => ['agent' => $selected, 'read' => $column]]]);
+
+        $this->actingAs($journal->ownerUser())->get($uri)->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->where('page.data.windows.0.component', 'chat/HomeChatWindow')
+                ->missing($prop)
+                ->reloadOnly($prop, fn (AssertableInertia $window) => $window
+                    ->where("{$prop}.status", 'ready')
+                    ->where("{$prop}.data.selectedAgentId", $selected)
+                    ->where("{$prop}.data.conversation.agentId", $column)
+                    ->has("{$prop}.data.conversation.entries")
+                    ->missing('section_web_bar_chat_agent')
+                    ->missing('page')),
         );
     }
 
