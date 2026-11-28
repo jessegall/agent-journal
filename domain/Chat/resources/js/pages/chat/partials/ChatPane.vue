@@ -24,6 +24,7 @@ import { read as readRoute } from "@generated/routes/chat";
 import AgentPicker from "./AgentPicker.vue";
 import AgentSessionActions from "./AgentSessionActions.vue";
 import Composer from "./Composer.vue";
+import RunningCommand from "./RunningCommand.vue";
 import VerifyingSessionCard from "./VerifyingSessionCard.vue";
 import RecordPanel from "./RecordPanel.vue";
 import DockStack from "./DockStack.vue";
@@ -412,6 +413,12 @@ watch(isShown, readOnOpen);
             <TextLink @click="readShown"> Read shown messages </TextLink>
             <span>Only your own reading changes.</span>
           </p>
+        </template>
+        <template v-if="selected">
+          <RunningCommand
+            :agent="selected"
+            :command="conversation.runningCommand"
+          />
         </template>
         <SlotSections :sections="chat.dockSections" />
         <DockStack

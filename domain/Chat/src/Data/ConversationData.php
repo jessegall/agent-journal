@@ -10,7 +10,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One chat as its window shows it: its members, what the viewer may do, the newest entries with whether older ones
- * exist, and what is docked in it.
+ * exist, what is docked in it and the agent's latest tool work since its last message.
  */
 #[TypeScript]
 final class ConversationData extends Data
@@ -35,5 +35,7 @@ final class ConversationData extends Data
         #[DataCollectionOf(ChatEntryData::class)]
         public readonly array $entries,
         public readonly DockPageData $dock,
+        // What the chat's agent read, ran or edited last, since its latest message here; none when it did nothing since.
+        public readonly string|null $runningCommand,
     ) {}
 }
