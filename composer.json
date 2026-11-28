@@ -110,11 +110,11 @@
         ],
         "lint": [
             "pint --parallel",
-            "php-cs-fixer fix --quiet --config=tools/code-style/php-cs-fixer.php"
+            "@php -d memory_limit=1G vendor/bin/php-cs-fixer fix --quiet --config=tools/code-style/php-cs-fixer.php"
         ],
         "lint:check": [
             "pint --parallel --test",
-            "php-cs-fixer check --config=tools/code-style/php-cs-fixer.php"
+            "@php -d memory_limit=1G vendor/bin/php-cs-fixer check --config=tools/code-style/php-cs-fixer.php"
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
