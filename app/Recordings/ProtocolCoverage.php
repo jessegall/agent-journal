@@ -9,7 +9,7 @@ use App\Hosts\Protocol\HostRefusal;
 use App\Hosts\Protocol\HostRoute;
 
 /**
- * What of host protocol 1 no recording holds: the calls, the instruction types and the refusals still to record.
+ * The calls, instruction types and refusals the recordings still need to cover.
  */
 final readonly class ProtocolCoverage
 {
@@ -17,11 +17,17 @@ final readonly class ProtocolCoverage
      * @param  list<HostRoute>  $routes
      * @param  list<HostInstructionType>  $instructionTypes
      * @param  list<HostRefusal>  $refusals
+     * @param  list<string>  $relayRoutes
      */
-    public function __construct(public array $routes, public array $instructionTypes, public array $refusals) {}
+    public function __construct(
+        public array $routes,
+        public array $instructionTypes,
+        public array $refusals,
+        public array $relayRoutes,
+    ) {}
 
     public function isWhole(): bool
     {
-        return $this->routes === [] && $this->instructionTypes === [] && $this->refusals === [];
+        return $this->routes === [] && $this->instructionTypes === [] && $this->refusals === [] && $this->relayRoutes === [];
     }
 }

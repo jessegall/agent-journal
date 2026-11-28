@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Http\Middleware\Agents\AuthenticateHost;
 use App\Recordings\CallRecorders;
 use App\Recordings\Enums\Wire;
 use App\Recordings\RecordedCall;
@@ -27,7 +28,14 @@ final readonly class RecordCalls
             return $next($request);
         }
 
-        $recorder = $this->recorders->of(Wire::from($wire));
+        $recordedWire = Wire::from($wire);
+
+        if ($recordedWire === Wire::Host && $this->drafts->isRecordingConnectedFolder()
+            && ! $request->attributes->getBoolean(AuthenticateHost::RELAY_REQUEST)) {
+            return $next($request);
+        }
+
+        $recorder = $this->recorders->of($recordedWire);
         $exchange = $recorder->exchangeOf($request);
         $recorder->add($exchange, RecordedEvent::asked(RecordingDrafts::moment(), RecordedCall::askedBy($request)));
 

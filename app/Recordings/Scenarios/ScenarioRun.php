@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Recordings\Scenarios;
 
+use App\Connections\Enums\BindingReadiness;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -12,7 +13,10 @@ use App\Models\Drivers\HookCall;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
+use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\ProjectBinding;
+use App\Projects\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
+use App\Projects\Values\InstallTicket;
 use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use Carbon\CarbonImmutable;
@@ -53,6 +57,10 @@ final class ScenarioRun
     private string|null $startRequest = null;
 
     private int|null $installerExit = null;
+
+    private InstallTicket $connectionTicket;
+
+    private InstallAttempt|null $connectionAttempt = null;
 
     /**
      * @param  array<string, string>  $agents  each agent's id, by its name in the scenario
@@ -168,6 +176,53 @@ final class ScenarioRun
         }
 
         return $binding->id;
+    }
+
+    public function issueConnection(): IssueProjectInvitationCommand
+    {
+        $this->connectionTicket = InstallTicket::generate();
+
+        return new IssueProjectInvitationCommand($this->connectionTicket->digest(), $this->stepKey(), null);
+    }
+
+    public function holdConnectionAttempt(): InstallTicket
+    {
+        $this->connectionAttempt = InstallAttempt::findWithKey($this->owner->id, $this->stepKey());
+
+        return $this->connectionTicket;
+    }
+
+    public function isConnected(): bool
+    {
+        $binding = $this->connectedBinding();
+
+        return $binding !== null && $binding->readinessAt(CarbonImmutable::now()) === BindingReadiness::Ready;
+    }
+
+    public function readBindingId(): string
+    {
+        if ($this->connectionAttempt === null) {
+            return $this->bindingIdOn($this->hostId());
+        }
+
+        $binding = $this->connectedBinding();
+
+        if ($binding === null) {
+            throw ScenarioInvalid::at($this->scenario->name, $this->stepsRun, 'the install line has no live binding');
+        }
+
+        return $binding->id;
+    }
+
+    private function connectedBinding(): ProjectBinding|null
+    {
+        $bindingId = $this->connectionAttempt?->refresh()->binding_id;
+
+        if ($bindingId === null) {
+            return null;
+        }
+
+        return ProjectBinding::query()->acrossProjects()->unrevoked()->find($bindingId);
     }
 
     /**

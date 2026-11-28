@@ -13,6 +13,8 @@ use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Commands\StopAgent\StopAgentCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Projects\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
+use App\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Recordings\Scenarios\Scenario;
 use App\Recordings\Scenarios\ScenarioRun;
@@ -115,6 +117,20 @@ final class ScenarioStepTest extends TestCase
         $file = '{"steps":[{"do":"start-session","agent":"Coder","type":"terminal","effort":"low"}]}';
 
         Scenario::read('claude-code/turn', $file);
+    }
+
+    public function test_connect_project_issues_an_install_line_for_a_new_project(): void
+    {
+        $this->journal->owner();
+        $file = '{"steps":[{"do":"connect-project"},{"do":"wait-for","fact":"connected","seconds":60}]}';
+        $scenario = Scenario::read('connected/first-claim', $file);
+        $run = new ScenarioRun($scenario, $this->journal->ownerUser(), [], 'journal-runner@sha256:1');
+
+        $issue = $run->nextStep()->commandFor($run, $this->app->make(DriverCatalogue::class));
+
+        $this->assertInstanceOf(IssueProjectInvitationCommand::class, $issue);
+        $this->assertNull($issue->projectId);
+        $this->assertFalse(ScenarioFact::Connected->isReached($run));
     }
 
     public function test_the_sign_in_steps_begin_a_sign_in_and_submit_the_code_the_user_typed(): void

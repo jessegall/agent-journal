@@ -172,6 +172,6 @@ final class PlayScenarioCommand extends Command
             $this->line("Enter the code {$pause->signIn->code}");
         }
 
-        return (string) $this->ask('Type the code the page shows, or press Enter', '');
+        return (string) $this->ask($pause->prompt, '');
     }
 }

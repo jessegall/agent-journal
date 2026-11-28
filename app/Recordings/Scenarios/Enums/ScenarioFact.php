@@ -29,6 +29,7 @@ enum ScenarioFact: string
     case SignedIn = 'signed-in';
     case SignInFailed = 'sign-in-failed';
     case Installed = 'installed';
+    case Connected = 'connected';
     case InstructionsAnswered = 'instructions-answered';
 
     /**
@@ -57,6 +58,7 @@ enum ScenarioFact: string
             self::SignedIn => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isSignedIn() === true,
             self::SignInFailed => SignInAttempt::findForJournal((string) $run->signInAttempt())?->isFailed() === true,
             self::Installed => $run->installerExit() === 0 && Host::query()->exists(),
+            self::Connected => $run->isConnected(),
             self::InstructionsAnswered => HostInstruction::areAllAnsweredSince($run->startedAt),
         };
     }

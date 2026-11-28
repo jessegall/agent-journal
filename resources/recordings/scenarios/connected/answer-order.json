@@ -1,0 +1,9 @@
+{
+    "description": "A connected folder's relay claims an instruction to read its root and reports and answers it",
+    "steps": [
+        {"do": "connect-project"},
+        {"do": "wait-for", "fact": "connected", "seconds": 60},
+        {"do": "read-project", "path": "."},
+        {"do": "wait-for", "fact": "instructions-answered", "seconds": 60}
+    ]
+}
