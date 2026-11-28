@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support\Layout;
+
+use App\Web\Creation\Buildable;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
+
+final class LayoutTableData extends Data
+{
+    /** @use Buildable<LayoutTableDataFields> */
+    use Buildable;
+
+    protected const FIELDS = LayoutTableDataFields::class;
+
+    /** @param list<LayoutRowData> $rows */
+    public function __construct(
+        #[DataCollectionOf(LayoutRowData::class)]
+        public readonly array $rows,
+    ) {}
+}
