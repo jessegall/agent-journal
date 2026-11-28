@@ -1,6 +1,7 @@
 {
     "about": "Host protocol 1 between the Go host and the PHP journal, written once. php artisan journal:host-protocol generates the Go and PHP code from this file; never edit the generated files.",
     "version": 1,
+    "opening_claim_about": "The expiry of an opening bounds the journal's claim, as timed by now in the claim reply. Other instructions still expire at execution.",
     "statuses": {
         "done": "the host carried the instruction out",
         "refused": "the host did not carry the instruction out, for the refusal it names"

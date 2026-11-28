@@ -29,6 +29,10 @@ type Verifier struct {
 
 // Verify refuses an unsigned or altered instruction as unsafe and one past its expiry as expired.
 func (verifier Verifier) Verify(instruction Instruction) error {
+	return verifier.verifyAt(instruction, verifier.Now())
+}
+
+func (verifier Verifier) verifyAt(instruction Instruction, at time.Time) error {
 	if instruction.Signature == "" {
 		return RefusalError{Refusal: Unsafe, Reason: "the instruction is not signed"}
 	}
@@ -36,7 +40,7 @@ func (verifier Verifier) Verify(instruction Instruction) error {
 	if !hmac.Equal([]byte(expected), []byte(instruction.Signature)) {
 		return RefusalError{Refusal: Unsafe, Reason: "the instruction's signature does not match it"}
 	}
-	if !verifier.Now().Before(instruction.ExpiresAt) {
+	if !at.Before(instruction.ExpiresAt) {
 		return RefusalError{Refusal: Expired, Reason: "the instruction expired at " + instruction.ExpiresAt.UTC().Format(time.RFC3339)}
 	}
 	return nil

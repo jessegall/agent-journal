@@ -210,7 +210,7 @@ func openHostProtocol(ctx context.Context, journal *client.Client, enrollment de
 	verifier := hostapi.Verifier{Secret: hostapi.InstructionSecretOf(enrollment.Secret), Now: clock.Now}
 	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(instruction hostapi.Instruction, answer hostapi.Answer) {
 		go func() {
-			if err := calls.AnswerUntilTaken(ctx, answer, time.Second, instruction.ExpiresAt); err != nil {
+			if err := calls.AnswerUntilTaken(ctx, answer, time.Second, instruction.AnswerDeadline()); err != nil {
 				log.Printf("the answer to instruction %s was not sent: %v", answer.InstructionID, err)
 			}
 		}()

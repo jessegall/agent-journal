@@ -5,6 +5,7 @@ import (
 	"errors"
 	"slices"
 	"sync"
+	"time"
 )
 
 // Executor carries out one type of instruction and gives the facts of its answer, or a RefusalError.
@@ -20,9 +21,14 @@ type Dispatcher struct {
 	report    func(Instruction, Answer)
 
 	mutex    sync.Mutex
-	lanes    map[string]chan Instruction
+	lanes    map[string]chan claimedInstruction
 	inFlight map[string]bool
 	running  sync.WaitGroup
+}
+
+type claimedInstruction struct {
+	instruction Instruction
+	at          time.Time
 }
 
 // NewDispatcher dispatches with these executors and hands every answer, with its instruction, to report once the record
@@ -33,13 +39,17 @@ func NewDispatcher(verifier Verifier, record *AnsweredRecord, executors map[stri
 		record:    record,
 		executors: executors,
 		report:    report,
-		lanes:     map[string]chan Instruction{},
+		lanes:     map[string]chan claimedInstruction{},
 		inFlight:  map[string]bool{},
 	}
 }
 
 // Submit takes one claimed instruction; an instruction already running is not taken twice.
 func (dispatcher *Dispatcher) Submit(ctx context.Context, instruction Instruction) {
+	dispatcher.submitAt(ctx, instruction, dispatcher.verifier.Now())
+}
+
+func (dispatcher *Dispatcher) submitAt(ctx context.Context, instruction Instruction, claimedAt time.Time) {
 	if answer, found := dispatcher.record.Find(instruction.ID); found {
 		dispatcher.report(instruction, answer)
 		return
@@ -51,16 +61,17 @@ func (dispatcher *Dispatcher) Submit(ctx context.Context, instruction Instructio
 	}
 	dispatcher.inFlight[instruction.ID] = true
 	dispatcher.running.Add(1)
+	claimed := claimedInstruction{instruction: instruction, at: claimedAt}
 	if instruction.IsHostWide() {
 		dispatcher.mutex.Unlock()
 		go func() {
-			dispatcher.carryOut(ctx, instruction)
+			dispatcher.carryOut(ctx, claimed)
 		}()
 		return
 	}
 	lane := dispatcher.laneOf(ctx, instruction.ProcessID)
 	dispatcher.mutex.Unlock()
-	lane <- instruction
+	lane <- claimed
 }
 
 // Wait returns once every instruction submitted so far was answered.
@@ -79,12 +90,12 @@ func (dispatcher *Dispatcher) Wait() {
 }
 
 // laneOf is the queue of one process's instructions, started on its first instruction; the caller holds the mutex.
-func (dispatcher *Dispatcher) laneOf(ctx context.Context, processID string) chan Instruction {
+func (dispatcher *Dispatcher) laneOf(ctx context.Context, processID string) chan claimedInstruction {
 	lane, found := dispatcher.lanes[processID]
 	if found {
 		return lane
 	}
-	lane = make(chan Instruction, 64)
+	lane = make(chan claimedInstruction, 64)
 	dispatcher.lanes[processID] = lane
 	go func() {
 		for instruction := range lane {
@@ -94,9 +105,10 @@ func (dispatcher *Dispatcher) laneOf(ctx context.Context, processID string) chan
 	return lane
 }
 
-func (dispatcher *Dispatcher) carryOut(ctx context.Context, instruction Instruction) {
+func (dispatcher *Dispatcher) carryOut(ctx context.Context, claimed claimedInstruction) {
 	defer dispatcher.running.Done()
-	answer := dispatcher.answerOf(ctx, instruction)
+	instruction := claimed.instruction
+	answer := dispatcher.answerOf(ctx, claimed)
 	if err := dispatcher.record.Keep(instruction, answer, dispatcher.verifier.Now()); err != nil {
 		answer = RefusedFor(instruction, Unsafe, "the host could not record its answer: "+err.Error(), nil)
 	}
@@ -106,8 +118,13 @@ func (dispatcher *Dispatcher) carryOut(ctx context.Context, instruction Instruct
 	dispatcher.report(instruction, answer)
 }
 
-func (dispatcher *Dispatcher) answerOf(ctx context.Context, instruction Instruction) Answer {
-	if err := dispatcher.verifier.Verify(instruction); err != nil {
+func (dispatcher *Dispatcher) answerOf(ctx context.Context, claimed claimedInstruction) Answer {
+	instruction := claimed.instruction
+	at := dispatcher.verifier.Now()
+	if InstructionTypes[instruction.Type].Opens && !claimed.at.IsZero() {
+		at = claimed.at
+	}
+	if err := dispatcher.verifier.verifyAt(instruction, at); err != nil {
 		return refusalAnswer(instruction, err, nil)
 	}
 	executor, found := dispatcher.executors[instruction.Type]
