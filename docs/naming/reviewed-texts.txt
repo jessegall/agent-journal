@@ -579,8 +579,11 @@ Your last answer did not arrive. Paste it again.
 Your last code did not arrive. Paste it again.
 a file the user names on the command line, wherever it lies
 a sharing gateway's program in the host's tool folders
+agent terminal
+agent turn
 approved by {{ signIn.approvedBy }}
 as {{ sample.approvedClasses.join(", ") }}
+build probe
 characters
 classes
 depth
@@ -602,6 +605,7 @@ now {{ setting.observed ?? 'unknown' }}, next {{ setting.staged ?? 'nothing' }},
 open
 operation
 parts
+probe
 program
 progress
 purpose
@@ -610,6 +614,7 @@ recover
 script
 selected
 shapes
+sign-in probe
 since {{ dateTime(signIn.issuedAt) }}
 the classified command's own file system: its folder, tools and worktree
 the host's own account folders, written by the host tools without the application
