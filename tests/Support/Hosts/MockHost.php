@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Hosts;
 
 use App\Hosts\Contracts\HostChannel;
+use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Values\HostInstructionSource;
 use App\Values\RowGuard;
@@ -15,7 +16,7 @@ use Tests\Support\Hosts\Exceptions\RecordingDiverged;
 
 /**
  * A host that plays one committed recording on a fake clock: it shows the recorded frames as the clock passes their
- * offsets, answers each instruction as a host would, and keeps every byte a driver types, which each checkpoint compares
+ * offsets, answers each instruction with the recorded host's answer to one of its type, and keeps every byte a driver types, which each checkpoint compares
  * with the bytes the recording's user typed up to it, however the driver split them into writes.
  */
 final class MockHost implements HostChannel
@@ -48,6 +49,7 @@ final class MockHost implements HostChannel
         private readonly array $inputs,
         private readonly array $inputOffsets,
         public readonly FakeMonotonicClock $clock,
+        private readonly RecordedHostAnswers $recordedAnswers,
     ) {}
 
     public static function playing(string $recordingFolder): self
@@ -69,6 +71,7 @@ final class MockHost implements HostChannel
             array_map(fn (array $input) => (string) base64_decode($input['bytes'] ?? '', true), $inputs),
             array_map(fn (array $input) => (int) $input['offset'], $inputs),
             new FakeMonotonicClock(),
+            RecordedHostAnswers::beside($recordingFolder),
         );
     }
 
@@ -182,7 +185,7 @@ final class MockHost implements HostChannel
         $this->typed .= $bytes;
         $this->advanceToTyped();
 
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::WriteKeys));
     }
 
     /**
@@ -287,32 +290,34 @@ final class MockHost implements HostChannel
         $this->typed .= $bytes;
         $this->advanceToTyped();
 
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::WriteStdin));
     }
 
     public function resize(string $processId, int $columns, int $rows, HostInstructionSource $source): string
     {
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::Resize));
     }
 
     public function signal(string $processId, string $signal, HostInstructionSource $source): string
     {
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::Signal));
     }
 
     public function stop(string $processId, int $graceMs, int $forceMs, HostInstructionSource $source): string
     {
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::Stop));
     }
 
     public function stream(string $processId, int $framesPerSecond, bool $isRaw, HostInstructionSource $source): string
     {
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::Stream));
     }
 
     public function snapshot(string $processId, HostInstructionSource $source): string
     {
-        return $this->answer(['status' => 'done', 'facts' => ['rows' => $this->rows()]]);
+        $recorded = $this->recordedAnswers->to(HostInstructionType::Snapshot);
+
+        return $this->answer([...$recorded, 'facts' => [...$recorded['facts'], 'rows' => $this->rows()]]);
     }
 
     /**
@@ -323,12 +328,12 @@ final class MockHost implements HostChannel
         $this->typed .= $bytes;
         $this->advanceToTyped();
 
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::WriteKeys));
     }
 
     public function openPrivate(string $processId, HostInstructionSource $source): string
     {
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::OpenPrivate));
     }
 
     /**
@@ -336,12 +341,12 @@ final class MockHost implements HostChannel
      */
     public function writePrivate(string $processId, string $submissionId, HostInstructionSource $source): string
     {
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::WritePrivate));
     }
 
     public function closePrivate(string $processId, HostInstructionSource $source): string
     {
-        return $this->answer(['status' => 'done', 'facts' => []]);
+        return $this->answer($this->recordedAnswers->to(HostInstructionType::ClosePrivate));
     }
 
     private function hashOf(int $from, int $to): string

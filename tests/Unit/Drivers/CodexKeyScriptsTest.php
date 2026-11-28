@@ -27,7 +27,7 @@ final class CodexKeyScriptsTest extends TestCase
 {
     private const string KEY_SCRIPTS = 'codex/0.165.0/keyscripts';
 
-    private const string BUILD = '0.165.0';
+    private const string BUILD = '0.172.0';
 
     private const int STREAM_MS = 100;
 

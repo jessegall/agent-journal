@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Hosts\Commands\ClaimRuntimeRequests;
 
-use App\Agents\Drivers\Work\AccountOwners;
 use App\Agents\Drivers\Work\DriverRequestClaims;
 use App\Bus\Contracts\CommandHandler;
 use App\Hosts\ClaimedRequests;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 
 /**
@@ -16,7 +16,7 @@ use App\Models\Hosts\HostProcess;
  */
 final readonly class ClaimRuntimeRequestsHandler implements CommandHandler
 {
-    public function __construct(private DriverRequestClaims $claims, private AccountOwners $owners) {}
+    public function __construct(private DriverRequestClaims $claims) {}
 
     public function handle(ClaimRuntimeRequestsCommand $command): ClaimedRequests
     {
@@ -29,7 +29,8 @@ final readonly class ClaimRuntimeRequestsHandler implements CommandHandler
             return new ClaimedRequests([]);
         }
 
-        $runtimes = $this->owners->runtimesOf($process)
+        $runtimes = AgentRuntime::query()
+            ->whereKey($process->agent_runtime_id)
             ->withSessionAgent()
             ->withAcceptedRequest()
             ->get()

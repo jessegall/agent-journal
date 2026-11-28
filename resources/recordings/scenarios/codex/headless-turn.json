@@ -1,5 +1,5 @@
 {
-    "description": "A Codex app-server turn answers one message on its thread",
+    "description": "Two headless Codex turns: the first codex exec answers one message and starts a thread, the second resumes that thread in a process of its own",
     "steps": [
         {
             "do": "restart-host"
@@ -15,6 +15,16 @@
             "do": "send-message",
             "agent": "Coder",
             "text": "Run: ls."
+        },
+        {
+            "do": "wait-for",
+            "fact": "turn-ended",
+            "seconds": 120
+        },
+        {
+            "do": "send-message",
+            "agent": "Coder",
+            "text": "Run: pwd."
         },
         {
             "do": "wait-for",

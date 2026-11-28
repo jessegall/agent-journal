@@ -1,5 +1,5 @@
 {
-    "description": "A Codex app-server turn is interrupted, released as a user releases it, and its thread resumes for the next one",
+    "description": "A headless Codex turn is interrupted, which ends its codex exec, and the next message resumes its thread in a new process",
     "steps": [
         {
             "do": "restart-host"

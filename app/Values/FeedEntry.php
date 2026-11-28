@@ -7,7 +7,6 @@ namespace App\Values;
 use App\Hosts\HostChunks;
 use App\Hosts\Protocol\Payloads\HostChunkPayload;
 use App\Hosts\Protocol\Payloads\HostFramePayload;
-use Spatie\LaravelData\Data;
 
 /**
  * One entry a worker read: a frame or chunk of its process, an answer to one of its instructions, or a wake of its
@@ -32,8 +31,12 @@ final readonly class FeedEntry
         return new self(
             $stream,
             $cursor,
-            self::decoded($fields['frame'] ?? null, HostFramePayload::class),
-            self::decoded($fields['chunk'] ?? null, HostChunkPayload::class),
+            isset($fields['frame'])
+                ? HostFramePayload::from(json_decode($fields['frame'], true, flags: JSON_THROW_ON_ERROR))
+                : null,
+            isset($fields['chunk'])
+                ? HostChunkPayload::from(json_decode($fields['chunk'], true, flags: JSON_THROW_ON_ERROR))
+                : null,
             $fields['answered'] ?? null,
             isset($fields['ended']),
         );
@@ -56,22 +59,5 @@ final readonly class FeedEntry
         $carriesNothing = $this->frame === null && $this->chunk === null && $this->answeredInstructionId === null;
 
         return $carriesNothing && ! $this->hasEnded;
-    }
-
-    /**
-     * The payload a field of the entry carries as JSON; none when the entry has no such field.
-     *
-     * @template T of Data
-     *
-     * @param  class-string<T>  $payload
-     * @return T|null
-     */
-    private static function decoded(string|null $field, string $payload): Data|null
-    {
-        if ($field === null) {
-            return null;
-        }
-
-        return $payload::from(json_decode($field, true, flags: JSON_THROW_ON_ERROR));
     }
 }

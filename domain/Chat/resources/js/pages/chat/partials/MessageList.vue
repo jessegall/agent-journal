@@ -41,7 +41,8 @@ const props = defineProps<{
   conversationProp: string;
   // The chat the entries are in, which a reaction names.
   inboxId: string;
-  // What the user's last messages wait for, such as the agent's start; none while nothing holds them.
+  // Whom the viewer's own messages go to, and what they wait for while only sent, such as the agent's start.
+  addresseeName: string;
   startWait: string | null;
 }>();
 
@@ -52,6 +53,7 @@ const emit = defineEmits<{
   restore: [intentKey: string];
   discard: [intentKey: string];
   openRecord: [card: DockCardEnvelope];
+  retryDelivery: [messageId: string];
 }>();
 
 const dayFormat = new Intl.DateTimeFormat(undefined, {
@@ -172,13 +174,6 @@ function replyTo(message: MessageEntryData): void {
   emit("reply", { id: message.id, number: message.number, body: message.body });
 }
 
-// The wait shows under the user's own last messages: those still being sent, or the last entry when it is theirs.
-const isLastOwn = computed(() => {
-  const last = props.entries.at(-1);
-
-  return props.pending.length > 0 || (last !== undefined && isOwn(last));
-});
-
 // Nothing to show yet: no entry, none being sent and none refused.
 const isEmpty = computed(
   () =>
@@ -253,7 +248,10 @@ const isEmpty = computed(
                 :viewer="viewer"
                 :inbox-id="inboxId"
                 :conversation-prop="conversationProp"
+                :addressee-name="addresseeName"
+                :start-wait="startWait"
                 @reply="entry.message && replyTo(entry.message)"
+                @retry="entry.message && emit('retryDelivery', entry.message.id)"
               />
             </div>
           </template>
@@ -265,15 +263,6 @@ const isEmpty = computed(
         :intent="intent"
         @check-again="(shown) => emit('checkAgain', shown)"
       />
-    </template>
-    <template v-if="startWait !== null && isLastOwn">
-      <p
-        class="-mt-4 self-end text-meta text-text-4"
-        role="status"
-        data-start-wait
-      >
-        {{ startWait }}
-      </p>
     </template>
     <template v-for="item in refused" :key="item.entry.intentKey">
       <RefusedSend

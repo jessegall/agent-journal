@@ -6,6 +6,7 @@ namespace App\Sessions;
 
 use App\Actors\PresenceWindow;
 use App\Agents\DriverRequestEndings;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandRefusal;
@@ -59,10 +60,12 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
         private CommandFacts $facts,
         private DriverRequestEndings $endings,
         private CapacityRelease $capacity,
+        private DriverCatalogue $drivers,
     ) {}
 
     /**
-     * Marks silent every active session whose last beat, or whose start when it never beat, is a presence window old.
+     * Marks silent every active session whose last beat, or whose start when it never beat, is a presence window old,
+     * but for one the journal drives itself, which beats only while a turn runs.
      */
     public function markSilentStarts(): void
     {
@@ -248,6 +251,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     {
         AgentSession::query()->withStatus(SessionStatus::Active)
             ->showedNoLifeSince($cutoff)
+            ->withoutLiveRuntimeOf($this->drivers->drivenKeys())
             ->update(['status' => SessionStatus::Silent->value, 'silent_since' => $now]);
     }
 }

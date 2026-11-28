@@ -25,7 +25,7 @@ final class ClaudeCodeKeyScriptsTest extends TestCase
 {
     private const string KEY_SCRIPTS = 'claude-code/2.1.323/keyscripts';
 
-    private const string BUILD = '2.1.323';
+    private const string BUILD = '2.1.332';
 
     private const int STREAM_MS = 100;
 

@@ -43,6 +43,7 @@ use App\Agents\Drivers\Codex\CodexSignIn;
 use App\Agents\Drivers\Codex\CodexSignInEnvironment;
 use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\Codex\CodexSkills;
+use App\Agents\Drivers\Codex\CodexTurnResults;
 use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
@@ -130,7 +131,7 @@ final class DriversServiceProvider extends ServiceProvider
             ->signInProbe([$driver, 'login', 'status'], CodexSignInReader::class)
             ->layout(CodexLayout::class)
             ->keyScripts([CodexChangeModel::class, CodexChangeEffort::class])
-            ->headlessTurns(HeadlessTurns::onAccountOwner([$driver, 'app-server']))
+            ->headlessTurns(HeadlessTurns::eachInAProcess(CodexTurnResults::class))
             ->signIn(new SignInSetup(
                 executable: $signInExecutable,
                 environment: CodexSignInEnvironment::class,

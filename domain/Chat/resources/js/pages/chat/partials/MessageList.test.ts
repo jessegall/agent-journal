@@ -33,7 +33,13 @@ function message(
   number: number,
   author: string,
   authorLabel: string,
-  options: { group?: number; body?: string; targetNumber?: number } = {},
+  options: {
+    group?: number;
+    body?: string;
+    targetNumber?: number;
+    delivery?: "sent" | "arrived" | "read" | "failed";
+    deliveryFailure?: string;
+  } = {},
 ): ChatEntryData {
   const targetNumber = options.targetNumber ?? null;
 
@@ -51,6 +57,8 @@ function message(
       targetMessageId: targetNumber === null ? null : `m${targetNumber}`,
       targetNumber,
       isReadByViewer: true,
+      delivery: options.delivery ?? "sent",
+      deliveryFailure: options.deliveryFailure ?? null,
     },
   } as ChatEntryData;
 }
@@ -75,6 +83,7 @@ function listOf(
       conversationProp: "page",
       inboxId: "inbox-chat",
       startWait: props.startWait ?? null,
+      addresseeName: "Agent 3",
     } as never,
   });
 }
@@ -149,21 +158,45 @@ describe("MessageList", () => {
     expect(list.text()).toContain("<b>bold</b>");
   });
 
-  it("shows under the user's own last message that it waits for the agent to start", () => {
+  it("shows one tick and what a sent message waits for while the agent starts", () => {
     const list = listOf({
       entries: [message(1, "user:user-1", "You")],
       startWait: "Waiting for Agent 3 to start",
     });
 
     expect(list.get("[data-start-wait]").text()).toBe("Waiting for Agent 3 to start");
+    expect(list.get("[data-ticks]").attributes("data-ticks")).toBe("sent");
+    expect(list.get("[data-ticks]").attributes("aria-label")).toBe("Sent · not yet with Agent 3");
   });
 
-  it("shows no wait once the agent answered last", () => {
+  it("shows two ticks once the message arrived, and filled ticks once it was read", () => {
     const list = listOf({
-      entries: [message(1, "user:user-1", "You"), message(2, "agent:a3", "Agent 3")],
+      entries: [
+        message(1, "user:user-1", "You", { delivery: "arrived" }),
+        message(2, "user:user-1", "You", { delivery: "read" }),
+      ],
       startWait: "Waiting for Agent 3 to start",
     });
 
+    expect(list.findAll("[data-ticks]").map((ticks) => ticks.attributes("aria-label"))).toEqual([
+      "Arrived at Agent 3",
+      "Read by Agent 3",
+    ]);
     expect(list.find("[data-start-wait]").exists()).toBe(false);
+  });
+
+  it("shows Not delivered with its reason and Retry, and puts no ticks under another's message", async () => {
+    const list = listOf({
+      entries: [
+        message(1, "user:user-1", "You", { delivery: "failed", deliveryFailure: "The start was refused." }),
+        message(2, "agent:a3", "Agent 3"),
+      ],
+    });
+
+    expect(list.get('[data-delivery="failed"]').text()).toContain("Not delivered");
+    expect(list.get('[data-delivery="failed"]').text()).toContain("The start was refused.");
+    expect(list.findAll("[data-delivery]")).toHaveLength(1);
+    await list.get("[data-retry-delivery]").trigger("click");
+    expect(list.emitted("retryDelivery")).toEqual([["m1"]]);
   });
 });

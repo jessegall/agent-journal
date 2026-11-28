@@ -79,7 +79,7 @@ final class NotifyEntryReplayedTest extends TestCase
 
         $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
         $this->assertSame(1, $entry->uses);
-        $this->assertSame(false, $entry->buildOn('2.1.323')?->isStale);
+        $this->assertSame(false, $entry->buildOn('2.1.332')?->isStale);
     }
 
     /**

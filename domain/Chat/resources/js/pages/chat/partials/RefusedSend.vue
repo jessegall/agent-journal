@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from "@kit/Button";
+import Icon from "@kit/Icon";
 import type { RecoveryEntry } from "../../../composables/useMessageDrafts";
 
 /**
@@ -22,7 +23,9 @@ const emit = defineEmits<{
       {{ entry.text }}
     </p>
     <span class="flex flex-wrap items-center justify-end gap-x-1.5 text-right text-meta leading-[15px] text-text-4">
-      <span class="font-medium text-danger">Not delivered</span>
+      <span class="inline-flex items-center gap-1 font-medium text-danger"
+        ><Icon name="alert" :size="12" />Not delivered</span
+      >
       <span class="text-border-3">·</span>
       <span class="text-text-3">{{ reason }}</span>
       <Button

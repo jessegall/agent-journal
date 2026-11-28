@@ -78,6 +78,14 @@ interface DriverCatalogue
     public function familyKeys(): array;
 
     /**
+     * The keys of the drivers whose runtimes the journal drives itself, one headless turn at a time, so no host claims
+     * their work.
+     *
+     * @return list<string>
+     */
+    public function drivenKeys(): array;
+
+    /**
      * The catalogue's revision, which rises with every registration, so a choice made against an older one can be told.
      */
     public function revision(): int;

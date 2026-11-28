@@ -7,6 +7,8 @@ namespace App\Recordings;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostRoute;
 use App\Hosts\Protocol\Payloads\HostClaimedInstructionsPayload;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
+use App\Hosts\Protocol\Payloads\HostInventoryProcessPayload;
 use App\Recordings\Enums\Wire;
 
 /**
@@ -71,7 +73,7 @@ final readonly class ScenarioProcesses
             $events[] = $isInventory ? $event->withCall($call->withBody($this->inventoryOf($call->body))) : $event;
         }
 
-        return clone ($exchange, ['events' => $events]);
+        return $exchange->withEvents($events);
     }
 
     private function isAboutAnotherProcess(RecordedCall $call): bool
@@ -85,13 +87,18 @@ final readonly class ScenarioProcesses
      */
     private function inventoryOf(string $body): string
     {
-        $inventory = (array) json_decode($body, true);
-        $inventory['processes'] = array_values(array_filter(
-            (array) ($inventory['processes'] ?? []),
-            fn (array $process) => in_array($process['process_id'] ?? '', $this->opened, true),
+        $inventory = HostInventoryPayload::from(json_decode($body, true, flags: JSON_THROW_ON_ERROR));
+        $processes = array_values(array_filter(
+            $inventory->processes,
+            fn (HostInventoryProcessPayload $process) => in_array($process->processId, $this->opened, true),
         ));
 
-        return (string) json_encode($inventory, JSON_UNESCAPED_SLASHES);
+        $wire = $inventory->toArray();
+        $wire['processes'] = array_map(fn (HostInventoryProcessPayload $process) => $process->toArray(), $processes);
+        // The order the host last answered before the scenario began is no part of it; a host that starts afresh names none.
+        $wire['answered_through'] = '';
+
+        return (string) json_encode($wire, JSON_UNESCAPED_SLASHES);
     }
 
     /**

@@ -25,7 +25,7 @@ final class DriverImageCheckTest extends TestCase
         $this->folder = sys_get_temp_dir().'/driver-image-'.bin2hex(random_bytes(6));
         File::makeDirectory("{$this->folder}/bin", 0o755, true);
         File::makeDirectory("{$this->folder}/policies");
-        $this->program('codex', 'echo "codex-cli 0.165.0"');
+        $this->program('codex', 'echo "codex-cli 0.172.0"');
         $this->program('codex-code-mode-host', 'true');
         File::put("{$this->folder}/programs.txt", "{$this->folder}/bin/codex\n{$this->folder}/bin/codex-code-mode-host\n");
         File::put("{$this->folder}/policies/config.toml", "[mcp_servers.journal]\n");
@@ -51,7 +51,7 @@ final class DriverImageCheckTest extends TestCase
         $results['version exits non-zero'] = $this->check();
         $this->program('codex', 'echo "codex-cli 0.166.0"');
         $results['another version'] = $this->check();
-        $this->program('codex', 'echo "codex-cli 0.165.0"');
+        $this->program('codex', 'echo "codex-cli 0.172.0"');
 
         $this->program('claude', 'true');
         $results['other driver'] = $this->check();
@@ -69,7 +69,7 @@ final class DriverImageCheckTest extends TestCase
                 'sound' => '',
                 'missing program' => "driver-image: {$this->folder}/bin/codex-code-mode-host is missing or not runnable",
                 'version exits non-zero' => 'driver-image: codex --version exited non-zero',
-                'another version' => 'driver-image: codex prints 0.166.0, not 0.165.0',
+                'another version' => 'driver-image: codex prints 0.166.0, not 0.172.0',
                 'other driver' => 'driver-image: the image holds claude as well',
                 'node' => 'driver-image: the image holds Node',
                 'writable policy' => "driver-image: {$this->folder}/policies/config.toml is not root's and read-only",
@@ -89,7 +89,7 @@ final class DriverImageCheckTest extends TestCase
                 base_path('.docker/helper/checks/driver-image.sh'),
                 'codex',
                 '2',
-                '0.165.0',
+                '0.172.0',
                 "{$this->folder}/programs.txt",
                 "{$this->folder}/policies",
                 '--',

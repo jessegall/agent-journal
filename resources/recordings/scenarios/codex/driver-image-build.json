@@ -1,0 +1,38 @@
+{
+    "description": "With its driver image gone from the daemon, a restarted host's allow finds it absent, the journal builds the Codex image again, and a headless turn runs on it",
+    "steps": [
+        {
+            "do": "remove-image",
+            "image": "driver"
+        },
+        {
+            "do": "restart-host"
+        },
+        {
+            "do": "start-session",
+            "agent": "Coder",
+            "type": "headless",
+            "model": "gpt-6-luna",
+            "effort": "low"
+        },
+        {
+            "do": "send-message",
+            "agent": "Coder",
+            "text": "Run: ls."
+        },
+        {
+            "do": "wait-for",
+            "fact": "turn-ended",
+            "seconds": 900
+        },
+        {
+            "do": "stop",
+            "agent": "Coder"
+        },
+        {
+            "do": "wait-for",
+            "fact": "stopped",
+            "seconds": 60
+        }
+    ]
+}

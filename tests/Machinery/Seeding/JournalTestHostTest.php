@@ -167,7 +167,7 @@ final class JournalTestHostTest extends TestCase
             ->assertJournal(fn (Assert $journal) => $journal
                 ->where(
                     'hostProcesses.terminal.rows',
-                    fn (array $rows) => str_contains(implode("\n", $rows), 'Code v2.1.323'),
+                    fn (array $rows) => str_contains(implode("\n", $rows), 'Code v2.1.332'),
                 )
                 ->where('hostProcesses.terminal.purpose', HostProcessPurpose::AgentTerminal)
                 ->count('testHost.claudeStarts', 1))
@@ -186,7 +186,7 @@ final class JournalTestHostTest extends TestCase
                     'Mac',
                     base_path(),
                     driver: 'codex',
-                    build: '0.165.0',
+                    build: '0.172.0',
                     profile: 'codex',
                     driverType: DriverType::Terminal,
                     model: 'gpt-5.5',
@@ -197,7 +197,7 @@ final class JournalTestHostTest extends TestCase
             ->assertJournal(fn (Assert $journal) => $journal
                 ->where(
                     'hostProcesses.terminal.rows',
-                    fn (array $rows) => str_contains(implode("\n", $rows), 'OpenAI Codex (v0.165.0)'),
+                    fn (array $rows) => str_contains(implode("\n", $rows), 'OpenAI Codex (v0.172.0)'),
                 )
                 ->count('testHost.codexStarts', 1)
                 ->count('testHost.claudeStarts', 0))
@@ -206,7 +206,7 @@ final class JournalTestHostTest extends TestCase
 
     public function test_a_sign_in_runs_on_the_real_host_and_its_challenge_reaches_the_test(): void
     {
-        $codex = CodexMock::from('codex/0.165.0')
+        $codex = CodexMock::from('codex/0.172.0')
             ->expects('initialize', fn (Answer $answer) => $answer->replies('device-login'))
             ->expects('initialized', fn (Answer $answer) => $answer)
             ->expects('account/login/start', fn (Answer $answer) => $answer

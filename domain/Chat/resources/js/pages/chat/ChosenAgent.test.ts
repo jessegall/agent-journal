@@ -66,4 +66,11 @@ describe("ChosenAgent", () => {
     expect(bar.findAll("[data-chat-list-trigger]")).toHaveLength(1);
     expect(bar.find("#agent-bar-members").exists()).toBe(false);
   });
+
+  it("stays one line: an old report adds no Last report line under it", () => {
+    const status = { sessionState: "unknown", observationAgeSeconds: 256, reason: null, remedy: null };
+    const bar = mount(ChosenAgent, { props: { data: chatWith({ status } as unknown as Partial<AgentOptionData>) } });
+
+    expect(bar.text()).not.toContain("Last report");
+  });
 });

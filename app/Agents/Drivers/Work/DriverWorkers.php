@@ -12,11 +12,11 @@ use App\Hosts\Commands\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Hosts\Commands\RenewHostWorker\RenewHostWorkerCommand;
 use App\Hosts\Commands\StreamHostProcess\StreamHostProcessCommand;
 use App\Hosts\Commands\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
-use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\HostWake;
 use App\Hosts\ProcessFeed;
 use App\Hosts\Protocol\HostProcessType;
 use App\Hosts\StreamRate;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
@@ -56,7 +56,6 @@ final readonly class DriverWorkers
         private DriverRestartSignal $restart,
         private CommandRegistry $registry,
         private WorkerLease $lease,
-        private AccountOwners $owners,
     ) {}
 
     /**
@@ -73,17 +72,11 @@ final readonly class DriverWorkers
             $streams[] = HostWake::runtimeKey($process->agent_runtime_id);
         }
 
-        $isOwner = $process->purpose === HostProcessPurpose::AccountOwner;
-
-        if ($isOwner) {
-            $streams[] = HostWake::accountKey($process->sessionProcess()->sole());
-        }
-
         $cursors = array_combine($streams, array_map($this->feed->lastCursor(...), $streams));
 
         // The process's first worker reads all it printed, as a short process may print before a worker begins; a
-        // later worker of a probe or an owner reads it all again too (HostProcessPurpose::readsItsOutputWhole).
-        if ($generation === 1 || $process->purpose->readsItsOutputWhole()) {
+        // later worker of a probe reads it all again too, as its verdict needs the whole of it.
+        if ($generation === 1 || $process->purpose->isProbe()) {
             $cursors[$output] = ProcessFeed::FIRST_CURSOR;
         }
 
@@ -168,7 +161,7 @@ final readonly class DriverWorkers
 
     private function resumed(DriverWork $work, HostProcess $process): DriverActions
     {
-        $runtimes = $this->owners->runtimesOf($process)->get();
+        $runtimes = AgentRuntime::query()->whereKey($process->agent_runtime_id)->get();
         $inFlight = array_values(DriverRequest::query()->inFlightForAny($runtimes)->get()->all());
         $ordered = array_merge(...array_map(
             fn (DriverRequest $request) => HostInstruction::findOrderedFor($request),

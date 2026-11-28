@@ -134,16 +134,6 @@ const subline = computed(() => {
           </template>
         </p>
       </template>
-      <template
-        v-if="
-          status?.sessionState === 'unknown' &&
-          status.observationAgeSeconds !== null
-        "
-      >
-        <p class="px-1.5 text-small text-text-3">
-          Last report {{ status.observationAgeSeconds }} s ago
-        </p>
-      </template>
     </div>
     <template v-if="status">
       <Status

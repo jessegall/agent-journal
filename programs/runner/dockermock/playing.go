@@ -22,14 +22,18 @@ import (
 // playedPause is how long a played container waits between two groups of its recorded output.
 const playedPause = 5 * time.Millisecond
 
-// Playing is a Docker daemon played from a recorded scenario: every call gets its recorded answer, and a container's
-// attach plays what the driver exchange of its program printed, gated on what is typed into it as it was recorded.
+// Playing is a Docker daemon played from a recorded scenario: every call gets its recorded answer, a container's
+// attach plays what the driver exchange of its program printed, gated on what is typed into it as it was recorded, and
+// the calls its program made to the journal are made again as its output reaches their moments.
 type Playing struct {
-	server *httptest.Server
-	replay *recorded.CallReplay
+	server   *httptest.Server
+	replay   *recorded.CallReplay
+	scenario recorded.Scenario
 	// programs are the driver exchanges by the id and the name of the container that ran them, as recorded.
 	programs map[string]program
-	mutex    sync.Mutex
+	// environments are the live environments of the containers created, by the name and the id they were created as.
+	environments map[string][]string
+	mutex        sync.Mutex
 }
 
 // program is the driver exchange a container ran, and whether the container had a terminal.
@@ -49,56 +53,74 @@ type createdProgram struct {
 // recording does not hold fails the test naming it.
 func Play(t testing.TB, driver, name string) *Playing {
 	t.Helper()
-	scenario := recorded.MustLoad(t, driver, name)
-	playing := &Playing{replay: recorded.NewCallReplay(t, scenario, recording.WireDocker), programs: programsOf(t, scenario)}
-	playing.replay.Upgraded = playing.attached
-	// A container's wait or followed log answers only once what was asked of it while it waited was asked here too.
-	playing.replay.IsLongPoll = isLongPoll
-	playing.replay.OrderGroup = containerCalledBy
-	headers := daemonHeadersOf(t, scenario)
-	playing.server = httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.URL.Path == pingPath {
-			answerPing(writer, headers)
-			return
-		}
-		playing.replay.ServeHTTP(writer, request)
-	}))
-	// Closing the replay first ends a call still held in its order, which the server's close would wait for.
+	playing, err := PlayScenario(t, recorded.MustLoad(t, driver, name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	playing.server = httptest.NewServer(playing)
 	t.Cleanup(func() {
-		playing.replay.Close()
+		playing.Close()
 		playing.server.Close()
 	})
 	return playing
 }
 
-// pingPath is where Docker's client asks the daemon's API version before its first call.
-const pingPath = "/_ping"
-
-// daemonHeaders are the headers the recorded daemon names itself by on every answer.
-var daemonHeaders = []string{"Api-Version", "Docker-Experimental", "Ostype", "Server"}
-
-// daemonHeadersOf are the recorded daemon's own headers, as its first answer carries them: a recording opens on a
-// host whose client asked the version before, so it holds no ping, and a played daemon answers one by these.
-func daemonHeadersOf(t testing.TB, scenario recorded.Scenario) map[string]string {
-	t.Helper()
-	calls, err := scenario.Calls(recording.WireDocker)
+// PlayScenario is a Docker daemon that plays the recorded scenario, reporting each call the recording does not hold
+// to the failures; serve it, and close it before its server.
+func PlayScenario(failures recorded.Failures, scenario recorded.Scenario) (*Playing, error) {
+	replay, err := recorded.NewCallReplay(failures, scenario, recording.WireDocker)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
-	for _, call := range calls {
-		if call.Answered.Headers["Api-Version"] != "" {
-			return call.Answered.Headers
-		}
+	programs, err := programsOf(scenario)
+	if err != nil {
+		return nil, err
 	}
-	t.Fatal("the recorded daemon named no API version")
-	return nil
+	playing := &Playing{replay: replay, scenario: scenario, programs: programs,
+		environments: map[string][]string{}}
+	replay.Upgraded = playing.attached
+	replay.Heard = playing.heard
+	// A container's wait or followed log answers only once what was asked of it while it waited was asked here too.
+	replay.IsLongPoll = isLongPoll
+	replay.OrderGroup = containerCalledBy
+	return playing, nil
 }
 
-func answerPing(writer http.ResponseWriter, headers map[string]string) {
-	for _, name := range daemonHeaders {
-		writer.Header().Set(name, headers[name])
+// ServeHTTP answers every call by its recording.
+func (playing *Playing) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	playing.replay.ServeHTTP(writer, request)
+}
+
+// Close ends every call still held in its order, so the server serving the daemon can close.
+func (playing *Playing) Close() {
+	playing.replay.Close()
+}
+
+// AssertPlayedWhole reports each recorded call that was never asked to the failures.
+func (playing *Playing) AssertPlayedWhole(failures recorded.Failures) {
+	playing.replay.AssertPlayedWhole(failures)
+}
+
+// IsPlayedWhole answers whether every recorded call was asked.
+func (playing *Playing) IsPlayedWhole() bool {
+	return playing.replay.IsPlayedWhole()
+}
+
+// heard keeps the live environment of each container created, by the name and the id the recording gave it.
+func (playing *Playing) heard(call recorded.Call, body []byte) {
+	if !strings.HasSuffix(call.Answered.Path, "/containers/create") {
+		return
 	}
-	_, _ = io.WriteString(writer, "OK")
+	var answered struct {
+		ID string `json:"Id"`
+	}
+	_ = json.Unmarshal(decoded(call.Answered.Body), &answered)
+	playing.mutex.Lock()
+	defer playing.mutex.Unlock()
+	playing.environments[answered.ID] = createdEnvironment(body)
+	if name := call.Asked.Query["name"]; name != "" {
+		playing.environments[name] = createdEnvironment(body)
+	}
 }
 
 // Host is the daemon's address as Docker's client takes it.
@@ -107,11 +129,10 @@ func (playing *Playing) Host() string {
 }
 
 // programsOf pairs each recorded container, by its id and its name, with the driver exchange its create ran.
-func programsOf(t testing.TB, scenario recorded.Scenario) map[string]program {
-	t.Helper()
+func programsOf(scenario recorded.Scenario) (map[string]program, error) {
 	calls, err := scenario.Calls(recording.WireDocker)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 	drivers := scenario.ExchangesOn(recording.WireDriver)
 	programs := map[string]program{}
@@ -138,7 +159,7 @@ func programsOf(t testing.TB, scenario recorded.Scenario) map[string]program {
 			}
 		}
 	}
-	return programs
+	return programs, nil
 }
 
 // attached plays the program of the attached container on its connection, or nothing for a container the recording
@@ -159,7 +180,16 @@ func (playing *Playing) attached(call recorded.Call, connection net.Conn, buffer
 	if !ran.hasTTY {
 		output = stdoutFrames{connection}
 	}
-	_ = recording.GatedReplay(fixture, buffered, output, playedPause, func(recording.Typed) error { return nil })
+	calls, err := journalCallsOf(playing.scenario, ran.exchange)
+	if err != nil {
+		return
+	}
+	playing.mutex.Lock()
+	environment := playing.environments[containerOf(call.Answered.Path)]
+	playing.mutex.Unlock()
+	caller := newJournalCaller(calls, playing.scenario.Manifest.Driver, environment, output, playing.replay.Values())
+	defer caller.finish()
+	_ = recording.GatedReplay(fixture, buffered, caller, playedPause, func(recording.Typed) error { return nil })
 }
 
 // isLongPoll answers whether the call waits on its container: a wait, or a log followed until the container ends.

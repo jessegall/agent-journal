@@ -28,6 +28,7 @@ use Tests\Support\Hosts\Steps\CompletesBrowserSignIn;
 use Tests\Support\Hosts\Steps\Contracts\HostStep;
 use Tests\Support\Hosts\Steps\ReleasesTurns;
 use Tests\Support\Mocks\Mock;
+use Tests\Support\Recordings\PlayedScenario;
 use Tests\Support\Seeding\TestJournal;
 
 /**
@@ -65,14 +66,14 @@ final class TestHost
      */
     private const string CODEX_TERMINAL_TURN = 'resources/recordings/codex/0.165.0/turns/terminal-turn/fixture.json';
 
-    private const string CLAUDE_BUILD = '2.1.323';
+    private const string CLAUDE_BUILD = '2.1.332';
 
     /**
      * The recorded exchanges of the Claude Code build, which a contained host's session containers answer with.
      */
     private const string CLAUDE_EXCHANGES = 'resources/recordings/claude-code/'.self::CLAUDE_BUILD.'/exchanges';
 
-    private const string CODEX_BUILD = '0.165.0';
+    private const string CODEX_BUILD = '0.172.0';
 
     /**
      * @var list<InvokedProcess>
@@ -109,6 +110,7 @@ final class TestHost
         private readonly string $ownerEmail,
         private readonly ArrangementType $arrangement,
         private readonly bool $showsDriverArrangements,
+        private readonly PlayedScenario|null $playing,
     ) {}
 
     /**
@@ -125,6 +127,7 @@ final class TestHost
         string $ownerEmail,
         ArrangementType $arrangement,
         bool $showsDriverArrangements,
+        PlayedScenario|null $playing = null,
     ): self {
         $folder = sys_get_temp_dir().'/journal-real-host-'.bin2hex(random_bytes(6));
         mkdir($folder, 0o700, true);
@@ -137,6 +140,7 @@ final class TestHost
             $ownerEmail,
             $arrangement,
             $showsDriverArrangements,
+            $playing,
         );
         $real->port = self::freePort();
         $real->serveJournal();
@@ -489,7 +493,28 @@ final class TestHost
             return $environment;
         }
 
-        return [...$environment, ...self::containedEnvironment()];
+        return [...$environment, ...self::containedEnvironment(), 'AGENTS_INSTALLATION_NAME' => $this->installationName()];
+    }
+
+    /**
+     * The installation name the host's containers are prefixed with: the played scenario's when it plays one.
+     */
+    private function installationName(): string
+    {
+        return $this->playing === null ? self::INSTALLATION_NAME : $this->playing->installationName;
+    }
+
+    /**
+     * Each call the played scenario's daemon could not answer from its recording, and each it held that was never
+     * asked once it stopped, one line each.
+     *
+     * @return list<string>
+     */
+    public function playedFailures(): array
+    {
+        $failures = "{$this->folder}/played-failures";
+
+        return is_file($failures) ? array_values(array_filter(explode("\n", (string) file_get_contents($failures)))) : [];
     }
 
     /**
@@ -763,6 +788,13 @@ final class TestHost
      */
     private function mockDocker(): array
     {
+        if ($this->playing !== null) {
+            return [
+                self::binary(), 'mock', 'playing', '--scenario', $this->playing->name, '--socket', "{$this->folder}/docker.sock",
+                '--failures', "{$this->folder}/played-failures", '--until-input-ends',
+            ];
+        }
+
         $command = [
             self::binary(), 'mock', 'docker', '--socket', "{$this->folder}/docker.sock", '--image', self::IMAGE,
             '--containers', "{$this->folder}/containers.jsonl", '--until-input-ends',
@@ -792,7 +824,7 @@ final class TestHost
         ];
 
         if ($this->arrangement->isContained()) {
-            $command = [...$command, '--installation-name', self::INSTALLATION_NAME, '--data-folder', MountRules::DATA_FOLDER];
+            $command = [...$command, '--installation-name', $this->installationName(), '--data-folder', MountRules::DATA_FOLDER];
         }
 
         // The installation's programs come first on the host's path, so a program started by name runs its mock.

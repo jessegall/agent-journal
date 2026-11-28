@@ -384,7 +384,7 @@ final class JournalHostProcessesTest extends TestCase
         );
     }
 
-    public function test_passed_codex_probes_open_the_accounts_owner_whose_writes_read_back(): void
+    public function test_passed_codex_probes_open_the_first_turn_as_a_codex_exec_of_its_own(): void
     {
         $this->journal
             ->owner()
@@ -392,21 +392,20 @@ final class JournalHostProcessesTest extends TestCase
             ->showDriverArrangements()
             ->idleAgent('Driven')
             ->enrollHost('Mac', [base_path()]);
-        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->openCodexRuntime('Mac', base_path()));
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->openCodexRuntime('Mac', base_path(), 'Run: ls.'));
         $opened = $this->journal->openedRuntimeOf('Driven');
 
         $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
-            ->passCodexProbes('driven')->callAccountOwner('owner'));
+            ->passCodexProbes('driven')->nameProcess('turn', HostProcessPurpose::AgentTurn));
 
-        $this->journal->hostProcess('owner', fn (TestHostProcess $owner) => $owner->beginWorker());
-
+        $argv = $this->journal->payloadOf($this->journal->hostInstructionsOf('turn')[0])['argv'];
         $this->journal->assertResult(
-            [true, HostProcessPurpose::AccountOwner, ['codex', 'app-server'], ['initialize']],
+            [true, ['exec', '--json', '--skip-git-repo-check'], 'Run: ls.'],
             [
                 AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->hasProvenStart(),
-                $this->journal->hostProcessCalled('owner')->purpose,
-                array_slice($this->journal->payloadOf($this->journal->hostInstructionsOf('owner')[0])['argv'], -2),
-                array_column($this->journal->pipeInputOf('owner'), 'method'),
+                array_slice($argv, 1, 3),
+                $argv[array_key_last($argv)],
             ],
         );
     }

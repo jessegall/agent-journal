@@ -231,7 +231,7 @@ final class AnswerNavigationTest extends TestCase
      *
      * @return array{EnrolledHost, NavigationRequest}
      */
-    private function stalled(string $build = '2.1.323'): array
+    private function stalled(string $build = '2.1.332'): array
     {
         [$host, $opened] = $this->openRuntime(build: $build);
         $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));

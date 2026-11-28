@@ -20,7 +20,7 @@ use Tests\TestCase;
  */
 final class SignInMethodsTest extends TestCase
 {
-    private const string NO_PROVIDER_TOKEN = 'codex has no provider_token sign-in on this host (pinned build 0.165.0).';
+    private const string NO_PROVIDER_TOKEN = 'codex has no provider_token sign-in on this host (pinned build 0.172.0).';
 
     public function test_each_program_declares_its_methods_oauth_first(): void
     {

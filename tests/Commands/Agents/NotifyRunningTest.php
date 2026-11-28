@@ -142,7 +142,7 @@ final class NotifyRunningTest extends TestCase
             $host->hostId,
             self::FOLDER,
             $driver,
-            '2.1.323',
+            '2.1.332',
             'claude',
             $driverType,
             'claude-opus-5-5',

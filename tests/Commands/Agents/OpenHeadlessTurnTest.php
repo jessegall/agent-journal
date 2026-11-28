@@ -10,8 +10,11 @@ use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Agents\Drivers\Enums\RequestProgress;
+use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\Protocol\HostProcessReportType;
+use App\Hosts\Protocol\Payloads\HostInventoryPayload;
 use App\Messages\Data\MessageTextData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
@@ -20,6 +23,7 @@ use App\Sessions\OpenedRuntime;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\Hosts\TestHostInstruction;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\TestCase;
 
@@ -121,6 +125,55 @@ final class OpenHeadlessTurnTest extends TestCase
     /**
      * The driven agent's runtime with its build and sign-in proven and its first turn, named first, running.
      */
+    /**
+     * A turn that answered and was then lost with its restarted host, before its exit was seen, is followed by the next
+     * turn for work that arrived while it still looked live, as nothing else would take that work.
+     */
+    public function test_a_lost_turn_is_followed_by_a_turn_for_the_work_that_waits(): void
+    {
+        $opened = $this->runtimeOnItsFirstTurn();
+        $this->journal->asOwner(new DeliverAgentCommand(
+            $this->journal->agentCalled('Driven')->id,
+            $opened->sessionId,
+            'second',
+            [new MessageTextData('And then: pwd.')],
+        ));
+        $this->journal->hostProcess('driven-sign-in', fn (TestHostProcess $signIn) => $signIn
+            ->report(HostProcessReportType::Running)->report(HostProcessReportType::Exited, 0));
+        [$firstOpen] = $this->journal->hostInstructionsOf('first');
+        $this->journal->hostInstruction($firstOpen, fn (TestHostInstruction $instruction) => $instruction->answer())
+            ->hostProcess('first', fn (TestHostProcess $first) => $first->report(HostProcessReportType::Running));
+        $first = DriverRequest::query()->findOrFail($firstOpen->driver_request_id);
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $this->journal->hostCalled('Mac')->hostId,
+            $first->id,
+            $first->attempt_version,
+            RequestProgress::Applied,
+            AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->conversation_id,
+            null,
+        ));
+        $inventory = HostInventoryPayload::from([
+            'protocol' => 1,
+            'release' => '6.0.0',
+            'answered_through' => $firstOpen->id,
+            'capabilities' => [],
+            'processes' => [],
+        ]);
+
+        $this->journal->asSystem(new NotifyHostInventoryCommand($this->journal->hostCalled('Mac')->hostId, $inventory));
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven
+            ->nameProcess('second', HostProcessPurpose::AgentTurn));
+
+        $this->journal->assertResult(
+            [HostProcessStatus::Lost, 2, 'And then: pwd.'],
+            [
+                $this->journal->hostProcessCalled('first')->status,
+                $this->turnCount($opened->runtimeId),
+                $this->promptOf('second'),
+            ],
+        );
+    }
+
     private function runtimeOnItsFirstTurn(): OpenedRuntime
     {
         $this->journal

@@ -75,7 +75,7 @@ final class ContainedSessionLifeTest extends TestCase
                     'Box',
                     base_path(),
                     driver: 'claude-code',
-                    build: '2.1.323',
+                    build: '2.1.332',
                     profile: 'claude',
                     driverType: DriverType::Terminal,
                     model: 'claude-opus-5-5',

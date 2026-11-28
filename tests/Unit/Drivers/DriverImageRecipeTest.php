@@ -62,7 +62,7 @@ final class DriverImageRecipeTest extends TestCase
         $codex = $recipes->of(DriverImage::at('.docker/drivers/codex'), self::BASE);
         $again = $recipes->of(DriverImage::at('.docker/drivers/codex'), self::BASE);
 
-        $this->assertSame([$codex->digest, '0.165.0'], [$again->digest, $codex->version]);
+        $this->assertSame([$codex->digest, '0.172.0'], [$again->digest, $codex->version]);
         $this->assertStringContainsString('Dockerfile', $codex->context);
     }
 }

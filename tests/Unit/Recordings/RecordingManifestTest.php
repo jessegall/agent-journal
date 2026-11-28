@@ -18,7 +18,7 @@ final class RecordingManifestTest extends TestCase
 {
     public function test_each_reason_makes_a_recording_stale_and_a_fresh_one_has_none(): void
     {
-        $manifest = RecordingManifest::of('scenario-1', 'claude-code', '2.1.323', 'programs-1', '2026-11-27', [
+        $manifest = RecordingManifest::of('scenario-1', 'claude-code', '2.1.332', 'programs-1', '2026-11-27', [
             '01-terminal',
         ]);
         $written = $manifest->jsonSerialize();

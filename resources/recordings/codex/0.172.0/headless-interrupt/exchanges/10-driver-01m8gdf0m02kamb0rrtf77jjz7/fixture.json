@@ -1,0 +1,40 @@
+{
+    "driver": "driver",
+    "driver_version": "sha256:3410274eba844d7361f36bb3b4d36b12d5a1841df4afa369baacfc6c494e14e0",
+    "profile": "",
+    "mode": "process",
+    "geometry": {
+        "columns": 0,
+        "rows": 0
+    },
+    "recorded_at": "2026-11-28T06:28:44.330564+00:00",
+    "initial_state": {
+        "working_folder": "/workspace",
+        "arguments": [
+            "--",
+            "codex",
+            "login",
+            "status"
+        ],
+        "environment_names": [
+            "CODEX_HOME",
+            "HOME",
+            "JOURNAL_ACCOUNTS_ROOT",
+            "JOURNAL_START_REF"
+        ]
+    },
+    "output": [
+        {
+            "offset": 703837000,
+            "stream": "stderr",
+            "bytes": "TG9nZ2VkIGluIHVzaW5nIENoYXRHUFQK"
+        }
+    ],
+    "inputs": [],
+    "resizes": [],
+    "exit_code": 0,
+    "checkpoints": [],
+    "script_parameters": [],
+    "expected_keys": [],
+    "expected_transitions": []
+}

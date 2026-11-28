@@ -50,11 +50,9 @@ final class TurnEndTest extends TestCase
 
         yield 'a completed Codex turn' => [new TurnEnd(codexStatus: 'completed'), ...$applied];
 
-        yield 'an interrupted Codex turn' => [new TurnEnd(codexStatus: 'interrupted'), ...$applied];
+        yield 'a turn the journal interrupted' => [new TurnEnd(exitCode: 130)->interrupted(), ...$applied];
 
         yield 'a failed Codex turn' => [new TurnEnd(codexStatus: 'failed'), ...$failed];
-
-        yield 'a Codex owner that exited' => [new TurnEnd(codexStatus: 'ownerExited'), ...$failed];
 
         yield 'a terminal turn whose composer came back' => [new TurnEnd(composerLeft: true), ...$applied];
 

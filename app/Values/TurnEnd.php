@@ -18,10 +18,7 @@ final readonly class TurnEnd
 {
     private const string SUCCESS_SUBTYPE = 'success';
 
-    private const array APPLIED_CODEX_STATUSES = [
-        'completed',
-        'interrupted',
-    ];
+    private const string COMPLETED_CODEX_STATUS = 'completed';
 
     public function __construct(
         public int|null $exitCode = null,
@@ -32,7 +29,17 @@ final readonly class TurnEnd
         public string|null $codexStatus = null,
         public bool|null $composerLeft = null,
         public string|null $problem = null,
+        public bool $isInterrupted = false,
     ) {}
+
+    /**
+     * The turn as it ended once the journal interrupted it: it ran as asked until the interrupt stopped it, however its
+     * process exited.
+     */
+    public function interrupted(): self
+    {
+        return clone ($this, ['isInterrupted' => true]);
+    }
 
     /**
      * An interrupt is done once the turn it stopped ended. A setting change staged for the turn counts as applied only
@@ -115,8 +122,9 @@ final readonly class TurnEnd
     private function failed(): bool
     {
         return match (true) {
+            $this->isInterrupted => false,
             $this->isResultRead => $this->isResultError || $this->resultSubtype !== self::SUCCESS_SUBTYPE,
-            $this->codexStatus !== null => ! in_array($this->codexStatus, self::APPLIED_CODEX_STATUSES, true),
+            $this->codexStatus !== null => $this->codexStatus !== self::COMPLETED_CODEX_STATUS,
             $this->exitCode !== null => $this->exitCode !== 0,
             default => false,
         };

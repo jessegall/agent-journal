@@ -56,8 +56,8 @@ final class DockerImageVerifierTest extends TestCase
             'name' => $name,
             'architecture' => 'linux/arm64',
             'reference' => $reference,
-            'claude_code' => '2.1.323',
-            'codex' => '0.165.0',
+            'claude_code' => '2.1.332',
+            'codex' => '0.172.0',
             'built_at' => '2026-11-20T21:37:10+00:00',
         ];
     }

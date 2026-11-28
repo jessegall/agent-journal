@@ -10,8 +10,6 @@ use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Exceptions\BuildNotPinned;
-use App\Hosts\Enums\HostProcessPurpose;
-use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\Protocol\HostProcessType;
 use App\Sessions\Enums\TransportProfileType;
 use App\Values\DriverAccount;
@@ -20,7 +18,8 @@ use Tests\TestCase;
 
 /**
  * The PHP profile plans a Codex terminal exactly as the pinned build was recorded running it, apart from paths and
- * ids, and an account's headless turns on one app-server; it refuses another build and an argument that would undo it.
+ * ids, and each headless turn as a codex exec of its own that a later turn resumes; it refuses another build and an
+ * argument that would undo it.
  */
 final class CodexProfileTest extends TestCase
 {
@@ -32,15 +31,24 @@ final class CodexProfileTest extends TestCase
 
     private const string CONVERSATION = '019a0000-0000-7000-8000-000000000001';
 
-    public function test_an_accounts_headless_turns_run_on_one_app_server_that_is_never_restarted(): void
+    public function test_a_headless_turn_runs_a_codex_exec_of_its_own_and_a_later_turn_resumes_its_thread(): void
     {
-        $start = new DriverStart(self::CONVERSATION, HostProcessType::Pipe, '/work', model: self::MODEL, effort: self::EFFORT);
-
-        $plan = $this->profile()->ownerPlan($start);
+        $first = new DriverStart(self::CONVERSATION, HostProcessType::Pipe, '/work', 'Run: ls.', false, self::MODEL, self::EFFORT);
+        $later = new DriverStart(self::CONVERSATION, HostProcessType::Pipe, '/work', 'Again.', true, self::MODEL, self::EFFORT);
 
         $this->journal->assertResult(
-            [['codex', 'app-server'], HostProcessPurpose::AccountOwner, HostProcessType::Pipe, RestartPolicy::Never],
-            [$plan->argv, $plan->purpose, $plan->type, $plan->restart],
+            [
+                ['codex', 'exec', '--json', '--skip-git-repo-check', '--dangerously-bypass-approvals-and-sandbox', '-m', self::MODEL],
+                'Run: ls.',
+                ['codex', 'exec', 'resume', self::CONVERSATION, '--json'],
+                'Again.',
+            ],
+            [
+                array_slice($this->profile()->startPlan($first)->argv, 0, 7),
+                array_last($this->profile()->startPlan($first)->argv),
+                array_slice($this->profile()->startPlan($later)->argv, 0, 5),
+                array_last($this->profile()->startPlan($later)->argv),
+            ],
         );
     }
 
@@ -153,7 +161,7 @@ final class CodexProfileTest extends TestCase
                 removedVariables: [],
                 startFlags: [],
                 accountSettings: [],
-                driverVersion: '0.165.0',
+                driverVersion: '0.172.0',
                 binaryDigest: '',
                 arrangement: 'contained',
                 protectionSettings: '',

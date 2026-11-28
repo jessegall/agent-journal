@@ -453,18 +453,6 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
         return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
     }
 
-    /**
-     * The starts whose session froze this driver image; with none, the starts of sessions that froze none, as local
-     * ones.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofSessionsInImage(Builder $query, string|null $image): void
-    {
-        $query->whereIn('session_id', AgentSession::query()->inDriverImage($image)->ids());
-    }
-
     // ----------[ Scopes ]----------
 
     /**

@@ -7,11 +7,13 @@ import MessageActions from "./MessageActions.vue";
 import MessageHead from "./MessageHead.vue";
 import MessageReactions from "./MessageReactions.vue";
 import ReplyLine from "./ReplyLine.vue";
+import DeliveryLine from "./DeliveryLine.vue";
 
 /**
  * One message of a chat: the viewer's own as a bubble on the right, another's on the left, only as wide as its text,
  * under its name line with React and Reply at that line's right end. A reply shows who it answers and a line of the
- * original above its text. Under the text come whether it is unread and its reactions.
+ * original above its text. Under the text come whether it is unread and its reactions, and under the viewer's own bubble
+ * how far it got to the other member.
  */
 const props = defineProps<{
   message: MessageEntryData;
@@ -30,9 +32,12 @@ const props = defineProps<{
   viewer: string;
   inboxId: string;
   conversationProp: string;
+  // Whom the viewer's own messages go to, and what they wait for while only sent.
+  addresseeName: string;
+  startWait: string | null;
 }>();
 
-const emit = defineEmits<{ reply: [] }>();
+const emit = defineEmits<{ reply: []; retry: [] }>();
 
 const isUnread = computed(() => !props.isOwn && !props.message.isReadByViewer);
 
@@ -93,4 +98,12 @@ function react(emoji: string): void {
       :conversation-prop="conversationProp"
     />
   </article>
+  <template v-if="isOwn">
+    <DeliveryLine
+      :message="message"
+      :addressee-name="addresseeName"
+      :start-wait="startWait"
+      @retry="emit('retry')"
+    />
+  </template>
 </template>

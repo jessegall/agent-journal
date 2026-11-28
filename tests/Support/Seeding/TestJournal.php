@@ -73,6 +73,7 @@ final class TestJournal
     use AssertsResults;
     use ObservesEvents;
     use OpensRuntimes;
+    use PlaysScenarios;
     use PushesStates;
     use RunsCommands;
     use SendsRequests;

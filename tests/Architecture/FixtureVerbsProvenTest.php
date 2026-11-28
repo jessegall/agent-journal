@@ -55,6 +55,8 @@ final class FixtureVerbsProvenTest extends TestCase
         CodexMock::class,
         ClaudeMock::class,
         Answer::class,
+        TestScenario::class,
+        WireAssert::class,
     ];
 
     public function test_every_fixture_verb_is_called_by_a_test_of_its_fixture(): void

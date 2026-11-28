@@ -118,7 +118,7 @@ final class OpenAgentRuntimeTest extends TestCase
                 $host->hostId,
                 '/elsewhere',
                 'claude-code',
-                '2.1.323',
+                '2.1.332',
                 'claude',
                 DriverType::Headless,
                 'claude-opus-5-5',
@@ -133,7 +133,7 @@ final class OpenAgentRuntimeTest extends TestCase
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
 
         $this->assertSame(
-            ['claude-code-headless', 'claude-code', 'Claude Code headless', '2.1.323'],
+            ['claude-code-headless', 'claude-code', 'Claude Code headless', '2.1.332'],
             [$runtime->driver_key, $runtime->family, $runtime->driver_label, $runtime->driver_build],
         );
         $this->assertSame($runtime->driver_label, AgentSession::query()->findOrFail($opened->sessionId)->driver_label);
@@ -338,12 +338,12 @@ final class OpenAgentRuntimeTest extends TestCase
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent', $this->localProject());
         [$build, $profile, $model] = $driver === 'codex'
             ? [
-                '0.165.0',
+                '0.172.0',
                 'codex',
                 'gpt-5.5',
             ]
             : [
-                '2.1.323',
+                '2.1.332',
                 'claude',
                 'claude-opus-5-5',
             ];

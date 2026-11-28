@@ -17,7 +17,9 @@ import Icon from "@kit/Icon";
 import { isRevealed } from "@kit/protectedView";
 import { liveStage, retryLiveConnection } from "@kit/liveConnection";
 import SlotSections from "@kit/SlotSections";
-import { read as readRoute } from "@generated/routes/chat";
+import { read as readRoute, retryDelivery as retryDeliveryRoute } from "@generated/routes/chat";
+import { keyedPost } from "@kit/keyedPost";
+import { newRequestId } from "@kit/requestId";
 import AgentSessionActions from "./AgentSessionActions.vue";
 import Composer from "./Composer.vue";
 import RunningCommand from "./RunningCommand.vue";
@@ -101,6 +103,31 @@ const startWait = computed(() =>
     ? `Waiting for ${selected.value.name} to start`
     : null,
 );
+/**
+ * Queues one of the user's messages that was not delivered again, once under a new request id; a stopped agent is
+ * started for it, and its ticks walk again as the chat reads it.
+ */
+const retryRefusal = ref<string | null>(null);
+
+function retryDelivery(messageId: string): void {
+  const requestId = newRequestId();
+  retryRefusal.value = null;
+  keyedPost(
+    retryDeliveryRoute().url,
+    {
+      messageId,
+      agent: selected.value?.id ?? null,
+      expectedSessionId: conversation.value?.sessionId ?? null,
+    },
+    requestId,
+    {
+      onAccepted: () => undefined,
+      onRefused: (reason) => (retryRefusal.value = reason ?? "The message could not be queued again."),
+      onUncertain: () => (retryRefusal.value = "We could not confirm the retry; the chat shows where it stands."),
+    },
+    [props.protectedProp],
+  );
+}
 const key = computed(() => {
   const userId = viewer.value.id;
 
@@ -374,6 +401,8 @@ watch(isShown, readOnOpen);
           :conversation-prop="protectedProp"
           :inbox-id="conversation.inboxId"
           :start-wait="startWait"
+          :addressee-name="selected?.name ?? 'the chat'"
+          @retry-delivery="retryDelivery"
           @reply="(target) => (replyingTo = target)"
           @older="timeline.loadOlder"
           @check-again="(intent) => owner?.retry(intent, protectedProp)"
@@ -381,6 +410,9 @@ watch(isShown, readOnOpen);
           @discard="(intentKey) => owner?.discardRecovery(intentKey)"
           @open-record="openRecord"
         />
+        <template v-if="retryRefusal">
+          <p class="text-small text-danger" role="alert">{{ retryRefusal }}</p>
+        </template>
         <template v-if="openedRecord !== null">
           <RecordPanel :card="openedRecord" @close="closeRecord" />
         </template>

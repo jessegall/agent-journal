@@ -174,6 +174,16 @@ final class DriverCatalogue implements DriverCatalogueContract
         return array_map(fn (DriverFamily $family) => $family->key, $this->families());
     }
 
+    public function drivenKeys(): array
+    {
+        $driven = array_filter(
+            $this->catalogue(),
+            fn (DriverRegistration $registration) => $registration->isDrivenByJournal,
+        );
+
+        return array_values(array_map(fn (DriverRegistration $registration) => $registration->key->key, $driven));
+    }
+
     public function registrationOfFamily(string $family): DriverRegistration
     {
         foreach ($this->catalogue() as $registration) {

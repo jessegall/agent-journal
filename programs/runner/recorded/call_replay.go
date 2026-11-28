@@ -47,7 +47,7 @@ type CallReplay struct {
 	// orders nothing.
 	OrderGroup func(call Call) string
 
-	t      testing.TB
+	t      Failures
 	calls  []Call
 	played []bool
 	values *recording.Values
@@ -58,14 +58,29 @@ type CallReplay struct {
 }
 
 // NewCallReplay plays the scenario's calls on the wire, in the order they were answered.
-func NewCallReplay(t testing.TB, scenario Scenario, wire recording.Wire) *CallReplay {
-	t.Helper()
+func NewCallReplay(failures Failures, scenario Scenario, wire recording.Wire) (*CallReplay, error) {
 	calls, err := scenario.Calls(wire)
+	if err != nil {
+		return nil, err
+	}
+	return &CallReplay{t: failures, calls: calls, played: make([]bool, len(calls)), values: recording.NewValues(),
+		closed: make(chan struct{})}, nil
+}
+
+// MustCallReplay is the replay of the scenario's calls on the wire for a test, failing it when they cannot be read.
+func MustCallReplay(t testing.TB, scenario Scenario, wire recording.Wire) *CallReplay {
+	t.Helper()
+	replay, err := NewCallReplay(t, scenario, wire)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &CallReplay{t: t, calls: calls, played: make([]bool, len(calls)), values: recording.NewValues(),
-		closed: make(chan struct{})}
+	return replay
+}
+
+// Failures is where a replay reports a call it cannot answer: a test, or a played daemon's own record of them.
+type Failures interface {
+	Error(args ...any)
+	Errorf(format string, args ...any)
 }
 
 // Close ends every call still held in its order, so the server serving the replay can close.
@@ -128,8 +143,7 @@ func (replay *CallReplay) ServeHTTP(writer http.ResponseWriter, request *http.Re
 }
 
 // AssertPlayedWhole fails the test when a recorded call was never asked.
-func (replay *CallReplay) AssertPlayedWhole(t testing.TB) {
-	t.Helper()
+func (replay *CallReplay) AssertPlayedWhole(t Failures) {
 	replay.mutex.Lock()
 	defer replay.mutex.Unlock()
 	for index, call := range replay.calls {
