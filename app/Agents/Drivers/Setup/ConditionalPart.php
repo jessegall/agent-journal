@@ -12,7 +12,7 @@ use App\Agents\Drivers\StartConditions\OutsideContainer;
 use App\Agents\Exceptions\DriverSetupInvalid;
 use App\Processes\Contracts\Condition;
 use App\Processes\Negation;
-use App\Support\Reflector;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Values\DriverStart;
 use App\Values\EnvironmentAddition;
 use App\Values\PlanAddition;
@@ -68,9 +68,9 @@ final readonly class ConditionalPart
     /**
      * Whether the part adds to a start's environment, else to its plan, so a declaration lists both kinds together.
      */
-    public function addsToEnvironment(): bool
+    public function addsToEnvironment(ReflectorFactory $reflectors): bool
     {
-        $part = Reflector::of($this->part);
+        $part = $reflectors->make($this->part);
 
         return $part->is(EnvironmentPart::class) || $part->is(AccountEnvironmentPart::class);
     }

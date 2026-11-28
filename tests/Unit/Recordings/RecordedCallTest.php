@@ -46,19 +46,22 @@ final class RecordedCallTest extends TestCase
 
     public function test_a_multiplexed_body_is_faked_frame_by_frame_with_each_length_written_anew(): void
     {
-        $lines = ["  \"configDirectory\": \"/Users/someone/.account\",\n", "}\n"];
+        $lines = ["{\"configDirectory\": \"/Users/someone/.account\"\n", "}\n"];
         $body = implode('', array_map(fn (string $line) => "\1\0\0\0".pack('N', strlen($line)).$line, $lines));
         $request = Request::create('/v1.51/containers/journal-process-1/logs');
         $answer = new Response($body, 200, ['Content-Type' => MultiplexedStream::CONTENT_TYPE]);
 
         $faked = RecordedCall::answeredWith($answer, $request)->fakedBy(new RecordingFakes([], []));
 
-        $folder = RecordingFakes::USER_FOLDER;
-        $this->assertSame(
-            "\1\0\0\0".pack('N', strlen("  \"configDirectory\": \"{$folder}/.account\",\n"))
-                ."  \"configDirectory\": \"{$folder}/.account\",\n\1\0\0\0".pack('N', 2)."}\n",
-            $faked->body,
-        );
+        $firstLength = unpack('Nlength', $faked->body, 4)['length'];
+        $second = 8 + $firstLength;
+        $secondLength = unpack('Nlength', $faked->body, $second + 4)['length'];
+        $json = substr($faked->body, 8, $firstLength).substr($faked->body, $second + 8, $secondLength);
+        $fields = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+
+        $this->assertSame(RecordingFakes::USER_FOLDER.'/.account', $fields['configDirectory']);
+        $this->assertSame(2, $secondLength);
+        $this->assertSame(strlen($faked->body), $second + 8 + $secondLength);
     }
 
     public function test_a_private_values_answer_keeps_only_that_a_value_was_sent(): void

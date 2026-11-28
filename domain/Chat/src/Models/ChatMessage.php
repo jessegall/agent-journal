@@ -311,9 +311,9 @@ final class ChatMessage extends JournalModel implements EventSource, ReadableMod
      * @param  list<string>  $inboxIds
      */
     #[Scope]
-    protected function ofInboxes(Builder $query, array $inboxIds): void
+    protected function ofInboxes(Builder $query, array $ids): void
     {
-        $query->whereIn('inbox_id', $inboxIds);
+        $query->whereIn('inbox_id', $ids);
     }
 
     /**

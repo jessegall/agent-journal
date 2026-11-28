@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Accounts\Contracts\AccountSettingsFiller;
 use App\Agents\Drivers\Contracts\DriverAdapter;
 use App\Agents\Drivers\Contracts\DriverKeyScript;
@@ -222,9 +223,9 @@ final readonly class DefaultDriverSetup
      *
      * @throws DriverSetupInvalid
      */
-    public function build(): DriverSetup
+    public function build(ReflectorFactory $reflectors): DriverSetup
     {
-        $addsToEnvironment = fn (ConditionalPart $part) => $part->addsToEnvironment();
+        $addsToEnvironment = fn (ConditionalPart $part) => $part->addsToEnvironment($reflectors);
         $environment = array_values(array_filter($this->parts, $addsToEnvironment));
         $plan = array_values(array_filter($this->parts, fn (ConditionalPart $part) => ! $addsToEnvironment($part)));
 

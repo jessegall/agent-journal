@@ -184,7 +184,7 @@ final class AgentStatusDecision
             return null;
         }
 
-        $copy = HoldWording::of($hold, $evidence->hasTerminal);
+        $copy = HoldText::of($hold, $evidence->hasTerminal);
 
         $state = match ($hold) {
             HoldReason::LoginRequired => SessionActivityStatus::WaitingForSignIn,

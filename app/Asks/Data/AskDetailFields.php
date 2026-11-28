@@ -38,9 +38,9 @@ final class AskDetailFields
         return $this;
     }
 
-    public function resultLabel(string $resultLabel): self
+    public function resultLabel(string $label): self
     {
-        $this->resultLabel = $resultLabel;
+        $this->resultLabel = $label;
 
         return $this;
     }

@@ -102,9 +102,9 @@ final class FileWindowDataFields
     }
 
     /** @param list<int> $cutLineNumbers */
-    public function cutLineNumbers(array $cutLineNumbers): self
+    public function cutLineNumbers(array $lineNumbers): self
     {
-        $this->cutLineNumbers = $cutLineNumbers;
+        $this->cutLineNumbers = $lineNumbers;
 
         return $this;
     }
@@ -132,9 +132,9 @@ final class FileWindowDataFields
         return $this;
     }
 
-    public function commentTarget(string|null $commentTarget): self
+    public function commentTarget(string|null $target): self
     {
-        $this->commentTarget = $commentTarget;
+        $this->commentTarget = $target;
         $this->hasCommentTarget = true;
 
         return $this;
@@ -164,17 +164,17 @@ final class FileWindowDataFields
         return $this;
     }
 
-    public function commentAddress(string|null $commentAddress): self
+    public function commentAddress(string|null $address): self
     {
-        $this->commentAddress = $commentAddress;
+        $this->commentAddress = $address;
         $this->hasCommentAddress = true;
 
         return $this;
     }
 
-    public function tellAddress(string|null $tellAddress): self
+    public function tellAddress(string|null $address): self
     {
-        $this->tellAddress = $tellAddress;
+        $this->tellAddress = $address;
         $this->hasTellAddress = true;
 
         return $this;

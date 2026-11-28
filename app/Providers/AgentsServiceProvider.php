@@ -30,7 +30,7 @@ use App\Agents\AgentNotices;
 use App\Agents\AgentSessionCounter;
 use App\Agents\AgentVisibility;
 use App\Agents\Contracts\AgentDrivers as AgentDriversContract;
-use App\Agents\Contracts\RunningTools;
+use App\Agents\Contracts\RunningTools as RunningToolsContract;
 use App\Agents\DriverBudgets;
 use App\Agents\Drivers\Contracts\AttachmentReferences;
 use App\Agents\Drivers\Contracts\DriverConversationResolver as DriverConversationResolverContract;
@@ -38,7 +38,7 @@ use App\Agents\Drivers\Contracts\ToolDiscovery as ToolDiscoveryContract;
 use App\Agents\Enums\AccessType;
 use App\Agents\RequestSession;
 use App\Agents\Resolvers\Support\PendingStartSecrets;
-use App\Agents\RunningToolRecords;
+use App\Agents\RunningTools;
 use App\Agents\ToolDiscovery;
 use App\Agents\UnavailableAttachments;
 use App\Api\ApiSender;
@@ -150,7 +150,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(ReadGrantContract::class, ReadGrant::class);
         $this->app->bind(AgentResolver::class, AgentLabels::class);
         $this->app->bind(ActivityLogContract::class, ActivityLog::class);
-        $this->app->bind(RunningTools::class, RunningToolRecords::class);
+        $this->app->bind(RunningToolsContract::class, RunningTools::class);
         $this->app->bind(HostCalls::class, JournalHostCalls::class);
 
         $this->app->scoped(RequestSession::class, static fn (Container $app) => new RequestSession(

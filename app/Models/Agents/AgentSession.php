@@ -464,7 +464,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         }
 
         $table = self::query()->getModel()->getTable();
-        $pairs = Link::resolvePairsFor(self::linkType(), $accounts);
+        $pairs = Link::findPairsFor(self::linkType(), $accounts);
 
         $ranked = self::query()
             ->joinSub($pairs, 'account_links', 'account_links.subject_id', '=', "{$table}.id")

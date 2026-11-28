@@ -6,6 +6,7 @@ namespace App\Reflection\Contracts;
 
 use App\Reflection\Exceptions\ClassMissing;
 use App\Support\Reflector;
+use PhpOption\Option;
 
 /**
  * Hands a class the process's one Reflector of a type, so it takes the factory in its constructor instead of calling
@@ -24,6 +25,13 @@ interface ReflectorFactory
      * @throws ClassMissing
      */
     public function make(string|object $type): Reflector;
+
+    /**
+     * The reflection of a named type if its autoloader can load it.
+     *
+     * @return Option<Reflector<object>>
+     */
+    public function find(string $name): Option;
 
     /**
      * Whether the subject, a class name or an object, extends or implements this type as a strict subtype; false for

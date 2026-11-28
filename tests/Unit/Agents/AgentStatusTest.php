@@ -23,7 +23,7 @@ use App\Sessions\SessionStartOutcome;
 use App\Sessions\StartRemedyWords;
 use App\Support\AgentEvidence;
 use App\Support\AgentStatusDecision;
-use App\Support\HoldWording;
+use App\Support\HoldText;
 use App\Support\RuntimeEvidence;
 use App\Support\StatusAction;
 use App\Support\SwitchEvidence;
@@ -282,7 +282,7 @@ final class AgentStatusTest extends TestCase
 
         $status = AgentStatusDecision::of($evidence, self::words(false));
 
-        $this->assertSame(HoldWording::of(HoldReason::OnboardingRequired, hasTerminal: false)->reason, $status->reason);
+        $this->assertSame(HoldText::of(HoldReason::OnboardingRequired, hasTerminal: false)->reason, $status->reason);
     }
 
     /**

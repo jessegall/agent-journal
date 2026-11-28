@@ -29,7 +29,7 @@ use App\Inboxes\Contracts\InboxMemberPolicies;
 use App\Inboxes\Contracts\InboxMemberRoutes;
 use App\Inboxes\Contracts\InboxRegistration as InboxRegistrationContract;
 use App\Inboxes\Contracts\MainInbox as MainInboxContract;
-use App\Inboxes\CoreInboxes;
+use App\Inboxes\InboxProvider;
 use App\Inboxes\InboxAssignees;
 use App\Inboxes\InboxRegistration;
 use App\Inboxes\MainInbox;
@@ -124,8 +124,8 @@ final class CommunicationServiceProvider extends ServiceProvider
             [AccessType::Read, AccessType::Edit],
         ));
 
-        $inboxes->register(Inbox::NAMED_PROVIDER, CoreInboxes::class);
-        $inboxes->register(Inbox::PERSONAL_PROVIDER, CoreInboxes::class);
+        $inboxes->register(Inbox::NAMED_PROVIDER, InboxProvider::class);
+        $inboxes->register(Inbox::PERSONAL_PROVIDER, InboxProvider::class);
         $this->commands([InstallInboxesCommand::class]);
         $destinations->register(Inbox::ASSIGNEE_TYPE, InboxDestinationProvider::class);
 

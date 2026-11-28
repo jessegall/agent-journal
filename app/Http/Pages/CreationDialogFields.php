@@ -51,37 +51,37 @@ final class CreationDialogFields
         return $this;
     }
 
-    public function sendLabel(string $sendLabel): self
+    public function sendLabel(string $label): self
     {
-        $this->sendLabel = $sendLabel;
+        $this->sendLabel = $label;
 
         return $this;
     }
 
-    public function guidedNoun(string|Optional $guidedNoun): self
+    public function guidedNoun(string|Optional $noun): self
     {
-        $this->guidedNoun = $guidedNoun;
+        $this->guidedNoun = $noun;
 
         return $this;
     }
 
-    public function plainWay(string $plainWay): self
+    public function plainWay(string $way): self
     {
-        $this->plainWay = $plainWay;
+        $this->plainWay = $way;
 
         return $this;
     }
 
-    public function guidedWay(string $guidedWay): self
+    public function guidedWay(string $way): self
     {
-        $this->guidedWay = $guidedWay;
+        $this->guidedWay = $way;
 
         return $this;
     }
 
-    public function waysInHeader(bool $waysInHeader): self
+    public function waysInHeader(bool $inHeader): self
     {
-        $this->waysInHeader = $waysInHeader;
+        $this->waysInHeader = $inHeader;
 
         return $this;
     }

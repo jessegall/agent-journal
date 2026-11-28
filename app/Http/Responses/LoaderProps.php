@@ -102,7 +102,7 @@ final readonly class LoaderProps
         } catch (ValidationException $invalid) {
             $errors = array_map(fn (array $messages) => (string) reset($messages), $invalid->errors());
 
-            return [self::FAILURE => LoaderReplyData::invalid($call->token, $errors)];
+            return $this->invalidReply($call, $errors);
         }
 
         try {
@@ -110,12 +110,21 @@ final readonly class LoaderProps
         } catch (FieldRefusal $refusal) {
             $errors = [$refusal->field() => $refusal->fieldError()];
 
-            return [self::FAILURE => LoaderReplyData::invalid($call->token, $errors)];
+            return $this->invalidReply($call, $errors);
         } catch (CommandRefusal|ModelNotFoundException|NotFoundHttpException) {
             return [self::FAILURE => LoaderReplyData::unavailable($call->token)];
         }
 
         return [$loader->prop => LoaderReplyData::ok($call->token, $value)];
+    }
+
+    /**
+     * @param  array<string, string>  $errors
+     * @return array<string, LoaderReplyData>
+     */
+    private function invalidReply(LoaderInput $call, array $errors): array
+    {
+        return [self::FAILURE => LoaderReplyData::invalid($call->token, $errors)];
     }
 
     private function read(RegisteredLoader $loader, Data $input): Data

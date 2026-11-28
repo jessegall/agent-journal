@@ -18,7 +18,6 @@ use App\Connections\ServerOrigin;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
-use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use App\Hosts\Enums\HostInstructionStatus;
 use App\Hosts\ProcessFeed;
 use App\Hosts\Protocol\HostProcessType;
@@ -30,15 +29,14 @@ use App\Models\Projects\Host;
 use App\Models\Projects\HostDriverImage;
 use App\Projects\Values\IssuedInvitation;
 use App\Support\ActorReference;
+use App\Support\KeyScripts\ScreenKeys;
 use App\Support\Recordings\RecordingDrafts;
 use App\Support\Recordings\Scenarios\Enums\ScenarioFact;
 use App\Support\Recordings\Scenarios\Enums\ScenarioStepType;
 use App\Support\Recordings\Scenarios\Exceptions\ScenarioInvalid;
 use App\Support\Recordings\Scenarios\Exceptions\ScenarioStuck;
-use App\Terminals\Screens\RowRange;
 use App\Time\Contracts\Sleeper;
 use App\Values\FilePath;
-use App\Values\HostInstructionSource;
 use App\Values\SignInChallenge;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -52,7 +50,7 @@ use Illuminate\Support\Str;
 final readonly class ScenarioPlayer
 {
     /**
-     * How long an ask step waits for the person to sign in on the journal's page when they typed nothing.
+     * How long an ask step waits for the user to sign in on the journal's page when they typed nothing.
      */
     private const int SIGN_IN_IN_PAGE_SECONDS = 900;
 
@@ -127,6 +125,7 @@ final readonly class ScenarioPlayer
         private ServerOrigin $origin,
         private PublishedReleases $releases,
         private ProcessFeed $feed,
+        private ScreenKeys $screenKeys,
         private RecordingDrafts $drafts,
     ) {}
 
@@ -211,7 +210,7 @@ final readonly class ScenarioPlayer
             return;
         }
 
-        // A code the person already submitted on the journal's page is not submitted again.
+        // A code the user already submitted on the journal's page is not submitted again.
         if ($step->stepType === ScenarioStepType::SubmitCode && $run->isSignedInOnPage()) {
             return;
         }
@@ -275,7 +274,7 @@ final readonly class ScenarioPlayer
                 return;
             }
 
-            // Nothing typed: the person answers the sign-in in the journal's own page, which ends it as the
+            // Nothing typed: the user answers the sign-in in the journal's own page, which ends it as the
             // scenario's next fact says: signed in, or refused.
             $this->waitFor($run, $run->nextFact() ?? ScenarioFact::SignedIn, self::SIGN_IN_IN_PAGE_SECONDS);
             $run->holdSignedInOnPage();
@@ -308,16 +307,8 @@ final readonly class ScenarioPlayer
             throw ScenarioInvalid::at($run->scenario->name, $run->stepIndex(), "{$agent->name} has no terminal frame");
         }
 
-        $rows = new RowRange(0, count($frame->rows));
         $sentAfter = RecordingDrafts::moment();
-
-        $instruction = $this->journal->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, new SendHostKeysCommand(
-            $process->id,
-            (string) $step->text,
-            $rows->guardOn($frame),
-            $process->input_generation,
-            HostInstructionSource::fromJournal(),
-        ));
+        $instruction = $this->screenKeys->send($process, $frame, (string) $step->text, self::TRUSTED_ENTRY);
 
         $this->waitForKeys($run, $instruction, $step->from, $sentAfter);
     }

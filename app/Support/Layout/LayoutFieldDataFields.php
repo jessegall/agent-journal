@@ -52,9 +52,9 @@ final class LayoutFieldDataFields
     }
 
     /** @param list<string> $optionLabels */
-    public function optionLabels(array $optionLabels): self
+    public function optionLabels(array $labels): self
     {
-        $this->optionLabels = $optionLabels;
+        $this->optionLabels = $labels;
 
         return $this;
     }

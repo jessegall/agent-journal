@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus;
 
-use App\Bus\Contracts\CommittedListenerFailures;
+use App\Bus\Contracts\CommittedListenerFailures as CommittedListenerFailuresContract;
 use App\Bus\Exceptions\CommittedFactListenerFailed;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -14,7 +14,7 @@ use Throwable;
 /**
  * Reports the failure of a listener on a committed fact and tells the operator through the log, as the write stands.
  */
-final readonly class ReportedListenerFailures implements CommittedListenerFailures
+final readonly class CommittedListenerFailures implements CommittedListenerFailuresContract
 {
     public function __construct(
         private ExceptionHandler $exceptions,

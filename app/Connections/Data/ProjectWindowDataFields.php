@@ -31,25 +31,25 @@ final class ProjectWindowDataFields
         return $this;
     }
 
-    public function projectLabel(string|null $projectLabel): self
+    public function projectLabel(string|null $label): self
     {
-        $this->projectLabel = $projectLabel;
+        $this->projectLabel = $label;
         $this->hasProjectLabel = true;
 
         return $this;
     }
 
-    public function machineLabel(string|null $machineLabel): self
+    public function machineLabel(string|null $label): self
     {
-        $this->machineLabel = $machineLabel;
+        $this->machineLabel = $label;
         $this->hasMachineLabel = true;
 
         return $this;
     }
 
-    public function connectAddress(string $connectAddress): self
+    public function connectAddress(string $address): self
     {
-        $this->connectAddress = $connectAddress;
+        $this->connectAddress = $address;
 
         return $this;
     }

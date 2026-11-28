@@ -35,9 +35,9 @@ final class HomeDataFields
     }
 
     /** @param list<SlotSectionData> $barSections */
-    public function barSections(array $barSections): self
+    public function barSections(array $sections): self
     {
-        $this->barSections = $barSections;
+        $this->barSections = $sections;
 
         return $this;
     }

@@ -20,7 +20,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\RetryAttempt;
 use App\Models\Hosts\HostProcess;
-use App\Support\Reflector;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\StackTransaction;
 use App\Time\Contracts\ServerClock;
 use App\Values\RetrySchedule;
@@ -37,6 +37,7 @@ final readonly class ListenerRetries
         private Jobs $jobs,
         private Events $events,
         private ExceptionHandler $exceptions,
+        private ReflectorFactory $reflectors,
     ) {}
 
     public function schedule(CommittedFactListenerFailed $failure): void
@@ -47,7 +48,7 @@ final readonly class ListenerRetries
             return;
         }
 
-        $listener = Reflector::find($run->listenerClass())->getOrElse(null);
+        $listener = $this->reflectors->find($run->listenerClass())->getOrElse(null);
 
         if ($listener !== null && $listener->isClass() && $listener->hasAttribute(RetriedWhenItFails::class)) {
             $this->enqueue($run, 1);

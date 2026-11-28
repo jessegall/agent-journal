@@ -7,7 +7,7 @@ namespace Tests\Machinery\Hosts;
 use App\Agents\Drivers\Enums\RetryOutcome;
 use App\Bus\Exceptions\CommittedFactListenerFailed;
 use App\Bus\ListenerRetries;
-use App\Bus\ReportedListenerFailures;
+use App\Bus\CommittedListenerFailures;
 use App\Bus\Values\ListenerRun;
 use App\Events\Sessions\AgentRuntimeStartProven;
 use App\Jobs\RetryCommittedListener;
@@ -35,7 +35,7 @@ final class ListenerRetriesTest extends TestCase
         $listener = $this->app->instance(RetryingStartListener::class, new RetryingStartListener());
         Bus::fake([RetryCommittedListener::class]);
         Exceptions::fake();
-        $reports = $this->journal->service(ReportedListenerFailures::class);
+        $reports = $this->journal->service(CommittedListenerFailures::class);
         $cause = new RuntimeException('The unmarked listener failed.');
         $unmarked = new ListenerRun(WakeHostForInstruction::class.'@handle', $event);
         $reports->take(CommittedFactListenerFailed::of($event::class, $unmarked->listener, $cause, $unmarked));

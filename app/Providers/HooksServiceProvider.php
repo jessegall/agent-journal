@@ -66,7 +66,7 @@ use App\Support\Compatibility\PinnedBuilds;
 use App\Support\Delivery\StateBridgeFactStaging;
 use App\Support\Delivery\StateEventDispatcher;
 use App\Support\Inspection\Contracts\StackInspectionQuery as StackInspectionQueryContract;
-use App\Support\Inspection\Queries\AnyAgentStackInspection;
+use App\Support\Inspection\Queries\StackInspectionQuery;
 use App\Support\Reflector;
 use App\Support\StackOperationDeadline;
 use App\Support\StackTransaction;
@@ -104,7 +104,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bind(CurrentStateContract::class, CurrentState::class);
         $this->app->bind(StackTransactionRunner::class, StackTransaction::class);
         $this->app->bind(UserStackContract::class, UserStack::class);
-        $this->app->bind(StackInspectionQueryContract::class, AnyAgentStackInspection::class);
+        $this->app->bind(StackInspectionQueryContract::class, StackInspectionQuery::class);
         $this->app->bind(StackTransactionContract::class, StackTransaction::class);
         $this->app->bind(StateTypesContract::class, StateTypes::class);
         $this->app->singleton(IncomingWorkRegistration::class);

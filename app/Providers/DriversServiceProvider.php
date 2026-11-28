@@ -71,6 +71,7 @@ use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\SignInEgress;
 use App\Files\Contracts\Files;
 use App\Processes\AnyContext;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\SignInProcess;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -112,11 +113,11 @@ final class DriversServiceProvider extends ServiceProvider
             $app->make(HookReplies::class),
             $app->make(Files::class),
             $app->make(SignInEgress::class),
-            self::setups($app->make('config')),
+            self::setups($app->make('config'), $app->make(ReflectorFactory::class)),
         ));
     }
 
-    private static function codex(string $signInExecutable): DriverSetup
+    private static function codex(string $signInExecutable, ReflectorFactory $reflectors): DriverSetup
     {
         $driver = CodexArguments::EXECUTABLE;
 
@@ -162,7 +163,7 @@ final class DriversServiceProvider extends ServiceProvider
             )
             // Codex links its own executable under tmp/arg0 each run; those links never belong in the account folder.
             ->keepsScratchIn('tmp')
-            ->build();
+            ->build($reflectors);
     }
 
     /**
@@ -175,15 +176,15 @@ final class DriversServiceProvider extends ServiceProvider
      *
      * @return list<DriverSetup>
      */
-    public static function setups(Repository $config): array
+    public static function setups(Repository $config, ReflectorFactory $reflectors): array
     {
         return [
-            self::claudeCode($config->string('journal.accounts.claude_program')),
-            self::codex($config->string('journal.accounts.codex_program')),
+            self::claudeCode($config->string('journal.accounts.claude_program'), $reflectors),
+            self::codex($config->string('journal.accounts.codex_program'), $reflectors),
         ];
     }
 
-    private static function claudeCode(string $signInExecutable): DriverSetup
+    private static function claudeCode(string $signInExecutable, ReflectorFactory $reflectors): DriverSetup
     {
         $installed = ClaudeCodeArguments::INSTALLED_EXECUTABLE;
 
@@ -216,7 +217,7 @@ final class DriversServiceProvider extends ServiceProvider
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeKeptSignIn::class),
                 ConditionalPart::forAccount(new AccountTerminal(), ClaudeCodeTranscriptRestart::class),
             )
-            ->build();
+            ->build($reflectors);
     }
 
     private static function claudeSignIn(string $executable): SignInSetup

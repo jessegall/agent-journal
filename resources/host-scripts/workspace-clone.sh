@@ -5,6 +5,8 @@ set -eu
 
 main() {
     local repository="$1" revision="$2" branch="$3" folder="$4"
+    local GIT_SSH_COMMAND='ssh -i /tmp/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/tmp/known_hosts'
+    export GIT_SSH_COMMAND
     [ -d "$folder/.git" ] && exit 0
     keep_key
     clone "$repository" "$revision" "$branch" "$folder" || { empty_folder "$folder"; exit 1; }
@@ -15,7 +17,6 @@ main() {
 keep_key() {
     umask 077
     cat > /tmp/deploy_key
-    export GIT_SSH_COMMAND='ssh -i /tmp/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/tmp/known_hosts'
 }
 
 clone() {

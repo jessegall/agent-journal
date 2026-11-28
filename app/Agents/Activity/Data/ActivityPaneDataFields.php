@@ -22,9 +22,9 @@ final class ActivityPaneDataFields
         return $this;
     }
 
-    public function fullUrl(string $fullUrl): self
+    public function fullUrl(string $url): self
     {
-        $this->fullUrl = $fullUrl;
+        $this->fullUrl = $url;
 
         return $this;
     }

@@ -63,9 +63,9 @@ final class PageFields
     }
 
     /** @param class-string<PageBuilder> $pageBuilder */
-    public function pageBuilder(string $pageBuilder): self
+    public function pageBuilder(string $builder): self
     {
-        $this->pageBuilder = $pageBuilder;
+        $this->pageBuilder = $builder;
 
         return $this;
     }

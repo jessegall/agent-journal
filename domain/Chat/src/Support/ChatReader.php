@@ -41,7 +41,7 @@ final readonly class ChatReader
         private ChatPages $pages,
         private PairChats $chats,
         private SlotSections $slots,
-        private AgentListing $listing,
+        private AgentList $listing,
         private StartAccounts $startAccounts,
     ) {}
 

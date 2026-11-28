@@ -66,25 +66,25 @@ abstract class ChatFields
     }
 
     /** The project's main agent, when one has been created. */
-    public function mainAgentId(string|Optional $mainAgentId): static
+    public function mainAgentId(string|Optional $agentId): static
     {
-        $this->mainAgentId = $mainAgentId;
+        $this->mainAgentId = $agentId;
 
         return $this;
     }
 
     /** The agent selected in the current visit. */
-    public function selectedAgentId(string|Optional $selectedAgentId): static
+    public function selectedAgentId(string|Optional $agentId): static
     {
-        $this->selectedAgentId = $selectedAgentId;
+        $this->selectedAgentId = $agentId;
 
         return $this;
     }
 
     /** @param list<SlotSectionData> $dockSections */
-    public function dockSections(array $dockSections): static
+    public function dockSections(array $sections): static
     {
-        $this->dockSections = $dockSections;
+        $this->dockSections = $sections;
 
         return $this;
     }
@@ -98,9 +98,9 @@ abstract class ChatFields
     }
 
     /** The instruction shown when the selected conversation needs setup. */
-    public function setupNotice(string|Optional $setupNotice): static
+    public function setupNotice(string|Optional $notice): static
     {
-        $this->setupNotice = $setupNotice;
+        $this->setupNotice = $notice;
 
         return $this;
     }
@@ -122,25 +122,25 @@ abstract class ChatFields
     }
 
     /** The inbox selected in the current visit. */
-    public function selectedInboxId(string|Optional $selectedInboxId): static
+    public function selectedInboxId(string|Optional $inboxId): static
     {
-        $this->selectedInboxId = $selectedInboxId;
+        $this->selectedInboxId = $inboxId;
 
         return $this;
     }
 
     /** The setup action shown while no account can start a session. */
-    public function noAccounts(LayoutPartData|Optional $noAccounts): static
+    public function noAccounts(LayoutPartData|Optional $notice): static
     {
-        $this->noAccounts = $noAccounts;
+        $this->noAccounts = $notice;
 
         return $this;
     }
 
     /** The cursor available when more agent choices remain. */
-    public function nextAgents(AgentPageCursorData|null $nextAgents): static
+    public function nextAgents(AgentPageCursorData|null $agents): static
     {
-        $this->nextAgents = $nextAgents;
+        $this->nextAgents = $agents;
 
         return $this;
     }

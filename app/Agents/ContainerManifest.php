@@ -147,9 +147,9 @@ final readonly class ContainerManifest
     /**
      * The same container with its plan file mounts bound to the folder its process's plan files are written to.
      */
-    public function withPlanFilesIn(string $filesFolder): self
+    public function withPlanFilesIn(string $folder): self
     {
-        $mounts = array_map(fn (ManifestMount $mount) => $mount->placedIn($filesFolder), $this->mounts);
+        $mounts = array_map(fn (ManifestMount $mount) => $mount->placedIn($folder), $this->mounts);
 
         return clone ($this, ['mounts' => $mounts]);
     }

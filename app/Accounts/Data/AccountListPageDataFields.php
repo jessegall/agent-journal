@@ -47,9 +47,9 @@ final class AccountListPageDataFields
         return $this;
     }
 
-    public function lastPage(int $lastPage): self
+    public function lastPage(int $page): self
     {
-        $this->lastPage = $lastPage;
+        $this->lastPage = $page;
 
         return $this;
     }
@@ -68,16 +68,16 @@ final class AccountListPageDataFields
         return $this;
     }
 
-    public function usageLastPage(int $lastPage): self
+    public function usageLastPage(int $page): self
     {
-        $this->usageLastPage = $lastPage;
+        $this->usageLastPage = $page;
 
         return $this;
     }
 
-    public function addForm(AccountListData $addForm): self
+    public function addForm(AccountListData $form): self
     {
-        $this->addForm = $addForm;
+        $this->addForm = $form;
 
         return $this;
     }

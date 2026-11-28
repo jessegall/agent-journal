@@ -14,7 +14,7 @@ use Carbon\CarbonImmutable;
 /**
  * How a runtime and a driver request become the statuses readers see; kept out of the exported Data classes.
  */
-final readonly class RuntimeStatusMapping
+final readonly class RuntimeStates
 {
     /**
      * A runtime as stored, read at the given time: its settings in their three states and how old its facts are.

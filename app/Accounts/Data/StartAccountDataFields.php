@@ -51,16 +51,16 @@ final class StartAccountDataFields
         return $this;
     }
 
-    public function accountLabel(string $accountLabel): self
+    public function accountLabel(string $label): self
     {
-        $this->accountLabel = $accountLabel;
+        $this->accountLabel = $label;
 
         return $this;
     }
 
-    public function accountState(AccountStatus $accountState): self
+    public function accountState(AccountStatus $state): self
     {
-        $this->accountState = $accountState;
+        $this->accountState = $state;
 
         return $this;
     }

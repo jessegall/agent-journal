@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Sessions;
+namespace Tests\Machinery\Sessions;
 
 use App\Agents\Drivers\Enums\DriverType;
 use App\Sessions\StartPreviews;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -13,6 +14,7 @@ use Tests\TestCase;
  * Every start the journal makes runs headless (users 30877, 30893): whatever the agent saved or its profile defaults
  * to, the start's mode is headless.
  */
+#[TestsMachinery(StartPreviews::class)]
 final class HeadlessOnlyStartsTest extends TestCase
 {
     use RefreshHookDatabase;

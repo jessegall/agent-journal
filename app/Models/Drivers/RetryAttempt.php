@@ -60,13 +60,13 @@ final class RetryAttempt extends JournalModel implements EventSource, ReadableMo
         string $failure,
         CarbonImmutable $now,
         string|null $requestId = null,
-        int|null $attemptVersion = null,
+        int|null $version = null,
         string|null $processId = null,
     ): self {
         $attempt = new self();
         $attempt->agent_runtime_id = $runtimeId;
         $attempt->driver_request_id = $requestId;
-        $attempt->attempt_version = $attemptVersion;
+        $attempt->attempt_version = $version;
         $attempt->host_process_id = $processId;
         $attempt->action = $action;
         $attempt->retry = $retry;

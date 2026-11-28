@@ -93,7 +93,7 @@ final class RecordingFakes
 
     /**
      * @param  array<string, string>  $environment  the recorded process's variables, by name
-     * @param  list<string>  $personalValues  the names, emails and account details of this journal's people
+     * @param  list<string>  $personalValues  the names, emails and account details of this journal's users
      */
     public function __construct(private readonly array $environment, private readonly array $personalValues) {}
 
@@ -116,7 +116,7 @@ final class RecordingFakes
         $faked = strtr($text, $this->environmentFolders());
         $faked = strtr($faked, array_fill_keys($this->distinctivePersonalValues(), self::USER_NAME));
 
-        // A home folder is a person's, except the fake's own and the containers' user's, which every machine shares.
+        // A home folder is a user's, except the fake's own and the containers' user's, which every machine shares.
         $faked = (string) preg_replace(
             [
                 '#/(?:Users|home)/(?!(?:user|journal)\b)[^/\s"\'\\\\]+#',
@@ -295,9 +295,9 @@ final class RecordingFakes
      * The fake a real value gets from the format, numbered in the order the values are seen, the same each time; a
      * value that starts with the fakes' prefix is a fake already and stays as it is.
      */
-    private function numberedFakeOf(string $real, string $fakePrefix, string $format): string
+    private function numberedFakeOf(string $real, string $prefix, string $format): string
     {
-        if (str_starts_with($real, $fakePrefix)) {
+        if (str_starts_with($real, $prefix)) {
             return $real;
         }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Recordings;
+namespace Tests\Machinery\Recordings;
 
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Files\Enums\Place;
@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Tests\Support\Files\UsesTemporaryPlaces;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -38,6 +39,7 @@ use Tests\TestCase;
  * image each refuse it, writing nothing and keeping the earlier folder; a good run's folder reads back as recorded.
  */
 #[TimeLimit(10, 'The finisher checks the generated protocol, which formats it with Pint once.')]
+#[TestsMachinery(RecordingFinisher::class)]
 final class RecordingFinisherTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -36,16 +36,16 @@ final class PhaseReaderDataFields
         $this->checkReceipt = new Optional();
     }
 
-    public function planNumber(string $planNumber): self
+    public function planNumber(string $number): self
     {
-        $this->planNumber = $planNumber;
+        $this->planNumber = $number;
 
         return $this;
     }
 
-    public function planTitle(string $planTitle): self
+    public function planTitle(string $title): self
     {
-        $this->planTitle = $planTitle;
+        $this->planTitle = $title;
 
         return $this;
     }
@@ -64,23 +64,23 @@ final class PhaseReaderDataFields
         return $this;
     }
 
-    public function finishedTasks(int $finishedTasks): self
+    public function finishedTasks(int $tasks): self
     {
-        $this->finishedTasks = $finishedTasks;
+        $this->finishedTasks = $tasks;
 
         return $this;
     }
 
-    public function cancelledTasks(int $cancelledTasks): self
+    public function cancelledTasks(int $tasks): self
     {
-        $this->cancelledTasks = $cancelledTasks;
+        $this->cancelledTasks = $tasks;
 
         return $this;
     }
 
-    public function totalTasks(int $totalTasks): self
+    public function totalTasks(int $tasks): self
     {
-        $this->totalTasks = $totalTasks;
+        $this->totalTasks = $tasks;
 
         return $this;
     }
@@ -106,9 +106,9 @@ final class PhaseReaderDataFields
         return $this;
     }
 
-    public function checkReceipt(PhaseCheckData|Optional $checkReceipt): self
+    public function checkReceipt(PhaseCheckData|Optional $receipt): self
     {
-        $this->checkReceipt = $checkReceipt;
+        $this->checkReceipt = $receipt;
 
         return $this;
     }

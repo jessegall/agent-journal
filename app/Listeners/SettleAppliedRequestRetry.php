@@ -18,6 +18,7 @@ final readonly class SettleAppliedRequestRetry implements Listener
     public function handle(DriverRequestApplied $fact): void
     {
         $request = DriverRequest::query()->whereKey($fact->requestId)->sole();
-        RetryAttempt::findForVersion($request)?->settle(RetryOutcome::Succeeded);
+        $attempt = RetryAttempt::findForVersion($request);
+        $attempt?->settle(RetryOutcome::Succeeded);
     }
 }

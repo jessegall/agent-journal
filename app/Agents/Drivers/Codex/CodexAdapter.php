@@ -214,8 +214,10 @@ final readonly class CodexAdapter implements DriverAdapter
 
     private function toolCall(HookPayload $hookInput, HookIdentity $hook): DriverCall
     {
+        $journalCall = JournalToolCall::starting(self::ALLOWANCE);
+
         if ($this->journalTools->names($hookInput->toolNameText())) {
-            return JournalToolCall::starting(self::ALLOWANCE);
+            return $journalCall;
         }
 
         $tool = CodexTool::named($hookInput->toolNameText());
@@ -229,7 +231,7 @@ final readonly class CodexAdapter implements DriverAdapter
         }
 
         if ($tool->discoversJournalTools()) {
-            return JournalToolCall::starting(self::ALLOWANCE);
+            return $journalCall;
         }
 
         $original = $hookInput->toolArguments();

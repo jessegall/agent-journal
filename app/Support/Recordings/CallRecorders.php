@@ -13,8 +13,8 @@ final readonly class CallRecorders
 {
     public function __construct(private RecordingDrafts $drafts) {}
 
-    public function of(Wire $wire): CallRecorder
+    public function of(Wire $wire): Recorder
     {
-        return new CallRecorder($wire, $this->drafts);
+        return new Recorder($wire, $this->drafts);
     }
 }

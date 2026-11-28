@@ -310,20 +310,18 @@ final class TerminalDriver implements ProcessDriver
             $this->escapesRefused[$instruction->driver_request_id] = true;
         }
 
+        $recovery = DriverActions::none();
+
         if ($this->delivery !== null && $instruction->driver_request_id === $this->delivery->requestId) {
             if ($this->awaitsRecoveredEcho) {
-                return $this->uncertain($this->delivery)->then(DriverActions::of($this->snapshot()));
+                $recovery = $this->uncertain($this->delivery);
+            } else {
+                $this->waiting = [$this->delivery, ...$this->waiting];
+                $this->delivery = null;
             }
-
-            $this->waiting = [
-                $this->delivery,
-                ...$this->waiting,
-            ];
-
-            $this->delivery = null;
         }
 
-        return DriverActions::of($this->snapshot());
+        return $recovery->then(DriverActions::of($this->snapshot()));
     }
 
     /**
