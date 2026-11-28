@@ -5,72 +5,41 @@ import type { AgentOptionData, ChatData } from "@generated/types/chat";
 
 vi.mock("@inertiajs/vue3", () => ({
   usePage: () => ({ url: "/", props: { drivers: [], viewer: { id: "user-1" } } }),
-  router: { visit: () => undefined },
+  router: { reload: () => undefined },
 }));
-vi.mock("./partials/AgentSessionActions.vue", () => ({ default: { template: "<div />" } }));
+vi.mock("./partials/ChatTabs.vue", () => ({ default: { name: "ChatTabs", template: "<div data-chat-tabs />" } }));
 
 const { default: ChosenAgent } = await import("./ChosenAgent.vue");
 
-function chatWith(agent: Partial<AgentOptionData>): ChatData {
+function chatWith(agent: Partial<AgentOptionData>, isSetupRequired = false): ChatData {
   return {
     agents: [
       {
         id: "agent-1",
         name: "Main agent",
-        profileKey: "main-agent",
-        sessionDriver: null,
-        sessionDriverLabel: null,
-        sessionModel: null,
         status: { sessionState: "idle", label: "Idle", actions: [] },
-        isMain: false,
-        isRetired: false,
-        waitsOnYou: false,
-        unreadCount: 0,
-        lastActiveAt: null,
         ...agent,
       },
     ],
     selectedAgentId: "agent-1",
     mainAgentId: "agent-1",
-    isSetupRequired: false,
+    isSetupRequired,
   } as unknown as ChatData;
 }
 
 describe("ChosenAgent", () => {
-  it("names the profile an agent starts from while it rests", () => {
+  it("is the chat bar's tabs alone: no agent picker, status or session actions of its own", () => {
     const bar = mount(ChosenAgent, { props: { data: chatWith({}) } });
 
-    expect(bar.find("small").text()).toBe("main-agent");
+    expect(bar.find("[data-chat-tabs]").exists()).toBe(true);
+    expect(bar.find("[data-chat-list-trigger]").exists()).toBe(false);
+    expect(bar.text()).not.toContain("Main agent");
+    expect(bar.text()).not.toContain("Idle");
   });
 
-  it("names the driver and model of a running session", () => {
-    const bar = mount(ChosenAgent, {
-      props: { data: chatWith({ sessionDriverLabel: "Claude Code", sessionModel: "opus" }) },
-    });
+  it("says when the installation has no main agent yet", () => {
+    const bar = mount(ChosenAgent, { props: { data: chatWith({}, true) } });
 
-    expect(bar.find("small").text()).toBe("Claude Code · opus");
-  });
-
-  it("names an agent whose role is main as main, and any other by its name alone", () => {
-    const main = mount(ChosenAgent, { props: { data: chatWith({ isMain: true }) } });
-    const helper = mount(ChosenAgent, { props: { data: chatWith({ name: "Reviewer" }) } });
-
-    expect(main.text()).toContain("Main agent · main");
-    expect(helper.text()).toContain("Reviewer");
-    expect(helper.text()).not.toContain("· main");
-  });
-
-  it("opens the one chat list from the agent's name, with no members or add-someone button", () => {
-    const bar = mount(ChosenAgent, { props: { data: chatWith({}) } });
-
-    expect(bar.findAll("[data-chat-list-trigger]")).toHaveLength(1);
-    expect(bar.find("#agent-bar-members").exists()).toBe(false);
-  });
-
-  it("stays one line: an old report adds no Last report line under it", () => {
-    const status = { sessionState: "unknown", observationAgeSeconds: 256, reason: null, remedy: null };
-    const bar = mount(ChosenAgent, { props: { data: chatWith({ status } as unknown as Partial<AgentOptionData>) } });
-
-    expect(bar.text()).not.toContain("Last report");
+    expect(bar.text()).toContain("No main agent yet");
   });
 });

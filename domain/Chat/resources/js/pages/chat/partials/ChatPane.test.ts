@@ -78,9 +78,13 @@ vi.mock("./VerifyingSessionCard.vue", () => ({
   default: { template: "<div />" },
 }));
 
+vi.mock("./StartPicker.vue", () => ({
+  default: { props: ["agent", "isNew"], template: '<div data-start-picker :data-new="isNew" />' },
+}));
+
 const { default: ChatPane } = await import("./ChatPane.vue");
 
-function chatWith(inboxId: string, runningCommand: RunningCommandData | null = null): ChatData {
+function chatWith(inboxId: string, runningCommand: RunningCommandData | null = null, hasEntries = true): ChatData {
   return {
     agents: [{ id: "agent-1", name: "Main agent", status: { sessionState: "working", label: "working", actions: [] } }],
     selectedAgentId: "agent-1",
@@ -104,7 +108,7 @@ function chatWith(inboxId: string, runningCommand: RunningCommandData | null = n
       sessionGeneration: 0,
       runningCommand,
       dock: { cards: [], hasMore: null },
-      entries: [
+      entries: hasEntries ? [
         {
           id: `${inboxId}-unread`,
           type: "message",
@@ -112,7 +116,7 @@ function chatWith(inboxId: string, runningCommand: RunningCommandData | null = n
           authorLabel: "Main agent",
           message: { id: `${inboxId}-unread`, isReadByViewer: false },
         },
-      ],
+      ] : [],
     },
   } as unknown as ChatData;
 }
@@ -292,5 +296,43 @@ describe("ChatPane", () => {
 
     expect(pane.find('[aria-label="No accounts yet"]').exists()).toBe(false);
     expect(pane.find('[aria-label="Composer"]').exists()).toBe(true);
+  });
+
+  it("shows only the start picker in a new chat: no composer and no empty-chat note", async () => {
+    revealedProps.value = new Set(["window_chat_conversation"]);
+    const chat = chatWith("conversation-1", null, false);
+    chat.agents[0] = { ...chat.agents[0], sessionId: null, isRetired: false } as (typeof chat.agents)[number];
+    const pane = mount(ChatPane, {
+      props: {
+        chat,
+        offersChoice: false,
+        loadMore: () => undefined,
+        protectedProp: "window_chat_conversation",
+      },
+    });
+    await flushPromises();
+
+    expect(pane.get("[data-start-picker]").attributes("data-new")).toBe("true");
+    expect(pane.find('[aria-label="Composer"]').exists()).toBe(false);
+    expect(pane.find('[aria-label="Messages"]').exists()).toBe(false);
+  });
+
+  it("keeps an ended chat's history and puts the start picker in the composer's place", async () => {
+    revealedProps.value = new Set(["window_chat_conversation"]);
+    const chat = chatWith("conversation-1");
+    chat.agents[0] = { ...chat.agents[0], sessionId: null, isRetired: false } as (typeof chat.agents)[number];
+    const pane = mount(ChatPane, {
+      props: {
+        chat,
+        offersChoice: false,
+        loadMore: () => undefined,
+        protectedProp: "window_chat_conversation",
+      },
+    });
+    await flushPromises();
+
+    expect(pane.find('[aria-label="Messages"]').exists()).toBe(true);
+    expect(pane.get("[data-start-picker]").attributes("data-new")).toBe("false");
+    expect(pane.find('[aria-label="Composer"]').exists()).toBe(false);
   });
 });
