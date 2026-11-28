@@ -3,7 +3,9 @@ import { enableAutoUnmount, flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
 import type { ChatData } from "@generated/types/chat";
+import type { LayoutPartData } from "@kit/CoreTypes";
 import { notifyRunningCommand, type RunningCommandData } from "@kit/runningCommands";
+import { chatAgent, chatAgentStatus } from "../../../testing/chatAgent";
 
 const revealedProps = ref(new Set<string>());
 const purgers: Array<() => void> = [];
@@ -85,8 +87,10 @@ vi.mock("./StartPicker.vue", () => ({
 const { default: ChatPane } = await import("./ChatPane.vue");
 
 function chatWith(inboxId: string, runningCommand: RunningCommandData | null = null, hasEntries = true): ChatData {
+  const messageId = `${inboxId}-unread`;
+
   return {
-    agents: [{ id: "agent-1", name: "Main agent", status: { sessionState: "working", label: "working", actions: [] } }],
+    agents: [chatAgent("agent-1", "Main agent", { status: chatAgentStatus("working", "Working") })],
     selectedAgentId: "agent-1",
     isSetupRequired: false,
     nextAgents: null,
@@ -95,9 +99,11 @@ function chatWith(inboxId: string, runningCommand: RunningCommandData | null = n
     canCreateChats: false,
     conversation: {
       inboxId,
+      label: "Main agent",
       agentId: "agent-1",
       viewer: "user:user-1",
       participants: [],
+      canManageParticipants: false,
       capabilities: {
         canAdd: false,
         canRemove: false,
@@ -107,20 +113,33 @@ function chatWith(inboxId: string, runningCommand: RunningCommandData | null = n
       },
       sessionId: null,
       sessionGeneration: 0,
+      unreadCount: hasEntries ? 1 : 0,
+      hasOlder: false,
       runningCommand,
       debugLines: [],
-      dock: { cards: [], hasMore: null },
+      dock: { cards: [], more: "end" },
       entries: hasEntries ? [
         {
-          id: `${inboxId}-unread`,
+          id: messageId,
           type: "message",
+          groupNumber: 1,
           author: "agent:agent-1",
           authorLabel: "Main agent",
-          message: { id: `${inboxId}-unread`, isReadByViewer: false },
+          createdAt: "2026-11-28T10:00:00Z",
+          message: {
+            id: messageId,
+            number: 1,
+            body: "Ready",
+            targetMessageId: null,
+            targetNumber: null,
+            isReadByViewer: false,
+            delivery: "sent",
+            deliveryFailure: null,
+          },
         },
       ] : [],
     },
-  } as unknown as ChatData;
+  };
 }
 
 function mountPane(inboxId = "conversation-1", runningCommand: RunningCommandData | null = null) {
@@ -303,7 +322,7 @@ describe("ChatPane", () => {
   it("shows only the start picker in a new chat: no composer and no empty-chat note", async () => {
     revealedProps.value = new Set(["window_chat_conversation"]);
     const chat = chatWith("conversation-1", null, false);
-    chat.agents[0] = { ...chat.agents[0], sessionId: null, isRetired: false } as (typeof chat.agents)[number];
+    chat.agents[0] = { ...chat.agents[0], status: chatAgentStatus("stopped", "Stopped") };
     const pane = mount(ChatPane, {
       props: {
         chat,
@@ -322,7 +341,7 @@ describe("ChatPane", () => {
   it("keeps an ended chat's history and puts the start picker in the composer's place", async () => {
     revealedProps.value = new Set(["window_chat_conversation"]);
     const chat = chatWith("conversation-1");
-    chat.agents[0] = { ...chat.agents[0], sessionId: null, isRetired: false } as (typeof chat.agents)[number];
+    chat.agents[0] = { ...chat.agents[0], status: chatAgentStatus("stopped", "Stopped") };
     const pane = mount(ChatPane, {
       props: {
         chat,
@@ -354,12 +373,7 @@ describe("ChatPane", () => {
   it("keeps showing a chat whose start runs as starting after a reload, never the start picker", async () => {
     revealedProps.value = new Set(["window_chat_conversation"]);
     const chat = chatWith("conversation-1", null, false);
-    chat.agents[0] = {
-      ...chat.agents[0],
-      sessionId: null,
-      isRetired: false,
-      status: { sessionState: "starting", label: "Starting the session", actions: [] },
-    } as (typeof chat.agents)[number];
+    chat.agents[0] = { ...chat.agents[0], status: chatAgentStatus("starting", "Starting the session") };
     const pane = mount(ChatPane, {
       props: { chat, offersChoice: false, loadMore: () => undefined, protectedProp: "window_chat_conversation" },
     });
