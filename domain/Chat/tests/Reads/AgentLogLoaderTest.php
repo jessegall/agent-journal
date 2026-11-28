@@ -16,7 +16,8 @@ use Tests\Support\RefreshHookDatabase;
 
 /**
  * The chat's Technical details read an agent's starts from the journal's own records, newest first: a refused start
- * shows as failed, with the host's reason and the evidence behind it; an agent out of sight is refused.
+ * shows as failed, with the host's reason and the evidence behind it, in plain words that name no process id, server
+ * path or request number; an agent out of sight is refused.
  */
 #[TestsRead(AgentLogLoader::class)]
 final class AgentLogLoaderTest extends TestCase
@@ -29,24 +30,32 @@ final class AgentLogLoaderTest extends TestCase
     {
         $this->journal->owner()->idleAgent('Planner')->startSession('Planner', 'Planner');
         $session = $this->journal->sessionCalled('Planner');
-        $this->journal->startOfSession($session->id)->refuse(self::REFUSAL);
+        $start = $this->journal->startOfSession($session->id);
+        $start->refuse(self::REFUSAL);
 
         $log = $this->read($this->journal->agentCalled('Planner')->id);
-        $start = $log->starts[0];
+        $shown = $log->starts[0];
         $refused = array_values(array_filter(
-            $start->lines,
+            $shown->lines,
             fn (AgentLogLineData $line) => $line->type === AgentLogLineType::StartRefused,
         ));
 
+        $words = implode(' ', array_map(
+            fn (AgentLogLineData $line) => "{$line->detail} {$line->evidence}",
+            $shown->lines,
+        ));
+
         $this->assertSame(
-            [$session->id, 'Failed', true, 1, self::REFUSAL, true],
+            [$session->id, 'Failed', true, 1, self::REFUSAL, true, false, false],
             [
-                $start->sessionId,
-                $start->outcome,
-                $start->hasFailed,
+                $shown->sessionId,
+                $shown->outcome,
+                $shown->hasFailed,
                 count($refused),
                 $refused[0]->reason,
-                str_contains((string) $refused[0]->evidence, 'start '),
+                str_contains((string) $refused[0]->evidence, 'account '),
+                str_contains($words, $start->id),
+                str_contains($words, $start->directory),
             ],
         );
     }

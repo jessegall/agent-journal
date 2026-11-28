@@ -22,7 +22,8 @@ use Domain\Chat\Enums\AgentLogLineType;
 /**
  * An agent's technical log, read from the journal's own records: each of its newest sessions as one start, with the
  * starts the host was asked for and their refusals, the host processes that ran for them and how they ended, and the
- * wakes and turns its driver was handed and how they went. Evidence is masked as shell lines are.
+ * wakes and turns its driver was handed and how they went, in plain words: never a process id, a server path or a
+ * request number. Evidence is masked as shell lines are.
  */
 final readonly class AgentStartLog
 {
@@ -62,7 +63,7 @@ final readonly class AgentStartLog
     {
         $starts = SessionProcess::query()->supervised()->ofSessions([$session->id])->limit(self::LINE_LIMIT)->get();
         $lines = [
-            ...$this->startLinesOf($starts->all()),
+            ...$this->startLinesOf($starts->all(), $this->runsOn($session)),
             ...$this->processLinesOf($starts->pluck('id')->all()),
             ...$this->requestLinesOf($session->id),
         ];
@@ -102,10 +103,18 @@ final readonly class AgentStartLog
     }
 
     /**
+     * What the session runs on in words, such as Claude Code · opus.
+     */
+    private function runsOn(AgentSession $session): string
+    {
+        return implode(' · ', array_filter([$session->driver_label, $session->model]));
+    }
+
+    /**
      * @param  list<SessionProcess>  $starts
      * @return list<AgentLogLineData>
      */
-    private function startLinesOf(array $starts): array
+    private function startLinesOf(array $starts, string $runsOn): array
     {
         $lines = [];
 
@@ -114,7 +123,7 @@ final readonly class AgentStartLog
                 $start->id.'-asked',
                 $start->created_at,
                 AgentLogLineType::StartAsked,
-                $start->directory,
+                $runsOn,
             );
 
             if ($start->isRefused()) {
@@ -123,7 +132,7 @@ final readonly class AgentStartLog
                     $start->ended_at ?? $start->updated_at,
                     AgentLogLineType::StartRefused,
                     (string) $start->refusal,
-                    "start {$start->id} · account {$start->account_type} · {$start->directory}",
+                    "{$runsOn} · account {$start->account_type}",
                 );
             }
         }
@@ -140,7 +149,7 @@ final readonly class AgentStartLog
         $lines = [];
 
         foreach (HostProcess::query()->ofStarts($startIds)->limit(self::LINE_LIMIT)->get() as $process) {
-            $detail = "{$process->purpose->label()} · {$process->container_name}";
+            $detail = ucfirst($process->purpose->label()).$this->tookOf($process->created_at, $process->started_at);
             $lines[] = $this->line(
                 $process->id.'-started',
                 $process->started_at ?? $process->created_at,
@@ -158,8 +167,12 @@ final readonly class AgentStartLog
                     $process->id.'-failed',
                     $process->ended_at,
                     AgentLogLineType::ProcessFailed,
-                    "The {$process->purpose->label()} {$process->end_evidence}",
-                    "{$detail} · exit code {$process->exit_code} · signal {$process->exit_signal}",
+                    "The {$process->purpose->label()} {$this->endedOf($process)}",
+                    implode(' · ', array_filter([
+                        "exit status {$process->exit_code}",
+                        $process->exit_signal === null ? null : "signal {$process->exit_signal}",
+                        $process->exit_evidence,
+                    ])),
                 );
         }
 
@@ -187,16 +200,32 @@ final readonly class AgentStartLog
                     $request->id,
                     $request->updated_at,
                     $isWake ? AgentLogLineType::WakeFailed : AgentLogLineType::TurnFailed,
-                    $request->refusal_reason?->value ?? $request->outcome?->value ?? $request->progress->value,
-                    "request {$request->id} · {$request->operation->value} · {$request->progress->value}",
+                    $request->refusal_reason?->startReason()->explanation()
+                        ?? ($isWake ? 'The agent did not answer its wake.' : 'The turn did not go through.'),
+                    implode(' · ', array_filter([
+                        $request->operation->value,
+                        $request->progress->value,
+                        $request->outcome?->value,
+                    ])),
                 );
 
                 continue;
             }
 
             if ($request->progress === RequestProgress::Applied) {
-                $type = $isWake ? AgentLogLineType::Woke : AgentLogLineType::TurnOpened;
-                $lines[] = $this->line($request->id, $request->updated_at, $type, "request {$request->sequence}");
+                $lines[] = $isWake
+                    ? $this->line(
+                        $request->id,
+                        $request->updated_at,
+                        AgentLogLineType::Woke,
+                        'answered'.$this->tookOf($request->created_at, $request->updated_at, ' in '),
+                    )
+                    : $this->line(
+                        $request->id,
+                        $request->updated_at,
+                        AgentLogLineType::TurnOpened,
+                        'your message went in',
+                    );
             }
         }
 
@@ -238,6 +267,26 @@ final readonly class AgentStartLog
             'reason' => ShownShellLine::of($reason),
             'evidence' => ShownShellLine::of($evidence),
         ]);
+    }
+
+    /**
+     * How long a step took, in seconds with one decimal, after the joiner given; nothing when either moment is unknown.
+     */
+    private function tookOf(CarbonImmutable|null $from, CarbonImmutable|null $to, string $joiner = ' · '): string
+    {
+        if ($from === null || $to === null) {
+            return '';
+        }
+
+        return $joiner.number_format(abs($to->diffInMilliseconds($from)) / 1000, 1).' s';
+    }
+
+    /**
+     * How the host saw the process end, without its own evidence: its exit status, or its loss.
+     */
+    private function endedOf(HostProcess $process): string
+    {
+        return $process->status === HostProcessStatus::Lost ? 'was lost' : "exited with status {$process->exit_code}";
     }
 
     private function timeOf(CarbonImmutable|null $at): string
