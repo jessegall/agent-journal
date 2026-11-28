@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support\Recordings;
 
 use App\Profiles\StartProfilePin;
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedCall;
-use App\Recordings\Recordings;
 use App\Sessions\AgentClientSettings;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedCall;
+use App\Support\Recordings\Recordings;
 use Closure;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Http\Client\Factory as HttpFactory;

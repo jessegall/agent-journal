@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
+use App\Hosts\HelperRuns;
 use Symfony\Component\Process\Process;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
  * The helper run that empties an account's scratch folders before a start: Codex links its own executable under
  * tmp/arg0 each time the accounts service runs it, and that link would fail the account folder's check.
  */
+#[TestsMachinery(HelperRuns::class)]
 final class AccountScratchClearTest extends TestCase
 {
     public function test_a_scratch_folder_is_emptied_of_the_link_a_sign_in_left_and_the_rest_of_the_account_stays(): void

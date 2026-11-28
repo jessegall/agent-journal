@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Recordings;
 
 use App\Files\Enums\Place;
-use App\Recordings\CallRecorders;
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedCall;
-use App\Recordings\RecordedEvent;
-use App\Recordings\RecordingDrafts;
-use App\Recordings\Scenarios\Scenario;
+use App\Support\Recordings\CallRecorders;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedCall;
+use App\Support\Recordings\RecordedEvent;
+use App\Support\Recordings\RecordingDrafts;
+use App\Support\Recordings\Scenarios\Scenario;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;

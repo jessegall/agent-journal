@@ -6,7 +6,13 @@ import { computed, useTemplateRef } from 'vue';
  * box for an input inside another control. A parent holding it by ref can focus() it. Measures:
  * docs/designs/kit-components.md.
  */
-const props = withDefaults(defineProps<{ size?: 'md' | 'sm'; invalid?: boolean; bare?: boolean }>(), {
+const props = withDefaults(defineProps<{
+    size?: 'md' | 'sm';
+    invalid?: boolean;
+    bare?: boolean;
+    choice?: 'checkbox' | 'radio';
+    checked?: boolean;
+}>(), {
     size: 'md',
     invalid: false,
     bare: false,
@@ -21,14 +27,25 @@ const look = computed(() => {
 });
 const element = useTemplateRef<HTMLInputElement>('element');
 
+defineOptions({ inheritAttrs: false });
 defineExpose({ focus: (): void => element.value?.focus() });
 </script>
 
 <template>
     <input
+        v-if="choice"
+        ref="element"
+        :type="choice"
+        :checked="checked"
+        :aria-invalid="invalid || undefined"
+        v-bind="$attrs"
+    />
+    <input
+        v-else
         ref="element"
         v-model="value"
         :aria-invalid="invalid || undefined"
         :class="look"
+        v-bind="$attrs"
     />
 </template>

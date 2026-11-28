@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support\Recordings;
 
-use App\Recordings\CutExchange;
-use App\Recordings\Enums\RecordedEventType;
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedEvent;
-use App\Recordings\Recordings;
+use App\Support\Recordings\CutExchange;
+use App\Support\Recordings\Enums\RecordedEventType;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedEvent;
+use App\Support\Recordings\Recordings;
 use Tests\Support\Recordings\GatedReplay;
 use Tests\TestCase;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Records\Contracts\RecordResolver;
+use App\Support\Layout\LayoutRowData;
 use App\Support\TextSelection;
 use Domain\Documents\Contracts\Documents\DocumentResolver as DocumentResolverContract;
 use Domain\Documents\Contracts\Drafts\DraftResolver;
@@ -21,7 +22,6 @@ use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Support\RecordReading;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 
 /**
@@ -74,14 +74,21 @@ final readonly class DocumentResolver implements DocumentResolverContract
         ]);
     }
 
-    /** @return Collection<int, Document> */
-    public function preview(DocumentFilters $filters, int $limit): Collection
+    /** @return list<LayoutRowData> */
+    public function preview(DocumentFilters $filters, int $limit): array
     {
-        return $this->matching($filters)
+        $records = $this->matching($filters)
             ->newestFirst()
             ->limit($limit)
             ->with('currentRevision:id,title')
             ->get(['id', 'number', 'current_revision_id']);
+
+        return $records->map(fn (Document $record) => LayoutRowData::build()
+            ->key($record->id)
+            ->label($record->currentRevision->title)
+            ->value('Document')
+            ->href(route('documents.document', ['document' => $record->number], false))
+            ->finish())->values()->all();
     }
 
     /** @return Builder<Document> */

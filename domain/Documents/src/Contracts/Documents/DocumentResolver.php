@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Contracts\Documents;
 
 use App\Data\Pages\RecordCard;
+use App\Support\Layout\LayoutRowData;
 use App\Support\TextSelection;
 use App\Text\Exceptions\SectionMissing;
 use Domain\Documents\Data\DocumentFilters;
@@ -16,8 +17,6 @@ use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\StaleRead;
-use Domain\Documents\Models\Document;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Reads the published documents: a page of them, or one by its number with its current text.
@@ -29,8 +28,12 @@ interface DocumentResolver
      */
     public function list(DocumentFilters $filters): PublicationList;
 
-    /** @return Collection<int, Document> */
-    public function preview(DocumentFilters $filters, int $limit): Collection;
+    /**
+     * The rows shown in the window for these filters.
+     *
+     * @return list<LayoutRowData>
+     */
+    public function preview(DocumentFilters $filters, int $limit): array;
 
     /**
      * @throws DocumentMissing

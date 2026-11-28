@@ -34,7 +34,7 @@ final readonly class ProjectPageBuilder implements PageBuilder
 
     public function build(Request $visit): ProjectWindowData
     {
-        $input = $this->requests->from(ProjectWindowRequest::class, $visit);
+        $input = $this->requests->forVisit(ProjectWindowRequest::class, $visit);
 
         $found = ProjectBinding::findLastHeardFromIn($this->served->environmentIds());
 

@@ -45,7 +45,7 @@ final readonly class PlanPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(PlanRequest::class, $visit);
+        $input = $this->requests->forVisit(PlanRequest::class, $visit);
 
         $plan = Plan::query()->findOr($input->planId(), fn () => throw new NotFoundHttpException());
         $planCard = $this->records->cardOf($plan);

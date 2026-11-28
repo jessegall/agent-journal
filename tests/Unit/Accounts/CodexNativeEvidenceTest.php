@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Accounts;
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Recordings;
 use Tests\Support\Recordings\RecordedProgram;
 use Tests\TestCase;
 

@@ -7,7 +7,7 @@ namespace Tests\Machinery\Seeding;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Files\Enums\Place;
 use App\Hosts\Contracts\HostChannel;
-use App\Recordings\RecordingDrafts;
+use App\Support\Recordings\RecordingDrafts;
 use App\Values\HostInstructionSource;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Files\UsesTemporaryPlaces;

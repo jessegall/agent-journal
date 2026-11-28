@@ -52,7 +52,7 @@ final readonly class ReaderRequests implements ReaderRequestsContract
             return $this->container->make($resolver->resolver);
         }
 
-        $request = $this->requests->from($resolver->request, $current);
+        $request = $this->requests->forVisit($resolver->request, $current);
 
         return $this->container->makeWith(
             $resolver->resolver,

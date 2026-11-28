@@ -10,7 +10,7 @@ use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Exceptions\ProbeOutputRefused;
 use App\Agents\Values\SignInFolder;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Recordings;
 use Tests\Support\Recordings\RecordedProgram;
 use Tests\TestCase;
 

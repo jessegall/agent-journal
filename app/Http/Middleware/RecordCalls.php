@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Http\Middleware\Agents\AuthenticateHost;
-use App\Recordings\CallRecorders;
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedCall;
-use App\Recordings\RecordedEvent;
-use App\Recordings\RecordingDrafts;
+use App\Support\Recordings\CallRecorders;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedCall;
+use App\Support\Recordings\RecordedEvent;
+use App\Support\Recordings\RecordingDrafts;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

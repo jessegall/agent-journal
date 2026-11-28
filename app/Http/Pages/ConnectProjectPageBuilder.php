@@ -17,7 +17,7 @@ final readonly class ConnectProjectPageBuilder implements PageBuilder
 
     public function build(Request $visit): ConnectProjectWindowData
     {
-        $request = $this->requests->from(ConnectProjectRequest::class, $visit);
+        $request = $this->requests->forVisit(ConnectProjectRequest::class, $visit);
 
         return $this->projects->read($request->cursors());
     }

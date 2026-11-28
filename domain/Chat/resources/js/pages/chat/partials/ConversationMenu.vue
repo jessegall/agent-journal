@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from "@kit/Button";
+import ListBox from "@kit/ListBox";
 import ChipButton from "@kit/ChipButton";
 import Popover from "@kit/Popover";
 import SearchField from "@kit/SearchField";
@@ -52,7 +53,8 @@ defineSlots<{ trigger(): unknown }>();
 
 const LIST_ID = "chat-list-rows";
 
-const trigger = useTemplateRef<HTMLElement>("trigger");
+const trigger = useTemplateRef<InstanceType<typeof Button>>("trigger");
+const anchor = computed<HTMLElement | null>(() => trigger.value?.$el ?? null);
 const isOpen = ref(false);
 const search = ref("");
 const filter = ref<ChatListFilter>("all");
@@ -106,6 +108,16 @@ const groups = computed(() =>
 );
 const shownRows = computed(() => groups.value.flatMap((group) => group.rows));
 const activeAgent = computed(() => shownRows.value[activeIndex.value]);
+const activeRowId = computed({
+  get: () => activeAgent.value === undefined ? null : rowId(activeAgent.value),
+  set: (id: string | null) => {
+    const index = shownRows.value.findIndex((agent) => rowId(agent) === id);
+
+    if (index >= 0) {
+      activeIndex.value = index;
+    }
+  },
+});
 
 const chosenAgent = computed(() => props.agents.find((agent) => agent.id === props.selectedAgentId));
 // The chosen agent's own terminal, offered while it runs in one.
@@ -149,7 +161,6 @@ function toggle(): void {
 function move(step: 1 | -1): void {
   const last = shownRows.value.length - 1;
   activeIndex.value = Math.max(0, Math.min(last, activeIndex.value + step));
-  document.getElementById(rowId(shownRows.value[activeIndex.value]))?.scrollIntoView?.({ block: "nearest" });
 }
 
 // On Home the chat bar chooses the chat, reading its tabs and the chat window again; on its own page the page does.
@@ -243,7 +254,8 @@ function askEnd(): void {
     @dragenter="openOnDrag"
     @dragover="carriesRecord($event) && $event.preventDefault()"
   >
-    <button
+    <Button
+      variant="bare"
       ref="trigger"
       type="button"
       class="flex items-center gap-2.5 rounded-field py-[3px] pr-1.5 pl-[3px] text-left hover:bg-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
@@ -253,8 +265,8 @@ function askEnd(): void {
       @click="toggle"
     >
       <slot name="trigger" />
-    </button>
-    <Popover v-model:open="isOpen" label="Chats" :anchor="trigger" :width="384" :placement="placement" :align="placement === 'above' ? 'right' : 'left'">
+    </Button>
+    <Popover v-model:open="isOpen" label="Chats" :anchor="anchor" :width="384" :placement="placement" :align="placement === 'above' ? 'right' : 'left'">
       <div @keydown.capture="openActiveBeside">
         <SearchField
           v-model="search"
@@ -279,10 +291,11 @@ function askEnd(): void {
           >
         </template>
       </div>
-      <div
+      <ListBox
         :id="LIST_ID"
-        role="listbox"
-        aria-label="Chats"
+        size="bare"
+        label="Chats"
+        v-model:active-id="activeRowId"
         class="max-h-[336px] overflow-y-auto pb-1"
         data-chat-list
         @scroll="readMoreNearEnd"
@@ -334,7 +347,8 @@ function askEnd(): void {
           </div>
         </template>
         <template v-if="pages.hasMore.value">
-          <button
+          <Button
+            variant="bare"
             type="button"
             class="w-full px-3 py-1.5 text-left text-small text-text-3 hover:bg-hover"
             :disabled="pages.isLoading.value"
@@ -342,19 +356,20 @@ function askEnd(): void {
             @click="pages.loadMore()"
           >
             {{ pages.isLoading.value ? "Reading more chats…" : "Show more chats" }}
-          </button>
+          </Button>
         </template>
         <template v-if="retiredCount > 0 && (shownRows.length > 0 || showsRetired)">
-          <button
+          <Button
+            variant="bare"
             type="button"
             class="w-full px-3 py-1.5 text-left text-small text-text-3 hover:bg-hover"
             data-retired-toggle
             @click="showsRetired = !showsRetired"
           >
             {{ showsRetired ? "Hide retired agents" : `Show ${retiredCount} retired agents` }}
-          </button>
+          </Button>
         </template>
-      </div>
+      </ListBox>
       <ConversationActions
         :chosen-agent="chosenAgent"
         :terminal-agent="terminalAgent"

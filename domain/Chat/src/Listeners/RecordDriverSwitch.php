@@ -18,6 +18,7 @@ final readonly class RecordDriverSwitch implements Listener
 
     public function handle(DriverSwitchConfirmed $event): void
     {
-        $this->lines->switched(DriverSwitch::query()->findOrFail($event->switchId));
+        $switch = DriverSwitch::query()->findOrFail($event->switchId);
+        $this->lines->switched($switch);
     }
 }

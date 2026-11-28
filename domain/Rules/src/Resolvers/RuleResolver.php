@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Domain\Rules\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Support\Layout\LayoutRowData;
 use App\Support\NumberedPage;
+use App\Web\Values\PaneExcerpt;
 use Domain\Rules\Contracts\RuleResolver as RuleResolverContract;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Values\RuleFilters;
@@ -13,7 +15,6 @@ use Domain\Rules\Values\RuleList;
 use Domain\Rules\Values\RuleView;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use PhpOption\None;
 use PhpOption\Option;
 
@@ -56,10 +57,16 @@ final readonly class RuleResolver implements RuleResolverContract
         );
     }
 
-    /** @return Collection<int, Rule> */
-    public function preview(RuleFilters $filters, int $limit): Collection
+    /** @return list<LayoutRowData> */
+    public function preview(RuleFilters $filters, int $limit): array
     {
-        return $this->matching($filters)->orderByDesc('id')->limit($limit)->get(['id', 'number', 'text']);
+        $records = $this->matching($filters)->orderByDesc('id')->limit($limit)->get(['id', 'number', 'text']);
+
+        return $records->map(fn (Rule $rule) => LayoutRowData::build()
+            ->key($rule->id)
+            ->label(PaneExcerpt::of($rule->text))
+            ->value("Rule {$rule->number}")
+            ->finish())->values()->all();
     }
 
     /** @return Builder<Rule> */
@@ -86,7 +93,9 @@ final readonly class RuleResolver implements RuleResolverContract
             return None::create();
         }
 
-        return Option::fromValue(Rule::query()->find($filters->selectedRuleId));
+        $rule = Rule::query()->find($filters->selectedRuleId);
+
+        return Option::fromValue($rule);
     }
 
     private static function viewOf(Rule $rule): RuleView

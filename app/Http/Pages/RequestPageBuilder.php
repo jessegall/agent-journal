@@ -45,7 +45,7 @@ final readonly class RequestPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(RequestPageRequest::class, $visit);
+        $input = $this->requests->forVisit(RequestPageRequest::class, $visit);
 
         $request = CommandRequest::query()
             ->whereKey($input->requestId())

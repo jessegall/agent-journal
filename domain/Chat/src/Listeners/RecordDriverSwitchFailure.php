@@ -18,6 +18,7 @@ final readonly class RecordDriverSwitchFailure implements Listener
 
     public function handle(DriverSwitchStartFailed $event): void
     {
-        $this->lines->failed(DriverSwitch::query()->findOrFail($event->switchId), $event->reason);
+        $switch = DriverSwitch::query()->findOrFail($event->switchId);
+        $this->lines->failed($switch, $event->reason);
     }
 }

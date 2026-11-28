@@ -47,7 +47,7 @@ final readonly class DocumentPageBuilder implements PageBuilder
 
     private function content(Request $visit): RecordLayoutData
     {
-        $input = $this->requests->from(RecordPageRequest::class, $visit);
+        $input = $this->requests->forVisit(RecordPageRequest::class, $visit);
 
         $number = $input->documentNumber();
         $document = $this->documents->show($number);

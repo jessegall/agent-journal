@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Recordings\Scenarios;
 
-use App\Recordings\Recordings;
-use App\Recordings\Scenarios\Scenario;
+use App\Support\Recordings\Recordings;
+use App\Support\Recordings\Scenarios\Scenario;
 use Tests\TestCase;
 
 /**

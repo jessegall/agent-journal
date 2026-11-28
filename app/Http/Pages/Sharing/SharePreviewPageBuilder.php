@@ -38,7 +38,7 @@ final readonly class SharePreviewPageBuilder implements PageBuilder
 
     public function build(Request $visit): SharePreviewData
     {
-        $input = $this->requests->from(SharePreviewPageRequest::class, $visit);
+        $input = $this->requests->forVisit(SharePreviewPageRequest::class, $visit);
 
         $root = $input->shareRoot($this->records);
         $candidates = $this->scope->discover($root, ShareBudget::forPreview($this->meter));

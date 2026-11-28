@@ -155,7 +155,10 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         }
 
         $image->checked();
-        $image->retireReplaced($folder);
+
+        foreach (HostDriverImage::findReplacedBy($image, $folder) as $replaced) {
+            $replaced->retire();
+        }
     }
 
     /**

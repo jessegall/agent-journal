@@ -29,6 +29,7 @@ use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * @property string $id
@@ -42,6 +43,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property string $payload
  * @property string $kept_payload
  * @property CarbonImmutable $expires_at
+ * @property-read CarbonImmutable $answer_deadline
  * @property HostInstructionStatus $status
  * @property HostRefusal|null $refusal
  * @property HostAnswerPayload|null $answer
@@ -259,15 +261,13 @@ final class HostInstruction extends JournalModel implements EventSource, Readabl
             && $this->idempotency_key === "{$request->id}:{$this->step}:{$request->attempt_version}";
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
-    public function answerDeadline(): CarbonImmutable
+    protected function answerDeadline(): Attribute
     {
-        if ($this->type->isOpening() && $this->hasBeenClaimed()) {
-            return $this->expires_at->addSeconds(self::OPEN_ANSWER_GRACE_SECONDS);
-        }
-
-        return $this->expires_at;
+        return Attribute::get(fn (): CarbonImmutable => $this->type->isOpening() && $this->hasBeenClaimed()
+            ? $this->expires_at->addSeconds(self::OPEN_ANSWER_GRACE_SECONDS)
+            : $this->expires_at)->withoutObjectCaching();
     }
 
     // ----------[ Asserts ]----------

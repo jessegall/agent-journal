@@ -24,7 +24,7 @@ final readonly class RemindersWindowBuilder implements WindowBuilder
 
     public function build(Request $visit): RemindersPaneData
     {
-        $input = $this->requests->from(RemindersRequest::class, $visit);
+        $input = $this->requests->forVisit(RemindersRequest::class, $visit);
         $policy = $this->policies->forType(RemindersPaneData::class);
         $cards = $this->reminders->preview($policy->limitFor('items'));
 

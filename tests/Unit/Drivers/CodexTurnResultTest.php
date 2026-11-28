@@ -6,10 +6,10 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\Codex\CodexTurnResult;
 use App\Agents\Drivers\Enums\RequestProgress;
-use App\Recordings\CutExchange;
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedEvent;
-use App\Recordings\Recordings;
+use App\Support\Recordings\CutExchange;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedEvent;
+use App\Support\Recordings\Recordings;
 use Carbon\CarbonImmutable;
 use Tests\TestCase;
 

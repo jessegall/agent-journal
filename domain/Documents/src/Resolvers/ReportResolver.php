@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Records\Contracts\RecordResolver;
+use App\Support\Layout\LayoutRowData;
 use App\Support\TextSelection;
 use Domain\Documents\Contracts\Reports\ReportResolver as ReportResolverContract;
 use Domain\Documents\Data\DocumentFilters;
@@ -19,7 +20,6 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordReading;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * The filed reports, newest first, a page at a time.
@@ -58,13 +58,20 @@ final readonly class ReportResolver implements ReportResolverContract
         ]);
     }
 
-    /** @return Collection<int, Report> */
-    public function preview(DocumentFilters $filters, int $limit): Collection
+    /** @return list<LayoutRowData> */
+    public function preview(DocumentFilters $filters, int $limit): array
     {
-        return $this->matching($filters)
+        $records = $this->matching($filters)
             ->newestFirst()
             ->limit($limit)
             ->get(['id', 'number', 'title']);
+
+        return $records->map(fn (Report $record) => LayoutRowData::build()
+            ->key($record->id)
+            ->label($record->title)
+            ->value('Report')
+            ->href(route('documents.report', ['report' => $record->number], false))
+            ->finish())->values()->all();
     }
 
     /** @return Builder<Report> */

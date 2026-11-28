@@ -158,10 +158,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
             return false;
         }
 
-        $this->status = SessionProcessStatus::Stopped;
-        $this->ended_at = CarbonImmutable::now();
-        $this->save();
-        $this->raise(new SessionProcessStopped($this->id));
+        $this->stopAt(CarbonImmutable::now());
 
         return true;
     }
@@ -218,6 +215,11 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
      * The start ends stopped because its session ended before it did.
      */
     public function endWithSession(CarbonImmutable $time): void
+    {
+        $this->stopAt($time);
+    }
+
+    private function stopAt(CarbonImmutable $time): void
     {
         $this->status = SessionProcessStatus::Stopped;
         $this->ended_at = $time;

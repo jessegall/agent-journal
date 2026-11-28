@@ -8,7 +8,7 @@ use App\Bus\CommandCall;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
 use App\Hosts\Protocol\HostProcessType;
-use App\Recordings\RecordingDrafts;
+use App\Support\Recordings\RecordingDrafts;
 use Closure;
 
 /**

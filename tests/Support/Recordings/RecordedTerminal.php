@@ -6,11 +6,11 @@ namespace Tests\Support\Recordings;
 
 use App\Files\Contracts\Files;
 use App\Navigation\Enums\NavigationKey;
-use App\Recordings\CutExchange;
-use App\Recordings\Enums\RecordedEventType;
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedEvent;
-use App\Recordings\Recordings;
+use App\Support\Recordings\CutExchange;
+use App\Support\Recordings\Enums\RecordedEventType;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedEvent;
+use App\Support\Recordings\Recordings;
 use App\Terminals\KeyScripts\KeyScript;
 use App\Values\FilePath;
 use PHPUnit\Framework\Assert;

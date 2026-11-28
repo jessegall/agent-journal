@@ -40,18 +40,9 @@ final class RetryAttempt extends JournalModel
         ];
     }
 
-    // ----------[ Mutations ]----------
+    // ----------[ Creation ]----------
 
-    public function settle(RetryOutcome $outcome, string|null $evidence = null): void
-    {
-        $this->outcome = $outcome;
-        $this->evidence = $evidence;
-        $this->save();
-    }
-
-    // ----------[ Queries ]----------
-
-    public static function record(
+    public static function create(
         string $runtimeId,
         RetriedAction $action,
         int $retry,
@@ -75,6 +66,17 @@ final class RetryAttempt extends JournalModel
 
         return $attempt;
     }
+
+    // ----------[ Mutations ]----------
+
+    public function settle(RetryOutcome $outcome, string|null $evidence = null): void
+    {
+        $this->outcome = $outcome;
+        $this->evidence = $evidence;
+        $this->save();
+    }
+
+    // ----------[ Queries ]----------
 
     public static function latestOf(DriverRequest $request): self|null
     {

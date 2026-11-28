@@ -38,7 +38,7 @@ final readonly class RulesPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(RulesRequest::class, $visit);
+        $input = $this->requests->forVisit(RulesRequest::class, $visit);
 
         $filters = $input->filters();
         $page = $this->records->list($filters->toDomain());

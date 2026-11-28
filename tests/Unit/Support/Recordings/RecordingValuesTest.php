@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support\Recordings;
 
-use App\Recordings\Enums\Wire;
-use App\Recordings\RecordedCall;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Enums\Wire;
+use App\Support\Recordings\RecordedCall;
+use App\Support\Recordings\Recordings;
 use Tests\Support\Recordings\Exceptions\LiveValueRefused;
 use Tests\Support\Recordings\RecordingValues;
 use Tests\TestCase;

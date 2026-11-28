@@ -13,7 +13,7 @@ const props = withDefaults(
     defineProps<{
         tabs?: readonly TabItem[];
         label?: string;
-        variant?: 'inline' | 'pagehead' | 'filters' | 'toolbar';
+        variant?: 'inline' | 'pagehead' | 'filters' | 'toolbar' | 'bare';
         line?: 'brand' | 'quiet';
     }>(),
     { tabs: () => [], label: undefined, variant: 'inline', line: 'brand' },
@@ -64,19 +64,20 @@ const tabGap = computed(() => (props.variant === 'toolbar' ? 'gap-3.5' : 'gap-4'
 </script>
 
 <template>
-    <div class="flex flex-col">
+    <div :class="variant === 'bare' ? 'flex' : 'flex flex-col'">
         <div
             ref="list"
             role="tablist"
             :aria-label="label"
             class="flex"
             :class="[
-                tabGap,
+                variant === 'bare' ? '' : tabGap,
                 {
                     inline: 'mt-2.5 mb-1.5 border-b border-line',
                     pagehead: 'h-13 items-center',
                     filters: 'border-b border-line px-3',
                     toolbar: '',
+                    bare: 'min-w-0 items-stretch',
                 }[variant],
             ]"
             @keydown="move"

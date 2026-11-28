@@ -82,7 +82,7 @@ final class SurfaceInputsTest extends TestCase
         $visit = $this->visit();
         $visit->query->set('after', '8');
 
-        $input = $this->app->make(PageFormRequests::class)->from(TerminalFrameRequest::class, $visit);
+        $input = $this->app->make(PageFormRequests::class)->forVisit(TerminalFrameRequest::class, $visit);
 
         $this->assertSame('selected', $input->agentId());
         $this->assertSame(8, $input->heldFrame()->sequence);

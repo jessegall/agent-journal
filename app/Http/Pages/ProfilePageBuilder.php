@@ -30,7 +30,7 @@ final readonly class ProfilePageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(ProfilePageRequest::class, $visit);
+        $input = $this->requests->forVisit(ProfilePageRequest::class, $visit);
 
         $key = $input->key();
 

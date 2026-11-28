@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Recordings;
 
-use App\Recordings\RecordingFakes;
+use App\Support\Recordings\RecordingFakes;
 use Tests\Support\Recordings\Exceptions\LiveValueRefused;
 
 /**

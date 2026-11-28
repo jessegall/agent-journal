@@ -30,7 +30,7 @@ final readonly class RevisionPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(RevisionPageRequest::class, $visit);
+        $input = $this->requests->forVisit(RevisionPageRequest::class, $visit);
 
         return $this->page->of(
             $this->documents->revision($input->documentNumber(), $input->revisionNumber()),

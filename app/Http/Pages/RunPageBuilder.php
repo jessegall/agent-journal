@@ -41,7 +41,7 @@ final readonly class RunPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(RunPageRequest::class, $visit);
+        $input = $this->requests->forVisit(RunPageRequest::class, $visit);
 
         if (! $this->snapshots->canSee($input->runId())) {
             return $this->layout->removed();

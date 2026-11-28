@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Recordings;
 
-use App\Recordings\CutExchange;
-use App\Recordings\Enums\RecordedEventType;
+use App\Support\Recordings\CutExchange;
+use App\Support\Recordings\Enums\RecordedEventType;
 
 /**
  * Plays a recorded terminal or pipe exchange by what is typed into it rather than by its clock, as the Go

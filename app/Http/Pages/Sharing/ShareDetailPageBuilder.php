@@ -40,7 +40,7 @@ final readonly class ShareDetailPageBuilder implements PageBuilder
 
     private function content(Request $visit): DeclaredLayoutData
     {
-        $input = $this->requests->from(ShareRequest::class, $visit);
+        $input = $this->requests->forVisit(ShareRequest::class, $visit);
 
         $shareId = $input->shareId();
         $share = Share::findById($shareId)->getOrThrow(ShareUnavailable::for($shareId));

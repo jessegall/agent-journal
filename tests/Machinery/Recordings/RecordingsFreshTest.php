@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Recordings;
 
-use App\Recordings\Exceptions\RecordingMissing;
-use App\Recordings\Exceptions\RecordingStale;
-use App\Recordings\Recordings;
+use App\Support\Recordings\Exceptions\RecordingMissing;
+use App\Support\Recordings\Exceptions\RecordingStale;
+use App\Support\Recordings\Recordings;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
