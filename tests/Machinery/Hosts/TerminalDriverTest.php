@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeChangeModel;
 use App\Agents\Drivers\Commands\NotifyEntryReplayed\NotifyEntryReplayedCommand;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
@@ -37,6 +38,7 @@ use App\Values\HostInstructionSource;
 use App\Values\LibraryEntryAnswer;
 use App\Values\NavigationRound;
 use App\Values\ScriptParameter;
+use Tests\Fixtures\Drivers\ClaudeCodeModelPicker;
 use Tests\Support\Agents\TestAgent;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\RecordedTerminalHost;
@@ -284,7 +286,7 @@ final class TerminalDriverTest extends TestCase
 
     public function test_a_named_key_script_that_meets_an_entry_the_menu_lacks_raises_navigation_with_its_screen(): void
     {
-        $driver = $this->drivenTerminal(self::MODEL_CHOICE);
+        $driver = $this->drivenModelPicker();
         $script = new ClaimedRequest(
             'runtime',
             'script-1',
@@ -325,7 +327,7 @@ final class TerminalDriverTest extends TestCase
 
     public function test_the_main_agents_round_chooses_the_entry_by_its_label_and_reports_the_screen_it_left(): void
     {
-        $driver = $this->drivenTerminal(self::MODEL_CHOICE);
+        $driver = $this->drivenModelPicker();
         $script = new ClaimedRequest(
             'runtime',
             'script-1',
@@ -415,7 +417,7 @@ final class TerminalDriverTest extends TestCase
      */
     private function replayed(callable $steps): array
     {
-        $driver = $this->drivenTerminal(self::MODEL_CHOICE);
+        $driver = $this->drivenModelPicker();
         $script = new ClaimedRequest(
             'runtime',
             'script-1',
@@ -483,6 +485,13 @@ final class TerminalDriverTest extends TestCase
 
             return $then === null ? null : $then();
         };
+    }
+
+    private function drivenModelPicker(): ProcessDriver
+    {
+        $this->journal->withDriverPart(ClaudeCodeChangeModel::class, ClaudeCodeModelPicker::class);
+
+        return $this->drivenTerminal(self::MODEL_CHOICE);
     }
 
     /**
