@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import TextLink from "@kit/TextLink";
 import { useAppContext } from "@kit/appContext";
 import { router, usePage } from "@inertiajs/vue3";
-import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
 import { arrivalAnnouncement } from "../../../composables/arrivalAnnouncement";
 import { useChatTimeline } from "../../../composables/useChatTimeline";
 import { openedRecordOf, recordKey } from "../../../recordPanel";
@@ -237,8 +236,8 @@ const unreadShown = timeline.unreadShown;
 
 /**
  * Marks the messages by others this view shows as read by the viewer alone; acknowledging one already read changes
- * nothing. It runs when the user opens the
- * conversation or asks for it, never on a background refresh.
+ * nothing. It runs when the user opens the conversation, and when a message arrives or the page comes back into view
+ * while the user can see it.
  */
 function readShown(): void {
   const shown = conversation.value;
@@ -281,6 +280,29 @@ function readOnOpen(): void {
 }
 
 onMounted(readOnOpen);
+
+/**
+ * Whether the user can see the page now: it is in view and its window has the focus.
+ */
+function isSeen(): boolean {
+  return document.visibilityState === "visible" && document.hasFocus();
+}
+
+function readWhenSeen(): void {
+  if (isShown.value && isSeen()) {
+    readShown();
+  }
+}
+
+watch(() => unreadShown.value.length, readWhenSeen);
+onMounted(() => {
+  window.addEventListener("focus", readWhenSeen);
+  document.addEventListener("visibilitychange", readWhenSeen);
+});
+onUnmounted(() => {
+  window.removeEventListener("focus", readWhenSeen);
+  document.removeEventListener("visibilitychange", readWhenSeen);
+});
 
 // The members of this chat sit in Home's agent bar, right after the agent, while the bar shows; elsewhere above the chat.
 const isBarShown = ref(false);
@@ -408,12 +430,6 @@ watch(isShown, readOnOpen);
         <p role="status" aria-live="polite" class="sr-only">
           {{ owner?.announcement.value }} {{ arrival }}
         </p>
-        <template v-if="unreadShown.length > 0">
-          <p class="flex items-center gap-2 text-small text-text-3">
-            <TextLink @click="readShown"> Read shown messages </TextLink>
-            <span>Only your own reading changes.</span>
-          </p>
-        </template>
         <template v-if="selected">
           <RunningCommand
             :agent="selected"
