@@ -4,10 +4,12 @@
     "scenario_hash": "0f8fbfd33757b8da19bd1a8b1a6c5797e6d909398a740ce483f000b0f6a5717a",
     "driver": "host",
     "build": "",
-    "image_build": "908ced22532353035a5bde7f2ce821419d4c2e2e4eb2e6691d077b14fc2f0f2b",
-    "recorded_at": "2026-11-28T07:37:53+00:00",
+    "image_build": "cb5f833271329607aa9e98b431a1ba118ec3f1c4094f88a67bf706b283f463ef",
+    "recorded_at": "2026-11-28T20:04:45+00:00",
     "exchanges": [
-        "01-host-caller-915b0be9afb2601e",
-        "02-docker-daemon"
+        "01-host-caller-84abcc6b00a29677",
+        "02-host-caller-8e6e67d6f486875d",
+        "03-host-caller-ab21f7b6230adb34",
+        "04-docker-daemon"
     ]
 }

@@ -1,0 +1,314 @@
+{
+    "opening": {
+        "wire": "host",
+        "exchange": "caller-ab21f7b6230adb34",
+        "mode": "calls",
+        "argv": [],
+        "environment": {},
+        "inherited": [],
+        "folder": null,
+        "columns": 0,
+        "rows": 0,
+        "image": null,
+        "openedAt": 1795896272721237
+    },
+    "events": [
+        {
+            "type": "asked",
+            "at": 1795896272721224,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/inventory",
+                "query": {},
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJwcm90b2NvbCI6MiwicmVsZWFzZSI6ImxvY2FsLTIwMjYxMTI4MTUzMDM2LWZkZWIxMDAyIiwiY2FwYWJpbGl0aWVzIjpbImFsbG93X2ltYWdlcyIsImJ1aWxkX2ltYWdlIiwiY2xvc2VfcHJpdmF0ZSIsImNsb3NlX3N0ZGluIiwibGlzdF9jb250YWluZXJzIiwib3Blbl9jb250YWluZXIiLCJvcGVuX3ByaXZhdGUiLCJvcGVuX3Byb2Nlc3MiLCJyZWFkX3Byb2plY3QiLCJyZW1vdmUiLCJyZW1vdmVfaW1hZ2UiLCJyZW1vdmVfbmV0d29yayIsInJlc2l6ZSIsInJ1bl9jb250YWluZXJzIiwicnVuX2ZlbmNlZCIsInNpZ25hbCIsInNuYXBzaG90Iiwic3RvcCIsInN0cmVhbSIsInVwZ3JhZGUiLCJ3cml0ZV9rZXlzIiwid3JpdGVfcHJpdmF0ZSIsIndyaXRlX3N0ZGluIl0sInByb2Nlc3NlcyI6W10sImFuc3dlcmVkX3Rocm91Z2giOiIiLCJjb250YWluZXJzIjpbXX0=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795896272729443,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/inventory",
+                "query": {},
+                "status": 204,
+                "headers": {},
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795896272739520,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/bindings/00000000000000000000000001/presence",
+                "query": {},
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJib290SWQiOiI3ZjkyMTM4YjJlNmMxYTYwZTZiNzI5YTBjMTVkNjY5MSIsInNlcXVlbmNlIjoxLCJyZWxlYXNlIjoibG9jYWwtMjAyNjExMjgxNTMwMzYtZmRlYjEwMDIiLCJwcm92aXNpb25pbmciOiJzdWNjZWVkZWQiLCJpc1Rha2VvdmVyIjp0cnVlLCJzZXR1cEdlbmVyYXRpb24iOjEsImlzUmVjb25jaWxlZCI6ZmFsc2V9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795896272740025,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "e30=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795896272745837,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/bindings/00000000000000000000000001/presence",
+                "query": {},
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJiaW5kaW5nSWQiOiIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMSIsImdlbmVyYXRpb24iOjEsInNldHVwR2VuZXJhdGlvbiI6MSwic2VydmVyVGltZSI6IjIwMjYtMTEtMjhUMjA6MDQ6MzIrMDA6MDAiLCJwcmVzZW5jZUV4cGlyZXNBdCI6IjIwMjYtMTEtMjhUMjA6MDY6MzIrMDA6MDAiLCJhdXRob3JpdHlHZW5lcmF0aW9uIjoxLCJyZWFkaW5lc3MiOiJyZWFkeSIsImxhc3RDb250YWN0QXQiOiIyMDI2LTExLTI4VDIwOjA0OjMyKzAwOjAwIn0=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795896272755159,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/bindings/00000000000000000000000001/presence",
+                "query": {},
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJib290SWQiOiI3ZjkyMTM4YjJlNmMxYTYwZTZiNzI5YTBjMTVkNjY5MSIsInNlcXVlbmNlIjoyLCJyZWxlYXNlIjoibG9jYWwtMjAyNjExMjgxNTMwMzYtZmRlYjEwMDIiLCJwcm92aXNpb25pbmciOiJzdWNjZWVkZWQiLCJpc1Rha2VvdmVyIjpmYWxzZSwic2V0dXBHZW5lcmF0aW9uIjoxLCJpc1JlY29uY2lsZWQiOnRydWV9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795896272759225,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/bindings/00000000000000000000000001/presence",
+                "query": {},
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJiaW5kaW5nSWQiOiIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMSIsImdlbmVyYXRpb24iOjEsInNldHVwR2VuZXJhdGlvbiI6MSwic2VydmVyVGltZSI6IjIwMjYtMTEtMjhUMjA6MDQ6MzIrMDA6MDAiLCJwcmVzZW5jZUV4cGlyZXNBdCI6IjIwMjYtMTEtMjhUMjA6MDY6MzIrMDA6MDAiLCJhdXRob3JpdHlHZW5lcmF0aW9uIjoxLCJyZWFkaW5lc3MiOiJyZWFkeSIsImxhc3RDb250YWN0QXQiOiIyMDI2LTExLTI4VDIwOjA0OjMyKzAwOjAwIn0=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795896273044278,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbnMiOlt7ImlkIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDIiLCJzZXF1ZW5jZSI6MCwidHlwZSI6InJlYWRfcHJvamVjdCIsInByb2Nlc3NfaWQiOiIiLCJwYXlsb2FkIjoie1wiaWRcIjpcIjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAzXCIsXCJiaW5kaW5nX2lkXCI6XCIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMVwiLFwidHlwZVwiOlwiZGlyZWN0b3J5XCIsXCJwYXRoXCI6XCIuLlwiLFwiZW50cmllc19saW1pdFwiOjUwMCxcInRleHRfbGltaXRcIjoyNjIxNDR9IiwiZXhwaXJlc19hdCI6IjIwMjYtMTEtMjhUMjA6MDU6MDNaIiwic2lnbmF0dXJlIjoiZDBjMjljYjRkZGQyZDA3ODhlMWU0YjNlODI3NmFkOGVjMGY5NzMxNGNhZTAwZTk3NjQyNGM3NDEyMzNmODZhYiJ9XSwiaWRsZV93aW5kb3dfc2Vjb25kcyI6NjAwLCJub3ciOiIyMDI2LTExLTI4VDIwOjA0OjMzLjAzN1oifQ==",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795896273054826,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/claim",
+                "query": {
+                    "limit": "50",
+                    "wait": "25"
+                },
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "e30=",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795896273056323,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/reports/project-reads/00000000000000000000000003",
+                "query": {},
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJ0cnVuY2F0ZWQiOmZhbHNlLCJmYWlsdXJlIjoib3V0c2lkZSJ9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795896273063302,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/reports/project-reads/00000000000000000000000003",
+                "query": {},
+                "status": 204,
+                "headers": {},
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "asked",
+            "at": 1795896273071116,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000002",
+                "query": {},
+                "status": null,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                "body": "eyJpbnN0cnVjdGlvbl9pZCI6IjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAyIiwic3RhdHVzIjoiZG9uZSJ9",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        },
+        {
+            "type": "answered",
+            "at": 1795896273076688,
+            "bytes": "",
+            "stream": "",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": {
+                "method": "POST",
+                "path": "/host/instructions/00000000000000000000000002",
+                "query": {},
+                "status": 204,
+                "headers": {},
+                "body": "",
+                "upgraded": false,
+                "cut": false,
+                "withheld": false
+            }
+        }
+    ],
+    "exit_code": null
+}

@@ -1,0 +1,133 @@
+{
+    "opening": {
+        "wire": "driver",
+        "exchange": "01m8hw2p44bg2qgkccnzqqrz5q",
+        "mode": "process",
+        "argv": [
+            "--",
+            "codex",
+            "exec",
+            "resume",
+            "00000000-0000-4000-8000-000000000001",
+            "--json",
+            "--skip-git-repo-check",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-m",
+            "gpt-6-luna",
+            "-c",
+            "model_reasoning_effort=low",
+            "-c",
+            "features.multi_agent=false",
+            "-c",
+            "features.multi_agent_mode=false",
+            "-c",
+            "features.multi_agent_v2=false",
+            "-c",
+            "features.multi_agent_v2_dynamic_tools=false",
+            "-c",
+            "features.agent_message_board=false",
+            "-c",
+            "features.runtime_agent_instances=false",
+            "Run: pwd."
+        ],
+        "environment": {
+            "HOME": "{env:HOME}",
+            "CODEX_HOME": "{env:CODEX_HOME}",
+            "JOURNAL_ACCOUNTS_ROOT": "{env:JOURNAL_ACCOUNTS_ROOT}",
+            "JOURNAL_START_REF": "{env:JOURNAL_START_REF}",
+            "JOURNAL_URL": "{env:JOURNAL_URL}",
+            "JOURNAL_START_TOKEN": "{env:JOURNAL_START_TOKEN}",
+            "JOURNAL_PROFILE": "{env:JOURNAL_PROFILE}",
+            "JOURNAL_PROFILE_REVISION": "{env:JOURNAL_PROFILE_REVISION}"
+        },
+        "inherited": [],
+        "folder": "/workspace",
+        "columns": 0,
+        "rows": 0,
+        "image": "sha256:6c73c9e9c5db01b254bcc8b13ff6a44d4823e91cbfb21cc96959bfb2a09a15b1",
+        "openedAt": 1795896203505545
+    },
+    "events": [
+        {
+            "type": "printed",
+            "at": 1795896204703507,
+            "bytes": "eyJ0eXBlIjoidGhyZWFkLnN0YXJ0ZWQiLCJ0aHJlYWRfaWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEifQo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795896205950876,
+            "bytes": "eyJ0eXBlIjoiaXRlbS5jb21wbGV0ZWQiLCJpdGVtIjp7ImlkIjoiaXRlbV8wIiwidHlwZSI6ImVycm9yIiwibWVzc2FnZSI6InNraXBwaW5nIE1DUCB0b29sIGhvb2sgaW4gL2V0Yy9jb2RleC9ob29rcy5qc29uOiBTZXNzaW9uRW5kIE1DUCBob29rcyBhcmUgbm90IHN1cHBvcnRlZCJ9fQo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795896205967785,
+            "bytes": "eyJ0eXBlIjoidHVybi5zdGFydGVkIn0K",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795896208498613,
+            "bytes": "eyJ0eXBlIjoiaXRlbS5jb21wbGV0ZWQiLCJpdGVtIjp7ImlkIjoiaXRlbV8xIiwidHlwZSI6ImFnZW50X21lc3NhZ2UiLCJ0ZXh0IjoiSeKAmWxsIHJ1biBgcHdkYCBpbiB0aGUgd29ya3NwYWNlIGFuZCByZXBvcnQgdGhlIHJlc3VsdC4ifX0K",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795896209108726,
+            "bytes": "eyJ0eXBlIjoiaXRlbS5zdGFydGVkIiwiaXRlbSI6eyJpZCI6Iml0ZW1fMiIsInR5cGUiOiJjb21tYW5kX2V4ZWN1dGlvbiIsImNvbW1hbmQiOiIvb3B0L2pvdXJuYWwvc2hlbGwvYmFzaCAtbGMgcHdkIiwiYWdncmVnYXRlZF9vdXRwdXQiOiIiLCJleGl0X2NvZGUiOm51bGwsInN0YXR1cyI6ImluX3Byb2dyZXNzIn19Cg==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795896209142477,
+            "bytes": "eyJ0eXBlIjoiaXRlbS5jb21wbGV0ZWQiLCJpdGVtIjp7ImlkIjoiaXRlbV8yIiwidHlwZSI6ImNvbW1hbmRfZXhlY3V0aW9uIiwiY29tbWFuZCI6Ii9vcHQvam91cm5hbC9zaGVsbC9iYXNoIC1sYyBwd2QiLCJhZ2dyZWdhdGVkX291dHB1dCI6Ii93b3Jrc3BhY2VcbiIsImV4aXRfY29kZSI6MCwic3RhdHVzIjoiY29tcGxldGVkIn19Cg==",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795896210602360,
+            "bytes": "eyJ0eXBlIjoiaXRlbS5jb21wbGV0ZWQiLCJpdGVtIjp7ImlkIjoiaXRlbV8zIiwidHlwZSI6ImFnZW50X21lc3NhZ2UiLCJ0ZXh0IjoiYHB3ZGAgcmV0dXJuZWQgYC93b3Jrc3BhY2VgLiJ9fQo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        },
+        {
+            "type": "printed",
+            "at": 1795896210698550,
+            "bytes": "eyJ0eXBlIjoidHVybi5jb21wbGV0ZWQiLCJ1c2FnZSI6eyJpbnB1dF90b2tlbnMiOjE2Mjc3MywiY2FjaGVkX2lucHV0X3Rva2VucyI6MTUxODA4LCJjYWNoZV93cml0ZV9pbnB1dF90b2tlbnMiOjAsIm91dHB1dF90b2tlbnMiOjIzNSwicmVhc29uaW5nX291dHB1dF90b2tlbnMiOjB9fQo=",
+            "stream": "stdout",
+            "secret": false,
+            "columns": 0,
+            "rows": 0,
+            "call": null
+        }
+    ],
+    "exit_code": 0
+}

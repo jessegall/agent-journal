@@ -4,9 +4,9 @@
     "scenario_hash": "7ede87819934def4f6d46abe95321431822c4be9d7d66632ee25c9f77639bb23",
     "driver": "connected",
     "build": "",
-    "image_build": "908ced22532353035a5bde7f2ce821419d4c2e2e4eb2e6691d077b14fc2f0f2b",
-    "recorded_at": "2026-11-28T14:55:37+00:00",
+    "image_build": "cb5f833271329607aa9e98b431a1ba118ec3f1c4094f88a67bf706b283f463ef",
+    "recorded_at": "2026-11-28T20:03:49+00:00",
     "exchanges": [
-        "01-host-caller-d50181ec06ae59a7"
+        "01-host-caller-2fb368d3417649b3"
     ]
 }
