@@ -48,7 +48,7 @@ play_terminal() {
     if [ -f "$installation/scenario" ]; then
         exec "$installation/bin/journal-terminal" mock scenario \
             --scenario "$(cat "$installation/scenario")" --repo "$(cat "$installation/repository")" \
-            --typed "$installation/../played-typed" --hold-for-stop -- "$@"
+            --typed "$installation/../played-typed" --transcript "$transcript" --hold-for-stop -- "$@"
     fi
     exec "$installation/bin/journal-terminal" mock recording --recording "$installation/terminal-turn" \
         --started "$installation/started" --transcript "$transcript" -- "$@"

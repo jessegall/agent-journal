@@ -57,6 +57,8 @@ interface DriverCatalogue
      */
     public function family(string $key): DriverFamily;
 
+    public function familyForStart(string $name): DriverFamily;
+
     /**
      * The family registered under the key; none when no driver of that family is registered.
      *

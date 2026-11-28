@@ -6,6 +6,7 @@ namespace App\Connections\Data;
 
 use App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use App\Projects\Commands\AssertBindingRuntime\AssertBindingRuntimeCommand;
+use App\Values\DriverFamily;
 use Spatie\LaravelData\Data;
 
 /**
@@ -24,6 +25,11 @@ final class BindingRuntimeRequestData extends Data
         public readonly string|null $startId = null,
         public readonly string|null $effort = null,
     ) {}
+
+    public function withDriver(DriverFamily $family): self
+    {
+        return clone ($this, ['driver' => $family->key]);
+    }
 
     /**
      * The check that this host may start the binding's main runtime in this root, before any grant.

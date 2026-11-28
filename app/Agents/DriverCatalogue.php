@@ -165,6 +165,17 @@ final class DriverCatalogue implements DriverCatalogueContract
         return $this->families->get($key);
     }
 
+    public function familyForStart(string $name): DriverFamily
+    {
+        foreach ($this->families() as $family) {
+            if ($family->hostName === $name) {
+                return $family;
+            }
+        }
+
+        return $this->family($name);
+    }
+
     /**
      * @return Option<DriverFamily>
      */
