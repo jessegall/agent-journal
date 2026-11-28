@@ -25,8 +25,6 @@ final class JournalRecordingsTest extends TestCase
 {
     use UsesTemporaryPlaces;
 
-    private const string RECORDING = 'claude-code/2.1.323/turns/terminal-turn';
-
     public function test_switching_recording_on_lets_a_run_open(): void
     {
         $this->placeInTemporaryFolder(Place::Project);
@@ -37,10 +35,10 @@ final class JournalRecordingsTest extends TestCase
 
     public function test_a_driver_typing_the_recorded_inputs_passes_every_checkpoint_in_one_or_two_writes(): void
     {
-        $this->journal->playRecording(self::RECORDING, DefaultDrivers::CLAUDE_CODE);
+        $this->playRecordedTerminal();
 
         $this->typeRecordedInputs(fn (string $input) => [$input]);
-        $this->journal->playRecording(self::RECORDING, DefaultDrivers::CLAUDE_CODE);
+        $this->playRecordedTerminal();
         $this->typeRecordedInputs(fn (string $input) => str_split($input, max(1, intdiv(strlen($input), 2))));
 
         $this->journal->recordedTerminalHost(fn (RecordedTerminalHost $host) => $this->assertNotSame([], $host->recordedInputs()));
@@ -58,13 +56,19 @@ final class JournalRecordingsTest extends TestCase
 
     public function test_one_wrong_byte_fails_naming_its_checkpoint(): void
     {
-        $this->journal->playRecording(self::RECORDING, DefaultDrivers::CLAUDE_CODE);
+        $this->playRecordedTerminal();
 
         $this->journal->assertRefused(
             RecordingDiverged::class,
             fn () => $this->typeRecordedInputs(fn (string $input) => [$input.'x']),
             fn (RecordingDiverged $diverged) => $this->journal->assertResult(0, $diverged->checkpoint),
         );
+    }
+
+    private function playRecordedTerminal(): void
+    {
+        $driver = DefaultDrivers::CLAUDE_CODE;
+        $this->journal->playTerminal($this->journal->recordedTerminal($driver)->folder, $driver);
     }
 
     /**

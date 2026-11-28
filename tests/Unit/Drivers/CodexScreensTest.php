@@ -6,11 +6,13 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\HoldReason;
+use App\Files\Contracts\Files;
 use App\Hosts\Protocol\Payloads\HostFramePayload;
 use App\Terminals\Screens\Enums\ScreenType;
 use App\Terminals\Screens\ScreenClassifier;
 use App\Terminals\Screens\ScreenHolds;
 use App\Terminals\Screens\ScreenReading;
+use Tests\Support\Recordings\TerminalCapture;
 use Tests\TestCase;
 
 /**
@@ -19,15 +21,13 @@ use Tests\TestCase;
  */
 final class CodexScreensTest extends TestCase
 {
-    private const string RECORDINGS = __DIR__.'/../../../resources/recordings/codex/0.165.0';
-
     private const int COLUMNS = 120;
 
     private const int ROWS = 24;
 
     public function test_a_first_start_reads_as_ready_at_its_composer(): void
     {
-        $frames = $this->framesOf('screens/first-start');
+        $frames = $this->framesOf('first-start');
 
         $this->journal->assertResult(ScreenType::PromptReady, $this->readingOf($frames[array_key_last($frames)])->type);
     }
@@ -37,8 +37,8 @@ final class CodexScreensTest extends TestCase
         $families = [];
 
         foreach ([
-            ...$this->framesOf('keyscripts/model-choice'),
-            ...$this->framesOf('keyscripts/effort-change'),
+            ...$this->framesOf('model-choice'),
+            ...$this->framesOf('effort-change'),
         ] as $frame) {
             $families[] = $this->readingOf($frame)->menu?->name;
         }
@@ -94,11 +94,8 @@ final class CodexScreensTest extends TestCase
      */
     private function framesOf(string $recording): array
     {
-        $frames = json_decode(
-            (string) file_get_contents(self::RECORDINGS."/{$recording}/frames.json"),
-            true,
-            flags: JSON_THROW_ON_ERROR,
-        );
+        $path = TerminalCapture::folderOf(DefaultDrivers::CODEX, $recording)->child('frames.json');
+        $frames = $this->journal->service(Files::class)->readJson($path);
 
         return array_map(fn (array $frame) => HostFramePayload::from($frame['frame']), $frames);
     }

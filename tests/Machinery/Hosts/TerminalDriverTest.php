@@ -45,6 +45,7 @@ use Tests\Support\Hosts\RecordedTerminalHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
+use Tests\Support\Recordings\TerminalCapture;
 use Tests\TestCase;
 
 /**
@@ -58,11 +59,9 @@ final class TerminalDriverTest extends TestCase
     use RefreshHookDatabase;
     use WithActiveAccount;
 
-    private const string TURN = 'claude-code/2.1.323/turns/terminal-turn';
+    private const string TURN = 'terminal-turn';
 
-    private const string MODEL_CHOICE = 'claude-code/2.1.323/keyscripts/model-choice';
-
-    private const string CODEX_TURN = 'codex/0.165.0/turns/terminal-turn';
+    private const string MODEL_CHOICE = 'model-choice';
 
     /**
      * The label of the model picker's first entry, highlighted when it opens.
@@ -188,7 +187,7 @@ final class TerminalDriverTest extends TestCase
     public function test_a_codex_turn_with_an_interrupt_and_a_second_prompt_types_what_the_recording_typed(): void
     {
         // The Codex terminal opens to users once its starts go through the journal; its profile is the family's.
-        $driver = $this->drivenTerminal(self::CODEX_TURN, DefaultDrivers::CODEX, DriverType::Headless);
+        $driver = $this->drivenTerminal(self::TURN, DefaultDrivers::CODEX, DriverType::Headless);
         $host = $this->journal->service(RecordedTerminalHost::class);
         $inputs = $host->recordedInputs();
         $events = [
@@ -511,7 +510,7 @@ final class TerminalDriverTest extends TestCase
         $this->journal
             ->driveProcessesWith(HostProcessPurpose::AgentTerminal, TerminalDriver::class)
             ->host('Mac', fn (TestEnrolledHost $mac) => $mac->openProcessForStart('agent', $opened->sessionId))
-            ->playRecording($recording, $driver);
+            ->playTerminal(TerminalCapture::folderOf($driver, $recording), $driver);
 
         return $this->journal->processDriverOf('agent');
     }

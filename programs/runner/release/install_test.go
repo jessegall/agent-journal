@@ -35,14 +35,14 @@ func TestAConnectedInstallSealsTheListedProgramsAndARerunRewritesOnlyTheAllowLis
 		writer.Write([]byte(relayContent))
 	}))
 	defer server.Close()
-	listed := listedPrograms(t)
+	listed, oldCodexBuild := listedPrograms(t)
 	programs, err := ParseProgramList(listed)
 	if err != nil {
 		t.Fatal(err)
 	}
 	path := t.TempDir()
 	for _, program := range programs {
-		version := recorded.MustProbeAt(t, program.Name, program.Build, "version")
+		version := recorded.MustProbe(t, program.Name, "version")
 		writeProgram(t, path, program.Executable, version.Printed(os.Getenv))
 	}
 	root, state := t.TempDir(), t.TempDir()
@@ -92,10 +92,13 @@ func TestAConnectedInstallSealsTheListedProgramsAndARerunRewritesOnlyTheAllowLis
 		}
 	}
 
+	programs[1].Build = oldCodexBuild
 	codex := programs[1]
-	wrongBuild := recorded.MustProbe(t, codex.Name, "version")
-	writeProgram(t, path, codex.Executable, wrongBuild.Printed(os.Getenv))
-	refused := InstallationFolder(t.TempDir(), "6.0.0", listed)
+	refusedList, err := json.Marshal(ProgramList{Programs: programs})
+	if err != nil {
+		t.Fatal(err)
+	}
+	refused := InstallationFolder(t.TempDir(), "6.0.0", refusedList)
 	if err := installer.Install(context.Background(), manifest, signature, programs, refused); err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +108,7 @@ func TestAConnectedInstallSealsTheListedProgramsAndARerunRewritesOnlyTheAllowLis
 	}
 }
 
-func listedPrograms(t *testing.T) []byte {
+func listedPrograms(t *testing.T) ([]byte, string) {
 	t.Helper()
 	root, err := recorded.Root()
 	if err != nil {
@@ -117,9 +120,8 @@ func listedPrograms(t *testing.T) []byte {
 	}
 	var manifest struct {
 		Images []struct {
-			Name       string `json:"name"`
-			ClaudeCode string `json:"claude_code"`
-			Codex      string `json:"codex"`
+			Name  string `json:"name"`
+			Codex string `json:"codex"`
 		} `json:"images"`
 	}
 	if err := json.Unmarshal(content, &manifest); err != nil {
@@ -129,17 +131,19 @@ func listedPrograms(t *testing.T) []byte {
 		if image.Name != "agent" {
 			continue
 		}
+		claude := recorded.MustProbe(t, "claude-code", "version")
+		codex := recorded.MustProbe(t, "codex", "version")
 		listed, err := json.Marshal(ProgramList{Programs: []Program{
-			{Name: "claude-code", Executable: "claude", Build: image.ClaudeCode, Check: []string{"--version"}, HostName: "CLAUDE_CODE_EXECUTABLE"},
-			{Name: "codex", Executable: "codex", Build: image.Codex, Check: []string{"--version"}, HostName: "CODEX_EXECUTABLE"},
+			{Name: "claude-code", Executable: "claude", Build: strings.Fields(claude.Printed(os.Getenv))[0], Check: []string{"--version"}, HostName: "CLAUDE_CODE_EXECUTABLE"},
+			{Name: "codex", Executable: "codex", Build: strings.Fields(codex.Printed(os.Getenv))[1], Check: []string{"--version"}, HostName: "CODEX_EXECUTABLE"},
 		}})
 		if err != nil {
 			t.Fatal(err)
 		}
-		return listed
+		return listed, image.Codex
 	}
 	t.Fatal("the image manifest does not name an agent image")
-	return nil
+	return nil, ""
 }
 
 // signedRelease is a release of one relay file for this machine's target, and its signature.

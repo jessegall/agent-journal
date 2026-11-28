@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Files\Contracts\Files;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use PHPUnit\Framework\AssertionFailedError;
@@ -18,6 +20,7 @@ use Tests\Support\Hosts\TestHost;
 use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Mocks\Answer;
 use Tests\Support\Mocks\CodexMock;
+use Tests\Support\Recordings\TerminalCapture;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -269,15 +272,14 @@ final class JournalTestHostTest extends TestCase
 
     public function test_the_claude_code_stand_in_plays_the_terminal_recording_a_test_names(): void
     {
-        $recording = 'resources/recordings/claude-code/2.1.323/turns/terminal-interrupt/fixture.json';
+        $recording = TerminalCapture::folderOf(DefaultDrivers::CLAUDE_CODE, 'terminal-interrupt')->child('fixture.json');
 
         $this->journal->enrollHost('Mac', [base_path()])->runTestHost('Mac', function (TestHost $mac) use ($recording) {
             $mac->playClaudeTerminal('terminal-interrupt');
 
-            $this->journal->assertResult(
-                file_get_contents(base_path($recording)),
-                file_get_contents("{$mac->installation()}/terminal-turn/fixture.json"),
-            );
+            $files = $this->journal->service(Files::class);
+            $installed = $files->filePathOf("{$mac->installation()}/terminal-turn/fixture.json");
+            $this->journal->assertResult($files->read($recording), $files->read($installed));
         })->stopRunningHost();
     }
 

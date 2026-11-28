@@ -30,6 +30,7 @@ use Tests\Support\Hosts\Steps\Contracts\HostStep;
 use Tests\Support\Hosts\Steps\ReleasesTurns;
 use Tests\Support\Mocks\Mock;
 use Tests\Support\Recordings\PlayedScenario;
+use Tests\Support\Recordings\TerminalCapture;
 use Tests\Support\Seeding\TestJournal;
 
 /**
@@ -70,8 +71,6 @@ final class TestHost
     private const string CLAUDE_EXCHANGES = 'resources/recordings/claude-code/'.self::CLAUDE_BUILD.'/exchanges';
 
     private const string CODEX_BUILD = '0.172.0';
-
-    private const string CLAUDE_RECORDED_TURNS = 'resources/recordings/claude-code/2.1.323/turns';
 
     /**
      * How long the mock Docker daemon gets to open its socket.
@@ -714,8 +713,8 @@ final class TestHost
      */
     public function playClaudeTerminal(string $recording): self
     {
-        $turns = base_path(self::CLAUDE_RECORDED_TURNS);
-        copy("{$turns}/{$recording}/fixture.json", "{$this->installation()}/terminal-turn/fixture.json");
+        $fixture = TerminalCapture::folderOf(DefaultDrivers::CLAUDE_CODE, $recording)->child('fixture.json');
+        copy(base_path($fixture->relative), "{$this->installation()}/terminal-turn/fixture.json");
 
         return $this;
     }

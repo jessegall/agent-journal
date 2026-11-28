@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Hosts;
 
+use App\Files\Contracts\Files;
 use App\Hosts\Contracts\HostChannel;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\Payloads\HostFramePayload;
+use App\Values\FilePath;
 use App\Values\HostInstructionSource;
 use App\Values\RowGuard;
 use Generator;
@@ -52,18 +54,10 @@ final class RecordedTerminalHost implements HostChannel
         private readonly RecordedHostAnswers $recordedAnswers,
     ) {}
 
-    public static function playing(string $recordingFolder, RecordedHostAnswers $answers): self
+    public static function playing(Files $files, FilePath $folder, RecordedHostAnswers $answers): self
     {
-        $fixture = json_decode(
-            (string) file_get_contents($recordingFolder.'/'.self::FIXTURE),
-            true,
-            flags: JSON_THROW_ON_ERROR,
-        );
-        $frames = json_decode(
-            (string) file_get_contents($recordingFolder.'/'.self::FRAMES),
-            true,
-            flags: JSON_THROW_ON_ERROR,
-        );
+        $fixture = $files->readJson($folder->child(self::FIXTURE));
+        $frames = $files->readJson($folder->child(self::FRAMES));
         $inputs = array_values(array_filter($fixture['inputs'] ?? [], fn (array $input) => ! $input['secret']));
 
         return new self(
