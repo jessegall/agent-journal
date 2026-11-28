@@ -45,18 +45,17 @@ final readonly class SendMessageHandler implements CommandHandler
 
     private function inboxFor(string $inboxId, ActorReference $actor): Inbox
     {
-        if ($actor->isSameAs(ActorReference::system())) {
-            return Inbox::findLockedById($inboxId);
-        }
+        $isJournal = $actor->isSameAs(ActorReference::system());
 
-        $sender = $this->participants->sender($actor);
-
-        if (! InboxMember::isAttached($inboxId, $actor)) {
+        if (! $isJournal && ! InboxMember::isAttached($inboxId, $actor)) {
             throw InboxUnavailable::forActor($inboxId);
         }
 
         $inbox = Inbox::findLockedById($inboxId);
-        $this->assertSameProjectAsOwner($sender, $inbox);
+
+        if (! $isJournal) {
+            $this->assertSameProjectAsOwner($this->participants->sender($actor), $inbox);
+        }
 
         return $inbox;
     }
