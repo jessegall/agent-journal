@@ -45,7 +45,12 @@ play_terminal() {
     shift
     local transcript
     transcript=$(transcript_path "$@")
-    exec "$installation/bin/journal-runner" mock recording --recording "$installation/terminal-turn" \
+    if [ -f "$installation/scenario" ]; then
+        exec "$installation/bin/journal-terminal" mock scenario \
+            --scenario "$(cat "$installation/scenario")" --repo "$(cat "$installation/repository")" \
+            --typed "$installation/../played-typed" --hold-for-stop -- "$@"
+    fi
+    exec "$installation/bin/journal-terminal" mock recording --recording "$installation/terminal-turn" \
         --started "$installation/started" --transcript "$transcript" -- "$@"
 }
 

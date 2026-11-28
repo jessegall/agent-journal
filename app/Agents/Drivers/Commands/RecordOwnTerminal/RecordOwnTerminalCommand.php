@@ -16,5 +16,13 @@ use App\Support\Command;
 #[Entry(CommandEntry::HostControl)]
 final readonly class RecordOwnTerminalCommand extends Command
 {
-    public function __construct(public string $runtimeId) {}
+    public function __construct(
+        public string $runtimeId,
+        public bool $wantsRawBytes = false,
+    ) {}
+
+    public function askingRawBytes(): self
+    {
+        return new self($this->runtimeId, true);
+    }
 }

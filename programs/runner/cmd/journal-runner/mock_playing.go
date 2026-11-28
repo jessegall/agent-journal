@@ -54,7 +54,7 @@ func mockPlaying(arguments []string) error {
 	playing.Typed = func(text []byte) {
 		typedMutex.Lock()
 		defer typedMutex.Unlock()
-		_ = appendLine(*typedPath, strings.ReplaceAll(string(text), "\n", " "))
+		_ = recorded.AppendLine(*typedPath, strings.ReplaceAll(string(text), "\n", " "))
 	}
 	listener, err := net.Listen("unix", *socket)
 	if err != nil {
@@ -92,5 +92,5 @@ func (failures *failuresFile) add(failure string) {
 	failures.mutex.Lock()
 	defer failures.mutex.Unlock()
 	fmt.Fprintln(os.Stderr, "mock playing:", failure)
-	_ = appendLine(failures.path, strings.ReplaceAll(failure, "\n", " "))
+	_ = recorded.AppendLine(failures.path, strings.ReplaceAll(failure, "\n", " "))
 }

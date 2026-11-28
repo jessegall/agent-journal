@@ -193,7 +193,7 @@ final class ScenarioStep extends Data
      *
      * @throws ScenarioInvalid
      */
-    private function startModel(ScenarioRun $run): string
+    public function startModel(ScenarioRun $run): string
     {
         $missing = "({$this->stepType->value}) names no model";
 
@@ -224,6 +224,12 @@ final class ScenarioStep extends Data
     /**
      * The step in a few words, for whoever watches a play: what it does and to whom or what.
      */
+    public function startsOwnTerminal(): bool
+    {
+        return $this->stepType === ScenarioStepType::StartSession
+            && ($this->driverType ?? DriverType::ofOwnTerminal())->isOwnTerminal();
+    }
+
     public function summary(): string
     {
         $parts = [

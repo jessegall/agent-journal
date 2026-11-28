@@ -7,6 +7,7 @@ namespace App;
 use App\Agents\Commands\ContinueStart\ContinueStartCommand;
 use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Agents\Commands\StartAgent\StartAgentCommand;
+use App\Agents\Drivers\Commands\RecordOwnTerminal\RecordOwnTerminalCommand;
 use App\Bus\CommandOwner;
 use App\Bus\CommandScope;
 use App\Bus\Contracts\Command;
@@ -46,6 +47,7 @@ final class CoreCommands
             MiddlewareDeclaration::around(CommitHeldStartRefusals::class, CommandScope::all()),
             MiddlewareDeclaration::around(KeepStartReceipt::class, CommandScope::command(StartAgentCommand::class)),
             MiddlewareDeclaration::around(AskRawBytes::class, CommandScope::command(OpenHostProcessCommand::class)),
+            MiddlewareDeclaration::around(AskRawBytes::class, CommandScope::command(RecordOwnTerminalCommand::class)),
             ...self::startRefusalAnnouncements(),
             MiddlewareDeclaration::inside(GuardTickOrigin::class, CommandScope::all()),
         ];

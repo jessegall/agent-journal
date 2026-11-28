@@ -30,6 +30,9 @@ use Tests\Support\Hosts\Steps\Contracts\HostStep;
 use Tests\Support\Hosts\Steps\ReleasesTurns;
 use Tests\Support\Mocks\Mock;
 use Tests\Support\Recordings\PlayedScenario;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Support\Recordings\Scenarios\Scenario;
+use App\Support\Recordings\Scenarios\ScenarioPlayer;
 use Tests\Support\Recordings\TerminalCapture;
 use Tests\Support\Seeding\TestJournal;
 
@@ -128,6 +131,7 @@ final class TestHost
         private readonly ArrangementType $arrangement,
         private readonly bool $showsDriverArrangements,
         private readonly PlayedScenario|null $playing,
+        private readonly Scenario|null $terminalScenario,
     ) {}
 
     /**
@@ -145,6 +149,7 @@ final class TestHost
         ArrangementType $arrangement,
         bool $showsDriverArrangements,
         PlayedScenario|null $playing = null,
+        Scenario|null $terminalScenario = null,
     ): self {
         $folder = sys_get_temp_dir().'/jh-'.bin2hex(random_bytes(6));
         mkdir($folder, 0o700, true);
@@ -158,6 +163,7 @@ final class TestHost
             $arrangement,
             $showsDriverArrangements,
             $playing,
+            $terminalScenario,
         );
         $real->port = self::freePort();
         $real->serveJournal();
@@ -179,16 +185,26 @@ final class TestHost
      */
     public static function binary(): string
     {
-        $path = base_path(self::BUILDS.'/journal-runner-'.self::sourceHash());
-        Assert::assertFileExists($path, 'No host is built for these Go sources: run composer test:go first.');
-
-        return $path;
+        return self::builtProgram('journal-runner');
     }
 
     /**
      * The first sixteen hex digits of the SHA-256 of every Go source, go.mod and go.sum, in byte instruction of their
      * paths, as the build script works it out.
      */
+    public static function terminalBinary(): string
+    {
+        return self::builtProgram('journal-terminal');
+    }
+
+    private static function builtProgram(string $name): string
+    {
+        $path = base_path(self::BUILDS.'/'.$name.'-'.self::sourceHash());
+        Assert::assertFileExists($path, "No {$name} is built for these Go sources: run sh scripts/go-test-host.sh.");
+
+        return $path;
+    }
+
     public static function sourceHash(): string
     {
         $root = base_path('programs/runner');
@@ -397,7 +413,7 @@ final class TestHost
             HostProcessPurpose::Probe,
             HostProcessType::Terminal,
             RestartPolicy::Never,
-            ["{$this->installation()}/bin/journal-runner", 'mock', 'keys', '--record', "{$this->installation()}/keys-{$name}"],
+            ["{$this->installation()}/bin/journal-terminal", 'mock', 'keys', '--record', "{$this->installation()}/keys-{$name}"],
             [],
             $this->folder,
         );
@@ -576,6 +592,17 @@ final class TestHost
             'ACCOUNTS_ROOT' => $this->accountsFolder(),
             'TEST_SHOWS_DRIVER_ARRANGEMENTS' => $this->showsDriverArrangements ? '1' : '0',
         ];
+
+        if ($this->terminalScenario !== null) {
+            $config = $this->journal->service(\Illuminate\Contracts\Config\Repository::class);
+            $environment = [
+                ...$environment,
+                'APP_ENV' => 'local',
+                'JOURNAL_SERVER_ORIGIN' => $this->journalUrl(),
+                'JOURNAL_RELEASE' => (string) $config->get('journal.agents.release'),
+                'JOURNAL_RELEASES_FOLDER' => (string) $config->get('journal.files.places.releases'),
+            ];
+        }
 
         if (! $this->arrangement->isContained()) {
             return $environment;
@@ -802,6 +829,7 @@ final class TestHost
         chmod("{$this->installation()}/bin/claude", 0o700);
         copy(__DIR__.'/fixtures/claude-turn.jsonl', "{$this->installation()}/turn.jsonl");
         symlink(self::binary(), "{$this->installation()}/bin/journal-runner");
+        symlink(self::terminalBinary(), "{$this->installation()}/bin/journal-terminal");
         mkdir("{$this->installation()}/terminal-turn", 0o700);
         copy($this->terminalFixture('claude-code'), "{$this->installation()}/terminal-turn/fixture.json");
         copy(__DIR__.'/scripts/codex-mock.sh', "{$this->installation()}/bin/codex");
@@ -811,6 +839,75 @@ final class TestHost
         copy($this->terminalFixture('codex'), "{$this->installation()}/codex-terminal-turn/fixture.json");
         $this->installExchanges('claude-code', self::CLAUDE_BUILD);
         $this->installExchanges('codex', self::CODEX_BUILD);
+
+        if ($this->terminalScenario !== null) {
+            $this->installTerminalMocks($this->terminalScenario);
+        }
+    }
+
+    /**
+     * @param  list<string>  $arguments
+     */
+    public function changeTerminalMachine(array $arguments): int
+    {
+        $project = "{$this->folder}/project";
+        $state = "{$this->folder}/terminal-state";
+        $installation = $this->installation();
+
+        if ($arguments[0] === ScenarioPlayer::CONNECT_PROJECT) {
+            $ticket = file_get_contents(base_path(ScenarioPlayer::CONNECTION_TICKET));
+            Assert::assertIsString($ticket);
+            $connected = $this->processes->path($project)->input($ticket)->timeout(40)->run([
+                "{$installation}/bin/journal-runner", 'mock', 'connect', $this->journalUrl(), $state,
+            ]);
+            Assert::assertTrue($connected->successful(), $connected->errorOutput());
+            $binding = trim($connected->output());
+            Assert::assertNotSame('', $binding);
+            $this->running[] = $this->processes->forever()->start([
+                "{$installation}/bin/journal-runner", 'relay', '--state', $state, '--binding', $binding,
+            ]);
+
+            return 0;
+        }
+
+        Assert::assertSame(ScenarioPlayer::START_TERMINAL, $arguments[0]);
+        [, $driver, $model, $effort] = $arguments;
+        $binary = "{$installation}/bin/journal-terminal";
+        $this->running[] = $this->processes->path($project)->forever()->start([
+            $binary, 'mock', 'launch', $binary, '--state', $state, '--model', $model, '--effort', $effort, $driver,
+        ]);
+
+        return 0;
+    }
+
+    private function installTerminalMocks(Scenario $scenario): void
+    {
+        $installation = $this->installation();
+        $bin = "{$installation}/bin";
+        $state = "{$this->folder}/terminal-state";
+        mkdir("{$this->folder}/project", 0o700);
+        mkdir("{$state}/allowed", 0o700, true);
+
+        // The terminal and relay resolve their sealed installation from their real binary path.
+        unlink("{$bin}/journal-runner");
+        copy(self::binary(), "{$bin}/journal-runner");
+        unlink("{$bin}/journal-terminal");
+        copy(self::terminalBinary(), "{$bin}/journal-terminal");
+        copy(self::builtProgram('journal-hook'), "{$bin}/journal-hook");
+
+        foreach (['journal-runner', 'journal-terminal', 'journal-hook'] as $program) {
+            chmod("{$bin}/{$program}", 0o700);
+        }
+
+        $driver = $scenario->driver();
+        $profile = $this->journal->driverProfile($driver);
+        $family = $this->journal->service(DriverCatalogue::class)->family($driver);
+        file_put_contents("{$state}/allowed/installation.json", json_encode([
+            'release' => 'installation',
+            'drivers' => [$profile->executableHostName() => "{$bin}/{$family->hostName}"],
+        ], JSON_THROW_ON_ERROR));
+        file_put_contents("{$installation}/scenario", $scenario->name."\n");
+        file_put_contents("{$installation}/repository", base_path()."\n");
     }
 
     private function terminalFixture(string $driver): string
@@ -909,7 +1006,7 @@ final class TestHost
      */
     private function mockDocker(): array
     {
-        if ($this->playing !== null) {
+        if ($this->playing !== null && $this->terminalScenario === null) {
             return [
                 self::binary(), 'mock', 'playing', '--scenario', $this->playing->name, '--socket', "{$this->folder}/docker.sock",
                 '--failures', "{$this->folder}/played-failures", '--typed', "{$this->folder}/played-typed",

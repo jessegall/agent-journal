@@ -44,6 +44,11 @@ final readonly class Scenario
         ));
     }
 
+    public function usesOwnTerminal(): bool
+    {
+        return array_any($this->steps, fn (ScenarioStep $step) => $step->startsOwnTerminal());
+    }
+
     public function driver(): string
     {
         return explode('/', $this->name, 2)[0];

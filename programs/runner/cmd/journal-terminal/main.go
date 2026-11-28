@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,6 +27,8 @@ import (
 	"journal-runner/upgrade"
 )
 
+var developmentCommand func([]string) error
+
 var errStartUsage = errors.New("usage: journal-terminal <driver> [<arguments of the program>]")
 
 func main() {
@@ -38,6 +41,13 @@ func run(arguments []string, input *os.File, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "       journal-terminal <annotate|screen|render> <folder>")
 		return 2
 	}
+	if developmentCommand != nil && arguments[0] == "mock" {
+		if err := developmentCommand(arguments[1:]); err != nil {
+			fmt.Fprintln(stderr, "journal-terminal:", err)
+			return 1
+		}
+		return 0
+	}
 	if tool, found := recordingTools[arguments[0]]; found {
 		if len(arguments) != 2 {
 			fmt.Fprintf(stderr, "usage: journal-terminal %s <folder>\n", arguments[0])
@@ -49,18 +59,31 @@ func run(arguments []string, input *os.File, stdout, stderr io.Writer) int {
 		}
 		return 0
 	}
+	flags := flag.NewFlagSet("journal-terminal", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	stateFolder := flags.String("state", device.DefaultStateFolder(), "the connected machine's private state")
+	model := flags.String("model", "default", "the session model")
+	effort := flags.String("effort", "", "the session effort")
+	if err := flags.Parse(arguments); err != nil {
+		return 2
+	}
+	if flags.NArg() == 0 {
+		fmt.Fprintln(stderr, errStartUsage)
+		return 2
+	}
 	folder, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintln(stderr, "journal-terminal:", err)
 		return 1
 	}
-	stateFolder := device.DefaultStateFolder()
-	found, binding, state, err := project.ResolveConnected(folder, stateFolder, upgrade.WakeRelay)
+	found, binding, state, err := project.ResolveConnected(folder, *stateFolder, upgrade.WakeRelay)
 	if err != nil {
 		fmt.Fprintln(stderr, "journal-terminal:", err)
 		return 1
 	}
-	code, err := start(arguments, input, stdout, stderr, found, binding, state)
+	code, err := start(flags.Args(), input, stdout, stderr, found, binding, state, client.BindingRuntimeRequest{
+		Model: *model, Effort: *effort,
+	})
 	if err != nil {
 		fmt.Fprintln(stderr, "journal-terminal:", err)
 		return 1
@@ -75,6 +98,7 @@ func start(
 	folder project.Folder,
 	binding device.Binding,
 	state device.ConnectionState,
+	request client.BindingRuntimeRequest,
 ) (int, error) {
 	size, err := windowSize(input)
 	if err != nil {
@@ -93,10 +117,12 @@ func start(
 		driver = "claude-code"
 	}
 	journal := client.ForRemoteProject(binding.Enrollment, &http.Client{Timeout: 30 * time.Second})
-	opened, err := openMainRuntime(journal, state, client.BindingRuntimeRequest{
-		RootID: binding.RootID, Folder: folder.Root, AgentID: binding.MainAgentID,
-		Driver: driver, Profile: "main-agent", Model: "default",
-	}, binding.BindingID)
+	request.RootID = binding.RootID
+	request.Folder = folder.Root
+	request.AgentID = binding.MainAgentID
+	request.Driver = driver
+	request.Profile = "main-agent"
+	opened, err := openMainRuntime(journal, state, request, binding.BindingID)
 	if err != nil {
 		return 1, err
 	}

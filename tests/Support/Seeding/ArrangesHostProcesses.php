@@ -59,6 +59,7 @@ use Tests\Support\Assertions\Facts\MadeHostInstructions;
 use Tests\Support\Connections\PublicRelease;
 use Tests\Support\Hosts\MockHost;
 use Tests\Support\Hosts\RecordedHostAnswers;
+use App\Support\Recordings\Scenarios\Scenario;
 use Tests\Support\Hosts\RecordedTerminalHost;
 use Tests\Support\Hosts\TestEnrolledHost;
 use Tests\Support\Hosts\TestHost;
@@ -196,16 +197,24 @@ trait ArrangesHostProcesses
      *
      * @param  Closure(TestHost): mixed  $scope
      */
-    public function runPlayingTestHost(string $host, PlayedScenario $playing, Closure $scope): self
-    {
-        return $this->startTestHost($host, $playing, $scope);
+    public function runPlayingTestHost(
+        string $host,
+        PlayedScenario $playing,
+        Closure $scope,
+        Scenario|null $terminalScenario = null,
+    ): self {
+        return $this->startTestHost($host, $playing, $scope, $terminalScenario);
     }
 
     /**
      * @param  Closure(TestHost): mixed  $scope
      */
-    private function startTestHost(string $host, PlayedScenario|null $playing, Closure $scope): self
-    {
+    private function startTestHost(
+        string $host,
+        PlayedScenario|null $playing,
+        Closure $scope,
+        Scenario|null $terminalScenario = null,
+    ): self {
         if ($this->testHost !== null) {
             throw FixtureRefused::testHostRuns($this->testHost->name);
         }
@@ -221,6 +230,7 @@ trait ArrangesHostProcesses
             Host::query()->findOrFail($this->hostCalled($host)->hostId)->arrangement,
             $this->app->make(DriverCompatibilities::class) instanceof ShownDriverArrangements,
             $playing,
+            $terminalScenario,
         );
         $scope($this->testHost);
 

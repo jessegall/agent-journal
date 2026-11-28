@@ -22,6 +22,7 @@ final class BindingRuntimeRequestData extends Data
         public readonly string $profile,
         public readonly string $model,
         public readonly string|null $startId = null,
+        public readonly string|null $effort = null,
     ) {}
 
     /**
@@ -52,6 +53,7 @@ final class BindingRuntimeRequestData extends Data
             $driverBuild,
             $this->profile,
             $this->model,
+            $this->effort,
         );
     }
 }

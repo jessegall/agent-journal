@@ -86,10 +86,8 @@ switch_recording_off() {
 
 # The play runs in the journal's container, which holds no Docker, so the machine changes it asks for run here.
 play_scenario() {
-    local watcher status=0 connection_scratch=""
-    case "$2" in
-        connected/*) connection_scratch=$(make_scratch_folder) || return 1 ;;
-    esac
+    local watcher status=0 connection_scratch
+    connection_scratch=$(make_scratch_folder) || return 1
     run_machine_changes "$connection_scratch" &
     watcher=$!
     docker compose exec $(read_terminal_flag) app php -d memory_limit="$PLAY_MEMORY" artisan recordings:play "$2" \
@@ -135,6 +133,9 @@ run_machine_change() {
         connect-recorded-project)
             connect_recorded_project "$connection_scratch" "$2" "$3" || status=$?
             ;;
+        start-recorded-terminal)
+            start_recorded_terminal "$connection_scratch" "$2" "$3" "$4" || status=$?
+            ;;
         *) "$@" || status=$? ;;
     esac
     printf '%s\n' "$status" > storage/recordings/drafts/machine-change.done
@@ -146,7 +147,19 @@ connect_recorded_project() {
         sh programs/runner/scripts/install-relay.sh --for-recording "$1" "$2" "$3" "$PWD/scripts/record-project-relay.py"
 }
 
+start_recorded_terminal() {
+    local scratch="$1" installation
+    installation=$(cat "$scratch/installation") || return 1
+    [ -x "$installation/bin/journal-terminal" ] || return 1
+    python3 scripts/record-project-relay.py terminal "$scratch/project" "$scratch/terminal.pid" \
+        "$installation/bin/journal-terminal" --state "$scratch/state" --model "$3" --effort "$4" "$2" \
+        > "$scratch/terminal.log" 2>&1 &
+}
+
 stop_recorded_project() {
+    if [ -f "$1/terminal.pid" ]; then
+        kill "$(cat "$1/terminal.pid")" 2>/dev/null || true
+    fi
     python3 scripts/record-project-relay.py stop "$1/state" || return 1
     # An installed release is read-only, as the installer leaves it.
     chmod -R u+w "$1" && rm -rf "$1"

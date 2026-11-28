@@ -8,6 +8,7 @@ use App\Accounts\Enums\CommandEntry;
 use App\Accounts\SignInChallenges;
 use App\Accounts\Values\SignInStarted;
 use App\Agents\AgentStartOnMessage;
+use App\Agents\Commands\WakeAgent\WakeAgentCommand;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Bus\ConsoleOwner;
 use App\Bus\Contracts\JournalCommands;
@@ -89,6 +90,8 @@ final readonly class ScenarioPlayer
     private const int QUIET_SECOND_LIMIT = 20;
 
     public const string CONNECT_PROJECT = 'connect-recorded-project';
+
+    public const string START_TERMINAL = 'start-recorded-terminal';
 
     /**
      * The paired inbox for a message between the owner and the agent.
@@ -183,14 +186,21 @@ final readonly class ScenarioPlayer
      * Plays the run's next step and answers it.
      *
      * @param  Closure(ScenarioPause): string  $askUser
+     * @param  (Closure(list<string>): int)|null  $changeMachine
      *
      * @throws ScenarioStuck
      * @throws ScenarioInvalid
      */
-    public function playNext(ScenarioRun $run, Closure $askUser): ScenarioStep
+    public function playNext(ScenarioRun $run, Closure $askUser, Closure|null $changeMachine = null): ScenarioStep
     {
         $step = $run->nextStep();
-        $this->playStep($run, $step, $askUser);
+
+        if ($step->startsOwnTerminal()) {
+            $this->startTerminal($run, $step, $changeMachine ?? $this->changeMachine(...));
+        } else {
+            $this->playStep($run, $step, $askUser);
+        }
+
         $run->stepRan();
 
         return $step;
@@ -237,7 +247,7 @@ final readonly class ScenarioPlayer
             }
 
             if ($result instanceof IssuedInvitation) {
-                $this->connectProject($run);
+                $this->connectProject($run, $this->changeMachine(...));
             }
 
             return;
@@ -335,21 +345,62 @@ final readonly class ScenarioPlayer
         throw ScenarioStuck::keysNotObserved($run, $source);
     }
 
-    private function connectProject(ScenarioRun $run): void
+    /**
+     * @param  Closure(list<string>): int  $changeMachine
+     */
+    private function startTerminal(ScenarioRun $run, ScenarioStep $step, Closure $changeMachine): void
+    {
+        if (! $run->isConnected()) {
+            $this->requestKey->independently($run->stepKey(), fn () => $this->commands->run($run->issueConnection()));
+            $this->connectProject($run, $changeMachine);
+            $this->waitFor($run, ScenarioFact::Connected, self::HOST_RESTART_SECOND_LIMIT);
+        }
+
+        $agent = $run->useConnectedMainAgent((string) $step->agent);
+        $previous = $agent->current_session_id;
+        $status = $changeMachine([
+            self::START_TERMINAL,
+            $run->scenario->driver(),
+            $step->startModel($run),
+            (string) $step->effort,
+        ]);
+
+        if ($status !== 0) {
+            throw ScenarioStuck::terminalNotStarted($run->scenario->name, $status);
+        }
+
+        $looks = intdiv(self::HOST_RESTART_SECOND_LIMIT * 1_000_000_000, self::LOOK_NANOSECONDS);
+
+        for ($look = 0; $look <= $looks; $look++) {
+            $session = $agent->refresh()->current_session_id;
+
+            if ($session !== null && $session !== $previous) {
+                $key = strtolower((string) Str::ulid());
+                $run->holdStartRequest($key);
+                $wake = new WakeAgentCommand($agent->id, $session, $key);
+                $this->requestKey->independently($key, fn () => $this->commands->run($wake));
+
+                return;
+            }
+
+            $this->sleeper->sleep(self::LOOK_NANOSECONDS);
+        }
+
+        throw ScenarioStuck::terminalNotStarted($run->scenario->name, $status);
+    }
+
+    /**
+     * @param  Closure(list<string>): int  $changeMachine
+     */
+    private function connectProject(ScenarioRun $run, Closure $changeMachine): void
     {
         $ticket = $run->holdConnectionAttempt();
         $file = FilePath::in(Place::Project, self::CONNECTION_TICKET);
 
-        $command = [
-            self::CONNECT_PROJECT,
-            $this->origin->canonical(),
-            $this->releases->current()->version,
-        ];
-
         $this->files->write($file, $ticket->secret."\n", Permissions::OwnerOnly);
 
         try {
-            $status = $this->changeMachine($command);
+            $status = $changeMachine([self::CONNECT_PROJECT]);
         } finally {
             $this->files->delete($file);
         }
@@ -459,6 +510,10 @@ final readonly class ScenarioPlayer
      */
     private function changeMachine(array $argv): int
     {
+        if ($argv === [self::CONNECT_PROJECT]) {
+            $argv = [...$argv, $this->origin->canonical(), $this->releases->current()->version];
+        }
+
         $request = FilePath::in(Place::Project, self::MACHINE_CHANGE);
         $done = FilePath::in(Place::Project, self::MACHINE_CHANGE_DONE);
         $this->files->write($request, implode("\n", $argv)."\n");

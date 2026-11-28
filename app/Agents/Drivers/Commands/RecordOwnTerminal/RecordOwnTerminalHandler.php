@@ -25,6 +25,10 @@ final readonly class RecordOwnTerminalHandler implements CommandHandler
         $terminal = $runtime->hostProcesses()->live()->ofPurposes([HostProcessPurpose::AgentTerminal])->first();
         $plan = $this->plans->of($runtime);
 
+        if ($command->wantsRawBytes) {
+            $plan = $plan->askingRawBytes();
+        }
+
         if ($terminal !== null) {
             return new RecordedOwnTerminal($terminal->id, $plan);
         }

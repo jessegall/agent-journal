@@ -100,11 +100,17 @@ final readonly class RecordingOpening implements JsonSerializable
      */
     public function fakedBy(RecordingFakes $fakes): self
     {
+        return clone ($this->withEnvironmentNames(), [
+            'argv' => array_map($fakes->replaceIn(...), $this->argv),
+            'folder' => $this->folder === null ? null : $fakes->replaceIn($this->folder),
+        ]);
+    }
+
+    public function withEnvironmentNames(): self
+    {
         $names = array_map(strval(...), array_keys($this->environment));
 
         return clone ($this, [
-            'argv' => array_map($fakes->replaceIn(...), $this->argv),
-            'folder' => $this->folder === null ? null : $fakes->replaceIn($this->folder),
             'environment' => array_combine($names, array_map(fn (string $name) => "{env:{$name}}", $names)),
         ]);
     }

@@ -31,7 +31,7 @@ use Illuminate\Process\Factory as ProcessFactory;
 final readonly class RecordingFinisher
 {
     /**
-     * Where the test host binary is built, which renders a terminal's frames as its screen showed them.
+     * Where the terminal binary is built, which renders a terminal's frames as its screen showed them.
      */
     private const string RENDERER = 'storage/framework/test-host';
 
@@ -114,9 +114,10 @@ final readonly class RecordingFinisher
             $windowed,
         ));
 
+        [$terminalOpenings, $calls] = $this->partitionOpenings($windowed);
         $all = [
-            ...$windowed,
-            ...array_values($this->driverExchanges->cutFrom($hostEvents, $fakes)),
+            ...$calls,
+            ...array_values($this->driverExchanges->cutFrom($hostEvents, $fakes, $terminalOpenings)),
         ];
 
         $named = [];
@@ -133,6 +134,26 @@ final readonly class RecordingFinisher
         }
 
         return $named;
+    }
+
+    /**
+     * @param  list<CutExchange>  $exchanges
+     * @return array{list<CutExchange>, list<CutExchange>}
+     */
+    private function partitionOpenings(array $exchanges): array
+    {
+        $terminals = [];
+        $calls = [];
+
+        foreach ($exchanges as $exchange) {
+            if ($exchange->opening->wire === Wire::Driver) {
+                $terminals[] = $exchange;
+            } else {
+                $calls[] = $exchange;
+            }
+        }
+
+        return [$terminals, $calls];
     }
 
     /**
@@ -217,15 +238,14 @@ final readonly class RecordingFinisher
      */
     private function renderFrames(FilePath $folder): void
     {
-        $hosts = $this->files->list(FilePath::in(Place::Project, self::RENDERER), pattern: 'journal-runner-*')->paths();
+        $hosts = $this->files->list(FilePath::in(Place::Project, self::RENDERER), pattern: 'journal-terminal-*')->paths();
 
         if ($hosts === []) {
-            throw RecordingUnfinished::framesUnrendered('no test host is built: run sh scripts/go-tests.sh');
+            throw RecordingUnfinished::framesUnrendered('no terminal renderer is built: run sh scripts/go-test-host.sh');
         }
 
         $run = $this->processes->newPendingProcess()->run([
             $this->files->realPath($hosts[0]),
-            'recording',
             'render',
             $this->files->realPath($folder),
         ]);

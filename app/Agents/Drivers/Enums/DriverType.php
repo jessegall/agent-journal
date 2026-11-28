@@ -29,6 +29,11 @@ enum DriverType: string
         return self::Terminal;
     }
 
+    public function isOwnTerminal(): bool
+    {
+        return $this === self::Terminal;
+    }
+
     /**
      * The mode a headless choice names: headless when asked for, else the terminal.
      */
