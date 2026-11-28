@@ -166,4 +166,19 @@ describe("StartPicker", () => {
     expect(picker.find('[data-start-option="driver:claude-code"]').exists()).toBe(true);
     expect(loads).toEqual([]);
   });
+
+  it("renders a start the server says runs, or failed, from the agent's status alone", async () => {
+    const starting = await pickerFor(
+      agentWith({ status: { sessionState: "starting", label: "Starting", actions: [], reason: null } } as Partial<AgentOptionData>),
+    );
+    const failed = await pickerFor(
+      agentWith({
+        status: { sessionState: "failed", label: "Start failed", actions: [], reason: "Work (Max) reached its usage limit" },
+      } as Partial<AgentOptionData>),
+    );
+
+    expect(starting.text()).toContain("Starting the session");
+    expect(failed.get("[data-start-failure]").text()).toContain("reached its usage limit");
+    expect(failed.get("[data-start]").text()).toBe("Start again");
+  });
 });
