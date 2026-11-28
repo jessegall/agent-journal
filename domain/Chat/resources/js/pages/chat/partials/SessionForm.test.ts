@@ -300,41 +300,15 @@ describe("SessionForm", () => {
     form.unmount();
   });
 
-  it("keeps a Codex terminal it cannot run, says why and disables Start, and lets Headless or the inherited mode back", async () => {
+  it("offers no driver mode: every start the journal makes runs headless", async () => {
     const form = mount(SessionForm, {
       attachTo: document.body,
       props: { agent: idle, mode: "start" },
     });
     await flushPromises();
 
-    await choose(form, "driver", "Codex");
-    await form.get('[role="switch"][aria-label="Headless"]').trigger("click");
-    await flushPromises();
-
-    expect(form.text()).toContain(
-      "The Codex terminal is not proven on any host yet.",
-    );
-    expect(startButton(form)?.attributes("disabled")).toBeDefined();
-
-    await form.get('[role="switch"][aria-label="Headless"]').trigger("click");
-    await flushPromises();
-
-    expect(form.text()).not.toContain(
-      "The Codex terminal is not proven on any host yet.",
-    );
-    expect(startButton(form)?.attributes("disabled")).toBeUndefined();
-
-    const inherit = form
-      .findAll("button")
-      .find((button) => button.text() === "Use saved or profile setting");
-    await inherit?.trigger("click");
-    await flushPromises();
-
-    expect(
-      form
-        .findAll("button")
-        .some((button) => button.text() === "Use saved or profile setting"),
-    ).toBe(false);
+    expect(form.find('[role="switch"][aria-label="Headless"]').exists()).toBe(false);
+    expect(form.text()).not.toContain("Use as default for this agent");
     form.unmount();
   });
 
@@ -594,7 +568,7 @@ describe("the start a session form sends", () => {
     const readyId = ready.id;
     ready.id = RECORDED.account;
     posted.length = 0;
-    const form = mount(SessionForm, { props: { agent: idle, mode: "start" } });
+    const form = mount(SessionForm, { props: { agent: { ...idle, id: RECORDED.agent }, mode: "start" } });
     await flushPromises();
 
     await form.find("form").trigger("submit");

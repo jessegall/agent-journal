@@ -153,20 +153,6 @@ final class Agent extends JournalModel implements
 
     // ----------[ Transformers ]----------
 
-    /**
-     * The driver type a start runs: the one it names, then the agent's saved preference, then its profile's default,
-     * the first a start may run in; a terminal saved before only headless could be chosen falls to headless.
-     */
-    public function driverTypeFor(DriverType|null $named, DriverType $profileDefault): DriverType
-    {
-        $candidates = array_filter(
-            [$named, $this->driver_type_preference, $profileDefault],
-            fn (DriverType|null $type) => $type?->isChoosable() === true,
-        );
-
-        return array_values($candidates)[0] ?? DriverType::Headless;
-    }
-
     public function assigneeIdentity(): AssigneeIdentity
     {
         return AssigneeIdentity::of($this);

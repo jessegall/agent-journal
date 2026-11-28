@@ -10,8 +10,8 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Every start runs headless (user 30877): a start that names no mode runs headless, a terminal saved before falls to
- * headless, and a start that names the terminal is offered nothing.
+ * Every start the journal makes runs headless (users 30877, 30893): whatever the agent saved or its profile defaults
+ * to, the start's mode is headless.
  */
 final class HeadlessOnlyStartsTest extends TestCase
 {
@@ -23,9 +23,8 @@ final class HeadlessOnlyStartsTest extends TestCase
         $agent->driver_type_preference = DriverType::Terminal;
 
         $this->journal->assertResult(
-            [DriverType::Headless, DriverType::Headless, DriverType::Headless],
+            [DriverType::Headless, DriverType::Headless],
             [
-                $agent->driverTypeFor(null, DriverType::Terminal),
                 $this->journal->service(StartPreviews::class)->chosenDriverType($agent, 'claude-code', null, DriverType::Terminal)[0],
                 $this->journal->service(StartPreviews::class)->chosenDriverType($agent, 'codex', null, DriverType::Terminal)[0],
             ],

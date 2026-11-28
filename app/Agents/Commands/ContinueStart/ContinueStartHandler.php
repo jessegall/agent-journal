@@ -10,10 +10,7 @@ use App\Agents\Enums\ConversationModeType;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandHandler;
 use App\Exceptions\StartRefused;
-use App\Models\Agents\Agent;
-use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Sessions\Contracts\BuiltInStartProfiles;
 use App\Sessions\Contracts\SessionPolicyReader;
 use App\Sessions\Enums\StartOriginType;
 use App\Sessions\StartReceipt;
@@ -30,7 +27,6 @@ final readonly class ContinueStartHandler implements CommandHandler
     public function __construct(
         private CommandBus $commands,
         private SessionPolicyReader $policies,
-        private BuiltInStartProfiles $profiles,
     ) {}
 
     public function handle(ContinueStartCommand $command): StartReceipt
@@ -54,24 +50,8 @@ final readonly class ContinueStartHandler implements CommandHandler
             ConversationModeType::New,
             $predecessor->parent_session_id,
             $this->policies->policyFor($predecessor->id),
-            driverType: $this->driverTypeOf($predecessor),
+            driverType: DriverType::ofJournalStart(),
         )));
-    }
-
-    /**
-     * The successor runs in its predecessor's driver type; one that ran no runtime takes the agent's own choice.
-     */
-    private function driverTypeOf(AgentSession $predecessor): DriverType
-    {
-        $runtime = AgentRuntime::findForSession($predecessor->id);
-
-        if ($runtime !== null) {
-            return $runtime->driver_type;
-        }
-
-        $agent = Agent::query()->findOrFail($predecessor->agent_id);
-
-        return $agent->driverTypeFor(null, $this->profiles->defaultDriverTypeOf($agent->profile_key));
     }
 
     /**

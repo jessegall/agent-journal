@@ -13,12 +13,12 @@ enum DriverType: string
     case Terminal = 'terminal';
 
     /**
-     * Whether a start may run in this mode: only headless (user 30877); the terminal runs only behind the scenes, as
-     * an account's sign-in.
+     * The mode every start the journal makes runs in (user 30893): the terminal driver is for a person running the
+     * driver on their own machine, never a start of the journal's.
      */
-    public function isChoosable(): bool
+    public static function ofJournalStart(): self
     {
-        return $this === self::Headless;
+        return self::Headless;
     }
 
     /**

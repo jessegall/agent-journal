@@ -8,7 +8,6 @@ import Button from "@kit/Button";
 import Field from "@kit/Field";
 import OptionCards from "@kit/OptionCards";
 import Select from "@kit/Select";
-import Toggle from "@kit/Toggle";
 import Dialog from "@kit/Dialog";
 import { followPage } from "@kit/followPage";
 import { keyedPost } from "@kit/keyedPost";
@@ -85,12 +84,8 @@ let requestId = newRequestId();
 const switching = useSwitchOperation(() => props.agent);
 // The driver family chosen; none takes the family of the agent's latest conversation, else the first.
 const family = ref<string | null>(null);
-// The driver type as drafted: inherit takes the agent's saved one or the profile's; on and off name headless or terminal.
-type ModeDraft = "inherit" | "on" | "off";
-const modeDraft = ref<ModeDraft>("inherit");
 // The server's preview of the start as drafted, read again whenever the draft changes.
 const preview = ref<StartPreviewData | null>(null);
-const saveDriverType = ref(false);
 const accounts = ref<EligibleAccountData[]>([]);
 const accountId = ref<string | null>(null);
 const defaultModel = ref<string | null>(null);
@@ -149,7 +144,6 @@ if (restored !== null) {
   model.value = restored.model;
   accountId.value = restored.accountId;
   conversationId.value = restored.conversationId;
-  saveDriverType.value = restored.saveDriverType;
   requestId = restored.requestId ?? requestId;
 }
 
@@ -159,11 +153,11 @@ if (restored !== null) {
 function keepRestoration(sentRequestId: string | null): void {
   restoration.keep({
     driver: driver.value,
-    driverType: draftedDriverType.value ?? "",
+    driverType: "",
     model: model.value,
     accountId: accountId.value,
     conversationId: conversationId.value,
-    saveDriverType: saveDriverType.value,
+    saveDriverType: false,
     focus: focusedField.value,
     requestId: sentRequestId,
   });
@@ -341,16 +335,8 @@ const driver = computed(
     families.value[0] ??
     "",
 );
-const draftedDriverType = computed<DriverType | null>(
-  () =>
-    (({ inherit: null, on: "headless", off: "terminal" }) as const)[
-      modeDraft.value
-    ],
-);
-// The driver type the start runs in, as the server resolved it; the drafted one until its preview arrives.
-const driverType = computed<DriverType>(
-  () => preview.value?.driverType ?? draftedDriverType.value ?? "headless",
-);
+// The driver type the start runs in, as the server resolved it: every start the journal makes runs headless.
+const driverType = computed<DriverType>(() => preview.value?.driverType ?? "headless");
 const driverTypeSources: Record<DriverTypeSource, string> = {
   explicit: "chosen here",
   saved: "saved for this agent",
@@ -365,20 +351,13 @@ const familySources: Record<DriverSourceType, string> = {
 
 if (restored !== null) {
   family.value = restored.driver;
-  modeDraft.value = (
-    { "": "inherit", headless: "on", terminal: "off" } as const
-  )[restored.driverType];
-}
-
-function chooseHeadless(isHeadless: boolean): void {
-  modeDraft.value = isHeadless ? "on" : "off";
 }
 
 function readPreview(): void {
   load(webStartPreview, {
     agent: props.agent.id,
     family: driver.value === "" ? null : driver.value,
-    driverType: draftedDriverType.value,
+    driverType: null,
     model: model.value,
   }).then(
     (answer) => (preview.value = answer.status === "ok" ? answer.value : null),
@@ -386,7 +365,7 @@ function readPreview(): void {
   );
 }
 
-watch([driver, draftedDriverType, model, protectedViewGeneration], readPreview, { immediate: true });
+watch([driver, model, protectedViewGeneration], readPreview, { immediate: true });
 // A purge of what this viewer was shown takes the preview with it; the generation's move reads it again.
 onBeforeUnmount(onPurge(() => (preview.value = null)));
 watch(
@@ -396,7 +375,6 @@ watch(
     model,
     accountId,
     conversationId,
-    saveDriverType,
     focusedField,
   ],
   () => keepRestoration(sentRequestId),
@@ -551,8 +529,8 @@ function sessionChoice(): SessionChoice {
     agentId: props.agent.id,
     model: model.value ?? "default",
     driver: driver.value,
-    driverType: draftedDriverType.value,
-    saveDriverType: saveDriverType.value,
+    driverType: null,
+    saveDriverType: false,
     accountId: account.value?.id,
     accountRevision: account.value?.signInRevision,
     conversationId: conversationId.value,
@@ -881,15 +859,6 @@ onBeforeUnmount(() => following?.stop());
         </template>
       </Field>
       <div class="flex flex-col gap-1">
-        <label class="flex items-center gap-2 text-small text-text-2">
-          <Toggle
-            label="Headless"
-            :model-value="driverType === 'headless'"
-            :disabled="preview?.isModeLocked === true"
-            @update:model-value="chooseHeadless"
-          />
-          Headless
-        </label>
         <template v-if="preview !== null">
           <p class="text-small text-text-3" aria-live="polite">
             {{ preview.label }}: driver type {{ driverTypeSources[preview.driverTypeSource] }},
@@ -900,17 +869,6 @@ onBeforeUnmount(() => following?.stop());
               {{ preview.unavailableReason }}
             </p>
           </template>
-        </template>
-        <template
-          v-if="modeDraft !== 'inherit' && preview?.isModeLocked !== true"
-        >
-          <TextLink
-            variant="quiet"
-            class="self-start"
-            @click="modeDraft = 'inherit'"
-          >
-            Use saved or profile setting
-          </TextLink>
         </template>
       </div>
       <Field
@@ -930,10 +888,6 @@ onBeforeUnmount(() => following?.stop());
           />
         </template>
       </Field>
-      <label class="flex items-center gap-2 text-small text-text-2">
-        <Toggle v-model="saveDriverType" label="Use as default for this agent" />
-        Use as default for this agent
-      </label>
       <Field
         :id="fieldIds.accountId"
         label="Account"

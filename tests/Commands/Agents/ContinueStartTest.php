@@ -73,7 +73,7 @@ final class ContinueStartTest extends TestCase
         $this->assertFalse($session->isLinkedTo($newAccount));
     }
 
-    public function test_a_continued_terminal_session_goes_on_in_a_terminal(): void
+    public function test_a_continued_terminal_session_goes_on_headless_as_every_journal_start(): void
     {
         $first = $this->startFirst(DriverType::Terminal);
         AgentSession::query()->findOrFail($first)->endAt(CarbonImmutable::now());
@@ -81,7 +81,7 @@ final class ContinueStartTest extends TestCase
         $successor = $this->bus()->run(new ContinueStartCommand($first, $this->agent->id));
 
         $this->assertSame(
-            DriverType::Terminal,
+            DriverType::Headless,
             SessionRequest::query()->where('request_id', $successor->requestId)->sole()->driver_type,
         );
     }
