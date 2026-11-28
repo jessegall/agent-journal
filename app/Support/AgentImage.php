@@ -19,6 +19,11 @@ final readonly class AgentImage
      */
     private const string BUILD_BASE_REPOSITORY = 'journal-agent-base';
 
+    /**
+     * How a bare image id begins, which names no repository.
+     */
+    private const string BARE_ID_PREFIX = 'sha256:';
+
     public static function fromConfig(string $configured): self
     {
         return new self($configured === '' ? ProfileStartPolicy::HELPER_IMAGE : $configured);
@@ -26,10 +31,14 @@ final readonly class AgentImage
 
     /**
      * The name a driver image's build takes the agent image by: a build names its base by name, never by a bare id,
-     * so the loader holds the image under one made of its own id.
+     * so an image pinned by its id is taken by the name the loader holds it under, made of that id.
      */
     public function buildBase(): string
     {
-        return self::BUILD_BASE_REPOSITORY.':'.str_replace('sha256:', '', $this->reference);
+        if (! str_starts_with($this->reference, self::BARE_ID_PREFIX)) {
+            return $this->reference;
+        }
+
+        return self::BUILD_BASE_REPOSITORY.':'.substr($this->reference, strlen(self::BARE_ID_PREFIX));
     }
 }

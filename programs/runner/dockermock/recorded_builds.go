@@ -17,6 +17,9 @@ const RecordedBuildImage = "sha256:a0d1c76feba0672e42e486ff93b3f8b72e05bdfdd72bb
 // RecordedFailingVersion is the driver version of the recorded build that failed, for want of a pinned digest.
 const RecordedFailingVersion = "0.164.0"
 
+// RecordedMissingBase is the base the mock daemon answers it does not hold, as the real daemon answered it.
+const RecordedMissingBase = "journal-agent-base:missing"
+
 //go:embed recordings
 var recordedBuilds embed.FS
 
@@ -66,6 +69,12 @@ func (daemon *BuildDaemon) answer(t *testing.T, writer http.ResponseWriter, requ
 		playRecorded(writer, recorded)
 	case strings.HasSuffix(request.URL.Path, "/images/"+RecordedBuildImage+"/history"):
 		playRecorded(writer, "history.json")
+	case strings.HasSuffix(request.URL.Path, "/images/"+RecordedMissingBase+"/json"):
+		writer.WriteHeader(http.StatusNotFound)
+		playRecorded(writer, "base_missing.json")
+	case strings.HasPrefix(request.URL.Path, "/v") && strings.Contains(request.URL.Path, "/images/") &&
+		strings.HasSuffix(request.URL.Path, "/json"):
+		playRecorded(writer, "base_held.json")
 	default:
 		t.Errorf("the build asked the daemon %s %s", request.Method, request.URL.Path)
 		writer.WriteHeader(http.StatusNotFound)

@@ -52,6 +52,19 @@ func (containers Containers) AssertImagePinned(ctx context.Context, reference st
 	return ImageUnusable{ErrDigestMismatch, reference, reference + " names " + wanted + ", but the daemon holds " + image.ID}
 }
 
+// AssertImageHeld refuses an image the Docker daemon does not hold under the reference, as a build's base it names
+// by its tag; a daemon it cannot reach is named as that.
+func (containers Containers) AssertImageHeld(ctx context.Context, reference string) error {
+	_, err := containers.Daemon.ImageInspect(ctx, reference)
+	if isAbsent(err) {
+		return ImageUnusable{ErrImageAbsent, reference, "the image " + reference + " is not loaded into the Docker daemon"}
+	}
+	if err != nil {
+		return ImageUnusable{ErrDaemonUnreachable, reference, err.Error()}
+	}
+	return nil
+}
+
 // AbsentImages are the images of the list the Docker daemon does not hold, in order; an image held under another
 // digest, or a daemon it cannot reach, refuses the list as that image's fault.
 func (containers Containers) AbsentImages(ctx context.Context, images []string) ([]string, error) {

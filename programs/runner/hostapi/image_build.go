@@ -9,10 +9,13 @@ import (
 
 // BuildImage has the Docker daemon build the image the journal signed and answers Docker's facts. The built image is
 // not allowed by being built: a container runs it only once allow_images names its digest. A daemon this host cannot
-// reach refuses the build as an image fault about the image's name.
+// reach refuses the build as an image fault about the image's name, and a base the daemon lacks as one about the base.
 func (table *ProcessTable) BuildImage(ctx context.Context, _ Instruction, plan host.ImageBuild) (host.ImageBuilt, error) {
 	if table.containers.Daemon == nil {
 		return host.ImageBuilt{}, imageFault(ImageFaultDaemonUnavailable, plan.Name, errNoDaemon)
+	}
+	if err := table.containers.AssertImageHeld(ctx, plan.Base); err != nil {
+		return host.ImageBuilt{}, refusalOf(err)
 	}
 	built, err := table.containers.BuildImage(ctx, plan)
 	if errors.Is(err, host.ErrDaemonUnreachable) {

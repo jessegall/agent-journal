@@ -75,6 +75,26 @@ func TestABuildOnAHostWithoutADaemonIsAnImageFaultAboutItsName(t *testing.T) {
 	}
 }
 
+func TestABuildWhoseBaseTheDaemonLacksIsAnImageFaultAboutItsBase(t *testing.T) {
+	daemon := dockermock.StartBuilds(t)
+	played, err := client.New(client.WithHost(daemon.Host()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	instruction := buildInstruction(t)
+	instruction.Payload = strings.Replace(instruction.Payload, "journal-candidate@sha256:"+strings.Repeat("a", 64),
+		dockermock.RecordedMissingBase, 1)
+	instruction.Signature = Sign(testSecret, instruction)
+
+	answer := answerOf(t, host.Containers{Daemon: played}, instruction)
+	asked, _ := daemon.Asked()
+
+	if answer.Refusal != ImageFault || answer.Facts["fault"] != "image_absent" ||
+		answer.Facts["reference"] != dockermock.RecordedMissingBase || len(asked) != 0 {
+		t.Fatalf("a build on a missing base was answered %+v after %d builds", answer, len(asked))
+	}
+}
+
 func TestABuiltImageIsNotAllowedUntilTheJournalAllowsIt(t *testing.T) {
 	daemon := dockermock.StartBuilds(t)
 	played, err := client.New(client.WithHost(daemon.Host()))
