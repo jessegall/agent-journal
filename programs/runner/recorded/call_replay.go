@@ -40,8 +40,8 @@ type CallReplay struct {
 	// asked at all.
 	IsStreamed func(call Call) bool
 	// IsLongPoll answers whether a call is a long poll, one the other side answered only once what ends it was heard:
-	// it is answered only once every call of its order group, not streamed, that was asked while it waited for its
-	// recorded answer was asked here too. Any other call is answered at once.
+	// it is answered once the other routes in its order group that ran while it was held have been asked here too.
+	// A stream or another poll of the same route does not hold it.
 	IsLongPoll func(call Call) bool
 	// OrderGroup names the calls a long poll is ordered with, such as those of one container; a call of no group
 	// orders nothing.
@@ -202,19 +202,23 @@ func (replay *CallReplay) awaitEarlier(request *http.Request, index int) bool {
 	return true
 }
 
-// isEarlierPlayed answers whether every call of the call's group, not streamed, that was asked on the exchange while
-// the call waited for its answer, when recorded, was asked here too.
+// isEarlierPlayed answers whether the other routes in the group were asked while the poll waited.
 func (replay *CallReplay) isEarlierPlayed(index int) bool {
 	replay.mutex.Lock()
 	defer replay.mutex.Unlock()
-	answered := replay.calls[index].AskedAt + replay.calls[index].Gap.Microseconds()
-	group := replay.OrderGroup(replay.calls[index])
+	poll := replay.calls[index]
+	answered := poll.AskedAt + poll.Gap.Microseconds()
+	group := replay.OrderGroup(poll)
 	for other, call := range replay.calls {
-		if other == index || replay.played[other] || replay.isStreamed(other) || call.Exchange != replay.calls[index].Exchange ||
+		if replay.played[other] || replay.isStreamed(other) || call.Exchange != poll.Exchange ||
 			replay.OrderGroup(call) != group {
 			continue
 		}
-		if call.AskedAt > replay.calls[index].AskedAt && call.AskedAt < answered {
+		// A recording can overlap two hosts' polls on restart. The live host sends its next poll only after this one returns.
+		if call.Answered.Method == poll.Answered.Method && call.Answered.Path == poll.Answered.Path {
+			continue
+		}
+		if call.AskedAt > poll.AskedAt && call.AskedAt < answered {
 			return false
 		}
 	}
