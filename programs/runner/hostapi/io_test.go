@@ -7,10 +7,16 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"journal-runner/recorded"
+	"journal-runner/recording"
 )
 
 // fakeClock is a host clock a test moves by hand.
@@ -48,35 +54,67 @@ func (posted *postedOutputs) post(_ string, output Output) error {
 	return nil
 }
 
-func terminalOutputs(t *testing.T) (*Outputs, *fakeClock, *postedOutputs) {
+func firstStart(t *testing.T) (recording.Fixture, []RenderedFrame) {
+	t.Helper()
+	exchange, fixture := recorded.MustTerminal(t, "claude-code", "first-start")
+	content, err := os.ReadFile(filepath.Join(exchange.Folder, FramesFileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var frames []RenderedFrame
+	if err := json.Unmarshal(content, &frames); err != nil {
+		t.Fatal(err)
+	}
+	if len(fixture.Output) < 3 || len(frames) < 3 {
+		t.Fatal("first-start must have a screen at opening, after typing and after submitting")
+	}
+	return fixture, frames
+}
+
+func terminalOutputs(t *testing.T, fixture recording.Fixture) (*Outputs, *fakeClock, *postedOutputs) {
 	t.Helper()
 	clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 	posted := &postedOutputs{}
 	outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-	if err := outputs.Open("p", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}}); err != nil {
+	geometry := fixture.StartGeometry()
+	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096,
+		Type: "terminal", Size: TerminalSize(geometry)}
+	if err := outputs.Open("p", plan); err != nil {
 		t.Fatal(err)
 	}
 	return outputs, clock, posted
 }
 
 func TestARowThatRedrawsNeverReportsUnchangedPastItsLastChange(t *testing.T) {
-	outputs, clock, _ := terminalOutputs(t)
+	fixture, frames := firstStart(t)
+	outputs, clock, _ := terminalOutputs(t, fixture)
 	screen, _ := outputs.ScreenOf("p")
 
-	outputs.Printed("p", []byte("thinking 1\r\nstill"))
+	outputs.Printed("p", fixture.Output[0].Bytes)
 	clock.advance(400 * time.Millisecond)
-	outputs.Printed("p", []byte("\x1b[1;1Hthinking 2"))
+	outputs.Printed("p", fixture.Output[1].Bytes)
 	clock.advance(100 * time.Millisecond)
 
 	frame := screen.Frame(outputs.monotonic())
-	if frame.UnchangedMs[0] != 100 || frame.UnchangedMs[1] != 500 {
-		t.Fatalf("the redrawn row reads %d ms unchanged and the still one %d ms", frame.UnchangedMs[0], frame.UnchangedMs[1])
+	before, after := frames[0].Frame.Rows, frames[1].Frame.Rows
+	if !slices.Equal(frame.Rows, after) {
+		t.Fatal("the two recorded outputs did not draw the next recorded screen")
+	}
+	for row, text := range after {
+		want := int64(500)
+		if row >= len(before) || text != before[row] {
+			want = 100
+		}
+		if frame.UnchangedMs[row] != want {
+			t.Fatalf("row %d was unchanged for %d ms, want %d", row, frame.UnchangedMs[row], want)
+		}
 	}
 }
 
 func TestAnUnchangedScreenIsSentAsAProofAtTheStreamRate(t *testing.T) {
-	outputs, _, posted := terminalOutputs(t)
-	outputs.Printed("p", []byte("ready"))
+	fixture, frames := firstStart(t)
+	outputs, _, posted := terminalOutputs(t, fixture)
+	outputs.Printed("p", fixture.Output[0].Bytes)
 
 	if err := outputs.Stream("p", 50); err != nil {
 		t.Fatal(err)
@@ -86,20 +124,22 @@ func TestAnUnchangedScreenIsSentAsAProofAtTheStreamRate(t *testing.T) {
 
 	posted.mutex.Lock()
 	defer posted.mutex.Unlock()
-	if len(posted.outputs) < 3 || posted.outputs[0].Frames[0].Rows[0] != "ready" {
+	if len(posted.outputs) < 3 || !slices.Equal(posted.outputs[0].Frames[0].Rows, frames[0].Frame.Rows) {
 		t.Fatalf("an unchanged screen was not sent at the rate: %d posts", len(posted.outputs))
 	}
 }
 
 func TestAGuardedWriteIsRefusedOnceItsRowsOrTheInputMovedAndTheUsersWriteRaisesTheGeneration(t *testing.T) {
-	outputs, _, _ := terminalOutputs(t)
+	fixture, _ := firstStart(t)
+	outputs, _, _ := terminalOutputs(t, fixture)
 	table := &ProcessTable{outputs: outputs, processes: map[string]*heldProcess{
 		"p": {id: "p", terminal: discardingTerminal{}, exited: make(chan struct{})},
 	}}
 	input := NewProcessInput(table, outputs, nil)
-	outputs.Printed("p", []byte("> "))
+	outputs.Printed("p", fixture.Output[0].Bytes)
 	screen, _ := outputs.ScreenOf("p")
-	guard := RowGuard{From: 0, To: 0, Hash: screen.RowsHash(0, 0)}
+	lastRow := int(fixture.StartGeometry().Rows) - 1
+	guard := RowGuard{From: 0, To: lastRow, Hash: screen.RowsHash(0, lastRow)}
 	generation := uint64(0)
 
 	if _, err := carry(testInstructions{ProcessInput: input}, "write_keys")(context.Background(), keysInstruction(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &generation})); err != nil {
@@ -114,7 +154,7 @@ func TestAGuardedWriteIsRefusedOnceItsRowsOrTheInputMovedAndTheUsersWriteRaisesT
 	if !errors.As(err, &refusal) || refusal.Refusal != GuardMoved {
 		t.Fatalf("a write after the user typed is not refused as guard moved: %v", err)
 	}
-	outputs.Printed("p", []byte("\x1b[1;1Hchanged"))
+	outputs.Printed("p", fixture.Output[1].Bytes)
 	moved := uint64(1)
 	_, err = carry(testInstructions{ProcessInput: input}, "write_keys")(context.Background(), keysInstruction(t, KeyWrite{Bytes: []byte("hi"), IfRows: &guard, IfInputGeneration: &moved}))
 	if !errors.As(err, &refusal) || refusal.Refusal != GuardMoved {
@@ -129,15 +169,18 @@ func TestAPipeReattachesAtItsSpoolOffset(t *testing.T) {
 	if err := outputs.Open("pipe", OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "pipe"}); err != nil {
 		t.Fatal(err)
 	}
-	outputs.Printed("pipe", []byte("first "))
-	outputs.Printed("pipe", []byte("second"))
+	probe := recorded.MustProbe(t, "codex", "version")
+	first, second := probe.Output[0].Bytes, probe.Output[1].Bytes
+	outputs.Printed("pipe", first)
+	outputs.Printed("pipe", second)
 
 	reopened, err := OpenSpool(folder+"/spool/pipe", 1<<20)
 	if err != nil {
 		t.Fatal(err)
 	}
-	after, err := reopened.From(6)
-	if err != nil || string(after) != "second" || posted.outputs[1].Chunks[0].Offset != 6 {
+	offset := int64(len(first))
+	after, err := reopened.From(offset)
+	if err != nil || !bytes.Equal(after, second) || posted.outputs[1].Chunks[0].Offset != offset {
 		t.Fatalf("the spool does not resume at its offset: %q, %v", after, err)
 	}
 }
@@ -149,7 +192,9 @@ func TestAContainersLogReachesTheJournalUnderTheNameOfEachStream(t *testing.T) {
 		t.Fatal(err)
 	}
 	table := &ProcessTable{outputs: outputs}
-	log := bytes.NewReader(append(framed(1, "build 1.2.3\n"), framed(2, "signed in\n")...))
+	version := recorded.MustProbe(t, "claude-code", "version")
+	login := recorded.MustProbe(t, "codex", "login-status")
+	log := bytes.NewReader(append(framed(1, string(version.Output[0].Bytes)), framed(2, string(login.Output[0].Bytes))...))
 
 	table.copyLog("pipe", log, 0)
 
@@ -215,16 +260,17 @@ func TestAShieldedScreenLeavesWithoutItsRows(t *testing.T) {
 
 // Nothing of a private entry leaves: no frame between open_private and the redraw after close_private.
 func TestAPrivateEntrySendsNoFrameUntilTheRedrawAfterItCloses(t *testing.T) {
-	outputs, _, posted := terminalOutputs(t)
+	fixture, _ := firstStart(t)
+	outputs, _, posted := terminalOutputs(t, fixture)
 	if err := outputs.OpenPrivate("p", time.Minute); err != nil {
 		t.Fatal(err)
 	}
-	outputs.Printed("p", []byte("Key: ****"))
+	outputs.Printed("p", fixture.Output[0].Bytes)
 	_ = outputs.Snapshot("p")
 	outputs.ClosePrivate("p")
 	_ = outputs.Snapshot("p")
 	sentWhilePrivate := len(posted.outputs)
-	outputs.Printed("p", []byte("\x1b[2J\x1b[Hready"))
+	outputs.Printed("p", fixture.Output[1].Bytes)
 	_ = outputs.Snapshot("p")
 
 	if sentWhilePrivate != 0 || len(posted.outputs) != 1 {
@@ -235,7 +281,8 @@ func TestAPrivateEntrySendsNoFrameUntilTheRedrawAfterItCloses(t *testing.T) {
 // A changed screen goes out once it settles, long before the stream's tick, and a screen that keeps changing goes
 // out no more often than the stream rate.
 func TestAChangedScreenIsSentOnceItSettlesAndABurstAtMostAtTheStreamRate(t *testing.T) {
-	outputs, _, posted := terminalOutputs(t)
+	fixture, _ := firstStart(t)
+	outputs, _, posted := terminalOutputs(t, fixture)
 	if err := outputs.Stream("p", 4); err != nil {
 		t.Fatal(err)
 	}
@@ -246,11 +293,11 @@ func TestAChangedScreenIsSentOnceItSettlesAndABurstAtMostAtTheStreamRate(t *test
 		return len(posted.outputs)
 	}
 
-	outputs.Printed("p", []byte("typed"))
+	outputs.Printed("p", fixture.Output[0].Bytes)
 	time.Sleep(60 * time.Millisecond)
 	afterOneChange := sentCount()
 	for at := 0; at < 120; at++ {
-		outputs.Printed("p", []byte("\r"+strings.Repeat(".", at%30)))
+		outputs.Printed("p", fixture.Output[1+at%2].Bytes)
 		time.Sleep(5 * time.Millisecond)
 	}
 	duringBurst := sentCount() - afterOneChange
@@ -263,7 +310,8 @@ func TestAChangedScreenIsSentOnceItSettlesAndABurstAtMostAtTheStreamRate(t *test
 // A private entry nobody closes ends by itself at its deadline: a private value is refused after it and its output
 // leaves again once the screen redraws.
 func TestAPrivateEntryNobodyClosesEndsAtItsDeadline(t *testing.T) {
-	outputs, _, posted := terminalOutputs(t)
+	fixture, _ := firstStart(t)
+	outputs, _, posted := terminalOutputs(t, fixture)
 	if err := outputs.OpenPrivate("p", 20*time.Millisecond); err != nil {
 		t.Fatal(err)
 	}
@@ -271,7 +319,7 @@ func TestAPrivateEntryNobodyClosesEndsAtItsDeadline(t *testing.T) {
 
 	time.Sleep(60 * time.Millisecond)
 	isPrivate := outputs.IsPrivate("p")
-	outputs.Printed("p", []byte("ready"))
+	outputs.Printed("p", fixture.Output[0].Bytes)
 	_ = outputs.Snapshot("p")
 
 	posted.mutex.Lock()
@@ -312,16 +360,19 @@ func TestAShieldedScreenWithholdsTheProcesssChunksOnEveryStream(t *testing.T) {
 // A terminal asked for its raw bytes sends what it prints as chunks from the first byte; the same terminal opened
 // without them sends no chunk, only its frames.
 func TestATerminalAskedForItsRawBytesSendsThemFromTheFirstOne(t *testing.T) {
+	fixture, _ := firstStart(t)
+	printed := fixture.Output[0].Bytes
 	sent := map[bool]int{}
 	for _, isRaw := range []bool{true, false} {
 		clock := &fakeClock{now: time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)}
 		posted := &postedOutputs{}
 		outputs := NewOutputs(t.TempDir(), posted.post, clock.Now)
-		plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "terminal", Size: TerminalSize{Columns: 40, Rows: 5}, RawBytes: isRaw}
+		plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096,
+			Type: "terminal", Size: TerminalSize(fixture.StartGeometry()), RawBytes: isRaw}
 		if err := outputs.Open("p", plan); err != nil {
 			t.Fatal(err)
 		}
-		outputs.Printed("p", []byte("\x1b[1mhello"))
+		outputs.Printed("p", printed)
 		for _, output := range posted.outputs {
 			for _, chunk := range output.Chunks {
 				printed, _ := base64.StdEncoding.DecodeString(chunk.Bytes)
@@ -329,7 +380,7 @@ func TestATerminalAskedForItsRawBytesSendsThemFromTheFirstOne(t *testing.T) {
 			}
 		}
 	}
-	if sent[true] != len("\x1b[1mhello") || sent[false] != 0 {
+	if sent[true] != len(printed) || sent[false] != 0 {
 		t.Fatalf("a raw terminal sent %d bytes and a plain one %d", sent[true], sent[false])
 	}
 }

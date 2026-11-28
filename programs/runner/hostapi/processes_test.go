@@ -14,6 +14,7 @@ import (
 
 	"journal-runner/dockermock"
 	"journal-runner/host"
+	"journal-runner/recorded"
 )
 
 const mockImage = "registry.example/journal-helper@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -394,9 +395,12 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 		runQueue(t, queue)
 		return OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
 	}
+	probe := recorded.MustProbe(t, "codex", "version")
+	first, second := probe.Output[0].Bytes, probe.Output[1].Bytes
+	firstFile, secondFile := recordedOutputFile(t, first), recordedOutputFile(t, second)
 	before, after, reports := &sentChunks{}, &sentChunks{}, &sentReports{}
 	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "pipe", Restart: "never", Folder: t.TempDir(),
-		Argv: []string{"sh", "-c", `echo first; while [ -e "$0" ]; do sleep 0.05; done; echo second`, hold}})
+		Argv: []string{"sh", "-c", `cat "$1"; while [ -e "$0" ]; do sleep 0.05; done; cat "$2"`, hold, firstFile, secondFile}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -404,7 +408,7 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 	if _, err := carry(testInstructions{ProcessTable: open(before, &sentReports{})}, "open_process")(context.Background(), instruction); err != nil {
 		t.Fatal(err)
 	}
-	waitForText(t, before, "first\n")
+	waitForText(t, before, string(first))
 
 	if err := open(after, reports).Adopt(context.Background()); err != nil {
 		t.Fatal(err)
@@ -413,11 +417,10 @@ func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T
 		t.Fatal(err)
 	}
 
-	waitForText(t, after, "second\n")
+	waitForText(t, after, string(second))
 	reports.waitFor(t, "exited")
 }
 
-// A healed process resumes once its restart file lies anywhere under its folder, as a transcript in a project folder.
 func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(t *testing.T) {
 	containers, err := host.ContainersOn(dockermock.Start(t, mockImage).Host(), host.ContainerRules{Arrangement: host.Local})
 	if err != nil {
@@ -431,8 +434,12 @@ func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(
 	runQueue(t, queue)
 	state, chunks := t.TempDir(), &sentChunks{}
 	table := OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
+	version := recorded.MustProbe(t, "claude-code", "version")
+	login := recorded.MustProbe(t, "codex", "login-status")
+	standard, diagnostic := version.Output[0].Bytes, login.Output[0].Bytes
+	standardFile, diagnosticFile := recordedOutputFile(t, standard), recordedOutputFile(t, diagnostic)
 	plan, err := json.Marshal(OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Type: "pipe", Restart: "never", Folder: t.TempDir(),
-		Argv: []string{"sh", "-c", `echo out; echo "Logged in using ChatGPT" >&2; echo after`}})
+		Argv: []string{"sh", "-c", `cat "$1"; cat "$2" >&2; cat "$1"`, "recorded-output", standardFile, diagnosticFile}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -441,11 +448,21 @@ func TestANativePipeProcessesErrorOutputReachesTheJournalInTheOrderItWasPrinted(
 		t.Fatal(err)
 	}
 
-	waitForText(t, chunks, "out\nLogged in using ChatGPT\nafter\n")
+	waitForText(t, chunks, string(standard)+string(diagnostic)+string(standard))
 	// The process ends and writes its report and state into the test's folders, so the test waits for that first.
 	reports.waitFor(t, "running", "exited")
 }
 
+func recordedOutputFile(t *testing.T, output []byte) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "output")
+	if err := os.WriteFile(path, output, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+// A healed process resumes once its restart file lies anywhere under its folder, as a transcript in a project folder.
 func TestAHealedProcessRunsItsRestartArgvOnceItsFileExistsUnderItsFolder(t *testing.T) {
 	folder := t.TempDir()
 	plan := OpenPlan{SpoolBytes: 1 << 20, DrainMs: 5000, ExitLogLines: 20, ExitLogBytes: 4096, Argv: []string{"program", "--session-id", "c1"}, RestartArgv: []string{"program", "--resume", "c1"},

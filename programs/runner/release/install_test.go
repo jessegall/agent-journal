@@ -11,10 +11,12 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"journal-runner/host"
 	"journal-runner/hostapi"
+	"journal-runner/recorded"
 )
 
 const relayContent = "#!/bin/sh\necho relay\n"
@@ -33,18 +35,16 @@ func TestAConnectedInstallSealsTheListedProgramsAndARerunRewritesOnlyTheAllowLis
 		writer.Write([]byte(relayContent))
 	}))
 	defer server.Close()
-	listed := []byte(`{"drivers":[` +
-		`{"name":"first-program","executable":"first","build":"2.1.323","check":["--version"],"host_name":"FIRST"},` +
-		`{"name":"second-program","executable":"second","build":"0.165.0","check":["--version"],"host_name":"SECOND"},` +
-		`{"name":"third-program","executable":"third","build":"1.0.0","check":["--version"],"host_name":"THIRD"}]}`)
+	listed := listedPrograms(t)
 	programs, err := ParseProgramList(listed)
 	if err != nil {
 		t.Fatal(err)
 	}
 	path := t.TempDir()
-	writeProgram(t, path, "first", "2.1.323 (First)")
-	writeProgram(t, path, "second", "second-cli 0.165.0")
-	writeProgram(t, path, "third", "third 0.9.0")
+	for _, program := range programs {
+		version := recorded.MustProbeAt(t, program.Name, program.Build, "version")
+		writeProgram(t, path, program.Executable, version.Printed(os.Getenv))
+	}
 	root, state := t.TempDir(), t.TempDir()
 	folder := InstallationFolder(root, "6.0.0", listed)
 	installer := Installer{
@@ -83,13 +83,63 @@ func TestAConnectedInstallSealsTheListedProgramsAndARerunRewritesOnlyTheAllowLis
 	if err != nil || json.Unmarshal(content, &allowed) != nil {
 		t.Fatalf("the rerun wrote no allow list: %v", err)
 	}
-	if len(allowed.Programs) != 2 || allowed.Programs["FIRST"] == "" || allowed.Programs["SECOND"] == "" {
+	if len(allowed.Programs) != len(programs) {
 		t.Fatalf("the allow list does not name both sealed programs: %+v", allowed.Programs)
 	}
-	off, err := ProvidersOff(folder)
-	if err != nil || len(off) != 1 || off[0].Name != "third-program" {
+	for _, program := range programs {
+		if allowed.Programs[program.HostName] == "" {
+			t.Fatalf("the allow list does not name %s: %+v", program.HostName, allowed.Programs)
+		}
+	}
+
+	codex := programs[1]
+	wrongBuild := recorded.MustProbe(t, codex.Name, "version")
+	writeProgram(t, path, codex.Executable, wrongBuild.Printed(os.Getenv))
+	refused := InstallationFolder(t.TempDir(), "6.0.0", listed)
+	if err := installer.Install(context.Background(), manifest, signature, programs, refused); err != nil {
+		t.Fatal(err)
+	}
+	off, err := ProvidersOff(refused)
+	if err != nil || len(off) != 1 || off[0].Name != codex.Name || !strings.Contains(off[0].Reason, codex.Build) {
 		t.Fatalf("the program with an unknown build was not left off with its reason: %+v %v", off, err)
 	}
+}
+
+func listedPrograms(t *testing.T) []byte {
+	t.Helper()
+	root, err := recorded.Root()
+	if err != nil {
+		t.Fatal(err)
+	}
+	content, err := os.ReadFile(filepath.Join(root, "docs", "accounts", "docker-images.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest struct {
+		Images []struct {
+			Name       string `json:"name"`
+			ClaudeCode string `json:"claude_code"`
+			Codex      string `json:"codex"`
+		} `json:"images"`
+	}
+	if err := json.Unmarshal(content, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	for _, image := range manifest.Images {
+		if image.Name != "agent" {
+			continue
+		}
+		listed, err := json.Marshal(ProgramList{Programs: []Program{
+			{Name: "claude-code", Executable: "claude", Build: image.ClaudeCode, Check: []string{"--version"}, HostName: "CLAUDE_CODE_EXECUTABLE"},
+			{Name: "codex", Executable: "codex", Build: image.Codex, Check: []string{"--version"}, HostName: "CODEX_EXECUTABLE"},
+		}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return listed
+	}
+	t.Fatal("the image manifest does not name an agent image")
+	return nil
 }
 
 // signedRelease is a release of one relay file for this machine's target, and its signature.
@@ -118,7 +168,7 @@ func signedRelease(t *testing.T, key ed25519.PrivateKey) ([]byte, []byte) {
 // writeProgram puts a native-looking program on the search path that reports the build line given.
 func writeProgram(t *testing.T, folder, name, reported string) {
 	t.Helper()
-	script := "#!/bin/sh\necho '" + reported + "'\n"
+	script := "#!/bin/sh\nprintf '%s' '" + strings.ReplaceAll(reported, "'", "'\\''") + "'\n"
 	if err := os.WriteFile(filepath.Join(folder, name), []byte(script), 0o755); err != nil {
 		t.Fatal(err)
 	}
