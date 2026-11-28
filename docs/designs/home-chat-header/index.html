@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home · one chat bar, the agent above the composer, starting a session</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* Self-contained. Inside .app every colour, radius, size and motion value is a token of resources/css/app.css (Stone mono),
+   the same set docs/designs/home-v6 uses. Geist is used when installed. */
+*{box-sizing:border-box}
+body{margin:0;font-family:'Geist',-apple-system,'Segoe UI',system-ui,sans-serif;font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased;background:var(--page);color:var(--page-text);--page:#eceae8;--page-text:#1c1a18}
+body.dk{--page:#060505;--page-text:#e9e6e2}
+.top{position:sticky;top:0;z-index:300;background:color-mix(in srgb,var(--page) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid color-mix(in srgb,var(--page-text) 10%,transparent)}
+.top .in{padding:9px 24px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.top h1{margin:0 6px 0 0;font-size:14px;font-weight:600}
+.seg2{display:flex;border:1px solid color-mix(in srgb,var(--page-text) 16%,transparent);border-radius:7px;overflow:hidden;flex-wrap:wrap}
+.seg2 button{font:inherit;font-size:12px;padding:5px 9px;border:0;background:transparent;color:inherit;cursor:pointer}
+.seg2 button[aria-pressed=true]{background:color-mix(in srgb,var(--page-text) 14%,transparent);font-weight:500}
+.seg2 button:focus-visible{outline:2px solid var(--page-text);outline-offset:-2px}
+.lbl{font-size:11px;opacity:.65;margin-left:6px}
+.wrap{padding:14px 24px 80px}
+.lead{max-width:1100px;margin:0 0 6px;opacity:.85}
+.sline{margin:0 0 12px;opacity:.8;font-size:12.5px;max-width:1100px;min-height:18px}
+.stage{overflow-x:auto;padding-bottom:6px}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px;margin-top:14px;max-width:1440px}
+.notes div{border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent);border-radius:10px;padding:10px 12px;font-size:12px}
+.notes b{display:block;font-size:12.5px;margin-bottom:2px}
+code{font-family:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;font-size:.92em}
+
+.app{--font-sans:'Geist',-apple-system,'Segoe UI',system-ui,sans-serif;--font-mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --text-title:16px;--text-card:13.5px;--text-body:13px;--text-field:12.5px;--text-small:12px;--text-badge:11.5px;--text-meta:11px;--text-group:10.5px;
+  --radius-badge:4px;--radius-seg:5px;--radius-control:6px;--radius-button:7px;--radius-field:8px;--radius-menu:9px;--radius-bubble:10px;--radius-card:12px;--radius-composer:14px;
+  --ease-journal:cubic-bezier(0.2,0,0,1);--duration-hover:120ms;--duration-pop:180ms;
+  --focus:#262422;--side:#f6f5f3;--bg:#ffffff;--bg-2:#fbfaf9;--raised:#f7f6f4;--hover:#efedea;--sel:#e8e5e1;--chip:#edeae6;--bubble:#f4f2ef;--bubble-agent:#f8f7f5;--code-bg:#f6f5f2;
+  --border:#e9e6e2;--border-2:#dcd8d3;--border-3:#ccc7c1;--line:#e9e6e2;
+  --text:#1c1a18;--text-2:#4a4540;--text-3:#625c56;--text-4:#6f6962;--brand:#262422;--on-brand:#ffffff;--danger:#bf4f3d;
+  --shadow-pop:0 6px 20px rgba(20,22,30,.13)}
+.app.dark{--focus:#e8e6e3;--side:#0e0d0c;--bg:#141312;--bg-2:#11100f;--raised:#1a1817;--hover:#201e1c;--sel:#252220;--chip:#282523;--bubble:#1c1a18;--bubble-agent:#181716;--code-bg:#131211;
+  --border:#282523;--border-2:#33302d;--border-3:#3f3b37;--line:#252220;
+  --text:#e9e6e2;--text-2:#b0aaa3;--text-3:#a09a93;--text-4:#9a948d;--brand:#e8e6e3;--on-brand:#100f0e;--danger:#df8b7e;
+  --shadow-pop:0 8px 22px rgba(0,0,0,.5)}
+
+.app{display:flex;flex-direction:column;height:680px;border-radius:var(--radius-card);overflow:hidden;border:1px solid var(--border-2);background:var(--bg);color:var(--text);position:relative;margin:0 auto;font-family:var(--font-sans);font-size:var(--text-body)}
+.ic{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.s13{width:13px;height:13px}.ic.s12{width:12px;height:12px}.ic.s18{width:18px;height:18px}
+button{font:inherit;color:inherit}
+.ib{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;border-radius:var(--radius-control);color:var(--text-3);cursor:pointer;flex:none}
+.ib:hover,.ib[aria-expanded=true]{background:var(--hover);color:var(--text)}
+.ib:focus-visible,.btn:focus-visible,.ctab:focus-visible,.chip:focus-visible,.opt:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.btn{height:24px;display:inline-flex;align-items:center;gap:5px;padding:0 8px;border-radius:var(--radius-button);border:0;background:transparent;color:var(--text-2);cursor:pointer;font-size:var(--text-small);white-space:nowrap}
+.btn:hover{background:var(--hover);color:var(--text)}
+.btn.bordered{border:1px solid var(--border-2)}
+.btn.primary{background:var(--brand);color:var(--on-brand)}
+.btn.lg{height:36px;padding:0 18px;font-size:var(--text-body);font-weight:500;border-radius:var(--radius-field)}
+.btn[disabled]{opacity:.5;cursor:default}
+.kbd{font-family:var(--font-mono);font-size:var(--text-meta);color:var(--text-4)}
+
+/* The topbar, as the app has it. */
+.tb{height:44px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px 0 16px;border-bottom:1px solid var(--line)}
+.tb .crumb{display:flex;gap:8px;align-items:center;color:var(--text-3)}.tb .crumb b{color:var(--text);font-weight:500}
+.tb .crumb .sq{width:8px;height:8px;border-radius:2px;background:var(--text)}
+.tb .sp{flex:1}
+.tb .srch{width:220px;height:28px;border:1px solid var(--border-2);border-radius:var(--radius-field);display:flex;align-items:center;gap:6px;padding:0 9px;color:var(--text-4);font-size:var(--text-small)}
+.app.w760 .tb .srch{width:120px}
+
+/* ONE chat bar: tabs, New chat, then the view switch and the pane buttons on the same 24 px centre line. */
+.cbar{height:38px;flex:none;display:flex;align-items:center;border-bottom:1px solid var(--line);background:var(--side);padding:0 8px 0 4px;gap:4px;user-select:none}
+.tl{display:flex;align-items:stretch;align-self:stretch;min-width:0;overflow-x:auto;scrollbar-width:none;position:relative}
+.tl::-webkit-scrollbar{display:none}
+.tl.fade{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+.ctab{position:relative;display:inline-flex;align-items:center;gap:6px;flex:none;max-width:220px;padding:0 4px 0 10px;font-size:var(--text-small);color:var(--text-3);cursor:pointer;white-space:nowrap;border:0;background:transparent}
+.ctab:hover{color:var(--text-2)}
+.ctab[aria-selected=true]{color:var(--text);box-shadow:inset 0 -2px 0 var(--text)}
+.ctab.col:not([aria-selected=true])::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:2px;background:var(--border-3)}
+.ctab .nm{overflow:hidden;text-overflow:ellipsis}
+.ctab .tx{width:18px;height:18px;opacity:0}
+.ctab:hover .tx,.ctab[aria-selected=true] .tx{opacity:1}
+.ctab .car{width:18px;height:18px;margin-left:-2px}
+.num{font-size:var(--text-meta);color:var(--text);min-width:16px;height:16px;padding:0 5px;border-radius:8px;background:var(--chip);display:inline-flex;align-items:center;justify-content:center}
+.more{align-self:center}
+.cbar .sp{flex:1;min-width:8px}
+.vseg{display:inline-flex;border:1px solid var(--border-2);border-radius:var(--radius-button);overflow:hidden;height:24px;flex:none}
+.vseg button{font-size:var(--text-small);border:0;background:transparent;color:var(--text-3);padding:0 9px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.vseg button+button{border-left:1px solid var(--border-2)}
+.vseg button:hover{color:var(--text)}
+.vseg button[aria-pressed=true]{background:var(--sel);color:var(--text)}
+.vseg button[disabled]{opacity:.45;cursor:default}
+.app.w760 .vseg .w{display:none}.app.w760 .vseg button{padding:0 7px}
+.app.w760 .newc .w,.app.w760 .newc .kbd{display:none}
+.vr{width:1px;height:16px;background:var(--border-2);margin:0 4px;flex:none}
+
+/* Status marks */
+.dot{width:7px;height:7px;border-radius:50%;flex:none;display:inline-block}
+.dot.on{background:var(--text)}.dot.hollow{border:1.5px solid var(--text-3)}.dot.you{background:var(--text);box-shadow:0 0 0 2px var(--chip)}
+.dot.bad{background:var(--danger)}
+.spin{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--border-3);border-top-color:var(--text);animation:sp 0.9s linear infinite;flex:none;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none;border-top-color:var(--text-3)}}
+
+/* The panes */
+.body{flex:1;min-height:0;display:flex;background:var(--bg)}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.col+.col{border-left:1px solid var(--line)}
+.body.side .col{background:var(--bg-2)}.body.side .col.act{background:var(--bg)}
+.msgs{flex:1;min-height:0;overflow:auto;padding:18px clamp(16px,4%,24px) 8px;display:flex;flex-direction:column;gap:12px}
+.m{display:flex;gap:9px;max-width:680px}
+.m.me{align-self:flex-end;flex-direction:row-reverse}
+.m .b{padding:8px 11px;border-radius:var(--radius-bubble);background:var(--bubble-agent);border:1px solid var(--line);font-size:var(--text-body);color:var(--text)}
+.m.me .b{background:var(--bubble);border-color:transparent}
+.m .h{font-size:var(--text-meta);color:var(--text-3);margin-bottom:2px}
+.endl{align-self:center;font-size:var(--text-meta);color:var(--text-4);display:flex;gap:8px;align-items:center;width:100%;max-width:680px}
+.endl::before,.endl::after{content:"";flex:1;height:1px;background:var(--line)}
+.av{width:24px;height:24px;border-radius:7px;background:var(--chip);display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--text-2);font-size:10px;font-weight:600}
+.av.s18{width:18px;height:18px;border-radius:5px;font-size:9px}
+.av.s16{width:16px;height:16px;border-radius:5px;font-size:8.5px}
+.av.s32{width:32px;height:32px;border-radius:9px;font-size:13px}
+.av.new{background:transparent;border:1px dashed var(--border-3);color:var(--text-3)}
+
+/* Above the composer: the running command on the left, the agent on the right. */
+.foot{padding:0 clamp(16px,4%,24px) 14px;flex:none}
+.ahead{display:flex;align-items:center;gap:8px;min-height:28px;margin-bottom:6px}
+.run{display:flex;align-items:center;gap:7px;min-width:0;flex:1;color:var(--text-3);font-size:var(--text-small)}
+.run code{font-family:var(--font-mono);font-size:var(--text-badge);color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.run .t{font-size:var(--text-meta);color:var(--text-4);flex:none}
+.chip{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 6px 0 5px;border-radius:var(--radius-button);border:1px solid transparent;background:transparent;cursor:pointer;color:var(--text);max-width:100%;min-width:0;flex:none;margin-left:auto}
+.chip:hover,.chip[aria-expanded=true]{background:var(--hover);border-color:var(--line)}
+.chip .nm{font-size:var(--text-small);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.chip .st{display:inline-flex;align-items:center;gap:5px;font-size:var(--text-small);color:var(--text-3);white-space:nowrap}
+.chip .st.bad{color:var(--danger)}
+.chip .sub{font-size:var(--text-meta);color:var(--text-4);white-space:nowrap}
+.app.w760 .chip .sub,.body.side .chip .sub{display:none}
+.body.side.c3 .chip .st .w{display:none}
+.chip .car{color:var(--text-3)}
+.inline{flex:none}
+.why{font-size:var(--text-small);color:var(--danger);margin:0 0 6px;display:flex;gap:6px;align-items:baseline;justify-content:flex-end;text-align:right}
+.why span{color:var(--text-3)}
+.att{font-size:var(--text-small);color:var(--text-2)}
+.att a,.lk{color:var(--text);text-decoration:underline;text-underline-offset:3px;cursor:pointer;background:none;border:0;padding:0;font-size:inherit}
+.comp{border:1px solid var(--border-2);border-radius:var(--radius-composer);background:var(--bg);padding:10px 12px 8px}
+.comp .ph{color:var(--text-4);font-size:var(--text-body);min-height:36px}
+.comp .row{display:flex;align-items:center;gap:6px}
+.comp .row .sp{flex:1}
+.comp .send{width:26px;height:26px;border-radius:8px;border:0;background:var(--brand);color:var(--on-brand);display:inline-flex;align-items:center;justify-content:center}
+.comp .stop{height:26px;padding:0 9px;border-radius:8px;border:1px solid var(--border-2);background:transparent;color:var(--text);display:inline-flex;align-items:center;gap:5px;font-size:var(--text-small)}
+
+/* Starting a session: in place of the composer (and of “No messages yet”), big choices and Start. */
+.startw{flex:none;padding:8px clamp(16px,4%,24px) 18px;display:flex;justify-content:center}
+.startw.mid{flex:1;align-items:center;padding-top:0}
+.start{width:100%;max-width:640px;border:1px solid var(--border-2);border-radius:var(--radius-composer);background:var(--bg);padding:16px 18px 14px}
+.start .hd{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.start .hd b{font-size:var(--text-title);font-weight:500;display:block}
+.start .hd small{font-size:var(--text-small);color:var(--text-3)}
+.start .lab{font-size:var(--text-group);text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin:12px 0 6px;display:flex;gap:8px;align-items:baseline}
+.start .lab .lk{text-transform:none;letter-spacing:0;font-size:var(--text-meta);color:var(--text-3)}
+.opts{display:grid;gap:8px}
+.opts.p{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.opts.m{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+.opts.e{grid-template-columns:repeat(4,1fr)}
+.opt{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;min-height:44px;border:1px solid var(--border-2);border-radius:var(--radius-field);background:transparent;cursor:pointer;color:var(--text-2);position:relative}
+.opt:hover{border-color:var(--border-3);color:var(--text);background:var(--hover)}
+.opt[aria-checked=true]{border-color:var(--text);color:var(--text);background:var(--sel);box-shadow:inset 0 0 0 1px var(--text)}
+.opt[aria-disabled=true]{opacity:.5;cursor:default}
+.opt .t{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.opt .t b{font-weight:500;font-size:var(--text-card);color:inherit}
+.opt .t small{font-size:var(--text-meta);color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opts.e .opt{justify-content:center;text-align:center;min-height:38px;padding:8px}
+.opt .ck{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--text);opacity:0}
+.opt[aria-checked=true] .ck{opacity:1}
+.start .go{display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.start .go .w{flex:1;font-size:var(--text-small);color:var(--text-3)}
+.start .go .w.bad{color:var(--danger)}
+.start .go .w.bad span{color:var(--text-3)}
+.start.busy .opts{pointer-events:none;opacity:.6}
+.quiet{font-size:var(--text-small);color:var(--text-3);margin:8px 0 0}
+.body.side .opts.p,.body.side .opts.m{grid-template-columns:1fr}
+.body.side .opts.e{grid-template-columns:repeat(2,1fr)}
+
+/* Menus */
+.pop{position:absolute;z-index:150;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-menu);box-shadow:var(--shadow-pop);padding:6px;width:320px;font-size:var(--text-small)}
+.pop .hd{display:flex;gap:9px;align-items:center;border-bottom:1px solid var(--line);margin:-6px -6px 6px;padding:10px 12px}
+.pop .hd b{font-weight:500;color:var(--text);display:block}.pop .hd small{color:var(--text-3);font-size:var(--text-meta)}
+.mi{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:var(--radius-control);color:var(--text-2);cursor:pointer}
+.mi:hover,.mi.on{background:var(--hover);color:var(--text)}
+.mi .k{margin-left:auto;font-family:var(--font-mono);font-size:var(--text-meta);color:var(--text-4)}
+.mi .r{margin-left:auto;display:flex;align-items:center;gap:5px;color:var(--text-4);font-size:var(--text-meta)}
+.mg{font-size:var(--text-group);text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);padding:8px 8px 4px}
+.msep{height:1px;background:var(--line);margin:5px -6px}
+.qs{display:flex;align-items:center;gap:7px;padding:6px 8px;margin:0 0 4px;border:1px solid var(--border-2);border-radius:var(--radius-field);color:var(--text-4)}
+.toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:var(--brand);color:var(--on-brand);padding:7px 12px;border-radius:var(--radius-button);font-size:var(--text-small);z-index:200}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="plus" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></symbol>
+  <symbol id="close" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
+  <symbol id="caret" viewBox="0 0 16 16"><path d="M4.5 6.5L8 10l3.5-3.5"/></symbol>
+  <symbol id="caretup" viewBox="0 0 16 16"><path d="M4.5 9.5L8 6l3.5 3.5"/></symbol>
+  <symbol id="window" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/></symbol>
+  <symbol id="cols" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M6 3v10M10 3v10"/></symbol>
+  <symbol id="layout" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M8 3v10M8 8h5.5"/></symbol>
+  <symbol id="addwin" viewBox="0 0 16 16"><rect x="2.5" y="3" width="8" height="8" rx="1.5"/><path d="M12.5 9.5v4M10.5 11.5h4"/></symbol>
+  <symbol id="search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/></symbol>
+  <symbol id="send" viewBox="0 0 16 16"><path d="M8 13V3M4 7l4-4 4 4"/></symbol>
+  <symbol id="stop" viewBox="0 0 16 16"><rect x="4.5" y="4.5" width="7" height="7" rx="1.2"/></symbol>
+  <symbol id="play" viewBox="0 0 16 16"><path d="M5 3.5v9l7-4.5z"/></symbol>
+  <symbol id="restart" viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.5-3.6M3 3v3h3"/></symbol>
+  <symbol id="swap" viewBox="0 0 16 16"><path d="M3 5h10l-2.5-2.5M13 11H3l2.5 2.5"/></symbol>
+  <symbol id="term" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7l2 1.5L5 10M8.5 10.5h2.5"/></symbol>
+  <symbol id="open" viewBox="0 0 16 16"><path d="M9 3h4v4M13 3L7.5 8.5M11 9.5V13H3V5h3.5"/></symbol>
+  <symbol id="attach" viewBox="0 0 16 16"><path d="M11 7.5L7.2 11.3a2.3 2.3 0 0 1-3.3-3.3l4.6-4.6a1.5 1.5 0 0 1 2.2 2.2L6.1 10.2"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4"/></symbol>
+</svg>
+<div class="top"><div class="in">
+  <h1>Home · one chat bar</h1>
+  <span class="lbl">Chosen chat</span><div class="seg2" id="cState"></div>
+  <span class="lbl">Chats</span><div class="seg2" id="cTabs"></div>
+  <span class="lbl">View</span><div class="seg2" id="cView"></div>
+  <span class="lbl">Width</span><div class="seg2" id="cW"></div>
+  <span class="lbl">Mode</span><div class="seg2" id="cMode"></div>
+</div></div>
+<div class="wrap">
+  <p class="lead">Home's chat header, round 7 (user 31675), and starting a session (user 31684). One bar holds the chat tabs, New chat, the view switch and the pane buttons; the agent bar is gone. Each chat names its agent above its own composer, on the right, with its status; that name, and the caret on the chosen tab, open the agent's menu: session actions and choosing another agent. A chat with no session yet, or whose session ended, shows big choices and Start in place of the composer.</p>
+  <p class="sline" id="sLine"></p>
+  <div class="stage"><div class="app dark" id="app"></div></div>
+  <div class="notes" id="notes"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const I=(n,c='')=>`<svg class="ic ${c}"><use href="#${n}"/></svg>`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let S={state:'working',tabs:3,view:'one',w:1440,dark:true,cur:'a1',menu:null,toast:null,pick:null,startErr:false};
+
+const AGENTS=[
+  {id:'a1',name:'Agent 1',main:true,prog:'claude',model:'Opus',effort:'High',acct:'Work (Max)'},
+  {id:'a2',name:'Agent 2',main:true,prog:'codex',model:'GPT-5',effort:'Medium',acct:'Personal',state:'you',unread:2},
+  {id:'a3',name:'Agent 3',main:true,prog:'claude',model:'Sonnet',effort:'Medium',acct:'Work (Max)',state:'stopped'},
+  {id:'a4',name:'Designer 439',main:false,prog:'claude',model:'Opus',effort:'High',acct:'Work (Max)',state:'working'},
+  {id:'a5',name:'Worker 3',main:false,prog:'claude',model:'Sonnet',effort:'Medium',acct:'Work (Max)',state:'working'},
+  {id:'a6',name:'Agent 4 · the release run that checks every package',main:true,prog:'codex',model:'GPT-5',effort:'High',acct:'Personal',state:'stopped'},
+  {id:'a7',name:'Agent 5',main:true,prog:'claude',model:'Opus',effort:'High',acct:'Work (Max)',state:'working'},
+  {id:'a8',name:'Agent 6',main:true,prog:'claude',model:'Opus',effort:'High',acct:'Work (Max)',state:'stopped'},
+];
+/* The providers: only one with a signed-in account is offered; one that is not stays out of the choices. */
+const PROVIDERS={
+  claude:{t:'Claude Code',mk:'C',acct:'Work (Max)',signed:true,models:[['Opus','Most capable'],['Sonnet','Fast, strong'],['Haiku','Quickest']],efforts:['Low','Medium','High','Max'],dm:'Opus',de:'High'},
+  codex:{t:'Codex',mk:'X',acct:'Personal',signed:true,models:[['GPT-5','Most capable'],['GPT-5 mini','Quicker']],efforts:['Low','Medium','High'],dm:'GPT-5',de:'Medium'},
+  gemini:{t:'Gemini CLI',mk:'G',signed:false}};
+const mk=a=>PROVIDERS[a.prog].mk;
+/* What each session state looks like: the mark, its words, and the one action the line offers inline (if any). */
+const LOOK={
+  working:{mark:'spin',w:'Working',run:true},
+  you:{mark:'you',w:'Waits for you'},
+  stopped:{mark:'hollow',w:'Stopped',inline:'Start'},
+  starting:{mark:'spin',w:'Starting…'},
+  verifying:{mark:'spin',w:'Verifying session'},
+  failed:{mark:'bad',w:'Start failed',bad:true,inline:'Start again',why:['The account Work (Max) is signed out.','Sign in on Accounts, then start again.']},
+  terminal:{mark:'you',w:'Waits in its terminal',att:true},
+  ended:{mark:'hollow',w:'Session ended',pick:true},
+  fresh:{mark:'new',w:'No agent yet',pick:true},
+  nosign:{mark:'new',w:'No agent yet',pick:true,none:true},
+};
+const STATES=[['working','Working'],['you','Waits for you'],['stopped','Stopped'],['starting','Starting'],['failed','Start failed'],['terminal','Terminal asks'],['ended','Session ended'],['fresh','New chat'],['nosign','New, nobody signed in']];
+const stOf=a=>a.id===S.cur||(!a.state)?S.state:a.state;
+const shown=()=>AGENTS.filter(a=>a.main).slice(0,S.tabs).concat(S.tabs>=6?AGENTS.filter(a=>!a.main).slice(0,1):[]);
+const mark=st=>{const m=LOOK[st].mark;return m==='spin'?'<span class="spin" aria-hidden="true"></span>':m==='new'?'':`<span class="dot ${m}" aria-hidden="true"></span>`};
+const isNew=a=>{const st=stOf(a);return st==='fresh'||st==='nosign'};
+const av=(a,c)=>isNew(a)?`<span class="av new ${c}" aria-hidden="true">${I('plus','s12')}</span>`:`<span class="av ${c}" aria-hidden="true">${mk(a)}</span>`;
+const label=a=>isNew(a)?'New chat':a.main?`${a.name} · main`:a.name;
+function columns(){const t=shown();if(S.view!=='side'||t.length<2)return [S.cur];const n=Math.max(2,Math.floor(S.w/400));const rest=t.map(a=>a.id).filter(x=>x!==S.cur);return [S.cur,...rest].slice(0,n).sort((x,y)=>t.findIndex(a=>a.id===x)-t.findIndex(a=>a.id===y))}
+
+function bar(){const t=shown(),cols=columns(),over=t.length>5&&S.w<1100;
+  return `<div class="cbar" role="region" aria-label="Chats">
+    <div class="tl ${over?'fade':''}" role="tablist" aria-label="Open chats">${t.map(a=>{const sel=a.id===S.cur,st=stOf(a);
+      return `<div class="ctab ${S.view==='side'&&cols.includes(a.id)?'col':''}" role="tab" tabindex="${sel?0:-1}" aria-selected="${sel}" data-tab="${a.id}" title="${esc(label(a))} · ${LOOK[st].w}">
+        ${av(a,'s16')}<span class="nm">${esc(label(a))}</span>${mark(st)}${a.unread&&!sel?`<span class="num" aria-label="${a.unread} unread">${a.unread}</span>`:''}
+        ${sel&&!isNew(a)?`<button class="ib car" data-menu="tab" aria-haspopup="menu" aria-expanded="${S.menu==='tab'}" aria-label="Choose the agent for this tab" title="Choose the agent">${I('caret','s12')}</button>`:''}
+        ${t.length>1?`<button class="ib tx" data-close="${a.id}" tabindex="-1" aria-label="Close the tab of ${esc(a.name)}; it keeps working" title="Close the tab · it keeps working">${I('close','s12')}</button>`:''}</div>`}).join('')}</div>
+    ${over?`<button class="ib more" data-menu="more" aria-label="All open chats" title="All open chats">${I('chev','s13')}</button>`:''}
+    <button class="btn newc" data-new title="Open a new chat · ⌥N">${I('plus','s13')}<span class="w">New chat</span><span class="kbd">⌥N</span></button>
+    <span class="sp"></span>
+    <div class="vseg" role="group" aria-label="How the open chats show">
+      <button data-view="one" aria-pressed="${S.view==='one'}" title="One at a time">${I('window','s13')}<span class="w">One at a time</span></button>
+      <button data-view="side" aria-pressed="${S.view==='side'}" ${t.length<2?'disabled title="Open a second chat first"':'title="Side by side: the open chats as columns"'}>${I('cols','s13')}<span class="w">Side by side</span></button></div>
+    <span class="vr" aria-hidden="true"></span>
+    <button class="ib" data-menu="layouts" aria-haspopup="menu" aria-expanded="${S.menu==='layouts'}" aria-label="Layouts" title="Layouts">${I('layout','s13')}</button>
+    <button class="ib" data-menu="add" aria-haspopup="dialog" aria-expanded="${S.menu==='add'}" aria-label="Add a window" title="Add a window">${I('addwin','s13')}</button>
+  </div>`}
+
+const MSGS={a1:[['ag','Agent 1','Running the chat tests before I hand task 3825 back.'],['me','','Keep the view switch where it is for now.'],['ag','Agent 1','Understood. The tests for ChatTabs pass; the page test is running.']],
+  a2:[['ag','Agent 2','The release notes are drafted. Shall I file them as a document?']],
+  a3:[['ag','Agent 3','Stopped after the plan was filed.']]};
+
+/* The start surface: provider, then model and effort, defaults chosen, then Start. */
+function pickFor(a){if(S.pick&&S.pick.id===a.id)return S.pick;const st=stOf(a);
+  const ran=st==='ended';const p=ran?a.prog:'claude',P=PROVIDERS[p];
+  return S.pick={id:a.id,prog:p,model:ran?a.model:P.dm,effort:ran?a.effort:P.de,ran,busy:false}}
+function startHtml(a){const st=stOf(a),L=LOOK[st],k=pickFor(a),P=PROVIDERS[k.prog];
+  const signed=Object.entries(PROVIDERS).filter(([,p])=>p.signed),unsigned=Object.entries(PROVIDERS).filter(([,p])=>!p.signed);
+  if(L.none)return `<div class="start" role="group" aria-label="Start a session"><div class="hd">${av(a,'s32')}<div><b>No account is signed in</b><small>A session needs a signed-in Claude Code, Codex or Gemini CLI account.</small></div></div>
+    <div class="go"><span class="w">Add an account here; this chat waits and starts once one is signed in.</span><button class="btn primary lg" data-flash="The add-account dialog opens over Home (home-v6 step 15)">${I('plus','s13')}Add an account</button></div></div>`;
+  const opt=(grp,v,b,s,icon)=>`<button class="opt" role="radio" aria-checked="${k[grp]===v}" tabindex="${k[grp]===v?0:-1}" data-opt="${grp}:${v}">${icon||''}<span class="t"><b>${esc(b)}</b>${s?`<small>${esc(s)}</small>`:''}</span><span class="ck" aria-hidden="true"></span></button>`;
+  const head=k.ran?`<div class="hd">${av(a,'s32')}<div><b>Start ${esc(a.name)} again</b><small>As last time: ${PROVIDERS[a.prog].t} · ${a.model} · ${a.effort} effort. Change anything, or Start.</small></div></div>`
+    :`<div class="hd">${av(a,'s32')}<div><b>Start a new main agent</b><small>Choose what runs it. Your first message goes after it starts.</small></div></div>`;
+  return `<div class="start ${k.busy?'busy':''}" role="group" aria-label="Start a session">${head}
+    <div class="lab">Provider</div><div class="opts p" role="radiogroup" aria-label="Provider">${signed.map(([id,p])=>opt('prog',id,p.t,p.acct,`<span class="av s32" aria-hidden="true">${p.mk}</span>`)).join('')}</div>
+    ${unsigned.length?`<p class="quiet">${unsigned.map(([,p])=>p.t).join(', ')} ${unsigned.length>1?'are':'is'} not signed in. <button class="lk" data-flash="The add-account dialog opens over Home">Add an account</button></p>`:''}
+    <div class="lab">Model</div><div class="opts m" role="radiogroup" aria-label="Model">${P.models.map(([m,s])=>opt('model',m,m,s)).join('')}</div>
+    <div class="lab">Effort</div><div class="opts e" role="radiogroup" aria-label="Effort">${P.efforts.map(e=>opt('effort',e,e,'')).join('')}</div>
+    <div class="go">${S.startErr&&!k.busy?`<span class="w bad" role="alert">The start failed: Work (Max) is signed out. <span>Sign in on Accounts, or choose another provider.</span></span>`:`<span class="w">${k.busy?'Starting the session…':`${P.t} · ${k.model} · ${k.effort} effort · ${P.acct}`}</span>`}
+      <button class="btn primary lg" data-start ${k.busy?'disabled':''}>${k.busy?'<span class="spin" aria-hidden="true"></span>Starting…':S.startErr?I('restart','s13')+'Start again':I('play','s13')+'Start'}</button></div></div>`}
+
+function pane(id){const a=AGENTS.find(x=>x.id===id),st=stOf(a),L=LOOK[st],act=id===S.cur,ms=MSGS[id]||[['ag',a.name,'Working on its task.']];
+  if(L.pick){const hist=st==='ended';
+    return `<section class="col ${act?'act':''}" data-col="${id}" aria-label="Chat with ${esc(label(a))}">
+      ${hist?`<div class="msgs">${msgs(a,ms)}<div class="endl">The session ended at 14:32</div></div><div class="startw">${startHtml(a)}</div>`:`<div class="startw mid">${startHtml(a)}</div>`}</section>`}
+  return `<section class="col ${act?'act':''}" data-col="${id}" aria-label="Chat with ${esc(a.name)}">
+    <div class="msgs">${msgs(a,ms)}</div>
+    <div class="foot">
+      ${L.why?`<p class="why" role="alert">${L.why[0]} <span>${L.why[1]}</span></p>`:''}
+      <div class="ahead">
+        ${L.run?`<div class="run" title="The command the agent runs now"><span class="spin" aria-hidden="true"></span><code>php artisan test --filter ChatTabs</code><span class="t">12 s</span></div>`:L.att?`<div class="run att">Claude Code asks you something in its terminal. <a data-flash="The terminal opens as a modal">Open the terminal</a></div>`:'<span style="flex:1"></span>'}
+        ${L.inline?`<button class="btn bordered inline" data-inline>${st==='failed'?I('restart','s13'):I('play','s13')}${L.inline}</button>`:''}
+        <button class="chip" data-menu="agent:${id}" aria-haspopup="menu" aria-expanded="${S.menu==='agent:'+id}" aria-label="${esc(a.name)}, ${L.w}. Session and agent choices" title="${esc(label(a))} · ${PROVIDERS[a.prog].t} · ${a.model} · ${a.effort} effort · ${a.acct}">
+          ${av(a,'s18')}<span class="nm">${esc(label(a))}</span><span class="st ${L.bad?'bad':''}">${mark(st)}<span class="w">${L.w}</span></span><span class="sub">${a.model} · ${a.effort}</span>${I('caretup','s12 car')}</button>
+      </div>
+      <div class="comp"><div class="ph">Message ${esc(a.name)}…</div>
+        <div class="row"><button class="ib" aria-label="Attach">${I('attach','s13')}</button><span class="sp"></span>
+          ${L.run?`<button class="stop">${I('stop','s12')}Stop</button>`:''}<button class="send" aria-label="Send">${I('send','s13')}</button></div></div>
+    </div></section>`}
+const msgs=(a,ms)=>ms.map(([w,n,t])=>w==='me'?`<div class="m me"><div class="b">${esc(t)}</div></div>`:`<div class="m"><span class="av">${mk(a)}</span><div><div class="h">${esc(n)}</div><div class="b">${esc(t)}</div></div></div>`).join('');
+
+function menuHtml(){if(!S.menu)return '';const app=$('#app').getBoundingClientRect();
+  const btn=document.querySelector(`[data-menu="${S.menu}"]`);if(!btn)return '';const r=btn.getBoundingClientRect();
+  const W=320,x=Math.max(6,Math.min((S.menu.startsWith('agent')?r.right-W:r.left)-app.left,app.width-W-6));
+  if(S.menu==='layouts')return `<div class="pop" role="menu" style="left:${r.right-app.left-240}px;top:${r.bottom-app.top+4}px;width:240px"><div class="mg">Layouts</div><div class="mi on">${I('layout','s13')}Just the chat</div><div class="mi">${I('layout','s13')}Chat and tasks</div><div class="mi">${I('layout','s13')}Review</div><div class="msep"></div><div class="mi">Save this layout</div><div class="mi">Back to just the chat</div></div>`;
+  if(S.menu==='add')return `<div class="pop" role="dialog" aria-label="Add a window" style="left:${r.right-app.left-280}px;top:${r.bottom-app.top+4}px;width:280px"><div class="qs">${I('search','s13')}Find a window</div><div class="mi">Tasks</div><div class="mi">Plans</div><div class="mi">Documents</div><div class="mi">Processes</div><div class="mg" style="text-transform:none;letter-spacing:0">Enter opens it floating · drag a row onto Home to dock it</div></div>`;
+  const row=(a,cur)=>{const st=a.id===S.cur?S.state:(a.state||'working');return `<div class="mi ${a.id===cur?'on':''}" data-pick="${a.id}"><span class="av s18">${mk(a)}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.main?a.name+' · main':a.name)}</span><span class="r">${LOOK[st].mark==='new'?'':mark(st)}${shown().some(t=>t.id===a.id)?'open':''}</span></div>`};
+  const list=cur=>`<div class="qs">${I('search','s13')}Find an agent</div><div class="mg">Main agents</div>${AGENTS.filter(a=>a.main).slice(0,5).map(a=>row(a,cur)).join('')}<div class="mg">Helpers</div>${AGENTS.filter(a=>!a.main).map(a=>row(a,cur)).join('')}<div class="msep"></div><div class="mi" data-new>${I('plus','s13')}New chat<span class="k">⌥N</span></div>`;
+  if(S.menu==='tab'||S.menu==='more')return `<div class="pop" role="menu" style="left:${x}px;top:${r.bottom-app.top+4}px"><div class="mg" style="padding-top:2px">${S.menu==='tab'?'Show in this tab':'Open chats'}</div>${list(S.cur)}</div>`;
+  const id=S.menu.split(':')[1],a=AGENTS.find(z=>z.id===id),st=stOf(a),L=LOOK[st];
+  const acts=st==='working'?[['stop','Stop the turn'],['restart','Restart the session']]:st==='stopped'?[['play','Start the session']]:st==='failed'?[['restart','Start again']]:st==='starting'||st==='verifying'?[['stop','Cancel the start']]:[['stop','End the session']];
+  return `<div class="pop" role="menu" aria-label="${esc(a.name)}" style="left:${x}px;bottom:${app.bottom-r.top+6}px;max-height:520px;overflow:auto">
+    <div class="hd"><span class="av">${mk(a)}</span><div style="min-width:0"><b>${esc(label(a))}</b><small>${PROVIDERS[a.prog].t} · ${a.model} · ${a.effort} effort · ${a.acct}</small></div><span style="margin-left:auto;display:inline-flex;gap:5px;align-items:center;white-space:nowrap;color:${L.bad?'var(--danger)':'var(--text-3)'}">${mark(st)}${L.w}</span></div>
+    ${acts.map(([ic,t])=>`<div class="mi">${I(ic,'s13')}${t}</div>`).join('')}
+    <div class="mi">${I('swap','s13')}Switch provider, model or effort…</div><div class="mi">${I('term','s13')}Open its terminal</div><div class="mi">${I('open','s13')}Open the agent's page</div>
+    <div class="msep"></div><div class="mg">Talk to another agent here</div>${list(id)}</div>`}
+
+function render(){const app=$('#app');const cols=columns();
+  app.className=`app ${S.dark?'dark':''} ${S.w<=760?'w760':''}`;app.style.width=S.w+'px';
+  app.innerHTML=`<header class="tb"><span class="crumb"><span class="sq"></span>Journal <span>/</span> <b>Home</b></span><span class="sp"></span><span class="srch">${I('search','s13')}Search</span></header>
+    ${bar()}<div class="body ${S.view==='side'&&cols.length>1?'side':''} ${cols.length>2?'c3':''}">${cols.map(pane).join('')}</div>${S.toast?`<div class="toast" role="status">${S.toast}</div>`:''}`;
+  if(S.menu)app.insertAdjacentHTML('beforeend',menuHtml());
+  document.body.classList.toggle('dk',S.dark);controls();wire()}
+function seg(el,items,key,fn){$(el).innerHTML=items.map(([v,t])=>`<button aria-pressed="${S[key]===v}" data-v="${v}">${t}</button>`).join('');
+  $(el).querySelectorAll('button').forEach(b=>b.onclick=()=>{const raw=b.dataset.v;S[key]=typeof S[key]==='number'?+raw:raw==='true'?true:raw==='false'?false:raw;S.menu=null;fn&&fn();render()})}
+function controls(){seg('#cState',STATES,'state',()=>{S.pick=null;S.startErr=false});seg('#cTabs',[[1,'One'],[3,'Three'],[8,'Many']],'tabs',()=>{if(S.tabs===1)S.view='one'});
+  seg('#cView',[['one','One at a time'],['side','Side by side']],'view');seg('#cW',[[1440,'1440'],[1024,'1024'],[760,'760']],'w');seg('#cMode',[[true,'Dark'],[false,'Light']],'dark');
+  const a=AGENTS.find(x=>x.id===S.cur);$('#sLine').innerHTML=`<b>${esc(label(a))}</b> · ${LOOK[S.state].w}. “Chosen chat” sets the state of the chat you are in; the other tabs keep their own. Click a tab, the tab's caret, the agent's name above the composer, the view switch, the pane buttons, or the choices and Start.`}
+function wire(){const app=$('#app');
+  app.querySelectorAll('[data-tab]').forEach(t=>t.onclick=e=>{if(e.target.closest('button'))return;S.cur=t.dataset.tab;S.menu=null;S.pick=null;render()});
+  app.querySelectorAll('[data-menu]').forEach(b=>b.onclick=e=>{e.stopPropagation();const m=b.dataset.menu;S.menu=S.menu===m?null:m;render()});
+  app.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{if(b.disabled)return;S.view=b.dataset.view;S.menu=null;render()});
+  app.querySelectorAll('[data-close]').forEach(b=>b.onclick=e=>{e.stopPropagation();flash('Closed the tab · it keeps working, and the chat list finds it')});
+  app.querySelectorAll('[data-new]').forEach(b=>b.onclick=newChat);
+  app.querySelectorAll('[data-flash]').forEach(b=>b.onclick=()=>flash(b.dataset.flash));
+  app.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{const id=b.dataset.pick;S.menu=null;if(shown().some(a=>a.id===id)){S.cur=id;S.pick=null;render()}else flash(`${AGENTS.find(a=>a.id===id).name} now shows in this tab`)});
+  app.querySelectorAll('[data-col]').forEach(c=>c.addEventListener('mousedown',e=>{if(e.target.closest('[data-menu],.pop,.start'))return;if(S.cur!==c.dataset.col){S.cur=c.dataset.col;S.menu=null;S.pick=null;render()}}));
+  app.querySelectorAll('[data-inline]').forEach(b=>b.onclick=()=>run('working'));
+  app.querySelectorAll('[data-opt]').forEach(b=>{b.onclick=()=>choose(b.dataset.opt);b.onkeydown=e=>{const dir={ArrowRight:1,ArrowDown:1,ArrowLeft:-1,ArrowUp:-1}[e.key];if(!dir)return;e.preventDefault();
+    const g=[...b.parentElement.querySelectorAll('[data-opt]')],i=(g.indexOf(b)+dir+g.length)%g.length;choose(g[i].dataset.opt);const f=document.querySelector(`[data-opt="${g[i].dataset.opt}"]`);f&&f.focus()}});
+  app.querySelectorAll('[data-start]').forEach(b=>b.onclick=startSession);
+  app.querySelectorAll('.pop').forEach(p=>p.onclick=e=>e.stopPropagation());}
+function choose(v){const [g,x]=v.split(':');const k=S.pick;k[g]=x;if(g==='prog'){const P=PROVIDERS[x];const a=AGENTS.find(z=>z.id===k.id);
+  k.model=k.ran&&a.prog===x?a.model:P.dm;k.effort=k.ran&&a.prog===x?a.effort:P.de}S.startErr=false;render()}
+/* Start: the choices lock, the button spins; the demo fails the first start of a Claude Code session in "Session ended" once, to show the failure. */
+function startSession(){const k=S.pick;k.busy=true;render();setTimeout(()=>{const fail=S.state==='ended'&&k.prog==='claude'&&!S.failedOnce;
+  if(fail){S.failedOnce=true;k.busy=false;S.startErr=true;render();return}
+  const a=AGENTS.find(z=>z.id===k.id);a.prog=k.prog;a.model=k.model;a.effort=k.effort;a.acct=PROVIDERS[k.prog].acct;S.pick=null;S.startErr=false;run('working')},1100)}
+function run(to){S.state='starting';render();setTimeout(()=>{S.state='verifying';render();setTimeout(()=>{S.state=to;render()},900)},800)}
+function newChat(){S.menu=null;S.cur='a1';S.state='fresh';S.pick=null;S.startErr=false;render()}
+let tt;function flash(t){S.toast=t;render();clearTimeout(tt);tt=setTimeout(()=>{S.toast=null;render()},2400)}
+document.addEventListener('click',e=>{if(S.menu&&!e.target.closest('.pop')&&!e.target.closest('.top')){S.menu=null;render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.menu){const m=S.menu;S.menu=null;render();const b=document.querySelector(`[data-menu="${m}"]`);b&&b.focus()}
+  if(e.altKey&&e.code==='KeyN'){e.preventDefault();newChat()}
+  if(e.key==='Enter'&&S.pick&&!S.pick.busy&&e.target.closest&&e.target.closest('.start')&&!e.target.closest('button')){startSession()}});
+
+const NOTES=[
+ ['One bar, 38 px','Tabs, then New chat ⌥N, then a flexible gap, then the view switch and, after a thin divider, Layouts and Add a window. Every control is 24 px high on the bar\'s centre line, so nothing floats or drops below. The agent bar (54 px) and its second row are gone: the chat gains 50 px.'],
+ ['The tab says which agent','A tab shows the program\'s mark, the agent\'s name, its status mark (spinner, dot, red dot) and unread count. The chosen tab carries a 2 px underline and a caret: the caret opens the agent list, and choosing one shows that agent in this tab. A tab with a column in Side by side has a fainter underline.'],
+ ['The agent above the composer','On the right of the row above the composer: avatar, “Agent 1 · main”, its status in words, model and effort in quiet text, and a caret. On the left of the same row runs the running command (task 3814) or, when the terminal asks, a line that opens it. Clicking the name opens the agent menu upward.'],
+ ['The agent menu','Its head repeats name, provider, model, effort, account and status. Then the session actions the state allows (Stop the turn, Restart, Start, Start again, Cancel the start, End the session), Switch provider, model or effort…, Open its terminal, Open the agent\'s page. Under “Talk to another agent here” the same list the tab caret opens, with search and New chat.'],
+ ['One inline action','Only a state that needs you shows a button beside the name: Stopped → Start, Start failed → Start again (its reason in red above, the remedy in --text-3). Working shows none: Stop sits in the composer (user 30973). Starting and Verifying show the spinner and their words only.'],
+ ['Starting a session (user 31684)','A chat with no session, new or ended, has no composer and no “No messages yet”. In its place: Provider as big cards (only signed-in ones, each naming its account), then Model and Effort as big choices, the defaults already chosen, then Start. Enter starts it; arrow keys move within a group. A new chat centres the panel; an ended one keeps its history above it with a “The session ended at 14:32” line.'],
+ ['As last time','An ended chat preselects the agent\'s own provider, model and effort and says “As last time: …” in the panel head. Changing the provider resets model and effort to that provider\'s defaults, or to the last ones if it is the provider the agent ran on. A new chat uses Claude Code · Opus · High (a project default; the New chat form\'s remembered choice when there is one).'],
+ ['Start: waiting and failing','Start locks the choices and spins (“Starting…”); the tab and the line above then show Starting, Verifying, Working as usual. A failed start keeps the panel and its choices, says why in red with the remedy in --text-3, and turns Start into Start again. With no provider signed in, the panel says so and offers Add an account only; providers not signed in are named under the cards with Add an account.'],
+ ['Side by side','Each column has its own row above its own composer (or its own start panel), so agent and status follow the column with no shared bar to keep in sync. At three columns the status words drop to the mark (the title still says them); model and effort show only in One at a time. Start panels stack their cards in one column.'],
+ ['Narrow (760 px)','The view switch and New chat drop their words and keep their icons and titles; tab names truncate; the chip drops model and effort. With more tabs than fit, the row fades at its end and a chevron opens “Open chats”.'],
+ ['What goes, what moves','Hide the agent bar goes: there is no agent bar. ConversationMenu moves from ChosenAgent into the chip and the tab caret; AgentSessionActions\' actions move into the chip menu, except the one inline action; the status reason moves to the line above the chip. New chat opens a tab with the start panel (the first message is written after Start) in place of the CreateChatForm popover.'],
+ ['What could go wrong','A long name: the tab caps at 220 px and the chip truncates the name before the status, which never truncates. Switching the agent in a tab with a draft keeps the draft with the old chat. A start that fails in a background tab turns its mark red. The account a provider card names signs out while the panel is open: the card leaves the choices and, if it was chosen, the next one is chosen with a line saying so. Effort is new: no driver field holds it yet.'],
+];
+$('#notes').innerHTML=NOTES.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join('');
+render();
+</script>
+</body>
+</html>
