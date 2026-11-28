@@ -9,7 +9,7 @@
   },
   "recorded_at": "2026-11-18T13:41:11.380143+01:00",
   "initial_state": {
-    "working_folder": "/private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f989e20b73/scratchpad/empty-folder",
+    "working_folder": "/private/tmp/claude-501/-home-user-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f989e20b73/scratchpad/empty-folder",
     "arguments": [
       "codex",
       "--sandbox",
@@ -227,7 +227,7 @@
     {
       "offset": 348337875,
       "stream": "terminal",
-      "bytes": "G1szOzZIG1sybS9wcml2YXRlL3RtcC9jbGF1ZGUtNTAxLy1Vc2Vycy1qZXNzZWdhbGwtcHJvamVjdHMtYWdlbnQtam91cm5hbC02L+KApi9zY3JhdGNocGFkL2VtcHR5LWZvbGRlchtbMzltG1s0OW0bWzBtG1szNzszSBtbPzI1aBtbPzIwMjZs"
+      "bytes": "G1szOzZIG1sybS9wcml2YXRlL3RtcC9jbGF1ZGUtNTAxLy1ob21lLXVzZXItcHJvamVjdHMtYWdlbnQtam91cm5hbC02L+KApi9zY3JhdGNocGFkL2VtcHR5LWZvbGRlchtbMzltG1s0OW0bWzBtG1szNzszSBtbPzI1aBtbPzIwMjZs"
     },
     {
       "offset": 350142209,
@@ -387,7 +387,7 @@
     {
       "offset": 3864109709,
       "stream": "terminal",
-      "bytes": "G1s/MjAyNmgbWz8yNWwbWzM5OzNIG1szODsyOzI0NjsyMjY7MTgzOzQ5bUdQVC02LjEtU29sIGRlZmF1bHQbWzM5OzIzSBtbMzk7NDltwrcbWzM5OzI1SBtbMzg7MjsxNzE7MjIzOzE2Nzs0OW0vcHJpdmF0ZS90bXAvY2xhdWRlLTUwMS8tVXNlcnMtamVzc2VnYWxsLXByb2plY3RzLWFnZW50LWpvdXJuYWwtNi9hZGZmZTc1ZS1kNTc3LTRiM2QtODgyZi02N2Y5OOKAphtbNDA7M0gbWzFtG1szOTs0OW3ihpAbWzQwOzlIG1syMm1hZ2VuG1s0MDsxNEhzIMK3IBtbMW0/G1s0MDsyMEgbWzIybWZvchtbNDA7MjRIc2hvcnRjdXRzG1szOW0bWzQ5bRtbMG0bWzM3OzNIG1s/MjVoG1s/MjAyNmw="
+      "bytes": "G1s/MjAyNmgbWz8yNWwbWzM5OzNIG1szODsyOzI0NjsyMjY7MTgzOzQ5bUdQVC02LjEtU29sIGRlZmF1bHQbWzM5OzIzSBtbMzk7NDltwrcbWzM5OzI1SBtbMzg7MjsxNzE7MjIzOzE2Nzs0OW0vcHJpdmF0ZS90bXAvY2xhdWRlLTUwMS8taG9tZS11c2VyLXByb2plY3RzLWFnZW50LWpvdXJuYWwtNi9hZGZmZTc1ZS1kNTc3LTRiM2QtODgyZi02N2Y5OOKAphtbNDA7M0gbWzFtG1szOTs0OW3ihpAbWzQwOzlIG1syMm1hZ2VuG1s0MDsxNEhzIMK3IBtbMW0/G1s0MDsyMEgbWzIybWZvchtbNDA7MjRIc2hvcnRjdXRzG1szOW0bWzQ5bRtbMG0bWzM3OzNIG1s/MjVoG1s/MjAyNmw="
     },
     {
       "offset": 3867932250,
@@ -402,7 +402,7 @@
     {
       "offset": 3867982709,
       "stream": "terminal",
-      "bytes": "ICAgICDilIIbWzY7MUjilIIgG1syMm0bWzRtG1szODsyOzk5OzE2ODsyNDg7NDltG104OztodHRwczovL2dpdGh1Yi5jb20vb3BlbmFpL2NvZGV4L3JlbGVhc2VzL2xhdGVzdAdodHRwczovL2dpdGh1Yi5jb20vb3BlbmFpL2NvZGV4L3JlbGVhc2VzL2xhdGVzdBtdODs7BxtbMjRtG1sybRtbMzk7NDltICAgICAgICAgICAgICAg4pSCG1s3OzFI4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pWvG1sxMDszSBtbMjJtG1szODsyOzk5OzE2ODsyNDg7NDltPl8gG1sxbRtbMzk7NDltT3BlbkFJIENvZGV4G1syMm0bWzJtG1sybSAodjAuMTY1LjApG1sxMTs2SC9wcml2YXRlL3RtcC9jbGF1ZGUtNTAxLy1Vc2Vycy1qZXNzZWdhbGwtcHJvamVjdHMtYWdlbnQtam91cm5hbC02L+KApi9zY3JhdGNocGFkL2VtcHR5LWZvbGRlchtbMzltG1s0OW0bWzBtG1szNzszSBtbPzI1aBtbPzIwMjZs"
+      "bytes": "ICAgICDilIIbWzY7MUjilIIgG1syMm0bWzRtG1szODsyOzk5OzE2ODsyNDg7NDltG104OztodHRwczovL2dpdGh1Yi5jb20vb3BlbmFpL2NvZGV4L3JlbGVhc2VzL2xhdGVzdAdodHRwczovL2dpdGh1Yi5jb20vb3BlbmFpL2NvZGV4L3JlbGVhc2VzL2xhdGVzdBtdODs7BxtbMjRtG1sybRtbMzk7NDltICAgICAgICAgICAgICAg4pSCG1s3OzFI4pWw4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pWvG1sxMDszSBtbMjJtG1szODsyOzk5OzE2ODsyNDg7NDltPl8gG1sxbRtbMzk7NDltT3BlbkFJIENvZGV4G1syMm0bWzJtG1sybSAodjAuMTY1LjApG1sxMTs2SC9wcml2YXRlL3RtcC9jbGF1ZGUtNTAxLy1ob21lLXVzZXItcHJvamVjdHMtYWdlbnQtam91cm5hbC02L+KApi9zY3JhdGNocGFkL2VtcHR5LWZvbGRlchtbMzltG1s0OW0bWzBtG1szNzszSBtbPzI1aBtbPzIwMjZs"
     },
     {
       "offset": 3887406875,
@@ -597,7 +597,7 @@
     {
       "offset": 15012580500,
       "stream": "terminal",
-      "bytes": "G1s/MjAyNmgbWzI4OzJIG1swbRtbNDltG1tLG1szMTsySBtbMG0bWzQ5bRtbSxtbMzI7MkgbWzBtG1s0OW0bW0sbWzMzOzJIG1swbRtbNDltG1tLG1szNDsySBtbMG0bWzQ5bRtbSxtbMzU7MkgbWzBtG1s0OW0bW0sbWzM2OzJIG1swbRtbNDltG1tLG1szNzsyN0gbWzBtG1s0OW0bW0sbWzM4OzJIG1swbRtbNDltG1tLG1s0MDszM0gbWzBtG1s0OW0bW0sbWzM3OzFIG1sxbeKAuhtbMzc7M0gbWzIybRtbMm0bWzJtQXNrIENvZGV4IHRvIGRvIGFueXRoaW5nG1szODsxSBtbMjJtIBtbMzk7M0gbWzM4OzI7MjQ2OzIyNjsxODM7NDltR1BULTYuMS1Tb2wgZGVmYXVsdBtbMzk7MjNIG1szOTs0OW3CtxtbMzk7MjVIG1szODsyOzE3MTsyMjM7MTY3OzQ5bS9wcml2YXRlL3RtcC9jbGF1ZGUtNTAxLy1Vc2Vycy1qZXNzZWdhbGwtcHJvamVjdHMtYWdlbnQtam91cm5hbC02L2FkZmZlNzVlLWQ1NzctNGIzZC04ODJmLTY3Zjk44oCmG1s0MDszSBtbMW0bWzM5OzQ5beKGkBtbMjJtIGZvciBhZ2VudHMgwrcgG1sxbT8bWzIybSBmb3Igc2hvcnRjdXRzG1szOW0bWzQ5bRtbMG0bWzM3OzNIG1s/MjVoG1s/MjAyNmw="
+      "bytes": "G1s/MjAyNmgbWzI4OzJIG1swbRtbNDltG1tLG1szMTsySBtbMG0bWzQ5bRtbSxtbMzI7MkgbWzBtG1s0OW0bW0sbWzMzOzJIG1swbRtbNDltG1tLG1szNDsySBtbMG0bWzQ5bRtbSxtbMzU7MkgbWzBtG1s0OW0bW0sbWzM2OzJIG1swbRtbNDltG1tLG1szNzsyN0gbWzBtG1s0OW0bW0sbWzM4OzJIG1swbRtbNDltG1tLG1s0MDszM0gbWzBtG1s0OW0bW0sbWzM3OzFIG1sxbeKAuhtbMzc7M0gbWzIybRtbMm0bWzJtQXNrIENvZGV4IHRvIGRvIGFueXRoaW5nG1szODsxSBtbMjJtIBtbMzk7M0gbWzM4OzI7MjQ2OzIyNjsxODM7NDltR1BULTYuMS1Tb2wgZGVmYXVsdBtbMzk7MjNIG1szOTs0OW3CtxtbMzk7MjVIG1szODsyOzE3MTsyMjM7MTY3OzQ5bS9wcml2YXRlL3RtcC9jbGF1ZGUtNTAxLy1ob21lLXVzZXItcHJvamVjdHMtYWdlbnQtam91cm5hbC02L2FkZmZlNzVlLWQ1NzctNGIzZC04ODJmLTY3Zjk44oCmG1s0MDszSBtbMW0bWzM5OzQ5beKGkBtbMjJtIGZvciBhZ2VudHMgwrcgG1sxbT8bWzIybSBmb3Igc2hvcnRjdXRzG1szOW0bWzQ5bRtbMG0bWzM3OzNIG1s/MjVoG1s/MjAyNmw="
     },
     {
       "offset": 15024091667,
@@ -637,12 +637,12 @@
     {
       "offset": 18005233834,
       "stream": "terminal",
-      "bytes": "G1syOzJIG1swbRtbNDltG1tLG1szOzJIG1swbRtbNDltG1tLG1s0OzI5SBtbMG0bWzQ5bRtbSxtbNjsySBtbMG0bWzQ5bRtbSxtbNzs2NEgbWzBtG1s0OW0bW0sbWzExOzUySBtbMG0bWzQ5bRtbSxtbMTM7NDdIG1swbRtbNDltG1tLG1sxNTs4SBtbMG0bWzQ5bRtbSxtbMTY7MkgbWzBtG1s0OW0bW0sbWzE3OzI5SBtbMG0bWzQ5bRtbSxtbMTg7MkgbWzBtG1s0OW0bW0sbWzM0OzgwSBtbMG0bWzQ5bRtbSxtbMzU7MkgbWzBtG1s0OW0bW0sbWzE7MUgbWzJt4pWwG1sxOzY1SOKVrxtbMjsxSBtbMjJtIBtbMzsxSCAbWzQ7MUggIBtbMzg7Mjs5OTsxNjg7MjQ4OzQ5bT5fIBtbMW0bWzM5OzQ5bU9wZW5BSSBDb2RleBtbNDsxOUgbWzIybRtbMm0bWzJtKHYwLjE2NS4wKRtbNTsxSBtbMjJtICAgICAbWzJtL3ByaXZhdGUvdG1wL2NsYXVkZS01MDEvLVVzZXJzLWplc3NlZ2FsbC1wcm9qZWN0cy1hZ2VudC1qb3VybmFsLTYv4oCmL3NjcmF0Y2hwYWQvZW1wdHktZm9sZGVyG1s2OzFIG1syMm0gG1s3OzFIG1sybSAgVG8gZ2V0IHN0YXJ0ZWQsIGRlc2NyaWJlIGEgdGFzayBvciB0cnkgb25lIG9mIHRoZXNlIGNvbW1hbmRzOhtbOTszSBtbMjJtL2luaXQbWzJtIC0gY3JlYXRlIGFuIEFHRU5UUy5tZCBmaWxlIHdpdGggaW5zdHJ1Y3Rpb25zIGZvciBDb2RleBtbMTA7M0gbWzIybS9zdGF0dXMbWzJtIC0gc2hvdyBjdXJyZW50IHNlc3Npb24gY29uZmlndXJhdGlvbhtbMTE7M0gbWzIybS9wZXJtaXNzaW9ucxtbMm0gLSBjaG9vc2Ugd2hhdCBDb2QbWzExOzM0SHggaXMgYWxsb3dlZCB0byBkbxtbMTI7M0gbWzIybS9tb2RlbBtbMm0gLSBjaG9vc2Ugd2hhdCBtb2RlbCBhbmQgcmVhc29uaW5nIGVmZm9ydCB0byB1c2UbWzEzOzFIG1syMm0gIC9yZXZpZXcbWzJtIC0gG1sxMzsxNEhldmlldyBhbnkgY2hhbmdlcyBhbmQgZmluZCBpc3N1ZXMbWzE1OzFIG1syMm0bWzM4OzU7NTs0OW0vc3RhdHVzG1sxNzszSBtbMzg7Mjs5OTsxNjg7MjQ4OzQ5bT5fIBtbMW0bWzM5OzQ5bU9wZW5BSSBDb2RleBtbMjJtG1sybRtbMm0gKHYwLg=="
+      "bytes": "G1syOzJIG1swbRtbNDltG1tLG1szOzJIG1swbRtbNDltG1tLG1s0OzI5SBtbMG0bWzQ5bRtbSxtbNjsySBtbMG0bWzQ5bRtbSxtbNzs2NEgbWzBtG1s0OW0bW0sbWzExOzUySBtbMG0bWzQ5bRtbSxtbMTM7NDdIG1swbRtbNDltG1tLG1sxNTs4SBtbMG0bWzQ5bRtbSxtbMTY7MkgbWzBtG1s0OW0bW0sbWzE3OzI5SBtbMG0bWzQ5bRtbSxtbMTg7MkgbWzBtG1s0OW0bW0sbWzM0OzgwSBtbMG0bWzQ5bRtbSxtbMzU7MkgbWzBtG1s0OW0bW0sbWzE7MUgbWzJt4pWwG1sxOzY1SOKVrxtbMjsxSBtbMjJtIBtbMzsxSCAbWzQ7MUggIBtbMzg7Mjs5OTsxNjg7MjQ4OzQ5bT5fIBtbMW0bWzM5OzQ5bU9wZW5BSSBDb2RleBtbNDsxOUgbWzIybRtbMm0bWzJtKHYwLjE2NS4wKRtbNTsxSBtbMjJtICAgICAbWzJtL3ByaXZhdGUvdG1wL2NsYXVkZS01MDEvLWhvbWUtdXNlci1wcm9qZWN0cy1hZ2VudC1qb3VybmFsLTYv4oCmL3NjcmF0Y2hwYWQvZW1wdHktZm9sZGVyG1s2OzFIG1syMm0gG1s3OzFIG1sybSAgVG8gZ2V0IHN0YXJ0ZWQsIGRlc2NyaWJlIGEgdGFzayBvciB0cnkgb25lIG9mIHRoZXNlIGNvbW1hbmRzOhtbOTszSBtbMjJtL2luaXQbWzJtIC0gY3JlYXRlIGFuIEFHRU5UUy5tZCBmaWxlIHdpdGggaW5zdHJ1Y3Rpb25zIGZvciBDb2RleBtbMTA7M0gbWzIybS9zdGF0dXMbWzJtIC0gc2hvdyBjdXJyZW50IHNlc3Npb24gY29uZmlndXJhdGlvbhtbMTE7M0gbWzIybS9wZXJtaXNzaW9ucxtbMm0gLSBjaG9vc2Ugd2hhdCBDb2QbWzExOzM0SHggaXMgYWxsb3dlZCB0byBkbxtbMTI7M0gbWzIybS9tb2RlbBtbMm0gLSBjaG9vc2Ugd2hhdCBtb2RlbCBhbmQgcmVhc29uaW5nIGVmZm9ydCB0byB1c2UbWzEzOzFIG1syMm0gIC9yZXZpZXcbWzJtIC0gG1sxMzsxNEhldmlldyBhbnkgY2hhbmdlcyBhbmQgZmluZCBpc3N1ZXMbWzE1OzFIG1syMm0bWzM4OzU7NTs0OW0vc3RhdHVzG1sxNzszSBtbMzg7Mjs5OTsxNjg7MjQ4OzQ5bT5fIBtbMW0bWzM5OzQ5bU9wZW5BSSBDb2RleBtbMjJtG1sybRtbMm0gKHYwLg=="
     },
     {
       "offset": 18005259584,
       "stream": "terminal",
-      "bytes": "MTY1LjApG1sxOTszSBtbMjJtG1szODsyOzk5OzE2ODsyNDg7NDltVmlzaXQgG1s0bRtdODs7aHR0cHM6Ly9jaGF0Z3B0LmNvbS9zZXR0aW5ncy91c2FnZQdodHRwczovL2NoYXRncHQuY29tL3NldHRpbmdzL3VzYWdlG104OzsHG1syNG0gZm9yIHVwLXRvLWRhdGUbWzIwOzNIaW5mb3JtYXRpb24gb24gcmF0ZSBsaW1pdHMgYW5kIGNyZWRpdHMbWzIyOzFIG1sybRtbMzk7NDltICBTZXJ2ZXI6ICAgICAgICAgICAgICAbWzIybUxvY2FsG1syMjszMEhiYWNrZ3JvdW5kG1syMjs0MUhzZXJ2ZXIbWzI0OzFIG1sybSAgTW9kZWw6ICAgICAgICAgICAgICAgG1syMm1HUFQtNi4xLVNvbBtbMm0gKHJlYXNvbmluZyBtZWRpdW0pG1syNTsxSCAgTW9kZWwgcHJvdmlkZXI6ICAgICAgG1syMm1vcGVuYWkbWzI2OzFIG1sybSAgRGlyZWN0b3J5OiAgICAgICAgICAgG1syMm0vcHJpdmF0ZS90bXAvY2xhdWRlLTUwMS8tVXNlcnMtamVzc2VnYWxsLXByb2plY3RzLWFnZW50LWpvdXJuYWwtNi8bWzI3OzFIG1sybSAgICAgICAgICAgICAgICAgICAgICAgG1syMm1hZGZmZTc1ZS1kNTc3LTRiM2QtODgyZi02N2Y5ODllMjBiNzMvc2NyYXRjaHBhZC9lbXB0eS1mb2xkZXIbWzI4OzFIG1sybSAgUGVybWlzc2lvbnM6ICAgICAgICAgG1syMm1Xb3Jrc3BhY2UbWzI4OzM0SChBc2sbWzI4OzM5SGZvchtbMjg7NDNIYXBwcm92YWwpG1syOTsxSBtbMm0gIEFnZW50cy5tZDogICAgICAgICAgIBtbMjJtPG5vbmU+G1szMDsxSBtbMm0gIEFjY291bnQ6ICAgICAgICAgICAgIBtbPHJlZGFjdGVkPiAgICAgICAgIBtbMzA7NDFIKEJ1c2luZXNzG1szMDs1MUhQcmVtaXVtKRtbMzE7MUgbWzJtICBDb2xsYWJvcmF0aW9uIG1vZGU6ICAbWzIybURlZmF1bHQbWzMyOzFIG1sybSAgU2Vzc2lvbjogICAgICAgICAgICAgG1syMm0wMWExZWVhYy1mNmRlLTdiMDItYmQ1Mi0xMGRhYTJlYzFjYTQbWzM0OzFIG1sybSAgV2Vla2x5IGxpbWl0OiAgICAgICAgG1syMm1b4paI4paI4paI4paI4paI4paI4paI4paR4paR4paR4paR4paR4paR4paR4paR4g=="
+      "bytes": "MTY1LjApG1sxOTszSBtbMjJtG1szODsyOzk5OzE2ODsyNDg7NDltVmlzaXQgG1s0bRtdODs7aHR0cHM6Ly9jaGF0Z3B0LmNvbS9zZXR0aW5ncy91c2FnZQdodHRwczovL2NoYXRncHQuY29tL3NldHRpbmdzL3VzYWdlG104OzsHG1syNG0gZm9yIHVwLXRvLWRhdGUbWzIwOzNIaW5mb3JtYXRpb24gb24gcmF0ZSBsaW1pdHMgYW5kIGNyZWRpdHMbWzIyOzFIG1sybRtbMzk7NDltICBTZXJ2ZXI6ICAgICAgICAgICAgICAbWzIybUxvY2FsG1syMjszMEhiYWNrZ3JvdW5kG1syMjs0MUhzZXJ2ZXIbWzI0OzFIG1sybSAgTW9kZWw6ICAgICAgICAgICAgICAgG1syMm1HUFQtNi4xLVNvbBtbMm0gKHJlYXNvbmluZyBtZWRpdW0pG1syNTsxSCAgTW9kZWwgcHJvdmlkZXI6ICAgICAgG1syMm1vcGVuYWkbWzI2OzFIG1sybSAgRGlyZWN0b3J5OiAgICAgICAgICAgG1syMm0vcHJpdmF0ZS90bXAvY2xhdWRlLTUwMS8taG9tZS11c2VyLXByb2plY3RzLWFnZW50LWpvdXJuYWwtNi8bWzI3OzFIG1sybSAgICAgICAgICAgICAgICAgICAgICAgG1syMm1hZGZmZTc1ZS1kNTc3LTRiM2QtODgyZi02N2Y5ODllMjBiNzMvc2NyYXRjaHBhZC9lbXB0eS1mb2xkZXIbWzI4OzFIG1sybSAgUGVybWlzc2lvbnM6ICAgICAgICAgG1syMm1Xb3Jrc3BhY2UbWzI4OzM0SChBc2sbWzI4OzM5SGZvchtbMjg7NDNIYXBwcm92YWwpG1syOTsxSBtbMm0gIEFnZW50cy5tZDogICAgICAgICAgIBtbMjJtPG5vbmU+G1szMDsxSBtbMm0gIEFjY291bnQ6ICAgICAgICAgICAgIBtbPHJlZGFjdGVkPiAgICAgICAgIBtbMzA7NDFIKEJ1c2luZXNzG1szMDs1MUhQcmVtaXVtKRtbMzE7MUgbWzJtICBDb2xsYWJvcmF0aW9uIG1vZGU6ICAbWzIybURlZmF1bHQbWzMyOzFIG1sybSAgU2Vzc2lvbjogICAgICAgICAgICAgG1syMm0wMWExZWVhYy1mNmRlLTdiMDItYmQ1Mi0xMGRhYTJlYzFjYTQbWzM0OzFIG1sybSAgV2Vla2x5IGxpbWl0OiAgICAgICAgG1syMm1b4paI4paI4paI4paI4paI4paI4paI4paR4paR4paR4paR4paR4paR4paR4paR4g=="
     },
     {
       "offset": 18005262542,
@@ -756,7 +756,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -803,7 +803,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -850,7 +850,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -897,7 +897,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -944,7 +944,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -991,7 +991,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -1038,7 +1038,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -1085,7 +1085,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -1132,7 +1132,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -1179,7 +1179,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -1207,7 +1207,7 @@
         "",
         "\u203a Ask Codex to do anything",
         "",
-        "  GPT-6.1-Sol default \u00b7 /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f98\u2026",
+        "  GPT-6.1-Sol default \u00b7 /private/tmp/claude-501/-home-user-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f98\u2026",
         "  \u2190 for agents \u00b7 ? for shortcuts"
       ],
       "cursor_row": 36,
@@ -1220,7 +1220,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -1241,7 +1241,7 @@
         "",
         "  Model:               GPT-6.1-Sol (reasoning medium)",
         "  Model provider:      openai",
-        "  Directory:           /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/",
+        "  Directory:           /private/tmp/claude-501/-home-user-projects-agent-journal-6/",
         "                       adffe75e-d577-4b3d-882f-67f989e20b73/scratchpad/empty-folder",
         "  Permissions:         Workspace (Ask for approval)",
         "  Agents.md:           <none>",
@@ -1254,7 +1254,7 @@
         "",
         "\u203a Ask Codex to do anything",
         "",
-        "  GPT-6.1-Sol default \u00b7 /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f98\u2026",
+        "  GPT-6.1-Sol default \u00b7 /private/tmp/claude-501/-home-user-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f98\u2026",
         "  \u2190 for agents \u00b7 ? for shortcuts"
       ],
       "cursor_row": 36,
@@ -1267,7 +1267,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -1288,7 +1288,7 @@
         "",
         "  Model:               GPT-6.1-Sol (reasoning medium)",
         "  Model provider:      openai",
-        "  Directory:           /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/",
+        "  Directory:           /private/tmp/claude-501/-home-user-projects-agent-journal-6/",
         "                       adffe75e-d577-4b3d-882f-67f989e20b73/scratchpad/empty-folder",
         "  Permissions:         Workspace (Ask for approval)",
         "  Agents.md:           <none>",
@@ -1301,7 +1301,7 @@
         "",
         "\u203a Ask Codex to do anything",
         "",
-        "  GPT-6.1-Sol default \u00b7 /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f98\u2026",
+        "  GPT-6.1-Sol default \u00b7 /private/tmp/claude-501/-home-user-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f98\u2026",
         "  \u2190 for agents \u00b7 ? for shortcuts"
       ],
       "cursor_row": 36,
@@ -1314,7 +1314,7 @@
         "",
         "",
         "  >_ OpenAI Codex (v0.165.0)",
-        "     /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
+        "     /private/tmp/claude-501/-home-user-projects-agent-journal-6/\u2026/scratchpad/empty-folder",
         "",
         "  To get started, describe a task or try one of these commands:",
         "",
@@ -1335,7 +1335,7 @@
         "",
         "  Model:               GPT-6.1-Sol (reasoning medium)",
         "  Model provider:      openai",
-        "  Directory:           /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/",
+        "  Directory:           /private/tmp/claude-501/-home-user-projects-agent-journal-6/",
         "                       adffe75e-d577-4b3d-882f-67f989e20b73/scratchpad/empty-folder",
         "  Permissions:         Workspace (Ask for approval)",
         "  Agents.md:           <none>",
@@ -1348,7 +1348,7 @@
         "",
         "\u203a Ask Codex to do anything",
         "",
-        "  GPT-6.1-Sol default \u00b7 /private/tmp/claude-501/-Users-jessegall-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f98\u2026",
+        "  GPT-6.1-Sol default \u00b7 /private/tmp/claude-501/-home-user-projects-agent-journal-6/adffe75e-d577-4b3d-882f-67f98\u2026",
         "  \u2190 for agents \u00b7 ? for shortcuts"
       ],
       "cursor_row": 36,
