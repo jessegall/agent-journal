@@ -1,10 +1,10 @@
 {
-    "format": 2,
+    "format": 3,
     "protocol": 1,
     "scenario_hash": "397081ef51caa2ac60f7e7f823e915986f3ab32ca85ad9bf89d97875c376601e",
     "driver": "claude-code",
     "build": "2.1.323",
-    "image_programs": "234caf25e241cc459eb4eff37ea55a2a828df57309c75dd16ab3e9247c6d692d",
+    "image_build": "234caf25e241cc459eb4eff37ea55a2a828df57309c75dd16ab3e9247c6d692d",
     "recorded_at": "2026-11-28T01:57:34+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",

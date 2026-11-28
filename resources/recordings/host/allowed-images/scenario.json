@@ -1,10 +1,10 @@
 {
-    "format": 2,
+    "format": 3,
     "protocol": 1,
     "scenario_hash": "0f8fbfd33757b8da19bd1a8b1a6c5797e6d909398a740ce483f000b0f6a5717a",
     "driver": "host",
     "build": "",
-    "image_programs": "908ced22532353035a5bde7f2ce821419d4c2e2e4eb2e6691d077b14fc2f0f2b",
+    "image_build": "908ced22532353035a5bde7f2ce821419d4c2e2e4eb2e6691d077b14fc2f0f2b",
     "recorded_at": "2026-11-28T07:37:53+00:00",
     "exchanges": [
         "01-host-caller-915b0be9afb2601e",

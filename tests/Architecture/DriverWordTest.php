@@ -146,6 +146,13 @@ final class DriverWordTest extends TestCase
         $this->assertSame([], $found, self::HOW_TO_FIX_IN_GO);
     }
 
+    public function test_the_driver_scan_keeps_flagging_words_beside_terminal_variables(): void
+    {
+        $this->assertDoesNotMatchRegularExpression(WordLines::DRIVER_WORDS, 'TERM_PROGRAM|TERM_PROGRAM_VERSION');
+        $this->assertMatchesRegularExpression(WordLines::DRIVER_WORDS, 'TERM_PROGRAM|agent program');
+        $this->assertMatchesRegularExpression(WordLines::DRIVER_WORDS, 'TERM_PROGRAM_DRIVER');
+    }
+
     public function test_the_go_check_catches_a_driver_called_a_program(): void
     {
         $this->assertMatchesRegularExpression(WordLines::GO_DRIVER_WORDS, self::GO_PROGRAM_CALL);

@@ -12,9 +12,9 @@ enum ScenarioStepType: string
     case StartSession = 'start-session';
     case SendMessage = 'send-message';
     // Opens a main agent on the scenario's driver and model, kept under the agent's name.
-    case CreateMainAgent = 'new-chat';
+    case CreateMainAgent = 'create-main-agent';
     // Starts an agent on its retained choice when needed, then sends it a message.
-    case SendToAgent = 'send-chat-message';
+    case SendToAgent = 'send-to-agent';
     case Interrupt = 'interrupt';
     case ReleaseHold = 'release-hold';
     case Stop = 'stop';

@@ -95,7 +95,7 @@ final readonly class ScenarioPlayer
     /**
      * The paired inbox for a message between the owner and the agent.
      */
-    private const string PAIR_PROVIDER = 'recordings.chat';
+    private const string PAIR_PROVIDER = 'recordings.pair';
 
     /**
      * The command line that restarts the local host, run by the record script on the machine.

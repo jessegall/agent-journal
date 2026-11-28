@@ -5,12 +5,12 @@
             "do": "restart-host"
         },
         {
-            "do": "new-chat",
+            "do": "create-main-agent",
             "agent": "Chat",
             "model": "claude-haiku-5-5"
         },
         {
-            "do": "send-chat-message",
+            "do": "send-to-agent",
             "agent": "Chat",
             "text": "Run: ls."
         },

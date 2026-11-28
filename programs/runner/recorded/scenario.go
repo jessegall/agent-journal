@@ -1,6 +1,6 @@
 // Package recorded reads the scenarios the journal recorded under resources/recordings, as the PHP Recordings does: a
 // scenario never recorded, or recorded before its scenario, the host protocol, the format or the agent image's
-// programs changed, fails by name.
+// build changed, fails by name.
 package recorded
 
 import (
@@ -16,7 +16,7 @@ import (
 )
 
 // Format is the recording format this reader reads, the PHP RecordingManifest::FORMAT.
-const Format = 2
+const Format = 3
 
 // ErrRecordingMissing is returned for a scenario with no recording folder or no definition.
 var ErrRecordingMissing = errors.New("the scenario is not recorded")
@@ -26,22 +26,22 @@ var ErrRecordingStale = errors.New("the recording is stale")
 
 // The reasons a recording is stale, in the words of the PHP StaleReason.
 const (
-	staleFormat        = "the recording format changed"
-	staleProtocol      = "the host protocol is newer than the recording"
-	staleScenario      = "the scenario changed"
-	staleImagePrograms = "the agent image's programs changed"
+	staleFormat     = "the recording format changed"
+	staleProtocol   = "the host protocol is newer than the recording"
+	staleScenario   = "the scenario changed"
+	staleImageBuild = "the agent image's build changed"
 )
 
 // Manifest is a recording's scenario.json, as the PHP RecordingManifest writes it.
 type Manifest struct {
-	Format        int      `json:"format"`
-	Protocol      int      `json:"protocol"`
-	ScenarioHash  string   `json:"scenario_hash"`
-	Driver        string   `json:"driver"`
-	Build         string   `json:"build"`
-	ImagePrograms string   `json:"image_programs"`
-	RecordedAt    string   `json:"recorded_at"`
-	Exchanges     []string `json:"exchanges"`
+	Format       int      `json:"format"`
+	Protocol     int      `json:"protocol"`
+	ScenarioHash string   `json:"scenario_hash"`
+	Driver       string   `json:"driver"`
+	Build        string   `json:"build"`
+	ImageBuild   string   `json:"image_build"`
+	RecordedAt   string   `json:"recorded_at"`
+	Exchanges    []string `json:"exchanges"`
 }
 
 // Exchange is one recorded exchange: how it opened and every event after, and the folder that holds it.
@@ -79,11 +79,11 @@ func Load(root, driver, name string) (Scenario, error) {
 	if err != nil {
 		return Scenario{}, err
 	}
-	programs, err := imagePrograms()
+	buildDigest, err := imageBuild()
 	if err != nil {
-		return Scenario{}, fmt.Errorf("reading the agent image's programs: %w", err)
+		return Scenario{}, fmt.Errorf("reading the agent image's build digest: %w", err)
 	}
-	if reason := manifest.staleReason(protocol, definitionHash, programs); reason != "" {
+	if reason := manifest.staleReason(protocol, definitionHash, buildDigest); reason != "" {
 		return Scenario{}, fmt.Errorf("%w: %s: %s", ErrRecordingStale, scenario, reason)
 	}
 	exchanges := []Exchange{}
@@ -173,7 +173,7 @@ func (scenario Scenario) calls(wire recording.Wire, includeUnanswered bool) ([]C
 	return calls, nil
 }
 
-func (manifest Manifest) staleReason(protocol int, definitionHash, imagePrograms string) string {
+func (manifest Manifest) staleReason(protocol int, definitionHash, buildDigest string) string {
 	switch {
 	case manifest.Format != Format:
 		return staleFormat
@@ -181,8 +181,8 @@ func (manifest Manifest) staleReason(protocol int, definitionHash, imagePrograms
 		return staleProtocol
 	case manifest.ScenarioHash != definitionHash:
 		return staleScenario
-	case manifest.ImagePrograms != imagePrograms:
-		return staleImagePrograms
+	case manifest.ImageBuild != buildDigest:
+		return staleImageBuild
 	}
 	return ""
 }

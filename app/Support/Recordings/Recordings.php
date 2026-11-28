@@ -8,6 +8,7 @@ use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
+use App\Support\Recordings\Enums\StaleReason;
 use App\Support\Recordings\Exceptions\RecordingMissing;
 use App\Support\Recordings\Exceptions\RecordingStale;
 use App\Values\FilePath;
@@ -50,7 +51,13 @@ final readonly class Recordings
             throw RecordingMissing::of($scenario, "recording in {$folder->relative}");
         }
 
-        $manifest = RecordingManifest::fromFile($this->files->readJson($folder->child('scenario.json')));
+        $fields = $this->files->readJson($folder->child('scenario.json'));
+
+        if ((int) $fields['format'] !== RecordingManifest::FORMAT) {
+            throw RecordingStale::of($scenario, StaleReason::Format);
+        }
+
+        $manifest = RecordingManifest::fromFile($fields);
         $reason = $manifest->staleReasonFor($this->files->digest($definition), $this->imageBuild->hash());
 
         if ($reason !== null) {

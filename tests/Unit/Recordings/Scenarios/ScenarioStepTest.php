@@ -89,8 +89,8 @@ final class ScenarioStepTest extends TestCase
         $this->journal->owner();
         $project = TestProjects::local();
         $scenario = Scenario::read('claude-code/new-chat', (string) json_encode(['steps' => [
-            ['do' => 'new-chat', 'agent' => 'Chat', 'model' => 'claude-haiku-5-5'],
-            ['do' => 'send-chat-message', 'agent' => 'Chat', 'text' => 'Run: ls.'],
+            ['do' => 'create-main-agent', 'agent' => 'Chat', 'model' => 'claude-haiku-5-5'],
+            ['do' => 'send-to-agent', 'agent' => 'Chat', 'text' => 'Run: ls.'],
             ['do' => 'stop', 'agent' => 'Chat'],
         ]]));
         $run = new ScenarioRun($scenario, $this->journal->ownerUser(), [], 'journal-runner@sha256:1');
@@ -107,9 +107,9 @@ final class ScenarioStepTest extends TestCase
 
     public function test_a_chat_message_without_its_text_is_refused_when_read(): void
     {
-        $this->expectExceptionObject(ScenarioInvalid::at('claude-code/new-chat', 0, '(send-chat-message) lacks text'));
+        $this->expectExceptionObject(ScenarioInvalid::at('claude-code/new-chat', 0, '(send-to-agent) lacks text'));
 
-        Scenario::read('claude-code/new-chat', '{"steps":[{"do":"send-chat-message","agent":"Chat"}]}');
+        Scenario::read('claude-code/new-chat', '{"steps":[{"do":"send-to-agent","agent":"Chat"}]}');
     }
 
     public function test_a_start_without_a_model_is_refused_when_read(): void

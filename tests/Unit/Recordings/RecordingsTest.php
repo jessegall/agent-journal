@@ -71,6 +71,19 @@ final class RecordingsTest extends TestCase
         $this->app->make(Recordings::class)->scenario('claude-code', 'terminal-turn');
     }
 
+    public function test_a_recording_in_an_older_format_is_refused_before_its_fields_are_read(): void
+    {
+        $recordings = $this->app->make(Recordings::class);
+        $folder = $recordings->folderOf('claude-code', 'terminal-turn');
+        $manifest = "{$this->project}/{$folder->relative}/scenario.json";
+        File::ensureDirectoryExists(dirname($manifest));
+        File::put($manifest, '{"format":2}');
+
+        $this->expectExceptionObject(RecordingStale::of('claude-code/terminal-turn', StaleReason::Format));
+
+        $recordings->scenario('claude-code', 'terminal-turn');
+    }
+
     private function writeDefinition(string $definition): void
     {
         File::ensureDirectoryExists("{$this->project}/".Recordings::SCENARIOS.'/claude-code');

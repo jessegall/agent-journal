@@ -71,8 +71,7 @@ interface HookInput
     public function recordTurn(NativeTurnRecords $turns, string $sessionId, int|null $generation): void;
 
     /**
-     * Records the tool call the agent's chat line names: a call let run starts it, a finished call finishes it, and a
-     * new turn or context clears it; a denied call and any other hook change nothing.
+     * Records an admitted tool call starting or finishing. A new turn or context clears the running call.
      */
     public function recordTool(RunningTools $tools, StackTarget $target, Decision $decision): void;
 }

@@ -10,8 +10,8 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The tool call an agent's chat line names: its line, or none once a turn cleared it, whether it still runs and when
- * it last changed. The chat page seeds with it and each change is pushed in the same shape.
+ * The latest tool call an agent displays, with its line, running status and change time.
+ * Initial reads and pushed updates use the same shape.
  */
 #[TypeScript]
 final class RunningCommandData extends Data
