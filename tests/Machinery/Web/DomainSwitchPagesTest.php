@@ -6,10 +6,13 @@ namespace Tests\Machinery\Web;
 
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Support\DomainRegistry;
+use App\Web\Creation\PageFactory;
+use App\Web\Creation\WindowFactory;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
+use Tests\Fixtures\Modules\Notes\Data\NotesPageData;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Settings\SwitchesDomainsOff;
@@ -48,6 +51,18 @@ final class DomainSwitchPagesTest extends TestCase
         $this->inertia('/plans')->assertNotFound();
         $this->actingAs($this->journal->ownerUser())->post("/plans/{$plan->number}/start")->assertNotFound();
         $this->inertia('/rules')->assertOk();
+    }
+
+    public function test_unbooted_modules_have_no_registration_in_either_factory(): void
+    {
+        $pages = $this->app->make(PageFactory::class);
+        $windows = $this->app->make(WindowFactory::class);
+
+        $this->assertFalse($this->app->make(DomainRegistry::class)->has('Notes'));
+        $this->assertFalse($pages->hasBuilderFor(NotesPageData::class));
+        $this->assertFalse($windows->hasBuilderFor(NotesPageData::class));
+        $this->assertSame($pages, $this->app->make(PageFactory::class));
+        $this->assertSame($windows, $this->app->make(WindowFactory::class));
     }
 
     /**

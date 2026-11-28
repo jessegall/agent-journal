@@ -28,6 +28,8 @@ use App\Support\CommandRegistry;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\Rules\CoreRules;
+use App\Web\Creation\PageFactory;
+use App\Web\Creation\WindowFactory;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Events\DiscoverEvents;
@@ -47,6 +49,8 @@ class DomainServiceProvider extends ServiceProvider
         $registry = DomainRegistry::from($this->domainClasses());
 
         $this->app->instance(DomainRegistry::class, $registry);
+        $this->app->singleton(PageFactory::class);
+        $this->app->singleton(WindowFactory::class);
         $this->app->booting(fn () => $this->registerDomainProviders($registry));
         $this->keepMigrationsOfUnbootedDomains($registry);
 

@@ -47,6 +47,11 @@ abstract class SurfaceFactory
         return $this->builders->get($type);
     }
 
+    public function hasBuilderFor(string $type): bool
+    {
+        return $this->builders->has($type);
+    }
+
     /**
      * @template TProduct of Data
      * @param  class-string<TProduct>  $type
