@@ -199,6 +199,13 @@ final class ScenarioRun
         return $binding !== null && $binding->readinessAt(CarbonImmutable::now()) === BindingReadiness::Ready;
     }
 
+    public function hasRelayHeartbeat(): bool
+    {
+        $binding = $this->connectedBinding();
+
+        return $binding !== null && $binding->host->last_heartbeat_at !== null;
+    }
+
     /**
      * The host a host step instructs: the connected project's relay once the scenario connected one, else the enrolled
      * host, as only a relay carries out an upgrade.

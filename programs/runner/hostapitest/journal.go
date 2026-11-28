@@ -156,6 +156,8 @@ func readRelayRequest(request *http.Request) error {
 		_, err = hostapi.ReadWirePayload[hostapi.Inventory](body)
 	case request.URL.Path == "/host/heartbeat":
 		_, err = hostapi.ReadWirePayload[hostapi.HostHeartbeat](body)
+	case parts[1] == "bindings" && len(parts) == 4 && parts[3] == "presence":
+		_, err = hostapi.ReadWirePayload[hostapi.BindingPresence](body)
 	case parts[1] == "instructions" && len(parts) == 3:
 		_, err = hostapi.ReadWirePayload[hostapi.Answer](body)
 	case parts[1] == "processes" && len(parts) == 3:

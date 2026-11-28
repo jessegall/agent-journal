@@ -1,0 +1,8 @@
+{
+    "description": "A connected folder's relay stays online until it sends its first host heartbeat",
+    "steps": [
+        {"do": "connect-project"},
+        {"do": "wait-for", "fact": "connected", "seconds": 60},
+        {"do": "wait-for", "fact": "relay-heartbeat", "seconds": 90}
+    ]
+}

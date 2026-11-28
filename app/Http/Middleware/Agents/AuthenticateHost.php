@@ -69,8 +69,10 @@ final readonly class AuthenticateHost
      */
     public function handle(Request $request, Closure $next, string $role = HostRouteRole::Enrolled->value): Response
     {
+        $routeRole = HostRouteRole::from($role);
+
         try {
-            $context = $this->servingContext($this->calls->verify($request), HostRouteRole::from($role));
+            $context = $this->servingContext($this->calls->verify($request), $routeRole);
         } catch (HostCredentialRejected|ApiSignatureInvalid $rejection) {
             return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
         } catch (HostRoleRefused $refusal) {
@@ -80,7 +82,7 @@ final readonly class AuthenticateHost
         $this->container->instance(HostContext::class, $context);
 
         try {
-            if ($context->bindingIds !== []) {
+            if ($context->bindingIds !== [] || ! $routeRole->isForEnrolledHosts()) {
                 $this->relayReader->assertRequest($request);
                 $request->attributes->set(self::RELAY_REQUEST, true);
             }
