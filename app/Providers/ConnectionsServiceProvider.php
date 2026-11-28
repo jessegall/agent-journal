@@ -7,10 +7,7 @@ namespace App\Providers;
 use App\Access\Contracts\PolicyCatalogue;
 use App\Access\Values\PolicyDefinition;
 use App\Accounts\Enums\CommandEntry;
-use App\Agents\Drivers\Processes\HeadlessDriver;
-use App\Agents\Drivers\Processes\ProbeDriver;
 use App\Agents\Drivers\Processes\ProcessDrivers;
-use App\Agents\Drivers\Processes\TerminalDriver;
 use App\Agents\Drivers\Work\WorkerLease;
 use App\Agents\Enums\AccessType;
 use App\Bus\JournalCommands;
@@ -24,7 +21,6 @@ use App\Hosts\Contracts\HostDriverImages as HostDriverImagesContract;
 use App\Hosts\Contracts\HostOperatorAccess as HostOperatorAccessContract;
 use App\Hosts\Contracts\LocalProjectHosts as LocalProjectHostsContract;
 use App\Hosts\Contracts\ProjectFiles as ProjectFilesContract;
-use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\HostChannel;
 use App\Hosts\HostDriverImages;
 use App\Hosts\HostOperatorAccess;
@@ -72,11 +68,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
         $this->app->bind(HostDriverImagesContract::class, HostDriverImages::class);
 
         // Each purpose of process the journal drives has its process driver; a test adds its mock drivers.
-        $this->app->singleton(ProcessDrivers::class, fn ($app) => new ProcessDrivers($app)
-            ->with(HostProcessPurpose::AgentTurn, HeadlessDriver::class)
-            ->with(HostProcessPurpose::AgentTerminal, TerminalDriver::class)
-            ->with(HostProcessPurpose::BuildProbe, ProbeDriver::class)
-            ->with(HostProcessPurpose::SignInProbe, ProbeDriver::class));
+        $this->app->singleton(ProcessDrivers::class, fn ($app) => ProcessDrivers::journalDrivers($app));
 
         $this->app->singleton(WorkerLease::class);
         $this->app->bind(HostOperatorAccessContract::class, HostOperatorAccess::class);

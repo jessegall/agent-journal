@@ -41,17 +41,16 @@ final readonly class DriverRegistration
         public string $handling = HostHandling::class,
     ) {}
 
-    /**
-     * Whether a runtime of the driver works in a terminal, which the journal opens once its start is proven, rather
-     * than one headless turn at a time.
-     */
-    public function opensTerminal(): bool
-    {
-        return $this->driverType === DriverType::Terminal;
-    }
-
     public function sharesModeWith(self $other): bool
     {
         return $this->family === $other->family && $this->driverType === $other->driverType;
+    }
+
+    /**
+     * Whether the journal starts the driver's runtimes itself, opening and probing their starts.
+     */
+    public function runsJournalStarts(): bool
+    {
+        return $this->driverType === DriverType::ofJournalStart();
     }
 }

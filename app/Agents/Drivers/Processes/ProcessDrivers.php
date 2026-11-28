@@ -21,6 +21,18 @@ final readonly class ProcessDrivers
     public function __construct(private Container $container, private array $drivers = []) {}
 
     /**
+     * The process driver of each purpose of process the journal drives.
+     */
+    public static function journalDrivers(Container $container): self
+    {
+        return new self($container)
+            ->with(HostProcessPurpose::AgentTurn, HeadlessDriver::class)
+            ->with(HostProcessPurpose::AgentTerminal, TerminalDriver::class)
+            ->with(HostProcessPurpose::BuildProbe, ProbeDriver::class)
+            ->with(HostProcessPurpose::SignInProbe, ProbeDriver::class);
+    }
+
+    /**
      * @param  class-string<ProcessDriver>  $driver
      */
     public function with(HostProcessPurpose $purpose, string $driver): self

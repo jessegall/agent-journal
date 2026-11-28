@@ -125,7 +125,7 @@ final readonly class StartPreviews
             array_filter(
                 $this->drivers->catalogue(),
                 fn (DriverRegistration $registration) => $registration->family === $family
-                    && $registration->driverType === DriverType::ofJournalStart(),
+                    && $registration->runsJournalStarts(),
             ),
         ));
     }
