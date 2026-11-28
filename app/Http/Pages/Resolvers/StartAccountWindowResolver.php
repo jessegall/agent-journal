@@ -35,7 +35,7 @@ final readonly class StartAccountWindowResolver implements PageResolver
 
         foreach ($this->uses->history($identity, self::MOST_USES) as $use) {
             if ($use->sessionId === $sessionId) {
-                return StartAccountData::fromUse($use, $account);
+                return StartAccountData::build()->useOf($use, $account)->finish();
             }
         }
 

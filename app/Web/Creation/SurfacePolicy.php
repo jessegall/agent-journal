@@ -58,6 +58,11 @@ final readonly class SurfacePolicy
         return (int) $value;
     }
 
+    public function pageSize(): int
+    {
+        return $this->paging?->size ?? throw InvalidSurfacePolicy::at($this->type, 'The read has no paging policy.');
+    }
+
     public function assertRows(Data $product): void
     {
         $class = Reflector::of($product);
